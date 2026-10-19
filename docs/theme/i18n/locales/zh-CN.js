@@ -89,6 +89,7 @@
       "/guide/musea": "Musea",
       "/guide/ui-styles": "UI 样式",
       "/integrations/nuxt": "Nuxt",
+      "/integrations/void": "Void",
       "/integrations/vscode": "VS Code",
       "/integrations/mcp": "MCP 服务器",
       "/architecture/overview": "架构概述",

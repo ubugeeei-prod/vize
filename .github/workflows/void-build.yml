@@ -1,0 +1,84 @@
+name: Void build
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/void-build.yml
+      - tools/support/compat/void/**
+      - tools/support/compat/nuxt/source-binding*
+      - npm/builder/vite/**
+      - npm/native/**
+      - crates/vize/src/commands/check/**
+      - crates/vize/src/commands/fmt/**
+      - crates/vize/src/commands/lint/**
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/void-build.yml
+      - tools/support/compat/void/**
+      - tools/support/compat/nuxt/source-binding*
+      - npm/builder/vite/**
+      - npm/native/**
+      - crates/**
+      - Cargo.toml
+      - Cargo.lock
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: void-build-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  void-vue:
+    name: Void + Vue build, SSR, HMR and tooling
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - name: Install workspace tooling
+        run: vp install --frozen-lockfile --prefer-offline
+      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # master
+        with:
+          toolchain: "1.99.1"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: void-source-native
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
+      - name: Build and capture the actual source native compiler
+        run: vp run --no-cache --filter './npm/native' build:debug
+      - name: Build the candidate Vite adapter
+        working-directory: npm/builder/vite
+        run: vp pack
+      - name: Build the candidate CLI
+        run: cargo build --profile ci -p vize
+      - name: Install the pinned Void app
+        working-directory: tools/support/compat/void/fixtures/void-vue
+        run: npm ci --no-audit --no-fund
+      - uses: ./.github/actions/setup-ubuntu-archive
+      - name: Install Chromium for hydration and HMR
+        working-directory: tests
+        run: vize-ci-apt-retry vp exec playwright install --with-deps chromium
+      - name: Verify build, workerd SSR, dev HMR, check parity, lint and fmt
+        run: vp env exec node tools/support/compat/void/void-vue-build.ts "$RUNNER_TEMP/void-vue-proof" target/ci/vize
+      - name: Upload Void evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: void-vue-proof-${{ github.sha }}
+          path: ${{ runner.temp }}/void-vue-proof
+          if-no-files-found: ignore

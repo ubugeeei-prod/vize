@@ -61,6 +61,7 @@
   const projectSetupPaths = [
     "/guide/vite-plugin",
     "/integrations/nuxt",
+    "/integrations/void",
     "/guide/workflows",
     "/guide/jsx",
     "/guide/jsx-babel-compat",

@@ -1,0 +1,15 @@
+{
+  "name": "vize-void-vue-fixture",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@void/vue": "1.1.12",
+    "@vizejs/vite-plugin": "0.474.0",
+    "typescript": "5.9.3",
+    "vite": "8.3.4",
+    "void": "1.1.12",
+    "vue": "3.5.44",
+    "vue-tsc": "3.3.13"
+  }
+}

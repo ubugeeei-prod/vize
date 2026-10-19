@@ -16,6 +16,7 @@ description: 既存の Vite 設定と TypeScript プロジェクトで Vue に V
 | Vite+ の Vue アプリ              | 以下の 3 ステップ                                       |
 | 通常の Vite の Vue アプリ        | [コンパイラーだけを置き換える](./guide/migration.md#vite-plugin) |
 | Nuxt                             | [Nuxt 統合](./integrations/nuxt.md)                     |
+| Void（`@void/vue`）              | [Void 統合](./integrations/void.md)                     |
 | ターミナルや CI だけで使う       | [Vite+ なしで利用する](#vite-なしで利用する)            |
 | Oxlint を使っている              | [Oxlint プラグイン](./guide/oxlint.md)                  |
 | エディターだけで使う             | [言語サーバー](./guide/language-server.md)              |

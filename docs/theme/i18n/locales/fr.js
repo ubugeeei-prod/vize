@@ -89,6 +89,7 @@
       "/guide/musea": "Musea",
       "/guide/ui-styles": "Styles UI",
       "/integrations/nuxt": "Nuxt",
+      "/integrations/void": "Void",
       "/integrations/vscode": "VS Code",
       "/integrations/mcp": "Serveur MCP",
       "/architecture/overview": "Vue d’ensemble de l’architecture",

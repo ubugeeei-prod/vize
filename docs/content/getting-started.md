@@ -14,6 +14,7 @@ Add Vize to your Vue 3 app with [Vite+](https://viteplus.dev/guide/install). Kee
 | Vue app on Vite+                 | The three steps below                                   |
 | Vue app on plain Vite            | [Replace only the compiler](./guide/migration.md#vite-plugin) |
 | Nuxt                             | [Nuxt integration](./integrations/nuxt.md)              |
+| Void (`@void/vue`)               | [Void integration](./integrations/void.md)              |
 | Any project, terminal or CI only | [Use Vize without Vite+](#use-vize-without-vite)        |
 | Existing Oxlint setup            | [Oxlint plugin](./guide/oxlint.md)                      |
 | Just the editor                  | [Language server](./guide/language-server.md)           |
