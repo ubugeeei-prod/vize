@@ -15,11 +15,11 @@ use std::sync::Arc;
 
 use oxc_span::SourceType;
 use rayon::prelude::*;
-use vize_carton::{FxHashMap, String as CompactString};
+use vize_carton::{FxHashMap, FxHashSet, String as CompactString};
 
 pub(super) type Occurrences = Arc<[(CompactString, crate::PackageResolutionMode)]>;
 
-/// A readable source's length and module specifiers, in source order.
+/// A readable source's length and unique module specifiers, in first-seen order.
 #[derive(Clone)]
 pub(super) struct SourceText {
     pub(super) len: usize,
@@ -125,9 +125,12 @@ fn read(path: &Path) -> Option<SourceText> {
     } else {
         SourceType::ts()
     };
+    let mut seen = FxHashSet::default();
     let occurrences = crate::batch::ImportRewriter::new()
         .collect_all_specifier_occurrences(&content, source_type)
-        .into();
+        .into_iter()
+        .filter(|occurrence| seen.insert(occurrence.clone()))
+        .collect();
     Some(SourceText {
         len: content.len(),
         occurrences,

@@ -10,7 +10,7 @@ use std::collections::BinaryHeap;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-use vize_carton::{FxHashSet, String as CompactString};
+use vize_carton::FxHashSet;
 
 use super::dependency_scan::resolve_dependency_with_inputs;
 use super::is_vue_runtime_support_specifier;
@@ -192,7 +192,7 @@ where
     let mut queue = BinaryHeap::new();
     // Deduplicated on arrival: lookups re-report the same manifests and
     // context files for every edge, which made the final sort dominate.
-    let mut inputs = FxHashSet::default();
+    let mut inputs = InputSet::default();
     let mut work = ReachabilityWork::default();
     let mut packages = FxHashSet::default();
     if !route_graph::seed_route_graph(
@@ -214,7 +214,6 @@ where
         return finish(ReachabilityOutcome::ReachesVue, inputs, work, budget);
     }
 
-    let mut edges = FxHashSet::<(PathBuf, CompactString, crate::PackageResolutionMode)>::default();
     while let Some((_, Reverse(path))) = queue.pop() {
         record_input(&mut inputs, &path);
         if work.files == budget.max_files {
@@ -261,17 +260,16 @@ where
             return finish(ReachabilityOutcome::BudgetExceeded, inputs, work, budget);
         }
         work.parses += 1;
+        // Each file is popped once per scan and its occurrences are already
+        // unique, so every occurrence is a new edge.
         for (specifier, mode) in content.occurrences.iter() {
             let (specifier, mode) = (specifier.clone(), *mode);
-            if !edges.insert((path.clone(), specifier.clone(), mode)) {
-                continue;
-            }
             if work.edges == budget.max_edges {
                 return finish(ReachabilityOutcome::BudgetExceeded, inputs, work, budget);
             }
             work.edges += 1;
             let (local_dependency, local_inputs) = resolve_local(&path, &specifier);
-            inputs.extend(local_inputs);
+            inputs.extend(local_inputs.into_iter().map(InputPath));
             if let Some(dependency) = local_dependency {
                 record_input(&mut inputs, &dependency);
                 if dependency
@@ -298,7 +296,7 @@ where
                 continue;
             }
             let (nested, consulted) = resolve_package(&path, &specifier, mode);
-            inputs.extend(consulted);
+            inputs.extend(consulted.into_iter().map(InputPath));
             if let Some(nested) = nested {
                 if !route_graph::seed_route_graph(
                     &nested,
@@ -343,19 +341,45 @@ fn source_priority(path: &Path) -> u8 {
     }
 }
 
-fn record_input(inputs: &mut FxHashSet<PathBuf>, path: &Path) {
-    if !inputs.contains(path) {
-        inputs.insert(path.to_path_buf());
+/// A scan input compared and hashed by its bytes. `Path` hashes component
+/// by component, which made deduplicating repeated lookup inputs expensive.
+struct InputPath(PathBuf);
+
+impl PartialEq for InputPath {
+    fn eq(&self, other: &Self) -> bool {
+        self.0.as_os_str() == other.0.as_os_str()
+    }
+}
+
+impl Eq for InputPath {}
+
+impl std::hash::Hash for InputPath {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.0.as_os_str().hash(state);
+    }
+}
+
+impl std::borrow::Borrow<std::ffi::OsStr> for InputPath {
+    fn borrow(&self) -> &std::ffi::OsStr {
+        self.0.as_os_str()
+    }
+}
+
+type InputSet = FxHashSet<InputPath>;
+
+fn record_input(inputs: &mut InputSet, path: &Path) {
+    if !inputs.contains(path.as_os_str()) {
+        inputs.insert(InputPath(path.to_path_buf()));
     }
 }
 
 fn finish(
     outcome: ReachabilityOutcome,
-    inputs: FxHashSet<PathBuf>,
+    inputs: InputSet,
     work: ReachabilityWork,
     budget: ReachabilityBudget,
 ) -> PackageRouteReachability {
-    let mut inputs = inputs.into_iter().collect::<Vec<_>>();
+    let mut inputs = inputs.into_iter().map(|input| input.0).collect::<Vec<_>>();
     inputs.sort_unstable_by(|left, right| left.as_os_str().cmp(right.as_os_str()));
     debug_assert!(
         outcome == ReachabilityOutcome::BudgetExceeded

@@ -13,7 +13,7 @@ pub(super) fn seed_route_graph(
     packages: &mut FxHashSet<PackageIdentity>,
     queue: &mut BinaryHeap<(u8, Reverse<PathBuf>)>,
     queued: &mut FxHashSet<PathBuf>,
-    inputs: &mut FxHashSet<PathBuf>,
+    inputs: &mut super::InputSet,
     work: &mut ReachabilityWork,
     budget: ReachabilityBudget,
 ) -> bool {
@@ -27,11 +27,13 @@ pub(super) fn seed_route_graph(
         if !packages.insert(identity) {
             continue;
         }
-        inputs.extend([
-            route.manifest_path.clone(),
-            route.package_link_root.clone(),
-            route.package_link_root.join("package.json"),
-        ]);
+        for path in [
+            &route.manifest_path,
+            &route.package_link_root,
+            &route.package_link_root.join("package.json"),
+        ] {
+            super::record_input(inputs, path);
+        }
         if work.packages == budget.max_packages {
             return false;
         }
