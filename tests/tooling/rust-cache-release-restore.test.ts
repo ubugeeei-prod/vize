@@ -42,3 +42,35 @@ test("release dispatches can opt into trusted cache reads without gaining writes
     },
   );
 });
+
+test("manual Full coverage reads the trusted instrumented target without gaining writes", () => {
+  cacheFixture(
+    (fixture: { cwd: string; context: (event?: string, ref?: string) => RustCacheContext }) => {
+      const main = { ...fixture.context("schedule"), role: "coverage-source" };
+      const manual = {
+        ...fixture.context("workflow_dispatch", "refs/heads/feature"),
+        role: main.role,
+        restoreTrusted: true,
+      };
+      const trusted = rustCachePolicy(main, { cwd: fixture.cwd });
+      const plan = rustCachePolicy(manual, { cwd: fixture.cwd });
+      assert.equal(trusted["sticky-commit"], "true");
+      assert.equal(plan.sticky, "true");
+      assert.equal(plan.trusted, "false");
+      assert.equal(plan["sticky-commit"], "false");
+      assert.equal(plan["target-save"], "false");
+      assert.equal(plan["sticky-target-key"], trusted["sticky-target-key"]);
+      for (const altered of [
+        { restoreTrusted: false },
+        { role: "coverage-branch" },
+        { role: "nextest-ci" },
+        { checkoutSha: "f".repeat(40) },
+      ]) {
+        assert.equal(
+          rustCachePolicy({ ...manual, ...altered }, { cwd: fixture.cwd }).sticky,
+          "false",
+        );
+      }
+    },
+  );
+});

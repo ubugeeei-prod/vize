@@ -22,6 +22,8 @@ const trustedEvents = new Set(["push", "schedule", "workflow_dispatch"]);
 const readOnlyEvents = new Set(["pull_request", "merge_group"]);
 // Actual trusted uploads exceeded the backend's 25 GB entry limit.
 const restoreOnlyTargetRoles = new Set(["coverage-source", "clippy-test"]);
+// Non-release roles whose manual dispatch may mount the trusted disk read-only.
+const dispatchRestoreRoles = new Set(["coverage-source"]);
 const fullSha = /^[0-9a-f]{40}$/;
 const token = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
 const object = (value: unknown): value is Record<string, unknown> =>
@@ -112,14 +114,15 @@ export function rustCachePolicy(
     ref === `refs/heads/${branch}` &&
     sourceSha === checkoutSha &&
     event.deleted !== true;
-  // A validated release workflow may reuse the default-branch build cache.
-  // This opt-in never grants a write or creates a candidate-specific disk.
-  const releaseRestore =
+  // A validated release workflow or a manual Full coverage run may reuse the
+  // default-branch build cache. This opt-in never grants a write or creates a
+  // candidate-specific disk.
+  const dispatchRestore =
     context.restoreTrusted === true &&
     eventName === "workflow_dispatch" &&
-    role.startsWith("release-") &&
+    (role.startsWith("release-") || dispatchRestoreRoles.has(role)) &&
     sourceSha === checkoutSha;
-  const readOnly = !trusted && (readOnlyEvents.has(eventName) || releaseRestore);
+  const readOnly = !trusted && (readOnlyEvents.has(eventName) || dispatchRestore);
   const sticky = (trusted || readOnly) && runnerEnvironment === "self-hosted";
   const base = `rust-cache-v1-${repository}-${runnerOs}-${runnerArch}-${suffix}-${fingerprint(cwd)}`;
   const target = `${base}-${role}-target-`;

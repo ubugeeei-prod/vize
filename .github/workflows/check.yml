@@ -336,6 +336,8 @@ jobs:
         with:
           key: coverage-source
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+          # A manual Full off main reads the scheduled run's instrumented disk.
+          restore-trusted: ${{ github.event_name == 'workflow_dispatch' }}
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Install Pkl CLI and hydrate pinned native fixture
