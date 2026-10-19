@@ -14,4 +14,19 @@ export const frenchRules6 = {
     'Le parent transmet `class="notice"` à un enfant résolu constitué d’un fragment, qui n’a aucune cible automatique pour les attributs et ne lit jamais `$attrs`.',
     "L’enfant choisit `<main>` comme cible en y liant `$attrs` ; son frère `<aside>` reste distinct.",
   ],
+  "script/no-expose-after-await": [
+    "Interdire expose() et defineExpose() après un await",
+    "`defineExpose()` s’exécute après un `await` de premier niveau, alors qu’aucune instance de composant n’est courante ; rien n’est donc exposé.",
+    "`defineExpose()` s’exécute avant le premier `await`, tant que l’instance du composant est courante.",
+  ],
+  "script/no-lifecycle-after-await": [
+    "Interdire l’enregistrement de hooks de cycle de vie après un await dans setup()",
+    "`setup()` appelle `onMounted()` après `await loadData()` ; sans instance de composant courante à ce moment, le hook n’est jamais enregistré.",
+    "`onMounted()` est enregistré avant le premier `await`, tant que `setup()` s’exécute de manière synchrone pour le composant.",
+  ],
+  "script/no-watch-after-await": [
+    "Interdire les observateurs créés après un await dans setup() sans conserver leur fonction d’arrêt",
+    "`watch()` est créé après `await loadData()` et sa fonction d’arrêt est ignorée ; l’observateur n’est donc jamais arrêté avec le composant.",
+    "L’observateur est créé avant le premier `await`, donc Vue l’arrête lorsque le composant est démonté.",
+  ],
 } satisfies Record<string, readonly [string, string, string]>;

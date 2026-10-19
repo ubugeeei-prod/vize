@@ -360,5 +360,121 @@
         "after": "    \"vue/prefer-import-from-vue\": {\n      \"patinaPresets\": [\n        \"ecosystem\",\n        \"essential\",\n        \"general-recommended\",\n        \"nuxt\",\n        \"opinionated\""
       }
     ]
+  },
+  {
+    "reason": "essential: lifecycle hooks, watchers and expose after await (eslint-plugin-vue Vue 3 essential)",
+    "path": "crates/vize_patina/src/linter/script_rules/registry/rules.rs",
+    "before": {
+      "bytes": 22109,
+      "sha256": "c25eeb913b064992ceedaef75c6c05e46c0528a9eb84d3524983da70f875511c"
+    },
+    "after": {
+      "bytes": 22949,
+      "sha256": "6b5b28f8d6c33ed9f46a39e975a467698125c8e001102ce11c08edd7a95e907f"
+    },
+    "hunks": [
+      {
+        "before": "    RULE_NO_DEPRECATED_EVENTS_API, RULE_NO_DEPRECATED_PROPS_DEFAULT_THIS, RULE_NO_DUPE_KEYS,\n    RULE_NO_DUPLICATE_ATTR_INHERITANCE, RULE_NO_EXPORT_IN_SCRIPT_SETUP,\n    RULE_NO_GET_CURRENT_INSTANCE, RULE_NO_IMPORT_COMPILER_MACROS, RULE_NO_INTERNAL_IMPORTS,\n    RULE_NO_MULTIPLE_SLOT_ARGS, RULE_NO_NEXT_TICK, RULE_NO_OPTIONS_API,\n    RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO, RULE_NO_REACTIVE_DESTRUCTURE, RULE_NO_REF_AS_OPERAND,\n    RULE_NO_REQUIRED_PROP_WITH_DEFAULT, RULE_NO_RESERVED_IDENTIFIERS, RULE_NO_RESERVED_KEYS,\n    RULE_NO_RESERVED_PROPS, RULE_NO_RESTRICTED_GLOBALS, RULE_NO_RESTRICTED_MEMBERS,\n    RULE_NO_SIDE_EFFECTS_IN_COMPUTED, RULE_NO_TOP_LEVEL_REF_IN_SCRIPT,\n    RULE_NO_UNSTABLE_NESTED_COMPONENTS, RULE_NO_UNUSED_EMIT_DECLARATIONS,\n    RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD, RULE_NO_WITH_DEFAULTS, RULE_NUXT_CONFIG_KEYS_ORDER,\n    RULE_NUXT_NO_CONFIG_TEST_KEY, RULE_NUXT_NO_PAGE_META_RUNTIME_VALUES,\n    RULE_NUXT_PREFER_IMPORT_META, RULE_PINIA_PREFER_STORE_TO_REFS, RULE_PREFER_COMPUTED,\n    RULE_PREFER_DEFINE_OPTIONS, RULE_PREFER_IMPORT_FROM_VUE, RULE_PREFER_REF_OVER_REACTIVE,\n    RULE_PREFER_USE_ATTRS, RULE_PREFER_USE_ID, RULE_PREFER_USE_SLOTS, RULE_PREFER_USE_TEMPLATE_REF,\n    RULE_REQUIRE_DEFAULT_PROP, RULE_REQUIRE_EXPLICIT_EMITS, RULE_REQUIRE_EXPLICIT_SLOTS,",
+        "after": "    RULE_NO_DEPRECATED_EVENTS_API, RULE_NO_DEPRECATED_PROPS_DEFAULT_THIS, RULE_NO_DUPE_KEYS,\n    RULE_NO_DUPLICATE_ATTR_INHERITANCE, RULE_NO_EXPORT_IN_SCRIPT_SETUP, RULE_NO_EXPOSE_AFTER_AWAIT,\n    RULE_NO_GET_CURRENT_INSTANCE, RULE_NO_IMPORT_COMPILER_MACROS, RULE_NO_INTERNAL_IMPORTS,\n    RULE_NO_LIFECYCLE_AFTER_AWAIT, RULE_NO_MULTIPLE_SLOT_ARGS, RULE_NO_NEXT_TICK,\n    RULE_NO_OPTIONS_API, RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO, RULE_NO_REACTIVE_DESTRUCTURE,\n    RULE_NO_REF_AS_OPERAND, RULE_NO_REQUIRED_PROP_WITH_DEFAULT, RULE_NO_RESERVED_IDENTIFIERS,\n    RULE_NO_RESERVED_KEYS, RULE_NO_RESERVED_PROPS, RULE_NO_RESTRICTED_GLOBALS,\n    RULE_NO_RESTRICTED_MEMBERS, RULE_NO_SIDE_EFFECTS_IN_COMPUTED, RULE_NO_TOP_LEVEL_REF_IN_SCRIPT,\n    RULE_NO_UNSTABLE_NESTED_COMPONENTS, RULE_NO_UNUSED_EMIT_DECLARATIONS,\n    RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD, RULE_NO_WATCH_AFTER_AWAIT, RULE_NO_WITH_DEFAULTS,\n    RULE_NUXT_CONFIG_KEYS_ORDER, RULE_NUXT_NO_CONFIG_TEST_KEY,\n    RULE_NUXT_NO_PAGE_META_RUNTIME_VALUES, RULE_NUXT_PREFER_IMPORT_META,\n    RULE_PINIA_PREFER_STORE_TO_REFS, RULE_PREFER_COMPUTED, RULE_PREFER_DEFINE_OPTIONS,\n    RULE_PREFER_IMPORT_FROM_VUE, RULE_PREFER_REF_OVER_REACTIVE, RULE_PREFER_USE_ATTRS,\n    RULE_PREFER_USE_ID, RULE_PREFER_USE_SLOTS, RULE_PREFER_USE_TEMPLATE_REF,\n    RULE_REQUIRE_DEFAULT_PROP, RULE_REQUIRE_EXPLICIT_EMITS, RULE_REQUIRE_EXPLICIT_SLOTS,"
+      },
+      {
+        "before": "    NoDeprecatedDollarScopedSlotsApi, NoDeprecatedEventsApi, NoDeprecatedPropsDefaultThis,\n    NoDupeKeys, NoDuplicateAttrInheritance, NoExportInScriptSetup, NoGetCurrentInstance,\n    NoImportCompilerMacros, NoInternalImports, NoMultipleSlotArgs, NoNextTick, NoNuxtConfigTestKey,\n    NoOptionsApi, NoPageMetaRuntimeValues, NoPotentialComponentOptionTypo, NoReactiveDestructure,\n    NoRefAsOperand, NoRequiredPropWithDefault, NoReservedIdentifiers, NoReservedKeys,\n    NoReservedProps, NoRestrictedGlobals, NoRestrictedMembers, NoSideEffectsInComputed,\n    NoTopLevelRefInScript, NoUnstableNestedComponents, NoUnusedEmitDeclarations,\n    NoUseComputedPropertyLikeMethod, NoWithDefaults, NuxtConfigKeysOrder, PiniaPreferStoreToRefs,\n    PreferComputed, PreferDefineOptions, PreferImportFromVue, PreferImportMeta,\n    PreferRefOverReactive, PreferUseAttrs, PreferUseId, PreferUseSlots, PreferUseTemplateRef,\n    RequireDefaultProp, RequireExplicitEmits, RequireExplicitSlots, RequireFunctionReturnType,\n    RequirePropTypeConstructor, RequirePropTypes, RequireSymbolProvide, RequireTypedObjectProp,",
+        "after": "    NoDeprecatedDollarScopedSlotsApi, NoDeprecatedEventsApi, NoDeprecatedPropsDefaultThis,\n    NoDupeKeys, NoDuplicateAttrInheritance, NoExportInScriptSetup, NoExposeAfterAwait,\n    NoGetCurrentInstance, NoImportCompilerMacros, NoInternalImports, NoLifecycleAfterAwait,\n    NoMultipleSlotArgs, NoNextTick, NoNuxtConfigTestKey, NoOptionsApi, NoPageMetaRuntimeValues,\n    NoPotentialComponentOptionTypo, NoReactiveDestructure, NoRefAsOperand,\n    NoRequiredPropWithDefault, NoReservedIdentifiers, NoReservedKeys, NoReservedProps,\n    NoRestrictedGlobals, NoRestrictedMembers, NoSideEffectsInComputed, NoTopLevelRefInScript,\n    NoUnstableNestedComponents, NoUnusedEmitDeclarations, NoUseComputedPropertyLikeMethod,\n    NoWatchAfterAwait, NoWithDefaults, NuxtConfigKeysOrder, PiniaPreferStoreToRefs, PreferComputed,\n    PreferDefineOptions, PreferImportFromVue, PreferImportMeta, PreferRefOverReactive,\n    PreferUseAttrs, PreferUseId, PreferUseSlots, PreferUseTemplateRef, RequireDefaultProp,\n    RequireExplicitEmits, RequireExplicitSlots, RequireFunctionReturnType,\n    RequirePropTypeConstructor, RequirePropTypes, RequireSymbolProvide, RequireTypedObjectProp,"
+      },
+      {
+        "before": "    BuiltinScriptRuleEntry { rule_name: RULE_NO_UNSTABLE_NESTED_COMPONENTS, profile_name: \"patina.script_rule.no_unstable_nested_components\", category: \"Script\", fixable: false, presets: HAPPY_PATH_SCRIPT_PRESETS, rule: &NoUnstableNestedComponents },\n];",
+        "after": "    BuiltinScriptRuleEntry { rule_name: RULE_NO_UNSTABLE_NESTED_COMPONENTS, profile_name: \"patina.script_rule.no_unstable_nested_components\", category: \"Script\", fixable: false, presets: HAPPY_PATH_SCRIPT_PRESETS, rule: &NoUnstableNestedComponents },\n    BuiltinScriptRuleEntry { rule_name: RULE_NO_LIFECYCLE_AFTER_AWAIT, profile_name: \"patina.script_rule.no_lifecycle_after_await\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &NoLifecycleAfterAwait },\n    BuiltinScriptRuleEntry { rule_name: RULE_NO_WATCH_AFTER_AWAIT, profile_name: \"patina.script_rule.no_watch_after_await\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &NoWatchAfterAwait },\n    BuiltinScriptRuleEntry { rule_name: RULE_NO_EXPOSE_AFTER_AWAIT, profile_name: \"patina.script_rule.no_expose_after_await\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &NoExposeAfterAwait },\n];"
+      }
+    ]
+  },
+  {
+    "reason": "essential: lifecycle hooks, watchers and expose after await (eslint-plugin-vue Vue 3 essential)",
+    "path": "crates/vize_patina/src/preset/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap",
+    "before": {
+      "bytes": 31030,
+      "sha256": "1bf347379b73a6beb4168dfae6e42887424eabd1643b9173b7c05f8b0879f093"
+    },
+    "after": {
+      "bytes": 31690,
+      "sha256": "095796c15bf6c44b7507af8017985dd5302c9d09ab7a3a6fb0e212c9d157493e"
+    },
+    "hunks": [
+      {
+        "before": "    \"script/no-multiple-slot-args\",\n    \"script/require-explicit-emits\",\n    \"script/no-unstable-nested-components\"\n  ],\n  \"essential\": [",
+        "after": "    \"script/no-multiple-slot-args\",\n    \"script/require-explicit-emits\",\n    \"script/no-unstable-nested-components\",\n    \"script/no-lifecycle-after-await\",\n    \"script/no-watch-after-await\",\n    \"script/no-expose-after-await\"\n  ],\n  \"essential\": ["
+      },
+      {
+        "before": "    \"script/no-ref-as-operand\",\n    \"script/no-duplicate-attr-inheritance\"\n  ],",
+        "after": "    \"script/no-ref-as-operand\",\n    \"script/no-duplicate-attr-inheritance\",\n    \"script/no-lifecycle-after-await\",\n    \"script/no-watch-after-await\",\n    \"script/no-expose-after-await\"\n  ],"
+      },
+      {
+        "before": "    \"script/no-multiple-slot-args\",\n    \"script/require-explicit-emits\",\n    \"script/no-unstable-nested-components\"\n  ],\n  \"incremental\": [],",
+        "after": "    \"script/no-multiple-slot-args\",\n    \"script/require-explicit-emits\",\n    \"script/no-unstable-nested-components\",\n    \"script/no-lifecycle-after-await\",\n    \"script/no-watch-after-await\",\n    \"script/no-expose-after-await\"\n  ],\n  \"incremental\": [],"
+      },
+      {
+        "before": "    \"script/no-reserved-props\",\n    \"script/no-unused-emit-declarations\",\n    \"script/return-in-emits-validator\",\n    \"script/valid-define-props\",\n    \"script/valid-define-emits\",\n    \"script/require-valid-default-prop\",\n    \"script/require-typed-object-prop\",\n    \"script/no-ref-as-operand\",\n    \"script/no-duplicate-attr-inheritance\",\n    \"script/no-multiple-slot-args\",\n    \"script/require-explicit-emits\",\n    \"script/no-unstable-nested-components\",\n    \"css/no-important\",\n    \"css/no-id-selectors\",\n    \"css/prefer-logical-properties\",\n    \"css/require-font-display\",\n    \"css/prefer-nested-selectors\",\n    \"css/no-display-none\",\n    \"css/no-v-bind-performance\",\n    \"css/no-hardcoded-values\",\n    \"css/no-utility-classes\",\n    \"css/prefer-slotted\"\n  ],\n  \"opinionated\": [",
+        "after": "    \"script/no-reserved-props\",\n    \"script/no-unused-emit-declarations\",\n    \"script/return-in-emits-validator\",\n    \"script/valid-define-props\",\n    \"script/valid-define-emits\",\n    \"script/require-valid-default-prop\",\n    \"script/require-typed-object-prop\",\n    \"script/no-ref-as-operand\",\n    \"script/no-duplicate-attr-inheritance\",\n    \"script/no-multiple-slot-args\",\n    \"script/require-explicit-emits\",\n    \"script/no-unstable-nested-components\",\n    \"script/no-lifecycle-after-await\",\n    \"script/no-watch-after-await\",\n    \"script/no-expose-after-await\",\n    \"css/no-important\",\n    \"css/no-id-selectors\",\n    \"css/prefer-logical-properties\",\n    \"css/require-font-display\",\n    \"css/prefer-nested-selectors\",\n    \"css/no-display-none\",\n    \"css/no-v-bind-performance\",\n    \"css/no-hardcoded-values\",\n    \"css/no-utility-classes\",\n    \"css/prefer-slotted\"\n  ],\n  \"opinionated\": ["
+      },
+      {
+        "before": "    \"script/no-reserved-props\",\n    \"script/no-unused-emit-declarations\",\n    \"script/return-in-emits-validator\",\n    \"script/valid-define-props\",\n    \"script/valid-define-emits\",\n    \"script/require-valid-default-prop\",\n    \"script/require-typed-object-prop\",\n    \"script/no-ref-as-operand\",\n    \"script/no-duplicate-attr-inheritance\",\n    \"script/no-multiple-slot-args\",\n    \"script/require-explicit-emits\",\n    \"script/no-unstable-nested-components\",\n    \"css/no-important\",\n    \"css/no-id-selectors\",\n    \"css/prefer-logical-properties\",\n    \"css/require-font-display\",\n    \"css/prefer-nested-selectors\",\n    \"css/no-display-none\",\n    \"css/no-v-bind-performance\",\n    \"css/no-hardcoded-values\",\n    \"css/no-utility-classes\",\n    \"css/prefer-slotted\"\n  ],\n  \"opt_in\": [",
+        "after": "    \"script/no-reserved-props\",\n    \"script/no-unused-emit-declarations\",\n    \"script/return-in-emits-validator\",\n    \"script/valid-define-props\",\n    \"script/valid-define-emits\",\n    \"script/require-valid-default-prop\",\n    \"script/require-typed-object-prop\",\n    \"script/no-ref-as-operand\",\n    \"script/no-duplicate-attr-inheritance\",\n    \"script/no-multiple-slot-args\",\n    \"script/require-explicit-emits\",\n    \"script/no-unstable-nested-components\",\n    \"script/no-lifecycle-after-await\",\n    \"script/no-watch-after-await\",\n    \"script/no-expose-after-await\",\n    \"css/no-important\",\n    \"css/no-id-selectors\",\n    \"css/prefer-logical-properties\",\n    \"css/require-font-display\",\n    \"css/prefer-nested-selectors\",\n    \"css/no-display-none\",\n    \"css/no-v-bind-performance\",\n    \"css/no-hardcoded-values\",\n    \"css/no-utility-classes\",\n    \"css/prefer-slotted\"\n  ],\n  \"opt_in\": ["
+      },
+      {
+        "before": "    \"script/no-unstable-nested-components\",\n    \"musea/require-title\",",
+        "after": "    \"script/no-unstable-nested-components\",\n    \"script/no-lifecycle-after-await\",\n    \"script/no-watch-after-await\",\n    \"script/no-expose-after-await\",\n    \"musea/require-title\","
+      }
+    ]
+  },
+  {
+    "reason": "essential: lifecycle hooks, watchers and expose after await (eslint-plugin-vue Vue 3 essential)",
+    "path": "tests/_fixtures/patina-eslint-vue-rule-map.json",
+    "before": {
+      "bytes": 46872,
+      "sha256": "033a5285518ca9bfd450d0dd322f5a7991560d9d15e038fffaa10b666adcf4c9"
+    },
+    "after": {
+      "bytes": 47480,
+      "sha256": "cff9f1248d9bce8e9f34b38f13a922ea8ac5e082e25c7ff9d5b8dbfd1c0f363d"
+    },
+    "hunks": [
+      {
+        "before": "    \"vue/no-expose-after-await\": {\n      \"issue\": 3223,\n      \"status\": \"unimplemented\"\n    },",
+        "after": "    \"vue/no-expose-after-await\": {\n      \"patinaPresets\": [\n        \"ecosystem\",\n        \"essential\",\n        \"general-recommended\",\n        \"nuxt\",\n        \"opinionated\"\n      ],\n      \"patinaRule\": \"script/no-expose-after-await\",\n      \"patinaSeverity\": \"error\",\n      \"status\": \"mapped\"\n    },"
+      },
+      {
+        "before": "    \"vue/no-lifecycle-after-await\": {\n      \"issue\": 3223,\n      \"status\": \"unimplemented\"\n    },",
+        "after": "    \"vue/no-lifecycle-after-await\": {\n      \"patinaPresets\": [\n        \"ecosystem\",\n        \"essential\",\n        \"general-recommended\",\n        \"nuxt\",\n        \"opinionated\"\n      ],\n      \"patinaRule\": \"script/no-lifecycle-after-await\",\n      \"patinaSeverity\": \"error\",\n      \"status\": \"mapped\"\n    },"
+      },
+      {
+        "before": "    \"vue/no-watch-after-await\": {\n      \"issue\": 3223,\n      \"status\": \"unimplemented\"\n    },",
+        "after": "    \"vue/no-watch-after-await\": {\n      \"patinaPresets\": [\n        \"ecosystem\",\n        \"essential\",\n        \"general-recommended\",\n        \"nuxt\",\n        \"opinionated\"\n      ],\n      \"patinaRule\": \"script/no-watch-after-await\",\n      \"patinaSeverity\": \"error\",\n      \"status\": \"mapped\"\n    },"
+      },
+      {
+        "before": "    \"intentionalDivergence\": 2,\n    \"mapped\": 127,\n    \"unimplemented\": 123\n  },",
+        "after": "    \"intentionalDivergence\": 2,\n    \"mapped\": 130,\n    \"unimplemented\": 120\n  },"
+      }
+    ]
+  },
+  {
+    "reason": "essential: lifecycle hooks, watchers and expose after await (eslint-plugin-vue Vue 3 essential)",
+    "path": "crates/vize_patina/src/linter/script_rules/registry.rs",
+    "before": {
+      "bytes": 4904,
+      "sha256": "d80d12bc0c6b720373194ac82873fd58c0a23b9a9df49c90274c1d03adc5f1f4"
+    },
+    "after": {
+      "bytes": 4998,
+      "sha256": "1539c0f45077e156a8c3c5fe7e7a3ef93ac64ae31caf39dc95ecde6b4f6cca3b"
+    },
+    "hunks": [
+      {
+        "before": "    RULE_NO_DEPRECATED_PROPS_DEFAULT_THIS, RULE_NO_DUPE_KEYS, RULE_NO_DUPLICATE_ATTR_INHERITANCE,\n    RULE_NO_GET_CURRENT_INSTANCE, RULE_NO_IMPORT_COMPILER_MACROS, RULE_NO_INTERNAL_IMPORTS,\n    RULE_NO_MULTIPLE_SLOT_ARGS, RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO, RULE_NO_REF_AS_OPERAND,\n    RULE_NO_REQUIRED_PROP_WITH_DEFAULT, RULE_NO_RESERVED_IDENTIFIERS, RULE_NO_RESERVED_KEYS,",
+        "after": "    RULE_NO_DEPRECATED_PROPS_DEFAULT_THIS, RULE_NO_DUPE_KEYS, RULE_NO_DUPLICATE_ATTR_INHERITANCE,\n    RULE_NO_EXPOSE_AFTER_AWAIT, RULE_NO_GET_CURRENT_INSTANCE, RULE_NO_IMPORT_COMPILER_MACROS,\n    RULE_NO_INTERNAL_IMPORTS, RULE_NO_LIFECYCLE_AFTER_AWAIT, RULE_NO_MULTIPLE_SLOT_ARGS,\n    RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO, RULE_NO_REF_AS_OPERAND,\n    RULE_NO_REQUIRED_PROP_WITH_DEFAULT, RULE_NO_RESERVED_IDENTIFIERS, RULE_NO_RESERVED_KEYS,"
+      },
+      {
+        "before": "    RULE_NO_SIDE_EFFECTS_IN_COMPUTED, RULE_NO_UNSTABLE_NESTED_COMPONENTS,\n    RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD, RULE_NUXT_CONFIG_KEYS_ORDER,\n    RULE_NUXT_NO_CONFIG_TEST_KEY, RULE_NUXT_NO_PAGE_META_RUNTIME_VALUES,\n    RULE_NUXT_PREFER_IMPORT_META, RULE_PINIA_PREFER_STORE_TO_REFS, RULE_PREFER_COMPUTED,\n    RULE_PREFER_IMPORT_FROM_VUE, RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR, RULE_REQUIRE_PROP_TYPES,\n    RULE_REQUIRE_TYPED_REF, RULE_REQUIRE_VALID_DEFAULT_PROP, RULE_RETURN_IN_COMPUTED_PROPERTY,\n    RULE_RETURN_IN_EMITS_VALIDATOR, RULE_VALID_DEFINE_EMITS, RULE_VALID_DEFINE_OPTIONS,",
+        "after": "    RULE_NO_SIDE_EFFECTS_IN_COMPUTED, RULE_NO_UNSTABLE_NESTED_COMPONENTS,\n    RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD, RULE_NO_WATCH_AFTER_AWAIT,\n    RULE_NUXT_CONFIG_KEYS_ORDER, RULE_NUXT_NO_CONFIG_TEST_KEY,\n    RULE_NUXT_NO_PAGE_META_RUNTIME_VALUES, RULE_NUXT_PREFER_IMPORT_META,\n    RULE_PINIA_PREFER_STORE_TO_REFS, RULE_PREFER_COMPUTED, RULE_PREFER_IMPORT_FROM_VUE,\n    RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR, RULE_REQUIRE_PROP_TYPES, RULE_REQUIRE_TYPED_REF,\n    RULE_REQUIRE_VALID_DEFAULT_PROP, RULE_RETURN_IN_COMPUTED_PROPERTY,\n    RULE_RETURN_IN_EMITS_VALIDATOR, RULE_VALID_DEFINE_EMITS, RULE_VALID_DEFINE_OPTIONS,"
+      }
+    ]
   }
 ]

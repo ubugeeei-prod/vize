@@ -678,8 +678,16 @@
       "status": "mapped"
     },
     "vue/no-expose-after-await": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
+      "patinaRule": "script/no-expose-after-await",
+      "patinaSeverity": "error",
+      "status": "mapped"
     },
     "vue/no-extra-parens": {
       "issue": 3223,
@@ -706,8 +714,16 @@
       "status": "unimplemented"
     },
     "vue/no-lifecycle-after-await": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
+      "patinaRule": "script/no-lifecycle-after-await",
+      "patinaSeverity": "error",
+      "status": "mapped"
     },
     "vue/no-literals-in-template": {
       "issue": 3223,
@@ -1196,8 +1212,16 @@
       "status": "mapped"
     },
     "vue/no-watch-after-await": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
+      "patinaRule": "script/no-watch-after-await",
+      "patinaSeverity": "error",
+      "status": "mapped"
     },
     "vue/object-curly-newline": {
       "issue": 3223,
@@ -1884,8 +1908,8 @@
   "schemaVersion": 1,
   "summary": {
     "intentionalDivergence": 2,
-    "mapped": 127,
-    "unimplemented": 123
+    "mapped": 130,
+    "unimplemented": 120
   },
   "upstream": {
     "package": "eslint-plugin-vue",

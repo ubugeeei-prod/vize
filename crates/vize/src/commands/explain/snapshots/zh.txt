@@ -2324,6 +2324,24 @@ script/no-export-in-script-setup · lint 规则
 类别: script
 自动修复: 不支持
 文档: docs/content/rules/type-and-script.md
+=== script/no-expose-after-await
+script/no-expose-after-await · lint 规则
+禁止在 await 之后调用 expose() 和 defineExpose()
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  await loadData()
+  defineExpose({ reload })
+
+正确示例:
+  defineExpose({ reload })
+  await loadData()
 === script/no-get-current-instance
 script/no-get-current-instance · lint 规则
 禁止getCurrentInstance()
@@ -2401,6 +2419,34 @@ script/no-internal-imports · lint 规则
 
 正确示例:
   import { ref, computed } from 'vue'
+=== script/no-lifecycle-after-await
+script/no-lifecycle-after-await · lint 规则
+禁止在 setup() 中 await 之后注册生命周期钩子
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  import { onMounted } from 'vue'
+  export default {
+    async setup() {
+      await loadData()
+      onMounted(() => {})
+    },
+  }
+
+正确示例:
+  import { onMounted } from 'vue'
+  export default {
+    async setup() {
+      onMounted(() => {})
+      await loadData()
+    },
+  }
 === script/no-multiple-slot-args
 script/no-multiple-slot-args · lint 规则
 禁止向作用域插槽函数调用传入多个参数
@@ -2783,6 +2829,34 @@ script/no-use-computed-property-like-method · lint 规则
 类别: script
 自动修复: 不支持
 文档: docs/content/rules/type-and-script.md
+=== script/no-watch-after-await
+script/no-watch-after-await · lint 规则
+禁止在 setup() 中 await 之后注册未保留停止句柄的侦听器
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  import { watch } from 'vue'
+  export default {
+    async setup(props) {
+      await loadData()
+      watch(() => props.id, reload)
+    },
+  }
+
+正确示例:
+  import { watch } from 'vue'
+  export default {
+    async setup(props) {
+      watch(() => props.id, reload)
+      await loadData()
+    },
+  }
 === script/no-with-defaults
 script/no-with-defaults · lint 规则
 不建议使用 withDefaults，推荐使用解构默认值（Vue 3.5+）

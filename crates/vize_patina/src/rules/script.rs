@@ -1,6 +1,7 @@
 //! Script-level lint rules for Vue.js SFC files. They check TypeScript/JavaScript
 //! in `<script>` and `<script setup>` blocks and are **opt-in** via `[rules.script]`.
 
+mod after_await;
 mod component_options_name_casing;
 mod custom_event_name_casing;
 mod define_emits_declaration;
@@ -22,9 +23,11 @@ mod no_deprecated_props_default_this;
 mod no_dupe_keys;
 mod no_duplicate_attr_inheritance;
 mod no_export_in_script_setup;
+mod no_expose_after_await;
 mod no_get_current_instance;
 mod no_import_compiler_macros;
 mod no_internal_imports;
+mod no_lifecycle_after_await;
 mod no_multiple_slot_args;
 mod no_next_tick;
 mod no_nuxt_config_test_key;
@@ -41,6 +44,7 @@ mod no_side_effects_in_computed;
 mod no_top_level_ref_in_script;
 mod no_unstable_nested_components;
 mod no_use_computed_property_like_method;
+mod no_watch_after_await;
 mod no_with_defaults;
 mod nuxt_config_keys_order;
 mod pinia_prefer_store_to_refs;

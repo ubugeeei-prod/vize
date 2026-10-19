@@ -4,7 +4,7 @@ title: ESLint ルール移行対応表
 
 # ESLint ルール移行対応表
 
-コミットされた対応記録は 252 件で、対応付け 127 件、意図的な差異 2 件、未実装 123 件です。「対応」はルール名の対応を示し、オプション・検出・修正・適用範囲の完全な一致を保証しません。
+コミットされた対応記録は 252 件で、対応付け 130 件、意図的な差異 2 件、未実装 120 件です。「対応」はルール名の対応を示し、オプション・検出・修正・適用範囲の完全な一致を保証しません。
 
 Vite+ の設定では Vize のルールを `vue.linter.rules` に指定します。Oxlint の JS / TS ルールは `lint.rules` に残します。ESLint の配列形式をそのまま移さず、重大度と型付き `ruleOptions` を分けて指定します。
 
@@ -120,12 +120,12 @@ Vite+ の設定では Vize のルールを `vue.linter.rules` に指定します
 | `vue/no-empty-component-block` | [`vue/no-empty-component-block`](./reference/vue-no-empty-component-block.md) | 対応付け |
 | `vue/no-empty-pattern` | — | 未実装 |
 | `vue/no-export-in-script-setup` | [`script/no-export-in-script-setup`](./reference/script-no-export-in-script-setup.md) | 対応付け |
-| `vue/no-expose-after-await` | — | 未実装 |
+| `vue/no-expose-after-await` | [`script/no-expose-after-await`](./reference/script-no-expose-after-await.md) | 対応付け |
 | `vue/no-extra-parens` | — | 未実装 |
 | `vue/no-implicit-coercion` | — | 未実装 |
 | `vue/no-import-compiler-macros` | [`script/no-import-compiler-macros`](./reference/script-no-import-compiler-macros.md) | 対応付け |
 | `vue/no-irregular-whitespace` | — | 未実装 |
-| `vue/no-lifecycle-after-await` | — | 未実装 |
+| `vue/no-lifecycle-after-await` | [`script/no-lifecycle-after-await`](./reference/script-no-lifecycle-after-await.md) | 対応付け |
 | `vue/no-literals-in-template` | — | 未実装 |
 | `vue/no-lone-template` | [`vue/no-lone-template`](./reference/vue-no-lone-template.md) | 対応付け |
 | `vue/no-loss-of-precision` | — | 未実装 |
@@ -190,7 +190,7 @@ Vite+ の設定では Vize のルールを `vue.linter.rules` に指定します
 | `vue/no-v-model-argument` | — | 未実装 |
 | `vue/no-v-text` | [`vue/no-v-text`](./reference/vue-no-v-text.md) | 対応付け |
 | `vue/no-v-text-v-html-on-component` | [`vue/no-v-text-v-html-on-component`](./reference/vue-no-v-text-v-html-on-component.md) | 対応付け |
-| `vue/no-watch-after-await` | — | 未実装 |
+| `vue/no-watch-after-await` | [`script/no-watch-after-await`](./reference/script-no-watch-after-await.md) | 対応付け |
 | `vue/object-curly-newline` | — | 未実装 |
 | `vue/object-curly-spacing` | — | 未実装 |
 | `vue/object-property-newline` | — | 未実装 |

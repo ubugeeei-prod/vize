@@ -4,7 +4,7 @@ title: ESLint rule migration map
 
 # ESLint rule migration map
 
-The committed ESLint mapping records 252 rule IDs: 127 mapped, 2 intentional divergences, and 123 unimplemented. A mapped ID identifies a Vize rule; it does not guarantee identical options, findings, fixes, or coverage.
+The committed ESLint mapping records 252 rule IDs: 130 mapped, 2 intentional divergences, and 120 unimplemented. A mapped ID identifies a Vize rule; it does not guarantee identical options, findings, fixes, or coverage.
 
 Enable Vize rules under `vue.linter.rules` in the Vite+ configuration. Keep JS/TS rules handled by Oxlint in `lint.rules`. Do not copy an ESLint option tuple directly: Vize severity and typed `ruleOptions` are separate.
 
@@ -120,12 +120,12 @@ For option conversion, see [Rule Options](./options.md) and [props destructuring
 | `vue/no-empty-component-block` | [`vue/no-empty-component-block`](./reference/vue-no-empty-component-block.md) | mapped |
 | `vue/no-empty-pattern` | — | unimplemented |
 | `vue/no-export-in-script-setup` | [`script/no-export-in-script-setup`](./reference/script-no-export-in-script-setup.md) | mapped |
-| `vue/no-expose-after-await` | — | unimplemented |
+| `vue/no-expose-after-await` | [`script/no-expose-after-await`](./reference/script-no-expose-after-await.md) | mapped |
 | `vue/no-extra-parens` | — | unimplemented |
 | `vue/no-implicit-coercion` | — | unimplemented |
 | `vue/no-import-compiler-macros` | [`script/no-import-compiler-macros`](./reference/script-no-import-compiler-macros.md) | mapped |
 | `vue/no-irregular-whitespace` | — | unimplemented |
-| `vue/no-lifecycle-after-await` | — | unimplemented |
+| `vue/no-lifecycle-after-await` | [`script/no-lifecycle-after-await`](./reference/script-no-lifecycle-after-await.md) | mapped |
 | `vue/no-literals-in-template` | — | unimplemented |
 | `vue/no-lone-template` | [`vue/no-lone-template`](./reference/vue-no-lone-template.md) | mapped |
 | `vue/no-loss-of-precision` | — | unimplemented |
@@ -190,7 +190,7 @@ For option conversion, see [Rule Options](./options.md) and [props destructuring
 | `vue/no-v-model-argument` | — | unimplemented |
 | `vue/no-v-text` | [`vue/no-v-text`](./reference/vue-no-v-text.md) | mapped |
 | `vue/no-v-text-v-html-on-component` | [`vue/no-v-text-v-html-on-component`](./reference/vue-no-v-text-v-html-on-component.md) | mapped |
-| `vue/no-watch-after-await` | — | unimplemented |
+| `vue/no-watch-after-await` | [`script/no-watch-after-await`](./reference/script-no-watch-after-await.md) | mapped |
 | `vue/object-curly-newline` | — | unimplemented |
 | `vue/object-curly-spacing` | — | unimplemented |
 | `vue/object-property-newline` | — | unimplemented |

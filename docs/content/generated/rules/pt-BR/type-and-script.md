@@ -29,9 +29,11 @@ Cada regra desta categoria reúne nesta página sua finalidade, configuração e
 | [`script/no-dupe-keys`](#script-no-dupe-keys) | [Incorreto](#script-no-dupe-keys-bad) · [Correto](#script-no-dupe-keys-good) | Proibir chaves duplicadas entre props/data/computed/methods/setup/inject da Options API |
 | [`script/no-duplicate-attr-inheritance`](#script-no-duplicate-attr-inheritance) | [Incorreto](#script-no-duplicate-attr-inheritance-bad) · [Correto](#script-no-duplicate-attr-inheritance-good) | Sinalizar um componente que aplica duas vezes seus atributos repassados |
 | [`script/no-export-in-script-setup`](#script-no-export-in-script-setup) | [Incorreto](#script-no-export-in-script-setup-bad) · [Correto](#script-no-export-in-script-setup-good) | Proibir instruções export dentro de &lt;script setup&gt; |
+| [`script/no-expose-after-await`](#script-no-expose-after-await) | [Incorreto](#script-no-expose-after-await-bad) · [Correto](#script-no-expose-after-await-good) | Proibir expose() e defineExpose() após um await |
 | [`script/no-get-current-instance`](#script-no-get-current-instance) | [Incorreto](#script-no-get-current-instance-bad) · [Correto](#script-no-get-current-instance-good) | Proibir getCurrentInstance() no modo Vapor (retorna null) |
 | [`script/no-import-compiler-macros`](#script-no-import-compiler-macros) | [Incorreto](#script-no-import-compiler-macros-bad) · [Correto](#script-no-import-compiler-macros-good) | Proibir a importação de macros do compilador Vue que são importadas automaticamente |
 | [`script/no-internal-imports`](#script-no-internal-imports) | [Incorreto](#script-no-internal-imports-bad) · [Correto](#script-no-internal-imports-good) | Proibir importações de módulos internos do Vue |
+| [`script/no-lifecycle-after-await`](#script-no-lifecycle-after-await) | [Incorreto](#script-no-lifecycle-after-await-bad) · [Correto](#script-no-lifecycle-after-await-good) | Proibir hooks de ciclo de vida registrados após um await em setup() |
 | [`script/no-multiple-slot-args`](#script-no-multiple-slot-args) | [Incorreto](#script-no-multiple-slot-args-bad) · [Correto](#script-no-multiple-slot-args-good) | Proibir passar mais de um argumento a uma chamada de função de slot com escopo |
 | [`script/no-next-tick`](#script-no-next-tick) | [Incorreto](#script-no-next-tick-bad) · [Correto](#script-no-next-tick-good) | Proibir o uso de nextTick() em componentes orientados a Vapor |
 | [`script/no-options-api`](#script-no-options-api) | [Incorreto](#script-no-options-api-bad) · [Correto](#script-no-options-api-good) | Proibir padrões da Options API no modo Vapor |
@@ -49,6 +51,7 @@ Cada regra desta categoria reúne nesta página sua finalidade, configuração e
 | [`script/no-unstable-nested-components`](#script-no-unstable-nested-components) | [Incorreto](#script-no-unstable-nested-components-bad) · [Correto](#script-no-unstable-nested-components-good) | Proibir definições de componentes dentro de funções de setup ou renderização |
 | [`script/no-unused-emit-declarations`](#script-no-unused-emit-declarations) | [Incorreto](#script-no-unused-emit-declarations-bad) · [Correto](#script-no-unused-emit-declarations-good) | Sinalizar eventos declarados que nunca são emitidos |
 | [`script/no-use-computed-property-like-method`](#script-no-use-computed-property-like-method) | [Incorreto](#script-no-use-computed-property-like-method-bad) · [Correto](#script-no-use-computed-property-like-method-good) | Proibir chamar uma propriedade computada da Options API como um método |
+| [`script/no-watch-after-await`](#script-no-watch-after-await) | [Incorreto](#script-no-watch-after-await-bad) · [Correto](#script-no-watch-after-await-good) | Proibir watchers registrados após um await em setup() sem guardar a função de parada |
 | [`script/no-with-defaults`](#script-no-with-defaults) | [Incorreto](#script-no-with-defaults-bad) · [Correto](#script-no-with-defaults-good) | Desencorajar withDefaults em favor de valores padrão na desestruturação (Vue 3.5+) |
 | [`script/prefer-computed`](#script-prefer-computed) | [Incorreto](#script-prefer-computed-bad) · [Correto](#script-prefer-computed-good) | Preferir computed() para estado reativo derivado |
 | [`script/prefer-define-options`](#script-prefer-define-options) | [Incorreto](#script-prefer-define-options-bad) · [Correto](#script-prefer-define-options-good) | Preferir defineOptions() a um &lt;script&gt; comum que só define name/inheritAttrs |
@@ -1397,6 +1400,69 @@ O exemplo correto evita o diagnóstico desta regra com a configuração acima; o
 
 [Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_export_in_script_setup.rs#L49) · [Todas as regras](all.md)
 
+### `script/no-expose-after-await`
+
+Proibir expose() e defineExpose() após um await
+
+[Incorreto](#script-no-expose-after-await-bad) · [Correto](#script-no-expose-after-await-good)
+
+Severidade padrão: `error`  
+Predefinições: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+Correção automática: Nenhuma; revise a alteração sugerida  
+Aplicável a: Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante de Options API ou script setup  
+Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
+
+**Configuração (Vite+)**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/no-expose-after-await": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-no-expose-after-await-bad"></span>
+
+**Incorreto**
+
+`defineExpose()` roda depois de um `await` de nível superior, quando não há instância de componente atual, então nada é exposto.
+
+```vue annotate="remove:2"
+<script setup lang="ts">
+await loadData()
+defineExpose({ reload })
+</script>
+```
+
+<span id="script-no-expose-after-await-good"></span>
+
+**Correto**
+
+`defineExpose()` roda antes do primeiro `await`, enquanto a instância do componente ainda é a atual.
+
+```vue annotate="add:3"
+<script setup lang="ts">
+defineExpose({ reload })
+await loadData()
+</script>
+```
+
+O exemplo correto evita o diagnóstico desta regra com a configuração acima; outras regras ainda podem emitir diagnósticos.
+
+[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_expose_after_await.rs#L34) · [Todas as regras](all.md)
+
 ### `script/no-get-current-instance`
 
 Proibir getCurrentInstance() no modo Vapor (retorna null)
@@ -1585,6 +1651,79 @@ import { ref, computed } from 'vue'
 O exemplo correto evita o diagnóstico desta regra com a configuração acima; outras regras ainda podem emitir diagnósticos.
 
 [Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_internal_imports.rs#L28) · [Todas as regras](all.md)
+
+### `script/no-lifecycle-after-await`
+
+Proibir hooks de ciclo de vida registrados após um await em setup()
+
+[Incorreto](#script-no-lifecycle-after-await-bad) · [Correto](#script-no-lifecycle-after-await-good)
+
+Severidade padrão: `error`  
+Predefinições: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+Correção automática: Nenhuma; revise a alteração sugerida  
+Aplicável a: Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante de Options API ou script setup  
+Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
+
+**Configuração (Vite+)**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/no-lifecycle-after-await": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-no-lifecycle-after-await-bad"></span>
+
+**Incorreto**
+
+`setup()` chama `onMounted()` depois de `await loadData()`; sem instância de componente atual nesse ponto, o hook nunca é registrado.
+
+```vue annotate="remove:5"
+<script lang="ts">
+import { onMounted } from 'vue'
+export default {
+  async setup() {
+    await loadData()
+    onMounted(() => {})
+  },
+}
+</script>
+```
+
+<span id="script-no-lifecycle-after-await-good"></span>
+
+**Correto**
+
+`onMounted()` é registrado antes do primeiro `await`, enquanto `setup()` ainda roda de forma síncrona para o componente.
+
+```vue annotate="add:6"
+<script lang="ts">
+import { onMounted } from 'vue'
+export default {
+  async setup() {
+    onMounted(() => {})
+    await loadData()
+  },
+}
+</script>
+```
+
+O exemplo correto evita o diagnóstico desta regra com a configuração acima; outras regras ainda podem emitir diagnósticos.
+
+[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_lifecycle_after_await.rs#L45) · [Todas as regras](all.md)
 
 ### `script/no-multiple-slot-args`
 
@@ -2739,6 +2878,79 @@ export default { computed: { total() { return 3; } }, methods: { log() { console
 O exemplo correto evita o diagnóstico desta regra com a configuração acima; outras regras ainda podem emitir diagnósticos.
 
 [Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_use_computed_property_like_method.rs#L44) · [Todas as regras](all.md)
+
+### `script/no-watch-after-await`
+
+Proibir watchers registrados após um await em setup() sem guardar a função de parada
+
+[Incorreto](#script-no-watch-after-await-bad) · [Correto](#script-no-watch-after-await-good)
+
+Severidade padrão: `error`  
+Predefinições: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+Correção automática: Nenhuma; revise a alteração sugerida  
+Aplicável a: Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante de Options API ou script setup  
+Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
+
+**Configuração (Vite+)**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/no-watch-after-await": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-no-watch-after-await-bad"></span>
+
+**Incorreto**
+
+`watch()` é criado depois de `await loadData()` e a função de parada é descartada, então o watcher nunca é parado junto com o componente.
+
+```vue annotate="remove:5"
+<script lang="ts">
+import { watch } from 'vue'
+export default {
+  async setup(props) {
+    await loadData()
+    watch(() => props.id, reload)
+  },
+}
+</script>
+```
+
+<span id="script-no-watch-after-await-good"></span>
+
+**Correto**
+
+O watcher é criado antes do primeiro `await`, então o Vue o para quando o componente é desmontado.
+
+```vue annotate="add:6"
+<script lang="ts">
+import { watch } from 'vue'
+export default {
+  async setup(props) {
+    watch(() => props.id, reload)
+    await loadData()
+  },
+}
+</script>
+```
+
+O exemplo correto evita o diagnóstico desta regra com a configuração acima; outras regras ainda podem emitir diagnósticos.
+
+[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_watch_after_await.rs#L44) · [Todas as regras](all.md)
 
 ### `script/no-with-defaults`
 

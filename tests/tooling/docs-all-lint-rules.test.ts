@@ -52,7 +52,7 @@ function implementations(directory = "crates/vize_patina/src/rules") {
 
 await test("the generated bilingual reference covers every implemented rule with real example context", () => {
   const names = [...implementations()].sort((a, b) => a.localeCompare(b));
-  assert.equal(names.length, 255);
+  assert.equal(names.length, 258);
   for (const locale of ["", "ja/"]) {
     const index = read(`docs/content/${locale}rules/all.md`);
     const links = [
@@ -172,8 +172,8 @@ await test("migration retains all mapped, divergent and unsupported ESLint ident
       Object.keys(inventory.entries).sort((a, b) => a.localeCompare(b)),
     );
     assert.match(page, /252/);
-    assert.match(page, /123/);
-    assert.match(page, /127/);
+    assert.match(page, /120/);
+    assert.match(page, /130/);
     assert.match(page, /component-definition-name-casing/);
     assert.match(page, /```ts annotate="remove:1,2;add:3,4,5,6"/);
     assert.match(page, /^ import vue/m);

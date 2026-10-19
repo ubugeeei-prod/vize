@@ -32,7 +32,7 @@ fn verify_examples(type_aware: bool) {
         .filter(|path| path.extension().is_some_and(|ext| ext == "md"))
         .collect();
     paths.sort();
-    assert_eq!(paths.len(), 255, "all current rule implementations");
+    assert_eq!(paths.len(), 258, "all current rule implementations");
     let mut checked = 0;
     let mut unavailable = 0;
     let mut parser_owned = 0;
@@ -105,7 +105,7 @@ fn verify_examples(type_aware: bool) {
             }
         }
     }
-    assert_eq!(checked, if type_aware { 6 } else { 249 });
+    assert_eq!(checked, if type_aware { 6 } else { 252 });
     assert_eq!(unavailable, if type_aware { 0 } else { 4 });
     assert_eq!(parser_owned, if type_aware { 0 } else { 1 });
     eprintln!(

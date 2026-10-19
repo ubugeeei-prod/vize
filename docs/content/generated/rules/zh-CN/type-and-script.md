@@ -30,9 +30,11 @@ title: "类型与脚本规则"
 | [`script/no-dupe-keys`](#script-no-dupe-keys) | [错误示例](#script-no-dupe-keys-bad) · [正确示例](#script-no-dupe-keys-good) | 禁止 Options API 的 props/data/computed/methods/setup/inject 之间重复的键 |
 | [`script/no-duplicate-attr-inheritance`](#script-no-duplicate-attr-inheritance) | [错误示例](#script-no-duplicate-attr-inheritance-bad) · [正确示例](#script-no-duplicate-attr-inheritance-good) | 标记重复应用透传属性的组件 |
 | [`script/no-export-in-script-setup`](#script-no-export-in-script-setup) | [错误示例](#script-no-export-in-script-setup-bad) · [正确示例](#script-no-export-in-script-setup-good) | 禁止 &lt;script setup&gt; 内的 export 语句 |
+| [`script/no-expose-after-await`](#script-no-expose-after-await) | [错误示例](#script-no-expose-after-await-bad) · [正确示例](#script-no-expose-after-await-good) | 禁止在 await 之后调用 expose() 和 defineExpose() |
 | [`script/no-get-current-instance`](#script-no-get-current-instance) | [错误示例](#script-no-get-current-instance-bad) · [正确示例](#script-no-get-current-instance-good) | 禁止在 Vapor 模式使用 getCurrentInstance()（返回 null） |
 | [`script/no-import-compiler-macros`](#script-no-import-compiler-macros) | [错误示例](#script-no-import-compiler-macros-bad) · [正确示例](#script-no-import-compiler-macros-good) | 禁止导入自动可用的 Vue 编译器宏 |
 | [`script/no-internal-imports`](#script-no-internal-imports) | [错误示例](#script-no-internal-imports-bad) · [正确示例](#script-no-internal-imports-good) | 禁止从 Vue 内部模块导入 |
+| [`script/no-lifecycle-after-await`](#script-no-lifecycle-after-await) | [错误示例](#script-no-lifecycle-after-await-bad) · [正确示例](#script-no-lifecycle-after-await-good) | 禁止在 setup() 中 await 之后注册生命周期钩子 |
 | [`script/no-multiple-slot-args`](#script-no-multiple-slot-args) | [错误示例](#script-no-multiple-slot-args-bad) · [正确示例](#script-no-multiple-slot-args-good) | 禁止向作用域插槽函数调用传入多个参数 |
 | [`script/no-next-tick`](#script-no-next-tick) | [错误示例](#script-no-next-tick-bad) · [正确示例](#script-no-next-tick-good) | 禁止面向 Vapor 的组件使用 nextTick() |
 | [`script/no-options-api`](#script-no-options-api) | [错误示例](#script-no-options-api-bad) · [正确示例](#script-no-options-api-good) | 禁止 Vapor 模式中的 Options API 模式 |
@@ -50,6 +52,7 @@ title: "类型与脚本规则"
 | [`script/no-unstable-nested-components`](#script-no-unstable-nested-components) | [错误示例](#script-no-unstable-nested-components-bad) · [正确示例](#script-no-unstable-nested-components-good) | 禁止在 setup 或 render 函数内定义组件 |
 | [`script/no-unused-emit-declarations`](#script-no-unused-emit-declarations) | [错误示例](#script-no-unused-emit-declarations-bad) · [正确示例](#script-no-unused-emit-declarations-good) | 标记已声明却从未发出的事件 |
 | [`script/no-use-computed-property-like-method`](#script-no-use-computed-property-like-method) | [错误示例](#script-no-use-computed-property-like-method-bad) · [正确示例](#script-no-use-computed-property-like-method-good) | 禁止像方法一样调用 Options API 计算属性 |
+| [`script/no-watch-after-await`](#script-no-watch-after-await) | [错误示例](#script-no-watch-after-await-bad) · [正确示例](#script-no-watch-after-await-good) | 禁止在 setup() 中 await 之后注册未保留停止句柄的侦听器 |
 | [`script/no-with-defaults`](#script-no-with-defaults) | [错误示例](#script-no-with-defaults-bad) · [正确示例](#script-no-with-defaults-good) | 不建议使用 withDefaults，优先使用解构默认值（Vue 3.5+） |
 | [`script/prefer-computed`](#script-prefer-computed) | [错误示例](#script-prefer-computed-bad) · [正确示例](#script-prefer-computed-good) | 响应式派生状态优先使用 computed() |
 | [`script/prefer-define-options`](#script-prefer-define-options) | [错误示例](#script-prefer-define-options-bad) · [正确示例](#script-prefer-define-options-good) | 优先使用 defineOptions()，而不是仅设置 name/inheritAttrs 的普通 &lt;script&gt; |
@@ -1398,6 +1401,69 @@ const count = 1;
 
 [实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_export_in_script_setup.rs#L49) · [全部规则](all.md)
 
+### `script/no-expose-after-await`
+
+禁止在 await 之后调用 expose() 和 defineExpose()
+
+[错误示例](#script-no-expose-after-await-bad) · [正确示例](#script-no-expose-after-await-good)
+
+默认严重程度: `error`  
+预设: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+自动修复: 无；请检查建议的修改  
+适用范围: Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式  
+选项: 没有规则专属选项。可以配置严重程度和预设。
+
+**配置（Vite+）**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/no-expose-after-await": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-no-expose-after-await-bad"></span>
+
+**错误示例**
+
+`defineExpose()` 在顶层 `await` 之后执行，此时没有当前组件实例，因此不会暴露任何内容。
+
+```vue annotate="remove:2"
+<script setup lang="ts">
+await loadData()
+defineExpose({ reload })
+</script>
+```
+
+<span id="script-no-expose-after-await-good"></span>
+
+**正确示例**
+
+`defineExpose()` 在第一个 `await` 之前执行，此时组件实例仍是当前实例。
+
+```vue annotate="add:3"
+<script setup lang="ts">
+defineExpose({ reload })
+await loadData()
+</script>
+```
+
+正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
+
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_expose_after_await.rs#L34) · [全部规则](all.md)
+
 ### `script/no-get-current-instance`
 
 禁止在 Vapor 模式使用 getCurrentInstance()（返回 null）
@@ -1586,6 +1652,79 @@ import { ref, computed } from 'vue'
 正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
 
 [实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_internal_imports.rs#L28) · [全部规则](all.md)
+
+### `script/no-lifecycle-after-await`
+
+禁止在 setup() 中 await 之后注册生命周期钩子
+
+[错误示例](#script-no-lifecycle-after-await-bad) · [正确示例](#script-no-lifecycle-after-await-good)
+
+默认严重程度: `error`  
+预设: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+自动修复: 无；请检查建议的修改  
+适用范围: Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式  
+选项: 没有规则专属选项。可以配置严重程度和预设。
+
+**配置（Vite+）**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/no-lifecycle-after-await": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-no-lifecycle-after-await-bad"></span>
+
+**错误示例**
+
+`setup()` 在 `await loadData()` 之后调用 `onMounted()`；此时没有当前组件实例，钩子不会被注册。
+
+```vue annotate="remove:5"
+<script lang="ts">
+import { onMounted } from 'vue'
+export default {
+  async setup() {
+    await loadData()
+    onMounted(() => {})
+  },
+}
+</script>
+```
+
+<span id="script-no-lifecycle-after-await-good"></span>
+
+**正确示例**
+
+`onMounted()` 在第一个 `await` 之前注册，此时 `setup()` 仍在为组件同步执行。
+
+```vue annotate="add:6"
+<script lang="ts">
+import { onMounted } from 'vue'
+export default {
+  async setup() {
+    onMounted(() => {})
+    await loadData()
+  },
+}
+</script>
+```
+
+正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
+
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_lifecycle_after_await.rs#L45) · [全部规则](all.md)
 
 ### `script/no-multiple-slot-args`
 
@@ -2740,6 +2879,79 @@ export default { computed: { total() { return 3; } }, methods: { log() { console
 正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
 
 [实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_use_computed_property_like_method.rs#L44) · [全部规则](all.md)
+
+### `script/no-watch-after-await`
+
+禁止在 setup() 中 await 之后注册未保留停止句柄的侦听器
+
+[错误示例](#script-no-watch-after-await-bad) · [正确示例](#script-no-watch-after-await-good)
+
+默认严重程度: `error`  
+预设: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+自动修复: 无；请检查建议的修改  
+适用范围: Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式  
+选项: 没有规则专属选项。可以配置严重程度和预设。
+
+**配置（Vite+）**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/no-watch-after-await": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-no-watch-after-await-bad"></span>
+
+**错误示例**
+
+`watch()` 在 `await loadData()` 之后创建且丢弃了停止句柄，因此侦听器不会随组件一起停止。
+
+```vue annotate="remove:5"
+<script lang="ts">
+import { watch } from 'vue'
+export default {
+  async setup(props) {
+    await loadData()
+    watch(() => props.id, reload)
+  },
+}
+</script>
+```
+
+<span id="script-no-watch-after-await-good"></span>
+
+**正确示例**
+
+侦听器在第一个 `await` 之前创建，因此组件卸载时 Vue 会停止它。
+
+```vue annotate="add:6"
+<script lang="ts">
+import { watch } from 'vue'
+export default {
+  async setup(props) {
+    watch(() => props.id, reload)
+    await loadData()
+  },
+}
+</script>
+```
+
+正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
+
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_watch_after_await.rs#L44) · [全部规则](all.md)
 
 ### `script/no-with-defaults`
 

@@ -32,9 +32,11 @@ vize_patina	script/no-deprecated-events-api	1
 vize_patina	script/no-deprecated-props-default-this	1
 vize_patina	script/no-dupe-keys	1
 vize_patina	script/no-export-in-script-setup	1
+vize_patina	script/no-expose-after-await	1
 vize_patina	script/no-get-current-instance	1
 vize_patina	script/no-import-compiler-macros	1
 vize_patina	script/no-internal-imports	1
+vize_patina	script/no-lifecycle-after-await	1
 vize_patina	script/no-next-tick	1
 vize_patina	script/no-options-api	1
 vize_patina	script/no-ref-as-operand	1
@@ -47,6 +49,7 @@ vize_patina	script/no-restricted-members	1
 vize_patina	script/no-side-effects-in-computed-properties	1
 vize_patina	script/no-top-level-ref-in-script	1
 vize_patina	script/no-use-computed-property-like-method	1
+vize_patina	script/no-watch-after-await	1
 vize_patina	script/require-default-prop	1
 vize_patina	script/require-prop-type-constructor	1
 vize_patina	script/require-prop-types	1

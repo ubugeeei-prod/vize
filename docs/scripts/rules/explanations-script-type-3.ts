@@ -133,4 +133,25 @@ export const scriptType3Explanations: readonly ExplanationRecord[] = [
     "`if (count)` は、undefined を含み得る数値をそのまま真偽判定に使い、明示的な真偽値の比較をしていません。数値のゼロと値の未指定を、どちらも偽として扱ってしまいます。",
     "`count !== undefined && count > 0` で、値が undefined でないことと正の数であることを別々に検査します。省略可能な値を絞り込んでから、真偽値を返す条件式で判定します。",
   ],
+  [
+    "script/no-expose-after-await",
+    "`defineExpose()` runs after a top-level `await`, when there is no current component instance, so nothing is exposed.",
+    "`defineExpose()` runs before the first `await`, while the component instance is still current.",
+    "トップレベルの `await` の後に `defineExpose()` を呼んでいます。この時点ではコンポーネントのインスタンスが確定していないため、何も公開されません。",
+    "最初の `await` より前、インスタンスが確定している間に `defineExpose()` を呼びます。",
+  ],
+  [
+    "script/no-lifecycle-after-await",
+    "`setup()` calls `onMounted()` after `await loadData()`; with no current component instance at that point, the hook is never registered.",
+    "`onMounted()` is registered before the first `await`, while `setup()` still runs synchronously for the component.",
+    "`setup()` で `await loadData()` の後に `onMounted()` を呼んでいます。この時点ではコンポーネントのインスタンスがないため、フックは登録されません。",
+    "最初の `await` より前、`setup()` が同期的に実行されている間に `onMounted()` を登録します。",
+  ],
+  [
+    "script/no-watch-after-await",
+    "`watch()` is created after `await loadData()` and its stop handle is discarded, so the watcher is never stopped with the component.",
+    "The watcher is created before the first `await`, so Vue stops it when the component unmounts.",
+    "`await loadData()` の後に `watch()` を作成し、停止ハンドルも捨てています。このウォッチャーはコンポーネントと一緒に停止されません。",
+    "最初の `await` より前にウォッチャーを作成するため、コンポーネントのアンマウント時に Vue が停止します。",
+  ],
 ];

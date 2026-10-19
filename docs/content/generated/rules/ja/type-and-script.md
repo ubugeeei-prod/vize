@@ -28,9 +28,11 @@ title: "型と script のルール"
 | [`script/no-dupe-keys`](#script-no-dupe-keys) | [悪い](#script-no-dupe-keys-bad) · [良い](#script-no-dupe-keys-good) | Options API の props / data / computed などのキー重複を検出します。 |
 | [`script/no-duplicate-attr-inheritance`](#script-no-duplicate-attr-inheritance) | [悪い](#script-no-duplicate-attr-inheritance-bad) · [良い](#script-no-duplicate-attr-inheritance-good) | fallthrough 属性を同じコンポーネントで二重に適用する箇所を検出します。 |
 | [`script/no-export-in-script-setup`](#script-no-export-in-script-setup) | [悪い](#script-no-export-in-script-setup-bad) · [良い](#script-no-export-in-script-setup-good) | script setup 内の export 文を検出します。 |
+| [`script/no-expose-after-await`](#script-no-expose-after-await) | [悪い](#script-no-expose-after-await-bad) · [良い](#script-no-expose-after-await-good) | await の後の expose() と defineExpose() を禁止します。 |
 | [`script/no-get-current-instance`](#script-no-get-current-instance) | [悪い](#script-no-get-current-instance-bad) · [良い](#script-no-get-current-instance-good) | Vapor で null を返す getCurrentInstance() を検出します。 |
 | [`script/no-import-compiler-macros`](#script-no-import-compiler-macros) | [悪い](#script-no-import-compiler-macros-bad) · [良い](#script-no-import-compiler-macros-good) | 自動的に使える Vue コンパイラーマクロの import を検出します。 |
 | [`script/no-internal-imports`](#script-no-internal-imports) | [悪い](#script-no-internal-imports-bad) · [良い](#script-no-internal-imports-good) | Vue 内部モジュールからの import を検出します。 |
+| [`script/no-lifecycle-after-await`](#script-no-lifecycle-after-await) | [悪い](#script-no-lifecycle-after-await-bad) · [良い](#script-no-lifecycle-after-await-good) | setup() 内で await の後にライフサイクルフックを登録することを禁止します。 |
 | [`script/no-multiple-slot-args`](#script-no-multiple-slot-args) | [悪い](#script-no-multiple-slot-args-bad) · [良い](#script-no-multiple-slot-args-good) | scoped slot 関数に複数の引数を渡す箇所を検出します。 |
 | [`script/no-next-tick`](#script-no-next-tick) | [悪い](#script-no-next-tick-bad) · [良い](#script-no-next-tick-good) | Vapor 向けコンポーネントの nextTick() 使用を検出します。 |
 | [`script/no-options-api`](#script-no-options-api) | [悪い](#script-no-options-api-bad) · [良い](#script-no-options-api-good) | Vapor で Options API を使用する箇所を検出します。 |
@@ -48,6 +50,7 @@ title: "型と script のルール"
 | [`script/no-unstable-nested-components`](#script-no-unstable-nested-components) | [悪い](#script-no-unstable-nested-components-bad) · [良い](#script-no-unstable-nested-components-good) | setup / render 内で毎回コンポーネントを定義する箇所を検出します。 |
 | [`script/no-unused-emit-declarations`](#script-no-unused-emit-declarations) | [悪い](#script-no-unused-emit-declarations-bad) · [良い](#script-no-unused-emit-declarations-good) | 宣言したまま emit していないイベントを検出します。 |
 | [`script/no-use-computed-property-like-method`](#script-no-use-computed-property-like-method) | [悪い](#script-no-use-computed-property-like-method-bad) · [良い](#script-no-use-computed-property-like-method-good) | Options API の computed プロパティをメソッドとして呼ぶ箇所を検出します。 |
+| [`script/no-watch-after-await`](#script-no-watch-after-await) | [悪い](#script-no-watch-after-await-bad) · [良い](#script-no-watch-after-await-good) | setup() 内で await の後に停止ハンドルを保持せずにウォッチャーを登録することを禁止します。 |
 | [`script/no-with-defaults`](#script-no-with-defaults) | [悪い](#script-no-with-defaults-bad) · [良い](#script-no-with-defaults-good) | Vue 3.5 以降の props 分割代入の既定値を勧めます。 |
 | [`script/prefer-computed`](#script-prefer-computed) | [悪い](#script-prefer-computed-bad) · [良い](#script-prefer-computed-good) | 他の状態から導ける値を watcher で同期する代わりに computed で表現します。 |
 | [`script/prefer-define-options`](#script-prefer-define-options) | [悪い](#script-prefer-define-options-bad) · [良い](#script-prefer-define-options-good) | name / inheritAttrs だけの通常 script を defineOptions() にまとめます。 |
@@ -1396,6 +1399,69 @@ const count = 1;
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_export_in_script_setup.rs#L49) · [全ルール](all.md)
 
+### `script/no-expose-after-await`
+
+await の後の expose() と defineExpose() を禁止します。
+
+[悪い例](#script-no-expose-after-await-bad) · [良い例](#script-no-expose-after-await-good)
+
+既定の重大度: `error`  
+プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+自動修正: なし。修正内容を確認してください  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
+オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+
+**設定（Vite+）**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/no-expose-after-await": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-no-expose-after-await-bad"></span>
+
+**悪い**
+
+トップレベルの `await` の後に `defineExpose()` を呼んでいます。この時点ではコンポーネントのインスタンスが確定していないため、何も公開されません。
+
+```vue annotate="remove:2"
+<script setup lang="ts">
+await loadData()
+defineExpose({ reload })
+</script>
+```
+
+<span id="script-no-expose-after-await-good"></span>
+
+**良い**
+
+最初の `await` より前、インスタンスが確定している間に `defineExpose()` を呼びます。
+
+```vue annotate="add:3"
+<script setup lang="ts">
+defineExpose({ reload })
+await loadData()
+</script>
+```
+
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
+
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_expose_after_await.rs#L34) · [全ルール](all.md)
+
 ### `script/no-get-current-instance`
 
 Vapor で null を返す getCurrentInstance() を検出します。
@@ -1584,6 +1650,79 @@ import { ref, computed } from 'vue'
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_internal_imports.rs#L28) · [全ルール](all.md)
+
+### `script/no-lifecycle-after-await`
+
+setup() 内で await の後にライフサイクルフックを登録することを禁止します。
+
+[悪い例](#script-no-lifecycle-after-await-bad) · [良い例](#script-no-lifecycle-after-await-good)
+
+既定の重大度: `error`  
+プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+自動修正: なし。修正内容を確認してください  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
+オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+
+**設定（Vite+）**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/no-lifecycle-after-await": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-no-lifecycle-after-await-bad"></span>
+
+**悪い**
+
+`setup()` で `await loadData()` の後に `onMounted()` を呼んでいます。この時点ではコンポーネントのインスタンスがないため、フックは登録されません。
+
+```vue annotate="remove:5"
+<script lang="ts">
+import { onMounted } from 'vue'
+export default {
+  async setup() {
+    await loadData()
+    onMounted(() => {})
+  },
+}
+</script>
+```
+
+<span id="script-no-lifecycle-after-await-good"></span>
+
+**良い**
+
+最初の `await` より前、`setup()` が同期的に実行されている間に `onMounted()` を登録します。
+
+```vue annotate="add:6"
+<script lang="ts">
+import { onMounted } from 'vue'
+export default {
+  async setup() {
+    onMounted(() => {})
+    await loadData()
+  },
+}
+</script>
+```
+
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
+
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_lifecycle_after_await.rs#L45) · [全ルール](all.md)
 
 ### `script/no-multiple-slot-args`
 
@@ -2738,6 +2877,79 @@ export default { computed: { total() { return 3; } }, methods: { log() { console
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_use_computed_property_like_method.rs#L44) · [全ルール](all.md)
+
+### `script/no-watch-after-await`
+
+setup() 内で await の後に停止ハンドルを保持せずにウォッチャーを登録することを禁止します。
+
+[悪い例](#script-no-watch-after-await-bad) · [良い例](#script-no-watch-after-await-good)
+
+既定の重大度: `error`  
+プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+自動修正: なし。修正内容を確認してください  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
+オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+
+**設定（Vite+）**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/no-watch-after-await": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-no-watch-after-await-bad"></span>
+
+**悪い**
+
+`await loadData()` の後に `watch()` を作成し、停止ハンドルも捨てています。このウォッチャーはコンポーネントと一緒に停止されません。
+
+```vue annotate="remove:5"
+<script lang="ts">
+import { watch } from 'vue'
+export default {
+  async setup(props) {
+    await loadData()
+    watch(() => props.id, reload)
+  },
+}
+</script>
+```
+
+<span id="script-no-watch-after-await-good"></span>
+
+**良い**
+
+最初の `await` より前にウォッチャーを作成するため、コンポーネントのアンマウント時に Vue が停止します。
+
+```vue annotate="add:6"
+<script lang="ts">
+import { watch } from 'vue'
+export default {
+  async setup(props) {
+    watch(() => props.id, reload)
+    await loadData()
+  },
+}
+</script>
+```
+
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
+
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_watch_after_await.rs#L44) · [全ルール](all.md)
 
 ### `script/no-with-defaults`
 

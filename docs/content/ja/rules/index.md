@@ -33,11 +33,11 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`vue
 
 | プリセット | ルール数 | 有効になる内容 |
 | --- | ---: | --- |
-| `essential` | 82 | テンプレートとディレクティブの妥当性、Vue 3 で削除された構文と API（`vue/no-deprecated-*`、`script/no-deprecated-*`）、スクリプトのマクロ・`nextTick`・Options API の正しさ、`@vue/*` ではなく `vue` からの import、未使用のコンポーネント、`vue/no-v-html`、`vue/no-unsafe-url`、`html/id-duplication` |
-| `happy-path`（既定） | 144 | `essential` に加え、テンプレートの書式（`v-bind` の省略記法、コンポーネントのイベント名のハイフン区切りを含む）、アクセシビリティ、HTML 適合性、SSR の危険、未使用のプロパティ、emit の宣言、props と emits の型 |
-| `ecosystem` | 152 | `happy-path` に加え、エコシステムのライブラリー向けの検査 |
-| `nuxt` | 206 | `opinionated` を Nuxt の自動インポートに合わせたもの |
-| `opinionated` | 206 | `happy-path` に加え、より厳しい規約、props の型宣言、型ベースの `defineProps`/`defineEmits`、props の既定値と emit の整理、`defineOptions`、`css/*` のスタイル規則 |
+| `essential` | 85 | テンプレートとディレクティブの妥当性、Vue 3 で削除された構文と API（`vue/no-deprecated-*`、`script/no-deprecated-*`）、スクリプトのマクロ・`nextTick`・Options API の正しさ、`await` の後に登録されるライフサイクルフック・ウォッチャー・`expose`、`@vue/*` ではなく `vue` からの import、未使用のコンポーネント、`vue/no-v-html`、`vue/no-unsafe-url`、`html/id-duplication` |
+| `happy-path`（既定） | 147 | `essential` に加え、テンプレートの書式（`v-bind` の省略記法、コンポーネントのイベント名のハイフン区切りを含む）、アクセシビリティ、HTML 適合性、SSR の危険、未使用のプロパティ、emit の宣言、props と emits の型 |
+| `ecosystem` | 155 | `happy-path` に加え、エコシステムのライブラリー向けの検査 |
+| `nuxt` | 209 | `opinionated` を Nuxt の自動インポートに合わせたもの |
+| `opinionated` | 209 | `happy-path` に加え、より厳しい規約、props の型宣言、型ベースの `defineProps`/`defineEmits`、props の既定値と emit の整理、`defineOptions`、`css/*` のスタイル規則 |
 | `incremental` | 0 | なし |
 
 ルール数にファイル横断のルールは含みません。各ルールの所属は[全ルールの一覧](./all.md)の「プリセット」列で確認できます。

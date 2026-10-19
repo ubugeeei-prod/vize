@@ -107,6 +107,12 @@ pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "禁止在 <script setup> 中使用 export 语句",
     ),
     (
+        "script/no-expose-after-await.description",
+        "Disallow expose() and defineExpose() after an await",
+        "await の後の expose() と defineExpose() を禁止する",
+        "禁止在 await 之后调用 expose() 和 defineExpose()",
+    ),
+    (
         "script/no-import-compiler-macros.description",
         "Disallow importing Vue compiler macros that are auto-imported",
         "自動インポートされる Vue コンパイラーマクロをインポートすることを禁止する",
@@ -117,6 +123,12 @@ pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "Disallow importing from Vue internal modules",
         "Vue の内部モジュールからのインポートを禁止する",
         "禁止从 Vue 内部模块导入",
+    ),
+    (
+        "script/no-lifecycle-after-await.description",
+        "Disallow lifecycle hooks registered after an await in setup()",
+        "setup() 内で await の後にライフサイクルフックを登録することを禁止する",
+        "禁止在 setup() 中 await 之后注册生命周期钩子",
     ),
     (
         "script/no-multiple-slot-args.description",
