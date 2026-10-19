@@ -10,7 +10,6 @@ use std::collections::BinaryHeap;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-use oxc_span::SourceType;
 use vize_carton::{FxHashSet, String as CompactString};
 
 use super::dependency_scan::resolve_dependency_with_inputs;
@@ -95,6 +94,9 @@ struct ReachabilityBudget {
 
 #[path = "package_route_reachability_route_graph.rs"]
 mod route_graph;
+#[path = "package_route_reachability_sources.rs"]
+mod sources;
+pub use sources::ReachabilitySources;
 
 #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")] // Compiler-option aliases originate in serde_json maps.
 pub(crate) fn package_route_reaches_vue(
@@ -103,6 +105,7 @@ pub(crate) fn package_route_reaches_vue(
     resolution: &super::package_resolution::PackageResolutionSettings,
     resolver: &mut crate::PackageRouteResolver,
     source_options: crate::PackageSourceOptions,
+    sources: &mut ReachabilitySources,
 ) -> PackageRouteReachability {
     package_route_reaches_vue_with_budget(
         route,
@@ -110,6 +113,7 @@ pub(crate) fn package_route_reaches_vue(
         resolution,
         resolver,
         source_options,
+        sources,
         DEFAULT_BUDGET,
     )
 }
@@ -118,6 +122,7 @@ pub(crate) fn package_route_reaches_vue(
 /// an arbitrary dependency graph to delay native project startup.
 pub fn scan_package_route_reachability<ResolveLocal, ResolvePackage>(
     route: &crate::PackageRoute,
+    sources: &mut ReachabilitySources,
     resolve_local: ResolveLocal,
     resolve_package: ResolvePackage,
 ) -> PackageRouteReachability
@@ -131,6 +136,7 @@ where
 {
     scan_package_route_reachability_with_budget(
         route,
+        sources,
         resolve_local,
         resolve_package,
         DEFAULT_BUDGET,
@@ -144,10 +150,12 @@ fn package_route_reaches_vue_with_budget(
     resolution: &super::package_resolution::PackageResolutionSettings,
     resolver: &mut crate::PackageRouteResolver,
     source_options: crate::PackageSourceOptions,
+    sources: &mut ReachabilitySources,
     budget: ReachabilityBudget,
 ) -> PackageRouteReachability {
     scan_package_route_reachability_with_budget(
         route,
+        sources,
         |importer, specifier| {
             let importer_dir = importer.parent().unwrap_or(importer);
             resolve_dependency_with_inputs(specifier, importer_dir, &route.package_root, aliases)
@@ -167,6 +175,7 @@ fn package_route_reaches_vue_with_budget(
 
 fn scan_package_route_reachability_with_budget<ResolveLocal, ResolvePackage>(
     route: &crate::PackageRoute,
+    sources: &mut ReachabilitySources,
     mut resolve_local: ResolveLocal,
     mut resolve_package: ResolvePackage,
     budget: ReachabilityBudget,
@@ -205,7 +214,6 @@ where
         return finish(ReachabilityOutcome::ReachesVue, inputs, work, budget);
     }
 
-    let rewriter = crate::batch::ImportRewriter::new();
     let mut edges = FxHashSet::<(PathBuf, CompactString, crate::PackageResolutionMode)>::default();
     while let Some((_, Reverse(path))) = queue.pop() {
         record_input(&mut inputs, &path);
@@ -214,10 +222,25 @@ where
         }
         work.files += 1;
 
-        let Ok(metadata) = std::fs::metadata(&path) else {
+        if !sources.is_loaded(&path) {
+            // Load the files this scan can still pop, in pop order, at once;
+            // later pops and other scans of this pass reuse them.
+            let mut next = queue.iter().collect::<Vec<_>>();
+            next.sort_unstable_by(|left, right| right.cmp(left));
+            let remaining = budget.max_files - work.files;
+            sources.prefetch(
+                std::iter::once(&path).chain(
+                    next.into_iter()
+                        .take(remaining)
+                        .map(|(_, Reverse(path))| path),
+                ),
+                budget.max_file_bytes,
+            );
+        }
+        let Some(file_len) = sources.len(&path) else {
             continue;
         };
-        let Ok(file_bytes) = usize::try_from(metadata.len()) else {
+        let Ok(file_bytes) = usize::try_from(file_len) else {
             return finish(ReachabilityOutcome::BudgetExceeded, inputs, work, budget);
         };
         if file_bytes > budget.max_file_bytes
@@ -225,25 +248,21 @@ where
         {
             return finish(ReachabilityOutcome::BudgetExceeded, inputs, work, budget);
         }
-        let Ok(content) = std::fs::read_to_string(&path) else {
+        let Some(content) = sources.text(&path) else {
             continue;
         };
-        if content.len() > budget.max_file_bytes
-            || work.bytes.saturating_add(content.len()) > budget.max_total_bytes
+        if content.len > budget.max_file_bytes
+            || work.bytes.saturating_add(content.len) > budget.max_total_bytes
         {
             return finish(ReachabilityOutcome::BudgetExceeded, inputs, work, budget);
         }
-        work.bytes += content.len();
+        work.bytes += content.len;
         if work.parses == budget.max_parses {
             return finish(ReachabilityOutcome::BudgetExceeded, inputs, work, budget);
         }
         work.parses += 1;
-        let source_type = if path.extension().is_some_and(|extension| extension == "tsx") {
-            SourceType::tsx()
-        } else {
-            SourceType::ts()
-        };
-        for (specifier, mode) in rewriter.collect_all_specifier_occurrences(&content, source_type) {
+        for (specifier, mode) in content.occurrences.iter() {
+            let (specifier, mode) = (specifier.clone(), *mode);
             if !edges.insert((path.clone(), specifier.clone(), mode)) {
                 continue;
             }

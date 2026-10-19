@@ -120,6 +120,7 @@ impl<'a> RouteDiscovery<'a> {
                             self.settings,
                             self.resolver,
                             crate::PackageSourceOptions::new(true, true),
+                            &mut Default::default(),
                         );
                         scanned.record_work(self.resolver);
                         self.resolver.store_reachability(shared, &scanned);

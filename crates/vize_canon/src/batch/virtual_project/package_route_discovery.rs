@@ -9,12 +9,15 @@ use super::VirtualProject;
 use super::dependency_scan::resolve_dependency;
 use super::package_route_reachability::{PackageRouteReachability, package_route_reaches_vue};
 
-/// Reachability scans of one registration pass, keyed like the check walk's
-/// memo: a route's scan resolves from the package's own files, never from the
+/// Reachability scans of one registration pass and the source facts they
+/// read. A route's scan resolves from the package's own files, never from the
 /// importer, so every importer of `(manifest, specifier, context)` shares it.
 /// Lives only while the filesystem is treated as stable (one pass).
-pub(crate) type ReachabilityMemo =
-    FxHashMap<(PathBuf, String, crate::PackageResolutionContext), PackageRouteReachability>;
+#[derive(Default)]
+pub(crate) struct ReachabilityMemo {
+    scans: FxHashMap<(PathBuf, String, crate::PackageResolutionContext), PackageRouteReachability>,
+    sources: super::package_route_reachability::ReachabilitySources,
+}
 
 impl VirtualProject {
     pub(super) fn reconcile_package_routes_for_importers_inner(
@@ -97,6 +100,7 @@ impl VirtualProject {
                 let reachability = match route.as_ref() {
                     None => PackageRouteReachability::default(),
                     Some(route) => memo
+                        .scans
                         .entry((
                             route.manifest_path.clone(),
                             specifier.clone(),
@@ -109,6 +113,7 @@ impl VirtualProject {
                                 &resolution,
                                 &mut resolver,
                                 source_options,
+                                &mut memo.sources,
                             );
                             scanned.record_work(&mut resolver);
                             scanned

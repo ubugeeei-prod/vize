@@ -43,6 +43,8 @@ type PackageReachabilityKey = (
 pub(super) struct VirtualRegistrationCache {
     registrations: FxHashMap<(PathBuf, bool), CachedVirtualRegistration>,
     reachability: FxHashMap<PackageReachabilityKey, vize_canon::batch::PackageRouteReachability>,
+    /// Package files every reachability scan of this walk reads and parses.
+    reachability_sources: vize_canon::batch::ReachabilitySources,
     negative_alias_sources: FxHashSet<PathBuf>,
     #[cfg(test)]
     source_reads: usize,

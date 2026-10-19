@@ -81,6 +81,7 @@ mod tests {
 
         let result = scan_package_route_reachability_with_budget(
             &package_zero,
+            &mut Default::default(),
             |_, _| (None, Vec::new()),
             |_, _, _| (None, Vec::new()),
             budget,

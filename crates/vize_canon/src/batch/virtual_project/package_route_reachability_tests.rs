@@ -25,6 +25,49 @@ fn cycles_and_duplicate_edges_have_exact_unique_work() {
 }
 
 #[test]
+fn scans_sharing_source_facts_match_fresh_scans_and_read_each_file_once() {
+    let fixture = Fixture::new();
+    fixture.write("entry.ts", "import './a'\nimport './b'\n");
+    fixture.write("a.ts", "export * from './b'\n");
+    fixture.write(
+        "b.ts",
+        &format!("export const big = '{}';\n", "x".repeat(200)),
+    );
+    let budget = ReachabilityBudget {
+        max_file_bytes: 128,
+        ..generous_budget()
+    };
+    let route = route(
+        &fixture.package_root,
+        &fixture.package_root.join("entry.ts"),
+    );
+    let fresh = fixture.reachability_for_route(&route, budget);
+    let mut sources = super::ReachabilitySources::default();
+    let mut scan = |sources: &mut super::ReachabilitySources| {
+        package_route_reaches_vue_with_budget(
+            &route,
+            &[],
+            &super::super::package_resolution::PackageResolutionSettings::default(),
+            &mut crate::PackageRouteResolver::default(),
+            SOURCE_OPTIONS,
+            sources,
+            budget,
+        )
+    };
+    let first = scan(&mut sources);
+    // The pass treats the filesystem as stable: a second scan reuses facts.
+    fixture.write("a.ts", "export {}\n");
+    let second = scan(&mut sources);
+
+    assert_eq!(fresh.outcome, ReachabilityOutcome::BudgetExceeded);
+    for result in [&first, &second] {
+        assert_eq!(result.outcome, fresh.outcome);
+        assert_eq!(result.work, fresh.work);
+        assert_eq!(result.inputs, fresh.inputs);
+    }
+}
+
+#[test]
 fn long_cyclic_duplicate_graph_stops_at_exact_unique_work_bound() {
     let fixture = Fixture::new();
     let mut expected_bytes = 0;
@@ -236,6 +279,7 @@ fn resolver_metrics_expose_the_exact_last_budgeted_work() {
         &super::super::package_resolution::PackageResolutionSettings::default(),
         &mut resolver,
         SOURCE_OPTIONS,
+        &mut Default::default(),
         budget,
     );
     result.record_work(&mut resolver);
@@ -311,6 +355,7 @@ impl Fixture {
             &super::super::package_resolution::PackageResolutionSettings::default(),
             &mut crate::PackageRouteResolver::default(),
             SOURCE_OPTIONS,
+            &mut Default::default(),
             budget,
         )
     }
@@ -356,6 +401,7 @@ mod graph_tests {
 
         let result = scan_package_route_reachability_with_budget(
             &entry,
+            &mut Default::default(),
             |_, _| (None, Vec::new()),
             |_, _, _| (Some(nested.clone()), Vec::new()),
             generous_budget(),

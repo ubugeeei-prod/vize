@@ -95,6 +95,7 @@ pub(super) fn source_needs_virtual_registration(
                             None => {
                                 let scanned = scan_route_reachability(
                                     &route,
+                                    &mut cache.reachability_sources,
                                     canonical_paths,
                                     options,
                                     aliases,
@@ -163,6 +164,7 @@ pub(super) fn source_needs_virtual_registration(
 /// package resolution the check import walk uses for authored sources.
 fn scan_route_reachability(
     route: &vize_canon::PackageRoute,
+    sources: &mut vize_canon::batch::ReachabilitySources,
     canonical_paths: &mut CanonicalPathCache,
     options: ImportFileOptions,
     aliases: Option<&PathAliasResolver>,
@@ -170,6 +172,7 @@ fn scan_route_reachability(
 ) -> vize_canon::batch::PackageRouteReachability {
     vize_canon::batch::scan_package_route_reachability(
         route,
+        sources,
         |importer, nested_specifier| {
             let nested_dir = importer.parent().unwrap_or(importer);
             if is_relative_specifier(nested_specifier) {
