@@ -8,10 +8,10 @@ title: VS Code
 
 # VS Code 統合
 
-> **⚠️ 開発中:** Vize のエディターサポートはまだ実験段階です。
-
-> **重要:** 通常の Vue 開発には、引き続き公式の Vue Language Tools（`vuejs/language-tools`）を使ってください。
-> Vize は、機能を少しずつ有効にして評価できるように設計されています。
+> [!WARNING]
+> Vize のエディターサポートは実験段階です。Vue - Official（`vuejs/language-tools`）を使っている場合は、
+> 両方を並べて使えるよう [lint だけを有効にする設定](#推奨される開始点)から始めるか、Vize のすべての機能を
+> 有効にする前にワークスペースで Vue - Official を無効にしてください。
 
 リポジトリには、2 つの実験的な VS Code 拡張機能が含まれています。
 
@@ -88,12 +88,11 @@ Vize 拡張機能は `vize lsp` を起動します。lint、型チェック、�
 ```text
 VS Code
   ↕ Language Server Protocol
-vize lsp (vize_maestro)
-  → vize_armature
-  → vize_croquis
-  → vize_patina
-  → vize_canon
-  → vize_glyph
+vize lsp
+  → parser and semantic analysis
+  → lint rules
+  → type checker
+  → formatter
 ```
 
 ### ソースまたは VSIX からのインストール
@@ -132,12 +131,11 @@ code --install-extension dist/vize.vsix
 
 `vize lsp` は Language Server Protocol に対応しているため、Neovim、Helix、Zed、Emacs などでも利用できます。
 
-Neovim の設定例です。
+同梱のプラグインを使う Neovim の設定例です。
 
 ```lua
-require("lspconfig").vize.setup({
-  cmd = { "vize", "lsp" },
-  filetypes = { "vue" },
+-- editors/nvim from the Vize repository, Neovim 0.11+
+require("vize").setup({
   init_options = {
     lint = true,
     typecheck = true,

@@ -16,12 +16,12 @@ void test("Japanese Vite guide retains published recipes and every current integ
 
   const archived = originalConfigDocument(`docs/content/ja/${path}`);
   const fences = [...japanese.matchAll(/^```[^\n]*\n[\s\S]*?^```/gm)].map((match) => match[0]);
-  // The ten whole published JA examples at signed main d55b8238f89b,
+  // The ten whole published JA examples (pipeline fence renamed to plain stages),
   // including the original localized TresJS comment, remain byte-exact.
   assert.equal(fences.length, 10);
   assert.equal(
     createHash("sha256").update(fences.join("\n")).digest("hex"),
-    "848af26f7762fa9a4a3d35ebff40cd8fe6fb09cb4011bb6aca58374fd0450328",
+    "e0942313d58c00836a66216b9cf843ab886f7f2f22e45e7194947b28193944dd",
   );
 
   const optionKeys = (source: string) =>

@@ -4,10 +4,10 @@ title: VS Code
 
 # VS Code Integration
 
-> **⚠️ Work in Progress:** Vize's editor support is still experimental.
-
-> **Important:** For day-to-day Vue editor support, keep using the official Vue language tools
-> (`vuejs/language-tools`) for now. Vize is designed for incremental opt-in evaluation.
+> [!WARNING]
+> Vize's editor support is experimental. If you use Vue - Official (`vuejs/language-tools`), start
+> with the [lint-only profile](#recommended-starting-point) so both extensions can run side by side,
+> or disable Vue - Official in the workspace before enabling Vize's full profile.
 
 The repository contains two experimental VS Code extensions:
 
@@ -84,12 +84,11 @@ existing Vue tooling.
 ```text
 VS Code
   ↕ Language Server Protocol
-vize lsp (vize_maestro)
-  → vize_armature
-  → vize_croquis
-  → vize_patina
-  → vize_canon
-  → vize_glyph
+vize lsp
+  → parser and semantic analysis
+  → lint rules
+  → type checker
+  → formatter
 ```
 
 ### Installing from Source or VSIX
@@ -125,12 +124,11 @@ It recognizes:
 `vize lsp` follows the Language Server Protocol and can be used by editors such as Neovim, Helix,
 Zed, and Emacs.
 
-Example Neovim setup:
+Example Neovim setup with the bundled plugin:
 
 ```lua
-require("lspconfig").vize.setup({
-  cmd = { "vize", "lsp" },
-  filetypes = { "vue" },
+-- editors/nvim from the Vize repository, Neovim 0.11+
+require("vize").setup({
   init_options = {
     lint = true,
     typecheck = true,

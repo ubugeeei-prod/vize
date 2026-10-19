@@ -4,7 +4,8 @@ title: Vite Plugin
 
 # Vite Plugin
 
-> **⚠️ Work in Progress:** Vize is under active development and is not yet ready for production use. Test thoroughly before adopting in non-trivial projects.
+> [!WARNING]
+> Vize is under active development and is not yet ready for production use. Test thoroughly before adopting it in non-trivial projects.
 
 > **Bundler status:** `@vizejs/vite-plugin` is currently the most stable bundler integration.
 > For rollup / webpack / esbuild use `@vizejs/unplugin`, and for Rspack use `@vizejs/rspack-plugin`.
@@ -32,7 +33,7 @@ The drop-in claim is deliberately bounded, so it is worth stating what it does a
 
 - **In scope** — Vue 3 single-file components compiled through Vite, in both `<script setup>` and
   Options API style, including scoped styles, CSS Modules, SSR, and HMR.
-- **Incubating** — Vue 2 and 2.7 (`vue.version: "2"` / `"2.7"`). The legacy dialects are off by
+- **Incubating** — Vue 2 and 2.7 (`vueVersion: 2` / `"2.7"`). The legacy dialects are off by
   default and non-invasive: Vize does not compile `.vue` files in those modes, so your existing Vue
   compiler, `vue-loader`, or Nuxt 2 setup stays in charge. See
   [Compiler Options](#compiler-options).
@@ -195,13 +196,13 @@ The plugin intercepts `.vue` file requests and compiles them using Vize's Rust-n
 
 ### Compilation Pipeline
 
-```
+```text
 .vue file
-  → Armature (Parser)          — Tokenizes and parses the SFC structure
-  → Croquis (Semantic Analysis) — Analyzes template expressions and bindings
-  → Atelier (Compilation)       — Generates optimized JavaScript output
-  → Vitrine (NAPI Binding)      — Delivers the result to Node.js
-  → Vite module graph            — Served as a virtual module
+  → Parser            — Tokenizes and parses the SFC structure
+  → Semantic analysis — Resolves template expressions and bindings
+  → Code generation   — Emits optimized JavaScript (VDOM, SSR, or Vapor)
+  → Node.js binding   — Hands the result to Vite
+  → Vite module graph — Served as a virtual module
 ```
 
 The same semantic analysis layer is reused by linting and type checking. See
@@ -220,7 +221,7 @@ The same semantic analysis layer is reused by linting and type checking. See
 | HMR                   | Yes                     | Yes (style-only optimization)                                                                          |
 | Batch Pre-compilation | No                      | Yes (parallel via Rayon)                                                                               |
 | CSS Extraction        | Per-component           | Merged single file                                                                                     |
-| Vapor Mode            | Experimental            | First-class (`vize_atelier_vapor`)                                                                     |
+| Vapor Mode            | Experimental            | Yes, experimental                                                                                      |
 | Plugin Options        | Full documented surface | `include` / `exclude` / `isProduction`; see [#3227](https://github.com/ubugeeei-prod/vize/issues/3227) |
 
 ## Advanced Features
@@ -260,7 +261,7 @@ For Nuxt compatibility, the plugin isolates `define` values per Vite environment
 | --- | --- | --- |
 | Vite | Vite preprocesses; Vize scopes the result | Native |
 | `@vizejs/unplugin` (webpack, Rollup, Rolldown, esbuild) | webpack uses your loaders; Rollup, Rolldown and esbuild run your installed preprocessor | Native |
-| `@vizejs/rspack` | Your loaders, with css-loader or native CSS | Native |
+| `@vizejs/rspack-plugin` | Your loaders, with css-loader or native CSS | Native |
 | `vize build` | Runs your installed preprocessor through Node | Native |
 | `vize fmt` | Preprocessor blocks are left byte-identical | Formatted |
 | `vize lint` | Template rules apply; style blocks are not linted as CSS | Template rules apply |
@@ -285,8 +286,7 @@ See [Nuxt Integration](../integrations/nuxt.md) for more details.
 ## Notes
 
 - The plugin requires `@vizejs/native` for Node.js NAPI bindings (installed automatically as a dependency)
-- Vapor mode compilation is available via `vize_atelier_vapor` (Vue 3.6+)
-- VDOM compilation uses `vize_atelier_dom`
+- Vapor Mode compilation is available for Vue 3.6+ (experimental)
 - The plugin supports `virtual:vize-styles` for importing all compiled CSS as a module
 - `.jsx`/`.tsx` Vue components are compiled automatically through the same plugin — see the [JSX & TSX](./jsx.md) guide
 - For experimental rollup / webpack / esbuild / Rspack support, see [Experimental Bundler Integrations](./unplugin.md)

@@ -6,7 +6,8 @@ title: Vite プラグイン
 
 # Vite プラグイン
 
-> **⚠️ 開発中:** Vize は開発を続けており、本番環境への導入準備はまだ整っていません。重要なプロジェクトで採用する前に、十分に検証してください。
+> [!WARNING]
+> Vize は開発を続けており、本番環境への導入準備はまだ整っていません。重要なプロジェクトで採用する前に、十分に検証してください。
 
 > **バンドラー統合の状況:** 現在、最も安定している統合は `@vizejs/vite-plugin` です。
 > rollup / webpack / esbuild には `@vizejs/unplugin`、Rspack には `@vizejs/rspack-plugin` を使います。
@@ -36,7 +37,7 @@ export default defineConfig({});
 既存プラグインを置き換えられる範囲には、次の制限があります。
 
 - **対応範囲:** Vite でコンパイルする Vue 3 SFC が対象です。`<script setup>` と Options API の両方に加え、scoped style、CSS Modules、SSR、HMR に対応します。
-- **開発中:** Vue 2 と 2.7（`vue.version: "2"` / `"2.7"`）の互換モードは既定で無効です。このモードでは Vize は `.vue` ファイルをコンパイルせず、既存の Vue コンパイラ、`vue-loader`、Nuxt 2 が引き続き処理を担当します。[コンパイラ オプション](#compiler-options)を参照してください。
+- **開発中:** Vue 2 と 2.7（`vueVersion: 2` / `"2.7"`）の互換モードは既定で無効です。このモードでは Vize は `.vue` ファイルをコンパイルせず、既存の Vue コンパイラ、`vue-loader`、Nuxt 2 が引き続き処理を担当します。[コンパイラ オプション](#compiler-options)を参照してください。
 - **保証の対象外:** webpack、rollup、esbuild、Rspack 向けの `@vizejs/unplugin` と `@vizejs/rspack-plugin` は実験段階であり、既存プラグインをそのまま置き換えられる保証はありません。[実験的なバンドラー統合](./unplugin.md)を参照してください。
 - **未完成:** `@vitejs/plugin-vue` の全オプションとの互換性はまだありません。現在は `include`、`exclude`、`isProduction` を反映します。その他の公開オプション、挙動が異なる理由、残る課題は [#3227](https://github.com/ubugeeei-prod/vize/issues/3227) で追跡しています。
 
@@ -195,13 +196,13 @@ vize({ vueVersion: 2 });
 
 ### コンパイルのパイプライン
 
-```
+```text
 .vue file
-  → Armature (Parser)          — Tokenizes and parses the SFC structure
-  → Croquis (Semantic Analysis) — Analyzes template expressions and bindings
-  → Atelier (Compilation)       — Generates optimized JavaScript output
-  → Vitrine (NAPI Binding)      — Delivers the result to Node.js
-  → Vite module graph            — Served as a virtual module
+  → Parser            — Tokenizes and parses the SFC structure
+  → Semantic analysis — Resolves template expressions and bindings
+  → Code generation   — Emits optimized JavaScript (VDOM, SSR, or Vapor)
+  → Node.js binding   — Hands the result to Vite
+  → Vite module graph — Served as a virtual module
 ```
 
 同じ意味解析の仕組みを、lint と型チェックでも使います。
@@ -220,7 +221,7 @@ vize({ vueVersion: 2 });
 | HMR | 対応 | 対応（style だけの更新を最適化） |
 | バッチプリコンパイル | 非対応 | 対応（Rayon で並列処理） |
 | CSS の抽出 | コンポーネントごと | 一つのファイルにまとめる |
-| Vapor | 実験段階 | 対応（`vize_atelier_vapor`） |
+| Vapor | 実験段階 | 対応（実験段階） |
 | プラグインのオプション | 公開オプション全体 | `include` / `exclude` / `isProduction`。残る対応は [#3227](https://github.com/ubugeeei-prod/vize/issues/3227) を参照 |
 
 ## 高度な機能
@@ -267,7 +268,7 @@ Nuxt と連携できるよう、プラグインは Vite の環境ごとに `defi
 | --- | --- | --- |
 | Vite | Vite が前処理し、その結果に Vize がスコープを付ける | ネイティブ |
 | `@vizejs/unplugin`（webpack・Rollup・Rolldown・esbuild） | webpack はプロジェクトのローダーを使用。Rollup・Rolldown・esbuild はインストール済みのプリプロセッサを実行 | ネイティブ |
-| `@vizejs/rspack` | プロジェクトのローダー（css-loader またはネイティブ CSS） | ネイティブ |
+| `@vizejs/rspack-plugin` | プロジェクトのローダー（css-loader またはネイティブ CSS） | ネイティブ |
 | `vize build` | インストール済みのプリプロセッサを Node で実行 | ネイティブ |
 | `vize fmt` | プリプロセッサのブロックは 1 バイトも変更しない | 整形する |
 | `vize lint` | テンプレートのルールを適用。スタイルブロックは CSS として lint しない | テンプレートのルールを適用 |
@@ -293,8 +294,7 @@ export default defineNuxtConfig({
 ## 注意事項
 
 - Node.js の NAPI バインディングには `@vizejs/native` が必要です。依存関係として自動でインストールされます。
-- Vapor モードは `vize_atelier_vapor` でコンパイルします（Vue 3.6 以降）。
-- VDOM モードは `vize_atelier_dom` でコンパイルします。
+- Vapor モードのコンパイルに対応しています（Vue 3.6 以降、実験段階）。
 - コンパイルしたすべての CSS をモジュールとして import するために、`virtual:vize-styles` を使えます。
 - `.jsx` / `.tsx` の Vue コンポーネントも同じプラグインで自動でコンパイルします。[JSX と TSX](./jsx.md)を参照してください。
 - rollup / webpack / esbuild / Rspack への実験的な対応は、[実験的なバンドラー統合](./unplugin.md)を参照してください。
