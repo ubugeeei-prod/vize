@@ -136,8 +136,8 @@ impl<'a> Emitter<'a, '_> {
         self.block_with(children, true)
     }
 
-    /// A branch or loop body. The retained lane transforms a `<template>`
-    /// carrier's children one by one, so its text parts are never combined.
+    /// A branch or loop body. The retained lane combines a `<template>`
+    /// carrier's text runs one at a time, never across other children.
     fn body(&mut self, children: &[usize]) -> BlockIRNode<'a> {
         self.block_with(children, false)
     }

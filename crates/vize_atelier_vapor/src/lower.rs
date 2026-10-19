@@ -116,25 +116,14 @@ fn transform_children_guarded<'a>(
     let mut block = BlockIRNode::new(ctx.allocator);
     // Note: Don't consume an ID for the block itself - element IDs should start from 0
 
-    // Check if ALL children are text/interpolation (combined text case)
-    let all_text_or_interp = children.len() > 1
-        && children.iter().all(|c| {
-            matches!(
-                c,
-                TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_)
-            )
-        })
-        && children
-            .iter()
-            .any(|c| matches!(c, TemplateChildNode::Interpolation(_)));
-
-    if all_text_or_interp {
-        // Combined text/interpolation: create a single text element with space template
-        transform_combined_block_text(ctx, children, &mut block);
-        return block;
-    }
-
-    for child in children {
+    let mut index = 0;
+    while let Some(child) = children.get(index) {
+        if let Some(run) = text_run(children.get(index..).unwrap_or_default()) {
+            transform_combined_block_text(ctx, run, &mut block);
+            index += run.len();
+            continue;
+        }
+        index += 1;
         match child {
             TemplateChildNode::Element(el) => {
                 key::element(ctx, el, &mut block, own_keys);
@@ -161,16 +150,40 @@ fn transform_children_guarded<'a>(
     block
 }
 
+/// The run of text and interpolations `children` starts with, when it has
+/// more than one part and an interpolation. Like upstream's
+/// `processInterpolation`, such a run renders one text node: split nodes
+/// would not line up with the single text node server markup carries.
+pub(super) fn text_run<'c, 'a>(
+    children: &'c [TemplateChildNode<'a>],
+) -> Option<&'c [TemplateChildNode<'a>]> {
+    let len = children
+        .iter()
+        .take_while(|c| {
+            matches!(
+                c,
+                TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_)
+            )
+        })
+        .count();
+    let run = children.get(..len)?;
+    (len > 1
+        && run
+            .iter()
+            .any(|c| matches!(c, TemplateChildNode::Interpolation(_))))
+    .then_some(run)
+}
+
 /// Transform combined text/interpolation children at block level.
 /// Creates a single text node with a space template and a SetText effect
 /// that combines all text parts and interpolations.
-fn transform_combined_block_text<'a>(
+pub(super) fn transform_combined_block_text<'a>(
     ctx: &mut TransformContext<'a>,
     children: &[TemplateChildNode<'a>],
     block: &mut BlockIRNode<'a>,
 ) {
     use crate::ir::{OperationNode, SetTextIRNode};
-    use vize_atelier_core::{ExpressionNode, SimpleExpressionNode, SourceLocation};
+    use vize_atelier_core::{ExpressionNode, SimpleExpressionNode};
     use vize_carton::{Box, Vec};
 
     let element_id = ctx.next_id();
@@ -190,7 +203,7 @@ fn transform_combined_block_text<'a>(
     for child in children.iter() {
         match child {
             TemplateChildNode::Text(text) => {
-                let exp = SimpleExpressionNode::new(text.content, true, SourceLocation::STUB);
+                let exp = SimpleExpressionNode::new(text.content, true, text.loc.clone());
                 values.push(Box::new_in(exp, &ctx.allocator));
             }
             TemplateChildNode::Interpolation(interp) => {

@@ -64,7 +64,15 @@ pub(super) fn transform_classified_element<'a>(
 
     // Template elements don't consume an ID - they just wrap children
     if el.tag_type == ElementType::Template {
-        for child in vize_atelier_core::walk_probe::vapor_children(&el.children) {
+        let children = vize_atelier_core::walk_probe::vapor_children(&el.children).as_slice();
+        let mut index = 0;
+        while let Some(child) = children.get(index) {
+            if let Some(run) = super::text_run(children.get(index..).unwrap_or_default()) {
+                super::transform_combined_block_text(ctx, run, block);
+                index += run.len();
+                continue;
+            }
+            index += 1;
             match child {
                 TemplateChildNode::Element(child_el) => {
                     ensure_sufficient_stack(|| super::key::transform_element(ctx, child_el, block));

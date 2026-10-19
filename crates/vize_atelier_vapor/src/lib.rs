@@ -35,6 +35,8 @@ mod tests_dotted_slots;
 #[cfg(test)]
 mod tests_dynamic_component;
 #[cfg(test)]
+mod tests_fragment_text;
+#[cfg(test)]
 mod tests_generated_identity;
 #[cfg(test)]
 mod tests_implicit_default_slot;

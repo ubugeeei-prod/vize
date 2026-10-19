@@ -1,6 +1,6 @@
 //! Text in the retained lane's shapes. Inside an element, adjacent parts form
-//! one run with one DOM address. At a block root, a pure mixed run becomes one
-//! standalone text node; otherwise each part is its own node.
+//! one run with one DOM address. At a block root, a mixed run becomes one
+//! standalone text node; a lone part is its own node.
 
 use vize_atelier_core::{SimpleExpressionNode, codegen::document::EmitDocument};
 use vize_carton::{Box, Vec};
@@ -37,6 +37,13 @@ impl<'a> Emitter<'a, '_> {
             (children.iter()).flat_map(|child| self.parts(*child).iter().copied()),
             &self.allocator,
         );
+        self.combine(&parts, block)
+    }
+
+    /// Two or more parts with an expression become one standalone text node,
+    /// as upstream's `processInterpolation` merges them; each further part
+    /// still consumes an id.
+    fn combine(&mut self, parts: &[TextPart<'a>], block: &mut BlockIRNode<'a>) -> bool {
         if parts.len() < 2 || !parts.iter().any(|part| part.dynamic) {
             return false;
         }
@@ -47,7 +54,7 @@ impl<'a> Emitter<'a, '_> {
         self.register(id, &EmitDocument::plain(" "));
         self.ir.standalone_text_elements.insert(id);
         let mut values = Vec::new_in(&self.allocator);
-        for part in &parts {
+        for part in parts {
             values.push(self.spanned(part.value, !part.dynamic, Some(self.text_span(part))));
         }
         self.effect(
@@ -67,6 +74,9 @@ impl<'a> Emitter<'a, '_> {
     pub(super) fn text_roots(&mut self, index: usize, block: &mut BlockIRNode<'a>) {
         let parts: Vec<'a, TextPart<'a>> =
             Vec::from_iter_in(self.parts(index).iter().copied(), &self.allocator);
+        if self.combine(&parts, block) {
+            return;
+        }
         for &part in parts.iter() {
             let id = self.id();
             if part.dynamic {
