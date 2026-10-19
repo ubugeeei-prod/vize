@@ -1,0 +1,2965 @@
+{
+ "provenance": "First string argument of every compile*() call in vuejs/core v3.6.0-rc.11 packages/compiler-vapor/__tests__, deduplicated (tests/tooling/support/vapor-parity/extract.ts).",
+ "cases": [
+  {
+   "id": "up.compile.0",
+   "source": "<div>\n        <p>hello</p>\n        <input />\n        <span />\n      </div>"
+  },
+  {
+   "id": "up.compile.1",
+   "source": "{{ 1 }}{{ 2 }}"
+  },
+  {
+   "id": "up.compile.2",
+   "source": "<button @click=\"handleClick\" :id=\"count\">{{count}}foo{{count}}foo{{count}} </button>"
+  },
+  {
+   "id": "up.compile.3",
+   "source": "{{ 1 }}{{ 2 }}3{{ 4 }}{{ 5 }}6{{ 7 }}{{ 8 }}9{{ 'A' }}{{ 'B' }}"
+  },
+  {
+   "id": "up.compile.4",
+   "source": "<p/><span/><div/>"
+  },
+  {
+   "id": "up.compile.5",
+   "source": "<Comp>{{ '' }}</Comp>"
+  },
+  {
+   "id": "up.compile.6",
+   "source": "<div>count is {{ count }}.</div>"
+  },
+  {
+   "id": "up.compile.7",
+   "source": "<div v-pre :id=\"foo\"><Comp/>{{ bar }}</div>\n"
+  },
+  {
+   "id": "up.compile.8",
+   "source": "<div v-cloak>test</div>"
+  },
+  {
+   "id": "up.compile.9",
+   "source": "<div v-example></div>"
+  },
+  {
+   "id": "up.compile.10",
+   "source": "<div v-example=\"msg\"></div>"
+  },
+  {
+   "id": "up.compile.11",
+   "source": "<div v-example=\"{ value: msg, other: 1 }\"></div>"
+  },
+  {
+   "id": "up.compile.12",
+   "source": "<div v-example=\"{ value: msg }\"></div>"
+  },
+  {
+   "id": "up.compile.13",
+   "source": "<div v-example:foo=\"msg\"></div>"
+  },
+  {
+   "id": "up.compile.14",
+   "source": "<div v-example.bar=\"msg\"></div>"
+  },
+  {
+   "id": "up.compile.15",
+   "source": "<div v-example.foo-bar></div>"
+  },
+  {
+   "id": "up.compile.16",
+   "source": "<div v-example:foo.bar=\"msg\"></div>"
+  },
+  {
+   "id": "up.compile.17",
+   "source": "<div v-example:[foo]=\"msg\"></div>"
+  },
+  {
+   "id": "up.compile.18",
+   "source": "{{ a + b }}"
+  },
+  {
+   "id": "up.compile.19",
+   "source": "<div :[key+1]=\"foo[key+1]()\" />"
+  },
+  {
+   "id": "up.compile.20",
+   "source": "<div @click=\"a++;b++\" />"
+  },
+  {
+   "id": "up.compile.21",
+   "source": "<Comp #foo=\"{ a, b }\">{{ a + b }}</Comp>"
+  },
+  {
+   "id": "up.compile.22",
+   "source": "<div v-for=\"({ a, b }, key, index) of a.b\" />"
+  },
+  {
+   "id": "up.compile.23",
+   "source": "<tr\n          v-for=\"row in rows\"\n          :key=\"row.id\"\n          :class=\"row.id === state.selected ? 'danger' : ''\"\n        ></tr>"
+  },
+  {
+   "id": "up.compile.24",
+   "source": "<div :class=\"{ active: arr[0].active }\"></div><span>{{ arr[0].label }}</span>"
+  },
+  {
+   "id": "up.compile.25",
+   "source": "<div v-test v-hello.world />"
+  },
+  {
+   "id": "up.compile.26",
+   "source": "\n      <Comp v-test>\n        <div v-if=\"true\">\n          <Bar v-hello.world />\n        </div>\n      </Comp>\n      "
+  },
+  {
+   "id": "up.compile.27",
+   "source": "<div :id=\"foo\">{{ bar }}</div>"
+  },
+  {
+   "id": "up.compile.28",
+   "source": "<div v-dir :id=\"foo\">{{ bar }}<span v-if=\"ok\" /><Comp /><input v-model=\"text\" /></div>"
+  },
+  {
+   "id": "up.compile.29",
+   "source": "<div>parent: {{ useId() }}</div><Child />"
+  },
+  {
+   "id": "up.compile.30",
+   "source": "<div :id=\"useId()\"><Child /></div>"
+  },
+  {
+   "id": "up.compile.31",
+   "source": "<div v-for=\"row of rows\" :key=\"row.id\">\n          <span>{{ selected === row.id ? 'danger' : '' }}</span>\n          <Child />\n          <span>{{ useId() }}</span>\n        </div>"
+  },
+  {
+   "id": "up.compile.32",
+   "source": "\n      <div>\n        <div />\n        <Comp />\n        <div />\n        <div v-if=\"true\" />\n        <div>\n          <button :disabled=\"foo\" />\n        </div>\n      </div>\n      "
+  },
+  {
+   "id": "up.compile.33",
+   "source": "<div>\n          <span v-once>{{ foo }}</span>\n          {{ bar }}<br>\n          {{ baz }}\n        </div>"
+  },
+  {
+   "id": "up.compile.34",
+   "source": "<div><div><slot /></div><Comp/></div>"
+  },
+  {
+   "id": "up.compile.35",
+   "source": "<div>{{ foo }}</div>"
+  },
+  {
+   "id": "up.compile.36",
+   "source": "<div>{{ foo }}</div><div>{{ foo }}</div>"
+  },
+  {
+   "id": "up.compile.37",
+   "source": "<div :ref=\"bar\" /><div :ref=\"bar\" /><div :ref=\"bar\" />"
+  },
+  {
+   "id": "up.compile.38",
+   "source": "<div/><span/><p/>"
+  },
+  {
+   "id": "up.compile.39",
+   "source": "<div>\n          <div>x</div>\n          <div><span>{{ foo }}</span></div>\n          <div><span>{{ foo }}</span></div>\n        </div>"
+  },
+  {
+   "id": "up.compile.40",
+   "source": "<div :id=\"ctx.a\" :title=\"ctx.b\" />\n        <div v-for=\"ctx in list\" :id=\"ctx.a + foo\" :title=\"ctx.b + foo\" />"
+  },
+  {
+   "id": "up.compile.41",
+   "source": "<div :ref=\"r\" :id=\"setTemplateRef.a\" :title=\"setTemplateRef.b\" />"
+  },
+  {
+   "id": "up.compile.42",
+   "source": "<div v-memo=\"[]\" />"
+  },
+  {
+   "id": "up.compile.43",
+   "source": "<Foo.Bar :a=\"foo\" :b=\"$foo\" :c=\"Math.PI\" />"
+  },
+  {
+   "id": "up.staticTemplate.0",
+   "source": "<div><span>foo</span></div>"
+  },
+  {
+   "id": "up.staticTemplate.1",
+   "source": "hello"
+  },
+  {
+   "id": "up.staticTemplate.2",
+   "source": "<!--foo-->"
+  },
+  {
+   "id": "up.staticTemplate.3",
+   "source": "<svg><circle r=\"40\"></circle></svg>"
+  },
+  {
+   "id": "up.staticTemplate.4",
+   "source": "<math><mrow><mi>x</mi></mrow></math>"
+  },
+  {
+   "id": "up.staticTemplate.5",
+   "source": "<span>hi {{ foo }}</span>"
+  },
+  {
+   "id": "up.staticTemplate.6",
+   "source": "<span :foo></span>"
+  },
+  {
+   "id": "up.staticTemplate.7",
+   "source": "<button @click=\"foo\"></button>"
+  },
+  {
+   "id": "up.staticTemplate.8",
+   "source": "<div v-text=\"foo\"></div>"
+  },
+  {
+   "id": "up.staticTemplate.9",
+   "source": "<div v-html=\"foo\"></div>"
+  },
+  {
+   "id": "up.staticTemplate.10",
+   "source": "<div ref=\"el\"></div>"
+  },
+  {
+   "id": "up.staticTemplate.11",
+   "source": "<div v-for=\"item in items\" :key=\"item\">foo</div>"
+  },
+  {
+   "id": "up.staticTemplate.12",
+   "source": "{{ foo }}"
+  },
+  {
+   "id": "up.staticTemplate.13",
+   "source": "hi {{ foo }}"
+  },
+  {
+   "id": "up.staticTemplate.14",
+   "source": "A <span>foo</span> B"
+  },
+  {
+   "id": "up.staticTemplate.15",
+   "source": "<p></p><span></span>"
+  },
+  {
+   "id": "up.staticTemplate.16",
+   "source": "<template>&lt;b&gt;foo&lt;/b&gt;</template>"
+  },
+  {
+   "id": "up.staticTemplate.17",
+   "source": "<template><span></span>{{ \"<b>foo</b>\" }}</template>"
+  },
+  {
+   "id": "up.staticTemplate.18",
+   "source": "<my-el></my-el>"
+  },
+  {
+   "id": "up.staticTemplate.19",
+   "source": "<span></span><span :foo></span>"
+  },
+  {
+   "id": "up.transforms.TransformTransition.0",
+   "source": "<Transition><h1 v-show=\"show\">foo</h1></Transition>"
+  },
+  {
+   "id": "up.transforms.TransformTransition.1",
+   "source": "<Transition appear><h1 v-show=\"show\">foo</h1></Transition>"
+  },
+  {
+   "id": "up.transforms.TransformTransition.2",
+   "source": "<Transition><h1 v-if=\"show\">foo</h1></Transition>"
+  },
+  {
+   "id": "up.transforms.TransformTransition.3",
+   "source": "<Transition>\n        <h1 :key=\"key\">foo</h1>\n      </Transition>"
+  },
+  {
+   "id": "up.transforms.TransformTransition.4",
+   "source": "\n        <Transition>\n          <div v-show=\"ok\" />\n        </Transition>\n    "
+  },
+  {
+   "id": "up.transforms.TransformTransition.5",
+   "source": "<Transition><div v-if=\"show\" v-show=\"true\" /></Transition>"
+  },
+  {
+   "id": "up.transforms.TransformTransition.6",
+   "source": "<transition>\n        <!-- comment -->\n        <div>foo</div>\n      </transition>"
+  },
+  {
+   "id": "up.transforms.TransformTransition.7",
+   "source": "<transition-group tag=\"ul\">\n        <!-- comment -->\n        <li key=\"a\">a</li>\n        <li key=\"b\">b</li>\n      </transition-group>"
+  },
+  {
+   "id": "up.transforms.TransformTransition.8",
+   "source": "\n    <transition>\n      <div v-if=\"a\">hey</div>\n      <!-- this should be ignored -->\n      <div v-else-if=\"b\">hey</div>\n      <!-- this should be ignored -->\n      <div v-else>\n        <p v-if=\"c\"/>\n        <!-- this should not be ignored -->\n        <p v-else/>\n      </div>\n    </transition>\n    "
+  },
+  {
+   "id": "up.transforms.expression.0",
+   "source": "{{ a }}"
+  },
+  {
+   "id": "up.transforms.expression.1",
+   "source": "{{}}"
+  },
+  {
+   "id": "up.transforms.expression.2",
+   "source": "{{ }}"
+  },
+  {
+   "id": "up.transforms.expression.3",
+   "source": "<div>{{ }}</div>"
+  },
+  {
+   "id": "up.transforms.expression.4",
+   "source": "<div>{{ foo }}{{ }}</div>"
+  },
+  {
+   "id": "up.transforms.expression.5",
+   "source": "\n        <div :id=\"String(foo.id++)\" :foo=\"foo\" :bar=\"bar++\">\n          {{ String(foo.id++) }} {{ foo }} {{ bar }}\n        </div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.6",
+   "source": "\n        <div :class=\"foo\"></div>\n        <div :class=\"foo\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.7",
+   "source": "\n        <div :id=\"foo + bar\"></div>\n        <div :id=\"foo + bar\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.8",
+   "source": "\n        <div :id=\"foo + foo + bar\"></div>\n        <div :id=\"foo\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.9",
+   "source": "\n        <div :id=\"foo + bar\"></div>\n        <div :id=\"foo + bar\"></div>\n        <div :id=\"foo + foo + bar\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.10",
+   "source": "\n        <div :id=\"foo + bar\"></div>\n        <div :id=\"foo + bar\"></div>\n        <div :title=\"'foo + bar' + baz\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.11",
+   "source": "\n        <div :id=\"foo + bar\"></div>\n        <div :id=\"foo + bar\"></div>\n        <div :title=\"foo + barbaz\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.12",
+   "source": "\n        <div :id=\"n + 1\"></div>\n        <div :id=\"n + 1\"></div>\n        <div :title=\"n + 10\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.13",
+   "source": "\n        <div :id=\"a + b\"></div>\n        <div :id=\"a + b\"></div>\n        <div :title=\"c * a + b\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.14",
+   "source": "\n        <div :id=\"obj?.k + 1\"></div>\n        <div :id=\"obj?.k + 1\"></div>\n        <div :title=\"obj?.k + 10\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.15",
+   "source": "\n        <div :id=\"foo + bar\"></div>\n        <div :id=\"foo + bar\"></div>\n        <div :title=\"foo + bar + baz\"></div>\n        <div :title=\"foo + bar + baz\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.16",
+   "source": "\n        <div :id=\"'foo_bar' + foo[bar] + baz\"></div>\n        <div :id=\"'foo_bar' + foo[bar] + baz\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.17",
+   "source": "\n        <div :id=\"foo()\"></div>\n        <div :id=\"foo()\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.18",
+   "source": "\n        <div :id=\"foo\"></div>\n        <div :id=\"foo\"></div>\n        <div :id=\"foo()\"></div>\n        <div :id=\"foo()\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.19",
+   "source": "\n        <div :id=\"foo_bar\"></div>\n        <div :id=\"foo + bar\"></div>\n        <div :id=\"foo + bar\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.20",
+   "source": "\n        <div :id=\"foo[bar(baz)]\"></div>\n        <div :id=\"foo[bar(baz)]\"></div>\n        <div :id=\"bar() + foo\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.21",
+   "source": "\n        <div :[key+1]=\"foo[key+1]()\" />\n      "
+  },
+  {
+   "id": "up.transforms.expression.22",
+   "source": "\n        <div :id=\"obj['foo']['baz'] + obj.bar\"></div>\n        <div :id=\"obj['foo']['baz'] + obj.bar\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.23",
+   "source": "\n        <div :id=\"obj[1][baz] + obj.bar\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.24",
+   "source": "\n        <div :x=\"(foo[bar]).x\" :bar=\"(foo[bar])\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.25",
+   "source": "<div :id=\"title + titles + title\"></div>"
+  },
+  {
+   "id": "up.transforms.expression.26",
+   "source": "<div :id=\"p.title + p.titles + p.title\"></div>"
+  },
+  {
+   "id": "up.transforms.expression.27",
+   "source": "\n        <div :style=\"{color}\" :id=\"color\"/>\n      "
+  },
+  {
+   "id": "up.transforms.expression.28",
+   "source": "<div :id=\"obj?.foo + obj?.bar\"></div>"
+  },
+  {
+   "id": "up.transforms.expression.29",
+   "source": "<div :id=\"obj?.foo.bar\" :title=\"obj?.foo.baz\"></div>"
+  },
+  {
+   "id": "up.transforms.expression.30",
+   "source": "<div :id=\"obj?.foo?.bar\" :title=\"obj?.foo?.baz\"></div>"
+  },
+  {
+   "id": "up.transforms.expression.31",
+   "source": "<div :id=\"obj?.foo!.bar\" :title=\"obj?.foo!.baz\"></div>"
+  },
+  {
+   "id": "up.transforms.expression.32",
+   "source": "<div :id=\"obj?.foo\" :title=\"obj?.foo\"></div>"
+  },
+  {
+   "id": "up.transforms.expression.33",
+   "source": "<div :id=\"obj!.foo + obj!.bar\"></div>"
+  },
+  {
+   "id": "up.transforms.expression.34",
+   "source": "\n        <div :id=\"foo.bar\"></div>\n        <div :id=\"foo.baz\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.35",
+   "source": "\n        <div :id=\"foo!.bar\"></div>\n        <div :id=\"foo!.baz\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.36",
+   "source": "\n        <div :style=\"{color}\" />\n      "
+  },
+  {
+   "id": "up.transforms.expression.37",
+   "source": "\n        <div :id=\"bar + obj.bar\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.38",
+   "source": "\n        <div v-bind=\"{ foo: bar => foo = bar }\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.39",
+   "source": "\n        <div :id=\"msg.replace('1', '2')\"></div>\n        <div :id=\"msg.replace('1', '3')\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.40",
+   "source": "\n        <div :id=\"msg.replace('1', '2')\"></div>\n        <div :id=\"msg.replace('1', '2')\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.41",
+   "source": "\n        <div :id=\"obj[foo?.(bar)]\"></div>\n        <div :id=\"obj[foo?.(bar)]\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.45",
+   "source": "\n        <div :id=\"String(foo)\"></div>\n        <div :id=\"String(bar)\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.47",
+   "source": "\n        <input\n          :value=\"user?.profile.name\"\n          :title=\"user?.profile.name\"\n          :data-length=\"user?.profile.name.length\"\n        />\n      "
+  },
+  {
+   "id": "up.transforms.expression.48",
+   "source": "\n        <div :id=\"items[(page - 1) * pageSize]\" />\n        <div :title=\"items[page - 1 * pageSize]\" />\n      "
+  },
+  {
+   "id": "up.transforms.expression.49",
+   "source": "\n        <div :id=\"labels[active ? 'on' : 'off']\"></div>\n        <div :title=\"labels[active ? 'on' : 'off']\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.50",
+   "source": "\n        <div :id=\"obj[`k${i}`]\"></div>\n        <div :title=\"obj[`k${i}`]\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.51",
+   "source": "\n        <div :id=\"labels[active ? 'on' : 'off']\"></div>\n        <div :title=\"labels[status || 'unknown']\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.52",
+   "source": "\n        <div :id=\"obj[[foo][0]]\"></div>\n        <div :title=\"obj[[bar][0]]\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.53",
+   "source": "\n        <div :id=\"obj[foo(bar ? 1 : 2)]\"></div>\n        <div :title=\"obj[foo(bar ? 1 : 2)]\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.54",
+   "source": "\n        <div :id=\"user.name\" :title=\"user.name\" />\n        <div :title=\"labels[active ? 'on' : 'off'][user_name]\" />\n      "
+  },
+  {
+   "id": "up.transforms.expression.55",
+   "source": "\n        <div :id=\"n + offset\"></div>\n        <div :id=\"n + offset\"></div>\n        <div :title=\"items.map(n => n + offset).join(',')\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.56",
+   "source": "\n        <div :id=\"n + 1\"></div>\n        <div :id=\"n + 1\"></div>\n        <div :title=\"items.map(n => n + 1).join(',') + (n + 1)\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.57",
+   "source": "\n        <div :id=\"a + b\"></div>\n        <div :id=\"a + b\"></div>\n        <div :title=\"(a + b) * c\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.58",
+   "source": "\n        <div :id=\"x === undefined ? '—' : x.y\"></div>\n        <div :title=\"x === undefined ? '—' : x.y\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.59",
+   "source": "\n        <div :id=\"ok && x.y\"></div>\n        <div :title=\"ok ?? x.y\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.60",
+   "source": "\n        <div :id=\"o?.[x.y]\"></div>\n        <div :title=\"o?.b[x.y]\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.61",
+   "source": "\n        <div :id=\"items.map(() => x.y)\"></div>\n        <div :title=\"({ v() { return x.y } }).v()\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.62",
+   "source": "\n        <div :id=\"x.y\"></div>\n        <div :title=\"ok ? x.y : 0\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.63",
+   "source": "\n        <div :id=\"levels[rungs[i + 1].level].color\"></div>\n        <div :title=\"levels[rungs[i + 1].level].label\"></div>\n        <div :id=\"x.y + ls[rs[0].l]?.c\"></div>\n        <div :title=\"ls[rs[0].l]?.b + x.y\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.64",
+   "source": "\n        <div :id=\"a[b[i].c].d\"></div>\n        <div :title=\"a[b[i].c].e\"></div>\n        <div :class=\"b[i].c\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.65",
+   "source": "\n        <div :id=\"a[b[i].c].d\"></div>\n        <div :title=\"a[b[i].c].d\"></div>\n        <div :class=\"a[b[i].c].d + 1\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.66",
+   "source": "\n        <div :id=\"2 * r\"></div>\n        <div :title=\"2 * r\"></div>\n        <div :class=\"y + 2 * r\"></div>\n      "
+  },
+  {
+   "id": "up.transforms.expression.67",
+   "source": "{{ isNaN }}"
+  },
+  {
+   "id": "up.transforms.expression.68",
+   "source": "{{ new Foo() }}"
+  },
+  {
+   "id": "up.transforms.expression.69",
+   "source": "{{ new Foo.Bar() }}"
+  },
+  {
+   "id": "up.transforms.placeholderAlignment.0",
+   "source": "\n        <div>\n          <Comp />\n          <div />\n        </div>\n      "
+  },
+  {
+   "id": "up.transforms.placeholderAlignment.1",
+   "source": "\n        <div>\n          <Comp />\n          <Bar />\n          <div />\n        </div>\n      "
+  },
+  {
+   "id": "up.transforms.placeholderAlignment.2",
+   "source": "\n        <div>\n          <Comp />\n          <div>{{ a }}</div>\n        </div>\n      "
+  },
+  {
+   "id": "up.transforms.placeholderAlignment.3",
+   "source": "\n        <div>\n          <div />\n          <Comp />\n          <div />\n        </div>\n      "
+  },
+  {
+   "id": "up.transforms.placeholderAlignment.4",
+   "source": "\n        <div>\n          <div />\n          <Comp />\n          <Bar />\n          <div />\n        </div>\n      "
+  },
+  {
+   "id": "up.transforms.placeholderAlignment.5",
+   "source": "\n        <div>\n          <div />\n          <Comp />\n          <div />\n          <div>{{ a }}</div>\n        </div>\n      "
+  },
+  {
+   "id": "up.transforms.placeholderAlignment.6",
+   "source": "\n        <div>\n          <Comp />\n        </div>\n      "
+  },
+  {
+   "id": "up.transforms.placeholderAlignment.7",
+   "source": "\n        <div>\n          <div />\n          <Comp />\n        </div>\n      "
+  },
+  {
+   "id": "up.transforms.placeholderAlignment.8",
+   "source": "\n        <div>\n          <div />\n          <Comp />\n          <Bar />\n        </div>\n      "
+  },
+  {
+   "id": "up.transforms.placeholderAlignment.9",
+   "source": "\n        <div>\n          <Comp />\n          <div />\n          <Bar />\n        </div>\n      "
+  },
+  {
+   "id": "up.transforms.placeholderAlignment.10",
+   "source": "\n        <div>\n          <Comp />\n          <div />\n          <Bar />\n          <div />\n          <Baz />\n        </div>\n      "
+  },
+  {
+   "id": "up.transforms.placeholderAlignment.11",
+   "source": "\n        <div>\n          <div v-if=\"ok\" />\n          <div v-else />\n          <div />\n        </div>\n      "
+  },
+  {
+   "id": "up.transforms.placeholderAlignment.12",
+   "source": "<p>a<div>x</div>b</p>"
+  },
+  {
+   "id": "up.transforms.placeholderAlignment.13",
+   "source": "<p><div>x</div>b</p>"
+  },
+  {
+   "id": "up.transforms.placeholderAlignment.14",
+   "source": "<p>a<div>x</div></p>"
+  },
+  {
+   "id": "up.transforms.placeholderAlignment.15",
+   "source": "<p>a<div>x</div><Comp/>b</p>"
+  },
+  {
+   "id": "up.transforms.templateTransformAssetUrl.0",
+   "source": "\n\t\t\t<img src=\"./logo.png\"/>\n\t\t\t<img src=\"~fixtures/logo.png\"/>\n\t\t\t<img src=\"~/fixtures/logo.png\"/>\n\t\t\t<img src=\"http://example.com/fixtures/logo.png\"/>\n\t\t\t<img src=\"//example.com/fixtures/logo.png\"/>\n\t\t\t<img src=\"/fixtures/logo.png\"/>\n\t\t\t<img src=\"data:image/png;base64,i\"/>\n\t\t"
+  },
+  {
+   "id": "up.transforms.templateTransformAssetUrl.1",
+   "source": "<use href=\"~\"></use>"
+  },
+  {
+   "id": "up.transforms.templateTransformAssetUrl.2",
+   "source": "<svg viewBox=\"0 0 10 10\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n        <defs>\n          <circle id=\"myCircle\" cx=\"0\" cy=\"0\" r=\"5\" />\n        </defs>\n        <use x=\"5\" y=\"5\" xlink:href=\"#myCircle\" />\n      </svg>"
+  },
+  {
+   "id": "up.transforms.templateTransformAssetUrl.3",
+   "source": "<img src=\"./logo.png\" />"
+  },
+  {
+   "id": "up.transforms.templateTransformAssetUrl.4",
+   "source": "<div><img src=\"/foo bar.png\"/></div>"
+  },
+  {
+   "id": "up.transforms.templateTransformAssetUrl.5",
+   "source": "<div><img src=\"./foo bar.png\"/></div>"
+  },
+  {
+   "id": "up.transforms.templateTransformAssetUrl.6",
+   "source": "<img v-bind=\"attrs\" src=\"./logo.png\"/>"
+  },
+  {
+   "id": "up.transforms.templateTransformAssetUrl.7",
+   "source": "<VImg src=\"./logo.png\"/>"
+  },
+  {
+   "id": "up.transforms.templateTransformSrcset.0",
+   "source": "\n      <img srcset=\"@/logo.png, @/logo.png 2x\"/>\n      <img srcset=\"@/logo.png 1x, ./logo.png 2x\"/>\n    "
+  },
+  {
+   "id": "up.transforms.transformChildren.0",
+   "source": "<div>\n        <p>{{ first }}</p>\n        {{ second }}\n        {{ third }}\n        <p>{{ forth }}</p>\n      </div>"
+  },
+  {
+   "id": "up.transforms.transformChildren.1",
+   "source": "<div>\n    <div>x</div>\n    <div><span>{{ msg }}</span></div>\n    <div><span>{{ msg }}</span></div>\n    <div><span>{{ msg }}</span></div>\n  </div>"
+  },
+  {
+   "id": "up.transforms.transformChildren.2",
+   "source": "<div>\n        <div>x</div>\n        <div>x</div>\n        <div>{{ msg }}</div>\n      </div>"
+  },
+  {
+   "id": "up.transforms.transformChildren.3",
+   "source": "<div>\n        <div>\n          <section><span>{{ first }}</span></section>\n          <section><span>{{ second }}</span></section>\n        </div>\n      </div>"
+  },
+  {
+   "id": "up.transforms.transformChildren.4",
+   "source": "<div>\n        <div><span>{{ first }}</span></div>\n        <i></i>\n        <div><span>{{ second }}</span></div>\n      </div>"
+  },
+  {
+   "id": "up.transforms.transformChildren.5",
+   "source": "<div>\n        <section>\n          <div><span>{{ first }}</span></div>\n          <i></i>\n          <div><span>{{ second }}</span></div>\n        </section>\n      </div>"
+  },
+  {
+   "id": "up.transforms.transformChildren.6",
+   "source": "<div>\n        <section><Comp /></section>\n        <section><span>{{ msg }}</span></section>\n      </div>"
+  },
+  {
+   "id": "up.transforms.transformChildren.7",
+   "source": "<div>\n        <div></div>\n        <div v-if=\"1\"></div>\n        <div></div>\n      </div>"
+  },
+  {
+   "id": "up.transforms.transformChildren.8",
+   "source": "<div><pre>\n<b>s</b></pre><i>{{ msg }}</i></div>"
+  },
+  {
+   "id": "up.transforms.transformChildren.9",
+   "source": "<pre>\n<b>s</b></pre>"
+  },
+  {
+   "id": "up.transforms.transformComment.0",
+   "source": "<div><span v-if=\"ok\"/><!--a & b--><span v-else/></div>"
+  },
+  {
+   "id": "up.transforms.transformElement.0",
+   "source": "<Foo/>"
+  },
+  {
+   "id": "up.transforms.transformElement.1",
+   "source": "<Card><div/></Card>"
+  },
+  {
+   "id": "up.transforms.transformElement.2",
+   "source": "<Foo/><div><Foo/></div>"
+  },
+  {
+   "id": "up.transforms.transformElement.3",
+   "source": "<Foo v-if=\"ok\"/>"
+  },
+  {
+   "id": "up.transforms.transformElement.4",
+   "source": "<Child /><Parent><Child /></Parent>"
+  },
+  {
+   "id": "up.transforms.transformElement.5",
+   "source": "<Child /><Parent><template #default><Child v-if=\"ok\" /></template></Parent>"
+  },
+  {
+   "id": "up.transforms.transformElement.6",
+   "source": "<Example/>"
+  },
+  {
+   "id": "up.transforms.transformElement.7",
+   "source": "<Foo.Example/>"
+  },
+  {
+   "id": "up.transforms.transformElement.8",
+   "source": "<Comp/>"
+  },
+  {
+   "id": "up.transforms.transformElement.9",
+   "source": "<Comp/>123"
+  },
+  {
+   "id": "up.transforms.transformElement.10",
+   "source": "<Comp v-for=\"item in items\" :key=\"item\"/>"
+  },
+  {
+   "id": "up.transforms.transformElement.11",
+   "source": "<Foo id=\"foo\" class=\"bar\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.12",
+   "source": "<Foo :literal=\"'bar'\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.13",
+   "source": "<Foo\n          :size=\"16\"\n          :disabled=\"false\"\n          :tabindex=\"0\"\n          :nullable=\"null\"\n          :missing=\"undefined\"\n          :big=\"1n\"\n          :label=\"`Save ${1}`\"\n          :items=\"[1, 'two', false, null, undefined]\"\n          :options=\"{ placement: 'bottom', offset: 8, nested: { enabled: true } }\"\n        />"
+  },
+  {
+   "id": "up.transforms.transformElement.14",
+   "source": "<Foo :foo=\"bar\" :obj=\"{ a: bar }\" :handler=\"onClick\" :formatter=\"v => v.toFixed(2)\" :fn=\"() => bar\" @click=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.15",
+   "source": "<Foo :computed=\"{ [foo]: 1 }\" :spread=\"{ ...{ foo: 1 } }\" :list=\"[1, ...[2]]\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.16",
+   "source": "<Foo :objLabel=\"`${{ __proto__: null }}`\" :arrLabel=\"`${[1]}`\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.17",
+   "source": "<Foo v-bind=\"{ foo: bar, baz: 1, id: 'x', formatter: v => v + 1 }\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.18",
+   "source": "<Foo :[name]=\"value\" v-bind=\"{ foo: bar }\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.19",
+   "source": "<Foo v-bind=\"{ foo: bar }\" :[name]=\"value\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.20",
+   "source": "<Foo id=\"x\" v-bind=\"{ foo: bar }\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.21",
+   "source": "<Foo v-bind=\"{ [foo]: 1, ...obj }\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.22",
+   "source": "<Foo v-bind=\"{ __proto__: foo }\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.23",
+   "source": "<Foo v-bind=\"{ key: foo }\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.24",
+   "source": "<Foo v-bind=\"{ foo: a, foo: b }\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.25",
+   "source": "<Foo v-bind=\"{ foo() {} }\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.26",
+   "source": "<Foo foo=\"x\" v-bind=\"{ foo: bar }\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.27",
+   "source": "<Foo :foo=\"a\" v-bind=\"{ foo: b }\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.28",
+   "source": "<Foo foo-bar=\"x\" v-bind=\"{ fooBar: bar }\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.29",
+   "source": "<Foo @vue:mounted=\"a\" v-bind=\"{ onVnodeMounted: b }\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.30",
+   "source": "<Foo @click.right=\"a\" v-bind=\"{ onContextmenu: b }\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.31",
+   "source": "<Foo v-bind=\"obj\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.32",
+   "source": "<Foo id=\"foo\" v-bind=\"obj\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.33",
+   "source": "<Foo v-bind=\"obj\" id=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.34",
+   "source": "<Foo id=\"foo\" v-bind=\"obj\" class=\"bar\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.35",
+   "source": "<Foo @click.foo=\"a\" @click.bar=\"b\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.36",
+   "source": "<Foo @keydown.enter.prevent=\"a\" @keydown.esc.prevent=\"b\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.37",
+   "source": "<Foo @click.foo=\"e => a(e)\" @click.bar=\"e => b(e)\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.38",
+   "source": "<Foo style=\"color: green\" :style=\"{ color: 'red' }\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.39",
+   "source": "<Foo class=\"foo\" :class=\"{ bar: isBar }\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.40",
+   "source": "<Foo v-on=\"obj\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.41",
+   "source": "<Foo v-on=\"{ click: onClick, input: onInput, 'foo-bar': onFooBar }\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.42",
+   "source": "<Foo id=\"x\" v-on=\"{ click: onClick }\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.43",
+   "source": "<Foo v-on=\"{ click: a }\" @click=\"b\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.44",
+   "source": "<Foo v-on=\"{ click: a }\" v-bind=\"{ onClick: b }\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.45",
+   "source": "<Foo v-on=\"{ [event]: onClick, ...listeners }\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.46",
+   "source": "<Foo v-on=\"{ __proto__: onClick }\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.47",
+   "source": "<Foo v-on=\"{ click: onClick, Click: onClick2 }\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.48",
+   "source": "<Foo v-on=\"obj\" @foo=\"bar\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.49",
+   "source": "<Foo v-on:bar=\"() => handler\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.50",
+   "source": "<Foo @vue:mounted=\"handleMounted\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.51",
+   "source": "<Foo v-on:bar=\"handleBar($event)\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.52",
+   "source": "<Foo v-on:bar=\"handleBar($event)\" /><Bar v-on:bar=\"() => handler\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.53",
+   "source": "<Foo style=\"width: 200px; color: red\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.54",
+   "source": "<component is=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.55",
+   "source": "<Component is=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.56",
+   "source": "<component :is=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.57",
+   "source": "<component :is />"
+  },
+  {
+   "id": "up.transforms.transformElement.58",
+   "source": "<custom-input is=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.59",
+   "source": "<button is=\"vue:foo\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.60",
+   "source": "<custom-input :is=\"'foo'\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.61",
+   "source": "<Comp :is=\"'Parent'\" /><Comp is=\"Parent\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.62",
+   "source": "<input type=\"checkbox\" indeterminate/>"
+  },
+  {
+   "id": "up.transforms.transformElement.63",
+   "source": "<div id=\"foo\"><span/></div>"
+  },
+  {
+   "id": "up.transforms.transformElement.64",
+   "source": "<div id=\"foo\"><span><b/></span><main><b/><div><div><span/><span/></div></div></main></div>"
+  },
+  {
+   "id": "up.transforms.transformElement.65",
+   "source": "<div><div><span/></div><div/></div>"
+  },
+  {
+   "id": "up.transforms.transformElement.66",
+   "source": "<div><div><b/></div><div/></div>"
+  },
+  {
+   "id": "up.transforms.transformElement.67",
+   "source": "<div><div><div/></div><div/></div>"
+  },
+  {
+   "id": "up.transforms.transformElement.68",
+   "source": "<div><span/></div><div><span /></div>"
+  },
+  {
+   "id": "up.transforms.transformElement.69",
+   "source": "<div v-bind=\"obj\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.70",
+   "source": "<div v-bind=\"{ id: foo }\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.71",
+   "source": "<div v-bind=\"{ id: foo }\" :[name]=\"bar\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.72",
+   "source": "<div v-bind=\"{ id: 'foo', disabled: true }\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.73",
+   "source": "<div id=\"foo\" v-bind=\"{ id: bar }\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.74",
+   "source": "<div v-bind=\"{ onClick: click }\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.75",
+   "source": "<input v-bind=\"{ '.value': value }\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.76",
+   "source": "<div v-bind=\"{ 'foo bar': 'x' }\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.77",
+   "source": "<div id=\"foo\" v-bind=\"obj\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.78",
+   "source": "<div v-bind=\"obj\" id=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.79",
+   "source": "<div id=\"foo\" v-bind=\"obj\" class=\"bar\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.80",
+   "source": "<div @click.foo=\"a\" @click.bar=\"b\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.81",
+   "source": "<div style=\"color: green\" :style=\"{ color: 'red' }\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.82",
+   "source": "<div class=\"foo\" :class=\"{ bar: isBar }\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.83",
+   "source": "<div @click=\"a\" v-on=\"obj\" v-bind=\"bind\" @click.stop=\"b\" @keyup.enter.once=\"c\" @myEvent=\"d\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.84",
+   "source": "<div :['id']=\"'btn'\" @click=\"a\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.85",
+   "source": "<div v-bind=\"bind\" @click=\"a\" :onClick=\"b\" /><div :onClick=\"c\" v-on=\"obj\" /><Comp @click=\"a\" :onClick=\"b\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.86",
+   "source": "<div v-bind=\"{ id: 'btn' }\" @click=\"a\" /><div v-bind=\"{ id: 'btn' }\" v-on=\"obj\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.87",
+   "source": "<div v-bind=\"bind\" @myEvent.capture.once=\"a\" @['click']=\"b\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.88",
+   "source": "<div v-bind=\"bind\" @click.stop=\"a\" @click=\"b($event)\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.89",
+   "source": "<div @click.delegate=\"a\" v-on=\"obj\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.90",
+   "source": "<div id=\"a\" v-on=\"obj\" v-bind=\"bind\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.91",
+   "source": "<div v-on=\"obj\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.92",
+   "source": "<Foo :[foo-bar]=\"bar\" :[baz]=\"qux\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.93",
+   "source": "<Foo @keyup.enter=\"bar\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.94",
+   "source": "<Foo @foo.stop.prevent=\"bar\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.95",
+   "source": "<Foo @foo.enter.stop.prevent.capture.once=\"bar\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.96",
+   "source": "<Foo @[foo-bar]=\"bar\" @[baz]=\"qux\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.97",
+   "source": "<Foo @[event]=\"bar($event)\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.98",
+   "source": "<Foo @foo.once=\"bar\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.99",
+   "source": "<Foo @[foo].once=\"bar\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.100",
+   "source": "<p><div>123</div></p>\n      <form><form/></form>"
+  },
+  {
+   "id": "up.transforms.transformElement.101",
+   "source": "<table>\n        <tr>\n          <td>{{ msg }}</td>\n        </tr>\n      </table>\n      <div></div>"
+  },
+  {
+   "id": "up.transforms.transformElement.102",
+   "source": "<my-custom-element></my-custom-element>"
+  },
+  {
+   "id": "up.transforms.transformElement.103",
+   "source": "<my-custom-element><div>{{ msg }}</div></my-custom-element>"
+  },
+  {
+   "id": "up.transforms.transformElement.104",
+   "source": "<template><div>{{ msg }}</div></template>"
+  },
+  {
+   "id": "up.transforms.transformElement.105",
+   "source": "<template><div>hi</div></template>"
+  },
+  {
+   "id": "up.transforms.transformElement.106",
+   "source": "<template>hello</template>"
+  },
+  {
+   "id": "up.transforms.transformElement.107",
+   "source": "<template>{{ msg }}</template>"
+  },
+  {
+   "id": "up.transforms.transformElement.108",
+   "source": "<div><my-custom-element><span>{{ msg }}</span></my-custom-element></div>"
+  },
+  {
+   "id": "up.transforms.transformElement.109",
+   "source": "<div><template><span>{{ msg }}</span></template></div>"
+  },
+  {
+   "id": "up.transforms.transformElement.110",
+   "source": "<div><template><span>{{ msg }}</span></template><b/></div>"
+  },
+  {
+   "id": "up.transforms.transformElement.111",
+   "source": "<div id=\"foo\" class=\"bar\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.112",
+   "source": "<div title=\"has whitespace\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.113",
+   "source": "<div data-expr=\"a>b\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.114",
+   "source": "<div data-expr=\"a<b\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.115",
+   "source": "<div data-expr=\"a=b\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.116",
+   "source": "<div title=\"it's\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.117",
+   "source": "<div title=\"foo`bar\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.118",
+   "source": "<div title='say \"hello\"' />"
+  },
+  {
+   "id": "up.transforms.transformElement.119",
+   "source": "<div title=\"has whitespace\" inert data-targets=\"foo>bar\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.120",
+   "source": "<div title=\"has whitespace\" alt='\"contains quotes\"' data-targets=\"foo>bar\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.121",
+   "source": "<div class=\"a&amp;amp;b\" :class=\"{ c: true }\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.122",
+   "source": "<svg><pre>\n\nline</pre></svg>"
+  },
+  {
+   "id": "up.transforms.transformElement.123",
+   "source": "<div v-bind=\"attrs\" :title=\"n\" :id=\"n\" @click=\"hit(n)\" @focus=\"hit(n)\" @blur=\"n++\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.124",
+   "source": "<div v-bind=\"attrs\" :title=\"n\" :id=\"n\" @click=\"n++\" @[event]=\"n++\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.125",
+   "source": "<div v-bind=\"attrs\" :title=\"on_click\" :id=\"on_click\" @click=\"a()\" @click1=\"b()\" />"
+  },
+  {
+   "id": "up.transforms.transformElement.126",
+   "source": "<Comp><template #default=\"{ Foo }\"><foo /></template></Comp>"
+  },
+  {
+   "id": "up.transforms.transformElement.127",
+   "source": "<Foo v-slot=\"{ Foo }\"><Foo /></Foo><Foo />"
+  },
+  {
+   "id": "up.transforms.transformElement.128",
+   "source": "<Comp v-slot=\"{ Foo }\"><template v-for=\"Foo in list\"><Foo /></template><Foo /></Comp>"
+  },
+  {
+   "id": "up.transforms.transformElement.129",
+   "source": "<div v-for=\"Foo in list\"><Comp v-slot=\"{ Foo }\"><Foo /></Comp></div>"
+  },
+  {
+   "id": "up.transforms.transformElement.130",
+   "source": "<foo-bar />"
+  },
+  {
+   "id": "up.transforms.transformElement.131",
+   "source": "<fooBar /><foo-bar />"
+  },
+  {
+   "id": "up.transforms.transformElement.132",
+   "source": "<foo.Bar v-focus />"
+  },
+  {
+   "id": "up.transforms.transformElement.133",
+   "source": "<Number />"
+  },
+  {
+   "id": "up.transforms.transformKey.0",
+   "source": "<div :key=\"ok\">{{msg}}</div>"
+  },
+  {
+   "id": "up.transforms.transformKey.1",
+   "source": "<div :key=\"a,b\" />"
+  },
+  {
+   "id": "up.transforms.transformKey.2",
+   "source": "<div :key />"
+  },
+  {
+   "id": "up.transforms.transformKey.3",
+   "source": "<Foo :key=\"id\" />"
+  },
+  {
+   "id": "up.transforms.transformKey.4",
+   "source": "<Comp><div :key=\"id\">foo</div></Comp>"
+  },
+  {
+   "id": "up.transforms.transformKey.5",
+   "source": "<div :key=\"id\"></div>"
+  },
+  {
+   "id": "up.transforms.transformKey.6",
+   "source": "<div><Foo :key=\"id\" /></div>"
+  },
+  {
+   "id": "up.transforms.transformKey.7",
+   "source": "<component :is=\"view\" :key=\"id\" />"
+  },
+  {
+   "id": "up.transforms.transformKey.8",
+   "source": "<div v-if=\"ok\" :key=\"id\"></div>"
+  },
+  {
+   "id": "up.transforms.transformKey.9",
+   "source": "<div v-if=\"ok\" /><div v-else-if=\"foo\" :key=\"id\"></div>"
+  },
+  {
+   "id": "up.transforms.transformKey.10",
+   "source": "<Comp><template #foo=\"{ x }\" :key=\"a\">{{ x }}</template></Comp>"
+  },
+  {
+   "id": "up.transforms.transformKey.11",
+   "source": "<div v-for=\"i in list\" :key=\"i\"></div>"
+  },
+  {
+   "id": "up.transforms.transformKey.12",
+   "source": "<Foo key=\"1\" />"
+  },
+  {
+   "id": "up.transforms.transformKey.13",
+   "source": "<Foo v-bind=\"props\" key=\"a\" />"
+  },
+  {
+   "id": "up.transforms.transformKey.14",
+   "source": "<div key=\"1\"></div>"
+  },
+  {
+   "id": "up.transforms.transformKey.15",
+   "source": "<component :is=\"view\" key=\"1\" />"
+  },
+  {
+   "id": "up.transforms.transformKey.16",
+   "source": "<component :is=\"'div'\" key=\"1\" />"
+  },
+  {
+   "id": "up.transforms.transformKey.17",
+   "source": "<div :key=\"1\" />"
+  },
+  {
+   "id": "up.transforms.transformKey.18",
+   "source": "<div :key=\"true\" />"
+  },
+  {
+   "id": "up.transforms.transformKey.19",
+   "source": "<div :key=\"null\" />"
+  },
+  {
+   "id": "up.transforms.transformKey.20",
+   "source": "<div><span key=\"a\"></span></div>"
+  },
+  {
+   "id": "up.transforms.transformKey.21",
+   "source": "<Foo><div key=\"a\"></div><div key=\"b\"></div></Foo>"
+  },
+  {
+   "id": "up.transforms.transformKey.22",
+   "source": "<div v-if=\"ok\" key=\"a\"></div>"
+  },
+  {
+   "id": "up.transforms.transformKey.23",
+   "source": "<div v-once key=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.transformKey.24",
+   "source": "<Foo v-once key=\"bar\" />"
+  },
+  {
+   "id": "up.transforms.transformSlotOutlet.0",
+   "source": "<slot />"
+  },
+  {
+   "id": "up.transforms.transformSlotOutlet.1",
+   "source": "<slot name=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.transformSlotOutlet.2",
+   "source": "<slot :name=\"foo + bar\" />"
+  },
+  {
+   "id": "up.transforms.transformSlotOutlet.3",
+   "source": "<slot :name />"
+  },
+  {
+   "id": "up.transforms.transformSlotOutlet.4",
+   "source": "<slot foo=\"bar\" :baz=\"qux\" :foo-bar=\"foo-bar\" />"
+  },
+  {
+   "id": "up.transforms.transformSlotOutlet.5",
+   "source": "<slot name=\"foo\" foo=\"bar\" :baz=\"qux\" />"
+  },
+  {
+   "id": "up.transforms.transformSlotOutlet.6",
+   "source": "<slot :count=\"0\" :level=\"1\" :ratio=\"1.5\" :str=\"'1'\" />"
+  },
+  {
+   "id": "up.transforms.transformSlotOutlet.7",
+   "source": "<slot name=\"foo\" foo=\"bar\" v-bind=\"obj\" :baz=\"qux\" />"
+  },
+  {
+   "id": "up.transforms.transformSlotOutlet.8",
+   "source": "<slot @click=\"foo\" v-on=\"bar\" :baz=\"qux\" />"
+  },
+  {
+   "id": "up.transforms.transformSlotOutlet.9",
+   "source": "<slot><div/></slot>"
+  },
+  {
+   "id": "up.transforms.transformSlotOutlet.10",
+   "source": "<slot name=\"foo\"><div/></slot>"
+  },
+  {
+   "id": "up.transforms.transformSlotOutlet.11",
+   "source": "<slot :foo=\"bar\"><div/></slot>"
+  },
+  {
+   "id": "up.transforms.transformSlotOutlet.12",
+   "source": "<slot name=\"foo\" :foo=\"bar\"><div/></slot>"
+  },
+  {
+   "id": "up.transforms.transformSlotOutlet.13",
+   "source": "<slot><span v-if=\"ok\"/></slot>"
+  },
+  {
+   "id": "up.transforms.transformSlotOutlet.14",
+   "source": "<slot><template v-if=\"ok\"><span v-for=\"item in items\">{{ item }}</span></template></slot>"
+  },
+  {
+   "id": "up.transforms.transformSlotOutlet.15",
+   "source": "<slot><div><span v-if=\"ok\"/></div></slot>"
+  },
+  {
+   "id": "up.transforms.transformSlotOutlet.16",
+   "source": "<slot><component :is=\"view\" /></slot>"
+  },
+  {
+   "id": "up.transforms.transformTemplateRef.0",
+   "source": "<div ref=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.transformTemplateRef.1",
+   "source": "<div ref=\"foo\" /><div ref=\"bar\" />"
+  },
+  {
+   "id": "up.transforms.transformTemplateRef.2",
+   "source": "<div ref=\"foo\" /><div :ref=\"bar\" />"
+  },
+  {
+   "id": "up.transforms.transformTemplateRef.3",
+   "source": "<div :ref=\"bar\" /><div ref=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.transformTemplateRef.4",
+   "source": "<Foo ref=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.transformTemplateRef.5",
+   "source": "<component :is=\"view\" ref=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.transformTemplateRef.6",
+   "source": "<div :ref=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.transformTemplateRef.7",
+   "source": "<div :ref=\"foo\" /><div :ref=\"bar\" />"
+  },
+  {
+   "id": "up.transforms.transformTemplateRef.8",
+   "source": "<div :ref=\"foo\" /><div :ref=\"bar => { foo.value = bar }\" />"
+  },
+  {
+   "id": "up.transforms.transformTemplateRef.9",
+   "source": "<Comp><div :ref=\"refName\" /></Comp>"
+  },
+  {
+   "id": "up.transforms.transformTemplateRef.10",
+   "source": "<Comp><div ref=\"foo\" /></Comp>"
+  },
+  {
+   "id": "up.transforms.transformTemplateRef.11",
+   "source": "<div :ref=\"bar => { foo.value = bar }\" />"
+  },
+  {
+   "id": "up.transforms.transformTemplateRef.12",
+   "source": "<div :ref=\"bar => {\n        foo.value = bar\n        ;({ baz } = bar)\n        console.log(foo.value, baz)\n      }\" />"
+  },
+  {
+   "id": "up.transforms.transformTemplateRef.13",
+   "source": "<div ref=\"foo\" v-if=\"true\" />"
+  },
+  {
+   "id": "up.transforms.transformTemplateRef.14",
+   "source": "<div ref=\"foo\" v-for=\"item in [1,2,3]\" />"
+  },
+  {
+   "id": "up.transforms.transformTemplateRef.15",
+   "source": "<div :ref=\"foo\" v-for=\"item in [1,2,3]\" />"
+  },
+  {
+   "id": "up.transforms.transformTemplateRef.16",
+   "source": "<div :ref=\"isNaN\" />"
+  },
+  {
+   "id": "up.transforms.transformText.0",
+   "source": "{{ \"hello world\" }}"
+  },
+  {
+   "id": "up.transforms.transformText.1",
+   "source": "{{ msg }}"
+  },
+  {
+   "id": "up.transforms.transformText.2",
+   "source": "<code>&lt;script&gt;</code>"
+  },
+  {
+   "id": "up.transforms.transformText.3",
+   "source": "<my-el>&lt;b&gt;foo&lt;/b&gt;</my-el>"
+  },
+  {
+   "id": "up.transforms.transformText.4",
+   "source": "<my-el>{{ \"<b>foo</b>\" }}<i/></my-el>"
+  },
+  {
+   "id": "up.transforms.transformText.5",
+   "source": "Howdy y'all"
+  },
+  {
+   "id": "up.transforms.transformText.6",
+   "source": "Say \"hello\""
+  },
+  {
+   "id": "up.transforms.transformText.7",
+   "source": "<template v-if=\"ok\">Howdy y'all</template>"
+  },
+  {
+   "id": "up.transforms.transformText.8",
+   "source": "<Comp>Howdy y'all</Comp>"
+  },
+  {
+   "id": "up.transforms.transformText.9",
+   "source": "\n        <div>\n          {{ (2) }}\n          {{ `foo${1}` }}\n          {{ 1 }}\n          {{ 1n }}\n          {{ '1' }}\n        </div>"
+  },
+  {
+   "id": "up.transforms.transformText.10",
+   "source": "<Comp>{{ \"Hello\" }}</Comp>"
+  },
+  {
+   "id": "up.transforms.transformText.11",
+   "source": "<Comp>{{ '' }}<b>{{ msg }}</b></Comp>"
+  },
+  {
+   "id": "up.transforms.transformText.12",
+   "source": "<p>{{ before }}<br :id=\"id\">{{ between }}<br>{{ after }}</p>"
+  },
+  {
+   "id": "up.transforms.vBind.0",
+   "source": "<div v-bind:id=\"id\"/>"
+  },
+  {
+   "id": "up.transforms.vBind.1",
+   "source": "<div v-bind:id />"
+  },
+  {
+   "id": "up.transforms.vBind.2",
+   "source": "<div :camel-case />"
+  },
+  {
+   "id": "up.transforms.vBind.3",
+   "source": "<div v-bind:[id]=\"id\" v-bind:[title]=\"title\" />"
+  },
+  {
+   "id": "up.transforms.vBind.4",
+   "source": "<div v-bind:[id]=\"id\" foo=\"bar\" checked />"
+  },
+  {
+   "id": "up.transforms.vBind.5",
+   "source": "<div v-bind:arg=\"\" />"
+  },
+  {
+   "id": "up.transforms.vBind.6",
+   "source": "<div v-bind:[arg] />"
+  },
+  {
+   "id": "up.transforms.vBind.7",
+   "source": "<div v-bind:foo-bar.camel=\"id\"/>"
+  },
+  {
+   "id": "up.transforms.vBind.8",
+   "source": "<div v-bind:foo-bar.camel />"
+  },
+  {
+   "id": "up.transforms.vBind.9",
+   "source": "<div v-bind:[foo].camel=\"id\"/>"
+  },
+  {
+   "id": "up.transforms.vBind.10",
+   "source": "<div v-bind:[foo(bar)].camel=\"id\"/>"
+  },
+  {
+   "id": "up.transforms.vBind.11",
+   "source": "<div v-bind:fooBar.prop=\"id\"/>"
+  },
+  {
+   "id": "up.transforms.vBind.12",
+   "source": "<div v-bind:fooBar.prop />"
+  },
+  {
+   "id": "up.transforms.vBind.13",
+   "source": "<div v-bind:[fooBar].prop=\"id\"/>"
+  },
+  {
+   "id": "up.transforms.vBind.14",
+   "source": "<div v-bind:[foo(bar)].prop=\"id\"/>"
+  },
+  {
+   "id": "up.transforms.vBind.15",
+   "source": "<div .fooBar=\"id\"/>"
+  },
+  {
+   "id": "up.transforms.vBind.16",
+   "source": "<div .fooBar />"
+  },
+  {
+   "id": "up.transforms.vBind.17",
+   "source": "<div :innerHTML.prop=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.vBind.18",
+   "source": "<div .innerHTML=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.vBind.19",
+   "source": "<div :textContent.prop=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.vBind.20",
+   "source": "<div .textContent=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.vBind.21",
+   "source": "<div :value.prop=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.vBind.22",
+   "source": "<div .value=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.vBind.23",
+   "source": "<progress :value.prop=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.vBind.24",
+   "source": "<progress .value=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.vBind.25",
+   "source": "<div v-bind:foo-bar.attr=\"id\"/>"
+  },
+  {
+   "id": "up.transforms.vBind.26",
+   "source": "<div v-bind:foo-bar.attr />"
+  },
+  {
+   "id": "up.transforms.vBind.27",
+   "source": "<div v-bind:[fooBar].attr=\"id\"/>"
+  },
+  {
+   "id": "up.transforms.vBind.28",
+   "source": "<div :innerHTML.attr=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.vBind.29",
+   "source": "<div :textContent.attr=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.vBind.30",
+   "source": "<div :value.attr=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.vBind.31",
+   "source": "<progress :value.attr=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.vBind.32",
+   "source": "<Comp :fooBar.prop=\"id\"/>"
+  },
+  {
+   "id": "up.transforms.vBind.33",
+   "source": "<Comp :fooBar.attr=\"id\"/>"
+  },
+  {
+   "id": "up.transforms.vBind.34",
+   "source": "<div :fooBar.prop=\"id\" v-bind=\"obj\"/>"
+  },
+  {
+   "id": "up.transforms.vBind.35",
+   "source": "<div :fooBar.attr=\"id\" v-bind=\"obj\"/>"
+  },
+  {
+   "id": "up.transforms.vBind.36",
+   "source": "<div :data-x.attr=\"id\" v-bind=\"obj\"/>"
+  },
+  {
+   "id": "up.transforms.vBind.37",
+   "source": "\n      <div :spellcheck :draggable :translate :form />\n      <input :list=\"list\" />\n      <textarea :type=\"type\" />\n      <img :width=\"width\" :height=\"height\"/>\n      <video :width=\"width\" :height=\"height\"/>\n      <canvas :width=\"width\" :height=\"height\"/>\n      <source :width=\"width\" :height=\"height\"/>\n    "
+  },
+  {
+   "id": "up.transforms.vBind.38",
+   "source": "\n      <div :innerHTML=\"foo\"/>\n    "
+  },
+  {
+   "id": "up.transforms.vBind.39",
+   "source": "\n      <div :textContent=\"foo\"/>\n    "
+  },
+  {
+   "id": "up.transforms.vBind.40",
+   "source": "\n      <input :value=\"foo\"/>\n    "
+  },
+  {
+   "id": "up.transforms.vBind.41",
+   "source": "\n      <progress :value=\"foo\"/>\n    "
+  },
+  {
+   "id": "up.transforms.vBind.42",
+   "source": "\n      <svg :class=\"cls\"/>\n    "
+  },
+  {
+   "id": "up.transforms.vBind.43",
+   "source": "\n      <div\n        :disabled=\"true\"\n        :class=\"{ active: true, hidden: false }\"\n        :style=\"{ color: 'red', marginTop: '4px' }\"\n      />\n    "
+  },
+  {
+   "id": "up.transforms.vBind.44",
+   "source": "\n      <div :style=\"{ '--x': 'a;b' }\" />\n    "
+  },
+  {
+   "id": "up.transforms.vBind.45",
+   "source": "\n      <div :class=\"{ '&amp;nbsp;': true }\" :style=\"{ '--x': '&amp;copy' }\" />\n    "
+  },
+  {
+   "id": "up.transforms.vBind.46",
+   "source": "\n      <button :disabled=\"false\" :hidden=\"null\" :multiple=\"undefined\" />\n    "
+  },
+  {
+   "id": "up.transforms.vBind.47",
+   "source": "\n      <div class=\" foo  bar \" />\n    "
+  },
+  {
+   "id": "up.transforms.vBind.48",
+   "source": "\n      <div :class=\"{ active: isActive }\"/>\n    "
+  },
+  {
+   "id": "up.transforms.vBind.49",
+   "source": "\n      <div :class=\"selected === row.id ? 'danger' : ''\"/>\n    "
+  },
+  {
+   "id": "up.transforms.vBind.50",
+   "source": "\n      <div :class=\"selected === row.id ? '' : 'danger'\"/>\n    "
+  },
+  {
+   "id": "up.transforms.vBind.51",
+   "source": "\n      <div :class=\"selected === row.id ? 'danger' : ''\" class=\"foo\"/>\n    "
+  },
+  {
+   "id": "up.transforms.vBind.52",
+   "source": "\n      <div class=\"foo\" :class=\"{ bar: isBar }\"/>\n    "
+  },
+  {
+   "id": "up.transforms.vBind.53",
+   "source": "\n      <div class=\"base\" :class=\"{ active: ok, hidden: false, fixed: true }\"/>\n    "
+  },
+  {
+   "id": "up.transforms.vBind.54",
+   "source": "\n      <div class=\"base\" :class=\"cls\"/>\n    "
+  },
+  {
+   "id": "up.transforms.vBind.55",
+   "source": "\n      <div :class=\"{ bar: isBar }\" class=\"foo\"/>\n    "
+  },
+  {
+   "id": "up.transforms.vBind.56",
+   "source": "\n      <div :class=\"{ active: ok, foo: bar }\" class=\"tail\"/>\n    "
+  },
+  {
+   "id": "up.transforms.vBind.57",
+   "source": "\n      <div :class=\"{ active: ok, foo: bar }\"/>\n    "
+  },
+  {
+   "id": "up.transforms.vBind.58",
+   "source": "<div :class=\"{ active: ok, foo: bar ? true : false, baz: n++ }\"/>"
+  },
+  {
+   "id": "up.transforms.vBind.59",
+   "source": "\n      <div class=\"foo\" :class=\"{ danger: selected === row.id, 'is-active': active }\"/>\n    "
+  },
+  {
+   "id": "up.transforms.vBind.60",
+   "source": "\n      <div :class=\"{ 'foo bar': isActive }\"/>\n    "
+  },
+  {
+   "id": "up.transforms.vBind.61",
+   "source": "\n      <div class=\"bar\" :class=\"{ bar: isBar }\"/>\n    "
+  },
+  {
+   "id": "up.transforms.vBind.62",
+   "source": "\n      <div class=\"foo\" :class=\"{ 'foo bar': isActive }\"/>\n    "
+  },
+  {
+   "id": "up.transforms.vBind.63",
+   "source": "\n      <div class=\" foo  bar \" :class=\"ok ? ' baz ' : ''\"/>\n    "
+  },
+  {
+   "id": "up.transforms.vBind.64",
+   "source": "\n      <div :class=\"{ [name]: active }\"/>\n    "
+  },
+  {
+   "id": "up.transforms.vBind.65",
+   "source": "\n      <div :class=\"[foo, { danger: active }]\"/>\n    "
+  },
+  {
+   "id": "up.transforms.vBind.66",
+   "source": "\n      <div class=\"foo\" :class=\"{ bar: isBar }\" v-bind=\"mayBeHasClass\"/>\n    "
+  },
+  {
+   "id": "up.transforms.vBind.67",
+   "source": "\n      <svg :style=\"style\"/>\n    "
+  },
+  {
+   "id": "up.transforms.vBind.68",
+   "source": "\n      <svg v-bind=\"obj\"/>\n    "
+  },
+  {
+   "id": "up.transforms.vBind.69",
+   "source": "<Comp :depth=\"0\" />"
+  },
+  {
+   "id": "up.transforms.vBind.70",
+   "source": "\n        <div\n          :a=\"void 0\"\n          :b=\"1 > 2\"\n          :c=\"1 + 2\"\n          :d=\"1 ? 2 : 3\"\n          :e=\"(2)\"\n          :f=\"`foo${1}`\"\n          :g=\"1\"\n          :h=\"'1'\"\n          :i=\"true\"\n          :j=\"null\"\n          :k=\"x\"\n          :l=\"{ foo: 1 }\"\n          :m=\"{ [x]: 1 }\"\n          :n=\"{ ...{ foo: 1 } }\"\n          :o=\"[1, , 3]\"\n          :p=\"[1, ...[2, 3]]\"\n          :q=\"[1, 2]\"\n          :r=\"/\\s+/\"\n        />"
+  },
+  {
+   "id": "up.transforms.vBind.71",
+   "source": "<number-probe :count=\"0\" :ratio=\"1.5\" :bigint=\"1n\" :str=\"'0'\" :text=\"`0`\" />"
+  },
+  {
+   "id": "up.transforms.vBind.72",
+   "source": "<input type=\"checkbox\" :value=\"1\" :true-value=\"1\" :false-value=\"0\">"
+  },
+  {
+   "id": "up.transforms.vBind.73",
+   "source": "<textarea :value=\"'hello'\"></textarea><select :value=\"'b'\"><option value=\"b\"></option></select>"
+  },
+  {
+   "id": "up.transforms.vBind.74",
+   "source": "<div :id=\"k0\" v-bind=\"obj\"/><div :title=\"k0\" v-bind=\"obj\"/>"
+  },
+  {
+   "id": "up.transforms.vBind.75",
+   "source": "<video :volume.attr=\"0.5\"/>"
+  },
+  {
+   "id": "up.transforms.vBind.76",
+   "source": "<input type=\"range\" :max=\"max\" :valueAsNumber=\"500\" :title=\"title\" />"
+  },
+  {
+   "id": "up.transforms.vBind.77",
+   "source": "<div :[name]=\"a\" :[foo?bar:baz]=\"b\" /><Comp :[name]=\"a\" />"
+  },
+  {
+   "id": "up.transforms.vBind.78",
+   "source": "<div :onClick=\"save\" :onKeyupOnceCapture=\"save\" :onMyEvent=\"cond ? a : b\" :on:MyEvent=\"fn\" :on-click.camel=\"save\" :onUpdate:modelValue=\"fn\" :onFoo /><svg :onClick=\"save\"/><a :onClick.prop=\"fn1\" /><b :onClick.attr=\"fn2\" /><i :on-click=\"fn3\" /><p v-bind=\"obj\" :onClick=\"fn4\" /><s v-once :onClick=\"fn5\" />"
+  },
+  {
+   "id": "up.transforms.vBind.79",
+   "source": "<svg><a :href=\"url\" :class=\"cls\"/></svg>"
+  },
+  {
+   "id": "up.transforms.vBind.80",
+   "source": "<svg><a v-bind=\"obj\"/></svg>"
+  },
+  {
+   "id": "up.transforms.vBind.81",
+   "source": "<svg><foreignObject><a :href=\"url\" :class=\"cls\"/></foreignObject></svg>"
+  },
+  {
+   "id": "up.transforms.vBind.82",
+   "source": "<svg><a :class=\"{ active: flag }\"/></svg>"
+  },
+  {
+   "id": "up.transforms.vBind.83",
+   "source": "<svg><a :onclick=\"click\" :onfocus=\"focus\" :href=\"url\" :class=\"cls\"/></svg>"
+  },
+  {
+   "id": "up.transforms.vBind.84",
+   "source": "<input type=\"range\" :max=\"max\" :step=\"step\" :value=\"500\" />"
+  },
+  {
+   "id": "up.transforms.vBind.85",
+   "source": "<select :value.attr=\"value\"><option :value=\"option\" /></select>"
+  },
+  {
+   "id": "up.transforms.vBind.86",
+   "source": "<select v-bind=\"attrs\" :value=\"value\"><option :value=\"option\" /></select>"
+  },
+  {
+   "id": "up.transforms.vBind.87",
+   "source": "<select v-bind=\"attrs\" v-model=\"value\"><option :value=\"option\" /></select>"
+  },
+  {
+   "id": "up.transforms.vFor.0",
+   "source": "<div v-for=\"item of items\" :key=\"item.id\" @click=\"remove(item)\">{{ item }}</div>"
+  },
+  {
+   "id": "up.transforms.vFor.1",
+   "source": "\n          <tr\n            v-for=\"row of rows\"\n            :key=\"row.id\"\n          >\n            {{ row.id + row.id }}\n          </tr>\n      "
+  },
+  {
+   "id": "up.transforms.vFor.2",
+   "source": "\n          <tr\n            v-for=\"row of rows\"\n            :key=\"row.id\"\n            :class=\"row.id === state.selected ? 'danger' : ''\"\n          ></tr>\n      "
+  },
+  {
+   "id": "up.transforms.vFor.3",
+   "source": "\n          <tr\n            v-for=\"row of rows\"\n            :key=\"row.id\"\n          >\n            {{ selected === row.id ? 'danger' : '' }}\n          </tr>\n      "
+  },
+  {
+   "id": "up.transforms.vFor.4",
+   "source": "\n          <tr\n            v-for=\"row of rows\"\n            :key=\"row.id\"\n            :class=\"selected === row.id ? 'danger' : ''\"\n          ></tr>\n      "
+  },
+  {
+   "id": "up.transforms.vFor.5",
+   "source": "\n          <tr\n            v-for=\"row of rows\"\n            :key=\"row.id\"\n            :class=\"row.label === row.id ? 'danger' : ''\"\n          ></tr>\n      "
+  },
+  {
+   "id": "up.transforms.vFor.6",
+   "source": "\n          <tr\n            v-for=\"row of rows\"\n            :key=\"row.id\"\n            :class=\"{ danger: row.id === selected }\"\n          ></tr>\n      "
+  },
+  {
+   "id": "up.transforms.vFor.7",
+   "source": "\n          <tr\n            v-for=\"row of rows\"\n            :key=\"row.id\"\n            :class=\"selected === row.id ? 'a' : ''\"\n            :title=\"active === row.id ? 'b' : ''\"\n          ></tr>\n      "
+  },
+  {
+   "id": "up.transforms.vFor.8",
+   "source": "i"
+  },
+  {
+   "id": "up.transforms.vFor.9",
+   "source": "item.id"
+  },
+  {
+   "id": "up.transforms.vFor.10",
+   "source": "<div v-for=\"(item, index) of items\" :item=\"item\" :index=\"index\" />"
+  },
+  {
+   "id": "up.transforms.vFor.11",
+   "source": "<div v-for=\"todo of todos\" :key=\"todo.id\" :class=\"{ completed: todo.completed, editing: todo === editedTodo }\" />"
+  },
+  {
+   "id": "up.transforms.vFor.12",
+   "source": "<div v-for=\" of items\">item</div>"
+  },
+  {
+   "id": "up.transforms.vFor.13",
+   "source": "<div v-for=\"i in list\"><span v-for=\"j in i\">{{ j+i }}</span></div>"
+  },
+  {
+   "id": "up.transforms.vFor.14",
+   "source": "<div v-for=\"(value, key, index) in list\" :key=\"key\">{{ value + key + index }}</div>"
+  },
+  {
+   "id": "up.transforms.vFor.15",
+   "source": "<span v-for=\"({ id, value }) in items\" :key=\"id\">{{ id }}{{ value }}</span>"
+  },
+  {
+   "id": "up.transforms.vFor.16",
+   "source": "<div v-for=\"(  { id, ...other }, index) in list\" :key=\"id\">{{ id + other + index }}</div>"
+  },
+  {
+   "id": "up.transforms.vFor.17",
+   "source": "<div v-for=\"([id, other], index) in list\" :key=\"id\">{{ id + other + index }}</div>"
+  },
+  {
+   "id": "up.transforms.vFor.18",
+   "source": "<div v-for=\"([id, ...other], index) in list\" :key=\"id\">{{ id + other + index }}</div>"
+  },
+  {
+   "id": "up.transforms.vFor.19",
+   "source": "<div v-for=\"({ foo = bar, baz: [qux = quux] }) in list\">\n        {{ foo + bar + baz + qux + quux }}\n      </div>"
+  },
+  {
+   "id": "up.transforms.vFor.20",
+   "source": "<Comp v-for=\"item in list\">{{item}}</Comp>"
+  },
+  {
+   "id": "up.transforms.vFor.21",
+   "source": "<component :is=\"view\" v-for=\"item in list\" :key=\"item.id\" />"
+  },
+  {
+   "id": "up.transforms.vFor.22",
+   "source": "<component is=\"view\" v-for=\"item in list\" :key=\"item.id\" />"
+  },
+  {
+   "id": "up.transforms.vFor.23",
+   "source": "<slot v-for=\"item in list\" :name=\"item.name\" :key=\"item.id\" />"
+  },
+  {
+   "id": "up.transforms.vFor.24",
+   "source": "<template v-for=\"item in list\"><div>{{ item }}</div><span>{{ item }}</span></template>"
+  },
+  {
+   "id": "up.transforms.vFor.25",
+   "source": "<template v-for=\"item in list\"><Comp>{{item}}</Comp></template>"
+  },
+  {
+   "id": "up.transforms.vFor.26",
+   "source": "<template v-for=\"item in items\">\n        <div v-if=\"item.id===1\">hi</div>\n        <Comp v-else></Comp>\n      </template>"
+  },
+  {
+   "id": "up.transforms.vFor.27",
+   "source": "<template v-for=\"row in rows\"><div v-for=\"item in row\">{{ item }}</div></template>"
+  },
+  {
+   "id": "up.transforms.vFor.28",
+   "source": "<template v-for=\"item in items\"><div :key=\"item.id\">{{ item.text }}</div></template>"
+  },
+  {
+   "id": "up.transforms.vFor.29",
+   "source": "\n      <div>\n        <button\n          v-for=\"child in items\"\n          :key=\"child.key\"\n          :disabled=\"child.disabled\"\n          :class=\"{ selected: child.key === selected }\"\n        >\n          <span>{{ child.label }}</span>\n        </button>\n      </div>\n    "
+  },
+  {
+   "id": "up.transforms.vFor.30",
+   "source": "<div v-for=\"(value: string, key: string, index: number) in items\">{{ value }}{{ key }}{{ index }}</div>"
+  },
+  {
+   "id": "up.transforms.vFor.31",
+   "source": "<div v-for=\"(item = 'x', key, index = 99) in items\">{{ item }}{{ index }}</div>"
+  },
+  {
+   "id": "up.transforms.vFor.32",
+   "source": "<div v-for=\"(item: string, index: number) in items\" :key=\"index\">{{ item }}</div>"
+  },
+  {
+   "id": "up.transforms.vFor.33",
+   "source": "<div v-for=\"(item, key, index: number = 99) in items\" :key=\"index\">{{ item }}</div>"
+  },
+  {
+   "id": "up.transforms.vFor.34",
+   "source": "<div v-for=\"({ id }: { id: number }, index: number) in items\" :key=\"index\">{{ id }}</div>"
+  },
+  {
+   "id": "up.transforms.vFor.35",
+   "source": "<div v-for=\"(item: Record<string, number>, index: number) in items\">{{ index }}</div>"
+  },
+  {
+   "id": "up.transforms.vFor.36",
+   "source": "<div v-for=\"setProp in items\" :id=\"setProp.id\" :title=\"setProp.title\" />"
+  },
+  {
+   "id": "up.transforms.vFor.37",
+   "source": "<div v-for=\"(row, item) in rows\">\n        <span v-for=\"(item = row.fallback, key, index = item.id) in row.items\" :key=\"index\" />\n      </div>"
+  },
+  {
+   "id": "up.transforms.vFor.38",
+   "source": "<div v-for=\"(item = fallback, i) in items\" :key=\"i\" />"
+  },
+  {
+   "id": "up.transforms.vFor.39",
+   "source": "<div v-for=\"(value: string, , index: number) in obj\">{{ value }}:{{ index }}</div>"
+  },
+  {
+   "id": "up.transforms.vFor.40",
+   "source": "<a v-for=\"({ label, title = label, [label]: extra }) in items\" :title>{{ extra }}</a>"
+  },
+  {
+   "id": "up.transforms.vHtml.0",
+   "source": "<div v-html=\"code\"></div>"
+  },
+  {
+   "id": "up.transforms.vHtml.1",
+   "source": "<component :is=\"Comp\" v-html=\"foo\"/>"
+  },
+  {
+   "id": "up.transforms.vHtml.2",
+   "source": "<Comp v-html=\"foo\"/>"
+  },
+  {
+   "id": "up.transforms.vHtml.3",
+   "source": "<div v-html=\"test\">hello</div>"
+  },
+  {
+   "id": "up.transforms.vHtml.4",
+   "source": "<div v-html=\"test\">{{ msg }}</div>"
+  },
+  {
+   "id": "up.transforms.vHtml.5",
+   "source": "<div v-html></div>"
+  },
+  {
+   "id": "up.transforms.vIf.0",
+   "source": "<div v-if=\"ok\">{{msg}}</div>"
+  },
+  {
+   "id": "up.transforms.vIf.1",
+   "source": "<div v-if=\"ok\">{{ msg }}</div>"
+  },
+  {
+   "id": "up.transforms.vIf.2",
+   "source": "<div v-if=\"ok\">static</div>"
+  },
+  {
+   "id": "up.transforms.vIf.3",
+   "source": "<template v-if=\"ok\"><div>one</div><p>two</p></template>"
+  },
+  {
+   "id": "up.transforms.vIf.4",
+   "source": "<div v-if=\"ok\" v-once />"
+  },
+  {
+   "id": "up.transforms.vIf.5",
+   "source": "<div v-if=\"foo\">foo</div><div v-else>bar</div>"
+  },
+  {
+   "id": "up.transforms.vIf.6",
+   "source": "<div v-if=\"foo\">foo</div><div v-else-if=\"bar\">bar</div><div v-if=\"baz\">baz</div>"
+  },
+  {
+   "id": "up.transforms.vIf.7",
+   "source": "<div v-if=\"foo\">foo</div><div v-else-if=\"bar\">bar</div><div>baz</div>"
+  },
+  {
+   "id": "up.transforms.vIf.8",
+   "source": "<template v-if=\"ok\"><div/>hello<p v-text=\"msg\"/></template>"
+  },
+  {
+   "id": "up.transforms.vIf.9",
+   "source": "<template v-if=\"foo\">hello</template>"
+  },
+  {
+   "id": "up.transforms.vIf.10",
+   "source": "<template v-if=\"foo\"><div>hi</div></template>"
+  },
+  {
+   "id": "up.transforms.vIf.11",
+   "source": "<template v-if=\"foo\"><div>hi</div><div>ho</div></template>"
+  },
+  {
+   "id": "up.transforms.vIf.12",
+   "source": "<template v-if=\"foo\"><div v-for=\"i in list\"/></template>"
+  },
+  {
+   "id": "up.transforms.vIf.13",
+   "source": "<template v-if=\"arr.length > 0\" v-for=\"(item, index) in arr\" :key=\"index\">\n        <div>item: {{ item }}</div>\n      </template>"
+  },
+  {
+   "id": "up.transforms.vIf.14",
+   "source": "<template v-for=\"item in list\">\n        <span v-if=\"item.ok\">\n          <span>{{ item.text }}</span>\n        </span>\n      </template>"
+  },
+  {
+   "id": "up.transforms.vIf.15",
+   "source": "<template v-if=\"foo\"><div>hi</div><div>ho</div></template><div v-else/>"
+  },
+  {
+   "id": "up.transforms.vIf.16",
+   "source": "<div v-if=\"ok\">hello</div><div v-if=\"ok\">hello</div>"
+  },
+  {
+   "id": "up.transforms.vIf.17",
+   "source": "<div v-if=\"ok\" v-once>{{ msg }}</div>"
+  },
+  {
+   "id": "up.transforms.vIf.18",
+   "source": "<Component v-if=\"ok\"></Component>"
+  },
+  {
+   "id": "up.transforms.vIf.19",
+   "source": "<div v-if=\"ok\"/><p v-else/>"
+  },
+  {
+   "id": "up.transforms.vIf.20",
+   "source": "<div v-if=\"ok\"/><p v-else-if=\"orNot\"/>"
+  },
+  {
+   "id": "up.transforms.vIf.21",
+   "source": "<div v-if=\"ok\"/><p v-else-if=\"orNot\"/><p v-else-if=\"false\"/><template v-else>fine</template>"
+  },
+  {
+   "id": "up.transforms.vIf.22",
+   "source": "<div>\n        <span v-if=\"foo\">foo</span>\n        <span v-if=\"bar\">bar</span>\n        <span v-else>baz</span>\n      </div>"
+  },
+  {
+   "id": "up.transforms.vIf.23",
+   "source": "\n      <div v-if=\"ok\"/>\n      <!--foo-->\n      <p v-else-if=\"orNot\"/>\n      <!--bar-->\n      <template v-else>fine</template>\n      <div v-text=\"text\" />\n    "
+  },
+  {
+   "id": "up.transforms.vIf.24",
+   "source": "<button v-on=\"{ click: clickEvent }\" v-if=\"true\">w/ v-if</button>"
+  },
+  {
+   "id": "up.transforms.vIf.25",
+   "source": "<div v-else/>"
+  },
+  {
+   "id": "up.transforms.vIf.26",
+   "source": "<div/><div v-else/>"
+  },
+  {
+   "id": "up.transforms.vIf.27",
+   "source": "<div/>foo<div v-else/>"
+  },
+  {
+   "id": "up.transforms.vIf.28",
+   "source": "<div v-if=\"bar\"/>foo<div v-else/>"
+  },
+  {
+   "id": "up.transforms.vIf.29",
+   "source": "<div v-if=\"bar\"/> <div v-else/>"
+  },
+  {
+   "id": "up.transforms.vIf.30",
+   "source": "<div v-else-if=\"foo\"/>"
+  },
+  {
+   "id": "up.transforms.vIf.31",
+   "source": "<div/><div v-else-if=\"foo\"/>"
+  },
+  {
+   "id": "up.transforms.vIf.32",
+   "source": "<div/>foo<div v-else-if=\"foo\"/>"
+  },
+  {
+   "id": "up.transforms.vIf.33",
+   "source": "<div v-if=\"bar\"/>foo<div v-else-if=\"foo\"/>"
+  },
+  {
+   "id": "up.transforms.vIf.34",
+   "source": "<div v-if=\"bar\"/> <div v-else-if=\"foo\"/>"
+  },
+  {
+   "id": "up.transforms.vIf.35",
+   "source": "<div v-if=\"notOk\"/><div v-else/><div v-else-if=\"ok\"/>"
+  },
+  {
+   "id": "up.transforms.vIf.36",
+   "source": "<div v-if=\"false\"/><div v-else/><div v-else/>"
+  },
+  {
+   "id": "up.transforms.vIf.37",
+   "source": "<div><span v-if=\"a\">a</span> <span v-else-if=\"b\">b</span> <span v-else>c</span>|</div>"
+  },
+  {
+   "id": "up.transforms.vIf.38",
+   "source": "<div>\n        <span v-if=\"a\">a</span>\n        <span v-else>b</span>\n      </div>"
+  },
+  {
+   "id": "up.transforms.vModel.0",
+   "source": "<input v-model=\"model\" />"
+  },
+  {
+   "id": "up.transforms.vModel.1",
+   "source": "<input type=\"text\" v-model=\"model\" />"
+  },
+  {
+   "id": "up.transforms.vModel.2",
+   "source": "<input type=\"radio\" v-model=\"model\" />"
+  },
+  {
+   "id": "up.transforms.vModel.3",
+   "source": "<input type=\"checkbox\" v-model=\"model\" />"
+  },
+  {
+   "id": "up.transforms.vModel.4",
+   "source": "<select v-model=\"model\" />"
+  },
+  {
+   "id": "up.transforms.vModel.5",
+   "source": "<textarea v-model=\"model\" />"
+  },
+  {
+   "id": "up.transforms.vModel.6",
+   "source": "<input :type=\"foo\" v-model=\"model\" />"
+  },
+  {
+   "id": "up.transforms.vModel.7",
+   "source": "<input v-bind=\"obj\" v-model=\"model\" />"
+  },
+  {
+   "id": "up.transforms.vModel.8",
+   "source": "<input v-bind:[key]=\"val\" v-model=\"model\" />"
+  },
+  {
+   "id": "up.transforms.vModel.9",
+   "source": "<span v-model=\"model\" />"
+  },
+  {
+   "id": "up.transforms.vModel.10",
+   "source": "<input v-model:value=\"model\" />"
+  },
+  {
+   "id": "up.transforms.vModel.11",
+   "source": "<my-input v-model=\"model\" />"
+  },
+  {
+   "id": "up.transforms.vModel.12",
+   "source": "<input type=\"file\" v-model=\"test\"/>"
+  },
+  {
+   "id": "up.transforms.vModel.13",
+   "source": "<input v-model=\"test\" :value=\"test\" />"
+  },
+  {
+   "id": "up.transforms.vModel.14",
+   "source": "<textarea v-model=\"test\" :value=\"test\"></textarea>"
+  },
+  {
+   "id": "up.transforms.vModel.15",
+   "source": "<input v-model=\"test\" value=\"test\" />"
+  },
+  {
+   "id": "up.transforms.vModel.16",
+   "source": "<input v-model=\"c\" />"
+  },
+  {
+   "id": "up.transforms.vModel.17",
+   "source": "<div v-for=\"item in items\"><input v-model=\"item.name\" /></div>"
+  },
+  {
+   "id": "up.transforms.vModel.18",
+   "source": "<input v-model.number=\"model\" />"
+  },
+  {
+   "id": "up.transforms.vModel.19",
+   "source": "<input v-model.trim=\"model\" />"
+  },
+  {
+   "id": "up.transforms.vModel.20",
+   "source": "<input v-model.lazy=\"model\" />"
+  },
+  {
+   "id": "up.transforms.vModel.21",
+   "source": "<input v-model.foo-bar=\"model\" />"
+  },
+  {
+   "id": "up.transforms.vModel.22",
+   "source": "<input v-model=\"setupRef.child\" /><input v-model=\"setupLet.child\" /><input v-model=\"setupMaybeRef.child\" />"
+  },
+  {
+   "id": "up.transforms.vModel.23",
+   "source": "<Comp v-model=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.vModel.24",
+   "source": "<Comp v-model:bar=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.vModel.25",
+   "source": "<Comp v-model:[arg]=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.vModel.26",
+   "source": "<Comp v-model.trim.bar-baz=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.vModel.27",
+   "source": "<Comp v-bind=\"obj\" v-model.trim=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.vModel.28",
+   "source": "<Comp v-bind=\"{ foo: bar }\" v-model:foo=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.vModel.29",
+   "source": "<Comp v-model:foo=\"foo\" v-bind=\"{ foo: bar }\" />"
+  },
+  {
+   "id": "up.transforms.vModel.30",
+   "source": "<Comp v-model:foo.trim=\"foo\" v-model:bar.number=\"bar\" />"
+  },
+  {
+   "id": "up.transforms.vModel.31",
+   "source": "<Comp v-model:model.trim=\"foo\" />"
+  },
+  {
+   "id": "up.transforms.vModel.32",
+   "source": "<Comp v-model:[foo].trim=\"foo\" v-model:[bar].number=\"bar\" />"
+  },
+  {
+   "id": "up.transforms.vModel.33",
+   "source": "<Comp v-model=\"counter\" @update:modelValue=\"onUpdate\" />"
+  },
+  {
+   "id": "up.transforms.vModel.34",
+   "source": "<input v-model=\"form.a as string\" />\n        <Comp v-model=\"form.b satisfies string\" />\n        <input v-model=\"form!.c\" />\n        <input v-model=\"state!.d\" />"
+  },
+  {
+   "id": "up.transforms.vModel.35",
+   "source": "<input v-model=\"form!.name\" />\n        <Comp v-model=\"form![key] as string\" />\n        <input v-model=\"form\" />"
+  },
+  {
+   "id": "up.transforms.vOn.0",
+   "source": "<div @click=\"handleClick\"></div>"
+  },
+  {
+   "id": "up.transforms.vOn.1",
+   "source": "<a @click.stop=\"handleEvent\"></a>\n        <form @submit.prevent=\"handleEvent\"></form>\n        <a @click.stop.prevent=\"handleEvent\"></a>\n        <div @click.self=\"handleEvent\"></div>\n        <div @click.capture=\"handleEvent\"></div>\n        <a @click.once=\"handleEvent\"></a>\n        <div @scroll.passive=\"handleEvent\"></div>\n        <input @click.right=\"handleEvent\" />\n        <input @click.left=\"handleEvent\" />\n        <input @click.middle=\"handleEvent\" />\n        <input @click.enter.right=\"handleEvent\" />\n        <input @keyup.enter=\"handleEvent\" />\n        <input @keyup.tab=\"handleEvent\" />\n        <input @keyup.delete=\"handleEvent\" />\n        <input @keyup.esc=\"handleEvent\" />\n        <input @keyup.space=\"handleEvent\" />\n        <input @keyup.up=\"handleEvent\" />\n        <input @keyup.down=\"handleEvent\" />\n        <input @keyup.left=\"handleEvent\" />\n        <input @keyup.middle=\"submit\" />\n        <input @keyup.middle.self=\"submit\" />\n        <input @keyup.self.enter=\"handleEvent\" />"
+  },
+  {
+   "id": "up.transforms.vOn.2",
+   "source": "<div v-on:[event]=\"handler\"/>"
+  },
+  {
+   "id": "up.transforms.vOn.3",
+   "source": "<div v-on:[event].capture.once=\"handler\"/>"
+  },
+  {
+   "id": "up.transforms.vOn.4",
+   "source": "<div v-on:[event(foo)]=\"handler\"/>"
+  },
+  {
+   "id": "up.transforms.vOn.5",
+   "source": "<div @click=\"i++\"/>"
+  },
+  {
+   "id": "up.transforms.vOn.6",
+   "source": "<div @click=\"x=y\"/><div @click=\"x++\"/><div @click=\"{ x } = y\"/>"
+  },
+  {
+   "id": "up.transforms.vOn.7",
+   "source": "<div @click=\"foo();bar()\"/>"
+  },
+  {
+   "id": "up.transforms.vOn.8",
+   "source": "<div @click=\"\nfoo();\nbar()\n\"/>"
+  },
+  {
+   "id": "up.transforms.vOn.9",
+   "source": "<div @click=\"foo($event)\"/>"
+  },
+  {
+   "id": "up.transforms.vOn.10",
+   "source": "<div @click=\"foo($event);bar()\"/>"
+  },
+  {
+   "id": "up.transforms.vOn.11",
+   "source": "<div @click=\"$event => foo($event)\"/>"
+  },
+  {
+   "id": "up.transforms.vOn.12",
+   "source": "<div @click=\"(e: any): any => foo(e)\"/>"
+  },
+  {
+   "id": "up.transforms.vOn.13",
+   "source": "<div @click.delegate=\"\n      $event => {\n        foo($event)\n      }\n    \"/>"
+  },
+  {
+   "id": "up.transforms.vOn.14",
+   "source": "<div @click=\"$event => {i++;foo($event)}\"></div>"
+  },
+  {
+   "id": "up.transforms.vOn.15",
+   "source": "<div @click=\"a['b' + c]\"/>"
+  },
+  {
+   "id": "up.transforms.vOn.16",
+   "source": "<div @click=\"e => foo(e)\"/>"
+  },
+  {
+   "id": "up.transforms.vOn.17",
+   "source": "<div v-on:click />"
+  },
+  {
+   "id": "up.transforms.vOn.18",
+   "source": "<div v-on:click.prevent />"
+  },
+  {
+   "id": "up.transforms.vOn.19",
+   "source": "<div @click.stop.prevent.capture.once=\"test\"/>"
+  },
+  {
+   "id": "up.transforms.vOn.20",
+   "source": "<div @click.stop=\"test\" @keyup.enter=\"test\" />"
+  },
+  {
+   "id": "up.transforms.vOn.21",
+   "source": "<div @keydown.stop.capture.ctrl.a=\"test\"/>"
+  },
+  {
+   "id": "up.transforms.vOn.22",
+   "source": "<div @keyup.exact=\"test\"/>"
+  },
+  {
+   "id": "up.transforms.vOn.23",
+   "source": "<div @keyup.left=\"test\"/>"
+  },
+  {
+   "id": "up.transforms.vOn.24",
+   "source": "<div @[e].left=\"test\"/>"
+  },
+  {
+   "id": "up.transforms.vOn.25",
+   "source": "<div @click.right=\"test\"/>"
+  },
+  {
+   "id": "up.transforms.vOn.26",
+   "source": "<div @[event].right=\"test\"/>"
+  },
+  {
+   "id": "up.transforms.vOn.27",
+   "source": "<div @click.middle=\"test\"/>"
+  },
+  {
+   "id": "up.transforms.vOn.28",
+   "source": "<div @[event].middle=\"test\"/>"
+  },
+  {
+   "id": "up.transforms.vOn.29",
+   "source": "<div @click.middle.right=\"test\"/><div @click.right.middle=\"test\"/>"
+  },
+  {
+   "id": "up.transforms.vOn.30",
+   "source": "<div @[event].middle.right=\"test\"/><div @[event].right.middle=\"test\"/>"
+  },
+  {
+   "id": "up.transforms.vOn.31",
+   "source": "<div @click=\"foo.bar\"/>"
+  },
+  {
+   "id": "up.transforms.vOn.32",
+   "source": "<div @click=\"test\"/>"
+  },
+  {
+   "id": "up.transforms.vOn.33",
+   "source": "<input @keyup.delegate=\"test\"/>"
+  },
+  {
+   "id": "up.transforms.vOn.34",
+   "source": "<div @scroll.delegate=\"test\"/>"
+  },
+  {
+   "id": "up.transforms.vOn.35",
+   "source": "<div @[event].delegate=\"test\"/>"
+  },
+  {
+   "id": "up.transforms.vOn.36",
+   "source": "<div @click.delegate.capture=\"test\"/><div @click.delegate.stop=\"test\"/>"
+  },
+  {
+   "id": "up.transforms.vOn.37",
+   "source": "<div @click.stop=\"test\" /><div @click.delegate.foo=\"a\" @click.delegate.bar=\"b\" />"
+  },
+  {
+   "id": "up.transforms.vOn.38",
+   "source": "<input @keyup.delegate.self.enter=\"test\" />"
+  },
+  {
+   "id": "up.transforms.vOn.39",
+   "source": "<input @keyup.delegate.enter=\"foo\" /><input @[event].enter=\"bar\" />"
+  },
+  {
+   "id": "up.transforms.vOn.40",
+   "source": "<div @click.delegate=\"test\" @click.stop=\"test\" />"
+  },
+  {
+   "id": "up.transforms.vOn.41",
+   "source": "<div @click.right.delegate=\"test\" @contextmenu.stop=\"test\" />"
+  },
+  {
+   "id": "up.transforms.vOn.42",
+   "source": "<div @click=\"foo[handleClick] as any\"></div>"
+  },
+  {
+   "id": "up.transforms.vOn.43",
+   "source": "<Foo @update:model=\"() => {}\" @update-model=\"() => {}\" />"
+  },
+  {
+   "id": "up.transforms.vOn.44",
+   "source": "<Comp @name-click=\"handleClick\" />"
+  },
+  {
+   "id": "up.transforms.vOn.45",
+   "source": "<Comp @click.delegate=\"handleClick\" />"
+  },
+  {
+   "id": "up.transforms.vOn.46",
+   "source": "<div @click=\"async () => { x = await bar() }\"/>"
+  },
+  {
+   "id": "up.transforms.vOnce.0",
+   "source": "<div v-once>\n        {{ msg }}\n        <span :class=\"clz\" />\n      </div>"
+  },
+  {
+   "id": "up.transforms.vOnce.1",
+   "source": "<div :id=\"foo\" v-once />"
+  },
+  {
+   "id": "up.transforms.vOnce.2",
+   "source": "<div><div :id=\"foo\" v-once /></div>"
+  },
+  {
+   "id": "up.transforms.vOnce.3",
+   "source": "<div><Comp :id=\"foo\" v-once /></div>"
+  },
+  {
+   "id": "up.transforms.vOnce.4",
+   "source": "<Comp v-once :id=\"foo\"><template #default=\"{ n }\">{{ n }}{{ msg }}</template></Comp>"
+  },
+  {
+   "id": "up.transforms.vOnce.5",
+   "source": "<div><slot v-once /></div>"
+  },
+  {
+   "id": "up.transforms.vOnce.6",
+   "source": "<Comp><slot v-once /></Comp>"
+  },
+  {
+   "id": "up.transforms.vOnce.7",
+   "source": "<div v-once><div v-once/></div>"
+  },
+  {
+   "id": "up.transforms.vOnce.8",
+   "source": "<div v-if=\"expr\" v-once />"
+  },
+  {
+   "id": "up.transforms.vOnce.9",
+   "source": "<div v-if=\"expr\" v-once /><p v-else/>"
+  },
+  {
+   "id": "up.transforms.vOnce.10",
+   "source": "<div v-for=\"i in list\" v-once />"
+  },
+  {
+   "id": "up.transforms.vOnce.11",
+   "source": "<div v-show=\"show\" v-once />"
+  },
+  {
+   "id": "up.transforms.vOnce.12",
+   "source": "<input v-model=\"text\" v-once />"
+  },
+  {
+   "id": "up.transforms.vOnce.13",
+   "source": "<div v-dir=\"val\" v-once />"
+  },
+  {
+   "id": "up.transforms.vOnce.14",
+   "source": "<div v-show=\"show\" v-dir=\"val\" /><div v-once />"
+  },
+  {
+   "id": "up.transforms.vOnce.15",
+   "source": "<div :key=\"foo\" v-once />"
+  },
+  {
+   "id": "up.transforms.vShow.0",
+   "source": "<div v-show=\"foo\"/>"
+  },
+  {
+   "id": "up.transforms.vShow.1",
+   "source": "<div v-show/>"
+  },
+  {
+   "id": "up.transforms.vSlot.0",
+   "source": "<Comp><div/></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.1",
+   "source": "<Comp><template # v-if=\"show\"></template></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.2",
+   "source": "<Comp><template # v-for=\"item in list\">{{ item }}</template></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.3",
+   "source": "<Comp v-slot=\"{ foo }\">{{ foo + bar }}</Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.4",
+   "source": "<Comp v-slot:named=\"{ foo }\">{{ foo + bar }}</Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.5",
+   "source": "<Comp v-slot:[named]=\"{ foo }\">{{ foo + bar }}</Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.6",
+   "source": "\n      <Foo>\n        <template #header></template>\n        <Bar />\n      </Foo>\n    "
+  },
+  {
+   "id": "up.transforms.vSlot.7",
+   "source": "<Comp><template #default=\"{ msg: msg1 }\">{{ msg1 }}</template></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.8",
+   "source": "<Comp><template #default=\"{ foo: { bar: baz } }\">{{ baz }}</template></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.9",
+   "source": "<Comp><template #default=\"{ [key]: val }\">{{ val }}</template></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.10",
+   "source": "<Comp><template #default=\"{ foo, ...rest }\">{{ rest.bar }}</template></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.11",
+   "source": "<Comp><template #default=\"{ arr: [first, ...rest] }\">{{ rest[0] }}</template></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.12",
+   "source": "<Comp><template #default=\"{ foo = 1 }\">{{ foo }}</template></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.13",
+   "source": "<Comp><template #default=\"{ foo: [bar = 1], baz: { qux = 2 } }\">{{ bar + qux }}</template></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.14",
+   "source": "<Comp><template #default=\"{ foo, [key]: val, ...rest }\">{{ foo + rest.other }}</template></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.15",
+   "source": "<Comp>\n        <template #one>foo</template>bar<span/>\n      </Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.16",
+   "source": "<Comp>\n        <template #default=\"{ foo }\">\n          <Inner v-slot=\"{ bar }\">\n            {{ foo + bar + baz }}\n          </Inner>\n          {{ foo + bar + baz }}\n        </template>\n      </Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.17",
+   "source": "<Comp>\n        <template #[name]>foo</template>\n      </Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.18",
+   "source": "<Comp>\n        <template v-for=\"item in list\" #[item]=\"{ bar }\">{{ bar }}</template>\n      </Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.19",
+   "source": "<Comp>\n        <template v-for=\"item in list\" :key=\"item.id\" #[item.name]>{{ item.label }}</template>\n      </Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.20",
+   "source": "<Comp>\n        <template v-for=\"(,,index) in list\" #[index]>foo</template>\n      </Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.21",
+   "source": "<Comp>\n        <template v-if=\"condition\" #condition>condition slot</template>\n        <template v-else-if=\"anotherCondition\" #condition=\"{ foo, bar }\">another condition</template>\n        <template v-else #condition>else condition</template>\n      </Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.22",
+   "source": "<div>\n        <slot name=\"foo\"></slot>\n        <Foo v-if=\"true\"></Foo>\n        <Bar v-else />\n      </div>"
+  },
+  {
+   "id": "up.transforms.vSlot.23",
+   "source": "<Comp><template #nav-bar-title-before></template></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.24",
+   "source": "<Comp><template #default><!--foo--></template></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.25",
+   "source": "<A><B/></A>"
+  },
+  {
+   "id": "up.transforms.vSlot.26",
+   "source": "<Comp><span/><div v-if=\"show\"/></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.27",
+   "source": "<Comp><Foo/><component :is=\"view\"/></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.28",
+   "source": "<Comp><span v-if=\"show\"/></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.29",
+   "source": "<Comp><span v-for=\"item in list\"/></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.30",
+   "source": "<Comp><div v-if=\"a\"/><p v-if=\"b\"/></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.31",
+   "source": "<Comp><div v-for=\"item in list\"/><p v-if=\"ok\"/></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.32",
+   "source": "<Comp><!--foo--><div v-if=\"show\"/></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.33",
+   "source": "<Comp><component :is=\"view\"/></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.34",
+   "source": "<Comp><div><span v-if=\"show\"/></div></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.35",
+   "source": "<slot><span v-if=\"show\"/></slot>"
+  },
+  {
+   "id": "up.transforms.vSlot.36",
+   "source": "<Comp><slot><span v-if=\"show\"/></slot></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.37",
+   "source": "<Comp><slot/></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.38",
+   "source": "<Comp><slot/><span/></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.39",
+   "source": "<Comp><slot name=\"a\"/><slot name=\"b\"/></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.40",
+   "source": "<Comp><slot/><span v-if=\"ok\"/></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.41",
+   "source": "<Comp><slot v-once name=\"a\"/><slot name=\"b\"/></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.42",
+   "source": "<Comp><slot><slot/><span/></slot></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.43",
+   "source": "<Comp><slot :key=\"key\" /></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.44",
+   "source": "<Comp><template :key=\"key\"><slot /><span /></template></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.45",
+   "source": "<Comp><slot v-if=\"ok\"/></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.46",
+   "source": "<Comp><slot v-for=\"a in b\"/></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.47",
+   "source": "<Comp><template #default><slot/></template></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.48",
+   "source": "<Comp><Comp><slot/></Comp></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.49",
+   "source": "<Comp><!--foo--></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.50",
+   "source": "<Comp><template #one>foo</template><!--bar--><span/></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.51",
+   "source": "\n        <Comp>\n          <template #default>\n            <div>static content</div>\n          </template>\n        </Comp>\n      "
+  },
+  {
+   "id": "up.transforms.vSlot.52",
+   "source": "\n        <Comp>\n          <template #default>\n            <ChildComp />\n          </template>\n        </Comp>\n      "
+  },
+  {
+   "id": "up.transforms.vSlot.53",
+   "source": "\n        <Comp>\n          <template #default>\n            <slot />\n          </template>\n        </Comp>\n      "
+  },
+  {
+   "id": "up.transforms.vSlot.54",
+   "source": "\n        <Comp>\n          <template v-for=\"(_, name) in slots\" #[name]>\n            <slot :name=\"name\" />\n          </template>\n        </Comp>\n      "
+  },
+  {
+   "id": "up.transforms.vSlot.55",
+   "source": "\n        <Comp>\n          <template v-for=\"(item: string, index: number) in list\" #[item]>{{ index }}</template>\n        </Comp>\n      "
+  },
+  {
+   "id": "up.transforms.vSlot.56",
+   "source": "\n        <Comp>\n          <template v-for=\"(item, key, index = 99) in list\" #[item]>{{ index }}</template>\n        </Comp>\n      "
+  },
+  {
+   "id": "up.transforms.vSlot.57",
+   "source": "\n        <Comp>\n          <template #default>\n            <div v-if=\"show\">\n              <ChildComp />\n            </div>\n          </template>\n        </Comp>\n      "
+  },
+  {
+   "id": "up.transforms.vSlot.58",
+   "source": "\n        <Comp>\n          <template #default>\n            <div v-for=\"item in items\">\n              <ChildComp />\n            </div>\n          </template>\n        </Comp>\n      "
+  },
+  {
+   "id": "up.transforms.vSlot.59",
+   "source": "\n        <Comp>\n          <template #default>\n            <div v-if=\"a\">\n              <span v-if=\"b\">\n                <ChildComp />\n              </span>\n            </div>\n          </template>\n        </Comp>\n      "
+  },
+  {
+   "id": "up.transforms.vSlot.60",
+   "source": "\n        <Comp>\n          <template #default>\n            {{ message }}\n          </template>\n        </Comp>\n      "
+  },
+  {
+   "id": "up.transforms.vSlot.61",
+   "source": "\n        <Comp>\n          <template #default>\n            <div v-if=\"show\">content</div>\n            <span v-else>fallback</span>\n          </template>\n        </Comp>\n      "
+  },
+  {
+   "id": "up.transforms.vSlot.62",
+   "source": "\n        <Comp>\n          <template #default>\n            <div v-for=\"item in items\">{{ item }}</div>\n          </template>\n        </Comp>\n      "
+  },
+  {
+   "id": "up.transforms.vSlot.63",
+   "source": "\n        <Comp>\n          <template #default>\n            <span v-for=\"item in items\">{{ item }}</span>\n            <i>tail</i>\n          </template>\n        </Comp>\n      "
+  },
+  {
+   "id": "up.transforms.vSlot.64",
+   "source": "\n        <Comp>\n          <template #default>\n            <my-element></my-element>\n          </template>\n        </Comp>\n      "
+  },
+  {
+   "id": "up.transforms.vSlot.65",
+   "source": "\n        <Comp>\n          <template #default>\n            <div v-if=\"show\">\n              <my-element></my-element>\n            </div>\n          </template>\n        </Comp>\n      "
+  },
+  {
+   "id": "up.transforms.vSlot.66",
+   "source": "\n      <Comp v-for=\"row in rows\">\n        <template\n          v-for=\"(item = row.fallback, key, index = item.id) in row.items\"\n          #[item.name]\n          :key=\"index\"\n        >{{ item.name }}</template>\n      </Comp>\n    "
+  },
+  {
+   "id": "up.transforms.vSlot.67",
+   "source": "<Comp><template v-if=\"ok\" #default>{{ s }}</template></Comp>\n       <Comp><template #[name]>{{ s1 }}</template></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.68",
+   "source": "<Comp><template #a>x</template><template>y</template></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.69",
+   "source": "<Comp><template v-if=\"ok\" #a>x</template><template>y</template></Comp>"
+  },
+  {
+   "id": "up.transforms.vSlot.70",
+   "source": "<Comp v-slot=\"{ label, title = label }\">{{ title }}</Comp>"
+  },
+  {
+   "id": "up.transforms.vText.0",
+   "source": "<div v-text=\"str\"></div>"
+  },
+  {
+   "id": "up.transforms.vText.1",
+   "source": "<component :is=\"Comp\" v-text=\"foo\"/>"
+  },
+  {
+   "id": "up.transforms.vText.2",
+   "source": "<Comp v-text=\"foo\"/>"
+  },
+  {
+   "id": "up.transforms.vText.3",
+   "source": "<Comp v-text=\"1\"/>"
+  },
+  {
+   "id": "up.transforms.vText.4",
+   "source": "<Comp v-text=\"undefined\"/>"
+  },
+  {
+   "id": "up.transforms.vText.5",
+   "source": "<Comp v-text=\"() => 1\"/>"
+  },
+  {
+   "id": "up.transforms.vText.6",
+   "source": "<Comp v-text=\"() => foo\"/>"
+  },
+  {
+   "id": "up.transforms.vText.7",
+   "source": "<Comp v-text=\"foo + 1\"/>"
+  },
+  {
+   "id": "up.transforms.vText.8",
+   "source": "<div v-text=\"'<b>foo</b>'\"/>"
+  },
+  {
+   "id": "up.transforms.vText.9",
+   "source": "<template v-text=\"foo\"></template>"
+  },
+  {
+   "id": "up.transforms.vText.10",
+   "source": "<div v-text=\"test\">hello</div>"
+  },
+  {
+   "id": "up.transforms.vText.11",
+   "source": "<div v-text></div>"
+  },
+  {
+   "id": "up.transforms.vText.12",
+   "source": "<Comp v-text=\"isNaN\"/>"
+  }
+ ]
+}

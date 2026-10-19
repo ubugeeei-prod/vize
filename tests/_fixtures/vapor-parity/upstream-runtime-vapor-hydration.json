@@ -1,0 +1,181 @@
+{
+ "provenance": "Single-component templates passed to testHydration()/mountWithHydration() in vuejs/core v3.6.0-rc.11 packages/runtime-vapor/__tests__/hydration, deduplicated (tests/tooling/support/vapor-parity/extract.ts).",
+ "cases": [
+  {
+   "id": "hy.basic.0",
+   "source": "{{ data }}"
+  },
+  {
+   "id": "hy.basic.1",
+   "source": "{{ data }}{{ data }}"
+  },
+  {
+   "id": "hy.basic.2",
+   "source": "<span/>{{ data }}{{ data }}<span/>"
+  },
+  {
+   "id": "hy.basic.3",
+   "source": "{{ data }}A{{ data }}B{{ data }}"
+  },
+  {
+   "id": "hy.basic.4",
+   "source": "<span/>{{ data }}A{{ data }}B{{ data }}<span/>"
+  },
+  {
+   "id": "hy.basic.5",
+   "source": "<div>{{ data.txt }}</div>"
+  },
+  {
+   "id": "hy.basic.6",
+   "source": "{{ data.txt }}<span>s</span>"
+  },
+  {
+   "id": "hy.basic.7",
+   "source": "<!---->"
+  },
+  {
+   "id": "hy.basic.8",
+   "source": "A<span>{{ data }}</span>{{ data }}"
+  },
+  {
+   "id": "hy.basic.9",
+   "source": "<div/>"
+  },
+  {
+   "id": "hy.basic.10",
+   "source": "<div :class=\"data\">{{ data }}</div>"
+  },
+  {
+   "id": "hy.basic.11",
+   "source": "<div>\n          <span>{{ data }}</span>\n          <span :class=\"data\" @click=\"data = 'bar'\"/>\n        </div>"
+  },
+  {
+   "id": "hy.basic.12",
+   "source": "<div><my-el><span>{{ data }}</span></my-el></div>"
+  },
+  {
+   "id": "hy.basic.13",
+   "source": "<div><my-el><span>{{ data }}</span><i>{{ data }}</i></my-el><b>{{ data }}</b></div>"
+  },
+  {
+   "id": "hy.basic.14",
+   "source": "<my-el>{{ data }}</my-el>"
+  },
+  {
+   "id": "hy.basic.15",
+   "source": "<my-el><b>head</b>{{ data }}</my-el>"
+  },
+  {
+   "id": "hy.basic.16",
+   "source": "<div><my-el v-for=\"i in 2\"><span>{{ data }}</span></my-el></div>"
+  },
+  {
+   "id": "hy.basic.17",
+   "source": "<my-el><span>{{ data }}</span></my-el><div>{{ data }}</div>"
+  },
+  {
+   "id": "hy.basic.18",
+   "source": "<my-el>{{ data }}<b>tail</b></my-el>"
+  },
+  {
+   "id": "hy.basic.19",
+   "source": "<my-el><span v-for=\"i in 2\">{{ i }}</span>{{ data }}</my-el>"
+  },
+  {
+   "id": "hy.basic.20",
+   "source": "<div><input type=\"checkbox\" v-model=\"data\" true-value=\"yes\" false-value=\"no\"></div>"
+  },
+  {
+   "id": "hy.basic.21",
+   "source": "<div><input type=\"checkbox\" v-model=\"data\" :true-value=\"1\" :false-value=\"0\"></div>"
+  },
+  {
+   "id": "hy.basic.22",
+   "source": "<div><select v-model=\"data\"><option :value=\"1\">a</option><option :value=\"2\">b</option></select></div>"
+  },
+  {
+   "id": "hy.basic.23",
+   "source": "<div><select multiple v-model=\"data\"><option :value=\"1\">a</option><option :value=\"2\">b</option></select></div>"
+  },
+  {
+   "id": "hy.basic.24",
+   "source": "<component :is=\"'select'\" selectedIndex=\"1\"><option>a</option><option>b</option></component>"
+  },
+  {
+   "id": "hy.basic.25",
+   "source": "<div><input type=\"checkbox\" :checked=\"data\"></div>"
+  },
+  {
+   "id": "hy.for.0",
+   "source": "<span v-for=\"item in data\" :key=\"item\">{{ item }}</span>"
+  },
+  {
+   "id": "hy.for.1",
+   "source": "<span v-for=\"(item: string, index: number) in data\">{{ item }}{{ index }}</span>"
+  },
+  {
+   "id": "hy.for.2",
+   "source": "<div>\n            <span/>\n            <span v-for=\"item in data\" :key=\"item\">{{ item }}</span>\n            <span/>\n          </div>"
+  },
+  {
+   "id": "hy.for.3",
+   "source": "<div>\n            <span/>\n            <span v-for=\"item in data\" :key=\"item\">{{ item }}</span>\n            <span v-for=\"item in data\" :key=\"item\">{{ item }}</span>\n            <span/>\n          </div>"
+  },
+  {
+   "id": "hy.for.4",
+   "source": "<p><template v-for=\"l in data.lines\" :key=\"l.id\">{{ l.v }}<br></template></p>"
+  },
+  {
+   "id": "hy.if.0",
+   "source": "<div v-if=\"data\">foo</div>"
+  },
+  {
+   "id": "hy.if.1",
+   "source": "<div v-if=\"data === 'a'\">foo</div>\n          <div v-else-if=\"data === 'b'\">bar</div>\n          <div v-else>baz</div>"
+  },
+  {
+   "id": "hy.if.2",
+   "source": "<div v-if=\"data.outer\">\n            <span>outer</span>\n            <div v-if=\"data.inner\">inner</div>\n          </div>"
+  },
+  {
+   "id": "hy.if.3",
+   "source": "<div>\n            <template v-if=\"data.show\">{{ data.txt }}</template>\n            <span>after</span>\n          </div>"
+  },
+  {
+   "id": "hy.if.4",
+   "source": "<div><template v-if=\"data.show\">{{ data.txt }}</template>tail</div>"
+  },
+  {
+   "id": "hy.if.5",
+   "source": "<div>\n            <template v-if=\"data.price > 0\">{{ data.price }}</template>\n            <template v-else />\n            <span>after</span>\n          </div>"
+  },
+  {
+   "id": "hy.if.6",
+   "source": "<div>\n            <template v-for=\"id in data.items\">\n              <template v-if=\"data.show\" v-once><i>first</i><b>second</b></template>\n            </template>\n            <span>after</span>\n          </div>"
+  },
+  {
+   "id": "hy.transition.0",
+   "source": "<transition appear>\n            <div>foo</div>\n          </transition>"
+  },
+  {
+   "id": "hy.transition.1",
+   "source": "<transition appear>\n            <div class=\"foo\">foo</div>\n          </transition>"
+  },
+  {
+   "id": "hy.transition.2",
+   "source": "<transition appear>\n            <slot v-if=\"data\"></slot>\n            <span v-else>foo</span>\n          </transition>"
+  },
+  {
+   "id": "hy.transition.3",
+   "source": "<transition appear>\n            <div v-if=\"data\">foo</div>\n          </transition>"
+  },
+  {
+   "id": "hy.transition.4",
+   "source": "<transition appear>\n            <div v-show=\"data\">foo</div>\n          </transition>"
+  },
+  {
+   "id": "hy.transition.5",
+   "source": "<Transition :css=\"false\">\n            <div v-if=\"data\">foo</div>\n          </Transition>"
+  }
+ ]
+}

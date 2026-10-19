@@ -1,0 +1,1361 @@
+{
+ "provenance": "Hand-written Vapor parity corpus (#8859): namespaces, fallthrough, slot props, event handlers, directives.",
+ "cases": [
+  {
+   "id": "ns-000",
+   "source": "<svg><circle v-if=\"ok\" r=\"1\"/></svg>"
+  },
+  {
+   "id": "ns-001",
+   "source": "<svg><circle v-if=\"ok\" r=\"1\"/><rect v-else width=\"1\"/></svg>"
+  },
+  {
+   "id": "ns-002",
+   "source": "<svg :class=\"c\" :style=\"s\"><path :d=\"d\"/></svg>"
+  },
+  {
+   "id": "ns-003",
+   "source": "<svg><g v-for=\"i in list\" :key=\"i\"><text>{{ i }}</text></g></svg>"
+  },
+  {
+   "id": "ns-004",
+   "source": "<svg><foreignObject><div v-if=\"ok\">x</div></foreignObject></svg>"
+  },
+  {
+   "id": "ns-005",
+   "source": "<svg><foreignObject><div :class=\"c\">x</div></foreignObject></svg>"
+  },
+  {
+   "id": "ns-006",
+   "source": "<math><mi v-if=\"a\">x</mi></math>"
+  },
+  {
+   "id": "ns-007",
+   "source": "<math><mrow v-for=\"i in l\"><mi>{{ i }}</mi></mrow></math>"
+  },
+  {
+   "id": "ns-008",
+   "source": "<svg><template v-if=\"ok\"><circle/><rect/></template></svg>"
+  },
+  {
+   "id": "ns-009",
+   "source": "<svg><component :is=\"tag\"/></svg>"
+  },
+  {
+   "id": "ns-010",
+   "source": "<svg><use :href=\"x\" :xlink:href=\"y\"/></svg>"
+  },
+  {
+   "id": "ns-011",
+   "source": "<svg viewBox=\"0 0 1 1\" :width=\"w\"><title>{{ t }}</title></svg>"
+  },
+  {
+   "id": "ns-012",
+   "source": "<svg><text v-text=\"t\"/></svg>"
+  },
+  {
+   "id": "ns-013",
+   "source": "<svg><g v-html=\"h\"/></svg>"
+  },
+  {
+   "id": "ns-014",
+   "source": "<svg><slot/></svg>"
+  },
+  {
+   "id": "ns-015",
+   "source": "<svg><slot name=\"icon\"><circle/></slot></svg>"
+  },
+  {
+   "id": "ns-016",
+   "source": "<div><svg v-if=\"a\"><circle :r=\"r\"/></svg><math v-else><mi>{{ x }}</mi></math></div>"
+  },
+  {
+   "id": "ns-017",
+   "source": "<svg><g><g><path v-if=\"deep\" :d=\"d\"/></g></g></svg>"
+  },
+  {
+   "id": "ns-018",
+   "source": "<svg><a :href=\"h\"><text>{{ t }}</text></a></svg>"
+  },
+  {
+   "id": "ns-019",
+   "source": "<svg><style>.a{}</style><circle :class=\"c\"/></svg>"
+  },
+  {
+   "id": "ns-020",
+   "source": "<svg><Comp/></svg>"
+  },
+  {
+   "id": "ns-021",
+   "source": "<svg><Comp><circle v-if=\"a\"/></Comp></svg>"
+  },
+  {
+   "id": "ns-022",
+   "source": "<circle v-if=\"ok\"/>"
+  },
+  {
+   "id": "ns-023",
+   "source": "<g><path :d=\"d\"/></g>"
+  },
+  {
+   "id": "ns-024",
+   "source": "<svg><desc><p v-if=\"a\">x</p></desc></svg>"
+  },
+  {
+   "id": "ns-025",
+   "source": "<svg><title><b v-if=\"a\">x</b></title></svg>"
+  },
+  {
+   "id": "ns-026",
+   "source": "<math><annotation-xml><div v-if=\"a\">x</div></annotation-xml></math>"
+  },
+  {
+   "id": "ns-027",
+   "source": "<svg><circle :cx=\"x\" :cy.attr=\"y\" :r.prop=\"r\"/></svg>"
+  },
+  {
+   "id": "ns-028",
+   "source": "<svg><circle v-bind=\"attrs\"/></svg>"
+  },
+  {
+   "id": "ns-029",
+   "source": "<svg @click=\"go\"><circle @mouseenter=\"go\"/></svg>"
+  },
+  {
+   "id": "ns-030",
+   "source": "<svg><image :href=\"src\" v-show=\"vis\"/></svg>"
+  },
+  {
+   "id": "ns-031",
+   "source": "<svg><textPath v-for=\"(p, i) in ps\" :key=\"i\" :startOffset=\"p\"/></svg>"
+  },
+  {
+   "id": "ns-032",
+   "source": "<svg><linearGradient :id=\"id\"><stop v-for=\"s in stops\" :offset=\"s\"/></linearGradient></svg>"
+  },
+  {
+   "id": "ns-033",
+   "source": "<svg><g v-if=\"a\"><g v-if=\"b\"><circle/></g></g></svg>"
+  },
+  {
+   "id": "ns-034",
+   "source": "<div v-if=\"a\"><svg><circle/></svg></div><svg v-else><rect/></svg>"
+  },
+  {
+   "id": "fall-000",
+   "source": "<div><Comp/></div>"
+  },
+  {
+   "id": "fall-001",
+   "source": "<div><Comp class=\"a\" :id=\"b\"/></div>"
+  },
+  {
+   "id": "fall-002",
+   "source": "<Comp/>"
+  },
+  {
+   "id": "fall-003",
+   "source": "<Comp class=\"a\"/>"
+  },
+  {
+   "id": "fall-004",
+   "source": "<Comp v-if=\"a\"/><div v-else/>"
+  },
+  {
+   "id": "fall-005",
+   "source": "<template v-if=\"a\"><Comp/></template>"
+  },
+  {
+   "id": "fall-006",
+   "source": "<KeepAlive><Comp/></KeepAlive>"
+  },
+  {
+   "id": "fall-007",
+   "source": "<KeepAlive><component :is=\"c\"/></KeepAlive>"
+  },
+  {
+   "id": "fall-008",
+   "source": "<KeepAlive :include=\"i\" :max=\"2\"><Comp v-if=\"a\"/><Other v-else/></KeepAlive>"
+  },
+  {
+   "id": "fall-009",
+   "source": "<div><component :is=\"c\"/></div>"
+  },
+  {
+   "id": "fall-010",
+   "source": "<component :is=\"c\"/>"
+  },
+  {
+   "id": "fall-011",
+   "source": "<Comp><Inner/></Comp>"
+  },
+  {
+   "id": "fall-012",
+   "source": "<div v-for=\"i in l\"><Comp/></div>"
+  },
+  {
+   "id": "fall-013",
+   "source": "<Comp v-for=\"i in l\" :key=\"i\"/>"
+  },
+  {
+   "id": "fall-014",
+   "source": "<Transition><Comp v-if=\"a\"/></Transition>"
+  },
+  {
+   "id": "fall-015",
+   "source": "<Transition name=\"x\" mode=\"out-in\"><div v-if=\"a\">a</div><span v-else>b</span></Transition>"
+  },
+  {
+   "id": "fall-016",
+   "source": "<Transition><div v-show=\"a\">a</div></Transition>"
+  },
+  {
+   "id": "fall-017",
+   "source": "<TransitionGroup tag=\"ul\"><li v-for=\"i in l\" :key=\"i\">{{ i }}</li></TransitionGroup>"
+  },
+  {
+   "id": "fall-018",
+   "source": "<Suspense><Comp/></Suspense>"
+  },
+  {
+   "id": "fall-019",
+   "source": "<Suspense><template #default><Comp/></template><template #fallback>loading</template></Suspense>"
+  },
+  {
+   "id": "fall-020",
+   "source": "<Teleport to=\"body\"><Comp/></Teleport>"
+  },
+  {
+   "id": "fall-021",
+   "source": "<Teleport :to=\"t\" :disabled=\"d\" defer><div>x</div></Teleport>"
+  },
+  {
+   "id": "fall-022",
+   "source": "<div><Comp/><Other/></div>"
+  },
+  {
+   "id": "fall-023",
+   "source": "<Comp/><Other/>"
+  },
+  {
+   "id": "fall-024",
+   "source": "<div><span/><Comp/><span/></div>"
+  },
+  {
+   "id": "fall-025",
+   "source": "<div>{{ a }}<Comp/>{{ b }}</div>"
+  },
+  {
+   "id": "fall-026",
+   "source": "<Comp v-bind=\"$attrs\"/>"
+  },
+  {
+   "id": "fall-027",
+   "source": "<div v-bind=\"$attrs\"><Comp/></div>"
+  },
+  {
+   "id": "fall-028",
+   "source": "<Comp v-show=\"a\"/>"
+  },
+  {
+   "id": "fall-029",
+   "source": "<div><Comp v-show=\"a\"/></div>"
+  },
+  {
+   "id": "fall-030",
+   "source": "<Comp ref=\"r\"/>"
+  },
+  {
+   "id": "fall-031",
+   "source": "<div><Comp :ref=\"setRef\"/></div>"
+  },
+  {
+   "id": "fall-032",
+   "source": "<Comp v-once/>"
+  },
+  {
+   "id": "fall-033",
+   "source": "<div v-once><Comp :a=\"b\"/></div>"
+  },
+  {
+   "id": "fall-034",
+   "source": "<Comp is=\"vue:div\"/>"
+  },
+  {
+   "id": "fall-035",
+   "source": "<div is=\"vue:Comp\"/>"
+  },
+  {
+   "id": "fall-036",
+   "source": "<component is=\"Comp\"/>"
+  },
+  {
+   "id": "fall-037",
+   "source": "<component :is=\"c\" v-model=\"m\" class=\"k\"><template #x=\"{ a }\">{{ a }}</template></component>"
+  },
+  {
+   "id": "fall-038",
+   "source": "<my-el :a.prop=\"b\"/>"
+  },
+  {
+   "id": "fall-039",
+   "source": "<Foo.Bar/>"
+  },
+  {
+   "id": "fall-040",
+   "source": "<foo-bar/>"
+  },
+  {
+   "id": "fall-041",
+   "source": "<Comp :=\"props\"/>"
+  },
+  {
+   "id": "fall-042",
+   "source": "<Comp v-bind=\"a\" v-on=\"b\"/>"
+  },
+  {
+   "id": "fall-043",
+   "source": "<Comp :a=\"1\" v-bind=\"b\" :c=\"2\"/>"
+  },
+  {
+   "id": "fall-044",
+   "source": "<Comp :[k]=\"v\"/>"
+  },
+  {
+   "id": "fall-045",
+   "source": "<Comp @[e]=\"h\"/>"
+  },
+  {
+   "id": "slot-000",
+   "source": "<Comp v-slot=\"{ a }\">{{ a }}</Comp>"
+  },
+  {
+   "id": "slot-001",
+   "source": "<Comp v-slot=\"{ a: b }\">{{ b }}</Comp>"
+  },
+  {
+   "id": "slot-002",
+   "source": "<Comp v-slot=\"{ a = 1 }\">{{ a }}</Comp>"
+  },
+  {
+   "id": "slot-003",
+   "source": "<Comp v-slot=\"{ a: { b } }\">{{ b }}</Comp>"
+  },
+  {
+   "id": "slot-004",
+   "source": "<Comp v-slot=\"{ a: [b, c] }\">{{ b }}{{ c }}</Comp>"
+  },
+  {
+   "id": "slot-005",
+   "source": "<Comp v-slot=\"[a, b]\">{{ a }}{{ b }}</Comp>"
+  },
+  {
+   "id": "slot-006",
+   "source": "<Comp v-slot=\"{ ...rest }\">{{ rest.a }}</Comp>"
+  },
+  {
+   "id": "slot-007",
+   "source": "<Comp v-slot=\"{ a, ...rest }\">{{ a }}{{ rest }}</Comp>"
+  },
+  {
+   "id": "slot-008",
+   "source": "<Comp v-slot=\"props\">{{ props.a }}</Comp>"
+  },
+  {
+   "id": "slot-009",
+   "source": "<Comp v-slot=\"{ a: b = 2 }\">{{ b }}</Comp>"
+  },
+  {
+   "id": "slot-010",
+   "source": "<Comp v-slot=\"{ [key]: v }\">{{ v }}</Comp>"
+  },
+  {
+   "id": "slot-011",
+   "source": "<Comp><template #item=\"{ data: { id, name: n } }\">{{ id }}{{ n }}</template></Comp>"
+  },
+  {
+   "id": "slot-012",
+   "source": "<Comp><template #[name]=\"{ a }\">{{ a }}</template></Comp>"
+  },
+  {
+   "id": "slot-013",
+   "source": "<Comp v-slot=\"{ a }\"><Inner v-slot=\"{ a }\">{{ a }}</Inner></Comp>"
+  },
+  {
+   "id": "slot-014",
+   "source": "<Comp v-slot=\"{ a }\"><Inner v-slot=\"{ b }\">{{ a }}{{ b }}</Inner></Comp>"
+  },
+  {
+   "id": "slot-015",
+   "source": "<Comp><template v-for=\"s in slots\" #[s]=\"{ a }\">{{ a }}{{ s }}</template></Comp>"
+  },
+  {
+   "id": "slot-016",
+   "source": "<Comp><template #a v-if=\"ok\">a</template><template #b v-else>b</template></Comp>"
+  },
+  {
+   "id": "slot-017",
+   "source": "<Comp v-slot=\"{ a }\"><button @click=\"go(a)\">{{ a }}</button></Comp>"
+  },
+  {
+   "id": "slot-018",
+   "source": "<Comp v-slot=\"{ a }\"><input v-model=\"a.value\"></Comp>"
+  },
+  {
+   "id": "slot-019",
+   "source": "<Comp v-slot=\"{ items }\"><li v-for=\"i in items\" :key=\"i.id\">{{ i.name }}</li></Comp>"
+  },
+  {
+   "id": "slot-020",
+   "source": "<Comp v-slot=\"{ props: trigger }\"><button v-bind=\"trigger\">x</button></Comp>"
+  },
+  {
+   "id": "slot-021",
+   "source": "<Comp v-slot=\"{ a: { b: { c } } }\">{{ c }}</Comp>"
+  },
+  {
+   "id": "slot-022",
+   "source": "<Comp v-slot=\"{ a: [, second] }\">{{ second }}</Comp>"
+  },
+  {
+   "id": "slot-023",
+   "source": "<Comp v-slot=\"{ a: [first, ...others] }\">{{ first }}{{ others }}</Comp>"
+  },
+  {
+   "id": "slot-024",
+   "source": "<Comp v-slot=\"{ a: { b = 1, ...r } = {} }\">{{ b }}{{ r }}</Comp>"
+  },
+  {
+   "id": "slot-025",
+   "source": "<Comp v-slot=\"{ 'kebab-key': k }\">{{ k }}</Comp>"
+  },
+  {
+   "id": "slot-026",
+   "source": "<Comp v-slot=\"{ a }\">{{ a }}{{ outer }}</Comp>"
+  },
+  {
+   "id": "slot-027",
+   "source": "<Comp v-slot=\"{ a }\"><div :class=\"{ on: a }\" :style=\"{ color: a }\">x</div></Comp>"
+  },
+  {
+   "id": "slot-028",
+   "source": "<Comp v-slot=\"{ a }\"><div v-if=\"a\">{{ a }}</div><div v-else>{{ b }}</div></Comp>"
+  },
+  {
+   "id": "slot-029",
+   "source": "<Comp v-slot=\"{ a }\"><component :is=\"a\"/></Comp>"
+  },
+  {
+   "id": "slot-030",
+   "source": "<Comp v-slot=\"{ a }\"><slot :x=\"a\"/></Comp>"
+  },
+  {
+   "id": "slot-031",
+   "source": "<Comp #default=\"{ a }\">{{ a }}</Comp>"
+  },
+  {
+   "id": "slot-032",
+   "source": "<Comp #header>h</Comp>"
+  },
+  {
+   "id": "slot-033",
+   "source": "<Comp><template #default>d</template><template #x=\"{ a }\">{{ a }}</template></Comp>"
+  },
+  {
+   "id": "slot-034",
+   "source": "<Comp>text<template #x>x</template></Comp>"
+  },
+  {
+   "id": "slot-035",
+   "source": "<Comp><template #x>x</template><!-- c --></Comp>"
+  },
+  {
+   "id": "slot-036",
+   "source": "<slot/>"
+  },
+  {
+   "id": "slot-037",
+   "source": "<slot name=\"a\" :b=\"c\" d=\"e\"/>"
+  },
+  {
+   "id": "slot-038",
+   "source": "<slot :name=\"n\"/>"
+  },
+  {
+   "id": "slot-039",
+   "source": "<slot v-bind=\"p\"/>"
+  },
+  {
+   "id": "slot-040",
+   "source": "<slot><div>fb</div></slot>"
+  },
+  {
+   "id": "slot-041",
+   "source": "<slot name=\"a\" v-if=\"ok\"/>"
+  },
+  {
+   "id": "slot-042",
+   "source": "<slot v-for=\"i in l\" :name=\"i\" :key=\"i\"/>"
+  },
+  {
+   "id": "slot-043",
+   "source": "<div><slot/><slot name=\"b\"/></div>"
+  },
+  {
+   "id": "slot-044",
+   "source": "<slot :a=\"1\" v-bind=\"b\" @click=\"c\"/>"
+  },
+  {
+   "id": "slot-045",
+   "source": "<Comp v-slot:[a].b=\"c\">x</Comp>"
+  },
+  {
+   "id": "slot-046",
+   "source": "<Comp v-slot=\"{ a }: any\">{{ a }}</Comp>"
+  },
+  {
+   "id": "slot-047",
+   "source": "<Comp v-slot=\"{ a }: { a: string }\">{{ a }}</Comp>"
+  },
+  {
+   "id": "slot-048",
+   "source": "<Comp><template #a=\"x\"><Inner><template #b=\"y\">{{ x }}{{ y }}</template></Inner></template></Comp>"
+  },
+  {
+   "id": "slot-049",
+   "source": "<Comp v-for=\"i in l\" v-slot=\"{ a }\">{{ a }}{{ i }}</Comp>"
+  },
+  {
+   "id": "slot-050",
+   "source": "<Comp v-if=\"ok\" v-slot=\"{ a }\">{{ a }}</Comp>"
+  },
+  {
+   "id": "ev-000",
+   "source": "<div @click=\"foo\"/>"
+  },
+  {
+   "id": "ev-001",
+   "source": "<div @click=\"foo()\"/>"
+  },
+  {
+   "id": "ev-002",
+   "source": "<div @click=\"foo($event)\"/>"
+  },
+  {
+   "id": "ev-003",
+   "source": "<div @click=\"() => foo()\"/>"
+  },
+  {
+   "id": "ev-004",
+   "source": "<div @click=\"(e: MouseEvent) => foo(e)\"/>"
+  },
+  {
+   "id": "ev-005",
+   "source": "<div @click=\"e => foo(e)\"/>"
+  },
+  {
+   "id": "ev-006",
+   "source": "<div @click=\"async () => { await foo() }\"/>"
+  },
+  {
+   "id": "ev-007",
+   "source": "<div @click=\"function (e) { foo(e) }\"/>"
+  },
+  {
+   "id": "ev-008",
+   "source": "<div @click=\"count++\"/>"
+  },
+  {
+   "id": "ev-009",
+   "source": "<div @click=\"a = 1; b = 2\"/>"
+  },
+  {
+   "id": "ev-010",
+   "source": "<div @click=\"foo.bar\"/>"
+  },
+  {
+   "id": "ev-011",
+   "source": "<div @click=\"foo?.bar\"/>"
+  },
+  {
+   "id": "ev-012",
+   "source": "<div @click=\"foo?.()\"/>"
+  },
+  {
+   "id": "ev-013",
+   "source": "<div @click=\"foo[bar]\"/>"
+  },
+  {
+   "id": "ev-014",
+   "source": "<div @click.stop.prevent=\"foo\"/>"
+  },
+  {
+   "id": "ev-015",
+   "source": "<input @keyup.enter=\"foo\"/>"
+  },
+  {
+   "id": "ev-016",
+   "source": "<div @click.once=\"foo\"/>"
+  },
+  {
+   "id": "ev-017",
+   "source": "<div @click.capture.passive=\"foo\"/>"
+  },
+  {
+   "id": "ev-018",
+   "source": "<div @[event]=\"foo\"/>"
+  },
+  {
+   "id": "ev-019",
+   "source": "<div v-on=\"handlers\"/>"
+  },
+  {
+   "id": "ev-020",
+   "source": "<div @click=\"[a, b]\"/>"
+  },
+  {
+   "id": "ev-021",
+   "source": "<Comp @update:modelValue=\"v => x = v\"/>"
+  },
+  {
+   "id": "ev-022",
+   "source": "<Comp @foo=\"bar\" @foo-bar.once=\"baz\"/>"
+  },
+  {
+   "id": "ev-023",
+   "source": "<div @click.self=\"foo\"/>"
+  },
+  {
+   "id": "ev-024",
+   "source": "<div @click.left=\"a\" @click.right=\"b\" @click.middle=\"c\"/>"
+  },
+  {
+   "id": "ev-025",
+   "source": "<div @click.exact=\"foo\"/>"
+  },
+  {
+   "id": "ev-026",
+   "source": "<div @click.ctrl.exact=\"foo\"/>"
+  },
+  {
+   "id": "ev-027",
+   "source": "<div @click=\"foo as any\"/>"
+  },
+  {
+   "id": "ev-028",
+   "source": "<div @click=\"foo!\"/>"
+  },
+  {
+   "id": "ev-029",
+   "source": "<div @click=\"(foo)\"/>"
+  },
+  {
+   "id": "ev-030",
+   "source": "<div @click=\"$emit('x', $event)\"/>"
+  },
+  {
+   "id": "ev-031",
+   "source": "<div @click=\"\n      a();\n      b()\n    \"/>"
+  },
+  {
+   "id": "ev-032",
+   "source": "<div @click=\"({ target }: Event) => foo(target)\"/>"
+  },
+  {
+   "id": "ev-033",
+   "source": "<div @click=\"(e: MouseEvent, n: number = 1) => foo(e, n)\"/>"
+  },
+  {
+   "id": "ev-034",
+   "source": "<div @click=\"<T,>(x: T) => foo(x)\"/>"
+  },
+  {
+   "id": "ev-035",
+   "source": "<div @click=\"function foo(e: Event): void { bar(e) }\"/>"
+  },
+  {
+   "id": "ev-036",
+   "source": "<div @click=\"async (e: Event): Promise<void> => { await foo(e) }\"/>"
+  },
+  {
+   "id": "ev-037",
+   "source": "<div @click=\"foo\" @click.stop=\"bar\"/>"
+  },
+  {
+   "id": "ev-038",
+   "source": "<div @click=\"foo\" @mousedown=\"bar\" @keydown.esc=\"baz\"/>"
+  },
+  {
+   "id": "ev-039",
+   "source": "<div @click-outside=\"foo\"/>"
+  },
+  {
+   "id": "ev-040",
+   "source": "<div @update:model-value=\"foo\"/>"
+  },
+  {
+   "id": "ev-041",
+   "source": "<div @Click=\"foo\"/>"
+  },
+  {
+   "id": "ev-042",
+   "source": "<div @click.native=\"foo\"/>"
+  },
+  {
+   "id": "ev-043",
+   "source": "<div @[event].stop=\"foo\"/>"
+  },
+  {
+   "id": "ev-044",
+   "source": "<div @[`on${e}`]=\"foo\"/>"
+  },
+  {
+   "id": "ev-045",
+   "source": "<div v-on:click=\"foo\"/>"
+  },
+  {
+   "id": "ev-046",
+   "source": "<div v-on=\"{ click: a, focus: b }\"/>"
+  },
+  {
+   "id": "ev-047",
+   "source": "<div v-on=\"h\" @click=\"c\"/>"
+  },
+  {
+   "id": "ev-048",
+   "source": "<Comp v-on=\"h\"/>"
+  },
+  {
+   "id": "ev-049",
+   "source": "<Comp @click.stop=\"foo\"/>"
+  },
+  {
+   "id": "ev-050",
+   "source": "<Comp @[e].once=\"foo\"/>"
+  },
+  {
+   "id": "ev-051",
+   "source": "<Comp @vue:mounted=\"foo\"/>"
+  },
+  {
+   "id": "ev-052",
+   "source": "<div @vue:mounted=\"foo\"/>"
+  },
+  {
+   "id": "ev-053",
+   "source": "<div @click=\"a ? b() : c()\"/>"
+  },
+  {
+   "id": "ev-054",
+   "source": "<div @click=\"a && b()\"/>"
+  },
+  {
+   "id": "ev-055",
+   "source": "<div @click=\"if (a) b()\"/>"
+  },
+  {
+   "id": "ev-056",
+   "source": "<div @click=\"x = $event.target.value\"/>"
+  },
+  {
+   "id": "ev-057",
+   "source": "<div @click=\"obj.count += 1\"/>"
+  },
+  {
+   "id": "ev-058",
+   "source": "<div @click=\"delete obj.k\"/>"
+  },
+  {
+   "id": "ev-059",
+   "source": "<div @click=\"new Foo()\"/>"
+  },
+  {
+   "id": "ev-060",
+   "source": "<div @click=\"`a${b}`\"/>"
+  },
+  {
+   "id": "ev-061",
+   "source": "<div @click=\"foo.bar()\"/>"
+  },
+  {
+   "id": "ev-062",
+   "source": "<div @click=\"foo().bar\"/>"
+  },
+  {
+   "id": "ev-063",
+   "source": "<div @click=\"(a, b) => a + b\"/>"
+  },
+  {
+   "id": "ev-064",
+   "source": "<div @click=\"() => {}\"/>"
+  },
+  {
+   "id": "ev-065",
+   "source": "<div @click=\"\"/>"
+  },
+  {
+   "id": "ev-066",
+   "source": "<div @click/>"
+  },
+  {
+   "id": "ev-067",
+   "source": "<div v-for=\"i in l\" @click=\"go(i)\"/>"
+  },
+  {
+   "id": "ev-068",
+   "source": "<div v-for=\"i in l\" @click=\"() => go(i)\"/>"
+  },
+  {
+   "id": "ev-069",
+   "source": "<div v-for=\"i in l\" @click=\"go\"/>"
+  },
+  {
+   "id": "ev-070",
+   "source": "<button @click.prevent/>"
+  },
+  {
+   "id": "ev-071",
+   "source": "<form @submit.prevent=\"onSubmit\"><input @input.trim=\"x\"/></form>"
+  },
+  {
+   "id": "ev-072",
+   "source": "<div @scroll.passive=\"s\" @wheel.passive.once=\"w\"/>"
+  },
+  {
+   "id": "ev-073",
+   "source": "<div @keydown.ctrl.enter.exact=\"k\"/>"
+  },
+  {
+   "id": "ev-074",
+   "source": "<div @keydown.arrow-down=\"k\" @keyup.page-up=\"k\"/>"
+  },
+  {
+   "id": "dir-000",
+   "source": "<input v-model=\"m\"/>"
+  },
+  {
+   "id": "dir-001",
+   "source": "<input v-model.lazy=\"m\"/>"
+  },
+  {
+   "id": "dir-002",
+   "source": "<input v-model.number=\"m\"/>"
+  },
+  {
+   "id": "dir-003",
+   "source": "<input v-model.trim=\"m\"/>"
+  },
+  {
+   "id": "dir-004",
+   "source": "<input v-model.lazy.trim.number=\"m\"/>"
+  },
+  {
+   "id": "dir-005",
+   "source": "<input type=\"checkbox\" v-model=\"m\"/>"
+  },
+  {
+   "id": "dir-006",
+   "source": "<input type=\"checkbox\" v-model=\"m\" true-value=\"y\" false-value=\"n\"/>"
+  },
+  {
+   "id": "dir-007",
+   "source": "<input type=\"checkbox\" v-model=\"m\" :true-value=\"y\" :false-value=\"n\"/>"
+  },
+  {
+   "id": "dir-008",
+   "source": "<input type=\"radio\" v-model=\"m\" value=\"a\"/>"
+  },
+  {
+   "id": "dir-009",
+   "source": "<input :type=\"t\" v-model=\"m\"/>"
+  },
+  {
+   "id": "dir-010",
+   "source": "<input v-bind=\"a\" v-model=\"m\"/>"
+  },
+  {
+   "id": "dir-011",
+   "source": "<select v-model=\"m\"><option value=\"a\">a</option></select>"
+  },
+  {
+   "id": "dir-012",
+   "source": "<select v-model=\"m\" multiple><option v-for=\"o in os\" :value=\"o\">{{ o }}</option></select>"
+  },
+  {
+   "id": "dir-013",
+   "source": "<select v-model.number=\"m\"><option :value=\"1\">1</option></select>"
+  },
+  {
+   "id": "dir-014",
+   "source": "<textarea v-model=\"m\"/>"
+  },
+  {
+   "id": "dir-015",
+   "source": "<textarea v-model.lazy=\"m\"></textarea>"
+  },
+  {
+   "id": "dir-016",
+   "source": "<Comp v-model=\"m\"/>"
+  },
+  {
+   "id": "dir-017",
+   "source": "<Comp v-model:title=\"m\"/>"
+  },
+  {
+   "id": "dir-018",
+   "source": "<Comp v-model.trim=\"m\"/>"
+  },
+  {
+   "id": "dir-019",
+   "source": "<Comp v-model:title.trim.foo=\"m\"/>"
+  },
+  {
+   "id": "dir-020",
+   "source": "<Comp v-model:[dyn]=\"m\"/>"
+  },
+  {
+   "id": "dir-021",
+   "source": "<Comp v-model:[dyn].mod=\"m\"/>"
+  },
+  {
+   "id": "dir-022",
+   "source": "<Comp v-model=\"a\" v-model:b=\"c\"/>"
+  },
+  {
+   "id": "dir-023",
+   "source": "<input v-model=\"obj.a.b\"/>"
+  },
+  {
+   "id": "dir-024",
+   "source": "<input v-model=\"arr[0]\"/>"
+  },
+  {
+   "id": "dir-025",
+   "source": "<input v-model=\"obj[key]\"/>"
+  },
+  {
+   "id": "dir-026",
+   "source": "<input v-for=\"i in l\" v-model=\"i.v\"/>"
+  },
+  {
+   "id": "dir-027",
+   "source": "<input v-model=\"m\" @input=\"onInput\"/>"
+  },
+  {
+   "id": "dir-028",
+   "source": "<input v-model=\"m\" :value=\"v\"/>"
+  },
+  {
+   "id": "dir-029",
+   "source": "<div v-for=\"i in l\">{{ i }}</div>"
+  },
+  {
+   "id": "dir-030",
+   "source": "<div v-for=\"(i, idx) in l\" :key=\"i.id\">{{ idx }}</div>"
+  },
+  {
+   "id": "dir-031",
+   "source": "<div v-for=\"(v, k, i) in obj\">{{ k }}{{ v }}{{ i }}</div>"
+  },
+  {
+   "id": "dir-032",
+   "source": "<div v-for=\"n in 10\">{{ n }}</div>"
+  },
+  {
+   "id": "dir-033",
+   "source": "<div v-for=\"{ a, b: [c] } of l\">{{ a }}{{ c }}</div>"
+  },
+  {
+   "id": "dir-034",
+   "source": "<div v-for=\"[a, b] in l\">{{ a }}{{ b }}</div>"
+  },
+  {
+   "id": "dir-035",
+   "source": "<div v-for=\"({ a }, i) in l\" :key=\"a\">{{ i }}</div>"
+  },
+  {
+   "id": "dir-036",
+   "source": "<div v-for=\"{ a = 1, ...r } in l\">{{ a }}{{ r }}</div>"
+  },
+  {
+   "id": "dir-037",
+   "source": "<template v-for=\"i in l\" :key=\"i\"><span>{{ i }}</span><b/></template>"
+  },
+  {
+   "id": "dir-038",
+   "source": "<template v-for=\"i in l\"><div v-if=\"i.ok\">{{ i }}</div></template>"
+  },
+  {
+   "id": "dir-039",
+   "source": "<div v-for=\"i in l\" v-if=\"ok\">{{ i }}</div>"
+  },
+  {
+   "id": "dir-040",
+   "source": "<div v-for=\"i in l\"><span v-for=\"j in i\">{{ j }}{{ i }}</span></div>"
+  },
+  {
+   "id": "dir-041",
+   "source": "<div v-for=\"i in l\" :key=\"i\" v-memo=\"[i.a]\">{{ i }}</div>"
+  },
+  {
+   "id": "dir-042",
+   "source": "<div v-memo=\"[a]\">{{ a }}</div>"
+  },
+  {
+   "id": "dir-043",
+   "source": "<div v-once>{{ a }}</div>"
+  },
+  {
+   "id": "dir-044",
+   "source": "<div v-once><span v-if=\"a\">{{ b }}</span></div>"
+  },
+  {
+   "id": "dir-045",
+   "source": "<div v-for=\"i in l\" v-once>{{ i }}</div>"
+  },
+  {
+   "id": "dir-046",
+   "source": "<div v-pre>{{ a }}<span v-if=\"b\"/></div>"
+  },
+  {
+   "id": "dir-047",
+   "source": "<div v-cloak>{{ a }}</div>"
+  },
+  {
+   "id": "dir-048",
+   "source": "<div v-text=\"a\"/>"
+  },
+  {
+   "id": "dir-049",
+   "source": "<div v-html=\"a\"/>"
+  },
+  {
+   "id": "dir-050",
+   "source": "<div v-show=\"a\"/>"
+  },
+  {
+   "id": "dir-051",
+   "source": "<div v-show=\"a\" v-if=\"b\"/>"
+  },
+  {
+   "id": "dir-052",
+   "source": "<div v-foo/>"
+  },
+  {
+   "id": "dir-053",
+   "source": "<div v-foo:arg.mod=\"v\"/>"
+  },
+  {
+   "id": "dir-054",
+   "source": "<div v-foo:[dyn].a.b=\"v\"/>"
+  },
+  {
+   "id": "dir-055",
+   "source": "<div v-foo v-bar=\"1\"/>"
+  },
+  {
+   "id": "dir-056",
+   "source": "<Comp v-foo=\"v\"/>"
+  },
+  {
+   "id": "dir-057",
+   "source": "<div v-bind=\"obj\"/>"
+  },
+  {
+   "id": "dir-058",
+   "source": "<div :class=\"[a, { b: c }]\" class=\"s\"/>"
+  },
+  {
+   "id": "dir-059",
+   "source": "<div :style=\"{ color: c }\" style=\"top: 0\"/>"
+  },
+  {
+   "id": "dir-060",
+   "source": "<div :style=\"[a, b]\"/>"
+  },
+  {
+   "id": "dir-061",
+   "source": "<div :a.prop=\"b\" :c.attr=\"d\" :e-f.camel=\"g\"/>"
+  },
+  {
+   "id": "dir-062",
+   "source": "<div .a=\"b\"/>"
+  },
+  {
+   "id": "dir-063",
+   "source": "<div :[key]=\"v\"/>"
+  },
+  {
+   "id": "dir-064",
+   "source": "<div :[key].prop=\"v\"/>"
+  },
+  {
+   "id": "dir-065",
+   "source": "<div :id/>"
+  },
+  {
+   "id": "dir-066",
+   "source": "<div :id :class/>"
+  },
+  {
+   "id": "dir-067",
+   "source": "<div ref=\"r\"/>"
+  },
+  {
+   "id": "dir-068",
+   "source": "<div :ref=\"r\"/>"
+  },
+  {
+   "id": "dir-069",
+   "source": "<div :ref=\"el => (x = el)\"/>"
+  },
+  {
+   "id": "dir-070",
+   "source": "<div v-for=\"i in l\" ref=\"r\"/>"
+  },
+  {
+   "id": "dir-071",
+   "source": "<div ref=\"r\" v-if=\"a\"/>"
+  },
+  {
+   "id": "dir-072",
+   "source": "<div :ref_key=\"k\" ref=\"r\"/>"
+  },
+  {
+   "id": "dir-073",
+   "source": "<div v-if=\"a\">a</div><div v-else-if=\"b\">b</div><div v-else>c</div>"
+  },
+  {
+   "id": "dir-074",
+   "source": "<div v-if=\"a\">a</div><!-- c --><div v-else>c</div>"
+  },
+  {
+   "id": "dir-075",
+   "source": "<template v-if=\"a\">a</template><template v-else-if=\"b\"><p/></template><template v-else>{{ c }}</template>"
+  },
+  {
+   "id": "dir-076",
+   "source": "<div v-if=\"a\"><div v-if=\"b\"><div v-if=\"c\">x</div></div></div>"
+  },
+  {
+   "id": "dir-077",
+   "source": "<div v-if=\"a\" :key=\"k\">a</div>"
+  },
+  {
+   "id": "dir-078",
+   "source": "<div :key=\"k\">a</div>"
+  },
+  {
+   "id": "dir-079",
+   "source": "<div v-if=\"a\" v-for=\"i in l\">{{ i }}</div>"
+  },
+  {
+   "id": "dir-080",
+   "source": "<p>{{ a }} {{ b }}</p>"
+  },
+  {
+   "id": "dir-081",
+   "source": "<p> {{ a }} </p>"
+  },
+  {
+   "id": "dir-082",
+   "source": "<p>a {{ b }} c {{ d }}</p>"
+  },
+  {
+   "id": "dir-083",
+   "source": "{{ a }}"
+  },
+  {
+   "id": "dir-084",
+   "source": "{{ a }}{{ b }}"
+  },
+  {
+   "id": "dir-085",
+   "source": "<div>{{ a?.b ?? c }}</div>"
+  },
+  {
+   "id": "dir-086",
+   "source": "<div>{{ a as string }}</div>"
+  },
+  {
+   "id": "dir-087",
+   "source": "<div>{{ fn(a, b)?.[c] }}</div>"
+  },
+  {
+   "id": "dir-088",
+   "source": "<div>{{ `t${a}` }}</div>"
+  },
+  {
+   "id": "dir-089",
+   "source": "<div>{{ a | b }}</div>"
+  },
+  {
+   "id": "dir-090",
+   "source": "<div>{{ { a: 1 }.a }}</div>"
+  },
+  {
+   "id": "dir-091",
+   "source": "<div>{{ (() => a)() }}</div>"
+  },
+  {
+   "id": "dir-093",
+   "source": "<div>{{ $slots.default }}{{ $attrs.x }}{{ $props.y }}{{ $el }}</div>"
+  },
+  {
+   "id": "dir-094",
+   "source": "<div :a=\"$event\"/>"
+  },
+  {
+   "id": "dir-095",
+   "source": "<div :class=\"`a-${b}`\"/>"
+  },
+  {
+   "id": "dir-096",
+   "source": "<div :a=\"b\" :c=\"b\" :d=\"b + 1\"/>"
+  },
+  {
+   "id": "dir-097",
+   "source": "<div :a=\"x.y\" :b=\"x.y.z\" :c=\"x.y.z()\"/>"
+  },
+  {
+   "id": "dir-098",
+   "source": "<div :id=\"id\" :title=\"id\">{{ id }}</div>"
+  },
+  {
+   "id": "dir-099",
+   "source": "<img :src=\"s\" alt=\"\"/>"
+  },
+  {
+   "id": "dir-100",
+   "source": "<a :href=\"u\" target=\"_blank\">{{ t }}</a>"
+  },
+  {
+   "id": "dir-101",
+   "source": "<input :value=\"v\" :checked=\"c\" :disabled=\"d\"/>"
+  },
+  {
+   "id": "dir-102",
+   "source": "<input :value.prop=\"v\"/>"
+  },
+  {
+   "id": "dir-103",
+   "source": "<button :disabled=\"!a\">x</button>"
+  },
+  {
+   "id": "dir-104",
+   "source": "<div :innerHTML=\"h\"/>"
+  },
+  {
+   "id": "dir-105",
+   "source": "<div :textContent=\"t\"/>"
+  },
+  {
+   "id": "dir-106",
+   "source": "<div :aria-label=\"l\" :data-x=\"x\" :tabindex=\"0\"/>"
+  },
+  {
+   "id": "dir-107",
+   "source": "<div :class=\"a\" :class.b=\"c\"/>"
+  },
+  {
+   "id": "dir-108",
+   "source": "<div contenteditable :spellcheck=\"s\"/>"
+  },
+  {
+   "id": "dir-109",
+   "source": "<table><tr v-for=\"r in rows\"><td v-for=\"c in r\">{{ c }}</td></tr></table>"
+  },
+  {
+   "id": "dir-110",
+   "source": "<table><tbody><tr v-if=\"a\"><td>x</td></tr></tbody></table>"
+  },
+  {
+   "id": "dir-111",
+   "source": "<ul><li v-for=\"i in l\" :key=\"i\" :class=\"{ a: i.a }\" @click=\"go(i)\">{{ i.n }}</li></ul>"
+  },
+  {
+   "id": "dir-112",
+   "source": "<pre>\n  a {{ b }}\n</pre>"
+  },
+  {
+   "id": "dir-113",
+   "source": "<textarea>\nx</textarea>"
+  },
+  {
+   "id": "dir-114",
+   "source": "<div>  a  <span/>  b  </div>"
+  },
+  {
+   "id": "dir-115",
+   "source": "<div>\n  <span>a</span>\n  <span>b</span>\n</div>"
+  },
+  {
+   "id": "dir-116",
+   "source": "<!-- root comment --><div/>"
+  },
+  {
+   "id": "dir-117",
+   "source": "<div><!-- inner --></div>"
+  },
+  {
+   "id": "dir-118",
+   "source": "<template v-if=\"a\"><!-- c --><div/></template>"
+  },
+  {
+   "id": "dir-119",
+   "source": "<div/><div/>"
+  },
+  {
+   "id": "dir-120",
+   "source": "text<div/>text"
+  },
+  {
+   "id": "dir-121",
+   "source": "<div v-if=\"a\"/><div v-if=\"b\"/>"
+  },
+  {
+   "id": "dir-122",
+   "source": "<div v-for=\"i in l\"/><div v-for=\"j in m\"/>"
+  },
+  {
+   "id": "dir-123",
+   "source": "<Comp/>{{ a }}<div v-if=\"b\"/>"
+  },
+  {
+   "id": "dir-124",
+   "source": "<div><div v-if=\"a\"/>{{ b }}<Comp/><div v-for=\"i in l\"/></div>"
+  },
+  {
+   "id": "dir-125",
+   "source": "<div><span/>{{ a }}<span/></div>"
+  },
+  {
+   "id": "dir-126",
+   "source": "<div>{{ a }}<span/>{{ b }}</div>"
+  },
+  {
+   "id": "dir-127",
+   "source": "<div><div v-if=\"a\"/><div v-if=\"b\"/><span/></div>"
+  },
+  {
+   "id": "dir-128",
+   "source": "<div><span/><div v-if=\"a\"/></div>"
+  },
+  {
+   "id": "dir-129",
+   "source": "<div><div v-if=\"a\"/><span/><div v-if=\"b\"/></div>"
+  },
+  {
+   "id": "dir-130",
+   "source": "<div><Comp/><Comp/><span/><Comp/></div>"
+  },
+  {
+   "id": "dir-131",
+   "source": "<div><slot/><span/><slot name=\"b\"/></div>"
+  },
+  {
+   "id": "dir-132",
+   "source": "<div><template v-for=\"i in l\"><span/></template><b/></div>"
+  }
+ ]
+}
