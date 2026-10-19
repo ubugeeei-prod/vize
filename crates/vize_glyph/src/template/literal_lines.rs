@@ -101,10 +101,6 @@ impl LiteralLineState {
         }
     }
 
-    pub(crate) fn line_holds_code(&self, line: &str) -> bool {
-        !self.line_is_raw() && !line.trim().is_empty()
-    }
-
     pub(crate) fn advance_line(&mut self, line: &str) {
         let bytes = line.trim_end_matches('\r').as_bytes();
         let mut index = 0;
