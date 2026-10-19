@@ -167,3 +167,41 @@ export function updateWorkspaceManifestVersions(
   }
   return updated.join("\n");
 }
+
+/** Orders stable `major.minor.patch` versions numerically. */
+function compareStable(left: Version, right: Version): number {
+  return left.major - right.major || left.minor - right.minor || left.patch - right.patch;
+}
+
+function parseClaimed(value: string): Version | null {
+  const version = parseVersion(value.startsWith("v") ? value.slice(1) : value);
+  return version === null || version.prerelease !== null ? null : version;
+}
+
+/**
+ * Every release bumps the minor of the highest version already claimed
+ * anywhere (workspace manifest, git tags, npm), so a burned or partial release
+ * never collides with the next one.
+ */
+export function nextReleaseVersion(claimed: readonly string[]): string | null {
+  let highest: Version | null = null;
+  for (const value of claimed) {
+    const version = parseClaimed(value);
+    if (version !== null && (highest === null || compareStable(version, highest) > 0)) {
+      highest = version;
+    }
+  }
+  return highest === null
+    ? null
+    : formatVersion(highest.major, increment(highest.minor), 0, null, null);
+}
+
+/** True when `candidate` is a stable version above every claimed one. */
+export function isUnclaimedVersion(candidate: string, claimed: readonly string[]): boolean {
+  const version = parseClaimed(candidate);
+  if (version === null || candidate.startsWith("v")) return false;
+  return claimed.every((value) => {
+    const other = parseClaimed(value);
+    return other === null || compareStable(version, other) > 0;
+  });
+}

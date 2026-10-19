@@ -25,17 +25,12 @@ test("controlled platform publish benchmark", { skip: !receiptPath }, () => {
     concurrency: number;
     runner_walltime_ms: number;
     peak_publishers: number;
-    publish_receipt: ReturnType<typeof fixture.receipt>;
   }> = [];
   try {
     for (let repetition = 1; repetition <= 3; repetition++) {
       // Alternate the order to reduce systematic warm-cache or load bias.
       for (const concurrency of repetition % 2 === 1 ? [1, 4] : [4, 1]) {
-        const previousEvents = fs.existsSync(
-          path.join(path.dirname(fixture.receiptPath), "events.jsonl"),
-        )
-          ? fixture.events().length
-          : 0;
+        const previousEvents = samples.length === 0 ? 0 : fixture.events().length;
         const started = performance.now();
         const result = runReleaseCommand(
           "publish_npm_package_dirs",
@@ -43,8 +38,6 @@ test("controlled platform publish benchmark", { skip: !receiptPath }, () => {
             fixture.baseDir,
             "--concurrency",
             String(concurrency),
-            "--receipt",
-            fixture.receiptPath,
             "--provenance",
           ],
           {
@@ -53,20 +46,11 @@ test("controlled platform publish benchmark", { skip: !receiptPath }, () => {
         );
         const runner_walltime_ms = performance.now() - started;
         assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`);
-        const publish_receipt = fixture.receipt();
         const events = fixture.events().slice(previousEvents);
         const peak_publishers = maxActivePublishers(events);
         assert.equal(peak_publishers, concurrency);
-        assert.equal(publish_receipt.package_count, 8);
-        assert.equal(publish_receipt.results.length, 8);
-        assert.ok(publish_receipt.results.every((item) => item.exit_code === 0));
-        samples.push({
-          repetition,
-          concurrency,
-          runner_walltime_ms,
-          peak_publishers,
-          publish_receipt,
-        });
+        assert.equal(events.length, 16);
+        samples.push({ repetition, concurrency, runner_walltime_ms, peak_publishers });
       }
     }
     const median = (values: number[]) =>
@@ -74,12 +58,12 @@ test("controlled platform publish benchmark", { skip: !receiptPath }, () => {
     const baseline = median(
       samples
         .filter((sample) => sample.concurrency === 1)
-        .map((sample) => sample.publish_receipt.walltime_ms),
+        .map((sample) => sample.runner_walltime_ms),
     );
     const candidate = median(
       samples
         .filter((sample) => sample.concurrency === 4)
-        .map((sample) => sample.publish_receipt.walltime_ms),
+        .map((sample) => sample.runner_walltime_ms),
     );
     const receipt = {
       schema_version: 1,

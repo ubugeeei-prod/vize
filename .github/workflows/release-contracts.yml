@@ -1,0 +1,53 @@
+name: Release contracts
+# Runs the release pipeline's tool and workflow tests on changes to them.
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/release*.yml"
+      - ".github/actions/release-*/**"
+      - ".github/actions/build-release-*/**"
+      - ".github/release-notes/drop-in-scope.md"
+      - "pnpm-workspace.yaml"
+      - "tools/support/release/**"
+      - "tests/tooling/release/**"
+      - "tests/tooling/package-manifests.test.ts"
+      - "tests/tooling/bundler-plugin-manifests.test.ts"
+      - "tests/tooling/davinci-plugin-sdk-release.test.ts"
+      - "tests/tooling/drop-in-claim-scope.test.ts"
+      - "tests/tooling/github-workflows-release-build.test.ts"
+      - "tests/tooling/release-jsr-workflow.test.ts"
+      - "tests/tooling/publish-npm-package*.test.ts"
+      - "tests/tooling/support/fake-npm-registry.ts"
+      - "tests/tooling/support/fake-command.ts"
+  workflow_dispatch:
+permissions: { contents: read }
+concurrency:
+  group: release-contracts-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  contracts:
+    name: Release pipeline contracts
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: ./.github/actions/cache-vp-bootstrap
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, cache: true, run-install: true }
+      - name: Release workflow, versioning and publication
+        run: >-
+          node --test
+          tests/tooling/release/release-workflow.test.ts
+          tests/tooling/release/release-notes.test.ts
+          tests/tooling/release/release-signing.test.ts
+          tests/tooling/github-workflows-release-build.test.ts
+          tests/tooling/release-jsr-workflow.test.ts
+          tests/tooling/drop-in-claim-scope.test.ts
+          tests/tooling/package-manifests.test.ts
+          tests/tooling/bundler-plugin-manifests.test.ts
+          tests/tooling/davinci-plugin-sdk-release.test.ts
+      - name: Concurrent npm publication
+        run: node --test tests/tooling/publish-npm-package*.test.ts

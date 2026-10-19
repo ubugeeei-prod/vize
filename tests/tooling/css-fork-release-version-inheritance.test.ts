@@ -7,7 +7,8 @@ import { test } from "node:test";
 
 import { parse as parseToml, stringify as stringifyToml } from "@iarna/toml";
 
-import { repoRoot, runReleaseCommand } from "./support/release-command.ts";
+import { updateWorkspaceManifestVersions } from "../../tools/support/release/release/versions.ts";
+import { repoRoot } from "./support/release-command.ts";
 
 const rootSource = fs.readFileSync(path.join(repoRoot, "Cargo.toml"), "utf8");
 const root = parseToml(rootSource);
@@ -43,22 +44,18 @@ test("the real release rewrite resolves both forks and rejects the historical st
   try {
     const input = path.join(directory, "release-input.toml");
     fs.writeFileSync(input, rootSource);
-    const rewrite = runReleaseCommand("release", [
-      "--print-workspace-manifest-update",
-      input,
+    const rewrite = updateWorkspaceManifestVersions(
+      fs.readFileSync(input, "utf8"),
       current,
       target,
-    ]);
-    assert.equal(rewrite.error, undefined);
-    assert.equal(rewrite.signal, null);
-    assert.equal(rewrite.status, 0, rewrite.stderr);
+    );
     assert.equal(
-      rewrite.stdout,
+      rewrite,
       rootSource
         .replace(`version = "${current}"`, `version = "${target}"`)
         .replaceAll(`version = "=${current}"`, `version = "=${target}"`),
     );
-    const updated = parseToml(rewrite.stdout).workspace as typeof workspace;
+    const updated = parseToml(rewrite).workspace as typeof workspace;
     const updatedDependencies = updated.dependencies as typeof dependencies;
     for (const name of ["lightningcss", "parcel_sourcemap"]) {
       const provider = updatedDependencies[name] as { version: string };

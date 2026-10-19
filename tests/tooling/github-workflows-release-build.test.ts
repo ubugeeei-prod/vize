@@ -5,7 +5,7 @@ import {
   cliReleasePlatforms,
   nativeReleasePlatforms,
 } from "../../tools/support/github/release-platforms.ts";
-import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
+import { readRepoFile } from "./support/github-workflows.ts";
 
 type Step = {
   name?: string;
@@ -23,10 +23,10 @@ const recipe = (name: string): { runs: { steps: Step[] } } =>
 test("release and cache warming share every exact-checkout binary recipe", () => {
   for (const [releaseJob, seedJob, action] of [
     ["build-cli", "cli", "build-release-cli"],
-    ["build-native-all", "native", "build-release-native"],
+    ["build-native", "native", "build-release-native"],
   ]) {
     const released = release.jobs[releaseJob];
-    assert.equal(released.needs, "plan-release-platforms");
+    assert.equal(released.needs, "version");
     const releaseStep = released.steps.find(
       (step: Step) => step.uses === `./.github/actions/${action}`,
     );
@@ -94,45 +94,4 @@ test("every produced native artifact is guarded against missing output", () => {
       assert.equal(step.with?.["compression-level"], 0);
     }
   }
-});
-
-test("publication keeps installed-package smoke and exact promotion barriers", () => {
-  const workflow = readRepoFile(".github", "workflows", "release.yml");
-  const smoke = workflowJobBody(workflow, "smoke-release-packages");
-  assert.match(
-    smoke,
-    /node tools\/commands\/release\/npm\/smoke-release-install\.ts --prepare-manifests --runtime-checks/,
-  );
-  assert.deepEqual(release.jobs["smoke-release-packages"].needs, [
-    "plan-release-platforms",
-    "build-release-packages",
-    "build-native-all",
-  ]);
-  for (const job of Object.values(release.jobs) as Array<{
-    name?: string;
-    needs?: string | string[];
-    steps?: Step[];
-  }>) {
-    if (
-      !job.steps?.some(
-        ({ run, uses }) =>
-          run?.includes("publish_npm_package/main.ts") ||
-          uses === "./.github/actions/publish-release-package",
-      )
-    )
-      continue;
-    assert.ok(job.needs?.includes("release-preflight"), job.name);
-  }
-  for (const jobName of ["release-npm-native", "release-npm-fresco-native", "release-npm-wasm"]) {
-    const steps = release.jobs[jobName].steps as Step[];
-    const smokeIndex = steps.findIndex(({ run }) =>
-      run?.includes("node tools/commands/release/npm/smoke-release-install.ts"),
-    );
-    const publishIndex = steps.findIndex(({ run }) => run?.includes("publish_npm_package"));
-    assert.ok(smokeIndex >= 0 && publishIndex > smokeIndex, jobName);
-  }
-  const fresco = workflowJobBody(workflow, "release-npm-fresco-native");
-  assert.match(fresco, /clean-node-binaries\.ts npm\/fresco-native/);
-  assert.match(fresco, /collect-native-artifacts\.ts/);
-  assert.doesNotMatch(fresco, /napi create-npm-dirs/);
 });

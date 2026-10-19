@@ -23,7 +23,7 @@ const releaseCommand = (name: string, ...args: string[]) =>
  */
 export const releaseTasks = defineTasks({
   // The release command owns argument parsing and confirmation before mutation.
-  release: noCacheTask(releaseCommand("release", '"$@"'), {
+  release: noCacheTask(releaseCommand("release", "dispatch", '"$@"'), {
     forwardArguments: true,
   }),
   "publish:wasm": noCacheTask(

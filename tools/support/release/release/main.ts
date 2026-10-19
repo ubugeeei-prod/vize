@@ -1,241 +1,135 @@
-// Confirm the requested version bump, then create and watch a release PR.
-// The internal prepare-only mode edits one isolated worktree without a tag.
-import { println, run, runMain, writeStderr, writeStdout } from "../command_io.ts";
-import { cliArgs, readFileToString } from "../command_runtime.ts";
-import { prepareCandidate } from "./apply_versions.ts";
-import {
-  replaceNativeBinaryLockfileCatalog,
-  replaceNativeBinaryWorkspaceCatalog,
-} from "./native_catalog.ts";
-import {
-  confirmRelease,
-  extraReleasePackageJsonPaths,
-  hasInteractiveTerminal,
-} from "./preparation.ts";
-import { replaceReadmeVersionReferences } from "./readmes.ts";
-import {
-  bumpVersion,
-  updateWorkspaceManifestVersions,
-  workspaceVersionFromContent,
-} from "./versions.ts";
+// Release entry point. Locally it dispatches the Release workflow; in CI it
+// picks the next version, stamps it and pushes the tag the workflow builds.
+import { appendFileSync } from "node:fs";
+import { collectStdout, println, run, runMain, writeStderr } from "../command_io.ts";
+import { cliArgs, nonEmptyEnv, readFileToString } from "../command_runtime.ts";
+import { stampVersion } from "./stamp.ts";
+import { isUnclaimedVersion, nextReleaseVersion, workspaceVersionFromContent } from "./versions.ts";
 
-const RELEASE_DRIVER = "tools/commands/release/pr.rs";
+const USAGE = `Usage:
+  main.ts dispatch [version] dispatch the Release workflow on main (\`vp run release\`)
+  main.ts next               print the next release version
+  main.ts stamp <version>    stamp <version> into the working tree
+  main.ts cut [version]      CI only: stamp, commit and push tag v<version>
+`;
 
 function fail(message: string): number {
   writeStderr(message);
   return 1;
 }
 
-function positiveRetirementIdentity(value: string): boolean {
-  return value !== "" && !value.startsWith("0") && /^[0-9]+$/.test(value);
+function workspaceVersion(): string | null {
+  const cargoToml = readFileToString("Cargo.toml");
+  return cargoToml === null ? null : workspaceVersionFromContent(cargoToml);
 }
 
-function isFullCommitIdentity(value: string): boolean {
-  return value.length === 40 && /^[0-9a-fA-F]+$/.test(value);
+/** Release tags already on the remote, including burned ones. */
+async function remoteTagVersions(): Promise<string[] | null> {
+  const output = await collectStdout("git", ["ls-remote", "--tags", "--refs", "origin", "v*"]);
+  if (output.status !== 0) return null;
+  return output.stdout
+    .split("\n")
+    .map((line) => line.split("refs/tags/")[1])
+    .filter((tag): tag is string => tag !== undefined && tag !== "");
 }
 
-/** Runs a pure rewrite mode over one input file and prints its result. */
-function printRewrite(
-  inputPath: string,
-  rewrite: (content: string) => string,
-  reportReadFailure: boolean,
-): number {
-  const content = readFileToString(inputPath);
-  if (content === null) {
-    return reportReadFailure ? fail(`Failed to read ${inputPath}\n`) : 1;
+/** Versions of the `vize` npm package, which every release publishes. */
+async function npmVersions(): Promise<string[] | null> {
+  try {
+    const response = await fetch("https://registry.npmjs.org/vize", {
+      headers: { accept: "application/vnd.npm.install-v1+json" },
+    });
+    if (!response.ok) return null;
+    const body = (await response.json()) as { versions?: Record<string, unknown> };
+    return Object.keys(body.versions ?? {});
+  } catch {
+    return null;
   }
-  writeStdout(rewrite(content));
+}
+
+async function claimedVersions(current: string): Promise<string[] | null> {
+  const [tags, published] = await Promise.all([remoteTagVersions(), npmVersions()]);
+  return tags === null || published === null ? null : [current, ...tags, ...published];
+}
+
+/** The requested version if it is still unclaimed, else the next minor. */
+async function resolveVersion(
+  current: string,
+  requested: string | undefined,
+): Promise<string | null> {
+  const claimed = await claimedVersions(current);
+  if (claimed === null) {
+    writeStderr("Failed to read release tags or npm versions\n");
+    return null;
+  }
+  if (requested === undefined) return nextReleaseVersion(claimed);
+  if (isUnclaimedVersion(requested, claimed)) return requested;
+  writeStderr(`${requested} is not above every existing tag and npm version\n`);
+  return null;
+}
+
+async function git(...args: string[]): Promise<boolean> {
+  return (await run("git", args)) === 0;
+}
+
+/** Stamps, commits and pushes the release tag. The tag push is the lock. */
+async function cut(current: string, requested: string | undefined): Promise<number> {
+  const version = await resolveVersion(current, requested);
+  if (version === null) return 1;
+  const tag = `v${version}`;
+  println(`Releasing ${tag} (workspace manifests say ${current})`);
+  if (!(await stampVersion(current, version))) return 1;
+  const ok =
+    (await git(
+      "-c",
+      "user.name=github-actions[bot]",
+      "-c",
+      "user.email=41898282+github-actions[bot]@users.noreply.github.com",
+      "commit",
+      "--all",
+      "--quiet",
+      "--no-verify",
+      "-m",
+      `chore(release): ${tag}`,
+    )) &&
+    (await git("tag", tag)) &&
+    (await git("push", "origin", `refs/tags/${tag}`));
+  if (!ok) return fail(`Failed to commit or push ${tag}\n`);
+  const sha = (await collectStdout("git", ["rev-parse", "HEAD"])).stdout.trim();
+  const output = nonEmptyEnv("GITHUB_OUTPUT");
+  if (output !== undefined) {
+    appendFileSync(output, `version=${version}\ntag=${tag}\nsha=${sha}\n`);
+  }
+  println(`Pushed ${tag} at ${sha}`);
   return 0;
 }
 
 export async function release(args: readonly string[]): Promise<number> {
-  if (args.length === 3 && args[0] === "--print-bump") {
-    const version = bumpVersion(args[1], args[2]);
-    if (version === null) return 1;
-    println(version);
-    return 0;
-  }
-  if (args.length === 4 && args[0] === "--print-readme-version-update") {
-    return printRewrite(
-      args[1],
-      (content) => replaceReadmeVersionReferences(content, args[2], args[3]),
-      false,
-    );
-  }
-  if (args.length === 4 && args[0] === "--print-workspace-manifest-update") {
-    return printRewrite(
-      args[1],
-      (content) => updateWorkspaceManifestVersions(content, args[2], args[3]),
-      false,
-    );
-  }
-  if (args.length === 4 && args[0] === "--print-workspace-catalog-update") {
-    return printRewrite(
-      args[1],
-      (content) => replaceNativeBinaryWorkspaceCatalog(content, args[2], args[3]),
-      true,
-    );
-  }
-  if (args.length === 4 && args[0] === "--print-lockfile-catalog-update") {
-    return printRewrite(
-      args[1],
-      (content) => replaceNativeBinaryLockfileCatalog(content, args[2], args[3]),
-      true,
-    );
-  }
-  if (args.length === 1 && args[0] === "--print-extra-package-json-paths") {
-    for (const packageJsonPath of await extraReleasePackageJsonPaths()) {
-      println(packageJsonPath);
+  const [command, value, ...rest] = args;
+  if (rest.length > 0) return fail(USAGE);
+  const current = workspaceVersion();
+  if (current === null) return fail("Failed to read the workspace version from Cargo.toml\n");
+  switch (command) {
+    case "next": {
+      const version = await resolveVersion(current, undefined);
+      if (version === null) return 1;
+      println(version);
+      return 0;
     }
-    return 0;
-  }
-  if (args.length === 0) {
-    return fail(
-      "Usage: node tools/support/release/release/main.ts <bump> [-y] [--pin] | --resume <PR> [--pin] | --retire <PR> --head <H> --tag <tag> --run <R> --operator-run <entry>\n",
-    );
-  }
-
-  if (args[0] === "--retire") {
-    if (
-      !(
-        args.length === 10 &&
-        args[2] === "--head" &&
-        args[4] === "--tag" &&
-        args[6] === "--run" &&
-        args[8] === "--operator-run"
-      )
-    ) {
-      return fail("Retirement requires explicit original PR/H/tag/R/operator-run identities\n");
+    case "stamp":
+      if (value === undefined) return fail(USAGE);
+      return (await stampVersion(current, value)) ? 0 : 1;
+    case "cut":
+      if (nonEmptyEnv("GITHUB_ACTIONS") !== "true") return fail("cut runs only in CI\n");
+      return cut(current, value);
+    case "dispatch": {
+      if (value !== undefined && !/^\d+\.\d+\.\d+$/.test(value)) return fail(USAGE);
+      const inputs = value === undefined ? [] : ["-f", `version=${value}`];
+      return run("gh", ["workflow", "run", "release.yml", "--ref", "main", ...inputs]);
     }
-    const tagParts = args[5].split(".");
-    if (
-      !(
-        positiveRetirementIdentity(args[1]) &&
-        positiveRetirementIdentity(args[7]) &&
-        positiveRetirementIdentity(args[9]) &&
-        isFullCommitIdentity(args[3]) &&
-        tagParts.length === 3 &&
-        tagParts[0] === "v0" &&
-        positiveRetirementIdentity(tagParts[1]) &&
-        tagParts[2] === "0"
-      )
-    ) {
-      return fail("Invalid original retirement identities\n");
-    }
-    return run("rust-script", [
-      RELEASE_DRIVER,
-      "retire",
-      args[1],
-      args[3],
-      args[5],
-      args[7],
-      args[9],
-    ]);
+    default:
+      return fail(USAGE);
   }
-
-  if (args.length === 2 && args[0] === "--resume") {
-    return run("rust-script", [RELEASE_DRIVER, "resume", args[1]]);
-  }
-  if (args.length === 3 && args[0] === "--resume" && args[2] === "--pin") {
-    return run("rust-script", [RELEASE_DRIVER, "resume", args[1], "--pin"]);
-  }
-  const bump = args[0];
-  let prepareOnly = false;
-  let autoConfirm = false;
-  let pin = false;
-  let pinnedTarget: string | null = null;
-  let targetValueIndex = -1;
-  for (let i = 1; i < args.length; i++) {
-    if (i === targetValueIndex) continue;
-    const arg = args[i];
-    if (arg === "--pinned-target") {
-      if (!(i + 1 < args.length && pinnedTarget === null)) {
-        return fail("Invalid internal pinned preparation target\n");
-      }
-      pinnedTarget = args[i + 1];
-      targetValueIndex = i + 1;
-      continue;
-    }
-    if (arg === "--prepare-only") {
-      prepareOnly = true;
-      continue;
-    }
-    if (arg === "-y") {
-      autoConfirm = true;
-      continue;
-    }
-    if (arg === "--pin") {
-      pin = true;
-      continue;
-    }
-    if (arg === "--force-tag") {
-      return fail("Error: --force-tag is not supported; published release tags are immutable.\n");
-    }
-    return fail("Unknown release arguments\n");
-  }
-  if (pin && prepareOnly) {
-    return fail("Error: --pin requires the release PR protocol.\n");
-  }
-  if (pinnedTarget !== null && (!prepareOnly || bump !== "minor")) {
-    return fail("Pinned target is internal to validated minor preparation\n");
-  }
-
-  const cargoToml = readFileToString("Cargo.toml");
-  if (cargoToml === null) {
-    return fail("Failed to read Cargo.toml\n");
-  }
-  const currentVersion = workspaceVersionFromContent(cargoToml);
-  if (currentVersion === null) {
-    return fail("Failed to read current version from Cargo.toml\n");
-  }
-  const ordinaryVersion = bumpVersion(currentVersion, bump);
-  if (ordinaryVersion === null) {
-    return fail("Failed to compute the next version\n");
-  }
-  let newVersion = ordinaryVersion;
-  if (pinnedTarget !== null) {
-    // Authentication precedes confirmation in this existing internal mode.
-    if (
-      (await run("rust-script", [
-        RELEASE_DRIVER,
-        "validate-preparation-target",
-        bump,
-        currentVersion,
-        pinnedTarget,
-      ])) !== 0
-    ) {
-      return fail("Pinned target was not authenticated; no release files changed\n");
-    }
-    newVersion = pinnedTarget;
-  }
-  const tag = `v${newVersion}`;
-
-  println(`Current version: ${currentVersion}`);
-  if (pin) {
-    println(
-      "The official pinned driver resolves the next unreserved version from immutable retirement evidence.",
-    );
-  } else {
-    println(`New version: ${newVersion} (tag: ${tag})`);
-  }
-  println("");
-
-  if (!autoConfirm) {
-    if (!(await hasInteractiveTerminal())) {
-      return fail(
-        "Error: Confirmation requires an interactive terminal. Re-run with -y to skip the prompt.\n",
-      );
-    }
-    if (!(await confirmRelease())) {
-      println("Aborted.");
-      return 1;
-    }
-  }
-
-  if (!prepareOnly) {
-    return run("rust-script", [RELEASE_DRIVER, "start", bump, ...(pin ? ["--pin"] : [])]);
-  }
-  return prepareCandidate(cargoToml, currentVersion, newVersion);
 }
 
 if (import.meta.main) {

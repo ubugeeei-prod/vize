@@ -61,13 +61,10 @@ await test("only an enabled channel publishes to JSR and runs the consumers", ()
   assert.equal(jsr.jobs.consumer?.if, enabled);
 });
 
-await test("the release calls the JSR workflow after the npm packages it re-exports", () => {
-  const release = workflow("release.yml").jobs["release-jsr"];
+await test("the release calls the JSR workflow once the npm packages it re-exports are visible", () => {
+  const release = workflow("release.yml").jobs["publish-jsr"];
   assert.equal(release?.uses, "./.github/workflows/release-jsr.yml");
-  const needs = new Set([release?.needs ?? []].flat());
-  for (const job of ["release-npm-cli", "release-npm-native", "release-npm-vite-plugin"]) {
-    assert.ok(needs.has(job), `release-jsr waits for ${job}`);
-  }
+  assert.ok([release?.needs ?? []].flat().includes("verify-npm"));
 });
 
 for (const [file, job, condition] of [

@@ -148,12 +148,13 @@ async function preparePublishManifest(directory: string): Promise<number> {
 }
 
 const USAGE =
-  "Usage: node tools/support/release/publish_npm_package/main.ts <dir> [--provenance] [--ignore-failure] [--retries N] [--delay N]\n";
+  "Usage: node tools/support/release/publish_npm_package/main.ts <dir> [--provenance] [--no-wait] [--ignore-failure] [--retries N] [--delay N]\n";
 
 /**
  * Main entry point for resilient single-package npm publishing.
  * The function first decides whether publishing is necessary, then performs
- * retries around `vp pm publish`, and finally waits for registry propagation.
+ * retries around `vp pm publish`, and finally waits for registry propagation
+ * unless `--no-wait` leaves that to a single post-publish verification.
  * `--ignore-failure` only affects the final hard failure after all retries and
  * visibility checks have been exhausted.
  */
@@ -171,11 +172,17 @@ export async function publishNpmPackage(args: readonly string[]): Promise<number
   const resolutionDelaySeconds = envPositiveInt("PUBLISH_RESOLUTION_RETRY_DELAY", delaySeconds);
   let provenance = false;
   let ignoreFailure = false;
+  let waitVisible = true;
   let index = 1;
   while (index < args.length) {
     const arg = args[index];
     if (arg === "--provenance") {
       provenance = true;
+      index += 1;
+      continue;
+    }
+    if (arg === "--no-wait") {
+      waitVisible = false;
       index += 1;
       continue;
     }
@@ -234,10 +241,10 @@ export async function publishNpmPackage(args: readonly string[]): Promise<number
 
   const maxAttempts = retries > 0 ? retries : 1;
   if (await npmVersionIsVisible(info.name, info.version, 0)) {
-    println(
-      `${info.name}@${info.version} is already published. Skipping publish and verifying registry visibility.`,
-    );
-    return waitForRegistryVisibility(info, resolutionRetries, resolutionDelaySeconds);
+    println(`${info.name}@${info.version} is already published. Skipping publish.`);
+    return waitVisible
+      ? waitForRegistryVisibility(info, resolutionRetries, resolutionDelaySeconds)
+      : 0;
   }
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     const commandDisplay = publishArgs.join(" ");
@@ -254,7 +261,9 @@ export async function publishNpmPackage(args: readonly string[]): Promise<number
       writeStderr(`${stderrText}\n`);
     }
     if (publish.status === 0) {
-      return waitForRegistryVisibility(info, resolutionRetries, resolutionDelaySeconds);
+      return waitVisible
+        ? waitForRegistryVisibility(info, resolutionRetries, resolutionDelaySeconds)
+        : 0;
     }
     if (await npmVersionIsVisible(info.name, info.version, 0 - attempt)) {
       println(

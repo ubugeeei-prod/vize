@@ -1,10 +1,8 @@
-import { run, writeStderr } from "../command_io.ts";
 import {
   isDir,
   joinPath,
   lexicalCompare,
   moonTrim,
-  nonEmptyEnv,
   pathExists,
   readDir,
   readFileToString,
@@ -104,50 +102,4 @@ export function replaceFirstVersionLine(
     updated.push(line);
   }
   return updated.join("\n");
-}
-
-/**
- * Detects whether the script can safely prompt the user for confirmation.
- * The release script is allowed to be interactive when run locally, but CI and
- * sessions without a controlling terminal must fail explicitly instead of
- * hanging on stdin reads.
- */
-export async function hasInteractiveTerminal(): Promise<boolean> {
-  return (await run("sh", ["-c", ": </dev/tty >/dev/tty"])) === 0;
-}
-
-/** Prompts through the controlling terminal because task runners keep stdin. */
-export async function confirmRelease(): Promise<boolean> {
-  const command =
-    "printf 'Proceed with release? [y/N] ' > /dev/tty; IFS= read -r answer < /dev/tty; case \"$answer\" in y|Y|yes|Yes|YES) exit 0 ;; *) exit 1 ;; esac";
-  return (await run("sh", ["-c", command])) === 0;
-}
-
-/**
- * Filters a list of candidate paths down to the ones that currently exist.
- * The release commit stages files opportunistically because some package
- * variants are optional in this repository.
- */
-export function stageFiles(files: readonly string[]): string[] {
-  return files.filter((file) => pathExists(file));
-}
-
-/**
- * Runs the shared immutable-tag and current-main guard before any mutation.
- * Tests may override the script path while exercising isolated repositories.
- */
-export async function runLocalReleaseGuard(tag: string): Promise<boolean> {
-  const script =
-    nonEmptyEnv("VIZE_RELEASE_GUARD_SCRIPT") ?? "tools/commands/ci/github/release-local-guard.rs";
-  if (!pathExists(script)) {
-    writeStderr(`Release preflight script not found: ${script}\n`);
-    return false;
-  }
-  const runner =
-    nonEmptyEnv("VIZE_RELEASE_GUARD_RUNNER") ?? (script.endsWith(".mjs") ? "node" : "rust-script");
-  if ((await run(runner, [script, tag, "--candidate"])) !== 0) {
-    writeStderr("Release preflight failed before repository mutation.\n");
-    return false;
-  }
-  return true;
 }

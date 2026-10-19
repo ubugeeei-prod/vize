@@ -245,11 +245,25 @@ function smokeInstallInvocations(workflow: string): string[][] {
   for (const job of Object.values(parsed.jobs ?? {})) {
     for (const step of job.steps ?? []) {
       if (!step.run?.includes("smoke-release-install.")) continue;
-      invocations.push(step.run.replace(/\\\n/gu, " ").trim().split(/\s+/u));
+      const line = step.run
+        .replace(/\\\n/gu, " ")
+        .split("\n")
+        .find((candidate) => candidate.includes("smoke-release-install."));
+      invocations.push((line ?? "").trim().split(/\s+/u));
     }
   }
   assert.ok(invocations.length > 0, `${workflow} runs no release smoke installer step`);
   return invocations;
+}
+
+/** Package directories named by a smoke invocation, including workflow env lists. */
+function smokedPackages(workflow: string, args: string[]): string[] {
+  const env = (
+    parse(readRepoFile(".github", "workflows", workflow)) as { env?: Record<string, string> }
+  ).env;
+  return args.includes('"${js[@]}"')
+    ? [...args, ...(env?.RELEASE_JS_PACKAGES ?? "").split(" ")]
+    : args;
 }
 
 function workflowSteps(workflow: string, jobName: string) {
@@ -291,7 +305,9 @@ test("release workflows run the runtime matrix with every required package", () 
     }
     assert.ok(
       runtimeSmokeArgs.some(
-        (args) => args.includes("--prepare-manifests") && args.includes("npm/cli"),
+        (args) =>
+          args.includes("--prepare-manifests") &&
+          smokedPackages(workflow, args).includes("npm/cli"),
       ),
       `${workflow} must run the runtime smoke over the packed CLI`,
     );
@@ -316,7 +332,7 @@ function assertRuntimeSmokePackageManagers(workflow: string, jobName: string) {
 
 test("fresh install runtime smokes expose every package manager they matrix", () => {
   assertRuntimeSmokePackageManagers("native-smoke.yml", "fresh-install-smoke");
-  assertRuntimeSmokePackageManagers("release.yml", "smoke-release-packages");
+  assertRuntimeSmokePackageManagers("release.yml", "smoke");
 });
 
 test("the documented generated check runs with outside vize path poison", () => {

@@ -24,7 +24,6 @@ test("GitHub workflows opt JavaScript actions into Node 24", () => {
     "miri.yml",
     "native-smoke.yml",
     "pkg-pr-new.yml",
-    "release-preflight.yml",
     "release.yml",
     "title-policy.yml",
     "tool-benchmark.yml",
@@ -127,16 +126,16 @@ test("GitHub workflows declare the expected cross-platform runner matrix", () =>
   assert.match(releasePlatforms, new RegExp(`host:\\s*"${hostedOrBlacksmith("windows-2025")}"`));
   const release = readRepoFile(".github", "workflows", "release.yml");
   assert.match(
-    workflowJobBody(release, "plan-release-platforms"),
+    workflowJobBody(release, "version"),
     /node tools\/support\/github\/release-platforms\.ts github-output/,
   );
   assert.match(
     workflowJobBody(release, "build-cli"),
-    /matrix:?[\s\S]*needs\.plan-release-platforms\.outputs\.cli_matrix/,
+    /matrix:?[\s\S]*needs\.version\.outputs\.cli_matrix/,
   );
   assert.match(
-    workflowJobBody(release, "build-native-all"),
-    /needs\.plan-release-platforms\.outputs\.native_matrix/,
+    workflowJobBody(release, "build-native"),
+    /needs\.version\.outputs\.native_matrix/,
   );
 });
 
@@ -284,7 +283,7 @@ test("Linux Rust CI installs Wild linker before cargo builds", () => {
   const release = readRepoFile(".github", "workflows", "release.yml");
   for (const [job, recipe] of [
     ["build-cli", "build-release-cli"],
-    ["build-native-all", "build-release-native"],
+    ["build-native", "build-release-native"],
   ]) {
     assert.match(
       workflowJobBody(release, job),
@@ -308,7 +307,7 @@ test("Blacksmith Rust CI uses sticky disks for Cargo and target caches", () => {
     "criterion-bench.yml",
     "fuzz.yml",
     "miri.yml",
-    "release-preflight.yml",
+    "release.yml",
     "tool-benchmark.yml",
   ]) {
     const workflow = readRepoFile(".github", "workflows", workflowName);

@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { test } from "node:test";
 
 import { repoRoot } from "./_helpers/tool-commands.ts";
-import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
+import { readRepoFile } from "./support/github-workflows.ts";
 
 const commandPath = "tools/support/github/clean-node-binaries.ts";
 
@@ -49,11 +49,9 @@ test("release recipes clean native binaries with Node type stripping", () => {
     readRepoFile(".github", "actions", "build-release-native", "action.yml"),
     /run: node tools\/support\/github\/clean-node-binaries\.ts npm\/native npm\/fresco-native$/m,
   );
-  for (const jobName of ["smoke-release-packages", "release-npm-fresco-native"]) {
-    assert.match(
-      workflowJobBody(workflow, jobName),
-      /node tools\/support\/github\/clean-node-binaries\.ts npm\/fresco-native$/m,
-    );
-  }
+  assert.match(
+    readRepoFile(".github", "actions", "release-npm-artifacts", "action.yml"),
+    /node tools\/support\/github\/clean-node-binaries\.ts npm\/fresco-native$/m,
+  );
   assert.doesNotMatch(workflow, /tools\/moon\/cmd\/github\/clean_node_binaries/);
 });

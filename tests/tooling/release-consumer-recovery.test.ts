@@ -458,10 +458,6 @@ test("recovery is an explicit read-only official operation; ordinary resume rema
   );
   assert.equal(recovery.jobs.consumer.strategy.matrix.include.length, 6);
   assert.equal(recovery.jobs.prepare.if, "github.ref == 'refs/heads/main'");
-  const operator = YAML.parse(file("release-operator.yml"));
-  assert.ok(operator.on.workflow_dispatch.inputs.operation.options.includes("recover-consumer"));
-  assert.equal(operator.jobs.operator.environment, "release-operator");
-  assert.match(file("release-operator.yml"), /vp run release --resume "\$RELEASE_SOURCE_PR" --pin/);
   const inputs = {
     PUBLIC_CUT: retained.identity.cut,
     PUBLIC_HEAD: retained.identity.head,

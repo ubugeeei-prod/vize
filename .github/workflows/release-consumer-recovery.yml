@@ -4,7 +4,6 @@ on:
     paths:
       - "npm/cli/src/corsa-runtime.ts"
       - ".github/workflows/release-consumer-recovery.yml"
-      - ".github/workflows/release-operator.yml"
       - ".github/workflows/release-public-acceptance.yml"
       - "tools/support/release/consumer_recovery/**"
       - "tools/support/release/public_acceptance/**"
@@ -14,7 +13,6 @@ on:
       - "tests/tooling/release-consumer-archive.test.ts"
       - "tests/tooling/release-consumer-integration.test.ts"
       - "tests/tooling/windows-hover-public-identity.test.ts"
-      - "tests/tooling/release/release-operator.test.ts"
       - "tests/_fixtures/release/consumer-recovery.json"
       - "tests/_fixtures/release/consumer-recovery-legacy-v1.json"
       - "tests/_fixtures/release/consumer-recovery-integration.json"
@@ -57,7 +55,6 @@ jobs:
       - name: Verify admission, installed acceptance and original consumer contracts
         run: |
           node --test tests/tooling/release-consumer-runtime.test.ts tests/tooling/release-consumer-recovery.test.ts tests/tooling/release-consumer-archive.test.ts tests/tooling/release-consumer-integration.test.ts tests/tooling/windows-hover-public-identity.test.ts tests/tooling/release/release-public-acceptance.test.ts tests/tooling/release-jsr-workflow.test.ts
-          node --test --test-name-pattern=hosted tests/tooling/release/release-operator.test.ts
       - if: github.event_name == 'pull_request'
         uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2
         with: { deno-version: "2.9.7", cache: false }

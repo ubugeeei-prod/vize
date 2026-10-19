@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -13,7 +12,6 @@ import {
   shellCommandForwardingArguments,
   withRustTaskEnvironment,
 } from "../../tools/config/vite-plus/task-shell.ts";
-import { localVp } from "../../tools/config/vite-plus/task-commands.ts";
 import { checkTasks } from "../../tools/config/vite-plus/tasks/check.ts";
 import { releaseTasks } from "../../tools/config/vite-plus/tasks/release.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
@@ -63,54 +61,13 @@ test("Rust task environments preserve forwarded arguments", () => {
   assert.match(command, / --$/);
 });
 
-test("release task runs the TypeScript release command and forwards vp run arguments", () => {
+test("release task dispatches the Release workflow and forwards vp run arguments", () => {
   const command = (releaseTasks.release as { command: string }).command;
 
-  assert.match(command, /node tools\/support\/release\/release\/main\.ts "\$@"/);
+  assert.match(command, /node tools\/support\/release\/release\/main\.ts dispatch "\$@"/);
   assert.doesNotMatch(command, /VIZE_RELEASE_REGISTRY_REFRESH|moon/);
   assert.match(command, / --$/);
 });
-
-function gitRepositoryState() {
-  const read = (...args: string[]) => {
-    const result = spawnSync("git", args, { encoding: "utf8" });
-    assert.equal(result.status, 0, result.stderr);
-    return result.stdout;
-  };
-  return {
-    head: read("rev-parse", "HEAD"),
-    status: read("status", "--porcelain=v1", "--untracked-files=all"),
-    tags: read("tag", "--list"),
-  };
-}
-
-test(
-  "release task prompts through a controlling terminal and aborts without mutation",
-  { skip: process.platform === "win32" },
-  () => {
-    const before = gitRepositoryState();
-    const result = spawnSync(
-      process.execPath,
-      [
-        "tests/tooling/support/pty-command.ts",
-        "Proceed with release? [y/N]",
-        "n\n",
-        localVp,
-        "run",
-        "release",
-        "minor",
-      ],
-      { encoding: "utf8", timeout: 30_000 },
-    );
-    const output = result.stdout + result.stderr;
-
-    assert.equal(result.error, undefined, output);
-    assert.equal(result.status, 1, output);
-    assert.match(output, /Proceed with release\? \[y\/N\]/);
-    assert.match(output, /Aborted\./);
-    assert.deepEqual(gitRepositoryState(), before);
-  },
-);
 
 test("repository JS check enforces the v1 alpha warning budget", () => {
   const command = (checkTasks["check:repo"] as { command: string }).command;

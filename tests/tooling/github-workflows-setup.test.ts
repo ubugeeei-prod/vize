@@ -122,7 +122,7 @@ test("WASM build jobs set up Node before invoking the TypeScript builders", () =
     },
     {
       workflowName: "release.yml",
-      jobName: "build-wasm-package",
+      jobName: "build-wasm",
       setup: "- uses: actions/setup-node@",
       command: "run: node tools/support/tasks/build-vize-wasm-package.ts",
     },

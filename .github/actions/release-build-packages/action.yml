@@ -1,5 +1,5 @@
 name: Build release npm packages
-description: Build and upload the candidate npm package artifacts
+description: Build the JS npm packages and upload them as one npm-packages artifact rooted at npm/
 runs:
   using: composite
   steps:
@@ -13,133 +13,27 @@ runs:
     - name: Build release npm packages
       shell: bash
       run: node tools/support/github/run-many.ts vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build -- vp run --filter './npm/oxlint' build -- vp run --filter './npm/builder/unplugin' build -- vp run --filter './npm/fresco' build -- vp run --filter './npm/mcp-musea' build -- vp run --filter './npm/builder/vite-musea' build -- vp run --filter './npm/builder/vite-musea' build:gallery -- vp run --filter './npm/builder/rspack' build -- vp run --filter './npm/framework/musea-nuxt' build -- vp run --filter './npm/framework/nuxt-lint-config' build -- vp run --filter './npm/framework/nuxt' build -- vp run --filter './npm/marquette' build -- vp run --filter './npm/compose/core' build -- vp run --filter './npm/ui' build
-    - name: Upload vize CLI package artifact
+    # Paths share the npm/ root, so downloading into npm/ restores every package in place.
+    - name: Upload npm packages
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
-        {
-          name: release-package-vize,
-          path: npm/cli,
-          if-no-files-found: error,
-          compression-level: 0,
-        }
-    - name: Upload Vite plugin artifact
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-      with:
-        {
-          name: release-package-vite-plugin-vize,
-          path: npm/builder/vite,
-          if-no-files-found: error,
-          compression-level: 0,
-        }
-    - name: Upload Oxlint plugin artifact
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-      with:
-        {
-          name: release-package-oxlint-plugin-vize,
-          path: npm/oxlint,
-          if-no-files-found: error,
-          compression-level: 0,
-        }
-    - name: Upload unplugin artifact
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-      with:
-        {
-          name: release-package-unplugin-vize,
-          path: npm/builder/unplugin,
-          if-no-files-found: error,
-          compression-level: 0,
-        }
-    - name: Upload Fresco artifact
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-      with:
-        {
-          name: release-package-fresco,
-          path: npm/fresco,
-          if-no-files-found: error,
-          compression-level: 0,
-        }
-    - name: Upload Musea MCP server artifact
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-      with:
-        {
-          name: release-package-musea-mcp-server,
-          path: npm/mcp-musea,
-          if-no-files-found: error,
-          compression-level: 0,
-        }
-    - name: Upload Musea Vite plugin artifact
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-      with:
-        {
-          name: release-package-vite-plugin-musea,
-          path: npm/builder/vite-musea,
-          if-no-files-found: error,
-          compression-level: 0,
-        }
-    - name: Upload Rspack plugin artifact
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-      with:
-        {
-          name: release-package-rspack-vize-plugin,
-          path: npm/builder/rspack,
-          if-no-files-found: error,
-          compression-level: 0,
-        }
-    - name: Upload Musea Nuxt artifact
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-      with:
-        {
-          name: release-package-musea-nuxt,
-          path: npm/framework/musea-nuxt,
-          if-no-files-found: error,
-          compression-level: 0,
-        }
-    - name: Upload Nuxt lint config artifact
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-      with:
-        {
-          name: release-package-nuxt-lint-config,
-          path: npm/framework/nuxt-lint-config,
-          if-no-files-found: error,
-          compression-level: 0,
-        }
-    - name: Upload Nuxt artifact
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-      with:
-        {
-          name: release-package-nuxt,
-          path: npm/framework/nuxt,
-          if-no-files-found: error,
-          compression-level: 0,
-        }
-    - name: Upload marquette package artifact
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-      with:
-        {
-          name: release-package-marquette,
-          path: npm/marquette,
-          if-no-files-found: error,
-          compression-level: 0,
-        }
-    - name: Upload compose core package artifact
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-      with:
-        {
-          name: release-package-composable,
-          path: npm/compose/core,
-          if-no-files-found: error,
-          compression-level: 0,
-        }
-    - name: Upload ui package artifact
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-      with:
-        { name: release-package-ui, path: npm/ui, if-no-files-found: error, compression-level: 0 }
-    - name: Upload plugin SDK artifact
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-      with:
-        {
-          name: release-package-plugin-sdk,
-          path: npm/plugin-sdk,
-          if-no-files-found: error,
-          compression-level: 0,
-        }
+        name: npm-packages
+        path: |
+          npm/cli
+          npm/builder/vite
+          npm/oxlint
+          npm/builder/unplugin
+          npm/fresco
+          npm/mcp-musea
+          npm/builder/vite-musea
+          npm/builder/rspack
+          npm/framework/musea-nuxt
+          npm/framework/nuxt-lint-config
+          npm/framework/nuxt
+          npm/marquette
+          npm/compose/core
+          npm/ui
+          npm/plugin-sdk
+          !npm/**/node_modules
+        if-no-files-found: error
+        compression-level: 1

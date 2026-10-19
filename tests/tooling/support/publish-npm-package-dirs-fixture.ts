@@ -5,25 +5,15 @@ import path from "node:path";
 
 import { writeFakeCommand } from "./fake-command.ts";
 
-type PublishResult = { package_dir: string; exit_code: number; walltime_ms: number };
-type PublishReceipt = {
-  schema_version: number;
-  concurrency: number;
-  package_count: number;
-  walltime_ms: number;
-  exit_code: number;
-  results: PublishResult[];
-};
 type Event = { phase: "start" | "end"; package: string; time: number; args: string[] };
 
-// The parent is the actual platform publisher command. Only its single-package
+// The parent is the actual multi-package publisher command. Only its single-package
 // publisher subprocess is mocked, with a deterministic registry-wait-like delay.
 export function controlledPublishFixture(packageCount = 8) {
   const tempDir = mkdtempSync(path.join(tmpdir(), "release-publish-concurrency-"));
   const baseDir = path.join(tempDir, "packages with ' spaces");
   const binDir = path.join(tempDir, "bin");
   const eventLog = path.join(tempDir, "events.jsonl");
-  const receiptPath = path.join(tempDir, "receipt.json");
   fs.mkdirSync(binDir, { recursive: true });
   for (let i = 0; i < packageCount; i++) {
     const dir = path.join(baseDir, `pkg-${i}`);
@@ -71,14 +61,12 @@ export function controlledPublishFixture(packageCount = 8) {
     baseDir,
     binDir,
     env,
-    receiptPath,
     events: () =>
       fs
         .readFileSync(eventLog, "utf8")
         .trim()
         .split("\n")
         .map((line) => JSON.parse(line) as Event),
-    receipt: () => JSON.parse(fs.readFileSync(receiptPath, "utf8")) as PublishReceipt,
     cleanup: () => rmSync(tempDir, { recursive: true, force: true }),
   };
 }

@@ -38,53 +38,17 @@ function collectNativeBinaryCatalogPins(workspaceYaml: string): Record<string, s
   return pins;
 }
 
-function minimumReleaseAgeExcludeVersions(workspaceYaml: string, packageName: string): string[] {
+/** First-party native binaries are age-exempt by one name pattern, never per version. */
+function assertNativeAgeExclusion(workspaceYaml: string): void {
   const exclude = (parse(workspaceYaml) as { minimumReleaseAgeExclude?: unknown })
     .minimumReleaseAgeExclude;
   assert.ok(Array.isArray(exclude), "minimumReleaseAgeExclude must be an array");
-  for (const entry of exclude)
-    assert.equal(typeof entry, "string", "minimumReleaseAgeExclude entries must be strings");
-  const entry = (exclude as string[]).find((candidate) => candidate.startsWith(`${packageName}@`));
-  assert.ok(entry, `${packageName} is missing from minimumReleaseAgeExclude`);
-  return entry.slice(packageName.length + 1).split(" || ");
+  const native = (exclude as string[]).filter((entry) => entry.startsWith("@vizejs/native"));
+  assert.deepEqual(native, ["@vizejs/native-*"]);
 }
 
 function readRepoFile(filePath: string): string {
   return fs.readFileSync(path.join(root, filePath), "utf-8");
-}
-
-function releaseWorkflowJobBlock(jobName: string): string {
-  const workflow = readRepoFile(".github/workflows/release.yml");
-  const startMarker = `  ${jobName}:\n`;
-  const start = workflow.indexOf(startMarker);
-  assert.notEqual(start, -1, `missing release workflow job ${jobName}`);
-
-  const rest = workflow.slice(start + startMarker.length);
-  const nextJob = rest.search(/\n  [a-zA-Z0-9_-]+:\n/);
-  return nextJob === -1 ? rest : rest.slice(0, nextJob);
-}
-
-function parseNeedsList(value: string): string[] {
-  return value.match(/[a-zA-Z0-9][a-zA-Z0-9_-]*/g) ?? [];
-}
-
-function releaseWorkflowNeeds(jobName: string): string[] {
-  const block = releaseWorkflowJobBlock(jobName);
-  const inline = block.match(/^    needs:\s*\[(?<needs>[^\]]+)\]/m)?.groups?.needs;
-  if (inline != null) {
-    return parseNeedsList(inline);
-  }
-
-  const lines = block.split("\n");
-  const needsLine = lines.findIndex((line) => /^    needs:\s*$/.test(line));
-  assert.notEqual(needsLine, -1, `missing needs for release workflow job ${jobName}`);
-
-  const needsBlock: string[] = [];
-  for (const line of lines.slice(needsLine + 1)) {
-    if (/^    \S/.test(line)) break;
-    needsBlock.push(line);
-  }
-  return parseNeedsList(needsBlock.join("\n"));
 }
 
 test("native package catalog pins and generated loader version checks stay aligned", () => {
@@ -125,11 +89,8 @@ test("native package catalog pins and generated loader version checks stay align
       new RegExp(`['"]?${escapedName}['"]?:\\n\\s+specifier: ${escapeRegExp(catalogVersion)}\\n`),
       `${name} lockfile catalog specifier should match @vizejs/native version`,
     );
-    assert.ok(
-      minimumReleaseAgeExcludeVersions(workspaceYaml, name).includes(catalogVersion),
-      `${name} ${catalogVersion} should be allowed by minimumReleaseAgeExclude`,
-    );
   }
+  assertNativeAgeExclusion(workspaceYaml);
 
   const nativeTargetsLoader = fs.readFileSync(
     path.join(root, "npm/native/native-targets.js"),
@@ -267,23 +228,8 @@ test("documented install commands point at supported release artifacts", () => {
   }
 });
 
-test("release workflow publishes npm packages after their npm dependencies", () => {
-  const vitePluginNeeds = releaseWorkflowNeeds("release-npm-vite-plugin");
-  const nuxtNeeds = releaseWorkflowNeeds("release-npm-nuxt");
-
-  assert.ok(vitePluginNeeds.includes("release-npm-cli"));
-  assert.ok(nuxtNeeds.includes("release-npm-cli"));
-  assert.ok(nuxtNeeds.includes("release-npm-vite-plugin"));
-  assert.ok(nuxtNeeds.includes("release-npm-vite-plugin-musea"));
-  assert.ok(vitePluginNeeds.includes("release-npm-unplugin"));
-  assert.ok(
-    releaseWorkflowNeeds("release-npm-vite-plugin-musea").includes("release-npm-vite-plugin"),
-  );
-  const nuxtPackage = JSON.parse(readRepoFile("npm/framework/nuxt/package.json"));
-  assert.equal(nuxtPackage.dependencies["@vizejs/musea-nuxt"], undefined);
-  assert.equal(nuxtNeeds.includes("release-npm-musea-nuxt"), false);
-
-  const contracts = parse(readRepoFile(".github/workflows/release-preflight-contracts.yml"));
+test("release contracts run the manifest tests", () => {
+  const contracts = parse(readRepoFile(".github/workflows/release-contracts.yml"));
   const steps = contracts.jobs.contracts.steps as Array<{ run?: string }>;
   for (const filename of [
     "tests/tooling/package-manifests.test.ts",

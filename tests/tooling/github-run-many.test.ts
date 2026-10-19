@@ -75,7 +75,7 @@ test("docs and release workflows run command groups with Node", () => {
   const docsWorkflow = readRepoFile(".github", "workflows", "build-docs.yml");
   const releaseWorkflow = readRepoFile(".github", "workflows", "release.yml");
   assert.match(
-    workflowJobBody(releaseWorkflow, "build-release-packages"),
+    workflowJobBody(releaseWorkflow, "build-packages"),
     /uses: \.\/\.github\/actions\/release-build-packages/,
   );
 
@@ -91,7 +91,7 @@ test("docs and release workflows run command groups with Node", () => {
       "node tools/support/github/run-many.ts vp run --filter './npm/native' build:ci",
     ],
     [
-      "release.yml:build-release-packages",
+      "release.yml:build-packages",
       readRepoFile(".github", "actions", "release-build-packages", "action.yml"),
       "node tools/support/github/run-many.ts vp run --filter './npm/cli' build",
     ],

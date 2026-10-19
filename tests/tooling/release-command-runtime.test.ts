@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -104,12 +105,22 @@ test("directory reads keep raw entries and report opendir failures like the orig
     fs.writeFileSync(path.join(root, "b"), "");
     fs.mkdirSync(path.join(root, "a"));
     assert.deepEqual(readDir(root).sort(), ["a", "b"]);
-    const missing = runReleaseCommand("release", ["--print-extra-package-json-paths"], {
-      cwd: root,
-    });
+    const runtime = path.join(
+      import.meta.dirname,
+      "../../tools/support/release/command_runtime.ts",
+    );
+    const missing = spawnSync(
+      process.execPath,
+      [
+        "--input-type=module",
+        "-e",
+        `import { readDir } from ${JSON.stringify(runtime)}; console.log(JSON.stringify(readDir("missing")));`,
+      ],
+      { cwd: root, encoding: "utf8" },
+    );
     assert.equal(missing.status, 0);
     assert.equal(missing.stderr, "opendir: No such file or directory\n");
-    assert.equal(missing.stdout, "editors/vscode/package.json\neditors/vscode-art/package.json\n");
+    assert.equal(missing.stdout, "[]\n");
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }

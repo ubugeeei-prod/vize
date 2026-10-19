@@ -1,143 +1,162 @@
 name: Release
+# Dispatch on main (or `vp run release`) to publish the next minor version.
+#
+# main is already validated by the merge queue, so nothing here re-runs Check.
+# `version` picks the next minor above every tag and npm version, stamps it into
+# all manifests, and pushes tag vX.Y.0 on a commit whose only parent is the
+# dispatched main commit. main itself is never rewritten. Every other job builds
+# that tag: all platforms build in parallel, one pre-publish smoke gates the
+# registries, every registry publishes in parallel, and npm publishes all of
+# its packages at once because npm does not resolve dependencies at publish
+# time. Registry visibility is checked once, after publishing.
+# Re-running failed jobs is safe: every publisher skips versions that exist.
 on:
   workflow_dispatch:
     inputs:
-      tag_name:
-        {
-          description: Release tag for the candidate or published crate handoff,
-          required: true,
-          type: string,
-        }
-      release_pr:
-        description: Release PR number (empty for the manual crate handoff)
+      version:
+        description: Exact version to release (default the next minor)
         required: false
         default: ""
         type: string
-      expected_sha:
-        description: Exact validated release PR commit
-        required: false
-        default: ""
-        type: string
-      qualification_deadline:
-        description: Original absolute full-Check qualification deadline in Unix milliseconds
-        required: false
-        default: ""
-        type: string
-      pinned:
-        description: Publish an immutable source cut after a protected version integration
-        required: false
-        default: false
-        type: boolean
-      crate_set:
-        {
-          description: Manual handoff crate set to publish,
-          required: true,
-          default: jsx-patina,
-          type: choice,
-          options: [jsx-patina],
-        }
-run-name: >-
-  ${{ inputs.release_pr != '' && (inputs.pinned && format('Pinned Release {0} PR #{1} @ {2}', inputs.tag_name, inputs.release_pr, inputs.expected_sha) || format('Release {0} PR #{1} @ {2}', inputs.tag_name, inputs.release_pr, inputs.expected_sha)) || format('Release crate handoff {0}', inputs.tag_name) }}
+run-name: Release ${{ inputs.version || 'next minor' }}
 concurrency:
-  group: ${{ inputs.release_pr != '' && 'release-candidates' || format('release-crates-handoff-{0}-{1}', inputs.tag_name, inputs.crate_set) }}
+  group: release
   cancel-in-progress: false
 permissions: { contents: read }
 env:
   CARGO_INCREMENTAL: 0
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  PUBLISH_RETRY_LIMIT: 6
-  PUBLISH_RETRY_DELAY: 10
-  PUBLISH_RESOLUTION_RETRY_LIMIT: 60
-  PUBLISH_RESOLUTION_RETRY_DELAY: 10
-  NPM_TAG: ${{ contains(inputs.tag_name, '-alpha') && 'alpha' || contains(inputs.tag_name, '-beta') && 'beta' || contains(inputs.tag_name, '-rc') && 'rc' || 'latest' }}
+  # JS packages built by ./.github/actions/release-build-packages.
+  RELEASE_JS_PACKAGES: npm/cli npm/builder/vite npm/oxlint npm/builder/unplugin npm/fresco npm/mcp-musea npm/builder/vite-musea npm/builder/rspack npm/framework/musea-nuxt npm/framework/nuxt-lint-config npm/framework/nuxt npm/marquette npm/compose/core npm/ui npm/plugin-sdk
 jobs:
-  candidate:
-    if: inputs.release_pr != ''
-    name: Authorize release candidate
+  version:
+    if: github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main'
+    name: Tag the release version
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    permissions: { contents: read, pull-requests: read }
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { fetch-depth: 0, persist-credentials: false }
-      - uses: dtolnay/rust-toolchain@02cb101ec7c40f2c49e1d9714d64511d8e1b74de # master
-        with: { toolchain: stable }
-      - uses: ./.github/actions/setup-rust-script
-      - name: Verify author, current main and exact PR commit
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RELEASE_PR: ${{ inputs.release_pr }}
-          RELEASE_SHA: ${{ inputs.expected_sha }}
-          RELEASE_TAG: ${{ inputs.tag_name }}
-          RELEASE_PINNED: ${{ inputs.pinned }}
-        run: |
-          if [ "$RELEASE_PINNED" = true ]; then
-            rust-script tools/commands/release/pr.rs validate-pinned "$RELEASE_PR" "$RELEASE_SHA" "$RELEASE_TAG"
-          else
-            rust-script tools/commands/release/pr.rs validate "$RELEASE_PR" "$RELEASE_SHA" "$RELEASE_TAG"
-          fi
-  plan-release-platforms:
-    if: inputs.release_pr != ''
-    needs: candidate
-    name: Plan release platforms
-    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
+    permissions: { contents: write }
     outputs:
-      include_slow_platforms: ${{ steps.platforms.outputs.include_slow_platforms }}
-      release_minor: ${{ steps.platforms.outputs.release_minor }}
+      version: ${{ steps.cut.outputs.version }}
+      tag: ${{ steps.cut.outputs.tag }}
+      sha: ${{ steps.cut.outputs.sha }}
       cli_matrix: ${{ steps.platforms.outputs.cli_matrix }}
       native_matrix: ${{ steps.platforms.outputs.native_matrix }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: "package.json", package-manager-cache: false }
+      - name: Stamp, commit and push the release tag
+        id: cut
+        env: { RELEASE_VERSION: "${{ inputs.version }}" }
+        run: node tools/support/release/release/main.ts cut ${RELEASE_VERSION:+"$RELEASE_VERSION"}
       - name: Select release platforms
         id: platforms
-        env:
-          RELEASE_REF_NAME: ${{ inputs.tag_name }}
-        run: node tools/support/github/release-platforms.ts github-output "$RELEASE_REF_NAME"
+        env: { RELEASE_TAG: "${{ steps.cut.outputs.tag }}" }
+        run: node tools/support/github/release-platforms.ts github-output "$RELEASE_TAG"
+
   build-cli:
     name: Build CLI - ${{ matrix.settings.target }}
-    needs: plan-release-platforms
+    needs: version
     runs-on: ${{ matrix.settings.host }}
-    timeout-minutes: 90
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
-        settings: ${{ fromJSON(needs.plan-release-platforms.outputs.cli_matrix) }}
+        settings: ${{ fromJSON(needs.version.outputs.cli_matrix) }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
       - uses: ./.github/actions/build-release-cli
         with:
           target: ${{ matrix.settings.target }}
           archive: ${{ matrix.settings.archive }}
           authorized-release: "true"
 
-  build-editor-extensions:
-    if: inputs.release_pr != ''
-    needs: candidate
-    name: Build Editor Extensions
+  build-native:
+    name: Build Native - ${{ matrix.settings.target }}
+    needs: version
+    runs-on: ${{ matrix.settings.host }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        settings: ${{ fromJSON(needs.version.outputs.native_matrix) }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
+      - uses: ./.github/actions/build-release-native
+        with:
+          target: ${{ matrix.settings.target }}
+          cross-compile: ${{ matrix.settings.cross_compile }}
+          authorized-release: "true"
+
+  build-packages:
+    name: Build npm packages
+    needs: version
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
+      - uses: ./.github/actions/release-build-packages
+
+  build-wasm:
+    name: Build @vizejs/wasm
+    needs: version
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable, targets: wasm32-unknown-unknown }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          reuse-target: "true"
+          restore-trusted: "true"
+          key: release-wasm
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
+      - uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
+        with: { tool: wasm-bindgen-cli@0.2.129 }
+      - name: Build WASM
+        run: node tools/support/tasks/build-vize-wasm-package.ts
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: "package.json", run-install: true }
+      - name: Smoke @vizejs/wasm
+        run: |
+          rust-script tools/commands/release/npm/smoke-wasm-package.rs npm/wasm
+          node tools/commands/release/npm/smoke-release-install.ts npm/wasm
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: npm-package-wasm
+          path: npm/wasm
+          if-no-files-found: error
+          compression-level: 1
+
+  build-editor-extensions:
+    name: Build editor extensions
+    needs: version
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: "package.json", cache: true, run-install: false }
       - name: Install JS dependencies
         run: vp install --workspace-root --frozen-lockfile --prefer-offline
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          {
-            reuse-target: "true",
-            restore-trusted: "true",
-            key: release-tools,
-            cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}",
-          }
+          reuse-target: "true"
+          restore-trusted: "true"
+          key: release-tools
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: ./.github/actions/setup-rust-script
-      # upload-artifact only fails when NO path matches, so every path it uploads needs a task here.
       - name: Package editor extensions
         run: |
           vp run --workspace-root package:vscode-extension
@@ -147,8 +166,7 @@ jobs:
           vp run --workspace-root package:vim-extension
           vp run --workspace-root package:helix-extension
           vp run --workspace-root package:emacs-extension
-      - name: Upload artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: editor-extensions
           path: |
@@ -160,784 +178,172 @@ jobs:
             zed-vize-extension.tar.gz
           if-no-files-found: error
           compression-level: 0
-  release-vscode-extension:
-    name: Release VS Code extension
-    runs-on: blacksmith-32vcpu-ubuntu-2404
-    needs: [build-editor-extensions, release-preflight]
-    timeout-minutes: 30
-    environment: vscode-marketplace
-    permissions: { contents: read }
-    env:
-      PUBLISH_RESOLUTION_RETRY_LIMIT: "90"
-      VSCE_DLX_BIN: npx
-      VSCE_PAT: "${{ secrets.VSCE_PAT }}"
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: "package.json", run-install: false }
-      - name: Download editor extension artifact
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: editor-extensions, path: editor-extension-artifacts }
-      - name: Require VS Code Marketplace credentials
-        run: |
-          if [ -z "${VSCE_PAT:-}" ]; then
-            echo "::error::VSCE_PAT is required in the protected vscode-marketplace environment."
-            exit 1
-          fi
-      - name: Publish VS Code extension
-        run: node tools/support/release/publish_vscode_extension/main.ts editor-extension-artifacts/editors/vscode/dist/vize.vsix
-  build-release-packages:
-    if: inputs.release_pr != ''
-    needs: candidate
-    name: Build release npm packages
-    runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 45
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: ./.github/actions/release-build-packages
-  build-wasm-package:
-    if: inputs.release_pr != ''
-    needs: candidate
-    name: Build @vizejs/wasm package
-    runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with: { node-version-file: "package.json", package-manager-cache: false }
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with:
-          toolchain: stable
-          targets: wasm32-unknown-unknown
-      - uses: ./.github/actions/setup-rust-sticky-cache
-        with:
-          # Reuse trusted Cargo build caches after pruning outputs from prior runs.
-          reuse-target: "true"
-          restore-trusted: "true"
-          key: release-wasm
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - uses: ./.github/actions/setup-rust-script
-      - name: Cache WASM package build
-        id: cache-wasm
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
-        with:
-          path: npm/wasm
-          key: ${{ runner.os }}-release-wasm-${{ hashFiles('crates/**/*.rs', 'davinci/**/*.rs', 'Cargo.lock', 'npm/wasm/package.json', 'npm/wasm/index.js', 'npm/wasm/index.d.ts', 'npm/wasm/lint-format.d.ts', 'tools/support/tasks/build-vize-wasm-package.ts', 'tools/support/tasks/build-vitrine-wasm.ts', 'tools/support/command-runtime.ts') }}
-      - name: Install wasm-bindgen-cli
-        if: steps.cache-wasm.outputs.cache-hit != 'true'
-        uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
-        with:
-          tool: wasm-bindgen-cli@0.2.129
-      - name: Build WASM
-        if: steps.cache-wasm.outputs.cache-hit != 'true'
-        run: node tools/support/tasks/build-vize-wasm-package.ts
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: "package.json", run-install: true }
-      - name: Smoke @vizejs/wasm package
-        run: rust-script tools/commands/release/npm/smoke-wasm-package.rs npm/wasm
-      - name: Smoke install WASM package tarball before promotion
-        run: node tools/commands/release/npm/smoke-release-install.ts npm/wasm
-      - name: Upload WASM package artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: release-package-vize-wasm
-          path: npm/wasm
-          if-no-files-found: error
-          compression-level: 0
-  build-native-all:
-    name: Build Native - ${{ matrix.settings.target }}
-    needs: plan-release-platforms
-    runs-on: ${{ matrix.settings.host }}
-    timeout-minutes: 90
-    strategy:
-      fail-fast: false
-      matrix:
-        settings: ${{ fromJSON(needs.plan-release-platforms.outputs.native_matrix) }}
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: ./.github/actions/build-release-native
-        with:
-          target: ${{ matrix.settings.target }}
-          cross-compile: ${{ matrix.settings.cross_compile }}
-          authorized-release: "true"
 
-  smoke-release-packages:
-    name: Smoke release npm package installs
+  # The single pre-publish gate: install every package tarball together and
+  # run it. Runs without registry credentials.
+  smoke:
+    name: Smoke package tarballs
+    needs: [version, build-packages, build-native]
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    needs: [plan-release-platforms, build-release-packages, build-native-all]
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - name: Setup runtime package managers
-        uses: ./.github/actions/setup-runtime-package-managers
+        with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
+      - uses: ./.github/actions/setup-runtime-package-managers
         with: { node-version-file: "package.json" }
-      - name: Install native package tooling dependencies
-        run: vp install --frozen-lockfile --prefer-offline --filter './npm/native...' --filter './npm/fresco-native...'
-      - name: Download vize CLI package artifact
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-vize, path: npm/cli }
-      - name: Download Vite plugin artifact
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-vite-plugin-vize, path: npm/builder/vite }
-      - name: Download Oxlint plugin artifact
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-oxlint-plugin-vize, path: npm/oxlint }
-      - name: Download unplugin artifact
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-unplugin-vize, path: npm/builder/unplugin }
-      - name: Download Fresco artifact
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-fresco, path: npm/fresco }
-      - name: Download Musea MCP server artifact
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-musea-mcp-server, path: npm/mcp-musea }
-      - name: Download Musea Vite plugin artifact
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-vite-plugin-musea, path: npm/builder/vite-musea }
-      - name: Download Rspack plugin artifact
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-rspack-vize-plugin, path: npm/builder/rspack }
-      - name: Download Musea Nuxt artifact
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-musea-nuxt, path: npm/framework/musea-nuxt }
-      - name: Download Nuxt lint config artifact
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-nuxt-lint-config, path: npm/framework/nuxt-lint-config }
-      - name: Download Nuxt artifact
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-nuxt, path: npm/framework/nuxt }
-      - name: Download marquette package artifact
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-marquette, path: npm/marquette }
-      - name: Download compose core package artifact
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-composable, path: npm/compose/core }
-      - name: Download ui package artifact
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-ui, path: npm/ui }
-      - name: Download plugin SDK artifact
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-plugin-sdk, path: npm/plugin-sdk }
-      - name: Download vize native artifacts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { pattern: bindings-*, path: npm/native/artifacts }
-      - name: Download fresco native artifacts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { pattern: fresco-bindings-*, path: npm/fresco-native/artifacts }
-      - name: Apply slow platform release cadence
-        env:
-          RELEASE_REF_NAME: ${{ inputs.tag_name }}
-        run: node tools/support/github/release-platforms.ts apply-cadence "$RELEASE_REF_NAME" npm/native/package.json npm/oxlint/package.json
-      - name: Prepare native package tarballs
-        working-directory: npm/native
-        run: |
-          vp exec napi create-npm-dirs
-          vp exec napi artifacts --output-dir artifacts
-          vp exec napi pre-publish -t npm --no-gh-release --skip-optional-publish
-      - name: Prepare Fresco native package tarball
-        run: |
-          node tools/support/github/clean-node-binaries.ts npm/fresco-native
-          node tools/support/github/collect-native-artifacts.ts npm/fresco-native/artifacts npm/fresco-native fresco-native
+      - uses: ./.github/actions/release-npm-artifacts
       - name: Smoke install release package tarballs
         run: |
+          read -ra js <<< "$RELEASE_JS_PACKAGES"
           node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests --runtime-checks \
-            npm/native npm/native/npm/* \
-            npm/fresco-native \
-            npm/cli \
-            npm/builder/vite \
-            npm/oxlint \
-            npm/builder/unplugin \
-            npm/fresco \
-            npm/mcp-musea \
-            npm/builder/vite-musea \
-            npm/builder/rspack \
-            npm/framework/musea-nuxt \
-            npm/framework/nuxt-lint-config \
-            npm/framework/nuxt \
-            npm/marquette \
-            npm/compose/core \
-            npm/ui \
-            npm/plugin-sdk
-  candidate-preflight:
-    needs: candidate
-    permissions: { actions: read, contents: read, issues: read, pull-requests: read }
-    uses: ./.github/workflows/release-preflight.yml
-    with:
-      release_pr: ${{ inputs.release_pr }}
-      tag_name: ${{ inputs.tag_name }}
-      pinned: ${{ inputs.pinned }}
-      qualification_deadline: ${{ inputs.qualification_deadline }}
-  candidate-ready:
-    name: Release candidate ready
-    needs:
-      [
-        candidate-preflight,
-        build-cli,
-        build-editor-extensions,
-        build-release-packages,
-        build-wasm-package,
-        build-native-all,
-        smoke-release-packages,
-      ]
+            npm/native npm/native/npm/* npm/fresco-native "${js[@]}"
+
+  publish-npm:
+    name: Publish npm packages
+    needs: [version, build-wasm, smoke]
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    steps:
-      - run: echo "All release artifacts and preflight gates passed for this candidate."
-  release-preflight:
-    needs: candidate-ready
-    permissions: { contents: read, pull-requests: read }
-    uses: ./.github/workflows/release-promotion.yml
-    with:
-      release_pr: ${{ inputs.release_pr }}
-      expected_sha: ${{ inputs.expected_sha }}
-      tag_name: ${{ inputs.tag_name }}
-      pinned: ${{ inputs.pinned }}
-  release-npm-native:
-    name: Release @vizejs/native to npm
-    runs-on: ubuntu-24.04
-    needs: [plan-release-platforms, build-native-all, release-preflight]
-    timeout-minutes: 60
-    environment: npm
-    permissions: { contents: read, id-token: write }
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: "package.json", cache: true, run-install: false }
-      - name: Install dependencies
-        run: vp install --frozen-lockfile --prefer-offline --filter './npm/native...'
-      - name: Download all artifacts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          pattern: bindings-*
-          path: npm/native/artifacts
-      - name: Apply slow platform release cadence
-        env:
-          RELEASE_REF_NAME: ${{ inputs.tag_name }}
-        run: node tools/support/github/release-platforms.ts apply-cadence "$RELEASE_REF_NAME" npm/native/package.json
-      - name: Create npm platform directories
-        working-directory: npm/native
-        run: vp exec napi create-npm-dirs
-      - name: Move artifacts
-        working-directory: npm/native
-        run: vp exec napi artifacts --output-dir artifacts
-      - name: Prepare for publish
-        working-directory: npm/native
-        run: vp exec napi pre-publish -t npm --no-gh-release --skip-optional-publish
-      - name: List packages
-        run: ls -R npm/native/npm/
-      - name: Smoke install native package tarballs
-        run: node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests --runtime-checks npm/native npm/native/npm/*
-      - name: Publish platform packages
-        run: node tools/support/release/publish_npm_package_dirs/main.ts npm/native/npm --concurrency 8 --provenance --receipt "$RUNNER_TEMP/native-platform-publish.json"
-      - name: Publish
-        run: node tools/support/release/publish_npm_package/main.ts npm/native --provenance
-      - name: Upload native platform publish receipt
-        if: ${{ always() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: native-platform-publish-receipt
-          path: ${{ runner.temp }}/native-platform-publish.json
-          if-no-files-found: warn
-  release-npm-fresco-native:
-    name: Release @vizejs/fresco-native to npm
-    runs-on: ubuntu-24.04
-    needs: [build-native-all, release-preflight]
     timeout-minutes: 20
     environment: npm
     permissions: { contents: read, id-token: write }
+    outputs:
+      packages: ${{ steps.publish.outputs.packages }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: "package.json", cache: true, run-install: false }
-      - name: Install dependencies
-        run: vp install --frozen-lockfile --prefer-offline --filter './npm/fresco-native...'
-      - name: Download all artifacts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          pattern: fresco-bindings-*
-          path: npm/fresco-native/artifacts
-      - name: Clean bundled native binaries
-        run: node tools/support/github/clean-node-binaries.ts npm/fresco-native
-      - name: Stage bundled native binaries
-        run: node tools/support/github/collect-native-artifacts.ts npm/fresco-native/artifacts npm/fresco-native fresco-native
-      - name: Smoke install Fresco native package tarball
-        run: node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests npm/fresco-native
-      - name: Publish
-        run: node tools/support/release/publish_npm_package/main.ts npm/fresco-native --provenance
+      - uses: ./.github/actions/release-npm-artifacts
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with: { name: npm-package-wasm, path: npm/wasm }
+      - name: Publish every package in parallel
+        id: publish
+        run: |
+          read -ra js <<< "$RELEASE_JS_PACKAGES"
+          dirs=(npm/native/npm npm/native npm/fresco-native npm/wasm "${js[@]}")
+          node tools/support/release/publish_npm_package_dirs/main.ts "${dirs[@]}" --concurrency 16 --provenance --no-wait
+          echo "packages=$(node tools/support/release/publish_npm_package_dirs/main.ts --names "${dirs[@]}")" >> "$GITHUB_OUTPUT"
 
-  # Publish WASM package (using Trusted Publishing / OIDC)
-  release-npm-wasm:
-    name: Release @vizejs/wasm to npm
-    runs-on: ubuntu-24.04
-    needs: [build-wasm-package, release-preflight]
-    timeout-minutes: 30
-    environment: npm
-    permissions: { contents: read, id-token: write }
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - name: Setup Vite+ and Node.js
-        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: "package.json", run-install: true }
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: { toolchain: stable }
-      - uses: ./.github/actions/setup-rust-script
-      - name: Download prebuilt WASM package
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-vize-wasm, path: npm/wasm }
-      - name: Smoke @vizejs/wasm package
-        run: rust-script tools/commands/release/npm/smoke-wasm-package.rs npm/wasm
-      - name: Smoke install WASM package tarball
-        run: node tools/commands/release/npm/smoke-release-install.ts npm/wasm
-      - name: Publish @vizejs/wasm
-        run: node tools/support/release/publish_npm_package/main.ts npm/wasm --provenance
-  release-npm-vite-plugin:
-    name: Release @vizejs/vite-plugin to npm
-    runs-on: ubuntu-24.04
-    needs:
-      [
-        build-release-packages,
-        release-npm-native,
-        release-npm-cli,
-        release-npm-unplugin,
-        smoke-release-packages,
-        release-preflight,
-      ]
-    timeout-minutes: 15
-    environment: npm
-    permissions: { contents: read, id-token: write }
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { persist-credentials: false }
-      - uses: ./.github/actions/publish-release-package
-        with:
-          artifact: release-package-vite-plugin-vize
-          package-path: npm/builder/vite
-  release-npm-oxlint-plugin:
-    name: Release oxlint-plugin-vize to npm
-    runs-on: ubuntu-24.04
-    needs:
-      [
-        plan-release-platforms,
-        build-release-packages,
-        release-npm-native,
-        smoke-release-packages,
-        release-preflight,
-      ]
-    timeout-minutes: 15
-    environment: npm
-    permissions: { contents: read, id-token: write }
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { persist-credentials: false }
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: "package.json", run-install: false }
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: { toolchain: stable }
-      - uses: ./.github/actions/setup-rust-script
-      - name: Download prebuilt packages
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-oxlint-plugin-vize, path: npm/oxlint }
-      - name: Inject native binding package versions
-        run: rust-script tools/commands/release/npm/inject-native-optional-deps.rs npm/oxlint/package.json npm/native/package.json --print
-      - name: Apply slow platform release cadence
-        env:
-          RELEASE_REF_NAME: ${{ inputs.tag_name }}
-        run: node tools/support/github/release-platforms.ts apply-cadence "$RELEASE_REF_NAME" npm/oxlint/package.json
-      - name: Publish oxlint-plugin-vize
-        run: node tools/support/release/publish_npm_package/main.ts npm/oxlint --provenance
-
-  release-npm-marquette:
-    name: Release @vizejs/marquette to npm
-    runs-on: ubuntu-24.04
-    needs: [build-release-packages, smoke-release-packages, release-preflight]
-    timeout-minutes: 15
-    environment: npm
-    permissions: { contents: read, id-token: write }
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { persist-credentials: false }
-      - uses: ./.github/actions/publish-release-package
-        with:
-          artifact: release-package-marquette
-          package-path: npm/marquette
-
-  release-npm-composable:
-    name: Release @vizejs/composable to npm
-    runs-on: ubuntu-24.04
-    needs: [build-release-packages, smoke-release-packages, release-preflight]
-    timeout-minutes: 15
-    environment: npm
-    permissions: { contents: read, id-token: write }
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { persist-credentials: false }
-      - uses: ./.github/actions/publish-release-package
-        with:
-          artifact: release-package-composable
-          package-path: npm/compose/core
-
-  release-npm-ui:
-    name: Release @vizejs/ui to npm
-    runs-on: ubuntu-24.04
-    needs: [build-release-packages, smoke-release-packages, release-preflight]
-    timeout-minutes: 15
-    environment: npm
-    permissions: { contents: read, id-token: write }
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { persist-credentials: false }
-      - uses: ./.github/actions/publish-release-package
-        with:
-          artifact: release-package-ui
-          package-path: npm/ui
-
-  release-npm-plugin-sdk:
-    name: Release @vizejs/plugin-sdk to npm
-    runs-on: ubuntu-24.04
-    needs: [build-release-packages, smoke-release-packages, release-preflight]
-    timeout-minutes: 15
-    environment: npm
-    permissions: { contents: read, id-token: write }
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { persist-credentials: false }
-      - uses: ./.github/actions/publish-release-package
-        with:
-          artifact: release-package-plugin-sdk
-          package-path: npm/plugin-sdk
-
-  release-npm-unplugin:
-    name: Release @vizejs/unplugin to npm
-    runs-on: ubuntu-24.04
-    needs: [build-release-packages, release-npm-native, smoke-release-packages, release-preflight]
-    timeout-minutes: 15
-    environment: npm
-    permissions: { contents: read, id-token: write }
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { persist-credentials: false }
-      - uses: ./.github/actions/publish-release-package
-        with:
-          artifact: release-package-unplugin-vize
-          package-path: npm/builder/unplugin
-
-  release-npm-fresco:
-    name: Release @vizejs/fresco to npm
-    runs-on: ubuntu-24.04
-    needs:
-      [build-release-packages, release-npm-fresco-native, smoke-release-packages, release-preflight]
-    timeout-minutes: 15
-    environment: npm
-    permissions: { contents: read, id-token: write }
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { persist-credentials: false }
-      - uses: ./.github/actions/publish-release-package
-        with:
-          artifact: release-package-fresco
-          package-path: npm/fresco
-
-  release-npm-musea-mcp-server:
-    name: Release @vizejs/musea-mcp-server to npm
-    runs-on: ubuntu-24.04
-    needs: [build-release-packages, release-npm-native, smoke-release-packages, release-preflight]
-    timeout-minutes: 15
-    environment: npm
-    permissions: { contents: read, id-token: write }
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { persist-credentials: false }
-      - uses: ./.github/actions/publish-release-package
-        with:
-          artifact: release-package-musea-mcp-server
-          package-path: npm/mcp-musea
-
-  release-npm-vite-plugin-musea:
-    name: Release @vizejs/vite-plugin-musea to npm
-    runs-on: ubuntu-24.04
-    needs:
-      [
-        build-release-packages,
-        release-npm-native,
-        release-npm-vite-plugin,
-        smoke-release-packages,
-        release-preflight,
-      ]
-    timeout-minutes: 15
-    environment: npm
-    permissions: { contents: read, id-token: write }
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { persist-credentials: false }
-      - uses: ./.github/actions/publish-release-package
-        with:
-          artifact: release-package-vite-plugin-musea
-          package-path: npm/builder/vite-musea
-
-  release-npm-rspack-plugin:
-    name: Release @vizejs/rspack-plugin to npm
-    runs-on: ubuntu-24.04
-    needs: [build-release-packages, release-npm-native, smoke-release-packages, release-preflight]
-    timeout-minutes: 15
-    environment: npm
-    permissions: { contents: read, id-token: write }
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { persist-credentials: false }
-      - uses: ./.github/actions/publish-release-package
-        with:
-          artifact: release-package-rspack-vize-plugin
-          package-path: npm/builder/rspack
-
-  release-npm-musea-nuxt:
-    name: Release @vizejs/musea-nuxt to npm
-    runs-on: ubuntu-24.04
-    needs: [build-release-packages, smoke-release-packages, release-preflight]
-    timeout-minutes: 15
-    environment: npm
-    permissions: { contents: read, id-token: write }
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { persist-credentials: false }
-      - uses: ./.github/actions/publish-release-package
-        with:
-          artifact: release-package-musea-nuxt
-          package-path: npm/framework/musea-nuxt
-
-  # Build and publish @vizejs/nuxt-lint-config (using Trusted Publishing / OIDC)
-  release-npm-nuxt-lint-config:
-    name: Release @vizejs/nuxt-lint-config to npm
-    runs-on: ubuntu-24.04
-    needs: [build-release-packages, smoke-release-packages, release-preflight]
-    timeout-minutes: 15
-    environment: npm
-    permissions: { contents: read, id-token: write }
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { persist-credentials: false }
-      - uses: ./.github/actions/publish-release-package
-        with:
-          artifact: release-package-nuxt-lint-config
-          package-path: npm/framework/nuxt-lint-config
-
-  # Build and publish @vizejs/nuxt (using Trusted Publishing / OIDC)
-  release-npm-nuxt:
-    name: Release @vizejs/nuxt to npm
-    runs-on: ubuntu-24.04
-    needs:
-      [
-        build-release-packages,
-        release-npm-vite-plugin,
-        release-npm-oxlint-plugin,
-        release-npm-vite-plugin-musea,
-        release-npm-nuxt-lint-config,
-        release-npm-cli,
-        smoke-release-packages,
-        release-preflight,
-      ]
-    timeout-minutes: 15
-    environment: npm
-    permissions: { contents: read, id-token: write }
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { persist-credentials: false }
-      - uses: ./.github/actions/publish-release-package
-        with:
-          artifact: release-package-nuxt
-          package-path: npm/framework/nuxt
-
-  # Publish crates to crates.io (using Trusted Publishing)
-  release-crates:
-    name: Release crates to crates.io
+  publish-crates:
+    name: Publish crates
+    needs: [version, smoke]
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    needs: release-preflight
     timeout-minutes: 30
     environment: crates-io
     permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: "package.json", cache: false, run-install: false }
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          # Reuse trusted Cargo build caches after pruning outputs from prior runs.
           reuse-target: "true"
           restore-trusted: "true"
           key: release-crates
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - name: Get crates.io token via Trusted Publishing
+      - uses: rust-lang/crates-io-auth-action@b7e9a28eded4986ec6b1fa40eeee8f8f165559ec # v1
         id: crates-io-auth
-        uses: rust-lang/crates-io-auth-action@b7e9a28eded4986ec6b1fa40eeee8f8f165559ec # v1
       - name: Publish to crates.io
-        env:
-          CARGO_REGISTRY_TOKEN: ${{ steps.crates-io-auth.outputs.token }}
+        env: { CARGO_REGISTRY_TOKEN: "${{ steps.crates-io-auth.outputs.token }}" }
         run: node tools/support/release/publish_crates/main.ts
 
-  release-crates-handoff:
-    if: inputs.release_pr == ''
-    name: Release crates.io handoff crates
-    runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 30
-    environment: crates-io
-    permissions: { contents: read, id-token: write }
+  publish-vscode:
+    name: Publish VS Code extension
+    needs: [version, build-editor-extensions, smoke]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: vscode-marketplace
+    env:
+      VSCE_DLX_BIN: npx
+      VSCE_PAT: ${{ secrets.VSCE_PAT }}
     steps:
-      - name: Resolve published release tag
-        id: release
-        env: { GH_TOKEN: "${{ github.token }}", RELEASE_TAG_NAME: "${{ inputs.tag_name }}" }
-        run: |
-          test -n "$RELEASE_TAG_NAME"
-          resolved_tag=$(gh release view "$RELEASE_TAG_NAME" --repo "$GITHUB_REPOSITORY" --json isDraft,tagName --jq 'select(.isDraft == false) | .tagName')
-          test "$resolved_tag" = "$RELEASE_TAG_NAME"
-          printf 'tag_name=%s\n' "$resolved_tag" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { ref: "${{ steps.release.outputs.tag_name }}", persist-credentials: false }
+        with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: "package.json", cache: false, run-install: false }
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: { toolchain: stable }
-      - uses: ./.github/actions/setup-rust-sticky-cache
-        with: {
-            # Reuse trusted Cargo build caches after pruning outputs from prior runs.
-            reuse-target: "true",
-            restore-trusted: "true",
-            key: release-crates-handoff,
-            cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}-${{ inputs.crate_set }}",
-          }
-      - name: Get crates.io token via Trusted Publishing
-        id: crates-io-auth
-        uses: rust-lang/crates-io-auth-action@b7e9a28eded4986ec6b1fa40eeee8f8f165559ec # v1
-      - name: Publish JSX and Patina handoff crates
-        if: ${{ inputs.crate_set == 'jsx-patina' }}
-        env: { CARGO_REGISTRY_TOKEN: "${{ steps.crates-io-auth.outputs.token }}" }
-        run: |
-          node tools/support/release/publish_crates/main.ts --crate vize_atelier_jsx --crate vize_patina
+        with: { node-version-file: "package.json", run-install: false }
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with: { name: editor-extensions, path: editor-extensions }
+      - name: Publish to the VS Code Marketplace
+        run: node tools/support/release/publish_vscode_extension/main.ts editor-extensions/editors/vscode/dist/vize.vsix
 
-  # Publish the JSR facade once the npm packages it re-exports are public.
-  # Skipped inside the called workflow while jsr/vize/channel.json is off.
-  release-jsr:
-    name: Release @vizejs/vize to JSR
-    needs: [release-npm-cli, release-npm-native, release-npm-vite-plugin]
-    permissions: { contents: read, id-token: write }
-    uses: ./.github/workflows/release-jsr.yml
-    with:
-      version: ${{ inputs.tag_name }}
-      source_sha: ${{ inputs.expected_sha }}
-
-  # Create GitHub Release with CLI binaries
-  create-github-release:
-    name: Create GitHub Release
-    runs-on: blacksmith-32vcpu-ubuntu-2404
-    needs:
-      - build-cli
-      - release-vscode-extension
-      - release-npm-native
-      - release-npm-fresco-native
-      - release-npm-wasm
-      - smoke-release-packages
-      - release-npm-cli
-      - release-npm-vite-plugin
-      - release-npm-oxlint-plugin
-      - release-npm-marquette
-      - release-npm-composable
-      - release-npm-ui
-      - release-npm-plugin-sdk
-      - release-npm-unplugin
-      - release-npm-fresco
-      - release-npm-musea-mcp-server
-      - release-npm-vite-plugin-musea
-      - release-npm-rspack-plugin
-      - release-npm-musea-nuxt
-      - release-npm-nuxt-lint-config
-      - release-npm-nuxt
-      - release-crates
-      - release-preflight
-    env: { RELEASE_TAG_NAME: "${{ inputs.tag_name }}" }
-    timeout-minutes: 20
-    # `id-token: write` is required by sigstore/cosign-installer to mint the keyless signing
-    # certificate, and by anchore/sbom-action when it uploads the SBOM as a release asset.
-    permissions:
-      contents: write
-      id-token: write
+  publish-open-vsx:
+    name: Publish Open VSX extension
+    needs: [version, build-editor-extensions, smoke]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: open-vsx-registry
+    env:
+      OVSX_PAT: ${{ secrets.OVSX_PAT }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - name: Download CLI artifacts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: "package.json", run-install: false }
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with: { name: editor-extensions, path: editor-extensions }
+      - name: Publish to Open VSX
+        run: node tools/support/release/publish_open_vsx_extension/main.ts editor-extensions/editors/vscode/dist/vize.vsix
+
+  github-release:
+    name: Create GitHub Release
+    needs: [version, build-cli, build-editor-extensions, publish-npm]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    # id-token mints the keyless cosign certificate.
+    permissions: { contents: write, id-token: write }
+    env:
+      RELEASE_TAG: ${{ needs.version.outputs.tag }}
+      RELEASE_SHA: ${{ needs.version.outputs.sha }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { pattern: cli-*, path: cli-artifacts, merge-multiple: true }
-      - name: Download editor extension artifacts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: editor-extensions, path: editor-extension-artifacts }
-      - name: List CLI artifacts
-        run: ls -la cli-artifacts/
-      - name: List editor extension artifacts
-        run: find editor-extension-artifacts -maxdepth 5 -type f | sort
-      # Publish CycloneDX and SPDX SBOMs for dependency auditing.
-      - name: Generate workspace SBOM (CycloneDX)
-        uses: anchore/sbom-action@61119d458adab75f756bc0b9e4bde25725f86a7a # v0.17.8
+      - uses: anchore/sbom-action@61119d458adab75f756bc0b9e4bde25725f86a7a # v0.17.8
         with:
-          artifact-name: vize-${{ inputs.tag_name }}-cyclonedx.sbom.json
+          artifact-name: vize-${{ needs.version.outputs.tag }}-cyclonedx.sbom.json
           format: cyclonedx-json
-          output-file: vize-${{ inputs.tag_name }}-cyclonedx.sbom.json
+          output-file: vize-${{ needs.version.outputs.tag }}-cyclonedx.sbom.json
           upload-artifact: false
-      - name: Generate workspace SBOM (SPDX)
-        uses: anchore/sbom-action@61119d458adab75f756bc0b9e4bde25725f86a7a # v0.17.8
+      - uses: anchore/sbom-action@61119d458adab75f756bc0b9e4bde25725f86a7a # v0.17.8
         with:
-          artifact-name: vize-${{ inputs.tag_name }}-spdx.sbom.json
+          artifact-name: vize-${{ needs.version.outputs.tag }}-spdx.sbom.json
           format: spdx-json
-          output-file: vize-${{ inputs.tag_name }}-spdx.sbom.json
+          output-file: vize-${{ needs.version.outputs.tag }}-spdx.sbom.json
           upload-artifact: false
-      # Sign artifacts with the workflow OIDC identity and Sigstore.
-      - name: Install cosign
-        uses: sigstore/cosign-installer@dc72c7d5c4d10cd6bcb8cf6e3fd625a9e5e537da # v3.7.0
-        with:
-          cosign-release: v2.4.1
-      # Publish SHA-256 checksums alongside signatures and certificates.
-      - name: Generate SHA-256 checksums for release artifacts
-        run: |
-          for artifact in \
-            cli-artifacts/*.tar.gz \
-            cli-artifacts/*.zip \
-            editor-extension-artifacts/editors/vscode/dist/*.vsix \
-            editor-extension-artifacts/*.tar.gz; do
-            if [ -f "$artifact" ]; then
-              echo "Hashing $artifact"
-              ( cd "$(dirname "$artifact")" && sha256sum "$(basename "$artifact")" ) > "${artifact}.sha256"
-            fi
-          done
+      - uses: sigstore/cosign-installer@dc72c7d5c4d10cd6bcb8cf6e3fd625a9e5e537da # v3.7.0
+        with: { cosign-release: v2.4.1 }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: "package.json", package-manager-cache: false }
-      - name: Sign release artifacts (keyless)
-        env:
-          COSIGN_YES: "true"
-        run: node tools/support/release/sign_release_artifacts.ts "$RELEASE_TAG_NAME"
-      - name: Generate notes for the exact published version range
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RELEASE_SOURCE_SHA: ${{ inputs.expected_sha }}
-        run: node tools/support/release/github_release_notes.ts "$RELEASE_TAG_NAME" "$RELEASE_SOURCE_SHA" "$RUNNER_TEMP/release-notes.md"
+      - name: Checksum and sign release artifacts
+        env: { COSIGN_YES: "true" }
+        run: |
+          shopt -s nullglob
+          for artifact in cli-artifacts/*.tar.gz cli-artifacts/*.zip editor-extension-artifacts/editors/vscode/dist/*.vsix editor-extension-artifacts/*.tar.gz; do
+            ( cd "$(dirname "$artifact")" && sha256sum "$(basename "$artifact")" ) > "$artifact.sha256"
+          done
+          node tools/support/release/sign_release_artifacts.ts "$RELEASE_TAG"
+      - name: Generate release notes
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: node tools/support/release/github_release_notes.ts "$RELEASE_TAG" "$RELEASE_SHA" "$RUNNER_TEMP/release-notes.md"
       - name: Create Release
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
+          tag_name: ${{ needs.version.outputs.tag }}
           body_path: ${{ runner.temp }}/release-notes.md
           generate_release_notes: false
-          target_commitish: ${{ inputs.expected_sha }}
-          draft: false
+          make_latest: true
           overwrite_files: true
-          tag_name: ${{ inputs.tag_name }}
-          prerelease: ${{ contains(inputs.tag_name, 'alpha') || contains(inputs.tag_name, 'beta') || contains(inputs.tag_name, 'rc') }}
           files: |
             cli-artifacts/*.tar.gz
             cli-artifacts/*.zip
             editor-extension-artifacts/editors/vscode/dist/*.vsix
             editor-extension-artifacts/*.tar.gz
-            vize-${{ inputs.tag_name }}-cyclonedx.sbom.json
-            vize-${{ inputs.tag_name }}-spdx.sbom.json
+            vize-${{ needs.version.outputs.tag }}-*.sbom.json
             cli-artifacts/*.sha256
             cli-artifacts/*.sig
             cli-artifacts/*.pem
@@ -946,33 +352,35 @@ jobs:
             editor-extension-artifacts/**/*.sig
             editor-extension-artifacts/**/*.pem
             editor-extension-artifacts/**/*.cosign.bundle
-            vize-${{ inputs.tag_name }}-*.sig
-            vize-${{ inputs.tag_name }}-*.pem
-            vize-${{ inputs.tag_name }}-*.cosign.bundle
+            vize-${{ needs.version.outputs.tag }}-*.sig
+            vize-${{ needs.version.outputs.tag }}-*.pem
+            vize-${{ needs.version.outputs.tag }}-*.cosign.bundle
 
-  # Publish vize CLI npm package (using Trusted Publishing / OIDC)
-
-  # Native bindings are distributed via @vizejs/native-* optionalDependencies (NAPI-RS)
-  release-npm-cli:
-    name: Release vize CLI to npm
+  # After publishing, never blocking it: one registry visibility wait plus an
+  # install of the CLI from npm, then JSR (its facade resolves the npm packages).
+  verify-npm:
+    name: Verify npm packages
+    needs: [version, publish-npm]
     runs-on: ubuntu-24.04
-    needs: [build-release-packages, release-npm-native, smoke-release-packages, release-preflight]
-    timeout-minutes: 15
-    environment: npm
-    permissions: { contents: read, id-token: write }
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { persist-credentials: false }
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: "package.json", run-install: false }
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: { toolchain: stable }
-      - uses: ./.github/actions/setup-rust-script
-      - name: Download prebuilt packages
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-vize, path: npm/cli }
-      - name: Inject native binding package versions
-        run: rust-script tools/commands/release/npm/inject-native-optional-deps.rs npm/cli/package.json --print
-      - name: Publish vize CLI package
-        run: node tools/support/release/publish_npm_package/main.ts npm/cli --provenance
+        with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
+      - name: Wait for npm and smoke the published CLI
+        env:
+          RELEASE_VERSION: ${{ needs.version.outputs.version }}
+          RELEASE_PACKAGES: ${{ needs.publish-npm.outputs.packages }}
+        run: |
+          read -ra packages <<< "$RELEASE_PACKAGES"
+          node tools/support/release/verify_published/main.ts "$RELEASE_VERSION" "${packages[@]}"
+
+  publish-jsr:
+    name: Publish JSR
+    needs: [version, verify-npm]
+    permissions: { contents: read, id-token: write }
+    uses: ./.github/workflows/release-jsr.yml
+    with:
+      version: ${{ needs.version.outputs.tag }}
+      source_sha: ${{ needs.version.outputs.sha }}

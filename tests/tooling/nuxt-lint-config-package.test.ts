@@ -126,14 +126,12 @@ test("shareable Nuxt lint config is a public dependency of the Nuxt module", () 
   assert.equal(nuxtPackage.dependencies?.["@vizejs/nuxt-lint-config"], "workspace:*");
 });
 
-test("release workflow publishes the Nuxt module after its runtime lint dependencies", () => {
+test("release workflow publishes the Nuxt module with its runtime lint dependencies", () => {
   const workflow = parse(
     fs.readFileSync(path.join(root, ".github/workflows/release.yml"), "utf8"),
-  ) as { jobs?: Record<string, { needs?: string | string[] }> };
-  const needs = workflow.jobs?.["release-npm-nuxt"]?.needs;
-  const nuxtNeeds = Array.isArray(needs) ? needs : needs == null ? [] : [needs];
-
-  for (const dependency of ["release-npm-nuxt-lint-config", "release-npm-oxlint-plugin"]) {
-    assert.ok(nuxtNeeds.includes(dependency), `release-npm-nuxt must wait for ${dependency}`);
+  ) as { env: Record<string, string> };
+  const published = workflow.env.RELEASE_JS_PACKAGES.split(" ");
+  for (const dir of ["npm/framework/nuxt", "npm/framework/nuxt-lint-config", "npm/oxlint"]) {
+    assert.ok(published.includes(dir), `${dir} must be released`);
   }
 });

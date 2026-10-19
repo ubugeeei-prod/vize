@@ -1,0 +1,26 @@
+name: Restore release npm packages
+description: Download the built npm packages and native bindings into npm/ and lay out the native platform packages
+runs:
+  using: composite
+  steps:
+    - name: Install native package tooling
+      shell: bash
+      run: vp install --frozen-lockfile --prefer-offline --filter './npm/native...' --filter './npm/fresco-native...'
+    - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      with: { name: npm-packages, path: npm }
+    - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      with: { pattern: bindings-*, path: npm/native/artifacts }
+    - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      with: { pattern: fresco-bindings-*, path: npm/fresco-native/artifacts }
+    - name: Lay out native platform packages
+      shell: bash
+      working-directory: npm/native
+      run: |
+        vp exec napi create-npm-dirs
+        vp exec napi artifacts --output-dir artifacts
+        vp exec napi pre-publish -t npm --no-gh-release --skip-optional-publish
+    - name: Stage Fresco native binaries
+      shell: bash
+      run: |
+        node tools/support/github/clean-node-binaries.ts npm/fresco-native
+        node tools/support/github/collect-native-artifacts.ts npm/fresco-native/artifacts npm/fresco-native fresco-native

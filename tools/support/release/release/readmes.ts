@@ -1,13 +1,4 @@
-import { println, writeStderr } from "../command_io.ts";
-import {
-  isDir,
-  joinPath,
-  pathExists,
-  readDir,
-  readFileToString,
-  replaceEvery,
-  tryWriteStringToFile,
-} from "../command_runtime.ts";
+import { isDir, joinPath, pathExists, readDir, replaceEvery } from "../command_runtime.ts";
 import { nestedNpmPackageDirs } from "./preparation.ts";
 import { isGitIgnored } from "./versions.ts";
 
@@ -34,56 +25,15 @@ export function replaceReadmeVersionReferences(
   return lines.join("\n");
 }
 
-export async function updateReleaseReadmes(
-  currentVersion: string,
-  newVersion: string,
-  filesToStage: string[],
-): Promise<boolean> {
-  println("Updating READMEs...");
-  const rootReadme = "README.md";
-  if (pathExists(rootReadme) && !(await isGitIgnored(rootReadme))) {
-    const content = readFileToString(rootReadme);
-    if (content === null) {
-      writeStderr(`Failed to read ${rootReadme}\n`);
-      return false;
-    }
-    if (
-      !tryWriteStringToFile(
-        rootReadme,
-        replaceReadmeVersionReferences(content, currentVersion, newVersion),
-      )
-    ) {
-      writeStderr(`Failed to update ${rootReadme}\n`);
-      return false;
-    }
-    filesToStage.push(rootReadme);
+/** The root README plus every tracked npm package README. */
+export async function releaseReadmePaths(): Promise<string[]> {
+  const packageDirs = readDir("npm")
+    .map((entry) => joinPath("npm", entry))
+    .filter((dir) => isDir(dir));
+  packageDirs.push(...(await nestedNpmPackageDirs()));
+  const paths: string[] = [];
+  for (const readme of ["README.md", ...packageDirs.map((dir) => joinPath(dir, "README.md"))]) {
+    if (pathExists(readme) && !(await isGitIgnored(readme))) paths.push(readme);
   }
-  const readmePackageDirs: string[] = [];
-  for (const entryName of readDir("npm")) {
-    const packageDir = joinPath("npm", entryName);
-    if (!isDir(packageDir)) continue;
-    readmePackageDirs.push(packageDir);
-  }
-  readmePackageDirs.push(...(await nestedNpmPackageDirs()));
-  for (const packageDir of readmePackageDirs) {
-    const readmePath = joinPath(packageDir, "README.md");
-    if (!pathExists(readmePath)) continue;
-    if (await isGitIgnored(readmePath)) continue;
-    const content = readFileToString(readmePath);
-    if (content === null) {
-      writeStderr(`Failed to read ${readmePath}\n`);
-      return false;
-    }
-    if (
-      !tryWriteStringToFile(
-        readmePath,
-        replaceReadmeVersionReferences(content, currentVersion, newVersion),
-      )
-    ) {
-      writeStderr(`Failed to update ${readmePath}\n`);
-      return false;
-    }
-    filesToStage.push(readmePath);
-  }
-  return true;
+  return paths;
 }

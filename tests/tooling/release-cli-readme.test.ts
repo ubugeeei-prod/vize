@@ -3,7 +3,10 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { runReleaseCommand } from "./support/release-command.ts";
+import { replaceReadmeVersionReferences } from "../../tools/support/release/release/readmes.ts";
+
+const stampReadme = (file: string) =>
+  replaceReadmeVersionReferences(fs.readFileSync(file, "utf8"), "0.425.0", "0.425.1");
 
 for (const newline of ["\n", "\r\n"]) {
   test(`release preserves measured versions while updating install examples (${JSON.stringify(newline)})`, () => {
@@ -18,35 +21,17 @@ for (const newline of ["\n", "\r\n"]) {
     const before = `Install vize@0.425.0${newline}${snapshot}${newline}npx vize@0.425.0 --version${newline}`;
     fs.writeFileSync(file, before);
     try {
-      const result = runReleaseCommand("release", [
-        "--print-readme-version-update",
-        file,
-        "0.425.0",
-        "0.425.1",
-      ]);
-      assert.equal(result.status, 0, result.stderr);
+      const result = stampReadme(file);
       assert.equal(
-        result.stdout,
+        result,
         `Install vize@0.425.1${newline}${snapshot}${newline}npx vize@0.425.1 --version${newline}`,
       );
-      fs.writeFileSync(file, result.stdout);
-      const repeated = runReleaseCommand("release", [
-        "--print-readme-version-update",
-        file,
-        "0.425.0",
-        "0.425.1",
-      ]);
-      assert.equal(repeated.status, 0, repeated.stderr);
-      assert.equal(repeated.stdout, result.stdout);
+      fs.writeFileSync(file, result);
+      const repeated = stampReadme(file);
+      assert.equal(repeated, result);
       fs.writeFileSync(file, "Install vize@0.425.0");
-      const plain = runReleaseCommand("release", [
-        "--print-readme-version-update",
-        file,
-        "0.425.0",
-        "0.425.1",
-      ]);
-      assert.equal(plain.status, 0, plain.stderr);
-      assert.equal(plain.stdout, "Install vize@0.425.1");
+      const plain = stampReadme(file);
+      assert.equal(plain, "Install vize@0.425.1");
     } finally {
       fs.rmSync(directory, { recursive: true, force: true });
     }

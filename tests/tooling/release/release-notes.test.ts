@@ -173,37 +173,36 @@ test("pagination finds a predecessor beyond 100 entries and missing published ba
   );
 });
 
-test("the workflow publishes only the prepared body at the pinned source and removes historical static notes", () => {
+test("the workflow publishes only the prepared body for the release tag commit", () => {
   const workflow = readFileSync(
     new URL("../../../.github/workflows/release.yml", import.meta.url),
     "utf8",
   );
-  const job = workflow.split("  create-github-release:")[1].split("  release-npm-cli:")[0];
+  const job = workflow.split("  github-release:")[1].split("  verify-npm:")[0];
   assert.ok(
     job.includes(
-      'node tools/support/release/github_release_notes.ts "$RELEASE_TAG_NAME" "$RELEASE_SOURCE_SHA" "$RUNNER_TEMP/release-notes.md"',
+      'node tools/support/release/github_release_notes.ts "$RELEASE_TAG" "$RELEASE_SHA" "$RUNNER_TEMP/release-notes.md"',
     ),
   );
-  assert.ok(job.includes("RELEASE_SOURCE_SHA: ${{ inputs.expected_sha }}"));
+  assert.ok(job.includes("RELEASE_SHA: ${{ needs.version.outputs.sha }}"));
   assert.ok(job.includes("body_path: ${{ runner.temp }}/release-notes.md"));
   assert.ok(job.includes("generate_release_notes: false"));
-  assert.ok(job.includes("target_commitish: ${{ inputs.expected_sha }}"));
   assert.ok(
     job.indexOf("actions/setup-node@") <
       job.indexOf("node tools/support/release/github_release_notes.ts"),
   );
   assert.ok(
-    job.indexOf("Generate notes for the exact published version range") <
+    job.indexOf("name: Generate release notes") <
       job.indexOf("name: Create Release"),
   );
   const preflight = readFileSync(
-    new URL("../../../.github/workflows/release-preflight-contracts.yml", import.meta.url),
+    new URL("../../../.github/workflows/release-contracts.yml", import.meta.url),
     "utf8",
   );
   assert.ok(preflight.includes("          tests/tooling/release/release-notes.test.ts\n"));
   assert.ok(preflight.includes("          tests/tooling/drop-in-claim-scope.test.ts\n"));
   for (const input of [
-    ".github/workflows/release.yml",
+    ".github/workflows/release*.yml",
     ".github/release-notes/drop-in-scope.md",
     "tests/tooling/drop-in-claim-scope.test.ts",
   ]) {
