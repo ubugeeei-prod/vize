@@ -99,6 +99,7 @@ void test("formatter differential manifest preserves captured baselines and vers
           "formatter/sfc/script-trailing-line-comment-parens",
           "formatter/sfc/typed-arrow-last-argument",
           "formatter/sfc/directive-prefix-print-width",
+          "formatter/sfc/directive-expression-indent-width",
         ].includes(fixture.id)
         ? "pending"
         : "captured",
