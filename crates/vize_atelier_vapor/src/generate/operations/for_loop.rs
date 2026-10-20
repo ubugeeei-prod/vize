@@ -99,14 +99,17 @@ pub(super) fn generate_for(
     // Check if this is a range-based for (source is a number literal)
     let is_range = for_node.source.content.parse::<f64>().is_ok();
 
+    // Rows that are one component each unmount one by one (upstream's
+    // `IS_COMPONENT`: a component carrying `v-for`, or a `<template>` holding
+    // only one).
+    let component = for_node.component || component_rows(&for_node.render);
     // The runtime's `createFor` flags, as Vue's compiler encodes them.
     let table = [
         (for_node.only_child, 1, "FAST_REMOVE"),
-        (for_node.component, 2, "IS_COMPONENT"),
+        (component, 2, "IS_COMPONENT"),
         (fragment_rows(&for_node.render), 16, "IS_FRAGMENT"),
         (
-            slot_root
-                || !for_node.component && single_node_rows(&for_node.render, element_template_map),
+            slot_root || !component && single_node_rows(&for_node.render, element_template_map),
             8,
             "IS_SINGLE_NODE",
         ),
@@ -147,6 +150,22 @@ pub(super) fn generate_for(
     ctx.transition_slot = previous_transition;
     ctx.is_fragment = was_fragment;
     ctx.for_scopes.pop();
+}
+
+/// Whether every row is a single component, or a single component under
+/// a lone `v-if` (upstream reads the row element's tag type either way).
+fn component_rows(render: &crate::ir::BlockIRNode<'_>) -> bool {
+    use crate::ir::OperationNode;
+    let [id] = render.returns.as_slice() else {
+        return false;
+    };
+    render.operation.iter().any(|operation| match operation {
+        OperationNode::CreateComponent(component) => component.id == *id,
+        OperationNode::If(node) => {
+            node.id == *id && node.negative.is_none() && component_rows(&node.positive)
+        }
+        _ => false,
+    })
 }
 
 /// Generate key function for v-for
