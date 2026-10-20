@@ -157,11 +157,22 @@ fn real_component_imports_have_private_mirrors_and_keep_query_offsets() {
     );
     assert_eq!(prepared.files.len(), 1);
     let (target, component) = &prepared.files[0];
-    assert!(target.starts_with(&session));
-    assert!(component.contains("export default __vize_component__"));
+    assert_eq!(target, &session.join("ChildPanel.vue.patina.ts"));
+    assert_eq!(
+        component
+            .matches("export default __vize_component__")
+            .count(),
+        1
+    );
     let rewritten = prepared.code.expect("component import was rewritten");
-    assert!(rewritten.contains(&*cstr!("from '{}'", target.display())));
-    assert!(rewritten.contains(&*cstr!("from '{}'", missing.display())));
+    assert_eq!(
+        rewritten,
+        cstr!(
+            "import Child from '{}';\nimport Missing from '{}';\nconst value = Child;\n",
+            target.display(),
+            missing.display()
+        )
+    );
     let before = source.rfind("Child;").unwrap() as u32;
     let after = rewritten.rfind("Child;").unwrap() as u32;
     assert_eq!(prepared.source_map.get_virtual_offset(before), after);
@@ -196,12 +207,23 @@ fn path_aliased_vue_imports_have_private_mirrors() {
     );
     assert_eq!(prepared.files.len(), 1);
     let (target, component) = &prepared.files[0];
-    assert!(target.starts_with(&session));
-    assert!(component.contains("export default __vize_component__"));
+    assert_eq!(target, &session.join("src/ui/Child.vue.patina.ts"));
+    assert_eq!(
+        component
+            .matches("export default __vize_component__")
+            .count(),
+        1
+    );
     let rewritten = prepared
         .code
         .expect("aliased component import was rewritten");
-    assert!(rewritten.contains(&*cstr!("from '{}'", target.display())));
+    assert_eq!(
+        rewritten,
+        cstr!(
+            "import Child from '{}';\nconst value = Child;\n",
+            target.display()
+        )
+    );
 }
 
 #[test]

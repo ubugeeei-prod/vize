@@ -206,5 +206,9 @@
   "linter/current-api/require-symbol-provide-range-9882": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__require-symbol-provide-range-9882.snap",
     "sha256": "b0eadd0dede28eb463f4e8064924b1297ed0030a0694dc09abbde968ca911980"
+  },
+  "linter/current-api/vue-path-alias-types-9864": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__vue-path-alias-types-9864.snap",
+    "sha256": "74d0dbeac227560db42a66f7d795b76b7168d67be0e79d01b562622705cd4390"
   }
 }
