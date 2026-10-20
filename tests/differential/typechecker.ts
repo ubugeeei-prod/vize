@@ -55,8 +55,7 @@ const sourceRevisions = {
   "allow-importing-ts-extensions-9890": "f1b07174a4a86ffc3433f31b8c78406d5bf5b760",
   "nuxt-plugin-injection-types": "2c22691f0f8303a28c425213c423e299f9ad5420",
   "listener-attribute-parity-9852": "11cb03950bc8d2a4e9cb8d164b0aaca79e302291",
-  "dynamic-component-union-listener-10026":
-    "0aafae7e41f1ac381d07fa9f0154084cc1e6f211",
+  "dynamic-component-union-listener-10026": "0aafae7e41f1ac381d07fa9f0154084cc1e6f211",
   "cache-maintenance-9860": "4714c0f264dedffaa81377df9545fbfa9514a64e",
   "reactive-props-destructure-10008": "f276e4d59cdaf765fd7d3f14eb3d679f5b685f98",
   "nuxt-unknown-template-options-10013": "fb700551a3a3a69f8976efa6fe31bca43ebc19b4",
