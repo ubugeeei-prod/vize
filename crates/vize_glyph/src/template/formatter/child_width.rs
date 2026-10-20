@@ -19,14 +19,14 @@ pub(super) fn hugged_closing_name(
     }
     // The successful tag parser already classified this unchanged source name.
     let name = source.get(tag_start + 1..tag_start + 1 + name_len)?;
-    // A multiline interpolation may be followed by inline runtime text before
-    // the matching close (`{{ value }}%`). That tail remains byte-adjacent;
-    // only the syntax inside the interpolation changes indentation.
+    // A multiline interpolation may be followed by plain inline runtime text
+    // before the matching close (`{{ value }}%`). That tail remains
+    // byte-adjacent; a later interpolation keeps the established mixed-run
+    // depth instead.
     let closing_start = end + memchr::memchr(b'<', source.get(end..)?)?;
-    if source
-        .get(end..closing_start)?
-        .iter()
-        .any(|byte| matches!(byte, b'\r' | b'\n'))
+    let tail = source.get(end..closing_start)?;
+    if tail.iter().any(|byte| matches!(byte, b'\r' | b'\n'))
+        || tail.windows(2).any(|window| window == b"{{")
     {
         return None;
     }
