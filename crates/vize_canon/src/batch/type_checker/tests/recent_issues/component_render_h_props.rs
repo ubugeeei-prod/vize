@@ -1,7 +1,8 @@
 //! An imported SFC keeps its required props when passed to Vue's `h()` from a
 //! TypeScript module (#9855).
 
-use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
+use super::super::{resolve_test_tsgo_binary, snapshot_project_diagnostics};
+use super::real_vue::create_project_case;
 
 #[test]
 fn imported_sfc_h_calls_check_missing_and_wrong_props() {
