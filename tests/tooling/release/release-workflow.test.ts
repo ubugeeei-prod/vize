@@ -128,6 +128,18 @@ test("npm resume preserves the trusted workflow and restores only the selected r
   assert.match(JSON.stringify(release.steps), /"run-id":"\$\{\{ inputs\.npm_resume_run \}\}"/);
   assert.equal(npm.env?.NPM_PUBLISH_TAG, "${{ needs.version.outputs.publish_tag }}");
   assert.equal(npm.env?.NPM_ALLOW_NEWER_TAG, "${{ needs.version.outputs.allow_newer_tag }}");
+
+  const restore = readRepoFile(".github", "actions", "release-npm-artifacts", "action.yml");
+  assert.match(
+    JSON.stringify(npm.steps),
+    /"release-tag":"\$\{\{ inputs\.npm_resume_run != '' && needs\.version\.outputs\.tag \|\| '' \}\}"/,
+  );
+  assert.match(restore, /git fetch --no-tags --depth=1 origin "refs\/tags\/\$RELEASE_TAG"/);
+  assert.match(
+    restore,
+    /for file in pnpm-workspace\.yaml npm\/native\/package\.json npm\/fresco-native\/package\.json/,
+  );
+  assert.match(restore, /git show "FETCH_HEAD:\$file" > "\$file"/);
 });
 
 test("builds use the untagged candidate; only a fully built release is tagged", () => {
@@ -228,6 +240,15 @@ test("npm exposes every native platform before packages that depend on it", () =
 test("final registry verification checks every package and gates only JSR", () => {
   assert.deepEqual(needs("verify-npm"), ["version", "publish-npm"]);
   assert.deepEqual(needs("publish-jsr"), ["version", "verify-npm"]);
+  assert.match(String((workflow.jobs["verify-npm"] as Job & { if?: string }).if), /always\(\)/);
+  assert.match(
+    String((workflow.jobs["verify-npm"] as Job & { if?: string }).if),
+    /publish-npm\.result == 'success'/,
+  );
+  assert.match(
+    String((workflow.jobs["publish-jsr"] as Job & { if?: string }).if),
+    /verify-npm\.result == 'success'/,
+  );
   assert.ok(!needs("github-release").includes("verify-npm"));
   // JSR runs as its own workflow so its slow server-side processing never
   // holds this run (and with it the cadence) open.
@@ -241,6 +262,10 @@ test("final registry verification checks every package and gates only JSR", () =
 test("post-publish product checks follow npm verification and gate nothing", () => {
   for (const check of ["verify-config", "verify-musea-vrt"]) {
     assert.deepEqual(needs(check), ["version", "verify-npm"]);
+    assert.match(
+      String((workflow.jobs[check] as Job & { if?: string }).if),
+      /verify-npm\.result == 'success'/,
+    );
     for (const name of Object.keys(workflow.jobs)) assert.ok(!needs(name).includes(check), name);
   }
   assert.match(

@@ -9,6 +9,10 @@ inputs:
     description: Token used to restore artifacts from a prior run
     required: false
     default: ""
+  release-tag:
+    description: Immutable release tag whose native package metadata should be restored
+    required: false
+    default: ""
 runs:
   using: composite
   steps:
@@ -48,6 +52,16 @@ runs:
         run-id: ${{ inputs.run-id }}
         github-token: ${{ inputs.github-token }}
         repository: ${{ github.repository }}
+    - name: Restore immutable native package metadata
+      if: inputs.release-tag != ''
+      shell: bash
+      env:
+        RELEASE_TAG: ${{ inputs.release-tag }}
+      run: |
+        git fetch --no-tags --depth=1 origin "refs/tags/$RELEASE_TAG"
+        for file in pnpm-workspace.yaml npm/native/package.json npm/fresco-native/package.json; do
+          git show "FETCH_HEAD:$file" > "$file"
+        done
     - name: Lay out native platform packages
       shell: bash
       working-directory: npm/native
