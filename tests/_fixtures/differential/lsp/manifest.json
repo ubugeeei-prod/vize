@@ -796,6 +796,32 @@
         "lint": false,
         "typecheck": false
       }
+    },
+    {
+      "id": "lsp/regression/type-aware-slot-outlet-9834",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "type-aware-slot-outlet-9834",
+        "files": [
+          {
+            "path": "MyList.vue.txt",
+            "sha256": "132514fe6d3a21c644af055aa8320102ca9b701cdf72aabf0163ed1de5c9b2fc"
+          }
+        ]
+      },
+      "case": {
+        "path": "type-aware-slot-outlet-9834/case.json",
+        "sha256": "5c6285970941a60b21e340b1759199315db3be4ad37844dff0cf8d4aec95067d"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
     }
   ]
 }
