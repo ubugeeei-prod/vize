@@ -694,6 +694,48 @@
         "lint": false,
         "typecheck": false
       }
+    },
+    {
+      "id": "lsp/regression/generated-project-import-extensions-9890",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "case": {
+        "path": "generated-project-import-extensions-9890/case.json",
+        "sha256": "be2b9d4a68d52bdf25ee759be40e378efc44e707b0c7f74afae6d5de04d827cb"
+      },
+      "inputs": {
+        "root": "generated-project-import-extensions-9890",
+        "files": [
+          {
+            "path": "Entry.vue.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "path": "Counter.vue.txt",
+            "sha256": "be05ff1c36344add48c9950caeacaa6e3b9c708d7f324a36799aea6a6537af07"
+          },
+          {
+            "path": "Consumer.valid.tsx.txt",
+            "sha256": "f84d32ace2d1da89f9edfd6d8eb9deaa5834427a9165f0552e40b0411ae66abe"
+          },
+          {
+            "path": "Consumer.valid.jsx.txt",
+            "sha256": "f84d32ace2d1da89f9edfd6d8eb9deaa5834427a9165f0552e40b0411ae66abe"
+          },
+          {
+            "path": "Intrinsic.tsx.txt",
+            "sha256": "caa41ae4d258f0769897cf8563e62ffd25fd35c8c74153e8dafdab13e6685676"
+          }
+        ]
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
     }
   ]
 }

@@ -249,7 +249,7 @@ impl DiagnosticMapper<'_> {
                 .and_then(|(line, column)| self.virtual_offset(file, line, column))
                 .unwrap_or(start)
                 .max(start);
-            if crate::projection::assemble::is_generated_vue_ts_import_extension_at(
+            if crate::projection::assemble::is_generated_project_import_extension_at(
                 &file.content,
                 raw.code,
                 &raw.message,

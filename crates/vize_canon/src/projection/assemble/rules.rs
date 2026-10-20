@@ -58,13 +58,16 @@ fn names_generated_binding(message: &str) -> bool {
     .any(|name| message.contains(name))
 }
 
-/// `TS5097` about a generated `.vue.ts`/`.vue.tsx` import specifier: the
-/// import rewriter's spelling, not the author's.
-pub(super) fn is_generated_vue_ts_import_extension<P>(
+/// `TS5097` about an import specifier owned by Canon's generated project.
+///
+/// This covers both rewritten `.vue.ts`/`.vue.tsx` routes and the synthesized
+/// `__vize_src` import used to load an external SFC script block. Authored
+/// `.ts` imports must continue to report the diagnostic.
+pub(super) fn is_generated_project_import_extension<P>(
     generated: &str,
     diagnostic: &FinishedDiagnostic<P>,
 ) -> bool {
-    is_generated_vue_ts_import_extension_at(
+    is_generated_project_import_extension_at(
         generated,
         diagnostic.code,
         &diagnostic.message,
@@ -73,16 +76,37 @@ pub(super) fn is_generated_vue_ts_import_extension<P>(
     )
 }
 
-pub(crate) fn is_generated_vue_ts_import_extension_at(
+pub fn is_generated_project_import_extension_at(
     generated: &str,
     code: Option<u32>,
     message: &str,
     start: usize,
     end: usize,
 ) -> bool {
-    is_ts5097_import_extension(code, message)
-        && specifier_at(generated, start, end)
-            .is_some_and(|specifier| has_extension(specifier, &[".vue.ts", ".vue.tsx"]))
+    if !is_ts5097_import_extension(code, message) {
+        return false;
+    }
+    let Some(specifier) = specifier_at(generated, start, end) else {
+        return false;
+    };
+    has_extension(specifier, &[".vue.ts", ".vue.tsx"])
+        || (has_extension(specifier, &[".ts", ".tsx", ".mts", ".cts"])
+            && import_statement_at(generated, start, end)
+                .is_some_and(|statement| statement.contains("import __vize_src from")))
+}
+
+fn import_statement_at(source: &str, start: usize, end: usize) -> Option<&str> {
+    let start = start.min(source.len());
+    let end = end.min(source.len()).max(start);
+    let line_start = source
+        .get(..start)?
+        .rfind(['\n', '\r'])
+        .map_or(0, |at| at + 1);
+    let line_end = source
+        .get(end..)?
+        .find(['\n', '\r'])
+        .map_or(source.len(), |at| end + at);
+    source.get(line_start..line_end)
 }
 
 /// `TS5097` on an authored `.vue` specifier: SFC imports are always allowed.
@@ -180,7 +204,7 @@ fn is_ts5097_import_extension(code: Option<u32>, message: &str) -> bool {
 #[cfg(test)]
 mod import_extension_tests {
     use super::{
-        is_authored_vue_import_extension, is_generated_vue_ts_import_extension,
+        is_authored_vue_import_extension, is_generated_project_import_extension,
         is_rewritten_ts_import_extension,
     };
     use crate::projection::FinishedDiagnostic;
@@ -203,9 +227,23 @@ mod import_extension_tests {
     #[test]
     fn generated_vue_extension_is_found_from_a_zero_width_cli_diagnostic() {
         let source = "import Panel from './Panel.vue.ts';\n";
-        assert!(is_generated_vue_ts_import_extension(
+        assert!(is_generated_project_import_extension(
             source,
             &diagnostic(source, "'./Panel.vue.ts'")
+        ));
+    }
+
+    #[test]
+    fn generated_external_script_route_is_found_from_its_internal_binding() {
+        let source = "import __vize_src from './component.jsx.ts';\nexport default __vize_src;\n";
+        assert!(is_generated_project_import_extension(
+            source,
+            &diagnostic(source, "'./component.jsx.ts'")
+        ));
+        let authored = "import component from './component.ts';\n";
+        assert!(!is_generated_project_import_extension(
+            authored,
+            &diagnostic(authored, "'./component.ts'")
         ));
     }
 

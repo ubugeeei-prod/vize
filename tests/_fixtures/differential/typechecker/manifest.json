@@ -1252,7 +1252,7 @@
       "sourceRevision": "f1b07174a4a86ffc3433f31b8c78406d5bf5b760",
       "packReference": {
         "path": "allow-importing-ts-extensions-9890/cases.json",
-        "sha256": "5f31daa2b76ac0d7677580d761c1b2db8074cf6aa4be555abd47101300d66f66"
+        "sha256": "77fa161ed809379a7c6dca040e8b7514fd999a93396546b3d496a6f0fb3a2618"
       },
       "inputs": [
         {
@@ -1294,7 +1294,7 @@
       "sourceRevision": "f1b07174a4a86ffc3433f31b8c78406d5bf5b760",
       "packReference": {
         "path": "allow-importing-ts-extensions-9890/cases.json",
-        "sha256": "5f31daa2b76ac0d7677580d761c1b2db8074cf6aa4be555abd47101300d66f66"
+        "sha256": "77fa161ed809379a7c6dca040e8b7514fd999a93396546b3d496a6f0fb3a2618"
       },
       "inputs": [
         {
@@ -1336,7 +1336,7 @@
       "sourceRevision": "f1b07174a4a86ffc3433f31b8c78406d5bf5b760",
       "packReference": {
         "path": "allow-importing-ts-extensions-9890/cases.json",
-        "sha256": "5f31daa2b76ac0d7677580d761c1b2db8074cf6aa4be555abd47101300d66f66"
+        "sha256": "77fa161ed809379a7c6dca040e8b7514fd999a93396546b3d496a6f0fb3a2618"
       },
       "inputs": [
         {
@@ -1353,6 +1353,41 @@
           "file": "tsconfig.json",
           "path": "allow-importing-ts-extensions-9890/declaration-generated/tsconfig.json.txt",
           "sha256": "7f2fe21e72e2bd8eda6a9af8b9152f2413ef26813a0e7131af98ccd7c9afad86"
+        }
+      ]
+    },
+    {
+      "id": "typechecker/allow-importing-ts-extensions-9890/generated-external-script-route",
+      "state": "active",
+      "targets": ["batch"],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "allow-importing-ts-extensions-9890",
+      "case": "generated-external-script-route",
+      "test": "authored_ts_extensions_report_ts5097_by_default",
+      "regressionCommit": "f1b07174a4a86ffc3433f31b8c78406d5bf5b760",
+      "sourceRevision": "f1b07174a4a86ffc3433f31b8c78406d5bf5b760",
+      "packReference": {
+        "path": "allow-importing-ts-extensions-9890/cases.json",
+        "sha256": "77fa161ed809379a7c6dca040e8b7514fd999a93396546b3d496a6f0fb3a2618"
+      },
+      "inputs": [
+        {
+          "file": "App.vue",
+          "path": "allow-importing-ts-extensions-9890/generated-external-script/App.vue.txt",
+          "sha256": "62db18ad2752549dd5e5fadfbece235b590222a291ed6a66dd320836bb8beac5"
+        },
+        {
+          "file": "component.tsx",
+          "path": "allow-importing-ts-extensions-9890/generated-external-script/component.tsx.txt",
+          "sha256": "65aff9f5ddaab81487bf5784c64a2db18d0976457c5c086e43588fb90ff38a90"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "allow-importing-ts-extensions-9890/generated-external-script/tsconfig.json.txt",
+          "sha256": "cb80c8f26ccfff81c52c59285ccd75b0972d7f2a364101590f11431037d3d5b2"
         }
       ]
     },
