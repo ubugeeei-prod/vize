@@ -1,5 +1,5 @@
 ---
-source: crates/vize_l2_to_l3/tests/placement_snapshots.rs
+source: davinci/vize_l2_to_l3/tests/placement_snapshots.rs
 expression: output
 ---
 # kitchen_sink
@@ -134,5 +134,5 @@ op=2 alternatives=inline,hoist leader=- chosen=inline
 # case_insensitive_close
 [s3-placement-folio]
 
-# sibling_li_nests_v1
+# sibling_li_closes
 [s3-placement-folio]

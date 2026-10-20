@@ -216,7 +216,7 @@ fn the_battery_aggregates_are_pinned() {
     // 107 -> 101 records.)
     assert_eq!(
         (ops, diagnostics, provenance, scopes),
-        (83, 28, 106, 1),
+        (83, 27, 106, 1),
         "battery census moved: re-pin deliberately"
     );
 }

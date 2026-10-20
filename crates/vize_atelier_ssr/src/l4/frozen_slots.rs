@@ -277,7 +277,7 @@ mod tests {
         for (source, message) in [
             (
                 "<p v-pre><div><Child></Child></div><p></p>",
-                "Frozen lowering custody is missing an authored frozen opening.",
+                "Frozen lowering custody contains an unmatched or non-frozen opening.",
             ),
             (
                 "<button v-pre><button></button></button>",

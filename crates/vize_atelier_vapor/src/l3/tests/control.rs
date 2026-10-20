@@ -36,7 +36,7 @@ fn control_flow_shapes_are_admitted() {
 
 #[test]
 fn unsupported_control_flow_selects_exact_legacy_reasons() {
-    use LegacyReason::{Binding, ControlFlow, ExpressionOrEncoding, Structure};
+    use LegacyReason::{Binding, ControlFlow, ExpressionOrEncoding, SurfaceSemantics};
     for (source, reason) in [
         // L2 keeps carrier branch keys as side facts (template wrappers:
         // `tests/templates.rs`).
@@ -81,8 +81,11 @@ fn unsupported_control_flow_selects_exact_legacy_reasons() {
             r#"<ul><li v-for="x in xs" key="static">{{ x }}</li></ul>"#,
             Binding,
         ),
-        (r#"<ul><li><span><li>x</li></span></li></ul>"#, Structure),
-        (r#"<ul><li><b><li>y</li></b></li></ul>"#, Structure),
+        (
+            r#"<ul><li><span><li>x</li></span></li></ul>"#,
+            SurfaceSemantics,
+        ),
+        (r#"<ul><li><b><li>y</li></b></li></ul>"#, SurfaceSemantics),
     ] {
         let allocator = Allocator::new();
         let status = lower_source_for_vapor(&allocator, source, options());
