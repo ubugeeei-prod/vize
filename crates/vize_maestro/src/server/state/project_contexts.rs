@@ -442,6 +442,11 @@ fn document_root(path: &Path, workspace: &Path) -> PathBuf {
             }
         }
         if has_project_config {
+            if package_root.is_some()
+                && let Some(vite_root) = vite_root.as_ref()
+            {
+                return vite_root.clone();
+            }
             return directory.to_path_buf();
         }
         if vite_root.is_none() && package_root.is_none() && has_vite {
