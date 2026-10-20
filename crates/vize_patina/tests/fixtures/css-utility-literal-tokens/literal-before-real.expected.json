@@ -8,7 +8,7 @@
         "message": "Utility class should be in global styles, not component styles",
         "start": 154,
         "end": 159,
-        "help": "Use semantic class names in components, or import utility classes from a global stylesheet",
+        "help": null,
         "labels": [],
         "fix": null
       },
@@ -18,7 +18,7 @@
         "message": "Utility class should be in global styles, not component styles",
         "start": 179,
         "end": 184,
-        "help": "Use semantic class names in components, or import utility classes from a global stylesheet",
+        "help": null,
         "labels": [],
         "fix": null
       }
@@ -39,7 +39,7 @@
           "column": 1,
           "endLine": 8,
           "endColumn": 6,
-          "help": "Use semantic class names in components, or import utility classes from a global stylesheet"
+          "help": null
         },
         {
           "ruleId": "css/no-utility-classes",
@@ -50,7 +50,7 @@
           "column": 1,
           "endLine": 9,
           "endColumn": 6,
-          "help": "Use semantic class names in components, or import utility classes from a global stylesheet"
+          "help": null
         }
       ],
       "errorCount": 0,

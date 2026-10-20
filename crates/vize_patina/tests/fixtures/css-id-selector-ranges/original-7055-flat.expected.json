@@ -8,7 +8,7 @@
         "message": "Avoid ID selectors - use class selectors for better reusability",
         "start": 173,
         "end": 184,
-        "help": "Replace with a class selector for lower specificity",
+        "help": null,
         "labels": [],
         "fix": null
       }
@@ -29,7 +29,7 @@
           "column": 1,
           "endLine": 14,
           "endColumn": 12,
-          "help": "Replace with a class selector for lower specificity"
+          "help": null
         }
       ],
       "errorCount": 0,

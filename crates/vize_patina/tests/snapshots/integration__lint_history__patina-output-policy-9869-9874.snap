@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "patina-output-policy-9869-9874",
+    history: "8de0a765d37f1888dcab7fc455fa306ad91ad96f",
+    source: "<script setup lang=\"ts\">\nimport { reactive } from \"vue\";\n\nconst state = reactive({ count: 0 });\n</script>\n\n<template>\n  <div style=\"color: red\">{{ state.count }}</div>\n</template>\n\n<style>\n.panel {\n  color: #ff0000;\n}\n</style>\n",
+    filename: "StatePanel.vue",
+    entry: "sfc",
+    rule: "vue/require-scoped-style",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "StatePanel.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/require-scoped-style",
+                severity: Warning,
+                message: "Style blocks should use scoped attribute to prevent style leaking",
+                start: 181,
+                end: 188,
+                help: Some(
+                    "Add the 'scoped' attribute to the style block",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "StatePanel.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/require-scoped-style",
+                    severity: Warning,
+                    message: "Style blocks should use scoped attribute to prevent style leaking",
+                    start: 181,
+                    end: 188,
+                    help: Some(
+                        "Add the 'scoped' attribute to the style block",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

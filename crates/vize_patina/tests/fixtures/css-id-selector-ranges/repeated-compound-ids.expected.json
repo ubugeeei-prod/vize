@@ -8,7 +8,7 @@
         "message": "Avoid ID selectors - use class selectors for better reusability",
         "start": 42,
         "end": 47,
-        "help": "Replace with a class selector for lower specificity",
+        "help": null,
         "labels": [],
         "fix": null
       },
@@ -18,7 +18,7 @@
         "message": "Avoid ID selectors - use class selectors for better reusability",
         "start": 37,
         "end": 42,
-        "help": "Replace with a class selector for lower specificity",
+        "help": null,
         "labels": [],
         "fix": null
       },
@@ -28,7 +28,7 @@
         "message": "Avoid ID selectors - use class selectors for better reusability",
         "start": 49,
         "end": 54,
-        "help": "Replace with a class selector for lower specificity",
+        "help": null,
         "labels": [],
         "fix": null
       },
@@ -38,7 +38,7 @@
         "message": "Avoid ID selectors - use class selectors for better reusability",
         "start": 62,
         "end": 68,
-        "help": "Replace with a class selector for lower specificity",
+        "help": null,
         "labels": [],
         "fix": null
       }
@@ -59,7 +59,7 @@
           "column": 6,
           "endLine": 3,
           "endColumn": 11,
-          "help": "Replace with a class selector for lower specificity"
+          "help": null
         },
         {
           "ruleId": "css/no-id-selectors",
@@ -70,7 +70,7 @@
           "column": 1,
           "endLine": 3,
           "endColumn": 6,
-          "help": "Replace with a class selector for lower specificity"
+          "help": null
         },
         {
           "ruleId": "css/no-id-selectors",
@@ -81,7 +81,7 @@
           "column": 13,
           "endLine": 3,
           "endColumn": 18,
-          "help": "Replace with a class selector for lower specificity"
+          "help": null
         },
         {
           "ruleId": "css/no-id-selectors",
@@ -92,7 +92,7 @@
           "column": 26,
           "endLine": 3,
           "endColumn": 32,
-          "help": "Replace with a class selector for lower specificity"
+          "help": null
         }
       ],
       "errorCount": 0,

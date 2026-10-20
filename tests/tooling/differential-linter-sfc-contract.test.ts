@@ -38,17 +38,21 @@ function packet(value: any) {
 void test("all current SFC wires have the complete bounded transition and old packs stay exact", () => {
   assert.equal(
     sha256(fs.readFileSync(manifest)),
-    "80a2987d05e3d4b4ccf3bc1c0a0157028a0fc9deda5705a7dcf353bbb5951afc",
+    "1a60295b3a4c61f8a354f286489dfb8907921ba5d7444b19109130dba22566ea",
   );
   assert.equal(
     sha256(
       fs.readFileSync(path.join(root, "tests/_fixtures/differential/linter/oracle-index.json")),
     ),
-    "a8657e46d07ea2352cb752ade4071f3b59599d952c64aebf149effd28abcfd2a",
+    "1b49c5dd7af6b5f64bd70e0cb3272df266e7246b2bf43e6a6fa27bf09701a86e",
   );
   const expected: [string, ReturnType<typeof missing> | null][] = [
     ["current-api/ref-string-untyped", null],
     ["current-api/ref-string-typed", null],
+    [
+      "current-api/patina-output-policy-9869-9874",
+      missing("vue/require-scoped-style"),
+    ],
     [
       "current-api/ref-call-control",
       { api: "--native-current-api", entry: "sfc", kind: "FileIssues", detail: positive },

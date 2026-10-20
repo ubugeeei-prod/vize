@@ -32,7 +32,7 @@
           "message": "Prop 'direction' is required but also declares a default",
           "start": 132,
           "end": 158,
-          "help": "Make the typed prop optional with `?` or remove the default.",
+          "help": null,
           "fix": null,
           "labels": [
             {
@@ -61,7 +61,7 @@
           "message": "Prop 'direction' is required but also declares a default",
           "start": 66,
           "end": 83,
-          "help": "Make the typed prop optional with `?` or remove the default.",
+          "help": null,
           "fix": null,
           "labels": [
             {
@@ -90,7 +90,7 @@
           "message": "Prop 'label' is required but also declares a default",
           "start": 72,
           "end": 85,
-          "help": "Make the typed prop optional with `?` or remove the default.",
+          "help": null,
           "fix": null,
           "labels": [
             {
@@ -119,7 +119,7 @@
           "message": "Prop 'café' is required but also declares a default",
           "start": 85,
           "end": 98,
-          "help": "Make the typed prop optional with `?` or remove the default.",
+          "help": null,
           "fix": null,
           "labels": [
             {

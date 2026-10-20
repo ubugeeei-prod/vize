@@ -198,5 +198,9 @@
   "linter/current-api/cli-preset-validation-9853": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__cli-preset-validation-9853.snap",
     "sha256": "be9213e74494e62056d6a765923ed552deeeee395761dc47c9a2de17fc03df92"
+  },
+  "linter/current-api/patina-output-policy-9869-9874": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__patina-output-policy-9869-9874.snap",
+    "sha256": "0e45b5d9615894bcff0e6f9a8d7fefc416c422d55c3cf5e1bafe02d53ca1ba90"
   }
 }

@@ -133,8 +133,27 @@ mod primary_location_tests {
             )],
         );
 
-        assert!(output.contains(":2:3]"), "{output}");
-        assert!(!output.contains(":1:1]"), "{output}");
+        assert_eq!(
+            strip_ansi(&output).lines().nth(2),
+            Some("   ╭─[ScoreTable.vue:2:3]")
+        );
+    }
+
+    fn strip_ansi(text: &str) -> String {
+        let mut output = String::with_capacity(text.len());
+        let mut chars = text.chars();
+        while let Some(ch) = chars.next() {
+            if ch == '\u{1b}' {
+                for next in chars.by_ref() {
+                    if next.is_ascii_alphabetic() {
+                        break;
+                    }
+                }
+            } else {
+                output.push(ch);
+            }
+        }
+        output
     }
 }
 

@@ -2,7 +2,10 @@
   "schema": "vize.lint.return-prefilter",
   "version": 1,
   "issue": 8090,
-  "rules": ["script/return-in-computed-property", "script/return-in-emits-validator"],
+  "rules": [
+    "script/return-in-computed-property",
+    "script/return-in-emits-validator"
+  ],
   "authority": "Expected complete diagnostic vectors authored from the unchanged AST producers and checked-in OXC span snapshots before execution. No lint output was used to capture or update expectations.",
   "producer": {
     "sourceCommit": "fc551dc09faaa3187cd37a3a02cb94ebab0c3352",
@@ -40,7 +43,12 @@
     "sourceCommit": "15e116fa258c7aaba5c6fdd2456442535605abe8",
     "status": "observed-separate-receipt",
     "authority": "beforeDiagnostics are source-derived legacy prefilter expectations, not execution receipts. Released-artifact observations must be retained separately.",
-    "blockFunctionNeedles": ["=> {", "=>{", "function", "get("],
+    "blockFunctionNeedles": [
+      "=> {",
+      "=>{",
+      "function",
+      "get("
+    ],
     "receipt": "original-public-baseline.json.gz",
     "receiptSha256": "40a2108e9b737b9104aa0792aee2c031d7deadbe67ee9618aeb797fad908b883"
   },
@@ -66,7 +74,7 @@
           "message": "Expected to return a value in this computed property.",
           "start": 55,
           "end": 77,
-          "help": "A computed getter must return the derived value. Add a `return` that yields a value on every path through the getter.",
+          "help": null,
           "labels": [
             {
               "message": "computed getter without a return value",
@@ -82,7 +90,7 @@
           "message": "Expected to return a boolean value in this emits validator.",
           "start": 98,
           "end": 124,
-          "help": "An emits validator must return whether the payload is valid. Add a `return` that yields a boolean on every path through the validator.",
+          "help": null,
           "labels": [
             {
               "message": "emits validator without a return value",
@@ -108,7 +116,7 @@
           "message": "Expected to return a value in this computed property.",
           "start": 57,
           "end": 95,
-          "help": "A computed getter must return the derived value. Add a `return` that yields a value on every path through the getter.",
+          "help": null,
           "labels": [
             {
               "message": "computed getter without a return value",
@@ -124,7 +132,7 @@
           "message": "Expected to return a boolean value in this emits validator.",
           "start": 118,
           "end": 162,
-          "help": "An emits validator must return whether the payload is valid. Add a `return` that yields a boolean on every path through the validator.",
+          "help": null,
           "labels": [
             {
               "message": "emits validator without a return value",
@@ -150,7 +158,7 @@
           "message": "Expected to return a value in this computed property.",
           "start": 57,
           "end": 86,
-          "help": "A computed getter must return the derived value. Add a `return` that yields a value on every path through the getter.",
+          "help": null,
           "labels": [
             {
               "message": "computed getter without a return value",
@@ -166,7 +174,7 @@
           "message": "Expected to return a boolean value in this emits validator.",
           "start": 109,
           "end": 142,
-          "help": "An emits validator must return whether the payload is valid. Add a `return` that yields a boolean on every path through the validator.",
+          "help": null,
           "labels": [
             {
               "message": "emits validator without a return value",
@@ -192,7 +200,7 @@
           "message": "Expected to return a value in this computed property.",
           "start": 57,
           "end": 82,
-          "help": "A computed getter must return the derived value. Add a `return` that yields a value on every path through the getter.",
+          "help": null,
           "labels": [
             {
               "message": "computed getter without a return value",
@@ -208,7 +216,7 @@
           "message": "Expected to return a boolean value in this emits validator.",
           "start": 105,
           "end": 134,
-          "help": "An emits validator must return whether the payload is valid. Add a `return` that yields a boolean on every path through the validator.",
+          "help": null,
           "labels": [
             {
               "message": "emits validator without a return value",
@@ -234,7 +242,7 @@
           "message": "Expected to return a value in this computed property.",
           "start": 54,
           "end": 76,
-          "help": "A computed getter must return the derived value. Add a `return` that yields a value on every path through the getter.",
+          "help": null,
           "labels": [
             {
               "message": "computed getter without a return value",
@@ -260,7 +268,7 @@
           "message": "Expected to return a value in this computed property.",
           "start": 96,
           "end": 118,
-          "help": "A computed getter must return the derived value. Add a `return` that yields a value on every path through the getter.",
+          "help": null,
           "labels": [
             {
               "message": "computed getter without a return value",
@@ -286,7 +294,7 @@
           "message": "Expected to return a value in this computed property.",
           "start": 55,
           "end": 105,
-          "help": "A computed getter must return the derived value. Add a `return` that yields a value on every path through the getter.",
+          "help": null,
           "labels": [
             {
               "message": "computed getter without a return value",
@@ -302,7 +310,7 @@
           "message": "Expected to return a boolean value in this emits validator.",
           "start": 126,
           "end": 186,
-          "help": "An emits validator must return whether the payload is valid. Add a `return` that yields a boolean on every path through the validator.",
+          "help": null,
           "labels": [
             {
               "message": "emits validator without a return value",
@@ -328,7 +336,7 @@
           "message": "Expected to return a value in this computed property.",
           "start": 55,
           "end": 69,
-          "help": "A computed getter must return the derived value. Add a `return` that yields a value on every path through the getter.",
+          "help": null,
           "labels": [
             {
               "message": "computed getter without a return value",
@@ -344,7 +352,7 @@
           "message": "Expected to return a boolean value in this emits validator.",
           "start": 90,
           "end": 111,
-          "help": "An emits validator must return whether the payload is valid. Add a `return` that yields a boolean on every path through the validator.",
+          "help": null,
           "labels": [
             {
               "message": "emits validator without a return value",
@@ -433,7 +441,7 @@
           "message": "Expected to return a value in this computed property.",
           "start": 57,
           "end": 107,
-          "help": "A computed getter must return the derived value. Add a `return` that yields a value on every path through the getter.",
+          "help": null,
           "labels": [
             {
               "message": "computed getter without a return value",
@@ -449,7 +457,7 @@
           "message": "Expected to return a boolean value in this emits validator.",
           "start": 130,
           "end": 165,
-          "help": "An emits validator must return whether the payload is valid. Add a `return` that yields a boolean on every path through the validator.",
+          "help": null,
           "labels": [
             {
               "message": "emits validator without a return value",
@@ -467,7 +475,7 @@
           "message": "Expected to return a value in this computed property.",
           "start": 57,
           "end": 107,
-          "help": "A computed getter must return the derived value. Add a `return` that yields a value on every path through the getter.",
+          "help": null,
           "labels": [
             {
               "message": "computed getter without a return value",
@@ -483,7 +491,7 @@
           "message": "Expected to return a boolean value in this emits validator.",
           "start": 130,
           "end": 165,
-          "help": "An emits validator must return whether the payload is valid. Add a `return` that yields a boolean on every path through the validator.",
+          "help": null,
           "labels": [
             {
               "message": "emits validator without a return value",

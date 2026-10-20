@@ -8,7 +8,7 @@
         "message": "Avoid ID selectors - use class selectors for better reusability",
         "start": 44,
         "end": 50,
-        "help": "Replace with a class selector for lower specificity",
+        "help": null,
         "labels": [],
         "fix": null
       },
@@ -18,7 +18,7 @@
         "message": "Avoid ID selectors - use class selectors for better reusability",
         "start": 84,
         "end": 91,
-        "help": "Replace with a class selector for lower specificity",
+        "help": null,
         "labels": [],
         "fix": null
       }
@@ -39,7 +39,7 @@
           "column": 1,
           "endLine": 3,
           "endColumn": 7,
-          "help": "Replace with a class selector for lower specificity"
+          "help": null
         },
         {
           "ruleId": "css/no-id-selectors",
@@ -50,7 +50,7 @@
           "column": 1,
           "endLine": 6,
           "endColumn": 8,
-          "help": "Replace with a class selector for lower specificity"
+          "help": null
         }
       ],
       "errorCount": 0,

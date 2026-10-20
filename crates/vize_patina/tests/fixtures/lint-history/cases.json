@@ -146,7 +146,7 @@
   {
     "id": "static-class-utf8-fix-corrected",
     "history": "634f636969b451c805ad4874c0567d64c8e8f850",
-    "source": "<template>\r\n<p>\u96ea\ud83c\udf38</p><div :class=\"'static-class'\"></div>\r\n</template>\r\n",
+    "source": "<template>\r\n<p>雪🌸</p><div :class=\"'static-class'\"></div>\r\n</template>\r\n",
     "filename": "History.vue",
     "entry": "sfc",
     "rule": "vapor/prefer-static-class",
@@ -225,6 +225,18 @@
     "vue_version": null,
     "vapor": true,
     "diagnostics": 2,
+    "fixes": 0
+  },
+  {
+    "id": "patina-output-policy-9869-9874",
+    "history": "8de0a765d37f1888dcab7fc455fa306ad91ad96f",
+    "source": "<script setup lang=\"ts\">\nimport { reactive } from \"vue\";\n\nconst state = reactive({ count: 0 });\n</script>\n\n<template>\n  <div style=\"color: red\">{{ state.count }}</div>\n</template>\n\n<style>\n.panel {\n  color: #ff0000;\n}\n</style>\n",
+    "filename": "StatePanel.vue",
+    "entry": "sfc",
+    "rule": "vue/require-scoped-style",
+    "vue_version": null,
+    "vapor": null,
+    "diagnostics": 1,
     "fixes": 0
   }
 ]

@@ -17,17 +17,20 @@ fn help_level_none_covers_script_css_and_sfc_rule_lanes() {
             "StatePanel.vue",
         );
 
-    let rules: Vec<_> = result
+    let mut rules: Vec<_> = result
         .diagnostics
         .iter()
         .map(|diagnostic| diagnostic.rule_name)
         .collect();
-    assert!(
-        rules.contains(&"script/prefer-ref-over-reactive"),
-        "{rules:?}"
+    rules.sort_unstable();
+    assert_eq!(
+        rules,
+        vec![
+            "css/no-hardcoded-values",
+            "script/prefer-ref-over-reactive",
+            "vue/require-scoped-style",
+        ]
     );
-    assert!(rules.contains(&"css/no-hardcoded-values"), "{rules:?}");
-    assert!(rules.contains(&"vue/require-scoped-style"), "{rules:?}");
     assert!(
         result
             .diagnostics

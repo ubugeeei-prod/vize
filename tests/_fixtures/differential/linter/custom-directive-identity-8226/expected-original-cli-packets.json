@@ -141,7 +141,7 @@
         "endLine": 265,
         "help": "Add scoped attribute: <style scoped>",
         "line": 265,
-        "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
+        "message": "[vize:vue/require-scoped-style] Style blocks should use scoped attribute to prevent style leaking",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "ruleId": "vue/require-scoped-style",
         "severity": 1
