@@ -738,6 +738,23 @@
       }
     },
     {
+      "id": "lsp/fix-history/nuxt-builtins-9866",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "nuxt-builtins-9866",
+        "files": [
+          {
+            "path": "HomeLink.vue.txt",
+            "role": "issue-authored-component",
+            "sha256": "5362dc0aab5809c4729ee24efd00b452b0eeae794a17a53f965eb5470d2c7b69"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/imported-sfc-parse-recovery-10027",
       "state": "active",
       "targets": [
