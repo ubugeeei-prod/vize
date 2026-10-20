@@ -110,6 +110,34 @@ fn pug_compiles_exactly_like_its_pug_rendered_html_in_every_lane() {
 }
 
 #[test]
+fn jade_alias_compiles_exactly_like_pug_in_every_lane() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../../tests/_fixtures/davinci-pug/matrix/slots-and-components.pug");
+    let template = std::fs::read_to_string(path).expect("pug");
+    for shell in SHELLS {
+        let pug = ["<template lang=\"pug\">", &template, "</template>\n", shell].concat();
+        for language in ["jade", "JADE"] {
+            let jade = [
+                "<template lang=\"",
+                language,
+                "\">",
+                &template,
+                "</template>\n",
+                shell,
+            ]
+            .concat();
+            for (lane, options) in lanes() {
+                assert_eq!(
+                    compile(&jade, options.clone()),
+                    compile(&pug, options),
+                    "{language} alias diverged from pug in {lane}"
+                );
+            }
+        }
+    }
+}
+
+#[test]
 fn refused_pug_fails_the_compile_with_its_first_diagnostic() {
     let refused = fixtures("refused");
     assert_eq!(refused.len(), 14);
@@ -124,5 +152,19 @@ fn refused_pug_fails_the_compile_with_its_first_diagnostic() {
             let error = compile(&sfc, options).expect_err("refused pug must not compile");
             assert_eq!(error, ["pug template: ", message].concat(), "{name}/{lane}");
         }
+    }
+}
+
+#[test]
+fn refused_jade_fails_like_refused_pug() {
+    let source = "include missing.pug";
+    for (lane, options) in lanes() {
+        let pug = ["<template lang=\"pug\">", source, "</template>"].concat();
+        let jade = ["<template lang=\"jade\">", source, "</template>"].concat();
+        assert_eq!(
+            compile(&jade, options.clone()),
+            compile(&pug, options),
+            "{lane}"
+        );
     }
 }

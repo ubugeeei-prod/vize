@@ -57,6 +57,15 @@ fn every_non_html_language_uses_the_opaque_strategy() {
 }
 
 #[test]
+fn jade_alias_preserves_pug_content() {
+    let source = "<template lang=\"jade\">\nmain\n  button(@click=\"save\") Save\n</template>\n";
+    let output = assert_fixed_point(source, &FormatOptions::default());
+    assert!(output.contains(
+        "<template lang=\"jade\">\n  main\n    button(@click=\"save\") Save\n</template>"
+    ));
+}
+
+#[test]
 fn explicit_html_still_uses_the_native_template_formatter() {
     let source = "<template lang=\"html\"><div   :title=\"message\">{{message}}</div></template>\n";
     let output = assert_fixed_point(source, &FormatOptions::default());

@@ -22,6 +22,8 @@ section#app.card(:class="{ active: ok }")
 </template>
 `;
 
+const jade = pug.replace('lang="pug"', 'lang="jade"');
+
 const html = `${script}
 <template>
   <section id="app" class="card" :class="{ active: ok }">
@@ -36,4 +38,4 @@ const html = `${script}
 </template>
 `;
 
-module.exports = { pug, html };
+module.exports = { pug, jade, html };

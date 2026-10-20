@@ -207,14 +207,13 @@ fn compile_sfc<'a>(
         }
         _ => fail(path, "native and product SFC template boundaries differ"),
     };
-    let authored_syntax = if native_template
+    let authored_language = native_template
         .and_then(|block| block.attr("lang"))
-        .and_then(|attr| attr.value)
-        .is_some_and(|lang| lang.eq_ignore_ascii_case("pug"))
-    {
-        "pug"
-    } else {
-        "vue-template"
+        .and_then(|attr| attr.value);
+    let authored_syntax = match authored_language {
+        Some(lang) if lang.eq_ignore_ascii_case("pug") => "pug",
+        Some(lang) if lang.eq_ignore_ascii_case("jade") => "jade",
+        _ => "vue-template",
     };
     let mut options = SfcCompileOptions::default();
     options.parse.filename = path_text.into();

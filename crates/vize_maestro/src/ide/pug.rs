@@ -307,7 +307,7 @@ fn template_start_tag_lang_is_pug(start_tag: &str) -> bool {
             None => continue,
         };
 
-        if value == "pug" {
+        if matches!(value, "pug" | "jade") {
             return true;
         }
     }
@@ -327,17 +327,23 @@ mod tests {
     };
 
     #[test]
-    fn reads_pug_component_tag_names() {
-        let source = r#"<template lang="pug">
+    fn reads_pug_and_jade_component_tag_names() {
+        for language in ["pug", "jade", "JADE"] {
+            let language = ["lang=\"", language, "\""].concat();
+            let source = r#"<template lang="pug">
   highlight-message(type="success")
 </template>
-"#;
-        let offset = source.find("highlight-message").unwrap();
+"#
+            .replace("lang=\"pug\"", &language);
+            let offset = source.find("highlight-message").unwrap();
 
-        assert_eq!(
-            tag_name_span_at_offset(source, offset).map(|(_, _, start, end)| &source[start..end]),
-            Some("highlight-message")
-        );
+            assert_eq!(
+                tag_name_span_at_offset(&source, offset)
+                    .map(|(_, _, start, end)| &source[start..end]),
+                Some("highlight-message"),
+                "{language}"
+            );
+        }
     }
 
     #[test]

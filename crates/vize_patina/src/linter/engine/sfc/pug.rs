@@ -1,5 +1,5 @@
-//! `<template lang="pug">` — the Davinci pug dialect (P4-12c) selector for
-//! SFC linting.
+//! `<template lang="pug">` and the legacy `jade` spelling — the Davinci pug
+//! dialect (P4-12c) selector for SFC linting.
 //!
 //! The pug block is swapped for its derived Vue template
 //! (`vize_l1_to_l2::lower::pug::PugBlockView`), the SFC lints through the
@@ -18,18 +18,19 @@ impl Linter {
     /// Lint `source` through its pug view, or `None` when the SFC has no
     /// inline pug template (or one the lowering refuses).
     pub(crate) fn lint_pug_sfc(&self, source: &str, filename: &str) -> Option<LintResult> {
-        // Cheap gate: only sources that mention pug pay for the SFC parse.
-        memchr::memmem::find(source.as_bytes(), b"pug")?;
+        // Cheap gate: only sources that mention either spelling pay for the SFC parse.
+        if !mentions_pug_language(source) {
+            return None;
+        }
         let options = SfcParseOptions {
             filename: filename.into(),
             ..SfcParseOptions::default()
         };
         let descriptor = parse_sfc(source, options).ok()?;
         let template = descriptor.template.as_ref()?;
-        let pug = template
-            .lang
-            .as_deref()
-            .is_some_and(|lang| lang.eq_ignore_ascii_case("pug"));
+        let pug = template.lang.as_deref().is_some_and(|lang| {
+            lang.eq_ignore_ascii_case("pug") || lang.eq_ignore_ascii_case("jade")
+        });
         if template.src.is_some() || !pug {
             return None;
         }
@@ -55,4 +56,15 @@ impl Linter {
         }
         Some(result)
     }
+}
+
+fn mentions_pug_language(source: &str) -> bool {
+    source
+        .as_bytes()
+        .windows(3)
+        .any(|window| window.eq_ignore_ascii_case(b"pug"))
+        || source
+            .as_bytes()
+            .windows(4)
+            .any(|window| window.eq_ignore_ascii_case(b"jade"))
 }
