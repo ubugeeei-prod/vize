@@ -1,0 +1,10 @@
+<script setup lang="ts">
+defineProps<{ rows: { name: string }[] }>();
+defineSlots<{ "item.name"(props: { row: { name: string } }): unknown }>();
+</script>
+
+<template>
+  <div v-for="row in rows" :key="row.name">
+    <slot name="item.name" :row="row">{{ row.name }}</slot>
+  </div>
+</template>
