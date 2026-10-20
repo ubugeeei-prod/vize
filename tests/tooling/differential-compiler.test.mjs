@@ -34,7 +34,7 @@ function syntheticReport(code = fixture.expected) {
       JSON.stringify({
         filename: "Layout.vue",
         code: (index === 0 ? code : current.expected).toString(),
-        css: null,
+        css: current.expectedCss?.toString() ?? null,
         errors: [],
         warnings: [],
         script_lang: current.comparison.scriptLang ?? "js",
@@ -46,9 +46,14 @@ function syntheticReport(code = fixture.expected) {
       output,
       current.expected,
       current.comparison.scriptLang,
+      current.expectedCss,
     );
     const verdict =
-      observation.referenceComparison.state === "equal" ? "matched-reference" : "baseline-drift";
+      observation.referenceComparison.state === "equal" &&
+      (observation.cssReferenceComparison === null ||
+        observation.cssReferenceComparison.state === "equal")
+        ? "matched-reference"
+        : "baseline-drift";
     return {
       id: current.id,
       target: "ssr",
@@ -101,19 +106,21 @@ void test("compiler fixture pins a real full-module reference without native cre
       "compiler/sfc/v-model-maybe-ref-9897",
       "compiler/sfc/vue2-preserve-boundaries-9886",
       "compiler/sfc/package-import-prop-type-9894",
+      "compiler/sfc/scoped-where-nesting-9830",
     ],
   );
   const report = syntheticReport();
   assert.deepEqual(validateCompilerReport(loaded, report, build), report.summary);
   assert.deepEqual(summarizeNativeAcceptance(loaded, report, { sourceRevision }).total, {
-    planned: 7,
+    planned: 8,
     nativeHandled: 0,
     nativeEquivalent: 0,
-    unsupported: 7,
+    unsupported: 8,
     legacyBacked: 0,
     unverified: 0,
   });
-  assert.equal(loaded.cases.at(-1).comparison.scriptLang, "ts");
+  assert.equal(loaded.cases.at(-2).comparison.scriptLang, "ts");
+  assert(Buffer.isBuffer(loaded.cases.at(-1).expectedCss));
 });
 
 void test("compiler comparison checks every code byte and rejects forged native completion", () => {
@@ -129,12 +136,35 @@ void test("compiler comparison checks every code byte and rejects forged native 
   const tampered = syntheticReport();
   tampered.rows[0].legacy.observation.codeSha256 = "f".repeat(64);
   assert.throws(() => validateCompilerReport(loaded, tampered, build), /forged/);
+
+  const cssFixture = loaded.cases.at(-1);
+  const cssOutput = Buffer.from(
+    JSON.stringify({
+      filename: "Layout.vue",
+      code: cssFixture.expected.toString(),
+      css: `${cssFixture.expectedCss.toString()}\n`,
+      errors: [],
+      warnings: [],
+      script_lang: "js",
+      macro_artifacts: [],
+    }),
+  );
+  const cssChanged = compilerAttempt(
+    { status: 0, signal: null, stdout: Buffer.alloc(0), stderr: Buffer.alloc(0) },
+    cssOutput,
+    cssFixture.expected,
+    "js",
+    cssFixture.expectedCss,
+  );
+  assert.equal(cssChanged.referenceComparison.state, "equal");
+  assert.equal(cssChanged.cssReferenceComparison.state, "different");
 });
 
 void test("compiler input and reference digests fail closed", () => {
   for (const relative of loaded.cases.flatMap((current) => [
     `${current.inputs.root}/Layout.vue.txt`,
     `${current.inputs.root}/module.expected.txt`,
+    ...(current.reference.cssPath ? [current.reference.cssPath] : []),
   ])) {
     const copy = fs.mkdtempSync(path.join(os.tmpdir(), "vize-compiler-manifest-"));
     try {

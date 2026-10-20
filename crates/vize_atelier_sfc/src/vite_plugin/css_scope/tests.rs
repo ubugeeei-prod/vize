@@ -135,6 +135,18 @@ fn scopes_nested_css_under_media_rules() {
 }
 
 #[test]
+fn preserves_nested_where_parent_specificity() {
+    assert_eq!(
+        scope_css_for_pipeline(
+            ":where(.card) { color: red; & > .title { font-weight: bold; } & > :deep(.icon) { display: block; } }",
+            "data-v-x"
+        )
+        .as_str(),
+        ":where(.card) {&[data-v-x]{color: red;} & > .title[data-v-x]{ font-weight: bold; } &[data-v-x] > .icon{ display: block; }}"
+    );
+}
+
+#[test]
 fn preserves_comments_before_media_rules() {
     assert_eq!(
         scope_css_for_pipeline(

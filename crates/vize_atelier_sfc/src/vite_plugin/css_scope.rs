@@ -80,6 +80,14 @@ fn transform_css_block_with_parents(
                 output.push_str(body);
             }
             output.push('}');
+        } else if parent_selectors.is_none()
+            && has_nested_style_rule(body)
+            && contains_where_selector(statement)
+        {
+            output.push_str(statement);
+            output.push('{');
+            output.push_str(transform_preserved_nested_body(body, scope_id).as_str());
+            output.push('}');
         } else {
             let selectors = combine_selector_lists(parent_selectors, statement);
             output.push_str(
@@ -97,6 +105,99 @@ fn transform_css_block_with_parents(
         declarations.as_str(),
     );
     output
+}
+
+fn contains_where_selector(selector_list: &str) -> bool {
+    split_selector_list(selector_list)
+        .iter()
+        .any(|selector| selector.trim_start().starts_with(":where("))
+}
+
+fn has_nested_style_rule(css: &str) -> bool {
+    let mut cursor = 0usize;
+    while cursor < css.len() {
+        let Some(brace) = find_next_top_level_brace(css, cursor) else {
+            return false;
+        };
+        let Some(end) = find_matching_brace(css, brace) else {
+            return false;
+        };
+        let header_start = find_rule_header_start(css, cursor, brace);
+        let header = css.get(header_start..brace).unwrap_or_default();
+        if !header.trim_start().starts_with('@') {
+            return true;
+        }
+        cursor = end + 1;
+    }
+    false
+}
+
+fn transform_preserved_nested_body(css: &str, scope_id: &str) -> String {
+    let mut output = String::with_capacity(css.len() + scope_id.len());
+    let mut cursor = 0usize;
+    let mut declarations = String::default();
+
+    while cursor < css.len() {
+        let rule = find_next_top_level_brace(css, cursor).and_then(|brace| {
+            let end = find_matching_brace(css, brace)?;
+            let header_start = find_rule_header_start(css, cursor, brace);
+            Some((
+                css.get(cursor..header_start)?,
+                css.get(header_start..brace)?,
+                css.get(brace + 1..end)?,
+                end,
+            ))
+        });
+        let Some((pending, header, body, end)) = rule else {
+            declarations.push_str(css.get(cursor..).unwrap_or_default());
+            break;
+        };
+
+        declarations.push_str(pending);
+        flush_preserved_declarations(&mut output, scope_id, declarations.as_str());
+        declarations.clear();
+
+        let (leading, statement) = split_leading_trivia(header);
+        output.push_str(leading);
+        if statement.trim_start().starts_with('@') {
+            output.push_str(statement);
+            output.push('{');
+            if should_recurse_at_rule(statement) {
+                output.push_str(transform_preserved_nested_body(body, scope_id).as_str());
+            } else {
+                output.push_str(body);
+            }
+            output.push('}');
+        } else if has_nested_style_rule(body) {
+            output.push_str(statement);
+            output.push('{');
+            output.push_str(transform_preserved_nested_body(body, scope_id).as_str());
+            output.push('}');
+        } else {
+            output.push_str(scope_selector_list(statement.trim(), scope_id).as_str());
+            output.push('{');
+            output.push_str(body);
+            output.push('}');
+        }
+
+        cursor = end + 1;
+    }
+
+    flush_preserved_declarations(&mut output, scope_id, declarations.as_str());
+    output
+}
+
+fn flush_preserved_declarations(output: &mut String, scope_id: &str, declarations: &str) {
+    let declarations = declarations.trim();
+    if declarations.is_empty() {
+        return;
+    }
+
+    output.push('&');
+    output.push_str(scope_attr(scope_id).as_str());
+    output.push('{');
+    output.push_str(declarations);
+    output.push('}');
 }
 
 fn find_rule_header_start(css: &str, start: usize, brace: usize) -> usize {
