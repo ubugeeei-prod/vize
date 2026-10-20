@@ -1,0 +1,63 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "valid-v-else-autofix-preserves-directive",
+    history: "6333970b1b053e489130d56979896fa53aa96262",
+    source: "<script setup lang=\"ts\">\ndefineProps<{ online: boolean }>();\n</script>\n\n<template>\n  <div>\n    <p v-if=\"online\">online</p>\n    <p v-else=\"online\">offline</p>\n  </div>\n</template>\n",
+    filename: "StatusText.vue",
+    entry: "sfc",
+    rule: "vue/valid-v-else",
+    vue_version: Some(
+        "3",
+    ),
+    vapor: None,
+    diagnostics: 1,
+    fixes: 1,
+}
+Observation {
+    initial: LintResult {
+        filename: "StatusText.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/valid-v-else",
+                severity: Error,
+                message: "v-else directives require no expression",
+                start: 130,
+                end: 145,
+                help: Some(
+                    "**Correct usage:**\n```vue\n<div v-if=\"type === 'A'\">A</div>\n<div v-else-if=\"type === 'B'\">B</div>\n<div v-else>Other</div>\n```\n\n**Rules:**\n- `v-else` takes no expression\n- Must immediately follow `v-if` or `v-else-if`\n- No other elements between them",
+                ),
+                labels: [],
+                fix: Some(
+                    Fix {
+                        message: "Remove the expression from v-else",
+                        edits: [
+                            TextEdit {
+                                start: 136,
+                                end: 145,
+                                new_text: "",
+                            },
+                        ],
+                    },
+                ),
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [
+        Application {
+            diagnostic_index: 0,
+            source: "<script setup lang=\"ts\">\ndefineProps<{ online: boolean }>();\n</script>\n\n<template>\n  <div>\n    <p v-if=\"online\">online</p>\n    <p v-else>offline</p>\n  </div>\n</template>\n",
+            result: LintResult {
+                filename: "StatusText.vue",
+                diagnostics: [],
+                error_count: 0,
+                warning_count: 0,
+            },
+        },
+    ],
+    unchanged_requery: None,
+}

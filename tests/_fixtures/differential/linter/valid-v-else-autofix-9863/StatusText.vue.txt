@@ -1,0 +1,10 @@
+<script setup lang="ts">
+defineProps<{ online: boolean }>();
+</script>
+
+<template>
+  <div>
+    <p v-if="online">online</p>
+    <p v-else="online">offline</p>
+  </div>
+</template>

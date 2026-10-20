@@ -16,7 +16,7 @@
       "api": "--current-api",
       "cases": {
         "path": "crates/vize_patina/tests/fixtures/lint-history/cases.json",
-        "sha256": "213da26d2a3a8b4f14b947dc711b786fa6568b51ac9cfc259fd7a253fab66c42"
+        "sha256": "248bcebf7d1dd96f174c69988b20ac604d2d60f97ba16f480497c259b420091f"
       }
     },
     {
@@ -54,7 +54,7 @@
   ],
   "oracles": {
     "path": "tests/_fixtures/differential/linter/oracle-index.json",
-    "sha256": "f3c204ba77abacbe1cbe0ca8d6f7878963353354cdd21844e0eb2848d2e06802"
+    "sha256": "2588ee723e0096d53346c607928c88661085e77a7e3c71d26e1ad2efdc7e2a6a"
   },
   "cases": [
     {
@@ -121,6 +121,21 @@
       "id": "linter/current-api/static-class-utf8-fix-corrected",
       "state": "active",
       "targets": ["lint"]
+    },
+    {
+      "id": "linter/current-api/valid-v-else-autofix-preserves-directive",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "valid-v-else-autofix-9863",
+        "files": [
+          {
+            "path": "StatusText.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "88678aef2a9a4d094e0d61e178f51d6d8ae8d06285dd9187ce377b2b2e2899f3"
+          }
+        ]
+      }
     },
     {
       "id": "linter/next-tick/valid-arrow-expression-return-script",

@@ -154,5 +154,17 @@
     "vapor": null,
     "diagnostics": 1,
     "fixes": 1
+  },
+  {
+    "id": "valid-v-else-autofix-preserves-directive",
+    "history": "6333970b1b053e489130d56979896fa53aa96262",
+    "source": "<script setup lang=\"ts\">\ndefineProps<{ online: boolean }>();\n</script>\n\n<template>\n  <div>\n    <p v-if=\"online\">online</p>\n    <p v-else=\"online\">offline</p>\n  </div>\n</template>\n",
+    "filename": "StatusText.vue",
+    "entry": "sfc",
+    "rule": "vue/valid-v-else",
+    "vue_version": "3",
+    "vapor": null,
+    "diagnostics": 1,
+    "fixes": 1
   }
 ]

@@ -174,5 +174,9 @@
   "linter/component-name/invalid-dotted-name": {
     "path": "tests/_fixtures/differential/linter/component-name/invalid-dotted-name.snap",
     "sha256": "ba8a8b32879d5126004d06b86fa7ec8971360afd5b9fd00ae34fb9abd045b3fd"
+  },
+  "linter/current-api/valid-v-else-autofix-preserves-directive": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__valid-v-else-autofix-preserves-directive.snap",
+    "sha256": "606d5afb73fe7512be388241ace3e5f8a9de84fc6f6c2215ebeb3ac8942154a0"
   }
 }
