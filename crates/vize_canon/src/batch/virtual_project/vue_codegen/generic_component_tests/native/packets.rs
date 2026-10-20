@@ -40,7 +40,7 @@ pub(super) fn retain(phase: &str, packet: &Value) {
     }
 }
 
-fn blob(bytes: &[u8]) -> Value {
+pub(super) fn blob(bytes: &[u8]) -> Value {
     let hash: String = Sha256::digest(bytes)
         .iter()
         .map(|byte| cstr!("{byte:02x}"))
