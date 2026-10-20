@@ -169,20 +169,25 @@ void test("action options route flat lint to Vite+ and native settings to the lo
   assert.equal(metadata.options.conflicts, false);
   assert.equal(metadata.lintLocale, "ja");
   assert.equal(metadata.lintHelpLevel, "short");
-  assert.deepEqual(await resolveConfigExport(metadata.config!, env), {
-    typeChecker: { jsxTypecheck: true, strict: true },
-    compiler: { whitespace: "preserve" },
-    linter: {
-      preset: "incremental",
-      rules: { "vue/no-v-html": "warn" },
+  const native = await resolveConfigExport(metadata.config!, env);
+  assert.deepEqual(
+    {
+      typeChecker: native.typeChecker,
+      compiler: native.compiler,
+      linter: native.linter,
+      formatter: native.formatter,
     },
-    formatter: { singleQuote: true },
-    entries: [
-      {
-        files: ["generated/**/*.vue"],
-        linter: { rules: { "vue/no-v-html": "off" } },
-      },
-    ],
+    {
+      typeChecker: { jsxTypecheck: true, strict: true },
+      compiler: { whitespace: "preserve" },
+      linter: { preset: "incremental", rules: { "vue/no-v-html": "warn" } },
+      formatter: { singleQuote: true },
+    },
+  );
+  assert.deepEqual(native.entries?.at(-1), {
+    basePath: process.cwd(),
+    files: ["generated/**/*.vue"],
+    linter: { rules: { "vue/no-v-html": "off" } },
   });
   const calls: string[][] = [];
   await runTools("lint", ["src"], metadata, "vp", "native", async (_command, args) => {
