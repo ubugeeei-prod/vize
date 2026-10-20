@@ -17,9 +17,9 @@ use std::{
 
 #[path = "../../support/common.rs"]
 mod common;
-#[path = "assertion_lint_ratchet.rs"]
+#[path = "../../support/davinci/assertion_lint_ratchet.rs"]
 mod ratchet;
-#[path = "assertion_lint_test_modules.rs"]
+#[path = "../../support/davinci/assertion_lint_test_modules.rs"]
 mod test_modules;
 
 #[derive(Clone, Debug)]
