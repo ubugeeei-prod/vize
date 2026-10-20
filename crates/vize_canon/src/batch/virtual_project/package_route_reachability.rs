@@ -217,7 +217,10 @@ where
     let mut queue = BinaryHeap::new();
     // Deduplicated on arrival: lookups re-report the same manifests and
     // context files for every edge, which made the final sort dominate.
-    let mut inputs = InputSet::default();
+    let mut inputs = InputSet {
+        untracked: sources.is_untracked(),
+        ..InputSet::default()
+    };
     // Interned edge input lists already merged into `inputs`, by address.
     let mut recorded_lists = FxHashSet::default();
     let mut work = ReachabilityWork::default();
@@ -419,9 +422,16 @@ impl std::borrow::Borrow<std::ffi::OsStr> for InputPath {
     }
 }
 
-type InputSet = FxHashSet<InputPath>;
+#[derive(Default)]
+struct InputSet {
+    paths: FxHashSet<InputPath>,
+    untracked: bool,
+}
 
 fn record_list(inputs: &mut InputSet, recorded: &mut FxHashSet<usize>, list: &sources::InputList) {
+    if inputs.untracked {
+        return;
+    }
     // The address identifies the interned list for as long as the pass holds it.
     if recorded.insert(Arc::as_ptr(list).cast::<PathBuf>() as usize) {
         for input in list.iter() {
@@ -431,8 +441,8 @@ fn record_list(inputs: &mut InputSet, recorded: &mut FxHashSet<usize>, list: &so
 }
 
 fn record_input(inputs: &mut InputSet, path: &Path) {
-    if !inputs.contains(path.as_os_str()) {
-        inputs.insert(InputPath(path.to_path_buf()));
+    if !inputs.untracked && !inputs.paths.contains(path.as_os_str()) {
+        inputs.paths.insert(InputPath(path.to_path_buf()));
     }
 }
 
@@ -442,7 +452,11 @@ fn finish(
     work: ReachabilityWork,
     budget: ReachabilityBudget,
 ) -> PackageRouteReachability {
-    let mut inputs = inputs.into_iter().map(|input| input.0).collect::<Vec<_>>();
+    let mut inputs = inputs
+        .paths
+        .into_iter()
+        .map(|input| input.0)
+        .collect::<Vec<_>>();
     inputs.sort_unstable_by(|left, right| left.as_os_str().cmp(right.as_os_str()));
     debug_assert!(
         outcome == ReachabilityOutcome::BudgetExceeded

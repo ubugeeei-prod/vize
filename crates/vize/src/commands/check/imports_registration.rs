@@ -39,7 +39,6 @@ type PackageReachabilityKey = (
     u8,
 );
 
-#[derive(Default)]
 pub(super) struct VirtualRegistrationCache {
     registrations: FxHashMap<(PathBuf, bool), CachedVirtualRegistration>,
     reachability: FxHashMap<PackageReachabilityKey, vize_canon::batch::PackageRouteReachability>,
@@ -48,6 +47,20 @@ pub(super) struct VirtualRegistrationCache {
     negative_alias_sources: FxHashSet<PathBuf>,
     #[cfg(test)]
     source_reads: usize,
+}
+
+impl Default for VirtualRegistrationCache {
+    fn default() -> Self {
+        Self {
+            registrations: FxHashMap::default(),
+            reachability: FxHashMap::default(),
+            // `vize check` runs once: nothing refreshes from these inputs.
+            reachability_sources: vize_canon::batch::ReachabilitySources::untracked(),
+            negative_alias_sources: FxHashSet::default(),
+            #[cfg(test)]
+            source_reads: 0,
+        }
+    }
 }
 
 impl VirtualRegistrationCache {

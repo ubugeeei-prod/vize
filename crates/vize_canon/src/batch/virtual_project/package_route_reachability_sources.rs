@@ -77,10 +77,30 @@ pub struct ReachabilitySources {
         )>,
     >,
     input_lists: FxHashSet<InputList>,
+    /// Scans keep no inputs; see [`Self::untracked`].
+    untracked: bool,
 }
 
 impl ReachabilitySources {
-    pub(super) fn intern(&mut self, inputs: Vec<PathBuf>) -> InputList {
+    /// Sources whose scans report no invalidation inputs, for a one-shot
+    /// check that never refreshes: collecting and sorting every scan's inputs
+    /// was a quarter of its import walk (#9727). Outcomes and work are the
+    /// same as a tracked scan's.
+    pub fn untracked() -> Self {
+        Self {
+            untracked: true,
+            ..Self::default()
+        }
+    }
+
+    pub(super) fn is_untracked(&self) -> bool {
+        self.untracked
+    }
+
+    pub(super) fn intern(&mut self, mut inputs: Vec<PathBuf>) -> InputList {
+        if self.untracked {
+            inputs.clear();
+        }
         if let Some(list) = self.input_lists.get(inputs.as_slice()) {
             return list.clone();
         }
