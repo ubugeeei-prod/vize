@@ -280,7 +280,9 @@ mod tests {
                 .parent()
                 .unwrap()
                 .ancestors()
-                .map(|directory| directory.join("node_modules/vite")),
+                .flat_map(|directory| {
+                    ["vite", "vite-plus"].map(|engine| directory.join("node_modules").join(engine))
+                }),
         );
         expected.sort();
         expected.dedup();
