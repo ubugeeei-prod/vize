@@ -601,6 +601,33 @@
           }
         ]
       }
+    },
+    {
+      "id": "linter/patina/rule-fixes-9872-9873",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-rule-fixes-9872-9873",
+        "files": [
+          {
+            "path": "ProfileCard.vue.txt",
+            "role": "issue-authored-fix-reproduction",
+            "sha256": "863e09c5ead9eaba63d9da6a9ba73892359db8ab8bc6159d6e8b4f24a4cb82ab"
+          },
+          {
+            "path": "ScssBox.vue.txt",
+            "role": "issue-authored-scss-reproduction",
+            "sha256": "7b72d5682dde10a0e1a598a50cd83ed44dfbe1ff2decaf1272b2d77e0febbf15"
+          },
+          {
+            "path": "PugBox.vue.txt",
+            "role": "issue-authored-pug-reproduction",
+            "sha256": "49bc1fa6701612529326ad14f213f63ff349433d7292c8640fffccdaab311f8a"
+          }
+        ]
+      }
     }
   ]
 }

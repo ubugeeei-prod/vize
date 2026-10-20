@@ -1,0 +1,12 @@
+<template>
+  <div class="box"><span class="inner">x</span></div>
+</template>
+
+<style lang="scss" scoped>
+$gap: 4px;
+.box {
+  .inner {
+    margin: $gap;
+  }
+}
+</style>
