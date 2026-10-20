@@ -85,21 +85,30 @@ fn kebab_case_builtins_resolve_like_their_pascal_names() {
 fn reserved_keys_never_render_and_constant_keys_need_no_fragment() {
     // Upstream's `isReservedProp`: a static `key` is not a DOM attribute; a
     // key that cannot change (`isStaticExpression`) never remounts its block.
+    let plain = |html: &str| {
+        vize_carton::cstr!(
+            "import {{ template as _template }} from 'vue';\n\
+             const t0 = _template(\"{html}\", true)\n\n\
+             export function render(_ctx) {{\n  const n0 = t0()\n  return n0\n}}\n"
+        )
+    };
+    let keyed = "import { createKeyedFragment as _createKeyedFragment, template as _template } from 'vue';\n\
+                 const t0 = _template(\"<div></div>\", true)\n\n\
+                 export function render(_ctx) {\n  \
+                 const n0 = _createKeyedFragment(() => (_ctx.k), () => {\n    \
+                 const n1 = t0()\n    return n1\n  })\n  return n0\n}\n";
     for retained in [false, true] {
-        let code = compiled(r#"<div key="a"><span key="b" class="c" /></div>"#, retained);
-        assert!(
-            code.contains(r#"_template("<div><span class=\"c\"></span></div>", true)"#),
-            "{code}"
+        assert_eq!(
+            compiled(r#"<div key="a"><span key="b" class="c" /></div>"#, retained),
+            plain(r#"<div><span class=\"c\"></span></div>"#).as_str()
         );
         for source in [r#"<div :key="1" />"#, r#"<div :key="'a'" />"#] {
-            let code = compiled(source, retained);
-            assert!(!code.contains("createKeyedFragment"), "{source}: {code}");
-            assert!(!code.contains("\"key\""), "{source}: {code}");
+            assert_eq!(
+                compiled(source, retained),
+                plain("<div></div>").as_str(),
+                "{source}"
+            );
         }
-        let code = compiled(r#"<div :key="k" />"#, retained);
-        assert!(
-            code.contains("_createKeyedFragment(() => (_ctx.k)"),
-            "{code}"
-        );
+        assert_eq!(compiled(r#"<div :key="k" />"#, retained), keyed);
     }
 }
