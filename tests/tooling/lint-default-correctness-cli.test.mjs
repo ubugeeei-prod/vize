@@ -6,7 +6,8 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.ts";
-import { sha256, wholeJson, withoutHelp } from "./lint-default-correctness-reference.mjs";
+import { sha256, wholeJson } from "./lint-default-correctness-reference.mjs";
+import { withoutHelp } from "./support/lint-help-policy.mjs";
 import { vueConfigFixtureSource, writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import { loadCurrentCorpus as loadCorpus } from "./support/lint-current-correctness-corpus.mjs";
 

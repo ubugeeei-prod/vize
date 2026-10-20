@@ -49,10 +49,7 @@ void test("all current SFC wires have the complete bounded transition and old pa
   const expected: [string, ReturnType<typeof missing> | null][] = [
     ["current-api/ref-string-untyped", null],
     ["current-api/ref-string-typed", null],
-    [
-      "current-api/patina-output-policy-9869-9874",
-      missing("vue/require-scoped-style"),
-    ],
+    ["current-api/patina-output-policy-9869-9874", missing("vue/require-scoped-style")],
     [
       "current-api/ref-call-control",
       { api: "--native-current-api", entry: "sfc", kind: "FileIssues", detail: positive },
