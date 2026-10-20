@@ -200,6 +200,17 @@ fn template_suppression_preserves_complete_original_diagnostics() {
     );
 }
 
+#[test]
+fn bounded_cache_maintenance_preserves_project_diagnostics() {
+    check_pack(
+        "cache-maintenance-9860",
+        "bounded_cache_maintenance_preserves_project_diagnostics",
+        "4714c0f264dedffaa81377df9545fbfa9514a64e",
+        Some(9860),
+        &["bounded-maintenance"],
+    );
+}
+
 fn check_pack(
     name: &str,
     test: &str,
@@ -230,7 +241,8 @@ fn check_pack(
             | "v-for-source-original"
             | "v-for-component-source-original"
             | "declared-prop-names-original"
-            | "template-suppression-original" => regression,
+            | "template-suppression-original"
+            | "cache-maintenance-9860" => regression,
             _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
         }
     );

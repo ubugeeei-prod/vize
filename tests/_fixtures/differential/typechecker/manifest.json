@@ -1429,6 +1429,38 @@
           "sha256": "c726f210eaba328ff6e53ff8ca53ab0d78de169931ed586462bb42b8bfac16df"
         }
       ]
+    },
+    {
+      "id": "typechecker/cache-maintenance-9860/bounded-maintenance",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "cache-maintenance-9860",
+      "case": "bounded-maintenance",
+      "test": "bounded_cache_maintenance_preserves_project_diagnostics",
+      "regressionCommit": "4714c0f264dedffaa81377df9545fbfa9514a64e",
+      "sourceRevision": "4714c0f264dedffaa81377df9545fbfa9514a64e",
+      "packReference": {
+        "path": "cache-maintenance-9860/cases.json",
+        "sha256": "4a087a0643f53b428f3a40bdb848b71185b7263a6c98dd167a38e7c33b8cdad2"
+      },
+      "inputs": [
+        {
+          "file": "App.vue",
+          "path": "cache-maintenance-9860/App.vue.txt",
+          "sha256": "e52222e0cbd39df944fe73430fc6874aac4a73a3e08b445636db37768eb64338"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "cache-maintenance-9860/tsconfig.json.txt",
+          "sha256": "07b958ce0048f7153f9528b747fd417a0ea82774b9a44506f9b88de92e11108f"
+        }
+      ]
     }
   ]
 }

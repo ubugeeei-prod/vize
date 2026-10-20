@@ -8,7 +8,15 @@ const ACCESS_SUFFIX: &str = ".access";
 const ACTIVE_LOCK_SUFFIX: &str = ".active.lock";
 const LOCK_SUFFIXES: [&str; 3] = [".lock", ".materialize.lock", ACTIVE_LOCK_SUFFIX];
 const MAX_PROJECT_ENTRIES: usize = 24;
+const MAX_SCANNED_PROJECT_ENTRIES: usize = 256;
+const MAX_EVICTIONS_PER_MAINTENANCE: usize = 8;
 const MAX_UNUSED_AGE: Duration = Duration::from_secs(14 * 24 * 60 * 60);
+
+#[derive(Debug, Default, PartialEq, Eq)]
+struct CacheMaintenanceSummary {
+    project_entries: usize,
+    evicted: usize,
+}
 
 /// Record the current namespace as recently used and evict old/excess mirrors.
 ///
@@ -16,40 +24,51 @@ const MAX_UNUSED_AGE: Duration = Duration::from_secs(14 * 24 * 60 * 60);
 /// the same project. All failures are ignored because these entries are only a
 /// cache and cache maintenance must not make type checking unavailable.
 pub(super) fn maintain_project_cache(current: &Path) {
+    let _ = maintain_project_cache_with_summary(current);
+}
+
+fn maintain_project_cache_with_summary(current: &Path) -> CacheMaintenanceSummary {
+    let mut summary = CacheMaintenanceSummary::default();
     let Some(projects) = current.parent() else {
-        return;
+        return summary;
     };
     if projects.parent().and_then(Path::file_name) != Some(std::ffi::OsStr::new("canon")) {
-        return;
+        return summary;
     }
     if fs::create_dir_all(projects).is_err() {
-        return;
+        return summary;
     }
 
     let _ = touch(&access_path(current));
     let Ok(read_dir) = fs::read_dir(projects) else {
-        return;
+        return summary;
     };
     let now = SystemTime::now();
-    let mut entries = read_dir
-        .flatten()
-        .filter_map(|entry| {
-            let path = entry.path();
-            if path == current || !entry.file_type().is_ok_and(|kind| kind.is_dir()) {
-                return None;
-            }
-            let name = entry.file_name();
-            let name = name.to_str()?;
-            if name.len() != 64 || !name.bytes().all(|byte| byte.is_ascii_hexdigit()) {
-                return None;
-            }
-            let modified = fs::metadata(access_path(&path))
-                .or_else(|_| entry.metadata())
-                .and_then(|metadata| metadata.modified())
-                .unwrap_or(SystemTime::UNIX_EPOCH);
-            Some((path, modified))
-        })
-        .collect::<Vec<_>>();
+    let mut entries = Vec::with_capacity(MAX_SCANNED_PROJECT_ENTRIES);
+    // Sibling lock files are retained for inode-safe locking, so enumerate
+    // past them while bounding metadata reads to actual project directories.
+    for entry in read_dir.flatten() {
+        let path = entry.path();
+        if path == current || !entry.file_type().is_ok_and(|kind| kind.is_dir()) {
+            continue;
+        }
+        let name = entry.file_name();
+        let Some(name) = name.to_str() else {
+            continue;
+        };
+        if name.len() != 64 || !name.bytes().all(|byte| byte.is_ascii_hexdigit()) {
+            continue;
+        }
+        let modified = fs::metadata(access_path(&path))
+            .or_else(|_| entry.metadata())
+            .and_then(|metadata| metadata.modified())
+            .unwrap_or(SystemTime::UNIX_EPOCH);
+        entries.push((path, modified));
+        if entries.len() == MAX_SCANNED_PROJECT_ENTRIES {
+            break;
+        }
+    }
+    summary.project_entries = entries.len();
 
     entries.sort_by_key(|(_, modified)| *modified);
     let excess = entries
@@ -57,6 +76,9 @@ pub(super) fn maintain_project_cache(current: &Path) {
         .saturating_add(1)
         .saturating_sub(MAX_PROJECT_ENTRIES);
     for (index, (path, modified)) in entries.into_iter().enumerate() {
+        if summary.evicted == MAX_EVICTIONS_PER_MAINTENANCE {
+            break;
+        }
         let expired = now
             .duration_since(modified)
             .is_ok_and(|age| age >= MAX_UNUSED_AGE);
@@ -64,12 +86,15 @@ pub(super) fn maintain_project_cache(current: &Path) {
             && let Some(locks) = lock_unused(&path)
         {
             let _locks = locks;
-            let _ = fs::remove_dir_all(&path);
-            let _ = fs::remove_file(access_path(&path));
+            if fs::remove_dir_all(&path).is_ok() {
+                summary.evicted += 1;
+                let _ = fs::remove_file(access_path(&path));
+            }
             // Retain the tiny sibling lock files. Unlinking a held lock lets a
             // racing process create a new inode that is not mutually excluded.
         }
     }
+    summary
 }
 
 /// Keep a project cache entry alive while a [`VirtualProject`](super::VirtualProject)
@@ -150,6 +175,7 @@ mod tests {
         fs::create_dir(&current).unwrap();
 
         maintain_project_cache(&current);
+        maintain_project_cache(&current);
 
         let count = fs::read_dir(&projects)
             .unwrap()
@@ -159,6 +185,31 @@ mod tests {
         assert_eq!(count, MAX_PROJECT_ENTRIES);
         assert!(current.is_dir());
         assert!(access_path(&current).is_file());
+    }
+
+    #[test]
+    fn maintenance_bounds_work_for_a_large_cache() {
+        let cache = tempfile::tempdir().unwrap();
+        let projects = cache.path().join("canon/projects");
+        fs::create_dir_all(&projects).unwrap();
+        let entry_count = MAX_SCANNED_PROJECT_ENTRIES * 8;
+        for index in 0..entry_count {
+            let entry = projects.join(format!("{index:064x}"));
+            fs::create_dir(&entry).unwrap();
+            fs::write(entry.join("source.vue"), "<template />").unwrap();
+        }
+        let current = projects.join(key(255));
+
+        let summary = maintain_project_cache_with_summary(&current);
+
+        assert_eq!(summary.project_entries, MAX_SCANNED_PROJECT_ENTRIES);
+        assert_eq!(summary.evicted, MAX_EVICTIONS_PER_MAINTENANCE);
+        let remaining = fs::read_dir(&projects)
+            .unwrap()
+            .flatten()
+            .filter(|entry| entry.file_type().is_ok_and(|kind| kind.is_dir()))
+            .count();
+        assert_eq!(remaining, entry_count - MAX_EVICTIONS_PER_MAINTENANCE);
     }
 
     #[test]
