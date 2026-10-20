@@ -172,17 +172,13 @@ Input(v-bind=\"$attrs\")
 }
 
 #[test]
-fn compact_slot_fallback_keeps_compound_child_boundaries() {
-    let source = "<slot v-if=\"ready\"> {{ value }}</slot>";
+fn compact_slot_fallback_keeps_conditional_sibling_boundaries() {
+    // Reduced from VaDataTable.vue: the outer v-else selects the compact
+    // outlet path, while the conditional fallback child leaves a condensed
+    // whitespace/interpolation run after its comment branch.
+    let source = r#"<slot v-if="named"></slot><slot v-else name="cell"><span v-if="grid">head</span> {{ value }}</slot>"#;
     let current = assembled(source);
     assert_eq!(current, shipped(source), "{source}");
-    assert_eq!(
-        current
-            .matches("_createTextVNode(),_toDisplayString(value)")
-            .count(),
-        1,
-        "compact fallback must preserve the legacy whitespace/interpolation boundary: {current}"
-    );
 }
 
 #[test]
