@@ -1,3 +1,5 @@
+use rayon::prelude::*;
+
 use super::{
     CanonicalPathCache, ImportFileOptions, Path, PathAliasResolver, RegistrationFrontier,
     VirtualRegistrationCache, extract_module_specifier_occurrences, is_declaration_file,
@@ -31,15 +33,43 @@ pub(super) fn source_needs_virtual_registration(
         {
             frontier.source_reads += 1;
         }
-        let Ok(source) = std::fs::read_to_string(&file) else {
+        if !cache.module_specifiers.contains_key(&file) {
+            // Candidate closures overlap heavily. Read and scan the unresolved
+            // portion of this frontier together, outside the serial resolver.
+            let pending = std::iter::once(&file)
+                .chain(frontier.queue.iter())
+                .filter(|path| !frontier.visited.contains(*path) || **path == file)
+                .filter(|path| {
+                    path.extension().is_none_or(|extension| extension != "vue")
+                        && !cache.module_specifiers.contains_key(*path)
+                })
+                .cloned()
+                .collect::<Vec<_>>();
+            let loaded = pending
+                .into_par_iter()
+                .map(|path| {
+                    let occurrences = std::fs::read_to_string(&path).ok().map(|source| {
+                        extract_module_specifier_occurrences(&source).into_boxed_slice()
+                    });
+                    (path, occurrences)
+                })
+                .collect::<Vec<_>>();
+            cache.module_specifiers.extend(loaded);
+        }
+        let Some(cached) = cache.module_specifiers.remove(&file) else {
+            continue;
+        };
+        let Some(occurrences) = cached else {
+            cache.module_specifiers.insert(file, None);
             continue;
         };
         let Some(dir) = file.parent() else {
+            cache.module_specifiers.insert(file, Some(occurrences));
             continue;
         };
 
-        for occurrence in extract_module_specifier_occurrences(&source) {
-            let specifier = occurrence.specifier;
+        for occurrence in occurrences.iter() {
+            let specifier = occurrence.specifier.clone();
             let candidate = Path::new(specifier.as_str());
             let resolved = if is_relative_specifier(&specifier) {
                 resolve_relative_import(dir, &specifier, canonical_paths, options)
@@ -155,6 +185,7 @@ pub(super) fn source_needs_virtual_registration(
                 frontier.queue.push(resolved);
             }
         }
+        cache.module_specifiers.insert(file, Some(occurrences));
     }
 
     needs_registration
