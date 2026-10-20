@@ -97,6 +97,8 @@ pub(super) fn emit_scope_closures(
             }
             expressions_by_scope
         });
+    let event_inference_usages = std::cell::RefCell::new(FxHashSet::default());
+    let event_contracts = std::cell::RefCell::new(FxHashMap::default());
     let slot_outlets = if check_options.check_props {
         profile!("canon.virtual_ts.collect_slot_outlets", {
             SlotOutletChecks::collect(summary, options.template_ast)
@@ -266,6 +268,8 @@ pub(super) fn emit_scope_closures(
             check_options,
             legacy_vue2: options.legacy_vue2,
             explicit_generics: &explicit_generics,
+            event_inference_usages: &event_inference_usages,
+            event_contracts: &event_contracts,
         };
 
         if nested_scope_ids.contains(&scope.id) {

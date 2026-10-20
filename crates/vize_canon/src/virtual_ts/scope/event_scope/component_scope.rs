@@ -56,6 +56,8 @@ pub(super) fn generate_component_handler_scope(
                     .alias_at(ctx.summary, component.as_str(), scope.span.start)
             }),
             enclosing_vif_guard,
+            event_inference_usages: ctx.event_inference_usages,
+            event_contracts: ctx.event_contracts,
             indent,
         },
     ) else {

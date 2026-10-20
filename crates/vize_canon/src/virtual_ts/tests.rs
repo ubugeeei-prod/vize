@@ -1990,7 +1990,7 @@ function handleTest(value1: string, value2: number) {
     );
     assert!(
         output.code.contains(
-            "const __vize_handler_9_40: __Test_9_test_handler | __Test_9_test_prop_arrays | null | undefined = ((value1, value2) => handleTest(value1, value2));"
+            "const __vize_handler_9_40: __Test_9_test_handler | __Test_8_test_prop_arrays | null | undefined = ((value1, value2) => handleTest(value1, value2));"
         ),
         "inline multi-arg arrow must be typed through the emit handler alias:\n{}",
         output.code
