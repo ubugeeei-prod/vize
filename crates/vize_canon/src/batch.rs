@@ -6,6 +6,7 @@
 //! requests diagnostics from
 //! Corsa's LSP instead of parsing CLI text output.
 
+mod cache_lock;
 mod declaration_path;
 mod error;
 mod executor;
