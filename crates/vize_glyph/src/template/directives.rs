@@ -4,6 +4,7 @@
 //! `v-slot:` -> `#`) and JS expression formatting in directive values.
 
 use crate::{options::FormatOptions, script};
+use unicode_width::UnicodeWidthStr;
 use vize_l0::{Allocator, SmallVec, Span, String, ToCompactString, is_simple_identifier};
 use vize_l1::embed::{
     Embed, EmbedSource, Grammar, Lang, Shape,
@@ -68,6 +69,12 @@ pub(super) fn format_directive_value(
     let expression = decoded
         .as_ref()
         .map_or(trimmed, |value| value.code.as_str());
+    let value_starts_on_next_line = value
+        .split_once('\n')
+        .is_some_and(|(first_line, _)| first_line.trim_end_matches('\r').trim().is_empty());
+    let inline_value_overflows_attribute = !value.contains(['\r', '\n'])
+        && (attribute_depth + 1) * options.tab_width as usize + name.width() + 3 + trimmed.width()
+            > options.print_width as usize;
 
     // Vue 2 filters apply to interpolations and bound values, never events.
     if (name.starts_with(':') || name.starts_with("v-bind"))
@@ -83,6 +90,7 @@ pub(super) fn format_directive_value(
         expression,
         options,
         attribute_depth,
+        value_starts_on_next_line || inline_value_overflows_attribute,
     ) {
         Some(formatted) if formatted.retained_bare_sequence => {
             // These authored bytes retain absolute source indentation. Rebase
