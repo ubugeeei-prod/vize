@@ -69,18 +69,20 @@ export default config;
 Keep the root object as an ordinary, Vue-free Vite+ config. `.withVue()` composes
 the Vue flat lint layer with that root configuration, so the root
 `no-debugger` policy remains active alongside `flatConfigs.recommended`,
-`flatConfigs.ecosystem`, and the Vue-specific `no-console` rule. Use `lint` and
-`fmt` for the native Vue tools, and keep `entries[].linter` for file-scoped
-native overrides. The older `linter` and `formatter` names remain compatibility
-aliases, but do not specify an alias together with its replacement. See [Shared
+`flatConfigs.ecosystem`, and the Vue-specific `no-console` rule. Use `compile`,
+`typeCheck`, `lint`, and `fmt`. `lint` is the host Oxlint block; its
+`settings.vize` and `vize/*` rules also configure the native linter. Keep
+`entries[].linter` for file-scoped native overrides. The older `compiler`,
+`typeChecker`, `linter`, and `formatter` names remain compatibility aliases, but
+do not specify an alias together with its replacement. See [Shared
 Vue configuration](./vue-configuration.md) for paths and scoped entries.
 
 | Section | Owner |
 | --- | --- |
-| `vue.compiler` | Native compiler settings shared with the CLI and editor |
-| `vue.typeChecker` | Native checker settings; TypeScript defaults come from `tsconfig.json` |
-| `vue.linter` | Native Vue lint presets, rules and options |
-| `vue.formatter` | Native Vue formatting options |
+| `vue.compile` (`compiler` alias) | Native compiler settings shared with the CLI and editor |
+| `vue.typeCheck` (`typeChecker` alias) | Native checker settings; TypeScript defaults come from `tsconfig.json` |
+| `vue.lint` (`linter` alias) | Host Oxlint settings; `settings.vize`, `vize/*` rules, and overrides project into native Vue lint |
+| `vue.fmt` (`formatter` alias) | Native Vue formatting options |
 | `vue.languageServer` | Shared language-server features |
 | `compiler` | Vite+ compiler plugin controls; `false` keeps the existing Vue compiler when `vue.compiler` is absent |
 | `typecheck` | Vite+ native-check task controls; `false` disables the task unless `vue.typeChecker.enabled` explicitly enables it |
@@ -92,8 +94,9 @@ Vue configuration](./vue-configuration.md) for paths and scoped entries.
 | Other `pack` fields | The installed Vite+ / tsdown configuration |
 
 Canonical `vue` settings take precedence over the corresponding task convenience
-options. For example, `vue.linter.enabled: false` disables native lint. Keep
-TypeScript strictness and template options in the existing TypeScript project:
+options. Supplying `vue.lint` makes the host Oxlint block own the lint pass and
+disables the duplicate native lint task. Keep TypeScript strictness and template
+options in the existing TypeScript project:
 
 ```json
 {

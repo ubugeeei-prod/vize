@@ -236,10 +236,23 @@ test("action-oriented tool names project host lint settings and native sections"
       "no-console": "warn",
       "vize/vue/no-v-html": "warn",
       "vize/vue/valid-v-on": ["error", { modifiers: ["custom"] }],
+      "vize/vue/no-template-shadow": 1,
+      "vize/vue/attribute-hyphenation": [2, "never"],
     },
     settings: {
       vize: { preset: "incremental", typeAware: true },
     },
+    overrides: [
+      {
+        files: ["src/admin/**/*.vue"],
+        excludeFiles: ["src/admin/generated/**"],
+        rules: {
+          "no-console": "off",
+          "vize/vue/no-v-html": "off",
+          "vize/vue/attribute-hyphenation": [2, "never"],
+        },
+      },
+    ],
   };
   const vue = {
     compile: { whitespace: "preserve" },
@@ -261,11 +274,30 @@ test("action-oriented tool names project host lint settings and native sections"
     linter: {
       preset: "incremental",
       typeAware: true,
-      rules: { "vue/no-v-html": "warn", "vue/valid-v-on": "error" },
-      ruleOptions: { "vue/valid-v-on": { modifiers: ["custom"] } },
+      rules: {
+        "vue/no-v-html": "warn",
+        "vue/valid-v-on": "error",
+        "vue/no-template-shadow": "warn",
+        "vue/attribute-hyphenation": "error",
+      },
+      ruleOptions: {
+        "vue/valid-v-on": { modifiers: ["custom"] },
+        "vue/attribute-hyphenation": "never",
+      },
     },
     formatter: { singleQuote: true },
     entries: [
+      {
+        files: ["src/admin/**/*.vue"],
+        ignores: ["src/admin/generated/**"],
+        linter: {
+          rules: {
+            "vue/no-v-html": "off",
+            "vue/attribute-hyphenation": "error",
+          },
+          ruleOptions: { "vue/attribute-hyphenation": "never" },
+        },
+      },
       {
         name: "generated views",
         files: ["generated/**/*.vue"],
@@ -274,6 +306,22 @@ test("action-oriented tool names project host lint settings and native sections"
     ],
   });
   assert.deepEqual(vue.lint, lint, "projection must not mutate the host lint config");
+});
+
+test("scoped host lint rejects vize rules whose file ownership cannot be projected", async () => {
+  const vue = {
+    lint: {
+      jsPlugins: ["oxlint-plugin-vize"],
+      plugins: ["vue"],
+      rules: {},
+      settings: { vize: {} },
+      overrides: [{ files: "src/**/*.vue", rules: { "vize/vue/no-v-html": "off" } }],
+    },
+  };
+  await assert.rejects(
+    projectViteConfigSource({ vue }),
+    /vue\.lint\.overrides\[0\]\.files: must be an array of strings to project vize\/\* rules/u,
+  );
 });
 
 test("action names reject ambiguous compatibility aliases at the exact scope", async () => {

@@ -61,9 +61,11 @@ export default config;
 ルートのオブジェクトは Vue 固有の項目を含まない通常の Vite+ 設定として保ちます。
 `.withVue()` は Vue の flat lint レイヤーをルート設定へ合成するため、ルートの
 `no-debugger` と `flatConfigs.recommended`・`flatConfigs.ecosystem`・Vue 固有の
-`no-console` が同時に有効です。ネイティブ Vue ツールには `lint`・`fmt` を使い、
-ファイル単位のネイティブ上書きは `entries[].linter` に置きます。従来の `linter`・
-`formatter` は互換 alias として使えますが、新旧の同じ項目を同時には指定できません。
+`no-console` が同時に有効です。`compile`・`typeCheck`・`lint`・`fmt` を使います。
+`lint` はホストの Oxlint ブロックで、`settings.vize`・`vize/*` ルール・override は
+ネイティブ linter にも反映されます。ファイル単位のネイティブ上書きは
+`entries[].linter` に置きます。従来の `compiler`・`typeChecker`・`linter`・`formatter` は
+互換 alias として使えますが、新旧の同じ項目を同時には指定できません。
 [共有 Vue 設定](./vue-configuration.md)にパスとスコープの扱いをまとめています。
 
 TypeScript の設定は既存の `tsconfig.json` を使います。

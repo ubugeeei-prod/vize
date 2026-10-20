@@ -254,10 +254,15 @@ function normalizeVueActionAliases(value, label) {
     delete result[action];
   }
   if (result.lint !== undefined) {
-    const linter = projectVitePlusLintConfig(result.lint);
+    const lint = result.lint;
+    const linter = projectVitePlusLintConfig(lint);
     validateVueOption(linter, { $ref: "#/definitions/LinterConfig" }, `${label}.lint`);
     result.linter = linter;
     delete result.lint;
+    const projectedEntries = projectVitePlusLintOverrides(lint, `${label}.lint`);
+    if (projectedEntries.length !== 0) {
+      result.entries = [...projectedEntries, ...(result.entries ?? [])];
+    }
   }
   if (Array.isArray(result.entries)) {
     result.entries = result.entries.map((entry, index) =>
@@ -275,20 +280,43 @@ function projectVitePlusLintConfig(lint) {
   }
   const rules = {};
   const ruleOptions = {};
-  for (const [id, entry] of Object.entries(lint.rules)) {
+  for (const [id, entry] of Object.entries(object(lint.rules) ? lint.rules : {})) {
     if (!id.startsWith("vize/")) continue;
     const name = id.slice("vize/".length);
-    const severity = Array.isArray(entry) ? entry[0] : entry;
+    const rawSeverity = Array.isArray(entry) ? entry[0] : entry;
+    const severity = rawSeverity === 1 ? "warn" : rawSeverity === 2 ? "error" : rawSeverity;
     if (severity === "off" || severity === "warn" || severity === "error") {
       rules[name] = severity;
     }
-    if (Array.isArray(entry) && object(entry[1])) {
+    if (Array.isArray(entry) && entry[1] !== undefined) {
       ruleOptions[name] = entry[1];
     }
   }
   if (Object.keys(rules).length !== 0) linter.rules = rules;
   if (Object.keys(ruleOptions).length !== 0) linter.ruleOptions = ruleOptions;
   return linter;
+}
+
+function projectVitePlusLintOverrides(lint, label) {
+  if (!Array.isArray(lint.overrides)) return [];
+  return lint.overrides.flatMap((override, index) => {
+    if (!object(override)) return [];
+    const linter = projectVitePlusLintConfig(override);
+    if (linter.rules === undefined && linter.ruleOptions === undefined) return [];
+    const files = stringArray(override.files, `${label}.overrides[${index}].files`);
+    const ignores =
+      override.excludeFiles === undefined
+        ? undefined
+        : stringArray(override.excludeFiles, `${label}.overrides[${index}].excludeFiles`);
+    return [{ files, ...(ignores === undefined ? {} : { ignores }), linter }];
+  });
+}
+
+function stringArray(value, label) {
+  if (!Array.isArray(value) || !value.every((entry) => typeof entry === "string")) {
+    throw new TypeError(`${label}: must be an array of strings to project vize/* rules`);
+  }
+  return [...value];
 }
 
 function flatVueOptions(selected) {
