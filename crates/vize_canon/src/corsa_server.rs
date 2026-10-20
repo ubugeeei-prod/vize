@@ -32,6 +32,7 @@ use vize_carton::{FxHashMap, String};
 use crate::corsa_session_cache::{DEFAULT_SESSION_IDLE, SessionMap};
 
 mod diagnostics;
+mod project_request;
 mod request;
 mod sessions;
 mod sfc_semantics;
@@ -88,6 +89,48 @@ pub struct CheckResult {
     pub error_count: usize,
 }
 
+/// One file in a project-level check request. The client supplies a cheap
+/// filesystem stamp so unchanged requests avoid reading every source twice.
+#[derive(Debug, Deserialize, Clone, PartialEq, Eq)]
+pub struct ProjectCheckFile {
+    pub uri: String,
+    pub len: u64,
+    #[serde(rename = "modifiedNanos")]
+    pub modified_nanos: u128,
+}
+
+/// Project-level check request parameters.
+#[derive(Debug, Deserialize)]
+pub struct ProjectCheckParams {
+    pub files: Vec<ProjectCheckFile>,
+    #[serde(default)]
+    pub tsconfig: Option<ProjectCheckFile>,
+}
+
+/// Diagnostic returned by one project-level request.
+#[derive(Debug, Serialize)]
+pub struct ProjectDiagnostic {
+    pub file: String,
+    pub message: String,
+    pub severity: String,
+    pub line: u32,
+    pub column: u32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub code: Option<String>,
+}
+
+/// Result returned by the project-level request.
+#[derive(Debug, Serialize)]
+pub struct ProjectCheckResult {
+    pub diagnostics: Vec<ProjectDiagnostic>,
+    #[serde(rename = "errorCount")]
+    pub error_count: usize,
+    #[serde(rename = "warningCount")]
+    pub warning_count: usize,
+    #[serde(rename = "fileCount")]
+    pub file_count: usize,
+}
+
 /// Diagnostic from type checking
 #[derive(Debug, Serialize, Clone)]
 pub struct Diagnostic {
@@ -136,6 +179,8 @@ pub struct CorsaServer {
     package_route_resolver: crate::PackageRouteResolver,
     /// Private editor mirror/cache for this check-server process.
     editor_session: crate::corsa_bridge::EditorMirrorSession,
+    /// Whole-project checker retained by `vize check --socket`.
+    project_session: Option<project_request::ProjectCheckSession>,
 }
 
 impl CorsaServer {
@@ -156,6 +201,7 @@ impl CorsaServer {
             observed_project_inits: 0,
             package_route_resolver: crate::PackageRouteResolver::default(),
             editor_session: crate::corsa_bridge::EditorMirrorSession::new(),
+            project_session: None,
         }
     }
 

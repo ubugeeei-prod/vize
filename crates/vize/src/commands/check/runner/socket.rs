@@ -1,377 +1,247 @@
-use std::{
-    fs,
-    io::{BufRead, BufReader, Write},
-    os::unix::net::UnixStream,
-    time::{Duration, Instant},
+use std::collections::BTreeMap;
+use std::io::{BufRead, BufReader, Write};
+use std::os::unix::net::UnixStream;
+use std::path::{Path, PathBuf};
+use std::time::{Instant, SystemTime};
+
+use serde::Serialize;
+use vize_l0::{String, cstr};
+
+use super::collect::collect_check_files_with_ignores;
+use super::{display_path, resolve_project_root, resolve_tsconfig_path, text_style::TextStyle};
+use crate::commands::check::{
+    CheckArgs, ProjectJsonRpcResponse, ServerProjectCheckResult,
+    patterns::CheckFileOptions,
+    reporting::{JsonFileResult, JsonOutput},
+    tsconfig_inputs::{TsconfigInputCache, collect_default_check_files, tsconfig_allows_js},
 };
 
-use vize_l0::{String, cstr, profile, profiler::global_profiler};
-
-use super::{
-    collect::collect_vue_files, diagnostics::user_facing_type_message, display_path,
-    output::save_virtual_ts_targets_or_exit, text_style::TextStyle,
-};
-use crate::{
-    commands::check::{
-        CheckArgs, JsonRpcResponse, ServerCheckResult,
-        reporting::{JsonFileResult, JsonOutput},
-    },
-    profile_support,
-};
-use vize_curator::profile::{ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report};
-
-pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
-    let start = Instant::now();
-    args.profile_export.begin(args.profile);
-
-    let collect_start = Instant::now();
-    #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
-    let default_patterns = vec![std::string::String::from(".")];
-    let files = if args.patterns.is_empty() {
-        collect_vue_files(&default_patterns)
-    } else {
-        collect_vue_files(&args.patterns)
-    };
-    let collect_time = collect_start.elapsed();
-
-    if files.is_empty() {
-        eprintln!("No .vue files found matching inputs: {:?}", args.patterns);
-        return;
-    }
-
-    let connect_start = Instant::now();
-    let mut stream = match UnixStream::connect(socket_path) {
-        Ok(stream) => stream,
-        Err(error) => {
-            let style = TextStyle::stderr();
-            eprintln!(
-                "{} Failed to connect to check-server: {}",
-                style.red("Error:"),
-                error
-            );
-            eprintln!();
-            eprintln!("{} Start the server first:", style.yellow("Hint:"));
-            eprintln!("  vize check-server --socket {}", socket_path);
-            std::process::exit(1);
-        }
-    };
-    let connect_time = connect_start.elapsed();
-
-    if !args.quiet {
-        eprintln!("Connected to check-server at {}", socket_path);
-        eprintln!("Type checking {} Vue files...", files.len());
-    }
-
-    let mut total_errors = 0usize;
-    let mut total_warnings = 0usize;
-    let mut shown_shared_helpers = false;
-    #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
-    let mut results: Vec<(std::string::String, ServerCheckResult)> = Vec::new();
-
-    let request_start = Instant::now();
-    for path in &files {
-        let source = match profile!("cli.check.socket.file.read", fs::read_to_string(path)) {
-            Ok(source) => {
-                global_profiler().record_fs_read_to_string(source.len());
-                source
-            }
-            Err(error) => {
-                global_profiler().record_fs_read_to_string_failure();
-                eprintln!("Failed to read {}: {}", path.display(), error);
-                continue;
-            }
-        };
-
-        #[expect(clippy::disallowed_methods, reason = "dependency API uses std String")]
-        let filename = path.to_string_lossy().to_string();
-
-        let request = serde_json::json!({
-            "jsonrpc": "2.0",
-            "id": 1,
-            "method": "check",
-            "params": {
-                "uri": filename,
-                "content": source,
-            }
-        });
-
-        let request_payload = match serde_json::to_string(&request) {
-            Ok(payload) => payload,
-            Err(error) => {
-                eprintln!("Failed to encode request: {}", error);
-                continue;
-            }
-        };
-        let request_bytes = request_payload.len() + 1;
-        if writeln!(stream, "{request_payload}").is_err() || stream.flush().is_err() {
-            global_profiler().record_counter("io.socket.write.calls", 1);
-            global_profiler()
-                .record_counter("io.socket.write.attempted_bytes", request_bytes as u64);
-            global_profiler().record_counter("io.socket.write.failures", 1);
-            global_profiler().record_counter("syscall.socket.write.calls", 1);
-            global_profiler().record_counter("syscall.socket.write.failures", 1);
-            eprintln!("Failed to send request");
-            break;
-        }
-        global_profiler().record_counter("io.socket.write.calls", 1);
-        global_profiler().record_counter("io.socket.write.attempted_bytes", request_bytes as u64);
-        global_profiler().record_counter("io.socket.write.bytes", request_bytes as u64);
-        global_profiler().record_counter("syscall.socket.write.calls", 1);
-        global_profiler().record_counter("syscall.socket.flush.calls", 1);
-
-        let mut reader = BufReader::new(&stream);
-        #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
-        let mut response_line = std::string::String::new();
-        if reader.read_line(&mut response_line).is_err() {
-            global_profiler().record_counter("io.socket.read.calls", 1);
-            global_profiler().record_counter("io.socket.read.failures", 1);
-            global_profiler().record_counter("syscall.socket.read.calls", 1);
-            global_profiler().record_counter("syscall.socket.read.failures", 1);
-            eprintln!("Failed to read response");
-            break;
-        }
-        global_profiler().record_counter("io.socket.read.calls", 1);
-        global_profiler().record_counter("io.socket.read.bytes", response_line.len() as u64);
-        global_profiler().record_counter("syscall.socket.read.calls", 1);
-
-        let response: JsonRpcResponse = match serde_json::from_str(&response_line) {
-            Ok(response) => response,
-            Err(error) => {
-                eprintln!("Failed to parse response: {}", error);
-                continue;
-            }
-        };
-
-        if let Some(error) = response.error {
-            eprintln!("Server error: {}", error.message);
-            continue;
-        }
-
-        if let Some(result) = response.result {
-            total_errors += result.error_count;
-            total_warnings += result
-                .diagnostics
-                .iter()
-                .filter(|diagnostic| diagnostic.severity == "warning")
-                .count();
-            if args.show_virtual_ts && !shown_shared_helpers {
-                eprintln!(
-                    "\n=== {} ===",
-                    vize_canon::virtual_ts::SHARED_PREAMBLE_FILE_NAME
-                );
-                eprintln!("{}", vize_canon::virtual_ts::SHARED_PREAMBLE_DTS);
-                shown_shared_helpers = true;
-            }
-            if args.show_virtual_ts {
-                eprintln!("\n=== {} ===", filename);
-                eprintln!("{}", result.virtual_ts);
-            }
-            results.push((filename, result));
-        }
-    }
-    let request_time = request_start.elapsed();
-
-    if !args.save_virtual_ts_for.is_empty() {
-        let cwd = std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
-        save_virtual_ts_targets_or_exit(
-            &args.save_virtual_ts_for,
-            &cwd,
-            || {
-                results.iter().map(|(filename, result)| {
-                    (std::path::Path::new(filename), result.virtual_ts.as_str())
-                })
-            },
-            args.quiet,
-        );
-    }
-    let render_start = Instant::now();
-    if args.format == "json" {
-        let cwd = std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
-        let mut files_json: Vec<JsonFileResult> = results
-            .iter()
-            .map(|(filename, result)| {
-                let path = std::path::Path::new(filename);
-                JsonFileResult {
-                    file: display_path(&cwd, path).into(),
-                    virtual_ts: args.show_virtual_ts.then(|| result.virtual_ts.clone()),
-                    diagnostics: render_socket_diagnostics(result),
-                }
-            })
-            .collect();
-        files_json.sort_by(|left, right| left.file.cmp(&right.file));
-
-        let json_output = JsonOutput {
-            files: files_json,
-            programs: Vec::new(),
-            error_count: total_errors,
-            warning_count: total_warnings,
-            file_count: results.len(),
-            declarations: None,
-        };
-        match serde_json::to_string_pretty(&json_output) {
-            Ok(output) => println!("{output}"),
-            Err(error) => {
-                eprintln!("Failed to serialize check output: {error}");
-                std::process::exit(1);
-            }
-        }
-        if total_errors > 0 {
-            std::process::exit(1);
-        }
-        return;
-    }
-
-    if !args.quiet {
-        let style = TextStyle::stdout();
-        for (filename, result) in &results {
-            if result.diagnostics.is_empty() {
-                continue;
-            }
-            println!("\n{}", style.underline(filename));
-            for diagnostic in &result.diagnostics {
-                let location = cstr!(
-                    "{}:{}:{}",
-                    diagnostic.severity,
-                    diagnostic.line,
-                    diagnostic.column
-                );
-                let location = if diagnostic.severity == "error" {
-                    style.red(location)
-                } else {
-                    style.yellow(location)
-                };
-                let code = diagnostic
-                    .code
-                    .as_ref()
-                    .map(|code| cstr!(" [{}]", code))
-                    .unwrap_or_default();
-                let message = user_facing_type_message(
-                    diagnostic.code.as_deref().is_some_and(is_ts2345_code),
-                    &diagnostic.message,
-                );
-                println!("  {}{} {}", location, code, message);
-            }
-        }
-    }
-    let render_time = render_start.elapsed();
-    let total_time = start.elapsed();
-
-    let style = TextStyle::stdout();
-    let status = if total_errors > 0 {
-        style.red("\u{2717}")
-    } else {
-        style.green("\u{2713}")
-    };
-    println!(
-        "\n{} Type checked {} Vue files in {:.2?} (via socket)",
-        status,
-        files.len(),
-        total_time
-    );
-    args.profile_export.finish("check", args.profile);
-    if args.profile {
-        let profiler = global_profiler();
-        let allocation_summary = profile_support::allocation_snapshot();
-        let counter_summary = profiler.counter_summary();
-        let operation_summary = profiler.summary();
-        profiler.disable();
-        let phases = [
-            ProfilePhase {
-                name: "collect files",
-                duration: collect_time,
-                kind: ProfilePhaseKind::Wall,
-                note: "Vue input discovery",
-            },
-            ProfilePhase {
-                name: "connect socket",
-                duration: connect_time,
-                kind: ProfilePhaseKind::Wall,
-                note: "Unix socket handshake",
-            },
-            ProfilePhase {
-                name: "request checks",
-                duration: request_time,
-                kind: ProfilePhaseKind::Wall,
-                note: "read, send, receive",
-            },
-            ProfilePhase {
-                name: "render diagnostics",
-                duration: render_time,
-                kind: ProfilePhaseKind::Wall,
-                note: "terminal output",
-            },
-        ];
-        let mut recommendations: Vec<String> = Vec::new();
-        if request_time > connect_time * 4 {
-            recommendations.push(
-                "Socket request time dominates; profile the running check-server process next."
-                    .into(),
-            );
-        }
-        let summary = cstr!(
-            "{} Vue file(s), {} error(s), socket {}",
-            files.len(),
-            total_errors,
-            socket_path
-        );
-        let report = ProfileReport {
-            title: "check --socket",
-            summary: summary.as_str(),
-            total: total_time,
-            phases: &phases,
-            files: &[],
-            slow_threshold: Duration::from_millis(0),
-            throughput_bytes: None,
-            operations: Some(&operation_summary),
-            counters: Some(&counter_summary),
-            allocations: allocation_summary,
-            recommendations: &recommendations,
-        };
-        print_profile_report(&report);
-    }
-    if total_errors > 0 {
-        println!("  {}", style.red(cstr!("{} error(s)", total_errors)));
-        std::process::exit(1);
-    }
-    println!("  {}", style.green("No type errors found!"));
+#[derive(Serialize)]
+#[expect(clippy::disallowed_types, reason = "JSON protocol uses std String")]
+struct ProjectFileRequest {
+    uri: std::string::String,
+    len: u64,
+    #[serde(rename = "modifiedNanos")]
+    modified_nanos: u128,
 }
 
-#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
-fn render_socket_diagnostics(result: &ServerCheckResult) -> Vec<std::string::String> {
-    let mut diagnostics = result
-        .diagnostics
+pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
+    // Virtual-source and declaration output need the direct runner's richer
+    // artifact contract. The normal diagnostic path uses one project RPC.
+    if args.show_virtual_ts || !args.save_virtual_ts_for.is_empty() {
+        super::socket_legacy::run_legacy_with_socket(args, socket_path);
+        return;
+    }
+    if args.declaration {
+        super::run_direct(args);
+        return;
+    }
+
+    args.profile_export.begin(args.profile);
+    let started = Instant::now();
+    let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
+    let project_root = resolve_project_root(args.tsconfig.as_deref(), &cwd, &[]);
+    let tsconfig = resolve_tsconfig_path(args.tsconfig.as_deref(), &cwd, &project_root, &[]);
+    let mut tsconfig_cache = TsconfigInputCache::default();
+    let include_js = tsconfig
+        .as_deref()
+        .is_some_and(|path| tsconfig_allows_js(path, &mut tsconfig_cache));
+    let files = if args.patterns.is_empty() {
+        collect_default_check_files(
+            &project_root,
+            tsconfig.as_deref(),
+            false,
+            &mut tsconfig_cache,
+        )
+    } else {
+        collect_check_files_with_ignores(
+            &args.patterns,
+            CheckFileOptions {
+                include_js,
+                include_jsx: false,
+            },
+            None,
+        )
+    };
+    if files.is_empty() {
+        super::report_no_inputs(args, tsconfig.as_deref());
+        return;
+    }
+
+    let request_files = files
         .iter()
-        .map(|diagnostic| {
-            let code = diagnostic
-                .code
-                .as_ref()
-                .map(|code| {
-                    if code.chars().all(|char| char.is_ascii_digit()) {
-                        cstr!(" [TS{}]", code)
-                    } else {
-                        cstr!(" [{}]", code)
-                    }
-                })
-                .unwrap_or_default();
-            let message = user_facing_type_message(
-                diagnostic.code.as_deref().is_some_and(is_ts2345_code),
-                &diagnostic.message,
-            );
+        .map(|path| file_request(path))
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap_or_else(|error| exit_error(error));
+    let tsconfig_request = tsconfig
+        .as_deref()
+        .map(file_request)
+        .transpose()
+        .unwrap_or_else(|error| exit_error(error));
+    let request = serde_json::json!({
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "check-project",
+        "params": {
+            "files": request_files,
+            "tsconfig": tsconfig_request,
+        }
+    });
+    let payload = serde_json::to_string(&request)
+        .unwrap_or_else(|error| exit_error(cstr!("Failed to encode request: {error}")));
+
+    let mut stream = UnixStream::connect(socket_path).unwrap_or_else(|error| {
+        let style = TextStyle::stderr();
+        eprintln!(
+            "{} Failed to connect to check-server: {}",
+            style.red("Error:"),
+            error
+        );
+        eprintln!();
+        eprintln!("{} Start the server first:", style.yellow("Hint:"));
+        eprintln!("  vize check-server --socket {}", socket_path);
+        std::process::exit(1);
+    });
+    if !args.quiet {
+        eprintln!("Connected to check-server at {socket_path}");
+        eprintln!("Type checking {} files...", files.len());
+    }
+    writeln!(stream, "{payload}")
+        .and_then(|()| stream.flush())
+        .unwrap_or_else(|error| exit_error(cstr!("Failed to send request: {error}")));
+    let mut response_line = std::string::String::new();
+    BufReader::new(&stream)
+        .read_line(&mut response_line)
+        .unwrap_or_else(|error| exit_error(cstr!("Failed to read response: {error}")));
+    let response: ProjectJsonRpcResponse = serde_json::from_str(&response_line)
+        .unwrap_or_else(|error| exit_error(cstr!("Failed to parse response: {error}")));
+    if let Some(error) = response.error {
+        exit_error(cstr!("Server error: {}", error.message));
+    }
+    let result = response
+        .result
+        .unwrap_or_else(|| exit_error("Server returned no result".into()));
+    render_result(args, &cwd, &files, result, started);
+}
+
+fn file_request(path: &Path) -> Result<ProjectFileRequest, String> {
+    let metadata = std::fs::metadata(path)
+        .map_err(|error| cstr!("Failed to read metadata for {}: {error}", path.display()))?;
+    let modified_nanos = metadata
+        .modified()
+        .ok()
+        .and_then(|modified| modified.duration_since(SystemTime::UNIX_EPOCH).ok())
+        .map_or(0, |duration| duration.as_nanos());
+    Ok(ProjectFileRequest {
+        uri: path.to_string_lossy().into_owned(),
+        len: metadata.len(),
+        modified_nanos,
+    })
+}
+
+fn render_result(
+    args: &CheckArgs,
+    cwd: &Path,
+    files: &[PathBuf],
+    result: ServerProjectCheckResult,
+    started: Instant,
+) {
+    let mut grouped = BTreeMap::<std::string::String, Vec<std::string::String>>::new();
+    for diagnostic in result.diagnostics {
+        let code = diagnostic
+            .code
+            .as_deref()
+            .map(|code| cstr!(" [{code}]"))
+            .unwrap_or_default();
+        grouped.entry(diagnostic.file).or_default().push(
             cstr!(
                 "{}:{}:{}{} {}",
                 diagnostic.severity,
                 diagnostic.line,
                 diagnostic.column,
                 code,
-                message
+                diagnostic.message
             )
-            .into()
-        })
-        .collect::<Vec<_>>();
-    diagnostics.sort();
-    diagnostics
+            .into(),
+        );
+    }
+    for diagnostics in grouped.values_mut() {
+        diagnostics.sort();
+    }
+
+    if args.format == "json" {
+        let files_json = files
+            .iter()
+            .map(|path| JsonFileResult {
+                file: display_path(cwd, path).into(),
+                virtual_ts: None,
+                diagnostics: grouped
+                    .remove(
+                        vize_carton::path::canonicalize_non_verbatim(path)
+                            .to_string_lossy()
+                            .as_ref(),
+                    )
+                    .unwrap_or_default(),
+            })
+            .collect();
+        let output = JsonOutput {
+            files: files_json,
+            programs: Vec::new(),
+            error_count: result.error_count,
+            warning_count: result.warning_count,
+            file_count: result.file_count,
+            declarations: None,
+        };
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&output)
+                .unwrap_or_else(|error| exit_error(cstr!("Failed to serialize output: {error}")))
+        );
+    } else {
+        if !args.quiet {
+            let style = TextStyle::stdout();
+            for (filename, diagnostics) in grouped {
+                if diagnostics.is_empty() {
+                    continue;
+                }
+                println!(
+                    "\n{}",
+                    style.underline(&display_path(cwd, Path::new(&filename)))
+                );
+                for diagnostic in diagnostics {
+                    println!("  {diagnostic}");
+                }
+            }
+        }
+        let style = TextStyle::stdout();
+        let status = if result.error_count == 0 {
+            style.green("\u{2713}")
+        } else {
+            style.red("\u{2717}")
+        };
+        println!(
+            "\n{} Type checked {} files in {:.2?} (via socket)",
+            status,
+            result.file_count,
+            started.elapsed()
+        );
+        if result.error_count == 0 {
+            println!("  {}", style.green("No type errors found!"));
+        } else {
+            println!("  {}", style.red(cstr!("{} error(s)", result.error_count)));
+        }
+    }
+
+    args.profile_export.finish("check", args.profile);
+    let warnings_exceeded = args
+        .max_warnings
+        .is_some_and(|maximum| result.warning_count > maximum);
+    if result.error_count > 0 || warnings_exceeded {
+        std::process::exit(1);
+    }
 }
 
-fn is_ts2345_code(code: &str) -> bool {
-    code == "2345" || code == "TS2345"
+fn exit_error(message: String) -> ! {
+    eprintln!("{message}");
+    std::process::exit(1)
 }

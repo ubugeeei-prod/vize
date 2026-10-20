@@ -29,6 +29,7 @@ impl CorsaServer {
 
         match request.method.as_str() {
             "check" => self.handle_check(request.id, request.params),
+            "check-project" => self.handle_project_check(request.id, request.params),
             "session-stats" => JsonRpcResponse {
                 jsonrpc: "2.0",
                 id: request.id,

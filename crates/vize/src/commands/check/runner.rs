@@ -33,6 +33,8 @@ mod programs;
 mod resolve;
 #[cfg(unix)]
 mod socket;
+#[cfg(unix)]
+mod socket_legacy;
 #[cfg(test)]
 mod tests;
 mod text_style;

@@ -312,6 +312,17 @@ impl TypeChecker for BatchTypeChecker {
 }
 
 impl BatchTypeChecker {
+    /// Check the registered project through one retained native project session.
+    ///
+    /// Long-lived hosts use this instead of the CLI-first fallback ladder so
+    /// unchanged requests reuse TypeScript's project state.
+    pub fn check_persistent_project(&mut self) -> CorsaResult<TypeCheckResult> {
+        if !self.scanned {
+            return Err(CorsaError::NotInitialized);
+        }
+        self.check_registered_project_incremental()
+    }
+
     fn check_registered_project(&self, project: &VirtualProject) -> CorsaResult<TypeCheckResult> {
         let result = self
             .executor

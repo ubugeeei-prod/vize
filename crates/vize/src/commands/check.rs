@@ -134,6 +134,33 @@ pub(crate) mod unix_types {
     }
 
     #[derive(Deserialize)]
+    pub(crate) struct ServerProjectCheckResult {
+        pub diagnostics: Vec<ServerProjectDiagnostic>,
+        #[serde(rename = "errorCount")]
+        pub error_count: usize,
+        #[serde(rename = "warningCount")]
+        pub warning_count: usize,
+        #[serde(rename = "fileCount")]
+        pub file_count: usize,
+    }
+
+    #[derive(Deserialize)]
+    pub(crate) struct ServerProjectDiagnostic {
+        pub file: String,
+        pub message: String,
+        pub severity: String,
+        pub line: u32,
+        pub column: u32,
+        pub code: Option<String>,
+    }
+
+    #[derive(Deserialize)]
+    pub(crate) struct ProjectJsonRpcResponse {
+        pub result: Option<ServerProjectCheckResult>,
+        pub error: Option<JsonRpcError>,
+    }
+
+    #[derive(Deserialize)]
     pub(crate) struct JsonRpcResponse {
         pub result: Option<ServerCheckResult>,
         pub error: Option<JsonRpcError>,
