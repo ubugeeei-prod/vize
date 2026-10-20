@@ -126,12 +126,15 @@ export function rustCachePolicy(
     event.deleted !== true;
   // A validated release workflow or a manual Full coverage run may reuse the
   // default-branch build cache. This opt-in never grants a write or creates a
-  // candidate-specific disk.
+  // candidate-specific disk. The release builds the version-stamped candidate
+  // it committed on top of a main commit, so its checkout never equals the
+  // dispatched commit; it runs only from the default branch.
   const dispatchRestore =
     context.restoreTrusted === true &&
     eventName === "workflow_dispatch" &&
-    (role.startsWith("release-") || dispatchRestoreRoles.has(role)) &&
-    sourceSha === checkoutSha;
+    (role.startsWith("release-")
+      ? ref === `refs/heads/${branch}`
+      : dispatchRestoreRoles.has(role) && sourceSha === checkoutSha);
   const readOnly = !trusted && (readOnlyEvents.has(eventName) || dispatchRestore);
   const sticky = (trusted || readOnly) && runnerEnvironment === "self-hosted";
   const base = `rust-cache-v1-${repository}-${runnerOs}-${runnerArch}-${suffix}-${fingerprint(cwd)}`;

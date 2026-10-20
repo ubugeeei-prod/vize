@@ -147,9 +147,12 @@ mod tests {
             [
                 "source.organizeImports",
                 "source.sortImports",
-                "source.removeUnusedImports"
+                "source.removeUnusedImports",
+                "source.fixAll"
             ]
         );
+        assert_eq!(kinds(Some(&["source.fixAll"])), ["source.fixAll"]);
+        assert!(kinds(Some(&["source.fixAll.ts"])).is_empty());
     }
 
     #[test]

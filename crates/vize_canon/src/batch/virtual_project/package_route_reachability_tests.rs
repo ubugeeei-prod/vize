@@ -178,6 +178,23 @@ fn equal_routes_share_one_scan_per_budget() {
 }
 
 #[test]
+fn equal_input_lists_intern_to_one_allocation() {
+    let mut sources = super::ReachabilitySources::default();
+    let list = || {
+        vec![
+            PathBuf::from("/w/node_modules/dep"),
+            PathBuf::from("/w/package.json"),
+        ]
+    };
+    let first = sources.intern(list());
+    let second = sources.intern(list());
+    let other = sources.intern(vec![PathBuf::from("/w/package.json")]);
+    // A scan records each distinct list once, keyed by this address.
+    assert!(std::ptr::eq(first.as_ptr(), second.as_ptr()));
+    assert!(!std::ptr::eq(first.as_ptr(), other.as_ptr()));
+}
+
+#[test]
 fn long_cyclic_duplicate_graph_stops_at_exact_unique_work_bound() {
     let fixture = Fixture::new();
     let mut expected_bytes = 0;

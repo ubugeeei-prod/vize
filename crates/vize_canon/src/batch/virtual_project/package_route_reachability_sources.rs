@@ -33,8 +33,12 @@ pub(super) struct SourceText {
     pub(super) edges: Arc<[ResolvedEdge]>,
 }
 
+/// Consulted inputs, interned per pass: importers in one directory consult
+/// the same paths, so a scan records each distinct list once.
+pub(super) type InputList = Arc<[PathBuf]>;
+
 /// Resolution outcome and consulted inputs.
-pub(super) type Resolution<T> = (Option<T>, Vec<PathBuf>);
+pub(super) type Resolution<T> = (Option<T>, InputList);
 
 /// Lookups that depend only on the importer and the specifier, so every scan
 /// of a pass shares them. Alias targets are left out: the canon walk resolves
@@ -72,9 +76,19 @@ pub struct ReachabilitySources {
             PackageRouteReachability,
         )>,
     >,
+    input_lists: FxHashSet<InputList>,
 }
 
 impl ReachabilitySources {
+    pub(super) fn intern(&mut self, inputs: Vec<PathBuf>) -> InputList {
+        if let Some(list) = self.input_lists.get(inputs.as_slice()) {
+            return list.clone();
+        }
+        let list = InputList::from(inputs);
+        self.input_lists.insert(list.clone());
+        list
+    }
+
     pub(super) fn scanned(
         &self,
         route: &crate::PackageRoute,

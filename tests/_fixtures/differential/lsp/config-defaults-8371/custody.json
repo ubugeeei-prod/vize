@@ -20,8 +20,8 @@
     "Consumer.valid.tsx.txt": "f84d32ace2d1da89f9edfd6d8eb9deaa5834427a9165f0552e40b0411ae66abe",
     "Counter.vue.txt": "be05ff1c36344add48c9950caeacaa6e3b9c708d7f324a36799aea6a6537af07",
     "Intrinsic.tsx.txt": "caa41ae4d258f0769897cf8563e62ffd25fd35c8c74153e8dafdab13e6685676",
-    "capabilities.fresh.json": "f984185cc1f41b9abe1d63cd0727b9826e5f8ad9ba439733275b273c6947fa2b",
-    "capabilities.historical.json": "4bdace7d8569b64122b603cfd47519f29eb5539bb679804337e842425eee2317",
+    "capabilities.fresh.json": "a55f404d139aad86af8df45bcb628c96e55e8075bfb6fcd3f19c5a87991ca2ff",
+    "capabilities.historical.json": "38074a4e3e991a88f9d98bc794b592f6727855a09bd44048f54d7d701012ab4f",
     "jsx-diagnostics.authored.json": "f0d6772c5269cb6356cae0f4873a1a179347dd1c04745a3a45927287bc6b96a0",
     "lsp-capabilities.original.ts.txt": "69548eb706810e1da70a96c0ddc724a1608923a0276ad7662cb226b096ad8dff",
     "lsp-typecheck-jsx-component.original.ts.txt": "9c01f9d68f8e78da0242ff863c63e80aa84da0ca066a8104391a7931b017d0bb"
