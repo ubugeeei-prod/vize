@@ -39,12 +39,12 @@ impl CorsaTypeAwareSession {
         })?;
 
         let config_path = session_root.join(TSCONFIG_FILE_NAME);
+        let tsconfig_contents = session_tsconfig_contents(&project_root, filename);
+        let vue_path_aliases =
+            super::vue_dependencies::PathAliases::from_tsconfig(&tsconfig_contents, &project_root);
         profile!(
             "patina.corsa_session.write_tsconfig",
-            std::fs::write(
-                &config_path,
-                session_tsconfig_contents(&project_root, filename).as_str(),
-            )
+            std::fs::write(&config_path, tsconfig_contents.as_str(),)
         )
         .map_err(|error| {
             io_error_message("Failed to write patina tsconfig", &config_path, &error)
@@ -111,6 +111,7 @@ impl CorsaTypeAwareSession {
             import_source_map: vize_canon::ImportSourceMap::empty(),
             dependency_paths: vize_l0::FxHashSet::default(),
             dependency_cache: vize_l0::FxHashMap::default(),
+            vue_path_aliases,
             closed: false,
         })
     }
@@ -131,6 +132,7 @@ impl CorsaTypeAwareSession {
             filename,
             &self.session_root,
             &self.project_root,
+            &self.vue_path_aliases,
             &mut self.dependency_cache,
             &self.dependency_paths,
         );

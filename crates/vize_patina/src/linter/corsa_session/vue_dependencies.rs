@@ -15,6 +15,8 @@ use crate::linter::native_type_aware::document::project_component;
 
 mod specifiers;
 use specifiers::Specifiers;
+mod aliases;
+pub(super) use aliases::PathAliases;
 #[cfg(test)]
 mod tests;
 
@@ -35,6 +37,7 @@ pub(super) fn prepare(
     filename: &str,
     session_root: &Path,
     project_root: &Path,
+    aliases: &PathAliases,
     cache: &mut FxHashMap<PathBuf, CachedDocument>,
     retained: &FxHashSet<PathBuf>,
 ) -> Prepared {
@@ -70,6 +73,11 @@ pub(super) fn prepare(
                     .join(specifier.as_str())
             } else if Path::new(specifier.as_str()).is_absolute() {
                 PathBuf::from(specifier.as_str())
+            } else if specifier.ends_with(".vue") {
+                let Some(resolved) = aliases.resolve(specifier.as_str()) else {
+                    continue;
+                };
+                resolved
             } else {
                 continue;
             };

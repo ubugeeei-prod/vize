@@ -1,4 +1,4 @@
-use super::{materialize, prepare};
+use super::{PathAliases, materialize, prepare};
 use vize_l0::{String, cstr};
 
 #[test]
@@ -26,11 +26,13 @@ fn projected_imports_escape_both_quotes_and_preserve_unicode_query_offsets() {
         let descriptor = vize_atelier_sfc::parse_sfc(&source, Default::default()).unwrap();
         let projected = super::project_component(&descriptor, None, &filename.to_string_lossy());
         let mut cache = vize_l0::FxHashMap::default();
+        let aliases = PathAliases::default();
         let prepared = prepare(
             &projected,
             &filename.to_string_lossy(),
             &session,
             &project,
+            &aliases,
             &mut cache,
             &vize_l0::FxHashSet::default(),
         );
@@ -143,11 +145,13 @@ fn real_component_imports_have_private_mirrors_and_keep_query_offsets() {
     );
     let session = fixtures.join("private-test-session");
     let mut cache = vize_l0::FxHashMap::default();
+    let aliases = PathAliases::default();
     let prepared = prepare(
         &source,
         &fixtures.join("ParentPanel.vue").to_string_lossy(),
         &session,
         &fixtures,
+        &aliases,
         &mut cache,
         &vize_l0::FxHashSet::default(),
     );
@@ -161,6 +165,43 @@ fn real_component_imports_have_private_mirrors_and_keep_query_offsets() {
     let before = source.rfind("Child;").unwrap() as u32;
     let after = rewritten.rfind("Child;").unwrap() as u32;
     assert_eq!(prepared.source_map.get_virtual_offset(before), after);
+}
+
+#[test]
+fn path_aliased_vue_imports_have_private_mirrors() {
+    let project = tempfile::tempdir().unwrap();
+    let child = project.path().join("src/ui/Child.vue");
+    std::fs::create_dir_all(child.parent().unwrap()).unwrap();
+    std::fs::write(
+        &child,
+        "<script setup lang=\"ts\">defineProps<{ label: string }>()</script><template />",
+    )
+    .unwrap();
+    let source = "import Child from '#ui/Child.vue';\nconst value = Child;\n";
+    let session = project.path().join("private-session");
+    let config = serde_json::json!({
+        "compilerOptions": {
+            "paths": {"#ui/*": [project.path().join("src/ui/*")]}
+        }
+    });
+    let aliases = PathAliases::from_tsconfig(&config.to_string(), project.path());
+    let mut cache = vize_l0::FxHashMap::default();
+    let prepared = prepare(
+        source,
+        &project.path().join("src/Parent.vue").to_string_lossy(),
+        &session,
+        project.path(),
+        &aliases,
+        &mut cache,
+    );
+    assert_eq!(prepared.files.len(), 1);
+    let (target, component) = &prepared.files[0];
+    assert!(target.starts_with(&session));
+    assert!(component.contains("export default __vize_component__"));
+    let rewritten = prepared
+        .code
+        .expect("aliased component import was rewritten");
+    assert!(rewritten.contains(&*cstr!("from '{}'", target.display())));
 }
 
 #[test]
