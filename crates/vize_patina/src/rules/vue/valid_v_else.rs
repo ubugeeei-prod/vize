@@ -64,20 +64,17 @@ impl Rule for ValidVElse {
 
         // Check 1: v-else should not have an expression
         if directive.exp.is_some() {
-            let fix = Fix::new(
-                "Remove the expression from v-else",
-                TextEdit::delete(directive.loc.span.start, directive.loc.span.end),
-            );
-            ctx.report(
-                crate::diagnostic::LintDiagnostic::error(
-                    META.name,
-                    ctx.t("vue/valid-v-else.unexpected_expression").as_ref(),
-                    directive.loc.span.start,
-                    directive.loc.span.end,
-                )
-                .with_help(ctx.t("vue/valid-v-else.help").as_ref())
-                .with_fix(fix),
-            );
+            let mut diagnostic = crate::diagnostic::LintDiagnostic::error(
+                META.name,
+                ctx.t("vue/valid-v-else.unexpected_expression").as_ref(),
+                directive.loc.span.start,
+                directive.loc.span.end,
+            )
+            .with_help(ctx.t("vue/valid-v-else.help").as_ref());
+            if let Some(fix) = unexpected_expression_fix(ctx.source, directive) {
+                diagnostic = diagnostic.with_fix(fix);
+            }
+            ctx.report(diagnostic);
         }
 
         // Check 2: v-else should not be used with v-if or v-else-if
@@ -93,6 +90,21 @@ impl Rule for ValidVElse {
             );
         }
     }
+}
+
+fn unexpected_expression_fix(source: &str, directive: &DirectiveNode) -> Option<Fix> {
+    let raw_name = directive.raw_name?;
+    let authored =
+        source.get(directive.loc.span.start as usize..directive.loc.span.end as usize)?;
+    authored.starts_with(raw_name).then(|| {
+        Fix::new(
+            "Remove the expression from v-else",
+            TextEdit::delete(
+                directive.loc.span.start + raw_name.len() as u32,
+                directive.loc.span.end,
+            ),
+        )
+    })
 }
 
 /// Report every `v-else` that does not directly follow a conditional branch.
@@ -154,12 +166,45 @@ mod tests {
     #[test]
     fn test_invalid_v_else_with_expression() {
         let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<div v-if="foo"></div><div v-else="bar"></div>"#,
-            "test.vue",
-        );
+        let source = r#"<div v-if="foo"></div><div v-else="bar"></div>"#;
+        let result = linter.lint_template(source, "test.vue");
         assert_eq!(result.error_count, 1);
+        assert_eq!(
+            result.diagnostics[0].fix.as_ref().unwrap().apply(source),
+            r#"<div v-if="foo"></div><div v-else></div>"#
+        );
         insta::assert_debug_snapshot!(result.diagnostics);
+    }
+
+    #[test]
+    fn test_invalid_v_else_fix_preserves_the_branch_for_each_value_style() {
+        let linter = create_linter();
+        for (source, expected) in [
+            (
+                r#"<div v-if="ok"></div><div v-else='no'></div>"#,
+                r#"<div v-if="ok"></div><div v-else></div>"#,
+            ),
+            (
+                r#"<div v-if="ok"></div><div v-else=no></div>"#,
+                r#"<div v-if="ok"></div><div v-else></div>"#,
+            ),
+            (
+                r#"<div v-if="ok"></div><div v-else = "no"></div>"#,
+                r#"<div v-if="ok"></div><div v-else></div>"#,
+            ),
+        ] {
+            let result = linter.lint_template(source, "test.vue");
+            assert_eq!(result.error_count, 1, "{source}");
+            assert_eq!(
+                result.diagnostics[0]
+                    .fix
+                    .as_ref()
+                    .expect("invalid v-else values have a safe fix")
+                    .apply(source),
+                expected,
+                "{source}"
+            );
+        }
     }
 
     #[test]

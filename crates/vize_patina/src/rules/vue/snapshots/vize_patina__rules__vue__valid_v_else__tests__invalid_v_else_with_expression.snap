@@ -18,7 +18,7 @@ expression: result.diagnostics
                 message: "Remove the expression from v-else",
                 edits: [
                     TextEdit {
-                        start: 27,
+                        start: 33,
                         end: 39,
                         new_text: "",
                     },
