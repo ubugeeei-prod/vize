@@ -24,8 +24,10 @@ impl CodeActionService {
     pub(crate) async fn native_actions(
         ctx: &IdeContext<'_>,
         range: Range,
+        kinds: &[CodeActionKind],
     ) -> Vec<CodeActionOrCommand> {
-        if !ctx.state.is_lsp_typecheck_enabled()
+        if kinds.is_empty()
+            || !ctx.state.is_lsp_typecheck_enabled()
             || !ctx.uri.path().ends_with(".vue")
             || ctx.uri.path().ends_with(".art.vue")
         {
@@ -49,8 +51,9 @@ impl CodeActionService {
         let Some(virtual_range) = request_range(ctx, &document, range) else {
             return vec![];
         };
+        let requested = kinds.iter().map(|kind| kind.as_str().into()).collect();
         let response = match bridge
-            .code_actions(&document.request_uri, virtual_range)
+            .code_actions(&document.request_uri, virtual_range, requested)
             .await
         {
             Ok(Some(response)) => response,
@@ -73,7 +76,8 @@ impl CodeActionService {
                 let CodeActionOrCommand::CodeAction(action) = action else {
                     return None;
                 };
-                map_action(ctx, &document, version, action).map(CodeActionOrCommand::CodeAction)
+                map_action(ctx, &document, version, kinds, action)
+                    .map(CodeActionOrCommand::CodeAction)
             })
             .collect()
     }
@@ -327,12 +331,28 @@ fn map_action(
     ctx: &IdeContext<'_>,
     document: &corsa_support::CanonicalVirtualDocument,
     version: i32,
+    requested: &[CodeActionKind],
     action: CodeAction,
 ) -> Option<CodeAction> {
-    if action.kind.as_ref()? != &CodeActionKind::QUICKFIX {
+    let kind = action.kind.as_ref()?;
+    if !is_native_range_kind(kind)
+        || !requested.iter().any(|requested| {
+            kind == requested
+                || kind
+                    .as_str()
+                    .strip_prefix(requested.as_str())
+                    .is_some_and(|suffix| suffix.starts_with('.'))
+        })
+    {
         return None;
     }
     map_action_edits(ctx, document, version, action)
+}
+
+fn is_native_range_kind(kind: &CodeActionKind) -> bool {
+    kind == &CodeActionKind::QUICKFIX
+        || kind == &CodeActionKind::REFACTOR
+        || kind.as_str().starts_with("refactor.")
 }
 
 /// Translate one backend action's edits onto the authored SFC, all or none.
