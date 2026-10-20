@@ -1,0 +1,1 @@
+<script setup lang="ts">\nimport MyCard from "./MyCard.vue";\ndefineArt("./MyCard.vue", { title: "MyCard" });\n</script>\n<art>\n  <variant name="Wrong"><MyCard :title="123" /></variant>\n  <variant name="Missing"><MyCard elevated /></variant>\n</art>\n

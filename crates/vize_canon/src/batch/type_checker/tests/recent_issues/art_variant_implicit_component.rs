@@ -49,6 +49,7 @@ defineArt("./MyCard.vue", { title: "MyCard" });
     let Some(snapshot) = snapshot else {
         return;
     };
+    assert!(snapshot.is_empty(), "capture exact differential diagnostics: {snapshot:#?}");
 
     for file in ["src/MyCard.art.vue", "src/MyCardExplicit.art.vue"] {
         assert!(
