@@ -8,6 +8,8 @@ mod corsa_path;
 mod corsa_requirement;
 #[path = "check_cli/empty_inputs.rs"]
 mod empty_inputs;
+#[path = "check_cli/global_component_value_imports.rs"]
+mod global_component_value_imports;
 #[path = "check_cli/stubs.rs"]
 mod stubs;
 #[path = "support/vite_config.rs"]

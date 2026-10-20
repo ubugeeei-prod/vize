@@ -11,6 +11,10 @@ use super::dts_rewrite::rewrite_relative_specifier;
 #[derive(Default)]
 pub(super) struct ImportTypeAliases {
     aliases: FxHashMap<String, ImportTypeAlias>,
+    /// Value imports, rewritten only as a `typeof` operand: `typeof Button`
+    /// for `import Button from './Button.vue'` keeps naming the component
+    /// once the annotation is copied out of its file.
+    values: FxHashMap<String, ImportTypeAlias>,
 }
 
 enum ImportTypeAlias {
@@ -40,7 +44,7 @@ pub(super) fn rewrite_import_type_aliases(
     type_annotation: &str,
     aliases: &ImportTypeAliases,
 ) -> String {
-    if aliases.aliases.is_empty() {
+    if aliases.aliases.is_empty() && aliases.values.is_empty() {
         return type_annotation.to_compact_string();
     }
 
@@ -65,7 +69,12 @@ pub(super) fn rewrite_import_type_aliases(
 
         let ident = type_annotation.get(start..i).unwrap_or_default();
         let next = char_at(type_annotation, i);
-        if let Some(alias) = aliases.aliases.get(ident) {
+        let alias = aliases.aliases.get(ident).or_else(|| {
+            follows_typeof(type_annotation, start)
+                .then(|| aliases.values.get(ident))
+                .flatten()
+        });
+        if let Some(alias) = alias {
             match alias {
                 ImportTypeAlias::Namespace { module } if next == Some('.') => {
                     out.push_str(&render_namespace_reference(module.as_str()));
@@ -104,6 +113,9 @@ fn collect_import_declaration(
     let declaration_is_type = declaration.import_kind.is_type();
 
     for specifier in specifiers {
+        if !declaration_is_type {
+            collect_value_specifier(specifier, module.as_str(), aliases);
+        }
         match specifier {
             ImportDeclarationSpecifier::ImportSpecifier(specifier)
                 if declaration_is_type || specifier.import_kind.is_type() =>
@@ -131,6 +143,57 @@ fn collect_import_declaration(
             _ => {}
         }
     }
+}
+
+fn collect_value_specifier(
+    specifier: &ImportDeclarationSpecifier<'_>,
+    module: &str,
+    aliases: &mut ImportTypeAliases,
+) {
+    let (local, alias) = match specifier {
+        ImportDeclarationSpecifier::ImportSpecifier(specifier)
+            if !specifier.import_kind.is_type() =>
+        {
+            let Some(imported) =
+                module_export_name(&specifier.imported).filter(|name| is_identifier(name))
+            else {
+                return;
+            };
+            (
+                specifier.local.name.as_str(),
+                ImportTypeAlias::Named {
+                    module: module.into(),
+                    imported: imported.into(),
+                },
+            )
+        }
+        ImportDeclarationSpecifier::ImportDefaultSpecifier(specifier) => (
+            specifier.local.name.as_str(),
+            ImportTypeAlias::Default {
+                module: module.into(),
+            },
+        ),
+        ImportDeclarationSpecifier::ImportNamespaceSpecifier(specifier) => (
+            specifier.local.name.as_str(),
+            ImportTypeAlias::Namespace {
+                module: module.into(),
+            },
+        ),
+        ImportDeclarationSpecifier::ImportSpecifier(_) => return,
+    };
+    if is_identifier(local) {
+        aliases.values.insert(local.to_compact_string(), alias);
+    }
+}
+
+/// Whether the identifier at `start` is the operand of a `typeof` query.
+fn follows_typeof(input: &str, start: usize) -> bool {
+    input
+        .get(..start)
+        .unwrap_or_default()
+        .trim_end()
+        .strip_suffix("typeof")
+        .is_some_and(|rest| !rest.chars().next_back().is_some_and(is_identifier_char))
 }
 
 fn push_named_alias(local: &str, module: &str, imported: &str, aliases: &mut ImportTypeAliases) {
@@ -269,6 +332,25 @@ import type * as Shared from '../../app/types/shared'
         assert_eq!(
             rewritten.as_str(),
             "Record<'User', import('/workspace/.nuxt/types/types').User> | value"
+        );
+    }
+
+    #[test]
+    fn rewrites_value_imports_only_as_typeof_operands() {
+        let content = r#"
+import Button from './Button.vue'
+import { Card as AliasedCard } from './card'
+import * as Icons from './icons'
+"#;
+        let aliases = collect_import_type_aliases(content, Path::new("/workspace/src"));
+        let rewritten = rewrite_import_type_aliases(
+            "typeof Button | typeof AliasedCard | typeof Icons.Star | Button | typeofButton",
+            &aliases,
+        );
+
+        assert_eq!(
+            rewritten.as_str(),
+            "typeof import('/workspace/src/Button.vue').default | typeof import('/workspace/src/card').Card | typeof import('/workspace/src/icons').Star | Button | typeofButton"
         );
     }
 

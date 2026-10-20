@@ -32,7 +32,6 @@ pub(super) fn generate_inferred_emit_args(
     mappings: &mut Vec<VizeMapping>,
     ctx: &EmitInferenceContext<'_>,
 ) -> Option<String> {
-    super::super::super::script_facts::binding_span(ctx.summary, ctx.component_ref)?;
     let (usage_idx, usage) =
         find_component_usage_for_event(ctx.summary, ctx.component_name, ctx.data, ctx.scope)?;
     if usage.spread_props.is_empty()

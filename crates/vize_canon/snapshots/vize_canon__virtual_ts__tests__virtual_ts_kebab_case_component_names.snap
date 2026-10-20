@@ -152,10 +152,16 @@ function __setup() {
     : typeof my_widget extends (props: infer __P, ...args: any[]) => any
       ? __P extends { "onUpdate:modelValue"?: (...args: infer __A) => any } ? __A : __P extends { "onUpdate:modelValue"?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? __P extends { "onUpdate:model-value"?: (...args: infer __A) => any } ? __A : unknown[] : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : __P extends { "onUpdate:model-value"?: (...args: infer __A) => any } ? __A : unknown[] : __P extends { "onUpdate:model-value"?: (...args: infer __A) => any } ? __A : unknown[]
       : unknown[];
-  type __my_widget_7_update_model_value_emit_args = typeof my_widget extends { __vizeEmitProps?: infer __EP }
+  type __my_widget_7_update_model_value_emit_resolver = __VizeEmitPropsFactory<typeof my_widget>;
+  const __vize_emit_props_0_7_update_model_value = (undefined as unknown as __my_widget_7_update_model_value_emit_resolver)(my_widget)({
+    "label": value,
+  });
+  type __my_widget_7_update_model_value_inferred_emit_args = typeof __vize_emit_props_0_7_update_model_value extends { "onUpdate:modelValue"?: (...args: infer __A) => any } ? __A : unknown[];
+  type __my_widget_7_update_model_value_static_emit_args = typeof my_widget extends { __vizeEmitProps?: infer __EP }
     ? __EP extends { "onUpdate:modelValue"?: (...args: infer __A) => any } ? __A : unknown[]
     : unknown[];
-  type __my_widget_7_update_model_value_args = unknown[] extends __my_widget_7_update_model_value_prop_args ? (unknown[] extends __my_widget_7_update_model_value_emit_args ? unknown[] : __my_widget_7_update_model_value_emit_args) : __my_widget_7_update_model_value_prop_args;
+  type __my_widget_7_update_model_value_emit_args = unknown[] extends __my_widget_7_update_model_value_inferred_emit_args ? __my_widget_7_update_model_value_static_emit_args : __my_widget_7_update_model_value_inferred_emit_args;
+  type __my_widget_7_update_model_value_args = unknown[] extends __my_widget_7_update_model_value_inferred_emit_args ? (unknown[] extends __my_widget_7_update_model_value_prop_args ? (unknown[] extends __my_widget_7_update_model_value_emit_args ? unknown[] : __my_widget_7_update_model_value_emit_args) : __my_widget_7_update_model_value_prop_args) : __my_widget_7_update_model_value_inferred_emit_args;
   type __my_widget_7_update_model_value_event = __my_widget_7_update_model_value_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;
   type __my_widget_7_update_model_value_return = unknown[] extends __my_widget_7_update_model_value_prop_args ? any : typeof my_widget extends { new (...args: any[]): { $props: infer __P } }
     ? (__P extends { "onUpdate:modelValue"?: (...args: any[]) => infer __R } ? __R : any)
