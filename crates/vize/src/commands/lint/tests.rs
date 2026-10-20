@@ -177,6 +177,76 @@ import Provider from './Provider.vue'
 }
 
 #[test]
+fn cross_file_nuxt_layout_with_component_keeps_page_provider_ancestry() {
+    let dir = tempfile::tempdir().unwrap();
+    let app_root = dir.path().join("app");
+    let app = app_root.join("app.vue");
+    let layout = app_root.join("layouts/default.vue");
+    let page = app_root.join("pages/index.vue");
+    let header = app_root.join("components/AppHeader.vue");
+    let button = app_root.join("components/SaveButton.vue");
+
+    fs::create_dir_all(layout.parent().unwrap()).unwrap();
+    fs::create_dir_all(page.parent().unwrap()).unwrap();
+    fs::create_dir_all(header.parent().unwrap()).unwrap();
+    fs::write(
+        &app,
+        "<template><NuxtLayout><NuxtPage /></NuxtLayout></template>\n",
+    )
+    .unwrap();
+    fs::write(
+        &layout,
+        r#"<script setup lang="ts">
+import { provide } from 'vue'
+import { ToastKey } from '../keys'
+import AppHeader from '../components/AppHeader.vue'
+
+provide(ToastKey, { show: (message: string) => console.log(message) })
+</script>
+
+<template><AppHeader /><main><slot /></main></template>
+"#,
+    )
+    .unwrap();
+    fs::write(
+        &page,
+        r#"<script setup lang="ts">
+import SaveButton from '../components/SaveButton.vue'
+</script>
+
+<template><SaveButton /></template>
+"#,
+    )
+    .unwrap();
+    let consumer = r#"<script setup lang="ts">
+import { inject } from 'vue'
+import { ToastKey } from '../keys'
+
+const toast = inject(ToastKey)
+</script>
+
+<template><button type="button" @click="toast?.show('hi')">Button</button></template>
+"#;
+    fs::write(&header, consumer).unwrap();
+    fs::write(&button, consumer).unwrap();
+
+    let files = [&app, &layout, &page, &header, &button]
+        .into_iter()
+        .map(|path| (path.to_path_buf(), fs::read_to_string(path).unwrap()))
+        .collect::<Vec<_>>();
+    let output = build_cross_file_lint_output(&files, vize_patina::HelpLevel::Short, false);
+
+    for file_name in ["AppHeader.vue", "SaveButton.vue"] {
+        let result = result_for_file(&output.results, file_name);
+        assert!(
+            result.diagnostics.is_empty(),
+            "{file_name}: {:#?}",
+            result.diagnostics
+        );
+    }
+}
+
+#[test]
 fn cross_file_opt_in_reports_duplicate_element_ids_at_template_offsets() {
     let dir = tempfile::tempdir().unwrap();
     let first = dir.path().join("First.vue");
