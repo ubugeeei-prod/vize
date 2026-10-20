@@ -1514,13 +1514,45 @@
       "sourceRevision": "f276e4d59cdaf765fd7d3f14eb3d679f5b685f98",
       "packReference": {
         "path": "reactive-props-destructure-10008/cases.json",
-        "sha256": "2e5945f59c2ce593870643c096df81ae4ea538022b1f1b72a771bc84f24b3c34"
+        "sha256": "5cc982c0ac7f0dd5cfe8213cb8f40a7b606f23737650f959926cf247b409aadf"
       },
       "inputs": [
         {
           "file": "src/MyBadge.vue",
           "path": "reactive-props-destructure-10008/MyBadge.vue.txt",
           "sha256": "571b884fca0c35c74ac4e80cf4dceb7690d7d2910af697d74be9764397c84288"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "reactive-props-destructure-10008/tsconfig.json.txt",
+          "sha256": "b3a5494b753d8fb49e84a253fe76eb893ca9bc931297491547d27df53d2c83b6"
+        }
+      ]
+    },
+    {
+      "id": "typechecker/reactive-props-destructure-10008/used-rest-binding",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "reactive-props-destructure-10008",
+      "case": "used-rest-binding",
+      "test": "reactive_props_destructure_preserves_unused_diagnostics",
+      "regressionCommit": "f276e4d59cdaf765fd7d3f14eb3d679f5b685f98",
+      "sourceRevision": "f276e4d59cdaf765fd7d3f14eb3d679f5b685f98",
+      "packReference": {
+        "path": "reactive-props-destructure-10008/cases.json",
+        "sha256": "5cc982c0ac7f0dd5cfe8213cb8f40a7b606f23737650f959926cf247b409aadf"
+      },
+      "inputs": [
+        {
+          "file": "src/RestProps.vue",
+          "path": "reactive-props-destructure-10008/RestProps.vue.txt",
+          "sha256": "45c82a64172c335dc904528b4b56d7f545b68b176b0d5b51e2f325518d003c06"
         },
         {
           "file": "tsconfig.json",

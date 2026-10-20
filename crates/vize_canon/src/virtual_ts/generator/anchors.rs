@@ -24,6 +24,10 @@ pub(super) fn setup_binding_anchor_comment(preserve_unused_diagnostics: bool) ->
 /// `const props = defineProps(...)` used only through the template
 /// (`v-bind="props"`) reported a false TS6133.
 ///
+/// This includes a reactive `defineProps` destructure whose local or rest
+/// binding is named `props`: Croquis classifies those as `BindingType::Props`,
+/// but they are still authored setup locals shadowed by the template closure.
+///
 /// Only a template that spells `props` itself counts as a read, so a component
 /// whose template reads prop names directly (`{{ label }}`) keeps its genuine
 /// unused-`props` report. Unlike the in-closure anchor list this narrowing is
@@ -35,17 +39,29 @@ pub(super) fn emit_props_shadow_anchor(
     summary: &Croquis,
     template_referenced_names: &FxHashSet<String>,
 ) -> Option<Range<usize>> {
-    if crate::virtual_ts::script_facts::binding_type(summary, "props")
-        .as_ref()
-        .is_some_and(is_setup_variable)
-        && template_referenced_names.contains("props")
-    {
+    if is_setup_props_binding(summary) && template_referenced_names.contains("props") {
         ts.push_str("  // Anchor before the template scope shadows `props`\n");
         let start = ts.len() + "  void ".len();
         ts.push_str("  void props;\n");
         return Some(start..start + "props".len());
     }
     None
+}
+
+fn is_setup_props_binding(summary: &Croquis) -> bool {
+    crate::virtual_ts::script_facts::binding_type(summary, "props")
+        .as_ref()
+        .is_some_and(is_setup_variable)
+        || summary
+            .macros
+            .props_destructure()
+            .is_some_and(|destructure| {
+                destructure
+                    .bindings
+                    .values()
+                    .any(|binding| binding.local.as_str() == "props")
+                    || destructure.rest_id.as_deref() == Some("props")
+            })
 }
 
 /// True for bindings declared as variables in `<script setup>` scope

@@ -15,12 +15,12 @@ fn unused_reactive_props_destructure_matches_vue_tsc() {
         &[(
             "src/MyBadge.vue",
             r#"<script setup lang="ts">
-const { label, color = "gray" } = defineProps<{ label: string; color?: string }>()
+const { label, color = "gray", ...rest } = defineProps<{ label: string; color?: string; title: string }>()
 const unusedLocal = 1
 </script>
 
 <template>
-  <span>{{ label }}</span>
+  <span>{{ label }} {{ rest.title }}</span>
 </template>
 "#,
         )],

@@ -229,7 +229,7 @@ fn reactive_props_destructure_preserves_unused_diagnostics() {
         "reactive_props_destructure_preserves_unused_diagnostics",
         "f276e4d59cdaf765fd7d3f14eb3d679f5b685f98",
         Some(10008),
-        &["unused-binding"],
+        &["unused-binding", "used-rest-binding"],
     );
 }
 
