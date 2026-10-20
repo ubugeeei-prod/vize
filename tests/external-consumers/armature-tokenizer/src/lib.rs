@@ -6,7 +6,13 @@ use std::rc::Rc;
 use vize_armature as armature;
 use vize_armature::tokenizer;
 
-const STATES: [armature::State; 35] = [
+// 0.429.1 also published the never-entered `InSFCRootTagName` (35); later releases removed it.
+#[cfg(feature = "published")]
+const STATE_COUNT: usize = 35;
+#[cfg(not(feature = "published"))]
+const STATE_COUNT: usize = 34;
+
+const STATES: [armature::State; STATE_COUNT] = [
     tokenizer::State::Text,
     tokenizer::State::InterpolationOpen,
     tokenizer::State::Interpolation,
@@ -41,6 +47,7 @@ const STATES: [armature::State; 35] = [
     tokenizer::State::SpecialStartSequence,
     tokenizer::State::InRCDATA,
     tokenizer::State::InEntity,
+    #[cfg(feature = "published")]
     tokenizer::State::InSFCRootTagName,
 ];
 
@@ -164,6 +171,7 @@ fn published_state_code(state: armature::State) -> u8 {
         armature::State::SpecialStartSequence => 32,
         armature::State::InRCDATA => 33,
         armature::State::InEntity => 34,
+        #[cfg(feature = "published")]
         armature::State::InSFCRootTagName => 35,
     }
 }

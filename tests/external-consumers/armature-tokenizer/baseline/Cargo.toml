@@ -8,3 +8,7 @@ publish = false
 
 [dependencies]
 vize_armature = "=0.429.1"
+
+[features]
+default = ["published"]
+published = []

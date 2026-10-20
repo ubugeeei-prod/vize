@@ -8,3 +8,7 @@ publish = false
 
 [dependencies]
 vize_armature = { path = "../../../crates/vize_armature" }
+
+[features]
+# Enabled by the baseline manifest, which builds this source against 0.429.1.
+published = []

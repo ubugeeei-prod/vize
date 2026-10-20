@@ -59,8 +59,6 @@ pub enum State {
     InRCDATA,
 
     InEntity,
-
-    InSFCRootTagName,
 }
 
 /// Quote type for attribute values

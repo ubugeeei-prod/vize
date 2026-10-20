@@ -10,6 +10,10 @@ See [`docs/release/support-policy.md`](./docs/release/support-policy.md) for the
 
 - Restore `davinci-differential` as a deprecated alias of `legacy-differential` and `davinci-dom-differential` as a deprecated alias of `legacy-dom-differential` (#7179).
 
+### Removed
+
+- **Breaking:** remove `vize_armature::State::InSFCRootTagName` (also `vize_armature::tokenizer::State` and `vize_l1::markup::lex::compat::State`), removed since 0.475.0. The tokenizer never entered this state; delete match arms that name it (#6835).
+
 ## [0.362.0] - 2026-08-22
 
 ### Added
