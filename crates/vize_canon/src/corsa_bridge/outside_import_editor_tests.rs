@@ -61,7 +61,7 @@ fn original_outside_import_preserves_types_in_native_editor() {
             .await
             .unwrap();
         bridge.shutdown().await.unwrap();
-        let complete = serde_json::to_value(diagnostics).unwrap();
+        let complete = serde_json::to_value(&diagnostics).unwrap();
         if let Some(capture) = std::env::var_os("VIZE_TYPECHECK_REGRESSION_CAPTURE") {
             let capture = PathBuf::from(capture).join("editor-original-script");
             std::fs::create_dir_all(&capture).unwrap();
