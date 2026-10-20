@@ -69,6 +69,8 @@ impl ServerState {
             workspace_folder_configs: RwLock::new(Vec::new()),
             #[cfg(feature = "glyph")]
             format_options: RwLock::new((vize_glyph::FormatOptions::default(), false)),
+            #[cfg(feature = "glyph")]
+            format_whitespace: RwLock::new(Default::default()),
             #[cfg(feature = "native")]
             corsa_bridge: RwLock::new(None),
             #[cfg(feature = "native")]

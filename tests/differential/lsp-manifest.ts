@@ -98,7 +98,10 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
     } else {
       assert.equal(data.method, "textDocument/onTypeFormatting", "unregistered LSP method");
       assert.deepEqual(data.options, { tabSize: 2, insertSpaces: true });
-      assert(Array.isArray(expected) && expected.length === 4, "all four CRLF controls required");
+      assert(Array.isArray(expected) && expected.length > 0, "on-type controls required");
+      if (data.id === "lsp/fix-history/on-type-crlf") {
+        assert.equal(expected.length, 4, "all four CRLF controls required");
+      }
       requests = (expected as { position: unknown; ch: string; result: unknown }[]).map(
         ({ position, ch, result }) => ({
           params: { position, ch, options: data.options },
