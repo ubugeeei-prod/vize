@@ -77,6 +77,12 @@ impl ConfigDocument {
         self.0.formatter.sort_imports.as_ref()
     }
 
+    /// Authored formatter options with the preset applied, including options
+    /// outside the stable formatter model.
+    pub fn formatter_profile(&self) -> &crate::config::FormatterProfile {
+        self.0.formatter_profile()
+    }
+
     /// Normalize the effective model and its feature flags once.
     pub fn into_config_and_features(self) -> (VizeConfig, ConfigFeatureFlags) {
         self.0.into_config_and_features()

@@ -57,7 +57,7 @@ pub struct FormatResultNapi {
 fn apply_options(opts: FormatOptionsNapi) -> Result<FormatOptions> {
     let mut options = FormatOptions::default();
     if let Some(preset) = opts.preset.as_deref() {
-        match preset {
+        options.apply_preset(match preset {
             "vize" => FormatPreset::Vize,
             "prettier" => FormatPreset::Prettier,
             _ => {
@@ -66,8 +66,7 @@ fn apply_options(opts: FormatOptionsNapi) -> Result<FormatOptions> {
                     "Unknown formatter preset; expected 'vize' or 'prettier'",
                 ));
             }
-        }
-        .apply(&mut options);
+        });
     }
 
     if let Some(value) = opts.print_width {

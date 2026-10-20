@@ -178,35 +178,39 @@ impl Default for FormatOptions {
     }
 }
 
-/// A named set of formatter defaults (#6098).
-///
-/// A preset only assigns the options it owns; options applied after it, such
-/// as CLI flags, still win.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum FormatPreset {
-    /// The Vize defaults.
-    #[default]
-    Vize,
-    /// Prettier's Vue layout: 80 columns, attributes and blocks in authored
-    /// order, directives as written, and Prettier's quotes, inline styles,
-    /// `v-for` parentheses and void-element closing.
-    Prettier,
-}
+/// A named set of formatter defaults (#6098); see [`FormatOptions::apply_preset`].
+pub use vize_l0::config::FormatterPreset as FormatPreset;
 
-impl FormatPreset {
-    /// Assign the options this preset owns.
-    pub fn apply(self, options: &mut FormatOptions) {
-        let vize = self == Self::Vize;
-        options.print_width = if vize { default_print_width() } else { 80 };
-        options.sort_attributes = vize;
-        options.sort_blocks = vize;
-        options.normalize_directive_shorthands = vize;
-        options.normalize_css_quotes = !vize;
-        options.normalize_inline_styles = !vize;
-        options.normalize_v_for_parens = !vize;
-        options.self_close_void_elements = !vize;
-        options.reindent_preprocessor_styles = !vize;
+impl FormatOptions {
+    /// Resolve a config file's formatter options; keys the config does not
+    /// set keep their defaults.
+    pub fn from_profile(
+        profile: &vize_l0::config::FormatterProfile,
+    ) -> Result<Self, serde_json::Error> {
+        let mut options = Self::default();
+        options.overlay(&profile.options)?;
+        Ok(options)
+    }
+
+    /// Assign the options a preset owns; options applied after it, such as
+    /// CLI flags, still win.
+    pub fn apply_preset(&mut self, preset: FormatPreset) {
+        // Preset options are typed literals, so the overlay cannot fail.
+        let _ = self.overlay(&preset.options());
+    }
+
+    fn overlay(&mut self, overrides: &serde_json::Value) -> Result<(), serde_json::Error> {
+        let serde_json::Value::Object(overrides) = overrides else {
+            return Ok(());
+        };
+        let mut merged = serde_json::to_value(&*self)?;
+        if let serde_json::Value::Object(merged) = &mut merged {
+            merged.extend(overrides.clone());
+        }
+        let skip_script_stabilization = self.skip_script_stabilization;
+        *self = serde_json::from_value(merged)?;
+        self.skip_script_stabilization = skip_script_stabilization;
+        Ok(())
     }
 }
 
@@ -296,7 +300,7 @@ impl FormatOptions {
     #[inline]
     pub fn prettier_compat() -> Self {
         let mut options = Self::default();
-        FormatPreset::Prettier.apply(&mut options);
+        options.apply_preset(FormatPreset::Prettier);
         options
     }
 

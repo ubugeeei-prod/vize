@@ -417,6 +417,10 @@ export interface TypeCheckerConfig {
  */
 export interface FormatterConfig {
   /**
+   * Named set of formatter defaults; options set alongside it win
+   */
+  preset?: "vize" | "prettier";
+  /**
    * Oxfmt-compatible import sorting; false disables it
    */
   sortImports?: false | SortImportsConfig;
@@ -504,6 +508,26 @@ export interface FormatterConfig {
    * Sort SFC blocks in canonical order
    */
   sortBlocks?: boolean;
+  /**
+   * Re-quote strings in CSS, SCSS and Less blocks with the singleQuote preference
+   */
+  normalizeCssQuotes?: boolean;
+  /**
+   * Write one-line static style attributes as name: value declarations
+   */
+  normalizeInlineStyles?: boolean;
+  /**
+   * Wrap several v-for aliases in parentheses
+   */
+  normalizeVForParens?: boolean;
+  /**
+   * Close void elements such as <img />
+   */
+  selfCloseVoidElements?: boolean;
+  /**
+   * Re-indent SCSS and Less blocks by nesting depth
+   */
+  reindentPreprocessorStyles?: boolean;
 }
 export interface SortImportsConfig {
   partitionByNewline?: boolean;

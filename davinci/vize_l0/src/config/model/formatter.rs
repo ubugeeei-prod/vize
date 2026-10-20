@@ -115,11 +115,120 @@ impl Default for FormatterConfig {
     }
 }
 
+/// A named assignment of formatter options (#6098).
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+#[non_exhaustive]
+pub enum FormatterPreset {
+    /// The Vize defaults.
+    #[default]
+    Vize,
+    /// Prettier's Vue layout.
+    Prettier,
+}
+
+impl FormatterPreset {
+    /// The options this preset assigns, keyed as in config files.
+    pub fn options(self) -> serde_json::Value {
+        let vize = self == Self::Vize;
+        let entries = [
+            (
+                "printWidth",
+                serde_json::Value::from(if vize { 100 } else { 80 }),
+            ),
+            ("sortAttributes", vize.into()),
+            ("sortBlocks", vize.into()),
+            ("normalizeDirectiveShorthands", vize.into()),
+            ("normalizeCssQuotes", (!vize).into()),
+            ("normalizeInlineStyles", (!vize).into()),
+            ("normalizeVForParens", (!vize).into()),
+            ("selfCloseVoidElements", (!vize).into()),
+            ("reindentPreprocessorStyles", (!vize).into()),
+        ];
+        serde_json::Value::Object(
+            entries
+                .into_iter()
+                .map(|(key, value)| (key.into(), value))
+                .collect(),
+        )
+    }
+}
+
+/// Formatter options as authored, after `preset`, including options outside
+/// [`FormatterConfig`].
+#[derive(Debug, Clone, Default, PartialEq)]
+#[non_exhaustive]
+pub struct FormatterProfile {
+    pub preset: Option<FormatterPreset>,
+    /// An object keyed as in config files: the preset's options, then the
+    /// authored ones. `Null` when neither is set.
+    pub options: serde_json::Value,
+}
+
 /// Retain extra formatter controls without changing the published exhaustive model.
-#[derive(Debug, Clone, Default, Deserialize)]
-#[serde(default, rename_all = "camelCase")]
+#[derive(Debug, Clone, Default)]
 pub(crate) struct RawFormatterConfig {
-    #[serde(flatten)]
     pub(crate) config: FormatterConfig,
     pub(crate) sort_imports: Option<super::sort_imports::SortImportsSetting>,
+    pub(crate) profile: FormatterProfile,
+}
+
+/// Every formatter key, typed so the loader refuses invalid values.
+#[derive(Default, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+struct RawFormatterKeys {
+    #[serde(flatten)]
+    config: FormatterConfig,
+    sort_imports: Option<super::sort_imports::SortImportsSetting>,
+    preset: Option<FormatterPreset>,
+    normalize_css_quotes: Option<bool>,
+    normalize_inline_styles: Option<bool>,
+    normalize_v_for_parens: Option<bool>,
+    self_close_void_elements: Option<bool>,
+    reindent_preprocessor_styles: Option<bool>,
+}
+
+impl RawFormatterConfig {
+    /// Whether the config wrote no formatter option.
+    pub(crate) fn is_unset(&self) -> bool {
+        self.profile.options.is_null()
+    }
+}
+
+impl<'de> Deserialize<'de> for RawFormatterConfig {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        use serde::de::Error;
+        let serde_json::Value::Object(mut authored) = serde_json::Value::deserialize(deserializer)?
+        else {
+            return Err(D::Error::custom("formatter must be an object"));
+        };
+        // Pkl writes unset options as null.
+        authored.retain(|_, value| !value.is_null());
+        let preset = authored
+            .get("preset")
+            .map(FormatterPreset::deserialize)
+            .transpose()
+            .map_err(D::Error::custom)?;
+        let sorting_only = authored.keys().all(|key| key == "sortImports");
+        let mut options = preset.map_or_else(
+            || serde_json::Value::Object(serde_json::Map::new()),
+            FormatterPreset::options,
+        );
+        if let serde_json::Value::Object(assigned) = &mut options {
+            assigned.extend(authored);
+        }
+        let keys = RawFormatterKeys::deserialize(&options).map_err(D::Error::custom)?;
+        Ok(Self {
+            config: keys.config,
+            sort_imports: keys.sort_imports,
+            profile: FormatterProfile {
+                preset,
+                options: if sorting_only {
+                    serde_json::Value::Null
+                } else {
+                    options
+                },
+            },
+        })
+    }
 }

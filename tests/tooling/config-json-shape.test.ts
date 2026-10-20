@@ -137,7 +137,7 @@ const configSections = [
   {
     name: "FormatterConfig",
     pkl: "FormatterConfig.pkl",
-    rust: [{ file: "formatter.rs", structs: ["FormatterConfig", "RawFormatterConfig"] }],
+    rust: [{ file: "formatter.rs", structs: ["FormatterConfig", "RawFormatterKeys"] }],
   },
   {
     name: "CompilerConfig",

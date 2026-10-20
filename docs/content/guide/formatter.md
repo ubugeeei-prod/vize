@@ -126,22 +126,56 @@ Each of these guides covers one setting in detail:
 - [Property quotes](./formatter-property-quotes.md)
 - [JSX attribute quotes](./formatter-jsx-quotes.md)
 
+## Options
+
+Every option below can be set under `vue.formatter`. An option you leave out takes its value from `preset`, or else from the default shown here.
+
+| Option                         | Default          | What it does                                                                                                                       |
+| ------------------------------ | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `preset`                       | none             | Applies a named set of defaults: `"vize"` or `"prettier"`. Options set next to it win.                                             |
+| `printWidth`                   | `100`            | Maximum line width.                                                                                                                |
+| `tabWidth`                     | `2`              | Spaces per indentation level.                                                                                                      |
+| `useTabs`                      | `false`          | Indents with tabs.                                                                                                                 |
+| `semi`                         | `true`           | Prints semicolons at the ends of statements.                                                                                       |
+| `singleQuote`                  | `false`          | Uses single quotes in scripts.                                                                                                     |
+| `jsxSingleQuote`               | `false`          | Uses single quotes in JSX attributes.                                                                                              |
+| `trailingComma`                | `"all"`          | Where to print trailing commas: `"all"`, `"es5"` or `"none"`.                                                                      |
+| `bracketSpacing`               | `true`           | Prints spaces inside object literal braces.                                                                                        |
+| `bracketSameLine`              | `false`          | Puts the `>` of a multi-line tag at the end of its last line.                                                                      |
+| `arrowParens`                  | `"always"`       | Parentheses around a sole arrow function parameter: `"always"` or `"avoid"`.                                                       |
+| `endOfLine`                    | `"lf"`           | Line endings: `"lf"`, `"crlf"`, `"cr"` or `"auto"`. See [Line endings](./formatter-line-endings.md).                               |
+| `quoteProps`                   | `"as-needed"`    | When object keys are quoted: `"as-needed"`, `"consistent"` or `"preserve"`. See [Property quotes](./formatter-property-quotes.md). |
+| `singleAttributePerLine`       | `false`          | Puts each attribute on its own line.                                                                                               |
+| `maxAttributesPerLine`         | none             | Wraps attributes once a tag has more than this many.                                                                               |
+| `vueIndentScriptAndStyle`      | `false`          | Indents the contents of `<script>` and `<style>`.                                                                                  |
+| `sortAttributes`               | `true`           | Sorts attributes in the template and on block tags.                                                                                |
+| `attributeSortOrder`           | `"alphabetical"` | Order within one attribute group: `"alphabetical"` or `"as-written"`.                                                              |
+| `mergeBindAndNonBindAttrs`     | `false`          | Sorts `class` and `:class` together instead of static attributes first.                                                            |
+| `attributeGroups`              | none             | Custom attribute groups, such as `[["id"], ["v-*"], ["*"]]`, in place of the Vue style guide order.                                |
+| `normalizeDirectiveShorthands` | `true`           | Turns `v-bind:`, `v-on:` and `v-slot:` into `:`, `@` and `#`.                                                                      |
+| `sortBlocks`                   | `true`           | Orders blocks as script, script setup, template, styles, custom blocks.                                                            |
+| `normalizeCssQuotes`           | `false`          | Re-quotes strings in CSS, SCSS and Less with the `singleQuote` preference.                                                         |
+| `normalizeInlineStyles`        | `false`          | Writes a one-line static `style` attribute as `color: red; top: 0`.                                                                |
+| `normalizeVForParens`          | `false`          | Wraps several `v-for` aliases in parentheses, as in `(item, i) in items`.                                                          |
+| `selfCloseVoidElements`        | `false`          | Closes void elements, as in `<img />`.                                                                                             |
+| `reindentPreprocessorStyles`   | `false`          | Re-indents SCSS and Less blocks by nesting depth and tidies their blank lines.                                                     |
+| `sortImports`                  | off              | Sorts imports in scripts. See [Sort imports](./formatter-import-sorting.md).                                                       |
+
 ## Coming from Prettier
 
-Vize is close to Prettier and Oxfmt, but a few defaults differ on purpose. To keep the written order of attributes and blocks, as Prettier does, turn off sorting:
+Vize is close to Prettier and Oxfmt, but a few defaults differ on purpose. To format Vue files the way Prettier does, set the `prettier` preset:
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({}).withVue({
   formatter: {
-    sortAttributes: false,
-    sortBlocks: false,
+    preset: "prettier",
   },
 });
 ```
 
-On the command line, `vize fmt --preset prettier` applies these settings and also:
+The preset keeps attributes and blocks in the written order (`sortAttributes: false`, `sortBlocks: false`) and also:
 
 - sets the print width to 80, as in Prettier. The Vize default is 100, as in Oxfmt;
 - leaves `v-bind:`, `v-on:` and `v-slot:` as written;
@@ -151,7 +185,7 @@ On the command line, `vize fmt --preset prettier` applies these settings and als
 - closes void elements, as in `<img src="a.png" />`;
 - re-indents SCSS and Less blocks by nesting depth and tidies their blank lines.
 
-Flags given with it still win.
+On the command line, `vize fmt --preset prettier` applies the same preset. Options resolve in this order: the preset in the config file, the other options in the config file, `--preset`, then the other flags.
 
 The Node API accepts the same two presets, `vize` and `prettier`:
 

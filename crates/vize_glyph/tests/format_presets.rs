@@ -67,7 +67,7 @@ const id = "a";
 </script>
 "#;
     let mut options = FormatOptions::default();
-    FormatPreset::Prettier.apply(&mut options);
+    options.apply_preset(FormatPreset::Prettier);
     assert_eq!(options.print_width, 80);
     assert_eq!(
         format_sfc(source, &options).expect("format").code.as_str(),
@@ -96,7 +96,7 @@ const id = "a";
 "#
     );
 
-    FormatPreset::Vize.apply(&mut options);
+    options.apply_preset(FormatPreset::Vize);
     let defaults = FormatOptions::default();
     assert_eq!(options.print_width, defaults.print_width);
     assert_eq!(options.sort_attributes, defaults.sort_attributes);
@@ -131,7 +131,7 @@ fn prettier_preset_requotes_css_strings() {
     assert_eq!(kept.code.as_str(), source);
 
     let mut options = FormatOptions::default();
-    FormatPreset::Prettier.apply(&mut options);
+    options.apply_preset(FormatPreset::Prettier);
     let requoted = format_sfc(source, &options).expect("format").code;
     assert_eq!(
         requoted.as_str(),
@@ -146,7 +146,7 @@ fn prettier_preset_requotes_css_strings() {
 #[test]
 fn prettier_preset_requotes_less_and_scss_strings() {
     let mut options = FormatOptions::default();
-    FormatPreset::Prettier.apply(&mut options);
+    options.apply_preset(FormatPreset::Prettier);
     for lang in ["less", "scss"] {
         let source = format!(
             "<style lang=\"{lang}\">\n// it's kept\n@import 'a';\n.a {{ background: url(http://x/'y'); }}\n</style>\n"
@@ -174,7 +174,7 @@ fn prettier_preset_lays_out_inline_styles() {
     assert_eq!(kept.code.as_str(), source);
 
     let mut options = FormatOptions::default();
-    FormatPreset::Prettier.apply(&mut options);
+    options.apply_preset(FormatPreset::Prettier);
     let formatted = format_sfc(source, &options).expect("format").code;
     assert_eq!(
         formatted.as_str(),
@@ -193,7 +193,7 @@ fn prettier_preset_writes_v_for_parens_and_closes_void_elements() {
     assert_eq!(kept.code.as_str(), source);
 
     let mut options = FormatOptions::default();
-    FormatPreset::Prettier.apply(&mut options);
+    options.apply_preset(FormatPreset::Prettier);
     let formatted = format_sfc(source, &options).expect("format").code;
     assert_eq!(
         formatted.as_str(),
@@ -208,7 +208,7 @@ fn prettier_preset_writes_v_for_parens_and_closes_void_elements() {
 #[test]
 fn prettier_preset_reindents_scss_and_less() {
     let mut options = FormatOptions::default();
-    FormatPreset::Prettier.apply(&mut options);
+    options.apply_preset(FormatPreset::Prettier);
     for lang in ["scss", "less"] {
         let source = format!(
             "<style lang=\"{lang}\">\n.a {{\n\tcolor: red;\n\n\n\t&:hover {{\n\t\tcolor: blue;\n\t}}\n}}\n</style>\n"
@@ -258,12 +258,35 @@ fn default_options_serialize_as_the_published_reference() {
     );
 
     let mut options = FormatOptions::default();
-    FormatPreset::Prettier.apply(&mut options);
+    options.apply_preset(FormatPreset::Prettier);
     let round_trip: FormatOptions =
         serde_json::from_value(serde_json::to_value(&options).expect("serialize"))
             .expect("deserialize");
     assert_eq!(
         serde_json::to_value(round_trip).expect("serialize"),
         serde_json::to_value(options).expect("serialize")
+    );
+}
+
+#[test]
+fn config_profiles_resolve_presets_under_authored_options() {
+    let document: vize_l0::config::ConfigDocument = serde_json::from_str(
+        r#"{"formatter":{"preset":"prettier","printWidth":120,"selfCloseVoidElements":false}}"#,
+    )
+    .expect("config");
+    let options = FormatOptions::from_profile(document.formatter_profile()).expect("options");
+    let mut expected = FormatOptions::prettier_compat();
+    expected.print_width = 120;
+    expected.self_close_void_elements = false;
+    assert_eq!(
+        serde_json::to_value(options).expect("serialize"),
+        serde_json::to_value(expected).expect("serialize")
+    );
+
+    let unset = vize_l0::config::FormatterProfile::default();
+    assert_eq!(
+        serde_json::to_value(FormatOptions::from_profile(&unset).expect("options"))
+            .expect("serialize"),
+        serde_json::to_value(FormatOptions::default()).expect("serialize")
     );
 }

@@ -1,61 +1,67 @@
 /// Formatter configuration for Vize.
+///
+/// An unset option takes its value from `preset`, or else from the Vize
+/// defaults given in each comment.
 module vize.FormatterConfig
 import "SortImportsConfig.pkl"
 
 class FormatterConfig {
+  /// Named set of defaults: "vize" or "prettier". Options set here still win.
+  preset: ("vize"|"prettier")? = null
+
   /// Oxfmt-compatible import sorting; false disables it.
   sortImports: Boolean(this == false) | SortImportsConfig.SortImportsConfig? = null
 
-  /// Maximum line width.
-  printWidth: Int = 100
+  /// Maximum line width (default: 100).
+  printWidth: Int? = null
 
-  /// Indentation width.
-  tabWidth: Int = 2
+  /// Indentation width (default: 2).
+  tabWidth: Int? = null
 
-  /// Use tabs for indentation.
-  useTabs: Boolean = false
+  /// Use tabs for indentation (default: false).
+  useTabs: Boolean? = null
 
-  /// Print semicolons.
-  semi: Boolean = true
+  /// Print semicolons (default: true).
+  semi: Boolean? = null
 
-  /// Use single quotes.
-  singleQuote: Boolean = false
+  /// Use single quotes (default: false).
+  singleQuote: Boolean? = null
 
-  /// Use single quotes in JSX.
-  jsxSingleQuote: Boolean = false
+  /// Use single quotes in JSX (default: false).
+  jsxSingleQuote: Boolean? = null
 
-  /// Trailing comma mode.
-  trailingComma: ("all"|"none"|"es5") = "all"
+  /// Trailing comma mode (default: "all").
+  trailingComma: ("all"|"none"|"es5")? = null
 
-  /// Print spaces between brackets in object literals.
-  bracketSpacing: Boolean = true
+  /// Print spaces between brackets in object literals (default: true).
+  bracketSpacing: Boolean? = null
 
-  /// Keep > on the last line of multiline tags.
-  bracketSameLine: Boolean = false
+  /// Keep > on the last line of multiline tags (default: false).
+  bracketSameLine: Boolean? = null
 
-  /// Arrow parens mode.
-  arrowParens: ("always"|"avoid") = "always"
+  /// Arrow parens mode (default: "always").
+  arrowParens: ("always"|"avoid")? = null
 
-  /// End-of-line mode.
-  endOfLine: ("lf"|"crlf"|"cr"|"auto") = "lf"
+  /// End-of-line mode (default: "lf").
+  endOfLine: ("lf"|"crlf"|"cr"|"auto")? = null
 
-  /// Quote properties mode.
-  quoteProps: ("as-needed"|"consistent"|"preserve") = "as-needed"
+  /// Quote properties mode (default: "as-needed").
+  quoteProps: ("as-needed"|"consistent"|"preserve")? = null
 
-  /// Force one attribute per line.
-  singleAttributePerLine: Boolean = false
+  /// Force one attribute per line (default: false).
+  singleAttributePerLine: Boolean? = null
 
-  /// Indent script/style blocks.
-  vueIndentScriptAndStyle: Boolean = false
+  /// Indent script/style blocks (default: false).
+  vueIndentScriptAndStyle: Boolean? = null
 
-  /// Sort attributes.
-  sortAttributes: Boolean = true
+  /// Sort attributes (default: true).
+  sortAttributes: Boolean? = null
 
-  /// Attribute ordering strategy.
-  attributeSortOrder: ("alphabetical"|"as-written") = "alphabetical"
+  /// Attribute ordering strategy (default: "alphabetical").
+  attributeSortOrder: ("alphabetical"|"as-written")? = null
 
-  /// Merge bind and non-bind attrs for sorting.
-  mergeBindAndNonBindAttrs: Boolean = false
+  /// Merge bind and non-bind attrs for sorting (default: false).
+  mergeBindAndNonBindAttrs: Boolean? = null
 
   /// Maximum attributes per line before wrapping.
   maxAttributesPerLine: Int? = null
@@ -63,9 +69,24 @@ class FormatterConfig {
   /// Custom attribute groups.
   attributeGroups: Listing<Listing<String>>? = null
 
-  /// Normalize directive shorthands.
-  normalizeDirectiveShorthands: Boolean = true
+  /// Normalize directive shorthands (default: true).
+  normalizeDirectiveShorthands: Boolean? = null
 
-  /// Sort SFC blocks in canonical order.
-  sortBlocks: Boolean = true
+  /// Sort SFC blocks in canonical order (default: true).
+  sortBlocks: Boolean? = null
+
+  /// Re-quote CSS, SCSS and Less strings with the singleQuote preference (default: false).
+  normalizeCssQuotes: Boolean? = null
+
+  /// Write one-line static style attributes as `name: value; …` (default: false).
+  normalizeInlineStyles: Boolean? = null
+
+  /// Wrap several v-for aliases in parentheses (default: false).
+  normalizeVForParens: Boolean? = null
+
+  /// Close void elements such as `<img />` (default: false).
+  selfCloseVoidElements: Boolean? = null
+
+  /// Re-indent SCSS and Less blocks by nesting depth (default: false).
+  reindentPreprocessorStyles: Boolean? = null
 }

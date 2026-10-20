@@ -240,8 +240,14 @@ class FormatterConfig {
   mergeBindAndNonBindAttrs: Boolean? = null
   maxAttributesPerLine: Int? = null
   attributeGroups: Listing<Listing<String>>? = null
+  preset: ("vize"|"prettier")? = null
   normalizeDirectiveShorthands: Boolean? = null
   sortBlocks: Boolean? = null
+  normalizeCssQuotes: Boolean? = null
+  normalizeInlineStyles: Boolean? = null
+  normalizeVForParens: Boolean? = null
+  selfCloseVoidElements: Boolean? = null
+  reindentPreprocessorStyles: Boolean? = null
 }
 
 class LspConfig {

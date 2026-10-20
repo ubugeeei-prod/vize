@@ -141,3 +141,39 @@ fn document_retains_declaration_order_and_entry_base_paths() {
     assert_eq!(entries[1].files[0], "first.vue");
     assert_eq!(entries[2].files[0], "second.vue");
 }
+
+#[test]
+fn formatter_preset_assigns_options_that_the_config_does_not_write() {
+    let document: ConfigDocument = serde_json::from_str(
+        r#"{"formatter":{"preset":"prettier","printWidth":120,"sortBlocks":true,"useTabs":null}}"#,
+    )
+    .unwrap();
+    let profile = document.formatter_profile().clone();
+    assert_eq!(
+        profile.preset,
+        Some(crate::config::FormatterPreset::Prettier)
+    );
+    assert_eq!(profile.options["printWidth"], 120);
+    assert_eq!(profile.options["normalizeCssQuotes"], true);
+    assert!(profile.options.get("useTabs").is_none());
+    let (config, _) = document.into_config_and_features();
+    assert_eq!(config.formatter.print_width, 120);
+    assert!(config.formatter.sort_blocks);
+    assert!(!config.formatter.sort_attributes);
+    assert!(!config.formatter.normalize_directive_shorthands);
+}
+
+#[test]
+fn formatter_profile_falls_back_to_the_legacy_alias_and_refuses_unknown_presets() {
+    let document: ConfigDocument =
+        serde_json::from_str(r#"{"fmt":{"preset":"prettier"}}"#).unwrap();
+    assert_eq!(document.formatter_profile().options["printWidth"], 80);
+    assert_eq!(
+        document.into_config_and_features().0.formatter.print_width,
+        80
+    );
+
+    let unset: ConfigDocument = serde_json::from_str(r#"{"formatter":{}}"#).unwrap();
+    assert!(unset.formatter_profile().options.is_null());
+    assert!(serde_json::from_str::<ConfigDocument>(r#"{"formatter":{"preset":"x"}}"#).is_err());
+}

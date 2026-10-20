@@ -6,6 +6,11 @@ formatterConfigDef: JsonSchema = new JsonSchema {
   type = "object"
   description = "Formatter options"
   properties {
+    ["preset"] = new JsonSchema {
+      type = "string"
+      enum = new Listing { "vize"; "prettier" }
+      description = "Named set of formatter defaults; options set alongside it win"
+    }
     ["sortImports"] = ImportSortSchemaDefinitions.sortImportsSettingDef
     ["printWidth"] = new JsonSchema {
       type = "integer"
@@ -118,6 +123,31 @@ formatterConfigDef: JsonSchema = new JsonSchema {
       type = "boolean"
       description = "Sort SFC blocks in canonical order"
       default = true
+    }
+    ["normalizeCssQuotes"] = new JsonSchema {
+      type = "boolean"
+      description = "Re-quote strings in CSS, SCSS and Less blocks with the singleQuote preference"
+      default = false
+    }
+    ["normalizeInlineStyles"] = new JsonSchema {
+      type = "boolean"
+      description = "Write one-line static style attributes as name: value declarations"
+      default = false
+    }
+    ["normalizeVForParens"] = new JsonSchema {
+      type = "boolean"
+      description = "Wrap several v-for aliases in parentheses"
+      default = false
+    }
+    ["selfCloseVoidElements"] = new JsonSchema {
+      type = "boolean"
+      description = "Close void elements such as <img />"
+      default = false
+    }
+    ["reindentPreprocessorStyles"] = new JsonSchema {
+      type = "boolean"
+      description = "Re-indent SCSS and Less blocks by nesting depth"
+      default = false
     }
   }
   additionalProperties = false

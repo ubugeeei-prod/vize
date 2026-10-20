@@ -36,7 +36,8 @@ pub use entries::{
 pub use experimentals::ConfigExperimentalVueFlags;
 pub use features::ConfigFeatureFlags;
 pub use formatter::{
-    ArrowParens, AttributeSortOrder, EndOfLine, FormatterConfig, QuoteProps, TrailingComma,
+    ArrowParens, AttributeSortOrder, EndOfLine, FormatterConfig, FormatterPreset, FormatterProfile,
+    QuoteProps, TrailingComma,
 };
 pub use global_types::{GlobalTypeDeclaration, GlobalTypesConfig, RawGlobalTypesConfig};
 pub use language_server::{LanguageServerConfig, LanguageServerUnstableFlags, LspConfig};
@@ -126,7 +127,7 @@ pub(crate) struct RawVizeConfig {
     #[serde(rename = "check")]
     legacy_check: Option<LegacyCheckConfig>,
     #[serde(rename = "fmt")]
-    legacy_formatter: Option<FormatterConfig>,
+    legacy_formatter: Option<RawFormatterConfig>,
     #[serde(rename = "lsp")]
     legacy_lsp: Option<RawLanguageServerConfig>,
 }
@@ -174,6 +175,14 @@ struct LegacyCheckConfig {
 }
 
 impl RawVizeConfig {
+    /// Authored formatter options, falling back to the legacy `fmt` alias.
+    pub(crate) fn formatter_profile(&self) -> &FormatterProfile {
+        match &self.legacy_formatter {
+            Some(legacy) if self.formatter.is_unset() => &legacy.profile,
+            _ => &self.formatter.profile,
+        }
+    }
+
     pub(crate) fn lsp_request_timeout_ms(&self) -> u64 {
         self.type_checker
             .lsp_request_timeout_ms
@@ -254,11 +263,9 @@ impl RawVizeConfig {
             }
         }
 
-        let formatter = formatter.config;
-        let formatter = if formatter == FormatterConfig::default() {
-            legacy_formatter.unwrap_or(formatter)
-        } else {
-            formatter
+        let formatter = match legacy_formatter {
+            Some(legacy) if formatter.is_unset() => legacy.config,
+            _ => formatter.config,
         };
 
         let language_server_raw = if raw_language_server.config == LanguageServerConfig::default() {

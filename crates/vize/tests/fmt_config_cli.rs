@@ -391,3 +391,33 @@ fn fmt_check_reports_already_formatted_jsonc_as_unchanged() {
         "expected already-formatted summary, got: {stderr}",
     );
 }
+
+#[test]
+fn fmt_applies_a_config_preset_under_explicit_options() {
+    let project = tempfile::tempdir().unwrap();
+    write_project_file(
+        project.path(),
+        "vite.config.mjs",
+        &vite_config::source(
+            r#"{ "formatter": { "preset": "prettier", "normalizeDirectiveShorthands": true } }"#,
+        ),
+    );
+    write_project_file(
+        project.path(),
+        "App.vue",
+        "<template>\n  <img v-bind:src=\"src\" alt=\"\" class=\"a\">\n</template>\n",
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(project.path())
+        .args(["fmt", "--write", "App.vue"])
+        .output()
+        .unwrap();
+    assert!(output.status.success(), "{}", output_details(&output));
+    // The preset keeps the authored attribute order and closes the void
+    // element; the explicit option still writes the shorthand.
+    assert_eq!(
+        fs::read_to_string(project.path().join("App.vue")).unwrap(),
+        "<template>\n  <img :src=\"src\" alt=\"\" class=\"a\" />\n</template>\n"
+    );
+}

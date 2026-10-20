@@ -26,11 +26,7 @@ this order: config file, then the preset, then individual CLI flags.
 `<script>`, `<template>`, `<style>` and custom block tags, so the Prettier
 preset matches Prettier on those tags.
 
-Not decided here: a `preset` key in `vize.config.*` and `fmt.vize`. Config
-values arrive at the CLI already merged with defaults, so honoring "explicit
-config wins over preset" needs the loader to track which keys were set. That
-change touches the Pkl schema, the JSON schema and the generated TypeScript
-types and is left to a follow-up on #6098. Presets for compact application
+The `preset` config key was left to a follow-up; see below. Presets for compact application
 code and documentation examples are also left open; they should be added only
 with corpus evidence that a fixed option set serves them.
 
@@ -44,8 +40,8 @@ treats every `//` as a line comment, so a doubtful `//` only leaves the rest of
 its line unchanged. The pass runs before CSS layout, because the layout treats
 `url('…')` and `url("…")` differently and running it afterwards was not
 idempotent. The `prettier` preset sets it. Like the other new options, it is a
-`FormatOptions` field that the WASM binding accepts; the Node binding and
-the config-file key wait for the same loader follow-up as `preset`.
+`FormatOptions` field that the WASM binding and the config file accept; the
+Node binding does not take it yet.
 
 ## Inline style attributes
 
@@ -77,3 +73,23 @@ that start inside a block comment or a string stay as written, and an
 unbalanced block is kept whole. Reformatting values, as Prettier's PostCSS
 printer does, is not attempted: it needs an SCSS-aware value parser, and
 Vize's CSS engine does not accept SCSS.
+
+## The `preset` config key
+
+`vue.formatter.preset` (or `fmt.vue.preset` under Vite+) selects a preset in the config file. The table of assignments
+now lives in `vize_l0::config::FormatterPreset::options`, keyed as in config
+files, and `vize_glyph::FormatPreset` re-exports it, so the CLI flag, the
+Node API and the config key share one table. The loader no longer merges a
+formatter section with defaults before the preset is known: it overlays the
+authored keys on the preset's options, and only then fills the stable
+`FormatterConfig`. `ConfigDocument::formatter_profile` keeps the merged
+object, which also carries the options outside `FormatterConfig`
+(`normalizeCssQuotes` and the rest), and `FormatOptions::from_profile` turns
+it into native options for the CLI and the language server. This replaces two
+hand-written conversions that set those options to `false`.
+
+Order: the config preset, the other config keys, `--preset`, the other CLI
+flags. Pkl's `FormatterConfig` options are now nullable, because a Pkl
+default would otherwise always count as an authored key; null values are
+treated as unset. A legacy `fmt` section is used only when `formatter` has no
+keys at all.

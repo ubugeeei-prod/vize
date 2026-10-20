@@ -28,6 +28,7 @@ lightningcss.workspace = true
 
 # Serialization
 serde = { workspace = true }
+serde_json.workspace = true
 
 # Utilities
 thiserror.workspace = true

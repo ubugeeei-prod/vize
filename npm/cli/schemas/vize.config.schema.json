@@ -781,6 +781,11 @@
       "description": "Formatter options",
       "type": "object",
       "properties": {
+        "preset": {
+          "description": "Named set of formatter defaults; options set alongside it win",
+          "type": "string",
+          "enum": ["vize", "prettier"]
+        },
         "sortImports": {
           "description": "Oxfmt-compatible import sorting; false disables it",
           "oneOf": [
@@ -905,6 +910,31 @@
         "sortBlocks": {
           "description": "Sort SFC blocks in canonical order",
           "default": true,
+          "type": "boolean"
+        },
+        "normalizeCssQuotes": {
+          "description": "Re-quote strings in CSS, SCSS and Less blocks with the singleQuote preference",
+          "default": false,
+          "type": "boolean"
+        },
+        "normalizeInlineStyles": {
+          "description": "Write one-line static style attributes as name: value declarations",
+          "default": false,
+          "type": "boolean"
+        },
+        "normalizeVForParens": {
+          "description": "Wrap several v-for aliases in parentheses",
+          "default": false,
+          "type": "boolean"
+        },
+        "selfCloseVoidElements": {
+          "description": "Close void elements such as <img />",
+          "default": false,
+          "type": "boolean"
+        },
+        "reindentPreprocessorStyles": {
+          "description": "Re-indent SCSS and Less blocks by nesting depth",
+          "default": false,
           "type": "boolean"
         }
       },

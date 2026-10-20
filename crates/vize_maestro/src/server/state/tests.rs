@@ -91,6 +91,24 @@ fn load_format_config_partial() {
 
 #[cfg(feature = "glyph")]
 #[test]
+fn load_format_config_applies_the_config_preset() {
+    let dir = crate::test_support::tempdir().unwrap();
+    std::fs::write(
+        dir.path().join("vite.config.mjs"),
+        r#"export default { vue: { formatter: { preset: "prettier", printWidth: 90 } } };"#,
+    )
+    .unwrap();
+
+    let state = ServerState::new();
+    state.load_format_config(dir.path());
+    let opts = state.get_format_options();
+    assert_eq!(opts.print_width, 90);
+    assert!(!opts.sort_attributes);
+    assert!(opts.self_close_void_elements);
+}
+
+#[cfg(feature = "glyph")]
+#[test]
 fn load_format_config_no_formatter_section() {
     let dir = crate::test_support::tempdir().unwrap();
     std::fs::write(

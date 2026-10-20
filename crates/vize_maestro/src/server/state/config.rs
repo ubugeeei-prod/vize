@@ -366,7 +366,7 @@ impl ServerState {
             #[cfg(feature = "glyph")]
             {
                 *self.format_options.write() = (
-                    format_options_from_config(&config.formatter),
+                    format_options_from_config(loaded.project.document.formatter_profile()),
                     source_path
                         .file_name()
                         .and_then(|name| name.to_str())
@@ -475,10 +475,12 @@ impl ServerState {
     /// Load format options from the shared project configuration.
     #[cfg(feature = "glyph")]
     pub fn load_format_config(&self, dir: &Path) {
-        let loaded = host::load_config_with_source(Some(dir));
+        let loaded = host::load_project_config_with_source(Some(dir));
         if let Some(source_path) = loaded.source_path {
-            *self.format_options.write() =
-                (format_options_from_config(&loaded.config.formatter), false);
+            *self.format_options.write() = (
+                format_options_from_config(loaded.document.formatter_profile()),
+                false,
+            );
             tracing::info!("Loaded format config from {}", source_path.display());
         }
     }

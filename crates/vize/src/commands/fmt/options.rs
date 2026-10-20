@@ -19,9 +19,13 @@ pub(super) fn build_format_options(
             eprintln!("Invalid formatter configuration: {error}");
             std::process::exit(2);
         });
-    let mut opts = config::to_glyph_format_options(&snapshot.loaded.config.formatter);
+    let mut opts =
+        FormatOptions::from_profile(&snapshot.formatter_profile).unwrap_or_else(|error| {
+            eprintln!("Invalid formatter configuration: {error}");
+            std::process::exit(2);
+        });
     if let Some(preset) = args.preset {
-        vize_glyph::FormatPreset::from(preset).apply(&mut opts);
+        opts.apply_preset(preset.into());
     }
 
     // CLI flags override config values
