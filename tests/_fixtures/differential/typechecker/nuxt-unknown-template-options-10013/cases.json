@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10013,
+  "regressionCommit": "fb700551a3a3a69f8976efa6fe31bca43ebc19b4",
+  "sourceRevision": "fb700551a3a3a69f8976efa6fe31bca43ebc19b4",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "generated-paths-explicit-unknown-checks",
+      "inputs": [
+        { "file": "src/App.vue", "source": "src/App.vue.txt" },
+        { "file": "tsconfig.json", "source": "tsconfig.json.txt" },
+        { "file": "nuxt.config.ts", "source": "nuxt.config.ts.txt" },
+        { "file": ".nuxt/tsconfig.json", "source": "nuxt-generated/tsconfig.json.txt" },
+        { "file": ".nuxt/types/imports.d.ts", "source": "nuxt-generated/types/imports.d.ts.txt" }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 2,
+          "column": 4,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'UnknownThing' does not exist on type '{}'."
+        }
+      ]
+    }
+  ]
+}

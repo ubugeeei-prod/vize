@@ -211,6 +211,17 @@ fn bounded_cache_maintenance_preserves_project_diagnostics() {
     );
 }
 
+#[test]
+fn nuxt_unknown_template_options_preserve_explicit_checks() {
+    check_pack(
+        "nuxt-unknown-template-options-10013",
+        "nuxt_unknown_template_options_preserve_explicit_checks",
+        "fb700551a3a3a69f8976efa6fe31bca43ebc19b4",
+        Some(10013),
+        &["generated-paths-explicit-unknown-checks"],
+    );
+}
+
 fn check_pack(
     name: &str,
     test: &str,
@@ -242,7 +253,8 @@ fn check_pack(
             | "v-for-component-source-original"
             | "declared-prop-names-original"
             | "template-suppression-original"
-            | "cache-maintenance-9860" => regression,
+            | "cache-maintenance-9860"
+            | "nuxt-unknown-template-options-10013" => regression,
             _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
         }
     );

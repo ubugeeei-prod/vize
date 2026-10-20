@@ -1,0 +1,3 @@
+<template>
+  <UnknownThing />
+</template>

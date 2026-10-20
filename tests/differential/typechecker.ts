@@ -29,6 +29,8 @@ export const TYPECHECKER_TESTS = {
   "nuxt-plugin-injection-types": "nuxt_reference_graph_preserves_plugin_injection_import_types",
   "listener-attribute-parity-9852": "listener_keeps_class_style_and_spread_attribute_parity",
   "cache-maintenance-9860": "bounded_cache_maintenance_preserves_project_diagnostics",
+  "nuxt-unknown-template-options-10013":
+    "nuxt_unknown_template_options_preserve_explicit_checks",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
@@ -52,6 +54,7 @@ const sourceRevisions = {
   "nuxt-plugin-injection-types": "2c22691f0f8303a28c425213c423e299f9ad5420",
   "listener-attribute-parity-9852": "11cb03950bc8d2a4e9cb8d164b0aaca79e302291",
   "cache-maintenance-9860": "4714c0f264dedffaa81377df9545fbfa9514a64e",
+  "nuxt-unknown-template-options-10013": "fb700551a3a3a69f8976efa6fe31bca43ebc19b4",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 
 export type Artifact = { path: string; sha256: string };

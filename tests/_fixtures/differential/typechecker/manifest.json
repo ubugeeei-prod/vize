@@ -1497,5 +1497,53 @@
         }
       ]
     }
+,
+    {
+      "id": "typechecker/nuxt-unknown-template-options-10013/generated-paths-explicit-unknown-checks",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "nuxt-unknown-template-options-10013",
+      "case": "generated-paths-explicit-unknown-checks",
+      "test": "nuxt_unknown_template_options_preserve_explicit_checks",
+      "regressionCommit": "fb700551a3a3a69f8976efa6fe31bca43ebc19b4",
+      "sourceRevision": "fb700551a3a3a69f8976efa6fe31bca43ebc19b4",
+      "packReference": {
+        "path": "nuxt-unknown-template-options-10013/cases.json",
+        "sha256": "dceba05427bd55eb6ab2d7eb26f3ca06449884d92c40b057f7d77614974e1f12"
+      },
+      "inputs": [
+        {
+          "file": "src/App.vue",
+          "path": "nuxt-unknown-template-options-10013/src/App.vue.txt",
+          "sha256": "70451aac95527357cca542f7d74c87645189ea860d55d85bfb88e8c825b34bd3"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "nuxt-unknown-template-options-10013/tsconfig.json.txt",
+          "sha256": "5baa4a1595b9dde66335c3ddb3f1a8a2cb9c437e65ff3869c9b9d35e6a8fbf4b"
+        },
+        {
+          "file": "nuxt.config.ts",
+          "path": "nuxt-unknown-template-options-10013/nuxt.config.ts.txt",
+          "sha256": "450f0af4f4c1ecc4c7180f2e364c8a59bfed69dd350fb6b47bce8641c2a37786"
+        },
+        {
+          "file": ".nuxt/tsconfig.json",
+          "path": "nuxt-unknown-template-options-10013/nuxt-generated/tsconfig.json.txt",
+          "sha256": "0d78e8e2567f8640aaed42094520cfb1b20059293817d7b9eddd3f29a9e5a71a"
+        },
+        {
+          "file": ".nuxt/types/imports.d.ts",
+          "path": "nuxt-unknown-template-options-10013/nuxt-generated/types/imports.d.ts.txt",
+          "sha256": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881"
+        }
+      ]
+    }
   ]
 }
