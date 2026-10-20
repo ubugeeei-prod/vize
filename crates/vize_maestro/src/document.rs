@@ -2,6 +2,7 @@
 //!
 //! This module handles document storage, versioning, and incremental changes.
 
+mod edit_cancel;
 mod store;
 mod text;
 

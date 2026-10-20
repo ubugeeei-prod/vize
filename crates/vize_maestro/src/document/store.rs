@@ -12,6 +12,7 @@ use dashmap::DashMap;
 use tower_lsp::lsp_types::{TextDocumentContentChangeEvent, Url};
 
 use super::DocumentText;
+use super::edit_cancel::EditCancellation;
 use crate::utils::position_to_offset;
 
 /// Source of [`Document::revision`] stamps.
@@ -138,6 +139,7 @@ pub struct DocumentStore {
     documents: Arc<DashMap<Url, Document>>,
     revision: Arc<AtomicU64>,
     mutations: Arc<AtomicUsize>,
+    edits: Arc<EditCancellation>,
 }
 
 impl Default for DocumentStore {
@@ -153,6 +155,7 @@ impl DocumentStore {
             documents: Arc::new(DashMap::new()),
             revision: Arc::new(AtomicU64::new(0)),
             mutations: Arc::new(AtomicUsize::new(0)),
+            edits: Arc::default(),
         }
     }
 
@@ -279,6 +282,15 @@ impl DocumentStore {
             .then_some(revision)
     }
 
+    /// Run a request until it completes, or `None` once any open source is
+    /// opened, edited, renamed or closed.
+    pub(crate) async fn until_edited<F: std::future::Future>(
+        &self,
+        future: F,
+    ) -> Option<F::Output> {
+        self.edits.until_edited(future).await
+    }
+
     fn source_set_mutation(&self) -> SourceSetMutation<'_> {
         self.mutations.fetch_add(1, Ordering::AcqRel);
         self.revision.fetch_add(1, Ordering::Release);
@@ -337,6 +349,7 @@ impl Drop for SourceSetMutation<'_> {
     fn drop(&mut self) {
         self.0.revision.fetch_add(1, Ordering::Release);
         self.0.mutations.fetch_sub(1, Ordering::Release);
+        self.0.edits.cancel();
     }
 }
 

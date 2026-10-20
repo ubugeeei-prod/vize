@@ -1,7 +1,6 @@
 //! Keep native open/query/map sequences together while the executor can yield.
 
 use std::future::Future;
-#[cfg(feature = "native")]
 use tower_lsp::jsonrpc::Error;
 use tower_lsp::jsonrpc::Result;
 
@@ -94,6 +93,23 @@ impl MaestroServer {
         &self,
         request: impl Future<Output = Result<T>>,
     ) -> Result<T> {
+        self.cancel_on_edit(self.native_request_admitted(request))
+            .await
+    }
+
+    /// An edit makes every pending reply stale, so stop its work right away.
+    async fn cancel_on_edit<T>(&self, request: impl Future<Output = Result<T>>) -> Result<T> {
+        self.state
+            .documents
+            .until_edited(request)
+            .await
+            .unwrap_or_else(|| Err(Error::content_modified()))
+    }
+
+    async fn native_request_admitted<T>(
+        &self,
+        request: impl Future<Output = Result<T>>,
+    ) -> Result<T> {
         #[cfg(feature = "native")]
         if self.state.project_context_retired() {
             return Err(Error::content_modified());
@@ -128,6 +144,15 @@ impl MaestroServer {
     /// its own thread and the request starts over inside a new transaction.
     /// The second attempt never defers, so a request always completes.
     pub(super) async fn workspace_native_request<T, F, Fut>(&self, request: F) -> Result<T>
+    where
+        F: Fn() -> Fut,
+        Fut: Future<Output = Result<T>>,
+    {
+        self.cancel_on_edit(self.workspace_native_request_admitted(request))
+            .await
+    }
+
+    async fn workspace_native_request_admitted<T, F, Fut>(&self, request: F) -> Result<T>
     where
         F: Fn() -> Fut,
         Fut: Future<Output = Result<T>>,
@@ -171,7 +196,7 @@ impl MaestroServer {
                 }
             }
         }
-        self.native_request(request()).await
+        self.native_request_admitted(request()).await
     }
 }
 

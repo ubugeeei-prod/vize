@@ -382,3 +382,68 @@ fn authored_revision_precedes_admission_but_valid_policy_reload_remains_usable()
         }
     }
 }
+
+#[test]
+#[expect(clippy::disallowed_types, reason = "ArcWake counts wakeups through an Arc")]
+fn an_edit_cancels_pending_requests_without_waiting_for_their_work() {
+    struct Wake(std::sync::atomic::AtomicUsize);
+    impl futures::task::ArcWake for Wake {
+        fn wake_by_ref(this: &std::sync::Arc<Self>) {
+            this.0.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+        }
+    }
+    struct Dropped<'a>(&'a std::sync::atomic::AtomicBool);
+    impl Drop for Dropped<'_> {
+        fn drop(&mut self) {
+            self.0.store(true, std::sync::atomic::Ordering::SeqCst);
+        }
+    }
+    for workspace in [false, true] {
+        let (service, _socket) = build_lsp_service();
+        let server = service.inner();
+        let uri = Url::parse("file:///project/src/App.vue").unwrap();
+        server
+            .state
+            .documents
+            .open(uri.clone(), APP.into(), 1, "vue".into());
+        let dropped = std::sync::atomic::AtomicBool::new(false);
+        // The work never finishes: only the edit can end the request.
+        let work = || async {
+            let _guard = Dropped(&dropped);
+            std::future::pending::<()>().await;
+            Ok(pending_native_reply())
+        };
+        let mut reply: std::pin::Pin<Box<dyn std::future::Future<Output = _>>> = if workspace {
+            Box::pin(server.workspace_native_request(work))
+        } else {
+            Box::pin(server.native_request(work()))
+        };
+        let wake = std::sync::Arc::new(Wake(std::sync::atomic::AtomicUsize::new(0)));
+        let waker = futures::task::waker(wake.clone());
+        let mut cx = std::task::Context::from_waker(&waker);
+        assert!(reply.as_mut().poll(&mut cx).is_pending());
+        assert!(!dropped.load(std::sync::atomic::Ordering::SeqCst));
+
+        assert!(server.state.documents.apply_changes(
+            &uri,
+            vec![TextDocumentContentChangeEvent {
+                range: None,
+                range_length: None,
+                text: "<template>new revision</template>".into(),
+            }],
+            2,
+        ));
+        assert_eq!(wake.0.load(std::sync::atomic::Ordering::SeqCst), 1);
+        assert_eq!(
+            reply.as_mut().poll(&mut cx),
+            std::task::Poll::Ready(Err(Error::content_modified()))
+        );
+        assert!(dropped.load(std::sync::atomic::Ordering::SeqCst));
+
+        // A request admitted after the edit answers normally.
+        assert_eq!(
+            block_on(server.native_request(async { Ok(server.state.documents.text(&uri)) })),
+            Ok(Some("<template>new revision</template>".into()))
+        );
+    }
+}
