@@ -64,8 +64,12 @@ function writeJson(file, value) {
   fs.writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`);
 }
 
-function collect(out, registry, formatter) {
-  const selectedSuites = formatter ? formatterInstructionSuites() : suites;
+function collect(out, registry, formatter, sfc) {
+  const selectedSuites = sfc
+    ? [["vize_atelier_sfc", "sfc_parse_instructions"]]
+    : formatter
+      ? formatterInstructionSuites()
+      : suites;
   assert.equal(process.platform, "linux", "instruction collection requires Linux");
   assert.equal(process.arch, "x64", "instruction collection requires x86_64");
   assert.equal(process.env.GITHUB_ACTIONS, "true", "baseline collection requires GitHub Actions");
@@ -276,17 +280,28 @@ try {
     "--base-budgets",
     "--registry",
     "--formatter",
+    "--sfc-parsing",
   ]);
   for (let index = 0; index < args.length; index += 1) {
     assert.ok(allowed.has(args[index]), `unknown option ${args[index]}`);
     if (
-      !["--collect", "--check", "--baseline", "--verify-budgets", "--formatter"].includes(
-        args[index],
-      )
+      ![
+        "--collect",
+        "--check",
+        "--baseline",
+        "--verify-budgets",
+        "--formatter",
+        "--sfc-parsing",
+      ].includes(args[index])
     )
       index += 1;
   }
   const formatter = args.includes("--formatter");
+  const sfc = args.includes("--sfc-parsing");
+  assert.ok(
+    !sfc || (!formatter && modes[0] === "--collect"),
+    "--sfc-parsing requires --collect without --formatter",
+  );
   const plan = path.join(root, "docs/davinci/plan");
   const budgetFile = path.join(
     plan,
@@ -294,17 +309,28 @@ try {
   );
   const output = path.join(
     root,
-    formatter ? "target/formatter-instruction-counts" : "target/instruction-counts",
+    sfc
+      ? "target/sfc-instruction-counts"
+      : formatter
+        ? "target/formatter-instruction-counts"
+        : "target/instruction-counts",
   );
   const registry = loadRegistry(
     flag(
       args,
       "--registry",
-      path.join(plan, formatter ? "formatter-instruction-registry.toml" : "budgets.toml"),
+      path.join(
+        plan,
+        sfc
+          ? "sfc-instruction-registry.toml"
+          : formatter
+            ? "formatter-instruction-registry.toml"
+            : "budgets.toml",
+      ),
     ),
   );
   if (modes[0] === "--collect") {
-    collect(flag(args, "--out", output), registry, formatter);
+    collect(flag(args, "--out", output), registry, formatter, sfc);
   } else if (modes[0] === "--verify-budgets") {
     const budgets = loadBudgets(flag(args, "--budgets", budgetFile), registry);
     verifyRepositoryInstructionBudgets(budgets, root);

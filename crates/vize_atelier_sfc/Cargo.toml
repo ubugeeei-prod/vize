@@ -99,6 +99,10 @@ name = "sfc_parse"
 harness = false
 
 [[bench]]
+name = "sfc_parse_instructions"
+harness = false
+
+[[bench]]
 name = "sfc_compile"
 harness = false
 

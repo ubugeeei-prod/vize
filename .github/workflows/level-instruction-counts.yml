@@ -4,6 +4,11 @@ on:
   # Check calls the measurement once per queue candidate and scheduled run.
   # Avoid a second standalone PR run of the same instruction campaign.
   workflow_dispatch:
+    inputs:
+      sfc_parse_only:
+        description: Measure only the template-only SFC regression
+        type: boolean
+        default: false
   workflow_call:
 
 permissions:
@@ -20,6 +25,7 @@ env:
 
 jobs:
   instruction-counts:
+    if: ${{ !inputs.sfc_parse_only }}
     name: Per-stage instruction ceilings
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
@@ -125,3 +131,37 @@ jobs:
           path: ${{ runner.temp }}/formatter-instruction-counts
           if-no-files-found: error
           retention-days: 30
+
+  sfc-parse:
+    name: Template-only SFC instruction parity
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - name: Install measurement tools
+        run: |
+          rustup toolchain install 1.99.1 --profile minimal
+          sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends valgrind
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: sfc-instructions-v1
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Verify native descriptor compatibility
+        run: |
+          cargo test --locked -p vize_l1 --lib container::vue
+          cargo test --locked -p vize_atelier_sfc --lib parse::tests
+      - name: Measure both parsers three times and enforce parity
+        run: |
+          node tools/benchmarks/scripts/instruction-counts.mjs --sfc-parsing --collect --out "${RUNNER_TEMP}/sfc-instructions"
+          node tools/benchmarks/scripts/sfc-parse-instructions.ts "${RUNNER_TEMP}/sfc-instructions/measurement.json"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: sfc-instructions-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/sfc-instructions
+          if-no-files-found: warn

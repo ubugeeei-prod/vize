@@ -11,6 +11,8 @@ use criterion::{Criterion, Throughput, criterion_group, criterion_main};
 use std::hint::black_box;
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 
+const TEMPLATE_ONLY_SFC: &str = include_str!("../tests/fixtures/template-only-bench.vue");
+
 const SIMPLE_SFC: &str = r#"<template>
   <div class="container">
     <h1>{{ title }}</h1>
@@ -493,6 +495,18 @@ export default {
 </style>
 "#;
 
+fn bench_parse_template_only(c: &mut Criterion) {
+    let mut group = c.benchmark_group("sfc_parse");
+    group.throughput(Throughput::Bytes(TEMPLATE_ONLY_SFC.len() as u64));
+    group.bench_function("template_only", |b| {
+        b.iter(|| {
+            parse_sfc(black_box(TEMPLATE_ONLY_SFC), SfcParseOptions::default())
+                .expect("failed to parse template-only benchmark SFC")
+        })
+    });
+    group.finish();
+}
+
 fn bench_parse_simple(c: &mut Criterion) {
     let mut group = c.benchmark_group("sfc_parse");
     group.throughput(Throughput::Bytes(SIMPLE_SFC.len() as u64));
@@ -559,6 +573,7 @@ fn bench_parse_throughput(c: &mut Criterion) {
 
 criterion_group!(
     benches,
+    bench_parse_template_only,
     bench_parse_simple,
     bench_parse_medium,
     bench_parse_complex,

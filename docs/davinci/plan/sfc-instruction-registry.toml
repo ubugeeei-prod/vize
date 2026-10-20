@@ -1,0 +1,8 @@
+# #9826: both parsers must see identical bytes and routine-return windows.
+# CI compares native instructions against the retained parser, with no tolerance.
+# Separate from the level registry so adding these probes changes no existing cap.
+schema_version = 1
+
+[bench]
+sfc_parse_template_only = {}
+sfc_parse_template_only_retained = {}
