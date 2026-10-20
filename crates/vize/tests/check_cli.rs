@@ -219,7 +219,6 @@ fn check_save_virtual_ts_for_writes_shared_helpers_target() {
             "<script setup lang=\"ts\">\nconst foo = 1\n</script>\n<template><div>{{ foo }}</div></template>\n",
         )],
     );
-
     let helpers_name = vize_canon::virtual_ts::SHARED_PREAMBLE_FILE_NAME;
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&project_root)
@@ -2241,6 +2240,11 @@ const count: string = 0;
 "#,
         )],
     );
+    std::fs::write(
+        project_root.join("src/plain.ts"),
+        "export const plain: number = 1;\n",
+    )
+    .unwrap();
     let socket_path = std::path::PathBuf::from(
         cstr!("/tmp/vize-check-{}-socket-json.sock", std::process::id()).as_str(),
     );
