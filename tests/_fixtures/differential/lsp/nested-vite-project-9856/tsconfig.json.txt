@@ -1,0 +1,4 @@
+{
+  "compilerOptions": { "target": "ESNext", "module": "ESNext", "moduleResolution": "Bundler", "strict": true, "noEmit": true, "paths": { "#lib/*": ["./src/lib/*"] } },
+  "include": ["src/**/*.ts", "gallery/**/*.vue"]
+}

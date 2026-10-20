@@ -282,7 +282,6 @@ crates/vize_canon/src/virtual_ts/tests/template_ref_unwrap.rs	4
 crates/vize_canon/src/virtual_ts/tests/unused_refs.rs	11
 crates/vize_canon/src/virtual_ts/tests/vif_chain.rs	8
 crates/vize_canon/src/virtual_ts/unknown_props_tests.rs	14
-crates/vize_carton/src/config/loader/extends_tests.rs	4
 crates/vize_carton/src/config/loader/project_settings_tests.rs	1
 crates/vize_carton/src/corsa_resolver/tests.rs	2
 crates/vize_croquis/src/croquis/alpha/emit_tests.rs	1

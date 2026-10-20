@@ -12,13 +12,12 @@ fn custom_native_extends_refuses_without_evaluating_its_base() {
         let path = root.path().join("serialized-config.json");
         std::fs::write(&path, document).unwrap();
         let error = validate_explicit_config_path(&path).unwrap_err();
-        assert!(
-            error.contains("Custom config extends is no longer supported"),
-            "{error}"
-        );
-        assert!(
-            !error.contains("No such file"),
-            "must refuse before reading a base: {error}"
+        assert_eq!(
+            error,
+            format!(
+                "failed to parse {}: Custom config extends is no longer supported; use defineConfig(vpConfig).withVue(vueConfig); standard tsconfig extends remains supported",
+                path.display()
+            )
         );
     }
 }
@@ -28,32 +27,25 @@ fn retired_dedicated_config_requires_migration_instead_of_silently_overriding_de
     let root = tempfile::tempdir().unwrap();
     let retired = root.path().join("vize.config.json");
     std::fs::write(&retired, r#"{"formatter":{"singleQuote":true}}"#).unwrap();
-    assert!(
-        validate_explicit_config_path(&retired)
-            .unwrap_err()
-            .contains("no longer supported")
+    assert_eq!(
+        validate_explicit_config_path(&retired).unwrap_err(),
+        format!(
+            "failed to parse {}: {}",
+            retired.display(),
+            super::discovery::CONFIG_MIGRATION
+        )
     );
-    assert!(
-        try_load_project_config_with_source(Some(root.path()))
-            .unwrap_err()
-            .contains("move Vue settings to vue:")
+    assert_eq!(
+        try_load_project_config_with_source(Some(root.path())).unwrap_err(),
+        super::discovery::CONFIG_MIGRATION
     );
     std::fs::write(
         root.path().join("vite.config.mjs"),
         "export default {vue:{formatter:{singleQuote:false}}};",
     )
     .unwrap();
-    let config = try_load_project_config_with_source(Some(root.path())).unwrap();
-    assert!(
-        !config
-            .document
-            .into_config_and_features()
-            .0
-            .formatter
-            .single_quote
-    );
     assert_eq!(
-        config.source_path.unwrap().file_name().unwrap(),
-        "vite.config.mjs"
+        try_load_project_config_with_source(Some(root.path())).unwrap_err(),
+        super::discovery::CONFIG_MIGRATION
     );
 }

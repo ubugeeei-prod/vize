@@ -8,8 +8,8 @@ use std::{
 use vize_l0::{String, cstr, profile, profiler::global_profiler};
 
 use super::{
-    collect::collect_vue_files, display_path, output::save_virtual_ts_targets_or_exit,
-    text_style::TextStyle,
+    collect::collect_vue_files, diagnostics::user_facing_type_message, display_path,
+    output::save_virtual_ts_targets_or_exit, text_style::TextStyle,
 };
 use crate::{
     commands::check::{
@@ -245,7 +245,11 @@ pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
                     .as_ref()
                     .map(|code| cstr!(" [{}]", code))
                     .unwrap_or_default();
-                println!("  {}{} {}", location, code, diagnostic.message);
+                let message = user_facing_type_message(
+                    diagnostic.code.as_deref().is_some_and(is_ts2345_code),
+                    &diagnostic.message,
+                );
+                println!("  {}{} {}", location, code, message);
             }
         }
     }
@@ -349,17 +353,25 @@ fn render_socket_diagnostics(result: &ServerCheckResult) -> Vec<std::string::Str
                     }
                 })
                 .unwrap_or_default();
+            let message = user_facing_type_message(
+                diagnostic.code.as_deref().is_some_and(is_ts2345_code),
+                &diagnostic.message,
+            );
             cstr!(
                 "{}:{}:{}{} {}",
                 diagnostic.severity,
                 diagnostic.line,
                 diagnostic.column,
                 code,
-                diagnostic.message
+                message
             )
             .into()
         })
         .collect::<Vec<_>>();
     diagnostics.sort();
     diagnostics
+}
+
+fn is_ts2345_code(code: &str) -> bool {
+    code == "2345" || code == "TS2345"
 }

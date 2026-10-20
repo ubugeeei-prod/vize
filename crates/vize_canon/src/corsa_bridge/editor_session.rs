@@ -1,7 +1,9 @@
 //! Private lifetime owner for editor Canon mirrors and their in-memory cache.
 
+use std::fs::{File, OpenOptions, TryLockError};
 use std::path::Path;
 use std::sync::{Mutex, MutexGuard};
+use std::time::{Duration, SystemTime};
 
 use super::types::CorsaBridgeError;
 use super::vue_dependencies_alias::{SessionCache, recover_lock};
@@ -10,7 +12,7 @@ use super::vue_dependencies_alias::{SessionCache, recover_lock};
 /// overlay bytes and the cache describing them must never be shared with an
 /// independent native TypeScript session.
 pub(crate) struct EditorMirrorSession {
-    storage: Result<tempfile::TempDir, vize_carton::String>,
+    storage: Result<EditorStorage, vize_carton::String>,
     cache: Mutex<SessionCache>,
     /// The workspace preparation in flight, shared by equal requests.
     preparing: Mutex<Option<Preparation>>,
@@ -19,6 +21,11 @@ pub(crate) struct EditorMirrorSession {
         reason = "immutable snapshots are shared by editor owners"
     )]
     compiler_configuration: Option<std::sync::Arc<crate::CompilerConfigurationSnapshot>>,
+}
+
+struct EditorStorage {
+    _lifetime_lock: File,
+    directory: tempfile::TempDir,
 }
 
 /// One preparation identity and the signal its worker thread resolves.
@@ -63,7 +70,7 @@ impl EditorMirrorSession {
     pub(crate) fn root(&self) -> Result<&Path, CorsaBridgeError> {
         self.storage
             .as_ref()
-            .map(|storage| storage.path())
+            .map(|storage| storage.directory.path())
             .map_err(|error| CorsaBridgeError::CommunicationError(error.clone()))
     }
 
@@ -92,6 +99,9 @@ impl EditorMirrorSession {
             return;
         };
         for entry in entries.flatten() {
+            if entry.file_name() == ".session.lock" {
+                continue;
+            }
             let path = entry.path();
             if entry.file_type().is_ok_and(|kind| kind.is_dir()) {
                 let _ = std::fs::remove_dir_all(path);
@@ -117,26 +127,81 @@ pub(crate) fn fallback_editor_session() -> &'static EditorMirrorSession {
     SESSION.with(|session| *session)
 }
 
-fn create_storage() -> std::io::Result<tempfile::TempDir> {
+fn create_storage() -> std::io::Result<EditorStorage> {
     let base = vize_carton::path::canonicalize_non_verbatim(&std::env::temp_dir())
         .join("vize-canon")
         .join("editor")
         .join("sessions");
     std::fs::create_dir_all(&base)?;
-    let storage = tempfile::Builder::new()
+    let gc_lock = open_lock(&base.join(".gc.lock"))?;
+    gc_lock.lock()?;
+    reap_abandoned_sessions(&base);
+    let directory = tempfile::Builder::new()
         .prefix("session-")
         .tempdir_in(base)?;
+    let lifetime_lock = open_lock(&directory.path().join(".session.lock"))?;
+    lifetime_lock.lock()?;
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt;
-        std::fs::set_permissions(storage.path(), std::fs::Permissions::from_mode(0o700))?;
+        std::fs::set_permissions(directory.path(), std::fs::Permissions::from_mode(0o700))?;
     }
-    Ok(storage)
+    Ok(EditorStorage {
+        _lifetime_lock: lifetime_lock,
+        directory,
+    })
+}
+
+fn open_lock(path: &Path) -> std::io::Result<File> {
+    OpenOptions::new()
+        .create(true)
+        .read(true)
+        .truncate(false)
+        .write(true)
+        .open(path)
+}
+
+fn reap_abandoned_sessions(base: &Path) {
+    const LEGACY_GRACE: Duration = Duration::from_secs(24 * 60 * 60);
+    let Ok(entries) = std::fs::read_dir(base) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if !entry.file_type().is_ok_and(|kind| kind.is_dir())
+            || !entry.file_name().to_string_lossy().starts_with("session-")
+        {
+            continue;
+        }
+        let lock_path = path.join(".session.lock");
+        let removable = if lock_path.exists() {
+            match open_lock(&lock_path) {
+                Ok(lock) => match lock.try_lock() {
+                    Ok(()) => true,
+                    Err(TryLockError::WouldBlock | TryLockError::Error(_)) => false,
+                },
+                Err(_) => false,
+            }
+        } else {
+            legacy_session_expired(&path, LEGACY_GRACE)
+        };
+        if removable {
+            let _ = std::fs::remove_dir_all(path);
+        }
+    }
+}
+
+fn legacy_session_expired(path: &Path, grace: Duration) -> bool {
+    std::fs::metadata(path)
+        .and_then(|metadata| metadata.modified())
+        .ok()
+        .and_then(|modified| SystemTime::now().duration_since(modified).ok())
+        .is_some_and(|age| age >= grace)
 }
 
 #[cfg(test)]
 mod tests {
-    use super::EditorMirrorSession;
+    use super::{EditorMirrorSession, open_lock, reap_abandoned_sessions};
 
     #[test]
     fn sessions_own_distinct_private_roots() {
@@ -171,5 +236,24 @@ mod tests {
             std::fs::read_to_string(&second_host).unwrap(),
             "export const overlay = 'second'\n"
         );
+    }
+
+    #[test]
+    fn startup_reaps_abandoned_sessions_but_keeps_live_owners() {
+        let base = tempfile::tempdir().unwrap();
+        let abandoned = base.path().join("session-abandoned");
+        let live = base.path().join("session-live");
+        std::fs::create_dir(&abandoned).unwrap();
+        std::fs::create_dir(&live).unwrap();
+        std::fs::write(abandoned.join("payload"), "stale").unwrap();
+        std::fs::write(live.join("payload"), "live").unwrap();
+        drop(open_lock(&abandoned.join(".session.lock")).unwrap());
+        let live_lock = open_lock(&live.join(".session.lock")).unwrap();
+        live_lock.lock().unwrap();
+
+        reap_abandoned_sessions(base.path());
+
+        assert!(!abandoned.exists());
+        assert!(live.is_dir());
     }
 }

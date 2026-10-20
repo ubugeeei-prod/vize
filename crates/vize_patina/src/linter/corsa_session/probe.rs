@@ -5,34 +5,48 @@ use corsa::{
     fast::{CompactString as CorsaString, ToCompactString as _},
     runtime::block_on,
 };
-use vize_l0::{String, profile};
+use vize_l0::{FxHashMap, String, profile};
 
 const SNAPSHOT_REGISTRY_NOT_FOUND: &str = "not found in snapshot registry";
 
 impl CorsaTypeAwareSession {
-    pub(in crate::linter) fn probe_type_at_offset(
+    /// Resolve all type probes for one virtual document with batched position
+    /// queries. Output order matches `requests`.
+    pub(in crate::linter) fn probe_types_at_offsets(
         &self,
         generated_source: &str,
-        generated_offset: u32,
-        load_property_types: bool,
-        load_signatures: bool,
-    ) -> Result<Option<TypeProbe>, String> {
+        requests: &[(u32, bool, bool)],
+    ) -> Result<Vec<Option<TypeProbe>>, String> {
+        if requests.is_empty() {
+            return Ok(Vec::new());
+        }
         let generated_source = self.rewritten_source.as_deref().unwrap_or(generated_source);
-        let generated_offset = self.import_source_map.get_virtual_offset(generated_offset);
-        let utf16_offset = profile!(
-            "patina.corsa_session.byte_to_utf16",
-            byte_offset_to_utf16_offset(generated_source, generated_offset)
-        );
+        let positions = profile!("patina.corsa_session.byte_to_utf16_batch", {
+            requests
+                .iter()
+                .map(|(generated_offset, _, _)| {
+                    let generated_offset =
+                        self.import_source_map.get_virtual_offset(*generated_offset);
+                    byte_offset_to_utf16_offset(generated_source, generated_offset)
+                })
+                .collect::<Vec<_>>()
+        });
+        let options = requests
+            .iter()
+            .map(
+                |(_, load_property_types, load_signatures)| TypeProbeOptions {
+                    load_property_types: *load_property_types,
+                    load_signatures: *load_signatures,
+                },
+            )
+            .collect::<Vec<_>>();
         profile!(
-            "patina.corsa_session.probe_type",
-            block_on(probe_type_at_position(
+            "patina.corsa_session.probe_type_batch",
+            block_on(probe_types_at_positions(
                 &self.session,
                 self.virtual_file_wire.as_str(),
-                utf16_offset,
-                TypeProbeOptions {
-                    load_property_types,
-                    load_signatures,
-                },
+                positions,
+                options,
             ))
         )
         .map_err(|error| {
@@ -44,25 +58,141 @@ impl CorsaTypeAwareSession {
     }
 }
 
-async fn probe_type_at_position(
+async fn probe_types_at_positions(
     session: &ProjectSession,
     file: impl Into<DocumentIdentifier>,
-    position: u32,
+    positions: Vec<u32>,
+    options: Vec<TypeProbeOptions>,
+) -> corsa::Result<Vec<Option<TypeProbe>>> {
+    let file = file.into();
+    let symbols = match session
+        .client()
+        .get_symbols_at_positions(
+            session.snapshot().handle.clone(),
+            session.project_handle(),
+            file.clone(),
+            positions.clone(),
+        )
+        .await
+    {
+        Ok(symbols) => symbols,
+        Err(error) if is_snapshot_registry_handle_error(&error) => vec![None; positions.len()],
+        Err(error) => return Err(error),
+    };
+    if symbols.len() != positions.len() {
+        return Err(CorsaError::Protocol(
+            "Incomplete type probe symbol batch".into(),
+        ));
+    }
+
+    let symbol_slots = symbols
+        .iter()
+        .enumerate()
+        .filter_map(|(index, symbol)| symbol.as_ref().map(|symbol| (index, symbol.id.clone())))
+        .collect::<Vec<_>>();
+    let symbol_types = if symbol_slots.is_empty() {
+        Vec::new()
+    } else {
+        match session
+            .get_types_of_symbols(
+                symbol_slots
+                    .iter()
+                    .map(|(_, symbol)| symbol.clone())
+                    .collect(),
+            )
+            .await
+        {
+            Ok(types) => types,
+            Err(error) if is_snapshot_registry_handle_error(&error) => {
+                vec![None; symbol_slots.len()]
+            }
+            Err(error) => return Err(error),
+        }
+    };
+    if symbol_types.len() != symbol_slots.len() {
+        return Err(CorsaError::Protocol(
+            "Incomplete type probe symbol-type batch".into(),
+        ));
+    }
+
+    let mut responses = vec![None; positions.len()];
+    for ((index, _), response) in symbol_slots.into_iter().zip(symbol_types) {
+        let Some(slot) = responses.get_mut(index) else {
+            return Err(CorsaError::Protocol(
+                "Type probe symbol index escaped its batch".into(),
+            ));
+        };
+        *slot = response;
+    }
+    let missing = responses
+        .iter()
+        .enumerate()
+        .filter_map(|(index, response)| response.is_none().then_some(index))
+        .collect::<Vec<_>>();
+    if !missing.is_empty() {
+        let mut missing_positions = Vec::with_capacity(missing.len());
+        for &index in &missing {
+            let Some(&position) = positions.get(index) else {
+                return Err(CorsaError::Protocol(
+                    "Type probe position index escaped its batch".into(),
+                ));
+            };
+            missing_positions.push(position);
+        }
+        let positional = session
+            .client()
+            .get_types_at_positions(
+                session.snapshot().handle.clone(),
+                session.project_handle(),
+                file,
+                missing_positions,
+            )
+            .await?;
+        if positional.len() != missing.len() {
+            return Err(CorsaError::Protocol(
+                "Incomplete type probe position batch".into(),
+            ));
+        }
+        for (index, response) in missing.into_iter().zip(positional) {
+            let Some(slot) = responses.get_mut(index) else {
+                return Err(CorsaError::Protocol(
+                    "Type probe response index escaped its batch".into(),
+                ));
+            };
+            *slot = response;
+        }
+    }
+
+    let mut cache: FxHashMap<(_, bool, bool), Option<TypeProbe>> = FxHashMap::default();
+    let mut probes = Vec::with_capacity(responses.len());
+    for (response, options) in responses.into_iter().zip(options) {
+        let Some(response) = response else {
+            probes.push(None);
+            continue;
+        };
+        let key = (
+            response.id.clone(),
+            options.load_property_types,
+            options.load_signatures,
+        );
+        let probe = match cache.get(&key) {
+            Some(probe) => probe.clone(),
+            None => {
+                let probe = probe_type_response(session, response, options).await?;
+                cache.insert(key, probe.clone());
+                probe
+            }
+        };
+        probes.push(probe);
+    }
+    Ok(probes)
+}
+
+async fn probe_type_response(
+    session: &ProjectSession,
+    type_response: TypeResponse,
     options: TypeProbeOptions,
 ) -> corsa::Result<Option<TypeProbe>> {
-    let file = file.into();
-    let symbol_type_response =
-        type_from_symbol_at_position(session, file.clone(), position).await?;
-    let position_type_response = if symbol_type_response.is_none() {
-        session.get_type_at_position(file.clone(), position).await?
-    } else {
-        None
-    };
-    let type_response = select_probe_type_response(symbol_type_response, position_type_response);
-    let Some(type_response) = type_response else {
-        return Ok(None);
-    };
-
     let Some(type_texts) = render_type_texts(session, &type_response).await? else {
         return Ok(None);
     };
@@ -179,25 +309,6 @@ async fn probe_type_at_position(
     Ok(Some(probe))
 }
 
-async fn type_from_symbol_at_position(
-    session: &ProjectSession,
-    file: DocumentIdentifier,
-    position: u32,
-) -> corsa::Result<Option<TypeResponse>> {
-    let symbol = match session.get_symbol_at_position(file, position).await {
-        Ok(Some(symbol)) => symbol,
-        Ok(None) => return Ok(None),
-        Err(error) if is_snapshot_registry_handle_error(&error) => return Ok(None),
-        Err(error) => return Err(error),
-    };
-
-    match session.get_type_of_symbol(symbol.id).await {
-        Ok(type_response) => Ok(type_response),
-        Err(error) if is_snapshot_registry_handle_error(&error) => Ok(None),
-        Err(error) => Err(error),
-    }
-}
-
 async fn render_type_texts(
     session: &ProjectSession,
     type_response: &TypeResponse,
@@ -209,6 +320,7 @@ async fn render_type_texts(
     }
 }
 
+#[cfg(test)]
 fn select_probe_type_response(
     symbol_type_response: Option<TypeResponse>,
     position_type_response: Option<TypeResponse>,

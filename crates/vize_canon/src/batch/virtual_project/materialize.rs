@@ -60,6 +60,10 @@ impl VirtualProject {
         query_paths: Option<&[PathBuf]>,
         preserved_arbitrary_extensions: bool,
     ) -> CorsaResult<vize_carton::FxHashMap<PathBuf, PathBuf>> {
+        // A checkout owns one durable mirror, but deleted worktrees otherwise
+        // leave their full mirrors in the user cache forever. Maintenance is
+        // deliberately best-effort: a cache failure must never fail a check.
+        super::cache_gc::maintain_project_cache(&self.virtual_root);
         let mut expected_files = self.expected_materialized_files();
         expected_files.extend(preserved_files.iter().cloned());
         let owned_files = self.workspace_cold_owned_files(&expected_files);

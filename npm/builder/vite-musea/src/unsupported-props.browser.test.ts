@@ -74,7 +74,8 @@ for (const mode of ["dev", "static"] as const) {
           origin = await listenUnsupportedPropsHost(host);
         }
         const gallery = `${origin}${mode === "static" ? "/site" : ""}/__musea__/`;
-        const artPath = path.join(root, "src", vector.filename.replace(".vue", ".art.vue"));
+        const artFile = vector.filename.replace(".vue", ".art.vue");
+        const artPath = mode === "static" ? `src/${artFile}` : path.join(root, "src", artFile);
         const storageKey = getPaletteStateStorageKey(artPath);
         const seed = Object.fromEntries(vector.names.map((name) => [name, `Retained ${name}`]));
         const serialized = JSON.stringify({
@@ -256,7 +257,8 @@ for (const mode of ["dev", "static"] as const) {
         await page.screenshot({ path: path.join(output, "supported.png"), fullPage: true });
         await openProps(rawTitle);
         await waitUnsupportedProps(page, {});
-        const rawPath = path.join(root, "src", rawFilename);
+        const rawPath =
+          mode === "static" ? `src/${rawFilename}` : path.join(root, "src", rawFilename);
         const rawPalette: PaletteApiResponse =
           mode === "static"
             ? (payload!.details[rawPath].palette as PaletteApiResponse)

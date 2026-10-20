@@ -13,7 +13,7 @@ const output = path.join(repository, "artifacts/musea-snapshot-identities");
 
 async function buildMachine(name: string) {
   const root = path.join(output, name);
-  const arts: ArtFileInfo[] = [];
+  const sourceArts: ArtFileInfo[] = [];
   for (const side of ["left", "right"]) {
     const source = await readFile(
       path.join(
@@ -29,7 +29,7 @@ async function buildMachine(name: string) {
     await writeFile(artPath, source);
     const title = source.match(/title="([^"]+)"/)![1];
     const template = source.match(/<variant[^>]*>([\s\S]*?)<\/variant>/)![1];
-    arts.push({
+    sourceArts.push({
       path: artPath,
       metadata: { title, tags: [], status: "ready" },
       variants: [{ name: "Default", template, isDefault: true, skipVrt: false }],
@@ -38,15 +38,25 @@ async function buildMachine(name: string) {
       styleCount: 0,
     });
   }
-  const host = await buildHostedGallery(root, 0, arts);
+  const host = await buildHostedGallery(root, 0, sourceArts);
   const manifest = path.join(host.dist, "__musea__/api/static.json");
   const payload = JSON.parse(await readFile(manifest, "utf8"));
+  const publicArts = payload.arts as ArtFileInfo[];
+  const art = publicArts.find((candidate) => candidate.path === "Host.art.vue");
+  const arts = publicArts
+    .filter((candidate) => candidate.path !== "Host.art.vue")
+    .sort((left, right) => left.path.localeCompare(right.path));
+  assert.ok(art);
+  assert.deepEqual(
+    arts.map((candidate) => candidate.path),
+    ["left/Button.art.vue", "right/Button.art.vue"],
+  );
   assert.equal(payload.snapshotIdentityVersion, 1);
-  assert.equal(payload.snapshotIdentities[arts[0].path], "left/Button.art.vue");
-  assert.equal(payload.snapshotIdentities[arts[1].path], "right/Button.art.vue");
+  assert.equal(payload.snapshotIdentities[arts[0].path], arts[0].path);
+  assert.equal(payload.snapshotIdentities[arts[1].path], arts[1].path);
   // The hosted capture cannot inspect these original build-machine sources.
-  await Promise.all([...arts, host.art].map((art) => rm(art.path)));
-  return { ...host, arts, manifest, payload };
+  await Promise.all([...sourceArts, host.art].map((candidate) => rm(candidate.path)));
+  return { ...host, art, arts, manifest, payload };
 }
 
 await test(

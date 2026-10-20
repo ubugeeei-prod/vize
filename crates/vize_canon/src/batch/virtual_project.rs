@@ -38,6 +38,7 @@ pub use content_mapper::{
     generate_vue_content_mapper_transform, generate_vue_content_mapper_transform_with_options,
 };
 pub use content_mapper_config::ContentMapperProjectConfiguration;
+mod cache_gc;
 mod css_var_usage;
 mod declaration_emit;
 pub(crate) mod dependency_scan;
@@ -59,7 +60,8 @@ mod external_mirror;
 pub use external_mirror::external_mirror_original_path;
 mod identity;
 pub use identity::{
-    legacy_project_virtual_roots, project_virtual_lock_paths, project_virtual_root,
+    legacy_project_virtual_roots, project_virtual_access_path, project_virtual_lock_paths,
+    project_virtual_root,
 };
 mod javascript_sfc;
 mod jsx_build;
@@ -183,6 +185,10 @@ pub struct VirtualProject {
     /// outside the checked tree and `node_modules`; editor projects are
     /// re-scoped to a session-private namespace.
     virtual_root: PathBuf,
+
+    /// Shared owner lock held for as long as this project can read or patch
+    /// its materialized cache. Cache GC takes the same file exclusively.
+    _cache_usage_lock: Option<std::fs::File>,
 
     /// Explicit tsconfig path, if one was provided by the caller.
     tsconfig_path: Option<PathBuf>,

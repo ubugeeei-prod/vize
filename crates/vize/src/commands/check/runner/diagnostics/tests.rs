@@ -1,4 +1,50 @@
-use super::{is_shared_helpers_target, save_virtual_ts_for_path, virtual_ts_save_path};
+use super::{
+    is_shared_helpers_target, save_virtual_ts_for_path, user_facing_type_message,
+    virtual_ts_save_path,
+};
+
+#[test]
+fn missing_required_prop_hides_setup_props_type() {
+    let message = "Argument of type '{ items: number[]; }' is not assignable to parameter of type '__VizeSetupProps<{ readonly headers: string[]; readonly items: number[]; }, __VizePublicComponentAttrs & { zoomAndPan?: string; }>'.\nProperty 'headers' is missing in type '{ items: number[]; }' but required in type '{ readonly headers: string[]; readonly items: number[]; }'.";
+
+    assert_eq!(
+        user_facing_type_message(true, message),
+        "Missing required prop `headers`."
+    );
+}
+
+#[test]
+fn missing_required_prop_hides_component_check_props_type() {
+    let message = "Argument of type '{}' is not assignable to parameter of type '__VizeComponentCheckProps<{ readonly text: string; }, __VizePublicComponentAttrs>'.\nProperty 'text' is missing in type '{}' but required in type '{ readonly text: string; }'.";
+
+    assert_eq!(
+        user_facing_type_message(true, message),
+        "Missing required prop `text`."
+    );
+}
+
+#[test]
+fn type_message_simplification_is_narrow() {
+    let ordinary_message =
+        "Property 'headers' is missing in type '{}' but required in type '{ headers: string[]; }'.";
+    let plural_message = "Argument of type '{}' is not assignable to parameter of type '__VizeComponentCheckProps<{}>'. Type '{}' is missing the following properties: headers, items";
+
+    assert_eq!(
+        user_facing_type_message(true, ordinary_message),
+        ordinary_message
+    );
+    assert_eq!(
+        user_facing_type_message(
+            false,
+            "__VizeSetupProps Property 'headers' is missing in type {}"
+        ),
+        "__VizeSetupProps Property 'headers' is missing in type {}"
+    );
+    assert_eq!(
+        user_facing_type_message(true, plural_message),
+        plural_message
+    );
+}
 
 #[test]
 fn virtual_ts_save_path_appends_virtual_ts_after_full_file_name() {

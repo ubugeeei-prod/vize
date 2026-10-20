@@ -32,6 +32,7 @@ fn managed_artifact_paths_are_lifecycle_owned_entries() {
             root.join(".vize/snapshots"),
             root.join(".vize/tokens"),
             vize_canon::project_virtual_root(root),
+            vize_canon::project_virtual_access_path(root),
             vize_canon::project_virtual_lock_paths(root)[0].clone(),
             vize_canon::project_virtual_lock_paths(root)[1].clone(),
             legacy[0].clone(),
@@ -68,6 +69,7 @@ fn clean_removes_managed_project_and_node_modules_vize_artifacts() {
     let legacy_artifact = &vize_canon::legacy_project_virtual_roots(root)[0];
     std::fs::create_dir_all(&project_artifact).unwrap();
     std::fs::create_dir_all(&node_modules_artifact).unwrap();
+    std::fs::write(vize_canon::project_virtual_access_path(root), "").unwrap();
     std::fs::create_dir_all(legacy_artifact).unwrap();
     std::fs::write(legacy_artifact.join("old.vue.ts"), "old").unwrap();
     for lock_path in vize_canon::project_virtual_lock_paths(root) {
@@ -87,6 +89,7 @@ fn clean_removes_managed_project_and_node_modules_vize_artifacts() {
     });
     assert!(!root.join(".vize").exists());
     assert!(!node_modules_artifact.exists());
+    assert!(!vize_canon::project_virtual_access_path(root).exists());
     assert!(!root.join("node_modules/.vize").exists());
     assert!(root.join("node_modules/keep.txt").exists());
 }

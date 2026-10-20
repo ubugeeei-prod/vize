@@ -427,6 +427,7 @@ impl ServerState {
 fn document_root(path: &Path, workspace: &Path) -> PathBuf {
     let mut directory = path.parent().unwrap_or(workspace);
     let mut package_root = None;
+    let mut vite_root = None;
     while directory.starts_with(workspace) {
         let mut has_package = false;
         let mut has_vite = false;
@@ -436,15 +437,15 @@ fn document_root(path: &Path, workspace: &Path) -> PathBuf {
                 let path = entry.path();
                 has_package |=
                     path.file_name().and_then(|name| name.to_str()) == Some("package.json");
-                has_vite |= path
-                    .file_name()
-                    .and_then(|name| name.to_str())
-                    .is_some_and(|name| name.starts_with("vite.config."));
-                has_project_config |= is_typescript_project_marker(&path);
+                has_vite |= is_vite_config_marker(&path);
+                has_project_config |= is_typescript_config_marker(&path);
             }
         }
-        if has_project_config || package_root.is_none() && has_vite {
+        if has_project_config {
             return directory.to_path_buf();
+        }
+        if vite_root.is_none() && package_root.is_none() && has_vite {
+            vite_root = Some(directory.to_path_buf());
         }
         if package_root.is_none() && has_package {
             package_root = Some(directory.to_path_buf());
@@ -457,10 +458,18 @@ fn document_root(path: &Path, workspace: &Path) -> PathBuf {
         };
         directory = parent;
     }
-    package_root.unwrap_or_else(|| workspace.to_path_buf())
+    vite_root
+        .or(package_root)
+        .unwrap_or_else(|| workspace.to_path_buf())
 }
 
-fn is_typescript_project_marker(path: &Path) -> bool {
+fn is_vite_config_marker(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| name.starts_with("vite.config."))
+}
+
+fn is_typescript_config_marker(path: &Path) -> bool {
     path.file_name()
         .and_then(|name| name.to_str())
         .is_some_and(|name| {
@@ -472,9 +481,9 @@ fn is_config_marker(path: &Path) -> bool {
     path.file_name()
         .and_then(|name| name.to_str())
         .is_some_and(|name| {
-            name.starts_with("vite.config.")
+            is_vite_config_marker(path)
+                || is_typescript_config_marker(path)
                 || name == "package.json"
-                || is_typescript_project_marker(path)
         })
 }
 

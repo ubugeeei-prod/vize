@@ -17,6 +17,26 @@ mod suppressions;
 pub(super) use source_filter::is_reported;
 pub(super) use suppressions::is_suppressed_false_positive;
 
+/// Replace TypeScript's implementation-shaped missing-prop error with the
+/// component-facing information that the author can act on.
+pub(super) fn user_facing_type_message(is_ts2345: bool, message: &str) -> CompactString {
+    const PROPERTY_PREFIX: &str = "Property '";
+    const MISSING_PROPERTY_SUFFIX: &str = "' is missing in type ";
+
+    let exposes_internal_component_type = message.contains("__VizeComponentCheckProps")
+        || message.contains("__VizeSetupProps")
+        || message.contains("__VizePublicComponentAttrs");
+    if is_ts2345
+        && exposes_internal_component_type
+        && let Some((_, property_and_rest)) = message.split_once(PROPERTY_PREFIX)
+        && let Some((property, _)) = property_and_rest.split_once(MISSING_PROPERTY_SUFFIX)
+    {
+        return cstr!("Missing required prop `{property}`.");
+    }
+
+    message.into()
+}
+
 pub(super) fn emit_json_output(json_output: JsonOutput) -> Result<(), CompactString> {
     let output = serde_json::to_string_pretty(&json_output)
         .map_err(|error| cstr!("Failed to serialize check output: {error}"))?;
@@ -46,13 +66,15 @@ pub(super) fn render_diagnostics(
             .code
             .map(|code| cstr!(" [TS{}]", code))
             .unwrap_or_default();
+        let user_facing_message =
+            user_facing_type_message(diagnostic.code == Some(2345), &diagnostic.message);
         let message = if include_source_context {
             source_context
                 .render(diagnostic)
-                .map(|context| cstr!("{} (source: {context})", diagnostic.message))
-                .unwrap_or_else(|| diagnostic.message.clone())
+                .map(|context| cstr!("{user_facing_message} (source: {context})"))
+                .unwrap_or(user_facing_message)
         } else {
-            diagnostic.message.clone()
+            user_facing_message
         };
         let rendered = cstr!(
             "{}:{}:{}{} {}",

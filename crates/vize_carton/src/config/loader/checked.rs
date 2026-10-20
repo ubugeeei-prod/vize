@@ -111,15 +111,29 @@ fn load_raw_checked(
     // mtime would turn unrelated source-file creation into config changes.
     dependencies.pop();
     for directory in search_directories_observed(&base, path.is_none(), before_read) {
+        let mut selected = None;
         for name in CONFIG_FILE_NAMES {
             let candidate = directory.join(name);
             if let Some(observe) = before_read.as_deref_mut() {
                 observe(std::slice::from_ref(&candidate));
             }
             dependencies.push(candidate.clone());
-            if !candidate.exists() {
-                continue;
+            if candidate.exists() {
+                selected = Some(candidate);
+                break;
             }
+        }
+        if let Some(observe) = before_read.as_deref_mut() {
+            let retired_candidates = ["pkl", "ts", "mts", "cts", "js", "mjs", "cjs", "json"]
+                .map(|extension| directory.join(crate::cstr!("vize.config.{extension}").as_str()));
+            observe(&retired_candidates);
+        }
+        let retired = retired_config_paths(&directory);
+        if !retired.is_empty() {
+            dependencies.extend(retired);
+            return Err(CONFIG_MIGRATION.into());
+        }
+        if let Some(candidate) = selected {
             match super::parse::parse_raw_config_file_with_compile_cache(
                 &candidate,
                 dependencies,
@@ -140,16 +154,6 @@ fn load_raw_checked(
                     );
                 }
             }
-        }
-        if let Some(observe) = before_read.as_deref_mut() {
-            let retired_candidates = ["pkl", "ts", "mts", "cts", "js", "mjs", "cjs", "json"]
-                .map(|extension| directory.join(crate::cstr!("vize.config.{extension}").as_str()));
-            observe(&retired_candidates);
-        }
-        let retired = retired_config_paths(&directory);
-        if !retired.is_empty() {
-            dependencies.extend(retired);
-            return Err(CONFIG_MIGRATION.into());
         }
     }
     if path.is_some() && require_explicit_config {

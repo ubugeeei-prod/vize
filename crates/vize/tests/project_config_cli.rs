@@ -144,13 +144,27 @@ fn package_boundaries_precedence_and_sibling_settings_reach_the_formatter() {
     fs::remove_file(root.join("packages/b/vite.config.mjs")).unwrap();
     assert_eq!(formatted(&b, &[]).as_str(), support::FORMATTED_DOUBLE);
 
-    // Stale same-directory dedicated configs do not change canonical Vite settings.
+    // A retired same-directory config makes automatic discovery fail closed so
+    // the user can migrate it instead of silently losing its settings.
     write(
         &root.join("packages/a"),
         "vize.config.json",
         r#"{"formatter":{"singleQuote":false}}"#,
     );
-    assert_eq!(formatted(&a, &[]).as_str(), support::FORMATTED_SINGLE);
+    let rejected = run(&a, &["fmt", "Quotes.vue"]);
+    let expected = vize_l0::cstr!(
+        "Invalid formatter configuration: {}\n",
+        support::LEGACY_CONFIG_ERROR
+    );
+    assert_eq!(
+        (
+            rejected.status.code(),
+            rejected.stdout.as_slice(),
+            rejected.stderr.as_slice()
+        ),
+        (Some(2), b"".as_slice(), expected.as_bytes()),
+        "{rejected:?}"
+    );
     let rejected = run(
         &a,
         &["fmt", "Quotes.vue", "--config", "../vize.config.json"],

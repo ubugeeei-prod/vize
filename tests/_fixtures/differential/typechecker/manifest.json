@@ -1252,7 +1252,7 @@
       "sourceRevision": "f1b07174a4a86ffc3433f31b8c78406d5bf5b760",
       "packReference": {
         "path": "allow-importing-ts-extensions-9890/cases.json",
-        "sha256": "edd1dab8946635adeee8cdb1cea52ad05c396a7077aeb901e37de3f2fc3fc59f"
+        "sha256": "5f31daa2b76ac0d7677580d761c1b2db8074cf6aa4be555abd47101300d66f66"
       },
       "inputs": [
         {
@@ -1294,7 +1294,7 @@
       "sourceRevision": "f1b07174a4a86ffc3433f31b8c78406d5bf5b760",
       "packReference": {
         "path": "allow-importing-ts-extensions-9890/cases.json",
-        "sha256": "edd1dab8946635adeee8cdb1cea52ad05c396a7077aeb901e37de3f2fc3fc59f"
+        "sha256": "5f31daa2b76ac0d7677580d761c1b2db8074cf6aa4be555abd47101300d66f66"
       },
       "inputs": [
         {
@@ -1316,6 +1316,43 @@
           "file": "tsconfig.json",
           "path": "allow-importing-ts-extensions-9890/tsconfig-opt-in.json.txt",
           "sha256": "332311d6d44cd6d6451b103e4986088dc3efd03af1e9a66b61c3e53d46528d8b"
+        }
+      ]
+    },
+    {
+      "id": "typechecker/allow-importing-ts-extensions-9890/declaration-generated-routes",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "allow-importing-ts-extensions-9890",
+      "case": "declaration-generated-routes",
+      "test": "authored_ts_extensions_report_ts5097_by_default",
+      "regressionCommit": "f1b07174a4a86ffc3433f31b8c78406d5bf5b760",
+      "sourceRevision": "f1b07174a4a86ffc3433f31b8c78406d5bf5b760",
+      "packReference": {
+        "path": "allow-importing-ts-extensions-9890/cases.json",
+        "sha256": "5f31daa2b76ac0d7677580d761c1b2db8074cf6aa4be555abd47101300d66f66"
+      },
+      "inputs": [
+        {
+          "file": "entry.ts",
+          "path": "allow-importing-ts-extensions-9890/declaration-generated/entry.ts.txt",
+          "sha256": "c1c8aa2f480ee70a8ef438097c1dd5f471cdc8c2d9289ff3498c97ecb37f7a74"
+        },
+        {
+          "file": "App.vue",
+          "path": "allow-importing-ts-extensions-9890/declaration-generated/App.vue.txt",
+          "sha256": "08e5a63c44cf38ac6f51e9a9dd220f12f5b61a7affe2fe865dde85d435bd1576"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "allow-importing-ts-extensions-9890/declaration-generated/tsconfig.json.txt",
+          "sha256": "7f2fe21e72e2bd8eda6a9af8b9152f2413ef26813a0e7131af98ccd7c9afad86"
         }
       ]
     },

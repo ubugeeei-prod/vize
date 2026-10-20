@@ -61,6 +61,36 @@ fn vite_config_precedes_retired_dedicated_files_and_preserves_project_defaults()
 }
 
 #[test]
+fn retired_dedicated_config_invalidates_editor_settings_even_with_vite_config() {
+    let project = tempfile::tempdir().unwrap();
+    std::fs::write(
+        project.path().join("vite.config.mjs"),
+        "export default { vue: { formatter: { singleQuote: true } } };",
+    )
+    .unwrap();
+    std::fs::write(project.path().join("vize.config.json"), "{}").unwrap();
+
+    let loaded = load_lsp_config_snapshot(Some(project.path()));
+
+    assert!(!loaded.valid);
+    assert_eq!(
+        loaded.error.as_deref(),
+        Some(super::discovery::CONFIG_MIGRATION)
+    );
+    assert_eq!(loaded.source_path, None);
+    let mut expected = [
+        "vite.config.ts",
+        "vite.config.js",
+        "vite.config.mjs",
+        "vize.config.json",
+    ]
+    .map(|name| project.path().join(name))
+    .to_vec();
+    expected.sort();
+    assert_eq!(loaded.watch_dependencies, expected);
+}
+
+#[test]
 fn malformed_vite_settings_fail_closed_before_formatter_writes() {
     let project = tempfile::tempdir().unwrap();
     std::fs::write(

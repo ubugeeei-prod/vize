@@ -21,6 +21,7 @@ impl VirtualProject {
             &self.project_root,
             identity,
         );
+        self._cache_usage_lock = super::super::cache_gc::acquire_usage_lock(&self.virtual_root);
     }
 
     /// Initial batch bindings carry source authority but no virtual artifacts.
@@ -33,6 +34,7 @@ impl VirtualProject {
             &self.project_root,
             0,
         );
+        self._cache_usage_lock = super::super::cache_gc::acquire_usage_lock(&self.virtual_root);
     }
 
     pub(crate) fn use_effective_tsconfig_for_source(&mut self, source_path: &Path) {
