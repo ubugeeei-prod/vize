@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import {
+  coAuthorCredits,
   generateReleaseNotes,
   previousPublishedTag,
   type PublishedRelease,
@@ -235,12 +236,24 @@ test("the real command preserves generated notes and evergreen scope and refuses
       "Large complete generated body " +
       "x".repeat(2 * 1024 * 1024) +
       "\n## What's Changed\n\n* Actual current fix by @reporter in https://github.com/owner/repo/pull/1\n\n**Full Changelog**: https://github.com/owner/repo/compare/v0.457.0...v0.458.0\n";
+    const commits = {
+      commits: [
+        {
+          commit: {
+            message:
+              "fix: x (#1)\n\nCo-authored-by: reporter <7+reporter@users.noreply.github.com>",
+          },
+          author: { login: "maintainer" },
+        },
+      ],
+    };
     const gh = join(root, "gh");
     writeFileSync(
       gh,
-      `#!${process.execPath}\nconst fs = require('node:fs');\nconst body = fs.readFileSync(0, 'utf8');\nfs.appendFileSync(${JSON.stringify(join(root, "api.jsonl"))}, JSON.stringify({args:process.argv.slice(2),body})+'\\n');\nprocess.stdout.write(JSON.stringify(body ? {body:${JSON.stringify(generated)}} : ${JSON.stringify([release("v0.458.0"), release("v0.457.0")])}));\n`,
+      `#!${process.execPath}\nconst fs = require('node:fs');\nconst body = fs.readFileSync(0, 'utf8');\nfs.appendFileSync(${JSON.stringify(join(root, "api.jsonl"))}, JSON.stringify({args:process.argv.slice(2),body})+'\\n');\nprocess.stdout.write(JSON.stringify(body ? {body:${JSON.stringify(generated)}} : process.argv[3].includes('/compare/') ? ${JSON.stringify(commits)} : ${JSON.stringify([release("v0.458.0"), release("v0.457.0")])}));\n`,
       { mode: 0o755 },
     );
+    const thanks = "## Thanks\n\nReported and co-authored by @reporter (#1).\n";
     const output = join(root, "notes.md");
     const env = {
       ...process.env,
@@ -257,7 +270,10 @@ test("the real command preserves generated notes and evergreen scope and refuses
       new URL("../../../.github/release-notes/drop-in-scope.md", import.meta.url),
       "utf8",
     );
-    assert.equal(readFileSync(output, "utf8"), `${scope.trim()}\n\n${generated.trim()}\n`);
+    assert.equal(
+      readFileSync(output, "utf8"),
+      `${scope.trim()}\n\n${generated.trim()}\n\n${thanks}`,
+    );
     const requests = readFileSync(join(root, "api.jsonl"), "utf8")
       .trim()
       .split("\n")
@@ -288,6 +304,15 @@ test("the real command preserves generated notes and evergreen scope and refuses
         }),
       },
       { args: ["api", "repos/owner/repo/git/ref/tags/v0.457.0"], body: "" },
+      {
+        args: [
+          "api",
+          `repos/owner/repo/compare/v0.457.0...${sha}?per_page=100&page=1`,
+          "--jq",
+          "{commits: [.commits[] | {commit: {message: .commit.message}, author}]}",
+        ],
+        body: "",
+      },
     ]);
     const refused = spawnSync(
       process.execPath,
@@ -298,10 +323,13 @@ test("the real command preserves generated notes and evergreen scope and refuses
     assert.match(refused.stderr, /checkout differs from the pinned source/);
     assert.equal(
       readFileSync(join(root, "api.jsonl"), "utf8").trim().split("\n").length,
-      3,
+      4,
       "mismatched source must not invoke GitHub",
     );
-    assert.equal(readFileSync(output, "utf8"), `${scope.trim()}\n\n${generated.trim()}\n`);
+    assert.equal(
+      readFileSync(output, "utf8"),
+      `${scope.trim()}\n\n${generated.trim()}\n\n${thanks}`,
+    );
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
@@ -482,4 +510,39 @@ void test("only the authenticated already-published integration bullet is remove
   );
   const titledBody = original.replace(row, titledRow);
   assert.equal(run(make(), titledBody).notes.body, titledBody.replace(`${titledRow}\n`, ""));
+});
+
+test("release notes credit third-party co-authors with their PRs", () => {
+  const fix = (subject: string, ...trailers: string[]) => ({
+    message: `${subject}\n\nCloses #1\n\n${trailers.join("\n")}`,
+    author: "maintainer",
+  });
+  const claude = "Co-authored-by: Claude Opus 5.5 <noreply@anthropic.com>";
+  const credits = coAuthorCredits([
+    fix(
+      "fix(canon): a (#9768)",
+      "Co-authored-by: escaton <123+escaton@users.noreply.github.com>",
+      claude,
+    ),
+    fix(
+      "fix(patina): b (#9759)",
+      "Co-authored-by: naitokosuke <9+naitokosuke@users.noreply.github.com>",
+    ),
+    fix(
+      "fix(patina): c (#9770)",
+      "co-authored-by: naitokosuke <naitokosuke@users.noreply.github.com>",
+    ),
+    fix("fix: self (#1)", "Co-authored-by: Maintainer <1+maintainer@users.noreply.github.com>"),
+    fix(
+      "chore: bot (#2)",
+      "Co-authored-by: renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>",
+    ),
+    fix("fix: mail (#3)", "Co-authored-by: Jane Doe <jane@example.com>"),
+    { message: "Release v0.486.0", author: null },
+  ]);
+  assert.equal(
+    credits,
+    "## Thanks\n\nReported and co-authored by @escaton (#9768), @naitokosuke (#9759, #9770), Jane Doe (#3).\n",
+  );
+  assert.equal(coAuthorCredits([fix("fix: x (#4)", claude)]), "");
 });

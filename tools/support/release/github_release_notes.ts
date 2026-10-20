@@ -226,6 +226,54 @@ export function generateReleaseNotes(
   return { body: omitPublishedIntegration(response.body, integration), previousTag };
 }
 
+export interface ReleaseCommit {
+  message: string;
+  /** GitHub login of the commit author, when GitHub matched one. */
+  author: string | null;
+}
+
+/**
+ * Credits the people who co-authored a fix without authoring its commit:
+ * third-party reporters are added as `Co-authored-by` on their fix, but the
+ * generated notes only name each PR's author.
+ */
+export function coAuthorCredits(commits: readonly ReleaseCommit[]): string {
+  const credits = new Map<string, Set<string>>();
+  for (const { message, author } of commits) {
+    const pr = /\(#(\d+)\)$/m.exec(message.split("\n")[0] ?? "")?.[1];
+    for (const [, name, email] of message.matchAll(/^Co-authored-by:\s*(.+?)\s*<([^>]+)>\s*$/gim)) {
+      const login = /^(?:\d+\+)?([\w-]+)@users\.noreply\.github\.com$/i.exec(email)?.[1];
+      if (login?.toLowerCase() === author?.toLowerCase()) continue;
+      if (/\[bot\]|@anthropic\.com$/i.test(`${login ?? name} ${email}`)) continue;
+      const who = login ? `@${login}` : name;
+      const prs = credits.get(who) ?? new Set<string>();
+      if (pr) prs.add(`#${pr}`);
+      credits.set(who, prs);
+    }
+  }
+  if (credits.size === 0) return "";
+  const rows = [...credits].map(([who, prs]) =>
+    prs.size ? `${who} (${[...prs].join(", ")})` : who,
+  );
+  return `## Thanks\n\nReported and co-authored by ${rows.join(", ")}.\n`;
+}
+
+function compareCommits(api: GitHubApi, repository: string, base: string, head: string) {
+  const commits: ReleaseCommit[] = [];
+  for (let page = 1; ; page++) {
+    const response = api(
+      `repos/${repository}/compare/${base}...${head}?per_page=100&page=${page}`,
+    ) as {
+      commits?: { commit: { message: string }; author: { login: string } | null }[];
+    };
+    const batch = response.commits ?? [];
+    for (const entry of batch) {
+      commits.push({ message: entry.commit.message, author: entry.author?.login ?? null });
+    }
+    if (batch.length < 100) return commits;
+  }
+}
+
 function main(): void {
   const [tag, expectedSha, output] = process.argv.slice(2);
   if (!tag || !expectedSha || !output)
@@ -246,7 +294,9 @@ function main(): void {
         ? ["--method", "POST", "--input", "-"]
         : path.includes("/releases?")
           ? ["--jq", "map({tag_name, draft, prerelease, published_at})"]
-          : [];
+          : path.includes("/compare/")
+            ? ["--jq", "{commits: [.commits[] | {commit: {message: .commit.message}, author}]}"]
+            : [];
       execFileSync("gh", ["api", path, ...args], {
         input: body ? JSON.stringify(body) : undefined,
         stdio: ["pipe", fd, "inherit"],
@@ -262,7 +312,15 @@ function main(): void {
     new URL("../../../.github/release-notes/drop-in-scope.md", import.meta.url),
     "utf8",
   );
-  writeFileSync(output, `${scope.trim()}\n\n${result.body.trim()}\n`);
+  let credits = "";
+  try {
+    credits = coAuthorCredits(compareCommits(api, repository, result.previousTag, expectedSha));
+  } catch (error) {
+    // Credits are cosmetic: never block the GitHub Release on them.
+    process.stdout.write(`::warning::Skipped co-author credits: ${String(error)}\n`);
+  }
+  const sections = [scope.trim(), result.body.trim(), credits.trim()].filter(Boolean);
+  writeFileSync(output, `${sections.join("\n\n")}\n`);
   process.stdout.write(`Release notes: ${result.previousTag}...${tag} @ ${expectedSha}\n`);
 }
 
