@@ -1554,6 +1554,59 @@ const a = ctx.second()
 }
 
 #[test]
+fn test_plain_reactive_aliases_are_fresh_inside_reexecuted_functions() {
+    use crate::reactivity::ReactivityLossKind;
+
+    let result = parse_script_setup(
+        r#"
+import { computed, ref, watchEffect } from 'vue'
+
+const { items = [], maxItems = 7 } = defineProps<{
+  items?: string[]
+  maxItems?: number
+}>()
+const size = ref(1)
+
+const topLevelItems = items
+
+function labelAt(index: number): string {
+  const list = items
+  return list[index] ?? ''
+}
+
+const range = computed(() => {
+  let count = maxItems
+  const read = size.value
+  let current = read
+  return { count, current }
+})
+
+watchEffect(() => {
+  let current
+  current = size.value
+  const copy = current
+  consume(copy)
+})
+"#,
+    );
+
+    let aliases: Vec<_> = result
+        .reactivity
+        .losses()
+        .iter()
+        .filter_map(|loss| match &loss.kind {
+            ReactivityLossKind::PlainValueAlias {
+                alias_name,
+                target_name,
+                ..
+            } => Some((alias_name.as_str(), target_name.as_str())),
+            _ => None,
+        })
+        .collect();
+    assert_eq!(aliases, [("items", "topLevelItems")]);
+}
+
+#[test]
 fn test_ref_value_children_are_tracked_as_reactive_objects() {
     use crate::reactivity::ReactivityLossKind;
 
