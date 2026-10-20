@@ -167,6 +167,16 @@ test("registry visibility is checked once, after publishing, and gates only JSR"
   assert.equal(workflow.jobs["publish-jsr"].uses, "./.github/workflows/release-jsr.yml");
 });
 
+test("config-free project checks follow npm verification and gate nothing", () => {
+  assert.deepEqual(needs("verify-config"), ["version", "verify-npm"]);
+  for (const name of Object.keys(workflow.jobs))
+    assert.ok(!needs(name).includes("verify-config"), name);
+  assert.match(
+    JSON.stringify(workflow.jobs["verify-config"].steps),
+    /verify_published\/config_free\.ts/,
+  );
+});
+
 test("the stamp reaches every tracked non-private npm and editor manifest", async () => {
   const extra = new Set(
     (await extraReleasePackageJsonPaths()).map((file) => file.replaceAll("\\", "/")),

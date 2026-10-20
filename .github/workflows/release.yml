@@ -427,6 +427,23 @@ jobs:
           read -ra packages <<< "$RELEASE_PACKAGES"
           node tools/support/release/verify_published/main.ts "$RELEASE_VERSION" "${packages[@]}"
 
+  # Gates nothing: fresh, migrated and monorepo projects configured only by
+  # vite.config.ts and tsconfig.json, using the packages just verified.
+  verify-config:
+    name: Verify config-free projects
+    needs: [version, verify-npm]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
+      - name: Set up fresh, migrated and monorepo projects without vize.config.*
+        env:
+          RELEASE_VERSION: ${{ needs.version.outputs.version }}
+        run: node tools/support/release/verify_published/config_free.ts "$RELEASE_VERSION"
+
   publish-jsr:
     name: Publish JSR
     needs: [version, verify-npm]
