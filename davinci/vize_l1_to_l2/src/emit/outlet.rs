@@ -12,7 +12,8 @@ use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::children::{
     emit_create_text_vnode, emit_dynamic_part, emit_interpolation, emit_plain_text_vnode,
-    emit_raw_interpolation_or_refuse, emit_slot_compound_parts, is_empty_interpolation,
+    emit_raw_interpolation_or_refuse, emit_slot_compound_parts, emit_to_display_string,
+    is_empty_interpolation,
 };
 use super::hoist::{emit_hoisted_element, is_hoistable};
 use super::js::escape_js_string;
@@ -83,7 +84,12 @@ pub(super) fn emit_outlet(
         }
         cx.buf.push(", () => [");
         let split_compound = opens_v_pre(slot, cx.source);
-        emit_fallback(cx, &slot.fallback, compact_fallback, split_compound)?;
+        emit_fallback(
+            cx,
+            &slot.fallback,
+            compact_fallback,
+            FallbackTextMode::SlotOutlet { split_compound },
+        )?;
         cx.buf.push("]");
         finish_outlet(cx, true, true);
     } else if props {
@@ -152,11 +158,17 @@ fn meaningful_fallback(region: &Region<'_>) -> bool {
         .any(|op| !is_whitespace_text(op) && !super::annotations::is_annotation(op))
 }
 
+#[derive(Clone, Copy)]
+pub(super) enum FallbackTextMode {
+    SlotOutlet { split_compound: bool },
+    BuiltinArray,
+}
+
 pub(super) fn emit_fallback(
     cx: &mut EmitCx<'_>,
     region: &Region<'_>,
     compact: bool,
-    split_compound: bool,
+    text_mode: FallbackTextMode,
 ) -> Result<(), EmitError> {
     if !compact {
         cx.buf.indent();
@@ -170,7 +182,7 @@ pub(super) fn emit_fallback(
             let _id = cx.walk.mint();
             continue;
         }
-        emit_fallback_units(cx, op, compact, split_compound, &mut first)?;
+        emit_fallback_units(cx, op, compact, text_mode, &mut first)?;
     }
     if !compact {
         cx.buf.deindent();
@@ -193,7 +205,7 @@ fn emit_fallback_units(
     cx: &mut EmitCx<'_>,
     op: &Op<'_>,
     compact: bool,
-    split_compound: bool,
+    text_mode: FallbackTextMode,
     first: &mut bool,
 ) -> Result<(), EmitError> {
     match op {
@@ -201,9 +213,7 @@ fn emit_fallback_units(
             start_fallback_item(cx, compact, first);
             emit_create_text_vnode(cx, core::slice::from_ref(op))
         }
-        Op::Interpolation(interp) => {
-            emit_fallback_interp(cx, interp, compact, split_compound, first)
-        }
+        Op::Interpolation(interp) => emit_fallback_interp(cx, interp, compact, text_mode, first),
         Op::Comment(comment) => emit_fallback_comment(cx, comment, compact, first),
         Op::Element(element) if cx.hoist_static && is_hoistable(element, cx.is_ts) => {
             start_fallback_item(cx, compact, first);
@@ -241,23 +251,30 @@ fn emit_fallback_comment(
     Ok(())
 }
 
-/// Slot fallback walks each L1 child (`generate_node`). Every fallback array
-/// entry must be a VNode, so wrap a lone interpolation in `_createTextVNode`
-/// too. A compound L2 interpolation represents one adjacent text run and stays
-/// one text VNode, except where the old/default `v-pre` outlet contract retains
-/// the original child boundary.
+/// Slot outlets normalize text entries to VNodes. Builtin component arrays use
+/// Vue's older `generate_node` shape instead: lone expressions stay raw and a
+/// compound run keeps its original child boundaries.
 fn emit_fallback_interp(
     cx: &mut EmitCx<'_>,
     interp: &InterpolationOp<'_>,
     compact: bool,
-    split_compound: bool,
+    text_mode: FallbackTextMode,
     first: &mut bool,
 ) -> Result<(), EmitError> {
     let id = cx.walk.mint();
+    let normalize_text = matches!(text_mode, FallbackTextMode::SlotOutlet { .. });
+    let split_compound = match text_mode {
+        FallbackTextMode::SlotOutlet { split_compound } => split_compound,
+        FallbackTextMode::BuiltinArray => true,
+    };
     match interp.expression {
         ExprRef::Js(_) => {
             start_fallback_item(cx, compact, first);
-            emit_fallback_interpolation_vnode(cx, interp, id)
+            if normalize_text {
+                emit_fallback_interpolation_vnode(cx, interp, id)
+            } else {
+                emit_interpolation(cx, interp, id)
+            }
         }
         ExprRef::Opaque(opaque) if opaque.reason == OpaqueReason::Compound => {
             let id = id.ok_or(EmitError::unsupported_at(
@@ -292,16 +309,16 @@ fn emit_fallback_interp(
         }
         ExprRef::Opaque(opaque) if is_empty_interpolation(opaque) => {
             start_fallback_item(cx, compact, first);
-            emit_fallback_interpolation_vnode(cx, interp, id)
+            if normalize_text {
+                emit_fallback_interpolation_vnode(cx, interp, id)
+            } else {
+                emit_to_display_string(cx, "");
+                Ok(())
+            }
         }
         _ => {
             start_fallback_item(cx, compact, first);
-            cx.buf.use_create_text();
-            cx.buf.push(Buf::create_text_alias());
-            cx.buf.push("(");
-            emit_raw_interpolation_or_refuse(cx, interp.expression)?;
-            cx.buf.push(", 1 /* TEXT */)");
-            Ok(())
+            emit_raw_interpolation_or_refuse(cx, interp.expression)
         }
     }
 }
