@@ -288,7 +288,7 @@ const bag = { count: 1 }
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
     let generated = "{ as: props[\"as\"], count: bag.missing }";
-    let generated_start = output.code.rfind(generated).unwrap_or_else(|| {
+    let generated_start = output.code.find(generated).unwrap_or_else(|| {
         panic!(
             "reserved spread reference was not rewritten:\n{}",
             output.code
@@ -296,8 +296,8 @@ const bag = { count: 1 }
     });
     assert_eq!(
         output.code.matches(generated).count(),
-        1,
-        "a component spread must be checked only by the mapped props call",
+        2,
+        "the mapped child check and unmapped fallthrough probe must share the authored literal",
     );
     let source_missing = template.find("missing").expect("authored member present");
     let generated_missing = generated_start + generated.find("missing").unwrap();
@@ -318,6 +318,17 @@ const bag = { count: 1 }
     assert_eq!(
         generated_missing - span.gen_range.start,
         source_missing - span.src_range.start,
+    );
+    let unmapped_missing =
+        output.code.rfind(generated).unwrap() + generated.find("missing").unwrap();
+    assert!(
+        output
+            .mapping
+            .spans()
+            .iter()
+            .flat_map(|mapping| &mapping.sub_spans)
+            .all(|span| !span.gen_range.contains(&unmapped_missing)),
+        "the secondary fallthrough literal must stay unmapped to avoid duplicate diagnostics",
     );
 }
 
