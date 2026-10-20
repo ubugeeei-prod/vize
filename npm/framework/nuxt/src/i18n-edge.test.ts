@@ -59,6 +59,37 @@ export default {
   assert.equal(out.match(/t: \$t/g)?.length, 1);
 });
 
+void test("preserves an app-provided helper binding in setup scope", () => {
+  const input = `
+export default {
+  setup(__props) {
+    const { $t } = useNuxtApp();
+    const title = $t("hello");
+    return { title };
+  }
+}
+`;
+  assert.equal(injectNuxtI18nHelpers(input), input);
+});
+
+void test("preserves local and imported helper bindings while injecting unbound helpers", () => {
+  const out = injectNuxtI18nHelpers(`
+import { translate as $t } from "./translate";
+export default {
+  setup(__props) {
+    function $n(value) { return String(value); }
+    const title = $t("hello");
+    const count = $n(1);
+    const date = $d(new Date());
+    return { title, count, date };
+  }
+}
+`);
+  assert.match(out, /const \{ d: \$d \} = useI18n\(\);/);
+  assert.equal(out.includes("t: $t"), false);
+  assert.equal(out.includes("n: $n"), false);
+});
+
 // _ctx.$t(...) and this.$t(...) are template/options globals (preceded by "."),
 // excluded by the (?<![.\w]) lookbehind => no injection happens.
 void test("does not trigger on _ctx.$t or this.$t member access", () => {

@@ -176,6 +176,46 @@ function collectPatternBindingNames(pattern: AstNode, locals: Set<string>): void
   }
 }
 
+function collectDirectBindingNames(scope: AstNode, locals: Set<string>): void {
+  const statements = Array.isArray(scope.body) ? scope.body : [];
+
+  for (const statement of statements) {
+    if (!isNode(statement)) {
+      continue;
+    }
+
+    if (statement.type === "VariableDeclaration") {
+      const declarations = Array.isArray(statement.declarations) ? statement.declarations : [];
+      for (const declaration of declarations) {
+        if (isNode(declaration) && isNode(declaration.id)) {
+          collectPatternBindingNames(declaration.id, locals);
+        }
+      }
+      continue;
+    }
+
+    if (statement.type === "FunctionDeclaration" || statement.type === "ClassDeclaration") {
+      const name = getNodeName(isNode(statement.id) ? statement.id : null);
+      if (name) {
+        locals.add(name);
+      }
+      continue;
+    }
+
+    if (statement.type === "ImportDeclaration") {
+      const specifiers = Array.isArray(statement.specifiers) ? statement.specifiers : [];
+      for (const specifier of specifiers) {
+        const name = isNode(specifier)
+          ? getNodeName(isNode(specifier.local) ? specifier.local : null)
+          : null;
+        if (name) {
+          locals.add(name);
+        }
+      }
+    }
+  }
+}
+
 function findExistingUseI18nDestructure(setupBody: AstNode): ExistingUseI18nDestructure | null {
   const statements = Array.isArray(setupBody.body) ? setupBody.body : [];
 
@@ -206,7 +246,10 @@ function findExistingUseI18nDestructure(setupBody: AstNode): ExistingUseI18nDest
   return null;
 }
 
-function collectUsedI18nSpecifiers(setupBody: AstNode): {
+function collectUsedI18nSpecifiers(
+  setupBody: AstNode,
+  authoredBindings: Set<string>,
+): {
   firstUseIndex: number;
   specifiers: string[];
 } {
@@ -220,7 +263,12 @@ function collectUsedI18nSpecifiers(setupBody: AstNode): {
     const callee = isNode(node.callee) ? node.callee : null;
     const fnName = getNodeName(callee);
     const callStart = getNodeStart(node);
-    if (!fnName || callStart == null || !I18N_HELPER_LOCALS.has(fnName)) {
+    if (
+      !fnName ||
+      callStart == null ||
+      !I18N_HELPER_LOCALS.has(fnName) ||
+      authoredBindings.has(fnName)
+    ) {
       return;
     }
 
@@ -249,7 +297,13 @@ export function injectNuxtI18nHelpers(code: string, id = DEFAULT_PARSE_ID): stri
   }
 
   const insertAt = setupBodyStart + 1;
-  const { firstUseIndex, specifiers: usedSpecifiers } = collectUsedI18nSpecifiers(setupBody);
+  const authoredBindings = new Set<string>();
+  collectDirectBindingNames(program, authoredBindings);
+  collectDirectBindingNames(setupBody, authoredBindings);
+  const { firstUseIndex, specifiers: usedSpecifiers } = collectUsedI18nSpecifiers(
+    setupBody,
+    authoredBindings,
+  );
   if (usedSpecifiers.length === 0) {
     return code;
   }
