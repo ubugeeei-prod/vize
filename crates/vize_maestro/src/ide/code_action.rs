@@ -25,6 +25,9 @@ mod ref_value;
 #[cfg(test)]
 mod ref_value_tests;
 mod script_bindings;
+mod script_lint;
+#[cfg(test)]
+mod script_lint_tests;
 #[cfg(test)]
 mod source_position_tests;
 mod template_lint;
@@ -53,6 +56,15 @@ impl CodeActionService {
         if let Some(lint) = Self::lint_template_once(ctx) {
             actions.extend(Self::collect_lint_fixes(ctx, range, &lint, diagnostics));
             actions.extend(Self::collect_forget_suppress(
+                ctx,
+                range,
+                &lint,
+                diagnostics,
+            ));
+        }
+
+        if let Some(lint) = Self::lint_script_once(ctx, diagnostics) {
+            actions.extend(Self::collect_script_suppress(
                 ctx,
                 range,
                 &lint,

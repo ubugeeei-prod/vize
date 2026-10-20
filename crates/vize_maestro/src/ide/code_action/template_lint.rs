@@ -207,7 +207,7 @@ impl CodeActionService {
 
 /// A client diagnostic must identify the current authored template rule exactly.
 /// Empty context retains the existing cursor-range discovery contract.
-fn selected_diagnostics(
+pub(super) fn selected_diagnostics(
     requested: &[Diagnostic],
     rule: &str,
     range: Range,
