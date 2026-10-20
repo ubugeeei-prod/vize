@@ -362,6 +362,7 @@ mod tests {
     use std::sync::Arc;
 
     use vize_canon::{CorsaBridge, CorsaBridgeError};
+    use vize_l0::cstr;
 
     use super::{CollectFailure, classify};
 
@@ -414,12 +415,12 @@ mod tests {
         let bridge = Arc::new(CorsaBridge::new());
         let message = "Malformed <template> block: the closing tag is missing.";
 
-        let error =
-            CorsaBridgeError::CommunicationError(format!("SFC parse error: {message}").into());
+        let error_message = cstr!("SFC parse error: {message}");
+        let error = CorsaBridgeError::CommunicationError(error_message.clone());
 
         match classify(&bridge, error) {
             CollectFailure::Request(CorsaBridgeError::CommunicationError(actual)) => {
-                assert_eq!(actual, format!("SFC parse error: {message}"));
+                assert_eq!(actual, error_message);
             }
             _ => panic!("a local SFC parse error must preserve the backend session"),
         }

@@ -36,8 +36,8 @@ function appendDeclared(fixture: LspFixture, runtimePath: string, source: string
   fixture.inputs.files.push({ path: runtimePath, sha256: sha256(bytes) });
 }
 
-test("all24 pinned LSP cases retain their inputs and only the two configured outline cases gain a carrier", () => {
-  assert.equal(loaded.cases.length, 24);
+test("all25 pinned LSP cases retain their inputs and only the two configured outline cases gain a carrier", () => {
+  assert.equal(loaded.cases.length, 25);
   assert.deepEqual(
     configured.map((fixture) => fixture.id),
     [
@@ -78,7 +78,7 @@ test("all24 pinned LSP cases retain their inputs and only the two configured out
   }
   const report = referenceReport(loaded, build);
   assert.deepEqual(report.argv, ["lsp"]);
-  assert.equal(validateLspReport(loaded, report, build).legacyMatches, 24);
+  assert.equal(validateLspReport(loaded, report, build).legacyMatches, 25);
   assert.equal(report.summary.nativeHandled, 0);
   assert.equal(report.summary.nativeEquivalent, 0);
 });

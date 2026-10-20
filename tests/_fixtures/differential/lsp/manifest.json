@@ -736,6 +736,40 @@
         "lint": false,
         "typecheck": false
       }
+    },
+    {
+      "id": "lsp/regression/imported-sfc-parse-recovery-10027",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "case": {
+        "path": "imported-sfc-parse-recovery-10027/case.json",
+        "sha256": "f85bc8e9bcf3fec56fbb765f817f764db4bfe04e8fc524759a9ed1f3f0f1f281"
+      },
+      "inputs": {
+        "root": "imported-sfc-parse-recovery-10027",
+        "files": [
+          {
+            "path": "Entry.vue.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "path": "Parent.vue.txt",
+            "sha256": "c1d63e80557c43ca5c4ae1a1ef6ab1c273b5ee8c753bb19f59af19b667ae8eee"
+          },
+          {
+            "path": "Child.broken.vue.txt",
+            "sha256": "dfded8ea3ce80c059b8cd5f7de190592fdcc66b8ad4bb68caf4ee80f09f2a996"
+          }
+        ]
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
     }
   ]
 }
