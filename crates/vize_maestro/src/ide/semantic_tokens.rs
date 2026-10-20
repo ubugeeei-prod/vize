@@ -14,7 +14,7 @@ mod art;
 mod encoding;
 mod expression_lines;
 mod expressions;
-mod style;
+pub(crate) mod style;
 mod template;
 mod template_attrs;
 mod types;

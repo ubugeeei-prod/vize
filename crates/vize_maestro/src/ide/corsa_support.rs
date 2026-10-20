@@ -20,6 +20,8 @@ mod canonical_rename_version_tests;
 #[cfg(test)]
 mod canonical_tests;
 mod external_mirror;
+mod style_bind;
+pub(crate) use style_bind::{StyleBindProjection, StyleBindQuery, style_bind_locations};
 mod html_attribute;
 #[cfg(test)]
 mod html_attribute_tests;

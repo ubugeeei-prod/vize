@@ -66,6 +66,11 @@ function pick(point: Point): void {}
   <p>{{ shape.area() }} {{ origin.x }}</p>
   <p v-if="origin.y" :title="String(measure(shape, 2))" @click="pick(origin)">x</p>
 </template>
+
+<style>
+/* v-bind(origin) */
+.card { width: v-bind('measure(shape, 3) + "px"'); color: v-bind(origin.x); margin: v-bind('origin.y +') }
+</style>
 "#;
 
 #[derive(Clone, Copy)]
@@ -325,6 +330,33 @@ fn navigation_from_vue_lands_on_authored_sources() {
                 1,
                 vec![("Card.vue", "pick")],
             ),
+            (
+                Request::TypeDefinition,
+                "origin.x);",
+                2,
+                vec![("shapes.ts", "{ x: number; y: number }")],
+            ),
+            (
+                Request::Implementation,
+                "shape, 3)",
+                1,
+                vec![("Card.vue", "shape")],
+            ),
+            (
+                Request::Declaration,
+                "measure(shape, 3)",
+                2,
+                vec![("Card.vue", "measure")],
+            ),
+            (
+                Request::TypeDefinition,
+                "shape, 3)",
+                1,
+                vec![("shapes.ts", "Shape")],
+            ),
+            // An expression that does not parse, and a commented-out binding.
+            (Request::Declaration, "origin.y +", 2, vec![]),
+            (Request::Declaration, "origin) */", 2, vec![]),
         ] {
             let actual = project.targets(request, needle, nth).await;
             if actual != targets(&expected) {

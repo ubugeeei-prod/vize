@@ -50,6 +50,16 @@ impl ImplementationService {
             BlockType::Art(ArtCursorPosition::VariantTemplate(ref info)) => {
                 Self::implementation_in_art_variant(ctx, &bridge, info).await
             }
+            BlockType::Style(_) if !ctx.uri.path().ends_with(".art.vue") => {
+                TypeDefinitionService::convert_locations(
+                    corsa_support::style_bind_locations(
+                        ctx,
+                        &bridge,
+                        corsa_support::StyleBindQuery::Implementation,
+                    )
+                    .await,
+                )
+            }
             BlockType::Template | BlockType::Style(_) | BlockType::Art(_) => None,
         }
     }

@@ -98,6 +98,42 @@ fn signature_help_maps_template_directives_and_event_handlers() {
 }
 
 #[test]
+fn signature_help_maps_style_v_bind_expressions() {
+    crate::runtime::block_on(async {
+        let Some(corsa_path) = resolve_tsgo_binary() else {
+            return;
+        };
+        let fixture = Fixture::new(&corsa_path);
+        let source = "<script setup lang=\"ts\">\nconst label = '🦀'\nfunction format(value: string, precision: number): string { return value.repeat(precision) }\n</script>\n\n<template><p>{{ label }}</p></template>\n\n<style>\n.a { content: v-bind('format(label, 2)'); color: v-bind(label) }\n</style>\n";
+        let (state, uri) = fixture.vue("Styled.vue", source);
+        let bridge = fixture.bridge();
+        bridge.spawn().await.unwrap();
+
+        let marker = "format(label, ";
+        let offset = source.find(marker).unwrap() + marker.len();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let help = SignatureHelpService::signature_help_with_corsa(&ctx, Some(bridge.clone()))
+            .await
+            .expect("signature help inside v-bind()");
+        let labels: Vec<_> = help.signatures.iter().map(|s| s.label.as_str()).collect();
+        assert_eq!(labels, ["format(value: string, precision: number): string"]);
+        assert_eq!(help.active_parameter, Some(1));
+
+        for outside in ["(label) }", "content:"] {
+            let offset = source.find(outside).unwrap() + 2;
+            let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+            assert_eq!(
+                SignatureHelpService::signature_help_with_corsa(&ctx, Some(bridge.clone())).await,
+                None,
+                "{outside}"
+            );
+        }
+
+        bridge.shutdown().await.unwrap();
+    });
+}
+
+#[test]
 fn signature_help_maps_art_variant_template() {
     crate::runtime::block_on(async {
         let Some(corsa_path) = resolve_tsgo_binary() else {

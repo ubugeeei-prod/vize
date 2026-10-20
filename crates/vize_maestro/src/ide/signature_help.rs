@@ -107,6 +107,9 @@ impl SignatureHelpService {
             BlockType::Art(ArtCursorPosition::VariantTemplate(ref info)) => {
                 Self::signature_help_in_art_variant(ctx, &bridge, info, context, trace).await
             }
+            BlockType::Style(_) if !ctx.uri.path().ends_with(".art.vue") => {
+                Self::signature_help_in_style(ctx, &bridge, context).await
+            }
             BlockType::Template | BlockType::Style(_) | BlockType::Art(_) => None,
         }
     }
@@ -123,6 +126,19 @@ impl SignatureHelpService {
             .await
             .ok()??;
         Some(Self::convert_lsp_signature_help(help))
+    }
+
+    async fn signature_help_in_style(
+        ctx: &IdeContext<'_>,
+        bridge: &CorsaBridge,
+        context: Option<serde_json::Value>,
+    ) -> Option<SignatureHelp> {
+        let (projection, line, character) =
+            corsa_support::StyleBindProjection::open(ctx, bridge).await?;
+        let help =
+            request_signature_help(bridge, &projection.request_uri, line, character, context).await;
+        projection.close(bridge).await;
+        Some(Self::convert_lsp_signature_help(help.ok()??))
     }
 
     async fn signature_help_in_split_script(
