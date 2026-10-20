@@ -255,7 +255,7 @@
     "id": "vue-path-alias-types-9864",
     "history": "673c6fa430aba9ca81c87a81e3e63a4a8c844921",
     "source": "<script setup lang=\"ts\">\nimport { setupPanel } from \"#ui/side-panel.vue\";\nimport { setupPanel as setupPanelRelative } from \"../ui/side-panel.vue\";\nimport { label } from \"#ui/helpers\";\n\nconst viaAlias = setupPanel();\nconst viaRelative = setupPanelRelative();\n</script>\n\n<template>\n  <button type=\"button\" @click=\"viaAlias.open\">alias</button>\n  <button type=\"button\" @click=\"viaRelative.open\">relative</button>\n  <span>{{ label() }}</span>\n</template>\n",
-    "filename": "tests/_fixtures/differential/linter/vue-alias-types-9864/src/pages/page-view.vue",
+    "filename": "../../tests/_fixtures/differential/linter/vue-alias-types-9864/src/pages/page-view.vue",
     "entry": "sfc",
     "rule": "type/no-unsafe-template-binding",
     "vue_version": "3",
