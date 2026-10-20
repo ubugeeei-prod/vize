@@ -8,7 +8,9 @@ use vize_l0::{
         LinterFeatureFlags,
     },
 };
-use vize_patina::{HelpLevel, Linter, Locale, Severity, VUE_ROUTER_COMPONENTS};
+use vize_patina::{
+    HelpLevel, Linter, Locale, NUXT_BUILTIN_COMPONENTS, Severity, VUE_ROUTER_COMPONENTS,
+};
 
 mod rule_option_mapping;
 
@@ -31,6 +33,7 @@ pub(super) struct ResolvedLinterRuleGroups {
     pub(super) file_config_indices: Vec<usize>,
     pinia_available: Vec<bool>,
     vue_router_available: Vec<bool>,
+    nuxt_available: Vec<bool>,
 }
 
 impl ResolvedLinterRuleGroups {
@@ -45,13 +48,16 @@ impl ResolvedLinterRuleGroups {
     ) -> Vec<Linter> {
         self.configs
             .iter()
-            .zip(self.pinia_available.iter().zip(&self.vue_router_available))
+            .enumerate()
             .zip(&self.rule_options)
-            .map(|((config, (pinia_available, vue_router)), rule_options)| {
+            .map(|((index, config), rule_options)| {
+                let pinia_available = self.pinia_available[index];
+                let vue_router_available = self.vue_router_available[index];
+                let nuxt_available = self.nuxt_available[index];
                 let type_aware =
                     args.type_aware || args.strict_reactivity || config.type_aware_lint_enabled();
                 let mut additional_rules = config.enabled_rules();
-                let disabled_rules = resolved_disabled_rules(config, *pinia_available);
+                let disabled_rules = resolved_disabled_rules(config, pinia_available);
                 let restricted_globals = rule_options.restricted_globals();
                 let restricted_members = rule_options.restricted_members();
                 let musea_design_tokens = rule_options.musea_design_tokens();
@@ -101,7 +107,8 @@ impl ResolvedLinterRuleGroups {
                     .with_musea_design_tokens(musea_design_tokens);
                 if let Some(globals) = component_registration_globals(
                     rule_options.component_registration_globals(),
-                    *vue_router,
+                    vue_router_available,
+                    nuxt_available,
                 ) {
                     linter = linter.with_component_registration_globals(globals);
                 }
@@ -211,19 +218,22 @@ impl LinterRuleResolver {
 
     /// Resolve each distinct matching-entry signature exactly once for the batch.
     pub(super) fn resolve_files(&self, files: &[PathBuf], cwd: &Path) -> ResolvedLinterRuleGroups {
-        let mut signatures = FxHashMap::<(Vec<usize>, bool, bool), usize>::default();
+        let mut signatures = FxHashMap::<(Vec<usize>, bool, bool, bool), usize>::default();
         let mut pinia_cache = FxHashMap::default();
         let mut vue_router_cache = FxHashMap::default();
+        let mut nuxt_cache = FxHashMap::default();
         let mut configs = Vec::new();
         let mut rule_options = Vec::new();
         let mut pinia_available = Vec::new();
         let mut vue_router_available = Vec::new();
+        let mut nuxt_available = Vec::new();
         let mut file_config_indices = Vec::with_capacity(files.len());
         for file in files {
             let signature = (
                 self.matching_entries(file, cwd),
                 package_is_resolvable_from(file, cwd, "pinia", &mut pinia_cache),
                 package_is_resolvable_from(file, cwd, "vue-router", &mut vue_router_cache),
+                package_is_resolvable_from(file, cwd, "nuxt", &mut nuxt_cache),
             );
             let index = match signatures.get(&signature) {
                 Some(index) => *index,
@@ -234,6 +244,7 @@ impl LinterRuleResolver {
                     rule_options.push(resolved.rule_options);
                     pinia_available.push(signature.1);
                     vue_router_available.push(signature.2);
+                    nuxt_available.push(signature.3);
                     signatures.insert(signature, index);
                     index
                 }
@@ -246,6 +257,7 @@ impl LinterRuleResolver {
             file_config_indices,
             pinia_available,
             vue_router_available,
+            nuxt_available,
         }
     }
 
@@ -270,16 +282,26 @@ fn resolved_disabled_rules(
     rules
 }
 
-/// Configured globals plus the components an installed Vue Router registers.
+/// Configured globals plus components installed frameworks register globally.
 fn component_registration_globals(
     configured: Option<&[String]>,
     vue_router_available: bool,
+    nuxt_available: bool,
 ) -> Option<Vec<String>> {
-    if !vue_router_available {
+    if !vue_router_available && !nuxt_available {
         return configured.map(<[String]>::to_vec);
     }
     let mut globals = configured.map(<[String]>::to_vec).unwrap_or_default();
-    globals.extend(VUE_ROUTER_COMPONENTS.iter().map(|name| String::from(*name)));
+    if vue_router_available {
+        globals.extend(VUE_ROUTER_COMPONENTS.iter().map(|name| String::from(*name)));
+    }
+    if nuxt_available {
+        globals.extend(
+            NUXT_BUILTIN_COMPONENTS
+                .iter()
+                .map(|name| String::from(*name)),
+        );
+    }
     Some(globals)
 }
 
