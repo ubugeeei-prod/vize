@@ -28,16 +28,44 @@ pub(super) fn evaluate(
 ) -> Result<(), String> {
     let mut warned_template_owners = FxHashSet::default();
     let mut warned_reactivity_loss_owners = FxHashSet::default();
-    for query in batch.macros {
-        let probe = profile!(
-            "patina.type_aware.corsa.probe_macro",
-            session.probe_type_at_offset(
-                batch.content,
+    let requests = batch
+        .macros
+        .iter()
+        .map(|query| {
+            (
                 query.generated_offset,
                 false,
                 matches!(query.kind, QueryKind::EmitValidator | QueryKind::Promise),
             )
-        )?;
+        })
+        .chain(batch.templates.iter().map(|query| {
+            (
+                query.generated_offset,
+                false,
+                matches!(query.kind, TemplateQueryKind::CallReturn),
+            )
+        }))
+        .chain(
+            batch
+                .promises
+                .iter()
+                .map(|query| (query.generated_offset, false, true)),
+        )
+        .chain(
+            batch
+                .reactivities
+                .iter()
+                .map(|query| (query.generated_offset, false, false)),
+        )
+        .collect::<Vec<_>>();
+    let probes = profile!(
+        "patina.type_aware.corsa.probe_batch",
+        session.probe_types_at_offsets(batch.content, &requests)
+    )?;
+    let mut probes = probes.into_iter();
+
+    for query in batch.macros {
+        let probe = probes.next().flatten();
 
         match query.kind {
             QueryKind::PropType => {
@@ -72,15 +100,7 @@ pub(super) fn evaluate(
     }
 
     for query in batch.templates {
-        let probe = profile!(
-            "patina.type_aware.corsa.probe_template",
-            session.probe_type_at_offset(
-                batch.content,
-                query.generated_offset,
-                false,
-                matches!(query.kind, TemplateQueryKind::CallReturn),
-            )
-        )?;
+        let probe = probes.next().flatten();
         if !super::super::expression_bindings::template_binding_is_unsafe(
             batch.source,
             query,
@@ -105,10 +125,7 @@ pub(super) fn evaluate(
     }
 
     for query in batch.promises {
-        let probe = profile!(
-            "patina.type_aware.corsa.probe_template_promise",
-            session.probe_type_at_offset(batch.content, query.generated_offset, false, true,)
-        )?;
+        let probe = probes.next().flatten();
         let Some(probe) = probe.as_ref() else {
             continue;
         };
@@ -120,10 +137,7 @@ pub(super) fn evaluate(
     }
 
     for query in batch.reactivities {
-        let probe = profile!(
-            "patina.type_aware.corsa.probe_reactivity_loss",
-            session.probe_type_at_offset(batch.content, query.generated_offset, false, false,)
-        )?;
+        let probe = probes.next().flatten();
         if !should_warn_for_reactivity_loss(probe.as_ref()) {
             continue;
         }
@@ -133,5 +147,6 @@ pub(super) fn evaluate(
             push_warning(result, query.diagnostic(batch.script_offset));
         }
     }
+    debug_assert!(probes.next().is_none());
     Ok(())
 }

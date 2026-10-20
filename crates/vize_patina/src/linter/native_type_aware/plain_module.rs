@@ -54,16 +54,16 @@ pub(in crate::linter) fn append_plain_module_type_diagnostics(
             session.open_virtual_project(augmented.as_str(), filename)?;
             let mut seen_promises = FxHashSet::default();
             let mut seen_reactivity = FxHashSet::default();
-            for (offset, kind) in &probes {
-                if !remember_probe(kind, &mut seen_promises, &mut seen_reactivity) {
-                    continue;
-                }
-                let probe = session.probe_type_at_offset(
-                    augmented.as_str(),
-                    *offset,
-                    false,
-                    kind.loads_signatures(),
-                )?;
+            let selected = probes
+                .iter()
+                .filter(|(_, kind)| remember_probe(kind, &mut seen_promises, &mut seen_reactivity))
+                .collect::<Vec<_>>();
+            let requests = selected
+                .iter()
+                .map(|(offset, kind)| (*offset, false, kind.loads_signatures()))
+                .collect::<Vec<_>>();
+            let type_probes = session.probe_types_at_offsets(augmented.as_str(), &requests)?;
+            for ((_, kind), probe) in selected.into_iter().zip(type_probes) {
                 report_probe(result, kind, probe.as_ref());
             }
             Ok(())

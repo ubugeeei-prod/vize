@@ -618,6 +618,48 @@
         "lint": false,
         "typecheck": false
       }
+    },
+    {
+      "id": "lsp/regression/nested-vite-project-9856",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "nested-vite-project-9856",
+        "files": [
+          {
+            "path": "gallery/Widget.vue.txt",
+            "sha256": "0304170acb45ce75b40faf514966cf5ee4453802e920fe7d05ceea05bceb6730"
+          },
+          {
+            "path": "src/lib/math.ts.txt",
+            "sha256": "f4d9a941b45e0f47e8eb4960c27f18af1d0dc973ab399c7862c327c846c941cc"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "63c312539837b3ea8e3b67509559651dd718be2c7488fdde9ff698fdc4d90f5d"
+          },
+          {
+            "path": "vite.config.ts.txt",
+            "sha256": "160eebeab2277ee2a479183fa67d2d4cfe72366877931eaaf1d92bc960f9588b"
+          },
+          {
+            "path": "gallery/vite.config.ts.txt",
+            "sha256": "450f0af4f4c1ecc4c7180f2e364c8a59bfed69dd350fb6b47bce8641c2a37786"
+          }
+        ]
+      },
+      "case": {
+        "path": "nested-vite-project-9856/case.json",
+        "sha256": "7c7850896d45849025be9f04d66ad7570794498088925c7dcaf83f666d67288c"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
     }
   ]
 }

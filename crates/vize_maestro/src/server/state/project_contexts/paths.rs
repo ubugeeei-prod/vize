@@ -88,6 +88,22 @@ mod tests {
     }
 
     #[test]
+    fn nested_vite_config_stays_in_the_ancestor_typescript_project() {
+        let fixture = tempfile::tempdir().unwrap();
+        let root = fixture.path();
+        let gallery = root.join("gallery");
+        std::fs::create_dir_all(&gallery).unwrap();
+        std::fs::write(root.join("tsconfig.json"), "{}").unwrap();
+        std::fs::write(root.join("vite.config.ts"), "export default { vue: {} }").unwrap();
+        std::fs::write(gallery.join("vite.config.ts"), "export default {}").unwrap();
+
+        assert_eq!(
+            document_context_root(&gallery.join("Widget.vue"), &[root.to_path_buf()]),
+            Some(root.to_path_buf())
+        );
+    }
+
+    #[test]
     fn config_watch_alias_retires_the_open_authored_uri_owner() {
         use super::super::{Arc, ServerState, Url};
         use tower_lsp::lsp_types::{FileChangeType, FileEvent};

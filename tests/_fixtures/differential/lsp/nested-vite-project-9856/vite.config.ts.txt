@@ -1,0 +1,1 @@
+export default { vue: { linter: { rules: { "vue/require-scoped-style": "off" } } } };
