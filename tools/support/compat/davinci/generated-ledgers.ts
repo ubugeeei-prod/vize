@@ -4,8 +4,8 @@ import { spawn } from "node:child_process";
 import { existsSync, readdirSync } from "node:fs";
 import path from "node:path";
 
-import { emitAggregate, parseAggregateArgs } from "./lib/aggregate-artifact.mjs";
-import { repoRoot } from "./lib/paths.mjs";
+import { emitAggregate, parseAggregateArgs } from "./lib/aggregate-artifact.ts";
+import { repoRoot } from "./lib/paths.ts";
 
 const generators: readonly (readonly [name: string, generator: string])[] = [
   ["rule-parity.md", "rule-parity.ts"],

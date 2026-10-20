@@ -2,7 +2,7 @@
 // (Davinci P0-13). Two pilot defect classes:
 //
 //   class (a) "undefined-template-ref": rename one `<script setup>` binding
-//   (first eligible, deterministic — see fpfn-seed-sfc.mjs for the
+//   (first eligible, deterministic — see fpfn-seed-sfc.ts for the
 //   eligibility contract) everywhere in the script block, so the template
 //   reference dangles. Expected diagnostic: vue/no-undefined-refs.
 //
@@ -24,8 +24,8 @@ import {
   templateExpressionSegments,
   topLevelBindings,
   totalTemplateOccurrences,
-} from "./fpfn-seed-sfc.mjs";
-import { indexToLineCol, lineStartsOf } from "./fpfn-shared.mjs";
+} from "./fpfn-seed-sfc.ts";
+import { indexToLineCol, lineStartsOf } from "./fpfn-shared.ts";
 
 export const CLASS_A = "undefined-template-ref";
 export const CLASS_B = "unused-binding";
@@ -35,10 +35,33 @@ export const SEEDED_NAME_SUFFIX = "__davinci_seeded";
 export const UNUSED_BINDING_NAME = "davinciSeededUnused";
 export const UNUSED_BINDING_STATEMENT = `const ${UNUSED_BINDING_NAME} = 0;\n`;
 
+export type Span = [number, number];
+
+export interface ClassAPlan {
+  name: string;
+  seededName: string;
+  renameSpans: Span[];
+  templateRef: Span;
+}
+
+export interface ClassBPlan {
+  insertAt: number;
+  insertText: string;
+  createdBlock: boolean;
+}
+
+export interface SeedEdit {
+  span: Span;
+  delta: number;
+}
+
 /** Standalone-token occurrences of `name` in blanked script text. */
-function scriptTokenOccurrences(scriptContent, name) {
+function scriptTokenOccurrences(
+  scriptContent: string,
+  name: string,
+): { spans: number[]; unsure: boolean } {
   const blanked = blankScriptNoise(scriptContent);
-  const spans = [];
+  const spans: number[] = [];
   let unsure = false;
   const tokenRe = new RegExp(escapeRegExp(name), "g");
   for (const match of blanked.matchAll(tokenRe)) {
@@ -58,7 +81,7 @@ function scriptTokenOccurrences(scriptContent, name) {
 }
 
 /** Class-(a) plan for one file, or null with a reason when ineligible. */
-export function planClassA(source) {
+export function planClassA(source: string): { plan: ClassAPlan | null; reason: string | null } {
   const blocks = extractBlocks(source);
   if (!blocks.scriptSetup || !blocks.template) {
     return { plan: null, reason: "no-single-script-setup-and-template" };
@@ -70,7 +93,7 @@ export function planClassA(source) {
     if (totalTemplateOccurrences(template.content, name) !== 1) continue;
     if (isShadowedInTemplate(template.content, name)) continue;
     const segments = templateExpressionSegments(template.content);
-    const hits = [];
+    const hits: number[] = [];
     for (const segment of segments) {
       for (const offset of identifierOccurrences(segment.text, name)) {
         hits.push(template.contentStart + segment.start + offset);
@@ -83,7 +106,7 @@ export function planClassA(source) {
       plan: {
         name,
         seededName,
-        renameSpans: script.spans.map((offset) => [
+        renameSpans: script.spans.map((offset): Span => [
           scriptSetup.contentStart + offset,
           scriptSetup.contentStart + offset + name.length,
         ]),
@@ -96,7 +119,7 @@ export function planClassA(source) {
 }
 
 /** Class-(b) plan for one file (always eligible unless already seeded). */
-export function planClassB(source) {
+export function planClassB(source: string): { plan: ClassBPlan | null; reason: string | null } {
   if (source.includes(UNUSED_BINDING_NAME)) return { plan: null, reason: "already-seeded" };
   const blocks = extractBlocks(source);
   if (blocks.scriptSetup) {
@@ -121,8 +144,12 @@ export function planClassB(source) {
  * Apply plans to `source`. Returns the seeded text plus the ascending edit
  * list ({span: [start, end], delta}, original-file coordinates).
  */
-export function applySeed(source, classAPlan, classBPlan) {
-  const edits = [];
+export function applySeed(
+  source: string,
+  classAPlan: ClassAPlan | null,
+  classBPlan: ClassBPlan | null,
+): { seeded: string; edits: SeedEdit[] } {
+  const edits: (SeedEdit & { insert: string })[] = [];
   if (classAPlan) {
     for (const [start, end] of classAPlan.renameSpans) {
       edits.push({
@@ -153,7 +180,11 @@ export function applySeed(source, classAPlan, classBPlan) {
  * `isEnd` marks exclusive span ends (they stay put at pure-insert points).
  * Returns {offset, overlap}.
  */
-export function mapOffsetThroughEdits(offset, edits, isEnd) {
+export function mapOffsetThroughEdits(
+  offset: number,
+  edits: readonly SeedEdit[],
+  isEnd: boolean,
+): { offset: number; overlap: boolean } {
   let mapped = offset;
   for (const { span, delta } of edits) {
     const [start, end] = span;
@@ -169,7 +200,7 @@ export function mapOffsetThroughEdits(offset, edits, isEnd) {
 }
 
 /** Whether the original-coordinate span [start, end) crosses any edit. */
-export function spanOverlapsEdits(start, end, edits) {
+export function spanOverlapsEdits(start: number, end: number, edits: readonly SeedEdit[]): boolean {
   for (const { span } of edits) {
     const editStart = span[0];
     const editEnd = span[1];
@@ -180,7 +211,20 @@ export function spanOverlapsEdits(start, end, edits) {
 }
 
 /** Locate a seeded span in the seeded text and attach line/column data. */
-export function describeSeededSpan(seededText, lineStarts, start, end) {
+export interface SeededSpan {
+  span: Span;
+  line: number;
+  column: number;
+  endLine: number;
+  endColumn: number;
+}
+
+export function describeSeededSpan(
+  seededText: string,
+  lineStarts: readonly number[],
+  start: number,
+  end: number,
+): SeededSpan {
   const from = indexToLineCol(seededText, lineStarts, start);
   const to = indexToLineCol(seededText, lineStarts, end);
   return {
@@ -193,7 +237,12 @@ export function describeSeededSpan(seededText, lineStarts, start, end) {
 }
 
 /** Map an original span forward and describe it in seeded coordinates. */
-export function describeMappedSpan(seededText, edits, originalStart, originalEnd) {
+export function describeMappedSpan(
+  seededText: string,
+  edits: readonly SeedEdit[],
+  originalStart: number,
+  originalEnd: number,
+): SeededSpan | null {
   const start = mapOffsetThroughEdits(originalStart, edits, false);
   const end = mapOffsetThroughEdits(originalEnd, edits, true);
   if (start.overlap || end.overlap) return null;

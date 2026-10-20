@@ -4,14 +4,19 @@
 
 import { existsSync, readFileSync } from "node:fs";
 
-import { CLASSIFICATIONS, OVERRIDES, OVERRIDES_REL } from "./rule-parity-paths.mjs";
+import { CLASSIFICATIONS, OVERRIDES, OVERRIDES_REL } from "./rule-parity-paths.ts";
 
-export function parseOverrides() {
+export interface Override {
+  classification: string | null;
+  reason: string | null;
+}
+
+export function parseOverrides(): Map<string, Override> {
   if (!existsSync(OVERRIDES)) {
     throw new Error(`${OVERRIDES_REL} is missing; commit it (empty is fine)`);
   }
-  const overrides = new Map(); // rule name -> { classification, reason }
-  let current = null;
+  const overrides = new Map<string, Override>(); // rule name -> { classification, reason }
+  let current: Override | null = null;
   const lines = readFileSync(OVERRIDES, "utf8").split("\n");
   for (const [idx, rawLine] of lines.entries()) {
     const line = rawLine.replace(/(^|\s)#.*$/, "").trim();

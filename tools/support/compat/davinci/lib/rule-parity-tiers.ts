@@ -6,7 +6,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-import { PATINA_SRC } from "./rule-parity-paths.mjs";
+import { PATINA_SRC } from "./rule-parity-paths.ts";
 
 export const TIER_TABLE_REL = "crates/vize_patina/src/rule_contracts/table.rs";
 export const TIERS = ["exact", "sound", "complete", "heuristic"];
@@ -15,14 +15,14 @@ const ROW =
   /^\s*row!\("(?<name>[^"]+)",\s*(?<tier>Exact|Sound|Complete|Heuristic),\s*[A-Z0-9_]+,\s*(?:Error|Warning)\),\s*$/u;
 
 /** name -> tier (lowercase), read from the contract table. */
-export function readTierTable() {
+export function readTierTable(): Map<string, string> {
   const source = readFileSync(path.join(PATINA_SRC, "rule_contracts", "table.rs"), "utf8");
-  const tiers = new Map();
+  const tiers = new Map<string, string>();
   for (const [index, line] of source.split("\n").entries()) {
     if (!line.trimStart().startsWith("row!(")) continue;
     const match = ROW.exec(line);
     if (!match) throw new Error(`${TIER_TABLE_REL}:${index + 1}: unreadable contract row`);
-    const { name, tier } = match.groups;
+    const { name, tier } = match.groups!;
     if (tiers.has(name)) throw new Error(`${TIER_TABLE_REL}: duplicate contract row "${name}"`);
     tiers.set(name, tier.toLowerCase());
   }
@@ -30,7 +30,10 @@ export function readTierTable() {
 }
 
 /** Attach `tier` to every rule; fail on a rule without a row or a stray row. */
-export function applyTiers(rules, tiers = readTierTable()) {
+export function applyTiers(
+  rules: Map<string, { name: string; tier?: string }>,
+  tiers: Map<string, string> = readTierTable(),
+): void {
   for (const rule of rules.values()) {
     const tier = tiers.get(rule.name);
     if (tier === undefined) {

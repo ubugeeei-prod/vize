@@ -4,8 +4,8 @@ import { appendFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { expectedComparisonCount } from "../davinci/lib/corpus-baseline-artifact.mjs";
-import { loadManifest } from "../davinci/lib/corpus-baseline-contract.mjs";
+import { expectedComparisonCount } from "../davinci/lib/corpus-baseline-artifact.ts";
+import { loadManifest } from "../davinci/lib/corpus-baseline-contract.ts";
 
 export const artifactDir = "real-project-davinci-dom-corpus";
 export const corpusRoot = "tests/_fixtures/_git";

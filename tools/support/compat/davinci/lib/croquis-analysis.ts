@@ -1,13 +1,30 @@
 // Consumer resolution: turns the per-file symbol index into product ×
 // consuming-crate site counts, plus the naive grep lane used as a cross-check.
 
-import { discoverCrates } from "./crates.mjs";
-import { buildFileIndex } from "./croquis-file-index.mjs";
-import { collectCroquisProducers } from "./croquis-producers.mjs";
-import { byKey } from "./ordering.mjs";
-import { CROQUIS_CRATE_NAME } from "./paths.mjs";
+import { discoverCrates } from "./crates.ts";
+import type { Crate } from "./crates.ts";
+import { buildFileIndex } from "./croquis-file-index.ts";
+import { collectCroquisProducers } from "./croquis-producers.ts";
+import type { Products } from "./croquis-products.ts";
+import { byKey } from "./ordering.ts";
+import { CROQUIS_CRATE_NAME } from "./paths.ts";
 
-export function analyzeConsumers(products) {
+export interface SiteRow {
+  product: string;
+  crate: string;
+  sites: number;
+  files: Set<string>;
+}
+
+export interface Analysis {
+  crates: Crate[];
+  rows: Map<string, SiteRow>;
+  nonProduct: Map<string, SiteRow>;
+  grepRows: Map<string, SiteRow>;
+  globFiles: string[];
+}
+
+export function analyzeConsumers(products: Products): Analysis {
   const allCrates = discoverCrates();
   const crates = allCrates.filter((c) => c.name !== CROQUIS_CRATE_NAME);
   const crateNames = new Set(crates.map((c) => c.name));
@@ -15,27 +32,33 @@ export function analyzeConsumers(products) {
   const parsed = buildFileIndex(crates, crateNames);
 
   // Reference + field-access counting.
-  const rows = new Map(); // key `${product}\0${crate}` -> { sites, files:Set }
-  const nonProduct = new Map(); // same keying for non-product croquis items
-  const grepRows = new Map(); // naive lane
-  const globFiles = [];
+  const rows = new Map<string, SiteRow>(); // key `${product}\0${crate}` -> { sites, files:Set }
+  const nonProduct = new Map<string, SiteRow>(); // same keying for non-product croquis items
+  const grepRows = new Map<string, SiteRow>(); // naive lane
+  const globFiles: string[] = [];
 
-  const bump = (map, product, crate, file, count) => {
+  const bump = (
+    map: Map<string, SiteRow>,
+    product: string,
+    crate: string,
+    file: string,
+    count: number,
+  ): void => {
     if (count <= 0) return;
     const key = product + "\u0000" + crate;
     if (!map.has(key)) map.set(key, { product, crate, sites: 0, files: new Set() });
-    const row = map.get(key);
+    const row = map.get(key)!;
     row.sites += count;
     row.files.add(file);
   };
 
-  const isProduct = (name) => products.typeProducts.has(name);
+  const isProduct = (name: string): boolean => products.typeProducts.has(name);
   const fieldNames = [...products.fieldProducts.keys()].sort(byKey);
   const fieldAlt = fieldNames.join("|");
 
   for (const crate of crates) {
-    for (const file of parsed.get(crate.name)) {
-      const attribute = (name, count) => {
+    for (const file of parsed.get(crate.name)!) {
+      const attribute = (name: string, count: number): void => {
         if (isProduct(name)) bump(rows, name, crate.name, file.rel, count);
         else bump(nonProduct, name, crate.name, file.rel, count);
       };
@@ -46,18 +69,18 @@ export function analyzeConsumers(products) {
       // (1) Fully qualified paths in code (masked text has use decls removed).
       let text = file.masked;
       const fqRe = /\bvize_croquis(?:::[a-z_][a-z0-9_]*)*::([A-Za-z_][A-Za-z0-9_]*)/g;
-      const fqCounts = new Map();
-      text = text.replace(fqRe, (whole, item) => {
+      const fqCounts = new Map<string, number>();
+      text = text.replace(fqRe, (whole: string, item: string) => {
         fqCounts.set(item, (fqCounts.get(item) ?? 0) + 1);
         return " ".repeat(whole.length);
       });
       for (const [item, count] of fqCounts) attribute(item, count);
 
       // (2) Module-alias qualified references: `alias::Member`.
-      const memberHits = new Map();
+      const memberHits = new Map<string, number>();
       for (const [local] of file.moduleAliases) {
         const re = new RegExp(`(?<![A-Za-z0-9_:.])${local}::([A-Za-z_][A-Za-z0-9_]*)`, "g");
-        text = text.replace(re, (whole, member) => {
+        text = text.replace(re, (whole: string, member: string) => {
           memberHits.set(member, (memberHits.get(member) ?? 0) + 1);
           return " ".repeat(whole.length);
         });
@@ -73,13 +96,13 @@ export function analyzeConsumers(products) {
 
       // (4) Field accesses on values provably typed `Croquis` in this file.
       if (fieldAlt) {
-        const croquisTypeNames = [];
+        const croquisTypeNames: string[] = [];
         for (const [local, { item }] of file.itemAliases) {
           if (item === "Croquis") croquisTypeNames.push(local);
         }
         croquisTypeNames.push("vize_croquis::Croquis", "vize_croquis::croquis::Croquis");
-        const receivers = new Set();
-        const croquisMethods = new Set();
+        const receivers = new Set<string>();
+        const croquisMethods = new Set<string>();
         for (const typeName of croquisTypeNames) {
           const t = typeName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
           // parameter / struct field / let annotations, incl. &, &'a, &mut,
@@ -130,9 +153,9 @@ export function analyzeConsumers(products) {
           }
         }
         receivers.delete("self");
-        const fieldHits = new Map();
-        const seenPositions = new Set();
-        const collect = (re) => {
+        const fieldHits = new Map<string, number>();
+        const seenPositions = new Set<number>();
+        const collect = (re: RegExp): void => {
           for (const m of file.masked.matchAll(re)) {
             const field = m[1];
             const pos = m.index + m[0].length;

@@ -2,6 +2,6 @@
 // artifact is byte-compared by the staleness check, so every sort passes an
 // explicit comparator rather than relying on the implicit `Array#sort` one.
 
-export function byKey(left, right) {
+export function byKey(left: string, right: string): number {
   return left < right ? -1 : left > right ? 1 : 0;
 }

@@ -3,12 +3,12 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { resolveCorsaPath, resolveVuePackagePath } from "../../editor-e2e/real-vue-workspace.ts";
 
-export const fileName = (index) => `Component${String(index).padStart(5, "0")}.vue`;
+export const fileName = (index: number): string => `Component${String(index).padStart(5, "0")}.vue`;
 
 // Disjoint import pairs avoid a synthetic 10,000-member dependency cycle.
 // Every SFC has a distinct public prop, so alpha interning cannot collapse the
 // workspace into one interface page. All six public facets have real macros.
-export function componentSource(index) {
+export function componentSource(index: number): string {
   return `<script setup lang="ts">
 import Peer from './${fileName(index ^ 1)}'
 ${index === 1 ? "import { useTemplateRef } from 'vue'\nconst peer = useTemplateRef('peer')\npeer.value?.publicState.toUpperCase()\n" : ""}
@@ -26,7 +26,10 @@ const checked: number = 1
 `;
 }
 
-export function prepareWorkspace(workspace, files) {
+export function prepareWorkspace(
+  workspace: string,
+  files: number,
+): { corsaPath: string; vuePath: string } {
   fs.mkdirSync(path.join(workspace, "src"), { recursive: true });
   fs.mkdirSync(path.join(workspace, "node_modules"), { recursive: true });
   fs.symlinkSync(resolveVuePackagePath(), path.join(workspace, "node_modules/vue"), "junction");
@@ -61,5 +64,5 @@ export function prepareWorkspace(workspace, files) {
   return { corsaPath, vuePath: resolveVuePackagePath() };
 }
 
-export const documentUri = (workspace, index) =>
+export const documentUri = (workspace: string, index: number): string =>
   pathToFileURL(path.join(workspace, "src", fileName(index))).href;

@@ -21,7 +21,7 @@ any read — or any deleted carrier — comes back.
 ## Resolution method (and its limits)
 
 - Comments and string literals are stripped first
-  (`tools/davinci/lib/rust-source.mjs`); member paths are then counted
+  (`tools/support/compat/davinci/lib/rust-source.ts`); member paths are then counted
   **textually** on loc-shaped receivers only: chained `.loc.<member>`,
   `.loc().<member>`, `.location.<member>` accesses, and bare locals named
   `loc` / `location` / `*_loc` / `*_location`.

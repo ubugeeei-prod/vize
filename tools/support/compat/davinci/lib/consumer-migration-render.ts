@@ -3,29 +3,49 @@
 // (method, surface legend, consumer scopes, shard layout) plus one TSV shard
 // per (consumer, crate). Nothing committed aggregates across files or crates,
 // so two PRs touching different crates never edit the same committed file;
-// totals live in the on-demand `--summary` view (consumer-migration-summary.mjs).
+// totals live in the on-demand `--summary` view (consumer-migration-summary.ts).
 
-import { formatTable } from "./markdown.mjs";
-import { SURFACES, surfaceNameKind } from "./consumer-migration-scan.mjs";
+import { formatTable } from "./markdown.ts";
+import { SURFACES, surfaceNameKind } from "./consumer-migration-scan.ts";
+import type {
+  Consumer,
+  ConsumerEntry,
+  ConsumerScan,
+  FileRow,
+  SiteMode,
+  Surface,
+} from "./consumer-migration-types.ts";
 
 export const SHARD_DIR_REL = "docs/davinci/plan/consumer-migration-surfaces";
 
-export function surfaceList(surfaceCounts) {
+export interface RenderOptions {
+  regenCommand: string;
+  summaryCommand: string;
+}
+
+export interface Shard<C extends Consumer> {
+  consumer: C;
+  crate: string;
+  entries: ConsumerEntry[];
+  relPath: string;
+}
+
+export function surfaceList(surfaceCounts: Record<string, number>): string {
   const labels = SURFACES.filter((surface) => surfaceCounts[surface.id] > 0).map(
     (surface) => `${surface.label} ${surfaceCounts[surface.id]}`,
   );
   return labels.length === 0 ? "-" : labels.join("<br>");
 }
 
-export function modeLabel(mode) {
+export function modeLabel(mode: SiteMode): string {
   if (mode === "manifest") return "manifest";
   if (mode === "test") return "test/dev";
   return "source";
 }
 
-function matchedNamesLabel(surface) {
+function matchedNamesLabel(surface: Surface): string {
   const classified = new Set([...(surface.preferredNames ?? []), ...(surface.compatNames ?? [])]);
-  const rows = [];
+  const rows: string[] = [];
   if (surface.preferredNames?.length) {
     rows.push(`preferred: ${surface.preferredNames.map((name) => `\`${name}\``).join(", ")}`);
   }
@@ -41,17 +61,17 @@ function matchedNamesLabel(surface) {
 }
 
 // The crate a scanned file belongs to: every scope entry lives under `crates/<crate>/`.
-function crateOf(relPath) {
+function crateOf(relPath: string): string {
   const [root, crate] = relPath.split("/");
   if (root !== "crates" || !crate) throw new Error(`scanned file outside crates/: ${relPath}`);
   return crate;
 }
 
-function entryRoot(entry) {
-  return entry.crate ? `crates/${entry.crate}` : entry.path;
+function entryRoot(entry: ConsumerEntry): string {
+  return entry.crate ? `crates/${entry.crate}` : entry.path!;
 }
 
-function entryLabel(entry) {
+function entryLabel(entry: ConsumerEntry): string {
   const filtered = entry.include || entry.exclude ? " (filtered, see scope)" : "";
   if (entry.crate) {
     return `crate \`${entry.crate}\` (\`Cargo.toml\`, \`src\`, \`tests\`, \`benches\`)${filtered}`;
@@ -60,20 +80,20 @@ function entryLabel(entry) {
 }
 
 /** Every (consumer, crate) shard, fixed by the scan configuration alone. */
-export function shardLayout(consumers) {
-  const shards = [];
+export function shardLayout<C extends Consumer>(consumers: readonly C[]): Shard<C>[] {
+  const shards: Shard<C>[] = [];
   for (const consumer of consumers) {
-    const byCrate = new Map();
+    const byCrate = new Map<string, ConsumerEntry[]>();
     for (const entry of consumer.entries) {
       const crate = crateOf(entryRoot(entry));
       if (!byCrate.has(crate)) byCrate.set(crate, []);
-      byCrate.get(crate).push(entry);
+      byCrate.get(crate)!.push(entry);
     }
     for (const crate of [...byCrate.keys()].sort((a, b) => a.localeCompare(b))) {
       shards.push({
         consumer,
         crate,
-        entries: byCrate.get(crate),
+        entries: byCrate.get(crate)!,
         relPath: `${SHARD_DIR_REL}/${consumer.id}/${crate}.tsv`,
       });
     }
@@ -81,7 +101,7 @@ export function shardLayout(consumers) {
   return shards;
 }
 
-function renderShardTable(consumers) {
+function renderShardTable(consumers: readonly Consumer[]): string {
   return formatTable(
     ["consumer", "shard", "scanned roots"],
     ["left", "left", "left"],
@@ -92,13 +112,13 @@ function renderShardTable(consumers) {
   );
 }
 
-function renderScopes(consumers) {
+function renderScopes(consumers: readonly Consumer[]): string {
   return consumers
     .map((consumer) => `- **${consumer.label}** (\`${consumer.id}\`): ${consumer.scope}.`)
     .join("\n");
 }
 
-function renderSlices() {
+function renderSlices(): string {
   return `## Independently mergeable no-rollout slices
 
 1. \`test(davinci): pin consumer migration surfaces\` - this artifact and its
@@ -139,7 +159,10 @@ user-visible defaults, command dispatch, package exports, editor activation, or
 protocol behavior.`;
 }
 
-export function renderConsumerMigrationSurfaces(scan, options) {
+export function renderConsumerMigrationSurfaces(
+  scan: ConsumerScan,
+  options: RenderOptions,
+): string {
   const surfaceLegend = formatTable(
     ["surface", "group", "matched name classes"],
     ["left", "left", "left"],
@@ -229,7 +252,7 @@ const ROW_COLUMNS = [
   "sites",
 ];
 
-function renderRows(consumer, fileRows) {
+function renderRows(consumer: Consumer, fileRows: readonly FileRow[]): string {
   const lines = [ROW_COLUMNS.join("\t")];
   for (const row of fileRows) {
     for (const surface of SURFACES) {
@@ -258,7 +281,9 @@ function renderRows(consumer, fileRows) {
 }
 
 /** One TSV per (consumer, crate) shard; a shard with no rows keeps its header. */
-export function renderConsumerMigrationShards(scan) {
+export function renderConsumerMigrationShards(
+  scan: ConsumerScan,
+): { relPath: string; text: string }[] {
   const shards = shardLayout(scan.consumers);
   const known = new Set(shards.map((shard) => `${shard.consumer.id}\0${shard.crate}`));
   for (const consumer of scan.consumers) {
@@ -277,7 +302,7 @@ export function renderConsumerMigrationShards(scan) {
 }
 
 /** Every row of every consumer as one TSV (header + rows): the in-memory union of the shards. */
-export function renderConsumerMigrationSurfaceRows(scan) {
+export function renderConsumerMigrationSurfaceRows(scan: ConsumerScan): string {
   const rows = scan.consumers.flatMap((consumer) =>
     renderRows(consumer, consumer.fileRows).split("\n").slice(1, -1),
   );

@@ -7,10 +7,16 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 
-import { repoRoot } from "./paths.mjs";
-import { stripRust } from "./rust-source.mjs";
+import type * as Scan from "./consumer-migration-types.ts";
+import { repoRoot } from "./paths.ts";
+import { stripRust } from "./rust-source.ts";
 
-function stageSurface(id, label, preferredName, compatNames = []) {
+function stageSurface(
+  id: string,
+  label: string,
+  preferredName: string,
+  compatNames: string[] = [],
+): Scan.Surface {
   return {
     id,
     label,
@@ -21,7 +27,7 @@ function stageSurface(id, label, preferredName, compatNames = []) {
   };
 }
 
-export const SURFACES = [
+export const SURFACES: Scan.Surface[] = [
   stageSurface("l0", "L0", "vize_l0"),
   {
     id: "carton",
@@ -62,7 +68,7 @@ export const SURFACES = [
   },
 ];
 
-export const CONSUMERS = [
+export const CONSUMERS: Scan.Consumer[] = [
   {
     id: "compiler",
     label: "Compiler",
@@ -137,11 +143,11 @@ export const CONSUMERS = [
 
 const SURFACE_BY_ID = new Map(SURFACES.map((surface) => [surface.id, surface]));
 
-function isContentMapperPath(relPath) {
+function isContentMapperPath(relPath: string): boolean {
   return relPath.includes("crates/vize_canon/src/batch/virtual_project/content_mapper");
 }
 
-function surfaceRegex(surface) {
+function surfaceRegex(surface: Scan.Surface): RegExp {
   const alternatives = surface.names
     .slice()
     .sort((a, b) => b.length - a.length)
@@ -149,16 +155,16 @@ function surfaceRegex(surface) {
   return new RegExp(`\\b(?:${alternatives.join("|")})\\b`, "g");
 }
 
-const SURFACE_REGEXES = SURFACES.map((surface) => [surface, surfaceRegex(surface)]);
+const SURFACE_REGEXES = SURFACES.map((surface) => [surface, surfaceRegex(surface)] as const);
 
-export function surfaceNameKind(surface, name) {
+export function surfaceNameKind(surface: Scan.Surface, name: string): Scan.NameKind {
   if (surface.preferredNames?.includes(name)) return "preferred";
   if (surface.compatNames?.includes(name)) return "compat";
   if (surface.group === "raw") return "raw";
   return "legacy";
 }
 
-function stripTomlComments(text) {
+function stripTomlComments(text: string): string {
   return text
     .split("\n")
     .map((line) => {
@@ -172,18 +178,18 @@ function stripTomlComments(text) {
     .join("\n");
 }
 
-function lineOfIndex(text, index) {
+function lineOfIndex(text: string, index: number): number {
   let line = 1;
   for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
   return line;
 }
 
-function walkFiles(root) {
-  const files = [];
+function walkFiles(root: string): string[] {
+  const files: string[] = [];
   if (!existsSync(root)) return files;
   const stat = statSync(root);
   if (stat.isFile()) return [root];
-  const visit = (dir) => {
+  const visit = (dir: string): void => {
     for (const dirent of readdirSync(dir, { withFileTypes: true }).sort((a, b) =>
       a.name < b.name ? -1 : a.name > b.name ? 1 : 0,
     )) {
@@ -196,7 +202,7 @@ function walkFiles(root) {
   return files;
 }
 
-function crateFiles(crateDir) {
+function crateFiles(crateDir: string): string[] {
   const root = path.join(repoRoot, "crates", crateDir);
   return [
     path.join(root, "Cargo.toml"),
@@ -206,11 +212,11 @@ function crateFiles(crateDir) {
   ];
 }
 
-function isScannable(file) {
+function isScannable(file: string): boolean {
   return file.endsWith(".rs") || file.endsWith("Cargo.toml");
 }
 
-function fileMode(relPath) {
+function fileMode(relPath: string): Scan.SiteMode {
   if (relPath.endsWith("/Cargo.toml")) return "manifest";
   const base = path.basename(relPath);
   if (relPath.includes("/tests/") || relPath.includes("/benches/")) return "test";
@@ -218,15 +224,15 @@ function fileMode(relPath) {
   return "source";
 }
 
-function siteMode(relPath, stripped, index) {
+function siteMode(relPath: string, stripped: string, index: number): Scan.SiteMode {
   const mode = fileMode(relPath);
   if (mode !== "source") return mode;
   const cfgTest = stripped.indexOf("#[cfg(test)]");
   return cfgTest !== -1 && index >= cfgTest ? "test" : "source";
 }
 
-function filesForEntry(entry) {
-  const files = entry.crate ? crateFiles(entry.crate) : walkFiles(path.join(repoRoot, entry.path));
+function filesForEntry(entry: Scan.ConsumerEntry): string[] {
+  const files = entry.crate ? crateFiles(entry.crate) : walkFiles(path.join(repoRoot, entry.path!));
   return files
     .filter(isScannable)
     .map((file) => path.relative(repoRoot, file).split(path.sep).join("/"))
@@ -234,22 +240,22 @@ function filesForEntry(entry) {
     .filter((relPath) => (entry.exclude ? !entry.exclude(relPath) : true));
 }
 
-function collectFiles(consumer) {
-  const files = new Set();
+function collectFiles(consumer: Scan.Consumer): string[] {
+  const files = new Set<string>();
   for (const entry of consumer.entries) {
     for (const file of filesForEntry(entry)) files.add(file);
   }
   return [...files].sort((a, b) => a.localeCompare(b));
 }
 
-function scanFile(relPath) {
+function scanFile(relPath: string): Scan.SurfaceSite[] {
   const file = path.join(repoRoot, relPath);
   const text = readFileSync(file, "utf8");
   const stripped = relPath.endsWith("Cargo.toml") ? stripTomlComments(text) : stripRust(text);
-  const sites = [];
+  const sites: Scan.SurfaceSite[] = [];
   for (const [surface, regex] of SURFACE_REGEXES) {
     regex.lastIndex = 0;
-    let match;
+    let match: RegExpExecArray | null;
     while ((match = regex.exec(stripped)) !== null) {
       const matchedName = match[0];
       sites.push({
@@ -266,26 +272,26 @@ function scanFile(relPath) {
   return sites;
 }
 
-function emptySurfaceCounts() {
+function emptySurfaceCounts(): Record<string, number> {
   return Object.fromEntries(SURFACES.map((surface) => [surface.id, 0]));
 }
 
-function emptyNameKindCounts() {
+function emptyNameKindCounts(): Record<Scan.NameKind, number> {
   return { preferred: 0, compat: 0, legacy: 0, raw: 0 };
 }
 
-function emptySurfaceNameCounts() {
+function emptySurfaceNameCounts(): Record<string, Record<string, number>> {
   return Object.fromEntries(SURFACES.map((surface) => [surface.id, {}]));
 }
 
-function summarizeConsumer(consumer) {
+function summarizeConsumer(consumer: Scan.Consumer): Scan.ConsumerSummary {
   const files = collectFiles(consumer);
   const sites = files.flatMap(scanFile);
   const groupCounts = { stage: 0, old: 0, raw: 0 };
   const modeCounts = { source: 0, manifest: 0, test: 0 };
   const surfaceCounts = emptySurfaceCounts();
   const nameKindCounts = emptyNameKindCounts();
-  const fileRows = new Map();
+  const fileRows = new Map<string, Scan.FileRow>();
 
   for (const site of sites) {
     groupCounts[site.group] += 1;
@@ -293,7 +299,7 @@ function summarizeConsumer(consumer) {
     surfaceCounts[site.surfaceId] += 1;
     nameKindCounts[site.nameKind] += 1;
     const key = `${site.relPath}\0${site.mode}`;
-    const row = fileRows.get(key) ?? {
+    const row: Scan.FileRow = fileRows.get(key) ?? {
       relPath: site.relPath,
       mode: site.mode,
       firstLine: site.line,
@@ -326,11 +332,11 @@ function summarizeConsumer(consumer) {
   };
 }
 
-export function surfaceLabel(id) {
+export function surfaceLabel(id: string): string {
   return SURFACE_BY_ID.get(id)?.label ?? id;
 }
 
-export function scanConsumerMigrationSurfaces() {
+export function scanConsumerMigrationSurfaces(): Scan.ConsumerScan {
   return {
     surfaces: SURFACES,
     consumers: CONSUMERS.map(summarizeConsumer),

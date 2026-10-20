@@ -6,7 +6,7 @@ import {
   buildArtifact,
   expectedComparisonCount,
   verifyScope,
-} from "../../tools/support/compat/davinci/lib/corpus-baseline-artifact.mjs";
+} from "../../tools/support/compat/davinci/lib/corpus-baseline-artifact.ts";
 import { requiredSection } from "./support/davinci-phase2-ledger.ts";
 
 type ManifestProject = {

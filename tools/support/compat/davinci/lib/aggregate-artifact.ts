@@ -3,11 +3,16 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
-import { repoRoot } from "./paths.mjs";
+import { repoRoot } from "./paths.ts";
 
 export const LEDGER_OUTPUT_REL = "artifacts/davinci-ledgers";
 
-export function parseAggregateArgs(argv, usage) {
+export interface AggregateArgs {
+  mode: string;
+  outDir: string;
+}
+
+export function parseAggregateArgs(argv: readonly string[], usage: string): AggregateArgs {
   const [mode, ...options] = argv;
   if (!["--write", "--check", "--summary"].includes(mode)) throw new Error(usage);
   let outDir = path.join(repoRoot, LEDGER_OUTPUT_REL);
@@ -20,7 +25,7 @@ export function parseAggregateArgs(argv, usage) {
   return { mode, outDir };
 }
 
-export function emitAggregate(name, text, { mode, outDir }) {
+export function emitAggregate(name: string, text: string, { mode, outDir }: AggregateArgs): void {
   if (mode === "--summary") {
     process.stdout.write(text);
     return;
@@ -43,12 +48,12 @@ export function emitAggregate(name, text, { mode, outDir }) {
   }
 }
 
-export function aggregateMain(name, generate, usage) {
-  let args;
+export function aggregateMain(name: string, generate: () => string, usage: string): void {
+  let args: AggregateArgs;
   try {
     args = parseAggregateArgs(process.argv.slice(2), usage);
   } catch (error) {
-    console.error(error.message);
+    console.error(error instanceof Error ? error.message : String(error));
     process.exitCode = 2;
     return;
   }

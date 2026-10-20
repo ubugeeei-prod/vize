@@ -6,20 +6,28 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-import { byKey } from "./ordering.mjs";
-import { PATINA_SRC } from "./rule-parity-paths.mjs";
-import { matchBraceBlock, stripRustComments } from "./rule-parity-rust-text.mjs";
-import { stripRust } from "./rust-source.mjs";
+import { byKey } from "./ordering.ts";
+import { PATINA_SRC } from "./rule-parity-paths.ts";
+import { matchBraceBlock, stripRustComments } from "./rule-parity-rust-text.ts";
+import { stripRust } from "./rust-source.ts";
 
-export function traitFnNames(stripped, traitName) {
+export interface DispatchModel {
+  templateHooks: string[];
+  markupHooks: string[];
+  semanticTemplateRules: string[];
+  sharedSfcDescriptorRules: string[];
+  typeAwareRules: string[];
+}
+
+export function traitFnNames(stripped: string, traitName: string): string[] {
   const m = new RegExp(`\\btrait\\s+${traitName}\\b`).exec(stripped);
   if (!m) throw new Error(`trait ${traitName} not found`);
   const open = stripped.indexOf("{", m.index);
   const close = matchBraceBlock(stripped, open);
   const body = stripped.slice(open + 1, close);
-  const names = [];
+  const names: string[] = [];
   const fnRe = /\bfn\s+([a-z_][a-z0-9_]*)/g;
-  let fm;
+  let fm: RegExpExecArray | null;
   while ((fm = fnRe.exec(body)) !== null) {
     const before = body.slice(0, fm.index);
     let depth = 0;
@@ -32,7 +40,7 @@ export function traitFnNames(stripped, traitName) {
   return names;
 }
 
-export function loadDispatchModel() {
+export function loadDispatchModel(): DispatchModel {
   const ruleRs = stripRust(readFileSync(path.join(PATINA_SRC, "rule.rs"), "utf8"));
   const markupRs = stripRust(readFileSync(path.join(PATINA_SRC, "markup", "rule.rs"), "utf8"));
   const engineRs = readFileSync(path.join(PATINA_SRC, "linter", "engine.rs"), "utf8");
@@ -103,7 +111,7 @@ export function loadDispatchModel() {
   const ruleSets = stripRustComments(
     readFileSync(path.join(PATINA_SRC, "linter", "engine", "rule_sets.rs"), "utf8"),
   );
-  const readSet = (text, name) => {
+  const readSet = (text: string, name: string): string[] => {
     const m2 = new RegExp(`${name}\\s*:\\s*&\\[&str\\]\\s*=\\s*&\\[`).exec(text);
     if (!m2) throw new Error(`rule set ${name} not found`);
     const end = text.indexOf("]", m2.index + m2[0].length);
@@ -117,7 +125,7 @@ export function loadDispatchModel() {
   const typeAwareRs = stripRustComments(
     readFileSync(path.join(PATINA_SRC, "linter", "native_type_aware.rs"), "utf8"),
   );
-  const typeAwareConsts = new Map();
+  const typeAwareConsts = new Map<string, string>();
   for (const m2 of typeAwareRs.matchAll(/const\s+([A-Z_0-9]+)\s*:\s*&str\s*=\s*"([^"]+)"/g)) {
     typeAwareConsts.set(m2[1], m2[2]);
   }

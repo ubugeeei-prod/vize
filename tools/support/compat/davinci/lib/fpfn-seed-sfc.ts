@@ -31,9 +31,28 @@ const INTERPOLATION_RE = /\{\{([\s\S]*?)\}\}/g;
 const DIRECTIVE_ATTR_RE =
   /(^|\s)([v:@#][^\s"'<>/=]*)\s*=\s*"([^"]*)"|(^|\s)([v:@#][^\s"'<>/=]*)\s*=\s*'([^']*)'/g;
 
+export interface BlockRecord {
+  attrs: string;
+  content: string;
+  contentStart: number;
+  contentEnd: number;
+}
+
+export interface SfcBlocks {
+  scriptSetup: BlockRecord | null;
+  template: BlockRecord | null;
+  scriptSetupCount: number;
+  templateCount: number;
+}
+
 /** Extract the `<script setup>` and `<template>` blocks with spans. */
-export function extractBlocks(source) {
-  const blocks = { scriptSetup: null, template: null, scriptSetupCount: 0, templateCount: 0 };
+export function extractBlocks(source: string): SfcBlocks {
+  const blocks: SfcBlocks = {
+    scriptSetup: null,
+    template: null,
+    scriptSetupCount: 0,
+    templateCount: 0,
+  };
   for (const match of source.matchAll(BLOCK_RE)) {
     const [full, tag, attrs, content] = match;
     const contentStart = match.index + full.length - content.length - `</${tag}>`.length;
@@ -61,9 +80,9 @@ export function extractBlocks(source) {
  * A line-wise scan with brace/paren/bracket depth tracking; strings,
  * template literals, and comments are blanked before depth counting.
  */
-export function topLevelBindings(scriptContent) {
+export function topLevelBindings(scriptContent: string): string[] {
   const blanked = blankScriptNoise(scriptContent);
-  const bindings = [];
+  const bindings: string[] = [];
   let depth = 0;
   let lineStart = 0;
   for (let i = 0; i <= blanked.length; i += 1) {
@@ -84,9 +103,9 @@ export function topLevelBindings(scriptContent) {
 }
 
 /** Blank string/template-literal/comment contents, preserving offsets. */
-export function blankScriptNoise(text) {
+export function blankScriptNoise(text: string): string {
   let out = "";
-  let mode = null; // '"' | "'" | "`" | "//" | "/*"
+  let mode: string | null = null; // '"' | "'" | "`" | "//" | "/*"
   for (let i = 0; i < text.length; i += 1) {
     const char = text[i];
     const next = text[i + 1];
@@ -131,8 +150,10 @@ export function blankScriptNoise(text) {
 }
 
 /** Expression-position segments of a template body: [{start, text}] . */
-export function templateExpressionSegments(templateContent) {
-  const segments = [];
+export function templateExpressionSegments(
+  templateContent: string,
+): { start: number; text: string }[] {
+  const segments: { start: number; text: string }[] = [];
   for (const match of templateContent.matchAll(INTERPOLATION_RE)) {
     segments.push({ start: match.index + 2, text: match[1] });
   }
@@ -151,9 +172,9 @@ export function templateExpressionSegments(templateContent) {
  * literals of the expression, member accesses (`.name`), and object keys
  * (`name:`) are excluded.
  */
-export function identifierOccurrences(segmentText, name) {
+export function identifierOccurrences(segmentText: string, name: string): number[] {
   const blanked = blankScriptNoise(segmentText);
-  const occurrences = [];
+  const occurrences: number[] = [];
   let from = 0;
   while (true) {
     const at = blanked.indexOf(name, from);
@@ -173,7 +194,7 @@ export function identifierOccurrences(segmentText, name) {
 }
 
 /** Whether `name` is introduced by a v-for / v-slot / #slot value anywhere. */
-export function isShadowedInTemplate(templateContent, name) {
+export function isShadowedInTemplate(templateContent: string, name: string): boolean {
   for (const match of templateContent.matchAll(DIRECTIVE_ATTR_RE)) {
     const attrName = match[2] ?? match[5];
     const value = match[3] ?? match[6];
@@ -188,13 +209,13 @@ export function isShadowedInTemplate(templateContent, name) {
 }
 
 /** Count word-boundary occurrences of `name` in the whole template body. */
-export function totalTemplateOccurrences(templateContent, name) {
+export function totalTemplateOccurrences(templateContent: string, name: string): number {
   const matches = templateContent.match(
     new RegExp(`(?<![A-Za-z0-9_$])${escapeRegExp(name)}(?![A-Za-z0-9_$])`, "g"),
   );
   return matches == null ? 0 : matches.length;
 }
 
-export function escapeRegExp(text) {
+export function escapeRegExp(text: string): string {
   return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

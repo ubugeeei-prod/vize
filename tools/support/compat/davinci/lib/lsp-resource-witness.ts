@@ -3,9 +3,22 @@ import {
   hoverToText,
   offsetToPosition,
 } from "../../../../../tests/tooling/support/lsp/assertions.ts";
-import { componentSource, documentUri } from "./lsp-resource-workspace.mjs";
+import type { PublishDiagnosticsParams } from "../../../../../tests/tooling/support/lsp/protocol.ts";
+import type { LspSession } from "../../../../../tests/tooling/support/lsp/session.ts";
+import { asString, at, isRecord } from "../../../json-value.ts";
+import type { JsonRecord } from "../../../json-value.ts";
+import { componentSource, documentUri } from "./lsp-resource-workspace.ts";
 
-export async function metadataCompletion(session, uri, source, type = "string") {
+function isPublication(value: unknown): value is PublishDiagnosticsParams & object {
+  return isRecord(value) && Array.isArray(value.diagnostics) && value.diagnostics.every(isRecord);
+}
+
+export async function metadataCompletion(
+  session: LspSession,
+  uri: string,
+  source: string,
+  type = "string",
+): Promise<JsonRecord> {
   const result = await session.request(
     "textDocument/completion",
     {
@@ -15,14 +28,22 @@ export async function metadataCompletion(session, uri, source, type = "string") 
     },
     120_000,
   );
-  const items = Array.isArray(result) ? result : result?.items;
-  const prop = items?.find((item) => item.label === "label" || item.label === ":label");
-  assert.ok(prop, `imported label prop completion missing for ${uri}`);
-  assert.match(prop.detail, new RegExp(`prop: ${type} \\(required\\)`));
+  const items: unknown = Array.isArray(result) ? result : at(result, "items");
+  const prop: unknown = Array.isArray(items)
+    ? items.find(
+        (item: unknown) => isRecord(item) && (item.label === "label" || item.label === ":label"),
+      )
+    : undefined;
+  assert.ok(isRecord(prop), `imported label prop completion missing for ${uri}`);
+  assert.match(asString(prop.detail, "detail"), new RegExp(`prop: ${type} \\(required\\)`));
   return prop;
 }
 
-export async function bodyEditChurn(session, workspace, count = 32) {
+export async function bodyEditChurn(
+  session: LspSession,
+  workspace: string,
+  count = 32,
+): Promise<{ edits: number; unchanged_prop_completion_replies: number; final_version: number }> {
   const childUri = documentUri(workspace, 0);
   const parentUri = documentUri(workspace, 1);
   let version = 1;
@@ -39,7 +60,11 @@ export async function bodyEditChurn(session, workspace, count = 32) {
   return { edits: count, unchanged_prop_completion_replies: count, final_version: version };
 }
 
-export async function controlledEdits(session, workspace, initialVersion = 1) {
+export async function controlledEdits(
+  session: LspSession,
+  workspace: string,
+  initialVersion = 1,
+): Promise<JsonRecord[]> {
   const childUri = documentUri(workspace, 0);
   const parentUri = documentUri(workspace, 1);
   const parent = componentSource(1);
@@ -47,14 +72,15 @@ export async function controlledEdits(session, workspace, initialVersion = 1) {
   let version = initialVersion;
   let publications = 0;
   let afterEdit = 0;
-  const publicationSequence = new WeakMap();
+  const publicationSequence = new WeakMap<object, number>();
+  const sequenceOf = (value: object): number => publicationSequence.get(value) ?? 0;
   session.notificationObservers.push((method, params) => {
-    if (method === "textDocument/publishDiagnostics") {
+    if (method === "textDocument/publishDiagnostics" && isPublication(params)) {
       publicationSequence.set(params, ++publications);
     }
   });
-  const proof = [];
-  const change = (next) => {
+  const proof: JsonRecord[] = [];
+  const change = (next: string): void => {
     child = next;
     afterEdit = publications;
     session.notify("textDocument/didChange", {
@@ -62,17 +88,28 @@ export async function controlledEdits(session, workspace, initialVersion = 1) {
       contentChanges: [{ text: child }],
     });
   };
-  const diagnostic = async (uri, documentVersion, code, pattern) => {
+  const diagnostic = async (
+    uri: string,
+    documentVersion: number,
+    code: number,
+    pattern: RegExp,
+  ): Promise<PublishDiagnosticsParams["diagnostics"][number] | undefined> => {
     const params = await session.waitForNotification(
       "textDocument/publishDiagnostics",
       (value) =>
-        publicationSequence.get(value) > afterEdit &&
+        isPublication(value) &&
+        sequenceOf(value) > afterEdit &&
         value.uri === uri &&
         value.version === documentVersion &&
-        value.diagnostics.some((entry) => entry.code === code && pattern.test(entry.message)),
+        value.diagnostics.some(
+          (entry) => entry.code === code && pattern.test(String(entry.message)),
+        ),
       180_000,
     );
-    return params.diagnostics.find((entry) => entry.code === code && pattern.test(entry.message));
+    assert.ok(isPublication(params));
+    return params.diagnostics.find(
+      (entry) => entry.code === code && pattern.test(String(entry.message)),
+    );
   };
   const start = performance.now();
   change(child.replace("checked: number = 1", 'checked: number = "resource-sentinel"'));
@@ -93,7 +130,8 @@ export async function controlledEdits(session, workspace, initialVersion = 1) {
   await session.waitForNotification(
     "textDocument/publishDiagnostics",
     (value) =>
-      publicationSequence.get(value) > afterEdit &&
+      isPublication(value) &&
+      sequenceOf(value) > afterEdit &&
       value.uri === childUri &&
       value.version === version &&
       !value.diagnostics.some((entry) => entry.code === 2322),
@@ -122,8 +160,9 @@ export async function controlledEdits(session, workspace, initialVersion = 1) {
     },
     120_000,
   );
-  assert.match(hoverToText(hover), /save: \[value: number\]/);
-  proof.push({ edit: "public emit", version, hover: hoverToText(hover) });
+  const hoverResult = isRecord(hover) ? hover : null;
+  assert.match(hoverToText(hoverResult), /save: \[value: number\]/);
+  proof.push({ edit: "public emit", version, hover: hoverToText(hoverResult) });
 
   change(child.replace("publicState: string = 'ready'", "publicState: number = 1"));
   await metadataCompletion(session, parentUri, parent);
@@ -138,7 +177,8 @@ export async function controlledEdits(session, workspace, initialVersion = 1) {
   await session.waitForNotification(
     "textDocument/publishDiagnostics",
     (value) =>
-      publicationSequence.get(value) > afterEdit &&
+      isPublication(value) &&
+      sequenceOf(value) > afterEdit &&
       value.uri === parentUri &&
       value.version === 1 &&
       !value.diagnostics.some((entry) => entry.code === 2339 || entry.code === 2322),

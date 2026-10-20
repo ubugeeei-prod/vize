@@ -9,11 +9,11 @@
  * byte), and char literals with spaces, preserving offsets and newlines.
  * Lifetimes (`'a`) are kept.
  */
-export function stripRust(source) {
+export function stripRust(source: string): string {
   const out = source.split("");
   const n = source.length;
   let i = 0;
-  const blank = (from, to) => {
+  const blank = (from: number, to: number): void => {
     for (let k = from; k < to; k++) if (out[k] !== "\n") out[k] = " ";
   };
   while (i < n) {
@@ -102,7 +102,7 @@ export function stripRust(source) {
   return out.join("");
 }
 
-export function maskKeepNewlines(text) {
+export function maskKeepNewlines(text: string): string {
   return text.replace(/[^\n]/g, " ");
 }
 
@@ -110,14 +110,28 @@ export function maskKeepNewlines(text) {
  * Find `use …;` statements in stripped source.
  * Returns [{ start, end, isPub, body }] where body excludes `use` and `;`.
  */
-export function findUseDecls(stripped) {
-  const decls = [];
+export interface UseDecl {
+  start: number;
+  end: number;
+  isPub: boolean;
+  body: string;
+}
+
+export interface UseEntry {
+  segments: string[];
+  alias: string | null;
+  glob: boolean;
+  self?: boolean;
+}
+
+export function findUseDecls(stripped: string): UseDecl[] {
+  const decls: UseDecl[] = [];
   const re =
     /(^|[^A-Za-z0-9_])((?:pub(?:\s*\(\s*(?:crate|super|self|in\s+[A-Za-z0-9_:]+)\s*\))?\s+)?use\s+[^;]+;)/g;
-  let m;
+  let m: RegExpExecArray | null;
   while ((m = re.exec(stripped)) !== null) {
     const stmt = m[2];
-    const body = /use\s+([^;]+);$/s.exec(stmt)[1].trim();
+    const body = /use\s+([^;]+);$/s.exec(stmt)![1].trim();
     decls.push({
       start: m.index + m[1].length,
       end: m.index + m[0].length,
@@ -136,7 +150,7 @@ export function findUseDecls(stripped) {
  *    {segments:["a","b"], alias:null, glob:false, self:true},
  *    {segments:["a","b"], alias:null, glob:true}]
  */
-export function expandUseTree(body, prefix = []) {
+export function expandUseTree(body: string, prefix: readonly string[] = []): UseEntry[] {
   const text = body.trim();
   if (text === "") return [];
   const braceIdx = text.indexOf("{");
@@ -176,15 +190,15 @@ export function expandUseTree(body, prefix = []) {
   if (close === -1) return [];
   const inner = text.slice(braceIdx + 1, close);
   const parts = splitTopLevel(inner);
-  const entries = [];
+  const entries: UseEntry[] = [];
   for (const part of parts) {
     entries.push(...expandUseTree(part, [...prefix, ...beforeSegments]));
   }
   return entries;
 }
 
-export function splitTopLevel(text) {
-  const parts = [];
+export function splitTopLevel(text: string): string[] {
+  const parts: string[] = [];
   let depth = 0;
   let current = "";
   for (const ch of text) {

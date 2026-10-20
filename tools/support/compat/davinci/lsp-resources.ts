@@ -6,12 +6,67 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { LspSession } from "../../../../tests/tooling/support/lsp/session.ts";
-import { componentSource, documentUri, prepareWorkspace } from "./lib/lsp-resource-workspace.mjs";
-import { createSampler, mib } from "./lib/lsp-resource-sampler.mjs";
-import { bodyEditChurn, controlledEdits, metadataCompletion } from "./lib/lsp-resource-witness.mjs";
+import { isRecord } from "../../json-value.ts";
+import type { JsonRecord } from "../../json-value.ts";
+import { componentSource, documentUri, prepareWorkspace } from "./lib/lsp-resource-workspace.ts";
+import { createSampler, mib } from "./lib/lsp-resource-sampler.ts";
+import type { ProcessEntry } from "./lib/lsp-resource-sampler.ts";
+import { bodyEditChurn, controlledEdits, metadataCompletion } from "./lib/lsp-resource-witness.ts";
+
+interface RunResult {
+  run: number;
+  dependencies: { corsaPath: string; vuePath: string };
+  opened_files: number;
+  metadata_requests: number;
+  successful_unique_provider_requests: number;
+  resident_document_witnesses: number;
+  diagnostic_publications: number;
+  initialized_ms?: number;
+  controlled_edits_scope?: string;
+  body_edit_churn?: Awaited<ReturnType<typeof bodyEditChurn>>;
+  controlled_edits?: JsonRecord[];
+  warming_elapsed_ms?: number;
+  current_rss_mib?: number;
+  current_processes?: ProcessEntry[];
+  rss_idle_mib?: number;
+  idle_cpu_pct?: number;
+  idle_processes?: ProcessEntry[];
+  elapsed_ms?: number;
+  error?: string;
+  server_stderr?: string;
+  rss_peak_mib?: number;
+  peak_processes?: ProcessEntry[];
+  resource_samples?: number;
+}
+
+interface Measurement {
+  scope: string;
+  preset: string;
+  workspace_files: number;
+  open_files: number;
+  unique_imported_providers: number;
+  provider_coverage: string;
+  runs: number;
+  completed_runs: number;
+  complete: boolean;
+  services: { editor: boolean; ecosystem: boolean; lint: boolean; typecheck: boolean };
+  server: string;
+  server_binary_mib: number;
+  build: string;
+  sampler: string;
+  idle_seconds: number;
+  acceptance: string;
+  command: string[];
+  github_run: string | undefined;
+  revision: string | undefined;
+  per_run: RunResult[];
+  active_run?: RunResult;
+  metrics?: Record<string, number>;
+}
 
 const args = process.argv.slice(2);
-const flag = (name, fallback) => (args.includes(name) ? args[args.indexOf(name) + 1] : fallback);
+const flag = (name: string, fallback: string): string =>
+  args.includes(name) ? args[args.indexOf(name) + 1] : fallback;
 const out = path.resolve(flag("--out", "lsp-resource.json"));
 const files = Number(flag("--files", "10000"));
 const openFiles = Number(flag("--open-files", String(files)));
@@ -35,7 +90,7 @@ async function measure() {
   );
   const server = fs.realpathSync(flag("--server", "target/ci-opt/vize"));
   process.env.VIZE_LSP_BIN = server;
-  const measurement = {
+  const measurement: Measurement = {
     scope: "production Maestro LSP with all descendants, including Corsa; harness excluded",
     preset,
     workspace_files: files,
@@ -69,7 +124,7 @@ async function measure() {
     const dependencies = prepareWorkspace(workspace, files);
     const session = new LspSession();
     const sampler = createSampler(session.processId);
-    const result = {
+    const result: RunResult = {
       run: run + 1,
       dependencies,
       opened_files: 0,
@@ -86,7 +141,7 @@ async function measure() {
     try {
       await session.initialize(workspace, measurement.services);
       result.initialized_ms = performance.now() - started;
-      const open = (index) => {
+      const open = (index: number): void => {
         session.notify("textDocument/didOpen", {
           textDocument: {
             uri: documentUri(workspace, index),
@@ -124,8 +179,15 @@ async function measure() {
               { textDocument: { uri: documentUri(workspace, batch + offset) } },
               300_000,
             );
-            assert.ok(symbols?.some((symbol) => symbol.name === "script setup"));
-            assert.ok(symbols.some((symbol) => symbol.name === "template"));
+            assert.ok(
+              Array.isArray(symbols) &&
+                symbols.some(
+                  (symbol: unknown) => isRecord(symbol) && symbol.name === "script setup",
+                ),
+            );
+            assert.ok(
+              symbols.some((symbol: unknown) => isRecord(symbol) && symbol.name === "template"),
+            );
             result.resident_document_witnesses++;
           }),
         );
@@ -184,9 +246,9 @@ async function measure() {
     save();
   }
   measurement.metrics = Object.fromEntries(
-    ["rss_peak_mib", "rss_idle_mib", "idle_cpu_pct"].map((key) => [
+    (["rss_peak_mib", "rss_idle_mib", "idle_cpu_pct"] as const).map((key) => [
       key,
-      Math.max(...measurement.per_run.map((run) => run[key])),
+      Math.max(...measurement.per_run.map((run) => run[key] ?? Number.NaN)),
     ]),
   );
   measurement.complete = true;

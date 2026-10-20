@@ -1,18 +1,20 @@
 // Artifact rendering: the file-accounting reconciliation and the summary
 // bullets, assembled with the prose and data sections into the committed
-// matrix. Every number here comes from ./rule-parity-summary.mjs.
+// matrix. Every number here comes from ./rule-parity-summary.ts.
 
-import { byKey } from "./ordering.mjs";
-import { derivationSection, preambleSection } from "./rule-parity-derivation.mjs";
-import { CLASSIFICATIONS } from "./rule-parity-paths.mjs";
-import { TIER_TABLE_REL, TIERS } from "./rule-parity-tiers.mjs";
-import { summarize } from "./rule-parity-summary.mjs";
-import { crossChecksSection, fullTableSection, overridesSection } from "./rule-parity-tables.mjs";
+import { byKey } from "./ordering.ts";
+import { derivationSection, preambleSection } from "./rule-parity-derivation.ts";
+import type { Matrix } from "./rule-parity-matrix.ts";
+import { CLASSIFICATIONS } from "./rule-parity-paths.ts";
+import { TIER_TABLE_REL, TIERS } from "./rule-parity-tiers.ts";
+import { summarize } from "./rule-parity-summary.ts";
+import type { RuleStats } from "./rule-parity-summary.ts";
+import { crossChecksSection, fullTableSection, overridesSection } from "./rule-parity-tables.ts";
 
-function fileAccountingSection(matrix, stats) {
+function fileAccountingSection(matrix: Matrix, stats: RuleStats): string[] {
   const { files, ruleFiles, nonRuleFiles } = matrix;
   const { rows, moduleFiles, testFiles, helperFiles } = stats;
-  const lines = [];
+  const lines: string[] = [];
   lines.push("## File accounting");
   lines.push("");
   lines.push(`- \`.rs\` files under \`crates/vize_patina/src/rules/**\`: **${files.length}**`);
@@ -30,7 +32,7 @@ function fileAccountingSection(matrix, stats) {
   return lines;
 }
 
-function summarySection(stats) {
+function summarySection(stats: RuleStats): string[] {
   const {
     rows,
     count,
@@ -48,7 +50,7 @@ function summarySection(stats) {
     overriddenRows,
     unregistered,
   } = stats;
-  const lines = [];
+  const lines: string[] = [];
   lines.push("## Summary");
   lines.push("");
   lines.push(`- **total rules: ${rows.length}**`);
@@ -94,7 +96,7 @@ function summarySection(stats) {
   return lines;
 }
 
-export function renderArtifact(matrix) {
+export function renderArtifact(matrix: Matrix): string {
   const stats = summarize(matrix);
   return [
     ...preambleSection(),

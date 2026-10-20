@@ -9,9 +9,12 @@ import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync } from "node:fs";
 import path from "node:path";
 
-import { repoRoot } from "./paths.mjs";
+import { repoRoot } from "./paths.ts";
 
-export function assertHydratedGitlinkFixtures(fixturePaths, root = repoRoot) {
+export function assertHydratedGitlinkFixtures(
+  fixturePaths: readonly string[],
+  root: string = repoRoot,
+): void {
   const uniquePaths = uniqueFixturePaths(fixturePaths);
   const failures = fixtureHydrationFailures(root, uniquePaths);
   if (failures.length === 0) return;
@@ -26,11 +29,11 @@ export function assertHydratedGitlinkFixtures(fixturePaths, root = repoRoot) {
   );
 }
 
-export function fixtureHydrationFailures(root, fixturePaths) {
+export function fixtureHydrationFailures(root: string, fixturePaths: readonly string[]): string[] {
   const uniquePaths = uniqueFixturePaths(fixturePaths);
   const safePaths = uniquePaths.filter(isRelativeFixturePath);
   const gitlinks = readGitlinks(root, safePaths);
-  const failures = [];
+  const failures: string[] = [];
   for (const relPath of uniquePaths) {
     if (!isRelativeFixturePath(relPath)) {
       failures.push(`${relPath}: not a safe relative fixture path`);
@@ -59,17 +62,17 @@ export function fixtureHydrationFailures(root, fixturePaths) {
   return failures;
 }
 
-function uniqueFixturePaths(fixturePaths) {
+function uniqueFixturePaths(fixturePaths: readonly string[]): string[] {
   return [...new Set(fixturePaths)].sort((left, right) => left.localeCompare(right));
 }
 
-function isRelativeFixturePath(relPath) {
+function isRelativeFixturePath(relPath: string): boolean {
   if (path.posix.isAbsolute(relPath)) return false;
   const normalized = path.posix.normalize(relPath);
   return normalized === relPath && normalized !== "." && !normalized.startsWith("..");
 }
 
-function isNonEmptyDirectory(directory) {
+function isNonEmptyDirectory(directory: string): boolean {
   try {
     return existsSync(directory) && readdirSync(directory).length > 0;
   } catch {
@@ -77,7 +80,7 @@ function isNonEmptyDirectory(directory) {
   }
 }
 
-function readGitlinks(root, fixturePaths) {
+function readGitlinks(root: string, fixturePaths: readonly string[]): Map<string, string> {
   if (fixturePaths.length === 0) return new Map();
   const result = git(root, ["ls-files", "--stage", "--", ...fixturePaths]);
   return new Map(
@@ -85,17 +88,17 @@ function readGitlinks(root, fixturePaths) {
       .split("\n")
       .map((line) => /^160000\s+([0-9a-f]{40})\s+\d+\t(.+)$/.exec(line))
       .filter((match) => match != null)
-      .map((match) => [match[2], match[1]]),
+      .map((match): [string, string] => [match[2], match[1]]),
   );
 }
 
-function gitlinkFixturePaths(root, fixturePaths) {
+function gitlinkFixturePaths(root: string, fixturePaths: readonly string[]): string[] {
   const safePaths = fixturePaths.filter(isRelativeFixturePath);
   const gitlinks = readGitlinks(root, safePaths);
   return fixturePaths.filter((relPath) => gitlinks.has(relPath));
 }
 
-function recoveryCommandLines(recoveryPaths) {
+function recoveryCommandLines(recoveryPaths: readonly string[]): string[] {
   if (recoveryPaths.length === 0) return [];
   return [
     "Run:",
@@ -103,7 +106,7 @@ function recoveryCommandLines(recoveryPaths) {
   ];
 }
 
-function readHead(directory) {
+function readHead(directory: string): string | null {
   const result = spawnSync("git", ["-C", directory, "rev-parse", "HEAD"], {
     encoding: "utf8",
     env: { ...process.env, LANG: "C", LC_ALL: "C" },
@@ -112,7 +115,7 @@ function readHead(directory) {
   return result.stdout.trim();
 }
 
-function git(cwd, args) {
+function git(cwd: string, args: readonly string[]): string {
   const result = spawnSync("git", args, {
     cwd,
     encoding: "utf8",
@@ -125,7 +128,7 @@ function git(cwd, args) {
   return result.stdout.trim();
 }
 
-function shellQuote(value) {
+function shellQuote(value: string): string {
   if (/^[A-Za-z0-9_./-]+$/.test(value)) return value;
   return `'${value.replaceAll("'", "'\\''")}'`;
 }

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { performance } from "node:perf_hooks";
 
-import { createSampler } from "../../../tools/support/compat/davinci/lib/lsp-resource-sampler.mjs";
+import { createSampler } from "../../../tools/support/compat/davinci/lib/lsp-resource-sampler.ts";
 import type { JsonRpcMessage } from "../../tooling/support/lsp/protocol.ts";
 import { LspRequestError, LspSession } from "../../tooling/support/lsp/session.ts";
 import { SessionRoots, type Packet, type RequestSpec } from "./warm-type-backed-packets.ts";

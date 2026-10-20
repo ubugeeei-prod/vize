@@ -4,19 +4,25 @@
 // that touched any scanned file changed them and made every other open PR
 // conflict. They are pure sums over the committed per-crate TSV shards.
 
-import { formatTable } from "./markdown.mjs";
-import { modeLabel, surfaceList } from "./consumer-migration-render.mjs";
-import { SURFACES } from "./consumer-migration-scan.mjs";
+import { formatTable } from "./markdown.ts";
+import { modeLabel, surfaceList } from "./consumer-migration-render.ts";
+import { SURFACES } from "./consumer-migration-scan.ts";
+import type {
+  ConsumerScan,
+  ConsumerSummary,
+  FileRow,
+  Surface,
+} from "./consumer-migration-types.ts";
 
 export const SUMMARY_COMMAND =
   "node tools/support/compat/davinci/consumer-migration-surfaces.ts --summary";
 
-function n(value) {
+function n(value: number): string {
   return String(value);
 }
 
-function renderSurfaceCounts(consumer) {
-  const sumFor = (surface, predicate) =>
+function renderSurfaceCounts(consumer: ConsumerSummary): string {
+  const sumFor = (surface: Surface, predicate: (row: FileRow) => boolean): number =>
     consumer.fileRows
       .filter(predicate)
       .reduce((sum, row) => sum + row.surfaceCounts[surface.id], 0);
@@ -34,7 +40,10 @@ function renderSurfaceCounts(consumer) {
   );
 }
 
-function renderFileRows(consumer, modePredicate) {
+function renderFileRows(
+  consumer: ConsumerSummary,
+  modePredicate: (row: FileRow) => boolean,
+): string {
   const rows = consumer.fileRows
     .filter(modePredicate)
     .sort((a, b) => b.total - a.total || a.relPath.localeCompare(b.relPath))
@@ -53,7 +62,7 @@ function renderFileRows(consumer, modePredicate) {
   );
 }
 
-function renderTotals(consumers) {
+function renderTotals(consumers: readonly ConsumerSummary[]): string {
   return formatTable(
     [
       "consumer",
@@ -83,7 +92,7 @@ function renderTotals(consumers) {
   );
 }
 
-function renderConsumer(consumer) {
+function renderConsumer(consumer: ConsumerSummary): string {
   const sourceRows = consumer.fileRows.filter((row) => row.mode !== "test").length;
   const testRows = consumer.fileRows.filter((row) => row.mode === "test").length;
   const omittedSource = Math.max(0, sourceRows - 5);
@@ -108,7 +117,7 @@ ${omittedTest > 0 ? `Additional test/dev rows are in the shards: ${omittedTest} 
 }
 
 /** The cross-file aggregates printed by `--summary`. Never committed. */
-export function renderConsumerMigrationSummary(scan) {
+export function renderConsumerMigrationSummary(scan: ConsumerScan): string {
   return `# Consumer migration surfaces summary (computed, not committed)
 
 Cross-file aggregates of the sharded inventory in

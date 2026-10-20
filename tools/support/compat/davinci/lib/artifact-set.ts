@@ -16,16 +16,32 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
-import { byKey } from "./ordering.mjs";
-import { repoRoot } from "./paths.mjs";
+import { byKey } from "./ordering.ts";
+import { repoRoot } from "./paths.ts";
 
-function absolute(relPath) {
+export interface GeneratedFile {
+  relPath: string;
+  text: string;
+}
+
+export interface ArtifactSet {
+  label: string;
+  files: readonly GeneratedFile[];
+  ownedDirs?: readonly string[];
+  runFiles?: readonly GeneratedFile[];
+}
+
+export interface CheckedArtifactSet extends ArtifactSet {
+  regenCommand: string;
+}
+
+function absolute(relPath: string): string {
   return path.join(repoRoot, ...relPath.split("/"));
 }
 
-function listOwnedFiles(dirRel) {
-  const files = [];
-  const visit = (rel) => {
+function listOwnedFiles(dirRel: string): string[] {
+  const files: string[] = [];
+  const visit = (rel: string): void => {
     const abs = absolute(rel);
     if (!existsSync(abs)) return;
     for (const entry of readdirSync(abs, { withFileTypes: true })) {
@@ -38,7 +54,7 @@ function listOwnedFiles(dirRel) {
   return files.sort(byKey);
 }
 
-function removeEmptyDirs(dirRel) {
+function removeEmptyDirs(dirRel: string): void {
   const abs = absolute(dirRel);
   if (!existsSync(abs)) return;
   for (const entry of readdirSync(abs, { withFileTypes: true })) {
@@ -48,11 +64,11 @@ function removeEmptyDirs(dirRel) {
 }
 
 /** Where a run file lands: its plan path moved under the uploaded ledger directory. */
-export function runFilePath(relPath) {
+export function runFilePath(relPath: string): string {
   return relPath.replace(/^docs\/davinci\/plan\//u, "artifacts/davinci-ledgers/");
 }
 
-function writeRunFiles(set) {
+function writeRunFiles(set: ArtifactSet): void {
   for (const file of set.runFiles ?? []) {
     const target = absolute(runFilePath(file.relPath));
     mkdirSync(path.dirname(target), { recursive: true });
@@ -60,12 +76,12 @@ function writeRunFiles(set) {
   }
 }
 
-function fileCount(set) {
+function fileCount(set: ArtifactSet): string {
   return `${set.files.length} file${set.files.length === 1 ? "" : "s"}`;
 }
 
-function assertWellFormed(set) {
-  const seen = new Set();
+function assertWellFormed(set: ArtifactSet): Set<string> {
+  const seen = new Set<string>();
   for (const file of set.files) {
     if (seen.has(file.relPath)) throw new Error(`duplicate generated path ${file.relPath}`);
     seen.add(file.relPath);
@@ -73,13 +89,18 @@ function assertWellFormed(set) {
   return seen;
 }
 
-function strayFiles(set, wanted) {
+function strayFiles(set: ArtifactSet, wanted: ReadonlySet<string>): string[] {
   return (set.ownedDirs ?? []).flatMap((dir) =>
     listOwnedFiles(dir).filter((relPath) => !wanted.has(relPath)),
   );
 }
 
-function reportDrift(relPath, committed, generated, regenCommand) {
+function reportDrift(
+  relPath: string,
+  committed: string,
+  generated: string,
+  regenCommand: string,
+): void {
   const committedLines = committed.split("\n");
   const generatedLines = generated.split("\n");
   let firstDiff = -1;
@@ -108,10 +129,8 @@ function reportDrift(relPath, committed, generated, regenCommand) {
 
 /**
  * Write every file of the set and delete stray files in its owned directories.
- *
- * @param {{ label: string, files: { relPath: string, text: string }[], ownedDirs?: string[] }} set
  */
-export function writeArtifactSet(set) {
+export function writeArtifactSet(set: ArtifactSet): void {
   const wanted = assertWellFormed(set);
   for (const relPath of strayFiles(set, wanted)) {
     rmSync(absolute(relPath));
@@ -130,10 +149,8 @@ export function writeArtifactSet(set) {
 /**
  * Byte-compare every file of the set against the committed tree; exits 1 on
  * any drift, missing file, or stray file in an owned directory.
- *
- * @param {{ label: string, files: { relPath: string, text: string }[], ownedDirs?: string[], regenCommand: string }} set
  */
-export function checkArtifactSet(set) {
+export function checkArtifactSet(set: CheckedArtifactSet): void {
   const wanted = assertWellFormed(set);
   let stale = 0;
   for (const file of set.files) {

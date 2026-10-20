@@ -2,22 +2,28 @@
 // pass that keeps string literals (rule names and `"v-…"` literals are signals
 // here, not noise), literal collection, and the impl/hook shape of a rule file.
 //
-// Complements ./rust-source.mjs, whose stripRust blanks strings as well.
+// Complements ./rust-source.ts, whose stripRust blanks strings as well.
 
-import { RULE_TRAITS } from "./rule-parity-paths.mjs";
+import { RULE_TRAITS } from "./rule-parity-paths.ts";
 
 /**
  * Like stripRust, but keeps string/char literals: only comments are blanked.
  * Used where string contents are the signal (rule names, "v-…" literals).
  */
-export function stripRustComments(source) {
+export interface ImplBlock {
+  trait: string;
+  type: string;
+  fns: Map<string, string>;
+}
+
+export function stripRustComments(source: string): string {
   const out = source.split("");
   const n = source.length;
   let i = 0;
-  const blank = (from, to) => {
+  const blank = (from: number, to: number): void => {
     for (let k = from; k < to; k++) if (out[k] !== "\n") out[k] = " ";
   };
-  const skipString = (from) => {
+  const skipString = (from: number): number => {
     // Assumes source[from] is the opening quote of a plain/byte string.
     let j = from + 1;
     while (j < n && source[j] !== '"') j += source[j] === "\\" ? 2 : 1;
@@ -94,8 +100,8 @@ export function stripRustComments(source) {
 }
 
 /** Collect the contents of "…" / r#"…"# / b"…" string literals in code text. */
-export function collectStringLiterals(code) {
-  const literals = [];
+export function collectStringLiterals(code: string): string[] {
+  const literals: string[] = [];
   const n = code.length;
   let i = 0;
   while (i < n) {
@@ -144,7 +150,7 @@ export function collectStringLiterals(code) {
   return literals;
 }
 
-export function matchBraceBlock(text, openIdx) {
+export function matchBraceBlock(text: string, openIdx: number): number {
   let depth = 0;
   for (let i = openIdx; i < text.length; i++) {
     if (text[i] === "{") depth++;
@@ -160,22 +166,22 @@ export function matchBraceBlock(text, openIdx) {
  * Find `impl <Trait> for <Type> { … }` blocks for the rule traits and list the
  * fns defined at the impl's top level, with each fn's body text.
  */
-export function findImplBlocks(stripped) {
-  const blocks = [];
+export function findImplBlocks(stripped: string): ImplBlock[] {
+  const blocks: ImplBlock[] = [];
   const re = new RegExp(
     `\\bimpl\\s+(${RULE_TRAITS.join("|")})\\s+for\\s+([A-Za-z_][A-Za-z0-9_]*)`,
     "g",
   );
-  let m;
+  let m: RegExpExecArray | null;
   while ((m = re.exec(stripped)) !== null) {
     const open = stripped.indexOf("{", m.index + m[0].length);
     if (open === -1) continue;
     const close = matchBraceBlock(stripped, open);
     if (close === -1) continue;
     const body = stripped.slice(open + 1, close);
-    const fns = new Map(); // fnName -> body text
+    const fns = new Map<string, string>(); // fnName -> body text
     const fnRe = /\bfn\s+([a-z_][a-z0-9_]*)/g;
-    let fm;
+    let fm: RegExpExecArray | null;
     while ((fm = fnRe.exec(body)) !== null) {
       // Only fns at the impl's own level: no unclosed brace before this fn.
       const before = body.slice(0, fm.index);

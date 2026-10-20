@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { stripTypeScriptTypes } from "node:module";
 import vm from "node:vm";
-import { stripRust } from "../../tools/support/compat/davinci/lib/rust-source.mjs";
+import { stripRust } from "../../tools/support/compat/davinci/lib/rust-source.ts";
 
 // These source witnesses qualify original inputs only; they never execute a
 // formatter or manufacture result/error/runtime credit.

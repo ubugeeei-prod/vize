@@ -11,15 +11,15 @@
 // exact disagreements are printed in every --check report, never reconciled.
 //
 // This file is the CLI; the stages live in ./lib:
-//   rust-source.mjs        comment/string stripping + `use`-tree parsing
-//   croquis-products.mjs   product enumeration from vize_croquis sources
-//   crates.mjs             workspace crate + .rs discovery
-//   croquis-producers.mjs  workspace table of croquis-value producers
-//   croquis-file-index.mjs per-file alias tables (pub-use fixpoint)
-//   croquis-analysis.mjs   site counting + naive grep lane
-//   croquis-render.mjs     method prose, per-crate grouping, --summary view
-//   croquis-shards.mjs     committed index + one shard per consuming crate
-//   artifact-set.mjs       byte-exact --write/--check of the shard set
+//   rust-source.ts         comment/string stripping + `use`-tree parsing
+//   croquis-products.ts    product enumeration from vize_croquis sources
+//   crates.ts              workspace crate + .rs discovery
+//   croquis-producers.ts   workspace table of croquis-value producers
+//   croquis-file-index.ts  per-file alias tables (pub-use fixpoint)
+//   croquis-analysis.ts    site counting + naive grep lane
+//   croquis-render.ts      method prose, per-crate grouping, --summary view
+//   croquis-shards.ts      committed index + one shard per consuming crate
+//   artifact-set.ts        byte-exact --write/--check of the shard set
 //
 // The committed matrix is sharded: docs/davinci/plan/croquis-consumption.md
 // (method + product set, which depend only on vize_croquis) and
@@ -38,12 +38,12 @@
 
 import { execFileSync } from "node:child_process";
 import { writeFileSync } from "node:fs";
-import { checkArtifactSet, writeArtifactSet } from "./lib/artifact-set.mjs";
-import { analyzeConsumers } from "./lib/croquis-analysis.mjs";
-import { enumerateProducts } from "./lib/croquis-products.mjs";
-import { gateViolations, renderSummary } from "./lib/croquis-render.mjs";
-import { renderCroquisArtifacts } from "./lib/croquis-shards.mjs";
-import { ARTIFACT_REL, REGEN_COMMAND, SHARD_DIR_REL, repoRoot } from "./lib/paths.mjs";
+import { checkArtifactSet, writeArtifactSet } from "./lib/artifact-set.ts";
+import { analyzeConsumers } from "./lib/croquis-analysis.ts";
+import { enumerateProducts } from "./lib/croquis-products.ts";
+import { gateViolations, renderSummary } from "./lib/croquis-render.ts";
+import { renderCroquisArtifacts } from "./lib/croquis-shards.ts";
+import { ARTIFACT_REL, REGEN_COMMAND, SHARD_DIR_REL, repoRoot } from "./lib/paths.ts";
 
 interface ArtifactFile {
   readonly relPath: string;

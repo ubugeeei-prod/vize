@@ -181,13 +181,13 @@ jobs:
           --config 'profile.ci-opt.codegen-units=16'
       - name: Verify the protocol and controlled edit oracle
         run: >-
-          vp exec node tools/support/compat/davinci/lsp-resources.mjs
+          vp exec node tools/support/compat/davinci/lsp-resources.ts
           --server target/ci-opt/vize --files 2 --runs 1 --idle-seconds 10
           --out "${RUNNER_TEMP}/lsp-resource-smoke.json"
       - name: Measure 10000 open buffers, 16 production providers, and Corsa
         run: >-
           timeout --signal=TERM --kill-after=30s 45m
-          vp exec node tools/support/compat/davinci/lsp-resources.mjs
+          vp exec node tools/support/compat/davinci/lsp-resources.ts
           --server target/ci-opt/vize --files 10000 --warm-providers 16 --runs 1 --idle-seconds 10
           --out "${RUNNER_TEMP}/lsp-resource.json"
       - name: Summarize the actual scope and every process

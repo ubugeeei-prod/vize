@@ -10,14 +10,14 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../
 const generator = "tools/support/compat/davinci/consumer-migration-surfaces.ts";
 const legacyFiles = [
   generator,
-  "tools/support/compat/davinci/lib/artifact-set.mjs",
-  "tools/support/compat/davinci/lib/consumer-migration-render.mjs",
-  "tools/support/compat/davinci/lib/consumer-migration-scan.mjs",
-  "tools/support/compat/davinci/lib/consumer-migration-summary.mjs",
-  "tools/support/compat/davinci/lib/markdown.mjs",
-  "tools/support/compat/davinci/lib/ordering.mjs",
-  "tools/support/compat/davinci/lib/paths.mjs",
-  "tools/support/compat/davinci/lib/rust-source.mjs",
+  "tools/support/compat/davinci/lib/artifact-set.ts",
+  "tools/support/compat/davinci/lib/consumer-migration-render.ts",
+  "tools/support/compat/davinci/lib/consumer-migration-scan.ts",
+  "tools/support/compat/davinci/lib/consumer-migration-summary.ts",
+  "tools/support/compat/davinci/lib/markdown.ts",
+  "tools/support/compat/davinci/lib/ordering.ts",
+  "tools/support/compat/davinci/lib/paths.ts",
+  "tools/support/compat/davinci/lib/rust-source.ts",
 ];
 const scannedCrates = [
   "vize_atelier_core",

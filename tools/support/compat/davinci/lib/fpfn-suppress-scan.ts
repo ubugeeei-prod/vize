@@ -21,16 +21,40 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { repoRoot } from "./fpfn-shared.mjs";
+import { asRecord, asString } from "../../../json-value.ts";
+import { repoRoot } from "./fpfn-shared.ts";
+import type { DiagnosticRow } from "./fpfn-shared.ts";
+
+export type SuppressionKind = "next-line" | "line" | "block" | "enable";
+
+export interface SuppressionRange {
+  rule: string | null;
+  startLine: number;
+  endLine: number | null;
+  commentLine: number;
+  kind: SuppressionKind;
+}
+
+export interface SuppressionScan {
+  comments: { line: number; kind: SuppressionKind; rules: string[] }[];
+  ranges: SuppressionRange[];
+}
+
+export interface RuleMap {
+  mapped: Map<string, string>;
+  fixturePath: string;
+  fixtureMappedCount: number;
+  coreSidecarCount: number;
+}
 
 export const RULE_MAP_FIXTURE = "tests/_fixtures/patina-eslint-vue-rule-map.json";
 
 // Verified core-ESLint (and non-vue-plugin) analogs. Empty on purpose: no
 // vize rule has been verified as a behavioral analog of a core rule yet
 // (`no-console`, `no-unused-vars`, … have no counterpart in any preset).
-export const CORE_ESLINT_TO_VIZE = {};
+export const CORE_ESLINT_TO_VIZE: Record<string, string> = {};
 
-const MARKERS = [
+const MARKERS: [string, SuppressionKind][] = [
   ["eslint-disable-next-line", "next-line"],
   ["eslint-disable-line", "line"],
   ["eslint-disable", "block"],
@@ -38,7 +62,9 @@ const MARKERS = [
 ];
 
 /** Parse one source line; null when it carries no eslint pragma. */
-export function parseSuppressionLine(lineText) {
+export function parseSuppressionLine(
+  lineText: string,
+): { kind: SuppressionKind; rules: string[] } | null {
   if (!lineText.includes("eslint-")) return null;
   for (const [marker, kind] of MARKERS) {
     const at = lineText.indexOf(marker);
@@ -48,7 +74,7 @@ export function parseSuppressionLine(lineText) {
   return null;
 }
 
-function parseRuleList(raw) {
+function parseRuleList(raw: string): string[] {
   const beforeReason = raw.split("--")[0].replaceAll("*/", " ").replaceAll("-->", " ");
   return beforeReason
     .split(/[\s,]+/)
@@ -61,17 +87,17 @@ function parseRuleList(raw) {
  * per-rule line ranges ({rule: name|null, startLine, endLine|null,
  * commentLine, kind}; rule null = bare disable covering all rules).
  */
-export function scanSuppressions(source) {
-  const comments = [];
-  const ranges = [];
-  const openBlocks = []; // indices into `ranges` with endLine null
+export function scanSuppressions(source: string): SuppressionScan {
+  const comments: SuppressionScan["comments"] = [];
+  const ranges: SuppressionRange[] = [];
+  const openBlocks: number[] = []; // indices into `ranges` with endLine null
   const lines = source.split("\n");
   for (let i = 0; i < lines.length; i += 1) {
     const lineNumber = i + 1;
     const parsed = parseSuppressionLine(lines[i]);
     if (parsed == null) continue;
     comments.push({ line: lineNumber, kind: parsed.kind, rules: parsed.rules });
-    const ruleList = parsed.rules.length === 0 ? [null] : parsed.rules;
+    const ruleList: (string | null)[] = parsed.rules.length === 0 ? [null] : parsed.rules;
     if (parsed.kind === "next-line") {
       for (const rule of ruleList) {
         ranges.push({
@@ -119,7 +145,7 @@ export function scanSuppressions(source) {
 }
 
 /** Rewrite pragma lines only, byte-length-preserving ("esl1nt-"). */
-export function defuseSuppressions(source) {
+export function defuseSuppressions(source: string): { defused: string; changed: boolean } {
   const lines = source.split("\n");
   let changed = false;
   for (let i = 0; i < lines.length; i += 1) {
@@ -132,11 +158,15 @@ export function defuseSuppressions(source) {
 }
 
 /** Load the committed eslint→vize rule mapping. */
-export function loadRuleMap() {
-  const fixture = JSON.parse(fs.readFileSync(path.join(repoRoot, RULE_MAP_FIXTURE), "utf8"));
-  const mapped = new Map();
-  for (const [eslintName, entry] of Object.entries(fixture.entries)) {
-    if (entry.status === "mapped") mapped.set(eslintName, entry.patinaRule);
+export function loadRuleMap(): RuleMap {
+  const fixture = asRecord(
+    JSON.parse(fs.readFileSync(path.join(repoRoot, RULE_MAP_FIXTURE), "utf8")),
+    RULE_MAP_FIXTURE,
+  );
+  const mapped = new Map<string, string>();
+  for (const [eslintName, value] of Object.entries(asRecord(fixture.entries, "entries"))) {
+    const entry = asRecord(value, eslintName);
+    if (entry.status === "mapped") mapped.set(eslintName, asString(entry.patinaRule, eslintName));
   }
   for (const [eslintName, vizeName] of Object.entries(CORE_ESLINT_TO_VIZE)) {
     mapped.set(eslintName, vizeName);
@@ -149,7 +179,7 @@ export function loadRuleMap() {
   };
 }
 
-function rangeCovers(range, line) {
+function rangeCovers(range: SuppressionRange, line: number): boolean {
   return line >= range.startLine && (range.endLine == null || line <= range.endLine);
 }
 
@@ -161,7 +191,25 @@ function rangeCovers(range, line) {
  * intersection drowns). Diagnostics on bare-suppressed lines are counted
  * for scope proof but are not candidates.
  */
-export function intersectSuppressions(diagnosticsByPath, suppressionsByPath, ruleMap) {
+export function intersectSuppressions(
+  diagnosticsByPath: Map<string, readonly DiagnosticRow[]>,
+  suppressionsByPath: Map<string, Pick<SuppressionScan, "ranges">>,
+  ruleMap: Pick<RuleMap, "mapped">,
+): {
+  candidates: {
+    path: string;
+    line: number;
+    column: number;
+    endLine: number;
+    endColumn: number;
+    severity: number;
+    vizeRule: string;
+    eslintRule: string;
+    commentLine: number;
+    kind: SuppressionKind;
+  }[];
+  onBareLines: number;
+} {
   const candidates = [];
   let onBareLines = 0;
   for (const [filePath, rows] of diagnosticsByPath) {

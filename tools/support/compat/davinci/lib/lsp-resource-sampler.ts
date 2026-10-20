@@ -2,20 +2,40 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 
-export const mib = (bytes) => Math.round((bytes / 1024 / 1024) * 10) / 10;
+export const mib = (bytes: number): number => Math.round((bytes / 1024 / 1024) * 10) / 10;
+
+export interface ProcessEntry {
+  pid: number;
+  parent: number;
+  birth_ticks: number;
+  rss_bytes: number;
+  cpu_seconds: number;
+  command: string;
+}
+
+export interface TreeSample {
+  rss_bytes: number;
+  cpu_seconds: number;
+  processes: ProcessEntry[];
+}
+
+export interface Sampler {
+  sample: () => TreeSample;
+  stop(): { peak: TreeSample; samples: number };
+}
 
 // The harness is outside the server tree. Count Maestro and every descendant,
 // including Corsa. RSS is summed per process, matching the TS-44 methodology.
-export function createSampler(root) {
+export function createSampler(root: number): Sampler {
   assert.equal(process.platform, "linux", "resource acceptance requires Linux /proc");
   const ticks = Number(execFileSync("getconf", ["CLK_TCK"], { encoding: "utf8" }));
   const page = Number(execFileSync("getconf", ["PAGESIZE"], { encoding: "utf8" }));
   assert.ok(ticks > 0 && page > 0);
   // Keep the last observed own CPU time after a child exits. Subtracting only
   // the two live-tree totals would lose retired Corsa workers' accumulated CPU.
-  const observedCpu = new Map();
-  const sample = () => {
-    const processes = new Map();
+  const observedCpu = new Map<string, number>();
+  const sample = (): TreeSample => {
+    const processes = new Map<number, ProcessEntry>();
     for (const pid of fs.readdirSync("/proc").filter((entry) => /^\d+$/.test(entry))) {
       try {
         const stat = fs.readFileSync(`/proc/${pid}/stat`, "utf8");
@@ -38,8 +58,9 @@ export function createSampler(root) {
       }
     }
     assert.ok(processes.has(root), "the measured Maestro server exited");
-    const tree = [...processes.values()].filter(({ pid }) => {
-      const visited = new Set();
+    const tree = [...processes.values()].filter((entry) => {
+      let pid: number | undefined = entry.pid;
+      const visited = new Set<number>();
       while (pid && !visited.has(pid)) {
         if (pid === root) return true;
         visited.add(pid);
@@ -58,7 +79,7 @@ export function createSampler(root) {
   };
   let peak = sample();
   let count = 1;
-  let samplingError;
+  let samplingError: unknown;
   const interval = setInterval(() => {
     try {
       const current = sample();

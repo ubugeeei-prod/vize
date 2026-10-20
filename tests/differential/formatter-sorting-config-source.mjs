@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { retainedFormatterFunction } from "./formatter-history-source-artifact.ts";
 import { sha256 } from "./manifest.mjs";
-import { stripRust } from "../../tools/support/compat/davinci/lib/rust-source.mjs";
+import { stripRust } from "../../tools/support/compat/davinci/lib/rust-source.ts";
 
 // These exact retained laws own configuration input, never an output oracle.
 export function assertOriginalSortingConfig(fixture, owner, initialFiles, root) {

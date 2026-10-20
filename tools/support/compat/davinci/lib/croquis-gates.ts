@@ -5,8 +5,7 @@
 // the hot path until something demands it. `--check` fails when an orphan
 // has no gate, or a gate names a product that is not an orphan.
 
-/** @type {Record<string, readonly string[]>} */
-export const GATES = {
+export const GATES: Record<string, readonly string[]> = {
   "summary-on-demand": ["AnalysisStats", "CroquisStats"],
   "script-parse": [
     "ImportStatementInfo",
@@ -72,7 +71,7 @@ export const GATES = {
   "script-types": ["TypeResolver"],
 };
 
-const gateByProduct = new Map();
+const gateByProduct = new Map<string, string>();
 for (const [gate, ids] of Object.entries(GATES)) {
   for (const id of ids) {
     if (gateByProduct.has(id)) {
@@ -82,10 +81,10 @@ for (const [gate, ids] of Object.entries(GATES)) {
   }
 }
 
-export function gateOf(productId) {
+export function gateOf(productId: string): string | null {
   return gateByProduct.get(productId) ?? null;
 }
 
-export function gatedProductIds() {
+export function gatedProductIds(): string[] {
   return [...gateByProduct.keys()];
 }

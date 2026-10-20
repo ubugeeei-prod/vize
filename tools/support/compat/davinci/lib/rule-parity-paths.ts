@@ -23,7 +23,7 @@ export const OVERRIDES = path.join(repoRoot, OVERRIDES_REL);
 export const REGEN_COMMAND = "node tools/support/compat/davinci/rule-parity.ts --write";
 
 /** `static META` type -> rule family, the partition every count is grouped by. */
-export const META_KINDS = new Map([
+export const META_KINDS = new Map<string, string>([
   ["RuleMeta", "template-family"],
   ["ScriptRuleMeta", "script"],
   ["CssRuleMeta", "css"],

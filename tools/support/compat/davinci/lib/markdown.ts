@@ -14,7 +14,11 @@
  * @param {string[][]} rows - cell contents (already stringified)
  * @returns {string} the table, one trailing newline, no leading newline
  */
-export function formatTable(headers, aligns, rows) {
+export function formatTable(
+  headers: readonly string[],
+  aligns: readonly ("left" | "right")[],
+  rows: readonly (readonly (string | number | null | undefined)[])[],
+): string {
   const widths = headers.map((header, column) => {
     let width = header.length;
     for (const row of rows) {
@@ -24,13 +28,13 @@ export function formatTable(headers, aligns, rows) {
     return Math.max(width, 3);
   });
 
-  const renderCell = (content, column) => {
+  const renderCell = (content: string | number | null | undefined, column: number): string => {
     const text = String(content ?? "");
     const pad = " ".repeat(widths[column] - text.length);
     return aligns[column] === "right" ? pad + text : text + pad;
   };
 
-  const lines = [];
+  const lines: string[] = [];
   lines.push(`| ${headers.map((header, i) => renderCell(header, i)).join(" | ")} |`);
   lines.push(
     `| ${widths

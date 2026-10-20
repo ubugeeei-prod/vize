@@ -5,7 +5,7 @@
 // is generated (`node tools/support/compat/davinci/storage-summary.ts
 // --write`) instead of hand-copied into the plan and the test.
 
-import { formatTable } from "../../tools/support/compat/davinci/lib/markdown.mjs";
+import { formatTable } from "../../tools/support/compat/davinci/lib/markdown.ts";
 import {
   summarizeAllocVecCategories,
   summarizeKind,

@@ -6,22 +6,48 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-import { walkRustFiles } from "./crates.mjs";
-import { CROQUIS_CRATE_NAME, repoRoot } from "./paths.mjs";
-import { expandUseTree, findUseDecls, maskKeepNewlines, stripRust } from "./rust-source.mjs";
+import { walkRustFiles } from "./crates.ts";
+import type { Crate } from "./crates.ts";
+import { CROQUIS_CRATE_NAME, repoRoot } from "./paths.ts";
+import { expandUseTree, findUseDecls, maskKeepNewlines, stripRust } from "./rust-source.ts";
+import type { UseEntry } from "./rust-source.ts";
 
 const MAX_ROUNDS = 12;
+
+export interface IndexEntry extends UseEntry {
+  isPub: boolean;
+  resolvedDone?: boolean;
+}
+
+export interface ItemAlias {
+  item: string;
+  via: string | null;
+}
+
+export interface FileIndex {
+  rel: string;
+  raw: string;
+  masked: string;
+  entries: IndexEntry[];
+  itemAliases: Map<string, ItemAlias>;
+  moduleAliases: Map<string, string>;
+  pubUseSites: string[];
+  globImports: string[];
+}
 
 /**
  * @returns {Map<string, object[]>} crate name -> per-file index entries
  *   ({ rel, raw, masked, entries, itemAliases, moduleAliases, pubUseSites,
  *   globImports })
  */
-export function buildFileIndex(crates, crateNames) {
+export function buildFileIndex(
+  crates: readonly Crate[],
+  crateNames: ReadonlySet<string>,
+): Map<string, FileIndex[]> {
   // Parse every file once.
-  const parsed = new Map();
+  const parsed = new Map<string, FileIndex[]>();
   for (const crate of crates) {
-    const files = [];
+    const files: FileIndex[] = [];
     for (const abs of walkRustFiles(crate.srcDir)) {
       const raw = readFileSync(abs, "utf8");
       const stripped = stripRust(raw);
@@ -34,7 +60,7 @@ export function buildFileIndex(crates, crateNames) {
           maskKeepNewlines(stripped.slice(d.start, d.end)) +
           masked.slice(d.end);
       }
-      const entries = [];
+      const entries: IndexEntry[] = [];
       for (const d of decls) {
         for (const entry of expandUseTree(d.body)) {
           entries.push({ ...entry, isPub: d.isPub });
@@ -45,6 +71,10 @@ export function buildFileIndex(crates, crateNames) {
         raw,
         masked,
         entries,
+        itemAliases: new Map(),
+        moduleAliases: new Map(),
+        pubUseSites: [],
+        globImports: [],
       });
     }
     parsed.set(crate.name, files);
@@ -53,29 +83,22 @@ export function buildFileIndex(crates, crateNames) {
   // Fixpoint resolution of use entries to vize_croquis items across
   // `pub use` re-export chains (name-level approximation).
   /** crate -> Map(exportedName -> itemName) */
-  const crateExports = new Map(crates.map((c) => [c.name, new Map()]));
-  /** per file: resolved item aliases / module aliases / counted pub-use sites */
-  for (const crate of crates) {
-    for (const file of parsed.get(crate.name)) {
-      file.itemAliases = new Map(); // localName -> { item, via }
-      file.moduleAliases = new Map(); // localName -> module path under vize_croquis
-      file.pubUseSites = []; // itemName[]
-      file.globImports = [];
-    }
-  }
+  const crateExports = new Map(crates.map((c) => [c.name, new Map<string, string>()]));
+  // Per file: itemAliases (localName -> { item, via }), moduleAliases
+  // (localName -> module path under vize_croquis), pubUseSites (itemName[]).
   let changed = true;
   let rounds = 0;
   while (changed && rounds < MAX_ROUNDS) {
     changed = false;
     rounds++;
     for (const crate of crates) {
-      for (const file of parsed.get(crate.name)) {
+      for (const file of parsed.get(crate.name)!) {
         for (const entry of file.entries) {
           if (entry.resolvedDone) continue;
           const root = entry.segments[0];
-          let itemName = null;
-          let via = null;
-          let modulePath = null;
+          let itemName: string | null = null;
+          let via: string | null = null;
+          let modulePath: string | null = null;
           if (root === CROQUIS_CRATE_NAME) {
             if (entry.glob) {
               file.globImports.push(entry.segments.join("::") + "::*");
@@ -120,7 +143,7 @@ export function buildFileIndex(crates, crateNames) {
               file.moduleAliases.set(local, modulePath);
             }
             if (entry.isPub) {
-              crateExports.get(crate.name).set(local, itemName);
+              crateExports.get(crate.name)!.set(local, itemName);
               file.pubUseSites.push(itemName);
             }
           } else if (modulePath !== null) {

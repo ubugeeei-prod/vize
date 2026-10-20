@@ -2,12 +2,14 @@
 // the cross-checks that report disagreements between the engine's rule-name
 // sets and the derived matrix instead of reconciling them.
 
-import { formatTable } from "./markdown.mjs";
-import { byKey } from "./ordering.mjs";
-import { OVERRIDES_REL } from "./rule-parity-paths.mjs";
+import { formatTable } from "./markdown.ts";
+import { byKey } from "./ordering.ts";
+import type { Matrix, MatrixRule } from "./rule-parity-matrix.ts";
+import { OVERRIDES_REL } from "./rule-parity-paths.ts";
+import type { RuleStats } from "./rule-parity-summary.ts";
 
-const croquisCell = (r) => {
-  const parts = [];
+const croquisCell = (r: MatrixRule): string => {
+  const parts: string[] = [];
   if (r.croquis.size > 0) {
     const items = [...r.croquis.keys()].sort(byKey);
     const shown = items.slice(0, 3).map((i) => `\`${i}\``);
@@ -18,15 +20,15 @@ const croquisCell = (r) => {
   if (r.ctxSites > 0) parts.push(`ctx ${r.ctxSites}`);
   return parts.length > 0 ? parts.join("; ") : "—";
 };
-const jsxCell = (r) => {
+const jsxCell = (r: MatrixRule): string => {
   if (r.jsx === "yes") return `yes (${r.jsxLane})`;
   if (r.jsxLane === "no-jsx-hooks") return "no (no JSX-reachable hooks)";
   return "no";
 };
-const sfcCell = (r) => (r.sfc === "yes" ? `yes (${r.sfcDetail})` : "no");
+const sfcCell = (r: MatrixRule): string => (r.sfc === "yes" ? `yes (${r.sfcDetail})` : "no");
 
-export function fullTableSection(stats) {
-  const lines = [];
+export function fullTableSection(stats: RuleStats): string[] {
+  const lines: string[] = [];
   lines.push("## Full table");
   lines.push("");
   lines.push("Sorted by rule name. File paths are relative to `crates/vize_patina/src/rules/`.");
@@ -62,8 +64,8 @@ export function fullTableSection(stats) {
   return lines;
 }
 
-export function overridesSection(stats) {
-  const lines = [];
+export function overridesSection(stats: RuleStats): string[] {
+  const lines: string[] = [];
   lines.push("## Overrides applied");
   lines.push("");
   if (stats.overriddenRows.length === 0) {
@@ -81,10 +83,10 @@ export function overridesSection(stats) {
   return lines;
 }
 
-export function crossChecksSection(matrix, stats) {
+export function crossChecksSection(matrix: Matrix, stats: RuleStats): string[] {
   const { model, rules } = matrix;
   const { croquisUsers, unregistered } = stats;
-  const lines = [];
+  const lines: string[] = [];
   lines.push("## Cross-checks");
   lines.push("");
   if (unregistered.length > 0) {
@@ -96,12 +98,13 @@ export function crossChecksSection(matrix, stats) {
   } else {
     lines.push("- Every non-musea rule is registered on at least one dispatch path.");
   }
-  const engineSetGaps = [];
-  for (const [setName, set] of [
+  const engineSetGaps: string[] = [];
+  const engineSets: [string, string[]][] = [
     ["SEMANTIC_TEMPLATE_RULES", model.semanticTemplateRules],
     ["SHARED_SFC_DESCRIPTOR_RULES", model.sharedSfcDescriptorRules],
     ["TYPE_AWARE_RULES", model.typeAwareRules],
-  ]) {
+  ];
+  for (const [setName, set] of engineSets) {
     for (const name of set) {
       const r = rules.get(name);
       if (!r) engineSetGaps.push(`\`${setName}\` names unknown rule \`${name}\``);

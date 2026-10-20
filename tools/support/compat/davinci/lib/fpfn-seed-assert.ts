@@ -28,7 +28,8 @@ import {
   planClassB,
   describeMappedSpan,
   spanOverlapsEdits,
-} from "./fpfn-seed-apply.mjs";
+} from "./fpfn-seed-apply.ts";
+import type { SeedEdit } from "./fpfn-seed-apply.ts";
 import {
   diagnosticKey,
   flattenLintJson,
@@ -36,18 +37,49 @@ import {
   lineStartsOf,
   runVizeLintJson,
   sortDiagnostics,
-} from "./fpfn-shared.mjs";
+} from "./fpfn-shared.ts";
+import type { DiagnosticRow, VizeCli } from "./fpfn-shared.ts";
+
+export interface SeedInjection {
+  class: string;
+  path: string;
+  expectedRule: string;
+  identifier: { original: string | null; seeded: string };
+  expected: { line: number; column: number; endLine: number; endColumn: number };
+}
+
+export interface SeedManifest {
+  source: unknown;
+  scope: unknown;
+  files: { path: string }[];
+  injections: SeedInjection[];
+  edits: Record<string, SeedEdit[]>;
+}
+
+export interface SeedAssertInput {
+  manifest: SeedManifest;
+  outDir: string;
+  cli?: VizeCli;
+  hooks?: { baselineLintJson?: string; seededLintJson?: string };
+}
 
 /** Load lint JSON either from a self-test hook file or by running vize. */
-function loadLintRows(hookPath, cli, cwd, files) {
+function loadLintRows(
+  hookPath: string | undefined,
+  cli: VizeCli | undefined,
+  cwd: string,
+  files: readonly string[],
+): DiagnosticRow[] {
   if (hookPath != null) {
     return flattenLintJson(JSON.parse(fs.readFileSync(hookPath, "utf8")));
   }
-  return flattenLintJson(runVizeLintJson(cli, cwd, files));
+  return flattenLintJson(runVizeLintJson(cli!, cwd, files));
 }
 
-function countByKey(rows) {
-  const counts = new Map();
+function countByKey(
+  rows: readonly DiagnosticRow[],
+): Map<string, { row: DiagnosticRow; count: number }> {
+  const counts = new Map<string, { row: DiagnosticRow; count: number }>();
   for (const row of rows) {
     const key = diagnosticKey(row);
     const entry = counts.get(key);
@@ -58,8 +90,11 @@ function countByKey(rows) {
 }
 
 /** Multiset difference a − b as sorted rows. */
-function multisetDifference(a, b) {
-  const out = [];
+function multisetDifference(
+  a: Map<string, { row: DiagnosticRow; count: number }>,
+  b: Map<string, { row: DiagnosticRow; count: number }>,
+): DiagnosticRow[] {
+  const out: DiagnosticRow[] = [];
   for (const [key, { row, count }] of a) {
     const other = b.get(key)?.count ?? 0;
     for (let i = 0; i < count - other; i += 1) out.push(row);
@@ -68,16 +103,20 @@ function multisetDifference(a, b) {
 }
 
 /** Map every baseline diagnostic into seeded coordinates via the manifest. */
-function shiftBaseline(rows, manifest, outDir) {
-  const shifted = [];
-  const unmappable = [];
-  const textCache = new Map();
-  const readText = (tree, relPath) => {
+function shiftBaseline(
+  rows: readonly DiagnosticRow[],
+  manifest: Pick<SeedManifest, "edits">,
+  outDir: string,
+): { shifted: DiagnosticRow[]; unmappable: DiagnosticRow[] } {
+  const shifted: DiagnosticRow[] = [];
+  const unmappable: DiagnosticRow[] = [];
+  const textCache = new Map<string, string>();
+  const readText = (tree: string, relPath: string): string => {
     const key = `${tree}:${relPath}`;
     if (!textCache.has(key)) {
       textCache.set(key, fs.readFileSync(path.join(outDir, tree, relPath), "utf8"));
     }
-    return textCache.get(key);
+    return textCache.get(key)!;
   };
   for (const row of rows) {
     const edits = manifest.edits[row.path] ?? [];
@@ -112,7 +151,9 @@ function shiftBaseline(rows, manifest, outDir) {
   return { shifted: sortDiagnostics(shifted), unmappable: sortDiagnostics(unmappable) };
 }
 
-function expectedClassARows(manifest) {
+function expectedClassARows(
+  manifest: SeedManifest,
+): (DiagnosticRow & { identifier: string | null })[] {
   return manifest.injections
     .filter((injection) => injection.class === CLASS_A)
     .map((injection) => ({
@@ -131,7 +172,7 @@ function expectedClassARows(manifest) {
 }
 
 /** Build the full identity-assertion report. Pure given its inputs. */
-export function assertSeededTree({ manifest, outDir, cli, hooks }) {
+export function assertSeededTree({ manifest, outDir, cli, hooks }: SeedAssertInput) {
   const files = manifest.files.map((file) => file.path);
   const baselineRows = loadLintRows(
     hooks?.baselineLintJson,
@@ -164,8 +205,8 @@ export function assertSeededTree({ manifest, outDir, cli, hooks }) {
       return [diagnosticKey(bare), identifier];
     }),
   );
-  const classAMisses = [];
-  const baselineMisses = [];
+  const classAMisses: (DiagnosticRow & { identifier: string })[] = [];
+  const baselineMisses: DiagnosticRow[] = [];
   for (const row of missingRows) {
     const identifier = classAKeys.get(diagnosticKey(row));
     if (identifier != null) classAMisses.push({ ...row, identifier });
@@ -210,9 +251,9 @@ export function assertSeededTree({ manifest, outDir, cli, hooks }) {
   };
 }
 
-function assertUnused({ manifest, outDir, cli, hooks }) {
+function assertUnused({ manifest, outDir, cli, hooks }: SeedAssertInput) {
   const plane = path.join(outDir, "class-b");
-  const bManifest = { ...manifest, edits: {} };
+  const bManifest: SeedManifest = { ...manifest, edits: {} };
   const files = manifest.files.map((file) => file.path);
   for (const file of files) {
     const original = fs.readFileSync(path.join(outDir, "original", file), "utf8");
@@ -227,7 +268,7 @@ function assertUnused({ manifest, outDir, cli, hooks }) {
       fs.writeFileSync(target, text);
     }
   }
-  const load = (tree, hook) => {
+  const load = (tree: string, hook: string | undefined): DiagnosticRow[] => {
     const cwd = path.join(plane, tree);
     const config = path.join(cwd, "vite.config.mjs");
     fs.writeFileSync(
@@ -236,7 +277,7 @@ function assertUnused({ manifest, outDir, cli, hooks }) {
     );
     const rows = hook
       ? loadLintRows(hook, cli, cwd, files)
-      : flattenLintJson(runVizeLintJson(cli, cwd, files, config));
+      : flattenLintJson(runVizeLintJson(cli!, cwd, files, config));
     return hook ? rows.filter((row) => row.ruleId !== "vue/no-undefined-refs") : rows;
   };
   const baseline = load("original", hooks?.baselineLintJson);

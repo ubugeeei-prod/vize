@@ -5,15 +5,17 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-import { byKey } from "./ordering.mjs";
-import { RULES_DIR } from "./rule-parity-paths.mjs";
+import { byKey } from "./ordering.ts";
+import { RULES_DIR } from "./rule-parity-paths.ts";
+import type { DispatchModel } from "./rule-parity-dispatch.ts";
 import {
   collectStringLiterals,
   findImplBlocks,
   matchBraceBlock,
   stripRustComments,
-} from "./rule-parity-rust-text.mjs";
-import { expandUseTree, findUseDecls, maskKeepNewlines, stripRust } from "./rust-source.mjs";
+} from "./rule-parity-rust-text.ts";
+import type { ImplBlock } from "./rule-parity-rust-text.ts";
+import { expandUseTree, findUseDecls, maskKeepNewlines, stripRust } from "./rust-source.ts";
 
 const CONTAINER_TOKEN_RE =
   /\b(SfcDescriptor|SfcBlock|SfcTemplateBlock|SfcScriptBlock|SfcStyleBlock|SfcParseOptions|parse_sfc|sfc_descriptor|sfc_template_descriptor|vize_atelier_sfc)\b/g;
@@ -25,7 +27,33 @@ const DIALECT_HOOKS = new Set(["check_directive", "check_for", "check_if", "chec
 const DIALECT_MARKUP_HOOKS = new Set(["enter_directive"]);
 export const DIALECT_NAME_PREFIXES = ["ecosystem", "nuxt", "petite-vue", "vapor"];
 
-export function parseRuleFile(abs, model) {
+export type HookModel = Pick<DispatchModel, "templateHooks" | "markupHooks">;
+
+export interface RuleSignals {
+  container: Set<string>;
+  dialect: Set<string>;
+}
+
+export interface ParsedRuleFile {
+  abs: string;
+  rel: string;
+  source: string;
+  meta: { kind: string; name: string } | null;
+  impls: ImplBlock[];
+  ruleImplTypes: string[];
+  hooks: Set<string>;
+  markupHookSet: Set<string>;
+  asMarkup: boolean;
+  jsxLowered: boolean;
+  scriptUsesAst: boolean;
+  scriptUsesTemplateAst: boolean;
+  croquisItems: Map<string, number>;
+  ctxSites: number;
+  signals: RuleSignals;
+  kind?: "test" | "module" | "helper";
+}
+
+export function parseRuleFile(abs: string, model: HookModel): ParsedRuleFile {
   return parseRuleSource(
     readFileSync(abs, "utf8"),
     path.relative(RULES_DIR, abs).split(path.sep).join("/"),
@@ -34,14 +62,19 @@ export function parseRuleFile(abs, model) {
   );
 }
 
-export function parseRuleSource(raw, rel, model, abs = rel) {
+export function parseRuleSource(
+  raw: string,
+  rel: string,
+  model: HookModel,
+  abs: string = rel,
+): ParsedRuleFile {
   const stripped = stripRust(raw);
   const code = stripRustComments(raw); // strings kept, comments blanked
 
   // --- meta ---------------------------------------------------------------
   const metaMatch =
     /static\s+META\s*:\s*(RuleMeta|ScriptRuleMeta|CssRuleMeta|MuseaRuleMeta)\s*=/.exec(code);
-  let meta = null;
+  let meta: ParsedRuleFile["meta"] = null;
   if (metaMatch) {
     const open = code.indexOf("{", metaMatch.index);
     const close = matchBraceBlock(code, open);
@@ -54,8 +87,8 @@ export function parseRuleSource(raw, rel, model, abs = rel) {
   // --- impl blocks + hook sets ---------------------------------------------
   const impls = findImplBlocks(stripped);
   const ruleImplTypes = impls.filter((b) => b.trait === "Rule").map((b) => b.type);
-  const hooks = new Set();
-  const markupHookSet = new Set();
+  const hooks = new Set<string>();
+  const markupHookSet = new Set<string>();
   let asMarkup = false;
   let jsxLowered = false;
   let scriptUsesAst = false;
@@ -90,8 +123,8 @@ export function parseRuleSource(raw, rel, model, abs = rel) {
       maskKeepNewlines(stripped.slice(d.start, d.end)) +
       masked.slice(d.end);
   }
-  const itemAliases = new Map(); // localName -> item
-  const moduleAliases = new Map(); // localName -> module path under vize_croquis
+  const itemAliases = new Map<string, string>(); // localName -> item
+  const moduleAliases = new Map<string, string>(); // localName -> module path under vize_croquis
   for (const d of decls) {
     for (const entry of expandUseTree(d.body)) {
       if (entry.segments[0] !== "vize_croquis") continue;
@@ -109,19 +142,22 @@ export function parseRuleSource(raw, rel, model, abs = rel) {
       }
     }
   }
-  const croquisItems = new Map(); // item path -> sites
-  const bumpItem = (item, count) => {
+  const croquisItems = new Map<string, number>(); // item path -> sites
+  const bumpItem = (item: string, count: number): void => {
     if (count > 0) croquisItems.set(item, (croquisItems.get(item) ?? 0) + count);
   };
   let text = masked;
-  text = text.replace(/\bvize_croquis((?:::[A-Za-z_][A-Za-z0-9_]*)+)/g, (whole, rest) => {
-    bumpItem(rest.slice(2), 1);
-    return " ".repeat(whole.length);
-  });
+  text = text.replace(
+    /\bvize_croquis((?:::[A-Za-z_][A-Za-z0-9_]*)+)/g,
+    (whole: string, rest: string) => {
+      bumpItem(rest.slice(2), 1);
+      return " ".repeat(whole.length);
+    },
+  );
   for (const [local, modulePath] of moduleAliases) {
     if (local === "__glob__") continue;
     const re = new RegExp(`(?<![A-Za-z0-9_:.])${local}::([A-Za-z_][A-Za-z0-9_]*)`, "g");
-    text = text.replace(re, (whole, member) => {
+    text = text.replace(re, (whole: string, member: string) => {
       bumpItem(modulePath === "" ? member : `${modulePath}::${member}`, 1);
       return " ".repeat(whole.length);
     });
@@ -134,7 +170,7 @@ export function parseRuleSource(raw, rel, model, abs = rel) {
   // Analysis-product access through the lint context: `.analysis()` /
   // `.has_analysis()` on receivers typed LintContext / MarkupContext /
   // MarkupDocument (the context lane croquis facts flow through).
-  const receivers = new Set();
+  const receivers = new Set<string>();
   const annRe =
     /\b([a-z_][a-z0-9_]*)\s*:\s*&(?:'[a-z_][A-Za-z0-9_]*\s*)?(?:mut\s+)?(?:LintContext|MarkupContext|MarkupDocument)\b/g;
   for (const m of masked.matchAll(annRe)) receivers.add(m[1]);
@@ -149,7 +185,7 @@ export function parseRuleSource(raw, rel, model, abs = rel) {
   }
 
   // --- classification signals ----------------------------------------------
-  const signals = { container: new Set(), dialect: new Set() };
+  const signals: RuleSignals = { container: new Set(), dialect: new Set() };
   for (const m of code.matchAll(CONTAINER_TOKEN_RE)) signals.container.add(m[1] ?? m[0]);
   for (const m of code.matchAll(DIALECT_NODE_RE))
     signals.dialect.add(m[1] ?? "PropNode::Directive");

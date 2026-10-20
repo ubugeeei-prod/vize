@@ -13,12 +13,12 @@ import {
   intersectSuppressions,
   loadRuleMap,
   scanSuppressions,
-} from "../../tools/support/compat/davinci/lib/fpfn-suppress-scan.mjs";
+} from "../../tools/support/compat/davinci/lib/fpfn-suppress-scan.ts";
 import {
   flattenLintJson,
   resolveVizeCli,
   runVizeLintJson,
-} from "../../tools/support/compat/davinci/lib/fpfn-shared.mjs";
+} from "../../tools/support/compat/davinci/lib/fpfn-shared.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const script = path.join(root, "tools/commands/davinci/seed-defects.rs");

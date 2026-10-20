@@ -21,7 +21,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 
 import { gitTrackedFiles } from "../../../git-tracked-files.ts";
-import { repoRoot } from "./paths.mjs";
+import { repoRoot } from "./paths.ts";
 
 // The gate itself carries lookalike and boundary fixtures for its unit tests.
 export const V_ON_GATE = "tests/tooling/davinci-v-on-storage.test.ts";
@@ -50,7 +50,12 @@ export const syntheticBoundary =
 const modifiedOnName = /^(?:@|v-on:)(?!\[)[^\s=./>]+(?:\.[^\s=./>]+)+$/u;
 
 /** Git-tracked carrier files with marked synthetic boundaries removed, in `git ls-files` order. */
-export function trackedNaturalSources() {
+export interface NaturalSource {
+  file: string;
+  source: string;
+}
+
+export function trackedNaturalSources(): NaturalSource[] {
   return gitTrackedFiles(repoRoot)
     .filter(
       (file) =>
@@ -62,12 +67,12 @@ export function trackedNaturalSources() {
     }));
 }
 
-export function startTags(source) {
-  const tags = [];
+export function startTags(source: string): string[] {
+  const tags: string[] = [];
   for (let start = 0; start < source.length - 1; start += 1) {
     if (source[start] !== "<" || !/[A-Za-z]/u.test(source[start + 1])) continue;
 
-    let quote;
+    let quote: string | undefined;
     for (let end = start + 2; end < source.length; end += 1) {
       const character = source[end];
       if (quote !== undefined) {
@@ -86,8 +91,8 @@ export function startTags(source) {
   return tags;
 }
 
-function attributeNames(tag) {
-  const names = [];
+function attributeNames(tag: string): string[] {
+  const names: string[] = [];
   let cursor = 1;
   while (cursor < tag.length && !/[\s/>]/u.test(tag[cursor])) cursor += 1;
 
@@ -122,13 +127,13 @@ function attributeNames(tag) {
   return names;
 }
 
-export function modifiedOnSpellings(source) {
+export function modifiedOnSpellings(source: string): string[] {
   return startTags(source).flatMap((tag) =>
     attributeNames(tag).filter((name) => modifiedOnName.test(name)),
   );
 }
 
-export function classify(spelling) {
+export function classify(spelling: string): { options: number; event: number; keys: number } {
   const normalized = spelling.startsWith("@") ? spelling.slice(1) : spelling.slice("v-on:".length);
   const [name, ...modifiers] = normalized.split(".");
   const keyboard = name === "keydown" || name === "keyup" || name === "keypress";
@@ -165,25 +170,27 @@ export function classify(spelling) {
 
 // Shard key: the first two directories of the path (`davinci/vize_l2`,
 // `playground/src`), or the directory itself for shallower files.
-function areaOf(file) {
+function areaOf(file: string): string {
   const dirs = file.split("/").slice(0, -1);
   return dirs.length === 0 ? "root" : dirs.slice(0, 2).join("--");
 }
 
 /** The committed inventory: one `file<TAB>spelling` TSV per area, stable order, no totals. */
-export function renderVOnCorpus(sources) {
-  const byArea = new Map();
+export function renderVOnCorpus(
+  sources: readonly NaturalSource[],
+): { relPath: string; text: string }[] {
+  const byArea = new Map<string, string[]>();
   for (const { file, source } of sources) {
     for (const spelling of modifiedOnSpellings(source)) {
       const area = areaOf(file);
       if (!byArea.has(area)) byArea.set(area, []);
-      byArea.get(area).push(`${file}\t${spelling}`);
+      byArea.get(area)!.push(`${file}\t${spelling}`);
     }
   }
   return [...byArea.keys()]
     .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
     .map((area) => ({
       relPath: `${V_ON_CORPUS_DIR}/${area}.tsv`,
-      text: `file\tspelling\n${byArea.get(area).join("\n")}\n`,
+      text: `file\tspelling\n${byArea.get(area)!.join("\n")}\n`,
     }));
 }

@@ -1,5 +1,5 @@
 // Shared plumbing for the Davinci P0-13 FP/FN pilot tools
-// (seed-defects.mjs, suppression-telemetry.mjs): repository locations, the
+// (seed-defects.rs, suppression-telemetry.rs): repository locations, the
 // corpus-shard definition, `vize lint` invocation, and the text-coordinate
 // utilities both tools need to talk about diagnostic locations exactly.
 //
@@ -16,6 +16,24 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { asArray, asNumber, asRecord, asString } from "../../../json-value.ts";
+
+export interface VizeCli {
+  command: string;
+  prefix: string[];
+}
+
+/** Location-identity diagnostic row. */
+export interface DiagnosticRow {
+  path: string;
+  ruleId: string;
+  severity: number;
+  line: number;
+  column: number;
+  endLine: number;
+  endColumn: number;
+}
+
 export const repoRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "..",
@@ -30,14 +48,14 @@ export const repoRoot = path.resolve(
 //   git submodule update --init --depth 1 -- tests/_fixtures/_git/<id>
 export const CORPUS_SHARD = ["splitpanes", "layoutit-grid", "cssgridgenerator"];
 
-export function shardProjectDir(id) {
+export function shardProjectDir(id: string): string {
   return path.join(repoRoot, "tests", "_fixtures", "_git", id);
 }
 
 /** List every .vue file under `dir`, as sorted /-separated relative paths. */
-export function listVueFiles(dir) {
-  const found = [];
-  const walk = (current) => {
+export function listVueFiles(dir: string): string[] {
+  const found: string[] = [];
+  const walk = (current: string): void => {
     for (const entry of fs
       .readdirSync(current, { withFileTypes: true })
       .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))) {
@@ -60,8 +78,8 @@ export function listVueFiles(dir) {
  * build outputs, `vize` on PATH, then `cargo run -q -p vize --` as the
  * last-resort fallback (matching tests/tooling/cli-lint-contract.test.ts).
  */
-export function resolveVizeCli() {
-  const candidates = [];
+export function resolveVizeCli(): VizeCli {
+  const candidates: string[] = [];
   if (process.env.VIZE_BIN) candidates.push(process.env.VIZE_BIN);
   candidates.push(
     path.join(repoRoot, "target", "ci", "vize"),
@@ -82,7 +100,12 @@ export function resolveVizeCli() {
  * status 0 (clean/warnings) and 1 (errors) both carry a valid report;
  * anything else throws with the captured stderr.
  */
-export function runVizeLintJson(cli, cwd, files, config) {
+export function runVizeLintJson(
+  cli: VizeCli,
+  cwd: string,
+  files: readonly string[],
+  config?: string,
+): unknown[] {
   const result = spawnSync(
     cli.command,
     [
@@ -101,7 +124,7 @@ export function runVizeLintJson(cli, cwd, files, config) {
       `vize lint exited with status ${result.status}:\n${result.stderr}\n${result.stdout}`,
     );
   }
-  let parsed;
+  let parsed: unknown;
   try {
     parsed = JSON.parse(result.stdout);
   } catch {
@@ -112,25 +135,27 @@ export function runVizeLintJson(cli, cwd, files, config) {
 }
 
 /** Flatten a vize lint JSON report into location-identity diagnostic rows. */
-export function flattenLintJson(report) {
-  const rows = [];
-  for (const fileResult of report) {
-    for (const message of fileResult.messages) {
+export function flattenLintJson(report: unknown): DiagnosticRow[] {
+  const rows: DiagnosticRow[] = [];
+  for (const fileValue of asArray(report, "vize lint JSON")) {
+    const fileResult = asRecord(fileValue, "vize lint file result");
+    for (const messageValue of asArray(fileResult.messages, "vize lint messages")) {
+      const message = asRecord(messageValue, "vize lint message");
       rows.push({
-        path: fileResult.file.split(path.sep).join("/"),
-        ruleId: message.ruleId,
-        severity: message.severity,
-        line: message.line,
-        column: message.column,
-        endLine: message.endLine,
-        endColumn: message.endColumn,
+        path: asString(fileResult.file, "file").split(path.sep).join("/"),
+        ruleId: asString(message.ruleId, "ruleId"),
+        severity: asNumber(message.severity, "severity"),
+        line: asNumber(message.line, "line"),
+        column: asNumber(message.column, "column"),
+        endLine: asNumber(message.endLine, "endLine"),
+        endColumn: asNumber(message.endColumn, "endColumn"),
       });
     }
   }
   return sortDiagnostics(rows);
 }
 
-export function sortDiagnostics(rows) {
+export function sortDiagnostics<T extends DiagnosticRow>(rows: T[]): T[] {
   return rows.sort(
     (a, b) =>
       compareStrings(a.path, b.path) ||
@@ -143,7 +168,7 @@ export function sortDiagnostics(rows) {
   );
 }
 
-export function diagnosticKey(row) {
+export function diagnosticKey(row: DiagnosticRow): string {
   return [
     row.path,
     row.ruleId,
@@ -155,14 +180,14 @@ export function diagnosticKey(row) {
   ].join("|");
 }
 
-function compareStrings(a, b) {
+function compareStrings(a: string, b: string): number {
   return a < b ? -1 : a > b ? 1 : 0;
 }
 
 // --- text coordinates -------------------------------------------------------
 
 /** JS-index offsets of every line start ("\n"-separated, 1-based lines). */
-export function lineStartsOf(text) {
+export function lineStartsOf(text: string): number[] {
   const starts = [0];
   for (let i = 0; i < text.length; i += 1) {
     if (text[i] === "\n") starts.push(i + 1);
@@ -171,7 +196,11 @@ export function lineStartsOf(text) {
 }
 
 /** Convert a JS string index into {line, column} (code-point columns). */
-export function indexToLineCol(text, lineStarts, index) {
+export function indexToLineCol(
+  text: string,
+  lineStarts: readonly number[],
+  index: number,
+): { line: number; column: number } {
   let low = 0;
   let high = lineStarts.length - 1;
   while (low < high) {
@@ -184,7 +213,12 @@ export function indexToLineCol(text, lineStarts, index) {
 }
 
 /** Convert a 1-based {line, column} (code-point columns) to a JS index. */
-export function lineColToIndex(text, lineStarts, line, column) {
+export function lineColToIndex(
+  text: string,
+  lineStarts: readonly number[],
+  line: number,
+  column: number,
+): number | null {
   const start = lineStarts[line - 1];
   if (start == null) return null;
   const end = line < lineStarts.length ? lineStarts[line] : text.length;
@@ -200,7 +234,7 @@ export function lineColToIndex(text, lineStarts, line, column) {
   return start + jsOffset;
 }
 
-function codePointLength(slice) {
+function codePointLength(slice: string): number {
   let count = 0;
   for (const _ of slice) count += 1;
   return count;
@@ -209,11 +243,11 @@ function codePointLength(slice) {
 // --- deterministic JSON -----------------------------------------------------
 
 /** Write `value` as pretty JSON with a trailing newline (byte-stable). */
-export function writeJson(filePath, value) {
+export function writeJson(filePath: string, value: unknown): void {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`);
 }
 
-export function readJson(filePath) {
+export function readJson(filePath: string): unknown {
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }

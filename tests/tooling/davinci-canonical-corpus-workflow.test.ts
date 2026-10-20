@@ -59,7 +59,7 @@ await test("selection covers pinned inputs, drivers and real producers in both c
     "tests/davinci_test_support/src/corpus/io_tests.rs",
     "tools/commands/fixtures/davinci-dom-corpus-workflow.rs",
     "tools/support/compat/fixtures/davinci-dom-corpus-workflow.mjs",
-    "tools/support/compat/davinci/lib/corpus-baseline-contract.mjs",
+    "tools/support/compat/davinci/lib/corpus-baseline-contract.ts",
     "tools/support/compat/github/canonical-corpus-selection.mjs",
     "tools/support/compat/github/canonical-corpus-identity.mjs",
     "tools/support/compat/github/canonical-corpus-inventory.mjs",

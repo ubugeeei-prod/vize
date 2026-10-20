@@ -7,14 +7,29 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
-import { discoverCrates, walkRustFiles } from "./crates.mjs";
-import { repoRoot } from "./paths.mjs";
-import { stripRust } from "./rust-source.mjs";
+import { discoverCrates, walkRustFiles } from "./crates.ts";
+import { repoRoot } from "./paths.ts";
+import { stripRust } from "./rust-source.ts";
 
 export const MEMBERS = ["source", "start.line", "start.column", "end.line", "end.column"];
 export const OFFSET_MEMBERS = ["span.start", "span.end"];
 
-export function isLocShaped(ident) {
+export interface SourceLocationSite {
+  crate: string;
+  relPath: string;
+  line: number;
+  member: string;
+  test: boolean;
+}
+
+export interface CrateLocationStats {
+  name: string;
+  counts: Record<string, number>;
+  total: number;
+  testSites: number;
+}
+
+export function isLocShaped(ident: string): boolean {
   return (
     ident === "loc" || ident === "location" || ident.endsWith("_loc") || ident.endsWith("_location")
   );
@@ -31,14 +46,17 @@ export function isLocShaped(ident) {
  * additionally require a non-identifier, non-`.` character before them so a
  * rejected chain segment is never recounted as a bare local.
  */
-export function scanMembers(stripped, members) {
+export function scanMembers(
+  stripped: string,
+  members: readonly string[],
+): { index: number; member: string }[] {
   const memberAlt = members.map((m) => m.replaceAll(".", "\\.")).join("|");
   const re = new RegExp(
     `(\\.)?([A-Za-z_][A-Za-z0-9_]*)(\\(\\))?\\.(${memberAlt})(?![A-Za-z0-9_])`,
     "g",
   );
-  const sites = [];
-  let m;
+  const sites: { index: number; member: string }[] = [];
+  let m: RegExpExecArray | null;
   while ((m = re.exec(stripped)) !== null) {
     const [, chained, receiver, , member] = m;
     if (!isLocShaped(receiver)) continue;
@@ -51,7 +69,7 @@ export function scanMembers(stripped, members) {
   return sites;
 }
 
-export function lineOfIndex(text, index) {
+export function lineOfIndex(text: string, index: number): number {
   let line = 1;
   for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
   return line;
@@ -63,7 +81,7 @@ export function lineOfIndex(text, index) {
  * `#[cfg(test)]` attribute (the repo convention keeps test modules at the
  * end of the file).
  */
-export function isTestSite(relPath, stripped, index) {
+export function isTestSite(relPath: string, stripped: string, index: number): boolean {
   const base = path.basename(relPath);
   if (base === "tests.rs" || base.endsWith("_tests.rs")) return true;
   if (relPath.includes("/tests/")) return true;
@@ -72,12 +90,16 @@ export function isTestSite(relPath, stripped, index) {
 }
 
 /** Scan the workspace once; returns per-crate stats and the flat site list. */
-export function scanWorkspace() {
-  const crates = [];
-  const allSites = [];
+export function scanWorkspace(): {
+  crates: CrateLocationStats[];
+  allSites: SourceLocationSite[];
+  offsetReadsByCrate: Map<string, number>;
+} {
+  const crates: CrateLocationStats[] = [];
+  const allSites: SourceLocationSite[] = [];
   // crate -> loc-shaped span-read sites; reported only by `--summary`
   // (a cross-crate count committed to the artifact churned on every PR).
-  const offsetReadsByCrate = new Map();
+  const offsetReadsByCrate = new Map<string, number>();
   for (const crate of discoverCrates()) {
     const counts = Object.fromEntries(MEMBERS.map((member) => [member, 0]));
     let testSites = 0;
@@ -109,7 +131,11 @@ export function scanWorkspace() {
 }
 
 /** `path:line` of the first inventoried site in the file, or throw. */
-export function citeSite(allSites, relPath, member = null) {
+export function citeSite(
+  allSites: readonly SourceLocationSite[],
+  relPath: string,
+  member: string | null = null,
+): string {
   const site = allSites.find(
     (s) => s.relPath === relPath && (member === null || s.member === member),
   );
@@ -123,7 +149,7 @@ export function citeSite(allSites, relPath, member = null) {
 }
 
 /** `path:line` of the first line matching `anchor` in the file, or throw. */
-export function citeAnchor(relPath, anchor) {
+export function citeAnchor(relPath: string, anchor: RegExp): string {
   const file = path.join(repoRoot, relPath);
   if (!existsSync(file)) {
     throw new Error(
@@ -143,7 +169,7 @@ export function citeAnchor(relPath, anchor) {
 }
 
 /** References to `name` outside its defining module chain (stripped text). */
-export function countExternalReferences(name, excludeRelPaths) {
+export function countExternalReferences(name: string, excludeRelPaths: readonly string[]): number {
   let count = 0;
   for (const crate of discoverCrates()) {
     for (const file of walkRustFiles(crate.srcDir)) {
@@ -163,7 +189,7 @@ export function countExternalReferences(name, excludeRelPaths) {
  * inverse of `citeAnchor`, for migration groups whose consumers stop
  * existing rather than move.
  */
-export function assertAnchorAbsent(relPath, anchor, description) {
+export function assertAnchorAbsent(relPath: string, anchor: RegExp, description: string): void {
   const file = path.join(repoRoot, relPath);
   if (!existsSync(file)) return;
   const lines = readFileSync(file, "utf8").split("\n");
@@ -178,7 +204,7 @@ export function assertAnchorAbsent(relPath, anchor, description) {
 }
 
 /** Pin a workspace-wide deletion of `name` (no references anywhere). */
-export function assertSymbolAbsent(name, description) {
+export function assertSymbolAbsent(name: string, description: string): void {
   const count = countExternalReferences(name, []);
   if (count !== 0) {
     throw new Error(

@@ -5,9 +5,10 @@
 
 import { readFileSync } from "node:fs";
 
-import { walkRustFiles } from "./crates.mjs";
-import { CROQUIS_CRATE_NAME } from "./paths.mjs";
-import { expandUseTree, findUseDecls, stripRust } from "./rust-source.mjs";
+import { walkRustFiles } from "./crates.ts";
+import type { Crate } from "./crates.ts";
+import { CROQUIS_CRATE_NAME } from "./paths.ts";
+import { expandUseTree, findUseDecls, stripRust } from "./rust-source.ts";
 
 /**
  * Scan the whole workspace (including vize_croquis) for croquis-value
@@ -17,15 +18,20 @@ import { expandUseTree, findUseDecls, stripRust } from "./rust-source.mjs";
  * - names of `pub` struct fields typed `Croquis` (e.g. `analysis.croquis`).
  * Name-level: owner types are not tracked (limitation stated in artifact).
  */
-export function collectCroquisProducers(allCrates) {
-  const fns = new Set();
-  const fields = new Set();
+export interface CroquisProducers {
+  fns: Set<string>;
+  fields: Set<string>;
+}
+
+export function collectCroquisProducers(allCrates: readonly Crate[]): CroquisProducers {
+  const fns = new Set<string>();
+  const fields = new Set<string>();
   for (const crate of allCrates) {
     const inCroquis = crate.name === CROQUIS_CRATE_NAME;
     for (const abs of walkRustFiles(crate.srcDir)) {
       const stripped = stripRust(readFileSync(abs, "utf8"));
       // Croquis type tokens valid in this file.
-      const tokens = [];
+      const tokens: string[] = [];
       if (inCroquis) tokens.push("Croquis", "crate::croquis::Croquis", "croquis::Croquis");
       else tokens.push("vize_croquis::Croquis", "vize_croquis::croquis::Croquis");
       for (const decl of findUseDecls(stripped)) {
@@ -45,11 +51,11 @@ export function collectCroquisProducers(allCrates) {
       const tokenAlt = [...new Set(tokens)]
         .map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
         .join("|");
-      const returnsCroquis = (retText) =>
+      const returnsCroquis = (retText: string): boolean =>
         new RegExp(`(?<![A-Za-z0-9_])(?:${tokenAlt})(?![A-Za-z0-9_])`).test(retText);
       // pub fns returning Croquis (multi-line signatures included).
       const fnRe = /pub(?:\s*\([^)]*\))?\s+(?:const\s+)?(?:async\s+)?fn\s+([a-z_][a-z0-9_]*)/g;
-      let fm;
+      let fm: RegExpExecArray | null;
       while ((fm = fnRe.exec(stripped)) !== null) {
         // Scan the signature: from the fn name to the body `{` or `;`.
         let i = fnRe.lastIndex;
@@ -72,7 +78,7 @@ export function collectCroquisProducers(allCrates) {
           `(?:(?:Option|Box|Rc|Arc)\\s*<\\s*&?(?:'[a-z_][A-Za-z0-9_]*)?\\s*)*(?:${tokenAlt})(?![A-Za-z0-9_])`,
         "g",
       );
-      let dm;
+      let dm: RegExpExecArray | null;
       while ((dm = fieldRe.exec(stripped)) !== null) fields.add(dm[1]);
     }
   }

@@ -4,18 +4,38 @@
 // would change on every PR and make every other PR conflict). Ordering is
 // fully determined by lexical sorts so the staleness check can byte-compare.
 
-import { gateOf, gatedProductIds } from "./croquis-gates.mjs";
-import { formatTable } from "./markdown.mjs";
-import { byKey } from "./ordering.mjs";
+import type { Analysis, SiteRow } from "./croquis-analysis.ts";
+import { gateOf, gatedProductIds } from "./croquis-gates.ts";
+import type { Products } from "./croquis-products.ts";
+import { formatTable } from "./markdown.ts";
+import { byKey } from "./ordering.ts";
 
 export const SUMMARY_COMMAND = "node tools/support/compat/davinci/croquis-consumers.ts --summary";
 
+export interface ProductId {
+  id: string;
+  kind: "type" | "field";
+  module: string;
+}
+
+export interface CrateGroup {
+  resolved: Map<string, SiteRow>;
+  nonProduct: Map<string, SiteRow>;
+  grep: Map<string, number>;
+}
+
+export interface Disagreement {
+  id: string;
+  resolved: number;
+  grep: number;
+}
+
 /** Every product in artifact order: type products by name, then `Croquis.<field>` rows. */
-export function productIdsOf(products) {
+export function productIdsOf(products: Products): ProductId[] {
   const { typeProducts, fieldProducts } = products;
-  const ids = [];
+  const ids: ProductId[] = [];
   for (const name of [...typeProducts.keys()].sort(byKey)) {
-    ids.push({ id: name, kind: "type", module: typeProducts.get(name).module });
+    ids.push({ id: name, kind: "type", module: typeProducts.get(name)!.module });
   }
   for (const name of [...fieldProducts.keys()].sort(byKey)) {
     ids.push({ id: "Croquis." + name, kind: "field", module: "croquis" });
@@ -24,13 +44,13 @@ export function productIdsOf(products) {
 }
 
 /** Per consuming crate: resolved rows, non-product rows, and naive-grep sites by product. */
-export function groupByCrate(analysis) {
-  const byCrate = new Map();
-  const entry = (crate) => {
+export function groupByCrate(analysis: Analysis): Map<string, CrateGroup> {
+  const byCrate = new Map<string, CrateGroup>();
+  const entry = (crate: string): CrateGroup => {
     if (!byCrate.has(crate)) {
       byCrate.set(crate, { resolved: new Map(), nonProduct: new Map(), grep: new Map() });
     }
-    return byCrate.get(crate);
+    return byCrate.get(crate)!;
   };
   for (const row of analysis.rows.values()) entry(row.crate).resolved.set(row.product, row);
   for (const row of analysis.nonProduct.values()) entry(row.crate).nonProduct.set(row.product, row);
@@ -39,7 +59,7 @@ export function groupByCrate(analysis) {
 }
 
 /** Products whose resolved and naive-grep counts differ in one crate's group. */
-export function disagreements(productIds, group) {
+export function disagreements(productIds: readonly ProductId[], group: CrateGroup): Disagreement[] {
   return productIds
     .map((p) => ({
       id: p.id,
@@ -49,10 +69,10 @@ export function disagreements(productIds, group) {
     .filter((d) => d.resolved !== d.grep);
 }
 
-export function methodLines(products, analysis) {
+export function methodLines(products: Products, analysis: Analysis): string[] {
   const { passthroughs } = products;
   const { globFiles } = analysis;
-  const lines = [];
+  const lines: string[] = [];
   lines.push("## Resolution method (and its limits)");
   lines.push("");
   lines.push("**Product enumeration** — parsed from source, not hardcoded:");
@@ -149,14 +169,18 @@ export function methodLines(products, analysis) {
   return lines;
 }
 
-function sum(values) {
+function sum(values: readonly number[]): number {
   return values.reduce((a, b) => a + b, 0);
 }
 
 // One row per id with at least one consuming crate: lead cells, then the
 // crate count and the file/site sums over that id's per-crate rows.
-function totalsTable(leadHeaders, ids, rowsById) {
-  const rows = [];
+function totalsTable(
+  leadHeaders: readonly string[],
+  ids: readonly { id: string; cells: readonly string[] }[],
+  rowsById: Map<string, SiteRow[]>,
+): string {
+  const rows: string[][] = [];
   for (const { id, cells } of ids) {
     const list = rowsById.get(id) ?? [];
     if (list.length === 0) continue;
@@ -169,28 +193,34 @@ function totalsTable(leadHeaders, ids, rowsById) {
   }
   return formatTable(
     [...leadHeaders, "crates", "files", "sites"],
-    [...leadHeaders.map(() => "left"), "right", "right", "right"],
+    [...leadHeaders.map(() => "left" as const), "right", "right", "right"],
     rows,
   ).trimEnd();
 }
 
-function rowsBy(map) {
-  const out = new Map();
+function rowsBy(map: Map<string, SiteRow>): Map<string, SiteRow[]> {
+  const out = new Map<string, SiteRow[]>();
   for (const row of map.values()) {
     if (!out.has(row.product)) out.set(row.product, []);
-    out.get(row.product).push(row);
+    out.get(row.product)!.push(row);
   }
   return out;
 }
 
-function orphanProducts(productIds, resolvedBy) {
+function orphanProducts(
+  productIds: readonly ProductId[],
+  resolvedBy: Map<string, SiteRow[]>,
+): ProductId[] {
   return productIds
     .filter((product) => !resolvedBy.has(product.id))
     .sort((left, right) => byKey(left.id, right.id));
 }
 
 /** Orphans missing a gate, and gates whose product is no longer an orphan. */
-export function gateViolations(products, analysis) {
+export function gateViolations(
+  products: Products,
+  analysis: Analysis,
+): { missing: string[]; stale: string[] } {
   const productIds = productIdsOf(products);
   const resolvedBy = rowsBy(analysis.rows);
   const orphans = new Set(orphanProducts(productIds, resolvedBy).map((product) => product.id));
@@ -202,12 +232,12 @@ export function gateViolations(products, analysis) {
 }
 
 /** The on-demand cross-crate view printed by `--summary`. Never committed. */
-export function renderSummary(products, analysis) {
+export function renderSummary(products: Products, analysis: Analysis): string {
   const productIds = productIdsOf(products);
   const resolvedBy = rowsBy(analysis.rows);
   const byCrate = groupByCrate(analysis);
   const crates = [...byCrate.keys()].sort(byKey);
-  const lines = [];
+  const lines: string[] = [];
   lines.push("# Croquis consumption summary (computed, not committed)");
   lines.push("");
   lines.push(
@@ -247,10 +277,10 @@ export function renderSummary(products, analysis) {
   lines.push("");
   lines.push("## Cross-check: symbol-resolved vs naive grep");
   lines.push("");
-  const crossRows = [];
+  const crossRows: string[][] = [];
   for (const p of productIds) {
     const perCrate = crates
-      .map((crate) => ({ crate, d: disagreements([p], byCrate.get(crate))[0] }))
+      .map((crate) => ({ crate, d: disagreements([p], byCrate.get(crate)!)[0] }))
       .filter((x) => x.d);
     if (perCrate.length === 0) continue;
     let resolved = 0;

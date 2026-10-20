@@ -2,12 +2,13 @@
 // contract. The derivation text quotes the parsed hook list and the dialect
 // name prefixes rather than restating them, so the prose tracks the code.
 
-import { OVERRIDES_REL, REGEN_COMMAND } from "./rule-parity-paths.mjs";
-import { DIALECT_NAME_PREFIXES } from "./rule-parity-rules.mjs";
-import { TIER_TABLE_REL } from "./rule-parity-tiers.mjs";
+import type { DispatchModel } from "./rule-parity-dispatch.ts";
+import { OVERRIDES_REL, REGEN_COMMAND } from "./rule-parity-paths.ts";
+import { DIALECT_NAME_PREFIXES } from "./rule-parity-rules.ts";
+import { TIER_TABLE_REL } from "./rule-parity-tiers.ts";
 
-export function preambleSection() {
-  const lines = [];
+export function preambleSection(): string[] {
+  const lines: string[] = [];
   lines.push("<!-- GENERATED FILE — do not edit by hand.");
   lines.push(`     Regenerate: ${REGEN_COMMAND}`);
   lines.push("     Verify:     node tools/support/compat/davinci/rule-parity.ts --check");
@@ -27,8 +28,8 @@ export function preambleSection() {
   return lines;
 }
 
-export function derivationSection(model) {
-  const lines = [];
+export function derivationSection(model: DispatchModel): string[] {
+  const lines: string[] = [];
   lines.push("## How each column is derived");
   lines.push("");
   lines.push(

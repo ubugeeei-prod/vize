@@ -49,7 +49,7 @@ test("daily source contracts cover the real Rust/docs failures without widening 
       "docs/davinci/plan/assertion-allowlist.toml",
       "tools/commands/davinci/assertion-lint.rs",
       "tools/support/common.rs",
-      "tools/support/compat/davinci/lib/consumer-migration-scan.mjs",
+      "tools/support/compat/davinci/lib/consumer-migration-scan.ts",
       "tests/tooling/davinci-assertion-lint.test.ts",
       "tests/tooling/davinci-consumer-migration-surfaces.test.mjs",
       "tests/tooling/docs-reviewed-translations.test.ts",

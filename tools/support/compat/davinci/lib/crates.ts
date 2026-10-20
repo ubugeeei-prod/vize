@@ -4,10 +4,16 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 
-import { CRATES_DIR, repoRoot } from "./paths.mjs";
+import { CRATES_DIR, repoRoot } from "./paths.ts";
 
-export function discoverCrates() {
-  const crates = [];
+export interface Crate {
+  dir: string;
+  name: string;
+  srcDir: string;
+}
+
+export function discoverCrates(): Crate[] {
+  const crates: Crate[] = [];
   for (const directory of [CRATES_DIR, path.join(repoRoot, "davinci")]) {
     for (const dirent of readdirSync(directory, { withFileTypes: true }).sort((a, b) =>
       a.name < b.name ? -1 : a.name > b.name ? 1 : 0,
@@ -27,9 +33,9 @@ export function discoverCrates() {
   return crates.sort((a, b) => a.name.localeCompare(b.name));
 }
 
-export function walkRustFiles(dir) {
-  const files = [];
-  const visit = (d) => {
+export function walkRustFiles(dir: string): string[] {
+  const files: string[] = [];
+  const visit = (d: string): void => {
     for (const dirent of readdirSync(d, { withFileTypes: true }).sort((a, b) =>
       a.name < b.name ? -1 : a.name > b.name ? 1 : 0,
     )) {

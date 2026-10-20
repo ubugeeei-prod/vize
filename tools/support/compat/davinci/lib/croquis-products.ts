@@ -4,30 +4,47 @@
 
 import { readFileSync } from "node:fs";
 
-import { byKey } from "./ordering.mjs";
-import { CROQUIS_RS, LIB_RS } from "./paths.mjs";
-import { expandUseTree, findUseDecls, stripRust } from "./rust-source.mjs";
+import { byKey } from "./ordering.ts";
+import { CROQUIS_RS, LIB_RS } from "./paths.ts";
+import { expandUseTree, findUseDecls, stripRust } from "./rust-source.ts";
 
-export function enumerateProducts() {
+export interface TypeProduct {
+  name: string;
+  module: string;
+}
+
+export interface FieldProduct {
+  name: string;
+  module: string;
+  typeText: string;
+}
+
+export interface Products {
+  typeProducts: Map<string, TypeProduct>;
+  fieldProducts: Map<string, FieldProduct>;
+  passthroughs: string[];
+}
+
+export function enumerateProducts(): Products {
   const croquisSource = readFileSync(CROQUIS_RS, "utf8");
   const croquisStripped = stripRust(croquisSource);
   const libSource = readFileSync(LIB_RS, "utf8");
   const libStripped = stripRust(libSource);
 
   /** name -> { name, kind: "type"|"fn-or-const", module } */
-  const typeProducts = new Map();
+  const typeProducts = new Map<string, TypeProduct>();
   /** fieldName -> { name, module, typeText } */
-  const fieldProducts = new Map();
-  const passthroughs = [];
+  const fieldProducts = new Map<string, FieldProduct>();
+  const passthroughs: string[] = [];
 
-  const addType = (name, module) => {
+  const addType = (name: string, module: string): void => {
     if (!typeProducts.has(name)) {
       typeProducts.set(name, { name, module });
     }
   };
 
   // --- lib.rs: local modules + crate-root re-export groups ------------------
-  const localModules = new Set();
+  const localModules = new Set<string>();
   for (const m of libStripped.matchAll(/(?:^|\s)(?:pub\s+)?mod\s+([a-z_][a-z0-9_]*)\s*;/g)) {
     localModules.add(m[1]);
   }
@@ -47,7 +64,7 @@ export function enumerateProducts() {
 
   // --- croquis.rs: use-map, pub-use re-exports, Croquis struct fields -------
   /** localName -> module path inside the crate ("race", "provide", ...) */
-  const croquisUseMap = new Map();
+  const croquisUseMap = new Map<string, string>();
   for (const decl of findUseDecls(croquisStripped)) {
     for (const entry of expandUseTree(decl.body)) {
       if (entry.glob || entry.segments.length === 0) continue;
@@ -88,7 +105,7 @@ export function enumerateProducts() {
   const body = croquisStripped.slice(bodyStart, bodyEnd);
   // Fields: `pub name:` then type text up to a top-level comma.
   const fieldRe = /pub\s+([a-z_][a-z0-9_]*)\s*:/g;
-  let fm;
+  let fm: RegExpExecArray | null;
   while ((fm = fieldRe.exec(body)) !== null) {
     const name = fm[1];
     let i = fieldRe.lastIndex;
@@ -110,7 +127,7 @@ export function enumerateProducts() {
     for (const ident of typeText.matchAll(/\b([A-Z][A-Za-z0-9_]*)\b/g)) {
       const typeName = ident[1];
       if (croquisUseMap.has(typeName)) {
-        const module = croquisUseMap.get(typeName);
+        const module = croquisUseMap.get(typeName)!;
         if (module === "(crate root)") {
           if (!typeProducts.has(typeName)) addType(typeName, "(crate root)");
         } else {

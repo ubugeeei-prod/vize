@@ -13,14 +13,63 @@ import {
   REGISTRY_REL,
   SCHEMA,
   SCHEMA_VERSION,
-} from "./corpus-baseline-contract.mjs";
-import { byKey } from "./ordering.mjs";
+} from "./corpus-baseline-contract.ts";
+import type { CorpusManifest } from "./corpus-baseline-contract.ts";
+import { byKey } from "./ordering.ts";
+
+export interface CorpusRow {
+  surface: string;
+  project: string;
+  file_count: number;
+  content_hash: string;
+}
+
+export interface CorpusScope {
+  manifest_project_count: number;
+  projects_run: number;
+  surfaces: string[];
+  surfaces_per_project: number;
+  row_count: number;
+  total_file_count: number;
+  file_count_by_surface: Record<string, number>;
+}
+
+export interface CorpusArtifact {
+  schema: string;
+  version: number;
+  registry: string;
+  notes: string;
+  hashed_fields: Record<string, readonly string[]>;
+  excluded_fields: Record<string, readonly string[]>;
+  scope: CorpusScope;
+  rows: CorpusRow[];
+}
+
+/** The fields a scope proof reads from a possibly stale or foreign artifact. */
+export interface CorpusArtifactInput {
+  schema?: unknown;
+  version?: unknown;
+  scope?: Partial<CorpusScope>;
+  rows?: readonly CorpusRow[];
+}
+
+export type CorpusDrift =
+  | (CorpusRow & { kind: "missing-in-fresh" | "missing-in-baseline" })
+  | {
+      surface: string;
+      project: string;
+      kind: "changed";
+      baseline_file_count: number;
+      fresh_file_count: number;
+      baseline_hash: string;
+      fresh_hash: string;
+    };
 
 /** Assemble the committed artifact with a fixed key order. */
-export function buildArtifact(rows, manifest) {
+export function buildArtifact(rows: CorpusRow[], manifest: CorpusManifest): CorpusArtifact {
   const projects = [...new Set(rows.map((row) => row.project))].sort(byKey);
   const surfaces = [...new Set(rows.map((row) => row.surface))].sort(byKey);
-  const fileCountBySurface = {};
+  const fileCountBySurface: Record<string, number> = {};
   for (const surface of surfaces) fileCountBySurface[surface] = 0;
   let totalFileCount = 0;
   for (const row of rows) {
@@ -48,11 +97,14 @@ export function buildArtifact(rows, manifest) {
   return artifact;
 }
 
-export function renderArtifact(artifact) {
+export function renderArtifact(artifact: CorpusArtifact): string {
   return `${JSON.stringify(artifact, null, 2)}\n`;
 }
 
-export function expectedComparisonCount(manifest, surfaces) {
+export function expectedComparisonCount(
+  manifest: CorpusManifest,
+  surfaces: readonly string[],
+): number {
   return manifest.projects.length * surfaces.length;
 }
 
@@ -61,11 +113,16 @@ export function expectedComparisonCount(manifest, surfaces) {
  * every requested surface, and must not be a zero-file run. Returns a list
  * of exact failure reasons; empty means the proof holds.
  */
-export function verifyScope(artifact, manifest, surfaces, label) {
-  const reasons = [];
+export function verifyScope(
+  artifact: CorpusArtifactInput,
+  manifest: CorpusManifest,
+  surfaces: readonly string[],
+  label: string,
+): string[] {
+  const reasons: string[] = [];
   const manifestIds = manifest.projects.map((project) => project.id).sort(byKey);
   const expectedSurfaces = [...surfaces].sort(byKey);
-  const scope = artifact.scope ?? {};
+  const scope: Partial<CorpusScope> = artifact.scope ?? {};
   if (artifact.schema !== SCHEMA || artifact.version !== SCHEMA_VERSION) {
     reasons.push(`${label}: schema is not ${SCHEMA} v${SCHEMA_VERSION}`);
     return reasons;
@@ -136,11 +193,14 @@ export function verifyScope(artifact, manifest, surfaces, label) {
 }
 
 /** Compare two row sets; returns sorted drift records. */
-export function diffRows(baselineRows, freshRows) {
-  const key = (row) => `${row.surface}\u0000${row.project}`;
+export function diffRows(
+  baselineRows: readonly CorpusRow[],
+  freshRows: readonly CorpusRow[],
+): CorpusDrift[] {
+  const key = (row: CorpusRow): string => `${row.surface}\u0000${row.project}`;
   const baselineByKey = new Map(baselineRows.map((row) => [key(row), row]));
   const freshByKey = new Map(freshRows.map((row) => [key(row), row]));
-  const drift = [];
+  const drift: CorpusDrift[] = [];
   for (const [rowKey, baselineRow] of baselineByKey) {
     const freshRow = freshByKey.get(rowKey);
     if (freshRow == null) {

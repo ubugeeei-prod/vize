@@ -25,8 +25,29 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
-import { byKey } from "./ordering.mjs";
-import { repoRoot } from "./paths.mjs";
+import { asRecord, isRecord } from "../../../json-value.ts";
+import type { JsonRecord } from "../../../json-value.ts";
+import { byKey } from "./ordering.ts";
+import { repoRoot } from "./paths.ts";
+
+export interface CorpusProject {
+  id: string;
+  expectedVueFileCount?: unknown;
+}
+
+export interface CorpusManifest {
+  projects: readonly CorpusProject[];
+}
+
+export interface UnstableRow {
+  surface: string;
+  project: string;
+  reason: string;
+}
+
+function isCorpusProject(value: unknown): value is CorpusProject & JsonRecord {
+  return isRecord(value) && typeof value.id === "string";
+}
 
 export const SCHEMA = "vize.davinciCorpusBaseline";
 export const SCHEMA_VERSION = 1;
@@ -42,7 +63,7 @@ export const UNSTABLE_PATH = path.join(repoRoot, UNSTABLE_REL);
 export const SURFACES = ["compiler", "formatter", "linter", "typechecker"];
 
 /** Payload fields whose canonical JSON forms each surface's content hash. */
-export const HASHED_FIELDS = {
+export const HASHED_FIELDS: Record<string, readonly string[]> = {
   compiler: ["compilerArtifacts", "exitCode", "stdout"],
   formatter: ["exitCode", "formatterCheck", "stdout"],
   linter: ["exitCode", "stderr", "stdout"],
@@ -50,22 +71,26 @@ export const HASHED_FIELDS = {
 };
 
 /** Fields deliberately left out of the hash, with the reason on record. */
-export const EXCLUDED_FIELDS = {
+export const EXCLUDED_FIELDS: Record<string, readonly string[]> = {
   compiler: ["stderr"],
   formatter: ["stderr"],
 };
 
-export function loadManifest() {
+export function loadManifest(): JsonRecord & { projects: (CorpusProject & JsonRecord)[] } {
   const registryPath = path.join(repoRoot, REGISTRY_REL);
-  const registry = JSON.parse(readFileSync(registryPath, "utf8"));
-  if (!Array.isArray(registry.projects) || registry.projects.length === 0) {
+  const registry = asRecord(JSON.parse(readFileSync(registryPath, "utf8")), REGISTRY_REL);
+  const projects: unknown = registry.projects;
+  if (!Array.isArray(projects) || projects.length === 0) {
     throw new Error(`${REGISTRY_REL} lists no projects`);
   }
-  const ids = registry.projects.map((project) => project.id);
+  if (!projects.every(isCorpusProject)) {
+    throw new Error(`${REGISTRY_REL} lists a project without a string id`);
+  }
+  const ids = projects.map((project) => project.id);
   if (new Set(ids).size !== ids.length) {
     throw new Error(`${REGISTRY_REL} contains duplicate project ids`);
   }
-  return registry;
+  return { ...registry, projects };
 }
 
 /**
@@ -76,33 +101,38 @@ export function loadManifest() {
  * non-empty reason — a stale or typo'd allowlist is an error, not a
  * silent no-op.
  */
-export function loadUnstableRows(manifest) {
+export function loadUnstableRows(manifest: CorpusManifest): UnstableRow[] {
   if (!existsSync(UNSTABLE_PATH)) return [];
-  const sidecar = JSON.parse(readFileSync(UNSTABLE_PATH, "utf8"));
+  const sidecar = asRecord(JSON.parse(readFileSync(UNSTABLE_PATH, "utf8")), UNSTABLE_REL);
   if (sidecar.schema !== UNSTABLE_SCHEMA || sidecar.version !== 1) {
     throw new Error(`${UNSTABLE_REL}: schema is not ${UNSTABLE_SCHEMA} v1`);
   }
-  if (!Array.isArray(sidecar.rows)) throw new Error(`${UNSTABLE_REL}: rows must be an array`);
+  const rows: unknown = sidecar.rows;
+  if (!Array.isArray(rows)) throw new Error(`${UNSTABLE_REL}: rows must be an array`);
   const manifestIds = new Set(manifest.projects.map((project) => project.id));
-  const seen = new Set();
-  for (const row of sidecar.rows) {
-    if (!SURFACES.includes(row.surface)) {
-      throw new Error(`${UNSTABLE_REL}: unknown surface ${row.surface}`);
+  const seen = new Set<string>();
+  const typed: UnstableRow[] = [];
+  for (const value of rows) {
+    const row = asRecord(value, `${UNSTABLE_REL} row`);
+    const { surface, project, reason } = row;
+    if (typeof surface !== "string" || !SURFACES.includes(surface)) {
+      throw new Error(`${UNSTABLE_REL}: unknown surface ${String(surface)}`);
     }
-    if (!manifestIds.has(row.project)) {
-      throw new Error(`${UNSTABLE_REL}: unknown project ${row.project}`);
+    if (typeof project !== "string" || !manifestIds.has(project)) {
+      throw new Error(`${UNSTABLE_REL}: unknown project ${String(project)}`);
     }
-    if (typeof row.reason !== "string" || row.reason.length === 0) {
-      throw new Error(`${UNSTABLE_REL}: ${row.surface}/${row.project} has no reason`);
+    if (typeof reason !== "string" || reason.length === 0) {
+      throw new Error(`${UNSTABLE_REL}: ${surface}/${project} has no reason`);
     }
-    const key = `${row.surface} ${row.project}`;
+    const key = `${surface} ${project}`;
     if (seen.has(key)) throw new Error(`${UNSTABLE_REL}: duplicate row ${key}`);
     seen.add(key);
+    typed.push({ ...row, surface, project, reason });
   }
-  return sidecar.rows;
+  return typed;
 }
 
-export function parseSurfaceFilter(values) {
+export function parseSurfaceFilter(values: readonly string[]): string[] {
   const surfaces = [...new Set(values)].sort(byKey);
   for (const surface of surfaces) {
     if (!SURFACES.includes(surface)) {

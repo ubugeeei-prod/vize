@@ -6,14 +6,14 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-import { walkRustFiles } from "./crates.mjs";
-import { PATINA_SRC } from "./rule-parity-paths.mjs";
-import { stripRustComments } from "./rule-parity-rust-text.mjs";
-import { stripRust } from "./rust-source.mjs";
+import { walkRustFiles } from "./crates.ts";
+import { PATINA_SRC } from "./rule-parity-paths.ts";
+import { stripRustComments } from "./rule-parity-rust-text.ts";
+import { stripRust } from "./rust-source.ts";
 
 /** Type names registered into a RuleRegistry anywhere in vize_patina/src. */
-export function collectRegisteredRuleTypes() {
-  const types = new Set();
+export function collectRegisteredRuleTypes(): Set<string> {
+  const types = new Set<string>();
   const patterns = [
     // registry.register(Box::new(Type…)) / registry.add(Box::new(Type…))
     /\.\s*(?:register|add)\s*\(\s*Box::new\s*\(\s*((?:[A-Za-z_][A-Za-z0-9_]*::)*)([A-Z][A-Za-z0-9_]*)/g,
@@ -24,7 +24,7 @@ export function collectRegisteredRuleTypes() {
     const stripped = stripRust(readFileSync(abs, "utf8"));
     for (const re of patterns) {
       re.lastIndex = 0;
-      let m;
+      let m: RegExpExecArray | null;
       while ((m = re.exec(stripped)) !== null) types.add(m[2]);
     }
   }
@@ -32,18 +32,18 @@ export function collectRegisteredRuleTypes() {
 }
 
 /** Rule names in the built-in script registry the SFC path dispatches. */
-export function collectScriptRegistryNames() {
+export function collectScriptRegistryNames(): { registered: Set<string>; allCount: number } {
   const namesRs = stripRustComments(
     readFileSync(path.join(PATINA_SRC, "linter", "script_rules", "registry", "names.rs"), "utf8"),
   );
-  const consts = new Map();
+  const consts = new Map<string, string>();
   for (const m of namesRs.matchAll(/const\s+([A-Z_0-9]+)\s*:\s*&str\s*=\s*"([^"]+)"/g)) {
     consts.set(m[1], m[2]);
   }
   const rulesRs = stripRustComments(
     readFileSync(path.join(PATINA_SRC, "linter", "script_rules", "registry", "rules.rs"), "utf8"),
   );
-  const registered = new Set();
+  const registered = new Set<string>();
   for (const m of rulesRs.matchAll(/rule_name:\s*([A-Z_0-9]+)/g)) {
     const value = consts.get(m[1]);
     if (!value) throw new Error(`script registry rule_name const ${m[1]} not found in names.rs`);
@@ -56,17 +56,17 @@ export function collectScriptRegistryNames() {
 }
 
 /** Rule names in the built-in css registry the SFC path dispatches. */
-export function collectCssRegistryNames() {
+export function collectCssRegistryNames(): Set<string> {
   const cssRs = stripRustComments(
     readFileSync(path.join(PATINA_SRC, "linter", "css_rules.rs"), "utf8"),
   );
-  const consts = new Map();
+  const consts = new Map<string, string>();
   for (const m of cssRs.matchAll(/const\s+(RULE_[A-Z_0-9]+)\s*:\s*&str\s*=\s*"([^"]+)"/g)) {
     consts.set(m[1], m[2]);
   }
   const allList = /ALL_BUILTIN_CSS_RULE_NAMES\s*:\s*&\[&str\]\s*=\s*&\[([^\]]*)\]/.exec(cssRs);
   if (!allList) throw new Error("ALL_BUILTIN_CSS_RULE_NAMES not found in css_rules.rs");
-  const registered = new Set();
+  const registered = new Set<string>();
   for (const m of allList[1].matchAll(/RULE_[A-Z_0-9]+/g)) {
     const value = consts.get(m[0]);
     if (!value) throw new Error(`css registry const ${m[0]} has no string value`);

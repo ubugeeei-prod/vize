@@ -1,10 +1,10 @@
-// Corpus sweep + reduction (Davinci P0-5, TS-11). `corpus-baseline.mjs` and
-// `corpus-diff.mjs` both run the existing real-project harness
-// (`tools/fixtures/tool-matrix-report.mjs`) across all shards through
+// Corpus sweep + reduction (Davinci P0-5, TS-11). `corpus-baseline` and
+// `corpus-diff` both run the existing real-project harness
+// (`tools/support/compat/fixtures/tool-matrix-report.mjs`) across all shards through
 // `runMatrix`, then reduce every per-project per-surface payload to a
 // `{surface, project, file_count, content_hash}` row through `reduceShards`.
 //
-// The hash contract itself lives in corpus-baseline-contract.mjs.
+// The hash contract itself lives in corpus-baseline-contract.ts.
 //
 // Node builtins only. Reduction output is deterministic: stable sorts, no
 // timestamps, no machine identity, no absolute paths.
@@ -14,10 +14,13 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
 import path from "node:path";
 
-import { HASHED_FIELDS } from "./corpus-baseline-contract.mjs";
-import { assertHydratedGitlinkFixtures } from "./corpus-hydration.mjs";
-import { byKey } from "./ordering.mjs";
-import { repoRoot } from "./paths.mjs";
+import { asArray, asNumber, asRecord, at, isRecord } from "../../../json-value.ts";
+import type { JsonRecord } from "../../../json-value.ts";
+import type { CorpusRow } from "./corpus-baseline-artifact.ts";
+import { HASHED_FIELDS } from "./corpus-baseline-contract.ts";
+import { assertHydratedGitlinkFixtures } from "./corpus-hydration.ts";
+import { byKey } from "./ordering.ts";
+import { repoRoot } from "./paths.ts";
 
 export const MATRIX_SCRIPT = path.join(
   repoRoot,
@@ -35,10 +38,25 @@ const PAYLOAD_FAILURE_FIELDS = ["spawnError", "parseError", "validationError"];
  * internally) and return the shard output directories. Throws unless every
  * shard exits 0 with a fully successful summary.
  */
-export async function runMatrix({ shards, vizeBin, tools, scratchDir, timeoutMs, log }) {
+export async function runMatrix({
+  shards,
+  vizeBin,
+  tools,
+  scratchDir,
+  timeoutMs,
+  log,
+}: {
+  shards: number;
+  vizeBin: string;
+  tools: readonly string[];
+  scratchDir: string;
+  timeoutMs?: number | null;
+  log: (line: string) => void;
+}): Promise<string[]> {
   mkdirSync(scratchDir, { recursive: true });
   assertHydratedGitlinkFixtures(listMatrixFixturePaths(shards));
-  const runs = [];
+  const runs: { index: number; outputDir: string; promise: Promise<{ code: number | null }> }[] =
+    [];
   for (let index = 0; index < shards; index += 1) {
     const outputDir = path.join(scratchDir, `shard-${index}`);
     const args = [
@@ -56,7 +74,7 @@ export async function runMatrix({ shards, vizeBin, tools, scratchDir, timeoutMs,
     for (const tool of tools) args.push("--tool", tool);
     runs.push({ index, outputDir, promise: spawnShard(args, index, log) });
   }
-  const failures = [];
+  const failures: string[] = [];
   for (const run of runs) {
     const result = await run.promise;
     if (result.code !== 0) {
@@ -71,8 +89,8 @@ export async function runMatrix({ shards, vizeBin, tools, scratchDir, timeoutMs,
   return runs.map((run) => run.outputDir);
 }
 
-function listMatrixFixturePaths(shards) {
-  const fixturePaths = [];
+function listMatrixFixturePaths(shards: number): string[] {
+  const fixturePaths: string[] = [];
   for (let index = 0; index < shards; index += 1) {
     const result = spawnSync(
       process.execPath,
@@ -95,16 +113,20 @@ function listMatrixFixturePaths(shards) {
   return fixturePaths;
 }
 
-function spawnShard(args, index, log) {
+function spawnShard(
+  args: readonly string[],
+  index: number,
+  log: (line: string) => void,
+): Promise<{ code: number | null }> {
   return new Promise((resolvePromise, rejectPromise) => {
     const child = spawn(process.execPath, args, {
       cwd: repoRoot,
       stdio: ["ignore", "pipe", "pipe"],
     });
     let stderrTail = "";
-    child.stdout.on("data", (chunk) => log(`[shard ${index}] ${String(chunk).trimEnd()}`));
-    child.stderr.on("data", (chunk) => {
-      stderrTail = `${stderrTail}${chunk}`.slice(-4000);
+    child.stdout.on("data", (chunk: Buffer) => log(`[shard ${index}] ${String(chunk).trimEnd()}`));
+    child.stderr.on("data", (chunk: Buffer) => {
+      stderrTail = `${stderrTail}${chunk.toString()}`.slice(-4000);
     });
     child.on("error", rejectPromise);
     child.on("close", (code) => {
@@ -116,15 +138,17 @@ function spawnShard(args, index, log) {
   });
 }
 
-function describeShardFailure(outputDir) {
+function describeShardFailure(outputDir: string): string {
   const summaryPath = path.join(outputDir, "summary.json");
   if (!existsSync(summaryPath)) return " (no summary.json written)";
-  const summary = JSON.parse(readFileSync(summaryPath, "utf8"));
-  const failed = [];
-  for (const project of summary.projects) {
-    for (const run of project.runs) {
+  const summary = asRecord(JSON.parse(readFileSync(summaryPath, "utf8")), summaryPath);
+  const failed: string[] = [];
+  for (const projectValue of asArray(summary.projects, "projects")) {
+    const project = asRecord(projectValue, "project");
+    for (const runValue of asArray(project.runs, "runs")) {
+      const run = asRecord(runValue, "run");
       if (run.status === "failed" || run.status === "missing-fixture") {
-        failed.push(`${project.id}/${run.tool}: ${run.status}`);
+        failed.push(`${String(project.id)}/${String(run.tool)}: ${run.status}`);
       }
     }
   }
@@ -135,30 +159,33 @@ function describeShardFailure(outputDir) {
  * Reduce every shard's per-run payload files to sorted
  * `{surface, project, file_count, content_hash}` rows.
  */
-export function reduceShards(shardDirs, tools) {
-  const rows = [];
-  const seenProjects = new Set();
+export function reduceShards(shardDirs: readonly string[], tools: readonly string[]): CorpusRow[] {
+  const rows: CorpusRow[] = [];
+  const seenProjects = new Set<string>();
   for (const shardDir of shardDirs) {
     const summaryPath = path.join(shardDir, "summary.json");
     if (!existsSync(summaryPath)) {
       throw new Error(`shard output has no summary.json: ${shardDir}`);
     }
-    const summary = JSON.parse(readFileSync(summaryPath, "utf8"));
+    const summary = asRecord(JSON.parse(readFileSync(summaryPath, "utf8")), summaryPath);
     assertCleanSummary(summary, shardDir);
-    for (const project of summary.projects) {
-      if (seenProjects.has(project.id)) {
-        throw new Error(`project ${project.id} appears in more than one shard`);
+    for (const projectValue of asArray(summary.projects, "projects")) {
+      const project = asRecord(projectValue, "project");
+      const id = String(project.id);
+      if (seenProjects.has(id)) {
+        throw new Error(`project ${id} appears in more than one shard`);
       }
-      seenProjects.add(project.id);
-      const runTools = project.runs.map((run) => run.tool).sort(byKey);
+      seenProjects.add(id);
+      const runs = asArray(project.runs, "runs").map((run) => asRecord(run, "run"));
+      const runTools = runs.map((run) => String(run.tool)).sort(byKey);
       const expectedTools = [...tools].sort(byKey);
       if (JSON.stringify(runTools) !== JSON.stringify(expectedTools)) {
         throw new Error(
-          `project ${project.id} ran surfaces [${runTools.join(", ")}], expected [${expectedTools.join(", ")}]`,
+          `project ${id} ran surfaces [${runTools.join(", ")}], expected [${expectedTools.join(", ")}]`,
         );
       }
-      for (const run of project.runs) {
-        rows.push(reduceRun(shardDir, project.id, run));
+      for (const run of runs) {
+        rows.push(reduceRun(shardDir, id, run));
       }
     }
   }
@@ -168,46 +195,52 @@ export function reduceShards(shardDirs, tools) {
   return rows;
 }
 
-function assertCleanSummary(summary, shardDir) {
-  const counts = summary.summary;
+function assertCleanSummary(summary: JsonRecord, shardDir: string): void {
+  const counts = asRecord(summary.summary, "summary");
+  const { okRuns, findingsRuns } = counts;
   const clean =
     counts.failedRuns === 0 &&
     counts.missingFixtureRuns === 0 &&
     counts.plannedRuns === 0 &&
-    counts.okRuns + counts.findingsRuns === counts.runCount;
+    typeof okRuns === "number" &&
+    typeof findingsRuns === "number" &&
+    okRuns + findingsRuns === counts.runCount;
   if (!clean) {
     throw new Error(`shard summary is not clean: ${shardDir} (${JSON.stringify(counts)})`);
   }
 }
 
-function reduceRun(shardDir, projectId, run) {
-  const payloadPath = path.join(shardDir, `${projectId}-${run.tool}.json`);
+function reduceRun(shardDir: string, projectId: string, run: JsonRecord): CorpusRow {
+  const tool = String(run.tool);
+  const payloadPath = path.join(shardDir, `${projectId}-${tool}.json`);
   if (!existsSync(payloadPath)) {
     throw new Error(`run payload is missing: ${payloadPath}`);
   }
-  const payload = JSON.parse(readFileSync(payloadPath, "utf8"));
+  const payload = asRecord(JSON.parse(readFileSync(payloadPath, "utf8")), payloadPath);
   for (const field of PAYLOAD_FAILURE_FIELDS) {
-    if (payload[field] != null) {
-      throw new Error(`${projectId}/${run.tool} payload carries ${field}: ${payload[field]}`);
+    const failure = payload[field];
+    if (failure != null) {
+      const detail = typeof failure === "string" ? failure : JSON.stringify(failure);
+      throw new Error(`${projectId}/${tool} payload carries ${field}: ${detail}`);
     }
   }
-  const hashedFields = HASHED_FIELDS[run.tool];
-  if (hashedFields == null) throw new Error(`unsupported surface: ${run.tool}`);
-  const content = {};
+  const hashedFields = Object.hasOwn(HASHED_FIELDS, tool) ? HASHED_FIELDS[tool] : undefined;
+  if (hashedFields == null) throw new Error(`unsupported surface: ${tool}`);
+  const content: JsonRecord = {};
   for (const field of hashedFields) {
     if (!(field in payload)) {
-      throw new Error(`${projectId}/${run.tool} payload has no ${field} field`);
+      throw new Error(`${projectId}/${tool} payload has no ${field} field`);
     }
     content[field] = payload[field];
   }
-  const fileCount = payloadFileCount(run.tool, payload);
+  const fileCount = payloadFileCount(tool, payload);
   if (run.fileCount !== fileCount) {
     throw new Error(
-      `${projectId}/${run.tool} summary fileCount ${run.fileCount} != payload-derived ${fileCount}`,
+      `${projectId}/${tool} summary fileCount ${String(run.fileCount)} != payload-derived ${fileCount}`,
     );
   }
   return {
-    surface: run.tool,
+    surface: tool,
     project: projectId,
     file_count: fileCount,
     content_hash: sha256(canonicalJson(content)),
@@ -215,29 +248,30 @@ function reduceRun(shardDir, projectId, run) {
 }
 
 /** Mirrors tools/fixtures/tool-matrix-metrics.ts, from the payload side. */
-function payloadFileCount(tool, payload) {
-  if (tool === "compiler") return payload.compilerArtifacts.inputFileCount;
-  if (tool === "typechecker") return payload.parsed.fileCount;
-  if (tool === "linter") return payload.parsed.length;
-  if (tool === "formatter") return payload.formatterCheck.checkedFileCount;
+function payloadFileCount(tool: string, payload: JsonRecord): number {
+  const count = (...keys: string[]): number => asNumber(at(payload, ...keys), `${tool} file count`);
+  if (tool === "compiler") return count("compilerArtifacts", "inputFileCount");
+  if (tool === "typechecker") return count("parsed", "fileCount");
+  if (tool === "linter") return asArray(payload.parsed, "linter parsed").length;
+  if (tool === "formatter") return count("formatterCheck", "checkedFileCount");
   throw new Error(`unsupported surface: ${tool}`);
 }
 
-export function sha256(text) {
+export function sha256(text: string): string {
   return createHash("sha256").update(text).digest("hex");
 }
 
 /** JSON with every object's keys sorted, so hashes ignore insertion order. */
-export function canonicalJson(value) {
+export function canonicalJson(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
-  if (value !== null && typeof value === "object") {
+  if (isRecord(value)) {
     const keys = Object.keys(value).sort(byKey);
     return `{${keys.map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(",")}}`;
   }
   return JSON.stringify(value);
 }
 
-export function resolveVizeBin(vizeBin) {
+export function resolveVizeBin(vizeBin: string | null | undefined): string {
   const resolved = path.resolve(repoRoot, vizeBin ?? path.join("target", "release", "vize"));
   if (!existsSync(resolved)) {
     throw new Error(
@@ -247,10 +281,10 @@ export function resolveVizeBin(vizeBin) {
   return resolved;
 }
 
-export function scratchRoot(label) {
+export function scratchRoot(label: string): string {
   return path.join(repoRoot, ".vize", "davinci-corpus", label);
 }
 
-export function cleanupScratch(dir) {
+export function cleanupScratch(dir: string): void {
   rmSync(dir, { recursive: true, force: true });
 }

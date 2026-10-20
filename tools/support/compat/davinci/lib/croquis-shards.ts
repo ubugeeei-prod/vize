@@ -6,15 +6,19 @@
 
 import { existsSync } from "node:fs";
 import path from "node:path";
-import { repoRoot } from "./paths.mjs";
-import { formatTable } from "./markdown.mjs";
-import { byKey } from "./ordering.mjs";
-import { SUMMARY_COMMAND, groupByCrate, methodLines, productIdsOf } from "./croquis-render.mjs";
-import { ARTIFACT_REL, REGEN_COMMAND, SHARD_DIR_REL } from "./paths.mjs";
+import { repoRoot } from "./paths.ts";
+import { formatTable } from "./markdown.ts";
+import { byKey } from "./ordering.ts";
+import type { Analysis } from "./croquis-analysis.ts";
+import type { Products } from "./croquis-products.ts";
+import { SUMMARY_COMMAND, groupByCrate, methodLines, productIdsOf } from "./croquis-render.ts";
+import type { CrateGroup, ProductId } from "./croquis-render.ts";
+import type { GeneratedFile } from "./artifact-set.ts";
+import { ARTIFACT_REL, REGEN_COMMAND, SHARD_DIR_REL } from "./paths.ts";
 
 const CHECK_COMMAND = "node tools/support/compat/davinci/croquis-consumers.ts --check";
 
-function header(extra = []) {
+function header(extra: readonly string[] = []): string[] {
   const lines = [
     "<!-- GENERATED FILE — do not edit by hand.",
     `     Regenerate: ${REGEN_COMMAND}`,
@@ -25,11 +29,19 @@ function header(extra = []) {
   return lines;
 }
 
-function tableOrNone(headers, aligns, rows) {
+function tableOrNone(
+  headers: readonly string[],
+  aligns: readonly ("left" | "right")[],
+  rows: readonly (readonly string[])[],
+): string {
   return rows.length === 0 ? "_None._" : formatTable(headers, aligns, rows).trimEnd();
 }
 
-function renderIndex(products, analysis, productIds) {
+function renderIndex(
+  products: Products,
+  analysis: Analysis,
+  productIds: readonly ProductId[],
+): string {
   const lines = header([
     `     Totals:     ${SUMMARY_COMMAND}`,
     "     Generator:  tools/support/compat/davinci/croquis-consumers.ts",
@@ -82,7 +94,7 @@ function renderIndex(products, analysis, productIds) {
   return lines.join("\n");
 }
 
-function renderShard(crate, group, productIds) {
+function renderShard(crate: string, group: CrateGroup, productIds: readonly ProductId[]): string {
   const directory = existsSync(path.join(repoRoot, "davinci", crate)) ? "davinci" : "crates";
   const lines = header();
   lines.push("");
@@ -104,7 +116,7 @@ function renderShard(crate, group, productIds) {
       productIds
         .filter((p) => group.resolved.has(p.id))
         .map((p) => {
-          const row = group.resolved.get(p.id);
+          const row = group.resolved.get(p.id)!;
           return [
             `\`${p.id}\``,
             p.kind,
@@ -123,7 +135,7 @@ function renderShard(crate, group, productIds) {
       ["item", "files", "sites"],
       ["left", "right", "right"],
       [...group.nonProduct.keys()].sort(byKey).map((item) => {
-        const row = group.nonProduct.get(item);
+        const row = group.nonProduct.get(item)!;
         return [`\`${item}\``, String(row.files.size), String(row.sites)];
       }),
     ),
@@ -133,12 +145,12 @@ function renderShard(crate, group, productIds) {
 }
 
 /** Every committed file of the matrix: the index plus one shard per consuming crate. */
-export function renderCroquisArtifacts(products, analysis) {
+export function renderCroquisArtifacts(products: Products, analysis: Analysis): GeneratedFile[] {
   const productIds = productIdsOf(products);
   const files = [{ relPath: ARTIFACT_REL, text: renderIndex(products, analysis, productIds) }];
   const byCrate = groupByCrate(analysis);
   for (const crate of [...byCrate.keys()].sort(byKey)) {
-    const group = byCrate.get(crate);
+    const group = byCrate.get(crate)!;
     const hasFacts = group.resolved.size > 0 || group.nonProduct.size > 0;
     if (!hasFacts) continue;
     files.push({

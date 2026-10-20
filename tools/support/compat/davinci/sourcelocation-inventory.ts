@@ -11,7 +11,7 @@
 // reappearance of the deleted carriers.
 //
 // Resolution is textual, not type-aware: comments and string literals are
-// stripped first (lib/rust-source.mjs), then member paths are counted on
+// stripped first (lib/rust-source.ts), then member paths are counted on
 // loc-shaped receivers only — chained `.loc.<member>` / `.loc().<member>` /
 // `.location.<member>` field or method accesses, and bare locals whose
 // identifier is `loc`, `location`, or ends in `_loc` / `_location`. The
@@ -27,16 +27,16 @@
 // Node builtins only. Output is deterministic (stable sort everywhere,
 // no timestamps, no absolute paths).
 
-import { checkArtifactSet, writeArtifactSet } from "./lib/artifact-set.mjs";
-import { formatTable } from "./lib/markdown.mjs";
-import { byKey } from "./lib/ordering.mjs";
+import { checkArtifactSet, writeArtifactSet } from "./lib/artifact-set.ts";
+import { formatTable } from "./lib/markdown.ts";
+import { byKey } from "./lib/ordering.ts";
 import {
   MEMBERS,
   assertAnchorAbsent,
   assertSymbolAbsent,
   citeAnchor,
   scanWorkspace,
-} from "./lib/sourcelocation-scan.mjs";
+} from "./lib/sourcelocation-scan.ts";
 
 const ARTIFACT_REL = "docs/davinci/plan/sourcelocation-inventory.md";
 const REGEN_COMMAND = "node tools/support/compat/davinci/sourcelocation-inventory.ts --write";
@@ -164,7 +164,7 @@ any read — or any deleted carrier — comes back.
 ## Resolution method (and its limits)
 
 - Comments and string literals are stripped first
-  (\`tools/davinci/lib/rust-source.mjs\`); member paths are then counted
+  (\`tools/support/compat/davinci/lib/rust-source.ts\`); member paths are then counted
   **textually** on loc-shaped receivers only: chained \`.loc.<member>\`,
   \`.loc().<member>\`, \`.location.<member>\` accesses, and bare locals named
   \`loc\` / \`location\` / \`*_loc\` / \`*_location\`.

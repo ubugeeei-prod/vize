@@ -2,12 +2,25 @@
 // second META/registration. Prove the complete direct-module/field association.
 import path from "node:path";
 
-import { matchBraceBlock } from "./rule-parity-rust-text.mjs";
-import { expandUseTree, findUseDecls } from "./rust-source.mjs";
+import type { ParsedRuleFile } from "./rule-parity-rules.ts";
+import { matchBraceBlock } from "./rule-parity-rust-text.ts";
+import { expandUseTree, findUseDecls } from "./rust-source.ts";
+
+export interface PrivateScriptAssociation {
+  callback: ParsedRuleFile;
+  parent: ParsedRuleFile;
+  type: string;
+  field: string;
+}
+
+export interface PrivateScripts {
+  byCallback: Map<string, PrivateScriptAssociation>;
+  byParent: Map<string, PrivateScriptAssociation>;
+}
 
 const ID = "[A-Za-z_][A-Za-z0-9_]*";
-const escape = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-const depthAt = (source, end) => {
+const escape = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const depthAt = (source: string, end: number | undefined): number => {
   let depth = 0;
   for (const ch of source.slice(0, end)) {
     if (ch === "{") depth++;
@@ -15,9 +28,9 @@ const depthAt = (source, end) => {
   }
   return depth;
 };
-const topMatches = (source, regex) =>
+const topMatches = (source: string, regex: RegExp): RegExpExecArray[] =>
   [...source.matchAll(regex)].filter((match) => depthAt(source, match.index) === 0);
-const hasConditionalAttributes = (source, index) => {
+const hasConditionalAttributes = (source: string, index: number | undefined): boolean => {
   let prefix = source.slice(0, index).trimEnd();
   while (prefix.endsWith("]")) {
     let depth = 1;
@@ -33,16 +46,19 @@ const hasConditionalAttributes = (source, index) => {
   return false;
 };
 
-export function collectPrivateScriptCallbacks(files, registeredTypes) {
-  const byCallback = new Map();
-  const byParent = new Map();
+export function collectPrivateScriptCallbacks(
+  files: readonly ParsedRuleFile[],
+  registeredTypes: ReadonlySet<string>,
+): PrivateScripts {
+  const byCallback = new Map<string, PrivateScriptAssociation>();
+  const byParent = new Map<string, PrivateScriptAssociation>();
   for (const callback of files.filter(
     (file) => !file.meta && file.impls.some((block) => block.trait === "ScriptRule"),
   )) {
-    const fail = (reason) => {
+    const fail: (reason: string) => never = (reason) => {
       throw new Error(`rule trait impl without META in ${callback.rel}: ${reason}`);
     };
-    const one = (rows, reason) => {
+    const one = <T>(rows: readonly T[], reason: string): T => {
       if (rows.length !== 1) fail(reason);
       return rows[0];
     };

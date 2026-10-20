@@ -143,7 +143,7 @@ await test("every script, import and literal fixture read of the canonical jobs 
   for (const expected of [
     "tools/support/compat/github/canonical-corpus-batch.ts",
     "tools/support/compat/github/release-preflight-github.mjs",
-    "tools/support/compat/davinci/lib/corpus-baseline-contract.mjs",
+    "tools/support/compat/davinci/lib/corpus-baseline-contract.ts",
     "tools/support/common.rs",
     ".github/actions/setup-rust-sticky-cache/cache-policy.ts",
   ])
