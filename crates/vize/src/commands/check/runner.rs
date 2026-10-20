@@ -141,6 +141,7 @@ fn prepare_and_execute(
     nuxt_project_root: &Path,
     explicit_input_root: &Path,
     validate_inputs: bool,
+    discover_tsconfig: bool,
     jsx_typecheck: bool,
     settings: &CheckerSettings,
     cache: &mut TsconfigInputCache,
@@ -215,10 +216,13 @@ fn prepare_and_execute(
     }
     let project_root =
         resolve_project_root(candidate.tsconfig_path.as_deref(), cwd, &candidate.files);
-    let discovered_tsconfig_path = candidate
-        .tsconfig_path
-        .clone()
-        .or_else(|| resolve_tsconfig_path(None, cwd, &project_root, &candidate.files));
+    let discovered_tsconfig_path = candidate.tsconfig_path.clone().or_else(|| {
+        if discover_tsconfig {
+            resolve_tsconfig_path(None, cwd, &project_root, &candidate.files)
+        } else {
+            None
+        }
+    });
     // A nested selected owner may reject every explicit JavaScript input.
     // Validate its authored chain before the file filter can end the run.
     if let Some(path) = discovered_tsconfig_path.as_deref() {

@@ -14,8 +14,7 @@ use super::prop_sources::append_prop_value;
 use super::spread_reserved_props::rewrite_reserved_spread_references;
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use prop_entry::append_prop_entry;
-use vize_carton::String;
-use vize_carton::append;
+use vize_carton::{FxHashSet, String, append};
 use vize_croquis::{
     ScopeChain, ScopeId,
     croquis::{ComponentUsage, SpreadProp},
@@ -77,13 +76,13 @@ pub(crate) fn append_props_literal(
     let merge_class_bindings = class_bindings.len() > 1;
     let mut emitted_merged_class = false;
     let mut spreads = usage.spread_props.iter().peekable();
-    let mut open_named_group = false;
+    let mut named_keys_before_spread = FxHashSet::default();
     for prop in &usage.props {
         if !is_checkable_prop(prop) {
             continue;
         }
         while let Some(spread) = spreads.next_if(|pending| pending.start < prop.start) {
-            close_named_group(ts, &mut open_named_group);
+            named_keys_before_spread.clear();
             append_spread_entry(
                 ts,
                 mappings,
@@ -106,11 +105,11 @@ pub(crate) fn append_props_literal(
             &class_bindings,
             &mut emitted_merged_class,
             spreads.peek().is_some(),
-            &mut open_named_group,
+            &mut named_keys_before_spread,
         );
     }
     for spread in spreads {
-        close_named_group(ts, &mut open_named_group);
+        named_keys_before_spread.clear();
         append_spread_entry(
             ts,
             mappings,
@@ -121,17 +120,9 @@ pub(crate) fn append_props_literal(
             expr_indent,
         );
     }
-    close_named_group(ts, &mut open_named_group);
 
     append!(*ts, "{expr_indent}}}");
     literal_gen_start..ts.len()
-}
-
-pub(super) fn close_named_group(ts: &mut String, open: &mut bool) {
-    if *open {
-        ts.push_str(" },\n");
-        *open = false;
-    }
 }
 
 /// Emit one `...expr` entry of the props literal, mapped back to its own

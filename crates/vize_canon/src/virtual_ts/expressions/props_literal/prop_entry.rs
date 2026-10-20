@@ -1,4 +1,3 @@
-use super::close_named_group;
 use crate::virtual_ts::expressions::component_props::{
     ComponentPropSource, merged_class_binding_value,
 };
@@ -10,7 +9,7 @@ use crate::virtual_ts::expressions::prop_sources::{
 use crate::virtual_ts::helpers::component_prop_key;
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use crate::virtual_ts::types::{VizeMapping, VizeSubSpan};
-use vize_carton::{String, append};
+use vize_carton::{FxHashSet, String, append};
 use vize_croquis::croquis::PassedProp;
 
 #[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
@@ -24,8 +23,8 @@ pub(super) fn append_prop_entry(
     merge_class_bindings: bool,
     class_bindings: &[(&PassedProp, String)],
     emitted_merged_class: &mut bool,
-    wrap_for_following_spread: bool,
-    open_named_group: &mut bool,
+    before_following_spread: bool,
+    named_keys_before_spread: &mut FxHashSet<String>,
 ) {
     let template_offset = source_context.offset;
     let mut merged_value_ranges = Vec::new();
@@ -73,17 +72,25 @@ pub(super) fn append_prop_entry(
     };
     let camel_prop_name = component_prop_key(prop.name.as_str());
 
-    if wrap_for_following_spread {
-        if *open_named_group {
-            ts.push_str(", ");
-        } else {
-            append!(*ts, "{expr_indent}  ...{{ ");
-            *open_named_group = true;
-        }
-    } else {
-        close_named_group(ts, open_named_group);
-        append!(*ts, "{expr_indent}  ");
+    if !before_following_spread {
+        named_keys_before_spread.clear();
     }
+    let repeated_named_key =
+        before_following_spread && !named_keys_before_spread.insert(camel_prop_name.clone());
+    if before_following_spread && !repeated_named_key && prop.value.is_some() {
+        // Keep named props direct so TypeScript contextually elaborates their
+        // value errors at the property instead of reporting a second TS2345 on
+        // the whole object when a later v-bind spread exists (#10069). The
+        // dedicated per-prop assignment above owns that diagnostic. Ignoring
+        // this generated entry also suppresses TS2783 when the later spread
+        // deliberately overwrites it, while the spread itself remains fully
+        // checked by the surrounding call.
+        append!(
+            *ts,
+            "{expr_indent}  // @ts-ignore Named prop diagnostics are owned by the per-prop check.\n",
+        );
+    }
+    append!(*ts, "{expr_indent}  ");
 
     let entry_gen_start = ts.len();
     append!(*ts, "\"{camel_prop_name}\"");
@@ -100,9 +107,7 @@ pub(super) fn append_prop_entry(
     } else {
         value_gen_range.clone()
     };
-    if !wrap_for_following_spread {
-        ts.push_str(",\n");
-    }
+    ts.push_str(",\n");
 
     let sub_spans = match merge_class_bindings && prop.name.as_str() == "class" {
         true => class_bindings

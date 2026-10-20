@@ -26,12 +26,24 @@ fn a_spread_after_a_named_prop_is_emitted_after_it() {
     let code = generated_props_literal(r#"<Child :count="2" v-bind="bag" />"#);
 
     let named = code
-        .find("...{ \"count\": 2 }")
-        .expect("named prefix emitted as a singleton spread");
+        .find("\"count\": 2")
+        .expect("named prefix emitted as a direct property");
+    let ignore = code
+        .find("// @ts-ignore Named prop diagnostics are owned by the per-prop check.")
+        .expect("the mapped per-prop check owns the named prop diagnostic");
     let spread = code.find("...bag").expect("spread emitted");
     assert!(
         named < spread,
         "the spread is authored last, so it must win the key: {code}"
+    );
+    assert_eq!(
+        code.matches("...{ \"count\": 2 }").count(),
+        0,
+        "a named prop must stay direct so its diagnostic remains property-local: {code}"
+    );
+    assert!(
+        ignore < named,
+        "the suppression must precede its entry: {code}"
     );
 }
 
@@ -45,14 +57,15 @@ fn a_spread_before_a_named_prop_is_emitted_before_it() {
         spread < named,
         "the named prop is authored last, so it must win the key: {code}"
     );
-    assert!(
-        !code.contains("...{ \"count\": 2 }"),
+    assert_eq!(
+        code.matches("...{ \"count\": 2 }").count(),
+        0,
         "a trailing named prop must remain direct: {code}"
     );
 }
 
 #[test]
-fn each_named_segment_before_a_later_spread_uses_a_singleton_spread() {
+fn each_named_segment_before_a_later_spread_stays_direct() {
     let script = r#"import Child from "./Child.vue"
 const first = { count: 1 }
 const second = { label: 'ok' }
@@ -67,13 +80,23 @@ const second = { label: 'ok' }
     let summary = analyzer.finish();
     let code = generate_virtual_ts(&summary, Some(script), Some(&root), 0).code;
 
-    assert!(code.contains("...{ \"count\": 2 }"), "{code}");
-    assert!(code.contains("...{ \"label\": \"middle\" }"), "{code}");
-    assert!(code.contains("\"tone\": \"info\""), "{code}");
-    assert!(!code.contains("...{ \"tone\": \"info\" }"), "{code}");
-    let count = code.rfind("...{ \"count\": 2 }").unwrap();
+    assert_eq!(code.matches("...{ \"count\": 2 }").count(), 0, "{code}");
+    assert_eq!(
+        code.matches("...{ \"label\": \"middle\" }").count(),
+        0,
+        "{code}"
+    );
+    assert_eq!(code.matches("\"count\": 2").count(), 1, "{code}");
+    assert_eq!(code.matches("\"label\": \"middle\"").count(), 1, "{code}");
+    assert_eq!(code.matches("\"tone\": \"info\"").count(), 1, "{code}");
+    assert_eq!(
+        code.matches("...{ \"tone\": \"info\" }").count(),
+        0,
+        "{code}"
+    );
+    let count = code.rfind("\"count\": 2").unwrap();
     let first = code.rfind("...first").unwrap();
-    let label = code.rfind("...{ \"label\": \"middle\" }").unwrap();
+    let label = code.rfind("\"label\": \"middle\"").unwrap();
     let second = code.rfind("...second").unwrap();
     let tone = code.rfind("\"tone\": \"info\"").unwrap();
     assert!(
@@ -96,27 +119,28 @@ const key = 'data-id'
     let summary = analyzer.finish();
     let code = generate_virtual_ts(&summary, Some(script), Some(&root), 0).code;
 
-    assert!(!code.contains("...{ \"count\""), "{code}");
+    assert_eq!(code.matches("...{ \"count\"").count(), 0, "{code}");
     assert_eq!(code.matches("\"count\":").count(), 2, "{code}");
 }
 
 #[test]
-fn duplicate_named_props_before_a_spread_share_one_singleton() {
+fn duplicate_named_props_before_a_spread_stay_visible_to_typescript() {
     let code = generated_props_literal(r#"<Child :count="1" :count="2" v-bind="bag" />"#);
 
-    // One singleton for the whole run keeps the authored duplicate inside a
-    // single object literal, so TypeScript still reports it (TS1117). One
-    // singleton per prop would split them apart and lose the diagnostic.
-    assert!(
-        code.contains("...{ \"count\": 1, \"count\": 2 }"),
-        "duplicates before a spread must stay in one literal: {code}"
-    );
+    // Both direct entries stay in the one outer object literal so TypeScript
+    // still reports the authored duplicate (TS1117).
     assert_eq!(
-        code.matches("...{ \"count\"").count(),
-        1,
-        "the run must not be split into one singleton per prop: {code}"
+        code.matches("\"count\":").count(),
+        2,
+        "both duplicate entries must remain visible: {code}"
     );
-    let named = code.find("...{ \"count\": 1").expect("named run emitted");
+    assert_eq!(code.matches("...{ \"count\"").count(), 0, "{code}");
+    assert_eq!(
+        code.matches("// @ts-ignore Named prop diagnostics").count(),
+        1,
+        "only the first entry can be ignored; the duplicate must stay visible to TypeScript: {code}"
+    );
+    let named = code.find("\"count\": 1").expect("named run emitted");
     let spread = code.find("...bag").expect("spread emitted");
     assert!(named < spread, "the spread is authored last: {code}");
 }
@@ -126,8 +150,9 @@ fn component_event_directives_do_not_enter_the_props_literal() {
     let code =
         generated_props_literal(r#"<Child @keydown="first" @keydown.esc.prevent="second" />"#);
 
-    assert!(
-        !code.contains("\"onKeydown\": undefined as any"),
+    assert_eq!(
+        code.matches("\"onKeydown\": undefined as any").count(),
+        0,
         "event directives are checked by the component-event path; duplicating them in the props literal reports legal modifier pairs as TS1117: {code}"
     );
 }
@@ -137,13 +162,17 @@ fn component_events_do_not_mask_spread_listener_props() {
     let code =
         generated_props_literal(r#"<Child @keydown="first" v-bind="bag" @click="second" />"#);
 
-    assert!(
-        code.contains("...bag"),
+    assert_eq!(
+        code.matches("...bag").count(),
+        1,
         "spread prop must remain checked: {code}"
     );
-    assert!(
-        !code.contains("\"onKeydown\": undefined as any")
-            && !code.contains("\"onClick\": undefined as any"),
+    assert_eq!(
+        (
+            code.matches("\"onKeydown\": undefined as any").count(),
+            code.matches("\"onClick\": undefined as any").count(),
+        ),
+        (0, 0),
         "event directive placeholders would mask same-named listener props from spreads: {code}"
     );
 }
@@ -292,12 +321,14 @@ defineProps<{ as: number }>()
     let summary = analyzer.finish();
     let code = generate_virtual_ts(&summary, Some(script), Some(&root), 0).code;
 
-    assert!(
-        code.contains("...{ as },"),
+    assert_eq!(
+        code.matches("...{ as },").count(),
+        1,
         "v-slot local must stay a local reference:\n{code}"
     );
-    assert!(
-        !code.contains(r#"...{ as: props["as"] },"#),
+    assert_eq!(
+        code.matches(r#"...{ as: props["as"] },"#).count(),
+        0,
         "the outer prop must not replace a visible v-slot local:\n{code}"
     );
 }
