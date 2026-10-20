@@ -259,7 +259,14 @@ test(
       if (entry == null) continue;
       assert.equal(
         entry.documentedDifferenceCount,
-        differences.filter((difference) => difference.project === probe.fixtureId).length,
+        // A project-wide matrix entry outside the probe's inputs is not counted.
+        differences.filter(
+          (difference) =>
+            difference.project === probe.fixtureId &&
+            probe.includePaths.some(
+              (input) => difference.file === input || difference.file.startsWith(`${input}/`),
+            ),
+        ).length,
         `${probe.fixtureId}: the baseline counts documented differences the ledger does not ` +
           `describe (or the reverse); every expected difference needs an entry in ` +
           `tests/_fixtures/compat-documented-differences.json`,

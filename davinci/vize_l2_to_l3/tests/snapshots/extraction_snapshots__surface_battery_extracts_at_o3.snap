@@ -1,5 +1,5 @@
 ---
-source: crates/vize_l2_to_l3/tests/extraction_snapshots.rs
+source: davinci/vize_l2_to_l3/tests/extraction_snapshots.rs
 expression: output
 ---
 # kitchen_sink
@@ -685,7 +685,7 @@ update_path_after=0
 
 [remarks]
 
-# sibling_li_nests_v1
+# sibling_li_closes
 [s3-placement-folio]
 
 [s3-extraction-folio]

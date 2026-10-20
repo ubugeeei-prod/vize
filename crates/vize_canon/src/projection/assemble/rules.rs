@@ -111,6 +111,18 @@ pub(super) fn is_checker_give_up(code: Option<u32>) -> bool {
     code.is_some_and(|code| CHECKER_GIVE_UP_CODES.contains(&code))
 }
 
+/// The end of a give-up's generated range. A give-up the checker reports
+/// with no length still covers its whole statement (`check({ ...props });`).
+pub(super) fn give_up_statement_end(generated: &str, start: usize, end: usize) -> usize {
+    if end > start {
+        return end;
+    }
+    generated
+        .get(start..)
+        .and_then(|rest| rest.find(";\n"))
+        .map_or(end, |offset| start + offset)
+}
+
 /// The internal-error diagnostic for a checker give-up in unmapped generated
 /// code, placed on the template block (or the file start) of the authored file.
 pub(super) fn generated_give_up<P>(

@@ -179,7 +179,7 @@ fn five_original_pre_recovery_sources_keep_every_registered_parser_diagnostic() 
         ),
         (
             "<template><p v-pre><div><meta :role='x' /></div></p></template>",
-            &[0, 0, 0][..],
+            &[1][..],
             None,
             Some("</p>"),
         ),
@@ -191,13 +191,13 @@ fn five_original_pre_recovery_sources_keep_every_registered_parser_diagnostic() 
         ),
         (
             "<template><select><option v-pre><option><meta :role='x' /></option></option></select></template>",
-            &[0, 0, 0, 0][..],
+            &[0, 1][..],
             None,
             Some("</option></select>"),
         ),
         (
             "<template><select><optgroup v-pre><optgroup><meta :role='x' /></optgroup></optgroup></select></template>",
-            &[0, 0, 0, 0][..],
+            &[0, 1][..],
             None,
             Some("</optgroup></select>"),
         ),

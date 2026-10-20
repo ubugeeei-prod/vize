@@ -138,8 +138,7 @@ pub const MALFORMED: &[Fixture] = &[
     malformed("cdata_in_svg", "<svg><![CDATA[a < b]]></svg>", 0, 0, 0),
     malformed("unquoted_slash_value", "<a href=/x/y>z</a>", 0, 0, 0),
     malformed("case_insensitive_close", "<DIV>x</div>", 0, 0, 0),
-    // v1 shape pin: no implied end tags — a sibling `<li>` nests until
-    // an explicit close, so both stay open at EOF (recorded in the P2-7
-    // record; reconciling with the shipping parser's tree is P2-8's).
-    malformed("sibling_li_nests_v1", "<li>a<li>b", 0, 2, 0),
+    // Implied end tags, as the shipping parser applies them: a sibling
+    // `<li>` closes the open one, so only the last stays open at EOF.
+    malformed("sibling_li_closes", "<li>a<li>b", 0, 1, 0),
 ];

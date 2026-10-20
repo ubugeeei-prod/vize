@@ -125,6 +125,55 @@ jobs:
         with:
           workspace-already-tested: "true"
 
+  # PR JS package lanes, affected tooling workers and the source CLI producer
+  # mount these disks read-only. Only the daily Full run wrote them, so each PR
+  # rebuilt all 29 workspace crates; repeat their native builds on every push.
+  js-native-target-seed:
+    name: Seed ${{ matrix.lane }} target
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: [js-packages, tooling-worker, source-cli]
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          version: latest
+          node-version-file: "package.json"
+          cache: true
+          cache-save: false
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        if: ${{ matrix.lane == 'js-packages' }}
+        with: { key: test-js-packages, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        if: ${{ matrix.lane == 'tooling-worker' }}
+        with: { key: test-scripts, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}-shard-1" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        if: ${{ matrix.lane == 'source-cli' }}
+        with: { key: test-scripts, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - name: Build the source CLI and SFC oracle like the producer
+        if: ${{ matrix.lane == 'source-cli' }}
+        run: cargo build --profile ci -p vize && cargo build --profile ci -p vize_atelier_sfc --example cli_build_result_oracle
+      - name: Install native package dependencies
+        if: ${{ matrix.lane != 'source-cli' }}
+        run: vp install --frozen-lockfile --prefer-offline --filter './npm/native...'
+      - name: Build the debug addon like package tests and tooling workers
+        if: ${{ matrix.lane != 'source-cli' }}
+        run: vp run --workspace-root build:native:test
+      - name: Build the CI addon like UI conformance
+        if: ${{ matrix.lane == 'js-packages' }}
+        run: vp run --filter './npm/native' build:ci
+
   # Writes the Node.js LTS and pinned pnpm that setup-vp would otherwise
   # download on every fresh runner. Pull requests only restore this entry.
   # This job is the only saver: the differential seed beside it must not

@@ -21,16 +21,18 @@ fn refused(source: &str, path: &[usize]) {
         .unwrap()
         .into_element()
         .unwrap();
-    let mut first_context = None;
+    // Complete caller traversal reaches an earlier authored sibling before
+    // the path's target: the genuine self-closing nested a, or an element an
+    // implied end tag closed (a hole).
+    let mut first = None;
+    for sibling in owner.children().take(path[0] + 1) {
+        let sibling = sibling.into_element().unwrap();
+        first = first.or(lint.header_facts(&sibling).err());
+    }
     for ordinal in &path[1..] {
-        // Complete caller traversal reaches an earlier authored sibling before
-        // the path's target, including the genuine self-closing nested a.
         for sibling in element.children().take(*ordinal + 1) {
             let sibling = sibling.into_element().unwrap();
-            let receipt = sibling.lint_tag().unwrap();
-            if receipt.in_recovery_context() {
-                first_context.get_or_insert(receipt.span());
-            }
+            first = first.or(lint.header_facts(&sibling).err());
         }
         element = element
             .children()
@@ -38,10 +40,6 @@ fn refused(source: &str, path: &[usize]) {
             .unwrap()
             .into_element()
             .unwrap();
-        let receipt = element.lint_tag().unwrap();
-        if receipt.in_recovery_context() {
-            first_context.get_or_insert(receipt.span());
-        }
     }
     let receipt = element.lint_tag().unwrap();
     assert!(receipt.header_is_literal());
@@ -57,11 +55,7 @@ fn refused(source: &str, path: &[usize]) {
     let mut output = Vec::new();
     assert_eq!(
         collect(&lint, owner.children(), &NeverLookup, &mut output),
-        Err(NativeHeaderFactError::Header(
-            NativeLintRefusal::RecoveryContext {
-                span: first_context.unwrap()
-            }
-        ))
+        Err(first.unwrap())
     );
     assert!(output.is_empty());
     assert!(core::ptr::eq(lint.owner(), &owner));
@@ -79,7 +73,7 @@ fn genuine_pre_recovery_refusal_retains_every_original_parser_and_aria_error() {
         ),
         (
             "<template><p v-pre><div><meta :role='x' /></div></p></template>",
-            &[0, 0, 0][..],
+            &[1][..],
             None,
             Some("</p>"),
         ),
@@ -91,13 +85,13 @@ fn genuine_pre_recovery_refusal_retains_every_original_parser_and_aria_error() {
         ),
         (
             "<template><select><option v-pre><option><meta :role='x' /></option></option></select></template>",
-            &[0, 0, 0, 0][..],
+            &[0, 1][..],
             None,
             Some("</option></select>"),
         ),
         (
             "<template><select><optgroup v-pre><optgroup><meta :role='x' /></optgroup></optgroup></select></template>",
-            &[0, 0, 0, 0][..],
+            &[0, 1][..],
             None,
             Some("</optgroup></select>"),
         ),

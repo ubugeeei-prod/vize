@@ -298,6 +298,20 @@
       },
       "issue": 5722,
       "reason": "Vize resolves the pinned Vuetify workspace package source through native package-route topology, while the vue-tsc baseline runs against an unbuilt package entry and reports TS2307; matching the baseline would remove a reachable source route and weaken batch/editor checking."
+    },
+    {
+      "project": "vue-vben-admin",
+      "file": "playground/src/views/examples/count-to/index.vue",
+      "severity": "error",
+      "line": 89,
+      "column": 10,
+      "vize": {
+        "code": 2589,
+        "message": "Type instantiation is excessively deep and possibly infinite."
+      },
+      "baseline": null,
+      "issue": 3984,
+      "reason": "Spreading this reactive() object (v-bind=\"props\") exceeds TypeScript instantiation depth; the same spread in a plain .ts file reports TS2589 under both TypeScript 6 and 7. vue-tsc emits the props call too, but the checker anchors the error on the unmapped call start, so vue-tsc drops it. Vize reports it on the component tag the props literal maps to, because dropping a give-up hides why the props and listeners of this usage are degraded."
     }
   ]
 }

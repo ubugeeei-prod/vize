@@ -134,7 +134,7 @@ fn original_pre_recovery_discrepancies_refuse_before_any_fact_artifact() {
         ),
         (
             "<template><p v-pre><div><meta :role='x' /></div></p></template>",
-            &[0, 0, 0][..],
+            &[1][..],
         ),
         (
             "<template><a v-pre><a /><meta :role='x' /></a></template>",
@@ -142,11 +142,11 @@ fn original_pre_recovery_discrepancies_refuse_before_any_fact_artifact() {
         ),
         (
             "<template><select><option v-pre><option><meta :role='x' /></option></option></select></template>",
-            &[0, 0, 0, 0][..],
+            &[0, 1][..],
         ),
         (
             "<template><select><optgroup v-pre><optgroup><meta :role='x' /></optgroup></optgroup></select></template>",
-            &[0, 0, 0, 0][..],
+            &[0, 1][..],
         ),
     ] {
         let arena = Allocator::default();

@@ -852,7 +852,7 @@
 "tests/_fixtures/davinci-fpfn/SuppressedSpaces.vue" s2.hoist-static missed static-subtree @180:222 tag="div" blocker="child" op="ui.interpolation"
 "tests/_fixtures/davinci-html-nesting/Child.vue" s2.hoist-static applied static-subtree @13:63 tag="span"
 "tests/_fixtures/davinci-html-nesting/Page.vue" s2.hoist-static missed static-subtree @155:264 tag="main" blocker="child" op="ui.component"
-"tests/_fixtures/davinci-html-nesting/Page.vue" s2.hoist-static applied static-subtree @166:240 tag="p"
+"tests/_fixtures/davinci-html-nesting/Page.vue" s2.hoist-static applied static-subtree @166:175 tag="p"
 "tests/_fixtures/davinci-html-nesting/Page.vue" s2.hoist-static applied static-subtree @175:236 tag="div"
 "tests/_fixtures/davinci-html-nesting/Static.vue" s2.hoist-static applied static-subtree @13:80 tag="section"
 "tests/_fixtures/davinci-html-nesting/Static.vue" s2.hoist-static applied static-subtree @27:67 tag="h2"

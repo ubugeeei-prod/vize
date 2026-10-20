@@ -1,0 +1,126 @@
+name: Typecheck vs vue-tsc
+
+# Wall time of `vize check` (latest npm release and this commit) against the
+# latest vue-tsc 3 on real projects and the #9727-shaped workspace. Report
+# only: it gates nothing. The run is pinned to `cpus` cores so the numbers
+# resemble a developer laptop instead of the 32-vCPU runner.
+
+on:
+  workflow_dispatch:
+    inputs:
+      projects:
+        description: Space-separated project ids (registry typecheckPerformance ids or synthetic-workspace)
+        required: true
+        default: "synthetic-workspace misskey"
+      compare_ref:
+        description: Optional branch or SHA built as an extra row
+        required: false
+        default: ""
+      runs:
+        description: Warm runs per tool
+        required: true
+        default: "3"
+      cold_runs:
+        description: Cold runs per tool (fresh vize cache)
+        required: true
+        default: "1"
+      cpus:
+        description: Cores the benchmark may use
+        required: true
+        default: "8"
+  # Changes to the benchmark itself measure once before they merge.
+  pull_request:
+    paths:
+      - .github/workflows/typecheck-vs-vue-tsc.yml
+      - tools/benchmarks/scripts/typecheck-vs-vue-tsc*.ts
+  schedule:
+    - cron: "23 4 * * 3"
+
+concurrency:
+  group: typecheck-vs-vue-tsc-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  PROJECTS: ${{ inputs.projects || 'synthetic-workspace misskey' }}
+  COMPARE_REF: ${{ inputs.compare_ref || '' }}
+  RUNS: ${{ inputs.runs || '3' }}
+  COLD_RUNS: ${{ inputs.cold_runs || '1' }}
+  CPUS: ${{ inputs.cpus || '8' }}
+
+jobs:
+  bench:
+    name: typecheck-vs-vue-tsc
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: typecheck-vs-vue-tsc
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
+
+      - name: Build this commit
+        run: |
+          cargo build --profile ci-opt -p vize
+          cp target/ci-opt/vize "$RUNNER_TEMP/vize-head"
+
+      - name: Build the compare ref
+        if: ${{ env.COMPARE_REF != '' }}
+        run: |
+          git fetch --no-tags --depth 1 "https://github.com/${GITHUB_REPOSITORY}.git" "$COMPARE_REF"
+          git worktree add "$RUNNER_TEMP/compare" FETCH_HEAD
+          (cd "$RUNNER_TEMP/compare" && CARGO_TARGET_DIR="$GITHUB_WORKSPACE/target" cargo build --profile ci-opt -p vize)
+          cp target/ci-opt/vize "$RUNNER_TEMP/vize-compare"
+
+      - name: Install the released vize and the latest vue-tsc
+        working-directory: ${{ runner.temp }}
+        run: |
+          mkdir tools && cd tools
+          echo '{"private":true}' > package.json
+          npm install --no-audit --no-fund vize@latest vue-tsc@3 typescript@6 vue@3
+          node -e 'for (const name of ["vize", "vue-tsc", "typescript", "vue"]) console.log(name, require(`./node_modules/${name}/package.json`).version)' | tee versions.txt
+
+      - name: Measure
+        run: |
+          tools="$RUNNER_TEMP/tools/node_modules"
+          args=()
+          for project in $PROJECTS; do args+=(--project "$project"); done
+          args+=(--vize "released=$tools/.bin/vize" --vize "head=$RUNNER_TEMP/vize-head")
+          args+=(--vize-env "head:CORSA_PATH=$tools/@typescript/typescript-linux-x64/lib/tsc")
+          if [ -n "$COMPARE_REF" ]; then
+            args+=(--vize "compare=$RUNNER_TEMP/vize-compare")
+            args+=(--vize-env "compare:CORSA_PATH=$tools/@typescript/typescript-linux-x64/lib/tsc")
+            args+=(--meta "compare=$COMPARE_REF")
+          fi
+          while read -r name version; do args+=(--meta "$name=$version"); done < "$RUNNER_TEMP/tools/versions.txt"
+          taskset -c "0-$((CPUS - 1))" node tools/benchmarks/scripts/typecheck-vs-vue-tsc.ts "${args[@]}" \
+            --vue-tsc "$tools/.bin/vue-tsc" --vue "$tools/vue" --typescript "$tools/typescript" \
+            --runs "$RUNS" --warmups 1 --cold-runs "$COLD_RUNS" \
+            --fixtures-dir "$RUNNER_TEMP/projects" \
+            --meta "head=$GITHUB_SHA" --meta "cpus=$CPUS" \
+            --out typecheck-vs-vue-tsc.md --json typecheck-vs-vue-tsc.json
+          cat typecheck-vs-vue-tsc.md >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: typecheck-vs-vue-tsc
+          path: |
+            typecheck-vs-vue-tsc.md
+            typecheck-vs-vue-tsc.json
+          if-no-files-found: error
+          retention-days: 30

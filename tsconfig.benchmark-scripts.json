@@ -42,6 +42,8 @@
     "tools/benchmarks/scripts/vite-precompile-cache.ts",
     "tools/benchmarks/scripts/nuxt-bridge-transform.ts",
     "tools/benchmarks/scripts/benchmark-notes.ts",
-    "tools/benchmarks/scripts/type-snapshot-paired.ts"
+    "tools/benchmarks/scripts/type-snapshot-paired.ts",
+    "tools/benchmarks/scripts/typecheck-vs-vue-tsc.ts",
+    "tools/benchmarks/scripts/typecheck-vs-vue-tsc-projects.ts"
   ]
 }

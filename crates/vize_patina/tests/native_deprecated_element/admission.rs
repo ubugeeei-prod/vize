@@ -73,10 +73,11 @@ fn actual_pre_recovery_context_refuses_without_granting_whole_file_completion() 
     let arena = Allocator::default();
     let owner = selected(&arena, source);
     let lint = NativeSyntaxLint::new(&owner).unwrap();
-    let paragraph = owner.children().next().unwrap().into_element().unwrap();
-    let parent = paragraph.children().next().unwrap().into_element().unwrap();
-    let element = parent.children().next().unwrap().into_element().unwrap();
+    // `<div>` closes the `<p>`, but its header was lexed under `v-pre`.
+    let element = owner.children().nth(1).unwrap().into_element().unwrap();
+    assert_eq!(element.surface().tag(), "div");
     let receipt = element.lint_tag().unwrap();
+    assert!(receipt.header_is_literal());
     assert!(receipt.in_recovery_context());
     assert_eq!(
         lint.deprecated_element(&element, &NeverLookup).err(),
