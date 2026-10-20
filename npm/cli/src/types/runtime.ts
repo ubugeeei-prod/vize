@@ -43,7 +43,15 @@ export interface VueHostLintConfig extends Record<string, unknown> {
   jsPlugins: string[];
   plugins: string[];
   rules: Record<string, unknown>;
-  settings: Record<string, unknown> & { vize?: Record<string, unknown> };
+  settings: Record<string, unknown> & {
+    vize?: {
+      locale?: unknown;
+      helpLevel?: unknown;
+      preset?: unknown;
+      typeAware?: unknown;
+      rules?: unknown;
+    };
+  };
   ignorePatterns?: string[];
   overrides?: unknown[];
 }
