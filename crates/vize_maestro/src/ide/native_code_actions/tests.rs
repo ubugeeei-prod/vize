@@ -133,3 +133,21 @@ fn same_position_insertions_keep_order_and_overlapping_replacements_are_rejected
     };
     assert!(ordered_edits(vec![first, edit("inside")]).is_none());
 }
+
+#[test]
+fn inserted_lines_take_the_authored_indent_and_line_ending() {
+    let member = "\n      area(): number {\n          return 1;\n      }";
+    assert_eq!(
+        relayout(member, "    ", ("  ", false)),
+        "\n    area(): number {\n        return 1;\n    }"
+    );
+    assert_eq!(
+        relayout(member, "    ", ("  ", true)),
+        "\r\n    area(): number {\r\n        return 1;\r\n    }"
+    );
+    assert_eq!(relayout("\n", "  ", ("", true)), "\r\n");
+    assert_eq!(relayout("single line", "  ", ("", true)), "single line");
+    // A line outside the generated indent keeps the whole text as tsgo sent it.
+    let literal = "\n  a = `\nraw`;";
+    assert_eq!(relayout(literal, "  ", ("", false)), literal);
+}
