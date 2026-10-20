@@ -6,6 +6,8 @@
 )]
 
 mod art_template_context;
+#[cfg(feature = "native")]
+mod canonical_paths;
 mod client_capabilities;
 mod config;
 mod default;
@@ -124,6 +126,10 @@ pub struct ServerState {
     /// The resolver validates manifest, link, and source inputs before each
     /// cache hit, so session reuse cannot return a stale export target.
     pub(crate) package_route_resolver: Mutex<vize_canon::PackageRouteResolver>,
+    /// Physical path identities used by canonical editor mapping. File events
+    /// invalidate the table before the next request.
+    #[cfg(feature = "native")]
+    canonical_paths: DashMap<PathBuf, PathBuf>,
     /// Parsed metadata for imported components, keyed by resolved path.
     /// Lets template completion skip re-reading + re-parsing + re-analyzing an
     /// imported component on every keystroke; entries are invalidated by the
@@ -196,6 +202,10 @@ pub struct ServerState {
     corsa_environment_revision: std::sync::atomic::AtomicU64,
     #[cfg(feature = "native")]
     corsa_environment_changes: std::sync::atomic::AtomicUsize,
+    /// Dynamic workspace file watching was registered successfully, so the
+    /// editor mirror can trust captured disk inputs between notifications.
+    #[cfg(feature = "native")]
+    corsa_disk_watcher_registered: AtomicBool,
     /// Per-document diagnostic passes. Watcher refreshes and consecutive
     /// didChange notifications may be polled concurrently by tower-lsp, but
     /// they must not race the same Corsa virtual document.

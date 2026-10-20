@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "id": "lsp/regression/import-specifier-hover-9858",
+  "provenance": {
+    "fixCommit": "bf8b182e7ff2b2959b03baeb8e88cab265510931",
+    "issue": 9858,
+    "meaning": "authored module-specifier hover range and display regression"
+  },
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "b622b5ac561c383eb8be67435f749c59c531a8882dd9a66f0b072a85da90ff58"
+    },
+    {
+      "source": "util.ts.txt",
+      "runtimePath": "util.ts",
+      "sha256": "b3a45c6bbf90d67d05d15d41b0d1abd46f42332260654cdece9041080f0fe092"
+    },
+    {
+      "source": "label.ts.txt",
+      "runtimePath": "label.ts",
+      "sha256": "38719ce11337851deb713b8cc4e2147224b0eee33d615b243ce0c0fccacb9613"
+    }
+  ],
+  "entry": "App.vue",
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "ac19c1feb4b84b8c262e132f568905ea56512daf70b273e043129831dcd5caac"
+  },
+  "method": "textDocument/hover",
+  "scope": "authored module specifiers and source ranges"
+}

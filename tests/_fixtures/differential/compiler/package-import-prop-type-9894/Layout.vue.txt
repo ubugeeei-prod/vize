@@ -1,0 +1,5 @@
+<script setup lang="ts">
+type Ripple = boolean | { center?: boolean } | null | undefined
+const { ripple = undefined } = defineProps<{ ripple?: Ripple }>()
+</script>
+<template><span>{{ JSON.stringify(ripple) }}</span></template>

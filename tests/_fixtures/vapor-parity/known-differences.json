@@ -214,9 +214,7 @@
       ]
     },
     "upstream-runtime-vapor-hydration": {
-      "hydrate": [
-        "hy.basic.20"
-      ],
+      "hydrate": [],
       "mount": []
     }
   },

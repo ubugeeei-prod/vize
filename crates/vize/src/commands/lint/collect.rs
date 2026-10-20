@@ -67,8 +67,9 @@ pub(super) fn collect_lint_file_collection(
                 continue;
             }
             if candidate.is_dir() {
-                if !collect_lint_files_from_dir(&candidate, None, ignore_set, &mut files, &mut seen)
-                {
+                if !collect_lint_files_from_dir(
+                    &candidate, None, true, ignore_set, &mut files, &mut seen,
+                ) {
                     unmatched_patterns.push(pattern.clone());
                 }
                 continue;
@@ -80,6 +81,7 @@ pub(super) fn collect_lint_file_collection(
         if !collect_lint_files_from_dir(
             &base_dir,
             matcher.as_ref(),
+            false,
             ignore_set,
             &mut files,
             &mut seen,
@@ -93,6 +95,22 @@ pub(super) fn collect_lint_file_collection(
         files,
         unmatched_patterns,
     }
+}
+
+/// Collects the implicit lint input set with one ignore-aware tree walk.
+///
+/// The CLI's default patterns differ only by extension. Walking once and
+/// filtering through `is_lintable_path` preserves that union without paying
+/// for one filesystem traversal per extension.
+pub(super) fn collect_default_lint_files(
+    root: &Path,
+    ignore_set: Option<&LintIgnoreSet>,
+) -> Vec<PathBuf> {
+    let mut files = Vec::new();
+    let mut seen = FxHashSet::default();
+    let _ = collect_lint_files_from_dir(root, None, false, ignore_set, &mut files, &mut seen);
+    files.sort();
+    files
 }
 
 pub(super) fn collect_lint_inputs(
@@ -114,6 +132,7 @@ pub(super) fn collect_lint_inputs(
 fn collect_lint_files_from_dir(
     dir: &Path,
     matcher: Option<&LintInputGlob>,
+    skip_hidden: bool,
     ignore_set: Option<&LintIgnoreSet>,
     files: &mut Vec<PathBuf>,
     seen: &mut FxHashSet<PathBuf>,
@@ -125,7 +144,7 @@ fn collect_lint_files_from_dir(
     let explicitly_selected = matcher.map(|matcher| matcher.explicit_directories());
     for entry in WalkBuilder::new(dir)
         .standard_filters(true)
-        .hidden(matcher.is_none())
+        .hidden(skip_hidden)
         .filter_entry(move |entry| {
             !vize_carton::path::is_git_metadata_path(entry.path())
                 && (entry.depth() == 0

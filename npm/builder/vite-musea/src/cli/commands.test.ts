@@ -55,6 +55,18 @@ void test("CLI threshold accepts zero as an explicit threshold", () => {
   assert.equal(options.thresholdProvided, true);
 });
 
+void test("CLI color threshold overrides only the configured per-pixel threshold", () => {
+  const options = parseArgs(["--color-threshold", "0", "-t", "0"]);
+  options.vrt = {
+    threshold: 5,
+    comparison: { antiAliasing: false, colorThreshold: 0.8 },
+  };
+
+  const vrtOptions = createVrtOptions(options);
+  assert.equal(vrtOptions.threshold, 0);
+  assert.deepEqual(vrtOptions.comparison, { antiAliasing: false, colorThreshold: 0 });
+});
+
 void test("CLI workers accepts positive concurrency and clamps invalid values", () => {
   const concurrent = parseArgs(["--workers", "8"]);
   assert.equal(concurrent.workers, 8);

@@ -154,11 +154,41 @@ function createPatinaRule(ruleMeta: PatinaRuleMeta) {
 function ruleOptionsSchema(ruleName: string): unknown[] {
   switch (ruleName) {
     case "vue/component-name-in-template-casing":
-      return [{ enum: ["PascalCase", "kebab-case"] }];
+      return [
+        {
+          oneOf: [
+            { enum: ["PascalCase", "kebab-case"] },
+            objectSchema({
+              casing: { enum: ["PascalCase", "kebab-case"] },
+              registeredComponentsOnly: { type: "boolean" },
+              globals: stringArraySchema(),
+            }),
+          ],
+        },
+      ];
     case "script/custom-event-name-casing":
-      return [{ enum: ["camelCase", "kebab-case"] }];
+      return [
+        {
+          oneOf: [
+            { enum: ["camelCase", "kebab-case"] },
+            objectSchema({ casing: { enum: ["camelCase", "kebab-case"] } }),
+          ],
+        },
+      ];
+    case "script/define-props-destructuring":
+      return [objectSchema({ destructure: { enum: ["only-when-assigned", "always", "never"] } })];
+    case "html/no-empty-palpable-content":
+      return [objectSchema({ contentDirectives: stringArraySchema() })];
+    case "type/strict-boolean-expressions":
+      return [strictBooleanExpressionsSchema()];
+    case "script/no-restricted-globals":
+      return [restrictedGlobalsSchema()];
+    case "script/no-restricted-members":
+      return [restrictedMembersSchema()];
     case "vue/no-mutating-props":
       return [noMutatingPropsSchema()];
+    case "script/define-macros-order":
+      return [defineMacrosOrderSchema()];
     case "vue/sfc-element-order":
       return [sfcElementOrderSchema()];
     case "vue/html-self-closing":
@@ -166,9 +196,93 @@ function ruleOptionsSchema(ruleName: string): unknown[] {
     case "vue/v-on-event-hyphenation":
     case "vue/attribute-hyphenation":
       return [{ enum: ["always", "never"] }];
+    case "vue/require-component-registration":
+      return [objectSchema({ globals: stringArraySchema() })];
+    case "vue/valid-v-on":
+      return [objectSchema({ modifiers: stringArraySchema() })];
+    case "vue/valid-v-slot":
+      return [objectSchema({ allowModifiers: { type: "boolean" } })];
+    case "musea/prefer-design-tokens":
+      return [designTokensSchema()];
     default:
       return [];
   }
+}
+
+function defineMacrosOrderSchema(): unknown {
+  return objectSchema({
+    order: {
+      type: "array",
+      items: { type: "string", minLength: 1 },
+      uniqueItems: true,
+    },
+  });
+}
+
+function objectSchema(properties: Record<string, unknown>): Record<string, unknown> {
+  return { type: "object", properties, additionalProperties: false };
+}
+
+function stringArraySchema(): unknown {
+  return { type: "array", items: { type: "string" } };
+}
+
+function strictBooleanExpressionsSchema(): unknown {
+  const boolean = { type: "boolean" };
+  return objectSchema({
+    allowString: boolean,
+    allowNumber: boolean,
+    allowNullableObject: boolean,
+    allowNullableBoolean: boolean,
+    allowNullableString: boolean,
+    allowNullableNumber: boolean,
+    allowNullableEnum: boolean,
+    allowAny: boolean,
+  });
+}
+
+function restrictedGlobalsSchema(): unknown {
+  return objectSchema({
+    globals: {
+      type: "array",
+      items: {
+        ...objectSchema({ name: { type: "string" }, message: { type: "string" } }),
+        required: ["name"],
+      },
+    },
+  });
+}
+
+function restrictedMembersSchema(): unknown {
+  return objectSchema({
+    members: {
+      type: "array",
+      items: {
+        ...objectSchema({
+          object: { type: "string" },
+          property: { type: "string" },
+          message: { type: "string" },
+        }),
+        required: ["object", "property"],
+      },
+    },
+  });
+}
+
+function designTokensSchema(): unknown {
+  return objectSchema({
+    tokens: {
+      type: "array",
+      items: {
+        ...objectSchema({
+          path: { type: "string" },
+          value: { type: "string" },
+          tier: { type: "string" },
+        }),
+        required: ["path", "value"],
+      },
+    },
+  });
 }
 
 function noMutatingPropsSchema(): unknown {

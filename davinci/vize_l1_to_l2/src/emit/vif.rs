@@ -82,7 +82,11 @@ fn emit_chain(cx: &mut EmitCx<'_>, if_op: &IfOp<'_>, id: Option<NodeId>) -> Resu
         cx.buf.newline();
         cx.buf.push(": ");
         cx.buf.push(Buf::create_comment_alias());
-        cx.buf.push("(\"v-if\", true)");
+        if cx.development {
+            cx.buf.push("(\"v-if\", true)");
+        } else {
+            cx.buf.push("(\"\", true)");
+        }
     }
     cx.buf.deindent();
     Ok(())

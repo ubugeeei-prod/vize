@@ -123,7 +123,7 @@ function createVue2StaticBuildPlugin(
         const variant = art.variants.find((candidate) => candidate.name === variantName)!;
         return compileVariantSfc(art, variant.template, variant.name, artPath).code;
       }
-      return loadStaticRuntimeModule(id, artFiles);
+      return loadStaticRuntimeModule(id, artFiles, getConfig()?.root);
     },
     async generateBundle(_options, bundle) {
       const config = getConfig();

@@ -9,19 +9,23 @@ use oxc_span::GetSpan;
 use vize_l0::{String, cstr};
 
 use super::IdentifierCollector;
+use crate::emit::options::BindingKind;
 
 impl IdentifierCollector<'_, '_> {
-    fn guards_setup_write(&self, name: &str) -> bool {
-        !self.is_local(name) && self.scope.guards_setup_let_write(name)
+    fn guarded_setup_write_kind(&self, name: &str) -> Option<BindingKind> {
+        if self.is_local(name) {
+            return None;
+        }
+        self.scope.guarded_setup_write_kind(name)
     }
 
     pub(super) fn guard_setup_assignment(&mut self, expr: &AssignmentExpression<'_>) {
         let AssignmentTarget::AssignmentTargetIdentifier(ident) = &expr.left else {
             return;
         };
-        if !self.guards_setup_write(ident.name.as_str()) {
+        let Some(kind) = self.guarded_setup_write_kind(ident.name.as_str()) else {
             return;
-        }
+        };
         let start = self.at(expr.span.start);
         let right = expr.right.span();
         let right_start = self.at(right.start);
@@ -48,16 +52,16 @@ impl IdentifierCollector<'_, '_> {
             .collect();
         let right = super::super::splice::splice_insertions(source, prefixes, suffixes, 0);
         let plain = cstr!("{head}{right}");
-        self.finish_setup_write(expr.span.start, expr.span.end, ident, plain);
+        self.finish_setup_write(expr.span.start, expr.span.end, ident, kind, plain);
     }
 
     pub(super) fn guard_setup_update(&mut self, expr: &UpdateExpression<'_>) {
         let SimpleAssignmentTarget::AssignmentTargetIdentifier(ident) = &expr.argument else {
             return;
         };
-        if !self.guards_setup_write(ident.name.as_str()) {
+        let Some(kind) = self.guarded_setup_write_kind(ident.name.as_str()) else {
             return;
-        }
+        };
         let Some(plain) = self
             .source
             .get(self.at(expr.span.start)..self.at(expr.span.end))
@@ -65,7 +69,7 @@ impl IdentifierCollector<'_, '_> {
             return;
         };
         let plain = String::from(plain);
-        self.finish_setup_write(expr.span.start, expr.span.end, ident, plain);
+        self.finish_setup_write(expr.span.start, expr.span.end, ident, kind, plain);
     }
 
     fn finish_setup_write(
@@ -73,6 +77,7 @@ impl IdentifierCollector<'_, '_> {
         start: u32,
         end: u32,
         ident: &IdentifierReference<'_>,
+        kind: BindingKind,
         plain: String,
     ) {
         let target_end = self.at(ident.span.end);
@@ -101,8 +106,13 @@ impl IdentifierCollector<'_, '_> {
             .iter()
             .position(|(at, _)| *at == end)
             .unwrap_or(self.suffix_rewrites.len());
+        let fallback = match kind {
+            BindingKind::SetupLet => plain,
+            BindingKind::SetupMaybeRef => String::from("null"),
+            _ => return,
+        };
         self.suffix_rewrites
-            .insert(position, (end, cstr!(" : {plain})")));
+            .insert(position, (end, cstr!(" : {fallback})")));
         self.used_is_ref = true;
     }
 }

@@ -1,0 +1,16 @@
+import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer";
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(`<span${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(JSON.stringify($props.ripple))}</span>`);
+}
+export default {
+  __name: "Layout",
+  props: { ripple: {
+    type: [Boolean, Object],
+    required: false,
+    default: undefined
+  } },
+  ssrRender,
+  setup(__props) {
+    return {};
+  }
+};

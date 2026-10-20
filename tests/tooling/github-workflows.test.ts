@@ -122,9 +122,14 @@ test("GitHub workflows declare the expected cross-platform runner matrix", () =>
     releasePlatforms,
     /host:\s*"(?:ubuntu-22\.04-arm|blacksmith-\d+vcpu-ubuntu-2204-arm)"/,
   );
-  assert.match(releasePlatforms, new RegExp(`host:\\s*"${hostedOrBlacksmith("macos-15")}"`));
+  assert.match(
+    releasePlatforms,
+    /VIZE_RELEASE_MACOS_RUNNER\?\.trim\(\) \|\| "blacksmith-12vcpu-macos-15"/,
+  );
+  assert.equal((releasePlatforms.match(/host:\s*macosReleaseHost/g) ?? []).length, 4);
   assert.match(releasePlatforms, new RegExp(`host:\\s*"${hostedOrBlacksmith("windows-2025")}"`));
   const release = readRepoFile(".github", "workflows", "release.yml");
+  assert.match(release, /VIZE_RELEASE_MACOS_RUNNER: "\$\{\{ vars\.VIZE_RELEASE_MACOS_RUNNER \}\}"/);
   assert.match(
     workflowJobBody(release, "version"),
     /node tools\/support\/github\/release-platforms\.ts github-output/,

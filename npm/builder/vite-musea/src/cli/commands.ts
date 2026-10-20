@@ -26,6 +26,9 @@ export function isArtFileInput(filePath: string): boolean {
 export function createVrtOptions(options: CliOptions): ExtendedVrtOptions {
   // `vrt.a11y` is MuseaA11yRunner config. ExtendedVrtOptions.a11y is a boolean.
   const configured = withoutA11y(options.vrt);
+  const comparison = options.colorThresholdProvided
+    ? { ...configured.comparison, colorThreshold: options.colorThreshold }
+    : configured.comparison;
   const vrtOptions: ExtendedVrtOptions = {
     ...configured,
     ...(options.projectRoot !== undefined ? { projectRoot: options.projectRoot } : {}),
@@ -36,6 +39,7 @@ export function createVrtOptions(options: CliOptions): ExtendedVrtOptions {
       ? { adoptLegacySnapshots: options.adoptLegacySnapshots }
       : {}),
     capture: { waitForPreviewReady: true, ...configured.capture },
+    ...(comparison !== undefined ? { comparison } : {}),
     ...(options.previewBasePath !== undefined ? { previewBasePath: options.previewBasePath } : {}),
     ...(options.previewUrls !== undefined ? { previewUrls: options.previewUrls } : {}),
     // run, approve, and clean all read this directory.

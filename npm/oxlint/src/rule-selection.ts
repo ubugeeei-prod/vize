@@ -64,7 +64,7 @@ export function createRuleSelection(
   const names = [...optionsByRule.keys()].sort();
   const options: PatinaRuleOptions = {};
   for (const name of names) {
-    Object.assign(options, optionsByRule.get(name));
+    mergeRuleOptions(options, optionsByRule.get(name));
   }
   return {
     names,
@@ -72,6 +72,15 @@ export function createRuleSelection(
     optionsByRule,
     cacheKey: JSON.stringify([names, ruleOptionsKey(options)]),
   };
+}
+
+function mergeRuleOptions(target: PatinaRuleOptions, source: PatinaRuleOptions | undefined): void {
+  if (!source) return;
+  const { ruleOptions, ...direct } = source;
+  Object.assign(target, direct);
+  if (ruleOptions) {
+    target.ruleOptions = { ...target.ruleOptions, ...ruleOptions };
+  }
 }
 
 function normalizeRuleName(name: string): string {

@@ -200,6 +200,41 @@ fn direct_typeof_and_witnessed_defined_branches_are_safe_but_member_probe_is_not
 }
 
 #[test]
+fn concrete_type_guards_prove_browser_globals_exist() {
+    assert!(
+        script_names(
+            r#"
+        if (typeof requestAnimationFrame === 'function') {
+            requestAnimationFrame(() => {});
+        }
+        if (typeof window === 'object') { window.scrollTo(0, 0); }
+        const raf = typeof requestAnimationFrame === 'function'
+            ? requestAnimationFrame
+            : undefined;
+        typeof document === 'object' && document.title;
+    "#
+        )
+        .is_empty()
+    );
+}
+
+#[test]
+fn opposite_concrete_type_branch_keeps_the_witness_precise() {
+    assert_eq!(
+        script_names(
+            r#"
+        if (typeof window !== 'object') {
+            window.scrollTo(0, 0);
+        } else {
+            window.scrollTo(0, 0);
+        }
+    "#
+        ),
+        ["window"]
+    );
+}
+
+#[test]
 fn escaped_identifiers_and_unicode_crlf_keep_physical_source_byte_ranges() {
     let source = "<script setup lang=\"ts\">\r\nconst 雪 = '🌸'; \\u0077indow.innerWidth;\r\n</script>\r\n<template />";
     let result = linter().lint_sfc(source, "Unicode.vue");

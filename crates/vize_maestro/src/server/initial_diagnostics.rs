@@ -1,10 +1,11 @@
-//! Background scheduling for the first native type-diagnostic pass.
+//! Background scheduling for native type-diagnostic passes after open/edit.
 //!
 //! `tower-lsp` polls handlers concurrently, but Corsa's synchronous IPC can
 //! occupy Maestro's single transport executor until a request completes. A
-//! full type-diagnostic pass inside `didOpen` therefore makes the first
-//! completion wait behind work that is not required to answer it. This module
-//! keeps that validation work while moving it onto one bounded background lane.
+//! full type-diagnostic pass inside `didOpen` or `didChange` therefore makes an
+//! interactive request wait behind work that is not required to answer it.
+//! This module keeps validation on one bounded background lane and coalesces
+//! repeated edits to the newest document version.
 
 use std::sync::mpsc;
 use std::thread;
@@ -25,15 +26,27 @@ pub(super) use retry::RetainedDiagnostics;
 /// Initial diagnostics remain prompt, while completion/hover no longer queue
 /// behind bridge startup and a full project diagnostic request.
 const INTERACTIVE_GRACE: Duration = Duration::from_secs(1);
+/// A short quiet period keeps an edit burst from queueing one whole native
+/// diagnostics pass per document version. Interactive requests observe the
+/// new buffer immediately and can claim Corsa while the user is still typing.
+const EDIT_DIAGNOSTIC_DEBOUNCE: Duration = Duration::from_millis(150);
 const MAX_PENDING_DOCUMENTS: usize = 64;
 
 #[derive(Clone)]
 struct InitialDiagnosticsJob {
+    cause: DiagnosticsJobCause,
     version: i32,
     not_before: Instant,
     sequence: u64,
     sync_pending: bool,
+    sync: Option<super::diagnostic_publishing::SyncDiagnostics>,
     continuation: Option<super::state::InitialConfigurationContinuation>,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum DiagnosticsJobCause {
+    Open,
+    Edit,
 }
 
 #[derive(Default)]
@@ -50,7 +63,14 @@ impl PendingInitialDiagnostics {
     }
 
     fn insert(&mut self, uri: Url, version: i32, not_before: Instant) {
-        self.insert_with_continuation(uri, version, not_before, None);
+        self.insert_with_continuation(
+            uri,
+            version,
+            not_before,
+            DiagnosticsJobCause::Open,
+            None,
+            None,
+        );
     }
 
     fn insert_with_continuation(
@@ -58,6 +78,8 @@ impl PendingInitialDiagnostics {
         uri: Url,
         version: i32,
         not_before: Instant,
+        cause: DiagnosticsJobCause,
+        sync: Option<super::diagnostic_publishing::SyncDiagnostics>,
         continuation: Option<super::state::InitialConfigurationContinuation>,
     ) {
         if self
@@ -84,10 +106,12 @@ impl PendingInitialDiagnostics {
         self.jobs.insert(
             uri,
             InitialDiagnosticsJob {
+                cause,
                 version,
                 not_before,
                 sequence,
-                sync_pending: true,
+                sync_pending: cause == DiagnosticsJobCause::Open,
+                sync,
                 continuation,
             },
         );
@@ -177,6 +201,9 @@ impl InitialDiagnosticsScheduler {
         &self,
         uri: Url,
         version: i32,
+        delay: Duration,
+        cause: DiagnosticsJobCause,
+        sync: Option<super::diagnostic_publishing::SyncDiagnostics>,
         continuation: Option<super::state::InitialConfigurationContinuation>,
     ) -> bool {
         let Some(sender) = &self.sender else {
@@ -185,7 +212,9 @@ impl InitialDiagnosticsScheduler {
         self.pending.lock().insert_with_continuation(
             uri,
             version,
-            Instant::now() + INTERACTIVE_GRACE,
+            Instant::now() + delay,
+            cause,
+            sync,
             continuation,
         );
         match sender.try_send(()) {
@@ -289,17 +318,31 @@ fn run_worker(
                     "initial_type_configuration_admission",
                     1,
                 );
-                let project = worker
-                    .for_initial_document(&uri, job.version, job.continuation.as_ref())
-                    .await;
+                let project = match job.cause {
+                    DiagnosticsJobCause::Open => {
+                        worker
+                            .for_initial_document(&uri, job.version, job.continuation.as_ref())
+                            .await
+                    }
+                    DiagnosticsJobCause::Edit => worker.for_document(&uri).await,
+                };
                 phase.finish();
-                project
-                    .publish_initial_api_diagnostics_if_version(
-                        &uri,
-                        job.version,
-                        job.continuation.as_ref(),
-                    )
-                    .await;
+                match job.cause {
+                    DiagnosticsJobCause::Open => {
+                        project
+                            .publish_initial_api_diagnostics_if_version(
+                                &uri,
+                                job.version,
+                                job.continuation.as_ref(),
+                            )
+                            .await;
+                    }
+                    DiagnosticsJobCause::Edit => {
+                        project
+                            .publish_changed_diagnostics_if_version(&uri, job.version, job.sync)
+                            .await;
+                    }
+                }
                 tracing::info!(
                     "finished initial type diagnostics for {} version {}",
                     uri,
@@ -326,7 +369,28 @@ impl MaestroServer {
             scheduler.schedule(
                 uri.clone(),
                 version,
+                INTERACTIVE_GRACE,
+                DiagnosticsJobCause::Open,
+                None,
                 self.state.initial_configuration_continuation(&uri, version),
+            )
+        })
+    }
+
+    pub(super) fn schedule_changed_diagnostics(
+        &self,
+        uri: Url,
+        version: i32,
+        sync: Option<super::diagnostic_publishing::SyncDiagnostics>,
+    ) -> bool {
+        self.initial_diagnostics.as_ref().is_some_and(|scheduler| {
+            scheduler.schedule(
+                uri.clone(),
+                version,
+                EDIT_DIAGNOSTIC_DEBOUNCE,
+                DiagnosticsJobCause::Edit,
+                sync,
+                None,
             )
         })
     }

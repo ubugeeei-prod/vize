@@ -914,6 +914,11 @@ export interface NoMutatingPropsOptionsNapi {
   shallowOnly?: boolean;
 }
 
+/** Define-macros-order options for NAPI */
+export interface DefineMacrosOrderOptionsNapi {
+  order?: Array<string>;
+}
+
 export declare function normalizeViteCssModuleFilename(filename: string): string;
 
 export declare function normalizeViteDevMiddlewareUrl(
@@ -1064,6 +1069,8 @@ export interface PatinaLintOptionsNapi {
   customEventNameCasing?: string;
   /** Options for `vue/no-mutating-props` */
   noMutatingProps?: NoMutatingPropsOptionsNapi;
+  /** Options for `script/define-macros-order` */
+  defineMacrosOrder?: DefineMacrosOrderOptionsNapi;
   /** Options for `vue/sfc-element-order` */
   sfcElementOrder?: SfcElementOrderOptionsNapi;
   /** Options for `vue/html-self-closing` */
@@ -1072,6 +1079,8 @@ export interface PatinaLintOptionsNapi {
   vOnEventHyphenation?: string;
   /** Style for `vue/attribute-hyphenation`: "always" or "never" */
   attributeHyphenation?: string;
+  /** CLI-compatible `linter.ruleOptions` encoded as JSON. */
+  ruleOptionsJson?: string;
 }
 
 /** One stable value a cached JS plugin declares it reads outside the batch. */

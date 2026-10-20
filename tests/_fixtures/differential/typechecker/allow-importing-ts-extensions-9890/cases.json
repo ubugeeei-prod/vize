@@ -49,6 +49,24 @@
         { "file": "tsconfig.json", "source": "tsconfig-opt-in.json.txt" }
       ],
       "diagnostics": []
+    },
+    {
+      "id": "declaration-generated-routes",
+      "inputs": [
+        {
+          "file": "entry.ts",
+          "source": "declaration-generated/entry.ts.txt"
+        },
+        {
+          "file": "App.vue",
+          "source": "declaration-generated/App.vue.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "declaration-generated/tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": []
     }
   ]
 }

@@ -17,7 +17,7 @@ mod retry_tests;
 #[cfg(feature = "native")]
 mod sync_feedback;
 #[cfg(feature = "native")]
-use sync_feedback::SyncDiagnostics;
+pub(in crate::server) use sync_feedback::SyncDiagnostics;
 
 pub(super) struct CollectedDiagnostics {
     pub(super) version: i32,

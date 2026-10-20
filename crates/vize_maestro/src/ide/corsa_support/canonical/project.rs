@@ -7,7 +7,7 @@ use tower_lsp::lsp_types::Url;
 use vize_canon::{CorsaBridge, CorsaBridgeError};
 use vize_l0::{FxHashSet, String};
 
-use super::{CanonicalDependencyDocument, CanonicalVirtualDocument, location_matches_uri};
+use super::{CanonicalDependencyDocument, CanonicalVirtualDocument, location_matches_uri_cached};
 use crate::ide::IdeContext;
 
 #[derive(Debug)]
@@ -17,7 +17,13 @@ pub(crate) enum CanonicalProjectOpenError {
 }
 
 impl CanonicalVirtualDocument {
-    fn include_opened_document(&mut self, source_uri: Url, source: String, mut opened: Self) {
+    fn include_opened_document(
+        &mut self,
+        ctx: &IdeContext<'_>,
+        source_uri: Url,
+        source: String,
+        mut opened: Self,
+    ) {
         for catalog in opened.source_catalogs.drain(..) {
             if !self
                 .source_catalogs
@@ -27,18 +33,25 @@ impl CanonicalVirtualDocument {
                 self.source_catalogs.push(catalog);
             }
         }
-        self.include_dependency(CanonicalDependencyDocument {
-            source_uri,
-            source,
-            request_uri: opened.request_uri,
-            virtual_result: opened.virtual_result,
-        });
+        self.include_dependency(
+            ctx,
+            CanonicalDependencyDocument {
+                source_uri,
+                source,
+                request_uri: opened.request_uri,
+                virtual_result: opened.virtual_result,
+            },
+        );
         for dependency in opened.dependencies.drain(..) {
-            self.include_dependency(dependency);
+            self.include_dependency(ctx, dependency);
         }
         for materialized in opened.materialized_sources.drain(..) {
             if !self.materialized_sources.iter().any(|existing| {
-                location_matches_uri(&existing.request_uri, &materialized.request_uri)
+                location_matches_uri_cached(
+                    ctx.state,
+                    &existing.request_uri,
+                    &materialized.request_uri,
+                )
             }) {
                 self.materialized_sources.push(materialized);
             }
@@ -49,10 +62,18 @@ impl CanonicalVirtualDocument {
         self.session_project_roots.dedup();
     }
 
-    fn include_dependency(&mut self, dependency: CanonicalDependencyDocument) {
-        if location_matches_uri(&dependency.request_uri, &self.request_uri)
+    fn include_dependency(
+        &mut self,
+        ctx: &IdeContext<'_>,
+        dependency: CanonicalDependencyDocument,
+    ) {
+        if location_matches_uri_cached(ctx.state, &dependency.request_uri, &self.request_uri)
             || self.dependencies.iter().any(|existing| {
-                location_matches_uri(&existing.request_uri, &dependency.request_uri)
+                location_matches_uri_cached(
+                    ctx.state,
+                    &existing.request_uri,
+                    &dependency.request_uri,
+                )
             })
         {
             return;
@@ -64,12 +85,10 @@ impl CanonicalVirtualDocument {
     /// importers have materialized it. The standalone overlay is no longer a
     /// live configured-project identity after the mirror reload; references and
     /// rename fan out only to the remaining live materialized identities.
-    fn promote_materialized_query_identity(&mut self) {
-        if self
-            .materialized_sources
-            .iter()
-            .any(|source| location_matches_uri(&source.request_uri, self.request_uri.as_str()))
-        {
+    fn promote_materialized_query_identity(&mut self, ctx: &IdeContext<'_>) {
+        if self.materialized_sources.iter().any(|source| {
+            location_matches_uri_cached(ctx.state, &source.request_uri, self.request_uri.as_str())
+        }) {
             return;
         }
         let mut candidates = self
@@ -78,7 +97,7 @@ impl CanonicalVirtualDocument {
             .enumerate()
             .filter(|(_, source)| {
                 source.mapping_kind.is_mappable()
-                    && authored_uris_match(&source.source_uri, &self.source_uri)
+                    && authored_uris_match(ctx, &source.source_uri, &self.source_uri)
             })
             .map(|(index, source)| {
                 let mapping_rank = match source.mapping_kind {
@@ -99,14 +118,13 @@ impl CanonicalVirtualDocument {
     }
 }
 
-fn authored_uris_match(left: &Url, right: &Url) -> bool {
+fn authored_uris_match(ctx: &IdeContext<'_>, left: &Url, right: &Url) -> bool {
     if left == right {
         return true;
     }
     match (left.to_file_path(), right.to_file_path()) {
         (Ok(left), Ok(right)) => {
-            vize_carton::path::canonicalize_non_verbatim(&left)
-                == vize_carton::path::canonicalize_non_verbatim(&right)
+            ctx.state.canonical_editor_path(&left) == ctx.state.canonical_editor_path(&right)
         }
         _ => false,
     }
@@ -208,7 +226,8 @@ async fn open_canonical_virtual_project_document_with_scope(
         .await
         .map_err(CanonicalProjectOpenError::Importer)?
         {
-            document.include_opened_document(uri.clone(), importer_ctx.content.into(), opened);
+            let importer_source = String::from(importer_ctx.content.as_str());
+            document.include_opened_document(&importer_ctx, uri.clone(), importer_source, opened);
         }
     }
 
@@ -231,9 +250,13 @@ async fn open_canonical_virtual_project_document_with_scope(
             .iter()
             .filter(|source| source.mapping_kind.is_mappable())
             .filter(|source| {
-                !location_matches_uri(&source.request_uri, &document.request_uri)
+                !location_matches_uri_cached(ctx.state, &source.request_uri, &document.request_uri)
                     && !document.dependencies.iter().any(|dependency| {
-                        location_matches_uri(&source.request_uri, &dependency.request_uri)
+                        location_matches_uri_cached(
+                            ctx.state,
+                            &source.request_uri,
+                            &dependency.request_uri,
+                        )
                     })
             })
             .map(|source| {
@@ -247,7 +270,7 @@ async fn open_canonical_virtual_project_document_with_scope(
         .open_virtual_documents_batch(&project_documents)
         .await
         .map_err(CanonicalProjectOpenError::Importer)?;
-    document.promote_materialized_query_identity();
+    document.promote_materialized_query_identity(ctx);
 
     Ok(Some(document))
 }

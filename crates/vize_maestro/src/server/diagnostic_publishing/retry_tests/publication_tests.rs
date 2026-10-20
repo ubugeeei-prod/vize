@@ -81,11 +81,10 @@ fn queued_old_edits_cannot_adopt_the_latest_version_after_waiting_for_native_sco
         edits.push(edit);
     }
     drop(scope);
-    let observed = diagnostics(drain(&mut fixture.socket, async {
-        futures::future::join_all(edits).await;
-    }));
-    assert_eq!(observed, vec![notification(&fixture, &current(&fixture))]);
-    assert_eq!(observed[0]["params"]["version"], 87);
+    futures::executor::block_on(futures::future::join_all(edits));
+    let expected = whole(&fixture, &current(&fixture));
+    assert_eq!(receive_whole(&mut fixture), expected);
+    assert_eq!(expected["version"], 87);
 }
 
 #[test]

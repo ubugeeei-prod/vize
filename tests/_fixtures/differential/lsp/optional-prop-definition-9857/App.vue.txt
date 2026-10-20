@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import Badge from "./Badge.vue";
+</script>
+
+<template>
+  <button disabled>Save</button>
+  <h2>Badge</h2>
+  <Badge color="red" :size="12">hi</Badge>
+</template>

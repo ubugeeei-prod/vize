@@ -9,14 +9,27 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const toolPath = path.join(root, "tools", "support", "github", "release-platforms.ts");
 
-function releasePlatformPlan(refName: string) {
+function releasePlatformPlan(refName: string, env: NodeJS.ProcessEnv = process.env) {
   const result = spawnSync(process.execPath, [toolPath, "print", refName], {
     cwd: root,
     encoding: "utf8",
+    env,
   });
   assert.equal(result.status, 0, result.stderr);
   return JSON.parse(result.stdout);
 }
+
+test("release platform plan can route macOS builds around a provider outage", () => {
+  const plan = releasePlatformPlan("v1.201.0", {
+    ...process.env,
+    VIZE_RELEASE_MACOS_RUNNER: "macos-15",
+  });
+
+  const appleHosts = [...plan.cliMatrix, ...plan.nativeMatrix]
+    .filter(({ target }) => target.endsWith("-apple-darwin"))
+    .map(({ host }) => host);
+  assert.deepEqual(appleHosts, ["macos-15", "macos-15", "macos-15", "macos-15"]);
+});
 
 function applyReleasePlatformCadence(refName: string, packageJsonPath: string) {
   const result = spawnSync(

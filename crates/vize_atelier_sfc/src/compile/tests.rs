@@ -120,6 +120,61 @@ export default {
 }
 
 #[test]
+fn production_v_if_placeholder_omits_development_comment_text() {
+    let descriptor = parse_sfc(
+        r#"<template><div><p v-if="open">open</p><span>always</span></div></template>"#,
+        SfcParseOptions::default(),
+    )
+    .expect("parse SFC");
+    let development_code = r#"import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, [
+    (_ctx.open)
+      ? (_openBlock(), _createElementBlock("p", { key: 0 }, "open"))
+      : _createCommentVNode("v-if", true),
+    _createElementVNode("span", null, "always")
+  ]))
+}"#;
+    let production_code = r#"import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, [
+    (_ctx.open)
+      ? (_openBlock(), _createElementBlock("p", { key: 0 }, "open"))
+      : _createCommentVNode("", true),
+    _createElementVNode("span", null, "always")
+  ]))
+}"#;
+
+    for custom_renderer in [false, true] {
+        let compiler_options = vize_atelier_dom::DomCompilerOptions {
+            custom_renderer,
+            ..Default::default()
+        };
+        let mut development_options = SfcCompileOptions::default();
+        development_options.template.is_prod = false;
+        development_options.template.compiler_options = Some(compiler_options.clone());
+        let development =
+            compile_sfc(&descriptor, development_options).expect("compile development SFC");
+        assert_eq!(
+            development.code, development_code,
+            "development output mismatch for custom_renderer={custom_renderer}"
+        );
+
+        let mut production_options = SfcCompileOptions::default();
+        production_options.template.is_prod = true;
+        production_options.template.compiler_options = Some(compiler_options);
+        let production =
+            compile_sfc(&descriptor, production_options).expect("compile production SFC");
+        assert_eq!(
+            production.code, production_code,
+            "production output mismatch for custom_renderer={custom_renderer}"
+        );
+    }
+}
+
+#[test]
 fn test_script_only_ssr_preserves_default_export() {
     let source = r#"<script lang="ts">
 import type { PropType } from 'vue'
@@ -412,6 +467,30 @@ const color = 'tomato'
     insta::assert_snapshot!(
         "script_setup_css_v_bind_uses_scoped_vars",
         sfc_compile_snapshot(&descriptor.css_vars, &result)
+    );
+}
+
+#[test]
+fn test_scoped_css_moves_scope_before_trailing_universal_selectors() {
+    let source = r#"<template><div class="row"><slot /></div></template>
+<style scoped>
+.row > * { flex-shrink: 0; }
+.row * { margin: 0; }
+</style>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("parse SFC");
+    let result = compile_sfc(
+        &descriptor,
+        SfcCompileOptions {
+            scope_id: Some("test".into()),
+            ..Default::default()
+        },
+    )
+    .expect("compile SFC");
+
+    assert_eq!(
+        result.css.as_deref(),
+        Some(".row[data-v-test] > *{ flex-shrink: 0; }.row[data-v-test] *{ margin: 0; }\n")
     );
 }
 
@@ -3067,5 +3146,47 @@ export default defineComponent({
         render_fn(&result.code),
         render_fn(&options_result.code),
         "class component render function must match the Options API equivalent"
+    );
+}
+
+#[test]
+fn test_script_setup_maybe_ref_v_model_uses_is_ref_guard() {
+    let source = r#"<script setup>
+import Child from './Child.js'
+import { useThing } from './thing.js'
+const { count } = useThing()
+</script>
+<template><Child v-model="count" /></template>"#;
+
+    let descriptor = parse_sfc(
+        source,
+        SfcParseOptions {
+            filename: "Parent.vue".into(),
+            ..Default::default()
+        },
+    )
+    .expect("parse SFC");
+    let result = compile_sfc(
+        &descriptor,
+        SfcCompileOptions {
+            script: crate::types::ScriptCompileOptions {
+                inline_template: true,
+                ..Default::default()
+            },
+            ..Default::default()
+        },
+    )
+    .expect("compile SFC");
+
+    let (_, handler) = result
+        .code
+        .split_once("\"onUpdate:modelValue\": ")
+        .expect("v-model update handler");
+    assert_eq!(
+        handler.lines().next(),
+        Some(
+            "_cache[0] || (_cache[0] = $event => ((_isRef(count) ? (count.value) = $event : null)))"
+        ),
+        "setup-maybe-ref v-model write handler must match Vue exactly"
     );
 }

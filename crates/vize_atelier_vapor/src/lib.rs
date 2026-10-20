@@ -49,6 +49,8 @@ mod tests_once_components;
 #[cfg(test)]
 mod tests_root_component;
 #[cfg(test)]
+mod tests_runtime_set_attrs;
+#[cfg(test)]
 mod tests_same_event_listeners;
 #[cfg(test)]
 mod tests_set_html;

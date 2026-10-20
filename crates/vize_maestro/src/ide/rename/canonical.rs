@@ -217,12 +217,14 @@ fn authored_edit_ranges(edit: &WorkspaceEdit) -> Vec<(Url, Range)> {
 }
 
 fn linked_positions(
+    state: &crate::server::ServerState,
     document: &corsa_support::CanonicalVirtualDocument,
     edit: &WorkspaceEdit,
 ) -> Vec<corsa_support::CanonicalSemanticPosition> {
     let mut positions = FxHashSet::default();
     let mut push = |uri: &Url, range: Range| {
         for position in corsa_support::linked_semantic_positions(
+            state,
             document,
             uri.as_str(),
             &corsa_support::tower_range(range),

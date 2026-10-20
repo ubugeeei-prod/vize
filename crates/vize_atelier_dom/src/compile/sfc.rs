@@ -39,6 +39,7 @@ pub(super) fn compile_template_inner_for_sfc_with_sections<'a>(
         codegen_options,
         codegen_experimental_options,
         no_slotted,
+        true,
         &mut NoCapture,
         None,
     )
@@ -58,6 +59,7 @@ pub(super) fn compile_template_inner_for_sfc_with_sections_captured<'a, C: Captu
     codegen_options: CodegenOptions,
     codegen_experimental_options: CodegenExperimentalOptions,
     no_slotted: bool,
+    development: bool,
     capture: &mut C,
     mut preflight: Option<&mut dyn vize_l1_to_l2::SurfacePreflight>,
 ) -> (Vec<CompilerError>, CodegenResultWithSections) {
@@ -102,6 +104,7 @@ pub(super) fn compile_template_inner_for_sfc_with_sections_captured<'a, C: Captu
                     stage_options::SlotEmitPolicy {
                         strict_slot_params: true,
                         no_slotted,
+                        development,
                     },
                     capture,
                     &mut preflight,
@@ -135,6 +138,7 @@ pub(super) fn compile_template_inner_for_sfc_with_sections_captured<'a, C: Captu
     pipeline_options.no_slotted = no_slotted;
     // L2 runs before the shipped transform reports malformed slot parameters.
     pipeline_options.strict_slot_params = true;
+    pipeline_options.development = development;
 
     // This is the actual compatibility parse entry, not a final emitter
     // selection: the shared pipeline may still emit L2. A native-checked

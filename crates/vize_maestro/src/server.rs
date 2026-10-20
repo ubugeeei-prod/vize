@@ -95,9 +95,10 @@ pub struct MaestroServer {
     // Only the foreground owns termination. Diagnostic Self instances have None.
     #[cfg(feature = "experimental-source-navigation")]
     module_link_termination: Option<ModuleLinkTerminationLease>,
-    /// Single background lane for the type-diagnostic work scheduled by
-    /// `didOpen`. Keeping the sender on the foreground server lets the worker
-    /// own the same client and state without spawning one thread per document.
+    /// Single background lane for type-diagnostic work scheduled by document
+    /// opens and edits. Keeping the sender on the foreground server lets the
+    /// worker own the same client and state without spawning one thread per
+    /// document.
     #[cfg(feature = "native")]
     initial_diagnostics: Option<initial_diagnostics::InitialDiagnosticsScheduler>,
     /// Registration ACKs run independently of document requests and diagnostics.

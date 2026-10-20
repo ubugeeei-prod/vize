@@ -32,10 +32,12 @@ impl VirtualProject {
     pub fn new(project_root: &Path) -> CorsaResult<Self> {
         let project_root = vize_carton::path::canonicalize_non_verbatim(project_root);
         let virtual_root = project_virtual_root(&project_root);
+        let cache_usage_lock = super::cache_gc::acquire_usage_lock(&virtual_root);
 
         let mut project = Self {
             project_root,
             virtual_root,
+            _cache_usage_lock: cache_usage_lock,
             tsconfig_path: None,
             compiler_configuration: None,
             preserve_unused_diagnostics: false,

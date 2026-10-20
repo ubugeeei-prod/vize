@@ -86,9 +86,12 @@ impl DeclarationService {
         // whose declaration is the authored one.
         let mut followed = Vec::new();
         for location in &locations {
-            for position in
-                corsa_support::linked_semantic_positions(&document, &location.uri, &location.range)
-            {
+            for position in corsa_support::linked_semantic_positions(
+                ctx.state,
+                &document,
+                &location.uri,
+                &location.range,
+            ) {
                 if let Some(found) = Self::declaration_or_definition_locations(
                     bridge,
                     &position.request_uri,

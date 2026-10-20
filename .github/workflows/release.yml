@@ -76,7 +76,9 @@ jobs:
       - name: Select release platforms
         id: platforms
         if: steps.cut.outputs.ref != ''
-        env: { RELEASE_TAG: "${{ steps.cut.outputs.tag }}" }
+        env:
+          RELEASE_TAG: "${{ steps.cut.outputs.tag }}"
+          VIZE_RELEASE_MACOS_RUNNER: "${{ vars.VIZE_RELEASE_MACOS_RUNNER }}"
         run: node tools/support/github/release-platforms.ts github-output "$RELEASE_TAG"
 
   build-cli:

@@ -23,7 +23,7 @@ pub(crate) fn local_binding_reference_position(
     if !is_reactive_binding_cursor(ctx) {
         return Some(position);
     }
-    let (_, result) = super::semantic_links::virtual_result(document, request_uri)?;
+    let (_, result) = super::semantic_links::virtual_result(ctx.state, document, request_uri)?;
     let code = &result.code;
     let offset = crate::ide::position_to_offset(code, position.0, position.1)?;
     let allocator = oxc_allocator::Allocator::default();

@@ -59,7 +59,7 @@ void test(
       const payload = JSON.parse(raw);
       const manifest: unknown[] = [];
       for (const title of ["Controls", "Keys"] as const) {
-        const artPath = path.join(f.root, "src", `${title}.art.vue`);
+        const artPath = `src/${title}.art.vue`;
         const urls = payload.previews[artPath];
         manifest.push({
           title,
@@ -111,7 +111,7 @@ void test(
       await page.screenshot({ path: path.join(f.output, "gallery.png"), fullPage: true });
       await writeFile(path.join(f.output, "gallery.html"), await page.content());
       for (const title of ["Controls", "Keys"] as const) {
-        const urls = payload.previews[path.join(f.root, "src", `${title}.art.vue`)];
+        const urls = payload.previews[`src/${title}.art.vue`];
         assert.deepEqual(
           Object.keys(urls),
           variants[title].map(([name]) => name),

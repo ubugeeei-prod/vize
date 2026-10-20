@@ -138,6 +138,16 @@ pub fn project_virtual_lock_paths(project_root: &Path) -> [PathBuf; 2] {
     ]
 }
 
+/// Recency marker used by bounded project-cache maintenance.
+pub fn project_virtual_access_path(project_root: &Path) -> PathBuf {
+    let virtual_root = project_virtual_root(project_root);
+    let mut name = virtual_root
+        .file_name()
+        .map_or_else(std::ffi::OsString::new, std::ffi::OsString::from);
+    name.push(".access");
+    virtual_root.with_file_name(name)
+}
+
 fn project_key(project_root: &Path) -> vize_carton::String {
     let mut digest = Sha256::new();
     digest.update(PROJECT_KEY_SCHEMA);

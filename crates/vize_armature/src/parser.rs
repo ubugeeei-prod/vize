@@ -94,6 +94,10 @@ pub struct Parser<'a> {
     /// entity; [`Parser::flush_pending_text`] runs at every tokenizer callback
     /// boundary that is not itself text, so nothing ever observes a stale node.
     pending_text: Option<PendingText>,
+    /// A comment omitted from the public tree still terminates a Vue 2 text
+    /// run. The next text callback must create a new node rather than merge
+    /// across that authored boundary.
+    split_text_after_removed_comment: bool,
     /// Current node stack
     stack: Vec<'a, ParserStackEntry<'a>>,
     /// Tags of the elements the nesting limit refused to descend into, in source
@@ -277,6 +281,7 @@ impl<'a> Parser<'a> {
 
     /// Add child to current context (stack top or root)
     fn add_child(&mut self, child: TemplateChildNode<'a>) {
+        self.split_text_after_removed_comment = false;
         if let Some(entry) = self.stack.last_mut() {
             entry.element.children.push(child);
         } else if let Some(ref mut root) = self.root {

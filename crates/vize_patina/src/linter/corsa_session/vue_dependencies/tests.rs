@@ -32,6 +32,7 @@ fn projected_imports_escape_both_quotes_and_preserve_unicode_query_offsets() {
             &session,
             &project,
             &mut cache,
+            &vize_l0::FxHashSet::default(),
         );
         assert_eq!(prepared.files.len(), 1, "quoted dependency must resolve");
         let (target, _) = prepared.files.first().expect("private child mirror");
@@ -76,6 +77,60 @@ fn projected_imports_escape_both_quotes_and_preserve_unicode_query_offsets() {
 }
 
 #[test]
+fn retained_component_frontier_is_materialized_once_for_a_chain() {
+    let root = std::env::temp_dir().join(&*cstr!(
+        "vize-patina-retained-frontier-{}-{}",
+        std::process::id(),
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos()
+    ));
+    let project = root.join("project");
+    let session = root.join("session");
+    std::fs::create_dir_all(&project).expect("create component project");
+    const COMPONENTS: usize = 24;
+    for index in 0..COMPONENTS {
+        let import = (index > 0)
+            .then(|| cstr!("import Item{} from './Item{}.vue';\n", index - 1, index - 1))
+            .unwrap_or_default();
+        std::fs::write(
+            project.join(cstr!("Item{index}.vue").as_str()),
+            cstr!(
+                "<script setup lang=\"ts\">\n{import}defineProps<{{ label: string }}>();\n</script>\n<template><Item{} v-if=\"false\" label=\"child\" /></template>\n",
+                index.saturating_sub(1)
+            ),
+        )
+        .expect("write chain component");
+    }
+
+    let mut cache = vize_l0::FxHashMap::default();
+    let mut retained = vize_l0::FxHashSet::default();
+    let mut materialized = 0;
+    for index in (0..COMPONENTS).rev() {
+        let import = (index > 0)
+            .then(|| cstr!("import Item{} from './Item{}.vue';\n", index - 1, index - 1))
+            .unwrap_or_default();
+        let filename = project.join(cstr!("Item{index}.vue").as_str());
+        let prepared = prepare(
+            &import,
+            &filename.to_string_lossy(),
+            &session,
+            &project,
+            &mut cache,
+            &retained,
+        );
+        materialized += prepared.files.len();
+        retained.extend(prepared.files.into_iter().map(|(path, _)| path));
+    }
+
+    assert_eq!(materialized, COMPONENTS - 1);
+    assert_eq!(retained.len(), COMPONENTS - 1);
+    assert_eq!(cache.len(), COMPONENTS - 1);
+    std::fs::remove_dir_all(root).expect("remove retained frontier project");
+}
+
+#[test]
 fn real_component_imports_have_private_mirrors_and_keep_query_offsets() {
     let fixtures = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("tests/fixtures/unsafe-template-binding/component-values");
@@ -94,6 +149,7 @@ fn real_component_imports_have_private_mirrors_and_keep_query_offsets() {
         &session,
         &fixtures,
         &mut cache,
+        &vize_l0::FxHashSet::default(),
     );
     assert_eq!(prepared.files.len(), 1);
     let (target, component) = &prepared.files[0];

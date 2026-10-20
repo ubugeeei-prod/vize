@@ -87,6 +87,7 @@ pub(super) async fn did_rename_files(server: &MaestroServer, params: &RenameFile
 }
 
 fn record_renames(state: &ServerState, params: &RenameFilesParams) {
+    state.invalidate_canonical_editor_paths();
     state.invalidate_global_component_references(
         params
             .files

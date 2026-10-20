@@ -59,3 +59,30 @@ fn test_invalid_v_for_no_in_or_of() {
     let result = linter.lint_template(r#"<div v-for="items"></div>"#, "test.vue");
     assert_eq!(result.error_count, 1);
 }
+
+#[test]
+fn dynamic_slot_templates_do_not_require_keys_on_component_bodies() {
+    let linter = create_linter();
+    let result = linter.lint_template(
+        r#"<MyList>
+            <template v-for="name in names" #[name]="scope">
+                <component :is="slots[name]" v-bind="scope" />
+            </template>
+            <template v-for="name in names" #[name]>
+                <MyItem :label="name" />
+            </template>
+        </MyList>"#,
+        "test.vue",
+    );
+    assert_eq!(result.error_count, 0, "{:?}", result.diagnostics);
+}
+
+#[test]
+fn ordinary_template_iterations_still_require_keys_on_component_bodies() {
+    let linter = create_linter();
+    let result = linter.lint_template(
+        r#"<template v-for="item in items"><MyItem :label="item" /></template>"#,
+        "test.vue",
+    );
+    assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
+}

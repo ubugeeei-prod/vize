@@ -61,6 +61,7 @@ export const pathHostCallers: Record<string, readonly [number, number, number, n
   "crates/vize_maestro/src/ide/file_rename/manual.rs": [1, 0, 0, 0],
   "crates/vize_maestro/src/server/native_requests/tests.rs": [0, 1, 0, 0],
   "crates/vize_maestro/src/server/project_contexts/operation_admission_tests.rs": [0, 2, 0, 0],
+  "crates/vize_maestro/src/server/state/canonical_paths.rs": [0, 0, 0, 1],
   "crates/vize_maestro/src/server/state/global_components.rs": [1, 0, 0, 0],
   "crates/vize_maestro/src/server/state/global_tag_names.rs": [1, 1, 0, 0],
   "crates/vize_maestro/src/server/state/project_contexts/paths.rs": [0, 0, 0, 1],

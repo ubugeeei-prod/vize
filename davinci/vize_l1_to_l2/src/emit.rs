@@ -129,8 +129,10 @@ pub use self::budget::{
     DomEmitBudget, ObservedDomEmit, emit_dom_source_observed,
     emit_dom_source_observed_with_options, emit_dom_source_observed_with_options_captured,
     emit_dom_source_observed_with_options_captured_and_slot_scope,
+    emit_dom_source_observed_with_options_captured_slot_scope_and_environment,
     emit_dom_source_sfc_observed_with_options, emit_dom_source_with_caps_observed,
     emit_dom_source_with_options_captured, emit_dom_source_with_options_captured_and_slot_scope,
+    emit_dom_source_with_options_captured_slot_scope_and_environment,
 };
 #[cfg(any(test, feature = "legacy-differential"))]
 pub use self::budget::{
@@ -229,6 +231,8 @@ struct EmitCx<'facts> {
     strict_slot_params: bool,
     /// The shipped lane's `cache_handlers`.
     cache_handlers: bool,
+    /// Whether development-only codegen hints should be retained.
+    development: bool,
     /// Scoped-style attr that only module-level static VNode hoists bake into
     /// props; runtime VNodes rely on Vue's current scope id.
     hoisted_scope_id: Option<&'facts str>,
@@ -260,4 +264,7 @@ struct EmitCx<'facts> {
 }
 
 #[doc(hidden)]
-pub use budget::{SurfacePreflight, emit_dom_source_with_preflight};
+pub use budget::{
+    SurfacePreflight, emit_dom_source_with_preflight,
+    emit_dom_source_with_preflight_and_environment,
+};

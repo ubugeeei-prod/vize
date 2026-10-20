@@ -90,6 +90,7 @@ async fn did_change_in_context(server: &MaestroServer, params: &DidChangeWatched
     #[cfg(feature = "native")]
     {
         let changes = &params.changes;
+        server.state.invalidate_canonical_editor_paths();
         server.state.observe_workspace_project_file_events(changes);
         server.state.invalidate_component_interfaces();
         if changes_invalidate_disk_project_state(&server.state, changes) {

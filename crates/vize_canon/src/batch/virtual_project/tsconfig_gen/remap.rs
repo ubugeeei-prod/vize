@@ -34,12 +34,63 @@ impl VirtualProject {
                 .collect::<Vec<_>>();
             remapped.insert(
                 alias.clone(),
-                Value::Array(remap_path_targets(&targets, &up)),
+                Value::Array(remap_path_targets(&targets, &up, |target| {
+                    self.authored_dependency_target(target)
+                })),
             );
         }
         let helpers = self.shared_helpers_include();
         protect_control_file_aliases(paths, &mut remapped, &up, &self.project_root, &helpers);
         remapped
+    }
+
+    /// Published dependency aliases must keep the package's complete authored
+    /// declaration graph ahead of a partial package shadow. Otherwise a bare
+    /// alias can fall back to the authored barrel while a wildcard alias finds
+    /// a mirrored leaf, splitting one augmentable interface into two module
+    /// identities. Workspace links canonicalize out of `node_modules` and keep
+    /// the mirror first so generated SFC companions still participate.
+    fn authored_dependency_target(&self, target: &str) -> bool {
+        let path = Path::new(target);
+        let components = path.components().collect::<Vec<_>>();
+        let Some(modules_index) = components
+            .iter()
+            .position(|component| component.as_os_str() == "node_modules")
+        else {
+            return false;
+        };
+        let Some(name) = components.get(modules_index + 1) else {
+            return false;
+        };
+        let name = name.as_os_str().to_string_lossy();
+        if name.contains('*') {
+            return false;
+        }
+        let package_end = if name.starts_with('@') {
+            let Some(package) = components.get(modules_index + 2) else {
+                return false;
+            };
+            if package.as_os_str().to_string_lossy().contains('*') {
+                return false;
+            }
+            modules_index + 3
+        } else {
+            modules_index + 2
+        };
+        let Some(package_components) = components.get(..package_end) else {
+            return false;
+        };
+        let mut package = PathBuf::new();
+        for component in package_components {
+            package.push(component.as_os_str());
+        }
+        std::fs::canonicalize(self.project_root.join(package))
+            .ok()
+            .is_some_and(|resolved| {
+                resolved
+                    .components()
+                    .any(|component| component.as_os_str() == "node_modules")
+            })
     }
 
     /// A self-contained config may spell an in-project target absolutely so it
@@ -172,6 +223,25 @@ mod tests {
         assert_eq!(
             project.path_target_onto_project_root(&json!("/outside/src/*")),
             json!("/outside/src/*")
+        );
+    }
+
+    #[test]
+    fn published_dependency_aliases_keep_the_authored_graph_first() {
+        let case = tempfile::tempdir().unwrap();
+        std::fs::create_dir_all(case.path().join("node_modules/nuxt/dist/app")).unwrap();
+        let project = VirtualProject::new(case.path()).unwrap();
+        let paths = json!({"#app": ["node_modules/nuxt/dist/app"]});
+        let generated = project.remap_paths(paths.as_object().unwrap());
+        let up = project.virtual_root_to_project_prefix();
+
+        assert_eq!(
+            generated["#app"],
+            json!([
+                vize_carton::cstr!("{up}node_modules/nuxt/dist/app"),
+                "./node_modules/nuxt/dist/app",
+                "./node_modules/nuxt/dist/app.vue.ts"
+            ])
         );
     }
 

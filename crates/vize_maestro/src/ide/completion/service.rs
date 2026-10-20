@@ -76,6 +76,11 @@ impl super::CompletionService {
         if super::literal_context::contains_cursor(ctx) {
             return None;
         }
+        if ctx.block_type.is_none()
+            && let Some(items) = template::incomplete_slot_name_completions(ctx)
+        {
+            return Some(CompletionResponse::Array(items));
+        }
         let items = match ctx.block_type? {
             BlockType::Template => template::complete_template(ctx),
             BlockType::Script => script::complete_script(ctx, false),
@@ -157,6 +162,11 @@ impl super::CompletionService {
 
         if super::literal_context::contains_cursor(ctx) {
             return super::literal_context::complete(ctx, corsa_bridge.as_deref()).await;
+        }
+        if matches!(ctx.block_type, None | Some(BlockType::Template))
+            && let Some(items) = template::incomplete_slot_name_completions(ctx)
+        {
+            return Some(CompletionResponse::Array(items));
         }
         let block_type = ctx.block_type?;
 

@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 9919,
+  "regressionCommit": "2c22691f0f8303a28c425213c423e299f9ad5420",
+  "sourceRevision": "2c22691f0f8303a28c425213c423e299f9ad5420",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "authored-dependency-identity",
+      "inputs": [
+        { "file": "project.json", "source": "project.json" }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

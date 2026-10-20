@@ -27,23 +27,25 @@ impl<'a> Parser<'a> {
 
     /// Append or merge text node
     fn append_or_merge_text(&mut self, content: &'a str, start: usize, end: usize) {
+        let split_after_comment = core::mem::take(&mut self.split_text_after_removed_comment);
         if self.should_foster_text(content) {
-            self.append_or_merge_fostered_text(content, start, end);
+            self.append_or_merge_fostered_text(content, start, end, split_after_comment);
             return;
         }
 
         let slot = self.current_text_slot();
-        let can_merge = if let Some(entry) = self.stack.last() {
-            matches!(
-                entry.element.children.last(),
-                Some(TemplateChildNode::Text(_))
-            )
-        } else {
-            matches!(
-                self.root.as_ref().and_then(|root| root.children.last()),
-                Some(TemplateChildNode::Text(_))
-            )
-        };
+        let can_merge = !split_after_comment
+            && if let Some(entry) = self.stack.last() {
+                matches!(
+                    entry.element.children.last(),
+                    Some(TemplateChildNode::Text(_))
+                )
+            } else {
+                matches!(
+                    self.root.as_ref().and_then(|root| root.children.last()),
+                    Some(TemplateChildNode::Text(_))
+                )
+            };
 
         if !can_merge {
             let loc = self.create_loc(start, end);
@@ -65,18 +67,25 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn append_or_merge_fostered_text(&mut self, content: &'a str, start: usize, end: usize) {
+    fn append_or_merge_fostered_text(
+        &mut self,
+        content: &'a str,
+        start: usize,
+        end: usize,
+        split_after_comment: bool,
+    ) {
         let Some(table_index) = self.nearest_table_index() else {
             self.append_or_merge_text(content, start, end);
             return;
         };
 
-        let can_merge = matches!(
-            self.stack
-                .get(table_index)
-                .and_then(|table| table.fostered_before.last()),
-            Some(TemplateChildNode::Text(_))
-        );
+        let can_merge = !split_after_comment
+            && matches!(
+                self.stack
+                    .get(table_index)
+                    .and_then(|table| table.fostered_before.last()),
+                Some(TemplateChildNode::Text(_))
+            );
 
         if !can_merge {
             let loc = self.create_loc(start, end);

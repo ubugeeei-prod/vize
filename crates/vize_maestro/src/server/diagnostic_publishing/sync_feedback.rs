@@ -6,10 +6,11 @@ use tower_lsp::lsp_types::{Diagnostic, Url};
 use super::super::{MaestroServer, state::CorsaRequestStamp};
 use crate::{ide::DiagnosticService, utils::is_plain_script_path};
 
+#[derive(Clone)]
 pub(in crate::server) struct SyncDiagnostics {
-    pub(super) version: i32,
-    pub(super) stamp: CorsaRequestStamp,
-    pub(super) diagnostics: Vec<Diagnostic>,
+    pub(in crate::server) version: i32,
+    pub(in crate::server) stamp: CorsaRequestStamp,
+    pub(in crate::server) diagnostics: Vec<Diagnostic>,
 }
 
 impl MaestroServer {

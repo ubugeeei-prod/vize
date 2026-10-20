@@ -2,7 +2,7 @@ use vize_atelier_core::{
     CompilerError, RootNode,
     codegen::{
         CodegenResult, CodegenResultWithSections,
-        generate_with_sections_and_experimental_options_and_slot_scope,
+        generate_with_sections_and_experimental_options_slot_scope_and_environment,
     },
     lane::transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
     options::TemplateSyntaxMode,
@@ -33,6 +33,7 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
         l2_emit_selection,
         no_slotted,
         strict_slot_params,
+        development,
     } = pipeline_options;
     let parser_opts = stage_options::parser_options(&options);
 
@@ -106,6 +107,7 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
             None,
             strict_slot_params,
             no_slotted,
+            development,
             capture,
         ) {
             selection::record(Ok(()));
@@ -157,6 +159,7 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
             template_walks,
             strict_slot_params,
             no_slotted,
+            development,
             capture,
         )
     });
@@ -173,11 +176,12 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
             });
             profile!(
                 "atelier.dom.template.codegen_compat",
-                generate_with_sections_and_experimental_options_and_slot_scope(
+                generate_with_sections_and_experimental_options_slot_scope_and_environment(
                     &root,
                     codegen_opts,
                     codegen_experimental_options,
                     no_slotted,
+                    development,
                 )
             )
         }

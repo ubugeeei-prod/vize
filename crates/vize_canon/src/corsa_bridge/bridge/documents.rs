@@ -131,6 +131,7 @@ impl CorsaBridge {
     /// Record an external disk project-shape change without touching the
     /// backend on the foreground LSP notification path.
     pub fn mark_disk_project_state_dirty(&self) {
+        self.editor_session.invalidate_disk_inputs();
         self.disk_project_state_dirty.store(true, Ordering::SeqCst);
     }
 

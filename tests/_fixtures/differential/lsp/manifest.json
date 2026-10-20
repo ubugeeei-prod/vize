@@ -7,7 +7,9 @@
     {
       "id": "lsp/fix-history/inactive-imports",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "inactive-imports",
         "files": [
@@ -43,7 +45,9 @@
     {
       "id": "lsp/fix-history/on-type-crlf",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "on-type-crlf",
         "files": [
@@ -68,7 +72,9 @@
     {
       "id": "lsp/fix-history/folding-four-divs",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "folding-four-divs",
         "files": [
@@ -92,7 +98,9 @@
     {
       "id": "lsp/fix-history/folding-multi-block",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "folding-multi-block",
         "files": [
@@ -116,7 +124,9 @@
     {
       "id": "lsp/fix-history/folding-comment",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "folding-comment",
         "files": [
@@ -140,7 +150,9 @@
     {
       "id": "lsp/fix-history/folding-one-line",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "folding-one-line",
         "files": [
@@ -164,7 +176,9 @@
     {
       "id": "lsp/fix-history/folding-empty-blocks",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "folding-empty-blocks",
         "files": [
@@ -188,7 +202,9 @@
     {
       "id": "lsp/fix-history/highlight-original-rw",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "highlight-original-rw",
         "files": [
@@ -212,7 +228,9 @@
     {
       "id": "lsp/fix-history/highlight-original-pair",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "highlight-original-pair",
         "files": [
@@ -236,7 +254,9 @@
     {
       "id": "lsp/fix-history/highlight-original-tag",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "highlight-original-tag",
         "files": [
@@ -260,7 +280,9 @@
     {
       "id": "lsp/fix-history/highlight-original-crlf",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "highlight-original-crlf",
         "files": [
@@ -284,7 +306,9 @@
     {
       "id": "lsp/fix-history/highlight-original-empty",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "highlight-original-empty",
         "files": [
@@ -308,7 +332,9 @@
     {
       "id": "lsp/regression/component-hover-readability",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "component-hover-readability",
         "files": [
@@ -527,6 +553,142 @@
         "sha256": "d889adbd9bea9b8ed5eb149385e6c24460363ef9a74d84f804d77aa3c0de1821"
       },
       "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
+      "id": "lsp/regression/template-slot-completion-9907",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "template-slot-completion-9907",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "b4d5a598b220640f06b64eadd75872f534aa97e4894b2b1827fc61430e405eb7"
+          },
+          {
+            "path": "MySelect.vue.txt",
+            "sha256": "128fd5e68e0ede7da66bbb4415005509933eebdf3202d51f684b58c951bee338"
+          }
+        ]
+      },
+      "case": {
+        "path": "template-slot-completion-9907/case.json",
+        "sha256": "3aa3d35f43e98f327342be0124c987338d9e4a198645011aaaec09345c75e57f"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
+      "id": "lsp/regression/optional-prop-definition-9857",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "optional-prop-definition-9857",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "31c5767a2766448a4a3933e10a95a7085a92529423a44e6893503deda34b13ad"
+          },
+          {
+            "path": "Badge.vue.txt",
+            "sha256": "8cd6dcd26225fe5e85ebcc94817524ea4f5e433c17a6617dd6b638af37f61065"
+          }
+        ]
+      },
+      "case": {
+        "path": "optional-prop-definition-9857/case.json",
+        "sha256": "1b66c5dd0a7a601cf34157cd9b954f08531e78b8b3e30593fe27607e98f6800c"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
+      "id": "lsp/regression/nested-vite-project-9856",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "nested-vite-project-9856",
+        "files": [
+          {
+            "path": "gallery/Widget.vue.txt",
+            "sha256": "0304170acb45ce75b40faf514966cf5ee4453802e920fe7d05ceea05bceb6730"
+          },
+          {
+            "path": "src/lib/math.ts.txt",
+            "sha256": "f4d9a941b45e0f47e8eb4960c27f18af1d0dc973ab399c7862c327c846c941cc"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "63c312539837b3ea8e3b67509559651dd718be2c7488fdde9ff698fdc4d90f5d"
+          },
+          {
+            "path": "vite.config.ts.txt",
+            "sha256": "160eebeab2277ee2a479183fa67d2d4cfe72366877931eaaf1d92bc960f9588b"
+          },
+          {
+            "path": "gallery/vite.config.ts.txt",
+            "sha256": "450f0af4f4c1ecc4c7180f2e364c8a59bfed69dd350fb6b47bce8641c2a37786"
+          }
+        ]
+      },
+      "case": {
+        "path": "nested-vite-project-9856/case.json",
+        "sha256": "7c7850896d45849025be9f04d66ad7570794498088925c7dcaf83f666d67288c"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
+      "id": "lsp/regression/import-specifier-hover-9858",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "import-specifier-hover-9858",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "b622b5ac561c383eb8be67435f749c59c531a8882dd9a66f0b072a85da90ff58"
+          },
+          {
+            "path": "util.ts.txt",
+            "sha256": "b3a45c6bbf90d67d05d15d41b0d1abd46f42332260654cdece9041080f0fe092"
+          },
+          {
+            "path": "label.ts.txt",
+            "sha256": "38719ce11337851deb713b8cc4e2147224b0eee33d615b243ce0c0fccacb9613"
+          }
+        ]
+      },
+      "case": {
+        "path": "import-specifier-hover-9858/case.json",
+        "sha256": "9ad1a500f6ca25ff3ebe98205ff0d02a5f735c59b914ae93a9423dae4a17984b"
+      },
+      "requestCount": 2,
       "initializationOptions": {
         "editor": true,
         "lint": false,

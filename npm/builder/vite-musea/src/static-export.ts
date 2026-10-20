@@ -9,6 +9,8 @@ import { emitGalleryShell, joinFileName } from "./static-gallery-shell.js";
 import {
   createStaticGalleryPayload,
   joinUrlPath,
+  resolveStaticArtIdentity,
+  resolveStaticIdentityRoot,
   staticPreviewId,
   type StaticGalleryDataContext,
 } from "./static-data.js";
@@ -94,12 +96,14 @@ export function resolveStaticRuntimeId(id: string): string | null {
 export function loadStaticRuntimeModule(
   id: string,
   artFiles: Map<string, ArtFileInfo>,
+  identityRoot?: string,
 ): string | null {
   if (id !== RESOLVED_STATIC_RUNTIME) return null;
 
   const entries = Array.from(artFiles.values()).flatMap((art) =>
     art.variants.map((variant) => {
-      const key = staticPreviewId(art.path, variant.name);
+      const publicPath = identityRoot ? resolveStaticArtIdentity(art.path, identityRoot) : art.path;
+      const key = staticPreviewId(publicPath, variant.name);
       const moduleId = previewModuleId(art.path, variant.name);
       return `${JSON.stringify(key)}: () => import(${JSON.stringify(moduleId)})`;
     }),
@@ -146,9 +150,17 @@ export async function emitStaticGallery(
     source: JSON.stringify(publicPayload.arts, null, 2),
   });
   await emitAxeVendor(emitFile, staticRoot);
-  emitPreviewHtml(emitFile, staticRoot, runtimeFileName, publicBasePath, ctx.artFiles);
+  emitPreviewHtml(
+    emitFile,
+    staticRoot,
+    runtimeFileName,
+    publicBasePath,
+    new Map(publicPayload.arts.map((art) => [art.path, art])),
+  );
   emitRootRedirect(emitFile, staticRoot, publicBasePath);
 }
+
+export { resolveStaticIdentityRoot };
 
 function findRuntimeFileName(bundle: OutputBundle): string | null {
   for (const item of Object.values(bundle)) {

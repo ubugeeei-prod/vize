@@ -1,0 +1,25 @@
+import { ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+import { mergeProps as _mergeProps } from "vue"
+
+
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: "toggle" }, _attrs))}>`)
+  if ($props.open) {
+    _push(`<p>open</p>`)
+  } else {
+    _push(`<!---->`)
+  }
+  _push(`<span>always</span></div>`)
+}
+
+export default {
+  __name: 'Layout',
+  props: { open: Boolean },
+  ssrRender: ssrRender,
+  setup(__props) {
+
+
+return {}
+}
+
+}

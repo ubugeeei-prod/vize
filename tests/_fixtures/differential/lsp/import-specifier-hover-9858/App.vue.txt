@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import { formatCount } from "./util";
+import { label } from "./label";
+</script>
+
+<template>
+  <span>{{ formatCount(1) }} {{ label }}</span>
+</template>

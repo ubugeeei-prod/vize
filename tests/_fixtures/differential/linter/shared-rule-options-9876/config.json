@@ -1,0 +1,10 @@
+{
+  "rules": {
+    "script/custom-event-name-casing": "error",
+    "vue/require-component-registration": "warn"
+  },
+  "ruleOptions": {
+    "script/custom-event-name-casing": { "casing": "kebab-case" },
+    "vue/require-component-registration": { "globals": ["MyButton"] }
+  }
+}

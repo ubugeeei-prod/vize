@@ -15,6 +15,7 @@
  *   -c, --config     Path to Vite config (default: Vite config discovery)
  *   -o, --output     Output directory for reports (default: .vize)
  *   -t, --threshold  Diff threshold percentage (default: 0.1)
+ *   --color-threshold Per-pixel color threshold, 0-1 (default: 0.1)
  *   -w, --workers    Number of concurrent captures (default: 1)
  *   --json           Output JSON report instead of HTML
  *   --ci             CI mode - exit with non-zero code on failures
@@ -45,6 +46,8 @@ export interface CliOptions {
   output: string;
   threshold: number;
   thresholdProvided: boolean;
+  colorThreshold: number;
+  colorThresholdProvided: boolean;
   workers: number;
   workersProvided: boolean;
   browserArgs: string[];
@@ -71,6 +74,8 @@ export function parseArgs(args: string[]): CliOptions {
     output: ".vize",
     threshold: 0.1,
     thresholdProvided: false,
+    colorThreshold: 0.1,
+    colorThresholdProvided: false,
     workers: 1,
     workersProvided: false,
     browserArgs: [],
@@ -131,6 +136,10 @@ export function parseArgs(args: string[]): CliOptions {
         options.threshold = parseThreshold(args[++i]);
         options.thresholdProvided = true;
         break;
+      case "--color-threshold":
+        options.colorThreshold = parseColorThreshold(args[++i]);
+        options.colorThresholdProvided = true;
+        break;
       case "-w":
       case "--workers":
         options.workers = parseWorkers(args[++i]);
@@ -178,6 +187,11 @@ function parseThreshold(value: string | undefined): number {
   return Number.isFinite(threshold) ? threshold : 0.1;
 }
 
+function parseColorThreshold(value: string | undefined): number {
+  const threshold = Number.parseFloat(value ?? "");
+  return Number.isFinite(threshold) && threshold >= 0 && threshold <= 1 ? threshold : 0.1;
+}
+
 function printHelp(): void {
   console.log(`
 Musea VRT - Visual Regression Testing for Component Gallery
@@ -198,6 +212,7 @@ Options:
   -c, --config <path>  Path to Vite config file (default: Vite config discovery)
   -o, --output <dir>   Output directory for reports (default: .vize)
   -t, --threshold <n>  Diff threshold percentage (default: 0.1)
+  --color-threshold <n> Per-pixel color threshold, 0-1 (default: 0.1)
   -b, --base-url <url> Base URL for dev server (default: http://localhost:5173)
   --gallery-url <url>  Capture a built hosted gallery using its static manifest
   --adopt-legacy-snapshots  Adopt reviewed, unambiguous legacy PNG baselines once

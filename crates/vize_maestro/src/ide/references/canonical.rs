@@ -102,9 +102,9 @@ pub(super) async fn references(
     locations.extend(prop_locations);
     let mut linked = linked_positions(ctx, &document, &locations);
     if attribute.is_none() {
-        for mut position in
-            corsa_support::materialized_semantic_positions(&document, ctx.uri, ctx.offset)
-        {
+        for mut position in corsa_support::materialized_semantic_positions(
+            ctx.state, &document, ctx.uri, ctx.offset,
+        ) {
             let Some((line, character)) = corsa_support::local_binding_reference_position(
                 ctx,
                 &document,
@@ -299,8 +299,12 @@ fn linked_positions(
     locations
         .iter()
         .flat_map(|location| {
-            let mut positions =
-                corsa_support::linked_semantic_positions(document, &location.uri, &location.range);
+            let mut positions = corsa_support::linked_semantic_positions(
+                ctx.state,
+                document,
+                &location.uri,
+                &location.range,
+            );
             positions.extend(corsa_support::model_linked_semantic_positions(
                 ctx,
                 document,

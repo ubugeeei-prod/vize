@@ -25,6 +25,7 @@ mod lexical_dollar_slots;
 mod literal_dynamic_slot_names;
 mod native_prop_anchors;
 mod normalization;
+mod nuxt_plugin_injections;
 mod open_slot_index_signature;
 mod optional_boolean_props;
 mod options_api_bridge_anchors;

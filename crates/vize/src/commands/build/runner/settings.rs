@@ -18,6 +18,7 @@ pub(super) struct BuildConfigSettings {
     pub(super) compiler_whitespace: Option<&'static str>,
     pub(super) features: ConfigFeatureFlags,
     pub(super) experimental_vue: ConfigExperimentalVueFlags,
+    pub(super) ssr: Option<bool>,
     pub(super) vapor: Option<bool>,
     pub(super) custom_elements: Vec<String>,
     pub(super) dialect: Option<VueVersion>,
@@ -34,6 +35,7 @@ pub(super) fn load_build_config(no_config: bool, config: Option<&Path>) -> Build
             compiler_whitespace: None,
             features: ConfigFeatureFlags::default(),
             experimental_vue: ConfigExperimentalVueFlags::default(),
+            ssr: None,
             vapor: None,
             custom_elements: Vec::new(),
             dialect: None,
@@ -66,6 +68,7 @@ pub(super) fn load_build_config(no_config: bool, config: Option<&Path>) -> Build
         compiler_template_syntax: document.compiler_template_syntax(),
         compiler_whitespace: document.compiler_whitespace(),
         experimental_vue: document.experimental_vue_flags(),
+        ssr: document.compiler_ssr(),
         vapor: document.compiler_vapor(),
         dialect: features.vue_version,
         features,
@@ -179,7 +182,7 @@ impl CompileFileSettings {
                 custom_elements: entry.custom_elements.clone(),
             })
             .collect();
-        let ssr = args.ssr;
+        let ssr = args.ssr || build_config.ssr.unwrap_or(false);
         let vapor = args.vapor || build_config.vapor.unwrap_or(false);
         let (plan, mode) = davinci_ice::compile_plan(ssr, vapor);
         let budget = davinci_ice::plan_budget(plan);
@@ -409,6 +412,7 @@ mod tests {
             compiler_whitespace: Some("preserve"),
             features: ConfigFeatureFlags::default(),
             experimental_vue: ConfigExperimentalVueFlags::default(),
+            ssr: None,
             vapor: None,
             custom_elements: Vec::new(),
             dialect: None,

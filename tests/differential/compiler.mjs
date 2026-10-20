@@ -47,6 +47,7 @@ export function loadCompilerManifest(manifestPath) {
       assert.equal(typeof fixture.reference.source, "string");
       assert(fixture.reference.source.length > 0, "compiler reference source is required");
       assert.equal(fixture.comparison.contract, "compiler-ssr-module-bytes-v1");
+      assert(["js", "ts"].includes(fixture.comparison.scriptLang ?? "js"));
       assert.deepEqual(fixture.comparison.requiredFacets, [
         "code",
         "css",
@@ -61,7 +62,7 @@ export function loadCompilerManifest(manifestPath) {
   };
 }
 
-export function compilerAttempt(result, output, expected) {
+export function compilerAttempt(result, output, expected, expectedScriptLang = "js") {
   const observation = {
     exitStatus: result.status,
     signal: result.signal,
@@ -88,7 +89,7 @@ export function compilerAttempt(result, output, expected) {
         "macro_artifacts",
       ]);
       assert.equal(parsed.filename, "Layout.vue");
-      assert.equal(parsed.script_lang, "js");
+      assert.equal(parsed.script_lang, expectedScriptLang);
       assert.equal(parsed.css, null);
       assert.deepEqual(parsed.errors, []);
       assert.deepEqual(parsed.warnings, []);
@@ -150,6 +151,7 @@ export function validateCompilerReport(loaded, report, expectedBuild) {
         },
         json,
         fixture.expected,
+        fixture.comparison.scriptLang,
       );
       assert.deepEqual(attempt, replay, "compiler observation or byte comparison was forged");
     }
@@ -203,7 +205,12 @@ function runCompilerCase(fixture, binaryPath, binaryFailure) {
     const output = fs.existsSync(path.join(workspace, OUTPUT_FILE))
       ? fs.readFileSync(path.join(workspace, OUTPUT_FILE))
       : null;
-    row.legacy.observation = compilerAttempt(result, output, fixture.expected);
+    row.legacy.observation = compilerAttempt(
+      result,
+      output,
+      fixture.expected,
+      fixture.comparison.scriptLang,
+    );
     if (row.legacy.observation.facetError) throw new Error(row.legacy.observation.facetError);
     if (result.error) throw result.error;
     assert.equal(result.status, 0, result.stderr?.toString());

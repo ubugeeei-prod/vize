@@ -36,6 +36,8 @@ impl ServerState {
                 package_route_resolver.clone(),
             ),
             package_route_resolver: Mutex::new(package_route_resolver),
+            #[cfg(feature = "native")]
+            canonical_paths: DashMap::new(),
             component_metadata_cache: DashMap::new(),
             #[cfg(feature = "native")]
             workspace_vue_files: DashMap::new(),
@@ -79,6 +81,8 @@ impl ServerState {
             corsa_environment_revision: std::sync::atomic::AtomicU64::new(0),
             #[cfg(feature = "native")]
             corsa_environment_changes: std::sync::atomic::AtomicUsize::new(0),
+            #[cfg(feature = "native")]
+            corsa_disk_watcher_registered: AtomicBool::new(false),
             #[cfg(feature = "native")]
             diagnostic_locks: DashMap::new(),
             #[cfg(feature = "native")]

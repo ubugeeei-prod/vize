@@ -17,16 +17,19 @@ export interface NativePlatform {
   cross_compile: boolean;
 }
 
+const macosReleaseHost =
+  process.env.VIZE_RELEASE_MACOS_RUNNER?.trim() || "blacksmith-12vcpu-macos-15";
+
 // The GNU builds retain Ubuntu 22.04's glibc floor. Windows ARM64 is built
 // with an explicit amd64_arm64 MSVC environment on the faster x64 runner.
 export const cliReleasePlatforms: CliPlatform[] = [
   {
-    host: "blacksmith-12vcpu-macos-15",
+    host: macosReleaseHost,
     target: "x86_64-apple-darwin",
     archive: "vize-x86_64-apple-darwin.tar.gz",
   },
   {
-    host: "blacksmith-12vcpu-macos-15",
+    host: macosReleaseHost,
     target: "aarch64-apple-darwin",
     archive: "vize-aarch64-apple-darwin.tar.gz",
   },
@@ -63,8 +66,8 @@ export const cliReleasePlatforms: CliPlatform[] = [
 ];
 
 export const nativeReleasePlatforms: NativePlatform[] = [
-  { host: "blacksmith-12vcpu-macos-15", target: "x86_64-apple-darwin", cross_compile: false },
-  { host: "blacksmith-12vcpu-macos-15", target: "aarch64-apple-darwin", cross_compile: false },
+  { host: macosReleaseHost, target: "x86_64-apple-darwin", cross_compile: false },
+  { host: macosReleaseHost, target: "aarch64-apple-darwin", cross_compile: false },
   {
     host: "blacksmith-32vcpu-windows-2025",
     target: "x86_64-pc-windows-msvc",

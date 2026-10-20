@@ -1,0 +1,41 @@
+import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+import { createElementVNode as _createElementVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, withCtx as _withCtx } from "vue"
+
+
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(`<section${_ssrRenderAttrs(_attrs)}><p class="note">${_ssrInterpolate($setup.a)} <b>x</b></p><span class="label">${_ssrInterpolate($setup.kind)}</span>`)
+  _push(_ssrRenderComponent(_resolveComponent("MyCard"), null, {
+    default: _withCtx((_, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(`<span>body</span>`)
+      } else {
+        return [_createElementVNode("span", null, "body")]
+      }
+    }),
+    footer: _withCtx((_, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(`f`)
+      } else {
+        return [_createTextVNode("f")]
+      }
+    }),
+    _: 1
+  }, _parent))
+  _push(`</section>`)
+}
+
+const a = "a";
+const kind = "kind";
+
+export default {
+  __name: 'Layout',
+  ssrRender: ssrRender,
+  setup(__props) {
+
+
+const __returned__ = { a, kind }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+}

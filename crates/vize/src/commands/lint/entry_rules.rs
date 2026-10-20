@@ -110,6 +110,9 @@ impl ResolvedLinterRuleGroups {
                 if let Some(mode) = rule_options.define_props_destructuring() {
                     linter = linter.with_define_props_destructuring(mode);
                 }
+                if let Some(options) = rule_options.define_macros_order() {
+                    linter = linter.with_define_macros_order(options);
+                }
                 if let Some(options) = rule_options.component_name_in_template_casing_options() {
                     linter = linter.with_component_name_in_template_casing_policy(
                         component_casing(options.casing),

@@ -335,6 +335,7 @@ pub fn compile_sfc_template_with_custom_elements_template_syntax_hoisted_scope_i
         codegen_options,
         codegen_experimental_options,
         no_slotted,
+        true,
         capture,
         None,
     )
@@ -360,6 +361,42 @@ pub fn compile_sfc_template_with_preflight<'a>(
     preflight: Option<&mut dyn vize_l1_to_l2::SurfacePreflight>,
     capture: Option<&mut StageCapture>,
 ) -> (Vec<CompilerError>, CodegenResultWithSections) {
+    compile_sfc_template_with_preflight_and_environment(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        hoisted_scope_id,
+        custom_elements,
+        codegen_options,
+        codegen_experimental_options,
+        no_slotted,
+        preflight,
+        capture,
+        true,
+    )
+}
+
+/// SFC-owned validation with the build environment outside public option literals.
+#[doc(hidden)]
+#[expect(
+    clippy::too_many_arguments,
+    reason = "existing SFC inputs and invocation-local validation"
+)]
+pub fn compile_sfc_template_with_preflight_and_environment<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: DomCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    hoisted_scope_id: Option<String>,
+    custom_elements: CustomElementMatcher,
+    codegen_options: CodegenOptions,
+    codegen_experimental_options: CodegenExperimentalOptions,
+    no_slotted: bool,
+    preflight: Option<&mut dyn vize_l1_to_l2::SurfacePreflight>,
+    capture: Option<&mut StageCapture>,
+    development: bool,
+) -> (Vec<CompilerError>, CodegenResultWithSections) {
     if let Some(capture) = capture {
         super::capture_options::record_dom_options(
             capture,
@@ -380,6 +417,7 @@ pub fn compile_sfc_template_with_preflight<'a>(
             codegen_options,
             codegen_experimental_options,
             no_slotted,
+            development,
             capture,
             preflight,
         )
@@ -394,6 +432,7 @@ pub fn compile_sfc_template_with_preflight<'a>(
             codegen_options,
             codegen_experimental_options,
             no_slotted,
+            development,
             &mut vize_l0::dump::capture::NoCapture,
             preflight,
         )

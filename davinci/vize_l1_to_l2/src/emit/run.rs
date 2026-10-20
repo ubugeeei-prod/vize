@@ -48,7 +48,7 @@ pub(super) fn emit_dom_with_emit_budget<'f>(
     facts: &'f L2Facts,
     options: &DomEmitOptions<'f>,
 ) -> Result<(DomEmit, u32), EmitError> {
-    emit_dom_observed(lowered, facts, options, false, false)
+    emit_dom_observed(lowered, facts, options, false, false, true)
         .map(|observed| (observed.emit, observed.emit_visits))
 }
 
@@ -58,6 +58,7 @@ pub(super) fn emit_dom_observed<'f>(
     options: &DomEmitOptions<'f>,
     strict_slot_params: bool,
     no_slotted: bool,
+    development: bool,
 ) -> Result<DomEmitObservation, EmitError> {
     if options.is_ts && !cfg!(feature = "typescript") {
         return Err(EmitError::unsupported(
@@ -120,6 +121,7 @@ pub(super) fn emit_dom_observed<'f>(
         is_ts: options.is_ts,
         strict_slot_params,
         cache_handlers: options.cache_handlers,
+        development,
         hoisted_scope_id: options.hoisted_scope_id,
         scope_id: options.scope_id,
         no_slotted,

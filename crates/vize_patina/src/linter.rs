@@ -9,6 +9,7 @@ mod category_config;
 mod category_rules;
 mod compatibility;
 mod config;
+mod config_rule_options;
 #[cfg(not(target_arch = "wasm32"))]
 mod corsa_session;
 pub(crate) mod css_rules;

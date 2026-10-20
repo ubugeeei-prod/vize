@@ -16,7 +16,7 @@
       "api": "--current-api",
       "cases": {
         "path": "crates/vize_patina/tests/fixtures/lint-history/cases.json",
-        "sha256": "248bcebf7d1dd96f174c69988b20ac604d2d60f97ba16f480497c259b420091f"
+        "sha256": "286948a85fd4f8d96149865a9bc8177b35dad2ca364853a8540b9339c24e8f1d"
       }
     },
     {
@@ -54,9 +54,29 @@
   ],
   "oracles": {
     "path": "tests/_fixtures/differential/linter/oracle-index.json",
-    "sha256": "2588ee723e0096d53346c607928c88661085e77a7e3c71d26e1ad2efdc7e2a6a"
+    "sha256": "afc9c66c8e3f1e593394d878c385b7c5aacd04d950753c2db88d7d7b596ba1ec"
   },
   "cases": [
+    {
+      "id": "linter/current-api/patina-rule-guards-9870-9871",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "patina-rule-guards-9870-9871",
+        "files": [
+          {
+            "path": "FadeIn.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "6b85c49c50df7f2c1d0bd8a013c94866aee7efad84b239e92dc7a1c850879a80"
+          },
+          {
+            "path": "BaseButton.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "bd5a5174c124fa411586d2c41519c4481189d2c6befbcd6fa5c46da5c0df8cfd"
+          }
+        ]
+      }
+    },
     {
       "id": "linter/current-api/ref-string-untyped",
       "state": "active",
@@ -133,6 +153,41 @@
             "path": "source.txt",
             "role": "issue-authored-reproduction",
             "sha256": "88678aef2a9a4d094e0d61e178f51d6d8ae8d06285dd9187ce377b2b2e2899f3"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/dynamic-slot-v-for-component-bodies",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "dynamic-slot-v-for-9924",
+        "files": [
+          {
+            "path": "source.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "d50755b2532cb85e5da3aa35a9e97b2f3b9c30d0b9e6e41ecb8774a421fe200c"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/shared-rule-options-9876",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "shared-rule-options-9876",
+        "files": [
+          {
+            "path": "config.json",
+            "role": "issue-authored-config",
+            "sha256": "bde48dd28c1c9fce42624f3b2232520e149f96c45f9b5a14b8f4f3fc4894f2b8"
+          },
+          {
+            "path": "App.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "79e4817baa6d3345b3f74ec23dc73d2a316c4ea035ba2f0ab37fc753de83038d"
           }
         ]
       }

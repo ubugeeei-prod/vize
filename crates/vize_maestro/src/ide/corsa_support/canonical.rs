@@ -113,7 +113,7 @@ pub(crate) fn map_canonical_corsa_location(
     doc: &CanonicalVirtualDocument,
     location: &LspLocation,
 ) -> Option<Location> {
-    if location_matches_uri(&location.uri, doc.request_uri.as_str())
+    if location_matches_uri_cached(ctx.state, &location.uri, doc.request_uri.as_str())
         || super::virtual_document_path(&location.uri).as_deref()
             == Some(canonical_request_path(ctx.uri).as_str())
     {
@@ -124,11 +124,9 @@ pub(crate) fn map_canonical_corsa_location(
         });
     }
 
-    if let Some(dependency) = doc
-        .dependencies
-        .iter()
-        .find(|dependency| location_matches_uri(&location.uri, &dependency.request_uri))
-    {
+    if let Some(dependency) = doc.dependencies.iter().find(|dependency| {
+        location_matches_uri_cached(ctx.state, &location.uri, &dependency.request_uri)
+    }) {
         let range = map_virtual_result_lsp_range_to_source(
             &dependency.source,
             &dependency.virtual_result,
@@ -143,7 +141,7 @@ pub(crate) fn map_canonical_corsa_location(
     if let Some(materialized) = doc
         .materialized_sources
         .iter()
-        .find(|source| location_matches_uri(&location.uri, &source.request_uri))
+        .find(|source| location_matches_uri_cached(ctx.state, &location.uri, &source.request_uri))
     {
         if !materialized.mapping_kind.is_mappable() {
             return None;
@@ -167,7 +165,7 @@ pub(crate) fn map_canonical_corsa_location(
         return Some(location);
     }
 
-    if is_private_materialized_uri(doc, &location.uri) {
+    if is_private_materialized_uri(ctx.state, doc, &location.uri) {
         return None;
     }
 
@@ -199,13 +197,13 @@ pub(crate) fn map_canonical_corsa_location(
 /// stays correct for synthetic sources whose interiors are not position
 /// mappable.
 pub(crate) fn map_canonical_materialized_module_location(
+    ctx: &IdeContext<'_>,
     doc: &CanonicalVirtualDocument,
     location: &LspLocation,
 ) -> Option<Location> {
-    let materialized = doc
-        .materialized_sources
-        .iter()
-        .find(|source| location_matches_uri(&location.uri, &source.request_uri))?;
+    let materialized = doc.materialized_sources.iter().find(|source| {
+        location_matches_uri_cached(ctx.state, &location.uri, &source.request_uri)
+    })?;
     let origin = tower_lsp::lsp_types::Position::new(0, 0);
     Some(Location {
         uri: materialized.source_uri.clone(),
@@ -213,14 +211,22 @@ pub(crate) fn map_canonical_materialized_module_location(
     })
 }
 
-fn location_matches_uri(actual: &str, expected: &str) -> bool {
+pub(super) fn location_matches_uri_cached(
+    state: &crate::server::ServerState,
+    actual: &str,
+    expected: &str,
+) -> bool {
     actual == expected
         || super::virtual_document_path(actual).as_deref()
             == super::virtual_document_path(expected).as_deref()
-        || file_uri_paths_match(actual, expected)
+        || file_uri_paths_match_cached(state, actual, expected)
 }
 
-fn file_uri_paths_match(left: &str, right: &str) -> bool {
+fn file_uri_paths_match_cached(
+    state: &crate::server::ServerState,
+    left: &str,
+    right: &str,
+) -> bool {
     let Some(left) = Url::parse(left)
         .ok()
         .and_then(|uri| uri.to_file_path().ok())
@@ -233,11 +239,14 @@ fn file_uri_paths_match(left: &str, right: &str) -> bool {
     else {
         return false;
     };
-    vize_carton::path::canonicalize_non_verbatim(&left)
-        == vize_carton::path::canonicalize_non_verbatim(&right)
+    state.canonical_editor_path(&left) == state.canonical_editor_path(&right)
 }
 
-pub(super) fn is_private_materialized_uri(doc: &CanonicalVirtualDocument, raw_uri: &str) -> bool {
+pub(super) fn is_private_materialized_uri(
+    state: &crate::server::ServerState,
+    doc: &CanonicalVirtualDocument,
+    raw_uri: &str,
+) -> bool {
     let Some(path) = Url::parse(raw_uri)
         .ok()
         .and_then(|uri| uri.to_file_path().ok())
@@ -246,7 +255,8 @@ pub(super) fn is_private_materialized_uri(doc: &CanonicalVirtualDocument, raw_ur
     };
     doc.session_project_roots.iter().any(|root| {
         path.starts_with(root)
-            || vize_carton::path::canonicalize_non_verbatim(&path)
-                .starts_with(vize_carton::path::canonicalize_non_verbatim(root))
+            || state
+                .canonical_editor_path(&path)
+                .starts_with(state.canonical_editor_path(root))
     })
 }

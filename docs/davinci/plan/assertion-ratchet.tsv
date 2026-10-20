@@ -282,7 +282,6 @@ crates/vize_canon/src/virtual_ts/tests/template_ref_unwrap.rs	4
 crates/vize_canon/src/virtual_ts/tests/unused_refs.rs	11
 crates/vize_canon/src/virtual_ts/tests/vif_chain.rs	8
 crates/vize_canon/src/virtual_ts/unknown_props_tests.rs	14
-crates/vize_carton/src/config/loader/extends_tests.rs	4
 crates/vize_carton/src/config/loader/project_settings_tests.rs	1
 crates/vize_carton/src/corsa_resolver/tests.rs	2
 crates/vize_croquis/src/croquis/alpha/emit_tests.rs	1
@@ -338,7 +337,6 @@ crates/vize_maestro/src/document/store/tests.rs	8
 crates/vize_maestro/src/ide/call_hierarchy/tests.rs	1
 crates/vize_maestro/src/ide/completion/art_tests.rs	26
 crates/vize_maestro/src/ide/completion/component_emits_tests/airi.rs	1
-crates/vize_maestro/src/ide/completion/component_props_tests.rs	3
 crates/vize_maestro/src/ide/completion/template/component_interface/tests/corpus.rs	1
 crates/vize_maestro/src/ide/completion/template/globals_tests.rs	1
 crates/vize_maestro/src/ide/completion/template/native_tests.rs	2
@@ -375,7 +373,6 @@ crates/vize_maestro/src/ide/hover/corsa_tests/component_props.rs	2
 crates/vize_maestro/src/ide/hover/corsa_tests/template_bindings.rs	1
 crates/vize_maestro/src/ide/hover/html/elements/tests.rs	1
 crates/vize_maestro/src/ide/hover/html/tests.rs	16
-crates/vize_maestro/src/ide/hover/tests.rs	6
 crates/vize_maestro/src/ide/hover/tests/boundaries.rs	9
 crates/vize_maestro/src/ide/inlay_hint/binding_hint_tests.rs	3
 crates/vize_maestro/src/ide/inlay_hint/prop_hint_tests.rs	1

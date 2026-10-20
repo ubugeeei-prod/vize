@@ -81,7 +81,11 @@ fn generate_if_chain(ctx: &mut CodegenContext, if_node: &IfNode<'_>) {
         ctx.newline();
         ctx.push(": ");
         ctx.push(ctx.helper(RuntimeHelper::CreateComment));
-        ctx.push("(\"v-if\", true)");
+        if ctx.development {
+            ctx.push("(\"v-if\", true)");
+        } else {
+            ctx.push("(\"\", true)");
+        }
     }
 
     ctx.deindent();

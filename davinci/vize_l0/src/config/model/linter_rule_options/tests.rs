@@ -1,11 +1,56 @@
 mod casing;
 
 use super::{
-    ConfigLintRuleOptions, HtmlSelfClosingHtmlOptions, HtmlSelfClosingOptions,
-    HtmlSelfClosingStyle, HyphenationStyle, LintRuleOptions, MuseaDesignToken,
-    NoMutatingPropsOptions, RestrictedGlobal, RestrictedMember, SfcElementOrderGroup,
-    SfcElementOrderOptions,
+    ConfigLintRuleOptions, DefineMacrosOrderOptions, HtmlSelfClosingHtmlOptions,
+    HtmlSelfClosingOptions, HtmlSelfClosingStyle, HyphenationStyle, LintRuleOptions,
+    MuseaDesignToken, NoMutatingPropsOptions, RestrictedGlobal, RestrictedMember,
+    SfcElementOrderGroup, SfcElementOrderOptions,
 };
+
+#[test]
+fn define_macros_order_options_validate_and_merge() {
+    let mut options: ConfigLintRuleOptions = serde_json::from_str(
+        r#"{"script/define-macros-order":{"order":["defineOptions","defineProps","defineEmits","defineSlots"]}}"#,
+    )
+    .expect("custom macro order");
+    assert_eq!(
+        options.define_macros_order(),
+        Some(DefineMacrosOrderOptions {
+            order: vec![
+                "defineOptions".into(),
+                "defineProps".into(),
+                "defineEmits".into(),
+                "defineSlots".into(),
+            ],
+        })
+    );
+
+    let overlay: ConfigLintRuleOptions = serde_json::from_str(
+        r#"{"script/define-macros-order":{"order":["defineEmits","defineProps"]}}"#,
+    )
+    .expect("overlay macro order");
+    options.merge_from(&overlay);
+    assert_eq!(
+        options.define_macros_order().unwrap().order,
+        ["defineEmits", "defineProps"]
+    );
+    assert!(
+        serde_json::from_str::<ConfigLintRuleOptions>(
+            r#"{"script/define-macros-order":{"order":true}}"#
+        )
+        .is_err()
+    );
+    assert!(
+        serde_json::from_str::<ConfigLintRuleOptions>(
+            r#"{"script/define-macros-order":{"unknown":[]}}"#
+        )
+        .is_err()
+    );
+    for order in [r#"[""]"#, r#"["defineProps","defineProps"]"#] {
+        let json = format!(r#"{{"script/define-macros-order":{{"order":{order}}}}}"#);
+        assert!(serde_json::from_str::<ConfigLintRuleOptions>(&json).is_err());
+    }
+}
 
 #[test]
 fn empty_options_deserialize_to_default() {

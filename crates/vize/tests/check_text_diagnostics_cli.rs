@@ -81,6 +81,18 @@ fn run_check(project_root: &Path, corsa_path: &str, format: Option<&str>) -> std
     command.output().unwrap()
 }
 
+fn run_check_without_config(project_root: &Path, corsa_path: &str) -> std::process::Output {
+    Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(project_root)
+        .env("CORSA_PATH", corsa_path)
+        .env("NO_COLOR", "1")
+        .env_remove("CLICOLOR_FORCE")
+        .env_remove("FORCE_COLOR")
+        .args(["check", "--no-config", "."])
+        .output()
+        .unwrap()
+}
+
 #[test]
 fn check_json_stays_machine_oriented_while_text_includes_source_context() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
@@ -223,6 +235,108 @@ function onWrongChange(value: string) { console.log(value); }
         "stdout:\n{normalized}\nstderr:\n{stderr}"
     );
     assert_eq!(normalized.lines().last(), Some("  3 error(s)"));
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn check_missing_required_props_hide_internal_component_types() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "missing-required-prop-diagnostic",
+        &[
+            (
+                "src/MyTable.vue",
+                r#"<script setup lang="ts" generic="T">
+defineProps<{ headers: string[]; items: T[] }>();
+</script>
+
+<template>
+  <table><tr v-for="(item, i) in items" :key="i"><td>{{ item }}</td></tr></table>
+</template>
+"#,
+            ),
+            (
+                "src/MyLabel.vue",
+                r#"<script setup lang="ts">
+defineProps<{ text: string }>();
+</script>
+
+<template>
+  <span>{{ text }}</span>
+</template>
+"#,
+            ),
+            (
+                "src/App.vue",
+                r#"<script setup lang="ts">
+import MyLabel from "./MyLabel.vue";
+import MyTable from "./MyTable.vue";
+
+const rows = [1, 2];
+</script>
+
+<template>
+  <MyTable :items="rows" />
+  <MyLabel />
+</template>
+"#,
+            ),
+        ],
+    );
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "preserve",
+    "noEmit": true,
+    "skipLibCheck": true,
+    "noErrorTruncation": true,
+    "types": []
+  },
+  "include": ["src/**/*.ts", "src/**/*.vue"]
+}
+"#,
+    )
+    .unwrap();
+
+    let output = run_check_without_config(&project_root, &corsa_path);
+    let stdout = std::str::from_utf8(&output.stdout).unwrap();
+    let stderr = std::str::from_utf8(&output.stderr).unwrap();
+    let normalized = normalize_check_output(stdout, &project_root);
+    assert_eq!(
+        output.status.code(),
+        Some(1),
+        "stdout:\n{normalized}\nstderr:\n{stderr}"
+    );
+    let diagnostic_messages: Vec<_> = normalized
+        .lines()
+        .filter_map(|line| line.trim_start().strip_prefix("error:"))
+        .map(|line| {
+            line.split_once(" (source:")
+                .map_or(line, |(message, _)| message)
+        })
+        .collect();
+    assert_eq!(
+        diagnostic_messages,
+        [
+            "9:4 [TS2345] Missing required prop `headers`.",
+            "10:4 [TS2345] Missing required prop `text`.",
+        ],
+        "stdout:\n{normalized}\nstderr:\n{stderr}"
+    );
+    assert_eq!(
+        normalized.lines().filter(|line| !line.is_empty()).count(),
+        5,
+        "stdout:\n{normalized}"
+    );
+    assert_eq!(normalized.lines().last(), Some("  2 error(s)"));
 
     let _ = std::fs::remove_dir_all(&project_root);
 }

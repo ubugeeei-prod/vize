@@ -467,6 +467,21 @@
     "LintRuleOptions": {
       "type": "object",
       "properties": {
+        "script/define-macros-order": {
+          "type": "object",
+          "properties": {
+            "order": {
+              "default": ["defineProps", "defineEmits"],
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "uniqueItems": true
+            }
+          },
+          "additionalProperties": false
+        },
         "script/define-props-destructuring": {
           "type": "object",
           "properties": {

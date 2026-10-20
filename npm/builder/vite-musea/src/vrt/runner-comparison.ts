@@ -171,6 +171,7 @@ export async function compareImages(
   currentPath: string,
   diffPath: string,
   comparison: {
+    colorThreshold?: number;
     antiAliasing?: boolean;
     alpha?: boolean;
     diffColor?: { r: number; g: number; b: number };
@@ -213,7 +214,17 @@ export async function compareImages(
 
   // Pixel comparison
   let diffPixels = 0;
-  const threshold = 0.1; // Color difference threshold
+  // Match pixelmatch's threshold scale: the YIQ distance has a maximum of 35215.
+  // Squaring the normalized threshold keeps 0 exact while making the default
+  // sensitive enough to detect a clearly visible mid-grey change.
+  const requestedColorThreshold = comparison.colorThreshold ?? 0.1;
+  const colorThreshold =
+    Number.isFinite(requestedColorThreshold) &&
+    requestedColorThreshold >= 0 &&
+    requestedColorThreshold <= 1
+      ? requestedColorThreshold
+      : 0.1;
+  const maxColorDelta = 35215 * colorThreshold * colorThreshold;
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
@@ -232,7 +243,7 @@ export async function compareImages(
       // Calculate color difference using YIQ color space
       const delta = colorDelta(r1, g1, b1, a1, r2, g2, b2, a2);
 
-      if (delta > threshold * 255 * 255) {
+      if (delta > maxColorDelta) {
         // Anti-aliasing detection: check if pixel is likely AA
         if (useAntiAliasing && isAntiAliased(baseline, current, x, y, width, height)) {
           // Mark as AA (yellow)

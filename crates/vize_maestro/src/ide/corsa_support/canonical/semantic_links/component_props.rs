@@ -87,12 +87,13 @@ pub(crate) async fn matching_component_prop_navigation_positions(
 /// such as the declaration and the component's local template use, continue
 /// through the normal authored-name check.
 pub(crate) fn component_prop_navigation_identity_matches(
+    state: &crate::server::ServerState,
     document: &CanonicalVirtualDocument,
     location: &LspLocation,
     authored_definitions: &[Location],
     navigation_identities: &ComponentPropNavigationIdentities,
 ) -> bool {
-    let Some(position) = component_prop_navigation_position(document, location) else {
+    let Some(position) = component_prop_navigation_position(state, document, location) else {
         return true;
     };
     navigation_identities
@@ -159,10 +160,11 @@ fn component_prop_navigation_positions(
 }
 
 fn component_prop_navigation_position(
+    state: &crate::server::ServerState,
     document: &CanonicalVirtualDocument,
     location: &LspLocation,
 ) -> Option<CanonicalSemanticPosition> {
-    let (request_uri, result) = super::virtual_result(document, location.uri.as_str())?;
+    let (request_uri, result) = super::virtual_result(state, document, location.uri.as_str())?;
     let start = crate::ide::position_to_offset(
         &result.code,
         location.range.start.line,

@@ -9,8 +9,9 @@
     )
 )]
 
-use tower_lsp::lsp_types::Hover;
+use tower_lsp::lsp_types::{Hover, Position, Range};
 use vize_croquis::{Drawer, DrawerOptions};
+use vize_l0::cstr;
 use vize_relief::BindingType;
 
 #[cfg(feature = "native")]
@@ -61,6 +62,10 @@ impl HoverService {
         is_setup: bool,
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<Hover> {
+        if let Some(hover) = Self::hover_module_specifier(ctx) {
+            return Some(hover);
+        }
+
         let word = script_identifier::at_offset(&ctx.content, ctx.offset).unwrap_or_default();
 
         if word.is_empty() {
@@ -101,6 +106,24 @@ impl HoverService {
 
         // Fall back to croquis analysis
         Self::hover_script(ctx, is_setup)
+    }
+
+    fn hover_module_specifier(ctx: &IdeContext<'_>) -> Option<Hover> {
+        let (specifier, span) = crate::ide::definition::module_specifier::specifier_span_at_offset(
+            &ctx.content,
+            ctx.offset,
+        )?;
+        let (start_line, start_character) =
+            crate::ide::offset_to_position(&ctx.content, span.start);
+        let (end_line, end_character) = crate::ide::offset_to_position(&ctx.content, span.end);
+        let mut hover = HoverBuilder::new()
+            .code("typescript", &cstr!("module \"{specifier}\""))
+            .build();
+        hover.range = Some(Range::new(
+            Position::new(start_line, start_character),
+            Position::new(end_line, end_character),
+        ));
+        Some(hover)
     }
 
     /// Get hover for TypeScript binding in script using croquis analysis.

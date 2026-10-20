@@ -13,18 +13,24 @@ use super::run::{DomEmitObservation, emit_dom_observed};
 use super::{DomEmit, DomEmitOptions, EmitError};
 
 mod preflight;
-pub use preflight::{SurfacePreflight, emit_dom_source_with_preflight};
+pub use preflight::{
+    SurfacePreflight, emit_dom_source_with_preflight,
+    emit_dom_source_with_preflight_and_environment,
+};
 
 mod slot_scope;
 pub use slot_scope::{
     emit_dom_source_observed_with_options_captured_and_slot_scope,
+    emit_dom_source_observed_with_options_captured_slot_scope_and_environment,
     emit_dom_source_with_options_captured_and_slot_scope,
+    emit_dom_source_with_options_captured_slot_scope_and_environment,
 };
 
 struct EmitInvocation<'o, 'p, 'v> {
     options: &'o DomEmitOptions<'p>,
     strict_slot_params: bool,
     no_slotted: bool,
+    development: bool,
     preflight: Option<&'v mut dyn SurfacePreflight>,
 }
 
@@ -135,6 +141,7 @@ fn emit_dom_source_observed_with_slot_policy_captured<C: CaptureSink>(
             options,
             strict_slot_params,
             no_slotted,
+            development: true,
             preflight: None,
         },
         &mut transform,
@@ -202,6 +209,7 @@ pub fn emit_dom_source_patch_facts_observed_with_options<'a>(
         &mut observer,
         false,
         false,
+        true,
         None,
     )?;
     Ok(ObservedPatchFactsEmit {
@@ -222,6 +230,7 @@ pub(super) fn emit_dom_source_with_options_and_observer<'a, O: PassObserver>(
     observer: &mut O,
     strict_slot_params: bool,
     no_slotted: bool,
+    development: bool,
     preflight: Option<&mut dyn SurfacePreflight>,
 ) -> Result<DomEmitObservation, EmitError> {
     ensure_sufficient_stack(|| {
@@ -251,7 +260,14 @@ pub(super) fn emit_dom_source_with_options_and_observer<'a, O: PassObserver>(
             profile = profile.without_static_analysis();
         }
         let facts = run_dom_transform_with_profile(&mut lowered, observer, profile);
-        emit_dom_observed(&lowered, &facts, options, strict_slot_params, no_slotted)
+        emit_dom_observed(
+            &lowered,
+            &facts,
+            options,
+            strict_slot_params,
+            no_slotted,
+            development,
+        )
     })
 }
 
@@ -269,6 +285,7 @@ fn emit_dom_source_with_options_and_observer_captured<'a, O: PassObserver, C: Ca
         options,
         strict_slot_params,
         no_slotted,
+        development,
         preflight,
     } = invocation;
     if !C::RECORDING {
@@ -280,6 +297,7 @@ fn emit_dom_source_with_options_and_observer_captured<'a, O: PassObserver, C: Ca
             observer,
             strict_slot_params,
             no_slotted,
+            development,
             preflight,
         );
     }
@@ -319,7 +337,14 @@ fn emit_dom_source_with_options_and_observer_captured<'a, O: PassObserver, C: Ca
         }
         let facts = run_dom_transform_with_profile(&mut lowered, observer, profile);
         capture.page(Level::L2, "facts", || vize_l0::cstr!("{facts:#?}"));
-        let emitted = emit_dom_observed(&lowered, &facts, options, strict_slot_params, no_slotted)?;
+        let emitted = emit_dom_observed(
+            &lowered,
+            &facts,
+            options,
+            strict_slot_params,
+            no_slotted,
+            development,
+        )?;
         capture.page(Level::L4, "emit", || emitted.emit.assembled());
         Ok(emitted)
     })

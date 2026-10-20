@@ -166,5 +166,41 @@
     "vapor": null,
     "diagnostics": 1,
     "fixes": 1
+  },
+  {
+    "id": "dynamic-slot-v-for-component-bodies",
+    "history": "71c157ded6632df04b61c96f44c25b11097b928c",
+    "source": "<script setup lang=\"ts\">\nimport { useSlots } from \"vue\";\n\nimport MyList from \"./my-list.vue\";\nimport MyItem from \"./my-item.vue\";\n\nconst slots = useSlots();\nconst names = Object.keys(slots);\n</script>\n\n<template>\n  <MyList>\n    <template v-for=\"name in names\" #[name]=\"scope\">\n      <slot :name=\"name\" v-bind=\"scope\" />\n    </template>\n  </MyList>\n\n  <MyList>\n    <template v-for=\"name in names\" #[name]=\"scope\">\n      <component :is=\"slots[name]\" v-bind=\"scope\" />\n    </template>\n  </MyList>\n\n  <MyList>\n    <template v-for=\"name in names\" #[name]>\n      <MyItem :label=\"name\" />\n    </template>\n  </MyList>\n</template>\n",
+    "filename": "DynamicSlots.vue",
+    "entry": "sfc",
+    "rule": "vue/valid-v-for",
+    "vue_version": "3",
+    "vapor": null,
+    "diagnostics": 0,
+    "fixes": 0
+  },
+  {
+    "id": "shared-rule-options-9876",
+    "history": "22cd835dde0e1e6b81473004a858897c478fa7fd",
+    "source": "const emit = defineEmits(['itemSelect'])\nemit('itemSelect')\n",
+    "filename": "App.ts",
+    "entry": "script",
+    "rule": "script/custom-event-name-casing",
+    "vue_version": "3",
+    "vapor": null,
+    "diagnostics": 0,
+    "fixes": 0
+  },
+  {
+    "id": "patina-rule-guards-9870-9871",
+    "history": "04541e20047f0cc3bf30bb219e127d59fe8ad44b",
+    "source": "<script setup lang=\"ts\">\nimport { useAttrs } from \"vue\";\n\ndefineOptions({ inheritAttrs: false });\nconst attrs = useAttrs();\nfunction onClick(): void {}\n</script>\n\n<template>\n  <button type=\"button\" class=\"base-button\" @click=\"onClick\" v-bind=\"attrs\">\n    <slot />\n  </button>\n</template>\n",
+    "filename": "BaseButton.vue",
+    "entry": "sfc",
+    "rule": "vue/attribute-order",
+    "vue_version": null,
+    "vapor": null,
+    "diagnostics": 0,
+    "fixes": 0
   }
 ]

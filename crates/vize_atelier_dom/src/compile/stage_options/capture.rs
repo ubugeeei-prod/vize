@@ -12,6 +12,7 @@ use vize_l1_to_l2::{DomEmitOptions, EmitError, LegacyCaps};
 pub(in crate::compile) struct SlotEmitPolicy {
     pub(in crate::compile) strict_slot_params: bool,
     pub(in crate::compile) no_slotted: bool,
+    pub(in crate::compile) development: bool,
 }
 
 #[expect(
@@ -29,6 +30,7 @@ pub(in crate::compile) fn try_emit_l2_captured<C: CaptureSink>(
     pre_s2_walks: Option<WalkCounts>,
     strict_slot_params: bool,
     no_slotted: bool,
+    development: bool,
     capture: &mut C,
 ) -> Option<CodegenResultWithSections> {
     if !C::RECORDING {
@@ -43,6 +45,7 @@ pub(in crate::compile) fn try_emit_l2_captured<C: CaptureSink>(
             pre_s2_walks,
             strict_slot_params,
             no_slotted,
+            development,
         );
     }
     let binding_table = l2_binding_table_for(options);
@@ -65,6 +68,7 @@ pub(in crate::compile) fn try_emit_l2_captured<C: CaptureSink>(
             SlotEmitPolicy {
                 strict_slot_params,
                 no_slotted,
+                development,
             },
             capture,
             &mut None,
@@ -92,10 +96,11 @@ pub(in crate::compile) fn emit_l2_captured<C: CaptureSink>(
     let SlotEmitPolicy {
         strict_slot_params,
         no_slotted,
+        development,
     } = policy;
     if let Some(preflight) = preflight.as_deref_mut() {
         let observe = global_profiler().is_enabled();
-        let observed = vize_l1_to_l2::emit_dom_source_with_preflight(
+        let observed = vize_l1_to_l2::emit_dom_source_with_preflight_and_environment(
             allocator,
             source,
             LegacyCaps::for_version(dialect),
@@ -104,6 +109,7 @@ pub(in crate::compile) fn emit_l2_captured<C: CaptureSink>(
             no_slotted,
             preflight,
             observe,
+            development,
             capture,
         );
         let (emit, budget) = if C::RECORDING {
@@ -132,31 +138,34 @@ pub(in crate::compile) fn emit_l2_captured<C: CaptureSink>(
             pre_s2_walks,
             strict_slot_params,
             no_slotted,
+            development,
         ));
     }
     let caps = LegacyCaps::for_version(dialect);
     let profiler = global_profiler();
     let emit = if profiler.is_enabled() {
         let observed =
-            vize_l1_to_l2::emit_dom_source_observed_with_options_captured_and_slot_scope(
+            vize_l1_to_l2::emit_dom_source_observed_with_options_captured_slot_scope_and_environment(
                 allocator,
                 source,
                 caps,
                 options,
                 strict_slot_params,
                 no_slotted,
+                development,
                 capture,
             )?;
         super::record_l2_budget(observed.budget, pre_s2_walks);
         observed.emit
     } else {
-        vize_l1_to_l2::emit_dom_source_with_options_captured_and_slot_scope(
+        vize_l1_to_l2::emit_dom_source_with_options_captured_slot_scope_and_environment(
             allocator,
             source,
             caps,
             options,
             strict_slot_params,
             no_slotted,
+            development,
             capture,
         )?
     };

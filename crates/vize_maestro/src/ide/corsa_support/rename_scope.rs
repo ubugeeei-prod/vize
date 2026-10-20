@@ -61,66 +61,67 @@ impl<'a> RenameScope<'a> {
             if self.native && !projection_node(&path) {
                 return false;
             }
-            let (authored, retained, projected) =
-                if self.projection_identity_matches(uri, &document.request_uri) {
-                    (
-                        document.source_uri.to_file_path().ok(),
-                        true,
-                        sfc_projection(&document.source_uri, &document.virtual_result),
-                    )
-                } else if let Some(dependency) = document
-                    .dependencies
-                    .iter()
-                    .find(|source| self.projection_identity_matches(uri, &source.request_uri))
+            let (authored, retained, projected) = if self
+                .projection_identity_matches(uri, &document.request_uri)
+            {
+                (
+                    document.source_uri.to_file_path().ok(),
+                    true,
+                    sfc_projection(&document.source_uri, &document.virtual_result),
+                )
+            } else if let Some(dependency) = document
+                .dependencies
+                .iter()
+                .find(|source| self.projection_identity_matches(uri, &source.request_uri))
+            {
+                (
+                    dependency.source_uri.to_file_path().ok(),
+                    true,
+                    sfc_projection(&dependency.source_uri, &dependency.virtual_result),
+                )
+            } else if let Some(source) = document
+                .materialized_sources
+                .iter()
+                .find(|source| self.projection_identity_matches(uri, &source.request_uri))
+            {
+                (
+                    source.source_uri.to_file_path().ok(),
+                    true,
+                    matches!(
+                        source.mapping_kind,
+                        vize_canon::CorsaMaterializedMappingKind::Generated
+                    ) && sfc_projection(&source.source_uri, &source.virtual_result),
+                )
+            } else if let Some(source) = document
+                .source_catalogs
+                .iter()
+                .find_map(|catalog| catalog.get(&path))
+            {
+                (
+                    Some(source.source_path.clone()),
+                    true,
+                    matches!(
+                        source.mapping_kind,
+                        vize_canon::CorsaMaterializedMappingKind::Generated
+                    ) && projection_node(&source.materialized_path)
+                        && physical_sfc_path(&source.source_path)
+                        && !source.mapping.is_empty(),
+                )
+            } else {
+                // A raw in-root path is not proof of a generated source owner.
+                // Private/synthetic unknowns would otherwise disappear during
+                // mapping and leave only the good part of a mixed edit.
+                if super::canonical::is_private_materialized_uri(self.state, document, uri.as_str())
+                    || !(path.is_file()
+                        || self.state.documents.contains(uri)
+                        || (new_resource
+                            && !uri.path().ends_with(".vue.ts")
+                            && !uri.path().ends_with(".vue.tsx")))
                 {
-                    (
-                        dependency.source_uri.to_file_path().ok(),
-                        true,
-                        sfc_projection(&dependency.source_uri, &dependency.virtual_result),
-                    )
-                } else if let Some(source) = document
-                    .materialized_sources
-                    .iter()
-                    .find(|source| self.projection_identity_matches(uri, &source.request_uri))
-                {
-                    (
-                        source.source_uri.to_file_path().ok(),
-                        true,
-                        matches!(
-                            source.mapping_kind,
-                            vize_canon::CorsaMaterializedMappingKind::Generated
-                        ) && sfc_projection(&source.source_uri, &source.virtual_result),
-                    )
-                } else if let Some(source) = document
-                    .source_catalogs
-                    .iter()
-                    .find_map(|catalog| catalog.get(&path))
-                {
-                    (
-                        Some(source.source_path.clone()),
-                        true,
-                        matches!(
-                            source.mapping_kind,
-                            vize_canon::CorsaMaterializedMappingKind::Generated
-                        ) && projection_node(&source.materialized_path)
-                            && physical_sfc_path(&source.source_path)
-                            && !source.mapping.is_empty(),
-                    )
-                } else {
-                    // A raw in-root path is not proof of a generated source owner.
-                    // Private/synthetic unknowns would otherwise disappear during
-                    // mapping and leave only the good part of a mixed edit.
-                    if super::canonical::is_private_materialized_uri(document, uri.as_str())
-                        || !(path.is_file()
-                            || self.state.documents.contains(uri)
-                            || (new_resource
-                                && !uri.path().ends_with(".vue.ts")
-                                && !uri.path().ends_with(".vue.tsx")))
-                    {
-                        return false;
-                    }
-                    (Some(path), false, false)
-                };
+                    return false;
+                }
+                (Some(path), false, false)
+            };
             authored.is_some_and(|path| {
                 // Validate the entire untouched packet before mapping can erase
                 // an unowned runtime member. Plain/identity catalog entries

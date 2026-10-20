@@ -178,5 +178,17 @@
   "linter/current-api/valid-v-else-autofix-preserves-directive": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__valid-v-else-autofix-preserves-directive.snap",
     "sha256": "606d5afb73fe7512be388241ace3e5f8a9de84fc6f6c2215ebeb3ac8942154a0"
+  },
+  "linter/current-api/dynamic-slot-v-for-component-bodies": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__dynamic-slot-v-for-component-bodies.snap",
+    "sha256": "6de424f4c524b76fc7063c1a73621a2883123e9b54b2a9400eddaf0bf1e8ddce"
+  },
+  "linter/current-api/shared-rule-options-9876": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__shared-rule-options-9876.snap",
+    "sha256": "e09030554f0c1b0758a6106dec91268c9b61339c6c77ceeaef4dffcd71fb245f"
+  },
+  "linter/current-api/patina-rule-guards-9870-9871": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__patina-rule-guards-9870-9871.snap",
+    "sha256": "8c9dbcb06f8545e12b78d8b7d24c142aa486db42fc103bea1310b82e187fcfbe"
   }
 }

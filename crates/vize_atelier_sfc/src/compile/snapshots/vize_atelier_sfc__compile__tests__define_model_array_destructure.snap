@@ -3,7 +3,7 @@ source: crates/vize_atelier_sfc/src/compile/tests.rs
 expression: result.code.as_str()
 ---
 import { useModel as _useModel } from "vue";
-import { vModelText as _vModelText, withDirectives as _withDirectives, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, unref as _unref } from "vue";
+import { vModelText as _vModelText, withDirectives as _withDirectives, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, isRef as _isRef, unref as _unref } from "vue";
 export default {
   __name: "anonymous",
   props: {
@@ -19,7 +19,7 @@ export default {
         null,
         [_withDirectives(_createElementVNode(
           "input",
-          { "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => model.value = $event) },
+          { "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => _isRef(model) ? model.value = $event : null) },
           null,
           512
           /* NEED_PATCH */

@@ -12,7 +12,7 @@ Default severity: `warning`
 Presets: `opinionated`, `nuxt`  
 Automatic fix: None; review the suggested change  
 Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Options: See [typed options and defaults](../options.md).
 
 ## Configuration (Vite+)
 
@@ -63,4 +63,4 @@ const value = ref(0)
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_macros_order.rs#L45) · [All rules](../all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_macros_order.rs#L44) · [All rules](../all.md)

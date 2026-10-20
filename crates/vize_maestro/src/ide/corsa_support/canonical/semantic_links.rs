@@ -2,7 +2,7 @@ use tower_lsp::lsp_types::{Location, Url};
 use vize_canon::{LspPosition, LspRange};
 use vize_l0::{FxHashMap, FxHashSet, String};
 
-use super::{CanonicalVirtualDocument, location_matches_uri};
+use super::{CanonicalVirtualDocument, location_matches_uri_cached};
 use crate::ide::diagnostics::VirtualTsResult;
 
 mod binding_links;
@@ -43,12 +43,13 @@ pub(crate) type ComponentPropSourceCache = FxHashMap<Url, Option<std::string::St
 /// references and rename query each identity once, then map and deduplicate the
 /// results back to authored locations.
 pub(crate) fn materialized_semantic_positions(
+    state: &crate::server::ServerState,
     document: &CanonicalVirtualDocument,
     source_uri: &tower_lsp::lsp_types::Url,
     source_offset: usize,
 ) -> Vec<CanonicalSemanticPosition> {
     let mut positions = Vec::new();
-    if same_authored_uri(&document.source_uri, source_uri)
+    if same_authored_uri(state, &document.source_uri, source_uri)
         && let Some(offset) = super::source_offset_to_virtual_generated_offset(
             &document.virtual_result,
             source_offset,
@@ -63,7 +64,7 @@ pub(crate) fn materialized_semantic_positions(
         });
     }
     positions.extend(document.dependencies.iter().filter_map(|source| {
-        if !same_authored_uri(&source.source_uri, source_uri) {
+        if !same_authored_uri(state, &source.source_uri, source_uri) {
             return None;
         }
         let offset = super::source_offset_to_virtual_generated_offset(
@@ -81,11 +82,15 @@ pub(crate) fn materialized_semantic_positions(
         document
             .materialized_sources
             .iter()
-            .filter(|source| same_authored_uri(&source.source_uri, source_uri))
+            .filter(|source| same_authored_uri(state, &source.source_uri, source_uri))
             .filter(|source| {
-                !location_matches_uri(&source.request_uri, &document.request_uri)
+                !location_matches_uri_cached(state, &source.request_uri, &document.request_uri)
                     && !document.dependencies.iter().any(|dependency| {
-                        location_matches_uri(&source.request_uri, &dependency.request_uri)
+                        location_matches_uri_cached(
+                            state,
+                            &source.request_uri,
+                            &dependency.request_uri,
+                        )
                     })
             })
             .filter_map(|source| {
@@ -113,36 +118,40 @@ pub(crate) fn materialized_semantic_positions(
     positions
 }
 
-fn same_authored_uri(left: &tower_lsp::lsp_types::Url, right: &tower_lsp::lsp_types::Url) -> bool {
+fn same_authored_uri(
+    state: &crate::server::ServerState,
+    left: &tower_lsp::lsp_types::Url,
+    right: &tower_lsp::lsp_types::Url,
+) -> bool {
     if left == right {
         return true;
     }
     match (left.to_file_path(), right.to_file_path()) {
         (Ok(left), Ok(right)) => {
-            vize_carton::path::canonicalize_non_verbatim(&left)
-                == vize_carton::path::canonicalize_non_verbatim(&right)
+            state.canonical_editor_path(&left) == state.canonical_editor_path(&right)
         }
         _ => false,
     }
 }
 
 pub(super) fn virtual_result<'a>(
+    state: &crate::server::ServerState,
     document: &'a CanonicalVirtualDocument,
     uri: &str,
 ) -> Option<(&'a String, &'a VirtualTsResult)> {
-    if location_matches_uri(uri, document.request_uri.as_str()) {
+    if location_matches_uri_cached(state, uri, document.request_uri.as_str()) {
         return Some((&document.request_uri, &document.virtual_result));
     }
     document
         .dependencies
         .iter()
-        .find(|dependency| location_matches_uri(uri, dependency.request_uri.as_str()))
+        .find(|dependency| location_matches_uri_cached(state, uri, dependency.request_uri.as_str()))
         .map(|dependency| (&dependency.request_uri, &dependency.virtual_result))
         .or_else(|| {
             document
                 .materialized_sources
                 .iter()
-                .find(|source| location_matches_uri(uri, source.request_uri.as_str()))
+                .find(|source| location_matches_uri_cached(state, uri, source.request_uri.as_str()))
                 .map(|source| (&source.request_uri, &source.virtual_result))
         })
 }
@@ -184,6 +193,7 @@ mod semantic_position_tests {
 
     #[test]
     fn authored_identity_uses_direct_offsets_without_querying_an_unrelated_host() {
+        let state = crate::server::ServerState::new();
         let host_uri = Url::parse("file:///workspace/Host.vue").unwrap();
         let package_uri = Url::parse("file:///workspace/node_modules/pkg/index.ts").unwrap();
         let source = "export const shared = 1\n";
@@ -204,7 +214,7 @@ mod semantic_position_tests {
             source_catalogs: Vec::new(),
         };
 
-        let positions = materialized_semantic_positions(&document, &package_uri, offset);
+        let positions = materialized_semantic_positions(&state, &document, &package_uri, offset);
 
         assert_eq!(positions.len(), 1);
         assert_eq!(

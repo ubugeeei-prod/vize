@@ -1,0 +1,21 @@
+<script setup lang="ts">
+import { ref } from "vue";
+
+const ready = ref(false);
+
+if (typeof requestAnimationFrame === "function") {
+  requestAnimationFrame(() => {
+    ready.value = true;
+  });
+}
+
+if (typeof window === "object") {
+  window.scrollTo(0, 0);
+}
+
+const raf = typeof requestAnimationFrame === "function" ? requestAnimationFrame : undefined;
+</script>
+
+<template>
+  <div :class="{ ready }">{{ raf ? "raf" : "no raf" }}</div>
+</template>

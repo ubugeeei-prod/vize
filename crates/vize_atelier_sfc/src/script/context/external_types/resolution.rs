@@ -121,6 +121,10 @@ fn resolve_import_path_uncached(current_file: &Path, specifier: &str) -> Option<
         return Some(alias_path);
     }
 
+    if specifier.starts_with('#') {
+        return resolve_package_import(current_file, specifier);
+    }
+
     if !specifier.starts_with('.') && !specifier.starts_with('/') {
         return resolve_bare_specifier(current_file, specifier);
     }
@@ -133,6 +137,76 @@ fn resolve_import_path_uncached(current_file: &Path, specifier: &str) -> Option<
     };
 
     resolve_candidate_path(candidate)
+}
+
+fn resolve_package_import(current_file: &Path, specifier: &str) -> Option<PathBuf> {
+    let start = current_file.parent()?;
+    for package_dir in start.ancestors() {
+        let manifest_path = package_dir.join("package.json");
+        if !manifest_path.is_file() {
+            continue;
+        }
+
+        let raw = std::fs::read_to_string(manifest_path).ok()?;
+        let manifest: serde_json::Value = serde_json::from_str(&raw).ok()?;
+        let imports = manifest.get("imports")?;
+        let target = package_import_target(imports, specifier)?;
+        let target = target.strip_prefix("./")?;
+        if target.split('/').any(|segment| segment == "..") {
+            return None;
+        }
+        return resolve_candidate_path(package_dir.join(target));
+    }
+    None
+}
+
+fn package_import_target(imports: &serde_json::Value, specifier: &str) -> Option<String> {
+    let imports = imports.as_object()?;
+    if let Some(value) = imports.get(specifier) {
+        return package_import_target_value(value, None);
+    }
+
+    let mut patterns = imports
+        .iter()
+        .filter_map(|(key, value)| {
+            let star = key.find('*')?;
+            let prefix = key.get(..star)?;
+            let suffix = key.get(star + 1..)?;
+            if !specifier.starts_with(prefix) || !specifier.ends_with(suffix) {
+                return None;
+            }
+            let matched = specifier.get(prefix.len()..specifier.len() - suffix.len())?;
+            Some((key.len(), value, matched))
+        })
+        .collect::<Vec<_>>();
+    patterns.sort_unstable_by_key(|entry| std::cmp::Reverse(entry.0));
+    let (_, value, matched) = patterns.first()?;
+    package_import_target_value(value, Some(matched))
+}
+
+fn package_import_target_value(
+    value: &serde_json::Value,
+    wildcard: Option<&str>,
+) -> Option<String> {
+    match value {
+        serde_json::Value::String(target) => Some(wildcard.map_or_else(
+            || target.as_str().to_compact_string(),
+            |matched| target.replace('*', matched).to_compact_string(),
+        )),
+        serde_json::Value::Array(values) => values
+            .iter()
+            .find_map(|value| package_import_target_value(value, wildcard)),
+        serde_json::Value::Object(conditions) => [
+            "types", "import", "module", "browser", "default", "node", "require",
+        ]
+        .iter()
+        .find_map(|condition| {
+            conditions
+                .get(*condition)
+                .and_then(|value| package_import_target_value(value, wildcard))
+        }),
+        _ => None,
+    }
 }
 
 /// Resolve a bare specifier to package type declarations through

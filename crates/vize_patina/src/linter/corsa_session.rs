@@ -48,7 +48,7 @@ pub(crate) struct CorsaTypeAwareSession {
     overlay_version: i32,
     rewritten_source: Option<String>,
     import_source_map: vize_canon::ImportSourceMap,
-    dependency_paths: Vec<PathBuf>,
+    dependency_paths: vize_l0::FxHashSet<PathBuf>,
     dependency_cache: vize_l0::FxHashMap<PathBuf, vue_dependencies::CachedDocument>,
     closed: bool,
 }

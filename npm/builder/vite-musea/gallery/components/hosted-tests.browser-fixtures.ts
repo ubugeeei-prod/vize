@@ -116,7 +116,7 @@ export async function buildHostedGallery(
           .replaceAll(" ", "");
         return generatePreviewModule(previewArt, identifier, name, [], setupId);
       }
-      return loadStaticRuntimeModule(id, arts);
+      return loadStaticRuntimeModule(id, arts, output);
     },
     async generateBundle(_options, bundle) {
       await emitStaticGallery(

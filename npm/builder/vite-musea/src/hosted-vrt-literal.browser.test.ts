@@ -102,8 +102,8 @@ void test(
       const manifestReceipts: unknown[] = [];
       const emittedUrls = new Set<string>();
       for (const title of ["Controls", "Keys"] as const) {
-        const artPath = path.join(f.root, "src", `${title}.art.vue`);
-        assert.equal(f.manifest.snapshotIdentities[artPath], `src/${title}.art.vue`);
+        const artPath = `src/${title}.art.vue`;
+        assert.equal(f.manifest.snapshotIdentities[artPath], artPath);
         const urls = f.manifest.previews[artPath];
         assert.deepEqual(
           Object.keys(urls),
@@ -209,9 +209,7 @@ void test(
                 item.buttons.includes(variants[title][index][1]) &&
                 item.url ===
                   new URL(
-                    f.manifest.previews[path.join(f.root, "src", `${title}.art.vue`)][
-                      variants[title][index][0]
-                    ],
+                    f.manifest.previews[`src/${title}.art.vue`][variants[title][index][0]],
                     url,
                   ).href,
             ),
@@ -254,7 +252,7 @@ void test(
             local,
             output: f.output,
             title,
-            artPath: path.join(f.root, "src", `${title}.art.vue`),
+            artPath: `src/${title}.art.vue`,
             phase,
             first: first[title],
           });

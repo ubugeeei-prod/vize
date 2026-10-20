@@ -109,7 +109,7 @@ impl CorsaTypeAwareSession {
             overlay_version: 0,
             rewritten_source: None,
             import_source_map: vize_canon::ImportSourceMap::empty(),
-            dependency_paths: Vec::new(),
+            dependency_paths: vize_l0::FxHashSet::default(),
             dependency_cache: vize_l0::FxHashMap::default(),
             closed: false,
         })
@@ -132,20 +132,11 @@ impl CorsaTypeAwareSession {
             &self.session_root,
             &self.project_root,
             &mut self.dependency_cache,
+            &self.dependency_paths,
         );
-        let prior_dependencies: Vec<_> = self
-            .dependency_paths
-            .iter()
-            .filter(|path| **path != next_path)
-            .cloned()
-            .collect();
-        let mut dependency_changes =
-            super::vue_dependencies::materialize(&prepared.files, &prior_dependencies)?;
-        self.dependency_paths = prepared
-            .files
-            .iter()
-            .map(|(path, _)| path.clone())
-            .collect();
+        let mut dependency_changes = super::vue_dependencies::materialize(&prepared.files, &[])?;
+        self.dependency_paths
+            .extend(prepared.files.iter().map(|(path, _)| path.clone()));
         self.import_source_map = prepared.source_map;
         self.rewritten_source = prepared.code;
         let generated_source = self.rewritten_source.as_deref().unwrap_or(generated_source);

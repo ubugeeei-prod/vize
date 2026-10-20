@@ -163,6 +163,17 @@ fn materialized_tsconfig_preserves_ts_extension_import_policy() {
             "{name}: {value:#}"
         );
 
+        let declaration_config = project
+            .write_declaration_tsconfig(&case_dir.join("dist"), false)
+            .unwrap();
+        let value: serde_json::Value =
+            serde_json::from_str(&fs::read_to_string(declaration_config).unwrap()).unwrap();
+        assert_eq!(
+            value["compilerOptions"]["allowImportingTsExtensions"],
+            serde_json::Value::Bool(true),
+            "{name}: declaration inputs must accept Canon's generated TypeScript extensions"
+        );
+
         let _ = fs::remove_dir_all(&case_dir);
     }
 }

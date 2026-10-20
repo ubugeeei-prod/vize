@@ -65,6 +65,7 @@ void value
                 .await
                 .expect("canonical project document");
         let identities = crate::ide::corsa_support::materialized_semantic_positions(
+            &state,
             &document,
             &package_uri,
             package_source.find("shared =").unwrap() + 1,

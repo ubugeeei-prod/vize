@@ -25,7 +25,11 @@ const TARGET_SOURCE_EXTENSIONS: &[&str] = &[
 /// copy (relative to the virtual tsconfig) then the real-tree fallback for every
 /// relative target, followed by the `.vue.ts` mirror candidates. `up` is the
 /// relative prefix from the virtual root back to the project root.
-pub(super) fn remap_path_targets(targets: &[Value], up: &str) -> Vec<Value> {
+pub(super) fn remap_path_targets(
+    targets: &[Value],
+    up: &str,
+    authored_first: impl Fn(&str) -> bool,
+) -> Vec<Value> {
     let mut candidates = Vec::with_capacity(targets.len() * 2);
     let mut vue_candidates = Vec::new();
     for target in targets {
@@ -49,8 +53,15 @@ pub(super) fn remap_path_targets(targets: &[Value], up: &str) -> Vec<Value> {
             continue;
         }
         let core = target.strip_prefix("./").unwrap_or(target);
-        candidates.push(Value::String(cstr!("./{core}").into()));
-        candidates.push(Value::String(cstr!("{up}{core}").into()));
+        let mirror = Value::String(cstr!("./{core}").into());
+        let authored = Value::String(cstr!("{up}{core}").into());
+        if authored_first(core) {
+            candidates.push(authored);
+            candidates.push(mirror);
+        } else {
+            candidates.push(mirror);
+            candidates.push(authored);
+        }
         if !has_source_extension(core) {
             vue_candidates.push(Value::String(cstr!("./{core}.vue.ts").into()));
         }
@@ -95,7 +106,11 @@ mod tests {
     use super::remap_path_targets;
 
     fn remap(targets: Value) -> Value {
-        Value::Array(remap_path_targets(targets.as_array().unwrap(), "../../../"))
+        Value::Array(remap_path_targets(
+            targets.as_array().unwrap(),
+            "../../../",
+            |_| false,
+        ))
     }
 
     #[test]
@@ -184,5 +199,26 @@ mod tests {
     #[test]
     fn non_string_targets_pass_through() {
         assert_eq!(remap(json!([42])), json!([42]));
+    }
+
+    #[test]
+    fn authored_first_only_reorders_the_ordinary_candidate_pair() {
+        assert_eq!(
+            Value::Array(remap_path_targets(
+                json!(["node_modules/nuxt/dist/app", "src/*"])
+                    .as_array()
+                    .unwrap(),
+                "../../../",
+                |target| target == "node_modules/nuxt/dist/app",
+            )),
+            json!([
+                "../../../node_modules/nuxt/dist/app",
+                "./node_modules/nuxt/dist/app",
+                "./src/*",
+                "../../../src/*",
+                "./node_modules/nuxt/dist/app.vue.ts",
+                "./src/*.vue.ts"
+            ])
+        );
     }
 }

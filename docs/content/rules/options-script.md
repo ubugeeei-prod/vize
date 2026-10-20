@@ -4,7 +4,8 @@ title: Script Rule Options
 
 # Script Rule Options
 
-Script rule option examples cover restricted globals, restricted members, and custom event casing. The main [Rule Options](./options.md) page lists the complete option table,
+Script rule option examples cover restricted globals, restricted members, compiler macro order,
+and custom event casing. The main [Rule Options](./options.md) page lists the complete option table,
 unknown-field behavior, and scoped replacement semantics.
 
 ## `script/no-restricted-globals`
@@ -141,6 +142,47 @@ Good:
 ```ts
 const emit = defineEmits(["save-item"]);
 emit("save-item");
+```
+
+## `script/define-macros-order`
+
+Use `order` to choose which compiler macros must appear first in `<script setup>` and in what
+sequence. The default is `["defineProps", "defineEmits"]`. Macros omitted from the list behave
+like ordinary statements.
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      rules: { "script/define-macros-order": "warn" },
+      ruleOptions: {
+        "script/define-macros-order": {
+          order: ["defineOptions", "defineProps", "defineEmits", "defineSlots"],
+        },
+      },
+    },
+  },
+});
+```
+
+Bad with the config above:
+
+```vue
+<script setup lang="ts">
+const props = defineProps<{ label: string }>();
+defineOptions({ inheritAttrs: false });
+</script>
+```
+
+Good:
+
+```vue
+<script setup lang="ts">
+defineOptions({ inheritAttrs: false });
+const props = defineProps<{ label: string }>();
+</script>
 ```
 
 ## `script/define-props-destructuring`

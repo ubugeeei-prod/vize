@@ -110,23 +110,12 @@
       ],
       "referenceErrorCount": 0,
       "referenceWarningCount": 1,
-      "serviceSuppressed": false,
+      "serviceSuppressed": true,
       "service": {
         "filename": "packages/theme-generator/src/common/components/ColorPicker/index.vue",
         "error_count": 0,
-        "warning_count": 1,
-        "diagnostics": [
-          {
-            "rule_name": "vue/attribute-order",
-            "severity": "warning",
-            "message": "Attribute should be placed in correct order",
-            "start": 300,
-            "end": 315,
-            "help": null,
-            "labels": [],
-            "fix": null
-          }
-        ]
+        "warning_count": 0,
+        "diagnostics": []
       }
     },
     {
@@ -626,23 +615,12 @@
       ],
       "referenceErrorCount": 0,
       "referenceWarningCount": 1,
-      "serviceSuppressed": false,
+      "serviceSuppressed": true,
       "service": {
         "filename": "controls/spread-after-event.vue",
         "error_count": 0,
-        "warning_count": 1,
-        "diagnostics": [
-          {
-            "rule_name": "vue/attribute-order",
-            "severity": "warning",
-            "message": "Attribute should be placed in correct order",
-            "start": 33,
-            "end": 47,
-            "help": null,
-            "labels": [],
-            "fix": null
-          }
-        ]
+        "warning_count": 0,
+        "diagnostics": []
       }
     },
     {
@@ -1115,7 +1093,7 @@
       "service": {
         "filename": "controls/multiple-isolated-spreads-no-later-binding.vue",
         "error_count": 0,
-        "warning_count": 2,
+        "warning_count": 1,
         "diagnostics": [
           {
             "rule_name": "vue/attribute-order",
@@ -1123,16 +1101,6 @@
             "message": "Attribute should be placed in correct order",
             "start": 31,
             "end": 45,
-            "help": null,
-            "labels": [],
-            "fix": null
-          },
-          {
-            "rule_name": "vue/attribute-order",
-            "severity": "warning",
-            "message": "Attribute should be placed in correct order",
-            "start": 61,
-            "end": 76,
             "help": null,
             "labels": [],
             "fix": null

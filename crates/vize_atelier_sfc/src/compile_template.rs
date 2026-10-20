@@ -284,7 +284,7 @@ pub(crate) fn compile_template_block_with_capture(
     let before_preflight = capture.as_deref().map(|capture| capture.options.len());
     let (errors, result) = profile!(
         "atelier.sfc.template.dom",
-        vize_atelier_dom::compile_sfc_template_with_preflight(
+        vize_atelier_dom::compile_sfc_template_with_preflight_and_environment(
             allocator,
             &template.content,
             dom_opts,
@@ -296,6 +296,7 @@ pub(crate) fn compile_template_block_with_capture(
             has_scoped && !slotted,
             preflight_hook,
             capture.as_deref_mut(),
+            !options.is_prod,
         )
     );
     let finish_preflight = true;

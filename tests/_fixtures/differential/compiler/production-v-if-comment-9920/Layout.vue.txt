@@ -1,0 +1,10 @@
+<script setup>
+defineProps({ open: Boolean })
+</script>
+
+<template>
+  <div class="toggle">
+    <p v-if="open">open</p>
+    <span>always</span>
+  </div>
+</template>

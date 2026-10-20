@@ -48,6 +48,29 @@ fn leaves_non_at_alias_specifiers_to_existing_resolution() {
 }
 
 #[test]
+fn resolves_package_import_patterns_from_the_nearest_scope() {
+    let project = temp_project_dir("package-import-pattern");
+    let src = project.join("src/components");
+    std::fs::create_dir_all(&src).unwrap();
+    std::fs::write(
+        project.join("package.json"),
+        r##"{ "imports": { "#lib/*": { "types": "./src/*.ts", "default": "./dist/*.js" } } }"##,
+    )
+    .unwrap();
+    let target = project.join("src/types.ts");
+    std::fs::write(&target, "export type Ripple = boolean | object").unwrap();
+
+    let current = src.join("Button.vue");
+    let resolved = resolve_import_path(&current, "#lib/types");
+
+    assert_eq!(
+        resolved.as_deref(),
+        Some(target.canonicalize().unwrap().as_path())
+    );
+    let _ = std::fs::remove_dir_all(project);
+}
+
+#[test]
 fn resolves_bare_specifier_through_node_modules_types_field() {
     let project = temp_project_dir("bare-types-field");
     let package = project.join("node_modules/some-ui");

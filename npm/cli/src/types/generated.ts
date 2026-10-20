@@ -252,6 +252,9 @@ export interface LinterConfig {
   };
 }
 export interface LintRuleOptions {
+  "script/define-macros-order"?: {
+    order?: string[];
+  };
   "script/define-props-destructuring"?: {
     destructure?: "only-when-assigned" | "always" | "never";
   };

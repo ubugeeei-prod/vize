@@ -1,0 +1,20 @@
+{
+  "schema": "vize.typechecker.nuxt-plugin-injection-types",
+  "version": 1,
+  "issue": 9919,
+  "files": {
+    ".nuxt/types/plugins.d.ts": "import type { Plugin } from '#app'\ntype InjectionType<A extends Plugin> = A extends { default: Plugin<infer T> } ? { [K in keyof T as K extends string ? `$${K}` : never]: T[K] } : unknown\ntype NuxtAppInjections = InjectionType<typeof import('../../node_modules/nuxt/dist/pages/runtime/plugins/router.js')> & InjectionType<typeof import('../../app/plugins/track.client')>\ndeclare module '#app' { interface NuxtApp extends NuxtAppInjections {} }\n",
+    "node_modules/nuxt/dist/app/nuxt.d.ts": "export interface NuxtApp { [key: string]: unknown }\nexport interface Plugin<T extends Record<string, unknown> = Record<string, unknown>> { (nuxtApp: NuxtApp): void | { provide: T } }\nexport declare function useNuxtApp(): NuxtApp\nexport declare function defineNuxtPlugin<T extends Record<string, unknown>>(plugin: Plugin<T>): Plugin<T>\n",
+    "node_modules/nuxt/dist/pages/runtime/plugins/router.d.ts": "import type { Plugin } from '#app/nuxt'\ndeclare const plugin: Plugin<{ router: { currentRoute: { value: { path: string } } } }>\nexport default plugin\n",
+    "app/plugins/track.client.ts": "export default defineNuxtPlugin(nuxtApp => { const path: string = nuxtApp.$router.currentRoute.value.path })\n",
+    "app/route-path.ts": "export const path: string = useNuxtApp().$router.currentRoute.value.path\n"
+  },
+  "resolution": {
+    "paths": {
+      "#app": ["node_modules/nuxt/dist/app"],
+      "#app/*": ["node_modules/nuxt/dist/app/*"]
+    },
+    "autoImports": "authored absolute declarations"
+  },
+  "expectedDiagnostics": []
+}

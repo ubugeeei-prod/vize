@@ -159,7 +159,7 @@ void test("static build emits previews with a callable side-effect runtime", asy
       ],
     });
 
-    const previewId = staticPreviewId(art.path, "Default");
+    const previewId = staticPreviewId("stories/Button.art.vue", "Default");
     const previewPath = path.join(outDir, "__musea__", "preview", `${previewId}.html`);
     const previewHtml = await fs.promises.readFile(previewPath, "utf8");
     const runtimePath = path.resolve(
@@ -249,7 +249,7 @@ const previous = globalThis.__museaLoadedPreviews || [];
 globalThis.__museaLoadedPreviews = [...previous, ${JSON.stringify(previewKey)}];
 `;
       }
-      return loadStaticRuntimeModule(id, artFiles);
+      return loadStaticRuntimeModule(id, artFiles, getConfig()?.root);
     },
     async generateBundle(_options, bundle) {
       const config = getConfig();

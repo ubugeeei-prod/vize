@@ -261,6 +261,62 @@ fn build_respects_configured_template_syntax_quirks() {
 }
 
 #[test]
+fn build_respects_configured_ssr_and_cli_override() {
+    let project_root = temp_project_dir("configured-ssr");
+    write_project_file(
+        &project_root,
+        "vite.config.mjs",
+        r#"export default { vue: {
+  compiler: {
+    ssr: true,
+  },
+} }
+"#,
+    );
+    write_project_file(
+        &project_root,
+        "src/App.vue",
+        r#"<script setup lang="ts">
+const msg = "hi"
+</script>
+
+<template><div>{{ msg }}</div></template>
+"#,
+    );
+
+    let build = |output: &str, extra_args: &[&str]| {
+        let mut args = vec!["build", "--format", "js", "src/App.vue", "--output", output];
+        args.extend_from_slice(extra_args);
+        let result = Command::new(env!("CARGO_BIN_EXE_vize"))
+            .current_dir(&project_root)
+            .args(args)
+            .output()
+            .unwrap();
+        assert!(
+            result.status.success(),
+            "stdout:\n{}\nstderr:\n{}",
+            String::from_utf8_lossy(&result.stdout),
+            String::from_utf8_lossy(&result.stderr)
+        );
+        fs::read_to_string(project_root.join(output).join("App.js")).unwrap()
+    };
+
+    let configured = build("out-config", &[]);
+    assert!(configured.contains("function ssrRender("), "{configured}");
+    assert!(configured.contains("@vue/server-renderer"), "{configured}");
+
+    let no_config = build("out-client", &["--no-config"]);
+    assert!(!no_config.contains("function ssrRender("), "{no_config}");
+    assert!(!no_config.contains("@vue/server-renderer"), "{no_config}");
+
+    let cli = build("out-flag", &["--no-config", "--ssr"]);
+    assert!(cli.contains("function ssrRender("), "{cli}");
+    assert!(cli.contains("@vue/server-renderer"), "{cli}");
+
+    let _ = fs::remove_dir_all(project_root);
+}
+
+#[test]
 fn build_rejects_legacy_vue_without_host_compiler() {
     let project_root = temp_project_dir("legacy-vue-without-host-compiler");
     write_project_file(

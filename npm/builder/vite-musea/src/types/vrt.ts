@@ -77,6 +77,13 @@ export interface CaptureConfig {
  * Image comparison configuration.
  */
 export interface ComparisonConfig {
+  /**
+   * Per-pixel YIQ color difference threshold from 0 (exact) to 1 (least sensitive).
+   * This is separate from `vrt.threshold`, which controls the allowed percentage
+   * of pixels that differ.
+   * @default 0.1
+   */
+  colorThreshold?: number;
   /** Anti-aliasing detection */
   antiAliasing?: boolean;
   /** Alpha channel comparison */

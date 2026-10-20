@@ -18,6 +18,7 @@ use super::{ExitFns, TransformContext};
 
 mod directive_expressions;
 mod frozen;
+mod vapor_runtime_props;
 mod vue_is;
 use directive_expressions::process_directive_expressions;
 /// Transform element node
@@ -27,6 +28,9 @@ pub fn transform_element<'a>(
 ) -> Option<ExitFns<'a>> {
     frozen::resolve_identity(ctx, el);
     validate_v_slot_usage(ctx, el);
+    if ctx.options.vapor && !ctx.options.ssr {
+        vapor_runtime_props::bind_runtime_only_attrs(ctx, el);
+    }
     // Process props and directives
     process_element_props(ctx, el);
 

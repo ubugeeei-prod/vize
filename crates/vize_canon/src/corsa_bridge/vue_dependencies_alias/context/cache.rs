@@ -26,6 +26,9 @@ pub(in crate::corsa_bridge) struct SessionCache {
     /// One revision prepared outside the native transaction.
     prebuilt: Option<prebuilt::PrebuiltContext>,
     generation: u64,
+    /// The LSP owner has an active workspace watcher and invalidates this
+    /// cache when any captured disk input can move.
+    trust_watched_disk_inputs: bool,
 }
 
 pub(super) struct ProjectMember {
@@ -89,25 +92,39 @@ impl SessionCache {
         self.reset_prebuilt();
     }
 
+    pub(in crate::corsa_bridge) fn trust_watched_disk_inputs(&mut self) {
+        self.trust_watched_disk_inputs = true;
+    }
+
+    /// Retire compiled contexts while keeping the materialized snapshot that
+    /// the next rebuild needs to remove stale mirror files precisely.
+    pub(in crate::corsa_bridge) fn invalidate_disk_inputs(&mut self) {
+        self.slots.clear();
+        self.project_overlay_identities.clear();
+        self.reset_prebuilt();
+    }
+
     pub(super) fn get(
         &mut self,
         source_path: &Path,
         fingerprint: &ContextFingerprint,
     ) -> Option<Arc<AliasContext>> {
-        // One filesystem observation per path in this lookup. The cache never
-        // survives a request, so same-mtime/same-length edits remain detectable.
+        // Standalone callers retain live filesystem validation. An LSP session
+        // with a registered watcher invalidates slots at the notification
+        // boundary and pays no lstat/read cost on unchanged warm requests.
         let mut observed = crate::package_route::stamp::InputStampCache::default();
         let valid = self.slots.get(source_path).is_some_and(|cached| {
             cached.fingerprint == *fingerprint
-                && cached.fingerprint.stamps_still_valid(&mut observed)
-                && cached.context.mirror.as_ref().is_none_or(|mirror| {
-                    !self.project_members.contains_key(mirror.virtual_root())
-                        || self.project_revision_is_current_with_cache(
-                            mirror.virtual_root(),
-                            fingerprint.overlay_identity(),
-                            &mut observed,
-                        )
-                })
+                && (self.trust_watched_disk_inputs
+                    || (cached.fingerprint.stamps_still_valid(&mut observed)
+                        && cached.context.mirror.as_ref().is_none_or(|mirror| {
+                            !self.project_members.contains_key(mirror.virtual_root())
+                                || self.project_revision_is_current_with_cache(
+                                    mirror.virtual_root(),
+                                    fingerprint.overlay_identity(),
+                                    &mut observed,
+                                )
+                        })))
         });
         if !valid {
             self.slots.remove(source_path);

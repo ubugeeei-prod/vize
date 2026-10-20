@@ -45,9 +45,10 @@ impl AliasContext {
         capture_phase.finish();
         let cache_phase =
             crate::corsa_bridge::preparation_trace::Phase::start("alias_cache_lookup", 1);
-        let cached = {
+        let (cached, cache_generation) = {
             let mut cache = environment.editor_session.cache();
-            cache.get(source_path, &fingerprint).map(|context| {
+            let generation = cache.generation();
+            let cached = cache.get(source_path, &fingerprint).map(|context| {
                 let catalog = context
                     .mirror
                     .as_ref()
@@ -55,7 +56,8 @@ impl AliasContext {
                         cache.source_catalog(mirror.virtual_root())
                     });
                 (context, catalog)
-            })
+            });
+            (cached, generation)
         };
         cache_phase.finish();
         if let Some((context, source_catalog)) = cached {
@@ -107,6 +109,15 @@ impl AliasContext {
         #[cfg(test)]
         ModuleSpecifierFactsCache::assert_no_live_preparation_facts();
         let mut cache = environment.editor_session.cache();
+        if cache.generation() != cache_generation {
+            return Err(
+                super::super::super::types::CorsaBridgeError::CommunicationError(
+                    vize_carton::cstr!(
+                        "project inputs changed while the editor mirror was being prepared"
+                    ),
+                ),
+            );
+        }
         if let Some(context) = cache.get(source_path, &fingerprint) {
             return Ok(PreparedAliasContext {
                 source_catalog: context

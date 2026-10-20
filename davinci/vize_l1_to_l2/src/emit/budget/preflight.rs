@@ -36,10 +36,40 @@ pub fn emit_dom_source_with_preflight<C: CaptureSink>(
     observe: bool,
     capture: &mut C,
 ) -> Result<(DomEmit, Option<DomEmitBudget>), EmitError> {
+    emit_dom_source_with_preflight_and_environment(
+        allocator,
+        source,
+        caps,
+        options,
+        strict_slot_params,
+        no_slotted,
+        preflight,
+        observe,
+        true,
+        capture,
+    )
+}
+
+/// Reuse the exact parsed surface with the SFC build environment.
+#[doc(hidden)]
+#[expect(clippy::too_many_arguments, reason = "SFC emission inputs")]
+pub fn emit_dom_source_with_preflight_and_environment<C: CaptureSink>(
+    allocator: &Allocator,
+    source: &str,
+    caps: LegacyCaps,
+    options: &DomEmitOptions<'_>,
+    strict_slot_params: bool,
+    no_slotted: bool,
+    preflight: &mut dyn SurfacePreflight,
+    observe: bool,
+    development: bool,
+    capture: &mut C,
+) -> Result<(DomEmit, Option<DomEmitBudget>), EmitError> {
     let invocation = EmitInvocation {
         options,
         strict_slot_params,
         no_slotted,
+        development,
         preflight: Some(preflight),
     };
     if observe {

@@ -56,9 +56,136 @@ import Child from './Child.vue'
         .find(|item| item.label == "some-message")
         .expect("some-message prop completion should be present");
     let doc = markdown_doc(&prop.documentation);
-    assert!(doc.contains("```typescript"), "got {doc:?}");
-    assert!(doc.contains("```vue"), "got {doc:?}");
-    assert!(doc.contains("Vue Component Props"), "got {doc:?}");
+    assert_eq!(
+        doc,
+        r#"**Prop `someMessage`**
+
+_Required component prop_
+
+```typescript
+interface Props {
+  someMessage: string
+}
+```
+
+**Requirement**
+
+Required
+
+**Example**
+
+```vue
+<Component some-message="..." />
+<Component :someMessage="value" />
+```
+
+**Docs**
+
+[Vue Component Props](https://vuejs.org/guide/components/props.html)"#
+    );
+}
+
+#[test]
+fn nested_template_slot_completion_only_lists_component_slots() {
+    let dir = tempfile::tempdir().unwrap();
+    fs::write(
+        dir.path().join("MySelect.vue"),
+        r#"<script setup lang="ts">
+defineSlots<{
+  selection?(props: { item: string }): unknown
+  item?(props: { item: string }): unknown
+}>()
+</script>"#,
+    )
+    .unwrap();
+
+    for (suffix, prefix) in [("#></template>", "#"), ("v-slot:></template>", "v-slot:")] {
+        let source = vize_l0::cstr!(
+            r#"<script setup lang="ts">
+import MySelect from "./MySelect.vue"
+</script>
+<template>
+  <MySelect><template {suffix}</MySelect>
+</template>"#
+        );
+        let parent_path = dir
+            .path()
+            .join(vize_l0::cstr!("Parent-{}.vue", prefix.len()));
+        fs::write(&parent_path, &source).unwrap();
+        let uri = Url::from_file_path(&parent_path).unwrap();
+        let state = ServerState::new();
+        state
+            .documents
+            .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+        state.update_virtual_docs(&uri, &source);
+
+        let offset = source
+            .find(vize_l0::cstr!("<template {prefix}").as_str())
+            .unwrap()
+            + "<template ".len()
+            + prefix.len();
+        let ctx = IdeContext::at_completion(&state, &uri, offset).unwrap();
+        let items = completion_items(CompletionService::complete(&ctx).unwrap());
+        let labels = items
+            .iter()
+            .map(|item| item.label.as_str())
+            .collect::<Vec<_>>();
+        let edits = items
+            .iter()
+            .map(|item| match item.text_edit.as_ref().unwrap() {
+                CompletionTextEdit::Edit(edit) => edit.new_text.clone(),
+                CompletionTextEdit::InsertAndReplace(_) => panic!("expected a simple text edit"),
+            })
+            .collect::<Vec<_>>();
+
+        assert_eq!(labels, vec!["selection", "item"], "{prefix}: {items:#?}");
+        assert_eq!(
+            edits,
+            vec![
+                vize_l0::cstr!(r#"{prefix}selection="{{ ${{1:item}} }}""#),
+                vize_l0::cstr!(r#"{prefix}item="{{ ${{1:item}} }}""#),
+            ]
+        );
+    }
+}
+
+#[test]
+fn incomplete_nested_template_slot_completion_recovers_template_context() {
+    let dir = tempfile::tempdir().unwrap();
+    fs::write(
+        dir.path().join("MySelect.vue"),
+        "<script setup lang='ts'>defineSlots<{ selection(): unknown; item(): unknown }>()</script>",
+    )
+    .unwrap();
+    let source = r#"<script setup lang="ts">
+import MySelect from "./MySelect.vue"
+</script>
+<template>
+  <MySelect><template #
+  <span>markup typed after the incomplete tag</span>
+  </MySelect>
+</template>"#;
+    let parent_path = dir.path().join("Parent.vue");
+    fs::write(&parent_path, source).unwrap();
+    let uri = Url::from_file_path(&parent_path).unwrap();
+    let state = ServerState::new();
+    state
+        .documents
+        .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+    state.update_virtual_docs(&uri, source);
+
+    let offset = source.find("<template #").unwrap() + "<template #".len();
+    let ctx = IdeContext::at_completion(&state, &uri, offset).unwrap();
+    let labels = completion_items(CompletionService::complete(&ctx).unwrap())
+        .into_iter()
+        .map(|item| item.label)
+        .collect::<Vec<_>>();
+
+    assert_eq!(labels, vec!["selection", "item"]);
+    assert!(!labels.iter().any(|label| matches!(
+        label.as_str(),
+        "template" | "script setup" | "style" | "v-if" | "@click" | ":" | "#"
+    )));
 }
 
 #[test]

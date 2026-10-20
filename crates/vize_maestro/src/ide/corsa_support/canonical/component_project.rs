@@ -137,6 +137,7 @@ impl ComponentPropNavigationMatches {
                 continue;
             };
             positions.extend(materialized_semantic_positions(
+                ctx.state,
                 document,
                 &definition.uri,
                 offset,

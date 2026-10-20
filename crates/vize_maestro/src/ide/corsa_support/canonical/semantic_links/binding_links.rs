@@ -11,11 +11,12 @@ use super::{CanonicalSemanticPosition, CanonicalVirtualDocument};
 /// key, typed property access and bare template binding share one identity.
 /// Component-navigation owner edges are intentionally not binding aliases.
 pub(crate) fn linked_semantic_positions(
+    state: &crate::server::ServerState,
     document: &CanonicalVirtualDocument,
     uri: &str,
     range: &LspRange,
 ) -> Vec<CanonicalSemanticPosition> {
-    let Some((request_uri, result)) = super::virtual_result(document, uri) else {
+    let Some((request_uri, result)) = super::virtual_result(state, document, uri) else {
         return Vec::new();
     };
     let Some(start) =
@@ -189,6 +190,7 @@ mod tests {
 
     #[test]
     fn linked_position_uses_metadata_without_generated_helper_spelling() {
+        let state = crate::server::ServerState::new();
         let code =
             "type Capture = typeof shared;\nvar shared: Unwrap<Capture> = undefined as any;\n";
         let source_start = code.find("typeof shared").unwrap() + "typeof ".len();
@@ -219,6 +221,7 @@ mod tests {
             crate::ide::offset_to_position(code, source_start + "shared".len());
 
         let linked = linked_semantic_positions(
+            &state,
             &document,
             "file:///workspace/App.vue.ts",
             &LspRange {

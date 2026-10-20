@@ -19,6 +19,10 @@ use super::root::{
     is_ignorable_root_text,
 };
 
+#[expect(
+    clippy::too_many_arguments,
+    reason = "codegen inputs remain explicit across the internal SFC environment boundary"
+)]
 pub(super) fn generate_with_sections_and_options(
     root: &RootNode<'_>,
     options: CodegenOptions,
@@ -27,6 +31,7 @@ pub(super) fn generate_with_sections_and_options(
     source_text: Option<&str>,
     experimental_options: CodegenExperimentalOptions,
     no_slotted: bool,
+    development: bool,
 ) -> CodegenResultWithSections {
     let mut ctx = CodegenContext::new_with_vnode_factory_merge_props_and_experimentals(
         options,
@@ -35,6 +40,7 @@ pub(super) fn generate_with_sections_and_options(
         experimental_options,
         no_slotted,
     );
+    ctx.development = development;
     ctx.source = match source_text {
         Some(text) => vize_l0::String::new(text),
         None => root.source.into(),

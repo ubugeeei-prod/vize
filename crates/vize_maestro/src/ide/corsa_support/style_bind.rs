@@ -203,7 +203,8 @@ pub(crate) async fn style_bind_locations(
         // A template ref-unwrap shadow has no authored span; its semantic
         // link leads to the setup binding, as from a template expression.
         let document = &projection.document;
-        for position in super::linked_semantic_positions(document, &canonical.uri, &canonical.range)
+        for position in
+            super::linked_semantic_positions(ctx.state, document, &canonical.uri, &canonical.range)
         {
             let (uri, line, character) = (&position.request_uri, position.line, position.character);
             let found = match query {

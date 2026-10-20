@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
+import path from "node:path";
 import { resolveSnapshotIdentity } from "./vrt/snapshot-identity.js";
 import type { ResolvedConfig } from "vite";
 
@@ -70,54 +71,167 @@ export async function createStaticGalleryPayload(
   ctx: StaticGalleryDataContext,
 ): Promise<StaticGalleryPayload> {
   const apiCtx = createApiContext(ctx);
-  const arts = sortedArts(ctx.artFiles.values());
+  const sourceArts = sortedArts(ctx.artFiles.values());
+  const arts: ArtFileInfo[] = [];
   const previews: StaticGalleryPayload["previews"] = Object.create(null);
   const details: StaticGalleryPayload["details"] = {};
   const snapshotIdentities: Record<string, string> = Object.create(null);
+  const identityRoot = resolveStaticIdentityRoot(
+    ctx.config.root,
+    sourceArts.map((art) => art.path),
+    ctx.projectRoot,
+  );
+  const publicPaths = new Map<string, string>();
+  for (const art of sourceArts) {
+    publicPaths.set(art.path, resolveStaticArtIdentity(art.path, identityRoot));
+  }
 
-  for (const art of arts) {
-    snapshotIdentities[art.path] = resolveSnapshotIdentity(
-      art.path,
-      ctx.projectRoot ?? ctx.config.root,
-    );
-    previews[art.path] = Object.create(null);
+  for (const sourceArt of sourceArts) {
+    const publicPath = publicPaths.get(sourceArt.path)!;
+    const art = publicArtInfo(sourceArt, publicPath, identityRoot);
+    arts.push(art);
+    snapshotIdentities[publicPath] = publicPath;
+    previews[publicPath] = Object.create(null);
 
     for (const variant of art.variants) {
-      const id = staticPreviewId(art.path, variant.name);
-      previews[art.path][variant.name] = joinUrlPath(ctx.basePath, "preview", `${id}.html`);
+      const id = staticPreviewId(publicPath, variant.name);
+      previews[publicPath][variant.name] = joinUrlPath(ctx.basePath, "preview", `${id}.html`);
     }
 
-    details[art.path] = {
-      source: await captureJson(
-        (sendJson, sendError) => {
-          return handleArtSource(apiCtx, artMatch(art.path), sendJson, sendError);
-        },
-        { source: "", path: art.path },
+    details[publicPath] = {
+      source: withPublicSourcePath(
+        await captureJson(
+          (sendJson, sendError) => {
+            return handleArtSource(apiCtx, artMatch(sourceArt.path), sendJson, sendError);
+          },
+          { source: "", path: sourceArt.path },
+        ),
+        publicPath,
       ),
       palette: await captureJson((sendJson, sendError) => {
-        return handleArtPalette(apiCtx, artMatch(art.path), sendJson, sendError);
+        return handleArtPalette(apiCtx, artMatch(sourceArt.path), sendJson, sendError);
       }, emptyPalette(art)),
       analysis: await captureJson(
         (sendJson, sendError) => {
-          return handleArtAnalysis(apiCtx, artMatch(art.path), sendJson, sendError);
+          return handleArtAnalysis(apiCtx, artMatch(sourceArt.path), sendJson, sendError);
         },
         { props: [], emits: [] },
       ),
       docs: await captureJson((sendJson, sendError) => {
-        return handleArtDocs(apiCtx, artMatch(art.path), sendJson, sendError);
+        return handleArtDocs(apiCtx, artMatch(sourceArt.path), sendJson, sendError);
       }, emptyDocs(art)),
     };
   }
 
+  const tokens = await captureJson((sendJson) => handleTokensGet(apiCtx, sendJson), emptyTokens());
+  const tokenUsage = await captureJson((sendJson) => handleTokensUsage(apiCtx, sendJson), {});
   return {
     arts,
     snapshotIdentityVersion: 1,
     snapshotIdentities,
     previews,
     details,
-    tokens: await captureJson((sendJson) => handleTokensGet(apiCtx, sendJson), emptyTokens()),
-    tokenUsage: await captureJson((sendJson) => handleTokensUsage(apiCtx, sendJson), {}),
+    tokens: withPublicTokenPath(tokens, identityRoot),
+    tokenUsage: withPublicUsagePaths(tokenUsage, publicPaths),
   };
+}
+
+export function resolveStaticIdentityRoot(
+  viteRoot: string,
+  artPaths: Iterable<string>,
+  projectRoot?: string,
+): string {
+  if (projectRoot) return path.resolve(projectRoot);
+  let root = path.resolve(viteRoot);
+  for (const artPath of artPaths) {
+    const directory = path.dirname(path.resolve(artPath));
+    while (!isPathInside(root, directory)) {
+      const parent = path.dirname(root);
+      if (parent === root) {
+        throw new Error(
+          `Art is outside the Vite root on another filesystem: ${artPath}. Configure projectRoot.`,
+        );
+      }
+      root = parent;
+    }
+  }
+  return root;
+}
+
+export function resolveStaticArtIdentity(artPath: string, identityRoot: string): string {
+  return resolveSnapshotIdentity(artPath, identityRoot);
+}
+
+function publicArtInfo(art: ArtFileInfo, publicPath: string, identityRoot: string): ArtFileInfo {
+  return {
+    ...art,
+    path: publicPath,
+    ...(art.componentPath
+      ? { componentPath: publicSourceIdentity(art.componentPath, identityRoot) }
+      : {}),
+  };
+}
+
+function withPublicSourcePath(value: unknown, publicPath: string): unknown {
+  if (!isRecord(value) || typeof value.path !== "string") return value;
+  return { ...value, path: publicPath };
+}
+
+function withPublicTokenPath(value: unknown, identityRoot: string): unknown {
+  if (!isRecord(value) || !isRecord(value.meta) || typeof value.meta.filePath !== "string")
+    return value;
+  if (!path.isAbsolute(value.meta.filePath)) return value;
+  return {
+    ...value,
+    meta: {
+      ...value.meta,
+      filePath: publicSourceIdentity(value.meta.filePath, identityRoot),
+    },
+  };
+}
+
+function withPublicUsagePaths(value: unknown, publicPaths: Map<string, string>): unknown {
+  if (!isRecord(value)) return value;
+  return Object.fromEntries(
+    Object.entries(value).map(([token, entries]) => [
+      token,
+      Array.isArray(entries)
+        ? entries.map((entry) =>
+            isRecord(entry) && typeof entry.artPath === "string"
+              ? {
+                  ...entry,
+                  artPath: publicPaths.get(entry.artPath) ?? path.basename(entry.artPath),
+                }
+              : entry,
+          )
+        : entries,
+    ]),
+  );
+}
+
+function publicSourceIdentity(sourcePath: string, identityRoot: string): string {
+  const relative = path.relative(identityRoot, path.resolve(sourcePath));
+  if (
+    relative === "" ||
+    relative === ".." ||
+    relative.startsWith(`..${path.sep}`) ||
+    path.isAbsolute(relative)
+  ) {
+    return path.basename(sourcePath);
+  }
+  return relative.split(path.sep).join("/");
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function isPathInside(root: string, candidate: string): boolean {
+  const relative = path.relative(root, candidate);
+  return (
+    relative === "" ||
+    (relative !== ".." && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative))
+  );
 }
 
 function createApiContext(ctx: StaticGalleryDataContext): ApiRoutesContext {

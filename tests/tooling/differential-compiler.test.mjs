@@ -37,7 +37,7 @@ function syntheticReport(code = fixture.expected) {
         css: null,
         errors: [],
         warnings: [],
-        script_lang: "js",
+        script_lang: current.comparison.scriptLang ?? "js",
         macro_artifacts: [],
       }),
     );
@@ -45,6 +45,7 @@ function syntheticReport(code = fixture.expected) {
       { status: 0, signal: null, stdout: Buffer.alloc(0), stderr: Buffer.alloc(0) },
       output,
       current.expected,
+      current.comparison.scriptLang,
     );
     const verdict =
       observation.referenceComparison.state === "equal" ? "matched-reference" : "baseline-drift";
@@ -95,19 +96,24 @@ void test("compiler fixture pins a real full-module reference without native cre
     [
       "compiler/sfc/ssr-slot-scope",
       "compiler/sfc/slot-fallback-compound-text-9889",
+      "compiler/sfc/production-v-if-comment-9920",
       "compiler/sfc/template-asset-urls-9895",
+      "compiler/sfc/v-model-maybe-ref-9897",
+      "compiler/sfc/vue2-preserve-boundaries-9886",
+      "compiler/sfc/package-import-prop-type-9894",
     ],
   );
   const report = syntheticReport();
   assert.deepEqual(validateCompilerReport(loaded, report, build), report.summary);
   assert.deepEqual(summarizeNativeAcceptance(loaded, report, { sourceRevision }).total, {
-    planned: 3,
+    planned: 7,
     nativeHandled: 0,
     nativeEquivalent: 0,
-    unsupported: 3,
+    unsupported: 7,
     legacyBacked: 0,
     unverified: 0,
   });
+  assert.equal(loaded.cases.at(-1).comparison.scriptLang, "ts");
 });
 
 void test("compiler comparison checks every code byte and rejects forged native completion", () => {

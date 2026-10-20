@@ -31,6 +31,7 @@ import {
   loadStaticRuntimeModule,
   museaStaticBuildConfig,
   resolveStaticRuntimeId,
+  resolveStaticIdentityRoot,
   shouldEmitMuseaStaticGallery,
   type StaticBuildInput,
 } from "../static-export.js";
@@ -274,7 +275,14 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
       return resolveStaticRuntimeId(id) ?? virtualResolveId(id);
     },
     load(id) {
-      return loadStaticRuntimeModule(id, artFiles) ?? virtualLoad(id);
+      const identityRoot = staticBuildEnabled
+        ? resolveStaticIdentityRoot(
+            config.root,
+            artFiles.keys(),
+            resolveProjectRoot(projectRootOption, config.root),
+          )
+        : undefined;
+      return loadStaticRuntimeModule(id, artFiles, identityRoot) ?? virtualLoad(id);
     },
     async generateBundle(_options, bundle) {
       if (!staticBuildEnabled) return;

@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "id": "lsp/regression/nested-vite-project-9856",
+  "provenance": {
+    "fixCommit": "52a00912754fa0f91ddb8b142616346275cb28b2",
+    "issue": 9856,
+    "meaning": "nested Vite app retains root TypeScript and lint authority"
+  },
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": [
+    {
+      "source": "gallery/Widget.vue.txt",
+      "runtimePath": "gallery/Widget.vue",
+      "sha256": "0304170acb45ce75b40faf514966cf5ee4453802e920fe7d05ceea05bceb6730"
+    },
+    {
+      "source": "src/lib/math.ts.txt",
+      "runtimePath": "src/lib/math.ts",
+      "sha256": "f4d9a941b45e0f47e8eb4960c27f18af1d0dc973ab399c7862c327c846c941cc"
+    },
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "63c312539837b3ea8e3b67509559651dd718be2c7488fdde9ff698fdc4d90f5d"
+    },
+    {
+      "source": "vite.config.ts.txt",
+      "runtimePath": "vite.config.ts",
+      "sha256": "160eebeab2277ee2a479183fa67d2d4cfe72366877931eaaf1d92bc960f9588b"
+    },
+    {
+      "source": "gallery/vite.config.ts.txt",
+      "runtimePath": "gallery/vite.config.ts",
+      "sha256": "450f0af4f4c1ecc4c7180f2e364c8a59bfed69dd350fb6b47bce8641c2a37786"
+    }
+  ],
+  "entry": "gallery/Widget.vue",
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "10b6343538acaab0a160be45a11a364d9859f961dda1218c6e3f71d292f9d7d0"
+  },
+  "method": "textDocument/hover",
+  "scope": "pinned nested Vite project ownership input"
+}

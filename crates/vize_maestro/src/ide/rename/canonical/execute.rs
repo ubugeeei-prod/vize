@@ -165,14 +165,14 @@ pub(super) async fn rename_strict_inner(
     shorthand_roles.capture(ctx, &document, response.as_ref())?;
     let mut linked = response
         .as_ref()
-        .map(|response| linked_positions(&document, response))
+        .map(|response| linked_positions(ctx.state, &document, response))
         .unwrap_or_default();
     // An attribute's producer key already selects its native identity. Its
     // shorthand value shares the authored token but is a separate symbol.
     // Public-key endpoints below cover matching materialized identities.
     if attribute.is_none() {
         linked.extend(corsa_support::materialized_semantic_positions(
-            &document, ctx.uri, ctx.offset,
+            ctx.state, &document, ctx.uri, ctx.offset,
         ));
     }
     linked.extend(definition_positions);

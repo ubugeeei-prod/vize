@@ -41,6 +41,8 @@ pub struct CodegenContext {
     /// Whether the reserved `<Self>` tag resolves to the current component.
     pub(super) experimental_self_component: bool,
     pub(super) no_slotted: bool,
+    /// Whether development-only codegen hints should be retained.
+    pub(super) development: bool,
     /// Pure annotation for tree-shaking
     pub(super) pure: bool,
     /// Helpers used during codegen

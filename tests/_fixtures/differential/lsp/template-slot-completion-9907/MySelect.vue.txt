@@ -1,0 +1,13 @@
+<script setup lang="ts">
+defineProps<{ items: readonly string[] }>();
+defineSlots<{
+  selection?(props: { item: string }): unknown;
+  item?(props: { item: string }): unknown;
+}>();
+</script>
+
+<template>
+  <ul>
+    <li v-for="item in items" :key="item"><slot name="item" :item="item">{{ item }}</slot></li>
+  </ul>
+</template>

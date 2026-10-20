@@ -160,24 +160,30 @@ fn explicit_native_configuration_keeps_the_existing_invocation_root() {
 }
 
 #[test]
-fn stale_dedicated_configuration_does_not_override_vite_and_explicit_use_rejects() {
+fn stale_dedicated_configuration_rejects_commands_before_vite_evaluation() {
     let project = project();
     let root = project.path();
     write(root, "vize.config.json", DEDICATED);
-    let (output, report) = lint_report(root, &[]);
-    assert_eq!(output.status.code(), Some(1), "{output:?}");
-    assert_eq!(report, oracle!("lint-configured.json"));
-    assert_configuration(root, &SETTINGS, true, Some("evaluated\n"));
 
-    reset_evaluations(root);
-    assert_success(&run(root, &["build", "-o", "configured"]));
-    assert_eq!(
-        inventory(&root.join("configured")),
-        oracle!("build-configured.json")
-    );
-    assert_configuration(root, &SETTINGS, true, Some("evaluated\n"));
+    for (args, status) in [
+        (&["lint", "--format", "json"][..], 2),
+        (&["build", "-o", "configured"][..], 1),
+    ] {
+        let output = run(root, args);
+        assert_eq!(output.status.code(), Some(status), "{args:?}: {output:?}");
+        assert!(output.stdout.is_empty(), "{args:?}: {output:?}");
+        assert_eq!(
+            String::from_utf8_lossy(&output.stderr),
+            vize_l0::cstr!(
+                "\x1b[31mError:\x1b[0m {}\n",
+                super::support::LEGACY_CONFIG_ERROR
+            )
+            .as_str(),
+            "{args:?}: {output:?}",
+        );
+        assert_configuration(root, &SETTINGS, true, None);
+    }
 
-    reset_evaluations(root);
     super::support::assert_legacy_config_rejected(&run(
         root,
         &["lint", "--config", "vize.config.json", "--format", "json"],

@@ -20,6 +20,7 @@ impl ComponentPropEditFilter<'_, '_> {
             range: corsa_support::tower_range(range),
         };
         if !corsa_support::component_prop_navigation_identity_matches(
+            self.ctx.state,
             self.document,
             &raw,
             self.authored_definitions,

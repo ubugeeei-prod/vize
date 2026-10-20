@@ -176,6 +176,9 @@ pub(super) fn apply_rule_options(
     if let Some(mode) = options.define_props_destructuring() {
         linter = linter.with_define_props_destructuring(mode);
     }
+    if let Some(options) = options.define_macros_order() {
+        linter = linter.with_define_macros_order(options);
+    }
     if let Some(options) = options.component_name_in_template_casing_options() {
         linter = linter.with_component_name_in_template_casing_policy(
             component_casing(options.casing),
@@ -405,5 +408,33 @@ mod valid_v_on_options_tests {
         );
         let empty = apply_rule_options(Linter::with_registry(RuleRegistry::new()), &options, false);
         assert!(!empty.registry().has_rule("vue/valid-v-on"));
+    }
+}
+
+#[cfg(test)]
+mod define_macros_order_options_tests {
+    use super::apply_rule_options;
+    use vize_patina::Linter;
+
+    #[test]
+    fn lsp_custom_macro_order_reaches_the_configured_rule() {
+        let options = serde_json::from_str(
+            r#"{"script/define-macros-order":{"order":["defineOptions","defineProps","defineEmits"]}}"#,
+        )
+        .unwrap();
+        let linter = apply_rule_options(
+            Linter::new().with_enabled_rules(Some(vec!["script/define-macros-order".into()])),
+            &options,
+            false,
+        );
+        let result = linter.lint_sfc(
+            r#"<script setup>
+defineOptions({ inheritAttrs: false })
+const props = defineProps()
+const emit = defineEmits()
+</script>"#,
+            "App.vue",
+        );
+        assert!(result.diagnostics.is_empty(), "{result:#?}");
     }
 }

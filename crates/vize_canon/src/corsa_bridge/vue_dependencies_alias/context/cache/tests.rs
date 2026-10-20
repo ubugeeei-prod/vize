@@ -151,6 +151,37 @@ fn unstamped_request_identity_reuses_a_valid_stamped_context() {
 }
 
 #[test]
+fn watched_session_trusts_stamps_until_the_event_invalidates_them() {
+    let root = tempfile::tempdir().unwrap();
+    let source = root.path().join("App.vue");
+    let config = root.path().join("tsconfig.json");
+    std::fs::write(&source, "<template />\n").unwrap();
+    std::fs::write(&config, r#"{"strict":true}"#).unwrap();
+    let overlays = FxHashMap::default();
+    let context = Arc::new(AliasContext::for_host(&source, "<template />\n", &overlays));
+    let mut cached = ContextFingerprint::capture(
+        &source,
+        "<template />\n",
+        &overlays,
+        Default::default(),
+        &Default::default(),
+        None,
+        None,
+    );
+    cached.stamp(&context);
+    let request = cached.clone();
+    let mut cache = SessionCache::default();
+    cache.trust_watched_disk_inputs();
+    cache.insert(source.clone(), cached, context);
+
+    std::fs::write(&config, r#"{"strict":false}"#).unwrap();
+    assert!(cache.get(&source, &request).is_some());
+
+    cache.invalidate_disk_inputs();
+    assert!(cache.get(&source, &request).is_none());
+}
+
+#[test]
 fn project_union_drops_members_with_stale_input_stamps() {
     let root = tempfile::tempdir().unwrap();
     let virtual_root = root.path().join("mirror");

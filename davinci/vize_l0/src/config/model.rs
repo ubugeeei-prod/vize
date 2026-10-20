@@ -48,9 +48,9 @@ pub use linter_execution::LinterExecutionOptions;
 pub use linter_feature_flags::LinterFeatureFlags;
 pub use linter_rule_options::{
     ComponentNameInTemplateCasingOptions, ConfigLintRuleOptions, CustomEventNameCasing,
-    CustomEventNameCasingOptions, DefinePropsDestructuringOptions, HtmlSelfClosingHtmlOptions,
-    HtmlSelfClosingOptions, HtmlSelfClosingStyle, HyphenationStyle, LintRuleOptions,
-    MuseaDesignToken, MuseaPreferDesignTokensOptions, NoMutatingPropsOptions,
+    CustomEventNameCasingOptions, DefineMacrosOrderOptions, DefinePropsDestructuringOptions,
+    HtmlSelfClosingHtmlOptions, HtmlSelfClosingOptions, HtmlSelfClosingStyle, HyphenationStyle,
+    LintRuleOptions, MuseaDesignToken, MuseaPreferDesignTokensOptions, NoMutatingPropsOptions,
     NoRestrictedGlobalsOptions, NoRestrictedMembersOptions, PropsDestructureMode, RestrictedGlobal,
     RestrictedMember, SfcElementOrderGroup, SfcElementOrderOptions,
     StrictBooleanExpressionsOptions, TemplateComponentNameCasing,

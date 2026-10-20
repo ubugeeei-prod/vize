@@ -12,8 +12,6 @@ use vize_l0::profiler::global_profiler;
 use vize_l0::{Allocator, profile};
 use vize_l1_to_l2::{
     BindingKind, BindingTable, DomEmitMode, DomEmitOptions, DomEmitSections, EmitError, LegacyCaps,
-    emit_dom_source_observed_with_options_captured_and_slot_scope as observe_sfc,
-    emit_dom_source_with_options_captured_and_slot_scope as emit_sfc,
 };
 
 use super::pipeline::L2EmitSelection;
@@ -217,6 +215,7 @@ pub(super) fn try_emit_l2(
     pre_s2_walks: Option<WalkCounts>,
     strict_slot_params: bool,
     no_slotted: bool,
+    development: bool,
 ) -> Option<CodegenResultWithSections> {
     let binding_table = l2_binding_table_for(options);
     let emit_options = l2_emit_options(
@@ -237,12 +236,17 @@ pub(super) fn try_emit_l2(
             pre_s2_walks,
             strict_slot_params,
             no_slotted,
+            development,
         )
     ))
     .ok()
 }
 
 /// Emit one DOM module through L2, with the SFC-only slot check when requested.
+#[expect(
+    clippy::too_many_arguments,
+    reason = "compile inputs remain explicit across the internal SFC environment boundary"
+)]
 pub(super) fn emit_l2(
     allocator: &Allocator,
     source: &str,
@@ -251,29 +255,32 @@ pub(super) fn emit_l2(
     pre_s2_walks: Option<WalkCounts>,
     strict_slot_params: bool,
     no_slotted: bool,
+    development: bool,
 ) -> Result<CodegenResultWithSections, EmitError> {
     let caps = LegacyCaps::for_version(dialect);
     let profiler = global_profiler();
     let emit = if profiler.is_enabled() {
-        let observed = observe_sfc(
+        let observed = vize_l1_to_l2::emit_dom_source_observed_with_options_captured_slot_scope_and_environment(
             allocator,
             source,
             caps,
             options,
             strict_slot_params,
             no_slotted,
+            development,
             &mut NoCapture,
         )?;
         record_l2_budget(observed.budget, pre_s2_walks);
         observed.emit
     } else {
-        emit_sfc(
+        vize_l1_to_l2::emit_dom_source_with_options_captured_slot_scope_and_environment(
             allocator,
             source,
             caps,
             options,
             strict_slot_params,
             no_slotted,
+            development,
             &mut NoCapture,
         )?
     };

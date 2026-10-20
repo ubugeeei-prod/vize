@@ -1,5 +1,6 @@
 //! Go-to-definition for import and export module specifiers.
 
+use std::ops::Range as ByteRange;
 use std::path::{Path, PathBuf};
 
 use tower_lsp::lsp_types::{GotoDefinitionResponse, Location, Position, Range, Url};
@@ -54,7 +55,7 @@ pub(super) async fn definition_with_corsa(
         .iter()
         .filter_map(|location| {
             corsa_support::map_canonical_corsa_location(ctx, &document, location).or_else(|| {
-                corsa_support::map_canonical_materialized_module_location(&document, location)
+                corsa_support::map_canonical_materialized_module_location(ctx, &document, location)
             })
         })
         .map(pin_to_module_origin)
@@ -85,6 +86,13 @@ fn pin_to_module_origin(mut location: Location) -> Location {
 }
 
 pub(super) fn specifier_at_offset(content: &str, offset: usize) -> Option<&str> {
+    specifier_span_at_offset(content, offset).map(|(specifier, _)| specifier)
+}
+
+pub(crate) fn specifier_span_at_offset(
+    content: &str,
+    offset: usize,
+) -> Option<(&str, ByteRange<usize>)> {
     if offset > content.len() || !content.is_char_boundary(offset) {
         return None;
     }
@@ -121,7 +129,10 @@ pub(super) fn specifier_at_offset(content: &str, offset: usize) -> Option<&str> 
                     && relative_offset <= end
                     && line.get(..start).is_some_and(is_module_context)
                 {
-                    return line.get(start + 1..end);
+                    return Some((
+                        line.get(start + 1..end)?,
+                        line_start + start + 1..line_start + end,
+                    ));
                 }
                 cursor += 1;
                 break;

@@ -1,0 +1,29 @@
+<script setup lang="ts">
+import { useSlots } from "vue";
+
+import MyList from "./my-list.vue";
+import MyItem from "./my-item.vue";
+
+const slots = useSlots();
+const names = Object.keys(slots);
+</script>
+
+<template>
+  <MyList>
+    <template v-for="name in names" #[name]="scope">
+      <slot :name="name" v-bind="scope" />
+    </template>
+  </MyList>
+
+  <MyList>
+    <template v-for="name in names" #[name]="scope">
+      <component :is="slots[name]" v-bind="scope" />
+    </template>
+  </MyList>
+
+  <MyList>
+    <template v-for="name in names" #[name]>
+      <MyItem :label="name" />
+    </template>
+  </MyList>
+</template>

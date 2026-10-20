@@ -18,6 +18,7 @@ pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
         None,
         CodegenExperimentalOptions::default(),
         false,
+        true,
     )
     .into_result()
 }
@@ -41,6 +42,7 @@ pub fn generate_with_merge_props(
         None,
         CodegenExperimentalOptions::default(),
         false,
+        true,
     )
     .into_result()
 }
@@ -60,6 +62,7 @@ pub fn generate_with_vnode_factory(
         None,
         CodegenExperimentalOptions::default(),
         false,
+        true,
     )
     .into_result()
 }
@@ -85,6 +88,7 @@ pub fn generate_with_vnode_factory_and_merge_props(
         source_text,
         CodegenExperimentalOptions::default(),
         false,
+        true,
     )
     .into_result()
 }
@@ -102,6 +106,7 @@ pub fn generate_with_sections(
         None,
         CodegenExperimentalOptions::default(),
         false,
+        true,
     )
 }
 
@@ -112,8 +117,17 @@ pub fn generate_with_experimental_options(
     options: CodegenOptions,
     experimental_options: CodegenExperimentalOptions,
 ) -> CodegenResult {
-    generate_with_sections_and_options(root, options, None, true, None, experimental_options, false)
-        .into_result()
+    generate_with_sections_and_options(
+        root,
+        options,
+        None,
+        true,
+        None,
+        experimental_options,
+        false,
+        true,
+    )
+    .into_result()
 }
 
 /// Generate code and section metadata with opt-in experimental codegen context.
@@ -123,7 +137,16 @@ pub fn generate_with_sections_and_experimental_options(
     options: CodegenOptions,
     experimental_options: CodegenExperimentalOptions,
 ) -> CodegenResultWithSections {
-    generate_with_sections_and_options(root, options, None, true, None, experimental_options, false)
+    generate_with_sections_and_options(
+        root,
+        options,
+        None,
+        true,
+        None,
+        experimental_options,
+        false,
+        true,
+    )
 }
 
 /// SFC-specific slot-scope policy carried outside the published options literal.
@@ -134,6 +157,24 @@ pub fn generate_with_sections_and_experimental_options_and_slot_scope(
     experimental_options: CodegenExperimentalOptions,
     no_slotted: bool,
 ) -> CodegenResultWithSections {
+    generate_with_sections_and_experimental_options_slot_scope_and_environment(
+        root,
+        options,
+        experimental_options,
+        no_slotted,
+        true,
+    )
+}
+
+/// SFC-specific build environment carried outside the published options literal.
+#[doc(hidden)]
+pub fn generate_with_sections_and_experimental_options_slot_scope_and_environment(
+    root: &RootNode<'_>,
+    options: CodegenOptions,
+    experimental_options: CodegenExperimentalOptions,
+    no_slotted: bool,
+    development: bool,
+) -> CodegenResultWithSections {
     generate_with_sections_and_options(
         root,
         options,
@@ -142,5 +183,6 @@ pub fn generate_with_sections_and_experimental_options_and_slot_scope(
         None,
         experimental_options,
         no_slotted,
+        development,
     )
 }

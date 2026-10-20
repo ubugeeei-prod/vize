@@ -80,10 +80,12 @@ const message = ref('hello')
     let hover = HoverService::hover(&ctx).unwrap();
     let value = hover_markdown(hover);
 
-    assert!(value.contains("message"));
     // The binding still resolves at the identifier boundary; its *type* is
     // the backend's to answer now, so the heuristic reports provenance only.
-    assert!(value.contains("_Template binding_"));
+    assert_eq!(
+        value,
+        "**message**\n\n_Template binding_\n\nBinding from `<script setup>`.\n\n**Behavior**\n- Available directly in the template scope.\n- Vue automatically unwraps refs when rendering templates."
+    );
 }
 
 #[test]
@@ -102,8 +104,10 @@ const message = ref('hello')
     let hover = HoverService::hover(&ctx).unwrap();
     let value = hover_markdown(hover);
 
-    assert!(value.contains("message"));
-    assert!(value.contains("_Template binding_"));
+    assert_eq!(
+        value,
+        "**message**\n\n_Template binding_\n\nBinding from `<script setup>`.\n\n**Behavior**\n- Available directly in the template scope.\n- Vue automatically unwraps refs when rendering templates."
+    );
 }
 
 #[test]
@@ -142,8 +146,31 @@ fn test_corsa_hover_is_decorated_for_editor_clients() {
     let value = hover_markdown(hover);
 
     // The signature is the whole body: no preamble above the fence (#3894).
-    assert!(value.starts_with("```typescript"));
-    assert!(value.contains("count: number"));
+    assert_eq!(value, "```typescript\n(property) count: number\n```");
+}
+
+#[cfg(feature = "native")]
+#[test]
+fn script_module_specifier_hover_uses_authored_text_and_range() {
+    crate::runtime::block_on(async {
+        let source = r#"<script setup lang="ts">
+import { formatCount } from "./util";
+</script>
+"#;
+        let (state, uri) = state_with_document("App.vue", source);
+        let offset = source.find("./util").unwrap() + 3;
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+
+        let hover = HoverService::hover_with_corsa(&ctx, None).await.unwrap();
+        let range = hover.range.unwrap();
+        assert_eq!(range.start.line, 1);
+        assert_eq!(range.start.character, 29);
+        assert_eq!(range.end.line, 1);
+        assert_eq!(range.end.character, 35);
+
+        let value = hover_markdown(hover);
+        assert_eq!(value, "```typescript\nmodule \"./util\"\n```");
+    });
 }
 
 #[test]

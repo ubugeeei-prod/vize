@@ -1,5 +1,8 @@
 #![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
-use super::{LintIgnoreSet, base_dir_from_lint_pattern, collect_lint_file_collection};
+use super::{
+    LintIgnoreSet, base_dir_from_lint_pattern, collect_default_lint_files,
+    collect_lint_file_collection,
+};
 use std::fs;
 
 #[test]
@@ -106,6 +109,40 @@ fn recursive_globs_include_dot_directories() {
     .files;
 
     assert_eq!(files, vec![download_page]);
+}
+
+#[test]
+fn default_collection_matches_the_extension_glob_union_in_one_walk() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path();
+    let included = [
+        root.join("App.vue"),
+        root.join("docs/.vitepress/theme.jsx"),
+        root.join("src/main.ts"),
+    ];
+    let excluded = [
+        root.join("README.md"),
+        root.join("node_modules/vue/index.ts"),
+        root.join(".vize/canon/cache.vue"),
+    ];
+    for file in included.iter().chain(&excluded) {
+        fs::create_dir_all(file.parent().unwrap()).unwrap();
+        fs::write(file, "").unwrap();
+    }
+
+    let patterns = super::super::patterns::LINT_DEFAULT_PATTERNS
+        .iter()
+        .map(|pattern| {
+            root.join(pattern.strip_prefix("./").unwrap_or(pattern))
+                .display()
+                .to_string()
+                .into()
+        })
+        .collect::<Vec<_>>();
+    let glob_union = collect_lint_file_collection(&patterns, None).files;
+
+    assert_eq!(collect_default_lint_files(root, None), glob_union);
+    assert_eq!(glob_union, included);
 }
 
 #[test]

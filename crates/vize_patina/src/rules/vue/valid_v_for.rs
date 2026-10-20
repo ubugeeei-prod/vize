@@ -182,6 +182,19 @@ fn check_iteration_keys(
     element: &ElementNode<'_>,
     v_for_exp: Option<&ExpressionNode<'_>>,
 ) {
+    // A template that combines v-for with v-slot creates one slot function per
+    // iteration. Its children are slot bodies rather than repeated VNodes, so
+    // they do not need keys. Keep validating the v-for expression itself, but
+    // do not forward the iteration's key requirement into the slot body.
+    if element.tag == "template"
+        && element
+            .props
+            .iter()
+            .any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == "slot"))
+    {
+        return;
+    }
+
     if element.tag == "template" && bound_key_directive(element).is_none() {
         let variables = v_for_exp.map(parse_v_for_variables).unwrap_or_default();
         for child in &element.children {

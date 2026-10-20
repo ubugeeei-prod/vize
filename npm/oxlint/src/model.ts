@@ -85,10 +85,13 @@ export interface PatinaBinding {
       componentNameInTemplateCasing?: ComponentNameInTemplateCasingOption;
       customEventNameCasing?: CustomEventNameCasingOption;
       noMutatingProps?: NoMutatingPropsOption;
+      defineMacrosOrder?: DefineMacrosOrderOption;
       sfcElementOrder?: SfcElementOrderOption;
       htmlSelfClosing?: HtmlSelfClosingOption;
       vOnEventHyphenation?: HyphenationStyle;
       attributeHyphenation?: HyphenationStyle;
+      /** Full CLI-compatible per-rule option map. */
+      ruleOptionsJson?: string;
     },
   ): PatinaLintResult;
   getPatinaRules(): PatinaRuleMeta[];
@@ -117,10 +120,53 @@ export interface PatinaRuleOptions {
   componentNameInTemplateCasing?: ComponentNameInTemplateCasingOption;
   customEventNameCasing?: CustomEventNameCasingOption;
   noMutatingProps?: NoMutatingPropsOption;
+  defineMacrosOrder?: DefineMacrosOrderOption;
   sfcElementOrder?: SfcElementOrderOption;
   htmlSelfClosing?: HtmlSelfClosingOption;
   vOnEventHyphenation?: HyphenationStyle;
   attributeHyphenation?: HyphenationStyle;
+  /** Full CLI-compatible per-rule option map. */
+  ruleOptions?: VizeRuleOptions;
+}
+
+export interface VizeRuleOptions {
+  "script/define-props-destructuring"?: {
+    destructure?: "only-when-assigned" | "always" | "never";
+  };
+  "html/no-empty-palpable-content"?: { contentDirectives?: string[] };
+  "type/strict-boolean-expressions"?: {
+    allowString?: boolean;
+    allowNumber?: boolean;
+    allowNullableObject?: boolean;
+    allowNullableBoolean?: boolean;
+    allowNullableString?: boolean;
+    allowNullableNumber?: boolean;
+    allowNullableEnum?: boolean;
+    allowAny?: boolean;
+  };
+  "script/no-restricted-globals"?: {
+    globals?: Array<{ name: string; message?: string }>;
+  };
+  "script/no-restricted-members"?: {
+    members?: Array<{ object: string; property: string; message?: string }>;
+  };
+  "vue/component-name-in-template-casing"?: {
+    casing?: ComponentNameInTemplateCasingOption;
+    registeredComponentsOnly?: boolean;
+    globals?: string[];
+  };
+  "script/custom-event-name-casing"?: { casing?: CustomEventNameCasingOption };
+  "vue/no-mutating-props"?: NoMutatingPropsOption;
+  "vue/require-component-registration"?: { globals?: string[] };
+  "vue/sfc-element-order"?: SfcElementOrderOption;
+  "vue/html-self-closing"?: HtmlSelfClosingOption;
+  "vue/v-on-event-hyphenation"?: HyphenationStyle;
+  "vue/attribute-hyphenation"?: HyphenationStyle;
+  "vue/valid-v-on"?: { modifiers?: string[] };
+  "vue/valid-v-slot"?: { allowModifiers?: boolean };
+  "musea/prefer-design-tokens"?: {
+    tokens?: Array<{ path: string; value: string; tier?: string }>;
+  };
 }
 
 export interface LineColumn {
@@ -132,6 +178,9 @@ export type ComponentNameInTemplateCasingOption = "PascalCase" | "kebab-case";
 export type CustomEventNameCasingOption = "camelCase" | "kebab-case";
 export interface NoMutatingPropsOption {
   shallowOnly?: boolean;
+}
+export interface DefineMacrosOrderOption {
+  order?: string[];
 }
 export type SfcElementOrderGroup = string | string[];
 export interface SfcElementOrderOption {

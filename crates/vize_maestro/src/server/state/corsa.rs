@@ -115,6 +115,9 @@ impl ServerState {
                 self.project_contexts.compiler_configuration.read().clone(),
             ))
         });
+        if self.corsa_disk_watcher_registered.load(Ordering::Acquire) {
+            bridge.trust_watched_disk_inputs();
+        }
         // Keep a cancelled startup's worker/session owner. Until it drains,
         // later callers refuse rather than creating a second backend process.
         *self.corsa_bridge.write() = Some(Arc::clone(&bridge));
@@ -171,10 +174,20 @@ impl ServerState {
     /// invalidation to answer. The next Corsa-using request flushes this bit
     /// instead.
     pub(crate) fn mark_corsa_disk_state_dirty(&self) {
+        self.invalidate_canonical_editor_paths();
         let _change = self.corsa_environment_change();
         let bridge = { self.corsa_bridge.read().clone() };
         if let Some(bridge) = bridge {
             bridge.mark_disk_project_state_dirty();
+        }
+    }
+
+    pub(crate) fn set_corsa_disk_watcher_registered(&self) {
+        self.corsa_disk_watcher_registered
+            .store(true, Ordering::Release);
+        let bridge = { self.corsa_bridge.read().clone() };
+        if let Some(bridge) = bridge {
+            bridge.trust_watched_disk_inputs();
         }
     }
 

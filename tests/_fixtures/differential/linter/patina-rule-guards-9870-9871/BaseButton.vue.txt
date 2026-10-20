@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import { useAttrs } from "vue";
+
+defineOptions({ inheritAttrs: false });
+const attrs = useAttrs();
+function onClick(): void {}
+</script>
+
+<template>
+  <button type="button" class="base-button" @click="onClick" v-bind="attrs">
+    <slot />
+  </button>
+</template>

@@ -101,6 +101,29 @@ void test("createVizeLintConfig preserves runtime rule forms with options", () =
   );
 });
 
+void test("createVizeLintConfig attaches CLI-shaped ruleOptions to enabled rules", () => {
+  const config = createVizeLintConfig({
+    preset: "incremental",
+    rules: {
+      "vize/script/custom-event-name-casing": "error",
+      "vize/vue/require-component-registration": "warn",
+      "vize/vue/valid-v-slot": "off",
+    },
+    ruleOptions: {
+      "script/custom-event-name-casing": { casing: "kebab-case" },
+      "vue/require-component-registration": { globals: ["MyButton"] },
+      "vue/valid-v-slot": { allowModifiers: true },
+    },
+  });
+
+  assert.deepEqual(config.rules, {
+    "vize/script/custom-event-name-casing": ["error", { casing: "kebab-case" }],
+    "vize/vue/require-component-registration": ["warn", { globals: ["MyButton"] }],
+    "vize/vue/valid-v-slot": "off",
+  });
+  assert.deepEqual(config.settings.vize.rules, config.rules);
+});
+
 void test("createVizeLintConfig accepts multiple preset bundles", () => {
   const config = createVizeLintConfig({ preset: ["happy-path", "ecosystem"] });
 

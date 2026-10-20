@@ -29,7 +29,8 @@ impl ComponentPropNavigationMatches {
         self.positions
             .iter()
             .map(|position| {
-                let (_, result) = super::virtual_result(document, &position.request_uri)?;
+                let (_, result) =
+                    super::virtual_result(ctx.state, document, &position.request_uri)?;
                 let offset = crate::ide::position_to_offset(
                     &result.code,
                     position.line,
@@ -99,7 +100,8 @@ impl CanonicalVirtualDocument {
             }) else {
                 return;
             };
-            let Some((request_uri, result)) = super::virtual_result(self, &location.uri) else {
+            let Some((request_uri, result)) = super::virtual_result(ctx.state, self, &location.uri)
+            else {
                 valid = false;
                 return;
             };

@@ -2,7 +2,8 @@
 //! and `:prop`s in authored order (upstream's `setDynamicProps` sources), and
 //! a `v-on` object binds its listeners with `setDynamicEvents`.
 //!
-//! These groups admit only ordinary props and static attributes.
+//! These groups admit only ordinary props and static attributes. Outside them
+//! a checkbox value prop stays on the retained lane.
 //! Named listeners interleave with an object's listeners in an order the
 //! Vapor and VDOM runtimes do not agree on, and directives (`v-show`,
 //! `v-model`, content directives) keep their own runtime contracts.
@@ -13,7 +14,12 @@ use crate::l3::LegacyReason;
 
 pub(super) fn check(nodes: &[Node<'_>]) -> Result<()> {
     for node in nodes {
-        let Content::Element { tag, .. } = node.content else {
+        let Content::Element {
+            tag,
+            ref attributes,
+            ..
+        } = node.content
+        else {
             continue;
         };
         let object = |kind| node.bindings.iter().any(|binding| binding.kind == kind);
@@ -23,6 +29,14 @@ pub(super) fn check(nodes: &[Node<'_>]) -> Result<()> {
                 .iter()
                 .any(|binding| binding.kind == BindingKind::Prop && binding.dynamic_name.is_some());
         let handlers = object(BindingKind::Handlers);
+        // Without a spread to merge into, a checkbox value prop is set at run
+        // time, which the retained lane emits.
+        if !spread
+            && tag == "input"
+            && (attributes.iter()).any(|&(name, ..)| matches!(name, "true-value" | "false-value"))
+        {
+            return Err(LegacyReason::Binding.into());
+        }
         if (spread || handlers)
             && (tag == "template"
                 || spread && handlers

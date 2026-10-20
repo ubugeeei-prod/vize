@@ -93,6 +93,10 @@ pub(crate) fn complete_template(ctx: &IdeContext) -> Vec<CompletionItem> {
 
     if let Some(tag_ctx) = tag_context::opening_tag_context_at_offset(&ctx.content, ctx.offset) {
         if !tag_ctx.inside_attribute_value {
+            if let Some(items) = exclusive_slot_name_completions(ctx, &tag_ctx) {
+                return items;
+            }
+
             // `:title=|`: the caret is already at a value position even though
             // no quote has been typed yet, so the attribute-name list is over.
             // Without this, `=` as a completion trigger could only ever open an
@@ -141,6 +145,34 @@ pub(crate) fn complete_template(ctx: &IdeContext) -> Vec<CompletionItem> {
     items_vec.extend(bindings::template_snippets());
 
     items_vec
+}
+
+/// Slot-name syntax on a nested `<template>` has a closed completion domain:
+/// after `#` or `v-slot:` only names from the owning component are valid. This
+/// also provides a narrow recovery path while the nested start tag is still
+/// incomplete and the SFC parser cannot classify the cursor as template text.
+pub(super) fn incomplete_slot_name_completions(
+    ctx: &IdeContext<'_>,
+) -> Option<Vec<CompletionItem>> {
+    if is_inside_html_comment(&ctx.content, ctx.offset) {
+        return None;
+    }
+    let tag_ctx = tag_context::opening_tag_context_at_offset(&ctx.content, ctx.offset)?;
+    exclusive_slot_name_completions(ctx, &tag_ctx)
+}
+
+fn exclusive_slot_name_completions(
+    ctx: &IdeContext<'_>,
+    tag_ctx: &tag_context::OpenTagContext,
+) -> Option<Vec<CompletionItem>> {
+    if tag_ctx.tag_name != "template"
+        || !(tag_ctx.current_token.starts_with('#') || tag_ctx.current_token.starts_with("v-slot:"))
+    {
+        return None;
+    }
+
+    let items = component_meta::component_surface_completions(ctx);
+    Some(prepare_open_tag_completions(ctx, tag_ctx, items))
 }
 
 /// Attributes whose value is a Vue expression rather than a literal string:
@@ -270,6 +302,10 @@ fn open_tag_completion_matches_prefix(label: &str, prefix: &str) -> bool {
 
     if let Some(slot_prefix) = prefix.strip_prefix('#') {
         return label == "#" || label == "v-slot" || label.starts_with(slot_prefix);
+    }
+
+    if let Some(slot_prefix) = prefix.strip_prefix("v-slot:") {
+        return label.starts_with(slot_prefix);
     }
 
     label.starts_with(prefix)

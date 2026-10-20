@@ -51,6 +51,42 @@ fn original_lint_and_empty_repairs_publish_while_both_collection_locks_are_held(
 }
 
 #[test]
+fn did_change_publishes_versioned_lint_before_held_native_diagnostics() {
+    let mut fixture = original_fixture();
+    let server = fixture.service.inner();
+    let native = futures::executor::block_on(server.state.corsa_request_scope());
+    let edited = ORIGINAL.replace(" alt=\"\"", "");
+    let change = server.apply_document_changes(
+        &fixture.app,
+        vec![TextDocumentContentChangeEvent {
+            range: None,
+            range_length: None,
+            text: edited,
+        }],
+        3,
+    );
+
+    assert!(
+        crate::runtime::block_on(crate::runtime::timeout(
+            std::time::Duration::from_secs(5),
+            change,
+        ))
+        .is_ok(),
+        "didChange waited for the held native diagnostic pass"
+    );
+    let expected = sync_packet(&fixture);
+    assert_eq!(
+        diagnostics(drain(&mut fixture.socket, async {})),
+        vec![expected],
+        "the new-version lint packet must reach transport before native collection"
+    );
+
+    drop(native);
+    let complete = receive_whole(&mut fixture);
+    assert_eq!(complete["version"], 3);
+}
+
+#[test]
 fn complete_same_world_result_cannot_be_replaced_by_an_early_partial() {
     let mut fixture = original_fixture();
     let complete = current(&fixture);

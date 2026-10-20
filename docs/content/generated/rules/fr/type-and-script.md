@@ -287,7 +287,7 @@ Gravité par défaut: `warning`
 Préréglages: `opinionated`, `nuxt`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Scripts JS/TS des SFC Vue ; les exemples montrent la forme concernée de l’Options API ou de script setup  
-Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
+Options: Consultez les [options typées et leurs valeurs par défaut](/rules/options.md).
 
 **Configuration (Vite+)**
 
@@ -342,7 +342,7 @@ const value = ref(0)
 
 Le bon exemple évite le diagnostic de cette règle avec la configuration ci-dessus ; d’autres règles peuvent encore signaler des diagnostics.
 
-[Implémentation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_macros_order.rs#L45) · [Toutes les règles](all.md)
+[Implémentation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_macros_order.rs#L44) · [Toutes les règles](all.md)
 
 ### `script/define-props-declaration`
 

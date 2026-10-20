@@ -29,8 +29,8 @@ pub(super) fn client_only(expression: &Expression<'_>, truthy: bool) -> bool {
     }
 }
 
-/// Only the exact `typeof name [!== / ===] "undefined"` witness establishes
-/// browser presence. Other conditions do not change execution assumptions.
+/// A branch that excludes `typeof name === "undefined"` establishes browser
+/// presence. Equality with any other type string proves the same thing.
 pub(super) fn defined_name(
     expression: &Expression<'_>,
     truthy: bool,
@@ -44,12 +44,13 @@ pub(super) fn defined_name(
         BinaryOperator::Inequality | BinaryOperator::StrictInequality => true,
         _ => return None,
     };
-    if unequal != truthy {
-        return None;
-    }
     for (probe, value) in [(&binary.left, &binary.right), (&binary.right, &binary.left)] {
         if let Expression::StringLiteral(value) = value.get_inner_expression()
-            && value.value == "undefined"
+            && if value.value == "undefined" {
+                unequal == truthy
+            } else {
+                unequal != truthy
+            }
             && let Expression::UnaryExpression(probe) = probe.get_inner_expression()
             && probe.operator == oxc_syntax::operator::UnaryOperator::Typeof
             && let Expression::Identifier(id) = probe.argument.get_inner_expression()

@@ -1,0 +1,35 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "shared-rule-options-9876",
+    history: "22cd835dde0e1e6b81473004a858897c478fa7fd",
+    source: "const emit = defineEmits(['itemSelect'])\nemit('itemSelect')\n",
+    filename: "App.ts",
+    entry: "script",
+    rule: "script/custom-event-name-casing",
+    vue_version: Some(
+        "3",
+    ),
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "App.ts",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "App.ts",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

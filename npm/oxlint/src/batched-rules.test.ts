@@ -208,6 +208,50 @@ it("complete Oxlint maps select only Vize entries and ignore disabled rules", ()
   });
 });
 
+it("projects define-macros-order options into the native batch", () => {
+  const options = getRuleOptions("script/define-macros-order", [
+    { order: ["defineOptions", "defineProps", "defineEmits"] },
+  ]);
+  assert.deepEqual(options, {
+    defineMacrosOrder: { order: ["defineOptions", "defineProps", "defineEmits"] },
+  });
+  assert.equal(
+    getRuleOptions("script/define-macros-order", [{ order: ["defineProps", "defineProps"] }]),
+    undefined,
+  );
+});
+
+it("collects every CLI-shaped rule option into one native option map", () => {
+  const authored = {
+    "script/define-props-destructuring": { destructure: "always" },
+    "html/no-empty-palpable-content": { contentDirectives: ["v-text"] },
+    "type/strict-boolean-expressions": { allowString: true },
+    "script/no-restricted-globals": { globals: [{ name: "window" }] },
+    "script/no-restricted-members": {
+      members: [{ object: "window", property: "localStorage" }],
+    },
+    "vue/component-name-in-template-casing": {
+      casing: "kebab-case",
+      registeredComponentsOnly: false,
+      globals: ["my-button"],
+    },
+    "script/custom-event-name-casing": { casing: "kebab-case" },
+    "vue/require-component-registration": { globals: ["MyButton"] },
+    "vue/valid-v-on": { modifiers: ["debounce"] },
+    "vue/valid-v-slot": { allowModifiers: true },
+    "musea/prefer-design-tokens": {
+      tokens: [{ path: "color.primary", value: "#3b82f6" }],
+    },
+  };
+  const selection = parseRuleSelection(
+    Object.fromEntries(
+      Object.entries(authored).map(([name, option]) => [`vize/${name}`, ["error", option]]),
+    ),
+  )!;
+
+  assert.deepEqual(selection.options.ruleOptions, authored);
+});
+
 it("canonical CSS map entries join the same selected native batch", () => {
   emptyNativeResult();
   const rules = { "css/no-important": "error", "vue/no-v-html": "warn" };

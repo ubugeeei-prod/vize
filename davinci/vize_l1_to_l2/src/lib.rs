@@ -86,10 +86,11 @@ pub use emit::{
     emit_dom_source_observed, emit_dom_source_observed_with_options,
     emit_dom_source_observed_with_options_captured,
     emit_dom_source_observed_with_options_captured_and_slot_scope,
+    emit_dom_source_observed_with_options_captured_slot_scope_and_environment,
     emit_dom_source_sfc_observed_with_options, emit_dom_source_sfc_with_options,
     emit_dom_source_with_caps, emit_dom_source_with_caps_observed, emit_dom_source_with_options,
     emit_dom_source_with_options_captured, emit_dom_source_with_options_captured_and_slot_scope,
-    emit_dom_with_options,
+    emit_dom_source_with_options_captured_slot_scope_and_environment, emit_dom_with_options,
 };
 #[cfg(any(test, feature = "legacy-differential"))]
 pub use emit::{
@@ -104,4 +105,7 @@ pub use lower::{
 };
 
 #[doc(hidden)]
-pub use emit::{SurfacePreflight, emit_dom_source_with_preflight};
+pub use emit::{
+    SurfacePreflight, emit_dom_source_with_preflight,
+    emit_dom_source_with_preflight_and_environment,
+};

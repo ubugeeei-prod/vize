@@ -10,6 +10,7 @@ const configurableRuleOptions = [
   "html/no-empty-palpable-content",
   "musea/prefer-design-tokens",
   "script/custom-event-name-casing",
+  "script/define-macros-order",
   "script/define-props-destructuring",
   "script/no-restricted-globals",
   "script/no-restricted-members",
@@ -161,6 +162,7 @@ test("strict boolean rows render within the complete option and type-aware table
     "html/no-empty-palpable-content",
     "script/no-restricted-globals",
     "script/no-restricted-members",
+    "script/define-macros-order",
     "vue/component-name-in-template-casing",
     "script/custom-event-name-casing",
     "script/define-props-destructuring",
@@ -182,7 +184,7 @@ test("strict boolean rows render within the complete option and type-aware table
     const currentOptions = tableRules(source);
     assert.equal(currentOptions.length, expectedOptions.length + 1, locale || "en");
     assert.equal(
-      currentOptions[3],
+      currentOptions[4],
       "vue/valid-v-on",
       "the single new modifier option follows the original restriction rules",
     );

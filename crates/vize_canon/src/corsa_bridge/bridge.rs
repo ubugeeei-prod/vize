@@ -61,6 +61,11 @@ pub struct CorsaBridge {
 
 #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 impl CorsaBridge {
+    /// Trust captured route inputs between workspace watcher notifications.
+    pub fn trust_watched_disk_inputs(&self) {
+        self.editor_session.trust_watched_disk_inputs();
+    }
+
     /// Create a new Corsa bridge with default configuration.
     pub fn new() -> Self {
         Self::with_config(CorsaBridgeConfig::default())

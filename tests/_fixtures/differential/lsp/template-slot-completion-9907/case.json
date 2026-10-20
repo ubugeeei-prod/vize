@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "id": "lsp/regression/template-slot-completion-9907",
+  "provenance": {
+    "fixCommit": "d860792e1730c95ae9c715695d4b1e0e1b31144c",
+    "witnessPath": "crates/vize_maestro/src/ide/completion/component_props_tests.rs",
+    "witnessTest": "nested_template_slot_completion_only_lists_component_slots; incomplete_nested_template_slot_completion_recovers_template_context",
+    "inputOrigin": "exact minimal component pair from issue 9907",
+    "contractOrigin": "focused completion regressions validate exclusive slot labels and incomplete-tag recovery; this differential row pins the authored project bytes"
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "b4d5a598b220640f06b64eadd75872f534aa97e4894b2b1827fc61430e405eb7"
+    },
+    {
+      "source": "MySelect.vue.txt",
+      "runtimePath": "MySelect.vue",
+      "sha256": "128fd5e68e0ede7da66bbb4415005509933eebdf3202d51f684b58c951bee338"
+    }
+  ],
+  "entry": "App.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "ae00584f4390018414bf2e37d26cf1ac1bcbd6ef3ad84af05bc3080a9032c86f"
+  },
+  "method": "textDocument/foldingRange",
+  "documentVersion": 1,
+  "scope": "exact issue input custody plus focused completion witnesses; no native adapter or acceptance credit"
+}

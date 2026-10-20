@@ -3,12 +3,15 @@
 use std::path::Path;
 
 use tower_lsp::{
-    LspService,
-    lsp_types::{DidOpenTextDocumentParams, TextDocumentContentChangeEvent, TextDocumentItem, Url},
+    LanguageServer, LspService,
+    lsp_types::{
+        DidChangeTextDocumentParams, DidOpenTextDocumentParams, TextDocumentContentChangeEvent,
+        TextDocumentItem, Url, VersionedTextDocumentIdentifier,
+    },
 };
 use vize_l0::cstr;
 
-use super::{MaestroServer, refresh_initial_importers};
+use super::{DiagnosticsJobCause, MaestroServer, refresh_initial_importers};
 
 #[expect(
     clippy::disallowed_types,
@@ -78,6 +81,41 @@ fn factory_count(fixture: &QueuedOpen) -> vize_l0::String {
     std::fs::read_to_string(fixture.root.path().join("app/factory-count"))
         .unwrap()
         .into()
+}
+
+#[test]
+fn did_change_burst_coalesces_native_diagnostics_behind_the_latest_buffer() {
+    let fixture = queued_open();
+    let server = fixture.service.inner();
+    let change = |version, text: &str| DidChangeTextDocumentParams {
+        text_document: VersionedTextDocumentIdentifier {
+            uri: fixture.uri.clone(),
+            version,
+        },
+        content_changes: vec![TextDocumentContentChangeEvent {
+            range: None,
+            range_length: None,
+            text: text.into(),
+        }],
+    };
+
+    for version in 2..=101 {
+        crate::runtime::block_on(
+            server.did_change(change(version, "<template>{{ latest }}</template>")),
+        );
+    }
+
+    assert_eq!(
+        server.state.documents.text(&fixture.uri).as_deref(),
+        Some("<template>{{ latest }}</template>")
+    );
+    let pending = fixture.pending.lock();
+    assert_eq!(pending.jobs.len(), 1);
+    let job = &pending.jobs[&fixture.uri];
+    assert_eq!(job.cause, DiagnosticsJobCause::Edit);
+    assert_eq!(job.version, 101);
+    assert!(!job.sync_pending);
+    assert!(job.not_before > std::time::Instant::now());
 }
 
 #[test]

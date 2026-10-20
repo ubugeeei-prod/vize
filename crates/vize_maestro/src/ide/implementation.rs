@@ -85,9 +85,12 @@ impl ImplementationService {
             }
             // A template ref-unwrap shadow (`var name: __U<__R_name>`) has no
             // authored span; its semantic link leads to the setup binding.
-            for position in
-                corsa_support::linked_semantic_positions(&document, &location.uri, &location.range)
-            {
+            for position in corsa_support::linked_semantic_positions(
+                ctx.state,
+                &document,
+                &location.uri,
+                &location.range,
+            ) {
                 let Ok(found) = bridge
                     .implementation(&position.request_uri, position.line, position.character)
                     .await

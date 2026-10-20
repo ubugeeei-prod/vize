@@ -8,7 +8,7 @@ use oxc_span::SourceType;
 use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
 use vize_canon::{ImportSourceMap, batch::OffsetAdjustment};
-use vize_l0::{FxHashMap, String};
+use vize_l0::{FxHashMap, FxHashSet, String};
 
 use super::{errors::io_error_message, escape_specifier, paths::virtual_file_path};
 use crate::linter::native_type_aware::document::project_component;
@@ -36,6 +36,7 @@ pub(super) fn prepare(
     session_root: &Path,
     project_root: &Path,
     cache: &mut FxHashMap<PathBuf, CachedDocument>,
+    retained: &FxHashSet<PathBuf>,
 ) -> Prepared {
     let mut prepared = Prepared {
         code: None,
@@ -43,7 +44,6 @@ pub(super) fn prepare(
         files: Vec::new(),
     };
     if !source.contains(".vue") {
-        cache.clear();
         return prepared;
     }
     let authored = absolute_path(Path::new(filename));
@@ -100,16 +100,18 @@ pub(super) fn prepare(
                         target.set_extension("tsx");
                     }
                     visited.insert(dependency.clone(), target.clone());
-                    queue.push((
-                        dependency,
-                        document.generated.clone(),
-                        Some(target.clone()),
-                        if document.suffix == ".tsx" {
-                            SourceType::tsx()
-                        } else {
-                            SourceType::ts()
-                        },
-                    ));
+                    if !retained.contains(&target) {
+                        queue.push((
+                            dependency,
+                            document.generated.clone(),
+                            Some(target.clone()),
+                            if document.suffix == ".tsx" {
+                                SourceType::tsx()
+                            } else {
+                                SourceType::ts()
+                            },
+                        ));
+                    }
                     target
                 }
             } else if relative {
@@ -146,7 +148,6 @@ pub(super) fn prepare(
             prepared.source_map = source_map;
         }
     }
-    cache.retain(|path, _| visited.contains_key(path));
     prepared
 }
 

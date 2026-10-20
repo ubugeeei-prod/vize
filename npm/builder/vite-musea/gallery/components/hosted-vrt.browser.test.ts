@@ -73,7 +73,9 @@ await test(
       try {
         const page = await browser.newPage({ viewport: { width: 320, height: 200 } });
         const hosted = await loadHostedGallery(host.url);
-        await page.goto(hosted.previewUrls[host.art.path]["Clean one"]);
+        const hostedArt = hosted.arts.find((art) => art.metadata.title === "Hosted");
+        assert.ok(hostedArt);
+        await page.goto(hosted.previewUrls[hostedArt.path]["Clean one"]);
         await page.getByRole("button", { name: "Accessible action" }).waitFor();
         const expected = PNG.sync.read(
           await page.screenshot({ path: path.join(output, "mounted.png"), animations: "disabled" }),

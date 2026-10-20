@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import MySelect from "./MySelect.vue";
+</script>
+
+<template>
+  <div>
+    <MySelect :items="['a']"><template #item="{ item }">{{ item }}</template></MySelect>
+  </div>
+</template>

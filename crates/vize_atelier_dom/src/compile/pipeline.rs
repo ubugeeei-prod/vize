@@ -20,6 +20,7 @@ pub(super) struct DomCompilePipelineOptions {
     pub(super) no_slotted: bool,
     /// Refuse malformed slot parameters in L2, as the SFC fast path does.
     pub(super) strict_slot_params: bool,
+    pub(super) development: bool,
 }
 
 impl DomCompilePipelineOptions {
@@ -34,6 +35,7 @@ impl DomCompilePipelineOptions {
             l2_emit_selection: L2EmitSelection::Allowed,
             no_slotted: false,
             strict_slot_params: false,
+            development: true,
         }
     }
 
@@ -49,6 +51,7 @@ impl DomCompilePipelineOptions {
             l2_emit_selection: L2EmitSelection::Allowed,
             no_slotted: false,
             strict_slot_params: false,
+            development: true,
         }
     }
 
@@ -63,6 +66,7 @@ impl DomCompilePipelineOptions {
             l2_emit_selection: L2EmitSelection::RequireSections,
             no_slotted: false,
             strict_slot_params: false,
+            development: true,
         }
     }
 
@@ -78,6 +82,7 @@ impl DomCompilePipelineOptions {
             l2_emit_selection: L2EmitSelection::RequireSections,
             no_slotted: false,
             strict_slot_params: false,
+            development: true,
         }
     }
 
@@ -94,6 +99,7 @@ impl DomCompilePipelineOptions {
             l2_emit_selection: L2EmitSelection::Disabled,
             no_slotted: false,
             strict_slot_params: false,
+            development: true,
         }
     }
 
@@ -112,6 +118,7 @@ impl DomCompilePipelineOptions {
             l2_emit_selection: L2EmitSelection::Refused,
             no_slotted: false,
             strict_slot_params: false,
+            development: true,
         }
     }
 
@@ -127,6 +134,7 @@ impl DomCompilePipelineOptions {
             l2_emit_selection: L2EmitSelection::Disabled,
             no_slotted: false,
             strict_slot_params: false,
+            development: true,
         }
     }
 }

@@ -50,6 +50,7 @@ impl CodegenContext {
             component_name,
             experimental_self_component: experimental_options.self_component,
             no_slotted,
+            development: true,
             pure: false,
             used_helpers: RuntimeHelpers::default(),
             cache_index: 0,

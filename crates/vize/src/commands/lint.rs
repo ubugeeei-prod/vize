@@ -23,7 +23,7 @@ pub use args::LintArgs;
 use crate::profile_support;
 use aggregate::{LintRunAccumulator, should_retain_file_results};
 use collect::{
-    LintIgnoreSet, collect_lint_file_collection, collect_lint_inputs, resolve_lint_config_path,
+    LintIgnoreSet, collect_default_lint_files, collect_lint_inputs, resolve_lint_config_path,
 };
 use entry_rules::LinterRuleResolver;
 use fix::lint_source_with_optional_fix;
@@ -76,31 +76,16 @@ pub fn run(mut args: LintArgs) {
         LintIgnoreSet::new(&linter_plan.plan.global_ignores, config_dir)
     };
     let collect_start = Instant::now();
-    let default_patterns = args.patterns.is_empty().then(|| {
-        patterns::LINT_DEFAULT_PATTERNS
-            .iter()
-            .map(|pattern| {
-                project_root.as_deref().map_or_else(
-                    || String::from(*pattern),
-                    |root| {
-                        String::from(
-                            root.join(pattern.strip_prefix("./").unwrap_or(pattern))
-                                .to_string_lossy()
-                                .as_ref(),
-                        )
-                    },
-                )
-            })
-            .collect::<Vec<_>>()
-    });
-    let input_patterns = default_patterns.as_deref().unwrap_or(&args.patterns);
     let (files, input_warnings) = if args.patterns.is_empty() {
         (
-            collect_lint_file_collection(input_patterns, ignore_set.as_ref()).files,
+            collect_default_lint_files(
+                project_root.as_deref().unwrap_or_else(|| Path::new(".")),
+                ignore_set.as_ref(),
+            ),
             0,
         )
     } else {
-        collect_lint_inputs(input_patterns, ignore_set.as_ref())
+        collect_lint_inputs(&args.patterns, ignore_set.as_ref())
     };
     let collect_time = collect_start.elapsed();
     if files.is_empty() {

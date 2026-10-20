@@ -9,6 +9,42 @@ import { PNG } from "pngjs";
 import { writePng } from "./comparison.ts";
 import { compareImages } from "./runner-comparison.ts";
 
+void test("-t 0 detects a 96-level grey change with the default per-pixel threshold", async () => {
+  const workspace = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-vrt-grey-"));
+  const baselinePath = path.join(workspace, "baseline.png");
+  const currentPath = path.join(workspace, "current.png");
+  const diffPath = path.join(workspace, "diff.png");
+  await writePng(createSolidPng(1, 1, { r: 238, g: 238, b: 238 }), baselinePath);
+  await writePng(createSolidPng(1, 1, { r: 142, g: 142, b: 142 }), currentPath);
+
+  const allowedDiffPercentage = 0;
+  const result = await compareImages(baselinePath, currentPath, diffPath, {});
+
+  assert.equal(result.diffPixels, 1);
+  assert.equal(result.diffPercentage > allowedDiffPercentage, true);
+});
+
+void test("colorThreshold controls per-pixel sensitivity independently", async () => {
+  const workspace = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-vrt-color-threshold-"));
+  const baselinePath = path.join(workspace, "baseline.png");
+  const currentPath = path.join(workspace, "current.png");
+  await writePng(createSolidPng(1, 1, { r: 238, g: 238, b: 238 }), baselinePath);
+  await writePng(createSolidPng(1, 1, { r: 237, g: 237, b: 237 }), currentPath);
+
+  const exact = await compareImages(baselinePath, currentPath, path.join(workspace, "exact.png"), {
+    colorThreshold: 0,
+  });
+  const tolerant = await compareImages(
+    baselinePath,
+    currentPath,
+    path.join(workspace, "tolerant.png"),
+    { colorThreshold: 0.1 },
+  );
+
+  assert.equal(exact.diffPixels, 1);
+  assert.equal(tolerant.diffPixels, 0);
+});
+
 void test("anti-aliased pixels still count as visual diffs", async () => {
   const workspace = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-vrt-aa-"));
   const baselinePath = path.join(workspace, "baseline.png");

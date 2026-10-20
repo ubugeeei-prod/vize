@@ -7,7 +7,7 @@
 //! `is_vue_whitespace` rather than the full-Unicode `char::is_whitespace`.
 
 use vize_l0::{Allocator, StringBuilder, Vec, ensure_sufficient_stack};
-use vize_relief::{ElementNode, Namespace, TemplateChildNode};
+use vize_relief::{ElementNode, ElementType, Namespace, PropNode, TemplateChildNode};
 
 /// Per Vue: only `[ \t\n\f\r]` is whitespace for the condense strategy.
 #[inline]
@@ -279,13 +279,21 @@ fn preserve_whitespace_vue2<'a>(
                     ensure_sufficient_stack(|| {
                         preserve_whitespace_vue2(allocator, &mut element.children, is_pre_tag)
                     });
+                    if element.tag_type == ElementType::Component {
+                        drop_default_slot_tail_before_named_slots(&mut element.children);
+                    }
                 }
             }
             start += 1;
             continue;
         }
         let mut end = start + 1;
-        while children.get(end).is_some_and(is_text_run_member) {
+        while children.get(end).is_some_and(is_text_run_member)
+            && children
+                .get(end.saturating_sub(1))
+                .zip(children.get(end))
+                .is_some_and(|(previous, next)| text_run_members_are_contiguous(previous, next))
+        {
             end += 1;
         }
         let whitespace_only = children
@@ -313,12 +321,73 @@ fn preserve_whitespace_vue2<'a>(
     }
 }
 
+/// Vue 2 extracts named-slot templates before it drops trailing whitespace
+/// from the remaining default-slot children. Once a component's final children
+/// are only whitespace and named-slot templates, those whitespace nodes are a
+/// default-slot tail and must be removed.
+fn drop_default_slot_tail_before_named_slots(children: &mut Vec<'_, TemplateChildNode<'_>>) {
+    let mut suffix_start = children.len();
+    let mut has_named_slot = false;
+    while let Some(child) = suffix_start.checked_sub(1).and_then(|i| children.get(i)) {
+        if is_whitespace_text(child) {
+            suffix_start -= 1;
+        } else if is_named_slot_template(child) {
+            has_named_slot = true;
+            suffix_start -= 1;
+        } else {
+            break;
+        }
+    }
+    if !has_named_slot {
+        return;
+    }
+    let mut index = suffix_start;
+    while index < children.len() {
+        if children.get(index).is_some_and(is_whitespace_text) {
+            children.remove(index);
+        } else {
+            index += 1;
+        }
+    }
+}
+
+fn is_named_slot_template(child: &TemplateChildNode<'_>) -> bool {
+    let TemplateChildNode::Element(element) = child else {
+        return false;
+    };
+    element.tag == "template"
+        && element
+            .props
+            .iter()
+            .any(|prop| matches!(prop, PropNode::Directive(directive) if directive.name == "slot"))
+}
+
 /// Vue 2 merges adjacent text and interpolations into a single text node.
 fn is_text_run_member(child: &TemplateChildNode<'_>) -> bool {
     matches!(
         child,
         TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_)
     )
+}
+
+/// Consecutive text-like nodes belong to the same Vue 2 text run only when
+/// their authored spans touch. A removed comment leaves a source gap even
+/// though it has no public AST node.
+fn text_run_members_are_contiguous(
+    previous: &TemplateChildNode<'_>,
+    next: &TemplateChildNode<'_>,
+) -> bool {
+    fn span(child: &TemplateChildNode<'_>) -> Option<vize_l0::Span> {
+        match child {
+            TemplateChildNode::Text(text) => Some(text.loc.span),
+            TemplateChildNode::Interpolation(interpolation) => Some(interpolation.loc.span),
+            _ => None,
+        }
+    }
+
+    span(previous)
+        .zip(span(next))
+        .is_some_and(|(previous, next)| previous.end == next.start)
 }
 
 /// Vue normalizes Windows line endings in text nodes throughout `<pre>`,

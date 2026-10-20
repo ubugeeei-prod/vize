@@ -9,6 +9,44 @@ use super::{CanonicalDependencyDocument, CanonicalMaterializedSource, CanonicalV
 use crate::ide::IdeContext;
 use crate::ide::diagnostics::VirtualTsResult;
 
+struct AuthoredUriResolver {
+    open: vize_l0::FxHashMap<PathBuf, Url>,
+    workspace: Option<(PathBuf, PathBuf)>,
+}
+
+impl AuthoredUriResolver {
+    fn new(ctx: &IdeContext<'_>) -> Self {
+        let open = ctx
+            .state
+            .documents
+            .uris()
+            .into_iter()
+            .filter_map(|uri| {
+                let path = uri.to_file_path().ok()?;
+                Some((ctx.state.canonical_editor_path(&path), uri))
+            })
+            .collect();
+        let workspace = ctx.state.get_workspace_root().map(|root| {
+            let physical = ctx.state.canonical_editor_path(&root);
+            (root, physical)
+        });
+        Self { open, workspace }
+    }
+
+    fn resolve(&self, ctx: &IdeContext<'_>, source_path: &std::path::Path) -> Option<Url> {
+        let source_path = ctx.state.canonical_editor_path(source_path);
+        self.open
+            .get(&source_path)
+            .cloned()
+            .or_else(|| {
+                let (logical_root, physical_root) = self.workspace.as_ref()?;
+                let relative = source_path.strip_prefix(physical_root).ok()?;
+                Url::from_file_path(logical_root.join(relative)).ok()
+            })
+            .or_else(|| Url::from_file_path(source_path).ok())
+    }
+}
+
 pub(crate) async fn open_canonical_virtual_document(
     ctx: &IdeContext<'_>,
     bridge: &CorsaBridge,
@@ -111,11 +149,12 @@ pub(super) async fn open_canonical_virtual_document_with_sources_strict(
     ctx.state
         .record_editor_project_open("canonical", ctx.uri, &ctx.content, &opened);
 
+    let authored_uris = AuthoredUriResolver::new(ctx);
     let dependencies = opened
         .dependencies
         .into_iter()
         .filter_map(|dependency| {
-            let source_uri = authored_uri(ctx, &dependency.source_path)?;
+            let source_uri = authored_uris.resolve(ctx, &dependency.source_path)?;
             Some(CanonicalDependencyDocument {
                 source_uri,
                 source: dependency.source,
@@ -129,7 +168,8 @@ pub(super) async fn open_canonical_virtual_document_with_sources_strict(
         })
         .collect();
 
-    let materialized_sources = map_materialized_sources(ctx, opened.materialized_sources);
+    let materialized_sources =
+        map_materialized_sources_with_resolver(ctx, &authored_uris, opened.materialized_sources);
 
     Ok(Some(CanonicalVirtualDocument {
         source_uri: ctx.uri.clone(),
@@ -150,10 +190,19 @@ pub(super) fn map_materialized_sources(
     ctx: &IdeContext<'_>,
     sources: Vec<vize_canon::CorsaMaterializedSource>,
 ) -> Vec<CanonicalMaterializedSource> {
+    let authored_uris = AuthoredUriResolver::new(ctx);
+    map_materialized_sources_with_resolver(ctx, &authored_uris, sources)
+}
+
+fn map_materialized_sources_with_resolver(
+    ctx: &IdeContext<'_>,
+    authored_uris: &AuthoredUriResolver,
+    sources: Vec<vize_canon::CorsaMaterializedSource>,
+) -> Vec<CanonicalMaterializedSource> {
     sources
         .into_iter()
         .filter_map(|materialized| {
-            let source_uri = authored_uri(ctx, &materialized.source_path)?;
+            let source_uri = authored_uris.resolve(ctx, &materialized.source_path)?;
             let request_uri = Url::from_file_path(&materialized.materialized_path)
                 .ok()?
                 .to_string();
@@ -173,23 +222,7 @@ pub(super) fn map_materialized_sources(
 }
 
 pub(super) fn authored_uri(ctx: &IdeContext<'_>, source_path: &std::path::Path) -> Option<Url> {
-    let source_path = vize_carton::path::canonicalize_non_verbatim(source_path);
-    ctx.state
-        .documents
-        .uris()
-        .into_iter()
-        .find(|uri| {
-            uri.to_file_path().ok().is_some_and(|path| {
-                vize_carton::path::canonicalize_non_verbatim(&path) == source_path
-            })
-        })
-        .or_else(|| {
-            let root = ctx.state.get_workspace_root()?;
-            let physical_root = vize_carton::path::canonicalize_non_verbatim(&root);
-            let relative = source_path.strip_prefix(physical_root).ok()?;
-            Url::from_file_path(root.join(relative)).ok()
-        })
-        .or_else(|| Url::from_file_path(source_path).ok())
+    AuthoredUriResolver::new(ctx).resolve(ctx, source_path)
 }
 
 #[cfg(all(test, unix))]

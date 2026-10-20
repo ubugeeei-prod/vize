@@ -4,7 +4,7 @@ import {
   type OxlintRuleConfig,
   type VizeRuleConfigPreset,
 } from "./configs.js";
-import type { PatinaPreset, PatinaRuleMeta, PatinaSettings } from "./model.js";
+import type { PatinaPreset, PatinaRuleMeta, PatinaSettings, VizeRuleOptions } from "./model.js";
 import { selectVizeRuleConfig } from "./rule-selection.js";
 
 /**
@@ -81,6 +81,11 @@ export interface VizeLintConfigOptions {
    */
   rules?: OxlintRuleConfig;
   /**
+   * CLI-compatible `vue.linter.ruleOptions`. Options are attached to rules
+   * already enabled by a preset or by `rules`; options never enable a rule.
+   */
+  ruleOptions?: VizeRuleOptions;
+  /**
    * Patina runtime settings forwarded through `settings.vize`. `preset` and
    * `rules` are derived from the selected presets and final rule map,
    * so the rule map and the bridge's runtime gate can never disagree.
@@ -147,10 +152,13 @@ export function buildVizeLintConfig(
     : toRuntimePreset(presets);
   const extraRules = options.rules ?? {};
   assertUsableVizeRules(extraRules, presets, runtimePreset);
-  const rules = {
-    ...createPresetRules(presets, options.includeTypeAware),
-    ...extraRules,
-  };
+  const rules = applyRuleOptions(
+    {
+      ...createPresetRules(presets, options.includeTypeAware),
+      ...extraRules,
+    },
+    options.ruleOptions,
+  );
 
   return {
     jsPlugins: [VIZE_JS_PLUGIN_SPECIFIER],
@@ -164,6 +172,22 @@ export function buildVizeLintConfig(
       },
     },
   };
+}
+
+function applyRuleOptions(
+  rules: OxlintRuleConfig,
+  ruleOptions: VizeRuleOptions | undefined,
+): OxlintRuleConfig {
+  if (!ruleOptions) return rules;
+  const resolved = { ...rules };
+  for (const [name, option] of Object.entries(ruleOptions)) {
+    const id = `${VIZE_RULE_PREFIX}${name}`;
+    const entry = resolved[id];
+    if (entry === undefined || entry === "off") continue;
+    const severity = Array.isArray(entry) ? entry[0] : entry;
+    resolved[id] = [severity, option];
+  }
+  return resolved;
 }
 
 function createPresetRules(
