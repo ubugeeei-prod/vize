@@ -427,7 +427,7 @@ impl ServerState {
 fn document_root(path: &Path, workspace: &Path) -> PathBuf {
     let mut directory = path.parent().unwrap_or(workspace);
     let mut package_root = None;
-    let mut vite_root = None;
+    let mut vite_root: Option<PathBuf> = None;
     while directory.starts_with(workspace) {
         let mut has_package = false;
         let mut has_vite = false;
