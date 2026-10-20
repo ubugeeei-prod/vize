@@ -130,7 +130,7 @@
         "root": "valid-v-else-autofix-9863",
         "files": [
           {
-            "path": "StatusText.vue.txt",
+            "path": "source.txt",
             "role": "issue-authored-reproduction",
             "sha256": "88678aef2a9a4d094e0d61e178f51d6d8ae8d06285dd9187ce377b2b2e2899f3"
           }

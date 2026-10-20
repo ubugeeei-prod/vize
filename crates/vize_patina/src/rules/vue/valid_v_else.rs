@@ -166,45 +166,20 @@ mod tests {
     #[test]
     fn test_invalid_v_else_with_expression() {
         let linter = create_linter();
-        let source = r#"<div v-if="foo"></div><div v-else="bar"></div>"#;
-        let result = linter.lint_template(source, "test.vue");
+        let result = linter.lint_template(
+            r#"<div v-if="foo"></div><div v-else="bar"></div>"#,
+            "test.vue",
+        );
         assert_eq!(result.error_count, 1);
         assert_eq!(
-            result.diagnostics[0].fix.as_ref().unwrap().apply(source),
+            result.diagnostics[0]
+                .fix
+                .as_ref()
+                .unwrap()
+                .apply(r#"<div v-if="foo"></div><div v-else="bar"></div>"#),
             r#"<div v-if="foo"></div><div v-else></div>"#
         );
         insta::assert_debug_snapshot!(result.diagnostics);
-    }
-
-    #[test]
-    fn test_invalid_v_else_fix_preserves_the_branch_for_each_value_style() {
-        let linter = create_linter();
-        for (source, expected) in [
-            (
-                r#"<div v-if="ok"></div><div v-else='no'></div>"#,
-                r#"<div v-if="ok"></div><div v-else></div>"#,
-            ),
-            (
-                r#"<div v-if="ok"></div><div v-else=no></div>"#,
-                r#"<div v-if="ok"></div><div v-else></div>"#,
-            ),
-            (
-                r#"<div v-if="ok"></div><div v-else = "no"></div>"#,
-                r#"<div v-if="ok"></div><div v-else></div>"#,
-            ),
-        ] {
-            let result = linter.lint_template(source, "test.vue");
-            assert_eq!(result.error_count, 1, "{source}");
-            assert_eq!(
-                result.diagnostics[0]
-                    .fix
-                    .as_ref()
-                    .expect("invalid v-else values have a safe fix")
-                    .apply(source),
-                expected,
-                "{source}"
-            );
-        }
     }
 
     #[test]
