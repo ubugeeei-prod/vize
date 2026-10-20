@@ -106,6 +106,18 @@ pub struct Linter {
 }
 
 impl Linter {
+    pub(crate) fn apply_diagnostic_policy(&self, mut result: LintResult) -> LintResult {
+        if self.help_level != HelpLevel::Full {
+            for diagnostic in &mut result.diagnostics {
+                diagnostic.help = diagnostic
+                    .help
+                    .take()
+                    .and_then(|help| self.help_level.process(help.as_str()));
+            }
+        }
+        result
+    }
+
     /// Apply custom elements from an already-loaded compiler configuration.
     /// This neither enables a rule nor evaluates project configuration.
     #[inline]

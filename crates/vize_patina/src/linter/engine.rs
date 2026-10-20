@@ -340,7 +340,7 @@ impl Linter {
         }
 
         self.lint_jsx_script(source, filename, &mut result);
-        result
+        self.apply_diagnostic_policy(result)
     }
 
     /// Lint a Vue template with a provided allocator (for reuse).
@@ -350,14 +350,15 @@ impl Linter {
         source: &str,
         filename: &str,
     ) -> LintResult {
-        self.lint_template_with_allocator_config(
+        let result = self.lint_template_with_allocator_config(
             allocator,
             source,
             filename,
             true,
             true,
             TemplateRuleEnv::relief(VueDialect::Vue),
-        )
+        );
+        self.apply_diagnostic_policy(result)
     }
 
     #[cfg(test)]
@@ -461,6 +462,6 @@ impl Linter {
                 .sort_unstable_by_key(|diagnostic| (diagnostic.start, diagnostic.end));
         }
 
-        result
+        self.apply_diagnostic_policy(result)
     }
 }

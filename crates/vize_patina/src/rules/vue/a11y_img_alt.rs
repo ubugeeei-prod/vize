@@ -68,11 +68,9 @@ impl Rule for A11yImgAlt {
         });
 
         if !has_alt {
-            ctx.warn_with_help(
-                "<img> elements must have an alt attribute for accessibility",
-                &element.loc,
-                "Add alt=\"description\" for informative images or alt=\"\" for decorative images",
-            );
+            let message = ctx.t("vue/a11y-img-alt.message").into_owned();
+            let help = ctx.t("vue/a11y-img-alt.help").into_owned();
+            ctx.warn_with_help(message, &element.loc, help);
         }
     }
 }
@@ -83,6 +81,7 @@ mod tests {
     use crate::linter::Linter;
     use crate::preset::LintPreset;
     use crate::rule::RuleRegistry;
+    use crate::{HelpLevel, Locale};
 
     const RULE: &str = "vue/a11y-img-alt";
 
@@ -137,5 +136,18 @@ mod tests {
         let result = linter.lint_template(r#"<img src="/photo.jpg" />"#, "test.vue");
         assert_eq!(result.warning_count, 1);
         insta::assert_debug_snapshot!(result.diagnostics);
+    }
+
+    #[test]
+    fn locale_and_help_level_apply_to_legacy_template_diagnostics() {
+        let result = create_linter()
+            .with_locale(Locale::Ja)
+            .with_help_level(HelpLevel::None)
+            .lint_template(r#"<img src="/photo.jpg" />"#, "test.vue");
+        assert_eq!(
+            result.diagnostics[0].message,
+            "<img>要素にはアクセシビリティのためにalt属性が必要です"
+        );
+        assert!(result.diagnostics[0].help.is_none());
     }
 }
