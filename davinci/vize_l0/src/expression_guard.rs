@@ -45,6 +45,7 @@ struct ExpressionNestingAnalysis {
     excessive_speculative_type_angle_opens: bool,
     excessive_arrow_default_speculation: bool,
     oversized_numeric_token: bool,
+    unterminated_template: bool,
 }
 
 fn flush_speculative_type_angle_segment(cumulative: &mut usize, segment_depth: &mut usize) {
@@ -93,6 +94,7 @@ pub fn expression_is_safe_to_parse(content: &str) -> bool {
         && !analysis.excessive_speculative_type_angle_opens
         && !analysis.excessive_arrow_default_speculation
         && !analysis.oversized_numeric_token
+        && !analysis.unterminated_template
         && !operators::has_excessive_prefix_operator_run(content)
 }
 
