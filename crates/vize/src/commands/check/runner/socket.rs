@@ -7,8 +7,11 @@ use std::time::{Instant, SystemTime};
 use serde::Serialize;
 use vize_l0::{String, cstr};
 
-use super::collect::collect_check_files_with_ignores;
-use super::{display_path, resolve_project_root, resolve_tsconfig_path, text_style::TextStyle};
+use super::collect::{collect_check_files_with_ignores, normalize_input_path};
+use super::{
+    diagnostics::user_facing_type_message, display_path, resolve_project_root,
+    resolve_tsconfig_path, text_style::TextStyle,
+};
 use crate::commands::check::{
     CheckArgs, ProjectJsonRpcResponse, ServerProjectCheckResult,
     patterns::CheckFileOptions,
@@ -153,8 +156,18 @@ fn render_result(
         let code = diagnostic
             .code
             .as_deref()
-            .map(|code| cstr!(" [{code}]"))
+            .map(|code| {
+                if code.chars().all(|character| character.is_ascii_digit()) {
+                    cstr!(" [TS{code}]")
+                } else {
+                    cstr!(" [{code}]")
+                }
+            })
             .unwrap_or_default();
+        let message = user_facing_type_message(
+            diagnostic.code.as_deref().is_some_and(is_ts2345_code),
+            &diagnostic.message,
+        );
         grouped.entry(diagnostic.file).or_default().push(
             cstr!(
                 "{}:{}:{}{} {}",
@@ -162,7 +175,7 @@ fn render_result(
                 diagnostic.line,
                 diagnostic.column,
                 code,
-                diagnostic.message
+                message
             )
             .into(),
         );
@@ -178,11 +191,7 @@ fn render_result(
                 file: display_path(cwd, path).into(),
                 virtual_ts: None,
                 diagnostics: grouped
-                    .remove(
-                        vize_carton::path::canonicalize_non_verbatim(path)
-                            .to_string_lossy()
-                            .as_ref(),
-                    )
+                    .remove(normalize_input_path(path).to_string_lossy().as_ref())
                     .unwrap_or_default(),
             })
             .collect();
@@ -246,4 +255,8 @@ fn render_result(
 fn exit_error(message: String) -> ! {
     eprintln!("{message}");
     std::process::exit(1)
+}
+
+fn is_ts2345_code(code: &str) -> bool {
+    code == "2345" || code == "TS2345"
 }
