@@ -97,8 +97,9 @@ impl VirtualProject {
         &self,
         package_links: &[PackageNodeModulesLink],
     ) -> Vec<PathBuf> {
-        let mut roots = Vec::with_capacity(package_links.len() + 1);
+        let mut roots = Vec::with_capacity(package_links.len() + 2);
         roots.push(self.virtual_root.join("node_modules"));
+        roots.push(self.virtual_root.join(super::CLI_BUILD_INFO_DIR));
         roots.extend(package_links.iter().map(|link| link.virtual_dir.clone()));
         roots
     }

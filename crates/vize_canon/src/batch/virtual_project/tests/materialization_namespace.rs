@@ -129,3 +129,34 @@ fn materialize_resolves_project_and_ancestor_installs_outside_source_tree() {
     }
     assert!(!project.virtual_root().starts_with(&project_root));
 }
+
+#[test]
+fn cli_build_info_survives_rematerialization() {
+    let case_dir = unique_case_dir("materialize-cli-build-info");
+    let _ = fs::remove_dir_all(&case_dir);
+    let src_dir = case_dir.join("src");
+    fs::create_dir_all(&src_dir).unwrap();
+    let main_path = src_dir.join("main.ts");
+    fs::write(&main_path, "export const answer = 42;\n").unwrap();
+
+    let mut project = VirtualProject::new(&case_dir).unwrap();
+    project.register_path(&main_path).unwrap();
+    project.materialize().unwrap();
+    let config = project.generated_tsconfig_path();
+    let shard = config.with_file_name("tsconfig.shard1.json");
+    let build_info = project.cli_build_info_path(&config);
+    assert_eq!(
+        build_info,
+        project
+            .virtual_root()
+            .join(".vize-buildinfo/tsconfig.tsbuildinfo")
+    );
+    assert_ne!(project.cli_build_info_path(&shard), build_info);
+    fs::create_dir_all(build_info.parent().unwrap()).unwrap();
+    fs::write(&build_info, "{}").unwrap();
+
+    project.materialize().unwrap();
+    assert_eq!(fs::read_to_string(&build_info).unwrap(), "{}");
+
+    let _ = fs::remove_dir_all(&case_dir);
+}

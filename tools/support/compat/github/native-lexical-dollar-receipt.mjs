@@ -211,6 +211,9 @@ export function validateLexicalDollarPackets(root) {
     assert.deepEqual(packet.actualArgs, [
       "--checkers",
       "1",
+      "--incremental",
+      "--tsBuildInfoFile",
+      path.join(packet.virtualRoot, ".vize-buildinfo", "tsconfig.tsbuildinfo"),
       "--pretty",
       "false",
       "--project",

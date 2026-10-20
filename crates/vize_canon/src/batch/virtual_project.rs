@@ -137,6 +137,9 @@ pub(super) const VUE_MODULE_STUBS_FILE: &str = "__vize_vue_modules.d.ts";
 /// Shared ambient helpers materialized once per program; generated `.vue.ts`
 /// modules are emitted with their preamble hoisted into this file.
 pub(super) const SHARED_HELPERS_FILE: &str = crate::virtual_ts::SHARED_PREAMBLE_FILE_NAME;
+/// CLI `--incremental` state; survives the materialize prune so the next run
+/// can reuse it.
+const CLI_BUILD_INFO_DIR: &str = ".vize-buildinfo";
 
 /// Ordered owners for one materialized package shadow path.
 ///

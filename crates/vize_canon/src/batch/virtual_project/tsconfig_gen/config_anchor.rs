@@ -8,7 +8,7 @@ use vize_carton::String;
 use crate::batch::error::CorsaResult;
 use crate::batch::materialize_fs::{ensure_dir, write_if_changed};
 
-use super::super::SHARED_HELPERS_FILE;
+use super::super::{CLI_BUILD_INFO_DIR, SHARED_HELPERS_FILE};
 use super::VirtualProject;
 
 impl VirtualProject {
@@ -28,6 +28,26 @@ impl VirtualProject {
             })
             .unwrap_or_default();
         self.virtual_root.join(directory).join("tsconfig.json")
+    }
+
+    /// Where the CLI run for `config_path` keeps its `--incremental` state.
+    /// Unchanged files then reuse their recorded diagnostics on the next run
+    /// instead of being checked again; Corsa still rechecks every file whose
+    /// content, dependencies or options changed.
+    pub(crate) fn cli_build_info_path(&self, config_path: &Path) -> PathBuf {
+        let relative = config_path
+            .strip_prefix(&self.virtual_root)
+            .unwrap_or(config_path)
+            .with_extension("tsbuildinfo");
+        let name: String = relative
+            .components()
+            .map(|component| component.as_os_str().to_string_lossy())
+            .collect::<Vec<_>>()
+            .join("__")
+            .into();
+        self.virtual_root
+            .join(CLI_BUILD_INFO_DIR)
+            .join(name.as_str())
     }
 
     /// Vue macro and native-element imports resolve from the governing config's

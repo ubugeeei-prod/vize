@@ -77,6 +77,11 @@ fn run_cli_for_config(
         // The checker count decides the diagnostic set, so it is always pinned
         // explicitly (see `checker_count`) rather than left to Corsa's default.
         command.arg("--checkers").arg(cstr!("{checkers}").as_str());
+        // Reuse the previous run's diagnostics for files nothing changed.
+        command
+            .arg("--incremental")
+            .arg("--tsBuildInfoFile")
+            .arg(project.cli_build_info_path(config_path));
         command
             .arg("--pretty")
             .arg("false")

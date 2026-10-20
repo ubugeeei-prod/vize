@@ -167,6 +167,50 @@ fn delete_and_recreate_a_dependency_rechecks_its_new_content() {
     );
 }
 
+/// Corsa runs with `--incremental`, so an unchanged rerun reuses recorded
+/// diagnostics; they must equal a fresh check, and a dependency-only edit must
+/// still recheck the untouched importer.
+#[test]
+fn unchanged_reruns_keep_findings_and_dependency_edits_recheck_importers() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project = ProjectCase::new("batch-rerun");
+    project.write("src/types.ts", TYPES_CHANGED);
+    project.write("src/Profile.vue", PROFILE);
+    let expected = vec!["error:4:22 [TS2322] Type 'string' is not assignable to type 'number'."];
+
+    for run in 0..3 {
+        let result = project.check(&corsa_path);
+        assert_eq!(
+            result.status,
+            Some(1),
+            "run {run}\n{}\n{}",
+            result.stdout,
+            result.stderr
+        );
+        assert_eq!(
+            diagnostics_for(&parse_json(&result), "src/Profile.vue"),
+            expected,
+            "run {run}:\n{}",
+            result.stdout
+        );
+    }
+
+    project.write("src/types.ts", TYPES);
+    let fixed = project.check(&corsa_path);
+    assert_eq!(fixed.status, Some(0), "{}\n{}", fixed.stdout, fixed.stderr);
+
+    project.write("src/types.ts", TYPES_CHANGED);
+    let broken = project.check(&corsa_path);
+    assert_eq!(
+        diagnostics_for(&parse_json(&broken), "src/Profile.vue"),
+        expected,
+        "{}",
+        broken.stdout
+    );
+}
+
 struct CheckRun {
     status: Option<i32>,
     stdout: String,
