@@ -47,12 +47,7 @@ fn newly_created_and_removed_nested_config_refreshes_without_document_requests()
     );
     let config_uri = file_uri(&config);
     lsp.send(json!({"jsonrpc":"2.0","method":"workspace/didChangeWatchedFiles","params":{"changes":[{"uri":config_uri,"type":1}]}}));
-    let cleared = lsp.recv_matching(|message| {
-        message["method"] == "textDocument/publishDiagnostics"
-            && message["params"]["uri"] == uri.as_str()
-            && message["params"]["version"] == 1
-    });
-    assert_eq!(cleared["params"]["diagnostics"], json!([]), "{cleared:#}");
+    native::publication(&mut lsp, &uri, 1, &json!([]));
     // The buffer remains owned by the new nested context until the marker is
     // removed. Restoration must use its latest unsaved text in the parent.
     const EDITED: &str = include_str!(
@@ -62,15 +57,11 @@ fn newly_created_and_removed_nested_config_refreshes_without_document_requests()
     native::publication(&mut lsp, &uri, 2, &json!([]));
     std::fs::remove_file(&config).unwrap();
     lsp.send(json!({"jsonrpc":"2.0","method":"workspace/didChangeWatchedFiles","params":{"changes":[{"uri":config_uri,"type":3}]}}));
-    let restored = lsp.recv_matching(|message| {
-        message["method"] == "textDocument/publishDiagnostics"
-            && message["params"]["uri"] == uri.as_str()
-            && message["params"]["version"] == 2
-    });
-    assert_eq!(
-        restored["params"]["diagnostics"],
-        native::mismatch("number", "string", 1, "value"),
-        "{restored:#}"
+    native::publication(
+        &mut lsp,
+        &uri,
+        2,
+        &native::mismatch("number", "string", 1, "value"),
     );
     assert_no_dedicated_config(root);
     finish(lsp);

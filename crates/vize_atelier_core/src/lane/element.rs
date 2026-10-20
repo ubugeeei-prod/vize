@@ -28,9 +28,6 @@ pub fn transform_element<'a>(
 ) -> Option<ExitFns<'a>> {
     frozen::resolve_identity(ctx, el);
     validate_v_slot_usage(ctx, el);
-    if ctx.options.vapor && !ctx.options.ssr {
-        vapor_runtime_props::bind_runtime_only_attrs(ctx, el);
-    }
     // Process props and directives
     process_element_props(ctx, el);
 
@@ -138,11 +135,15 @@ fn is_registered_component(ctx: &TransformContext<'_>, tag: &str) -> bool {
 
 /// Process element properties and directives
 fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, ElementNode<'a>>) {
+    let runtime_only =
+        (ctx.options.vapor && !ctx.options.ssr && el.tag_type == ElementType::Element)
+            .then(|| vapor_runtime_props::RuntimeOnlyContext::new(el));
     if el.props.is_empty()
-        || !el
-            .props
-            .iter()
-            .any(|prop| matches!(prop, PropNode::Directive(_)))
+        || (runtime_only.is_none()
+            && !el
+                .props
+                .iter()
+                .any(|prop| matches!(prop, PropNode::Directive(_))))
     {
         return;
     }
@@ -173,7 +174,10 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
 
     // Collect indices of v-model directives to process (skip in vapor mode)
     let mut model_indices: std::vec::Vec<usize> = std::vec::Vec::new();
-    for (i, prop) in el.props.iter().enumerate() {
+    for (i, prop) in el.props.iter_mut().enumerate() {
+        if let Some(runtime_only) = runtime_only {
+            runtime_only.bind_attr(ctx, prop);
+        }
         if let PropNode::Directive(dir) = prop {
             match dir.name {
                 "model" if !ctx.options.vapor => {
