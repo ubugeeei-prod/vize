@@ -38,6 +38,24 @@ type VueOptionKeys =
   | "basePath"
   | "lib";
 
+/** Host Vite+ lint config produced by `oxlint-plugin-vize` flat-config helpers. */
+export interface VueHostLintConfig extends Record<string, unknown> {
+  jsPlugins: string[];
+  plugins: string[];
+  rules: Record<string, unknown>;
+  settings: Record<string, unknown> & { vize?: Record<string, unknown> };
+  ignorePatterns?: string[];
+  overrides?: unknown[];
+}
+
+/** Preferred action-oriented spellings for the Vue tools. */
+type VueToolActions = {
+  compile?: VizeConfig["compiler"];
+  typeCheck?: VizeConfig["typeChecker"];
+  lint?: VueHostLintConfig;
+  fmt?: VizeConfig["formatter"];
+};
+
 /** Native scopes retain the same authored options inside the Vue namespace. */
 export type VueOptionsEntry = Pick<
   VizeConfigEntry,
@@ -48,7 +66,7 @@ export type VueOptionsEntry = Pick<
 export type VueOptions = Pick<VizeConfig, VueOptionKeys> & {
   version?: VueVersion;
   entries?: VueOptionsEntry[];
-};
+} & VueToolActions;
 
 export type UserConfigEntry = VizeConfigEntry & {
   /**

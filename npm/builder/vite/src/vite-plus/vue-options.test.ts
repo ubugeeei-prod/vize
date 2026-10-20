@@ -5,6 +5,7 @@ import { defineConfig, withVue } from "../vite-plus.ts";
 import { resolveConfigExport, resolveViteConfigExport } from "../config.ts";
 import { projectViteConfigSource } from "../../../../cli/src/config/vite-runtime.mjs";
 import { normalizeConfig, resolveConfig } from "./config.ts";
+import { runTools } from "./runner.ts";
 import {
   sourceConfigKey,
   taskConfigKey,
@@ -127,6 +128,68 @@ void test("canonical sections reach the same native normalizer as the selected V
   assert.equal(metadata.options.lint, false);
   assert.equal(metadata.options.fmt, true);
   assert.ok(!("vue" in result));
+});
+
+void test("action options route flat lint to Vite+ and native settings to the loader", async () => {
+  const hostLint = {
+    jsPlugins: ["oxlint-plugin-vize"],
+    plugins: ["vue"],
+    ignorePatterns: ["dist/**"],
+    rules: {
+      "no-console": "warn",
+      "vize/vue/no-v-html": "warn",
+    },
+    settings: {
+      vize: { preset: "incremental", locale: "ja", helpLevel: "short" },
+    },
+  };
+  const { vp: result, metadata } = normalizeConfig(
+    {
+      lint: { rules: { "no-console": "off" } },
+      vue: {
+        compile: { whitespace: "preserve" },
+        typeCheck: { strict: true },
+        lint: hostLint,
+        fmt: { singleQuote: true },
+        entries: [
+          {
+            files: ["generated/**/*.vue"],
+            linter: { rules: { "vue/no-v-html": "off" } },
+          },
+        ],
+      },
+    },
+    integration,
+  );
+  assert.equal(result.lint, hostLint, "withVue lint takes ownership of the host Vite+ block");
+  assert.equal(metadata.options.plugin, false);
+  assert.equal(metadata.options.tasks, false);
+  assert.equal(metadata.options.lint, false);
+  assert.equal(metadata.options.fmt, true);
+  assert.equal(metadata.options.conflicts, false);
+  assert.equal(metadata.lintLocale, "ja");
+  assert.equal(metadata.lintHelpLevel, "short");
+  assert.deepEqual(await resolveConfigExport(metadata.config!, env), {
+    typeChecker: { jsxTypecheck: true, strict: true },
+    compiler: { whitespace: "preserve" },
+    linter: {
+      preset: "incremental",
+      rules: { "vue/no-v-html": "warn" },
+    },
+    formatter: { singleQuote: true },
+    entries: [
+      {
+        files: ["generated/**/*.vue"],
+        linter: { rules: { "vue/no-v-html": "off" } },
+      },
+    ],
+  });
+  const calls: string[][] = [];
+  await runTools("lint", ["src"], metadata, "vp", "native", async (_command, args) => {
+    calls.push(args);
+    return 0;
+  });
+  assert.deepEqual(calls, [["vp", "lint", "src"]], "the host bridge owns the native lint pass");
 });
 
 void test("fluent Vue settings merge native leaves and replace canonical arrays immutably", async () => {
