@@ -16,7 +16,7 @@
       "api": "--current-api",
       "cases": {
         "path": "crates/vize_patina/tests/fixtures/lint-history/cases.json",
-        "sha256": "d0b7d4de710848dbeb14509e2cf2e1ae0d25a127cb909e7b7a2669d7e0b02ac2"
+        "sha256": "ca1f52d6713978f63776254534393598097faf5bb9963ca9bfe0e6a24df8aaeb"
       }
     },
     {
@@ -54,7 +54,7 @@
   ],
   "oracles": {
     "path": "tests/_fixtures/differential/linter/oracle-index.json",
-    "sha256": "c81a821187526d5a0fa38b86b8a7007a8a1fadad4c63f6cb128c6ce9f878ea26"
+    "sha256": "8b6997adf1bd848ddb34f02358e6d83a4ac55f6467d89da2e146a877d061b158"
   },
   "cases": [
     {

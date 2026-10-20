@@ -298,5 +298,17 @@
     "vapor": null,
     "diagnostics": 0,
     "fixes": 0
+  },
+  {
+    "id": "nuxt-builtins-9866",
+    "history": "673c6fa430aba9ca81c87a81e3e63a4a8c844921",
+    "source": "<template>\n  <ClientOnly>\n    <NuxtLink to=\"/\">home</NuxtLink>\n    <UnknownWidget />\n  </ClientOnly>\n</template>\n",
+    "filename": "HomeLink.vue",
+    "entry": "sfc",
+    "rule": "vue/require-component-registration",
+    "vue_version": "3",
+    "vapor": null,
+    "diagnostics": 3,
+    "fixes": 0
   }
 ]

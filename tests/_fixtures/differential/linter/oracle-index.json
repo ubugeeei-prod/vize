@@ -219,6 +219,10 @@
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__vue-path-alias-types-9864.snap",
     "sha256": "52e4ec70e7a4e05c3ea6fbc8b4800057c60d8f3620756c6e7e96cedafc7973c1"
   },
+  "linter/current-api/nuxt-builtins-9866": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__nuxt-builtins-9866.snap",
+    "sha256": "b0553cc80634ecf13f05d4fdf65f4b2b164ca1766dcec01070feb22dbec9a5a5"
+  },
   "linter/current-api/prefer-use-id-context-9837": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__prefer-use-id-context-9837.snap",
     "sha256": "28543706721f9b2c15c52b5c626725bdfc86662a73adb8b32a8893427f85434a"
