@@ -200,7 +200,6 @@ pub(crate) fn generate_props_variables(
         .define_props()
         .and_then(|m| m.type_args.as_ref());
 
-    let props_type_ref = model.authored_type_ref.as_str();
     let template_props_type_ref = model.resolved_type_ref.as_str();
     let defaulted_prop_names = &model.defaulted_prop_names;
 
