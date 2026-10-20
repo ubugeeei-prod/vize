@@ -10,10 +10,15 @@ test("capture never replaces the actual diagnostic assertion and the full tier s
     path.join(root, "crates/vize_canon/tests/fix_history_diagnostics.rs"),
     "utf8",
   );
-  const assertion = rust.indexOf("assert_eq!(\n            actual, case.diagnostics,");
+  const comparison = rust.indexOf(
+    "let (compared_actual, compared_expected) =",
+  );
+  const assertion = rust.indexOf(
+    "assert_eq!(\n            compared_actual, compared_expected,",
+  );
   const capture = rust.indexOf("capture.record(");
   assert(
-    assertion >= 0 && capture > assertion,
+    comparison >= 0 && assertion > comparison && capture > assertion,
     "expected data must never substitute for actual diagnostics",
   );
   const workflow = fs.readFileSync(
