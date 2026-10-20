@@ -2,7 +2,8 @@
 //!
 //! Importers of different packages scan overlapping closures, and each scan
 //! used to stat, read and parse the same package files again (#9727). A pass
-//! now loads each file once, reading a scan's whole frontier in parallel.
+//! now loads each file once, reading a scan's whole frontier in parallel,
+//! and resolves each of its path and package edges once.
 //! Facts never outlive the pass that treats the filesystem as stable.
 
 #![expect(
@@ -11,7 +12,7 @@
 )]
 
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
+use std::sync::{Arc, OnceLock};
 
 use oxc_span::SourceType;
 use rayon::prelude::*;
@@ -24,6 +25,23 @@ pub(super) type Occurrences = Arc<[(CompactString, crate::PackageResolutionMode)
 pub(super) struct SourceText {
     pub(super) len: usize,
     pub(super) occurrences: Occurrences,
+    /// Resolutions of `occurrences`, by index, filled by the first scan that
+    /// needs each one.
+    pub(super) edges: Arc<[ResolvedEdge]>,
+}
+
+/// Resolution outcome and consulted inputs.
+pub(super) type Resolution<T> = (Option<T>, Vec<PathBuf>);
+
+/// Lookups that depend only on the importer and the specifier, so every scan
+/// of a pass shares them. Alias targets are left out: the canon walk resolves
+/// them against the scanned route's package root.
+#[derive(Default)]
+pub(super) struct ResolvedEdge {
+    /// Relative or absolute spellings.
+    pub(super) path: OnceLock<Resolution<PathBuf>>,
+    /// Bare spellings that no alias resolved.
+    pub(super) package: OnceLock<Resolution<crate::PackageRoute>>,
 }
 
 #[derive(Clone)]
@@ -126,13 +144,17 @@ fn read(path: &Path) -> Option<SourceText> {
         SourceType::ts()
     };
     let mut seen = FxHashSet::default();
-    let occurrences = crate::batch::ImportRewriter::new()
+    let occurrences: Occurrences = crate::batch::ImportRewriter::new()
         .collect_all_specifier_occurrences(&content, source_type)
         .into_iter()
         .filter(|occurrence| seen.insert(occurrence.clone()))
         .collect();
+    let edges = std::iter::repeat_with(ResolvedEdge::default)
+        .take(occurrences.len())
+        .collect();
     Some(SourceText {
         len: content.len(),
         occurrences,
+        edges,
     })
 }

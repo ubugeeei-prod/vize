@@ -68,6 +68,68 @@ fn scans_sharing_source_facts_match_fresh_scans_and_read_each_file_once() {
 }
 
 #[test]
+fn scans_sharing_sources_resolve_path_and_package_edges_once() {
+    let fixture = Fixture::new();
+    fixture.write("one.ts", "import './shared'\nimport 'dep'\n");
+    fixture.write("two.ts", "import './shared'\n");
+    fixture.write("shared.ts", "import './leaf'\nimport 'dep'\n");
+    fixture.write("leaf.ts", "export {}\n");
+    let calls = std::cell::RefCell::new(Vec::new());
+    let scan = |entry: &str, sources: &mut super::ReachabilitySources| {
+        scan_package_route_reachability_with_budget(
+            &route(&fixture.package_root, &fixture.package_root.join(entry)),
+            sources,
+            |importer, specifier| {
+                calls.borrow_mut().push(format!("local {specifier}"));
+                let base = importer.parent().unwrap().join(specifier);
+                let candidate = base.with_extension("ts");
+                let consulted = vec![candidate.clone()];
+                if specifier.starts_with('.') && candidate.is_file() {
+                    (Some(candidate), consulted)
+                } else {
+                    (None, Vec::new())
+                }
+            },
+            |_, specifier, _| {
+                calls.borrow_mut().push(format!("package {specifier}"));
+                (
+                    None,
+                    vec![fixture.package_root.join("node_modules").join(specifier)],
+                )
+            },
+            generous_budget(),
+        )
+    };
+    let fresh = ["one.ts", "two.ts"].map(|entry| scan(entry, &mut Default::default()));
+    calls.borrow_mut().clear();
+    let mut sources = super::ReachabilitySources::default();
+    let shared = ["one.ts", "two.ts"].map(|entry| scan(entry, &mut sources));
+
+    for (fresh, shared) in fresh.iter().zip(&shared) {
+        assert_eq!(shared.outcome, fresh.outcome);
+        assert_eq!(shared.work, fresh.work);
+        assert_eq!(shared.inputs, fresh.inputs);
+    }
+    // `shared.ts` resolves `./leaf` and the `dep` package once. Aliases may
+    // resolve against the scanned route, so only they repeat.
+    let mut calls = calls.into_inner();
+    calls.sort();
+    assert_eq!(
+        calls,
+        [
+            "local ./leaf",
+            "local ./shared",
+            "local ./shared",
+            "local dep",
+            "local dep",
+            "local dep",
+            "package dep",
+            "package dep",
+        ]
+    );
+}
+
+#[test]
 fn long_cyclic_duplicate_graph_stops_at_exact_unique_work_bound() {
     let fixture = Fixture::new();
     let mut expected_bytes = 0;

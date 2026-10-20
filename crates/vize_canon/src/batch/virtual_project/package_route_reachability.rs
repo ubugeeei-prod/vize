@@ -262,28 +262,37 @@ where
         work.parses += 1;
         // Each file is popped once per scan and its occurrences are already
         // unique, so every occurrence is a new edge.
-        for (specifier, mode) in content.occurrences.iter() {
-            let (specifier, mode) = (specifier.clone(), *mode);
+        for ((specifier, mode), edge) in content.occurrences.iter().zip(content.edges.iter()) {
             if work.edges == budget.max_edges {
                 return finish(ReachabilityOutcome::BudgetExceeded, inputs, work, budget);
             }
             work.edges += 1;
-            let (local_dependency, local_inputs) = resolve_local(&path, &specifier);
-            inputs.extend(local_inputs.into_iter().map(InputPath));
+            let alias;
+            let (local_dependency, local_inputs) = if is_path_spelling(specifier) {
+                let (dependency, consulted) =
+                    edge.path.get_or_init(|| resolve_local(&path, specifier));
+                (dependency.as_ref(), consulted)
+            } else {
+                alias = resolve_local(&path, specifier);
+                (alias.0.as_ref(), &alias.1)
+            };
+            for input in local_inputs {
+                record_input(&mut inputs, input);
+            }
             if let Some(dependency) = local_dependency {
-                record_input(&mut inputs, &dependency);
+                record_input(&mut inputs, dependency);
                 if dependency
                     .extension()
                     .is_some_and(|extension| extension == "vue")
                 {
                     return finish(ReachabilityOutcome::ReachesVue, inputs, work, budget);
                 }
-                if !queued.contains(&dependency) {
+                if !queued.contains(dependency) {
                     if queued.len() == budget.max_queued_files {
                         return finish(ReachabilityOutcome::BudgetExceeded, inputs, work, budget);
                     }
                     queued.insert(dependency.clone());
-                    queue.push((source_priority(&dependency), Reverse(dependency)));
+                    queue.push((source_priority(dependency), Reverse(dependency.clone())));
                 }
                 continue;
             }
@@ -292,14 +301,18 @@ where
             }
             // Canon supplies Vue's compiler/runtime types. They are terminal
             // support edges, not importer-scoped component packages.
-            if is_vue_runtime_support_specifier(&specifier) {
+            if is_vue_runtime_support_specifier(specifier) {
                 continue;
             }
-            let (nested, consulted) = resolve_package(&path, &specifier, mode);
-            inputs.extend(consulted.into_iter().map(InputPath));
+            let (nested, consulted) = edge
+                .package
+                .get_or_init(|| resolve_package(&path, specifier, *mode));
+            for input in consulted {
+                record_input(&mut inputs, input);
+            }
             if let Some(nested) = nested {
                 if !route_graph::seed_route_graph(
-                    &nested,
+                    nested,
                     &mut packages,
                     &mut queue,
                     &mut queued,
@@ -320,6 +333,14 @@ where
         }
     }
     finish(ReachabilityOutcome::DoesNotReachVue, inputs, work, budget)
+}
+
+/// Spellings both walks resolve from the importer's directory alone.
+fn is_path_spelling(specifier: &str) -> bool {
+    matches!(specifier, "." | "..")
+        || specifier.starts_with("./")
+        || specifier.starts_with("../")
+        || Path::new(specifier).is_absolute()
 }
 
 fn enqueue(
