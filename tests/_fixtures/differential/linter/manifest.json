@@ -16,7 +16,7 @@
       "api": "--current-api",
       "cases": {
         "path": "crates/vize_patina/tests/fixtures/lint-history/cases.json",
-        "sha256": "25b10c03d43ae27bd3a0029610d47f3e866b63ca9012e3e6a3247a5adb067e5a"
+        "sha256": "eb615b331cc1b0c771a73a16bf84e097f139eb36af36f4a7bc71521fe97f6c0d"
       }
     },
     {
@@ -54,7 +54,7 @@
   ],
   "oracles": {
     "path": "tests/_fixtures/differential/linter/oracle-index.json",
-    "sha256": "c373b5145f4b8726d78d5b929f944fb22c7c8b66491821674f40ae08f09e5133"
+    "sha256": "01d2c12bac296343c6fda858227c279e51de184726683af637b147435272e476"
   },
   "cases": [
     {
@@ -229,7 +229,9 @@
     {
       "id": "linter/current-api/require-symbol-provide-range-9882",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "require-symbol-provide-range-9882",
         "files": [
@@ -514,6 +516,48 @@
             "path": "StatePanel.vue.txt",
             "role": "issue-authored-reproduction",
             "sha256": "19d1f6b0d716ab1b4599f83b012781539a696d9dfbf658d3294c9ac90367be23"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/vue-path-alias-types-9864",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "vue-alias-types-9864",
+        "files": [
+          {
+            "path": "tsconfig.json",
+            "role": "issue-authored-config",
+            "sha256": "2ddd0f0f16a9b64c0244adf7812d537dcc7c0675db731a7ffb5a72a0de7ed365"
+          },
+          {
+            "path": "src/ui/side-panel.vue",
+            "role": "issue-authored-component",
+            "sha256": "611ef6b1087e7f4deef925767ea4554fca9a697d485e888ee58ed6ca17cbe3a6"
+          },
+          {
+            "path": "src/ui/item-list.vue",
+            "role": "issue-authored-component",
+            "sha256": "021013dfb5858864ae8fea736ec69a1478bca3ce0e8ff70c700be69e8f9f0203"
+          },
+          {
+            "path": "src/ui/helpers.ts",
+            "role": "issue-authored-control",
+            "sha256": "50528261e7bd829ae991388f4ec8d8b956cecd140e72bc6db630c87f4f5dc410"
+          },
+          {
+            "path": "src/pages/page-view.vue",
+            "role": "issue-authored-consumer",
+            "sha256": "101475e96ae9d5ff4f8cd8d24d6cdccdc499e54dee68cfb4ac15b885b4c89e0d"
+          },
+          {
+            "path": "src/pages/list-view.vue",
+            "role": "issue-authored-consumer",
+            "sha256": "999459441acb76214dd616f70cfe4b9f1cd25ad423a15436fb29223579113efc"
           }
         ]
       }

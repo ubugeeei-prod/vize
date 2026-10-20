@@ -187,13 +187,15 @@ pub fn check_reactive_plain_alias_extraction(
     }
 
     let live = result.keeps_live_ref_origin(value.argument_name.as_str());
-    result.reactivity.record_plain_value_alias(
-        value.source_name.clone(),
-        value.argument_name,
-        CompactString::new(target_name),
-        value.start,
-        value.end,
-    );
+    if !snapshot_in_reexecuted_scope(result) {
+        result.reactivity.record_plain_value_alias(
+            value.source_name.clone(),
+            value.argument_name,
+            CompactString::new(target_name),
+            value.start,
+            value.end,
+        );
+    }
     result.record_reactive_origin(
         CompactString::new(target_name),
         ReactiveValueOrigin::PlainAlias {
@@ -226,13 +228,15 @@ pub fn check_reactive_plain_assignment_alias(
     }
 
     let live = result.keeps_live_ref_origin(value.argument_name.as_str());
-    result.reactivity.record_plain_value_alias(
-        value.source_name.clone(),
-        value.argument_name,
-        CompactString::new(target_name),
-        value.start,
-        value.end,
-    );
+    if !snapshot_in_reexecuted_scope(result) {
+        result.reactivity.record_plain_value_alias(
+            value.source_name.clone(),
+            value.argument_name,
+            CompactString::new(target_name),
+            value.start,
+            value.end,
+        );
+    }
     result.record_reactive_origin(
         CompactString::new(target_name),
         ReactiveValueOrigin::PlainAlias {

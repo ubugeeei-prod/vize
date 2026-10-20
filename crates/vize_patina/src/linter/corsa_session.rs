@@ -50,6 +50,7 @@ pub(crate) struct CorsaTypeAwareSession {
     import_source_map: vize_canon::ImportSourceMap,
     dependency_paths: vize_l0::FxHashSet<PathBuf>,
     dependency_cache: vize_l0::FxHashMap<PathBuf, vue_dependencies::CachedDocument>,
+    vue_path_aliases: vue_dependencies::PathAliases,
     closed: bool,
 }
 

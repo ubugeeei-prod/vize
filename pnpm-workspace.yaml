@@ -20,7 +20,7 @@ packages:
   - "crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755"
 
 minimumReleaseAgeExclude:
-  - "hono@4.13.7"
+  - "hono@4.13.11"
   # First-party native binaries are published by our own release; any version.
   - "@vizejs/native-*"
   - "@vue/compiler-core@3.6.0-rc.11"
@@ -60,7 +60,7 @@ overrides:
   fast-uri: "3.1.8"
   "glob>minimatch": "10.2.5"
   h3: "1.15.11"
-  hono: "4.13.7"
+  hono: "4.13.11"
   ip-address: "10.7.1"
   launch-editor: "2.14.1"
   "nanoid@>=3.0.0 <3.3.17": "3.3.17"

@@ -160,6 +160,37 @@
       }
     },
     {
+      "id": "compiler/sfc/maybe-ref-model-parity-10044",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "maybe-ref-model-parity-10044",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "129ec64c760961a649ba0227648435a5128c9d6768d18df4d6ecdb637cdaf610",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "maybe-ref-model-parity-10044/module.expected.txt",
+        "sha256": "d907caac9a5a86b41f85e042b1a3d5cff59647d7447ee3feaae370a8eb388754",
+        "source": "crates/vize_atelier_sfc/tests/davinci_production_reach/inline_parity_regressions.rs:maybe_ref_model_writes_match_shipped_compiler"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); Croquis descriptor and armature tokenizer remain legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      }
+    },
+    {
       "id": "compiler/sfc/vue2-preserve-boundaries-9886",
       "state": "active",
       "targets": ["ssr"],

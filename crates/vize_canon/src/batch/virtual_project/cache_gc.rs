@@ -7,15 +7,24 @@ use std::time::{Duration, SystemTime};
 const ACCESS_SUFFIX: &str = ".access";
 const ACTIVE_LOCK_SUFFIX: &str = ".active.lock";
 const LOCK_SUFFIXES: [&str; 3] = [".lock", ".materialize.lock", ACTIVE_LOCK_SUFFIX];
+const CACHE_ENTRY_SUFFIXES: [&str; 4] = [
+    ".lock",
+    ".materialize.lock",
+    ACTIVE_LOCK_SUFFIX,
+    ACCESS_SUFFIX,
+];
 const MAX_PROJECT_ENTRIES: usize = 24;
 const MAX_SCANNED_PROJECT_ENTRIES: usize = 256;
+const MAX_SCANNED_CACHE_ENTRIES: usize = MAX_SCANNED_PROJECT_ENTRIES * 4;
 const MAX_EVICTIONS_PER_MAINTENANCE: usize = 8;
+const MAX_ORPHAN_LOCK_CLEANUPS_PER_MAINTENANCE: usize = 8;
 const MAX_UNUSED_AGE: Duration = Duration::from_secs(14 * 24 * 60 * 60);
 
 #[derive(Debug, Default, PartialEq, Eq)]
 struct CacheMaintenanceSummary {
     project_entries: usize,
     evicted: usize,
+    orphan_lock_groups_cleaned: usize,
 }
 
 /// Record the current namespace as recently used and evict old/excess mirrors.
@@ -45,10 +54,17 @@ fn maintain_project_cache_with_summary(current: &Path) -> CacheMaintenanceSummar
     };
     let now = SystemTime::now();
     let mut entries = Vec::with_capacity(MAX_SCANNED_PROJECT_ENTRIES);
-    // Sibling lock files are retained for inode-safe locking, so enumerate
-    // past them while bounding metadata reads to actual project directories.
-    for entry in read_dir.flatten() {
+    let mut lock_roots = Vec::new();
+    // Bound directory iteration as well as project metadata reads. Historical
+    // versions left sibling locks behind, so collect their roots during the
+    // same scan and retire a bounded number below.
+    for entry in read_dir.flatten().take(MAX_SCANNED_CACHE_ENTRIES) {
         let path = entry.path();
+        if let Some(root) = cache_entry_root(&path)
+            && root != current
+        {
+            lock_roots.push(root);
+        }
         if path == current || !entry.file_type().is_ok_and(|kind| kind.is_dir()) {
             continue;
         }
@@ -69,12 +85,32 @@ fn maintain_project_cache_with_summary(current: &Path) -> CacheMaintenanceSummar
         }
     }
     summary.project_entries = entries.len();
+    lock_roots.sort();
+    lock_roots.dedup();
 
     entries.sort_by_key(|(_, modified)| *modified);
     let excess = entries
         .len()
         .saturating_add(1)
         .saturating_sub(MAX_PROJECT_ENTRIES);
+    // New project-lock acquisitions take this guard shared until their lock
+    // inode is held. Taking it exclusively lets eviction close and unlink the
+    // idle lock files without a process racing onto a replacement inode.
+    let Some(_cache_lock) = super::super::cache_lock::try_acquire_exclusive(current) else {
+        return summary;
+    };
+    for root in lock_roots {
+        if summary.orphan_lock_groups_cleaned == MAX_ORPHAN_LOCK_CLEANUPS_PER_MAINTENANCE {
+            break;
+        }
+        if !root.is_dir()
+            && let Some(locks) = lock_unused(&root)
+        {
+            drop(locks);
+            remove_cache_entry_siblings(&root);
+            summary.orphan_lock_groups_cleaned += 1;
+        }
+    }
     for (index, (path, modified)) in entries.into_iter().enumerate() {
         if summary.evicted == MAX_EVICTIONS_PER_MAINTENANCE {
             break;
@@ -84,14 +120,15 @@ fn maintain_project_cache_with_summary(current: &Path) -> CacheMaintenanceSummar
             .is_ok_and(|age| age >= MAX_UNUSED_AGE);
         if (index < excess || expired)
             && let Some(locks) = lock_unused(&path)
+            && fs::remove_dir_all(&path).is_ok()
         {
-            let _locks = locks;
-            if fs::remove_dir_all(&path).is_ok() {
-                summary.evicted += 1;
-                let _ = fs::remove_file(access_path(&path));
-            }
-            // Retain the tiny sibling lock files. Unlinking a held lock lets a
-            // racing process create a new inode that is not mutually excluded.
+            summary.evicted += 1;
+            let _ = fs::remove_file(access_path(&path));
+            // Windows does not permit unlinking these files while our lock
+            // handles are open. The exclusive cache guard above prevents a
+            // new opener from entering the gap after the handles close.
+            drop(locks);
+            remove_cache_entry_siblings(&path);
         }
     }
     summary
@@ -100,6 +137,7 @@ fn maintain_project_cache_with_summary(current: &Path) -> CacheMaintenanceSummar
 /// Keep a project cache entry alive while a [`VirtualProject`](super::VirtualProject)
 /// can still read or incrementally update its materialized tree.
 pub(super) fn acquire_usage_lock(root: &Path) -> Option<File> {
+    let cache_lock = super::super::cache_lock::acquire_shared(root).ok()?;
     let path = sibling_path(root, ACTIVE_LOCK_SUFFIX);
     fs::create_dir_all(path.parent()?).ok()?;
     let file = OpenOptions::new()
@@ -110,6 +148,7 @@ pub(super) fn acquire_usage_lock(root: &Path) -> Option<File> {
         .open(path)
         .ok()?;
     file.lock_shared().ok()?;
+    drop(cache_lock);
     Some(file)
 }
 
@@ -133,6 +172,25 @@ fn sibling_path(root: &Path, suffix: &str) -> PathBuf {
     let mut name = name.to_os_string();
     name.push(suffix);
     root.with_file_name(name)
+}
+
+fn cache_entry_root(path: &Path) -> Option<PathBuf> {
+    let name = path.file_name()?.to_str()?;
+    for suffix in CACHE_ENTRY_SUFFIXES {
+        let Some(key) = name.strip_suffix(suffix) else {
+            continue;
+        };
+        if key.len() == 64 && key.bytes().all(|byte| byte.is_ascii_hexdigit()) {
+            return Some(path.with_file_name(key));
+        }
+    }
+    None
+}
+
+fn remove_cache_entry_siblings(root: &Path) {
+    for suffix in CACHE_ENTRY_SUFFIXES {
+        let _ = fs::remove_file(sibling_path(root, suffix));
+    }
 }
 
 fn lock_unused(root: &Path) -> Option<Vec<File>> {
@@ -210,6 +268,73 @@ mod tests {
             .filter(|entry| entry.file_type().is_ok_and(|kind| kind.is_dir()))
             .count();
         assert_eq!(remaining, entry_count - MAX_EVICTIONS_PER_MAINTENANCE);
+    }
+
+    #[test]
+    fn maintenance_removes_lock_files_for_each_evicted_entry() {
+        let cache = tempfile::tempdir().unwrap();
+        let projects = cache.path().join("canon/projects");
+        fs::create_dir_all(&projects).unwrap();
+        let mut candidates = Vec::new();
+        for index in 0..(MAX_PROJECT_ENTRIES + MAX_EVICTIONS_PER_MAINTENANCE) {
+            let entry = projects.join(key(index as u8));
+            fs::create_dir(&entry).unwrap();
+            for suffix in LOCK_SUFFIXES {
+                fs::write(sibling_path(&entry, suffix), []).unwrap();
+            }
+            candidates.push(entry);
+        }
+        let current = projects.join(key(255));
+        fs::create_dir(&current).unwrap();
+
+        let summary = maintain_project_cache_with_summary(&current);
+
+        assert_eq!(summary.evicted, MAX_EVICTIONS_PER_MAINTENANCE);
+        let evicted = candidates
+            .iter()
+            .filter(|entry| !entry.exists())
+            .collect::<Vec<_>>();
+        assert_eq!(evicted.len(), MAX_EVICTIONS_PER_MAINTENANCE);
+        for entry in evicted {
+            for suffix in LOCK_SUFFIXES {
+                assert!(!sibling_path(entry, suffix).exists());
+            }
+        }
+    }
+
+    #[test]
+    fn maintenance_reaps_a_bounded_number_of_historical_orphan_locks() {
+        let cache = tempfile::tempdir().unwrap();
+        let projects = cache.path().join("canon/projects");
+        fs::create_dir_all(&projects).unwrap();
+        let orphan_count = MAX_ORPHAN_LOCK_CLEANUPS_PER_MAINTENANCE + 4;
+        for index in 0..orphan_count {
+            let root = projects.join(key(index as u8));
+            for suffix in LOCK_SUFFIXES {
+                fs::write(sibling_path(&root, suffix), []).unwrap();
+            }
+        }
+        let current = projects.join(key(255));
+        fs::create_dir(&current).unwrap();
+
+        let summary = maintain_project_cache_with_summary(&current);
+
+        assert_eq!(
+            summary.orphan_lock_groups_cleaned,
+            MAX_ORPHAN_LOCK_CLEANUPS_PER_MAINTENANCE
+        );
+        let remaining = (0..orphan_count)
+            .filter(|index| {
+                let root = projects.join(key(*index as u8));
+                LOCK_SUFFIXES
+                    .iter()
+                    .any(|suffix| sibling_path(&root, suffix).exists())
+            })
+            .count();
+        assert_eq!(
+            remaining,
+            orphan_count - MAX_ORPHAN_LOCK_CLEANUPS_PER_MAINTENANCE
+        );
     }
 
     #[test]

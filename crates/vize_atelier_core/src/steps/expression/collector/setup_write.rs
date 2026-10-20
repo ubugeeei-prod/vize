@@ -8,32 +8,34 @@ use oxc_span::GetSpan;
 use vize_l0::{String, cstr};
 
 use super::IdentifierCollector;
+use crate::options::BindingType;
 
 impl IdentifierCollector<'_, '_> {
-    fn guards_setup_write(&self, name: &str) -> bool {
-        !self.is_local(name)
-            && !self.ctx.is_in_scope(name)
-            && self.ctx.options.inline
-            && !self.ctx.options.ssr
-            && !self.ctx.options.vapor
-            && self
-                .ctx
-                .options
-                .binding_metadata
-                .as_ref()
-                .is_some_and(|table| {
-                    table.is_script_setup
-                        && table.bindings.get(name) == Some(&crate::options::BindingType::SetupLet)
-                })
+    fn guarded_setup_write_kind(&self, name: &str) -> Option<BindingType> {
+        if self.is_local(name)
+            || self.ctx.is_in_scope(name)
+            || !self.ctx.options.inline
+            || self.ctx.options.ssr
+            || self.ctx.options.vapor
+        {
+            return None;
+        }
+        self.ctx
+            .options
+            .binding_metadata
+            .as_ref()
+            .filter(|table| table.is_script_setup)
+            .and_then(|table| table.bindings.get(name).copied())
+            .filter(|kind| matches!(kind, BindingType::SetupLet | BindingType::SetupMaybeRef))
     }
 
     pub(super) fn guard_setup_assignment(&mut self, expr: &AssignmentExpression<'_>) {
         let AssignmentTarget::AssignmentTargetIdentifier(ident) = &expr.left else {
             return;
         };
-        if !self.guards_setup_write(ident.name.as_str()) {
+        let Some(kind) = self.guarded_setup_write_kind(ident.name.as_str()) else {
             return;
-        }
+        };
         let start = expr.span.start as usize;
         let right = expr.right.span();
         let right_start = right.start as usize;
@@ -60,16 +62,16 @@ impl IdentifierCollector<'_, '_> {
             .collect();
         let right = super::super::splice::splice_insertions(source, prefixes, suffixes, 0);
         let plain = cstr!("{head}{right}");
-        self.finish_setup_write(expr.span.start, expr.span.end, ident, plain);
+        self.finish_setup_write(expr.span.start, expr.span.end, ident, kind, plain);
     }
 
     pub(super) fn guard_setup_update(&mut self, expr: &UpdateExpression<'_>) {
         let SimpleAssignmentTarget::AssignmentTargetIdentifier(ident) = &expr.argument else {
             return;
         };
-        if !self.guards_setup_write(ident.name.as_str()) {
+        let Some(kind) = self.guarded_setup_write_kind(ident.name.as_str()) else {
             return;
-        }
+        };
         let Some(plain) = self
             .source
             .get(expr.span.start as usize..expr.span.end as usize)
@@ -77,7 +79,7 @@ impl IdentifierCollector<'_, '_> {
             return;
         };
         let plain = String::from(plain);
-        self.finish_setup_write(expr.span.start, expr.span.end, ident, plain);
+        self.finish_setup_write(expr.span.start, expr.span.end, ident, kind, plain);
     }
 
     fn finish_setup_write(
@@ -85,6 +87,7 @@ impl IdentifierCollector<'_, '_> {
         start: u32,
         end: u32,
         ident: &IdentifierReference<'_>,
+        kind: BindingType,
         plain: String,
     ) {
         let target_end = ident.span.end as usize;
@@ -113,8 +116,13 @@ impl IdentifierCollector<'_, '_> {
             .iter()
             .position(|(at, _)| *at == end)
             .unwrap_or(self.suffix_rewrites.len());
+        let fallback = match kind {
+            BindingType::SetupLet => plain,
+            BindingType::SetupMaybeRef => String::from("null"),
+            _ => return,
+        };
         self.suffix_rewrites
-            .insert(position, (end, cstr!(" : {plain})")));
+            .insert(position, (end, cstr!(" : {fallback})")));
         self.used_is_ref = true;
     }
 }
@@ -137,6 +145,7 @@ mod tests {
         let mut bindings = FxHashMap::default();
         bindings.insert("evt".into(), BindingType::SetupLet);
         bindings.insert("attr".into(), BindingType::SetupLet);
+        bindings.insert("maybe".into(), BindingType::SetupMaybeRef);
         bindings.insert("n".into(), BindingType::SetupRef);
         TransformOptions {
             prefix_identifiers: true,
@@ -290,6 +299,24 @@ mod tests {
         let evidence: Value = serde_json::from_slice(&output.stdout).unwrap();
         assert_eq!(evidence["vue"], "3.6.0-rc.9");
         assert_eq!(evidence["observations"].as_array().unwrap().len(), 26);
+    }
+
+    #[test]
+    fn maybe_ref_setup_writes_use_null_fallback() {
+        for (source, expected) in [
+            (
+                "maybe = next(n)",
+                "(_isRef(maybe) ? maybe.value = _ctx.next(n.value) : null)",
+            ),
+            ("maybe++", "(_isRef(maybe) ? maybe.value++ : null)"),
+        ] {
+            let allocator = Allocator::new();
+            let ctx = TransformContext::new(&allocator, source, options());
+            let actual = rewrite_expression(source, &ctx, false, None);
+            assert_eq!(actual.parse_error, None);
+            assert_eq!(actual.code.as_str(), expected);
+            assert!(actual.used_is_ref);
+        }
     }
 
     #[test]

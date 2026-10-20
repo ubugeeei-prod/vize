@@ -197,10 +197,10 @@ test("npm exposes every native platform before packages that depend on it", () =
   assert.ok(
     Number(job.env?.PUBLISH_RESOLUTION_RETRY_LIMIT) *
       Number(job.env?.PUBLISH_RESOLUTION_RETRY_DELAY) >=
-      15 * 60,
-    "the platform barrier tolerates npm propagation for 15 minutes",
+      30 * 60,
+    "the platform barrier tolerates npm propagation for 30 minutes",
   );
-  assert.ok((job["timeout-minutes"] ?? 0) >= 40, "the job can outlive both visibility barriers");
+  assert.ok((job["timeout-minutes"] ?? 0) >= 55, "the job can outlive both visibility barriers");
 });
 
 test("final registry verification checks every package and gates only JSR", () => {

@@ -29,6 +29,7 @@ interface Job {
   readonly if?: string;
   readonly needs?: string | readonly string[];
   readonly steps?: readonly Step[];
+  readonly "timeout-minutes"?: number;
   readonly uses?: string;
   readonly strategy?: { readonly matrix: { readonly include: readonly unknown[] } };
 }
@@ -379,7 +380,18 @@ await test("sealed facades exercise all original consumer refusal assertions", (
   }
 });
 
-await test("the JSR publish job outlasts JSR's server-side processing", () => {
-  const publish = workflow("release-jsr.yml").jobs.publish as { "timeout-minutes"?: number };
-  assert.ok((publish["timeout-minutes"] ?? 0) >= 45);
+await test("the JSR publish job bounds the CLI poll and waits for public evidence", () => {
+  const publish = workflow("release-jsr.yml").jobs.publish;
+  assert.ok((publish["timeout-minutes"] ?? 0) >= 105);
+  const steps = publish.steps ?? [];
+  const publication = steps.find(
+    (step) => step.name === "Publish through the repository's JSR OIDC link",
+  );
+  assert.match(publication?.run ?? "", /timeout --signal=INT --kill-after=30s 5m deno publish/);
+  assert.match(publication?.run ?? "", /status -ne 0 && \$status -ne 124/);
+  const publicWait = steps.find(
+    (step) => step.name === "Wait for the immutable public JSR version",
+  );
+  assert.equal(publicWait?.if, enabled);
+  assert.match(publicWait?.run ?? "", /package\.ts wait-public/);
 });
