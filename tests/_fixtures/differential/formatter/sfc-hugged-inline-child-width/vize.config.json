@@ -1,0 +1,4 @@
+{
+  "vue": { "version": "3" },
+  "formatter": { "printWidth": 80, "sortAttributes": false }
+}

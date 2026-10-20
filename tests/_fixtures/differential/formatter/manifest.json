@@ -2055,6 +2055,141 @@
           "operations": []
         }
       ]
+    },
+    {
+      "id": "formatter/sfc/hugged-inline-child-width",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-hugged-inline-child-width",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "9f1df2e7dbc66eee24d6b881321434d67b6eafb685fd8deb4fdfed6533a04008",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": [
+          {
+            "path": "vize.config.json",
+            "sha256": "f936a6f700d82cc19bcd9080cff3a6fb94ff56f01c71673d318f0bc0e94fcaba",
+            "role": "project-vue-version-and-formatter-options"
+          }
+        ]
+      },
+      "provenance": {
+        "issues": [
+          9867,
+          9841
+        ],
+        "commits": [
+          {
+            "sha": "a89b0206d362e61db80bcba778a39ff253a564a9",
+            "role": "pre-fix-base",
+            "paths": [
+              "crates/vize_glyph/src/template/formatter.rs",
+              "crates/vize_glyph/src/template/formatter/child_width.rs",
+              "crates/vize_glyph/src/template/formatter/text.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "issue-authored-regression",
+            "issue": 9867,
+            "path": "crates/vize_glyph/src/template/tests_print_width.rs",
+            "symbol": "hugged_inline_children_contribute_to_opening_tag_width"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/src/template/tests_print_width.rs",
+          "symbol": "hugged_inline_children_contribute_to_opening_tag_width",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes",
+            "print-width",
+            "idempotence"
+          ],
+          "limitations": [
+            "Current source-built CLI execution remains required on Actions."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "hugged-inline-text",
+              "mixed-interpolation"
+            ],
+            "selector": "vize.config.json:vue.version"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built CLI with the issue-authored printWidth and formatter options.",
+          "native": "No verified native formatter adapter at this base; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "pending",
+          "artifacts": [
+            {
+              "path": "sfc-hugged-inline-child-width/reference.expected.txt",
+              "sha256": "b399b8f1c9e9cfc880d6559014b31f22f6b30308007c6a2111e8012bffea53f2",
+              "role": "issue-authored-regression-reference",
+              "provenance": {
+                "issue": 9867,
+                "path": "crates/vize_glyph/src/template/tests_print_width.rs",
+                "symbol": "hugged_inline_children_contribute_to_opening_tag_width",
+                "assertion": "Complete output stays within printWidth and reaches a fixed point."
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured-FormatResult.changed; public Rust witness covers this field"
+          ],
+          "referenceState": "issue-9867-authored-reference; exact-source Actions required"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
     }
   ],
   "adapterOptions": {

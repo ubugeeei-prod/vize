@@ -52,8 +52,8 @@ fn single_long_attribute_wraps_at_print_width() {
     let fits = format!(r#"<span class="{inline_class}">x</span>"#);
     assert_eq!(
         format_template_content(&fits, &options).unwrap().as_str(),
-        fits.as_str(),
-        "a single attribute that fits print width stays on one line"
+        format!("<span class=\"{inline_class}\"\n>x</span>"),
+        "the complete hugged element contributes to the width decision"
     );
 
     let nested = format!(
@@ -65,5 +65,121 @@ fn single_long_attribute_wraps_at_print_width() {
         format!(
             "<div>\n  <span\n    class=\"{inline_class}\"\n  >{{{{ lap }}}}</span>\n  <div class=\"ok\">text</div>\n</div>"
         )
+    );
+}
+
+#[test]
+fn hugged_inline_children_contribute_to_opening_tag_width() {
+    let options = FormatOptions {
+        print_width: 80,
+        sort_attributes: false,
+        ..FormatOptions::default()
+    };
+    let source = r#"<div>
+  <span class="status-label" :title="statusText">{{ statusText }} of {{ totalCount }} entries</span>
+  <div class="message-body" :data-kind="kind">A plain sentence that is long enough to overflow.</div>
+</div>"#;
+    let expected = r#"<div>
+  <span class="status-label" :title="statusText"
+  >{{ statusText }} of {{ totalCount }} entries</span>
+  <div class="message-body" :data-kind="kind"
+  >A plain sentence that is long enough to overflow.</div>
+</div>"#;
+
+    let formatted = format_template_content(source, &options).unwrap();
+    assert_eq!(formatted.as_str(), expected);
+    assert!(formatted.lines().all(|line| line.len() <= 80));
+    assert_eq!(
+        format_template_content(&formatted, &options).unwrap(),
+        formatted,
+        "hugged text and mixed interpolation layout must be stable"
+    );
+}
+
+#[test]
+fn authored_hugged_text_wrap_does_not_rejoin_past_print_width() {
+    let options = FormatOptions {
+        print_width: 100,
+        sort_attributes: false,
+        ..FormatOptions::default()
+    };
+    let source = r#"<div class="toolbar">
+  <template v-if="isEditing">
+    <MyButton color="primary" :disabled="!isReorderInputReady" @click="openReorderConfirmDialog"
+      >Finish reordering</MyButton
+    >
+  </template>
+</div>"#;
+    let expected = r#"<div class="toolbar">
+  <template v-if="isEditing">
+    <MyButton color="primary" :disabled="!isReorderInputReady" @click="openReorderConfirmDialog"
+    >Finish reordering</MyButton>
+  </template>
+</div>"#;
+
+    let formatted = format_template_content(source, &options).unwrap();
+    assert_eq!(formatted.as_str(), expected);
+    assert!(formatted.lines().all(|line| line.len() <= 100));
+    assert_eq!(
+        format_template_content(&formatted, &options).unwrap(),
+        formatted
+    );
+}
+
+#[test]
+fn adjacent_inline_template_children_each_respect_print_width() {
+    let options = FormatOptions {
+        print_width: 90,
+        sort_attributes: false,
+        ..FormatOptions::default()
+    };
+    let source = r#"<div>
+  <p>
+    Assigned {{ summary.assigned }} items<template v-if="summary.released > 0">, released {{ summary.released }} items</template><template v-if="summary.unchanged > 0">, unchanged {{ summary.unchanged }} items</template>
+  </p>
+</div>"#;
+    let expected = r#"<div>
+  <p>
+    Assigned {{ summary.assigned }} items<template v-if="summary.released > 0"
+    >, released {{ summary.released }} items</template><template
+      v-if="summary.unchanged > 0"
+    >, unchanged {{ summary.unchanged }} items</template>
+  </p>
+</div>"#;
+
+    let formatted = format_template_content(source, &options).unwrap();
+    assert_eq!(formatted.as_str(), expected);
+    assert_eq!(
+        format_template_content(&formatted, &options).unwrap(),
+        formatted
+    );
+}
+
+#[test]
+fn hugged_multiline_interpolation_with_trailing_text_uses_parent_depth() {
+    let options = FormatOptions {
+        print_width: 90,
+        ..FormatOptions::default()
+    };
+    let source = r#"<div>
+  <div>
+    <span class="my-very-long-component-name__an-element-with-a-long-name">{{
+      progressPercentages.value.firstLapOfTheCurrentSelectionInTheView
+    }}%</span>
+  </div>
+</div>"#;
+    let expected = r#"<div>
+  <div>
+    <span class="my-very-long-component-name__an-element-with-a-long-name">{{
+      progressPercentages.value.firstLapOfTheCurrentSelectionInTheView
+    }}%</span>
+  </div>
+</div>"#;
+
+    let formatted = format_template_content(source, &options).unwrap();
+    assert_eq!(formatted.as_str(), expected);
+    assert_eq!(
+        format_template_content(&formatted, &options).unwrap(),
+        formatted
     );
 }

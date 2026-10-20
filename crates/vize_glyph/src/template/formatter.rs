@@ -166,18 +166,33 @@ impl<'a> TemplateFormatter<'a> {
                     let is_void = is_void_element_str(&tag_name);
                     let is_self_closing =
                         is_self_closing || (is_void && self.options.self_close_void_elements);
+                    let hugged_inline_suffix = if is_self_closing || joiner.locks_current_line() {
+                        None
+                    } else {
+                        self.hugged_inline_suffix_width(input, end_pos, &tag_name)
+                    };
                     self.open_chunk(&mut output, depth, join);
                     output.push(b'<');
                     output.extend_from_slice(tag_name.as_bytes());
 
-                    let closing_bracket_on_own_line = self.write_opening_attributes_with_prefix(
-                        &mut output,
-                        &tag_name,
-                        &sorted_attrs,
-                        depth,
-                        join.is_continuation() && !joiner.locks_current_line(),
-                        if is_self_closing { 3 } else { 1 },
-                    );
+                    let mut closing_bracket_on_own_line = self
+                        .write_opening_attributes_with_prefix(
+                            &mut output,
+                            &tag_name,
+                            &sorted_attrs,
+                            depth,
+                            join.is_continuation() && !joiner.locks_current_line(),
+                            if is_self_closing { 3 } else { 1 },
+                        );
+                    if !closing_bracket_on_own_line
+                        && hugged_inline_suffix.is_some_and(|suffix| {
+                            self.hugged_inline_suffix_overflows(&output, suffix)
+                        })
+                    {
+                        output.extend_from_slice(self.newline);
+                        self.write_indent(&mut output, depth);
+                        closing_bracket_on_own_line = true;
+                    }
 
                     // The policy is pure; ordinary nonempty tags previously
                     // queried it twice. Self-closing tags never query it.

@@ -23,14 +23,14 @@ const fixtureRoot = path.join(
 const indexBytes = fs.readFileSync(path.join(fixtureRoot, "contracts-index.json"));
 assert.equal(
   sha256(indexBytes),
-  "091ba20a0035ca8bd08433e5d63a94b89301abf98856651d69a52262b7eff35a",
+  "7e368c2f7dd85561b612a9a9257b48a2a42197480af195b62d036ed9a3faef9b",
 );
 const index = JSON.parse(indexBytes);
 assert.equal(index.contracts.length, 13);
 const corpusBytes = fs.readFileSync(path.join(fixtureRoot, "corpus.json"));
 assert.equal(
   sha256(corpusBytes),
-  "01110cd1256ab49fe407547567b43300f41b32be5859cd6fc3b81c9c8b4b6b62",
+  "0100e649d87937e0bc7ddbdd836b8d357d26e14abd251430dbaec54e0e5ae526",
 );
 const corpus = JSON.parse(corpusBytes);
 assert.equal(corpus.cases.length, 14);

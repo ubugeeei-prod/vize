@@ -43,7 +43,7 @@
       "input": "exact-40.input",
       "output": "exact-40.expected",
       "inputSha256": "08ca33e565c18f3e5d1352d14945f002862fc40f82a1ec8039302de1342f862f",
-      "outputSha256": "08ca33e565c18f3e5d1352d14945f002862fc40f82a1ec8039302de1342f862f",
+      "outputSha256": "4fc1cad052f79800c50d2b06f0726239d4a5b7be8a09f1c514c4534fdd69fc7f",
       "options": {
         "printWidth": 40,
         "semi": true,
@@ -52,7 +52,7 @@
         "arrowParens": "avoid",
         "sortAttributes": false
       },
-      "referenceAuthority": "Compact opening-tag line is exactly 40 display columns; the narrow policy leaves it compact.",
+      "referenceAuthority": "The opening tag alone is exactly 40 display columns; the hugged text and closing tag require a syntax-only break before `>`.",
       "nativeSupported": false
     },
     {

@@ -13,9 +13,9 @@
     {
       "id": "exact-40",
       "file": "exact-40.stock-contract.json",
-      "sha256": "07485e554b48ac951e222681f6d3e61164c3bd598e3c251fcef9e7e8f824ca43",
+      "sha256": "f2272b15bfcae3fff3a903792d31eb9dfbb75dd3f3b181ac389d67b3729f4183",
       "inputSha256": "08ca33e565c18f3e5d1352d14945f002862fc40f82a1ec8039302de1342f862f",
-      "expectedSourceSha256": "08ca33e565c18f3e5d1352d14945f002862fc40f82a1ec8039302de1342f862f",
+      "expectedSourceSha256": "4fc1cad052f79800c50d2b06f0726239d4a5b7be8a09f1c514c4534fdd69fc7f",
       "states": 7
     },
     {
