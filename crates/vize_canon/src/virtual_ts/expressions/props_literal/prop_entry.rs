@@ -77,7 +77,7 @@ pub(super) fn append_prop_entry(
     }
     let repeated_named_key =
         before_following_spread && !named_keys_before_spread.insert(camel_prop_name.clone());
-    if before_following_spread && !repeated_named_key && prop.value.is_some() {
+    if before_following_spread && !repeated_named_key {
         // Keep named props direct so TypeScript contextually elaborates their
         // value errors at the property instead of reporting a second TS2345 on
         // the whole object when a later v-bind spread exists (#10069). The

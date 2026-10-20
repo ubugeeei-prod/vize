@@ -48,6 +48,25 @@ fn a_spread_after_a_named_prop_is_emitted_after_it() {
 }
 
 #[test]
+fn a_bare_static_prop_before_a_spread_suppresses_the_overwrite_diagnostic() {
+    let code = generated_props_literal(r#"<Child disabled v-bind="bag" />"#);
+
+    let ignore = code
+        .find("// @ts-ignore Named prop diagnostics are owned by the per-prop check.")
+        .expect("the mapped per-prop check owns the bare prop diagnostic");
+    let named = code
+        .find("\"disabled\": true")
+        .expect("bare static prop emitted as true");
+    let spread = code.find("...bag").expect("spread emitted");
+    assert!(ignore < named && named < spread, "{code}");
+    assert_eq!(
+        code.matches("// @ts-ignore Named prop diagnostics").count(),
+        1,
+        "the direct bare prop must suppress only TypeScript's synthetic overwrite warning: {code}"
+    );
+}
+
+#[test]
 fn a_spread_before_a_named_prop_is_emitted_before_it() {
     let code = generated_props_literal(r#"<Child v-bind="bag" :count="2" />"#);
 
@@ -143,6 +162,18 @@ fn duplicate_named_props_before_a_spread_stay_visible_to_typescript() {
     let named = code.find("\"count\": 1").expect("named run emitted");
     let spread = code.find("...bag").expect("spread emitted");
     assert!(named < spread, "the spread is authored last: {code}");
+}
+
+#[test]
+fn duplicate_bare_props_before_a_spread_keep_the_duplicate_diagnostic() {
+    let code = generated_props_literal(r#"<Child disabled disabled v-bind="bag" />"#);
+
+    assert_eq!(code.matches("\"disabled\": true").count(), 2, "{code}");
+    assert_eq!(
+        code.matches("// @ts-ignore Named prop diagnostics").count(),
+        1,
+        "only the first bare prop may hide the synthetic overwrite warning; the duplicate must remain visible to TypeScript: {code}"
+    );
 }
 
 #[test]
