@@ -3,7 +3,8 @@
 //! Importers of different packages scan overlapping closures, and each scan
 //! used to stat, read and parse the same package files again (#9727). A pass
 //! now loads each file once, reading a scan's whole frontier in parallel,
-//! and resolves each of its path and package edges once.
+//! and resolves each of its path and package edges once. Equal routes reached
+//! from different importer scopes share one finished scan.
 //! Facts never outlive the pass that treats the filesystem as stable.
 
 #![expect(
@@ -17,6 +18,8 @@ use std::sync::{Arc, OnceLock};
 use oxc_span::SourceType;
 use rayon::prelude::*;
 use vize_carton::{FxHashMap, FxHashSet, String as CompactString};
+
+use super::{PackageRouteReachability, ReachabilityBudget};
 
 pub(super) type Occurrences = Arc<[(CompactString, crate::PackageResolutionMode)]>;
 
@@ -59,9 +62,45 @@ enum Facts {
 #[derive(Default)]
 pub struct ReachabilitySources {
     files: FxHashMap<PathBuf, Facts>,
+    /// Finished scans by manifest. A scan reads only its route, the budget
+    /// and the facts above, so an equal route repeats the same outcome.
+    scans: FxHashMap<
+        PathBuf,
+        Vec<(
+            ReachabilityBudget,
+            crate::PackageRoute,
+            PackageRouteReachability,
+        )>,
+    >,
 }
 
 impl ReachabilitySources {
+    pub(super) fn scanned(
+        &self,
+        route: &crate::PackageRoute,
+        budget: ReachabilityBudget,
+    ) -> Option<PackageRouteReachability> {
+        self.scans
+            .get(&route.manifest_path)?
+            .iter()
+            .find(|(scanned_budget, scanned_route, _)| {
+                *scanned_budget == budget && scanned_route == route
+            })
+            .map(|(_, _, scanned)| scanned.clone())
+    }
+
+    pub(super) fn remember_scan(
+        &mut self,
+        route: &crate::PackageRoute,
+        budget: ReachabilityBudget,
+        scanned: PackageRouteReachability,
+    ) {
+        self.scans
+            .entry(route.manifest_path.clone())
+            .or_default()
+            .push((budget, route.clone(), scanned));
+    }
+
     /// File size from metadata, or `None` when the file cannot be stat'ed.
     pub(super) fn len(&mut self, path: &Path) -> Option<u64> {
         if !self.files.contains_key(path) {

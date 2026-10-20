@@ -81,7 +81,7 @@ impl PackageRouteReachability {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 struct ReachabilityBudget {
     max_packages: usize,
     max_files: usize,
@@ -176,6 +176,31 @@ fn package_route_reaches_vue_with_budget(
 fn scan_package_route_reachability_with_budget<ResolveLocal, ResolvePackage>(
     route: &crate::PackageRoute,
     sources: &mut ReachabilitySources,
+    resolve_local: ResolveLocal,
+    resolve_package: ResolvePackage,
+    budget: ReachabilityBudget,
+) -> PackageRouteReachability
+where
+    ResolveLocal: FnMut(&Path, &str) -> (Option<PathBuf>, Vec<PathBuf>),
+    ResolvePackage: FnMut(
+        &Path,
+        &str,
+        crate::PackageResolutionMode,
+    ) -> (Option<crate::PackageRoute>, Vec<PathBuf>),
+{
+    // Importers in different package scopes key different lookups, but they
+    // usually resolve the same route, and a scan reads nothing else.
+    if let Some(scanned) = sources.scanned(route, budget) {
+        return scanned;
+    }
+    let scanned = scan_route(route, sources, resolve_local, resolve_package, budget);
+    sources.remember_scan(route, budget, scanned.clone());
+    scanned
+}
+
+fn scan_route<ResolveLocal, ResolvePackage>(
+    route: &crate::PackageRoute,
+    sources: &mut ReachabilitySources,
     mut resolve_local: ResolveLocal,
     mut resolve_package: ResolvePackage,
     budget: ReachabilityBudget,
@@ -207,10 +232,7 @@ where
         return finish(ReachabilityOutcome::BudgetExceeded, inputs, work, budget);
     }
 
-    if queued
-        .iter()
-        .any(|path| path.extension().is_some_and(|extension| extension == "vue"))
-    {
+    if queues_vue(&queue) {
         return finish(ReachabilityOutcome::ReachesVue, inputs, work, budget);
     }
 
@@ -322,11 +344,7 @@ where
                 ) {
                     return finish(ReachabilityOutcome::BudgetExceeded, inputs, work, budget);
                 }
-                if queued.iter().any(|source| {
-                    source
-                        .extension()
-                        .is_some_and(|extension| extension == "vue")
-                }) {
+                if queues_vue(&queue) {
                     return finish(ReachabilityOutcome::ReachesVue, inputs, work, budget);
                 }
             }
@@ -353,9 +371,20 @@ fn enqueue(
     }
 }
 
+const VUE_PRIORITY: u8 = 3;
+
+/// Whether any queued path is a `.vue` file. A scan returns as soon as one is
+/// queued, so none was ever popped, and `.vue` sorts first: checking the head
+/// replaces walking every queued path after each package seed.
+fn queues_vue(queue: &BinaryHeap<(u8, Reverse<PathBuf>)>) -> bool {
+    queue
+        .peek()
+        .is_some_and(|(priority, _)| *priority == VUE_PRIORITY)
+}
+
 fn source_priority(path: &Path) -> u8 {
     match path.extension().and_then(|extension| extension.to_str()) {
-        Some("vue") => 3,
+        Some("vue") => VUE_PRIORITY,
         Some("ts" | "tsx" | "mts" | "cts") => 2,
         Some("js" | "jsx" | "mjs" | "cjs") => 1,
         _ => 0,

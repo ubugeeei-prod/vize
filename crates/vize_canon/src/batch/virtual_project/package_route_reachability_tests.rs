@@ -130,6 +130,54 @@ fn scans_sharing_sources_resolve_path_and_package_edges_once() {
 }
 
 #[test]
+fn equal_routes_share_one_scan_per_budget() {
+    let fixture = Fixture::new();
+    fixture.write("entry.ts", "import './leaf'\nimport 'dep'\n");
+    fixture.write("leaf.ts", "export {}\n");
+    let route = route(
+        &fixture.package_root,
+        &fixture.package_root.join("entry.ts"),
+    );
+    let calls = std::cell::Cell::new(0);
+    let scan = |sources: &mut super::ReachabilitySources, budget| {
+        scan_package_route_reachability_with_budget(
+            &route,
+            sources,
+            |importer, specifier| {
+                calls.set(calls.get() + 1);
+                let candidate = importer
+                    .parent()
+                    .unwrap()
+                    .join(specifier)
+                    .with_extension("ts");
+                (candidate.is_file().then_some(candidate), Vec::new())
+            },
+            |_, _, _| {
+                calls.set(calls.get() + 1);
+                (None, Vec::new())
+            },
+            budget,
+        )
+    };
+    let mut sources = super::ReachabilitySources::default();
+    let first = scan(&mut sources, generous_budget());
+    let resolutions = calls.get();
+    // Another importer scope that resolved the same route reuses the scan.
+    let second = scan(&mut sources, generous_budget());
+    assert_eq!(calls.get(), resolutions);
+    assert_eq!(second.outcome, first.outcome);
+    assert_eq!(second.work, first.work);
+    assert_eq!(second.inputs, first.inputs);
+    // A different budget is a different scan.
+    let tight = ReachabilityBudget {
+        max_edges: 1,
+        ..generous_budget()
+    };
+    let bounded = scan(&mut sources, tight);
+    assert_eq!(bounded.outcome, ReachabilityOutcome::BudgetExceeded);
+}
+
+#[test]
 fn long_cyclic_duplicate_graph_stops_at_exact_unique_work_bound() {
     let fixture = Fixture::new();
     let mut expected_bytes = 0;
