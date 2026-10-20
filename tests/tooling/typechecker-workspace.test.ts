@@ -319,13 +319,13 @@ void test("workspace producer/consumer bind physical bytes, all registered bodie
   assert.equal(env.VIZE_TEST_FIX_HISTORY_WORKSPACE_RECEIPT, prepared.receiptPath);
   f.complete();
   const packet = finishTypecheckerWorkspace(f);
-  assert.equal(packet.captures.length, 25);
+  assert.equal(packet.captures.length, 26);
   assert.equal(packet.execution.runAttempt, 2);
   fs.unlinkSync(f.binary); // A downloaded consumer must not pretend to have the producer executable.
   const downloaded = path.join(f.repoRoot, ".artifacts/rust-full-workspace");
   fs.cpSync(f.resultDir, downloaded, { recursive: true });
   const result = aggregateTypecheckerWorkspace({ ...f, resultDir: downloaded });
-  assert.equal(result.report.summary.legacyMatches, 46);
+  assert.equal(result.report.summary.legacyMatches, 48);
   assert.equal(result.acceptance.total.nativeHandled, 0);
   assert.equal(result.acceptance.total.nativeEquivalent, 0);
   assert(

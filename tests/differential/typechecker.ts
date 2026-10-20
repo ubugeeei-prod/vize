@@ -37,6 +37,8 @@ export const TYPECHECKER_TESTS = {
   "generic-fallthrough-spread-9956": "generic_fallthrough_spread_preserves_valid_values",
   "art-variant-implicit-component-9854":
     "implicit_art_component_reports_the_same_prop_errors_as_an_explicit_import",
+  "misskey-generated-inference-9516":
+    "misskey_generated_inference_probes_preserve_authored_diagnostics",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
@@ -66,6 +68,7 @@ const sourceRevisions = {
   "native-inline-event-handler-9835": "8ac6ce1668e9bede8d73411e63a247dbd6f8eb56",
   "generic-fallthrough-spread-9956": "2b1e41a5b09005a97d24d1ff34f34c7507bbfb67",
   "art-variant-implicit-component-9854": "f07065df35d25bc76f355e5f106c80dbefa922b5",
+  "misskey-generated-inference-9516": "cf6c83ab16fb7f20f84f0d51112090bbce89c74a",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 
 export type Artifact = { path: string; sha256: string };

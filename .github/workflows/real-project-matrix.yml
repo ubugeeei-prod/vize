@@ -215,7 +215,7 @@ jobs:
           VIZE_TEST_FIX_HISTORY_CAPTURE_DIR: ${{ github.workspace }}/${{ env.FIXTURE_REPORT_DIR }}/misskey-generated-diagnostics-9516
         run: >-
           cargo test --locked --profile ci -p vize_canon --lib
-          pinned_misskey_separates_tuple_and_property_generated_diagnostic_causes
+          pinned_misskey_preserves_current_and_tuple_diagnostic_boundaries
           -- --nocapture --test-threads=1
       - name: Exercise real projects with every core tool
         id: core_tools

@@ -1,0 +1,4 @@
+<script setup lang="ts">
+import FallthroughRoot from './FallthroughRoot.vue';
+</script>
+<template><FallthroughRoot><header><slot name="header" /></header><slot /></FallthroughRoot></template>

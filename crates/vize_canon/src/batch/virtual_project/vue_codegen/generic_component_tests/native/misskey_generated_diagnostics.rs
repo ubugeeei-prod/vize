@@ -21,12 +21,9 @@ use vize_carton::{String, cstr, line_index::LineBreaks};
 const MISSKEY_REVISION: &str = "810faa8e5db4bbf9d6d408a61df148559340ee99";
 const CURRENT_TUPLE_READ: &str = "(__vize_args as unknown[])[0]";
 const PRIOR_TUPLE_READ: &str = "__vize_args[0]";
-const CURRENT_FALLTHROUGH: &str = "{ [K in `data-${string}` | `data${Capitalize<string>}`]?: unknown } & { [K in `aria-${string}` | `aria${Capitalize<string>}`]?: unknown }";
-const PRIOR_FALLTHROUGH: &str =
-    "{ [K in `data-${string}`]?: unknown } & { [K in `aria-${string}`]?: unknown }";
 
 #[test]
-fn pinned_misskey_separates_tuple_and_property_generated_diagnostic_causes() {
+fn pinned_misskey_preserves_current_and_tuple_diagnostic_boundaries() {
     if std::env::var("VIZE_TEST_MISSKEY_GENERATED_DIAGNOSTICS_9516").as_deref() != Ok("1") {
         return;
     }
@@ -89,7 +86,6 @@ fn pinned_misskey_separates_tuple_and_property_generated_diagnostic_causes() {
     let current = diagnose(
         &native, &mirror, &config, &files, &requested, "current", None,
     );
-    let current_property = target_keys(&current.raw, 2353);
 
     let tuple_mutations = files
         .iter()
@@ -131,44 +127,6 @@ fn pinned_misskey_separates_tuple_and_property_generated_diagnostic_causes() {
         "the exact pre-9435 tuple expression must reproduce generated TS2493"
     );
 
-    let helper = config.with_file_name(crate::virtual_ts::SHARED_PREAMBLE_FILE_NAME);
-    let helper_current = fs::read_to_string(&helper).unwrap();
-    assert_eq!(helper_current.matches(CURRENT_FALLTHROUGH).count(), 1);
-    let property = {
-        let _restore = RestoredFiles::write(vec![(
-            helper.clone(),
-            helper_current
-                .replacen(CURRENT_FALLTHROUGH, PRIOR_FALLTHROUGH, 1)
-                .into_bytes(),
-        )]);
-        diagnose(
-            &native,
-            &mirror,
-            &config,
-            &files,
-            &requested,
-            "pre-9437-data-aria-contract",
-            Some(ReplayCause::Property),
-        )
-    };
-    let property_rows = property
-        .evidence
-        .iter()
-        .filter(|row| {
-            row["diagnostic"]["code"] == 2353
-                && !current_property.contains(&diagnostic_key(&row["uri"], &row["diagnostic"]))
-        })
-        .collect::<Vec<_>>();
-    assert!(
-        !property_rows.is_empty(),
-        "the exact pre-9437 data/aria contract must reproduce new TS2353"
-    );
-    assert!(
-        property_rows
-            .iter()
-            .all(|row| row["authoredOwner"].is_null()),
-        "the reproduced property findings must remain generated-owned: {property_rows:#?}"
-    );
     let current_ts2493 = current
         .evidence
         .iter()
@@ -186,9 +144,8 @@ fn pinned_misskey_separates_tuple_and_property_generated_diagnostic_causes() {
         current.evidence
     );
     println!(
-        "Misskey #9516 new reference: current TS2493={current_ts2493}, current TS2353={current_ts2353}, replay generated TS2493={}, replay new TS2353={}",
-        tuple_rows.len(),
-        property_rows.len()
+        "Misskey #9516 new reference: current TS2493={current_ts2493}, current TS2353={current_ts2353}, replay generated TS2493={}",
+        tuple_rows.len()
     );
 
     packets::retain(
@@ -202,12 +159,6 @@ fn pinned_misskey_separates_tuple_and_property_generated_diagnostic_causes() {
                 "reproducedGeneratedTs2493":tuple_rows.len(),
                 "packet":tuple.packet,
             },
-            "propertyCause":{
-                "historicalFix":"96f6a1b52b",
-                "inverse":{"current":CURRENT_FALLTHROUGH,"replay":PRIOR_FALLTHROUGH},
-                "reproducedNewTs2353":property_rows.len(),
-                "packet":property.packet,
-            },
             "inferenceProbeCause":{
                 "sourceRun":39425591681_u64,
                 "sourceArtifact":"real-project-matrix-12/misskey-generated-diagnostics-9516",
@@ -216,13 +167,12 @@ fn pinned_misskey_separates_tuple_and_property_generated_diagnostic_causes() {
                 "ownership":{"slotPayloadProbe":172,"genericTemplateRefProbe":1,"authoredMappings":0},
                 "fix":"open only duplicated inference probes; mapped component checks remain authoritative",
             },
-            "classification":"three independent generated-code causes across the two diagnostic classes; current generation repairs all without diagnostic suppression or checker give-up changes",
+            "classification":"the live pinned project preserves the generated TS2493 replay and verifies both target classes are absent; the retained source packet classifies generated TS2353 inference probes, and focused fixtures pin their repair without diagnostic suppression or checker give-up changes",
         }),
     );
 }
 
 struct Phase {
-    raw: Vec<(String, Vec<LspDiagnostic>)>,
     evidence: Vec<Value>,
     packet: Value,
 }
@@ -230,7 +180,6 @@ struct Phase {
 #[derive(Clone, Copy)]
 enum ReplayCause {
     Tuple,
-    Property,
 }
 
 fn diagnose(
@@ -259,11 +208,7 @@ fn diagnose(
         "wholeGeneratedConfig":fs::read_to_string(config).unwrap(),
     });
     packets::retain(&cstr!("misskey-9516-{phase}"), &packet);
-    Phase {
-        raw,
-        evidence,
-        packet,
-    }
+    Phase { evidence, packet }
 }
 
 fn evidence(
@@ -296,9 +241,7 @@ fn evidence(
                             &replay_code,
                             usize::try_from(offset).unwrap(),
                         ),
-                        Some(ReplayCause::Property) | None => {
-                            (usize::try_from(offset).unwrap(), None)
-                        }
+                        None => (usize::try_from(offset).unwrap(), None),
                     };
                     let authored = file
                         .source_map
@@ -400,23 +343,6 @@ fn code(diagnostic: &LspDiagnostic) -> Option<u64> {
         .code
         .as_ref()
         .and_then(|value| value.as_u64().or_else(|| value.as_str()?.parse().ok()))
-}
-
-fn target_keys(raw: &[(String, Vec<LspDiagnostic>)], target: u64) -> Vec<String> {
-    raw.iter()
-        .flat_map(|(uri, diagnostics)| {
-            diagnostics
-                .iter()
-                .filter(move |diagnostic| code(diagnostic) == Some(target))
-                .map(move |diagnostic| {
-                    diagnostic_key(&json!(uri), &serde_json::to_value(diagnostic).unwrap())
-                })
-        })
-        .collect()
-}
-
-fn diagnostic_key(uri: &Value, diagnostic: &Value) -> String {
-    serde_json::to_string(&(uri, diagnostic)).unwrap().into()
 }
 
 fn command_stdout(cwd: &Path, args: &[&str]) -> String {
