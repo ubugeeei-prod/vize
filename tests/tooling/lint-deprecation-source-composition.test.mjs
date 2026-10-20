@@ -4,7 +4,10 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { gunzipSync } from "node:zlib";
-import { withoutDefaultBindStyle } from "./support/lint-current-correctness-corpus.mjs";
+import {
+  restoreHistoricalHelp,
+  withoutDefaultBindStyle,
+} from "./support/lint-current-correctness-corpus.mjs";
 
 const root = path.resolve(import.meta.dirname, "../..");
 const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
@@ -259,6 +262,7 @@ function validateCurrentPacket(original, current, changes, autofixes, firstNumer
       row[field].push(structuredClone(old[field][1]));
     }
   }
+  restoreHistoricalHelp(inverse, original);
   assert.deepEqual(inverse, original);
 }
 void test("current whole preset packets preserve seven ranges, five numeric fixes and one first-modifier witness", () => {

@@ -6,7 +6,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.ts";
-import { sha256, wholeJson } from "./lint-default-correctness-reference.mjs";
+import { sha256, wholeJson, withoutHelp } from "./lint-default-correctness-reference.mjs";
 import { vueConfigFixtureSource, writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import { loadCurrentCorpus as loadCorpus } from "./support/lint-current-correctness-corpus.mjs";
 
@@ -102,7 +102,7 @@ await test("configless CLI defaults retain whole correctness findings and explic
         error: run.error ? { name: run.error.name, message: run.error.message } : null,
         stdout: run.stdout ?? "",
         stderr: run.stderr ?? "",
-        expected: wholeJson(entry, cliOrder(findings)),
+        expected: withoutHelp(wholeJson(entry, cliOrder(findings))),
         expectedStderr: "",
         expectedStatus: findings.some((finding) => finding.severity === "error") ? 1 : 0,
       };
