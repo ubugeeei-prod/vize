@@ -38,6 +38,15 @@ pub(super) fn classify(
     error: CorsaBridgeError,
 ) -> CollectFailure {
     match error {
+        // Dependency overlays are parsed locally before a request reaches the
+        // Corsa process. Keep the warm session when an in-progress SFC edit
+        // cannot be projected; retiring it loses the last valid dependency
+        // shape and makes open importers report a false TS2307 (#10027).
+        CorsaBridgeError::CommunicationError(message)
+            if message.starts_with("SFC parse error: ") =>
+        {
+            CollectFailure::Request(CorsaBridgeError::CommunicationError(message))
+        }
         CorsaBridgeError::CommunicationError(_)
         | CorsaBridgeError::ProcessTerminated
         | CorsaBridgeError::Timeout => CollectFailure::DeadBridge(bridge.clone(), error),
@@ -398,5 +407,21 @@ mod tests {
                 "message":"Configuration error: cannot resolve tsconfig extends \"./base.json\" from /app/tsconfig.json"
             })
         );
+    }
+
+    #[test]
+    fn imported_sfc_parse_failure_preserves_the_backend_session() {
+        let bridge = Arc::new(CorsaBridge::new());
+        let message = "Malformed <template> block: the closing tag is missing.";
+
+        let error =
+            CorsaBridgeError::CommunicationError(format!("SFC parse error: {message}").into());
+
+        match classify(&bridge, error) {
+            CollectFailure::Request(CorsaBridgeError::CommunicationError(actual)) => {
+                assert_eq!(actual, format!("SFC parse error: {message}"));
+            }
+            _ => panic!("a local SFC parse error must preserve the backend session"),
+        }
     }
 }
