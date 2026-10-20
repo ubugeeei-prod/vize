@@ -227,6 +227,21 @@
       }
     },
     {
+      "id": "linter/current-api/require-symbol-provide-range-9882",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "require-symbol-provide-range-9882",
+        "files": [
+          {
+            "path": "source.vue",
+            "role": "issue-authored-reproduction",
+            "sha256": "ece0c3c069e19ff060a66cefdd576174b8a5c1452b0f736daa5a400bb6bbfba3"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/next-tick/valid-arrow-expression-return-script",
       "state": "active",
       "targets": [
