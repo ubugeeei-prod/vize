@@ -34,10 +34,16 @@ fn allocation_free_template_owner_matches_the_general_original_descriptor() {
             let source = format!(" \r\n<template>{first}{second}</template>\t");
             let original = observe(&arena, &source, options);
             let fast = observe_template_only(&source);
-            let expected = original
-                .admitted()
-                .ok()
-                .filter(|_| original.container().blocks.len() == 1);
+            let expected = original.admitted().ok().filter(|_| {
+                let [block] = original.container().blocks.as_slice() else {
+                    return false;
+                };
+                block.close_tag.is_some_and(|close| {
+                    source
+                        .get(close.end as usize..)
+                        .is_some_and(|tail| tail.trim_ascii().is_empty())
+                })
+            });
             assert_eq!(fast.is_some(), expected.is_some(), "{source}");
             if let (Some(fast), Some(expected)) = (fast, expected) {
                 let block = &original.container().blocks[0];
@@ -56,6 +62,7 @@ fn allocation_free_template_owner_matches_the_general_original_descriptor() {
         "<script>x</script><template>y</template>",
         "<template>x</template><!-- tail -->",
         "<template>x</template>extra",
+        "<template>x</template></template>",
     ] {
         assert!(observe_template_only(source).is_none(), "{source}");
     }

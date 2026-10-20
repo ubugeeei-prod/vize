@@ -171,3 +171,26 @@ fn common_unsupported_envelopes_do_not_acquire_a_native_arena() {
 }
 
 mod parity;
+
+#[test]
+fn non_whitespace_after_the_original_template_boundary_keeps_legacy_geometry() {
+    for source in [
+        "<template>x</template></template>",
+        "<template>x</template>extra</template>",
+    ] {
+        let calls = Cell::new(0);
+        let actual = with_legacy(source, SfcParseOptions::default(), |source, options| {
+            calls.set(calls.get() + 1);
+            vize_croquis::sfc::parse_sfc(source, options)
+        });
+        assert_eq!(calls.get(), 1);
+        assert_eq!(
+            serde_json::to_value(actual).unwrap(),
+            serde_json::to_value(vize_croquis::sfc::parse_sfc(
+                source,
+                SfcParseOptions::default()
+            ))
+            .unwrap()
+        );
+    }
+}
