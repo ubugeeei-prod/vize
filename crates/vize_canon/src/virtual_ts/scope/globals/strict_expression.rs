@@ -24,6 +24,7 @@ pub(super) fn generate_strict_expression_refs(
     options: &VirtualTsOptions,
     template_binding_access: &TemplateBindingAccess,
     keyed_prop_bindings: &FxHashSet<String>,
+    check_keyed: bool,
     type_export_names: &FxHashSet<&str>,
     seen_names: &mut FxHashSet<String>,
     seen_strict_occurrences: &mut FxHashSet<(String, usize)>,
@@ -41,11 +42,14 @@ pub(super) fn generate_strict_expression_refs(
                 .trim_end();
             let member_root = is_member_root_occurrence(summary, local_start, name);
             let call_root = is_call_root_occurrence(summary, local_start, name);
+            let keyed = check_keyed && keyed_prop_bindings.contains(name);
             let scoped_bare_ref =
                 !member_root && !call_root && is_inside_template_scope(summary, local_start);
             if is_template_instance_global_name(name)
                 || !is_strict_template_context_candidate(name)
-                || (!member_root && !call_root && !scoped_bare_ref)
+                || (!keyed
+                    && (!options.strict_instance_globals
+                        || (!member_root && !call_root && !scoped_bare_ref)))
                 || is_declared_template_context_name(name, options)
                 || template_binding_access.contains(name)
                 || type_export_names.contains(name)
@@ -65,7 +69,14 @@ pub(super) fn generate_strict_expression_refs(
             emit_strict_template_context_ref(
                 ts,
                 mappings,
-                (strict_receiver(keyed), name),
+                (
+                    if check_keyed && keyed {
+                        "__vize_keyed_template_context"
+                    } else {
+                        strict_receiver(keyed)
+                    },
+                    name,
+                ),
                 src_start,
                 src_start + name.len(),
                 already_declared,

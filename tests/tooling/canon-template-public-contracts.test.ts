@@ -308,3 +308,54 @@ defineSlots<{ required(props: { item: number }): unknown; empty(): unknown; 'las
     fs.rmSync(directory, { recursive: true, force: true });
   }
 });
+
+test("opaque props report every unknown template name without rejecting instance augmentations", async () => {
+  const template = `<template><h1>{{ titel }}</h1><p :title="titel">{{ title }}{{ plugin.name }}</p>
+<div v-for="item in [title]" :key="item">{{ item }}{{ titel }}</div></template>`;
+  const directory = project("opaque-template-props-9756-", {
+    "Return.vue": `<script setup lang="ts">
+const loader = () => ({ title: "x" });
+type Props = ReturnType<typeof loader>;
+defineProps<Props>();
+</script>${template}`,
+    "Pick.vue": `<script setup lang="ts">
+type Props = Pick<{ title: string; count: number }, "title">;
+defineProps<Props>();
+</script>${template}`,
+    "Infer.vue": `<script setup lang="ts">
+import type { InferProps } from './props';
+const loader = async () => ({ title: "x" });
+type Props = InferProps<typeof loader>;
+defineProps<Props>();
+</script>${template}`,
+    "props.ts": `export type InferProps<T extends (...args: any[]) => any> = Awaited<ReturnType<T>>;`,
+    "plugins.d.ts": `import 'vue';
+declare module 'vue' { interface ComponentCustomProperties { plugin: { name: string } } }`,
+    "Ignored.vue": `<script setup lang="ts">
+const loader = () => ({ title: "x" });
+defineProps<ReturnType<typeof loader>>();
+</script><template><!-- @vue-expect-error --><h1>{{ titel }}</h1></template>`,
+  });
+  try {
+    const expected = vueTscDiagnostics(directory).sort(compareIdentity);
+    for (const file of ["Return.vue", "Pick.vue", "Infer.vue"]) {
+      const errors = expected.filter((d) => d.file === file);
+      assert.equal(errors.length, 3, `${file}: oracle must report all typo occurrences`);
+      assert.ok(errors.every((d) => d.code === 2339 || d.code === 2551));
+    }
+    assert.equal(expected.length, 9, "valid plugin and ignored typo are negative controls");
+    for (const strictTemplates of [false, true]) {
+      const configFile = path.join(directory, "tsconfig.json");
+      const config = JSON.parse(fs.readFileSync(configFile, "utf8"));
+      config.vueCompilerOptions = { strictTemplates };
+      fs.writeFileSync(configFile, JSON.stringify(config));
+      assert.deepEqual(vueTscDiagnostics(directory).sort(compareIdentity), expected);
+      assert.deepEqual(
+        (await check(directory)).map(diagnosticIdentity).sort(compareIdentity),
+        expected,
+      );
+    }
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});

@@ -11,6 +11,7 @@ mod component_navigation;
 mod component_spread_prop_order;
 mod define_props_scope;
 mod generic_module_type_exports;
+mod keyed_template_diagnostics;
 mod legacy_nuxt2_page_context;
 mod model_update_payload;
 mod no_check_template_bindings;

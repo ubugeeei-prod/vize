@@ -178,7 +178,7 @@ fn keyed_imported_props_are_read_through_the_props_object() {
     );
     for name in ["selectable", "picked", "missingKey"] {
         assert!(
-            code.contains(&format!("  void (props.{name});\n")),
+            code.contains(&format!("  void (__vize_keyed_template_context.{name});\n")),
             "{name} must be read through the props object:\n{code}"
         );
     }

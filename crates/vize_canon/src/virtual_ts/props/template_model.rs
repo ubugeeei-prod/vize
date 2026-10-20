@@ -249,7 +249,13 @@ pub(crate) fn generate_props_variables(
         }
 
         if should_emit_keyed_template_prop_bindings(summary, type_name, &emitted_names) {
-            for name in collect_keyed_template_prop_names(summary, &emitted_names) {
+            let names = collect_keyed_template_prop_names(summary, &emitted_names);
+            if check_props && !names.is_empty() {
+                // Keep literal public-instance members (including user plugin
+                // augmentations), but never let an index signature hide typos.
+                ts.push_str("  const __vize_keyed_template_context = props as typeof props & { [K in keyof __Ctx as string extends K ? never : number extends K ? never : symbol extends K ? never : K]: __Ctx[K] };\n  void __vize_keyed_template_context;\n");
+            }
+            for name in names {
                 if check_props {
                     emit_keyed_template_prop_binding(
                         ts,

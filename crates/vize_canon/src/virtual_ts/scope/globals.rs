@@ -48,9 +48,12 @@ pub(super) fn generate_undefined_refs(
     template_offset: u32,
     options: &ScopeGenerationOptions<'_, '_>,
 ) {
+    let check_keyed = options.check_options.check_props
+        && !options.legacy_vue2
+        && !options.keyed_prop_bindings.is_empty();
     let undefined_refs = super::super::script_facts::undefined_refs(summary);
     if undefined_refs.is_empty()
-        && (!options.virtual_ts_options.strict_instance_globals
+        && ((!options.virtual_ts_options.strict_instance_globals && !check_keyed)
             || summary.template_expressions.is_empty())
     {
         return;
@@ -123,11 +126,13 @@ pub(super) fn generate_undefined_refs(
         let member_root = is_member_root_occurrence(summary, undef.offset, name);
         let call_root = is_call_root_occurrence(summary, undef.offset, name);
         let strict_ref_shape = member_root || call_root;
-        let on_strict_template_context = options.virtual_ts_options.strict_instance_globals
-            && !on_instance
-            && !script_declared
-            && !context_declared
-            && strict_ref_shape;
+        let keyed = check_keyed && !context_declared && options.keyed_prop_bindings.contains(name);
+        let on_strict_template_context = keyed
+            || options.virtual_ts_options.strict_instance_globals
+                && !on_instance
+                && !script_declared
+                && !context_declared
+                && strict_ref_shape;
 
         // Interpolations are checked as authored expressions in their lexical
         // scope. A duplicate read would escape their authored TS directives.
@@ -151,7 +156,14 @@ pub(super) fn generate_undefined_refs(
             emit_strict_template_context_ref(
                 ts,
                 mappings,
-                (strict_receiver(keyed), name),
+                (
+                    if check_keyed && keyed {
+                        "__vize_keyed_template_context"
+                    } else {
+                        strict_receiver(keyed)
+                    },
+                    name,
+                ),
                 src_start,
                 src_end,
                 already_declared,
@@ -208,7 +220,7 @@ pub(super) fn generate_undefined_refs(
         );
     }
 
-    if options.virtual_ts_options.strict_instance_globals && !resolve_on_instance {
+    if (options.virtual_ts_options.strict_instance_globals || check_keyed) && !resolve_on_instance {
         generate_strict_expression_refs(
             ts,
             mappings,
@@ -217,6 +229,7 @@ pub(super) fn generate_undefined_refs(
             options.virtual_ts_options,
             template_binding_access,
             options.keyed_prop_bindings,
+            check_keyed,
             &type_export_names,
             &mut seen_names,
             &mut seen_strict_occurrences,
