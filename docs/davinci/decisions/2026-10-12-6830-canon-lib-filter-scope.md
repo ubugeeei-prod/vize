@@ -141,7 +141,7 @@ not remove selected documentation tests or claim they passed here.
 Run the existing cheap campaign with:
 
 ```sh
-vp node --test tests/tooling/typechecker-native-canon-lib-scope.test.mjs
+vp node --test tests/tooling/typechecker-native-canon-lib-scope.test.ts
 ```
 
 Source laws must cover genuine body/library additions, both filters' integration
