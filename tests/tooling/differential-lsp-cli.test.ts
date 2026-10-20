@@ -35,7 +35,7 @@ void test("source-built LSP registers complete fix-history response sessions wit
     legacyBacked: 0,
     unverified: 0,
   });
-  assert.equal(report.summary.legacyMatches, 20, JSON.stringify(report.rows, null, 2));
+  assert.equal(report.summary.legacyMatches, 21, JSON.stringify(report.rows, null, 2));
   assert.equal(report.summary.legacyFailures, 0);
   assert.equal(report.summary.baselineDrift, 0);
 });

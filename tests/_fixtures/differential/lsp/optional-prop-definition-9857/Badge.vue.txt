@@ -1,0 +1,15 @@
+<script setup lang="ts">
+import { computed } from "vue";
+
+const props = defineProps<{
+  color?: string;
+  size: number;
+}>();
+
+const style = computed(() => ({
+  color: props.color,
+  size: props.size
+}));
+</script>
+
+<template><span :style="style"><slot /></span></template>

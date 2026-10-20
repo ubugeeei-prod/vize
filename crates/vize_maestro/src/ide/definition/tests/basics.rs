@@ -232,6 +232,23 @@ fn test_find_prop_in_define_props() {
 }
 
 #[test]
+fn optional_define_prop_precedes_later_object_key_with_same_name() {
+    let content = r#"defineProps<{
+  color?: string
+  size: number
+}>()
+
+const style = computed(() => ({
+  color: props.color,
+  size: props.size
+}))"#;
+
+    let color = helpers::find_prop_in_define_props(content, "color").unwrap();
+    assert_eq!(&content[color..color + "color".len()], "color");
+    assert_eq!(color, content.find("color?: string").unwrap());
+}
+
+#[test]
 fn test_find_prop_in_define_model() {
     let content = r#"
 const value = defineModel<string>({ required: true })

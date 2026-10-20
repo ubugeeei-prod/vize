@@ -147,6 +147,57 @@ const msg = 'hello'
 }
 
 #[test]
+fn optional_component_prop_precedes_later_object_key_with_same_name() {
+    let dir = tempfile::tempdir().unwrap();
+    let component_path = dir.path().join("Badge.vue");
+    let source_path = dir.path().join("App.vue");
+    let child = r#"<script setup lang="ts">
+import { computed } from "vue";
+
+const props = defineProps<{
+  color?: string;
+  size: number;
+}>();
+
+const style = computed(() => ({
+  color: props.color,
+  size: props.size
+}));
+</script>
+"#;
+    fs::write(&component_path, child).unwrap();
+    let source = r#"<script setup lang="ts">
+import Badge from "./Badge.vue";
+</script>
+
+<template>
+  <Badge color="red" :size="12">hi</Badge>
+</template>
+"#;
+    fs::write(&source_path, source).unwrap();
+
+    let uri = Url::from_file_path(&source_path).unwrap();
+    let state = ServerState::new();
+    state
+        .documents
+        .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+    state.update_virtual_docs(&uri, source);
+
+    let offset = source.rfind("color=").unwrap() + 2;
+    let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+    let location = scalar_location(DefinitionService::definition(&ctx).unwrap());
+    let expected = child.find("color?: string").unwrap();
+    let (line, character) = crate::ide::offset_to_position(child, expected);
+
+    assert_eq!(
+        location.uri.to_file_path().unwrap().canonicalize().unwrap(),
+        component_path.canonicalize().unwrap()
+    );
+    assert_eq!(location.range.start.line, line);
+    assert_eq!(location.range.start.character, character);
+}
+
+#[test]
 fn test_definition_ignores_static_attribute_value() {
     let dir = tempfile::tempdir().unwrap();
     let source_path = dir.path().join("StaticAttribute.vue");

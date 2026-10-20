@@ -162,19 +162,27 @@ pub(crate) fn find_prop_in_define_props(content: &str, property_name: &str) -> O
         cstr!("{property_name}?:"),
     ];
 
-    for pattern in &patterns {
-        if let Some(pos) = content.find(pattern.as_str()) {
-            let Some(before) = content.get(..pos) else {
-                continue;
-            };
-            let open_angle = before.matches('<').count();
-            let close_angle = before.matches('>').count();
-            let open_curly = before.matches('{').count();
-            let close_curly = before.matches('}').count();
+    let mut positions = patterns
+        .iter()
+        .filter_map(|pattern| content.find(pattern.as_str()))
+        .collect::<Vec<_>>();
+    positions.sort_unstable();
+    positions.dedup();
 
-            if open_angle > close_angle || open_curly > close_curly {
-                return Some(pos);
-            }
+    // Source order is authoritative. Checking pattern order first lets a later
+    // required-looking object key win over an earlier optional prop, because
+    // `color: ` is searched before `color?: `.
+    for pos in positions {
+        let Some(before) = content.get(..pos) else {
+            continue;
+        };
+        let open_angle = before.matches('<').count();
+        let close_angle = before.matches('>').count();
+        let open_curly = before.matches('{').count();
+        let close_curly = before.matches('}').count();
+
+        if open_angle > close_angle || open_curly > close_curly {
+            return Some(pos);
         }
     }
 
