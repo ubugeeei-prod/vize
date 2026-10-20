@@ -206,11 +206,12 @@ fn no_input_in_the_class_trips_the_upstream_span_assertion() {
 }
 
 /// Replay of the unreduced `js_ts_expression` reproducer from #3296 through the
-/// same guard-then-parse path the fuzz target runs, now that the target no
-/// longer skips this class.
+/// same guard-then-parse path the fuzz target runs. The minimized inputs in
+/// [`matrix`] still reach OXC, while this original input now stops at the guard
+/// because its unrelated trailing template literal is unterminated (#9931).
 #[test]
-fn issue_3296_fuzz_reproducer_parses_without_panicking() {
+fn issue_3296_fuzz_reproducer_is_rejected_without_panicking() {
     let source = std::str::from_utf8(REPRODUCER_3296).expect("the reproducer is valid UTF-8");
 
-    assert_eq!(classify(source), diagnostic("Unexpected token"));
+    assert_eq!(classify(source), Outcome::RejectedByGuard);
 }
