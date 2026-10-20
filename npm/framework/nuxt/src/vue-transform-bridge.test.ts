@@ -59,6 +59,7 @@ void test("Nuxt type-gated transforms receive the compatible identity", () => {
 });
 
 void test("handler transforms and unrelated plugins preserve their contract", () => {
+  assert.doesNotThrow(() => patchNuxtVueTypeGatedTransform(undefined));
   const calls: string[] = [];
   const routePlugin = {
     name: "nuxt:vue-async-context",

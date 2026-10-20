@@ -42,8 +42,9 @@ export function toNuxtVueTransformId(id: string): string {
  * as the script submodule only for those transforms and retain its canonical
  * Vite identity everywhere else.
  */
-export function patchNuxtVueTypeGatedTransform(plugin: VitePluginWithTransform): void {
+export function patchNuxtVueTypeGatedTransform(plugin: VitePluginWithTransform | undefined): void {
   if (
+    !plugin ||
     plugin.__vizeNuxtVueTransformPatched ||
     !plugin.name ||
     !NUXT_VUE_TYPE_GATED_TRANSFORMS.has(plugin.name)
