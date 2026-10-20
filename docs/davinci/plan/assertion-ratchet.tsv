@@ -373,7 +373,6 @@ crates/vize_maestro/src/ide/hover/corsa_tests/component_props.rs	2
 crates/vize_maestro/src/ide/hover/corsa_tests/template_bindings.rs	1
 crates/vize_maestro/src/ide/hover/html/elements/tests.rs	1
 crates/vize_maestro/src/ide/hover/html/tests.rs	16
-crates/vize_maestro/src/ide/hover/tests.rs	6
 crates/vize_maestro/src/ide/hover/tests/boundaries.rs	9
 crates/vize_maestro/src/ide/inlay_hint/binding_hint_tests.rs	3
 crates/vize_maestro/src/ide/inlay_hint/prop_hint_tests.rs	1

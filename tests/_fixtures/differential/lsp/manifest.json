@@ -702,6 +702,40 @@
         "lint": false,
         "typecheck": false
       }
+    },
+    {
+      "id": "lsp/regression/import-specifier-hover-9858",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "import-specifier-hover-9858",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "b622b5ac561c383eb8be67435f749c59c531a8882dd9a66f0b072a85da90ff58"
+          },
+          {
+            "path": "util.ts.txt",
+            "sha256": "b3a45c6bbf90d67d05d15d41b0d1abd46f42332260654cdece9041080f0fe092"
+          },
+          {
+            "path": "label.ts.txt",
+            "sha256": "38719ce11337851deb713b8cc4e2147224b0eee33d615b243ce0c0fccacb9613"
+          }
+        ]
+      },
+      "case": {
+        "path": "import-specifier-hover-9858/case.json",
+        "sha256": "9ad1a500f6ca25ff3ebe98205ff0d02a5f735c59b914ae93a9423dae4a17984b"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
     }
   ]
 }

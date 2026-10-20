@@ -15,7 +15,7 @@ mod html;
 mod html_tests;
 pub(crate) mod import_resolver;
 mod inline_art;
-mod module_specifier;
+pub(crate) mod module_specifier;
 pub(crate) mod script;
 mod service;
 mod slot;
