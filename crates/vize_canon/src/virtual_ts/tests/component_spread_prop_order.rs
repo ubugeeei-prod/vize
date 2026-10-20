@@ -193,10 +193,18 @@ fn component_events_do_not_mask_spread_listener_props() {
     let code =
         generated_props_literal(r#"<Child @keydown="first" v-bind="bag" @click="second" />"#);
 
+    let (inference, canonical) = code
+        .split_once("// Component props value checks (template scope)")
+        .expect("component props section emitted");
     assert_eq!(
-        code.matches("...bag").count(),
+        inference.matches("...bag").count(),
         1,
-        "spread prop must remain checked: {code}"
+        "the inference path must retain the spread: {code}"
+    );
+    assert_eq!(
+        canonical.matches("...bag").count(),
+        1,
+        "the canonical component-props call must retain the spread: {code}"
     );
     assert_eq!(
         (
