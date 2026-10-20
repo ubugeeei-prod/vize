@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { gunzipSync } from "node:zlib";
+import { withoutDefaultBindStyle } from "./support/lint-current-correctness-corpus.mjs";
 
 const root = path.resolve(import.meta.dirname, "../..");
 const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
@@ -200,6 +201,7 @@ const vectors = [
 ];
 function validateCurrentPacket(original, current, changes, autofixes, firstNumericOnly) {
   const inverse = structuredClone(current);
+  if (original.schema === "vize.lint.default-correctness") withoutDefaultBindStyle(inverse);
   for (const [index, id, start, end, lspStart, lspEnd] of changes) {
     const row = inverse.cases[index];
     const old = original.cases[index];

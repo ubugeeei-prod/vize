@@ -30,7 +30,7 @@ function fixture(t: TestContext) {
   git("commit", "-qm", "synthetic integrity source");
   const binary = path.join(root, "target/ci/vize");
   fs.mkdirSync(path.dirname(binary), { recursive: true });
-  fs.writeFileSync(binary, '#!/bin/sh\nprintf "vize 1.0.0\\n"\n', { mode: 0o755 });
+  fs.writeFileSync(binary, '#!/bin/sh\nprintf "vize 1.0.0-dev\\n"\n', { mode: 0o755 });
   writeBuildReceipt(root);
   let launch: VerifiedLspLaunch | undefined;
   resolveVizeLaunchCommand(undefined, binary, {

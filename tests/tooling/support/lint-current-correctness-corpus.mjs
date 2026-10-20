@@ -12,6 +12,7 @@ export function loadCurrentCorpus(root) {
     ),
   );
   const inverse = structuredClone(current);
+  withoutDefaultBindStyle(inverse);
   for (const [index, id, start, end, lspStart, lspEnd] of [
     [0, "sync", 18, 37, 18, 37],
     [2, "slot-scope", 28, 38, 28, 38],
@@ -33,4 +34,21 @@ export function loadCurrentCorpus(root) {
   }
   assert.deepEqual(inverse, original, "only the approved full byte/UTF-16 range differences");
   return current;
+}
+
+// #9643 enabled vue/v-bind-style by default, after the original corpus; its
+// one finding on `full-modifiers` is the only other approved difference.
+export function withoutDefaultBindStyle(packet) {
+  const row = packet.cases[4];
+  assert.equal(row.id, "full-modifiers");
+  for (const key of [
+    "diagnostics",
+    "lspDiagnostics",
+    "baselineDiagnostics",
+    "baselineLspDiagnostics",
+  ]) {
+    const kept = row[key].filter((entry) => (entry.rule_name ?? entry.code) !== "vue/v-bind-style");
+    assert.equal(kept.length, row[key].length - 1, key);
+    row[key] = kept;
+  }
 }

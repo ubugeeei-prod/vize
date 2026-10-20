@@ -6,7 +6,8 @@ title: Vue RFC Experiments
 
 Vize can try four Vue RFCs before they land in Vue. Each one is off until you turn on its own flag,
 and turning on one never enables another. The RFC on GitHub is the design source; this page shows
-what Vize implements today and where it stops.
+what Vize implements today and where it stops. To try one, start with
+[Enable an experiment](#enable-an-experiment).
 
 > [!WARNING]
 > These features follow open proposals. Syntax and behavior can change with the RFC, and code that

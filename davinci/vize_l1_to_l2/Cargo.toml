@@ -119,5 +119,14 @@ required-features = ["legacy-differential"]
 name = "integration"
 path = "tests/main.rs"
 
+# TS-21 and TS-34 keep their own targets; the corpus shard lanes run them by name.
+[[test]]
+name = "metamorphic"
+path = "tests/metamorphic/main.rs"
+
+[[test]]
+name = "cfg_complexity_oracle"
+path = "tests/cfg_complexity_oracle/main.rs"
+
 [lints]
 workspace = true

@@ -13,7 +13,7 @@ import { root } from "./support/lsp/paths.ts";
 const require = createRequire(import.meta.url);
 
 test(
-  "an unreported intermediate Vite helper repairs on the next normal operation",
+  "an intermediate Vite helper repair applies on the next operation after its watched-file event",
   { timeout: 90_000 },
   async () => {
     const [binary] = resolveVizeLaunchCommand(undefined, path.join(root, "target/ci/vize"), {
@@ -97,6 +97,10 @@ test(
         bridge,
         "export default { languageServer: { hover: false }, linter: { enabled: false }, typeChecker: { enabled: false } };",
       );
+      // An unobservable failure is retried once per save or watched-file event (#9720).
+      wire.notify("workspace/didChangeWatchedFiles", {
+        changes: [{ uri: pathToFileURL(bridge).href, type: 2 }],
+      });
       const repaired = await hover();
       assert.deepEqual(repaired, { jsonrpc: "2.0", id: wire.nextId, result: null });
       assert.equal(

@@ -45,9 +45,27 @@ void test("the original archives remain pinned while active package cases follow
     "    true,\n" +
     '    "vueVersion: 0.10 should enable legacy Vue compatibility mode",\n' +
     "  );\n\n";
+  // #9730 added the host plugin-vue removal case.
+  const addedHostImport = "  removeHostVueSfcCompilers,\n";
+  const addedHostCase =
+    "{\n" +
+    "  // `@void/vue`'s `voidVue()` bundles @vitejs/plugin-vue. Both compiling the\n" +
+    "  // same SFC made plugin-vue read Vize's style virtual IDs from disk (ENOENT).\n" +
+    '  const hostVue = { name: "vite:vue", transform() {} };\n' +
+    '  const vizeShim = { name: "vite:vue" };\n' +
+    '  const pages = { name: "void-vue:pages", transform() {} };\n' +
+    "  const plugins = [hostVue, vizeShim, pages];\n\n" +
+    "  assert.equal(removeHostVueSfcCompilers([...plugins], { exclude: /legacy/ }), 0);\n" +
+    "  assert.equal(removeHostVueSfcCompilers(plugins, {}), 1);\n" +
+    '  assert.deepEqual(plugins, [vizeShim, pages], "only the compiling plugin-vue is removed");\n' +
+    "}\n\n";
   const liveDialect = read("npm/builder/vite/src/plugin/index.test.ts");
-  assert.equal(liveDialect.split(addedDialect).length, 2);
-  assert.equal(liveDialect.replace(addedDialect, ""), dialect);
+  for (const added of [addedDialect, addedHostImport, addedHostCase])
+    assert.equal(liveDialect.split(added).length, 2);
+  assert.equal(
+    liveDialect.replace(addedDialect, "").replace(addedHostImport, "").replace(addedHostCase, ""),
+    dialect,
+  );
 });
 
 void test("the shared Vue configuration guide documents the canonical entry points", () => {

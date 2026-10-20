@@ -11,6 +11,16 @@ import { vueConfigFixtureSource, writeVueConfigFixture } from "./support/vue-con
 import { loadCurrentCorpus as loadCorpus } from "./support/lint-current-correctness-corpus.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+// The CLI orders findings by range, then errors first, then rule (lint/aggregate.rs).
+const rank = (finding) => (finding.severity === "error" ? 0 : 1);
+const cliOrder = (findings) =>
+  findings.toSorted(
+    (left, right) =>
+      left.start - right.start ||
+      left.end - right.end ||
+      rank(left) - rank(right) ||
+      (left.rule_name < right.rule_name ? -1 : left.rule_name > right.rule_name ? 1 : 0),
+  );
 await test("configless CLI defaults retain whole correctness findings and explicit controls", () => {
   const artifact = path.join(root, "target/differential/lint-default-correctness-cli.json");
   fs.mkdirSync(path.dirname(artifact), { recursive: true });
@@ -92,7 +102,7 @@ await test("configless CLI defaults retain whole correctness findings and explic
         error: run.error ? { name: run.error.name, message: run.error.message } : null,
         stdout: run.stdout ?? "",
         stderr: run.stderr ?? "",
-        expected: wholeJson(entry, findings),
+        expected: wholeJson(entry, cliOrder(findings)),
         expectedStderr: "",
         expectedStatus: findings.some((finding) => finding.severity === "error") ? 1 : 0,
       };

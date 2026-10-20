@@ -25,7 +25,7 @@ const build = {
   sourceRevision,
   binaryPath: "target/ci/vize",
   binarySha256: "0".repeat(64),
-  cliVersion: "vize 0.429.0",
+  cliVersion: "vize 0.429.0-dev",
 };
 
 function syntheticReport(code = fixture.expected) {

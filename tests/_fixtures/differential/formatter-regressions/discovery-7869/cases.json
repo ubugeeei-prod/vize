@@ -56,11 +56,11 @@
       "selected": ["generated/out.ts"]
     },
     {
-      "id": "absolute-glob-authority",
+      "id": "absolute-glob-under-cwd",
       "git": false,
       "absolute": true,
       "patterns": ["**/*.ts"],
-      "selected": [".github/hidden.ts", "generated/out.ts", "src/main.ts"]
+      "selected": [".github/hidden.ts", "src/main.ts"]
     }
   ]
 }

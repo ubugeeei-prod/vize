@@ -33,7 +33,10 @@ void test("formatter discovery never writes installed dependencies and reads sta
   };
   try {
     for (const fixture of corpus.cases) {
-      const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-format-discovery-"));
+      // Physical, so an absolute glob is under the physical cwd on every OS (#9744).
+      const directory = fs.realpathSync(
+        fs.mkdtempSync(path.join(os.tmpdir(), "vize-format-discovery-")),
+      );
       const snapshot = () =>
         Object.fromEntries(
           Object.keys(corpus.files).map((file) => [

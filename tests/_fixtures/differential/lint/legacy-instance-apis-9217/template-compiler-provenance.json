@@ -23,8 +23,8 @@
     },
     {
       "file": "template-event-object-reference.json",
-      "bytes": 8902,
-      "sha256": "da2e09b9cdb9bd587d8e8f04fb3ae14053cd3eacd16a625f24aefb3289f6449e",
+      "bytes": 8900,
+      "sha256": "f1f85e4520fbd725924f7ced3deacad321a5dd3168d2d66b0d22b0ad72e6a96c",
       "providerPath": ["proof", "compilerProvider"]
     },
     {

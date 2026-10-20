@@ -64,10 +64,13 @@ test("actual native SFC error vectors survive script and template-only API route
       vapor,
     });
     assert.deepEqual(actual.errors, templateOnly.errors, fixture.name);
-    const refused = fixture.errors.length > 0 || vapor;
-    assert.equal(actual.errors.length, refused ? 1 : 0, fixture.name);
+    assert.equal(actual.errors.length, fixture.errors.length > 0 ? 1 : 0, fixture.name);
     if (vapor) {
-      // DOM accepts this source; Vize's current Vapor backend explicitly refuses it.
+      // Vapor warns and ignores v-memo like upstream (#9675); DOM accepts it.
+      for (const result of [actual, templateOnly])
+        assert.deepEqual(result.warnings, [
+          "v-memo is not supported in Vapor mode and will be ignored.",
+        ]);
       assert.deepEqual(native.compileSfc(source, { filename: "Fixture.vue" }).errors, []);
       assert.deepEqual(fixture.errors, []);
     }

@@ -131,7 +131,7 @@ fn source_identity_matches(file_name: &str, path: &str, expected_name: &str) -> 
 
 /// `tspath.ToFileNameLowerCase`: lowercase every character except U+0130,
 /// whose lowercase form would change the name's length.
-fn to_file_name_lower_case(name: &str) -> vize_carton::String {
+fn to_file_name_lower_case(name: &str) -> vize_l0::String {
     name.chars()
         .flat_map(|character| {
             let keep = character == '\u{0130}';

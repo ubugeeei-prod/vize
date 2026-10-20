@@ -7,7 +7,10 @@ import { withoutTimingHostImport } from "./davinci-timing-host-imports.ts";
 /** Remove only reviewed legacy host APIs before checking L0 storage imports. */
 export function withoutHostRuntimeReferences(source: string, relativePath: string): string {
   const file = relativePath.replaceAll("\\", "/");
-  let storage = source.replace(/\bvize_carton::corsa_(?:api_mode|resolver)\b/gu, "host_runtime");
+  let storage = source.replace(
+    /\bvize_carton::(?:corsa_(?:api_mode|resolver)|VERSION)\b/gu,
+    "host_runtime",
+  );
   if (file === "crates/vize/src/config.rs") {
     storage = storage.replace(/^pub use vize_carton::config::\*;$/gmu, "host_config_facade");
   }
@@ -15,7 +18,7 @@ export function withoutHostRuntimeReferences(source: string, relativePath: strin
     // Snapshot identity and filesystem ownership stay in Carton. Only this
     // private facade can expose the reviewed host APIs to state consumers.
     storage = storage.replace(
-      /^pub\(in crate::server::state\) use vize_carton::config::(?:ConfigEvaluationSession|ConfigLoadFailureIdentity|LoadedLspConfig|ProjectModel|load_config_with_source|load_lsp_config_snapshot|load_lsp_config_snapshot_observed);$/gmu,
+      /^pub\(in crate::server::state\) use vize_carton::config::(?:ConfigEvaluationSession|ConfigLoadFailureIdentity|LoadedLspConfig|ProjectModel|load_config_with_source|load_lsp_config_snapshot|load_lsp_config_snapshot_observed|load_project_config_with_source);$/gmu,
       "host_config_snapshot_facade",
     );
   }
