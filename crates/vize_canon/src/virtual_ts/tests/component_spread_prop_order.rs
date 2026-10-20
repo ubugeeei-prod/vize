@@ -61,8 +61,8 @@ fn a_bare_static_prop_before_a_spread_suppresses_the_overwrite_diagnostic() {
     assert!(ignore < named && named < spread, "{code}");
     assert_eq!(
         code.matches("// @ts-ignore Named prop diagnostics").count(),
-        1,
-        "the direct bare prop must suppress only TypeScript's synthetic overwrite warning: {code}"
+        2,
+        "both the mapped child literal and unmapped fallthrough literal must suppress TypeScript's synthetic overwrite warning: {code}"
     );
 }
 
@@ -105,9 +105,9 @@ const second = { label: 'ok' }
         0,
         "{code}"
     );
-    assert_eq!(code.matches("\"count\": 2").count(), 1, "{code}");
-    assert_eq!(code.matches("\"label\": \"middle\"").count(), 1, "{code}");
-    assert_eq!(code.matches("\"tone\": \"info\"").count(), 1, "{code}");
+    assert_eq!(code.matches("\"count\": 2").count(), 2, "{code}");
+    assert_eq!(code.matches("\"label\": \"middle\"").count(), 2, "{code}");
+    assert_eq!(code.matches("\"tone\": \"info\"").count(), 2, "{code}");
     assert_eq!(
         code.matches("...{ \"tone\": \"info\" }").count(),
         0,
@@ -150,14 +150,14 @@ fn duplicate_named_props_before_a_spread_stay_visible_to_typescript() {
     // still reports the authored duplicate (TS1117).
     assert_eq!(
         code.matches("\"count\":").count(),
-        2,
-        "both duplicate entries must remain visible: {code}"
+        4,
+        "both duplicate entries must remain visible in both spread probes: {code}"
     );
     assert_eq!(code.matches("...{ \"count\"").count(), 0, "{code}");
     assert_eq!(
         code.matches("// @ts-ignore Named prop diagnostics").count(),
-        1,
-        "only the first entry can be ignored; the duplicate must stay visible to TypeScript: {code}"
+        2,
+        "only the first entry in each probe can be ignored; the duplicate must stay visible to TypeScript: {code}"
     );
     let named = code.find("\"count\": 1").expect("named run emitted");
     let spread = code.find("...bag").expect("spread emitted");
@@ -169,11 +169,11 @@ fn duplicate_named_props_across_spreads_stay_visible_to_typescript() {
     let code =
         generated_props_literal(r#"<Child :count="1" v-bind="bag" :count="2" v-bind="bag" />"#);
 
-    assert_eq!(code.matches("\"count\":").count(), 2, "{code}");
+    assert_eq!(code.matches("\"count\":").count(), 4, "{code}");
     assert_eq!(
         code.matches("// @ts-ignore Named prop diagnostics").count(),
-        1,
-        "only the first authored key may hide a synthetic overwrite warning; the later duplicate across a spread must stay visible to TypeScript: {code}"
+        2,
+        "only the first authored key in each probe may hide a synthetic overwrite warning; the later duplicate across a spread must stay visible to TypeScript: {code}"
     );
 }
 
@@ -181,11 +181,11 @@ fn duplicate_named_props_across_spreads_stay_visible_to_typescript() {
 fn duplicate_bare_props_before_a_spread_keep_the_duplicate_diagnostic() {
     let code = generated_props_literal(r#"<Child disabled disabled v-bind="bag" />"#);
 
-    assert_eq!(code.matches("\"disabled\": true").count(), 2, "{code}");
+    assert_eq!(code.matches("\"disabled\": true").count(), 4, "{code}");
     assert_eq!(
         code.matches("// @ts-ignore Named prop diagnostics").count(),
-        1,
-        "only the first bare prop may hide the synthetic overwrite warning; the duplicate must remain visible to TypeScript: {code}"
+        2,
+        "only the first bare prop in each probe may hide the synthetic overwrite warning; the duplicate must remain visible to TypeScript: {code}"
     );
 }
 
@@ -216,8 +216,8 @@ fn component_events_do_not_mask_spread_listener_props() {
     );
     assert_eq!(
         canonical.matches("...bag").count(),
-        1,
-        "the canonical component-props call must retain the spread: {code}"
+        2,
+        "the mapped child check and unmapped fallthrough probe must retain the spread: {code}"
     );
     assert_eq!(
         (
@@ -244,9 +244,11 @@ const value = { missing: 'bad' }
     let summary = analyzer.finish();
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
+    let generated_value = "\"count\": value.missing";
     let generated_missing = output
         .code
-        .rfind("missing")
+        .find(generated_value)
+        .map(|start| start + generated_value.find("missing").unwrap())
         .expect("named value emitted inside singleton spread");
     let authored_missing = template.find("missing").unwrap();
     let span = output
@@ -359,13 +361,13 @@ const items = ["local"]
 
     assert_eq!(
         code.matches(r#"...{ as: props["as"] },"#).count(),
-        1,
-        "only the root usage should fall back to the outer prop:\n{code}"
+        2,
+        "only the root usage should fall back to the outer prop in both probes:\n{code}"
     );
     assert_eq!(
         code.matches("...{ as },").count(),
-        2,
-        "same-element and lexical-parent v-for locals must stay local:\n{code}"
+        4,
+        "same-element and lexical-parent v-for locals must stay local in both probes:\n{code}"
     );
 }
 
@@ -390,8 +392,8 @@ defineProps<{ as: number }>()
 
     assert_eq!(
         code.matches("...{ as },").count(),
-        1,
-        "v-slot local must stay a local reference:\n{code}"
+        2,
+        "v-slot local must stay a local reference in both probes:\n{code}"
     );
     assert_eq!(
         code.matches(r#"...{ as: props["as"] },"#).count(),
