@@ -105,7 +105,7 @@ void test("linter manifest rejects omitted/duplicate inputs, unregistered API an
   const baseline = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
   try {
     for (const mutate of [
-      (manifest: any) => manifest.cases.pop(),
+      (manifest: any) => manifest.cases.shift(),
       (manifest: any) => manifest.cases.push(manifest.cases[0]),
       (manifest: any) => {
         manifest.cohorts[0].api = "--private-parser";
