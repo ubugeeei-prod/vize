@@ -82,6 +82,42 @@ fn load_config_uses_explicit_file_path() {
 }
 
 #[test]
+fn load_config_accepts_experimental_tsrs_path() {
+    let dir = tempfile::tempdir().unwrap();
+    let config_path = dir.path().join("serialized-config.json");
+    std::fs::write(
+        &config_path,
+        r#"{ "typeChecker": { "tsrsPath": "node_modules/.bin/tsrs" } }"#,
+    )
+    .unwrap();
+
+    let loaded = load_config_with_source(Some(&config_path));
+
+    assert_eq!(
+        loaded.config.type_checker.runtime_path(),
+        Some("node_modules/.bin/tsrs")
+    );
+}
+
+#[test]
+fn canonical_corsa_path_wins_over_experimental_tsrs_path() {
+    let dir = tempfile::tempdir().unwrap();
+    let config_path = dir.path().join("serialized-config.json");
+    std::fs::write(
+        &config_path,
+        r#"{ "typeChecker": { "corsaPath": "tools/corsa", "tsrsPath": "node_modules/.bin/tsrs" } }"#,
+    )
+    .unwrap();
+
+    let loaded = load_config_with_source(Some(&config_path));
+
+    assert_eq!(
+        loaded.config.type_checker.runtime_path(),
+        Some("tools/corsa")
+    );
+}
+
+#[test]
 fn load_config_reads_dialect_key() {
     let dir = tempfile::tempdir().unwrap();
     let config_path = dir.path().join("serialized-config.json");

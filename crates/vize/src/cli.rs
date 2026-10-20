@@ -163,6 +163,16 @@ mod tests {
     }
 
     #[test]
+    fn check_accepts_tsrs_path_alias() {
+        let cli = Cli::try_parse_from(["vize", "check", "--tsrs-path", "tools/tsrs"]).unwrap();
+        let Some(Commands::Check(args)) = cli.command else {
+            panic!("expected check command");
+        };
+
+        assert_eq!(args.corsa_path.as_deref(), Some("tools/tsrs"));
+    }
+
+    #[test]
     fn lint_help_snapshot() {
         insta::assert_snapshot!("cli_lint_help", command_help("lint"));
     }

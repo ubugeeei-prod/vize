@@ -203,6 +203,7 @@
 "tests/_fixtures/differential/lint/transition-custom-child-6881/sources/slot-child.vue"
 "tests/_fixtures/differential/lint/transition-custom-child-6881/sources/static-key.vue"
 "tests/_fixtures/differential/lint/transition-custom-child-6881/sources/web-component.vue"
+"tests/_fixtures/differential/linter/require-symbol-provide-range-9882/source.vue"
 "tests/_fixtures/differential/lsp/binding-occurrences-original/Field.vue"
 "tests/_fixtures/differential/nuxt/explicit-page-meta/App.vue"
 "tests/_fixtures/differential/typechecker/vite-plus-relative-tsconfig/src/Counter.vue"

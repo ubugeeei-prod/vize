@@ -16,7 +16,7 @@
       "api": "--current-api",
       "cases": {
         "path": "crates/vize_patina/tests/fixtures/lint-history/cases.json",
-        "sha256": "a8d0016034ba5ec261e910e485ab2bdde5aae89c9d9e93eaf8909abceaacfbdf"
+        "sha256": "25b10c03d43ae27bd3a0029610d47f3e866b63ca9012e3e6a3247a5adb067e5a"
       }
     },
     {
@@ -54,7 +54,7 @@
   ],
   "oracles": {
     "path": "tests/_fixtures/differential/linter/oracle-index.json",
-    "sha256": "1b49c5dd7af6b5f64bd70e0cb3272df266e7246b2bf43e6a6fa27bf09701a86e"
+    "sha256": "c373b5145f4b8726d78d5b929f944fb22c7c8b66491821674f40ae08f09e5133"
   },
   "cases": [
     {
@@ -222,6 +222,21 @@
             "path": "App.vue.txt",
             "role": "issue-authored-reproduction",
             "sha256": "79e4817baa6d3345b3f74ec23dc73d2a316c4ea035ba2f0ab37fc753de83038d"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/require-symbol-provide-range-9882",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "require-symbol-provide-range-9882",
+        "files": [
+          {
+            "path": "source.vue",
+            "role": "issue-authored-reproduction",
+            "sha256": "ece0c3c069e19ff060a66cefdd576174b8a5c1452b0f736daa5a400bb6bbfba3"
           }
         ]
       }

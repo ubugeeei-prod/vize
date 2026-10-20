@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "require-symbol-provide-range-9882",
+    history: "04541e20047f0cc3bf30bb219e127d59fe8ad44b",
+    source: "const items = inject<Ref<string[]>>(\"items\")",
+    filename: "History.ts",
+    entry: "script",
+    rule: "script/require-symbol-provide",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.ts",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "script/require-symbol-provide",
+                severity: Warning,
+                message: "Consider using a Symbol key instead of a string literal",
+                start: 36,
+                end: 43,
+                help: Some(
+                    "Define an InjectionKey with Symbol: `export const MyKey: InjectionKey<MyType> = Symbol('myKey')`",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.ts",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "script/require-symbol-provide",
+                    severity: Warning,
+                    message: "Consider using a Symbol key instead of a string literal",
+                    start: 36,
+                    end: 43,
+                    help: Some(
+                        "Define an InjectionKey with Symbol: `export const MyKey: InjectionKey<MyType> = Symbol('myKey')`",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

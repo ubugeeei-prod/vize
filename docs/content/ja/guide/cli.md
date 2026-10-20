@@ -227,12 +227,13 @@ vize check --profile src
 | `-q, --quiet`       | 概要だけを表示する                                           |
 | `--profile`         | `node_modules/.vize` にプロファイルを書き込む                |
 | `--corsa-path`      | ネイティブ TypeScript（Corsa）実行ファイルのパスを指定する   |
+| `--tsrs-path`       | 実験的な tsrs 実行ファイルを使用する                         |
 | `--servers`         | 並列に起動する Corsa CLI サーバー数（`1`〜`32`）。省略時は自動調整 |
 | `--checkers`        | Corsa プロセスごとのチェッカー数（デフォルト `1`）           |
 | `--declaration`     | `.d.ts` を出力する                                           |
 | `--declaration-dir` | 宣言ファイルの出力先                                         |
 
-ローカルでビルドした Corsa や `corsa-bind` を開発・検証に使う場合、`--corsa-path` で実行ファイルを固定してください。共有設定キーは `typeChecker.corsaPath` です。`typeChecker.tsgoPath` は互換性のための別名としてのみ残っています。
+ローカルでビルドした Corsa や `corsa-bind` を開発・検証に使う場合、`--corsa-path` で実行ファイルを固定してください。共有設定キーは `typeChecker.corsaPath` です。`typeChecker.tsgoPath` は互換性のための別名としてのみ残っています。実験的な tsrs バックエンドを評価する場合は、`typeChecker.tsrsPath` とともに `--tsrs-path` を使います。
 
 ```bash
 vize check --tsconfig tsconfig.app.json src

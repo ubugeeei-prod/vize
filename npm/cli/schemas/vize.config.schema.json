@@ -774,6 +774,10 @@
           "description": "Deprecated alias for typeChecker.corsaPath",
           "type": "string"
         },
+        "tsrsPath": {
+          "description": "Path to the experimental tsrs executable. Used when corsaPath and tsgoPath are not set.",
+          "type": "string"
+        },
         "globalsFile": {
           "description": "Path to a .d.ts file that declares template globals",
           "type": "string"

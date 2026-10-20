@@ -7,8 +7,8 @@ expression: result.diagnostics
         rule_name: "script/require-symbol-provide",
         severity: Warning,
         message: "Consider using a Symbol key instead of a string literal",
-        start: 0,
-        end: 8,
+        start: 8,
+        end: 14,
         help: Some(
             "Define an InjectionKey with Symbol: `export const MyKey: InjectionKey<MyType> = Symbol('myKey')`",
         ),

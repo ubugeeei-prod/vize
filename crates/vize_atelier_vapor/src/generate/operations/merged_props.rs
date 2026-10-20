@@ -78,9 +78,64 @@ pub(crate) fn merged_props_call(
         }
     }
     call.push(']');
-    call.push_str(svg_argument(node.namespace));
+    let names = dynamic_prop_names(ctx, node);
+    let svg = node.namespace == vize_atelier_core::Namespace::Svg;
+    if names.is_some() || svg {
+        call.push_str(", ");
+        call.push_str(names.as_deref().unwrap_or("null"));
+    }
+    if svg {
+        call.push_str(", true");
+    }
     call.push(')');
     call
+}
+
+/// The `staticKeys` argument (upstream's `genDynamicPropNames`): statically
+/// named props with a value that can change, which hydration must write even
+/// though the server rendered them. `.prop` keys and `class`/`style` are
+/// always patched, and a constant value never differs.
+fn dynamic_prop_names(ctx: &GenerateContext, node: &SetMergedPropsIRNode<'_>) -> Option<String> {
+    let mut names = String::default();
+    for source in node.sources.iter() {
+        let MergedPropsSource::Group(props) = source else {
+            continue;
+        };
+        for prop in props.iter() {
+            let key = prop.key.content;
+            if !prop.key.is_static
+                || key.starts_with('.')
+                || matches!(key, "class" | "style")
+                || !prop.values.iter().any(|value| !constant_value(ctx, value))
+            {
+                continue;
+            }
+            names.push_str(if names.is_empty() { "[\"" } else { ",\"" });
+            names.push_str(&escape_js_string_literal(key));
+            names.push('"');
+        }
+    }
+    (!names.is_empty()).then(|| {
+        names.push(']');
+        names
+    })
+}
+
+/// A literal, or a binding that never changes (upstream's `isConstantBinding`).
+fn constant_value(
+    ctx: &GenerateContext,
+    value: &vize_atelier_core::SimpleExpressionNode<'_>,
+) -> bool {
+    use vize_atelier_core::options::BindingType;
+    let content = value.content.trim();
+    value.is_static
+        || super::super::expression::is_literal_expression(content)
+        || ctx
+            .binding_metadata
+            .and_then(|bindings| bindings.bindings.get(content))
+            .is_some_and(|binding| {
+                matches!(binding, BindingType::SetupConst | BindingType::LiteralConst)
+            })
 }
 
 /// Upstream's `isSimpleIdentifier`: such keys stay bare, others are quoted.

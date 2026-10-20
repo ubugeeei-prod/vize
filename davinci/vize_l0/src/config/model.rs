@@ -147,6 +147,9 @@ where
 struct RawTypeCheckerConfig {
     #[serde(flatten)]
     config: TypeCheckerConfig,
+    /// Experimental `tsrs` selector. Folded into the shared runtime path so
+    /// downstream batch, lint, and editor consumers use one executable.
+    tsrs_path: Option<String>,
     /// Editor-only Corsa bound; keep it off the public shared Rust struct so
     /// existing exhaustive `TypeCheckerConfig` literals remain source compatible.
     lsp_request_timeout_ms: Option<u64>,
@@ -254,6 +257,9 @@ impl RawVizeConfig {
         let experimental_jsx_vapor = experimentals.jsx_vapor_enabled();
         let type_checker_jsx_typecheck = raw_type_checker.jsx_typecheck || experimental_jsx_vapor;
         let mut type_checker = raw_type_checker.config;
+        if type_checker.tsgo_path.is_none() {
+            type_checker.tsgo_path = raw_type_checker.tsrs_path;
+        }
         if let Some(legacy_check) = legacy_check {
             if type_checker.globals_file.is_none() {
                 type_checker.globals_file = legacy_check.globals;
