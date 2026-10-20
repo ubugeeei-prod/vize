@@ -18,7 +18,7 @@ mod warnings;
 #[cfg(test)]
 mod tests;
 
-pub use args::{LintArgs, LintPresetArg};
+pub use args::LintArgs;
 
 use crate::profile_support;
 use aggregate::{LintRunAccumulator, should_retain_file_results};
@@ -38,6 +38,12 @@ use vize_carton::source_io as fs;
 use vize_curator::profile::ProfileFileRow;
 use vize_l0::{String, ToCompactString, cstr, profile, profiler::global_profiler};
 use vize_patina::{HelpLevel, LintPreset, OutputFormat};
+
+#[derive(Clone, Copy)]
+pub(super) enum ResolvedLintPreset {
+    Builtin(LintPreset),
+    All,
+}
 
 pub fn run(mut args: LintArgs) {
     let start = Instant::now();
@@ -104,13 +110,15 @@ pub fn run(mut args: LintArgs) {
         .or(linter_plan.plan.base.preset.as_deref())
         .unwrap_or("happy-path")
         .into();
-    let all_rules = preset_name == "all";
-    let preset = LintPreset::parse(preset_name.as_str()).unwrap_or_default();
+    let preset = if preset_name == "all" {
+        ResolvedLintPreset::All
+    } else {
+        ResolvedLintPreset::Builtin(LintPreset::parse(preset_name.as_str()).unwrap_or_default())
+    };
     let resolved_rules =
         LinterRuleResolver::new(linter_plan, config_dir, &cwd).resolve_files(&files, &cwd);
     let linters = resolved_rules.build_linters(
         preset,
-        all_rules,
         help_level,
         &args,
         linter_features,

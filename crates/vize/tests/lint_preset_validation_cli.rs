@@ -27,6 +27,18 @@ fn json_rule_ids(output: &std::process::Output) -> BTreeSet<String> {
         .collect()
 }
 
+fn possible_values(output: &str) -> Vec<&str> {
+    let (_, values) = output
+        .split_once("[possible values:")
+        .expect("possible values section");
+    let (values, _) = values.split_once(']').expect("possible values terminator");
+    values
+        .split(',')
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .collect()
+}
+
 #[test]
 fn lint_preset_help_lists_every_public_selection_and_rejects_unknown_names() {
     let help = Command::new(env!("CARGO_BIN_EXE_vize"))
@@ -35,7 +47,7 @@ fn lint_preset_help_lists_every_public_selection_and_rejects_unknown_names() {
         .unwrap();
     assert!(help.status.success(), "{}", output_details(&help));
     let stdout = String::from_utf8_lossy(&help.stdout);
-    for preset in [
+    let expected = vec![
         "happy-path",
         "general-recommended",
         "default",
@@ -47,9 +59,8 @@ fn lint_preset_help_lists_every_public_selection_and_rejects_unknown_names() {
         "essential",
         "incremental",
         "nuxt",
-    ] {
-        assert!(stdout.contains(preset), "missing {preset} from:\n{stdout}");
-    }
+    ];
+    assert_eq!(possible_values(&stdout), expected);
 
     let unknown = Command::new(env!("CARGO_BIN_EXE_vize"))
         .args(["lint", "--preset", "bogus", "src"])
@@ -63,9 +74,8 @@ fn lint_preset_help_lists_every_public_selection_and_rejects_unknown_names() {
         output_details(&unknown)
     );
     let stderr = String::from_utf8_lossy(&unknown.stderr);
-    assert!(stderr.contains("invalid value 'bogus'"), "{stderr}");
-    assert!(stderr.contains("possible values"), "{stderr}");
-    assert!(stderr.contains("all"), "{stderr}");
+    assert_eq!(stderr.split('\'').nth(1), Some("bogus"), "{stderr}");
+    assert_eq!(possible_values(&stderr), expected);
 }
 
 #[test]
@@ -98,13 +108,16 @@ fn all_preset_runs_opt_in_rules_from_cli_and_config() {
         "src/GreetingCard.vue",
     ]);
     let cli_rules = json_rule_ids(&cli);
-    assert!(
-        cli_rules.contains("script/no-next-tick"),
-        "{}",
-        output_details(&cli)
-    );
-    assert!(
-        cli_rules.contains("vue/no-bare-strings-in-template"),
+    let expected = BTreeSet::from([
+        "script/no-next-tick".to_owned(),
+        "vue/no-bare-strings-in-template".to_owned(),
+    ]);
+    assert_eq!(
+        cli_rules
+            .intersection(&expected)
+            .cloned()
+            .collect::<BTreeSet<_>>(),
+        expected,
         "{}",
         output_details(&cli)
     );
@@ -123,13 +136,12 @@ fn all_preset_runs_opt_in_rules_from_cli_and_config() {
         "src/GreetingCard.vue",
     ]);
     let configured_rules = json_rule_ids(&configured);
-    assert!(
-        configured_rules.contains("script/no-next-tick"),
-        "{}",
-        output_details(&configured)
-    );
-    assert!(
-        configured_rules.contains("vue/no-bare-strings-in-template"),
+    assert_eq!(
+        configured_rules
+            .intersection(&expected)
+            .cloned()
+            .collect::<BTreeSet<_>>(),
+        expected,
         "{}",
         output_details(&configured)
     );
