@@ -27,8 +27,7 @@
 //! ```
 
 use crate::context::LintContext;
-use crate::diagnostic::Severity;
-use crate::ir::ByteRange;
+use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::InterpolationNode;
 
@@ -101,20 +100,48 @@ impl Rule for MustacheInterpolationSpacing {
         match self.style {
             SpacingStyle::Always => {
                 if leading == 0 {
-                    report(ctx, EXPECTED_AFTER, HELP_EXPECTED, opening, opening + 2);
+                    report(
+                        ctx,
+                        EXPECTED_AFTER,
+                        HELP_EXPECTED,
+                        opening,
+                        opening + 2,
+                        TextEdit::insert(opening + 2, " "),
+                    );
                 }
                 if trailing == 0 {
-                    report(ctx, EXPECTED_BEFORE, HELP_EXPECTED, closing - 2, closing);
+                    report(
+                        ctx,
+                        EXPECTED_BEFORE,
+                        HELP_EXPECTED,
+                        closing - 2,
+                        closing,
+                        TextEdit::insert(closing - 2, " "),
+                    );
                 }
             }
             SpacingStyle::Never => {
                 if leading > 0 {
                     let end = opening + 2 + leading;
-                    report(ctx, UNEXPECTED_AFTER, HELP_UNEXPECTED, opening, end);
+                    report(
+                        ctx,
+                        UNEXPECTED_AFTER,
+                        HELP_UNEXPECTED,
+                        opening,
+                        end,
+                        TextEdit::delete(opening + 2, end),
+                    );
                 }
                 if trailing > 0 {
                     let start = closing - 2 - trailing;
-                    report(ctx, UNEXPECTED_BEFORE, HELP_UNEXPECTED, start, closing);
+                    report(
+                        ctx,
+                        UNEXPECTED_BEFORE,
+                        HELP_UNEXPECTED,
+                        start,
+                        closing,
+                        TextEdit::delete(start, closing - 2),
+                    );
                 }
             }
         }
@@ -128,10 +155,21 @@ const UNEXPECTED_BEFORE: &str = "vue/mustache-interpolation-spacing.unexpected_b
 const HELP_EXPECTED: &str = "vue/mustache-interpolation-spacing.help_expected";
 const HELP_UNEXPECTED: &str = "vue/mustache-interpolation-spacing.help_unexpected";
 
-fn report(ctx: &mut LintContext<'_>, message: &str, help: &str, start: u32, end: u32) {
-    let message = ctx.t(message);
-    let help = ctx.t(help);
-    ctx.warn_at_with_help(message, ByteRange::new(start, end), help);
+fn report(
+    ctx: &mut LintContext<'_>,
+    message: &str,
+    help: &str,
+    start: u32,
+    end: u32,
+    edit: TextEdit,
+) {
+    let message = ctx.t(message).into_owned();
+    let help = ctx.t(help).into_owned();
+    ctx.report(
+        LintDiagnostic::warn(META.name, message, start, end)
+            .with_help(help.clone())
+            .with_fix(Fix::new(help, edit)),
+    );
 }
 
 fn leading_whitespace(inner: &str) -> u32 {
@@ -279,5 +317,48 @@ mod tests {
             findings(SpacingStyle::Never, r#"<div>{{text}}</div>"#),
             vec![]
         );
+    }
+
+    #[test]
+    fn reports_safe_spacing_edits() {
+        let source = r#"<div>{{title}}</div>"#;
+        let mut fixed = source.to_owned();
+        let result = {
+            let mut registry = RuleRegistry::new();
+            registry.register(Box::new(MustacheInterpolationSpacing::default()));
+            Linter::with_registry(registry).lint_template(source, "test.vue")
+        };
+        let mut edits: Vec<_> = result
+            .diagnostics
+            .iter()
+            .flat_map(|diagnostic| diagnostic.fix.as_ref().unwrap().edits.iter())
+            .collect();
+        edits.sort_by_key(|edit| std::cmp::Reverse(edit.start));
+        for edit in edits {
+            fixed.replace_range(edit.start as usize..edit.end as usize, &edit.new_text);
+        }
+        assert_eq!(fixed, r#"<div>{{ title }}</div>"#);
+        assert!(always(&fixed).is_empty());
+    }
+
+    #[test]
+    fn never_reports_safe_whitespace_deletions() {
+        let source = r#"<div>{{ title }}</div>"#;
+        let mut registry = RuleRegistry::new();
+        registry.register(Box::new(MustacheInterpolationSpacing {
+            style: SpacingStyle::Never,
+        }));
+        let result = Linter::with_registry(registry).lint_template(source, "test.vue");
+        let mut fixed = source.to_owned();
+        let mut edits: Vec<_> = result
+            .diagnostics
+            .iter()
+            .flat_map(|diagnostic| diagnostic.fix.as_ref().unwrap().edits.iter())
+            .collect();
+        edits.sort_by_key(|edit| std::cmp::Reverse(edit.start));
+        for edit in edits {
+            fixed.replace_range(edit.start as usize..edit.end as usize, &edit.new_text);
+        }
+        assert_eq!(fixed, r#"<div>{{title}}</div>"#);
     }
 }

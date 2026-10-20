@@ -132,7 +132,6 @@ export const runtimeOverrides: Record<string, RuleExample> = {
     vue('<template lang="pug">\np Notice\n</template>'),
     template("<p>Notice</p>"),
     "crates/vize_patina/src/rules/opinionated/vue/no_template_lang.rs",
-    noSfcFinding,
   ),
   "vue/no-preprocessor-lang": pair(
     vue(
@@ -140,7 +139,6 @@ export const runtimeOverrides: Record<string, RuleExample> = {
     ),
     vue("<template><p>Notice</p></template>\n<style>\n.notice { color: red; }\n</style>"),
     "crates/vize_patina/src/rules/opinionated/vue/no_preprocessor_lang.rs",
-    noSfcFinding,
   ),
   "vue/no-script-non-standard-lang": pair(
     vue('<script lang="coffee">\ncount = 0\n</script>\n<template><p>Notice</p></template>'),

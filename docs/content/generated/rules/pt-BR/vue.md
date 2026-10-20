@@ -851,7 +851,7 @@ Espaços separam a expressão dos delimitadores de abertura e fechamento das cha
 
 O exemplo correto evita o diagnóstico desta regra com a configuração acima; outras regras ainda podem emitir diagnósticos.
 
-[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/mustache_interpolation_spacing.rs#L35) · [Todas as regras](all.md)
+[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/mustache_interpolation_spacing.rs#L34) · [Todas as regras](all.md)
 
 ### `vue/no-array-index-key`
 
@@ -2650,15 +2650,11 @@ Desencorajar o uso de preprocessadores CSS em favor de CSS moderno
 
 Severidade padrão: `warning`  
 Predefinições: `nuxt`, `opinionated`  
-Correção automática: Não implementada no lint de SFC  
+Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
 
-Suporte atual: `no-sfc-finding`
-
-Esta entrada do catálogo atualmente não emite uma ocorrência específica da regra pelo lint de SFCs. O par Bad/Good descreve a convenção pretendida, e não uma ocorrência executável. Ativar o ID não fornece a verificação de SFC ausente.
-
-**ID configurado (sem diagnóstico de SFC atualmente)**
+**Configuração (Vite+)**
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -2705,9 +2701,9 @@ As mesmas declarações CSS omitem o lang do preprocessador. Essa é a correçã
 </style>
 ```
 
-O exemplo correto ilustra a convenção pretendida; o fluxo atual de SFC não emite o diagnóstico específico da regra para nenhum dos exemplos.
+O exemplo correto evita o diagnóstico desta regra com a configuração acima; outras regras ainda podem emitir diagnósticos.
 
-[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_preprocessor_lang.rs#L22) · [Todas as regras](all.md)
+[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_preprocessor_lang.rs#L11) · [Todas as regras](all.md)
 
 ### `vue/no-reserved-component-names`
 
@@ -3108,15 +3104,11 @@ Desencorajar o atributo lang no bloco template
 
 Severidade padrão: `warning`  
 Predefinições: `nuxt`, `opinionated`  
-Correção automática: Não implementada no lint de SFC  
+Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
 
-Suporte atual: `no-sfc-finding`
-
-Esta entrada do catálogo atualmente não emite uma ocorrência específica da regra pelo lint de SFCs. O par Bad/Good descreve a convenção pretendida, e não uma ocorrência executável. Ativar o ID não fornece a verificação de SFC ausente.
-
-**ID configurado (sem diagnóstico de SFC atualmente)**
+**Configuração (Vite+)**
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -3161,9 +3153,9 @@ Um template HTML comum omite lang e usa o parágrafo diretamente. Isso ilustra a
 </template>
 ```
 
-O exemplo correto ilustra a convenção pretendida; o fluxo atual de SFC não emite o diagnóstico específico da regra para nenhum dos exemplos.
+O exemplo correto evita o diagnóstico desta regra com a configuração acima; outras regras ainda podem emitir diagnósticos.
 
-[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_template_lang.rs#L38) · [Todas as regras](all.md)
+[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_template_lang.rs#L11) · [Todas as regras](all.md)
 
 ### `vue/no-template-shadow`
 

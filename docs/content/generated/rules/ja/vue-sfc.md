@@ -36,15 +36,11 @@ CSS プリプロセッサーより標準の CSS を使う方針を示します�
 
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
-自動修正: SFC lint では未対応  
+自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
-現在の対応: `no-sfc-finding`
-
-このカタログ項目は現在の SFC lint では固有の診断を出しません。悪い例・良い例は意図した規約の説明であり、実行時にこのルールの診断が出る例ではありません。ID を設定しても未対応の SFC 検査は追加されません。
-
-**設定できる ID（現在の SFC lint では診断されません）**
+**設定（Vite+）**
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -91,9 +87,9 @@ style の lang に SCSS を指定しています。プリプロセッサーを�
 </style>
 ```
 
-良い例は意図する規約を示します。現在の SFC lint では、悪い例・良い例のどちらからもこのルール固有の診断は出ません。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_preprocessor_lang.rs#L22) · [全ルール](all.md)
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_preprocessor_lang.rs#L11) · [全ルール](all.md)
 
 ### `vue/no-script-non-standard-lang`
 
@@ -241,15 +237,11 @@ template の lang 指定を避ける方針を示します。
 
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
-自動修正: SFC lint では未対応  
+自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
-現在の対応: `no-sfc-finding`
-
-このカタログ項目は現在の SFC lint では固有の診断を出しません。悪い例・良い例は意図した規約の説明であり、実行時にこのルールの診断が出る例ではありません。ID を設定しても未対応の SFC 検査は追加されません。
-
-**設定できる ID（現在の SFC lint では診断されません）**
+**設定（Vite+）**
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -294,9 +286,9 @@ lang を取り除き、通常の HTML の p を直接記述します。規約の
 </template>
 ```
 
-良い例は意図する規約を示します。現在の SFC lint では、悪い例・良い例のどちらからもこのルール固有の診断は出ません。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_template_lang.rs#L38) · [全ルール](all.md)
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_template_lang.rs#L11) · [全ルール](all.md)
 
 ### `vue/require-scoped-style`
 
