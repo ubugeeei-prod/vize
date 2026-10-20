@@ -57,6 +57,7 @@ pub(super) fn generate_empty_root_checks(
         template_binding_access: ctx.template_binding_access,
         source_context: ctx.source_context(),
         indent: "  ",
+        typed_fallthrough_values: ctx.typed_fallthrough_values,
         experimental_strict_slot_children: ctx.experimental_strict_slot_children,
         explicit_generics: ctx.explicit_generics,
     };
@@ -73,6 +74,7 @@ struct EmptyChecksContext<'a, 'template, 'b> {
     template_binding_access: &'a TemplateBindingAccess,
     source_context: ComponentPropSource<'a>,
     indent: &'b str,
+    typed_fallthrough_values: bool,
     experimental_strict_slot_children: bool,
     explicit_generics: &'a ExplicitGenerics,
 }
@@ -104,7 +106,8 @@ fn generate_empty_checks(
             ctx.template_binding_access,
             ctx.source_context,
             body_indent.as_str(),
-        );
+        )
+        .typed_fallthrough_values(ctx.typed_fallthrough_values);
         profile!(
             "canon.virtual_ts.empty_component_prop_checks",
             generate_component_prop_checks(&mut check_context, usage, idx, component_ref.as_str())
@@ -164,7 +167,8 @@ pub(super) fn generate_scope_checks(
                 ctx.source_context,
                 indent,
             )
-            .strict_v_model(ctx.strict_v_model);
+            .strict_v_model(ctx.strict_v_model)
+            .typed_fallthrough_values(ctx.typed_fallthrough_values);
             generate_component_prop_checks(&mut check_context, usage, idx, component_ref.as_str());
             generate_component_slot_checks(
                 &mut check_context,
@@ -197,6 +201,7 @@ pub(super) fn generate_scope_checks(
             template_binding_access: ctx.template_binding_access,
             source_context: ctx.source_context,
             indent,
+            typed_fallthrough_values: ctx.typed_fallthrough_values,
             experimental_strict_slot_children: ctx.experimental_strict_slot_children,
             explicit_generics: ctx.explicit_generics,
         };

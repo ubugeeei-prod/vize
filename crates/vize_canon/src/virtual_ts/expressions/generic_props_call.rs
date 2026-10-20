@@ -29,6 +29,10 @@ use vize_croquis::croquis::ComponentUsage;
 /// checked separately against the resolver's instantiated prop type. This call
 /// receives `never` for that one entry so it keeps whole-object/required-prop
 /// validation without also reporting a coarse property-key error.
+#[expect(
+    clippy::too_many_arguments,
+    reason = "generic prop checks share the component source context"
+)]
 pub(super) fn generate_generic_props_call(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
@@ -37,6 +41,7 @@ pub(super) fn generate_generic_props_call(
     template_binding_access: &TemplateBindingAccess,
     source_context: ComponentPropSource<'_>,
     indent: &str,
+    typed_fallthrough_values: bool,
 ) {
     let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
     let expr_indent = if usage.vif_guard.is_some() {
@@ -53,6 +58,13 @@ pub(super) fn generate_generic_props_call(
         *ts,
         "{expr_indent}(undefined as unknown as __{component_type_name}_Check_{idx})(",
     );
+    let check_spread_values = typed_fallthrough_values && !usage.spread_props.is_empty();
+    if check_spread_values {
+        append!(
+            *ts,
+            "(undefined as unknown as __VizeFallthroughSpreadChecker<__{component_type_name}_Component_{idx}, __{component_type_name}_Props_{idx}>)(",
+        );
+    }
     // TypeScript anchors an *argument* assignability failure — `TS2345` — at the
     // argument expression, which here is the whole object literal and not any
     // one property. Without a mapping over that range the diagnostic has no
@@ -71,6 +83,9 @@ pub(super) fn generate_generic_props_call(
         source_context,
         expr_indent.as_str(),
     );
+    if check_spread_values {
+        ts.push(')');
+    }
     ts.push_str(");\n");
     // Anchored on the tag *name*, not on `usage.start`, which is the `<` one
     // byte to its left. `vue-tsc` puts a whole-props failure on the name — the

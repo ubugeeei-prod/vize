@@ -1672,6 +1672,48 @@
           "sha256": "97fe2cd88a02b6ee5680212cba048feac1cb807d26fd4a5ef3c2dede7874117e"
         }
       ]
+    },
+    {
+      "id": "typechecker/generic-fallthrough-spread-9956/broad-index-valid",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "generic-fallthrough-spread-9956",
+      "case": "broad-index-valid",
+      "test": "generic_fallthrough_spread_preserves_valid_values",
+      "regressionCommit": "2b1e41a5b09005a97d24d1ff34f34c7507bbfb67",
+      "sourceRevision": "2b1e41a5b09005a97d24d1ff34f34c7507bbfb67",
+      "packReference": {
+        "path": "generic-fallthrough-spread-9956/cases.json",
+        "sha256": "413ebd606cf22f612928ab1eaeec17bde3f237e8bee6505cdcf2ee5c834e7d71"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "generic-fallthrough-spread-9956/tsconfig.json.txt",
+          "sha256": "9d229f8c0814c642c7023271ee3fbf63b99bbfecde94de2344c3877214df01b0"
+        },
+        {
+          "file": "src/Root.vue",
+          "path": "generic-fallthrough-spread-9956/src/Root.vue.txt",
+          "sha256": "c921551ddaa36c41418ef6fb0e42263ad509938ab539c5fd25ce96824faaab0d"
+        },
+        {
+          "file": "src/Forwarding.vue",
+          "path": "generic-fallthrough-spread-9956/src/Forwarding.vue.txt",
+          "sha256": "8da68aa8acca4960a1e634b4dbf161739e7a6c939678fb9154b14da43e586ff9"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "generic-fallthrough-spread-9956/src/App.vue.txt",
+          "sha256": "b8bf3408b1f2f13b905e7a4ab3288cf08192cc269c9de8e0f5fd2e60199402fb"
+        }
+      ]
     }
   ]
 }

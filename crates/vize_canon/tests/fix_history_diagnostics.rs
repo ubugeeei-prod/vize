@@ -233,6 +233,17 @@ fn reactive_props_destructure_preserves_unused_diagnostics() {
     );
 }
 
+#[test]
+fn generic_fallthrough_spread_preserves_valid_values() {
+    check_pack(
+        "generic-fallthrough-spread-9956",
+        "generic_fallthrough_spread_preserves_valid_values",
+        "2b1e41a5b09005a97d24d1ff34f34c7507bbfb67",
+        Some(9956),
+        &["broad-index-valid"],
+    );
+}
+
 fn check_pack(
     name: &str,
     test: &str,
@@ -266,7 +277,8 @@ fn check_pack(
             | "template-suppression-original"
             | "cache-maintenance-9860"
             | "nuxt-unknown-template-options-10013"
-            | "reactive-props-destructure-10008" => regression,
+            | "reactive-props-destructure-10008"
+            | "generic-fallthrough-spread-9956" => regression,
             _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
         }
     );
