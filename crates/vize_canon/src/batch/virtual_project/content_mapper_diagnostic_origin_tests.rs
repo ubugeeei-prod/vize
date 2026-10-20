@@ -29,24 +29,38 @@ fn diagnostic_origin(spans: &[ContentMapperSpan], virtual_range: Range<usize>) -
     map(virtual_range.start, false)..map(virtual_range.end - 1, true)
 }
 
-fn assert_quoted_diagnostic_origin(source: &str, quoted: &str, occurrence: usize, authored: &str) {
+/// The authored range of the `occurrence`th `token` after `after`.
+fn authored(source: &str, after: &str, token: &str, occurrence: usize) -> Range<usize> {
+    let from = source.find(after).expect("authored anchor");
+    let start = from
+        + source[from..]
+            .match_indices(token)
+            .nth(occurrence)
+            .expect("token")
+            .0;
+    start..start + token.len()
+}
+
+/// Where the `occurrence`th generated `node` (the first `len` bytes of
+/// `generated`) reports a diagnostic.
+fn generated_origin(source: &str, generated: &str, len: usize, occurrence: usize) -> Range<usize> {
     let result =
         generate_vue_content_mapper_transform(Path::new("App.vue"), source).expect("transform");
     let start = result
         .text
-        .match_indices(quoted)
+        .match_indices(generated)
         .nth(occurrence)
-        .unwrap_or_else(|| panic!("generated {quoted} #{occurrence}:\n{}", result.text))
+        .unwrap_or_else(|| panic!("generated {generated} #{occurrence}:\n{}", result.text))
         .0;
-    let expected = source
-        .match_indices(authored)
-        .nth(occurrence)
-        .map(|(start, text)| start..start + text.len())
-        .expect("authored token");
+    diagnostic_origin(&result.mappings, start..start + len)
+}
+
+fn assert_quoted_diagnostic_origin(source: &str, quoted: &str, occurrence: usize, authored: &str) {
+    let expected = self::authored(source, "<", authored, occurrence);
     // TypeScript reports the quoted key node, delimiters included.
     let key = quoted[1..].find('"').expect("closing quote") + 2;
     assert_eq!(
-        diagnostic_origin(&result.mappings, start..start + key),
+        generated_origin(source, quoted, key, occurrence),
         expected,
         "{quoted} #{occurrence} must report on authored {authored:?}"
     );
@@ -80,5 +94,30 @@ const count = ref('wrong')
 <Child v-model="count" />
 </template>
 "#;
-    assert_quoted_diagnostic_origin(model, "\"modelValue\": count", 0, "v-model");
+    // vue-tsc: the per-prop check on `v-model`, the props object on `count`.
+    let check = "__vize_prop_check_0_modelValue";
+    assert_eq!(
+        generated_origin(model, check, check.len(), 0),
+        authored(model, "<template>", "v-model", 0)
+    );
+    let key = "\"modelValue\"";
+    assert_eq!(
+        generated_origin(model, "\"modelValue\": count", key.len(), 0),
+        authored(model, "<template>", "count", 0)
+    );
+
+    // An argument model and an ordinary prop keep their own names.
+    let named = r#"<script setup lang="ts">
+import Child from './Child.vue'
+const title = 1
+</script>
+<template>
+<Child v-model:title="title" :count="title" />
+</template>
+"#;
+    assert_eq!(
+        generated_origin(named, "\"title\": title", "\"title\"".len(), 0),
+        authored(named, "<template>", "title", 1)
+    );
+    assert_quoted_diagnostic_origin(named, "\"count\": title", 0, "count");
 }

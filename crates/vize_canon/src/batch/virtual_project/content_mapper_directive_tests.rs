@@ -265,11 +265,8 @@ fn block_directives_cover_duplicate_css_module_names_only() {
         for directive in &directives.directives {
             let [original, length, start, end, _, _] = directive.0;
             assert_eq!(&source[original..original + length], token);
-            assert!(
-                !text[start..end].contains("__template"),
-                "a block directive must not reach template checks: {:?}",
-                &text[start..end]
-            );
+            // Only the generated module key, never a template check.
+            assert_eq!(&text[start..end], "\"foo\"");
         }
     }
 }

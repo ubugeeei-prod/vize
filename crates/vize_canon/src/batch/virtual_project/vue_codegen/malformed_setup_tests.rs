@@ -74,8 +74,16 @@ fn project(source: &str) -> (GeneratedVueFile, GeneratedVueFile, serde_json::Val
             ..Default::default()
         },
     );
-    let (mappings, mapping_meta, semantic_links, prop_default_key_links) =
+    let (mut mappings, mut mapping_meta, semantic_links, prop_default_key_links) =
         prior.mapping.into_binding_parts_with_metadata();
+    // The generic attribute post-pass reads only the generated text.
+    super::generic_attribute::map_generic_attribute(
+        &prior.code,
+        &mut mappings,
+        &mut mapping_meta,
+        source,
+        &descriptor,
+    );
     let before = GeneratedVueFile {
         code: prior.code,
         mappings,

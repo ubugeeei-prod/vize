@@ -327,7 +327,9 @@ mod tests {
                 reporting += 1;
             } else {
                 assert!(
-                    echoes.iter().any(|echo| echo.contains(&copy)),
+                    echoes
+                        .iter()
+                        .any(|echo| echo.start <= copy && copy + authored.len() <= echo.end),
                     "copy of {authored} at {copy} neither maps nor is ignored:\n{}",
                     result.text
                 );

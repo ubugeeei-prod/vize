@@ -329,12 +329,17 @@ fn protocol_spans(
             .map_or(generated.len(), |next| next.generated.start);
         let delimiters = synthetic_delimiters(generated, &candidate.generated)
             .filter(|(open, close)| previous_end <= *open && *close < next_start);
+        let target = delimiters
+            .and_then(|(_, close)| {
+                model_value(source, generated, candidate, accepted.get(index + 1), close)
+            })
+            .unwrap_or(&candidate.original);
         let delimiter = |at: usize| {
             ContentMapperSpan([
                 at,
                 1,
-                candidate.original.start,
-                candidate.original.len(),
+                target.start,
+                target.len(),
                 ContentMapperSpanKind::Atom as usize,
                 0,
             ])
@@ -351,6 +356,22 @@ fn protocol_spans(
         spans.extend(delimiters.map(|(_, close)| delimiter(close)));
     }
     spans
+}
+
+/// A `v-model` key directly followed by its mapped value: the props-object
+/// mismatch reports on the model expression, the per-prop check on `v-model`.
+fn model_value<'a>(
+    source: &str,
+    generated: &str,
+    key: &SpanCandidate,
+    next: Option<&'a SpanCandidate>,
+    close: usize,
+) -> Option<&'a Range<usize>> {
+    let next = next?;
+    let model = source.get(key.original.clone())?.starts_with("v-model")
+        || source.get(..key.original.start)?.ends_with("v-model:");
+    (model && generated.get(close + 1..next.generated.start) == Some(": "))
+        .then_some(&next.original)
 }
 
 /// The generated quotes around a mapped name, when no authored span owns them.
