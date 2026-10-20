@@ -35,32 +35,43 @@ Ordinary Vite projects can keep the usual plugin entry point.
 ## Configuration
 
 ```ts
-import { defineConfig, type VueConfigObject } from "@vizejs/vite-plugin/vite-plus";
+import { defineConfig, type VueOptions } from "@vizejs/vite-plugin/vite-plus";
+import type { UserConfig } from "vite-plus";
 
 const vpConfig = {
   server: { port: 3000 },
   lint: {
-    vue: { typecheck: true, locale: "ja", helpLevel: "short" },
     rules: { "no-debugger": "error" },
     ignorePatterns: ["dist/**"],
   },
   fmt: { ignorePatterns: ["dist/**"] },
-} satisfies VueConfigObject;
+} satisfies UserConfig;
 
-export default defineConfig(vpConfig).withVue({
+const vueConfig = {
   compiler: { sourceMap: true },
+  typeChecker: { enabled: true },
   linter: {
     preset: "essential",
     rules: { "vue/no-v-html": "error" },
   },
   formatter: { singleQuote: true },
-});
+  entries: [
+    {
+      files: ["src/admin/**/*.vue"],
+      linter: { rules: { "vue/no-v-html": "off" } },
+    },
+  ],
+} satisfies VueOptions;
+
+export default defineConfig(vpConfig).withVue(vueConfig);
 ```
 
-`.withVue()` sets the canonical `vue:` section. An inline `vue: { ... }` in the
-Vite+ config is equivalent. Native settings use `compiler`, `typeChecker`,
-`linter`, `formatter` and `languageServer` inside that section. See
-[Shared Vue configuration](./vue-configuration.md) for paths and scoped entries.
+Keep `vpConfig` as an ordinary Vite+ config. `.withVue()` adds the canonical
+`vue:` section without mixing Vue-only options into the Vite+ object. Prefer
+`entries` for Flat Config-style, file-scoped overrides. An inline `vue: { ... }`
+in the Vite+ config is equivalent. Native settings use `compiler`, `typeChecker`,
+`linter`, `formatter` and `languageServer` inside that section. See [Shared Vue
+configuration](./vue-configuration.md) for paths and scoped entries.
 
 | Section | Owner |
 | --- | --- |

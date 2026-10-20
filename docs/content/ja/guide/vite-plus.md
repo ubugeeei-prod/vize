@@ -27,27 +27,40 @@ CLI、エディタ、統合タスクは `vite.config.*` と `tsconfig.json` を�
 ## 設定
 
 ```ts
-import { defineConfig, type VueConfigObject } from "@vizejs/vite-plugin/vite-plus";
+import { defineConfig, type VueOptions } from "@vizejs/vite-plugin/vite-plus";
+import type { UserConfig } from "vite-plus";
 
 const vpConfig = {
   server: { port: 3000 },
   lint: {
-    vue: { locale: "ja", helpLevel: "short" },
     rules: { "no-debugger": "error" },
+    ignorePatterns: ["dist/**"],
   },
-} satisfies VueConfigObject;
+  fmt: { ignorePatterns: ["dist/**"] },
+} satisfies UserConfig;
 
-export default defineConfig(vpConfig).withVue({
+const vueConfig = {
   compiler: { sourceMap: true },
+  typeChecker: { enabled: true },
   linter: {
     preset: "essential",
     rules: { "vue/no-v-html": "error" },
   },
   formatter: { printWidth: 100 },
-});
+  entries: [
+    {
+      files: ["src/admin/**/*.vue"],
+      linter: { rules: { "vue/no-v-html": "off" } },
+    },
+  ],
+} satisfies VueOptions;
+
+export default defineConfig(vpConfig).withVue(vueConfig);
 ```
 
-`.withVue(vueConfig)` は、既存の Vite+ 設定を保ちながら `vue:` にネイティブ設定を追加します。
+`vpConfig` は Vue 固有の項目を含まない通常の Vite+ 設定として保ちます。
+`.withVue(vueConfig)` は、その設定を保ちながら `vue:` にネイティブ設定を追加します。
+ファイル単位の上書きには Flat Config ライクな `entries` を推奨します。
 インラインの `vue: { ... }` と同じ設定です。共有するコンパイラ・lint・フォーマッタの設定は
 `vue.compiler`・`vue.linter`・`vue.formatter` に、エディター設定は `vue.languageServer` に置きます。
 `lint.vue` は診断言語などのタスク設定、その他の `lint`・`fmt` は Vite+ の Oxlint・Oxfmt 設定です。
