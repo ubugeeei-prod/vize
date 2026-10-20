@@ -194,7 +194,7 @@ runtime, so it can run from `package.json` scripts after installing `vize`:
 ```json
 {
   "scripts": {
-    "vize:check:strict": "vize check src --strict",
+    "vize:check": "vize check src",
     "vize:check:virtual-ts": "vize check src --show-virtual-ts",
     "vize:check:declarations": "vize check src --declaration --declaration-dir dist/types"
   }
@@ -202,7 +202,7 @@ runtime, so it can run from `package.json` scripts after installing `vize`:
 ```
 
 ```bash
-vp run vize:check:strict
+vp run vize:check
 vp run vize:check:virtual-ts
 vp run vize:check:declarations
 ```

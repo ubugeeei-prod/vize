@@ -16,7 +16,7 @@ pub struct LintOptionsNapi {
     pub fix: Option<bool>,
     /// Help display level: "full", "short", "none"
     pub help_level: Option<String>,
-    /// Lint preset: "general-recommended", "essential", "incremental", "ecosystem", "opinionated", or "nuxt"
+    /// Lint preset: "general-recommended", "essential", "incremental", "ecosystem", "opinionated", "nuxt", or "all"
     pub preset: Option<String>,
     /// Enable native type-aware lint rules
     pub type_aware: Option<bool>,
@@ -49,7 +49,7 @@ pub struct PatinaLintOptionsNapi {
     pub locale: Option<String>,
     /// Help display level: "full", "short", or "none"
     pub help_level: Option<String>,
-    /// Lint preset: "general-recommended", "essential", "incremental", "ecosystem", "opinionated", or "nuxt"
+    /// Lint preset: "general-recommended", "essential", "incremental", "ecosystem", "opinionated", "nuxt", or "all"
     pub preset: Option<String>,
     /// Optional list of Patina rule names to enable
     pub enabled_rules: Option<Vec<String>>,
@@ -121,6 +121,7 @@ pub struct HtmlSelfClosingHtmlOptionsNapi {
 pub(super) enum PatinaPresetSelection {
     Builtin(vize_patina::LintPreset),
     Ecosystem,
+    All,
 }
 
 pub(super) fn patina_locale_from_option(locale: Option<&str>) -> vize_patina::Locale {
@@ -150,9 +151,10 @@ pub(super) fn patina_preset_from_option(preset: Option<&str>) -> PatinaPresetSel
             PatinaPresetSelection::Builtin(vize_patina::LintPreset::Incremental)
         }
         Some("ecosystem" | "Ecosystem" | "eco" | "Eco") => PatinaPresetSelection::Ecosystem,
-        Some("opinionated" | "Opinionated" | "Opnionated" | "opnionated" | "strict" | "all") => {
+        Some("opinionated" | "Opinionated" | "Opnionated" | "opnionated" | "strict") => {
             PatinaPresetSelection::Builtin(vize_patina::LintPreset::Opinionated)
         }
+        Some("all") => PatinaPresetSelection::All,
         Some("nuxt" | "Nuxt") => PatinaPresetSelection::Builtin(vize_patina::LintPreset::Nuxt),
         _ => PatinaPresetSelection::Builtin(vize_patina::LintPreset::default()),
     }
@@ -162,6 +164,7 @@ pub(super) fn create_patina_linter(preset: PatinaPresetSelection) -> vize_patina
     match preset {
         PatinaPresetSelection::Builtin(preset) => vize_patina::Linter::with_preset(preset),
         PatinaPresetSelection::Ecosystem => vize_patina::Linter::with_ecosystem(),
+        PatinaPresetSelection::All => vize_patina::Linter::with_all(),
     }
 }
 

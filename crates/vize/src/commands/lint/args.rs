@@ -1,8 +1,41 @@
 //! Command-line arguments for the lint command.
 
-use clap::Args;
+use clap::{Args, ValueEnum};
 use std::path::PathBuf;
 use vize_l0::String;
+
+#[derive(Clone, Copy, ValueEnum)]
+pub enum LintPresetArg {
+    HappyPath,
+    GeneralRecommended,
+    Default,
+    Recommended,
+    Ecosystem,
+    Opinionated,
+    Strict,
+    All,
+    Essential,
+    Incremental,
+    Nuxt,
+}
+
+impl LintPresetArg {
+    pub(super) const fn as_str(self) -> &'static str {
+        match self {
+            Self::HappyPath => "happy-path",
+            Self::GeneralRecommended => "general-recommended",
+            Self::Default => "default",
+            Self::Recommended => "recommended",
+            Self::Ecosystem => "ecosystem",
+            Self::Opinionated => "opinionated",
+            Self::Strict => "strict",
+            Self::All => "all",
+            Self::Essential => "essential",
+            Self::Incremental => "incremental",
+            Self::Nuxt => "nuxt",
+        }
+    }
+}
 
 #[derive(Args)]
 pub struct LintArgs {
@@ -48,9 +81,9 @@ pub struct LintArgs {
     #[arg(long, default_value = "full")]
     pub help_level: String,
 
-    /// Override the configured lint preset: happy-path, ecosystem, opinionated, essential, incremental, nuxt
-    #[arg(long)]
-    pub preset: Option<String>,
+    /// Override the configured lint preset
+    #[arg(long, value_enum)]
+    pub preset: Option<LintPresetArg>,
 
     /// Enable opt-in cross-file lint checks for provide/inject, reactivity flow, and race risks.
     #[arg(long)]

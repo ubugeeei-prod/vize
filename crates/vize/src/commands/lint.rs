@@ -18,7 +18,7 @@ mod warnings;
 #[cfg(test)]
 mod tests;
 
-pub use args::LintArgs;
+pub use args::{LintArgs, LintPresetArg};
 
 use crate::profile_support;
 use aggregate::{LintRunAccumulator, should_retain_file_results};
@@ -99,15 +99,18 @@ pub fn run(mut args: LintArgs) {
     };
     let preset_name: String = args
         .preset
-        .as_deref()
+        .as_ref()
+        .map(|preset| preset.as_str())
         .or(linter_plan.plan.base.preset.as_deref())
         .unwrap_or("happy-path")
         .into();
+    let all_rules = preset_name == "all";
     let preset = LintPreset::parse(preset_name.as_str()).unwrap_or_default();
     let resolved_rules =
         LinterRuleResolver::new(linter_plan, config_dir, &cwd).resolve_files(&files, &cwd);
     let linters = resolved_rules.build_linters(
         preset,
+        all_rules,
         help_level,
         &args,
         linter_features,

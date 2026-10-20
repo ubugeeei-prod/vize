@@ -203,6 +203,7 @@ mod lint_pinia_dependency_cli;
 mod lint_plain_script_ownership_cli;
 mod lint_prefixed_suppressions_cli;
 mod lint_preset_scope_cli;
+mod lint_preset_validation_cli;
 mod lint_relocated_config_cli;
 mod lint_restricted_members_cli;
 mod lint_rich_cli;

@@ -107,6 +107,19 @@ impl Linter {
         }
     }
 
+    /// Create a linter with every built-in rule enabled.
+    #[inline]
+    pub fn with_all() -> Self {
+        let mut linter = Self::with_preset(LintPreset::Opinionated);
+        linter.preset = None;
+        linter.registry = RuleRegistry::with_all();
+        linter.registry.register_opt_in_rules();
+        linter.script_rules = super::super::script_rules::all_builtin_script_rule_names();
+        linter.css_rules = super::super::css_rules::all_builtin_css_rule_names();
+        linter.musea_rules = super::super::musea_rules::all_builtin_musea_rule_names();
+        linter
+    }
+
     /// Create a linter with a custom rule registry.
     #[inline]
     pub fn with_registry(registry: RuleRegistry) -> Self {

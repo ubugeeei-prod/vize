@@ -37,6 +37,7 @@ impl ResolvedLinterRuleGroups {
     pub(super) fn build_linters(
         &self,
         preset: LintPreset,
+        all_rules: bool,
         help_level: HelpLevel,
         args: &LintArgs,
         features: LinterFeatureFlags,
@@ -75,7 +76,12 @@ impl ResolvedLinterRuleGroups {
                 {
                     additional_rules.push(SCRIPT_NO_RESTRICTED_MEMBERS.into());
                 }
-                let mut linter = Linter::with_preset(preset)
+                let linter = if all_rules {
+                    Linter::with_all()
+                } else {
+                    Linter::with_preset(preset)
+                };
+                let mut linter = linter
                     .with_additional_rules(additional_rules)
                     .with_disabled_rules(disabled_rules)
                     .with_disabled_categories(config.disabled_categories())
