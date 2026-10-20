@@ -80,18 +80,18 @@ impl CodeActionService {
 }
 
 /// Whole-document TypeScript source actions this server forwards to tsgo and
-/// advertises. Each has a real-tsgo whole-SFC oracle; `source.fixAll` waits
-/// for one.
-pub(crate) const NATIVE_SOURCE_KINDS: [&str; 3] = [
+/// advertises. Each has a real-tsgo whole-SFC oracle.
+pub(crate) const NATIVE_SOURCE_KINDS: [&str; 4] = [
     "source.organizeImports",
     "source.sortImports",
     "source.removeUnusedImports",
+    FIX_ALL,
 ];
+
+const FIX_ALL: &str = "source.fixAll";
 
 impl CodeActionService {
     /// Organize, sort or remove imports, or fix all, in a Vue SFC script.
-    /// tsgo answers on [`ImportProjection`]; every edit must land on the
-    /// authored script or the action is dropped whole.
     pub(crate) async fn native_source_actions(
         ctx: &IdeContext<'_>,
         kinds: &[CodeActionKind],
@@ -111,6 +111,71 @@ impl CodeActionService {
         else {
             return vec![];
         };
+        let (fix_all, imports): (Vec<_>, Vec<_>) = kinds
+            .iter()
+            .cloned()
+            .partition(|kind| kind.as_str() == FIX_ALL);
+        let mut actions = Self::import_source_actions(ctx, &imports, version).await;
+        if !fix_all.is_empty() {
+            actions.extend(Self::fix_all_actions(ctx, version).await);
+        }
+        actions
+    }
+
+    /// Fix all runs on the canonical document, where the checker sees the
+    /// whole SFC. Like a quick fix, every edit must map exactly onto authored
+    /// text and keep its references' bindings, or the action is dropped whole.
+    async fn fix_all_actions(ctx: &IdeContext<'_>, version: i32) -> Vec<CodeActionOrCommand> {
+        let Some(bridge) = ctx.state.get_corsa_bridge().await else {
+            return vec![];
+        };
+        let Some(document) = corsa_support::open_canonical_virtual_document(ctx, &bridge).await
+        else {
+            return vec![];
+        };
+        let response = match bridge
+            .source_actions(&document.request_uri, vec![FIX_ALL.into()])
+            .await
+        {
+            Ok(Some(response)) => response,
+            Ok(None) => return vec![],
+            Err(error) => {
+                tracing::warn!(%error, uri = %ctx.uri, "native fix-all request failed");
+                return vec![];
+            }
+        };
+        let actions = match serde_json::from_value::<Vec<CodeActionOrCommand>>(response) {
+            Ok(actions) => actions,
+            Err(error) => {
+                tracing::warn!(%error, uri = %ctx.uri, "invalid native fix-all response");
+                return vec![];
+            }
+        };
+        actions
+            .into_iter()
+            .filter_map(|action| {
+                let CodeActionOrCommand::CodeAction(action) = action else {
+                    return None;
+                };
+                if action.kind.as_ref()?.as_str() != FIX_ALL {
+                    return None;
+                }
+                map_action_edits(ctx, &document, version, action)
+                    .map(CodeActionOrCommand::CodeAction)
+            })
+            .collect()
+    }
+
+    /// tsgo answers import actions on [`ImportProjection`]; every edit must
+    /// land on the authored script or the action is dropped whole.
+    async fn import_source_actions(
+        ctx: &IdeContext<'_>,
+        kinds: &[CodeActionKind],
+        version: i32,
+    ) -> Vec<CodeActionOrCommand> {
+        if kinds.is_empty() {
+            return vec![];
+        }
         let Some(projection) = ImportProjection::build(ctx) else {
             return vec![];
         };
@@ -291,11 +356,13 @@ fn map_action_edits(
             return None;
         }
         let range = corsa_support::map_canonical_exact_edit_range(ctx, document, edit.range)?;
-        generated_edits.push(edit.clone());
-        edits.push(TextEdit {
-            range,
-            new_text: edit.new_text,
-        });
+        let new_text = relayout(
+            &edit.new_text,
+            line_layout(&document.virtual_result.code, edit.range.start.line).0,
+            line_layout(&ctx.content, range.start.line),
+        );
+        generated_edits.push(edit);
+        edits.push(TextEdit { range, new_text });
         Some(())
     };
     if let Some(changes) = original.changes {
@@ -338,6 +405,44 @@ fn map_action_edits(
     action.diagnostics = None;
     action.data = None;
     Some(action)
+}
+
+/// The leading whitespace of a 0-based line, and whether it ends in CRLF.
+fn line_layout(text: &str, line: u32) -> (&str, bool) {
+    let line = text.split('\n').nth(line as usize).unwrap_or_default();
+    let indent = line.len() - line.trim_start_matches([' ', '\t']).len();
+    (line.get(..indent).unwrap_or_default(), line.ends_with('\r'))
+}
+
+/// tsgo lays inserted lines out for the generated line, which can be nested
+/// deeper than the authored one (`<script setup>` sits inside `__setup()`)
+/// and ends in LF. Use the authored line's base indent and line ending,
+/// unless an inserted line does not start with the generated indent.
+fn relayout(text: &str, generated: &str, (indent, crlf): (&str, bool)) -> String {
+    let mut lines = text.split('\n');
+    let first = lines.next().unwrap_or_default();
+    let rest: Vec<_> = lines.collect();
+    if rest
+        .iter()
+        .any(|line| !line.trim().is_empty() && !line.starts_with(generated))
+    {
+        return text.to_string();
+    }
+    let mut out = String::from(first);
+    for line in rest {
+        if crlf && !out.ends_with('\r') {
+            out.push('\r');
+        }
+        out.push('\n');
+        match line.strip_prefix(generated) {
+            Some(tail) => {
+                out.push_str(indent);
+                out.push_str(tail);
+            }
+            None => out.push_str(line),
+        }
+    }
+    out
 }
 
 fn ordered_edits(mut edits: Vec<TextEdit>) -> Option<Vec<TextEdit>> {

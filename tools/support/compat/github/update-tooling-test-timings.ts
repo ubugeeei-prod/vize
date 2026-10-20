@@ -33,7 +33,9 @@ export type ToolingMeasurements = {
   leadSteps: Record<string, number>;
 };
 
-const TOOLING_JOB = /(?:^| \/ )(?:(PR tooling scripts) \(([^()]*)\)|(Tooling) \(([^()]*)\))$/;
+// `Affected tooling (cohort)` is the PR tier's worker since #9681.
+const TOOLING_JOB =
+  /(?:^| \/ )(?:(PR tooling scripts) \(([^()]*)\)|((?:Affected t|T)ooling) \(([^()]*)\))$/;
 const TOOLING_FILE = /^tests\/tooling\/(?:[^/]+\/)?[^/]+\.test\.(?:ts|mjs)$/;
 const CURRENT_LEAD_NAMES: Record<string, string> = {
   "native-js-setup": "Prepare plugin runtime and test native JS setup",
