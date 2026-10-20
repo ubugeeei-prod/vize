@@ -3,6 +3,7 @@
 
 use std::path::{Path, PathBuf};
 
+use rayon::prelude::*;
 use vize_carton::FxHashSet;
 
 use super::VirtualProject;
@@ -46,14 +47,17 @@ impl VirtualProject {
         if candidates.is_empty() {
             return Ok(());
         }
+        // Every key and candidate costs a `realpath`; spread them over the pool.
         let known: FxHashSet<PathBuf> = self
             .original_index
-            .keys()
-            .map(|path| vize_carton::path::canonicalize_non_verbatim(path))
+            .par_iter()
+            .map(|(path, _)| vize_carton::path::canonicalize_non_verbatim(path))
             .collect();
         let missing: Vec<PathBuf> = candidates
-            .into_iter()
+            .into_par_iter()
             .map(|path| vize_carton::path::canonicalize_non_verbatim(&path))
+            .collect::<Vec<_>>()
+            .into_iter()
             .filter(|path| path.is_file() && !known.contains(path))
             .filter(|path| self.source_file_policy().accepts_project_source(path))
             .filter(|path| !path_contains_node_modules(path))
@@ -65,7 +69,7 @@ impl VirtualProject {
         }
         let mut roots = self.declaration_roots.clone().unwrap_or_else(|| {
             self.registered_original_paths_sorted()
-                .into_iter()
+                .into_par_iter()
                 .map(|path| vize_carton::path::canonicalize_non_verbatim(&path))
                 .collect()
         });
@@ -74,13 +78,7 @@ impl VirtualProject {
         }
         let listed: Vec<PathBuf> = roots.into_iter().collect();
         self.set_declaration_roots(&listed);
-        let mut registered_any = false;
-        for path in &missing {
-            if self.register_path(path).is_ok() {
-                registered_any = true;
-            }
-        }
-        if registered_any {
+        if self.register_canonical_paths_lenient(&missing) {
             self.register_reachable_dependencies()?;
             self.finalize_package_routes()?;
         }

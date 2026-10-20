@@ -150,39 +150,90 @@ impl VirtualProject {
         content: &str,
         runtime_prop_resolve_cache: Option<&RuntimePropResolveCache>,
     ) -> CorsaResult<()> {
-        let package_route_path = self.is_package_route_path(path);
         let registered = build_registered_file(
             path,
             content,
-            VirtualBuildContext {
-                project_root: &self.project_root,
-                virtual_root: &self.virtual_root,
-                virtual_ts_options: &self.virtual_ts_options,
-                virtual_ts_check_options: self.virtual_ts_check_options,
-                typed_router_root: self.typed_router.root.as_deref(),
-                preserve_unused_diagnostics: self.tsconfig_preserves_unused_diagnostics(),
-                options_api: self.options_api,
-                legacy_vue2: self.legacy_vue2,
-                jsx_typecheck: self.jsx_typecheck,
-                allow_javascript: self.source_policy.allows_javascript(),
-                javascript_explicitly_denied: self.source_policy.explicitly_denies_javascript(),
-                dialect: self.dialect,
-                template_syntax: self.template_syntax,
-                experimental_in_tag_comments: self.experimental_in_tag_comments,
-                experimental_patterned_template: self.experimental_patterned_template,
-                experimental_strict_slot_children: self.experimental_strict_slot_children,
-                hoist_shared_preamble: self.editor_document_options.is_none(),
-                editor_document_options: self.editor_document_options,
-                preserve_relative_declarations: package_route_path || self.session_scripts,
-                preserve_declaration_spelling: self.session_scripts,
-                mirrorable_project_files: None,
-                rewriter: &self.rewriter,
-                alias_rewrite_policy: Some(self.alias_rewrite_policy()),
-                runtime_prop_resolve_cache,
-            },
+            self.path_build_context(path, runtime_prop_resolve_cache),
         )?;
         self.absorb_registered_file(registered)?;
         Ok(())
+    }
+
+    /// Register canonical `paths` as a `register_path` loop that skips
+    /// failures would: each file builds against the same context, but builds
+    /// run in parallel and only absorbing stays in order. Returns whether any
+    /// file registered.
+    pub(crate) fn register_canonical_paths_lenient(&mut self, paths: &[PathBuf]) -> bool {
+        // An art file adds the `defineArt` stub that later builds read.
+        if paths.len() <= 1
+            || paths
+                .iter()
+                .any(|path| artifacts::is_musea_art_vue_path(path))
+        {
+            let mut registered_any = false;
+            for path in paths {
+                registered_any |= self.register_path(path).is_ok();
+            }
+            return registered_any;
+        }
+        let contexts = paths
+            .iter()
+            .map(|path| self.path_build_context(path, None))
+            .collect::<Vec<_>>();
+        let built = paths
+            .par_iter()
+            .zip(contexts)
+            .map(|(path, context)| {
+                let content = profile!("canon.file.read", std::fs::read_to_string(path))?;
+                build_registered_file(path, &content, context)
+            })
+            .collect::<Vec<_>>();
+        let mut registered_any = false;
+        for (path, built) in paths.iter().zip(built) {
+            let Ok(registered) = built else {
+                continue;
+            };
+            let canonical = (registered.file.original_path == *path).then(|| path.clone());
+            registered_any |= self
+                .absorb_registered_file_with_canonical(registered, canonical)
+                .is_ok();
+        }
+        registered_any
+    }
+
+    /// The context `register_path` builds `path` with.
+    fn path_build_context<'a>(
+        &'a self,
+        path: &Path,
+        runtime_prop_resolve_cache: Option<&'a RuntimePropResolveCache>,
+    ) -> VirtualBuildContext<'a> {
+        let package_route_path = self.is_package_route_path(path);
+        VirtualBuildContext {
+            project_root: &self.project_root,
+            virtual_root: &self.virtual_root,
+            virtual_ts_options: &self.virtual_ts_options,
+            virtual_ts_check_options: self.virtual_ts_check_options,
+            typed_router_root: self.typed_router.root.as_deref(),
+            preserve_unused_diagnostics: self.tsconfig_preserves_unused_diagnostics(),
+            options_api: self.options_api,
+            legacy_vue2: self.legacy_vue2,
+            jsx_typecheck: self.jsx_typecheck,
+            allow_javascript: self.source_policy.allows_javascript(),
+            javascript_explicitly_denied: self.source_policy.explicitly_denies_javascript(),
+            dialect: self.dialect,
+            template_syntax: self.template_syntax,
+            experimental_in_tag_comments: self.experimental_in_tag_comments,
+            experimental_patterned_template: self.experimental_patterned_template,
+            experimental_strict_slot_children: self.experimental_strict_slot_children,
+            hoist_shared_preamble: self.editor_document_options.is_none(),
+            editor_document_options: self.editor_document_options,
+            preserve_relative_declarations: package_route_path || self.session_scripts,
+            preserve_declaration_spelling: self.session_scripts,
+            mirrorable_project_files: None,
+            rewriter: &self.rewriter,
+            alias_rewrite_policy: Some(self.alias_rewrite_policy()),
+            runtime_prop_resolve_cache,
+        }
     }
 
     /// Register a batch of file paths, parallelizing per-file parse and Virtual TS

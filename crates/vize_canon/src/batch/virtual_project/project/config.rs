@@ -153,8 +153,7 @@ impl VirtualProject {
                 binding
                     .invalidation_paths
                     .push(binding.importer_path.clone());
-                binding.invalidation_paths.sort();
-                binding.invalidation_paths.dedup();
+                vize_carton::path::sort_dedup_paths(&mut binding.invalidation_paths);
                 binding
             })
             .collect::<Vec<_>>();

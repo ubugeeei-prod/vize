@@ -204,6 +204,8 @@ impl VirtualProject {
             .into_iter()
             .map(|(path, canonical, _)| (path, canonical))
             .collect();
+        // Importers share targets; each one costs a `realpath` and a `stat`.
+        let mut canonical_keys: FxHashMap<PathBuf, Option<PathBuf>> = FxHashMap::default();
 
         while let Some(importer) = queue.pop() {
             let Some((virtual_content, virtual_path, generated_sfc)) =
@@ -298,7 +300,11 @@ impl VirtualProject {
                     }
                     continue;
                 };
-                let Some(key) = canonical_key(&target) else {
+                let Some(key) = canonical_keys
+                    .entry(target)
+                    .or_insert_with_key(|target| canonical_key(target))
+                    .clone()
+                else {
                     continue;
                 };
                 let package_local = importer_package_roots

@@ -210,7 +210,7 @@ impl VirtualProject {
     }
 }
 
-fn is_musea_art_vue_path(path: &Path) -> bool {
+pub(super) fn is_musea_art_vue_path(path: &Path) -> bool {
     path.file_name()
         .and_then(|name| name.to_str())
         .is_some_and(|name| name.ends_with(".art.vue"))

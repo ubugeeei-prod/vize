@@ -5,6 +5,7 @@
 use std::path::{Path, PathBuf};
 
 use crate::batch::SfcBlockType;
+use rayon::prelude::*;
 use vize_carton::FxHashSet;
 
 use super::{Diagnostic, OriginalPosition, VirtualFile, VirtualProject};
@@ -48,8 +49,11 @@ impl VirtualProject {
     }
 
     pub(crate) fn set_diagnostic_paths<'a>(&mut self, paths: impl IntoIterator<Item = &'a Path>) {
+        // One `stat` and `realpath` per reported file; spread them over the pool.
         self.diagnostic_paths = paths
             .into_iter()
+            .collect::<Vec<_>>()
+            .into_par_iter()
             .filter(|path| path.is_file())
             .map(vize_carton::path::canonicalize_non_verbatim)
             .collect();

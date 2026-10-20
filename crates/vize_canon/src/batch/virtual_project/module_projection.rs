@@ -2,6 +2,7 @@
 
 use std::path::Path;
 
+use rayon::prelude::*;
 use vize_carton::{FxHashSet, String};
 
 use super::{VirtualFile, VirtualProject};
@@ -33,88 +34,94 @@ impl VirtualProject {
 
         let aliases = self.dependency_alias_map();
         let settings = self.package_resolution_settings();
-        let mut package_resolver = crate::PackageRouteResolver::default();
         let mirrorable = self
             .original_index
             .keys()
             .cloned()
             .collect::<FxHashSet<_>>();
+        // Files rewrite independently; each worker keeps its own manifest cache.
         let rewrites = self
             .virtual_files_sorted()
-            .into_iter()
-            .filter_map(|file| {
-                let source = self.module_source(file)?;
-                let context = settings
-                    .context(
-                        &mut package_resolver,
-                        &file.original_path,
-                        PackageResolutionMode::Contextual,
-                    )
-                    .0;
-                let resolver = |specifier: &str, mode| {
-                    let path = super::dependency_scan::resolve_dependency(
-                        specifier,
-                        file.original_path.parent()?,
-                        &self.project_root,
-                        &aliases,
+            .into_par_iter()
+            .map_init(
+                crate::PackageRouteResolver::default,
+                |package_resolver, file| {
+                    let source = self.module_source(file)?;
+                    let context = settings
+                        .context(
+                            package_resolver,
+                            &file.original_path,
+                            PackageResolutionMode::Contextual,
+                        )
+                        .0;
+                    let resolver = |specifier: &str, mode| {
+                        let path = super::dependency_scan::resolve_dependency(
+                            specifier,
+                            file.original_path.parent()?,
+                            &self.project_root,
+                            &aliases,
+                        );
+                        let target = path.as_ref().and_then(|path| {
+                            self.find_by_original(&vize_carton::path::canonicalize_non_verbatim(
+                                path,
+                            ))
+                        });
+                        if target.is_some_and(is_denied_javascript_sfc) {
+                            // The project owns this edge through its authored declaration;
+                            // a generated TypeScript projection cannot admit a denied JS module.
+                            return Some(specifier.to_owned());
+                        }
+                        // Native Node ESM still owns invalid extensionless imports.
+                        // Projection must not turn an invalid authored edge valid.
+                        if requires_explicit_extension(specifier, mode, &context) {
+                            return None;
+                        }
+                        let target = target?;
+                        is_lowered_jsx(target)
+                            .then(|| target.virtual_path.to_string_lossy().replace('\\', "/"))
+                    };
+                    let options = VirtualProjectRewriteOptions {
+                        preserve_relative_declarations: self
+                            .is_package_route_path(&file.original_path)
+                            || self.session_scripts,
+                        mirrorable_project_files: Some(&mirrorable),
+                        alias_rewrite_policy: Some(self.alias_rewrite_policy()),
+                        module_resolver: Some(&resolver),
+                    };
+                    let source_type = super::build::source_type_for_path(&file.virtual_path)?;
+                    let roots = (self.project_root.as_path(), self.virtual_root.as_path());
+                    let (rewritten, stars) = if file.source_map.sfc_map.is_some() {
+                        self.rewriter
+                            .rewrite_generated_for_virtual_project_with_captured_stars(
+                                source,
+                                source_type,
+                                roots,
+                                file.original_path.parent(),
+                                options,
+                            )
+                    } else {
+                        self.rewriter
+                            .rewrite_for_virtual_project_with_captured_stars(
+                                source,
+                                source_type,
+                                roots,
+                                file.original_path.parent(),
+                                options,
+                            )
+                    };
+                    let rewritten = apply_captured_vue_stars(
+                        &rewritten.code,
+                        &rewritten.source_map,
+                        &stars,
+                        |specifier, projected, _mode| {
+                            self.known_vue_star_target(file, specifier, projected)
+                        },
                     );
-                    let target = path.as_ref().and_then(|path| {
-                        self.find_by_original(&vize_carton::path::canonicalize_non_verbatim(path))
-                    });
-                    if target.is_some_and(is_denied_javascript_sfc) {
-                        // The project owns this edge through its authored declaration;
-                        // a generated TypeScript projection cannot admit a denied JS module.
-                        return Some(specifier.to_owned());
-                    }
-                    // Native Node ESM still owns invalid extensionless imports.
-                    // Projection must not turn an invalid authored edge valid.
-                    if requires_explicit_extension(specifier, mode, &context) {
-                        return None;
-                    }
-                    let target = target?;
-                    is_lowered_jsx(target)
-                        .then(|| target.virtual_path.to_string_lossy().replace('\\', "/"))
-                };
-                let options = VirtualProjectRewriteOptions {
-                    preserve_relative_declarations: self.is_package_route_path(&file.original_path)
-                        || self.session_scripts,
-                    mirrorable_project_files: Some(&mirrorable),
-                    alias_rewrite_policy: Some(self.alias_rewrite_policy()),
-                    module_resolver: Some(&resolver),
-                };
-                let source_type = super::build::source_type_for_path(&file.virtual_path)?;
-                let roots = (self.project_root.as_path(), self.virtual_root.as_path());
-                let (rewritten, stars) = if file.source_map.sfc_map.is_some() {
-                    self.rewriter
-                        .rewrite_generated_for_virtual_project_with_captured_stars(
-                            source,
-                            source_type,
-                            roots,
-                            file.original_path.parent(),
-                            options,
-                        )
-                } else {
-                    self.rewriter
-                        .rewrite_for_virtual_project_with_captured_stars(
-                            source,
-                            source_type,
-                            roots,
-                            file.original_path.parent(),
-                            options,
-                        )
-                };
-                let rewritten = apply_captured_vue_stars(
-                    &rewritten.code,
-                    &rewritten.source_map,
-                    &stars,
-                    |specifier, projected, _mode| {
-                        self.known_vue_star_target(file, specifier, projected)
-                    },
-                );
-                Some((file.virtual_path.clone(), rewritten))
-            })
+                    Some((file.virtual_path.clone(), rewritten))
+                },
+            )
             .collect::<Vec<_>>();
-        for (path, rewritten) in rewrites {
+        for (path, rewritten) in rewrites.into_iter().flatten() {
             if let Some(file) = self.virtual_files.get_mut(&path) {
                 if file.content != rewritten.code {
                     self.incremental_materialized_candidates.insert(path);
