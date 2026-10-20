@@ -33,10 +33,13 @@ const CASES: &[(&str, &str)] = &[
     ),
 ];
 
+const CORRECTED_8625: &str =
+    include_str!("fixtures/fix-history-next/root-document-order.corrected-8625.expected.json");
+
 const CURRENT_CASES: &[&str] = &[
     include_str!("fixtures/fix-history-next/once-directive.expected.json"),
     include_str!("fixtures/fix-history-next/insertion-placeholder.expected.json"),
-    include_str!("fixtures/fix-history-next/root-document-order.corrected-8625.expected.json"),
+    include_str!("fixtures/fix-history-next/root-document-order.corrected-8859.expected.json"),
     include_str!("fixtures/fix-history-next/hydration-sibling-element.expected.json"),
     include_str!("fixtures/fix-history-next/mounted-control-slot.expected.json"),
 ];
@@ -88,22 +91,28 @@ fn five_history_fixes_preserve_complete_vapor_outputs() {
 #[test]
 fn root_flag_correction_preserves_every_other_historical_output_byte() {
     let historical = serde_json::from_str::<Value>(CASES[2].1).expect("immutable original case");
-    let current = serde_json::from_str::<Value>(CURRENT_CASES[2]).expect("corrected complete case");
+    let corrected = serde_json::from_str::<Value>(CORRECTED_8625).expect("#8625 complete case");
+    let current = serde_json::from_str::<Value>(CURRENT_CASES[2]).expect("current complete case");
     let old_code = historical["output"]["code"]
         .as_str()
         .expect("whole original module");
     let old_call = "_createComponentWithFallback(_component_Child, null, null, true)";
     assert_eq!(old_code.matches(old_call).count(), 1);
-    let mut authorized = historical.clone();
-    // #8625 cleared the sibling-root flag; #8859 hoists the resolution, so the
-    // call drops its default arguments as upstream's does.
-    authorized["output"]["code"] = Value::String(old_code.replacen(
-        old_call,
-        "_createComponentWithFallback(_component_Child)",
-        1,
-    ));
+    let replaced = |call: &str| {
+        let mut authorized = historical.clone();
+        authorized["output"]["code"] = Value::String(old_code.replacen(old_call, call, 1));
+        authorized
+    };
     assert_eq!(
-        current, authorized,
-        "only the #8625 sibling-root flag and its #8859 default arguments change"
+        corrected,
+        replaced("_createComponentWithFallback(_component_Child, null, null, false)"),
+        "only the explicit #8625 sibling-root flag changes"
+    );
+    // #8859 resolves the twice-used component once, so the call drops its
+    // default arguments as upstream's does.
+    assert_eq!(
+        current,
+        replaced("_createComponentWithFallback(_component_Child)"),
+        "only the #8859 default arguments change after #8625"
     );
 }
