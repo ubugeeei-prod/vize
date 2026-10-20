@@ -229,9 +229,7 @@
     {
       "id": "linter/current-api/require-symbol-provide-range-9882",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "require-symbol-provide-range-9882",
         "files": [
