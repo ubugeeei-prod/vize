@@ -74,16 +74,9 @@ fn all_preset_runs_opt_in_rules_from_cli_and_config() {
     fs::create_dir_all(project.path().join("src")).unwrap();
     fs::write(
         project.path().join("src/GreetingCard.vue"),
-        r#"<script setup lang="ts">
-import { nextTick } from "vue";
-
-await nextTick();
-</script>
-
-<template>
-  <p>Hello</p>
-</template>
-"#,
+        include_str!(
+            "../../../tests/_fixtures/differential/linter/cli-preset-validation-9853/GreetingCard.vue.txt"
+        ),
     )
     .unwrap();
 

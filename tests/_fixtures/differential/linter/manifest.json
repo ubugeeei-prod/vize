@@ -366,6 +366,20 @@
           }
         ]
       }
+    },
+    {
+      "id": "linter/cli-preset-validation-9853/all-enables-opt-in-rules",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "cli-preset-validation-9853",
+        "files": [
+          {
+            "path": "GreetingCard.vue.txt",
+            "sha256": "4adee56134928fe85a8773dc35daf5703e35cac33f48bf5f69ee3a2af1122993"
+          }
+        ]
+      }
     }
   ]
 }

@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { nextTick } from "vue";
+
+await nextTick();
+</script>
+
+<template>
+  <p>Hello</p>
+</template>
