@@ -281,7 +281,7 @@ test("action names reject ambiguous compatibility aliases at the exact scope", a
     ["compile", "compiler", { whitespace: "preserve" }],
     ["typeCheck", "typeChecker", { strict: true }],
     ["fmt", "formatter", { singleQuote: true }],
-  ]) {
+  ] as const) {
     const root = { [action]: value, [compatibility]: value };
     const rootError = new RegExp(
       `vue\\.${action}: conflicts with compatibility alias vue\\.${compatibility}; remove vue\\.${compatibility} and use vue\\.${action}`,
