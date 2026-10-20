@@ -39,15 +39,16 @@ const COMPONENT_OPTIONS_INDEX_SIGNATURE: &str = "  [key: string]: any;\n";
 /// Structural shape of the Vue component options object the SFC's default
 /// export is intersected with, so template/`InstanceType` consumers see the
 /// runtime option keys alongside the constructor.
-const VUE_COMPONENT_OPTIONS_MEMBERS: &str = "  name?: string;
+const VUE_COMPONENT_OPTIONS_MEMBERS_BEFORE_SETUP: &str = "  name?: string;
   __name?: string;
   __file?: string;
   __vccOpts?: any;
   props?: any;
   emits?: any;
   slots?: any;
-  setup?: any;
-  render?: Function;
+";
+
+const VUE_COMPONENT_OPTIONS_MEMBERS_AFTER_SETUP: &str = "  render?: Function;
   components?: any;
   directives?: any;
   inheritAttrs?: boolean;
@@ -71,12 +72,30 @@ const VUE_COMPONENT_OPTIONS_MEMBERS: &str = "  name?: string;
 /// `TS2339` for everything but `Function`'s own members. Only the non-generic
 /// spelling therefore carries [`COMPONENT_OPTIONS_INDEX_SIGNATURE`], which
 /// keeps generic components reporting exactly what `vue-tsc` reports.
-fn emit_vue_component_options_type(ts: &mut String, has_generic_params: bool) {
+fn emit_vue_component_options_type(
+    ts: &mut String,
+    has_generic_params: bool,
+    static_raw_props_ref: Option<&str>,
+) {
     ts.push_str("type __VizeVueComponentOptions = {\n");
     if !has_generic_params {
         ts.push_str(COMPONENT_OPTIONS_INDEX_SIGNATURE);
     }
-    ts.push_str(VUE_COMPONENT_OPTIONS_MEMBERS);
+    ts.push_str(VUE_COMPONENT_OPTIONS_MEMBERS_BEFORE_SETUP);
+    if has_generic_params {
+        ts.push_str("  setup?: any;\n");
+    } else {
+        // Vue's `h()` overloads infer their `P` from `ComponentOptionsBase<P>`.
+        // Keeping this member as `any` makes the options half of the generated
+        // intersection match `ComponentOptions<any>`, bypassing the precise
+        // constructor `$props` contract for imported SFCs (#9855).
+        let props_ref = static_raw_props_ref.unwrap_or("any");
+        append!(
+            *ts,
+            "  setup?: (this: void, props: Readonly<{props_ref}>, ctx: any) => any;\n"
+        );
+    }
+    ts.push_str(VUE_COMPONENT_OPTIONS_MEMBERS_AFTER_SETUP);
 }
 
 /// Alias the authored default export and its instance type so the generated
@@ -104,7 +123,7 @@ pub(super) fn emit_default_export_declaration(
     static_slots_ref: Option<&str>,
     (fallthrough_props_ref, checks): (Option<&str>, VirtualTsCheckOptions),
 ) {
-    emit_vue_component_options_type(ts, generic_component_params.is_some());
+    emit_vue_component_options_type(ts, generic_component_params.is_some(), static_raw_props_ref);
     let emit_props_static = emits_info.static_emit_props_field();
     let event_map_static = emits_info.static_event_map_field();
     let authored_component = if authored_default == AuthoredDefaultKind::Component {
