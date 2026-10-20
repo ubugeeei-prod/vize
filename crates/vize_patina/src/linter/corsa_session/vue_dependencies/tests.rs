@@ -108,6 +108,7 @@ fn retained_component_frontier_is_materialized_once_for_a_chain() {
 
     let mut cache = vize_l0::FxHashMap::default();
     let mut retained = vize_l0::FxHashSet::default();
+    let aliases = PathAliases::default();
     let mut materialized = 0;
     for index in (0..COMPONENTS).rev() {
         let import = (index > 0)
@@ -119,6 +120,7 @@ fn retained_component_frontier_is_materialized_once_for_a_chain() {
             &filename.to_string_lossy(),
             &session,
             &project,
+            &aliases,
             &mut cache,
             &retained,
         );
@@ -204,6 +206,7 @@ fn path_aliased_vue_imports_have_private_mirrors() {
         project.path(),
         &aliases,
         &mut cache,
+        &vize_l0::FxHashSet::default(),
     );
     assert_eq!(prepared.files.len(), 1);
     let (target, component) = &prepared.files[0];
