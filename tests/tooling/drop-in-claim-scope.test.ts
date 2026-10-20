@@ -121,7 +121,7 @@ test("release notes retain the evergreen drop-in scope before the explicit versi
   );
 
   const generator = readRepoFile("tools", "support", "release", "github_release_notes.ts");
-  assert.ok(generator.includes("`${scope.trim()}\\n\\n${result.body.trim()}\\n`"));
+  assert.ok(generator.includes("[scope.trim(), result.body.trim(), credits.trim()]"));
   const body = readRepoFile(".github", "release-notes", "drop-in-scope.md");
   assert.doesNotMatch(body, /0\.\d+\.\d+|^## (?!Drop-in scope$)/mu);
   assert.match(body, /drop-in replacement for `@vitejs\/plugin-vue` on \*\*Vue 3 SFCs\*\*/u);
