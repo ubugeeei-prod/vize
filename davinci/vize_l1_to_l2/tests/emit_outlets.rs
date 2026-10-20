@@ -172,6 +172,17 @@ Input(v-bind=\"$attrs\")
 }
 
 #[test]
+fn compact_slot_fallback_keeps_compound_child_boundaries() {
+    let source = "<slot v-if=\"ready\"> {{ value }}</slot>";
+    let current = assembled(source);
+    assert_eq!(current, shipped(source), "{source}");
+    assert!(
+        current.contains("_createTextVNode(),_toDisplayString(value)"),
+        "compact fallback must preserve the legacy whitespace/interpolation boundary: {current}"
+    );
+}
+
+#[test]
 fn v_pre_fallback_interp_keeps_the_old_default_child_boundary() {
     assert_eq!(
         assembled("<slot v-pre>{{ not }} an interpolation</slot>"),

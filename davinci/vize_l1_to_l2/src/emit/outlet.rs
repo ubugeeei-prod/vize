@@ -267,7 +267,10 @@ fn emit_fallback_interp(
     // which keeps a lone interpolation as the raw display-string expression.
     let normalize_text = matches!(text_mode, FallbackTextMode::SlotOutlet { .. }) && !compact;
     let split_compound = match text_mode {
-        FallbackTextMode::SlotOutlet { split_compound } => split_compound,
+        // Compact branch/template outlets follow the legacy child walk too:
+        // preserve each authored text/interpolation boundary instead of
+        // merging the whole compound into one text VNode.
+        FallbackTextMode::SlotOutlet { split_compound } => split_compound || compact,
         FallbackTextMode::BuiltinArray => true,
     };
     match interp.expression {
