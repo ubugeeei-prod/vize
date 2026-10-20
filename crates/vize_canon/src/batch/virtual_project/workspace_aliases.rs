@@ -258,8 +258,14 @@ impl VirtualProject {
                     // Root-first validation never unlinks through a raw parent.
                     let target = std::fs::read_link(&path)?;
                     let target = vize_carton::path::normalize_windows_verbatim_path(target);
+                    // A cold CLI process has no in-memory receipt for the last
+                    // process's links. The project-keyed cache namespace owns
+                    // both ends of an internal alias, so it may reclaim that
+                    // stale link when this run selects a different package set.
+                    let cache_owned = target.starts_with(&self.virtual_root);
                     if path == self.virtual_root
                         || (!install_roots.contains(&path)
+                            && !cache_owned
                             && self.materialized_package_links.get(&path) != Some(&target))
                     {
                         return Err(std::io::Error::new(

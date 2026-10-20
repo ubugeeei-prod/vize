@@ -2,6 +2,7 @@
 
 use std::fs;
 
+use super::super::load_entry;
 use super::{VirtualProject, begin_warm, fixture, load};
 
 #[test]
@@ -40,10 +41,9 @@ fn stale_target_and_root_scope_links_decline_before_raw_sources_are_touched() {
             project.materialize().unwrap_err(),
             project.materialize_incremental_delta().unwrap_err(),
         ] {
-            assert!(
-                error
-                    .to_string()
-                    .contains("Workspace package alias requires owned directories")
+            assert_eq!(
+                error.to_string(),
+                "IO error: Workspace package alias requires owned directories"
             );
             assert_eq!(
                 (fs::read(&manifest).unwrap(), fs::read(&button).unwrap()),
@@ -73,10 +73,9 @@ fn editor_union_rejects_raw_parent_link_before_rewriting_real_pnpm_install() {
     let error = project
         .materialize_editor_union(&vize_carton::FxHashSet::default(), &preserved, &[], false)
         .unwrap_err();
-    assert!(
-        error
-            .to_string()
-            .contains("Workspace package alias overlaps another package link")
+    assert_eq!(
+        error.to_string(),
+        "IO error: Workspace package alias overlaps another package link"
     );
     assert_eq!(
         (
@@ -141,10 +140,9 @@ fn retargeted_committed_parent_declines_without_touching_authored_sources() {
     let manifest = root.join("packages/c/package.json");
     let before = fs::read(&manifest).unwrap();
     let error = project.materialize_incremental_delta().unwrap_err();
-    assert!(
-        error
-            .to_string()
-            .contains("Workspace package alias requires owned directories")
+    assert_eq!(
+        error.to_string(),
+        "IO error: Workspace package alias requires owned directories"
     );
     assert_eq!(fs::read(&manifest).unwrap(), before);
     assert_eq!(fs::read_link(&parent).unwrap(), unexpected);
@@ -181,11 +179,9 @@ fn editor_union_preserves_alias_claims_when_only_the_previous_snapshot_owns_them
     for (alias, target, manifest) in before {
         assert_eq!(fs::read_link(&alias).unwrap(), target);
         assert_eq!(fs::read(alias.join("package.json")).unwrap(), manifest);
-        assert!(
-            alias
-                .canonicalize()
-                .unwrap()
-                .starts_with(project.virtual_root())
+        assert_eq!(
+            alias.canonicalize().unwrap(),
+            target.canonicalize().unwrap()
         );
     }
 }
@@ -202,7 +198,13 @@ fn separate_projects_replace_only_the_selected_leaf_across_alias_directory_alias
     let shared = load(&root);
     let selected = shared.virtual_root().join("packages/b/node_modules/@x/c");
     let shared_target = fs::read_link(&selected).unwrap();
-    assert!(shared_target.starts_with(shared.virtual_root()));
+    let selected_target = shared
+        .workspace_alias_links()
+        .into_iter()
+        .find(|link| link.virtual_dir == selected)
+        .unwrap()
+        .real_dir;
+    assert_eq!(shared_target, selected_target);
     let variant = root.join("packages/c-variant");
     super::copy_tree(&root.join("packages/c"), &variant);
     fs::write(
@@ -250,12 +252,9 @@ fn separate_projects_replace_only_the_selected_leaf_across_alias_directory_alias
     let raw_parent = root.join("packages/b/node_modules/@x");
     std::os::unix::fs::symlink(&raw_parent, parent).unwrap();
     divergent.materialized_package_links.clear();
-    assert!(
-        divergent
-            .materialize()
-            .unwrap_err()
-            .to_string()
-            .contains("requires owned directories")
+    assert_eq!(
+        divergent.materialize().unwrap_err().to_string(),
+        "IO error: Workspace package alias requires owned directories"
     );
     assert_eq!(fs::read_link(parent).unwrap(), raw_parent);
     assert_eq!(
@@ -276,6 +275,47 @@ fn separate_projects_replace_only_the_selected_leaf_across_alias_directory_alias
     }
     super::begin_warm(&mut repaired);
     super::assert_warm_matches_cold(&mut repaired, &root);
+}
+
+#[test]
+fn sequential_package_selections_reclaim_cached_internal_aliases() {
+    let temp = fixture(true);
+    let root = temp.path().canonicalize().unwrap();
+
+    let selected_a = load(&root);
+    let virtual_root = selected_a.virtual_root().to_path_buf();
+    drop(selected_a);
+
+    let selected_b = load_entry(&root, &root.join("packages/b/src/index.ts"));
+    assert_eq!(selected_b.virtual_root(), virtual_root.as_path());
+    for link in selected_b.workspace_alias_links() {
+        assert_eq!(
+            link.virtual_dir.canonicalize().unwrap(),
+            link.real_dir.canonicalize().unwrap()
+        );
+    }
+    drop(selected_b);
+
+    // A separate `vize check` process starts without the first run's in-memory
+    // link receipt, but deliberately reuses the project-root cache on disk.
+    let selected_a_again = load_entry(&root, &root.join("packages/a/src/index.ts"));
+    assert_eq!(selected_a_again.virtual_root(), virtual_root.as_path());
+    let button = root.join("packages/c/src/Btn.vue");
+    assert_eq!(
+        selected_a_again
+            .find_by_original(&button)
+            .unwrap()
+            .original_path
+            .as_path(),
+        button.as_path()
+    );
+    for link in selected_a_again.workspace_alias_links() {
+        assert!(link.virtual_dir.is_symlink());
+        assert_eq!(
+            link.virtual_dir.canonicalize().unwrap(),
+            link.real_dir.canonicalize().unwrap()
+        );
+    }
 }
 
 #[test]
