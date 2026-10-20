@@ -14,7 +14,6 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
     usages: &[(usize, &ComponentUsage)],
     check_unknown_props: bool,
     check_unknown_fallthrough_props: bool,
-    typed_fallthrough: bool,
     strict_component_attrs: bool,
 ) {
     ts.push_str("  type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;\n");
@@ -117,11 +116,9 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
     ts.push_str(
         "  type __VizeHasRawProps<C> = __VizeHasInstanceRawProps<C> extends true ? true : __VizeHasStaticRawProps<C>;\n",
     );
-    if typed_fallthrough {
-        ts.push_str(
-            "  type __VizeFallthroughValue<C, K extends PropertyKey> = __VizeHasFallthroughProps<C> extends true ? C extends { readonly __vizeFallthroughProps?: infer __F } ? __VizeIsAny<__F> extends true ? unknown : __VizePropValue<NonNullable<__F>, K, unknown> : unknown : unknown;\n",
-        );
-    }
+    ts.push_str(
+        "  type __VizeFallthroughValue<C, K extends PropertyKey> = __VizeHasFallthroughProps<C> extends true ? C extends { readonly __vizeFallthroughProps?: infer __F } ? __VizeIsAny<__F> extends true ? unknown : __VizePropValue<NonNullable<__F>, K, unknown> : unknown : unknown;\n",
+    );
     if usages.iter().any(|(_, usage)| {
         usage
             .events

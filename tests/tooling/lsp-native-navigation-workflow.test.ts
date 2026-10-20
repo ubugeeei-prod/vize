@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
-import { readRepoFile } from "./support/github-workflows.ts";
+import { RUST_SOURCE_LANES, readRepoFile } from "./support/github-workflows.ts";
 import { differentialMatrix } from "../../tools/support/compat/github/rust-differential-lanes.ts";
 
 const action = "./.github/actions/test-native-navigation";
@@ -39,12 +39,15 @@ test("affected Maestro source builds require real native feature tests before re
   const workflow = parse(readRepoFile(".github", "workflows", "pr-rust-checks.yml"));
   const build = workflow.jobs["pr-rust-build"];
   assert.equal(build.if, "${{ inputs.run-rust }}");
+  assert.equal(build.strategy.matrix.lane, RUST_SOURCE_LANES);
+  assert.ok(
+    RUST_SOURCE_LANES.includes(
+      "github.event_name == 'pull_request' && contains(fromJSON(inputs.rust-plan).packages, 'vize_maestro') && ',\"navigation\"'",
+    ),
+  );
   const callers = build.steps.filter((candidate: { uses?: string }) => candidate.uses === action);
   assert.equal(callers.length, 1);
-  assert.equal(
-    callers[0].if,
-    "${{ github.event_name == 'pull_request' && contains(fromJSON(inputs.rust-plan).packages, 'vize_maestro') }}",
-  );
+  assert.equal(callers[0].if, "${{ matrix.lane == 'navigation' }}");
   assert.notEqual(callers[0]["continue-on-error"], true);
   assert.notEqual(build["continue-on-error"], true);
   const report = workflow.jobs["rust-source-report"];

@@ -203,7 +203,7 @@ void test("trusted main and scheduled runs seed the CI profiles while candidate 
   }
 });
 
-// Whole parsed producer vectors from 3d93303bb615c71987394528276bd1bed7e3bc40.
+// Whole parsed producer vectors (pr-rust-build since its lane matrix split).
 // Current daily source policy is checked before reversing its command/evidence additions.
 // Every other producer field and the explicit product guard retain the historical whole digest.
 type RustJob = {
@@ -234,7 +234,7 @@ function requireSplitRustRecipes(
   assert.deepEqual(Object.keys(products), [...productJobs, "rust-product-report"]);
   const oldHashes = {
     "merge-rust-differential": "13c78bc5c1872dffc8af00f380e4b65177e524cf516b5914d808aa0bdea1194e",
-    "pr-rust-build": "08e14fc4bc848f4b90cf136b9558a0ab3bc91d3e835405a3f0a59fc27999282a",
+    "pr-rust-build": "86f6f06586d5cf26e5d6c38d361816467053d003f4fb1d7b069f26cd54fb5b13",
   };
   for (const [id, expected] of Object.entries(oldHashes)) {
     const job = structuredClone(source[id]);

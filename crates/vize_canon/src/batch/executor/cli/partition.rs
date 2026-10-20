@@ -2,8 +2,6 @@
 
 use std::path::{Path, PathBuf};
 
-use rayon::prelude::*;
-
 use super::import_resolution::resolve_virtual_import;
 use super::union_find::UnionFind;
 use super::{ShardPlan, declares_program_wide_types, is_ambient_declaration};
@@ -29,19 +27,14 @@ pub(super) fn partition_virtual_files(project: &VirtualProject, servers: usize) 
 fn partition(project: &VirtualProject, servers: usize, allow_leaves: bool) -> ShardPlan<'_> {
     let requested_servers = servers;
     let files = project.virtual_files_sorted();
-    // Membership costs a `realpath` per file; decide it on the pool.
-    let members = files
-        .par_iter()
-        .map(|file| project.virtual_file_is_program_member(file))
-        .collect::<Vec<_>>();
     let mut partitioned: Vec<&VirtualFile> = Vec::new();
     let mut shared: Vec<&Path> = Vec::new();
-    for (file, member) in files.into_iter().zip(members) {
+    for file in files {
         // Match the unsharded program's root membership. Registered dependency
         // sources outside the project root load through their importer-scoped
         // package shadows; making their canonical mirror an independent root
         // loses that package's node_modules lookup chain (#9201).
-        if !member {
+        if !project.virtual_file_is_program_member(file) {
             // An imported external augmentation still affects every root. Its
             // package context cannot be recreated by sharing the canonical
             // file, so retain the single program for that coupled graph.

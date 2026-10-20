@@ -64,7 +64,6 @@ pub(super) fn generate_component_props(
         checkable_usages,
         ctx.check_unknown_props,
         ctx.check_unknown_fallthrough_props,
-        ctx.typed_fallthrough_values,
         ctx.strict_component_attrs,
     );
     append_component_slot_check_helpers(ts, ctx.experimental_strict_slot_children);
@@ -250,16 +249,9 @@ fn generate_usage_declarations(
         component_ref.as_str(),
         idx,
         ctx.relaxed_required_usage_starts.contains(&usage.start),
-        ctx.typed_fallthrough_values,
     );
 
-    append_per_prop_aliases(
-        ts,
-        usage,
-        component_type_name.as_str(),
-        idx,
-        ctx.typed_fallthrough_values,
-    );
+    append_per_prop_aliases(ts, usage, component_type_name.as_str(), idx);
     append_duplicate_listener_checks(ts, mappings, ctx, usage);
 }
 

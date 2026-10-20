@@ -93,7 +93,6 @@ pub(super) fn append_prop_checker_alias(
     component_ref: &str,
     idx: usize,
     relax_required: bool,
-    typed_fallthrough: bool,
 ) {
     append!(
         *ts,
@@ -128,12 +127,10 @@ pub(super) fn append_prop_checker_alias(
             *ts,
             "  type __{component_type_name}_ValueProps_{idx} = __VizeIsLibraryGenericExport<__{component_type_name}_Component_{idx}> extends true ? Record<string, any> : __{component_type_name}_Props_{idx} & __VizeEmitListeners<__{component_type_name}_Component_{idx}> & __VizePublicComponentAttrs;\n",
         );
-        if typed_fallthrough {
-            append!(
-                *ts,
-                "  type __{component_type_name}_FallthroughValue_{idx}<K extends PropertyKey> = __VizeFallthroughValue<__{component_type_name}_Component_{idx}, K>;\n",
-            );
-        }
+        append!(
+            *ts,
+            "  type __{component_type_name}_FallthroughValue_{idx}<K extends PropertyKey> = __VizeFallthroughValue<__{component_type_name}_Component_{idx}, K>;\n",
+        );
     }
     append!(
         *ts,
@@ -153,27 +150,18 @@ fn usage_needs_per_prop_aliases(usage: &ComponentUsage) -> bool {
 /// without `__vizeResolveProps`. Vize generic children replace it at the value
 /// check with their instantiated resolver result. Every other prop keeps the
 /// statically extracted type.
-///
-/// An undeclared attribute is typed by the child's root only when
-/// `typed_fallthrough`; otherwise `vue-tsc` leaves it unchecked
-/// (`<Input aria-expanded="visible" />` is clean).
 pub(super) fn prop_alias_type(
     prop: &PassedProp,
     component_type_name: &str,
     idx: usize,
-    (camel_prop_name, fallthrough_prop_name): (&str, &str),
-    typed_fallthrough: bool,
+    camel_prop_name: &str,
+    fallthrough_prop_name: &str,
 ) -> String {
     if prop.name.as_str() == "ref" && is_inline_ref_callback_prop(prop) {
         return String::from("__VizeComponentRefCallback");
     }
-    let fallback = if typed_fallthrough {
-        cstr!("__{component_type_name}_FallthroughValue_{idx}<'{fallthrough_prop_name}'>")
-    } else {
-        String::from("unknown")
-    };
     let normalized = cstr!(
-        "__VizePropValue<__{component_type_name}_ValueProps_{idx}, '{camel_prop_name}', {fallback}>"
+        "__VizePropValue<__{component_type_name}_ValueProps_{idx}, '{camel_prop_name}', __{component_type_name}_FallthroughValue_{idx}<'{fallthrough_prop_name}'>>"
     );
     // A declared literal key such as `data-owned` is still an owned prop.
     // Try its authored spelling before the normal camelized alias and root.
@@ -201,7 +189,6 @@ pub(super) fn append_per_prop_aliases(
     usage: &ComponentUsage,
     component_type_name: &str,
     idx: usize,
-    typed_fallthrough: bool,
 ) {
     let mut declared_aliases = FxHashSet::default();
     for prop in &usage.props {
@@ -226,8 +213,8 @@ pub(super) fn append_per_prop_aliases(
                 prop,
                 component_type_name,
                 idx,
-                (&camel_prop_name, prop.name.as_str()),
-                typed_fallthrough,
+                &camel_prop_name,
+                prop.name.as_str()
             ),
         );
     }

@@ -26,7 +26,6 @@ pub(super) use vue_compiler_options::snapshot_vue_compiler_options;
 use jsx_files::compiler_option_enabled;
 use std::path::{Path, PathBuf};
 
-use rayon::prelude::*;
 use serde_json::{Map, Value};
 use vize_carton::{String as CompactString, ToCompactString, cstr};
 
@@ -334,16 +333,15 @@ impl VirtualProject {
         };
         let mut includes: Vec<_> = match paths {
             Some(paths) => paths.iter().filter_map(|path| relative(path)).collect(),
-            // Membership costs a `realpath` per file; `includes` is sorted below.
             None => self
                 .virtual_files
-                .par_iter()
-                .filter(|(_, file)| self.virtual_file_is_program_member(file))
-                .filter_map(|(_, file)| relative(&file.virtual_path))
+                .values()
+                .filter(|file| self.virtual_file_is_program_member(file))
+                .filter_map(|file| relative(&file.virtual_path))
                 .collect(),
         };
         if paths.is_none() {
-            includes.par_extend(self.package_shadow_files.par_iter().filter_map(
+            includes.extend(self.package_shadow_files.iter().filter_map(
                 |(materialized_path, canonical_path)| {
                     let file = self.virtual_files.get(canonical_path)?;
                     self.virtual_file_is_program_member(file)

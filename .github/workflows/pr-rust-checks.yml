@@ -30,11 +30,17 @@ jobs:
       run-rust: ${{ inputs.run-rust }}
       rust-plan: ${{ inputs.rust-plan }}
 
+  # The source contracts and the Maestro navigation lane each run on their own
+  # runner beside Clippy and doctests instead of after them.
   pr-rust-build:
-    name: Clippy, doctests and feature lanes
+    name: Clippy, doctests and feature lanes (${{ matrix.lane }})
     if: ${{ inputs.run-rust }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: ${{ fromJSON(format('["clippy"{0}{1}]', inputs.run-source-contracts && ',"contracts"' || '', github.event_name == 'pull_request' && contains(fromJSON(inputs.rust-plan).packages, 'vize_maestro') && ',"navigation"' || '')) }}
     env:
       CARGO_BUILD_JOBS: "24"
       VIZE_NUXT_CONFIG_ITERATIONS: "100"
@@ -55,9 +61,9 @@ jobs:
           key: nextest-ci
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: ./.github/actions/setup-rust-script
-        if: ${{ inputs.run-source-contracts }}
+        if: ${{ matrix.lane == 'contracts' }}
       - name: Require current-tree source, API and reviewed-doc contracts
-        if: ${{ inputs.run-source-contracts }}
+        if: ${{ matrix.lane == 'contracts' }}
         run: >-
           node --test --test-concurrency=1
           tests/tooling/davinci-assertion-lint.test.ts
@@ -82,7 +88,7 @@ jobs:
           tests/tooling/typecheck-divergence.test.ts
           tests/tooling/typecheck-baseline-usability.test.ts
       - name: Retain mutation deadline command and fixture evidence
-        if: ${{ always() && inputs.run-source-contracts }}
+        if: ${{ always() && matrix.lane == 'contracts' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: mutation-deadline-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}
@@ -100,17 +106,19 @@ jobs:
             *) exit 1 ;;
           esac
       - name: Clippy affected crates
+        if: ${{ matrix.lane == 'clippy' }}
         run: node tools/support/compat/github/run-affected-rust.ts "$RUNNER_TEMP/rust-plan.json" cargo clippy @packages@ --profile ci -- -D warnings -D clippy::wildcard_imports
       - name: Native L1 markup parity
-        if: ${{ contains(fromJSON(inputs.rust-plan).packages, 'vize_l1') || contains(fromJSON(inputs.rust-plan).packages, 'vize_armature') }}
+        if: ${{ matrix.lane == 'clippy' && (contains(fromJSON(inputs.rust-plan).packages, 'vize_l1') || contains(fromJSON(inputs.rust-plan).packages, 'vize_armature')) }}
         run: cargo test -p vize_armature --features native-lex-parity,legacy --lib --test markup_lex_parity
       - name: Test L1 feature-enabled surface corpus
-        if: ${{ github.event_name == 'pull_request' && contains(fromJSON(inputs.rust-plan).packages, 'vize_l1') }}
+        if: ${{ matrix.lane == 'clippy' && github.event_name == 'pull_request' && contains(fromJSON(inputs.rust-plan).packages, 'vize_l1') }}
         run: cargo test -p vize_l1 --features legacy-differential --test surface_corpus -- --nocapture
       - name: Test affected native Program and Vue navigation
-        if: ${{ github.event_name == 'pull_request' && contains(fromJSON(inputs.rust-plan).packages, 'vize_maestro') }}
+        if: ${{ matrix.lane == 'navigation' }}
         uses: ./.github/actions/test-native-navigation
       - name: Run affected Rust doctests
+        if: ${{ matrix.lane == 'clippy' }}
         run: node tools/support/compat/github/run-affected-rust.ts "$RUNNER_TEMP/rust-plan.json" cargo test @packages@ --profile ci --doc
 
   rust-source-report:

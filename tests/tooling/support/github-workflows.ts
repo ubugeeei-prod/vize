@@ -191,6 +191,7 @@ type DailySourceJob = {
   with?: Record<string, string | boolean>;
   needs?: string[] | string;
   steps?: DailySourceStep[];
+  strategy?: unknown;
   "continue-on-error"?: boolean;
 };
 export type DailyRustSourceWorkflow = {
@@ -201,6 +202,11 @@ export type DailyRustSourceWorkflow = {
     };
   };
 };
+
+// Contracts run only when selected and navigation only for PRs touching Maestro;
+// each lane gets its own runner beside Clippy and doctests.
+export const RUST_SOURCE_LANES =
+  "${{ fromJSON(format('[\"clippy\"{0}{1}]', inputs.run-source-contracts && ',\"contracts\"' || '', github.event_name == 'pull_request' && contains(fromJSON(inputs.rust-plan).packages, 'vize_maestro') && ',\"navigation\"' || '')) }}";
 
 export function requireDailySourceContracts(
   planWorkflow: { jobs: Record<string, DailySourceJob> },
@@ -220,12 +226,13 @@ export function requireDailySourceContracts(
   const job = rustWorkflow.jobs["pr-rust-build"];
   assert.equal(job.if, "${{ inputs.run-rust }}");
   assert.equal(job["continue-on-error"], undefined);
+  assert.deepEqual(job.strategy, { "fail-fast": false, matrix: { lane: RUST_SOURCE_LANES } });
   const steps = job.steps ?? [];
   const contracts = steps.findIndex(
     (step) => step.name === "Require current-tree source, API and reviewed-doc contracts",
   );
   assert.ok(contracts >= 0);
-  assert.equal(steps[contracts].if, "${{ inputs.run-source-contracts }}");
+  assert.equal(steps[contracts].if, "${{ matrix.lane == 'contracts' }}");
   assert.equal(steps[contracts]["continue-on-error"], undefined);
   assert.equal(
     steps[contracts].run,
@@ -259,7 +266,7 @@ export function requireDailySourceContracts(
   const custody = steps[contracts + 1];
   assert.deepEqual(custody, {
     name: "Retain mutation deadline command and fixture evidence",
-    if: "${{ always() && inputs.run-source-contracts }}",
+    if: "${{ always() && matrix.lane == 'contracts' }}",
     uses: "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
     with: {
       name: "mutation-deadline-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}",
@@ -278,7 +285,7 @@ export function requireDailySourceContracts(
     const setup = steps.findIndex((step) => step.uses?.startsWith(action));
     assert.ok(setup >= 0 && setup < contracts, action);
     if (action.endsWith("setup-rust-script")) {
-      assert.equal(steps[setup].if, "${{ inputs.run-source-contracts }}");
+      assert.equal(steps[setup].if, "${{ matrix.lane == 'contracts' }}");
       assert.equal(steps[setup]["continue-on-error"], undefined);
     }
   }
