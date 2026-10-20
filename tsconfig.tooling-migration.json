@@ -116,6 +116,7 @@
     "tools/support/release/verify_published/config_free.ts",
     "tools/support/release/verify_published/lsp_client.ts",
     "tools/support/release/verify_published/main.ts",
+    "tools/support/release/verify_published/musea_vrt.ts",
     "tools/support/release/verify_published/user_checks.ts",
     "tests/tooling/release/release-workflow.test.ts",
     "tools/support/release/publish_open_vsx_extension/main.ts",

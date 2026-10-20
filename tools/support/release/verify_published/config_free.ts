@@ -45,9 +45,10 @@ const KEY = "vue/require-v-for-key";
 const HTML = "vue/no-v-html";
 const npm = process.platform === "win32" ? "npm.cmd" : "npm";
 
-type Step = [name: string, run: () => Promise<string | null>];
+// A failed setup step skips the rest of its scenario.
+export type Step = [name: string, run: () => Promise<string | null>, setup?: true];
 
-function write(path: string, text: string): void {
+export function write(path: string, text: string): void {
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, text);
 }
@@ -70,7 +71,7 @@ function retired(dir: string): string[] {
   return readdirSync(dir).filter((name) => name.startsWith("vize.config."));
 }
 
-async function install(dir: string, packages: string[]): Promise<string | null> {
+export async function install(dir: string, packages: string[]): Promise<string | null> {
   const args = ["install", "--no-audit", "--no-fund", ...packages];
   return (await run(npm, args, { cwd: dir })) === 0 ? null : "npm install failed";
 }
@@ -117,7 +118,7 @@ function freshProject(dir: string, version: string): Step[] {
   const packages = [`vize@${version}`, `@vizejs/vite-plugin@${version}`, "vite", "vue"];
   const vue = { linter: { rules: { [KEY]: "off" } }, formatter: { singleQuote: true } };
   return [
-    ["install", () => install(dir, packages)],
+    ["install", () => install(dir, packages), true],
     ["defaults without any config", () => lintRules(bin, dir, [KEY, HTML])],
     [
       "vize init writes no dedicated config",
@@ -179,7 +180,11 @@ function migration(dir: string, version: string): Step[] {
   const dedicated = join(dir, "vize.config.json");
   const stale = `${JSON.stringify({ linter: { rules: { [HTML]: "off", [KEY]: "off" } } })}\n`;
   return [
-    ["install", () => install(dir, [`vize@${version}`, `@vizejs/vite-plugin@${version}`, "vite"])],
+    [
+      "install",
+      () => install(dir, [`vize@${version}`, `@vizejs/vite-plugin@${version}`, "vite"]),
+      true,
+    ],
     [
       "a lone vize.config.json is refused with migration guidance",
       async () => {
@@ -250,6 +255,7 @@ function monorepo(dir: string, version: string): Step[] {
         }
         return install(dir, packages);
       },
+      true,
     ],
     ["lint from packages/a", () => lintRules(bin, a, [HTML])],
     ["lint from packages/b", () => lintRules(bin, b, [KEY])],
@@ -276,6 +282,20 @@ function monorepo(dir: string, version: string): Step[] {
   ];
 }
 
+/** Runs steps in order, printing each. */
+export async function runSteps(label: string, steps: Step[]): Promise<boolean> {
+  let ok = true;
+  for (const [name, step, setup] of steps) {
+    const failure = await step();
+    println(
+      `${failure === null ? "ok  " : "FAIL"} ${label}: ${name}${failure ? `: ${failure}` : ""}`,
+    );
+    ok &&= failure === null;
+    if (failure !== null && setup) break;
+  }
+  return ok;
+}
+
 export async function verifyConfigFree(version: string): Promise<number> {
   const root = mkdtempSync(join(tmpdir(), "vize-config-free-"));
   let ok = true;
@@ -288,14 +308,7 @@ export async function verifyConfigFree(version: string): Promise<number> {
       const dir = join(root, label);
       write(join(dir, "package.json"), `{ "name": "${label}", "private": true }\n`);
       write(join(dir, "src/App.vue"), APP);
-      for (const [name, step] of scenario(dir, version)) {
-        const failure = await step();
-        println(
-          `${failure === null ? "ok  " : "FAIL"} ${label}: ${name}${failure ? `: ${failure}` : ""}`,
-        );
-        ok &&= failure === null;
-        if (failure !== null && name === "install") break;
-      }
+      ok = (await runSteps(label, scenario(dir, version))) && ok;
     }
   } finally {
     rmSync(root, { recursive: true, force: true });

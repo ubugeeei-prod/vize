@@ -174,10 +174,15 @@ test("registry visibility is checked once, after publishing, and gates only JSR"
   assert.match(JSON.stringify(jsr.steps), /secrets\.RELEASE_OPERATOR_TOKEN/);
 });
 
-test("config-free project checks follow npm verification and gate nothing", () => {
-  assert.deepEqual(needs("verify-config"), ["version", "verify-npm"]);
-  for (const name of Object.keys(workflow.jobs))
-    assert.ok(!needs(name).includes("verify-config"), name);
+test("post-publish product checks follow npm verification and gate nothing", () => {
+  for (const check of ["verify-config", "verify-musea-vrt"]) {
+    assert.deepEqual(needs(check), ["version", "verify-npm"]);
+    for (const name of Object.keys(workflow.jobs)) assert.ok(!needs(name).includes(check), name);
+  }
+  assert.match(
+    JSON.stringify(workflow.jobs["verify-musea-vrt"].steps),
+    /verify_published\/musea_vrt\.ts/,
+  );
   assert.match(
     JSON.stringify(workflow.jobs["verify-config"].steps),
     /verify_published\/config_free\.ts/,

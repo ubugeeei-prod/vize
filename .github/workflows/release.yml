@@ -449,6 +449,24 @@ jobs:
           RELEASE_VERSION: ${{ needs.version.outputs.version }}
         run: node tools/support/release/verify_published/config_free.ts "$RELEASE_VERSION"
 
+  # Gates nothing: Musea VRT from the published plugin in Chromium on Linux.
+  verify-musea-vrt:
+    name: Verify Musea VRT
+    needs: [version, verify-npm]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
+      # playwright install --with-deps uses apt.
+      - uses: ./.github/actions/setup-ubuntu-archive
+      - name: Capture, match, diff and update a Musea baseline
+        env:
+          RELEASE_VERSION: ${{ needs.version.outputs.version }}
+        run: node tools/support/release/verify_published/musea_vrt.ts "$RELEASE_VERSION"
+
   publish-jsr:
     name: Dispatch the JSR publication
     needs: [version, verify-npm]
