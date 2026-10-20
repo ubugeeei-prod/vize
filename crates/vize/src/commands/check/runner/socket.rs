@@ -5,15 +5,15 @@ use std::path::{Path, PathBuf};
 use std::time::{Instant, SystemTime};
 
 use serde::Serialize;
-use vize_l0::{cstr, String};
+use vize_l0::{String, cstr};
 
 use super::collect::collect_check_files_with_ignores;
 use super::{display_path, resolve_project_root, resolve_tsconfig_path, text_style::TextStyle};
 use crate::commands::check::{
+    CheckArgs, ProjectJsonRpcResponse, ServerProjectCheckResult,
     patterns::CheckFileOptions,
     reporting::{JsonFileResult, JsonOutput},
-    tsconfig_inputs::{collect_default_check_files, tsconfig_allows_js, TsconfigInputCache},
-    CheckArgs, ProjectJsonRpcResponse, ServerProjectCheckResult,
+    tsconfig_inputs::{TsconfigInputCache, collect_default_check_files, tsconfig_allows_js},
 };
 
 #[derive(Serialize)]
