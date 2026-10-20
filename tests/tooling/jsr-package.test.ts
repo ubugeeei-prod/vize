@@ -9,6 +9,8 @@ import {
   facadeSpecifier,
   parseChannel,
   preparePackage,
+  publishedAt,
+  waitForPublishedVersion,
 } from "../../tools/support/release/jsr/package.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
@@ -98,6 +100,41 @@ await test("the JSR channel is an explicit boolean and never defaults to disable
     assert.throws(() => parseChannel(invalid), /must be exactly/);
   }
   parseChannel(readFileSync(resolve(root, "jsr/vize/channel.json"), "utf8"));
+});
+
+await test("the JSR public wait survives server processing and proves immutable metadata", async () => {
+  const sleeps: number[] = [];
+  const metadata: unknown[] = [
+    { latest: "0.502.0", versions: {} },
+    { latest: "0.502.0", versions: { "0.504.0": { createdAt: "2026-10-20T15:55:00Z" } } },
+  ];
+  assert.equal(
+    await waitForPublishedVersion("0.504.0", {
+      attempts: 2,
+      intervalMs: 30_000,
+      readMetadata: async () => metadata.shift(),
+      sleep: async (milliseconds) => sleeps.push(milliseconds),
+    }),
+    "2026-10-20T15:55:00Z",
+  );
+  assert.deepEqual(sleeps, [30_000]);
+  assert.equal(publishedAt({ versions: {} }, "0.504.0"), undefined);
+  assert.throws(
+    () => publishedAt({ versions: { "0.504.0": {} } }, "0.504.0"),
+    /no valid createdAt/,
+  );
+});
+
+await test("the JSR public wait fails with an exact bounded timeout", async () => {
+  await assert.rejects(
+    waitForPublishedVersion("0.504.0", {
+      attempts: 3,
+      intervalMs: 30_000,
+      readMetadata: async () => ({ versions: {} }),
+      sleep: async () => {},
+    }),
+    /JSR 0\.504\.0 was not public after 1 minutes/,
+  );
 });
 
 await test("Deno exempts exactly the fresh Vize dependency closure and retains the external age policy", () => {

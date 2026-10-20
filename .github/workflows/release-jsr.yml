@@ -40,10 +40,11 @@ jobs:
     name: Publish the JSR package
     needs: channel
     runs-on: ubuntu-24.04
-    # JSR processes the npm-backed facade server-side for 10-60 min before
-    # `deno publish` returns (0.485.0 took 59); a shorter limit cancels a
-    # publication that lands anyway and skips the consumers.
-    timeout-minutes: 75
+    # The registry accepted 0.496.0-0.504.0 but `deno publish` kept polling
+    # until this job's old 75-minute limit cancelled it. Those versions became
+    # public 5-18 minutes later. Bound the CLI poll, then own the public wait so
+    # an accepted publication reaches the consumer jobs.
+    timeout-minutes: 110
     permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -62,7 +63,24 @@ jobs:
       - name: Publish through the repository's JSR OIDC link
         if: needs.channel.outputs.enabled == 'true'
         working-directory: ${{ runner.temp }}/jsr-package
-        run: deno publish --config jsr.json
+        env:
+          JSR_VERSION: ${{ inputs.version }}
+        run: |
+          if node "$GITHUB_WORKSPACE/tools/support/release/jsr/package.ts" is-public "${JSR_VERSION#v}"; then
+            exit 0
+          fi
+          set +e
+          timeout --signal=INT --kill-after=30s 5m deno publish --config jsr.json
+          status=$?
+          set -e
+          if [[ $status -ne 0 && $status -ne 124 ]]; then
+            exit "$status"
+          fi
+      - name: Wait for the immutable public JSR version
+        if: needs.channel.outputs.enabled == 'true'
+        env:
+          JSR_VERSION: ${{ inputs.version }}
+        run: node tools/support/release/jsr/package.ts wait-public "${JSR_VERSION#v}"
   consumer:
     name: JSR consumer (${{ matrix.runtime }}, ${{ matrix.os }})
     needs: [channel, publish]
