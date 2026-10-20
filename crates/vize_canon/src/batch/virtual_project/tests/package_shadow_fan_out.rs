@@ -261,3 +261,52 @@ fn the_program_does_not_grow_when_more_directories_import_the_same_package() {
 
 #[path = "package_shadow_identity_scopes.rs"]
 mod identity_scopes;
+
+#[test]
+fn bulk_route_replacement_keeps_owner_counts_and_dirties_every_key() {
+    let monorepo = build_monorepo("bulk-route-replacement", IMPORTER_DIRS);
+    let shared_route = route(&monorepo);
+    let binding = |importer_path: &PathBuf| PackageRouteBinding {
+        importer_path: importer_path.clone(),
+        specifier: "@w/ui".into(),
+        occurrence_mode: PackageResolutionMode::Import,
+        context: PackageResolutionContext::default(),
+        route: Some(shared_route.clone()),
+        invalidation_paths: vec![monorepo.manifest_path.clone()],
+        shared_invalidation_paths: Vec::new(),
+    };
+    let mut project = VirtualProject::new(&monorepo.root).unwrap();
+    // A repeated key replaces its first binding instead of owning twice.
+    project.replace_package_route_bindings(
+        monorepo
+            .importer_paths
+            .iter()
+            .chain(monorepo.importer_paths.first())
+            .map(binding),
+    );
+
+    assert_eq!(project.package_routes.len(), IMPORTER_DIRS);
+    assert_eq!(
+        project.package_shadow_dirty_keys,
+        project
+            .package_routes
+            .keys()
+            .cloned()
+            .collect::<vize_carton::FxHashSet<_>>()
+    );
+    for source in shared_route.all_source_paths() {
+        let canonical = vize_carton::path::canonicalize_non_verbatim(source);
+        assert_eq!(
+            project.package_route_source_owners.get(&canonical),
+            Some(&IMPORTER_DIRS)
+        );
+    }
+    let package_root = vize_carton::path::canonicalize_non_verbatim(&monorepo.package_root);
+    assert_eq!(
+        project
+            .package_route_roots
+            .get(&package_root)
+            .map(|keys| keys.len()),
+        Some(IMPORTER_DIRS)
+    );
+}

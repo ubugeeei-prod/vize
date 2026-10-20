@@ -18,6 +18,8 @@ mod artifacts;
 mod config;
 mod package_routes;
 
+pub(super) use package_routes::RouteBatch;
+
 use super::build::{
     RegisteredFile, ScriptBuildContext, VirtualBuildContext, build_registered_file,
     build_script_registered_file, build_vue_registered_file, source_type_for_path,

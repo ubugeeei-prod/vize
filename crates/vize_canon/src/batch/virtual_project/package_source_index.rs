@@ -154,12 +154,17 @@ impl VirtualProject {
         }
     }
 
-    pub(super) fn index_existing_package_route_sources(&mut self, route: &crate::PackageRoute) {
+    pub(super) fn index_existing_package_route_sources(
+        &mut self,
+        route: &crate::PackageRoute,
+        mut batch: Option<&mut super::project::RouteBatch>,
+    ) {
         for route in route.all_routes() {
-            let root = vize_carton::path::canonicalize_non_verbatim(&route.package_root);
+            let root =
+                super::project::RouteBatch::canonical(batch.as_deref_mut(), &route.package_root);
             self.package_route_roots.entry(root.clone()).or_default();
             for source in route.all_source_paths() {
-                let source = vize_carton::path::canonicalize_non_verbatim(source);
+                let source = super::project::RouteBatch::canonical(batch.as_deref_mut(), source);
                 let Some(virtual_path) = self.original_index.get(&source).cloned() else {
                     continue;
                 };

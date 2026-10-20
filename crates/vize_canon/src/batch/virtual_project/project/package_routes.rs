@@ -2,11 +2,37 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_carton::FxHashSet;
+use vize_carton::{FxHashMap, FxHashSet};
 
 use crate::batch::error::CorsaResult;
 
 use super::super::VirtualProject;
+
+/// Canonical paths memoized across one `replace_package_route_bindings`;
+/// importers of a package repeat its roots and sources.
+#[derive(Default)]
+pub(in crate::batch::virtual_project) struct RouteBatch {
+    canonical: FxHashMap<PathBuf, PathBuf>,
+}
+
+impl RouteBatch {
+    pub(in crate::batch::virtual_project) fn canonical(
+        batch: Option<&mut Self>,
+        path: &Path,
+    ) -> PathBuf {
+        let Some(batch) = batch else {
+            return vize_carton::path::canonicalize_non_verbatim(path);
+        };
+        if let Some(canonical) = batch.canonical.get(path) {
+            return canonical.clone();
+        }
+        let canonical = vize_carton::path::canonicalize_non_verbatim(path);
+        batch
+            .canonical
+            .insert(path.to_path_buf(), canonical.clone());
+        canonical
+    }
+}
 
 impl VirtualProject {
     pub(crate) fn clear_package_route_bindings_for_rebuild(&mut self) {
@@ -35,8 +61,19 @@ impl VirtualProject {
         self.package_route_manifests.clear();
         self.package_route_roots.clear();
         self.package_shadow_dirty_keys.clear();
+        // Every index starts empty and each insert marks its own key dirty, so
+        // a first-seen key needs neither the rebound-source dance nor dependent
+        // propagation: both only reach keys of this batch, already dirty.
+        // Without them, bulk insertion is no longer quadratic in the bindings
+        // that share a package.
+        let mut batch = RouteBatch::default();
+        let mut seen = FxHashSet::default();
         for binding in bindings {
-            self.insert_package_route_binding(binding);
+            if seen.insert(binding.key()) {
+                self.insert_route_binding_in(binding, Some(&mut batch));
+            } else {
+                self.insert_package_route_binding(binding);
+            }
         }
         let current_roots = self
             .package_route_roots
@@ -73,8 +110,20 @@ impl VirtualProject {
     }
 
     pub(crate) fn insert_route_binding_inner(&mut self, binding: crate::PackageRouteBinding) {
+        self.insert_route_binding_in(binding, None);
+    }
+
+    /// With a `batch`, the key is new to an emptied index set (see
+    /// `replace_package_route_bindings`).
+    fn insert_route_binding_in(
+        &mut self,
+        binding: crate::PackageRouteBinding,
+        mut batch: Option<&mut RouteBatch>,
+    ) {
         let key = binding.key();
-        self.remove_package_route_binding(&key);
+        if batch.is_none() {
+            self.remove_package_route_binding(&key);
+        }
         self.package_route_reverse.insert(&key, &binding);
         self.package_route_importers
             .entry(binding.importer_path.clone())
@@ -82,13 +131,14 @@ impl VirtualProject {
             .insert(key.clone());
         if let Some(route) = binding.route.as_ref() {
             for route in route.all_routes() {
-                let package_root =
-                    vize_carton::path::canonicalize_non_verbatim(&route.package_root);
+                let package_root = RouteBatch::canonical(batch.as_deref_mut(), &route.package_root);
                 self.package_route_roots
                     .entry(package_root)
                     .or_default()
                     .insert(key.clone());
-                if let Some(keys) = self.package_route_manifests.get(&route.manifest_path) {
+                if batch.is_none()
+                    && let Some(keys) = self.package_route_manifests.get(&route.manifest_path)
+                {
                     self.package_shadow_dirty_keys.extend(keys.iter().cloned());
                 }
                 self.package_route_manifests
@@ -101,10 +151,10 @@ impl VirtualProject {
                     .package_route_source_paths
                     .entry(source.clone())
                     .or_default() += 1;
-                let source = vize_carton::path::canonicalize_non_verbatim(source);
+                let source = RouteBatch::canonical(batch.as_deref_mut(), source);
                 *self.package_route_source_owners.entry(source).or_default() += 1;
             }
-            self.index_existing_package_route_sources(route);
+            self.index_existing_package_route_sources(route, batch);
         }
         self.package_shadow_dirty_keys.insert(key.clone());
         self.package_routes.insert(key, binding);
