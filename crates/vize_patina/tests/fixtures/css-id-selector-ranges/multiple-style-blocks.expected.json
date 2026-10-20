@@ -38,8 +38,7 @@
           "line": 3,
           "column": 1,
           "endLine": 3,
-          "endColumn": 7,
-          "help": null
+          "endColumn": 7
         },
         {
           "ruleId": "css/no-id-selectors",
@@ -49,8 +48,7 @@
           "line": 6,
           "column": 1,
           "endLine": 6,
-          "endColumn": 8,
-          "help": null
+          "endColumn": 8
         }
       ],
       "errorCount": 0,

@@ -69,7 +69,9 @@ fn promoted_rules_can_be_disabled_while_retaining_baseline_and_empty_incremental
         let filename = case["filename"].as_str().unwrap();
         for (linter, expected_diagnostics) in [
             (
-                Linter::new().with_disabled_rules(promoted.clone()),
+                Linter::new()
+                    .with_help_level(HelpLevel::None)
+                    .with_disabled_rules(promoted.clone()),
                 case["baselineDiagnostics"].clone(),
             ),
             (Linter::with_preset(LintPreset::Incremental), json!([])),

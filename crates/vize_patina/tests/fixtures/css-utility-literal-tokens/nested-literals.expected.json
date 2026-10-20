@@ -38,8 +38,7 @@
           "line": 10,
           "column": 5,
           "endLine": 10,
-          "endColumn": 10,
-          "help": null
+          "endColumn": 10
         },
         {
           "ruleId": "css/no-utility-classes",
@@ -49,8 +48,7 @@
           "line": 10,
           "column": 12,
           "endLine": 10,
-          "endColumn": 17,
-          "help": null
+          "endColumn": 17
         }
       ],
       "errorCount": 0,
