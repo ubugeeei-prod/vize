@@ -25,6 +25,15 @@ export const OPENVUE_SOURCE = JSON.parse(
 export function verifyOpenVueFixtureSource(): void {
   const fixture = path.join(TESTS_DIR, "_fixtures", "_git", OPENVUE_SOURCE.id);
   assert.equal(
+    fs.realpathSync(
+      execFileSync("git", ["-C", fixture, "rev-parse", "--show-toplevel"], {
+        encoding: "utf8",
+      }).trim(),
+    ),
+    fs.realpathSync(fixture),
+    "OpenVue fixture must be an initialized submodule checkout",
+  );
+  assert.equal(
     execFileSync("git", ["-C", fixture, "rev-parse", "HEAD"], { encoding: "utf8" }).trim(),
     OPENVUE_SOURCE.revision,
     "OpenVue checkout must match the pinned release commit",
