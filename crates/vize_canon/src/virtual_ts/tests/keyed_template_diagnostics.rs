@@ -36,7 +36,7 @@ fn opaque_props_have_mapped_checks_for_every_bare_template_occurrence() {
             );
             for (at, _) in template.match_indices("titel") {
                 assert!(
-                    output.mappings.iter().any(|mapping| {
+                    output.mapping.spans().iter().any(|mapping| {
                         mapping.src_range == (100 + at..100 + at + 5)
                             && output.code.get(mapping.gen_range.clone()) == Some("titel")
                             && output
