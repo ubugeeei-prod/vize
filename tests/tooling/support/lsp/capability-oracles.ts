@@ -82,6 +82,7 @@ export const EDITOR_BUNDLE_CAPABILITIES = {
       "source.organizeImports",
       "source.sortImports",
       "source.removeUnusedImports",
+      "source.fixAll",
     ],
     resolveProvider: false,
   },

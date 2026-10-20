@@ -23,6 +23,7 @@ fn advertises_only_the_kinds_the_handler_emits() {
             CodeActionKind::from("source.organizeImports".to_owned()),
             CodeActionKind::from("source.sortImports".to_owned()),
             CodeActionKind::from("source.removeUnusedImports".to_owned()),
+            CodeActionKind::from("source.fixAll".to_owned()),
         ]
     } else {
         vec![CodeActionKind::QUICKFIX]

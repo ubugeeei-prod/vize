@@ -224,3 +224,77 @@ fn organize_imports_keeps_component_directive_and_type_reads_and_refuses_broken_
         }
     });
 }
+
+// (name, authored SFC, whole SFC after fix all, or None when nothing is fixable)
+const FIX_ALL_CASES: &[(&str, &str, Option<&str>)] = &[
+    (
+        "setup",
+        "<script setup lang=\"ts\">\ninterface Shape { area(): number }\nclass Circle implements Shape {}\nconst circle = new Circle();\n</script>\n\n<template>\n  <p>{{ circle }}</p>\n</template>\n",
+        Some(
+            "<script setup lang=\"ts\">\ninterface Shape { area(): number }\nclass Circle implements Shape {\n    area(): number {\n        throw new Error('Method not implemented.');\n    }\n}\nconst circle = new Circle();\n</script>\n\n<template>\n  <p>{{ circle }}</p>\n</template>\n",
+        ),
+    ),
+    (
+        "plain-script",
+        "<script lang=\"ts\">\n// 日本語 🎌\nexport interface Shape { area(): number }\nexport class Circle implements Shape {}\n</script>\n\n<template>\n  <p>x</p>\n</template>\n",
+        Some(
+            "<script lang=\"ts\">\n// 日本語 🎌\nexport interface Shape { area(): number }\nexport class Circle implements Shape {\n    area(): number {\n        throw new Error('Method not implemented.');\n    }\n}\n</script>\n\n<template>\n  <p>x</p>\n</template>\n",
+        ),
+    ),
+    (
+        "nested-crlf",
+        "<script setup lang=\"ts\">\r\ninterface Shape { area(): number }\r\nfunction make() {\r\n  class Circle implements Shape {}\r\n  return new Circle();\r\n}\r\nconst circle = make();\r\n</script>\r\n\r\n<template>\r\n  <p>{{ circle }}</p>\r\n</template>\r\n",
+        Some(
+            "<script setup lang=\"ts\">\r\ninterface Shape { area(): number }\r\nfunction make() {\r\n  class Circle implements Shape {\r\n      area(): number {\r\n          throw new Error('Method not implemented.');\r\n      }\r\n}\r\n  return new Circle();\r\n}\r\nconst circle = make();\r\n</script>\r\n\r\n<template>\r\n  <p>{{ circle }}</p>\r\n</template>\r\n",
+        ),
+    ),
+    (
+        "nothing-to-fix",
+        "<script setup lang=\"ts\">\nconst value = 1;\n</script>\n\n<template>\n  <p>{{ value }}</p>\n</template>\n",
+        None,
+    ),
+];
+
+#[test]
+fn fix_all_edits_only_authored_script_text() {
+    let Some(corsa_path) = resolve_test_tsgo_binary() else {
+        assert!(
+            std::env::var_os("VIZE_TEST_REQUIRE_TSGO").is_none(),
+            "required native source-action law has no configured runtime"
+        );
+        return;
+    };
+    crate::runtime::block_on(async {
+        let project = tempfile::tempdir().expect("fixture root");
+        let root = project.path();
+        std::fs::create_dir_all(root.join("src")).expect("src dir");
+        write_vue_test_package(root);
+        std::fs::write(
+            root.join("tsconfig.json"),
+            r#"{"compilerOptions":{"strict":true,"module":"ESNext","moduleResolution":"bundler","target":"ES2022","noEmit":true},"include":["src/**/*"]}"#,
+        )
+        .expect("tsconfig");
+        write_corsa_config(root, &corsa_path);
+        let fix_all = CodeActionKind::from("source.fixAll".to_string());
+        for (name, source, expected) in FIX_ALL_CASES {
+            let app = root.join(format!("src/{name}.vue"));
+            std::fs::write(&app, source).expect("case");
+            let uri = Url::from_file_path(&app).expect("case URI");
+            let state = state_for_fixture(root, &uri, source);
+            state.load_workspace_config(root);
+            let ctx = IdeContext::new(&state, &uri, 0).expect("SFC context");
+            let actions =
+                CodeActionService::native_source_actions(&ctx, std::slice::from_ref(&fix_all))
+                    .await;
+            let applied: Vec<_> = actions.iter().map(|action| apply(source, action)).collect();
+            assert_eq!(
+                applied,
+                expected.iter().map(|s| s.to_string()).collect::<Vec<_>>(),
+                "{name}"
+            );
+            if let Some(bridge) = state.get_corsa_bridge().await {
+                bridge.shutdown().await.expect("shutdown");
+            }
+        }
+    });
+}

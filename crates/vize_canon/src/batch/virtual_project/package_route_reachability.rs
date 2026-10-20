@@ -218,6 +218,8 @@ where
     // Deduplicated on arrival: lookups re-report the same manifests and
     // context files for every edge, which made the final sort dominate.
     let mut inputs = InputSet::default();
+    // Interned edge input lists already merged into `inputs`, by address.
+    let mut recorded_lists = FxHashSet::default();
     let mut work = ReachabilityWork::default();
     let mut packages = FxHashSet::default();
     if !route_graph::seed_route_graph(
@@ -290,17 +292,20 @@ where
             }
             work.edges += 1;
             let alias;
-            let (local_dependency, local_inputs) = if is_path_spelling(specifier) {
-                let (dependency, consulted) =
-                    edge.path.get_or_init(|| resolve_local(&path, specifier));
-                (dependency.as_ref(), consulted)
+            let local_dependency = if is_path_spelling(specifier) {
+                let (dependency, consulted) = edge.path.get_or_init(|| {
+                    let (dependency, consulted) = resolve_local(&path, specifier);
+                    (dependency, sources.intern(consulted))
+                });
+                record_list(&mut inputs, &mut recorded_lists, consulted);
+                dependency.as_ref()
             } else {
                 alias = resolve_local(&path, specifier);
-                (alias.0.as_ref(), &alias.1)
+                for input in &alias.1 {
+                    record_input(&mut inputs, input);
+                }
+                alias.0.as_ref()
             };
-            for input in local_inputs {
-                record_input(&mut inputs, input);
-            }
             if let Some(dependency) = local_dependency {
                 record_input(&mut inputs, dependency);
                 if dependency
@@ -326,12 +331,11 @@ where
             if is_vue_runtime_support_specifier(specifier) {
                 continue;
             }
-            let (nested, consulted) = edge
-                .package
-                .get_or_init(|| resolve_package(&path, specifier, *mode));
-            for input in consulted {
-                record_input(&mut inputs, input);
-            }
+            let (nested, consulted) = edge.package.get_or_init(|| {
+                let (nested, consulted) = resolve_package(&path, specifier, *mode);
+                (nested, sources.intern(consulted))
+            });
+            record_list(&mut inputs, &mut recorded_lists, consulted);
             if let Some(nested) = nested {
                 if !route_graph::seed_route_graph(
                     nested,
@@ -416,6 +420,15 @@ impl std::borrow::Borrow<std::ffi::OsStr> for InputPath {
 }
 
 type InputSet = FxHashSet<InputPath>;
+
+fn record_list(inputs: &mut InputSet, recorded: &mut FxHashSet<usize>, list: &sources::InputList) {
+    // The address identifies the interned list for as long as the pass holds it.
+    if recorded.insert(Arc::as_ptr(list).cast::<PathBuf>() as usize) {
+        for input in list.iter() {
+            record_input(inputs, input);
+        }
+    }
+}
 
 fn record_input(inputs: &mut InputSet, path: &Path) {
     if !inputs.contains(path.as_os_str()) {

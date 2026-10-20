@@ -61,7 +61,8 @@
       "quickfix",
       "source.organizeImports",
       "source.sortImports",
-      "source.removeUnusedImports"
+      "source.removeUnusedImports",
+      "source.fixAll"
     ],
     "resolveProvider": false
   },

@@ -484,6 +484,7 @@ test("current initialization derives source-backed capabilities and canonical JS
     "source.organizeImports",
     "source.sortImports",
     "source.removeUnusedImports",
+    "source.fixAll",
   );
   original.capabilities.monikerProvider = true;
   original.capabilities.experimental.vize.jsxTypecheck =
