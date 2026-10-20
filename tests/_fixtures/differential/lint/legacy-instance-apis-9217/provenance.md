@@ -22,17 +22,19 @@ The 193 Vue-backed events comprise 94 public root +35 direct public this +34 dir
 
 ## Product decision and remaining frontier
 
-The native script rules preserve their pre-existing broad receiver/reference
-warning coverage. This patch fixes property spans, JSX parsing and template
-references; it does not infer that an unrecognised receiver is foreign, nor
-claim every Matrix false-positive label is a product defect. The temporary
-factory/region/receiver gating was removed after this audit.
+`script/no-deprecated-events-api` reports only receivers proven to be a Vue
+instance within the file: `this` and its aliases, their `$root` / `$parent`, and
+local `new Vue` / `Vue.extend` instances that never escape. An imported or
+injected hub may be the Vue 3 migration shim that re-exposes `$on` over
+`tiny-emitter`, so the import, plugin and injection tiers above are no longer
+reported, and a file that defines a `$on` / `$off` / `$once` itself (object key,
+member write, `defineProperty` key, merge into `this`) is not reported for that
+name. Against the 202 events rows this keeps the 94 `$root` rows, 31 direct
+`this` rows (four use `extend(this, options)`) and two local constructors.
 
-[Issue #9217](https://github.com/ubugeeei-prod/vize/issues/9217) remains the
-acceptance tracker. The one proven tiny-emitter call still receives the existing
-warning; its sibling unresolved reference also remains visible. The eight
-unresolved identities are not suppressed. Exact source and diagnostic packets
-remain separate from this policy decision.
+The tiny-emitter call and all eight unresolved identities are silent; [issue
+#9217](https://github.com/ubugeeei-prod/vize/issues/9217) is resolved by that
+policy. Exact source and diagnostic packets remain separate from it.
 
 The tiny-emitter source is Gogocode's
 `packages/gogocode-vue-playground/packages/vue3/src/components/events-api/B.vue`,

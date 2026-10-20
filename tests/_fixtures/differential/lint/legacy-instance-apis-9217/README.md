@@ -1,25 +1,25 @@
 # Legacy instance API diagnostic contracts (#9217)
 
 [Issue #9217](https://github.com/ubugeeei-prod/vize/issues/9217) came from the
-Real Project Matrix at `d2506ca6b5e31252973f05981829c0367cacf26b` and remains
-open as the receiver-accuracy acceptance tracker.
+Real Project Matrix at `d2506ca6b5e31252973f05981829c0367cacf26b`.
 
 Parent PR #9222 fixes exact deprecated script-property spans and JSX-bearing
 JavaScript SFC parsing. Missing template `$listeners` diagnostics are owned by
 [Draft child #9251](https://github.com/ubugeeei-prod/vize/pull/9251), which is not
 accepted until retained AST, authored coordinates and lexical ownership are
-qualified. The existing broad
-script warning policy is preserved, including unknown receivers, ordinary
-objects, bare script references, registered components and custom factories.
-It does not restrict diagnostics to the pinned provider's receiver/factory
-heuristics. TypeScript-wrapped and optional calls retain their warnings.
+qualified. `$listeners` keeps its broad script policy. `$on` / `$off` / `$once`
+are reported only on receivers proven to be a Vue instance: `this` and its
+aliases, their `$root` / `$parent`, and contained local `new Vue` instances.
+Imported, injected, plugin and call-result receivers stay silent, as does a
+method name the file itself defines. TypeScript-wrapped and optional calls on a
+proven receiver retain their warnings.
 `$emit` and ordinary external-emitter `on`/`off`/`once` remain valid.
 
 `independent.json` retains 70 authored SFCs, source SHA256s and complete unchanged
 ESLint 10.4.1 / eslint-plugin-vue 10.9.2 / vue-eslint-parser 10.4.1 /
 @typescript-eslint/parser 8.65.0 packets. Both rule implementations and the shared
 utility implementation are pinned by hash. `native.json` contains separate
-complete native expectations; `provider-gaps.json` explicitly records the 35
+complete native expectations; `provider-gaps.json` explicitly records the 32
 authored cases where the historical native script policy is broader than the
 provider. A provider omission is not automatically a native false positive.
 No budgets or reported ranges are adjusted to make the tools agree.
@@ -50,10 +50,9 @@ regression evidence rather than production dependencies.
 [The receiver provenance audit](./provenance.md) explains all 239 original
 false-positive labels without conflating provider silence and product truth.
 `provenance.json.gz` retains all row classifications, full primary source
-packets and hashes. Known Vue instances and unknown receivers keep their
-existing warnings. One lexically proven tiny-emitter call and eight unresolved
-receiver rows remain visible as the acceptance frontier; this PR does not claim
-to resolve them. The scoped-slots rule remains a separate scope in
+packets and hashes. The tiny-emitter call and the eight unresolved receiver rows
+are silent under the proven-receiver policy; their reduced forms are unit tests
+of `script/no-deprecated-events-api`. The scoped-slots rule remains a separate scope in
 `expanded-audit.json`.
 
 The pinned Vue 3 runtime packet in `runtime.json` and its executable control

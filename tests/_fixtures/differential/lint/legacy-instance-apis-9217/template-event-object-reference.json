@@ -10,13 +10,13 @@
     },
     {
       "path": "native.json",
-      "bytes": 70986,
-      "sha256": "2f37da2c65d05654d85c68ca34f4fe9a9daafb72a16bda87b22578bbf4a97cd0"
+      "bytes": 62984,
+      "sha256": "438a3f336fa795685936db007b1fa129065156c267a017ac19da6468d745a0ec"
     },
     {
       "path": "cli70.json",
-      "bytes": 107945,
-      "sha256": "edd8ec3befefe73060b36a2e924f3ce760dc3a0e5bea289f04f1843297c42d04"
+      "bytes": 97293,
+      "sha256": "ad423509e7bb49917459b342184b0502b1b71cdb64f91a9cee62d346b39ab7ce"
     }
   ],
   "originalCorrections": [
@@ -78,8 +78,8 @@
       },
       {
         "path": "native.json",
-        "bytes": 70986,
-        "sha256": "2f37da2c65d05654d85c68ca34f4fe9a9daafb72a16bda87b22578bbf4a97cd0",
+        "bytes": 62984,
+        "sha256": "438a3f336fa795685936db007b1fa129065156c267a017ac19da6468d745a0ec",
         "originalRecord": {
           "id": "template-event-object-expression",
           "sourceSha256": "80e9e7ce9a301400846abdd42f7a396795e8c00a26177eab6401dee81441c20c",
@@ -88,8 +88,8 @@
       },
       {
         "path": "cli70.json",
-        "bytes": 107945,
-        "sha256": "edd8ec3befefe73060b36a2e924f3ce760dc3a0e5bea289f04f1843297c42d04",
+        "bytes": 97293,
+        "sha256": "ad423509e7bb49917459b342184b0502b1b71cdb64f91a9cee62d346b39ab7ce",
         "originalRecord": {
           "id": "template-event-object-expression",
           "sourceSha256": "80e9e7ce9a301400846abdd42f7a396795e8c00a26177eab6401dee81441c20c",

@@ -6,7 +6,7 @@
   "status": "Draft correctness hold: template implementation must use canonical retained AST, authored entity ranges, authenticated lexical bindings and guarded traversal.",
   "packetSha256": {
     "independent.json": "3e04d9e772224ce65d7201d38f4785bb38904bedf27395b2b22d17715cf49a97",
-    "native.json": "2f37da2c65d05654d85c68ca34f4fe9a9daafb72a16bda87b22578bbf4a97cd0"
+    "native.json": "438a3f336fa795685936db007b1fa129065156c267a017ac19da6468d745a0ec"
   },
   "cases": [
     {
@@ -109,13 +109,13 @@
       "id": "modal-event-hub",
       "owner": "script-parent",
       "sourceSha256": "d3533d0a59540eb07a2b45dd53c0e279d780b7843e50c40b0c6eb1eaa8c27937",
-      "nativeDiagnosticCount": 2
+      "nativeDiagnosticCount": 0
     },
     {
       "id": "foreign-members",
       "owner": "script-parent",
       "sourceSha256": "a3c25094674dbf7ad721dbac5305c13bd4a64093c183adaf84430fed691fc830",
-      "nativeDiagnosticCount": 4
+      "nativeDiagnosticCount": 2
     },
     {
       "id": "const-this-alias",
@@ -127,7 +127,7 @@
       "id": "shadowed-this-alias",
       "owner": "script-parent",
       "sourceSha256": "860d481e59ea5f4dc5ae6de801748993974c958a772c32a9c430c37c6a521fc5",
-      "nativeDiagnosticCount": 3
+      "nativeDiagnosticCount": 2
     },
     {
       "id": "mutable-and-indirect-aliases",
@@ -325,7 +325,7 @@
       "id": "wrapped-foreign-callee",
       "owner": "script-parent",
       "sourceSha256": "0b62fa67ceb711fda7da504128c8945bb1ebfac630e0fa1302e277334c813044",
-      "nativeDiagnosticCount": 3
+      "nativeDiagnosticCount": 1
     },
     {
       "id": "wrapped-outside-component",
@@ -379,13 +379,13 @@
       "id": "computed-public-relations",
       "owner": "script-parent",
       "sourceSha256": "0c87778527bab0e75b107030b29496a250abe708b5e3c47f55392b663a01d3b3",
-      "nativeDiagnosticCount": 3
+      "nativeDiagnosticCount": 2
     },
     {
       "id": "ordinary-public-name-objects",
       "owner": "script-parent",
       "sourceSha256": "12564e7a25ae9abe897b003a9ec2b63b097aab88bf2192dcafd2b0d20e0dde46",
-      "nativeDiagnosticCount": 5
+      "nativeDiagnosticCount": 1
     },
     {
       "id": "outside-public-relations",
@@ -397,13 +397,13 @@
       "id": "public-alias-shadow",
       "owner": "script-parent",
       "sourceSha256": "80c86c784b29ec7ab37e62a34e04405e539a9b00cf33af05e7954d1822c51897",
-      "nativeDiagnosticCount": 3
+      "nativeDiagnosticCount": 2
     },
     {
       "id": "arbitrary-public-chains",
       "owner": "script-parent",
       "sourceSha256": "aad2fa141c2f4c1db3628cdb7b3d60ad51e94fea10dce626fbcf02ba71afaaef",
-      "nativeDiagnosticCount": 3
+      "nativeDiagnosticCount": 0
     },
     {
       "id": "options-returning-component-factory",
@@ -421,7 +421,7 @@
       "id": "non-vue-event-frontier",
       "owner": "script-parent",
       "sourceSha256": "1da67ca06400b8d421c5554bd412ff29a89957254f015c527c20f9f24f82a4e3",
-      "nativeDiagnosticCount": 1
+      "nativeDiagnosticCount": 0
     },
     {
       "id": "outside-component",

@@ -25,13 +25,13 @@
     },
     {
       "path": "cli70.json",
-      "bytes": 107945,
-      "sha256": "edd8ec3befefe73060b36a2e924f3ce760dc3a0e5bea289f04f1843297c42d04"
+      "bytes": 97293,
+      "sha256": "ad423509e7bb49917459b342184b0502b1b71cdb64f91a9cee62d346b39ab7ce"
     },
     {
       "path": "native.json",
-      "bytes": 70986,
-      "sha256": "2f37da2c65d05654d85c68ca34f4fe9a9daafb72a16bda87b22578bbf4a97cd0"
+      "bytes": 62984,
+      "sha256": "438a3f336fa795685936db007b1fa129065156c267a017ac19da6468d745a0ec"
     }
   ],
   "historical": {
@@ -186,58 +186,13 @@
       "sourceSha256": "d550a07ada5370ffc80f068f65c7384f5375b6e0ba85abfb95a19d9bf46f271b",
       "qualification": "callback-ownership-warning-preservation",
       "expectationAuthority": "authored-exact-property-token-and-existing-rule-contract",
-      "status": 1,
+      "status": 0,
       "stderrBytes": [],
       "expected": [
         {
           "file": "Component.vue",
-          "messages": [
-            {
-              "ruleId": "script/no-deprecated-events-api",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 2,
-              "message": "[vize:script/no-deprecated-events-api] `$on()` was removed in Vue 3. The instance event-emitter API is no longer available.",
-              "line": 72,
-              "column": 19,
-              "endLine": 72,
-              "endColumn": 22,
-              "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid."
-            },
-            {
-              "ruleId": "script/no-deprecated-events-api",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 2,
-              "message": "[vize:script/no-deprecated-events-api] `$on()` was removed in Vue 3. The instance event-emitter API is no longer available.",
-              "line": 73,
-              "column": 19,
-              "endLine": 73,
-              "endColumn": 22,
-              "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid."
-            },
-            {
-              "ruleId": "script/no-deprecated-events-api",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 2,
-              "message": "[vize:script/no-deprecated-events-api] `$on()` was removed in Vue 3. The instance event-emitter API is no longer available.",
-              "line": 74,
-              "column": 19,
-              "endLine": 74,
-              "endColumn": 22,
-              "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid."
-            },
-            {
-              "ruleId": "script/no-deprecated-events-api",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 2,
-              "message": "[vize:script/no-deprecated-events-api] `$on()` was removed in Vue 3. The instance event-emitter API is no longer available.",
-              "line": 75,
-              "column": 19,
-              "endLine": 75,
-              "endColumn": 22,
-              "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid."
-            }
-          ],
-          "errorCount": 4,
+          "messages": [],
+          "errorCount": 0,
           "warningCount": 0
         }
       ]
@@ -247,25 +202,13 @@
       "sourceSha256": "cb2800830929931fa30e1ce14beabfae744b0e5ab7ddeea4c01c8f801c9759bc",
       "qualification": "callback-ownership-warning-preservation",
       "expectationAuthority": "authored-exact-property-token-and-existing-rule-contract",
-      "status": 1,
+      "status": 0,
       "stderrBytes": [],
       "expected": [
         {
           "file": "Component.vue",
-          "messages": [
-            {
-              "ruleId": "script/no-deprecated-events-api",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 2,
-              "message": "[vize:script/no-deprecated-events-api] `$on()` was removed in Vue 3. The instance event-emitter API is no longer available.",
-              "line": 1,
-              "column": 114,
-              "endLine": 1,
-              "endColumn": 117,
-              "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid."
-            }
-          ],
-          "errorCount": 1,
+          "messages": [],
+          "errorCount": 0,
           "warningCount": 0
         }
       ]
@@ -275,25 +218,13 @@
       "sourceSha256": "7dc0ef795d094a5ef9943b1110fc41303f3c8be7c3e43e3c69fe8057048d644b",
       "qualification": "callback-ownership-warning-preservation",
       "expectationAuthority": "authored-exact-property-token-and-existing-rule-contract",
-      "status": 1,
+      "status": 0,
       "stderrBytes": [],
       "expected": [
         {
           "file": "Component.vue",
-          "messages": [
-            {
-              "ruleId": "script/no-deprecated-events-api",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 2,
-              "message": "[vize:script/no-deprecated-events-api] `$on()` was removed in Vue 3. The instance event-emitter API is no longer available.",
-              "line": 1,
-              "column": 109,
-              "endLine": 1,
-              "endColumn": 112,
-              "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid."
-            }
-          ],
-          "errorCount": 1,
+          "messages": [],
+          "errorCount": 0,
           "warningCount": 0
         }
       ]
@@ -303,25 +234,13 @@
       "sourceSha256": "0f2556fdb38611246ff8ffa56454fdd25c44248d7bfedafc744a08cfec457927",
       "qualification": "callback-ownership-warning-preservation",
       "expectationAuthority": "authored-exact-property-token-and-existing-rule-contract",
-      "status": 1,
+      "status": 0,
       "stderrBytes": [],
       "expected": [
         {
           "file": "Component.vue",
-          "messages": [
-            {
-              "ruleId": "script/no-deprecated-events-api",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 2,
-              "message": "[vize:script/no-deprecated-events-api] `$on()` was removed in Vue 3. The instance event-emitter API is no longer available.",
-              "line": 1,
-              "column": 156,
-              "endLine": 1,
-              "endColumn": 159,
-              "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid."
-            }
-          ],
-          "errorCount": 1,
+          "messages": [],
+          "errorCount": 0,
           "warningCount": 0
         }
       ]
@@ -331,25 +250,13 @@
       "sourceSha256": "74321006445fffe324a31b15cd244358597afe587be61a22bbda2f87d9e23865",
       "qualification": "callback-ownership-warning-preservation",
       "expectationAuthority": "authored-exact-property-token-and-existing-rule-contract",
-      "status": 1,
+      "status": 0,
       "stderrBytes": [],
       "expected": [
         {
           "file": "Component.vue",
-          "messages": [
-            {
-              "ruleId": "script/no-deprecated-events-api",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 2,
-              "message": "[vize:script/no-deprecated-events-api] `$on()` was removed in Vue 3. The instance event-emitter API is no longer available.",
-              "line": 1,
-              "column": 167,
-              "endLine": 1,
-              "endColumn": 170,
-              "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid."
-            }
-          ],
-          "errorCount": 1,
+          "messages": [],
+          "errorCount": 0,
           "warningCount": 0
         }
       ]

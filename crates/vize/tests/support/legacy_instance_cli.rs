@@ -163,7 +163,7 @@ pub(super) fn run_cli_cases(manifest: &Value, sources: &[Value], expected_count:
 }
 
 #[test]
-fn callback_return_ownership_keeps_all_six_whole_cli_packets() {
+fn callback_return_receivers_stay_silent_in_all_six_whole_cli_packets() {
     let manifest: Value = serde_json::from_str(include_str!(concat!(
         env!("CARGO_MANIFEST_DIR"),
         "/../../tests/_fixtures/differential/lint/legacy-instance-apis-9217/callback-return-ownership-cli.json"
@@ -193,8 +193,8 @@ fn callback_return_ownership_keeps_all_six_whole_cli_packets() {
             .iter()
             .map(|case| { case["expected"][0]["messages"].as_array().unwrap().len() })
             .collect::<Vec<_>>(),
-        vec![4, 1, 1, 1, 1, 0],
-        "retain original four, argument identity, enclosing and mixed returns; $emit stays valid"
+        vec![0, 0, 0, 0, 0, 0],
+        "a call result is not a proven Vue instance; $emit stays valid"
     );
     run_cli_cases(&manifest, sources, 6);
 }

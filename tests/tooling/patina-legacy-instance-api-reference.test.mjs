@@ -17,7 +17,7 @@ const json = (file) => JSON.parse(fs.readFileSync(path.join(fixture, file), "utf
 const compressed = (file) => JSON.parse(gunzipSync(fs.readFileSync(path.join(fixture, file))));
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
-await test("callback-return overlay preserves original ownership and all six complete CLI contracts", () => {
+await test("callback-return receivers stay silent across all six complete CLI contracts", () => {
   const overlay = json("callback-return-ownership-cli.json");
   assert.equal(overlay.schema, "vize.lint.callback-return-ownership-cli");
   for (const input of overlay.frozenInputs) {
@@ -39,7 +39,7 @@ await test("callback-return overlay preserves original ownership and all six com
   assert.deepEqual(overlay.historical.selectedAuditIndices, [42, 43, 44, 45]);
   assert.deepEqual(
     overlay.cases.map((row) => row.expected[0].messages.length),
-    [4, 1, 1, 1, 1, 0],
+    [0, 0, 0, 0, 0, 0],
   );
   const baseline = json("cli70.json");
   for (const key of ["config", "configBytes", "configSha256", "argv"])
@@ -55,12 +55,8 @@ await test("callback-return overlay preserves original ownership and all six com
     assert.equal(contract.id, row.id);
     assert.equal(contract.sourceSha256, row.sourceSha256);
     assert.deepEqual(contract.stderrBytes, []);
-    assert.equal(contract.status, index === 5 ? 0 : 1);
+    assert.equal(contract.status, 0);
   }
-  assert.deepEqual(
-    overlay.cases[0].expected[0].messages.map((m) => [m.line, m.column, m.endLine, m.endColumn]),
-    [72, 73, 74, 75].map((line) => [line, 19, line, 22]),
-  );
 });
 
 await test("legacy instance API packets preserve every pinned original source and complete reference finding", () => {
@@ -172,7 +168,7 @@ await test("legacy instance API packets preserve every pinned original source an
     );
   }
   const gaps = json("provider-gaps.json");
-  assert.equal(gaps.gaps.length, 35);
+  assert.equal(gaps.gaps.length, 32);
   for (const gap of gaps.gaps) {
     const packet = authored.records.find((row) => row.id === gap.caseId);
     assert.ok(packet, gap.caseId);

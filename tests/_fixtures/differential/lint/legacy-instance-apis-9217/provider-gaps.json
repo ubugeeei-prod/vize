@@ -64,32 +64,6 @@
       ]
     },
     {
-      "caseId": "modal-event-hub",
-      "reason": "The native historical script warning contract includes this receiver/reference/callee construct. Pinned provider silence is not proof of a false positive; retain the complete native expectation and the unmodified provider packet separately.",
-      "nativeMessages": [
-        {
-          "ruleId": "script/no-deprecated-events-api",
-          "start": 55,
-          "end": 58,
-          "severity": "error",
-          "message": "`$on()` was removed in Vue 3. The instance event-emitter API is no longer available.",
-          "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid.",
-          "labels": [],
-          "fix": null
-        },
-        {
-          "ruleId": "script/no-deprecated-events-api",
-          "start": 91,
-          "end": 95,
-          "severity": "error",
-          "message": "`$off()` was removed in Vue 3. The instance event-emitter API is no longer available.",
-          "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid.",
-          "labels": [],
-          "fix": null
-        }
-      ]
-    },
-    {
       "caseId": "foreign-members",
       "reason": "The native historical script warning contract includes this receiver/reference/callee construct. Pinned provider silence is not proof of a false positive; retain the complete native expectation and the unmodified provider packet separately.",
       "nativeMessages": [
@@ -100,26 +74,6 @@
           "severity": "error",
           "message": "$listeners was removed in Vue 3 and merged into $attrs",
           "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
-          "labels": [],
-          "fix": null
-        },
-        {
-          "ruleId": "script/no-deprecated-events-api",
-          "start": 61,
-          "end": 64,
-          "severity": "error",
-          "message": "`$on()` was removed in Vue 3. The instance event-emitter API is no longer available.",
-          "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid.",
-          "labels": [],
-          "fix": null
-        },
-        {
-          "ruleId": "script/no-deprecated-events-api",
-          "start": 77,
-          "end": 81,
-          "severity": "error",
-          "message": "`$off()` was removed in Vue 3. The instance event-emitter API is no longer available.",
-          "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid.",
           "labels": [],
           "fix": null
         },
@@ -146,16 +100,6 @@
           "severity": "error",
           "message": "$listeners was removed in Vue 3 and merged into $attrs",
           "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
-          "labels": [],
-          "fix": null
-        },
-        {
-          "ruleId": "script/no-deprecated-events-api",
-          "start": 101,
-          "end": 104,
-          "severity": "error",
-          "message": "`$on()` was removed in Vue 3. The instance event-emitter API is no longer available.",
-          "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid.",
           "labels": [],
           "fix": null
         },
@@ -501,30 +445,10 @@
       "nativeMessages": [
         {
           "ruleId": "script/no-deprecated-events-api",
-          "start": 56,
-          "end": 59,
-          "severity": "error",
-          "message": "`$on()` was removed in Vue 3. The instance event-emitter API is no longer available.",
-          "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid.",
-          "labels": [],
-          "fix": null
-        },
-        {
-          "ruleId": "script/no-deprecated-events-api",
           "start": 89,
           "end": 93,
           "severity": "error",
           "message": "`$off()` was removed in Vue 3. The instance event-emitter API is no longer available.",
-          "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid.",
-          "labels": [],
-          "fix": null
-        },
-        {
-          "ruleId": "script/no-deprecated-events-api",
-          "start": 141,
-          "end": 146,
-          "severity": "error",
-          "message": "`$once()` was removed in Vue 3. The instance event-emitter API is no longer available.",
           "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid.",
           "labels": [],
           "fix": null
@@ -750,16 +674,6 @@
           "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
           "labels": [],
           "fix": null
-        },
-        {
-          "ruleId": "script/no-deprecated-events-api",
-          "start": 110,
-          "end": 113,
-          "severity": "error",
-          "message": "`$on()` was removed in Vue 3. The instance event-emitter API is no longer available.",
-          "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid.",
-          "labels": [],
-          "fix": null
         }
       ]
     },
@@ -768,52 +682,12 @@
       "reason": "The native historical script warning contract includes this receiver/reference/callee construct. Pinned provider silence is not proof of a false positive; retain the complete native expectation and the unmodified provider packet separately.",
       "nativeMessages": [
         {
-          "ruleId": "script/no-deprecated-events-api",
-          "start": 105,
-          "end": 108,
-          "severity": "error",
-          "message": "`$on()` was removed in Vue 3. The instance event-emitter API is no longer available.",
-          "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid.",
-          "labels": [],
-          "fix": null
-        },
-        {
           "ruleId": "script/no-deprecated-dollar-listeners-api",
           "start": 134,
           "end": 144,
           "severity": "error",
           "message": "$listeners was removed in Vue 3 and merged into $attrs",
           "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
-          "labels": [],
-          "fix": null
-        },
-        {
-          "ruleId": "script/no-deprecated-events-api",
-          "start": 163,
-          "end": 166,
-          "severity": "error",
-          "message": "`$on()` was removed in Vue 3. The instance event-emitter API is no longer available.",
-          "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid.",
-          "labels": [],
-          "fix": null
-        },
-        {
-          "ruleId": "script/no-deprecated-events-api",
-          "start": 187,
-          "end": 190,
-          "severity": "error",
-          "message": "`$on()` was removed in Vue 3. The instance event-emitter API is no longer available.",
-          "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid.",
-          "labels": [],
-          "fix": null
-        },
-        {
-          "ruleId": "script/no-deprecated-events-api",
-          "start": 214,
-          "end": 217,
-          "severity": "error",
-          "message": "`$on()` was removed in Vue 3. The instance event-emitter API is no longer available.",
-          "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid.",
           "labels": [],
           "fix": null
         }
@@ -850,16 +724,6 @@
       "reason": "The native historical script warning contract includes this receiver/reference/callee construct. Pinned provider silence is not proof of a false positive; retain the complete native expectation and the unmodified provider packet separately.",
       "nativeMessages": [
         {
-          "ruleId": "script/no-deprecated-events-api",
-          "start": 92,
-          "end": 95,
-          "severity": "error",
-          "message": "`$on()` was removed in Vue 3. The instance event-emitter API is no longer available.",
-          "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid.",
-          "labels": [],
-          "fix": null
-        },
-        {
           "ruleId": "script/no-deprecated-dollar-listeners-api",
           "start": 116,
           "end": 126,
@@ -875,42 +739,6 @@
           "end": 146,
           "severity": "error",
           "message": "`$off()` was removed in Vue 3. The instance event-emitter API is no longer available.",
-          "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid.",
-          "labels": [],
-          "fix": null
-        }
-      ]
-    },
-    {
-      "caseId": "arbitrary-public-chains",
-      "reason": "The native historical script warning contract includes this receiver/reference/callee construct. Pinned provider silence is not proof of a false positive; retain the complete native expectation and the unmodified provider packet separately.",
-      "nativeMessages": [
-        {
-          "ruleId": "script/no-deprecated-events-api",
-          "start": 52,
-          "end": 55,
-          "severity": "error",
-          "message": "`$on()` was removed in Vue 3. The instance event-emitter API is no longer available.",
-          "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid.",
-          "labels": [],
-          "fix": null
-        },
-        {
-          "ruleId": "script/no-deprecated-events-api",
-          "start": 80,
-          "end": 83,
-          "severity": "error",
-          "message": "`$on()` was removed in Vue 3. The instance event-emitter API is no longer available.",
-          "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid.",
-          "labels": [],
-          "fix": null
-        },
-        {
-          "ruleId": "script/no-deprecated-events-api",
-          "start": 116,
-          "end": 119,
-          "severity": "error",
-          "message": "`$on()` was removed in Vue 3. The instance event-emitter API is no longer available.",
           "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid.",
           "labels": [],
           "fix": null
@@ -963,22 +791,6 @@
           "end": 108,
           "severity": "error",
           "message": "`$off()` was removed in Vue 3. The instance event-emitter API is no longer available.",
-          "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid.",
-          "labels": [],
-          "fix": null
-        }
-      ]
-    },
-    {
-      "caseId": "non-vue-event-frontier",
-      "reason": "The native historical script warning contract includes this receiver/reference/callee construct. Pinned provider silence is not proof of a false positive; retain the complete native expectation and the unmodified provider packet separately.",
-      "nativeMessages": [
-        {
-          "ruleId": "script/no-deprecated-events-api",
-          "start": 48,
-          "end": 51,
-          "severity": "error",
-          "message": "`$on()` was removed in Vue 3. The instance event-emitter API is no longer available.",
           "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid.",
           "labels": [],
           "fix": null
