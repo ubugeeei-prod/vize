@@ -334,11 +334,14 @@ declare module 'vue' { interface ComponentCustomProperties { plugin: { name: str
     "PluginMember.vue": `<script setup lang="ts">
 const loader = () => ({ title: "x" });
 defineProps<ReturnType<typeof loader>>();
-</script><template>{{ plugin.nmae }}</template>`,
+</script><template>{{ plugin.unknownMember }}</template>`,
     "Ignored.vue": `<script setup lang="ts">
 const loader = () => ({ title: "x" });
 defineProps<ReturnType<typeof loader>>();
-</script><template><!-- @vue-expect-error --><h1>{{ titel }}</h1></template>`,
+</script><template>
+<!-- @vue-expect-error -->
+<h1 :title="titel" />
+</template>`,
   });
   try {
     const expected = vueTscDiagnostics(directory).sort(compareIdentity);
