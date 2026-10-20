@@ -372,8 +372,9 @@ export async function importConfigModuleWithDependencies(
     watchInputs.add(engineEntry);
     const entryPath = relative(engineDirectory, engineEntry);
     if (entryPath === ".." || entryPath.startsWith(`..${sep}`) || isAbsolute(entryPath)) {
+      const engineLabel = candidate.engineName === "vite" ? "Vite" : "Vite+";
       throw new Error(
-        `Resolved loader escapes selected project ${candidate.engineName}: ${candidate.directory} -> ${engineEntry}`,
+        `Resolved loader escapes selected project ${engineLabel}: ${candidate.directory} -> ${engineEntry}`,
       );
     }
     await beforeRead?.([resolvedEntry, engineEntry]);
