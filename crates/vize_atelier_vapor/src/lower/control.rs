@@ -211,19 +211,19 @@ fn transform_for_node_with_options<'a>(
     let value = for_node
         .value_alias
         .as_ref()
-        .map(|v| clone_simple_expr(ctx, v));
+        .map(|v| crate::ir::untype_alias(clone_simple_expr(ctx, v)));
 
     // Get key alias
     let key = for_node
         .key_alias
         .as_ref()
-        .map(|k| clone_simple_expr(ctx, k));
+        .map(|k| crate::ir::untype_alias(clone_simple_expr(ctx, k)));
 
     // Get index alias
     let index = for_node
         .object_index_alias
         .as_ref()
-        .map(|i| clone_simple_expr(ctx, i));
+        .map(|i| crate::ir::untype_alias(clone_simple_expr(ctx, i)));
 
     // Extract :key from the first child element's props
     let key_prop = extract_key_prop(ctx, for_node);

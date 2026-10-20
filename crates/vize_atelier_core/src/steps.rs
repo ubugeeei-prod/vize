@@ -49,7 +49,7 @@ pub use v_bind::{
 };
 pub use v_for::{
     get_for_expression, has_v_for, parse_for_expression, parse_for_expression_with_options,
-    process_v_for, remove_for_directive,
+    process_v_for, remove_for_directive, untyped_for_alias,
 };
 pub use v_if::{
     get_if_condition, has_v_else, has_v_else_if, has_v_if, process_v_if, remove_if_directive,

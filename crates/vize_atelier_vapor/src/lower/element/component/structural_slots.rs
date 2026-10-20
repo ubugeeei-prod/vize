@@ -87,7 +87,7 @@ fn lower_node<'a>(
             let slot = lower_node(ctx, child, true);
             ctx.structural_slot_spans = previous;
             let mut slot = slot?;
-            let value = expression(ctx, node.value_alias.as_ref()?);
+            let value = crate::ir::untype_alias(expression(ctx, node.value_alias.as_ref()?));
             let key_prop = carrier(child)?.props.iter().find_map(|prop| match prop {
                 PropNode::Directive(dir)
                     if dir.name == "bind"
@@ -101,11 +101,14 @@ fn lower_node<'a>(
             slot.control = Some(IRSlotControl::For(IRSlotLoop {
                 source: expression(ctx, &node.source),
                 value,
-                key: node.key_alias.as_ref().map(|key| expression(ctx, key)),
+                key: node
+                    .key_alias
+                    .as_ref()
+                    .map(|key| crate::ir::untype_alias(expression(ctx, key))),
                 index: node
                     .object_index_alias
                     .as_ref()
-                    .map(|index| expression(ctx, index)),
+                    .map(|index| crate::ir::untype_alias(expression(ctx, index))),
                 key_prop,
             }));
             Some(slot)

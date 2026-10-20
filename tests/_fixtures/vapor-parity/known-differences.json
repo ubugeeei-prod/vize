@@ -79,7 +79,6 @@
         "up.transforms.vBind.43",
         "up.transforms.vBind.70",
         "up.transforms.vBind.73",
-        "up.transforms.vFor.39",
         "up.transforms.vHtml.1",
         "up.transforms.vIf.17",
         "up.transforms.vIf.24",
@@ -171,7 +170,6 @@
         "up.transforms.vBind.9",
         "up.transforms.vFor.11",
         "up.transforms.vFor.35",
-        "up.transforms.vFor.39",
         "up.transforms.vFor.4",
         "up.transforms.vFor.6",
         "up.transforms.vFor.7",
@@ -226,12 +224,10 @@
     "upstream-runtime-vapor-hydration": {
       "hydrate": [
         "hy.basic.16",
-        "hy.basic.20",
-        "hy.for.1"
+        "hy.basic.20"
       ],
       "mount": [
-        "hy.basic.16",
-        "hy.for.1"
+        "hy.basic.16"
       ]
     }
   },

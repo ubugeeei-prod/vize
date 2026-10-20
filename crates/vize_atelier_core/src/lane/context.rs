@@ -367,6 +367,13 @@ impl<'a> TransformContext<'a> {
         index_alias: Option<&str>,
         source: &str,
     ) {
+        // Scope names are the bound names, without TypeScript annotations.
+        let untyped = crate::steps::untyped_for_alias;
+        let (value_alias, key_alias, index_alias) = (
+            value_alias.map(untyped),
+            key_alias.map(untyped),
+            index_alias.map(untyped),
+        );
         self.scope_chain.enter_v_for_scope(
             VForScopeData {
                 value_alias: CompactString::new(value_alias.unwrap_or("")),

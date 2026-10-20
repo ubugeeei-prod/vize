@@ -57,3 +57,15 @@ pub struct KeyIRNode<'a> {
     pub parent: Option<usize>,
     pub anchor: Option<InsertionAnchor>,
 }
+
+/// A lowered `v-for` alias without its TypeScript annotation.
+pub(crate) fn untype_alias<'a>(
+    mut alias: Box<'a, SimpleExpressionNode<'a>>,
+) -> Box<'a, SimpleExpressionNode<'a>> {
+    let untyped = vize_atelier_core::steps::untyped_for_alias(alias.content);
+    if untyped.len() != alias.content.len() {
+        alias.content = untyped;
+        alias.js_ast = None;
+    }
+    alias
+}

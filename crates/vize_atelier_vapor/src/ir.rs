@@ -8,6 +8,7 @@ mod slot_roots;
 pub(crate) use slot_roots::{Layout as SlotLayout, finish_slot, finish_slot_fallback};
 mod slots;
 
+pub(crate) use control_flow::untype_alias;
 pub use control_flow::{ForIRNode, IfIRNode, KeyIRNode, NegativeBranch};
 pub use props::{IRProp, PropValueKind};
 pub use slots::{IRSlot, IRSlotControl, IRSlotLoop};

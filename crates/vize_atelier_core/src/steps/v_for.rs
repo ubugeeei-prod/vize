@@ -10,6 +10,30 @@ use crate::{
     SimpleExpressionNode, SourceLocation, TemplateChildNode,
 };
 
+/// A `v-for` alias without its TypeScript annotation (`item: string` is
+/// `item`), the name the loop binds. An alias with a default keeps its text:
+/// a `:` after `=` belongs to the default.
+pub fn untyped_for_alias(alias: &str) -> &str {
+    let mut depth = 0usize;
+    let mut quote = None;
+    for (index, byte) in alias.bytes().enumerate() {
+        match (quote, byte) {
+            (Some(open), _) if byte == open => quote = None,
+            (Some(_), _) => {}
+            (None, b'\'' | b'"' | b'`') => quote = Some(byte),
+            (None, b'(' | b'[' | b'{') => depth += 1,
+            (None, b')' | b']' | b'}') => depth = depth.saturating_sub(1),
+            (None, b'=') if depth == 0 => return alias,
+            (None, b':') if depth == 0 => {
+                let head = alias.get(..index).unwrap_or(alias).trim_end();
+                return head.strip_suffix('?').map_or(head, str::trim_end);
+            }
+            _ => {}
+        }
+    }
+    alias
+}
+
 /// The component a bare `<template v-for>` renders as its loop item.
 ///
 /// Like Vue's transformFor, a template carrying only `v-for` and `:key` around
@@ -296,7 +320,7 @@ pub fn process_v_for(ctx: &mut TransformContext<'_>) {
 mod tests {
     use super::{
         ExpressionNode, ForParseResult, SourceLocation, has_v_for, parse_for_expression,
-        parse_for_expression_with_options,
+        parse_for_expression_with_options, untyped_for_alias,
     };
     use crate::TemplateChildNode;
     use crate::parser::parse;
@@ -305,6 +329,21 @@ mod tests {
     fn parse_for<'a>(allocator: &'a Allocator, content: &'a str) -> ForParseResult<'a> {
         parse_for_expression(allocator, content, &SourceLocation::STUB)
             .expect("expected valid v-for expression")
+    }
+
+    #[test]
+    fn untyped_for_alias_drops_only_a_top_level_annotation() {
+        for (alias, name) in [
+            ("item: string", "item"),
+            ("index?: number", "index"),
+            ("{ a, b: c }: Row", "{ a, b: c }"),
+            ("[x, y]: [number, number]", "[x, y]"),
+            ("item", "item"),
+            ("{ a: b }", "{ a: b }"),
+            ("item = ok ? a : b", "item = ok ? a : b"),
+        ] {
+            assert_eq!(untyped_for_alias(alias), name, "{alias}");
+        }
     }
 
     #[test]

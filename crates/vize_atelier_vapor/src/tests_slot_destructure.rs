@@ -1,6 +1,6 @@
 //! Destructuring in `v-slot` and `v-for` reads each name from its own path in
 //! the slot props or loop item, as Vue's compiler does: renames, nesting,
-//! defaults, computed keys, rest elements and annotated patterns.
+//! defaults, computed keys, rest elements and annotated patterns or aliases.
 
 use super::{VaporCompilerOptions, compile_vapor};
 use vize_carton::{Allocator, String};
@@ -150,5 +150,24 @@ fn an_array_loop_value_with_a_rest_element_slices_the_item() {
             "{code}"
         );
         assert!(!code.contains("_ctx.tail"), "{code}");
+    }
+}
+
+#[test]
+fn annotated_loop_aliases_bind_their_names() {
+    let source = r#"<span v-for="(item: string, index?: number) in data" :key="item" @click="go(item, index)">{{ item }}{{ index }}</span>"#;
+    for retained in [false, true] {
+        let code = compile(source, retained);
+        assert!(
+            code.contains("_toDisplayString(_for_item0.value) + _toDisplayString(_for_key0.value)"),
+            "{code}"
+        );
+        assert!(
+            code.contains("_ctx.go(_for_item0.value, _for_key0.value)"),
+            "{code}"
+        );
+        // The key callback is plain JavaScript, like upstream's.
+        assert!(code.contains("(item, index) => (item)"), "{code}");
+        assert!(!code.contains("_ctx.item"), "{code}");
     }
 }
