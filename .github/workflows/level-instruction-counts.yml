@@ -4,11 +4,6 @@ on:
   # Check calls the measurement once per queue candidate and scheduled run.
   # Avoid a second standalone PR run of the same instruction campaign.
   workflow_dispatch:
-    inputs:
-      sfc_parse_only:
-        description: Measure only the template-only SFC regression
-        type: boolean
-        default: false
   workflow_call:
 
 permissions:
@@ -25,7 +20,6 @@ env:
 
 jobs:
   instruction-counts:
-    if: ${{ !inputs.sfc_parse_only }}
     name: Per-stage instruction ceilings
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
