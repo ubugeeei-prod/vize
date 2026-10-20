@@ -234,7 +234,7 @@ type __VizeVueComponentOptions = {
   props?: any;
   emits?: any;
   slots?: any;
-  setup?: any;
+  setup?: (this: void, props: Readonly<Props>, ctx: any) => any;
   render?: Function;
   components?: any;
   directives?: any;
