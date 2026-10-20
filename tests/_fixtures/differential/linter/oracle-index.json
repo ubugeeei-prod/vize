@@ -194,5 +194,9 @@
   "linter/current-api/dotted-slot-name-9865": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__dotted-slot-name-9865.snap",
     "sha256": "e7b8d1aa5ae5203aff3a697d09b3c7edaff4fb61e2f50381fda250f11c912d4f"
+  },
+  "linter/current-api/cli-preset-validation-9853": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__cli-preset-validation-9853.snap",
+    "sha256": "be9213e74494e62056d6a765923ed552deeeee395761dc47c9a2de17fc03df92"
   }
 }

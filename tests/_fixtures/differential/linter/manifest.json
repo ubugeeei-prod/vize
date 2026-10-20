@@ -16,7 +16,7 @@
       "api": "--current-api",
       "cases": {
         "path": "crates/vize_patina/tests/fixtures/lint-history/cases.json",
-        "sha256": "d7b1d9be911cf7645fa62ca4bbb0a981ca61fec77e970ad20a5ebc1dfde6b84c"
+        "sha256": "3a9f3a0cd0499b33019c4fc69eab67ccadaea34d68ba3fff185a7b375ca9135e"
       }
     },
     {
@@ -54,7 +54,7 @@
   ],
   "oracles": {
     "path": "tests/_fixtures/differential/linter/oracle-index.json",
-    "sha256": "5ce457dd2c14feacea2ec6a3b55f2248fa6b9f714c12afe99aac95efa0558737"
+    "sha256": "a8657e46d07ea2352cb752ade4071f3b59599d952c64aebf149effd28abcfd2a"
   },
   "cases": [
     {
@@ -368,7 +368,7 @@
       }
     },
     {
-      "id": "linter/cli-preset-validation-9853/all-enables-opt-in-rules",
+      "id": "linter/current-api/cli-preset-validation-9853",
       "state": "active",
       "targets": ["lint"],
       "inputs": {

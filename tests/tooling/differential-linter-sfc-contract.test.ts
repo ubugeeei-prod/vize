@@ -38,13 +38,13 @@ function packet(value: any) {
 void test("all current SFC wires have the complete bounded transition and old packs stay exact", () => {
   assert.equal(
     sha256(fs.readFileSync(manifest)),
-    "144f393b9ac6e1026187f2ab97ea51e3ad15c96a7f4f796066329fe8cbe304f8",
+    "80a2987d05e3d4b4ccf3bc1c0a0157028a0fc9deda5705a7dcf353bbb5951afc",
   );
   assert.equal(
     sha256(
       fs.readFileSync(path.join(root, "tests/_fixtures/differential/linter/oracle-index.json")),
     ),
-    "5ce457dd2c14feacea2ec6a3b55f2248fa6b9f714c12afe99aac95efa0558737",
+    "a8657e46d07ea2352cb752ade4071f3b59599d952c64aebf149effd28abcfd2a",
   );
   const expected: [string, ReturnType<typeof missing> | null][] = [
     ["current-api/ref-string-untyped", null],
@@ -74,6 +74,15 @@ void test("all current SFC wires have the complete bounded transition and old pa
     ["current-api/slot-compat-vue3", missing("vue/no-deprecated-slot-attribute")],
     ["current-api/shorthand-compat-vue3", missing("vue/prefer-props-shorthand")],
     ["current-api/next-tick-unspecified", missing("script/no-next-tick")],
+    [
+      "current-api/cli-preset-validation-9853",
+      {
+        api: "--native-current-api",
+        entry: "sfc",
+        kind: "UnsupportedVaporMode",
+        detail: "UnsupportedVaporMode { requested: true }",
+      },
+    ],
     [
       "current-api/next-tick-disabled",
       {
