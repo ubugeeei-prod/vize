@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { generateSfcScopeId } from "@vizejs/native";
 import type { CompiledModule, StyleBlockInfo } from "../types.ts";
 import { type HmrUpdateType, generateHmrCode } from "../hmr.ts";
 import { assembleComponentOutput } from "./component-output.ts";
@@ -96,9 +96,13 @@ function insertAfterStaticImports(output: string, imports: string): string {
   return `${output.slice(0, insertAt)}${imports}\n${output.slice(insertAt)}`;
 }
 
-export function generateScopeId(filename: string): string {
-  const hash = createHash("sha256").update(filename).digest("hex");
-  return hash.slice(0, 8);
+export function generateScopeId(
+  filename: string,
+  root?: string,
+  isProduction = false,
+  source?: string,
+): string {
+  return generateSfcScopeId(filename, root, isProduction, source);
 }
 
 export interface GenerateOutputOptions {
