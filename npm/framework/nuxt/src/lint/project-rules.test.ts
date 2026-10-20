@@ -8,6 +8,7 @@ import type { TestContext } from "node:test";
 
 import type { VizeRuleConfigPreset } from "oxlint-plugin-vize";
 
+import { runNuxtLintCheckerTask } from "./checker/worker.ts";
 import { setupNuxtLintConfigGeneration } from "./generation.ts";
 import {
   readProjectLintRules,
@@ -64,16 +65,20 @@ void test("Vite+ Oxlint rules are retained with their authored namespaces", asyn
     path.join(root, "vite.config.mjs"),
     `export default {
       vue: { linter: { rules: { "vue/no-v-html": "error" } } },
-      lint: { rules: {
-        "no-console": "error",
-        "no-debugger": "warn",
-        "vue/no-unused-properties": "error",
-        ignored: ["error", { option: true }]
-      } }
+      lint: {
+        jsPlugins: ["oxlint-plugin-vize", "./local-plugin.mjs", "./local-plugin.mjs"],
+        rules: {
+          "no-console": "error",
+          "no-debugger": "warn",
+          "vue/no-unused-properties": "error",
+          ignored: ["error", { option: true }]
+        }
+      }
     };`,
   );
 
   assert.deepEqual(await readProjectLintRuleSets(root, unexpectedPreset), {
+    jsPlugins: [path.join(root, "local-plugin.mjs")],
     vize: { "vue/no-v-html": "error" },
     oxlint: {
       "no-console": "error",
@@ -295,28 +300,85 @@ void test("generated config lists project rules under the incremental preset", a
   assert.equal(artifact.rules["vize/nuxt/prefer-import-meta"], "error");
 });
 
-void test("generated config includes Vite+ Oxlint rules without Patina prefixing", async (t) => {
+void test("generated config keeps Vite+ JS plugins loadable by the dev checker", async (t) => {
   const root = await temporaryRoot(t, "vize-nuxt-project-oxlint-emit-");
   await mkdir(path.join(root, "app"));
+  await mkdir(path.join(root, "node_modules"));
+  await symlink(
+    path.dirname(createRequire(import.meta.url).resolve("oxlint/package.json")),
+    path.join(root, "node_modules", "oxlint"),
+    "junction",
+  );
+  await writeFile(
+    path.join(root, "local-plugin.mjs"),
+    `export default {
+      meta: { name: "local" },
+      rules: { "no-foo": { create(context) { return {
+        Identifier(node) {
+          if (node.name === "foo") context.report({ node, message: "Do not name things foo." });
+        }
+      }; } } }
+    };`,
+  );
   await writeFile(
     path.join(root, "vite.config.mjs"),
     `export default {
       vue: { linter: { rules: { "vue/no-v-html": "error" } } },
-      lint: { rules: { "no-console": "error", "vue/no-unused-properties": "warn" } }
+      lint: {
+        jsPlugins: ["./local-plugin.mjs"],
+        rules: {
+          "local/no-foo": "error",
+          "no-console": "error"
+        }
+      }
     };`,
   );
+  const source = path.join(root, "app", "plugin-rule.ts");
+  await writeFile(source, "const foo = 1;\nvoid foo;\n");
 
   const generation = await setupNuxtLintConfigGeneration({ autoInit: false }, createNuxt(root), {
-    resolvePluginSpecifier: () => "../plugin.mjs",
+    resolvePluginSpecifier: () => "./vize-plugin.mjs",
   });
   const artifact = JSON.parse(await readFile(generation?.configFile ?? "", "utf8")) as {
+    jsPlugins: Array<string | { name: string; specifier: string }>;
+    overrides: Array<{ rules?: Record<string, unknown> }>;
     rules: Record<string, string>;
   };
 
+  assert.equal(typeof artifact.jsPlugins[0], "object");
+  assert.equal((artifact.jsPlugins[0] as { specifier: string }).specifier, "./vize-plugin.mjs");
+  assert.equal(artifact.jsPlugins[1], "./local-plugin.mjs");
   assert.equal(artifact.rules["vize/vue/no-v-html"], "error");
+  assert.equal(artifact.rules["local/no-foo"], "error");
   assert.equal(artifact.rules["no-console"], "error");
-  assert.equal(artifact.rules["vue/no-unused-properties"], "warn");
-  assert.equal(artifact.rules["vize/vue/no-unused-properties"], undefined);
+
+  const vizeRules = [
+    ...Object.keys(artifact.rules),
+    ...artifact.overrides.flatMap(({ rules }) => Object.keys(rules ?? {})),
+  ]
+    .filter((rule) => rule.startsWith("vize/"))
+    .filter((rule, index, rules) => rules.indexOf(rule) === index)
+    .map((rule) => `${JSON.stringify(rule.slice("vize/".length))}: { create() { return {}; } }`);
+  await writeFile(
+    path.join(root, "vize-plugin.mjs"),
+    `export default { meta: { name: "vize" }, rules: { ${vizeRules.join(",")} } };`,
+  );
+
+  const result = await runNuxtLintCheckerTask({
+    configFile: generation?.configFile ?? "",
+    cwd: root,
+    emitError: true,
+    emitWarning: true,
+    exclude: [],
+    fix: false,
+    formatter: "json",
+    targets: [source],
+  });
+  assert.equal(result.hasErrors, true);
+  assert.deepEqual(
+    result.diagnostics.map(({ code }) => code),
+    ["local(no-foo)", "local(no-foo)"],
+  );
 });
 
 function unexpectedPreset(): Promise<ProjectLintRules> {
