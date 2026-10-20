@@ -20,6 +20,7 @@ use crate::virtual_ts::types::VizeMapping;
 
 use super::component_prop_checker::{
     append_per_prop_aliases, append_prop_check_helpers, append_prop_checker_alias,
+    usage_needs_per_prop_aliases,
 };
 use super::component_prop_navigation;
 use super::component_slots::{
@@ -68,9 +69,11 @@ pub(super) fn generate_component_props(
     );
     append_component_slot_check_helpers(ts, ctx.experimental_strict_slot_children);
 
+    let shared_contracts = shared_component_contracts(ctx, checkable_usages);
+
     for &(idx, usage) in checkable_usages {
         if !root_packets.contains(idx) {
-            generate_usage_declarations(ts, mappings, ctx, idx, usage);
+            generate_usage_declarations(ts, mappings, ctx, &shared_contracts, idx, usage);
         }
     }
     let legacy_usages;
@@ -195,7 +198,14 @@ pub(super) fn generate_component_props(
     }
     for &(idx, usage) in checkable_usages {
         if let Some(mut packet) = root_packets.remove(idx) {
-            generate_usage_declarations(&mut packet.text, &mut packet.mappings, ctx, idx, usage);
+            generate_usage_declarations(
+                &mut packet.text,
+                &mut packet.mappings,
+                ctx,
+                &shared_contracts,
+                idx,
+                usage,
+            );
             component_prop_navigation::emit_usage_references(
                 &mut packet.text,
                 &mut packet.mappings,
@@ -214,6 +224,7 @@ fn generate_usage_declarations(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     ctx: &ComponentPropsContext<'_, '_>,
+    shared_contracts: &FxHashMap<usize, SharedComponentContract>,
     idx: usize,
     usage: &ComponentUsage,
 ) {
@@ -236,10 +247,20 @@ fn generate_usage_declarations(
     append!(*ts, "  // @vize-map: component -> {src_start}:{src_end}\n",);
     // Prefer the modern static raw-props identity while retaining the
     // instance marker for declarations emitted before #4034.
-    append!(
-        *ts,
-        "  type __{component_type_name}_Props_{idx} = typeof {component_ref} extends {{ __vizeCheck: infer __F }} ? (__VizeIsAny<__F> extends true ? __VizeComponentRawProps<typeof {component_ref}> : Record<string, unknown>) : __VizeComponentRawProps<typeof {component_ref}>;\n",
-    );
+    append!(*ts, "  type __{component_type_name}_Props_{idx} = ",);
+    let shared = shared_contracts.get(&idx);
+    if let Some(shared) = shared.filter(|shared| shared.canonical_idx != idx) {
+        append!(
+            *ts,
+            "__{component_type_name}_Props_{};\n",
+            shared.canonical_idx,
+        );
+    } else {
+        append!(
+            *ts,
+            "typeof {component_ref} extends {{ __vizeCheck: infer __F }} ? (__VizeIsAny<__F> extends true ? __VizeComponentRawProps<typeof {component_ref}> : Record<string, unknown>) : __VizeComponentRawProps<typeof {component_ref}>;\n",
+        );
+    }
 
     // Generic functional prop-checker for this component (#775).
     append_prop_checker_alias(
@@ -249,10 +270,81 @@ fn generate_usage_declarations(
         component_ref.as_str(),
         idx,
         ctx.relaxed_required_usage_starts.contains(&usage.start),
+        (
+            shared
+                .filter(|shared| shared.canonical_idx != idx)
+                .map(|shared| shared.canonical_idx),
+            shared.is_some_and(|shared| shared.needs_value_props),
+        ),
     );
 
     append_per_prop_aliases(ts, usage, component_type_name.as_str(), idx);
     append_duplicate_listener_checks(ts, mappings, ctx, usage);
+}
+
+#[derive(Clone, Copy)]
+struct SharedComponentContract {
+    canonical_idx: usize,
+    needs_value_props: bool,
+}
+
+fn shared_component_contracts(
+    ctx: &ComponentPropsContext<'_, '_>,
+    usages: &[(usize, &ComponentUsage)],
+) -> FxHashMap<usize, SharedComponentContract> {
+    let mut groups: FxHashMap<(String, String, bool), SharedComponentContract> =
+        FxHashMap::default();
+    for &(idx, usage) in usages {
+        let component_ref = ctx.explicit_generics.usage_reference(
+            usage.start,
+            named_dynamic_reference(ctx, usage).unwrap_or_else(|| {
+                component_binding_reference(
+                    ctx.summary,
+                    ctx.options,
+                    ctx.syntactic_type_only_imported_names,
+                    usage.name.as_str(),
+                )
+            }),
+        );
+        let key = (
+            String::from(to_safe_identifier_fragment(usage.name.as_str()).as_str()),
+            component_ref,
+            ctx.relaxed_required_usage_starts.contains(&usage.start),
+        );
+        groups
+            .entry(key)
+            .and_modify(|shared| {
+                shared.needs_value_props |= usage_needs_per_prop_aliases(usage);
+            })
+            .or_insert(SharedComponentContract {
+                canonical_idx: idx,
+                needs_value_props: usage_needs_per_prop_aliases(usage),
+            });
+    }
+
+    let mut contracts = FxHashMap::default();
+    for &(idx, usage) in usages {
+        let component_ref = ctx.explicit_generics.usage_reference(
+            usage.start,
+            named_dynamic_reference(ctx, usage).unwrap_or_else(|| {
+                component_binding_reference(
+                    ctx.summary,
+                    ctx.options,
+                    ctx.syntactic_type_only_imported_names,
+                    usage.name.as_str(),
+                )
+            }),
+        );
+        let key = (
+            String::from(to_safe_identifier_fragment(usage.name.as_str()).as_str()),
+            component_ref,
+            ctx.relaxed_required_usage_starts.contains(&usage.start),
+        );
+        if let Some(shared) = groups.get(&key) {
+            contracts.insert(idx, *shared);
+        }
+    }
+    contracts
 }
 
 fn generate_root_usage_checks(

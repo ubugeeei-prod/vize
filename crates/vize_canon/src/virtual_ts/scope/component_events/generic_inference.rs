@@ -1,5 +1,5 @@
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
-use vize_carton::{String, append, cstr};
+use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::{Croquis, EventHandlerScopeData, Scope, analysis::ComponentUsage};
 
 use crate::virtual_ts::{
@@ -25,6 +25,7 @@ pub(super) struct EmitInferenceContext<'a> {
     pub(super) template_binding_access: &'a TemplateBindingAccess,
     pub(super) source_context: ComponentPropSource<'a>,
     pub(super) enclosing_vif_guard: Option<&'a str>,
+    pub(super) event_inference_usages: &'a std::cell::RefCell<FxHashSet<usize>>,
     pub(super) indent: &'a str,
 }
 
@@ -47,30 +48,15 @@ pub(super) fn generate_inferred_emit_args(
     }
 
     let scope_id = ctx.scope.id.as_u32();
-    let resolver_type = cstr!(
-        "__{}_{}_{}_emit_resolver",
-        ctx.component_type_name,
-        scope_id,
-        ctx.safe_event_name
-    );
-    let emit_props = cstr!(
-        "__vize_emit_props_{}_{}_{}",
-        usage_idx,
-        scope_id,
-        ctx.safe_event_name
-    );
+    let resolver_type = cstr!("__{}_{}_emit_resolver", ctx.component_type_name, usage_idx);
+    let emit_props = cstr!("__vize_emit_props_{usage_idx}");
     let inferred_args = cstr!(
         "__{}_{}_{}_inferred_emit_args",
         ctx.component_type_name,
         scope_id,
         ctx.safe_event_name
     );
-    append!(
-        *ts,
-        "{}type {resolver_type} = __VizeEmitPropsFactory<typeof {}>;\n",
-        ctx.indent,
-        ctx.component_ref,
-    );
+    let first_listener = ctx.event_inference_usages.borrow_mut().insert(usage_idx);
     let guard = usage
         .vif_guard
         .as_ref()
@@ -90,7 +76,15 @@ pub(super) fn generate_inferred_emit_args(
         });
     let guarded_call_indent = guard.as_ref().map(|_| cstr!("{}  ", ctx.indent));
     let call_indent = guarded_call_indent.as_deref().unwrap_or(ctx.indent);
-    if let Some(guard) = guard.as_deref() {
+    if first_listener {
+        append!(
+            *ts,
+            "{}type {resolver_type} = __VizeEmitPropsFactory<typeof {}>;\n",
+            ctx.indent,
+            ctx.component_ref,
+        );
+    }
+    if first_listener && let Some(guard) = guard.as_deref() {
         let isolated = crate::virtual_ts::expressions::isolate_incomplete_expression(guard);
         let guard = isolated.as_str();
         append!(*ts, "{}const {emit_props} = (() => {{\n", ctx.indent);
@@ -103,7 +97,7 @@ pub(super) fn generate_inferred_emit_args(
             "{call_indent}if ({guard}) return (undefined as unknown as {resolver_type})({})(",
             ctx.component_ref,
         );
-    } else {
+    } else if first_listener {
         append!(
             *ts,
             "{}const {emit_props} = (undefined as unknown as {resolver_type})({})(",
@@ -111,96 +105,101 @@ pub(super) fn generate_inferred_emit_args(
             ctx.component_ref,
         );
     }
-    if !usage.spread_props.is_empty() {
-        let literal_range = append_props_literal(
-            ts,
-            mappings,
-            &usage,
-            ctx.template_binding_access,
-            ctx.source_context,
-            call_indent,
-        );
-        ts.push_str(");\n");
-        // Argument assignability errors cover the whole literal, rather than
-        // one spread expression. Preserve the same authored tag owner as the
-        // canonical props call; these inference rows remain diagnostics-only.
-        if let Some(src_range) = crate::virtual_ts::component_tag::source_range(
-            ctx.source_context.template,
-            ctx.source_context.offset,
-            &usage,
-        ) {
-            mappings.push(VizeMapping {
-                gen_range: literal_range,
-                src_range,
-                sub_spans: Vec::new(),
-            });
+    if first_listener {
+        if !usage.spread_props.is_empty() {
+            let literal_range = append_props_literal(
+                ts,
+                mappings,
+                &usage,
+                ctx.template_binding_access,
+                ctx.source_context,
+                call_indent,
+            );
+            ts.push_str(");\n");
+            // Argument assignability errors cover the whole literal, rather than
+            // one spread expression. Preserve the same authored tag owner as the
+            // canonical props call; these inference rows remain diagnostics-only.
+            if let Some(src_range) = crate::virtual_ts::component_tag::source_range(
+                ctx.source_context.template,
+                ctx.source_context.offset,
+                &usage,
+            ) {
+                mappings.push(VizeMapping {
+                    gen_range: literal_range,
+                    src_range,
+                    sub_spans: Vec::new(),
+                });
+            }
+        } else {
+            ts.push_str("{\n");
+            // A static `class` next to `:class` is one Vue prop; a second key in
+            // this literal would be TS1117 on authored markup that vue-tsc accepts.
+            let mut emitted = vize_carton::FxHashSet::default();
+            for prop in &usage.props {
+                if prop.name_is_dynamic
+                    || prop.name.as_str() == "key"
+                    || prop.name.as_str() == "ref"
+                {
+                    continue;
+                }
+                let Some(generated_value) = generated_prop_span(prop, ctx.template_binding_access)
+                else {
+                    continue;
+                };
+                let camel_prop_name = to_camel_case(prop.name.as_str());
+                if !emitted.insert(camel_prop_name.clone()) {
+                    continue;
+                }
+                if is_inline_callback_prop(prop) {
+                    append!(
+                        *ts,
+                        "{call_indent}  // @ts-ignore Inference-only callback prop; mapped prop owner checks diagnostics.\n"
+                    );
+                }
+                append!(*ts, "{call_indent}  ");
+                let entry_start = ts.len();
+                append!(*ts, "\"{camel_prop_name}\"");
+                let key_end = ts.len();
+                ts.push_str(": ");
+                let value_start = ts.len();
+                ts.push_str(generated_value.text.as_str());
+                let entry_end = if generated_value.omits_tail() {
+                    generated_value.mapped_limit(value_start)
+                } else {
+                    ts.len()
+                };
+                ts.push_str(",\n");
+                mappings.push(VizeMapping {
+                    gen_range: entry_start..entry_end,
+                    src_range: (ctx.source_context.offset + prop.start) as usize
+                        ..(ctx.source_context.offset + prop.end) as usize,
+                    sub_spans: prop_entry_sub_spans(
+                        ctx.source_context,
+                        prop,
+                        entry_start..key_end,
+                        value_start..entry_end,
+                    ),
+                });
+                if !ctx.template_binding_access.is_empty()
+                    && prop.is_dynamic
+                    && !is_inline_callback_prop(prop)
+                    && let Some(value) = prop.value.as_ref()
+                    && let Some(source) = prop_value_source_range(ctx.source_context, prop)
+                {
+                    map_rewritten_template_binding(
+                        ts,
+                        mappings,
+                        value_start,
+                        source.start,
+                        value.as_str(),
+                        ctx.template_binding_access,
+                    );
+                }
+            }
+            append!(*ts, "{call_indent}}});\n");
         }
-    } else {
-        ts.push_str("{\n");
-        // A static `class` next to `:class` is one Vue prop; a second key in
-        // this literal would be TS1117 on authored markup that vue-tsc accepts.
-        let mut emitted = vize_carton::FxHashSet::default();
-        for prop in &usage.props {
-            if prop.name_is_dynamic || prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
-                continue;
-            }
-            let Some(generated_value) = generated_prop_span(prop, ctx.template_binding_access)
-            else {
-                continue;
-            };
-            let camel_prop_name = to_camel_case(prop.name.as_str());
-            if !emitted.insert(camel_prop_name.clone()) {
-                continue;
-            }
-            if is_inline_callback_prop(prop) {
-                append!(
-                    *ts,
-                    "{call_indent}  // @ts-ignore Inference-only callback prop; mapped prop owner checks diagnostics.\n"
-                );
-            }
-            append!(*ts, "{call_indent}  ");
-            let entry_start = ts.len();
-            append!(*ts, "\"{camel_prop_name}\"");
-            let key_end = ts.len();
-            ts.push_str(": ");
-            let value_start = ts.len();
-            ts.push_str(generated_value.text.as_str());
-            let entry_end = if generated_value.omits_tail() {
-                generated_value.mapped_limit(value_start)
-            } else {
-                ts.len()
-            };
-            ts.push_str(",\n");
-            mappings.push(VizeMapping {
-                gen_range: entry_start..entry_end,
-                src_range: (ctx.source_context.offset + prop.start) as usize
-                    ..(ctx.source_context.offset + prop.end) as usize,
-                sub_spans: prop_entry_sub_spans(
-                    ctx.source_context,
-                    prop,
-                    entry_start..key_end,
-                    value_start..entry_end,
-                ),
-            });
-            if !ctx.template_binding_access.is_empty()
-                && prop.is_dynamic
-                && !is_inline_callback_prop(prop)
-                && let Some(value) = prop.value.as_ref()
-                && let Some(source) = prop_value_source_range(ctx.source_context, prop)
-            {
-                map_rewritten_template_binding(
-                    ts,
-                    mappings,
-                    value_start,
-                    source.start,
-                    value.as_str(),
-                    ctx.template_binding_access,
-                );
-            }
-        }
-        append!(*ts, "{call_indent}}});\n");
     }
-    if guard.is_some() {
+    if first_listener && guard.is_some() {
         append!(
             *ts,
             "{call_indent}return undefined as never;\n{}}})();\n",
