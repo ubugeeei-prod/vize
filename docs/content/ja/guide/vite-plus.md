@@ -27,43 +27,43 @@ CLI、エディタ、統合タスクは `vite.config.*` と `tsconfig.json` を�
 ## 設定
 
 ```ts
-import { defineConfig, type VueOptions } from "@vizejs/vite-plugin/vite-plus";
-import type { UserConfig } from "vite-plus";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+import { defineVizeLintConfig, flatConfigs } from "oxlint-plugin-vize";
 
-const vpConfig = {
+const config = defineConfig({
   server: { port: 3000 },
   lint: {
     rules: { "no-debugger": "error" },
     ignorePatterns: ["dist/**"],
   },
   fmt: { ignorePatterns: ["dist/**"] },
-} satisfies UserConfig;
-
-const vueConfig = {
-  compiler: { sourceMap: true },
-  typeChecker: { enabled: true },
-  linter: {
-    preset: "essential",
-    rules: { "vue/no-v-html": "error" },
-  },
-  formatter: { printWidth: 100 },
+}).withVue({
+  lint: defineVizeLintConfig(
+    ...flatConfigs.recommended,
+    ...flatConfigs.ecosystem,
+    {
+      ignorePatterns: ["dist/**"],
+      rules: { "no-console": "warn" },
+    },
+  ),
+  fmt: { singleQuote: true },
   entries: [
     {
       files: ["src/admin/**/*.vue"],
       linter: { rules: { "vue/no-v-html": "off" } },
     },
   ],
-} satisfies VueOptions;
+});
 
-export default defineConfig(vpConfig).withVue(vueConfig);
+export default config;
 ```
 
-`vpConfig` は Vue 固有の項目を含まない通常の Vite+ 設定として保ちます。
-`.withVue(vueConfig)` は、その設定を保ちながら `vue:` にネイティブ設定を追加します。
-ファイル単位の上書きには Flat Config ライクな `entries` を推奨します。
-インラインの `vue: { ... }` と同じ設定です。共有するコンパイラ・lint・フォーマッタの設定は
-`vue.compiler`・`vue.linter`・`vue.formatter` に、エディター設定は `vue.languageServer` に置きます。
-`lint.vue` は診断言語などのタスク設定、その他の `lint`・`fmt` は Vite+ の Oxlint・Oxfmt 設定です。
+ルートのオブジェクトは Vue 固有の項目を含まない通常の Vite+ 設定として保ちます。
+`.withVue()` は Vue の flat lint レイヤーをルート設定へ合成するため、ルートの
+`no-debugger` と `flatConfigs.recommended`・`flatConfigs.ecosystem`・Vue 固有の
+`no-console` が同時に有効です。ネイティブ Vue ツールには `lint`・`fmt` を使い、
+ファイル単位のネイティブ上書きは `entries[].linter` に置きます。従来の `linter`・
+`formatter` は互換 alias として使えますが、新旧の同じ項目を同時には指定できません。
 [共有 Vue 設定](./vue-configuration.md)にパスとスコープの扱いをまとめています。
 
 TypeScript の設定は既存の `tsconfig.json` を使います。

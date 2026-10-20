@@ -35,43 +35,45 @@ Ordinary Vite projects can keep the usual plugin entry point.
 ## Configuration
 
 ```ts
-import { defineConfig, type VueOptions } from "@vizejs/vite-plugin/vite-plus";
-import type { UserConfig } from "vite-plus";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+import { defineVizeLintConfig, flatConfigs } from "oxlint-plugin-vize";
 
-const vpConfig = {
+const config = defineConfig({
   server: { port: 3000 },
   lint: {
     rules: { "no-debugger": "error" },
     ignorePatterns: ["dist/**"],
   },
   fmt: { ignorePatterns: ["dist/**"] },
-} satisfies UserConfig;
-
-const vueConfig = {
-  compiler: { sourceMap: true },
-  typeChecker: { enabled: true },
-  linter: {
-    preset: "essential",
-    rules: { "vue/no-v-html": "error" },
-  },
-  formatter: { singleQuote: true },
+}).withVue({
+  lint: defineVizeLintConfig(
+    ...flatConfigs.recommended,
+    ...flatConfigs.ecosystem,
+    {
+      ignorePatterns: ["dist/**"],
+      rules: { "no-console": "warn" },
+    },
+  ),
+  fmt: { singleQuote: true },
   entries: [
     {
       files: ["src/admin/**/*.vue"],
       linter: { rules: { "vue/no-v-html": "off" } },
     },
   ],
-} satisfies VueOptions;
+});
 
-export default defineConfig(vpConfig).withVue(vueConfig);
+export default config;
 ```
 
-Keep `vpConfig` as an ordinary Vite+ config. `.withVue()` adds the canonical
-`vue:` section without mixing Vue-only options into the Vite+ object. Prefer
-`entries` for Flat Config-style, file-scoped overrides. An inline `vue: { ... }`
-in the Vite+ config is equivalent. Native settings use `compiler`, `typeChecker`,
-`linter`, `formatter` and `languageServer` inside that section. See [Shared Vue
-configuration](./vue-configuration.md) for paths and scoped entries.
+Keep the root object as an ordinary, Vue-free Vite+ config. `.withVue()` composes
+the Vue flat lint layer with that root configuration, so the root
+`no-debugger` policy remains active alongside `flatConfigs.recommended`,
+`flatConfigs.ecosystem`, and the Vue-specific `no-console` rule. Use `lint` and
+`fmt` for the native Vue tools, and keep `entries[].linter` for file-scoped
+native overrides. The older `linter` and `formatter` names remain compatibility
+aliases, but do not specify an alias together with its replacement. See [Shared
+Vue configuration](./vue-configuration.md) for paths and scoped entries.
 
 | Section | Owner |
 | --- | --- |
