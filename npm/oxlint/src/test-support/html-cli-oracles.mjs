@@ -139,8 +139,7 @@ export const fixtures = [
     formats: ["default"],
     implicitDefault: true,
     agent: true,
-    status: 1,
-    refused: true,
+    skipped: true,
   },
 ];
 

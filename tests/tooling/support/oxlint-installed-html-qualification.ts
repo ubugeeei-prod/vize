@@ -59,10 +59,13 @@ export function qualifyInstalledHtml(
     "conserve the genuine original stock/Vue phases",
   );
   const originalOutput = Buffer.from(hostPhases[0].stdoutBytes ?? []).toString("utf8");
-  if (fixture.refused) {
+  if (fixture.refused || fixture.skipped) {
     assert.equal(nativeCalls.length, 0);
     assert.equal(wrapper.stdout, originalOutput);
-    assert.match(wrapper.stderr, /Original HTML unavailable/u);
+    assert.match(
+      wrapper.stderr,
+      fixture.skipped ? /Skipped standalone HTML lint/u : /Original HTML unavailable/u,
+    );
     completeCase(capture, nativeCalls, hostPhases);
     return;
   }

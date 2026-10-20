@@ -26,8 +26,10 @@ function completeJson(text: string): Record<string, unknown> {
 
 /** Genuine child packets establish host setup; no additional provider query. */
 export function qualifyHtmlHost(context: HtmlContext, original: OxlintProcessResult): void {
-  if (context.failure || !context.options || !context.provider)
-    throw new Error(context.failure ?? "original HTML host context is unavailable");
+  if (context.failure || context.skipReason || !context.options || !context.provider)
+    throw new Error(
+      context.failure ?? context.skipReason ?? "original HTML host context is unavailable",
+    );
   const phases = original.phases ?? (original.observation ? [original.observation] : []);
   if (phases.length === 0)
     throw new Error("original HTML requires complete actual host observations");
@@ -161,6 +163,21 @@ export function unavailableHtml(
       Buffer.from(suffix),
     ]),
     status: Math.max(original.status ?? 1, 1),
+    stderr: original.stderr + suffix,
+  };
+}
+
+export function skippedHtml(original: OxlintProcessResult, error: unknown): OxlintProcessResult {
+  const suffix = `\n[oxlint-plugin-vize] Skipped standalone HTML lint: ${
+    error instanceof Error ? error.message : String(error)
+  }\n`;
+  return {
+    ...original,
+    rawStderr: Buffer.concat([
+      original.rawStderr ?? Buffer.from(original.stderr),
+      Buffer.from(suffix),
+    ]),
+    status: original.status ?? 1,
     stderr: original.stderr + suffix,
   };
 }

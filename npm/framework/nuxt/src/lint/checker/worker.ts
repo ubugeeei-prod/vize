@@ -23,6 +23,7 @@ export interface NuxtLintCheckerResult {
   diagnosticCount: number;
   hasErrors: boolean;
   hasWarnings: boolean;
+  notices: string[];
   output: string;
 }
 
@@ -38,6 +39,11 @@ export interface NuxtLintCheckerDiagnostic {
 interface OxlintPayload {
   diagnostics: NuxtLintCheckerDiagnostic[];
   [key: string]: unknown;
+}
+
+interface OxlintExecution {
+  stderr: string;
+  stdout: string;
 }
 
 interface WorkerRequest {
@@ -113,7 +119,7 @@ function spawnOxlint(
   entrypoint: string,
   args: string[],
   cwd: string,
-): Promise<string> {
+): Promise<OxlintExecution> {
   return new Promise((resolve, reject) => {
     const child = spawn(node, [entrypoint, ...args], {
       cwd,
@@ -130,25 +136,29 @@ function spawnOxlint(
     });
     child.on("close", (status) => {
       const output = Buffer.concat(stdout).toString("utf8");
+      const details = Buffer.concat(stderr).toString("utf8");
       if (output.trim()) {
-        resolve(output);
+        resolve({ stderr: details, stdout: output });
         return;
       }
-      const details = Buffer.concat(stderr).toString("utf8").trim();
       if (status === 0) {
-        resolve('{"diagnostics":[]}\n');
+        resolve({ stderr: details, stdout: '{"diagnostics":[]}\n' });
         return;
       }
       reject(
         new Error(
-          `oxlint exited with ${String(status)} without JSON output${details ? `: ${details}` : ""}`,
+          `oxlint exited with ${String(status)} without JSON output${details.trim() ? `: ${details.trim()}` : ""}`,
         ),
       );
     });
   });
 }
 
-async function executeOxlint(entrypoint: string, args: string[], cwd: string): Promise<string> {
+async function executeOxlint(
+  entrypoint: string,
+  args: string[],
+  cwd: string,
+): Promise<OxlintExecution> {
   if (!existsSync(entrypoint)) {
     throw new Error(`Failed to start oxlint: entrypoint does not exist: ${entrypoint}`);
   }
@@ -205,6 +215,7 @@ export function formatNuxtLintCheckerDiagnostics(
 function resultFromPayload(
   payload: OxlintPayload,
   task: NuxtLintCheckerTask,
+  stderr: string,
 ): NuxtLintCheckerResult {
   const diagnostics = payload.diagnostics.filter((diagnostic) => {
     const kind = diagnosticKind(diagnostic);
@@ -218,7 +229,15 @@ function resultFromPayload(
         ? `${JSON.stringify({ ...payload, diagnostics })}\n`
         : ""
       : formatNuxtLintCheckerDiagnostics(diagnostics, task.formatter);
-  return { diagnostics, diagnosticCount: diagnostics.length, hasErrors, hasWarnings, output };
+  const notice = stderr.trim();
+  return {
+    diagnostics,
+    diagnosticCount: diagnostics.length,
+    hasErrors,
+    hasWarnings,
+    notices: notice ? [notice] : [],
+    output,
+  };
 }
 
 /** Run one checker pass. This function executes inside the long-lived worker. */
@@ -231,19 +250,22 @@ export async function runNuxtLintCheckerTask(
       diagnosticCount: 0,
       hasErrors: false,
       hasWarnings: false,
+      notices: [],
       output: "",
     };
   }
   const entrypoint = task.oxlintEntrypoint ?? resolveOxlintEntrypoint();
-  const stdout = await executeOxlint(entrypoint, await checkerArgs(task), task.cwd);
+  const execution = await executeOxlint(entrypoint, await checkerArgs(task), task.cwd);
   let payload: OxlintPayload;
   try {
-    payload = JSON.parse(stdout) as OxlintPayload;
+    payload = JSON.parse(execution.stdout) as OxlintPayload;
   } catch (error) {
-    throw new Error(`oxlint returned invalid JSON: ${stdout.slice(0, 240)}`, { cause: error });
+    throw new Error(`oxlint returned invalid JSON: ${execution.stdout.slice(0, 240)}`, {
+      cause: error,
+    });
   }
   if (!Array.isArray(payload.diagnostics)) throw new Error("oxlint JSON has no diagnostics array");
-  return resultFromPayload(payload, task);
+  return resultFromPayload(payload, task, execution.stderr);
 }
 
 function serializeError(error: unknown): { message: string; stack?: string } {

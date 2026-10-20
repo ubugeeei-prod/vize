@@ -157,6 +157,7 @@ class NuxtLintChangeCollector {
   }
 
   private report(result: NuxtLintCheckerResult, targets: string[], full: boolean): void {
+    for (const notice of result.notices) this.server.config.logger.warn(notice);
     if (result.output) {
       if (result.hasErrors) this.server.config.logger.error(result.output);
       else if (result.hasWarnings) this.server.config.logger.warn(result.output);
