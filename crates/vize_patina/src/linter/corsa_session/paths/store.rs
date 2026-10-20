@@ -90,7 +90,7 @@ pub(super) fn remove_empty_session_parents(session_root: &Path) {
     }
 }
 
-pub(in super::super) fn resolve_project_root(filename: &str) -> PathBuf {
+pub(in crate::linter) fn resolve_project_root(filename: &str) -> PathBuf {
     let start_dir = source_directory(filename);
     let mut current = start_dir.as_path();
     let mut package_root = None;
@@ -207,7 +207,7 @@ fn stub_tsconfig_value() -> Value {
     })
 }
 
-fn nearest_tsconfig(filename: &str) -> Option<PathBuf> {
+pub(in crate::linter) fn nearest_tsconfig(filename: &str) -> Option<PathBuf> {
     let mut current = source_directory(filename);
     loop {
         let candidate = current.join("tsconfig.json");
@@ -218,6 +218,40 @@ fn nearest_tsconfig(filename: &str) -> Option<PathBuf> {
             return None;
         }
     }
+}
+
+pub(in crate::linter) fn validate_tsconfig(
+    project_root: &Path,
+    tsconfig: &Path,
+) -> Result<(), String> {
+    let mut project = vize_canon::VirtualProject::new(project_root).map_err(|error| {
+        cstr!(
+            "Cannot load type-aware project configuration {}: {error}",
+            tsconfig.display()
+        )
+    })?;
+    project.set_tsconfig_path(Some(tsconfig.to_path_buf()));
+    project.checked_config_chain_paths().map_err(|error| {
+        cstr!(
+            "Cannot load type-aware project configuration {}: {error}",
+            tsconfig.display()
+        )
+    })?;
+
+    let unresolved = project.unresolved_tsconfig_extends();
+    if unresolved.is_empty() {
+        return Ok(());
+    }
+
+    let mut message = cstr!(
+        "Cannot load type-aware project configuration {}:",
+        tsconfig.display()
+    );
+    for entry in unresolved {
+        message.push_str("\n- ");
+        message.push_str(entry.message().as_str());
+    }
+    Err(message)
 }
 
 fn overlay_user_compiler_options(value: &mut Value, project_root: &Path, tsconfig: &Path) {

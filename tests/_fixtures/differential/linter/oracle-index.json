@@ -191,6 +191,10 @@
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__patina-rule-guards-9870-9871.snap",
     "sha256": "8c9dbcb06f8545e12b78d8b7d24c142aa486db42fc103bea1310b82e187fcfbe"
   },
+  "linter/current-api/incomplete-type-project-10005": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__incomplete-type-project-10005.snap",
+    "sha256": "d412217e50e0544ca98fa62a2d4aa9579121ec36910c0206aeb9ee72183806e6"
+  },
   "linter/current-api/dotted-slot-name-9865": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__dotted-slot-name-9865.snap",
     "sha256": "e7b8d1aa5ae5203aff3a697d09b3c7edaff4fb61e2f50381fda250f11c912d4f"

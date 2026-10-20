@@ -1,0 +1,5 @@
+{
+  "extends": "./.generated/tsconfig.base.json",
+  "compilerOptions": { "strict": true, "noEmit": true },
+  "include": ["src/**/*.vue", "lib/**/*.ts"]
+}

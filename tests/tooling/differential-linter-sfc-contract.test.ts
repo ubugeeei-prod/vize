@@ -38,13 +38,13 @@ function packet(value: any) {
 void test("all current SFC wires have the complete bounded transition and old packs stay exact", () => {
   assert.equal(
     sha256(fs.readFileSync(manifest)),
-    "b2631b097afacf6978f2e900c8130dfc0181831f5ac5441890215ecd5b12591d",
+    "6b608a8746b80a388f0da72c6796265cf1145238b1b5553c38291555d28a2d99",
   );
   assert.equal(
     sha256(
       fs.readFileSync(path.join(root, "tests/_fixtures/differential/linter/oracle-index.json")),
     ),
-    "01d2c12bac296343c6fda858227c279e51de184726683af637b147435272e476",
+    "ffc51288fcf48d52edd0981ee7f19c94590e8604c7931caf106d8245a91d0f66",
   );
   const expected: [string, ReturnType<typeof missing> | null][] = [
     ["current-api/ref-string-untyped", null],
@@ -97,6 +97,7 @@ void test("all current SFC wires have the complete bounded transition and old pa
     ["current-api/static-class-utf8-fix-corrected", missing("vapor/prefer-static-class")],
     ["current-api/valid-v-else-autofix-preserves-directive", missing("vue/valid-v-else")],
     ["current-api/dynamic-slot-v-for-component-bodies", missing("vue/valid-v-for")],
+    ["current-api/incomplete-type-project-10005", missing("vue/valid-v-for")],
     ["current-api/dotted-slot-name-9865", missing("vue/valid-v-slot")],
     ["current-api/vue-path-alias-types-9864", missing("type/no-unsafe-template-binding")],
     ["current-api/patina-rule-guards-9870-9871", missing("vue/attribute-order")],

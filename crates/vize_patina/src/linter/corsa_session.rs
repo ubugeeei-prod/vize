@@ -9,6 +9,8 @@ mod probe;
 mod session;
 mod vue_dependencies;
 
+pub(in crate::linter) use paths::{nearest_tsconfig, resolve_project_root, validate_tsconfig};
+
 #[cfg(test)]
 mod tests;
 

@@ -100,6 +100,12 @@ pub struct Linter {
     /// Lazily initialized native corsa session for type-aware lint.
     #[cfg(not(target_arch = "wasm32"))]
     pub(crate) native_corsa: Mutex<Option<CorsaTypeAwareSession>>,
+    /// Authored TypeScript project configurations already admitted for this lint run.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub(crate) type_aware_project_configs: Mutex<FxHashMap<PathBuf, Option<String>>>,
+    /// Invalid project configurations whose run-level diagnostic was already emitted.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub(crate) reported_type_aware_project_configs: Mutex<FxHashSet<PathBuf>>,
     /// Optional configured Corsa executable for type-aware lint.
     #[cfg(not(target_arch = "wasm32"))]
     pub(crate) corsa_path: Option<PathBuf>,
@@ -252,6 +258,12 @@ impl Linter {
                         session.close();
                     }
                     *guard = None;
+                }
+                if let Ok(mut configs) = linter.type_aware_project_configs.lock() {
+                    configs.clear();
+                }
+                if let Ok(mut reported) = linter.reported_type_aware_project_configs.lock() {
+                    reported.clear();
                 }
             }
             super::corsa_session::remove_finished_process_sessions(files);

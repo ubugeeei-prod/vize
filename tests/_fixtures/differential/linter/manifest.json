@@ -16,7 +16,7 @@
       "api": "--current-api",
       "cases": {
         "path": "crates/vize_patina/tests/fixtures/lint-history/cases.json",
-        "sha256": "eb615b331cc1b0c771a73a16bf84e097f139eb36af36f4a7bc71521fe97f6c0d"
+        "sha256": "8c198ab48866e54ea2c30bfb26e8099a2e86f1d25fd65c3680d370711378e27b"
       }
     },
     {
@@ -54,9 +54,49 @@
   ],
   "oracles": {
     "path": "tests/_fixtures/differential/linter/oracle-index.json",
-    "sha256": "01d2c12bac296343c6fda858227c279e51de184726683af637b147435272e476"
+    "sha256": "ffc51288fcf48d52edd0981ee7f19c94590e8604c7931caf106d8245a91d0f66"
   },
   "cases": [
+    {
+      "id": "linter/current-api/incomplete-type-project-10005",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "incomplete-type-project-10005",
+        "files": [
+          {
+            "path": "package.json",
+            "role": "issue-authored-package",
+            "sha256": "ee27549d82bca7cde54306e886ff85ef408fd80e55e7b574da2d2be426755256"
+          },
+          {
+            "path": "tsconfig.json",
+            "role": "issue-authored-broken-config",
+            "sha256": "d8acd38ce951b8063ac256f9e6a934b2efb45d9e972286f8dc4983b6f634acb6"
+          },
+          {
+            "path": "base.json",
+            "role": "issue-authored-generated-config",
+            "sha256": "8f9ec0f27edcd9bb7d73567a6736599cff3117a720830eccf9ec54852645a28f"
+          },
+          {
+            "path": "lint.json",
+            "role": "issue-authored-lint-config",
+            "sha256": "d2ae1baf4b12fbc63f80e1709127f01af4dfb7336f804dc2abe4bacc20ccb461"
+          },
+          {
+            "path": "data.ts.txt",
+            "role": "issue-authored-aliased-module",
+            "sha256": "c7c0f197f35bf85d7cd6b5b720008a6f25e1412d3cfa5ad87396cfccd590440a"
+          },
+          {
+            "path": "MyList.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "1a358f9e731698f87e550832669cce93c9c9f3f0459ac4ee5d00ff5f2096835f"
+          }
+        ]
+      }
+    },
     {
       "id": "linter/current-api/patina-rule-guards-9870-9871",
       "state": "active",
