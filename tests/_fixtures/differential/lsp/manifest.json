@@ -770,6 +770,32 @@
         "lint": false,
         "typecheck": false
       }
+    },
+    {
+      "id": "lsp/regression/pug-multiline-attributes-8908",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "case": {
+        "path": "pug-multiline-attributes-8908/case.json",
+        "sha256": "568e4bb81c181fe86a3087c4e442b8bc96cdc964aaa4c23dccb6d9ada4e37fb3"
+      },
+      "inputs": {
+        "root": "pug-multiline-attributes-8908",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "f2f3ddb31e7144b88bebefda086a4f545c7010007c3c679089fe28973c7adc50"
+          }
+        ]
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
     }
   ]
 }

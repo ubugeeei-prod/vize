@@ -1,6 +1,6 @@
 use std::fs;
 
-use tower_lsp::lsp_types::{CompletionResponse, Url};
+use tower_lsp::lsp_types::{CompletionResponse, CompletionTextEdit, Url};
 
 use super::CompletionService;
 use crate::{ide::IdeContext, server::ServerState};
@@ -45,6 +45,70 @@ import HighlightMessage from './HighlightMessage.vue'
 
     assert!(labels.iter().any(|label| label == "type"), "{labels:?}");
     assert!(labels.iter().any(|label| label == "no-icon"), "{labels:?}");
+}
+
+#[test]
+fn template_component_prop_completion_resolves_multiline_pug_props() {
+    let dir = tempfile::tempdir().unwrap();
+    let child_path = dir.path().join("HighlightMessage.vue");
+    fs::write(
+        &child_path,
+        r#"<script setup lang="ts">
+defineProps<{
+  type?: string
+  noIcon?: boolean
+}>()
+</script>
+"#,
+    )
+    .unwrap();
+
+    let source = r#"<script setup lang="ts">
+import HighlightMessage from './HighlightMessage.vue'
+</script>
+
+<template lang="pug">
+  highlight-message(
+    type="success"
+    no-
+  )
+</template>
+"#;
+    let parent_path = dir.path().join("Parent.vue");
+    fs::write(&parent_path, source).unwrap();
+
+    let uri = Url::from_file_path(&parent_path).unwrap();
+    let state = ServerState::new();
+    state
+        .documents
+        .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+    state.update_virtual_docs(&uri, source);
+
+    let prefix_start = source.find("    no-").unwrap() + "    ".len();
+    let offset = prefix_start + "no-".len();
+    let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+    let response = CompletionService::complete(&ctx).unwrap();
+    let items = match response {
+        CompletionResponse::Array(items) => items,
+        CompletionResponse::List(list) => list.items,
+    };
+    let item = items
+        .iter()
+        .find(|item| item.label == "no-icon")
+        .expect("no-icon completion");
+    let Some(CompletionTextEdit::Edit(edit)) = item.text_edit.as_ref() else {
+        panic!("no-icon completion must replace the authored prefix: {item:?}");
+    };
+    let (start_line, start_character) = crate::ide::offset_to_position(source, prefix_start);
+    let (end_line, end_character) = crate::ide::offset_to_position(source, offset);
+    assert_eq!(
+        (edit.range.start.line, edit.range.start.character),
+        (start_line, start_character)
+    );
+    assert_eq!(
+        (edit.range.end.line, edit.range.end.character),
+        (end_line, end_character)
+    );
 }
 
 fn completion_labels(response: CompletionResponse) -> Vec<String> {
