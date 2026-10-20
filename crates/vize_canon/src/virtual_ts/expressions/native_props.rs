@@ -105,7 +105,7 @@ fn collect_child_bindings(child: &TemplateChildNode<'_>, bindings: &mut NativePr
 fn collect_element_bindings(element: &ElementNode<'_>, bindings: &mut NativePropBindings) {
     if is_native_tag(element.tag) {
         let renders_as_fragment = renders_as_fragment(element);
-        for prop in &element.props {
+        for (index, prop) in element.props.iter().enumerate() {
             let PropNode::Directive(directive) = prop else {
                 continue;
             };
@@ -115,6 +115,9 @@ fn collect_element_bindings(element: &ElementNode<'_>, bindings: &mut NativeProp
                 {
                     continue;
                 }
+                if overridden_by_later_attribute(&binding.target, element.props.get(index + 1..)) {
+                    continue;
+                }
                 bindings.insert(range, binding);
             }
         }
@@ -122,6 +125,23 @@ fn collect_element_bindings(element: &ElementNode<'_>, bindings: &mut NativeProp
     for child in &element.children {
         collect_child_bindings(child, bindings);
     }
+}
+
+/// `vue-tsc` writes element props into one object literal in authored order,
+/// so a plain `class` / `style` after `:class` / `:style` is the value
+/// it checks (`<div :class="flag" class="row">` is clean). Other names
+/// cannot repeat on an element.
+fn overridden_by_later_attribute(
+    target: &NativePropTarget,
+    later: Option<&[PropNode<'_>]>,
+) -> bool {
+    let NativePropTarget::Property { name, .. } = target else {
+        return false;
+    };
+    matches!(name.as_str(), "class" | "style")
+        && later.unwrap_or_default().iter().any(
+            |prop| matches!(prop, PropNode::Attribute(attribute) if attribute.name == name.as_str()),
+        )
 }
 
 /// Whether this `<template>` stands for a fragment or a slot body rather than

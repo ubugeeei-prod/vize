@@ -330,3 +330,27 @@ fn analyze<'a>(
     analyzer.analyze_template(&root);
     (root, analyzer.finish())
 }
+
+#[test]
+fn later_static_class_or_style_replaces_the_bound_value() {
+    let script = r#"const flag = true"#;
+    let template = r#"<div :class="flag" class="row" /><p class="row" :class="flag" /><i :style="flag" style="color: red" /><b :title="flag" title="x" />"#;
+    let allocator = vize_carton::Allocator::new();
+    let (root, summary) = analyze(&allocator, script, template, false);
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+    let checks: Vec<_> = output
+        .code
+        .lines()
+        .map(str::trim)
+        .filter(|line| line.starts_with("const __vize_native_prop_check_"))
+        .collect();
+    assert_eq!(
+        checks,
+        [
+            r#"const __vize_native_prop_check_56: __VizeNativeElementProp<__VizeNativeElement<"p">, "class"> = (flag);"#,
+            r#"const __vize_native_prop_check_113: __VizeNativeElementProp<__VizeNativeElement<"b">, "title"> = (flag);"#,
+        ],
+        "{}",
+        output.code
+    );
+}
