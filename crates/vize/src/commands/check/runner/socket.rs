@@ -5,15 +5,15 @@ use std::path::{Path, PathBuf};
 use std::time::{Instant, SystemTime};
 
 use serde::Serialize;
-use vize_l0::{String, cstr};
+use vize_l0::{cstr, String};
 
 use super::collect::collect_check_files_with_ignores;
 use super::{display_path, resolve_project_root, resolve_tsconfig_path, text_style::TextStyle};
 use crate::commands::check::{
-    CheckArgs, ProjectJsonRpcResponse, ServerProjectCheckResult,
     patterns::CheckFileOptions,
     reporting::{JsonFileResult, JsonOutput},
-    tsconfig_inputs::{TsconfigInputCache, collect_default_check_files, tsconfig_allows_js},
+    tsconfig_inputs::{collect_default_check_files, tsconfig_allows_js, TsconfigInputCache},
+    CheckArgs, ProjectJsonRpcResponse, ServerProjectCheckResult,
 };
 
 #[derive(Serialize)]
@@ -25,6 +25,7 @@ struct ProjectFileRequest {
     modified_nanos: u128,
 }
 
+#[expect(clippy::disallowed_types, reason = "JSON protocol uses std String")]
 pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
     // Virtual-source and declaration output need the direct runner's richer
     // artifact contract. The normal diagnostic path uses one project RPC.
@@ -139,6 +140,7 @@ fn file_request(path: &Path) -> Result<ProjectFileRequest, String> {
     })
 }
 
+#[expect(clippy::disallowed_types, reason = "JSON diagnostics use std String")]
 fn render_result(
     args: &CheckArgs,
     cwd: &Path,
@@ -206,7 +208,7 @@ fn render_result(
                 }
                 println!(
                     "\n{}",
-                    style.underline(&display_path(cwd, Path::new(&filename)))
+                    style.underline(display_path(cwd, Path::new(&filename)))
                 );
                 for diagnostic in diagnostics {
                     println!("  {diagnostic}");
