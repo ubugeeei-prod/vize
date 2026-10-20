@@ -36,9 +36,10 @@ pub(super) fn generate_event_handler_scope(
     ctx: &ScopeGenContext<'_, '_>,
     scope: &Scope,
     data: &EventHandlerScopeData,
-    indent: &str,
-    inner_indent: &str,
+    enclosing_vif_guard: Option<&str>,
+    indents: (&str, &str),
 ) {
+    let (indent, inner_indent) = indents;
     let scope_id = scope.id.as_u32();
     let event_value = if data.has_implicit_event {
         "$event"
@@ -78,6 +79,7 @@ pub(super) fn generate_event_handler_scope(
                     event_listener_type: None,
                     event_name_src_range: None,
                     return_single_expression: false,
+                    enclosing_vif_guard,
                     template_binding_access: ctx.template_binding_access,
                     template_offset: ctx.template_offset,
                     indent: inner_indent,
@@ -132,6 +134,7 @@ pub(super) fn generate_event_handler_scope(
                         data.event_name.as_str(),
                     ),
                     return_single_expression: false,
+                    enclosing_vif_guard,
                     template_binding_access: ctx.template_binding_access,
                     template_offset: ctx.template_offset,
                     indent: inner_indent,
@@ -147,8 +150,8 @@ pub(super) fn generate_event_handler_scope(
             ctx,
             scope,
             data,
-            indent,
-            inner_indent,
+            enclosing_vif_guard,
+            (indent, inner_indent),
         );
     } else if let Some((event_type, listener_args)) = transition_hook_signature(
         ctx.template_source,
@@ -199,6 +202,7 @@ pub(super) fn generate_event_handler_scope(
                         data.event_name.as_str(),
                     ),
                     return_single_expression: false,
+                    enclosing_vif_guard,
                     template_binding_access: ctx.template_binding_access,
                     template_offset: ctx.template_offset,
                     indent: inner_indent,
@@ -247,6 +251,7 @@ pub(super) fn generate_event_handler_scope(
                         data.event_name.as_str(),
                     ),
                     return_single_expression: false,
+                    enclosing_vif_guard,
                     template_binding_access: ctx.template_binding_access,
                     template_offset: ctx.template_offset,
                     indent: inner_indent,
@@ -276,6 +281,7 @@ pub(super) fn generate_event_handler_scope(
                     event_listener_type: None,
                     event_name_src_range: None,
                     return_single_expression: false,
+                    enclosing_vif_guard,
                     template_binding_access: ctx.template_binding_access,
                     template_offset: ctx.template_offset,
                     indent: inner_indent,

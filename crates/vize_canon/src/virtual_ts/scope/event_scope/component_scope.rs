@@ -20,9 +20,10 @@ pub(super) fn generate_component_handler_scope(
     ctx: &ScopeGenContext<'_, '_>,
     scope: &Scope,
     data: &EventHandlerScopeData,
-    indent: &str,
-    inner_indent: &str,
+    enclosing_vif_guard: Option<&str>,
+    indents: (&str, &str),
 ) {
+    let (indent, inner_indent) = indents;
     let scope_id = scope.id.as_u32();
     let event_value = if data.has_implicit_event {
         "$event"
@@ -54,6 +55,7 @@ pub(super) fn generate_component_handler_scope(
                 ctx.explicit_generics
                     .alias_at(ctx.summary, component.as_str(), scope.span.start)
             }),
+            enclosing_vif_guard,
             indent,
         },
     ) else {
@@ -127,6 +129,7 @@ pub(super) fn generate_component_handler_scope(
                 event_listener_type: Some(listener_type.as_str()),
                 event_name_src_range: event_name_src_range.clone(),
                 return_single_expression: inline_statement_handler,
+                enclosing_vif_guard,
                 template_binding_access: ctx.template_binding_access,
                 template_offset: ctx.template_offset,
                 indent: inner_indent,

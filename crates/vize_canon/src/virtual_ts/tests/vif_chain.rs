@@ -234,3 +234,96 @@ const items: ViewItem[] = []
         output.code
     );
 }
+
+#[test]
+fn component_listeners_share_linear_v_else_if_branch_guards() {
+    let script = r#"import { reactive } from 'vue'
+import KeyPad from './KeyPad.vue'
+type Kind = 'k0' | 'k1' | 'k2' | 'k3'
+const state = reactive<{ mode: 'edit' | 'view'; kind: Kind }>({ mode: 'edit', kind: 'k0' })
+const onPress = (key: string) => key
+const onClear = () => undefined
+const onSubmit = (value: number) => value
+"#;
+    let mut template = String::from("<div>\n");
+    for index in 0..4 {
+        let directive = if index == 0 { "v-if" } else { "v-else-if" };
+        template.push_str(
+            format!(
+                "  <template {directive}=\"state.mode === 'edit' && state.kind === 'k{index}'\">\n    <KeyPad label=\"a{index}\" @press=\"onPress\" @clear=\"onClear\" @submit=\"onSubmit\" />\n    <KeyPad label=\"b{index}\" @press=\"onPress\" @clear=\"onClear\" @submit=\"onSubmit\" />\n  </template>\n"
+            )
+            .as_str(),
+        );
+    }
+    template.push_str("  <span v-else>none</span>\n</div>");
+
+    let allocator = vize_carton::Allocator::new();
+    let (root, errors) = vize_armature::parse(&allocator, template.as_str());
+    assert!(errors.is_empty(), "{errors:?}");
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+    let listener_start = output.code.find("  // @press handler").unwrap_or(0);
+    let listener_end = output
+        .code
+        .find("  // Component props type declarations")
+        .unwrap_or(output.code.len());
+    let navigation_start = output
+        .code
+        .find("// @ts-ignore Navigation-only guard")
+        .unwrap();
+    let navigation_end = output.code[navigation_start..]
+        .find("  if (state.mode === 'edit' && state.kind === 'k0') {")
+        .map(|offset| navigation_start + offset)
+        .unwrap();
+    let navigation = &output.code[navigation_start..navigation_end];
+    let listeners = &output.code[listener_start..listener_end];
+
+    assert_eq!(
+        navigation
+            .matches("// @ts-ignore Navigation-only guard")
+            .count(),
+        4,
+        "one linear branch chain must own all event navigation references: {navigation}"
+    );
+    for index in 0..4 {
+        let condition = format!("state.kind === 'k{index}'");
+        assert_eq!(
+            navigation.matches(condition.as_str()).count(),
+            1,
+            "navigation must emit each branch condition once: {condition}\n{navigation}"
+        );
+    }
+
+    assert_eq!(
+        listeners.matches("// @press handler").count(),
+        8,
+        "{listeners}"
+    );
+    assert_eq!(
+        listeners.matches("// @clear handler").count(),
+        8,
+        "{listeners}"
+    );
+    assert_eq!(
+        listeners.matches("// @submit handler").count(),
+        8,
+        "{listeners}"
+    );
+    for index in 0..4 {
+        let condition = format!("state.kind === 'k{index}'");
+        assert!(
+            listeners.matches(condition.as_str()).count() <= 7,
+            "each branch condition is emitted once in the shared chain and at most once per listener callback: {condition}\n{listeners}"
+        );
+    }
+    assert_eq!(
+        listeners
+            .matches("// @ts-ignore Listener branch guard")
+            .count(),
+        3,
+        "the three else-if continuations must share the listener branch chain: {listeners}"
+    );
+}

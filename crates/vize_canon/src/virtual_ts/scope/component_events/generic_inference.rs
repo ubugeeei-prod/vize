@@ -24,6 +24,7 @@ pub(super) struct EmitInferenceContext<'a> {
     pub(super) prop_key: &'a str,
     pub(super) template_binding_access: &'a TemplateBindingAccess,
     pub(super) source_context: ComponentPropSource<'a>,
+    pub(super) enclosing_vif_guard: Option<&'a str>,
     pub(super) indent: &'a str,
 }
 
@@ -70,10 +71,23 @@ pub(super) fn generate_inferred_emit_args(
         ctx.indent,
         ctx.component_ref,
     );
-    let guard = usage.vif_guard.as_ref().map(|guard| {
-        rewrite_reserved_template_binding(guard.as_str(), ctx.template_binding_access)
-            .unwrap_or_else(|| guard.clone())
-    });
+    let guard = usage
+        .vif_guard
+        .as_ref()
+        .map(|guard| {
+            rewrite_reserved_template_binding(guard.as_str(), ctx.template_binding_access)
+                .unwrap_or_else(|| guard.clone())
+        })
+        .and_then(|guard| {
+            ctx.enclosing_vif_guard
+                .and_then(|enclosing| {
+                    crate::virtual_ts::scope::remove_enclosing_vif_guard_prefix(
+                        guard.as_str(),
+                        enclosing,
+                    )
+                })
+                .or_else(|| ctx.enclosing_vif_guard.is_none().then_some(guard))
+        });
     let guarded_call_indent = guard.as_ref().map(|_| cstr!("{}  ", ctx.indent));
     let call_indent = guarded_call_indent.as_deref().unwrap_or(ctx.indent);
     if let Some(guard) = guard.as_deref() {

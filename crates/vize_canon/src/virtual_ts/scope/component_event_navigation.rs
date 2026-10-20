@@ -13,6 +13,7 @@ use crate::virtual_ts::{
 use super::component_navigation::{is_ts_identifier, push_ts_single_quoted_literal};
 use super::context::{ComponentPropsContext, VForPropsContext};
 use super::event_handler::event_name_source_range;
+use super::vif_guard_chain::{append_chained_vif_guard_close, append_chained_vif_guard_open};
 use crate::virtual_ts::expressions::generated_prop_value;
 
 pub(super) fn emit_event_references(
@@ -138,12 +139,7 @@ fn emit_usage_event_references(
         };
         if !emitted_guard {
             if let Some(guard) = guard.as_deref() {
-                let isolated = crate::virtual_ts::expressions::isolate_incomplete_expression(guard);
-                let guard = isolated.as_str();
-                append!(
-                    *ts,
-                    "{indent}// @ts-ignore Navigation-only guard; authored binding checks own diagnostics.\n{indent}if ({guard}) {{\n"
-                );
+                append_chained_vif_guard_open(ts, indent, guard, "Navigation-only guard");
             }
             emitted_guard = true;
         }
@@ -231,7 +227,7 @@ fn emit_usage_event_references(
         });
     }
     if emitted_guard && guard.is_some() {
-        append!(*ts, "{indent}}}\n");
+        append_chained_vif_guard_close(ts, indent);
     }
 }
 
