@@ -517,6 +517,48 @@
           }
         ]
       }
+    },
+    {
+      "id": "linter/current-api/vue-path-alias-types-9864",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "vue-alias-types-9864",
+        "files": [
+          {
+            "path": "tsconfig.json",
+            "role": "issue-authored-config",
+            "sha256": "2ddd0f0f16a9b64c0244adf7812d537dcc7c0675db731a7ffb5a72a0de7ed365"
+          },
+          {
+            "path": "src/ui/side-panel.vue",
+            "role": "issue-authored-component",
+            "sha256": "611ef6b1087e7f4deef925767ea4554fca9a697d485e888ee58ed6ca17cbe3a6"
+          },
+          {
+            "path": "src/ui/item-list.vue",
+            "role": "issue-authored-component",
+            "sha256": "021013dfb5858864ae8fea736ec69a1478bca3ce0e8ff70c700be69e8f9f0203"
+          },
+          {
+            "path": "src/ui/helpers.ts",
+            "role": "issue-authored-control",
+            "sha256": "50528261e7bd829ae991388f4ec8d8b956cecd140e72bc6db630c87f4f5dc410"
+          },
+          {
+            "path": "src/pages/page-view.vue",
+            "role": "issue-authored-consumer",
+            "sha256": "101475e96ae9d5ff4f8cd8d24d6cdccdc499e54dee68cfb4ac15b885b4c89e0d"
+          },
+          {
+            "path": "src/pages/list-view.vue",
+            "role": "issue-authored-consumer",
+            "sha256": "999459441acb76214dd616f70cfe4b9f1cd25ad423a15436fb29223579113efc"
+          }
+        ]
+      }
     }
   ]
 }
