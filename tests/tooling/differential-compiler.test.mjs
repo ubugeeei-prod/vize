@@ -101,6 +101,7 @@ void test("compiler fixture pins a real full-module reference without native cre
     [
       "compiler/sfc/ssr-slot-scope",
       "compiler/sfc/slot-fallback-compound-text-9889",
+      "compiler/sfc/slot-fallback-adjacent-text-10087",
       "compiler/sfc/production-v-if-comment-9920",
       "compiler/sfc/template-asset-urls-9895",
       "compiler/sfc/v-model-maybe-ref-9897",
