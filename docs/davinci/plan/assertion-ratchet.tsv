@@ -426,7 +426,6 @@ crates/vize_marquette/src/test_run/validate/tests.rs	4
 crates/vize_marquette/src/validate/tests.rs	4
 crates/vize_musea/src/transform/to_csf/tests.rs	5
 crates/vize_patina/src/linter/corsa_session/session_tests.rs	1
-crates/vize_patina/src/linter/corsa_session/vue_dependencies/tests.rs	4
 crates/vize_patina/src/linter/native_type_aware/public_expression_tests.rs	1
 crates/vize_patina/src/linter/native_type_aware/template_queries/tests.rs	1
 crates/vize_patina/src/linter/native_type_aware/tests.rs	15
