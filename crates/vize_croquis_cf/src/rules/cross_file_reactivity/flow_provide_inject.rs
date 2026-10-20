@@ -74,7 +74,7 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
                     }
 
                     // Check if provider provides non-reactive value
-                    if !provider.is_reactive && !provider.is_function_service {
+                    if !provider.is_reactive && !provider.is_reactive_service {
                         self.issues.push(CrossFileReactivityIssue {
                             file_id: provider.file_id,
                             kind: CrossFileReactivityIssueKind::NonReactiveProvide {
