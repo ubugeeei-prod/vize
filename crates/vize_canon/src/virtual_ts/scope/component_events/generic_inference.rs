@@ -60,10 +60,7 @@ pub(super) fn generate_inferred_emit_args(
     let first_listener = ctx.event_inference_usages.borrow_mut().insert(usage_idx);
     let dynamic_component =
         crate::virtual_ts::scope::is_owned_dynamic_component_alias(ctx.template_ast, &usage)
-            || crate::virtual_ts::scope::is_owned_named_dynamic_component(
-                ctx.template_ast,
-                &usage,
-            );
+            || crate::virtual_ts::scope::is_owned_named_dynamic_component(ctx.template_ast, &usage);
     let guard = usage
         .vif_guard
         .as_ref()
