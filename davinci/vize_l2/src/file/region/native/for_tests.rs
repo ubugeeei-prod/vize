@@ -4,12 +4,12 @@ extern crate std;
 use super::*;
 use vize_l0::config::{VueDialect, VueVersion};
 use vize_l1::{
-    SurfaceParseOptions,
     container::{Vue, vue::DescriptorOptions},
     embed::{
         EmbedSource,
         syntax::{ProgramOptions, parse_program_once},
     },
+    markup::SurfaceParseOptions,
 };
 
 std::thread_local! {

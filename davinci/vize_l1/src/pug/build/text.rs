@@ -5,12 +5,12 @@
 use vize_l0::Vec;
 
 use super::Builder;
+use crate::markup::surface::Token;
 use crate::pug::error::PugErrorCode;
 use crate::pug::lex::Tk;
 use crate::pug::tree::{
     PugDotBlock, PugHtml, PugHtmlItem, PugInterpolation, PugNode, PugText, PugTextPiece,
 };
-use crate::surface::Token;
 
 impl<'a> Builder<'a, '_> {
     /// `parseText`: in a block, a newline followed by more text joins the

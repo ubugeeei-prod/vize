@@ -118,7 +118,7 @@ impl<'a> MarkupElement<'a> {
 /// kept the op for) — Relief's `ElementType::Template` rule.
 pub(super) fn l2_template_is_special(
     op: L2ElementOp<'_>,
-    surface: Option<&vize_l1::Element<'_>>,
+    surface: Option<&vize_l1::markup::Element<'_>>,
     doc: &L2Markup<'_>,
 ) -> bool {
     match surface {

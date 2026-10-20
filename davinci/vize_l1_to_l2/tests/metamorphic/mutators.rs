@@ -104,7 +104,7 @@
 //! so the quotient the justification licenses is already the artifact.
 
 use vize_l0::{Allocator, Box, String, StringBuilder, Vec as ArenaVec};
-use vize_l1::{
+use vize_l1::markup::{
     Attribute, CloseTag, Element, ElementClose, OpenTag, SurfaceChild, SurfaceTree, Token, render,
 };
 

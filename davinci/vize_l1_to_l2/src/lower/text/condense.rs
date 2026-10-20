@@ -8,7 +8,7 @@
 use alloc::vec::Vec as StdVec;
 
 use vize_l0::{Allocator, String, StringBuilder};
-use vize_l1::SurfaceChild;
+use vize_l1::markup::SurfaceChild;
 
 use super::super::cx::Cx;
 

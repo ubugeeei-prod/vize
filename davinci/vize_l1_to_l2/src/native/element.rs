@@ -5,7 +5,7 @@ use vize_l0::Span;
 use vize_l1::dialect::vue3::VueDirectives;
 use vize_l1::embed::prepare_attribute_value;
 use vize_l1::markup::directive::DirectiveSyntax;
-use vize_l1::{Attribute as SurfaceAttribute, Element};
+use vize_l1::markup::{Attribute as SurfaceAttribute, Element};
 use vize_l2::op::{Attribute, Namespace};
 
 mod header;

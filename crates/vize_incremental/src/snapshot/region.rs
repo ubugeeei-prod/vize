@@ -14,7 +14,7 @@
 
 use vize_l0::diag::{Diagnostic, Stage};
 use vize_l0::{Allocator, SourceRoot, String};
-use vize_l1::{SurfaceChild, Token};
+use vize_l1::markup::{SurfaceChild, Token};
 use vize_l1_to_l2::{LegacyCaps, lower_source_block_with_caps};
 use vize_l2::dump::{Op as DumpOp, Page as L2Page};
 
@@ -42,7 +42,7 @@ pub struct RegionLowering {
 #[must_use]
 pub fn split_regions(block: &str) -> Option<Vec<RegionSyntax>> {
     let allocator = Allocator::default();
-    let (tree, _) = vize_l1::parse(&allocator, block);
+    let (tree, _) = vize_l1::markup::parse(&allocator, block);
     let base = block.as_ptr() as usize;
     let starts: Vec<usize> = tree
         .children
@@ -86,7 +86,7 @@ pub fn lower_region(
     let start = region.start as usize;
     let slice = block.get(start..start + region.text.len())?;
     let allocator = Allocator::default();
-    let (tree, errors) = vize_l1::parse(&allocator, slice);
+    let (tree, errors) = vize_l1::markup::parse(&allocator, slice);
     let frame = SourceRoot::new(block)
         .and_then(|root| root.block(slice, region.start))
         .ok()?;

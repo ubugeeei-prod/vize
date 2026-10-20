@@ -269,7 +269,7 @@ pub fn surface_artifact(source: &BlockSource) -> Option<SurfaceArtifact> {
         return None;
     }
     let allocator = Allocator::default();
-    let (tree, errors) = vize_l1::parse(&allocator, source.text.as_str());
+    let (tree, errors) = vize_l1::markup::parse(&allocator, source.text.as_str());
     Some(SurfaceArtifact {
         key: ArtifactKey::of(&SurfacePage(&tree), 0),
         findings: errors
@@ -300,7 +300,7 @@ pub fn page_artifact(source: &BlockSource, config: StageConfig) -> Option<PageAr
         return None;
     }
     let caps = LegacyCaps::for_version(config.vue_version);
-    let (tree, errors) = vize_l1::parse(&allocator, source.text.as_str());
+    let (tree, errors) = vize_l1::markup::parse(&allocator, source.text.as_str());
     let lowered = lower_with_caps(&allocator, &tree, &errors, caps);
     let folio = L2Page::of(&lowered.root.ops);
     Some(PageArtifact {

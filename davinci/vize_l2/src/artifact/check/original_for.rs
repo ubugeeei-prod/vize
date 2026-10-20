@@ -6,13 +6,12 @@ use vize_l0::{
     config::{VueDialect, VueVersion},
 };
 use vize_l1::{
-    SurfaceParseOptions,
     container::{Vue, vue::DescriptorOptions},
     embed::{
         EmbedSource,
         syntax::{ProgramOptions, parse_program_once},
     },
-    markup::NativeTemplateComponent,
+    markup::{NativeTemplateComponent, SurfaceParseOptions},
 };
 
 #[test]

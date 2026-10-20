@@ -16,7 +16,7 @@ fn selected<'a>(
         DescriptorOptions {
             version: VueVersion::V3,
             dialect: VueDialect::Vue,
-            template: crate::SurfaceParseOptions::default(),
+            template: crate::markup::SurfaceParseOptions::default(),
         },
     );
     let admitted = descriptor
@@ -141,7 +141,7 @@ fn reborrow_never_promotes_unquoted_slash_recovery_to_header_admission() {
     assert!(failure.syntax().is_none());
     assert!(matches!(
         element.surface().close,
-        crate::ElementClose::Missing
+        crate::markup::ElementClose::Missing
     ));
     assert_eq!(attribute.surface().name.text, "v-if");
     assert!(core::ptr::eq(attribute.component(), owner.component()));

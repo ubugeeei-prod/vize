@@ -12,7 +12,7 @@ fn normally_owned_checked_attribute_reports_only_its_exact_component_and_full_ra
     let mut children = root.children();
     assert!(matches!(
         children.next().unwrap().surface(),
-        vize_l1::SurfaceChild::Text(_)
+        vize_l1::markup::SurfaceChild::Text(_)
     ));
     let element = children.next().unwrap().into_element().unwrap();
     assert_eq!(element.ordinal(), 1);

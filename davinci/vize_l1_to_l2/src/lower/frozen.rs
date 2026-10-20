@@ -2,7 +2,7 @@
 
 use super::{Allocator, LegacyCaps, Lowered, cx::Cx, finish};
 use vize_l0::{SourceBlock, Span};
-use vize_l1::{Element, SurfaceError, SurfaceTree};
+use vize_l1::markup::{Element, SurfaceError, SurfaceTree};
 
 const FOREIGN: &str = "Frozen lowering custody belongs to a different whole template source.";
 const BOUNDS: &str = "Frozen lowering opening spans are unordered, overlapping or out of bounds.";
@@ -136,7 +136,7 @@ mod tests {
     fn absent_and_explicit_empty_custody_have_distinct_contracts() {
         let arena = Allocator::new();
         let source = "<slot v-pre></slot>";
-        let (tree, errors) = vize_l1::parse(&arena, source);
+        let (tree, errors) = vize_l1::markup::parse(&arena, source);
         let original = lower(&arena, &tree, &errors);
         assert!(matches!(&original.root.ops[0], Op::Slot(_)));
         let block = SourceRoot::new(source).unwrap().whole_block();
@@ -144,7 +144,7 @@ mod tests {
             lower_with_frozen_element_spans(&arena, &tree, &errors, block, &[]).err(),
             Some(MISSING)
         );
-        let (normal, errors) = vize_l1::parse(&arena, "<slot></slot>");
+        let (normal, errors) = vize_l1::markup::parse(&arena, "<slot></slot>");
         let block = SourceRoot::new(normal.source).unwrap().whole_block();
         let explicit =
             lower_with_frozen_element_spans(&arena, &normal, &errors, block, &[]).unwrap();
@@ -156,7 +156,7 @@ mod tests {
     fn complete_opening_membership_changes_only_the_explicit_owner() {
         let arena = Allocator::new();
         let source = "<slot v-pre></slot>";
-        let (tree, errors) = vize_l1::parse(&arena, source);
+        let (tree, errors) = vize_l1::markup::parse(&arena, source);
         let block = SourceRoot::new(source).unwrap().whole_block();
         let spans = [Span::new(0, 12)];
         let explicit =
@@ -175,7 +175,7 @@ mod tests {
         let arena = Allocator::new();
         let source = "<slot v-pre></slot>".to_owned();
         let copy = source.clone();
-        let (tree, errors) = vize_l1::parse(&arena, &source);
+        let (tree, errors) = vize_l1::markup::parse(&arena, &source);
         let before = cstr!("{tree:?}");
         let foreign = SourceRoot::new(&copy).unwrap().whole_block();
         assert_eq!(
@@ -185,7 +185,7 @@ mod tests {
         assert_eq!(cstr!("{tree:?}"), before);
         let root = "prefix<slot v-pre></slot>";
         let block = SourceRoot::new(root).unwrap().block(&root[6..], 6).unwrap();
-        let (tree, errors) = vize_l1::parse(&arena, block.source());
+        let (tree, errors) = vize_l1::markup::parse(&arena, block.source());
         let before = cstr!("{tree:?}");
         assert_eq!(
             lower_with_frozen_element_spans(&arena, &tree, &errors, block, &[]).err(),
@@ -198,7 +198,7 @@ mod tests {
     fn duplicate_overlapping_out_of_bounds_and_non_frozen_spans_refuse() {
         let arena = Allocator::new();
         let source = "<slot v-pre></slot><i></i>";
-        let (tree, errors) = vize_l1::parse(&arena, source);
+        let (tree, errors) = vize_l1::markup::parse(&arena, source);
         let block = SourceRoot::new(source).unwrap().whole_block();
         let before = cstr!("{tree:?}");
         for spans in [
@@ -227,7 +227,7 @@ mod tests {
     fn non_pre_opening_custody_is_not_an_arbitrary_literal_permission() {
         let arena = Allocator::new();
         let source = "<Child></Child>";
-        let (tree, errors) = vize_l1::parse(&arena, source);
+        let (tree, errors) = vize_l1::markup::parse(&arena, source);
         let block = SourceRoot::new(source).unwrap().whole_block();
         let spans = [Span::new(0, 7)];
         assert_eq!(
@@ -244,7 +244,7 @@ mod tests {
     fn explicit_utf8_boundary_and_extra_nonopening_ranges_refuse() {
         let arena = Allocator::new();
         let source = "<div v-pre>ä</div>";
-        let (tree, errors) = vize_l1::parse(&arena, source);
+        let (tree, errors) = vize_l1::markup::parse(&arena, source);
         let block = SourceRoot::new(source).unwrap().whole_block();
         let spans = [Span::new(0, 12)];
         assert_eq!(

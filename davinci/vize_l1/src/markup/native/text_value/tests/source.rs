@@ -35,7 +35,7 @@ fn original_7502_text_has_exact_once_prepared_value_and_complete_authored_map() 
         parent.surface()
     ));
     assert!(core::ptr::eq(view.observation(), &value));
-    crate::check_fidelity(&owner.component().carrier().tree).unwrap();
+    crate::markup::check_fidelity(&owner.component().carrier().tree).unwrap();
 }
 
 #[test]
@@ -113,7 +113,7 @@ fn unicode_numeric_multiscalar_and_unknown_atoms_keep_full_map_and_precise_proje
         value.source().authored_span(Span::new(0, 33)).unwrap(),
         value.span()
     );
-    crate::check_fidelity(&owner.component().carrier().tree).unwrap();
+    crate::markup::check_fidelity(&owner.component().carrier().tree).unwrap();
 }
 
 #[test]
@@ -137,7 +137,7 @@ fn text_context_differs_from_attribute_and_never_reparses_decoded_markup_or_inte
         SurfaceChild::Text(_)
     ));
     assert!(value.source().decode_map().is_some());
-    crate::check_fidelity(&owner.component().carrier().tree).unwrap();
+    crate::markup::check_fidelity(&owner.component().carrier().tree).unwrap();
 }
 
 #[test]
@@ -162,7 +162,7 @@ fn literal_and_unknown_values_borrow_without_preparation_allocation_or_whitespac
         assert!(core::ptr::eq(value.raw_text(), value.source().text()));
         assert_eq!(value.raw_text(), value.span().slice(source));
         assert!(value.admitted_for(&owner, child).is_some());
-        crate::check_fidelity(&owner.component().carrier().tree).unwrap();
+        crate::markup::check_fidelity(&owner.component().carrier().tree).unwrap();
     }
     let owner = selected(&arena, "<template> &#32;&#9;&NewLine;\r\n </template>");
     let value = owner
@@ -198,6 +198,6 @@ fn pre_namespace_and_table_source_preparation_grants_no_whitespace_or_element_po
         assert_eq!(value.raw_text(), "\r\n &amp;lt;\t ");
         assert_eq!(value.source().text(), "\r\n &lt;\t ");
         assert!(value.admitted_for(&owner, child).is_some());
-        crate::check_fidelity(&owner.component().carrier().tree).unwrap();
+        crate::markup::check_fidelity(&owner.component().carrier().tree).unwrap();
     }
 }

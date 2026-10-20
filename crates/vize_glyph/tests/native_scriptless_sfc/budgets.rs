@@ -322,7 +322,7 @@ fn original_raw_double_closer_refuses_at_the_earliest_selected_safety_boundary()
         }),
     );
     assert_eq!(
-        vize_l1::check_fidelity(&owner.selected().unwrap().component().carrier().tree),
+        vize_l1::markup::check_fidelity(&owner.selected().unwrap().component().carrier().tree),
         Ok(())
     );
     assert!(owner.interpolation_failure().is_none());

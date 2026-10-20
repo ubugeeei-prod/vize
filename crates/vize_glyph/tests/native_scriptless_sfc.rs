@@ -50,7 +50,7 @@ fn assert_original(owner: &NativeSfcObservation<'_>, source: &str, options: Nati
         source
     ));
     assert_eq!(
-        vize_l1::check_fidelity(&selected.component().carrier().tree),
+        vize_l1::markup::check_fidelity(&selected.component().carrier().tree),
         Ok(())
     );
 }

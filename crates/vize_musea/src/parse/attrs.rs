@@ -5,7 +5,7 @@
 //! bytes between the quotes (entities undecoded — `args` / `viewport`
 //! decode their own payloads).
 
-use vize_l1::{Attribute, OpenTag};
+use vize_l1::markup::{Attribute, OpenTag};
 
 /// The value of the first attribute named `name` that carries one.
 ///
@@ -33,7 +33,7 @@ fn present_value<'a>(attr: &Attribute<'a>) -> Option<&'a str> {
 mod tests {
     use super::{attr_value, has_attr};
     use vize_l0::Allocator;
-    use vize_l1::{OpenTag, SurfaceChild, parse};
+    use vize_l1::markup::{OpenTag, SurfaceChild, parse};
 
     fn with_open_tag(source: &str, check: impl FnOnce(&OpenTag<'_>)) {
         let allocator = Allocator::new();

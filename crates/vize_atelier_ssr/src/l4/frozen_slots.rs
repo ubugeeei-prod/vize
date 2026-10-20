@@ -35,8 +35,8 @@ impl<'a> FrozenTemplate<'a> {
     pub(super) fn lower(
         self,
         allocator: &'a vize_l0::Allocator,
-        tree: &vize_l1::SurfaceTree<'a>,
-        errors: &[vize_l1::SurfaceError],
+        tree: &vize_l1::markup::SurfaceTree<'a>,
+        errors: &[vize_l1::markup::SurfaceError],
     ) -> Result<vize_l1_to_l2::Lowered<'a>, &'static str> {
         let source = vize_l0::SourceRoot::new(self.source).map_err(|_| FOREIGN_SOURCE)?;
         vize_l1_to_l2::lower_with_frozen_element_spans(
@@ -128,7 +128,7 @@ mod tests {
     use vize_l2::op::{ElementOp, Namespace, Op, Region};
 
     fn lower<'a>(arena: &'a Allocator, source: &'a str) -> vize_l1_to_l2::lower::Lowered<'a> {
-        let (tree, errors) = vize_l1::parse(arena, source);
+        let (tree, errors) = vize_l1::markup::parse(arena, source);
         assert!(errors.is_empty(), "{errors:?}");
         let (root, parser_errors, carrier) =
             Parser::new(arena, source).parse_with_frozen_elements();
@@ -292,7 +292,7 @@ mod tests {
             let (root, _parser_errors, carrier) =
                 Parser::new(&arena, source).parse_with_frozen_elements();
             let before = vize_l0::cstr!("{root:#?}");
-            let (tree, errors) = vize_l1::parse(&arena, source);
+            let (tree, errors) = vize_l1::markup::parse(&arena, source);
             let tree_before = vize_l0::cstr!("{tree:#?}");
             let template =
                 FrozenTemplate::new(&root, source, &carrier).expect("actual original parser join");

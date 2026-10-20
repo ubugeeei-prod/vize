@@ -27,16 +27,16 @@ pub(crate) const CONFIG_INJECT_WHEN: &str = "inject-when";
 /// Whether `source`'s L1 surface tree holds an element named `tag`,
 /// anywhere (SFC blocks parse as markup, so this sees template content).
 pub(crate) fn has_element(source: &str, tag: &str) -> bool {
-    fn walk(children: &[vize_l1::SurfaceChild<'_>], tag: &str) -> bool {
+    fn walk(children: &[vize_l1::markup::SurfaceChild<'_>], tag: &str) -> bool {
         children.iter().any(|child| match child {
-            vize_l1::SurfaceChild::Element(element) => {
+            vize_l1::markup::SurfaceChild::Element(element) => {
                 element.tag() == tag || walk(&element.children, tag)
             }
             _ => false,
         })
     }
     let allocator = Allocator::default();
-    let (tree, _errors) = vize_l1::parse(&allocator, source);
+    let (tree, _errors) = vize_l1::markup::parse(&allocator, source);
     walk(&tree.children, tag)
 }
 

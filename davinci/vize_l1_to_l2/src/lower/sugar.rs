@@ -11,7 +11,7 @@
 use alloc::vec::Vec as StdVec;
 
 use vize_l0::{Box, String, cstr};
-use vize_l1::Element;
+use vize_l1::markup::Element;
 
 use vize_l2::op::{BindingOp, VueSlotScopeOp};
 use vize_l2::scope::{ScopeBinding, ScopeFacts, ScopeOrigin};
@@ -68,7 +68,7 @@ pub(crate) fn companion_slot_index(
 pub(crate) fn lower_slot_scope<'a>(
     cx: &mut Cx<'a>,
     element: &Element<'a>,
-    attr: &vize_l1::Attribute<'a>,
+    attr: &vize_l1::markup::Attribute<'a>,
     companion_slot: Option<usize>,
 ) -> BindingOp<'a> {
     let span = attr_span(cx, attr);

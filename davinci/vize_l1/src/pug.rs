@@ -4,7 +4,7 @@
 //! [`parse_pug`] builds a typed tree whose in-order render is the exact
 //! authored bytes, malformed input included, with the debug verifier
 //! asserting `render(tree) == source` on every construction (TS-19's
-//! law, the same contract as the Vue surface in [`crate::parse`]).
+//! law, the same contract as the Vue surface in [`crate::markup::parse`]).
 //!
 //! # What "pug" means here
 //!
@@ -86,7 +86,10 @@ fn parse_pug_within<'a>(
             code: PugErrorCode::SourceTooLarge,
             offset: 0,
         });
-        let eof = crate::surface::Token::present(source, crate::slice::from(source, source.len()));
+        let eof = crate::markup::surface::Token::present(
+            source,
+            crate::slice::from(source, source.len()),
+        );
         let tree = PugTree {
             source,
             nodes: Vec::new_in(&allocator),

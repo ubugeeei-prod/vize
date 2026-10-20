@@ -27,7 +27,7 @@ const EXPECTED: &str = include_str!(
 
 fn current_module() -> String {
     let allocator = Allocator::new();
-    let (tree, errors) = vize_l1::parse(&allocator, SOURCE);
+    let (tree, errors) = vize_l1::markup::parse(&allocator, SOURCE);
     assert!(errors.is_empty(), "{errors:?}");
     let mut lowered =
         vize_l1_to_l2::lower_with_caps(&allocator, &tree, &errors, vize_l1_to_l2::LegacyCaps::VUE3);

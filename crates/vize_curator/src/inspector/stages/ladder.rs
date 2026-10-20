@@ -167,10 +167,10 @@ pub fn ladder_run(path: &str, template: &str, clock: LadderClock<'_>) -> LadderR
     let mut steps = Vec::new();
     let allocator = Allocator::default();
     let started = clock();
-    let (tree, errors) = vize_l1::parse(&allocator, template);
+    let (tree, errors) = vize_l1::markup::parse(&allocator, template);
     steps.push(step("s1", "parse", started, clock()));
     let mut s1 = String::default();
-    vize_l1::render::render(&tree, &mut |slice| s1.push_str(slice));
+    vize_l1::markup::render::render(&tree, &mut |slice| s1.push_str(slice));
     let mut pages = vec![page("s1", "parse", s1)];
 
     let started = clock();

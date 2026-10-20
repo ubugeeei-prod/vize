@@ -1,7 +1,7 @@
 use super::super::{TemplateNamePair, TemplateSelection};
 use super::Vue1DescriptorObservation;
 use crate::dialect::vue1::surface::ComponentParse;
-use crate::parse::SurfaceParseOptions;
+use crate::markup::parse::SurfaceParseOptions;
 use vize_l0::config::{VueDialect, VueVersion};
 use vize_l0::{SourceBlock, Span};
 

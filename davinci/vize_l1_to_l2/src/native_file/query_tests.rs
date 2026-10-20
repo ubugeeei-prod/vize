@@ -7,7 +7,7 @@ use vize_l0::{
     Allocator, Span,
     config::{VueDialect, VueVersion},
 };
-use vize_l1::{SurfaceParseOptions, container::vue::DescriptorOptions};
+use vize_l1::{container::vue::DescriptorOptions, markup::SurfaceParseOptions};
 use vize_l2::{
     file::{FileIssueKind, PositionQueryError},
     resolution::Usage,

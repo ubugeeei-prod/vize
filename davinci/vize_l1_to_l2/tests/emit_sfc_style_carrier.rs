@@ -16,7 +16,7 @@ use crate::support;
 use support::{with_lowered, with_transformed};
 use vize_l0::pass::BudgetObserver;
 use vize_l0::{Allocator, SourceRoot};
-use vize_l1::parse;
+use vize_l1::markup::parse;
 use vize_l1_to_l2::{emit_dom, emit_dom_source, lower_source_block};
 
 fn block_between<'a>(source: &'a str, open: &str, close: &str) -> (&'a str, u32) {

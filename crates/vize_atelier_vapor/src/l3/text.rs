@@ -130,7 +130,7 @@ mod tests {
         let allocator = Allocator::new();
         let mut s3 = {
             let scratch = Allocator::new();
-            let (tree, errors) = vize_l1::parse(&scratch, SOURCE);
+            let (tree, errors) = vize_l1::markup::parse(&scratch, SOURCE);
             let s2 = vize_l1_to_l2::lower(&scratch, &tree, &errors);
             let mut s3 = vize_l2_to_l3::lower(&allocator, &s2.root);
             capture(&allocator, &s2, &mut s3, &mut Retained::new(&allocator)).unwrap();
@@ -169,7 +169,7 @@ mod tests {
         for mutation in 0..5 {
             let scratch = Allocator::new();
             let allocator = Allocator::new();
-            let (tree, errors) = vize_l1::parse(&scratch, SOURCE);
+            let (tree, errors) = vize_l1::markup::parse(&scratch, SOURCE);
             let mut s2 = vize_l1_to_l2::lower(&scratch, &tree, &errors);
             let mut s3 = vize_l2_to_l3::lower(&allocator, &s2.root);
             let (_, parts) = s2.texts.iter_mut().next().unwrap();

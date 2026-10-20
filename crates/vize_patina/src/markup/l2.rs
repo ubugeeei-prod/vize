@@ -15,7 +15,7 @@
 use vize_atelier_jsx::l2::JsxL2Root;
 use vize_l0::Allocator;
 use vize_l0::side_table::SideTable;
-use vize_l1::{SurfaceError, SurfaceTree};
+use vize_l1::markup::{SurfaceError, SurfaceTree};
 use vize_l1_to_l2::lower::TextParts;
 use vize_l1_to_l2::{Lowered, lower_preserving_comments};
 use vize_l2::op::{Attribute, BindingOp, ComponentOp, ElementOp, Op, Region, SlotOp};
@@ -167,7 +167,7 @@ impl<'a> L2Markup<'a> {
         &self,
         span: vize_l0::Span,
         region: &'a [Op<'a>],
-    ) -> Option<&'a vize_l1::Element<'a>> {
+    ) -> Option<&'a vize_l1::markup::Element<'a>> {
         if let [op] = region
             && L2ElementOp::from_op(op).is_some_and(|element| element.span() == span)
         {
@@ -200,7 +200,7 @@ impl<'a> L2Template<'a> {
     /// Parse `source` into L1 and lower it into L2, keeping authored comments
     /// as `ui.comment` ops (the child list the lint parser sees).
     pub fn lower(allocator: &'a Allocator, source: &'a str) -> Self {
-        let (tree, authored, errors) = vize_l1::parse_with_authored(allocator, source);
+        let (tree, authored, errors) = vize_l1::markup::parse_with_authored(allocator, source);
         let lowered = lower_preserving_comments(allocator, &tree, &errors);
         Self {
             tree,

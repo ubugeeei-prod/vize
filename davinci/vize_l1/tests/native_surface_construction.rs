@@ -5,11 +5,11 @@
 use davinci_test_support::surface_fixture as common;
 use vize_l0::{Allocator, ErrorCode, cstr};
 use vize_l1::markup::{
-    parse_component, parse_component_with_authored, parse_component_with_options,
-};
-use vize_l1::{
     HoleCounts, SurfaceChild, SurfaceParseOptions, check_fidelity, hole_counts, parse,
     parse_with_authored, parse_with_options,
+};
+use vize_l1::markup::{
+    parse_component, parse_component_with_authored, parse_component_with_options,
 };
 
 fn assert_parity(source: &str, options: SurfaceParseOptions) {

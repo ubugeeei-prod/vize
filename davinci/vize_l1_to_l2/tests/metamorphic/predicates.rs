@@ -4,7 +4,7 @@
 //! this module judges. Each returned reason is a counted skip; the
 //! semantic argument for every "allow" lives in `mutators.rs`.
 
-use vize_l1::{Attribute, Element, TokenStatus};
+use vize_l1::markup::{Attribute, Element, TokenStatus};
 
 use super::sites::{Flags, Parent, is_vue_ws};
 
@@ -162,7 +162,7 @@ pub fn wrap_skip(
     if element.open.gt.status != TokenStatus::Present {
         return Some("open-tag-hole");
     }
-    if matches!(element.close, vize_l1::ElementClose::Missing) {
+    if matches!(element.close, vize_l1::markup::ElementClose::Missing) {
         return Some("missing-end-tag");
     }
     None
@@ -170,8 +170,8 @@ pub fn wrap_skip(
 
 pub fn merge_skip(
     source: &str,
-    first: &vize_l1::Token<'_>,
-    second: &vize_l1::Token<'_>,
+    first: &vize_l1::markup::Token<'_>,
+    second: &vize_l1::markup::Token<'_>,
     flags: Flags,
 ) -> Option<&'static str> {
     if flags.rawtext {

@@ -9,9 +9,9 @@ use vize_l0::{
     config::{VueDialect, VueVersion},
 };
 use vize_l1::{
-    SurfaceParseOptions,
     container::vue::{DescriptorObservation, DescriptorOptions},
     css::StyleSyntax,
+    markup::SurfaceParseOptions,
 };
 use vize_l2::lang::js::{NativeScopedTemplateIssueKind as Kind, NativeScopedTemplateView};
 

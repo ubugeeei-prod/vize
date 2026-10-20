@@ -1,5 +1,5 @@
 use super::{NativeComponent, NativeElement};
-use crate::{Element, SurfaceChild};
+use crate::markup::{Element, SurfaceChild};
 
 #[derive(Clone, Copy)]
 pub(super) enum Parent<'o, 'a> {

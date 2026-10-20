@@ -6,7 +6,7 @@ use tower_lsp::lsp_types::{
     FoldingRange, FoldingRangeKind, Position, Range, TextDocumentContentChangeEvent, Url,
 };
 use vize_l0::config::{VueDialect, VueVersion};
-use vize_l1::{SurfaceParseOptions, container::vue::DescriptorOptions};
+use vize_l1::{container::vue::DescriptorOptions, markup::SurfaceParseOptions};
 
 use crate::document::DocumentStore;
 use crate::runtime::block_on;

@@ -16,7 +16,7 @@ test("genuine value producers, consumers, writers and capture dependencies quali
     "davinci/vize_l1/src/markup/native/operand/value/frame.rs",
     "davinci/vize_l1/src/markup/native/operand.rs",
     "davinci/vize_l1/src/markup/native/selected.rs",
-    "davinci/vize_l1/src/parse.rs",
+    "davinci/vize_l1/src/markup/parse.rs",
     "davinci/vize_l1/src/markup/entity/native/decode.rs",
     "davinci/vize_l1/src/embed/source/map.rs",
     "davinci/vize_l1/src/container/vue/descriptor/policy.rs",

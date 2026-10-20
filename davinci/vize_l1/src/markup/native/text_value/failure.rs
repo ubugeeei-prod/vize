@@ -1,5 +1,5 @@
 use super::{NativeChild, NativeTextValueError};
-use crate::{SurfaceChild, Token};
+use crate::markup::{SurfaceChild, Token};
 use vize_l0::{SourceBlock, Span};
 
 /// Owned typed preparation refusal with the actual child's full source/token.
@@ -23,7 +23,7 @@ impl<'a> NativeTextValueFailure<'a> {
                 SurfaceChild::Text(token) => Some(*token),
                 _ => None,
             },
-            parent_tag: child.parent_element().map(crate::Element::tag),
+            parent_tag: child.parent_element().map(crate::markup::Element::tag),
         }
     }
     #[must_use]

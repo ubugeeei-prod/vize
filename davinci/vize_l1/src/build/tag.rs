@@ -4,7 +4,9 @@ use vize_l0::{Box, Vec, is_void_tag};
 
 use super::{Builder, Frame};
 use crate::event::{Event, EventKind};
-use crate::surface::{Attribute, CloseTag, Element, ElementClose, OpenTag, SurfaceChild, Token};
+use crate::markup::surface::{
+    Attribute, CloseTag, Element, ElementClose, OpenTag, SurfaceChild, Token,
+};
 
 impl<'a, const RAW: bool, const LINT: bool> Builder<'a, '_, RAW, LINT> {
     pub(super) fn element(&mut self, ev: Event) {

@@ -36,7 +36,7 @@ pub(crate) fn compile(
         return Err("transform input exceeds the source/plugin limit".into());
     }
     let allocator = Allocator::new();
-    let (tree, errors) = vize_l1::parse(&allocator, source);
+    let (tree, errors) = vize_l1::markup::parse(&allocator, source);
     let mut lowered = vize_l1_to_l2::lower(&allocator, &tree, &errors);
     if !lowered.diagnostics.is_empty() {
         return Err("transform requires a diagnostic-free L2 lowering".into());

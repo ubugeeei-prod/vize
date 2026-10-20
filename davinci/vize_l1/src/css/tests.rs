@@ -1,5 +1,5 @@
 use super::{StyleIssueCode, StyleSyntax};
-use crate::{SurfaceParseOptions, container::Vue, container::vue::DescriptorOptions};
+use crate::{container::Vue, container::vue::DescriptorOptions, markup::SurfaceParseOptions};
 use cssparser::Token;
 use vize_l0::{
     Allocator, Span,

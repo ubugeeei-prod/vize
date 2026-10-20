@@ -4,8 +4,8 @@ use vize_l0::ErrorCode;
 
 use super::{EventKind, Recorder};
 use crate::markup::entity::DecodedEntity;
+use crate::markup::parse::SurfaceError;
 use crate::markup::token::{LexErrorCode, QuoteType, Sink};
-use crate::parse::SurfaceError;
 
 impl Sink for Recorder<'_, '_> {
     fn on_text(&mut self, start: usize, end: usize) {

@@ -8,7 +8,7 @@
 //! the bridge's own markup admission.
 
 use vize_l0::Allocator;
-use vize_l1::SurfaceParseOptions;
+use vize_l1::markup::SurfaceParseOptions;
 
 /// The bridge refused the template after lowering, in markup admission.
 pub const MARKUP_ADMISSION: &str = "markup_admission";
@@ -17,7 +17,7 @@ pub const MARKUP_ADMISSION: &str = "markup_admission";
 pub fn first_cause(template: &str) -> String {
     let allocator = Allocator::new();
     let (tree, errors) =
-        vize_l1::parse_with_options(&allocator, template, SurfaceParseOptions::default());
+        vize_l1::markup::parse_with_options(&allocator, template, SurfaceParseOptions::default());
     let lowered = vize_l1_to_l2::lower(&allocator, &tree, &errors);
     if let Some(diagnostic) = lowered.diagnostics.first() {
         return format!("diagnostic:{}", message_shape(&diagnostic.message));

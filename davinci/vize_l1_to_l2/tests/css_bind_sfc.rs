@@ -12,7 +12,7 @@ use crate::support;
 use support::assert_authored_artifact;
 use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, SourceBlock, SourceRoot};
-use vize_l1::parse;
+use vize_l1::markup::parse;
 use vize_l1_to_l2::lower_source_block;
 use vize_l2::dump::Page as L2Page;
 use vize_l2::op::Op;

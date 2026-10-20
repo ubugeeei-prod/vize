@@ -5,7 +5,7 @@ use single::lower_single_text;
 use alloc::vec::Vec as StdVec;
 
 use vize_l0::{Box, Span, String, StringBuilder, cstr};
-use vize_l1::SurfaceChild;
+use vize_l1::markup::SurfaceChild;
 use vize_l2::expr::OpaqueReason;
 use vize_l2::op::{InterpolationOp, Op, TextOp};
 

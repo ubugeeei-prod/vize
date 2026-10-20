@@ -17,7 +17,7 @@
 
 use super::features::OpFamily;
 use vize_l0::{Box, String, Vec, cstr};
-use vize_l1::Element;
+use vize_l1::markup::Element;
 
 use vize_l2::op::{Attribute, BindingOp, DynamicName, Namespace, Op, Region, SlotOp};
 

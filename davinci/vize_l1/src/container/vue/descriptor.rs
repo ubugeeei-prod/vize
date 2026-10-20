@@ -7,7 +7,7 @@ use vize_l0::config::{VueDialect, VueVersion};
 use vize_l0::{Allocator, SourceBlock, SourceRoot, Span, Vec};
 
 use super::super::{Container, ContainerError};
-use crate::{embed::Lang, parse::SurfaceParseOptions};
+use crate::{embed::Lang, markup::parse::SurfaceParseOptions};
 
 mod policy;
 mod template;
@@ -112,7 +112,7 @@ struct StyleSelection<'a> {
 /// Setup-only TypeScript determines the template's language:
 /// ```
 /// use vize_l0::{Allocator, config::{VueDialect, VueVersion}};
-/// use vize_l1::{SurfaceParseOptions, container::Vue, embed::Lang};
+/// use vize_l1::{container::Vue, embed::Lang, markup::SurfaceParseOptions};
 /// use vize_l1::container::vue::DescriptorOptions;
 /// let arena = Allocator::default();
 /// let source = "<template>{{ x }}</template><script setup lang=ts>const x=1</script>";

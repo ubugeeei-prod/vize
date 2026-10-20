@@ -6,8 +6,8 @@ use vize_l0::{
     config::{VueDialect, VueVersion},
 };
 use vize_l1::{
-    SurfaceParseOptions,
     container::vue::{DescriptorOptions, ScriptRole},
+    markup::SurfaceParseOptions,
 };
 use vize_l2::{
     file::RejectedFileHandler,

@@ -148,7 +148,7 @@ mod tests {
     use super::{NativeTemplateComponent, NativeTemplateGrammar};
     use crate::container::Vue;
     use crate::container::vue::{DescriptorOptions, ScriptRole};
-    use crate::{SurfaceParseOptions, embed::Lang};
+    use crate::{embed::Lang, markup::SurfaceParseOptions};
     use vize_l0::{
         Allocator,
         config::{VueDialect, VueVersion},
@@ -314,7 +314,10 @@ mod tests {
             .unwrap();
         let div = owner.children().next().unwrap().into_element().unwrap();
         assert_eq!(div.surface().tag(), "div");
-        assert!(matches!(div.surface().close, crate::ElementClose::Missing));
+        assert!(matches!(
+            div.surface().close,
+            crate::markup::ElementClose::Missing
+        ));
         assert_eq!(owner.component().block().source(), "<div>");
     }
 

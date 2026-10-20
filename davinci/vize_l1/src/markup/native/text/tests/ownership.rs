@@ -60,7 +60,8 @@ fn moved_owner_and_pending_growth_rejoin_exact_backing_without_second_iteration(
             .is_none()
     );
     assert_eq!(moved.children().len(), 3);
-    crate::check_fidelity(&moved.component().carrier().tree).map_err(|_| "retained fidelity")?;
+    crate::markup::check_fidelity(&moved.component().carrier().tree)
+        .map_err(|_| "retained fidelity")?;
     Ok(())
 }
 
@@ -114,7 +115,7 @@ fn nested_pre_rcdata_and_nontext_events_never_mint_root_whitespace_authority()
             owner.prepare_condensed_root_text(nested),
             Err(Kind::NestedChild)
         ));
-        crate::check_fidelity(&owner.component().carrier().tree)
+        crate::markup::check_fidelity(&owner.component().carrier().tree)
             .map_err(|_| "original fidelity")?;
     }
     let owner = selected(&arena, "<template><!--comment-->{{ value }}</template>")?;
@@ -161,7 +162,7 @@ fn entity_spelling_refuses_before_decode_and_the_next_original_text_stays_availa
             .map_err(|_| "next original receipt")?;
         assert_eq!(receipt.content(), Some("next"));
         assert!(receipt.admitted_for_root_at(&owner, 2).is_some());
-        crate::check_fidelity(&owner.component().carrier().tree).map_err(|_| "fidelity")?;
+        crate::markup::check_fidelity(&owner.component().carrier().tree).map_err(|_| "fidelity")?;
     }
     Ok(())
 }
@@ -194,7 +195,7 @@ fn original_unsupported_parser_observations_refuse_before_deriving_root_text()
         original
     ));
     assert!(!owner.component().carrier().unsupported.is_empty());
-    crate::check_fidelity(&owner.component().carrier().tree)
+    crate::markup::check_fidelity(&owner.component().carrier().tree)
         .map_err(|_| "original recovered fidelity")?;
     // Repeated identical delimiters share one run in the actual bounded
     // scanner. They cannot be used as an invented unsupported witness.

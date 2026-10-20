@@ -30,7 +30,7 @@ fn input<'a>(allocator: &'a Allocator, text: &str) -> NativeHandlerInput<'a> {
         DescriptorOptions {
             version: VueVersion::V3,
             dialect: VueDialect::Vue,
-            template: vize_l1::SurfaceParseOptions::default(),
+            template: vize_l1::markup::SurfaceParseOptions::default(),
         },
     );
     let selected = NativeTemplateComponent::parse_in(allocator, descriptor.admitted().unwrap())

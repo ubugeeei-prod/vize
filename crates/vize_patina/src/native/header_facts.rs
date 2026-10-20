@@ -12,10 +12,7 @@ use vize_l0::{
     },
     fact::{FactConsumer, FactError, FactManager, FactTable, FactView},
 };
-use vize_l1::{
-    Element,
-    markup::{NativeElement, NativeTemplateComponent},
-};
+use vize_l1::markup::{Element, NativeElement, NativeTemplateComponent};
 
 use super::{NativeLintRefusal, header, header_rules};
 

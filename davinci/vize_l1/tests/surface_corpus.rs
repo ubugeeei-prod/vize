@@ -26,7 +26,7 @@ use std::fs;
 
 use davinci_test_support::surface_fixture as common;
 use vize_l0::{Allocator, String};
-use vize_l1::{HoleCounts, hole_counts, parse, render};
+use vize_l1::markup::{HoleCounts, hole_counts, parse, render};
 
 fn assert_round_trip(source: &str, context: &str) {
     let allocator = Allocator::new();

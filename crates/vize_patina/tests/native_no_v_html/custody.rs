@@ -1,7 +1,7 @@
 use super::support::{FILENAME, LOCALES, NeverLookup, complete, native, parity, selected};
 use std::{borrow::Cow, cell::Cell};
 use vize_l0::{Allocator, cstr, diag::MessageLookup};
-use vize_l1::check_fidelity;
+use vize_l1::markup::check_fidelity;
 use vize_patina::{
     Linter,
     native::{NativeLintRefusal, NativeSyntaxLint},

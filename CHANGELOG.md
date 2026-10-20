@@ -11,6 +11,10 @@ See [`docs/release/support-policy.md`](./docs/release/support-policy.md) for the
 - Restore `davinci-differential` as a deprecated alias of `legacy-differential` and `davinci-dom-differential` as a deprecated alias of `legacy-dom-differential` (#7179).
 - `vize_l1::parse` and the native component surface now close omitted end tags like the shipped parser: `li`, `dt`/`dd`, `option`/`optgroup`, a `p` before a block, and a table row or row group before its sibling (#6835). Compiler output is unchanged.
 
+### Deprecated
+
+- Deprecate the root surface paths of `vize_l1` (`parse`, `parse_with_options`, `parse_with_authored`, `render`, `check_fidelity`, `hole_counts`, the `surface`, `parse` and `render` modules, and the surface node types). They moved under `vize_l1::markup`; replace `vize_l1::X` with `vize_l1::markup::X`. The root paths will be removed in a later minor release (#6835).
+
 ### Removed
 
 - **Breaking:** remove `vize_armature::State::InSFCRootTagName` (also `vize_armature::tokenizer::State` and `vize_l1::markup::lex::compat::State`), removed since 0.475.0. The tokenizer never entered this state; delete match arms that name it (#6835).

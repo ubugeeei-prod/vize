@@ -6,7 +6,7 @@
 //! stay in folio page order.
 
 use vize_l0::{Box, Span, Vec, cstr};
-use vize_l1::{Interpolation, SurfaceChild};
+use vize_l1::markup::{Interpolation, SurfaceChild};
 use vize_l2::op::{Attribute, BindingOp, ElementOp, Namespace, Op, Region};
 
 use super::cx::{Cx, element_span};

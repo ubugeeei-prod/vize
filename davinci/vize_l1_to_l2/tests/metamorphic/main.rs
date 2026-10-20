@@ -154,7 +154,7 @@ fn the_normalization_does_not_collapse_real_differences() {
     use normalize::{Normalization, normalized_display};
     let folio = |source: &str| {
         let allocator = vize_l0::Allocator::new();
-        let (tree, errors) = vize_l1::parse(&allocator, source);
+        let (tree, errors) = vize_l1::markup::parse(&allocator, source);
         let lowered = vize_l1_to_l2::lower(&allocator, &tree, &errors);
         vize_l2::dump::Page::of(&lowered.root.ops)
     };
@@ -249,7 +249,7 @@ fn the_merge_mutator_holds_through_its_own_site_path() {
     // a split tree, exactly the shape a recovered input would present.
     let source = "<template>hello world</template>";
     let allocator = vize_l0::Allocator::new();
-    let (mut tree, errors) = vize_l1::parse(&allocator, source);
+    let (mut tree, errors) = vize_l1::markup::parse(&allocator, source);
     let original = {
         let lowered = vize_l1_to_l2::lower(&allocator, &tree, &errors);
         vize_l2::dump::Page::of(&lowered.root.ops)
@@ -278,7 +278,7 @@ fn the_merge_mutator_holds_through_its_own_site_path() {
 fn the_exclusion_predicates_refuse_the_documented_unsafe_sites() {
     let skips = |source: &str| {
         let allocator = vize_l0::Allocator::new();
-        let (tree, _errors) = vize_l1::parse(&allocator, source);
+        let (tree, _errors) = vize_l1::markup::parse(&allocator, source);
         sites::enumerate(&tree)
             .into_iter()
             .filter_map(|site| site.skip.map(|reason| (site.kind, reason)))

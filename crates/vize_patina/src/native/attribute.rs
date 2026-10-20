@@ -1,7 +1,7 @@
 //! Checked readonly header projections; expression and value bytes stay opaque.
 
 use vize_l0::{SourceBlock, Span};
-use vize_l1::{Attribute, Token};
+use vize_l1::markup::{Attribute, Token};
 
 use super::NativeLintRefusal;
 

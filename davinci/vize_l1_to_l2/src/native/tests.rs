@@ -211,7 +211,7 @@ fn real_component_carrier_keeps_full_surface_errors_and_partial_native_nodes() {
     assert!(!lowered.is_supported());
     assert!(lowered.component.authored.is_none());
     assert_eq!(
-        vize_l1::render::check_fidelity(&lowered.component.tree),
+        vize_l1::markup::render::check_fidelity(&lowered.component.tree),
         Ok(())
     );
     let error = lowered

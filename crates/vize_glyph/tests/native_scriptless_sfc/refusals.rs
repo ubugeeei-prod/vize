@@ -7,11 +7,11 @@ use vize_glyph::native_doc::{
 };
 use vize_l0::config::{VueDialect, VueVersion};
 use vize_l0::{Allocator, Span};
-use vize_l1::SurfaceChild;
 use vize_l1::container::ContainerErrorCode;
 use vize_l1::container::vue::{DescriptorIssue, DescriptorIssueCode as Code, ScriptRole};
 use vize_l1::embed::syntax::EmbedHole;
 use vize_l1::markup::NativeInterpolationError;
+use vize_l1::markup::SurfaceChild;
 
 fn refused(owner: &NativeSfcObservation<'_>, source: &str, expected: NativeSfcRefusal) {
     assert!(core::ptr::eq(owner.source(), source));

@@ -21,7 +21,7 @@ use vize_l0::config::VueVersion;
 use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, String, profile, profiler::global_profiler};
 use vize_l0::{dump::capture::CaptureSink, level::Level};
-use vize_l1::SurfaceParseOptions;
+use vize_l1::markup::SurfaceParseOptions;
 use vize_l1_to_l2::TransformExpressions;
 
 use crate::codegen::SsrCodegenResult;

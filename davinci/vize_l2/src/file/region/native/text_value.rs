@@ -5,10 +5,7 @@ use crate::file::NativeTextValuePolicyError as Policy;
 use crate::file::{NativeFileTextValue, NativeFileTextValueState as State};
 use crate::lang::js::NativeTemplateIssueKind as Kind;
 use vize_l0::id::NodeId;
-use vize_l1::{
-    TokenStatus,
-    markup::{NativeChild, NativeTemplateComponent},
-};
+use vize_l1::markup::{NativeChild, NativeTemplateComponent, TokenStatus};
 
 #[cfg(test)]
 mod interruption;

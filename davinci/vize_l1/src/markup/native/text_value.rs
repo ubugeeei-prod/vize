@@ -1,7 +1,7 @@
 //! Original text source preparation, without whitespace or target admission.
 
 use super::{NativeChild, NativeTemplateComponent};
-use crate::{Token, embed::EmbedSource};
+use crate::{embed::EmbedSource, markup::Token};
 use vize_l0::Span;
 
 mod failure;
@@ -31,7 +31,7 @@ pub enum NativeTextValueError {
 /// requires_clone::<NativeTextValue<'static>>();
 /// ```
 /// ```compile_fail
-/// use vize_l1::{Token, embed::EmbedSource, markup::NativeTextValue};
+/// use vize_l1::{embed::EmbedSource, markup::{Token, NativeTextValue}};
 /// fn forge(source: EmbedSource<'static>) -> NativeTextValue<'static> {
 ///     NativeTextValue {
 ///         origin: panic!(), original: Token::present("", source.text()), source,

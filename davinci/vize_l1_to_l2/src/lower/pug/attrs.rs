@@ -39,7 +39,10 @@ struct Entry<'s> {
 }
 
 /// The body of a quoted literal token and its span.
-fn literal_body<'s>(emitter: &Emitter<'_>, value: &vize_l1::Token<'s>) -> Option<(&'s str, Span)> {
+fn literal_body<'s>(
+    emitter: &Emitter<'_>,
+    value: &vize_l1::markup::Token<'s>,
+) -> Option<(&'s str, Span)> {
     let text = value.text;
     let quote = text
         .chars()

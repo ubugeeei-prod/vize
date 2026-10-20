@@ -18,12 +18,12 @@
 use std::ops::Range;
 
 use vize_l0::{Allocator, String};
-use vize_l1::{Attribute, Element, ElementClose, SurfaceChild, Token};
+use vize_l1::markup::{Attribute, Element, ElementClose, SurfaceChild, Token};
 
 /// Every deletion candidate of `source`, in pre-order.
 pub(crate) fn candidates(source: &str) -> Vec<Range<usize>> {
     let allocator = Allocator::default();
-    let (tree, _errors) = vize_l1::parse(&allocator, source);
+    let (tree, _errors) = vize_l1::markup::parse(&allocator, source);
     let mut out = Vec::new();
     let base = Base(source.as_ptr() as usize);
     children(&tree.children, base, &mut out);

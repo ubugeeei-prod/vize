@@ -3,7 +3,7 @@
 use vize_l0::{Allocator, ErrorCode, SourceFrameError, SourceRoot, Span, cstr};
 use vize_l1::dialect::LegacyVueVersion;
 use vize_l1::dialect::vue1::surface::{self, SyntaxBoundary, SyntaxBoundaryKind};
-use vize_l1::{SurfaceChild, check_fidelity};
+use vize_l1::markup::{SurfaceChild, check_fidelity};
 
 fn contents<'a>(children: &[SurfaceChild<'a>]) -> Vec<&'a str> {
     let mut result = Vec::new();

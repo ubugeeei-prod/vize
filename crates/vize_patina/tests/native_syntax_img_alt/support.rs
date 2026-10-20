@@ -6,9 +6,8 @@ use vize_l0::{
     diag::{PartKind, Stage},
 };
 use vize_l1::{
-    SurfaceParseOptions,
     container::{Vue, vue::DescriptorOptions},
-    markup::{NativeChildren, NativeTemplateComponent},
+    markup::{NativeChildren, NativeTemplateComponent, SurfaceParseOptions},
 };
 use vize_patina::{
     LintDiagnostic, Linter, RuleRegistry,

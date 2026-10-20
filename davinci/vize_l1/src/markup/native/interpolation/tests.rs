@@ -20,7 +20,7 @@ fn selected<'a>(
         DescriptorOptions {
             version: VueVersion::V3,
             dialect: VueDialect::Vue,
-            template: crate::SurfaceParseOptions::default(),
+            template: crate::markup::SurfaceParseOptions::default(),
         },
     );
     NativeTemplateComponent::parse_in(

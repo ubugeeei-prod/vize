@@ -10,7 +10,7 @@ impl Vue {
     /// Component parser; supported envelopes retain its complete normal owner.
     /// ```
     /// use vize_l0::{Allocator, config::{VueDialect, VueVersion}};
-    /// use vize_l1::{SurfaceParseOptions, container::{Vue, vue::DescriptorOptions}};
+    /// use vize_l1::{container::{Vue, vue::DescriptorOptions}, markup::SurfaceParseOptions};
     /// let arena = Allocator::default();
     /// let owner = Vue.observe_vue1_descriptor(&arena,
     ///     "<template>{{ value }}</template>", DescriptorOptions {

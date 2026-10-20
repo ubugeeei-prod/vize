@@ -1,8 +1,8 @@
 //! Resolved native policy facts belong to the existing opening owner.
 
 use vize_l0::{Allocator, cstr};
+use vize_l1::markup::{Element, OpenTag, SurfaceChild, Token, check_fidelity};
 use vize_l1::markup::{parse_component, parse_component_with_authored};
-use vize_l1::{Element, OpenTag, SurfaceChild, Token, check_fidelity};
 
 fn modes<'a>(children: &[SurfaceChild<'a>]) -> Vec<(&'a str, bool)> {
     let mut result = Vec::new();
@@ -97,7 +97,7 @@ fn raw_construction_compatibility_and_public_debug_do_not_forge_metadata() {
     let allocator = Allocator::new();
     let source = "<div v-pre>{{raw}}</div>";
     let native = parse_component(&allocator, source).unwrap();
-    let compat = vize_l1::parse(&allocator, source);
+    let compat = vize_l1::markup::parse(&allocator, source);
     assert_eq!(modes(&compat.0.children), [("div", false)]);
     let SurfaceChild::Element(div) = &native.tree.children[0] else {
         panic!("div")

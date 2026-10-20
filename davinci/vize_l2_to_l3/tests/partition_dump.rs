@@ -33,7 +33,7 @@ fn full_print_is_identity_on_canonical_text() {
 fn the_live_mirror_prints_the_lowered_facts_exactly() {
     let allocator = Allocator::default();
     let source = r#"<main class="shell"><button :disabled="locked" @click="save">{{ label }}</button></main>"#;
-    let (tree, errors) = vize_l1::parse(&allocator, source);
+    let (tree, errors) = vize_l1::markup::parse(&allocator, source);
     let s2 = vize_l1_to_l2::lower(&allocator, &tree, &errors);
     let lowered = lower(&allocator, &s2.root);
 

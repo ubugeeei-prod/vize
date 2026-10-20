@@ -42,7 +42,7 @@ impl<'a> NativeTemplateOwner<'a> {
     /// The original parser arena remains borrowed by its normal owner:
     /// ```compile_fail
     /// use vize_l0::{Allocator, config::{VueDialect, VueVersion}};
-    /// use vize_l1::{SurfaceParseOptions, container::{Vue, vue::DescriptorOptions}, markup::NativeTemplateComponent};
+    /// use vize_l1::{container::{Vue, vue::DescriptorOptions}, markup::{SurfaceParseOptions, NativeTemplateComponent}};
     /// use vize_l2::lang::js::NativeTemplateOwner;
     /// let arena = Allocator::default();
     /// let source = "<template></template><script setup>const x=1</script>";

@@ -128,7 +128,7 @@ pub fn compare_with(name: &str, source: &str, counters: &mut Counters, dialect: 
     // L2 lane: L1 parse -> L1-to-L2 lower -> the L2 passes through
     // the P2-2 pass manager (verifier between passes in debug).
     let l2_allocator = Allocator::new();
-    let (tree, surface_errors) = vize_l1::parse(&l2_allocator, source);
+    let (tree, surface_errors) = vize_l1::markup::parse(&l2_allocator, source);
     let mut lowered = vize_l1_to_l2::lower_with_caps(
         &l2_allocator,
         &tree,

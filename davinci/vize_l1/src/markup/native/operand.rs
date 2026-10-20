@@ -15,7 +15,7 @@ use crate::dialect::vue3::operand::conditional_head;
 use crate::embed::syntax::{NativeSyntax, RetainedExpression, parse_once};
 use crate::embed::{Embed, Grammar, Lang, Shape, SourceError, prepare_attribute_value};
 use crate::markup::DirectiveNameError;
-use crate::{Attribute, Element};
+use crate::markup::{Attribute, Element};
 
 mod event;
 pub use event::{

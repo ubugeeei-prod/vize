@@ -3,7 +3,7 @@
 use super::super::super::text::{RetainedFilterChain, RetainedTextBinding};
 use super::super::TextRefusal;
 use super::ComponentExpressionPool;
-use crate::{Element, ElementClose, SurfaceChild};
+use crate::markup::{Element, ElementClose, SurfaceChild};
 
 /// Original body refusal, or an intact original syntax owner whose consuming
 /// expression handoff was refused. Neither confers complete-chain admission.
@@ -47,7 +47,7 @@ impl ExactSizeIterator for RetainedTextChildren<'_, '_> {}
 /// Sealed original component, direct parent and ordinal membership.
 ///
 /// ```compile_fail
-/// use vize_l1::{SurfaceChild, dialect::vue2::surface::RetainedTextChild};
+/// use vize_l1::{dialect::vue2::surface::RetainedTextChild, markup::SurfaceChild};
 /// fn forge<'o, 'a>(raw: &'o SurfaceChild<'a>) -> RetainedTextChild<'o, 'a> { raw.into() }
 /// ```
 #[derive(Debug)]

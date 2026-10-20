@@ -23,7 +23,7 @@ fn recorded_attribute_input_retains_all_lowering_and_roundtrip_laws() {
         "keep every byte of the authenticated original input",
     );
     let allocator = Allocator::new();
-    let (tree, errors) = vize_l1::parse(&allocator, source);
+    let (tree, errors) = vize_l1::markup::parse(&allocator, source);
     let lowered = lower(&allocator, &tree, &errors);
     let authored = SourceRoot::new(source).expect("retained input is u32-addressable UTF-8");
     for diagnostic in &lowered.diagnostics {

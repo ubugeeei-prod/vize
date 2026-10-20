@@ -88,9 +88,9 @@ pub(super) fn observe<'o, 'a>(
 #[cfg(test)]
 mod tests {
     use crate::{
-        SurfaceParseOptions,
         container::{Vue, vue::DescriptorOptions},
         css::StyleSyntax,
+        markup::SurfaceParseOptions,
     };
     use cssparser::Token;
     use vize_l0::{

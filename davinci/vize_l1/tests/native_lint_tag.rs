@@ -9,13 +9,12 @@ mod native_lint_tag {
         cstr,
     };
     use vize_l1::{
-        Element, ElementClose, OpenTag, SurfaceParseOptions, SurfaceTree, Token, check_fidelity,
         container::{Vue, vue::DescriptorOptions},
         markup::{
-            NativeChildren, NativeComponent, NativeLintTagKind as Kind,
+            Element, ElementClose, NativeChildren, NativeComponent, NativeLintTagKind as Kind,
             NativeLintTagRefusal as Refusal, NativeTemplateComponent, NativeTemplateGrammar,
+            OpenTag, SurfaceParseOptions, SurfaceTree, Token, check_fidelity, render,
         },
-        render,
     };
 
     fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponent<'a> {

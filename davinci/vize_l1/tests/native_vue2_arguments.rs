@@ -9,7 +9,7 @@
 
 use vize_l0::{Allocator, SourceRoot, cstr};
 use vize_l1::dialect::vue2::{surface, text::TextBoundaryKind};
-use vize_l1::render::check_fidelity;
+use vize_l1::markup::render::check_fidelity;
 
 #[test]
 fn blank_and_single_trailing_windows_match_original_ordered_argument_facts() {

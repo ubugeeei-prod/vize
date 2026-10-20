@@ -5,7 +5,7 @@ use vize_l1::dialect::LegacyVueVersion;
 use vize_l1::dialect::vue1::surface::{
     SyntaxBoundaryKind, parse_component, parse_component_with_authored,
 };
-use vize_l1::{Element, Interpolation, OpenTag, SurfaceChild, Token, check_fidelity};
+use vize_l1::markup::{Element, Interpolation, OpenTag, SurfaceChild, Token, check_fidelity};
 
 fn interpolations<'a>(children: &[SurfaceChild<'a>]) -> Vec<(&'a str, &'a str, &'a str, bool)> {
     let mut result = Vec::new();
@@ -229,7 +229,7 @@ fn default_modern_raw_construction_debug_and_layouts_are_unchanged() {
         interpolations(&modern.tree.children),
         [("{{", "{ x ", "}}", false)]
     );
-    let legacy = vize_l1::parse(&allocator, "{{{ x }}}");
+    let legacy = vize_l1::markup::parse(&allocator, "{{{ x }}}");
     assert_eq!(
         interpolations(&legacy.0.children),
         [("{{", "{ x ", "}}", false)]

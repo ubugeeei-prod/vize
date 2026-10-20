@@ -41,7 +41,7 @@ fn element_span(source: &str, open: &str, close: &str) -> Span {
 
 fn source_block_artifact(source: &str, block_source: &str, block_start: usize) -> Artifact {
     let allocator = Allocator::new();
-    let (tree, errors) = vize_l1::parse(&allocator, block_source);
+    let (tree, errors) = vize_l1::markup::parse(&allocator, block_source);
     let root = SourceRoot::new(source).expect("source is small");
     let block = root
         .block(block_source, block_start as u32)

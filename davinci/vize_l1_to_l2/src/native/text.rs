@@ -1,7 +1,7 @@
 use super::{Context, NativeHoleKind};
 use crate::native::ConstructionFactory;
 use vize_l0::String;
-use vize_l1::Token;
+use vize_l1::markup::Token;
 use vize_l1::markup::entity::{EntityContext, decode_one, needs_decoding};
 
 impl<'a> Context<'_, 'a> {

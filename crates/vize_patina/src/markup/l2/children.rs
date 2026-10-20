@@ -17,7 +17,7 @@ use crate::markup::element::MarkupElement;
 use crate::markup::l2_range;
 use crate::markup::node::{MarkupNode, MarkupText};
 use vize_l0::Span;
-use vize_l1::SurfaceChild;
+use vize_l1::markup::SurfaceChild;
 use vize_l2::op::{IfOp, InterpolationOp, Op, TextOp};
 
 /// Visit the child nodes a region contributes, in authored order.

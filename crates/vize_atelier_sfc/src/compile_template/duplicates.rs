@@ -206,7 +206,10 @@ impl<'t, 'a> Preflight<'t, 'a> {
 impl vize_l1_to_l2::SurfacePreflight for Preflight<'_, '_> {
     fn check(
         &mut self,
-        surface: Option<(&vize_l1::SurfaceTree<'_>, &[vize_l1::SurfaceError])>,
+        surface: Option<(
+            &vize_l1::markup::SurfaceTree<'_>,
+            &[vize_l1::markup::SurfaceError],
+        )>,
     ) -> bool {
         if self.result.is_none() {
             self.result = Some(if !self.enabled {

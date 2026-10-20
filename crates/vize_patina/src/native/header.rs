@@ -1,10 +1,7 @@
 //! Checked original element ranges and header binding names, shared by syntax rules.
 
 use vize_l0::Span;
-use vize_l1::{
-    ElementClose,
-    markup::{NativeAttribute, NativeElement},
-};
+use vize_l1::markup::{ElementClose, NativeAttribute, NativeElement};
 
 use super::{NativeLintRefusal, attribute};
 

@@ -50,7 +50,7 @@ fn eight_original_root_values_keep_whole_source_maps_and_actual_single_event() -
             .ok_or("same original L1 join")?;
         same(joined.child().ordinal(), 0)?;
         check(joined.child().parent_element().is_none())?;
-        vize_l1::check_fidelity(&original.selected().component().carrier().tree)
+        vize_l1::markup::check_fidelity(&original.selected().component().carrier().tree)
             .map_err(|_| "full original bytes")?;
         if prepared.decode_map().is_none() {
             check(core::ptr::eq(prepared.text(), value.raw_text()))?;

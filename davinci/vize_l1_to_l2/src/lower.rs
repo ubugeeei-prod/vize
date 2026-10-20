@@ -19,7 +19,7 @@
 //!
 //! [`Diagnostic`]: vize_l0::diag::Diagnostic
 //! [`L2Page`]: vize_l2::dump::Page
-//! [`SurfaceError`]: vize_l1::SurfaceError
+//! [`SurfaceError`]: vize_l1::markup::SurfaceError
 
 use alloc::vec::Vec as StdVec;
 use core::fmt;
@@ -27,7 +27,7 @@ use core::fmt;
 use vize_l0::diag::Diagnostic;
 use vize_l0::side_table::SideTable;
 use vize_l0::{Allocator, SourceBlock, SourceRoot, Span, String};
-use vize_l1::{SurfaceError, SurfaceTree};
+use vize_l1::markup::{SurfaceError, SurfaceTree};
 
 use vize_l2::op::Region;
 use vize_l2::provenance::ProvenanceRecord;
@@ -273,7 +273,7 @@ fn lower_source_block_with_caps_and_comment_policy<'a>(
 
 /// The artifact for a source that cannot be addressed by `u32` offsets.
 ///
-/// [`vize_l1::parse`] refuses such sources, so a tree reaching here was
+/// [`vize_l1::markup::parse`] refuses such sources, so a tree reaching here was
 /// built by hand. Nothing can be spanned inside it: lowering yields an
 /// empty root and one diagnostic instead of mis-measured ops.
 fn oversized_source<'a>(

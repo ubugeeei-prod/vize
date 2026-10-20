@@ -1,7 +1,7 @@
 //! Original token custody shared by native template document consumers.
 
 use vize_l0::Vec;
-use vize_l1::Token;
+use vize_l1::markup::Token;
 
 use super::{Doc, TemplateRefusal};
 

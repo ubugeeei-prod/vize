@@ -9,7 +9,7 @@
 //! twice.
 
 use vize_l0::{Box, Span, String, Vec, cstr};
-use vize_l1::{Interpolation, SurfaceChild, Token};
+use vize_l1::markup::{Interpolation, SurfaceChild, Token};
 
 use vize_l2::op::{CommentOp, InterpolationOp, Op, TextOp};
 

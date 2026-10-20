@@ -48,7 +48,7 @@
 //!   that both survive failure, Lean-InfoTree style.
 //!
 //! [`Diagnostic`]: vize_l0::diag::Diagnostic
-//! [`SurfaceError`]: vize_l1::SurfaceError
+//! [`SurfaceError`]: vize_l1::markup::SurfaceError
 //! [`IfOp`]: vize_l2::op::IfOp
 //! [`ForOp`]: vize_l2::op::ForOp
 //! [`SlotOp`]: vize_l2::op::SlotOp

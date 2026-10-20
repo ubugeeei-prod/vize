@@ -13,7 +13,7 @@ use vize_l0::dump::remarks::RemarkLog;
 use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::pass::RemarkCollector;
 use vize_l0::{Allocator, SourceRoot, Span};
-use vize_l1::parse;
+use vize_l1::markup::parse;
 use vize_l1_to_l2::lower as lower_l1_to_l2;
 use vize_l2_to_l3::{Lowered, PartitionKind, lower as lower_l2_to_l3};
 use vize_l3::dump::Page as L3Page;

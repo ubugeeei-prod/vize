@@ -113,7 +113,7 @@ impl PluginDocument {
             .block(content, start as u32)
             .map_err(|_| HostError::Split("template is not a source slice".into()))?;
         let allocator = Allocator::new();
-        let (tree, errors) = vize_l1::parse(&allocator, content);
+        let (tree, errors) = vize_l1::markup::parse(&allocator, content);
         let lowered = lower_source_block(&allocator, &tree, &errors, block);
         let mut walk = Walk::default();
         walk.region(&lowered.root, None);

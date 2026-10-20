@@ -279,7 +279,7 @@ test("Davinci Vapor compile path imports the verified L3 bridge", () => {
   const bridge = readRepoFile("crates", "vize_atelier_vapor", "src", "l3.rs");
   assert.match(compile, /mod inner;/u);
   assert.match(compileInner, /l3::lower_source_for_vapor_captured\(/u);
-  assert.match(bridge, /vize_l1::parse_with_options/u);
+  assert.match(bridge, /vize_l1::markup::parse_with_options/u);
   assert.match(bridge, /vize_l1_to_l2::lower/u);
   assert.match(bridge, /vize_l2_to_l3::lower/u);
   assert.match(bridge, /vize_l3::verify::verify/u);

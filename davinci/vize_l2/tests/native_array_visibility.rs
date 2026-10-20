@@ -6,12 +6,11 @@ mod cases {
         cstr,
     };
     use vize_l1::{
-        SurfaceParseOptions,
         container::{
             Vue,
             vue::{DescriptorObservation, DescriptorOptions},
         },
-        markup::NativeTemplateComponent,
+        markup::{NativeTemplateComponent, SurfaceParseOptions},
     };
     use vize_l2::file::FileIssueKind;
     use vize_l2::file::NativeFileInterpolationState;

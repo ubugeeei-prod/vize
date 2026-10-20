@@ -290,7 +290,7 @@ fn original_special_parent_failures_are_parked_before_root_extent_policy() -> Te
             "&amp;",
         )?;
         check(core::ptr::eq(failure.block().root_source(), source))?;
-        vize_l1::check_fidelity(&original.selected().component().carrier().tree)
+        vize_l1::markup::check_fidelity(&original.selected().component().carrier().tree)
             .map_err(|_| "full special-parent original source")?;
     }
     Ok(())

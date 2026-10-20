@@ -14,7 +14,7 @@
 //! The profile-generic lexer, entity decoder and compatibility callback
 //! adapter are available in default builds. [`parse_component`] constructs a
 //! native surface tree with checked admission and dialect-owned `v-pre` scope.
-//! The root parse APIs and compiler products retain
+//! The surface [`parse`] entries and compiler products retain
 //! their existing parser routes through the published tokenizer facade;
 //! that facade executes this same lexer while preserving callback policy.
 //! Replacing product parser routes still requires fix-history and parity gates.
@@ -30,6 +30,8 @@ pub mod lex;
 mod native;
 pub mod parse;
 pub mod profile;
+pub mod render;
+pub mod surface;
 pub mod token;
 
 pub use directive::{
@@ -52,10 +54,16 @@ pub use native::{
     NativeTextValue, NativeTextValueError, NativeTextValueFailure, NativeTextValueView,
 };
 pub use parse::{
-    ComponentParse, ComponentSourceError, DirectiveAdmission, parse_component,
-    parse_component_with_authored, parse_component_with_options,
+    ComponentParse, ComponentSourceError, DirectiveAdmission, SurfaceError, SurfaceParseOptions,
+    parse, parse_component, parse_component_with_authored, parse_component_with_options,
+    parse_with_authored, parse_with_options,
 };
 pub use profile::{Component, Document, Profile, ProfileKind};
+pub use render::{HoleCounts, check_fidelity, hole_counts, render};
+pub use surface::{
+    AttrValue, Attribute, CloseTag, Element, ElementClose, Interpolation, OpenTag, SurfaceChild,
+    SurfaceTree, Token, TokenStatus,
+};
 pub use token::{LexErrorCode, LexMode, Namespace, QuoteType, Sink};
 
 pub use native::{NativeLintComponent, NativeLintTag, NativeLintTagKind, NativeLintTagRefusal};

@@ -2,7 +2,7 @@
 
 use super::*;
 use vize_l0::Span;
-use vize_l1::{SurfaceChild, dialect::vue2::surface::TextChildren};
+use vize_l1::{dialect::vue2::surface::TextChildren, markup::SurfaceChild};
 
 pub(super) fn facts(owner: &NativeVue2SfcObservation<'_>) -> std::vec::Vec<std::string::String> {
     let descriptor = owner.descriptor();

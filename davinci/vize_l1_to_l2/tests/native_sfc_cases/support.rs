@@ -1,5 +1,5 @@
 use vize_l0::config::{VueDialect, VueVersion};
-use vize_l1::{SurfaceParseOptions, container::vue::DescriptorOptions};
+use vize_l1::{container::vue::DescriptorOptions, markup::SurfaceParseOptions};
 
 pub fn options() -> DescriptorOptions {
     DescriptorOptions {

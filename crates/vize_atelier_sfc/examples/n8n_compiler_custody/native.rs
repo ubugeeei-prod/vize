@@ -49,7 +49,7 @@ pub(super) fn expected_contract(coordinates: &Value) -> Result<Value, Box<dyn st
 
 pub(super) fn capture(source: &str, options: &DomEmitOptions<'_>) -> Value {
     let allocator = Allocator::new();
-    let (tree, errors) = vize_l1::parse(&allocator, source);
+    let (tree, errors) = vize_l1::markup::parse(&allocator, source);
     let mut lowered = lower_with_caps(&allocator, &tree, &errors, LegacyCaps::VUE3);
     let mut profile = vize_l1_to_l2::pass::TransformProfile::DEFAULT;
     if !options.hoist_static {

@@ -1,6 +1,6 @@
 use super::support::selected;
 use vize_l0::{Allocator, cstr};
-use vize_l1::{check_fidelity, render};
+use vize_l1::markup::{check_fidelity, render};
 use vize_patina::{
     Linter,
     native::{NativeLintRefusal, NativeSyntaxLint, header_facts::NativeHeaderFactError},

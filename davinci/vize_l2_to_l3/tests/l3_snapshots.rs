@@ -22,7 +22,7 @@ macro_rules! assert_l3_snapshot {
 
 fn snapshot(source: &str) -> String {
     let allocator = Allocator::default();
-    let (tree, errors) = vize_l1::parse(&allocator, source);
+    let (tree, errors) = vize_l1::markup::parse(&allocator, source);
     let s2 = vize_l1_to_l2::lower(&allocator, &tree, &errors);
     let lowered = lower(&allocator, &s2.root);
     assert_eq!(verify(&lowered.program), []);

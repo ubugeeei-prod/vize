@@ -9,7 +9,7 @@ fn prelowered_region_emits_the_same_document_and_mapping() {
     let source =
         "<div v-if=\"状態\" :[field]=\"value\">{{ count }}</div>\r\n<slot :name=\"slotName\" />";
     let allocator = vize_carton::Allocator::new();
-    let (tree, errors) = vize_l1::parse(&allocator, source);
+    let (tree, errors) = vize_l1::markup::parse(&allocator, source);
     let lowered = vize_l1_to_l2::lower(&allocator, &tree, &errors);
     let document = project_template_expression_document(&lowered.root);
 

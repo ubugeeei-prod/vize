@@ -3,10 +3,10 @@
 use super::{Context, NativeEmbed, NativeHoleKind};
 use crate::native::ConstructionFactory;
 use vize_l0::{Allocator, Span, Vec};
-use vize_l1::Interpolation;
 use vize_l1::embed::prepare_vue_interpolation_in;
 use vize_l1::embed::syntax::{EmbedHole, RetainedExpression, parse_once};
 use vize_l1::embed::{DecodeSegmentKind, Embed, EmbedSource, Grammar, Shape};
+use vize_l1::markup::Interpolation;
 use vize_l2::artifact::ArtifactError;
 use vize_l2::expr::JsExpr;
 use vize_l2::expr::js::{JsCoordinateError, JsCoordinates, JsSegment};

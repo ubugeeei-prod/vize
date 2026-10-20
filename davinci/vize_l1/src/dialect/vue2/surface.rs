@@ -8,10 +8,10 @@ use crate::dialect::LegacyVueVersion;
 use crate::dialect::vue::surface::{SurfacePolicy, sink::VueSink};
 use crate::event::Recorder;
 use crate::markup::entity::DecodedEntity;
+use crate::markup::parse::{SurfaceError, construct};
+use crate::markup::surface::SurfaceTree;
 use crate::markup::token::{LexErrorCode, LexMode, QuoteType};
 use crate::markup::{Component, LexOptions, Lexer, Sink};
-use crate::parse::{SurfaceError, construct};
-use crate::surface::SurfaceTree;
 
 mod body;
 pub use body::{TextChild, TextChildren, TextRefusal, TextView};

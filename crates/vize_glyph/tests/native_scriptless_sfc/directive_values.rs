@@ -6,7 +6,7 @@ use vize_glyph::native_doc::{
     ObservedNativeTemplateRefusal, observe_native_sfc_in,
 };
 use vize_l0::{Allocator, Span};
-use vize_l1::SurfaceChild;
+use vize_l1::markup::SurfaceChild;
 
 fn refused(source: &str, expected: Span, index: usize) {
     let arena = Allocator::default();
@@ -35,7 +35,7 @@ fn refused(source: &str, expected: Span, index: usize) {
         source
     ));
     assert_eq!(
-        vize_l1::check_fidelity(&selected.component().carrier().tree),
+        vize_l1::markup::check_fidelity(&selected.component().carrier().tree),
         Ok(())
     );
     if index == 1 {

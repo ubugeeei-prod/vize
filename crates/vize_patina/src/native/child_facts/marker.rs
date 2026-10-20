@@ -1,7 +1,7 @@
 use super::super::attribute;
 use super::{NativeChildFactError, NativeHeaderFacts, NativeInterpolationFact, NativeLintRefusal};
 use vize_l0::Span;
-use vize_l1::{ElementClose, SurfaceChild, markup::NativeChild};
+use vize_l1::markup::{ElementClose, NativeChild, SurfaceChild};
 
 pub(super) fn observe(
     header: &NativeHeaderFacts<'_, '_>,

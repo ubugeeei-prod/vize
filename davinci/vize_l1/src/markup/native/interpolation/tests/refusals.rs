@@ -87,7 +87,7 @@ fn missing_delimiter_has_no_selected_admission_and_verbatim_text_cannot_parse() 
         super::DescriptorOptions {
             version: super::VueVersion::V3,
             dialect: super::VueDialect::Vue,
-            template: crate::SurfaceParseOptions::default(),
+            template: crate::markup::SurfaceParseOptions::default(),
         },
     );
     assert!(descriptor.admitted().is_err());
@@ -118,7 +118,7 @@ fn missing_parent_frame_is_refused_even_without_diagnostic_rows() {
     assert!(owner.component().carrier().unsupported.is_empty());
     assert!(matches!(
         parent.surface().close,
-        crate::ElementClose::Missing
+        crate::markup::ElementClose::Missing
     ));
     assert!(matches!(
         owner.observe_interpolation_expression(parent.children().next().unwrap()),

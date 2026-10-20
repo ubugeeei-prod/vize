@@ -1,7 +1,7 @@
 //! Authored tag names borrowed from one original Element CST projection.
 
 use super::{NativeComponent, NativeElement, Parent};
-use crate::{Element, ElementClose, SurfaceChild, Token};
+use crate::markup::{Element, ElementClose, SurfaceChild, Token};
 use vize_l0::{SourceBlock, Span};
 
 /// The original construction outcome, without an invented closing name.
@@ -226,8 +226,8 @@ fn token_span(block: SourceBlock<'_>, token: &Token<'_>) -> Result<Span, NativeE
 mod tests {
     use super::{NativeElementClosingName as Closing, NativeElementNameRefusal as Refusal};
     use crate::container::{Vue, vue::DescriptorOptions};
+    use crate::markup::{ElementClose, check_fidelity};
     use crate::markup::{NativeComponent, NativeTemplateComponent};
-    use crate::{ElementClose, check_fidelity};
     use vize_l0::{
         Allocator, SourceRoot, Span,
         config::{VueDialect, VueVersion},
@@ -241,7 +241,7 @@ mod tests {
             DescriptorOptions {
                 version: VueVersion::V3,
                 dialect: VueDialect::Vue,
-                template: crate::SurfaceParseOptions::default(),
+                template: crate::markup::SurfaceParseOptions::default(),
             },
         );
         NativeTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())

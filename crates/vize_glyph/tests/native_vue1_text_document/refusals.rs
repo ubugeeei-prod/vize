@@ -5,9 +5,9 @@ use vize_glyph::native_doc::{
     vue1_text_document,
 };
 use vize_l0::{Allocator, Span, cstr};
-use vize_l1::SurfaceChild;
 use vize_l1::dialect::vue1::{surface, text::TextBoundaryKind};
 use vize_l1::embed::syntax::EmbedHole;
+use vize_l1::markup::SurfaceChild;
 
 #[test]
 fn original_raw_once_all_pipe_separator_and_empty_boundaries_never_supply_docs() {

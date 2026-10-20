@@ -2,7 +2,7 @@
 
 use super::{check, equal};
 use vize_l0::{Span, id::NodeId};
-use vize_l1::SurfaceChild;
+use vize_l1::markup::SurfaceChild;
 use vize_l2::{
     expr::ExprRef, file::NativeFileInterpolationState, lang::js::NativeTemplateFile, op::Op,
 };

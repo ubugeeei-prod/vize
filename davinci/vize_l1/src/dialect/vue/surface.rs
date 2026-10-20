@@ -4,7 +4,7 @@ pub(crate) mod sink;
 
 use crate::event::Recorder;
 use crate::markup::Sink;
-use crate::surface::LintTagFact;
+use crate::markup::surface::LintTagFact;
 use vize_l0::Vec;
 
 #[derive(Default)]

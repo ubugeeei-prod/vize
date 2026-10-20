@@ -10,13 +10,12 @@ use vize_l0::{
     config::{VueDialect, VueVersion},
 };
 use vize_l1::{
-    SurfaceParseOptions,
     container::{
         Vue,
         vue::{DescriptorObservation, DescriptorOptions},
     },
     css::StyleSyntax,
-    markup::NativeTemplateComponent,
+    markup::{NativeTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::lang::js::{NativeScopedTemplateIssueKind as Kind, NativeTemplateOwner};
 

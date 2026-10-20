@@ -22,7 +22,7 @@ use vize_l0::diag::Diagnostic;
 use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::side_table::SideTable;
 use vize_l0::{Allocator, String};
-use vize_l1::parse;
+use vize_l1::markup::parse;
 use vize_l1_to_l2::{LegacyCaps, Lowered, lower_with_caps};
 use vize_l2::dump::Page as L2Page;
 use vize_l2::provenance::ProvenanceRecord;

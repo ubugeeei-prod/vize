@@ -175,7 +175,7 @@ fn pending_original_hole_survives_callback_unwind_and_forget_grants_no_new_recei
     core::mem::forget(forgotten);
     assert_eq!(intact.component().block().source(), "<p :id='ready'/>");
     assert_eq!(intact.component().block().root_source(), intact_source);
-    crate::check_fidelity(&intact.component().carrier().tree).unwrap();
+    crate::markup::check_fidelity(&intact.component().carrier().tree).unwrap();
     // This tests source survival at the deliberate forget boundary, without
     // fabricating an admission or destructor-count claim after that boundary.
 }

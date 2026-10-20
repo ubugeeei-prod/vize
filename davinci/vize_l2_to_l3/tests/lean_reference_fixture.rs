@@ -38,7 +38,7 @@ fn rust_lowered_values_match_stateful_reference_input() {
         ),
     ] {
         let allocator = Allocator::default();
-        let (tree, errors) = vize_l1::parse(&allocator, source.trim_end());
+        let (tree, errors) = vize_l1::markup::parse(&allocator, source.trim_end());
         assert!(errors.is_empty(), "{errors:?}");
         let s2 = vize_l1_to_l2::lower(&allocator, &tree, &errors);
         let lowered = lower(&allocator, &s2.root);
@@ -101,7 +101,7 @@ fn assert_rust_lowered_fixture(
     expected_vapor: &str,
 ) {
     let allocator = Allocator::default();
-    let (tree, errors) = vize_l1::parse(&allocator, source.trim_end());
+    let (tree, errors) = vize_l1::markup::parse(&allocator, source.trim_end());
     assert!(errors.is_empty(), "{errors:?}");
     let s2 = vize_l1_to_l2::lower(&allocator, &tree, &errors);
     let lowered = lower(&allocator, &s2.root);

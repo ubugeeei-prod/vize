@@ -110,7 +110,7 @@ fn cases() -> Vec<(&'static str, &'static str, Value, Value, Vec<Value>)> {
 
 fn lowered(source: &str) -> (String, String) {
     let allocator = Allocator::default();
-    let (tree, errors) = vize_l1::parse(&allocator, source);
+    let (tree, errors) = vize_l1::markup::parse(&allocator, source);
     assert!(errors.is_empty(), "{errors:?}");
     let s2 = vize_l1_to_l2::lower(&allocator, &tree, &errors);
     assert!(s2.diagnostics.is_empty(), "{:?}", s2.diagnostics);

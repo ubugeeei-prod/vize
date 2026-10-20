@@ -2,8 +2,8 @@
 
 use vize_l0::{Allocator, SourceBlock, SourceFrameError, Span, Vec};
 use vize_l1::{
-    SurfaceChild,
     dialect::vue2::surface::{ComponentParse, TextChild, TextChildren},
+    markup::SurfaceChild,
 };
 
 use super::template::{Cursor, close_element, verbatim};

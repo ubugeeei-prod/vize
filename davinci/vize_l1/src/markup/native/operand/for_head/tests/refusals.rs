@@ -169,7 +169,7 @@ fn real_missing_close_and_recovery_precedence_refuse_before_dialect_selection() 
         assert!(owner.component().carrier().errors.is_empty());
         assert!(matches!(
             element.surface().close,
-            crate::ElementClose::Missing
+            crate::markup::ElementClose::Missing
         ));
         let failure = owner
             .observe_attribute_for_head(element.attributes().last().unwrap())

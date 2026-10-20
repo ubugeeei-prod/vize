@@ -1,7 +1,7 @@
 //! A first-party expression dialect selected once for an authored block.
 
 use vize_l0::{Allocator, SourceBlock};
-use vize_l1::{SurfaceError, SurfaceTree};
+use vize_l1::markup::{SurfaceError, SurfaceTree};
 use vize_l2::expr::{ExprDialect, ExprRef};
 
 use super::{LegacyCaps, Lowered, cx::Cx, finish::lower_in_context};

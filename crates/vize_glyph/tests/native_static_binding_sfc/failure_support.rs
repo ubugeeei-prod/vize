@@ -4,7 +4,7 @@ use vize_glyph::native_doc::{
     LineEnding, NativeSfcObservation, NativeSfcRefusal, ObservedNativeTemplateRefusal,
 };
 use vize_l0::Span;
-use vize_l1::{SurfaceChild, markup::NativeConditionKind};
+use vize_l1::markup::{NativeConditionKind, SurfaceChild};
 
 pub(super) fn refused(owner: &NativeSfcObservation<'_>, source: &str, expected: NativeSfcRefusal) {
     assert_eq!(owner.source(), source);

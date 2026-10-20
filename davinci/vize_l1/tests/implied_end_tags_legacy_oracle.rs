@@ -9,7 +9,7 @@ use vize_armature::{
     ParserOptions, TemplateChildNode, TemplateSyntaxMode, parse_with_options_and_template_syntax,
 };
 use vize_l0::{Allocator, is_native_tag};
-use vize_l1::{SurfaceChild, SurfaceTree, check_fidelity, parse_with_authored};
+use vize_l1::markup::{SurfaceChild, SurfaceTree, check_fidelity, parse_with_authored};
 
 type Rows<'a> = Vec<(&'a str, usize)>;
 

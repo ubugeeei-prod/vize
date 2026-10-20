@@ -8,10 +8,10 @@ use vize_l0::{
     config::{VueDialect, VueVersion},
 };
 use vize_l1::{
-    SurfaceParseOptions,
     container::vue::{DescriptorOptions, ScriptRole},
     css::StyleIssue,
     embed::Lang,
+    markup::SurfaceParseOptions,
 };
 use vize_l1_to_l2::native_file::{NativeSfcObservation, lower_sfc_native};
 use vize_l2::lang::js::{OrdinaryIssue, SetupIssue};

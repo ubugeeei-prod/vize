@@ -14,7 +14,7 @@
 
 use vize_l0::key::{KeySink, KeyedArtifact, schema};
 use vize_l0::stage::Stage;
-use vize_l1::SurfaceTree;
+use vize_l1::markup::SurfaceTree;
 
 /// An L1 surface tree viewed as its keyed page.
 ///
@@ -28,6 +28,6 @@ impl KeyedArtifact for SurfacePage<'_, '_> {
     const SCHEMA_VERSION: u32 = schema::L1_SURFACE;
 
     fn feed_key(&self, sink: &mut KeySink) {
-        vize_l1::render(self.0, &mut |piece| sink.feed_str(piece));
+        vize_l1::markup::render(self.0, &mut |piece| sink.feed_str(piece));
     }
 }

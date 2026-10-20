@@ -67,7 +67,7 @@ fn l2_run(source: &str) -> Option<L2Run> {
         return None;
     }
     let allocator = Allocator::default();
-    let (tree, errors) = vize_l1::parse(&allocator, &template.content);
+    let (tree, errors) = vize_l1::markup::parse(&allocator, &template.content);
     let mut lowered =
         vize_l1_to_l2::lower_with_caps(&allocator, &tree, &errors, vize_l1_to_l2::LegacyCaps::VUE3);
     let mut observers = Pair(BudgetObserver::new(), RemarkCollector::new());

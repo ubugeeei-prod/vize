@@ -38,7 +38,7 @@ impl<'o, 'a> TemplateView<'o, 'a> {
     ///
     /// ```
     /// use vize_l0::{Allocator, Span, config::{VueDialect, VueVersion}};
-    /// use vize_l1::{SurfaceParseOptions, container::vue::{Vue, DescriptorOptions}};
+    /// use vize_l1::{container::vue::{Vue, DescriptorOptions}, markup::SurfaceParseOptions};
     /// let arena = Allocator::default();
     /// let options = DescriptorOptions {
     ///     version: VueVersion::V3, dialect: VueDialect::Vue,
@@ -110,7 +110,7 @@ pub enum NativeTemplateFrameNameRefusal {
 /// The original descriptor must remain alive:
 /// ```compile_fail
 /// use vize_l0::{Allocator, config::{VueDialect, VueVersion}};
-/// use vize_l1::{SurfaceParseOptions, container::vue::{Vue, DescriptorOptions}};
+/// use vize_l1::{container::vue::{Vue, DescriptorOptions}, markup::SurfaceParseOptions};
 /// let options = DescriptorOptions {
 ///     version: VueVersion::V3, dialect: VueDialect::Vue,
 ///     template: SurfaceParseOptions::default(),
@@ -125,7 +125,7 @@ pub enum NativeTemplateFrameNameRefusal {
 /// Its whole-root projection cannot outlive the original source bytes:
 /// ```compile_fail
 /// use vize_l0::{Allocator, String, config::{VueDialect, VueVersion}};
-/// use vize_l1::{SurfaceParseOptions, container::vue::{Vue, DescriptorOptions}};
+/// use vize_l1::{container::vue::{Vue, DescriptorOptions}, markup::SurfaceParseOptions};
 /// let options = DescriptorOptions {
 ///     version: VueVersion::V3, dialect: VueDialect::Vue,
 ///     template: SurfaceParseOptions::default(),
@@ -141,7 +141,7 @@ pub enum NativeTemplateFrameNameRefusal {
 /// The original arena must also remain alive:
 /// ```compile_fail
 /// use vize_l0::{Allocator, config::{VueDialect, VueVersion}};
-/// use vize_l1::{SurfaceParseOptions, container::vue::{Vue, DescriptorOptions}};
+/// use vize_l1::{container::vue::{Vue, DescriptorOptions}, markup::SurfaceParseOptions};
 /// let options = DescriptorOptions {
 ///     version: VueVersion::V3, dialect: VueDialect::Vue,
 ///     template: SurfaceParseOptions::default(),

@@ -88,7 +88,7 @@ fn recovered_verbatim_boolean_and_missing_values_keep_exact_origin_failure() {
                 );
                 assert!(matches!(
                     element.surface().close,
-                    crate::ElementClose::Missing
+                    crate::markup::ElementClose::Missing
                 ));
             }
             "<template><div title= ></div></template>" => {
@@ -111,7 +111,7 @@ fn recovered_verbatim_boolean_and_missing_values_keep_exact_origin_failure() {
                 );
                 assert!(matches!(
                     element.surface().close,
-                    crate::ElementClose::Present(_)
+                    crate::markup::ElementClose::Present(_)
                 ));
             }
             "<template><div title='a&amp;</template>" => {

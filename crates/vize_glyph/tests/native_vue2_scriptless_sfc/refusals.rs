@@ -9,10 +9,10 @@ use vize_l0::{
     config::{VueDialect, VueVersion},
 };
 use vize_l1::{
-    SurfaceParseOptions,
     container::vue::DescriptorIssueCode as Code,
     dialect::vue2::{surface::TextRefusal, text::TextBoundaryKind},
     embed::syntax::EmbedHole,
+    markup::SurfaceParseOptions,
 };
 
 pub(super) fn span(source: &str, raw: &str) -> Span {

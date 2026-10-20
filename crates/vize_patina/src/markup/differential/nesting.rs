@@ -14,7 +14,7 @@
 //! Relief parse inserts (zero-width) are transparent, as L1 has none.
 
 use crate::markup::l2::surface::offset_in;
-use vize_l1::{SurfaceChild, SurfaceTree};
+use vize_l1::markup::{SurfaceChild, SurfaceTree};
 use vize_relief::{RootNode, TemplateChildNode};
 
 type Nesting = std::vec::Vec<(u32, Option<u32>)>;

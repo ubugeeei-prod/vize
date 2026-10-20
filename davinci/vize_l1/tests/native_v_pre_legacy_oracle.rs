@@ -5,7 +5,7 @@
 use vize_armature::{ExpressionNode, PropNode, TemplateChildNode, parse};
 use vize_l0::{Allocator, String, cstr};
 use vize_l1::markup::parse_component;
-use vize_l1::{SurfaceChild, check_fidelity};
+use vize_l1::markup::{SurfaceChild, check_fidelity};
 
 fn native_interpolations<'a>(children: &[SurfaceChild<'a>], values: &mut Vec<&'a str>) {
     for child in children {

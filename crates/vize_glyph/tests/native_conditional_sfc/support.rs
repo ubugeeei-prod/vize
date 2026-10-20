@@ -4,9 +4,9 @@ use vize_glyph::native_doc::{
     observe_native_sfc_in,
 };
 use vize_l0::Allocator;
-use vize_l1::SurfaceChild;
 use vize_l1::embed::{Grammar, Lang, Shape, syntax::RetainedExpression};
 use vize_l1::markup::NativeChildren;
+use vize_l1::markup::SurfaceChild;
 
 use super::fingerprint;
 
@@ -36,7 +36,7 @@ pub(super) fn assert_original(
         source
     ));
     assert_eq!(
-        vize_l1::check_fidelity(&selected.component().carrier().tree),
+        vize_l1::markup::check_fidelity(&selected.component().carrier().tree),
         Ok(())
     );
 }

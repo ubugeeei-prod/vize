@@ -2,7 +2,7 @@ use super::sfc_comment_ranges;
 use tower_lsp::lsp_types::{FoldingRange, FoldingRangeKind};
 use vize_l0::Allocator;
 use vize_l0::config::{VueDialect, VueVersion};
-use vize_l1::{SurfaceParseOptions, container::vue::DescriptorOptions};
+use vize_l1::{container::vue::DescriptorOptions, markup::SurfaceParseOptions};
 use vize_l1_to_l2::native_file::lower_sfc_native;
 
 fn options() -> DescriptorOptions {

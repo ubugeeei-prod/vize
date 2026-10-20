@@ -96,7 +96,7 @@ fn static_class_never_authorizes_nul_ordinary_cr_style_duplicates_or_dynamic_hea
             vize_l1::container::vue::DescriptorOptions {
                 version: vize_l0::config::VueVersion::V3,
                 dialect: vize_l0::config::VueDialect::Vue,
-                template: vize_l1::SurfaceParseOptions::default(),
+                template: vize_l1::markup::SurfaceParseOptions::default(),
             },
         );
         let selected = vize_l1::markup::NativeTemplateComponent::parse_in(

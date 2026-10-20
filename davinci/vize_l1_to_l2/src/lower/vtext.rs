@@ -1,7 +1,7 @@
 //! `v-text` lowering into the Vue dialect text-content op.
 
 use vize_l0::{Box, String};
-use vize_l1::Attribute;
+use vize_l1::markup::Attribute;
 use vize_l2::op::{BindingOp, VueTextOp};
 
 use super::binding::defer;

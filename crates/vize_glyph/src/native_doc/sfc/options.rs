@@ -1,8 +1,8 @@
 //! Explicit native descriptor and document-print policy.
 
 use vize_l0::config::{VueDialect, VueVersion};
-use vize_l1::SurfaceParseOptions;
 use vize_l1::container::vue::DescriptorOptions;
+use vize_l1::markup::SurfaceParseOptions;
 
 use super::super::PrintOptions;
 

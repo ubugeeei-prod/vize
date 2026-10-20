@@ -2,7 +2,7 @@
 
 use super::{Lowered, cx::Cx, structural, surface_error_span};
 use vize_l0::SourceBlock;
-use vize_l1::{SurfaceError, SurfaceTree};
+use vize_l1::markup::{SurfaceError, SurfaceTree};
 use vize_l2::op::{Namespace, Region};
 
 pub(super) fn lower_in_context<'a>(

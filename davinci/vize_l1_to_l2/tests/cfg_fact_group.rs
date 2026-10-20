@@ -64,7 +64,7 @@ fn the_group_is_computed_once_read_under_demand_and_equals_the_pass() {
 
     // The table is the pass's product over the same template.
     let allocator = Allocator::new();
-    let (tree, errors) = vize_l1::parse(&allocator, TEMPLATE);
+    let (tree, errors) = vize_l1::markup::parse(&allocator, TEMPLATE);
     assert_eq!(rule_facts, cfg::run(&lower(&allocator, &tree, &errors)));
     assert_eq!((rule_facts.cyclomatic, rule_facts.cognitive), (5, 5));
 
@@ -93,7 +93,7 @@ fn the_group_is_computed_once_read_under_demand_and_equals_the_pass() {
     let placed = cfg::template_facts::<Rule>(&source, start as u32, end as u32).unwrap();
     let root = SourceRoot::new(&source).unwrap();
     let block = root.block(&source[start..end], start as u32).unwrap();
-    let (tree, errors) = vize_l1::parse(&allocator, &source[start..end]);
+    let (tree, errors) = vize_l1::markup::parse(&allocator, &source[start..end]);
     assert_eq!(
         placed,
         cfg::run(&lower_source_block(&allocator, &tree, &errors, block))

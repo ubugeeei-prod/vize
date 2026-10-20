@@ -3,8 +3,8 @@ extern crate std;
 use super::*;
 use vize_l0::config::{VueDialect, VueVersion};
 use vize_l1::{
-    SurfaceParseOptions,
     container::{Vue, vue::DescriptorOptions},
+    markup::SurfaceParseOptions,
 };
 
 std::thread_local! {

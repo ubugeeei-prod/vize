@@ -4,7 +4,7 @@
 use vize_l0::Span;
 
 use super::{NativeComponent, NativeElement};
-use crate::{Element, surface::LintTagFact};
+use crate::markup::{Element, surface::LintTagFact};
 
 /// Original default Vue 3 lint category; no runtime tag resolution is implied.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

@@ -2,7 +2,7 @@ use super::{
     Attribute, Element, NativeAttribute, NativeAttributeOperandError, NativeTemplateComponent,
     NativeTemplateGrammar, SourceBlock, SourceError, Span,
 };
-use crate::ElementClose;
+use crate::markup::ElementClose;
 
 pub(super) struct Origin<'a> {
     pub(super) block: SourceBlock<'a>,

@@ -7,7 +7,7 @@ use vize_l0::Span;
 use super::{NativeChild, NativeTemplateComponent, NativeTemplateGrammar};
 use crate::embed::syntax::{NativeSyntax, RetainedExpression, parse_once};
 use crate::embed::{Embed, Grammar, Lang, Shape, SourceError, prepare_vue_interpolation_in};
-use crate::{ElementClose, SurfaceChild};
+use crate::markup::{ElementClose, SurfaceChild};
 
 mod origin;
 use origin::Origin;

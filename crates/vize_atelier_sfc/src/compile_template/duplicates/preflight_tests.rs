@@ -19,7 +19,7 @@ fn complete_native_error_and_repeated_requests_reuse_the_original_check_once() {
     ] {
         let template = template(source);
         let arena = vize_l0::Allocator::default();
-        let (tree, errors) = vize_l1::parse(&arena, source);
+        let (tree, errors) = vize_l1::markup::parse(&arena, source);
         let mut check = Preflight::new(&template, true, false);
         let expected = reject_duplicate_props(&template);
         assert_eq!(check.check(Some((&tree, &errors))), expected.is_ok());
@@ -38,7 +38,7 @@ fn native_whole_refusal_keeps_all_old_spans_and_runs_the_callback_once() {
     let source = "<div id='a' id='b'><p v-if[a]='x' v-if[a]='y'/></div>";
     let template = template(source);
     let arena = vize_l0::Allocator::default();
-    let (tree, errors) = vize_l1::parse(&arena, source);
+    let (tree, errors) = vize_l1::markup::parse(&arena, source);
     let mut check = Preflight::new(&template, true, false);
     let expected = reject_duplicate_props(&template);
     assert!(expected.is_err());
@@ -128,7 +128,7 @@ fn equal_text_from_an_unrelated_tree_cannot_skip_the_original_callback() {
     assert!(!core::ptr::eq(original.as_str(), foreign.as_str()));
     let template = template(&original);
     let arena = vize_l0::Allocator::default();
-    let (tree, errors) = vize_l1::parse(&arena, &foreign);
+    let (tree, errors) = vize_l1::markup::parse(&arena, &foreign);
     let mut check = Preflight::new(&template, true, false);
     assert!(!check.check(Some((&tree, &errors))));
     assert_eq!(check.retained_calls, 1);
@@ -212,10 +212,10 @@ fn differing_title_and_comment_policies_keep_the_complete_callback_result_once()
     ] {
         let template = template(source);
         let arena = vize_l0::Allocator::default();
-        let (tree, errors) = vize_l1::parse_with_options(
+        let (tree, errors) = vize_l1::markup::parse_with_options(
             &arena,
             source,
-            vize_l1::SurfaceParseOptions {
+            vize_l1::markup::SurfaceParseOptions {
                 experimental_in_tag_comments: comments,
             },
         );

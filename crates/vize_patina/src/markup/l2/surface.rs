@@ -8,7 +8,7 @@
 //! from the tokens the parser kept — the lowering's own extent rule.
 
 use vize_l0::Span;
-use vize_l1::{Attribute, Element, SurfaceChild, SurfaceTree, Token};
+use vize_l1::markup::{Attribute, Element, SurfaceChild, SurfaceTree, Token};
 
 /// Byte offset of a slice of `source`.
 #[inline]

@@ -111,7 +111,10 @@ fn native_construction_casts_from_once_prepared_attributes() {
         let allocator = Allocator::default();
         let lowered = lower_component_native(&allocator, source, Lang::Js).unwrap();
         assert!(lowered.is_supported(), "{:?}", lowered.holes);
-        assert_eq!(vize_l1::check_fidelity(&lowered.component.tree), Ok(()));
+        assert_eq!(
+            vize_l1::markup::check_fidelity(&lowered.component.tree),
+            Ok(())
+        );
         let root = lowered.artifact.root();
         let component = if source == ORIGINAL {
             let [Op::Element(outer), Op::Text(tail)] = root.ops.as_slice() else {

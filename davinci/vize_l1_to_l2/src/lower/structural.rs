@@ -17,7 +17,7 @@ use super::features::OpFamily;
 use alloc::vec::Vec as StdVec;
 
 use vize_l0::{Box, Span, String, Vec, cstr, ensure_sufficient_stack};
-use vize_l1::{Attribute, Element, SurfaceChild};
+use vize_l1::markup::{Attribute, Element, SurfaceChild};
 
 use vize_l2::op::{IfBranch, IfOp, Namespace, Op, Region};
 

@@ -6,7 +6,7 @@
 //! A *sinopia* is the preparatory underdrawing beneath a fresco. When the
 //! finished layer is detached from the wall, the sinopia survives as the
 //! byte-faithful record of what was actually drawn — which is this crate's
-//! contract for Vue templates: [`parse`](parse::parse) builds a typed tree
+//! contract for Vue templates: [`parse`](markup::parse) builds a typed tree
 //! whose in-order render is the **exact source bytes**, malformed input
 //! included, and a debug verifier asserts that on every construction
 //! (`render(tree) == source`, the SwiftSyntax import recorded in
@@ -28,21 +28,21 @@
 //!
 //! 1. **Absent-but-required syntax is a typed `Missing` hole** at the exact
 //!    offset where the syntax belongs: an open tag's `>` at EOF
-//!    ([`OpenTag::gt`](surface::OpenTag)), a close tag's `>` at EOF
-//!    ([`CloseTag::gt`](surface::CloseTag)), an unterminated quoted value's
-//!    closing quote ([`AttrValue::close_quote`](surface::AttrValue)), an
+//!    ([`OpenTag::gt`](markup::surface::OpenTag)), a close tag's `>` at EOF
+//!    ([`CloseTag::gt`](markup::surface::CloseTag)), an unterminated quoted value's
+//!    closing quote ([`AttrValue::close_quote`](markup::surface::AttrValue)), an
 //!    announced-but-absent attribute value (`a= >`,
-//!    [`AttrValue::content`](surface::AttrValue)) — all
-//!    [`TokenStatus::Missing`](surface::TokenStatus) tokens, zero-width —
+//!    [`AttrValue::content`](markup::surface::AttrValue)) — all
+//!    [`TokenStatus::Missing`](markup::surface::TokenStatus) tokens, zero-width —
 //!    and a required-but-absent end tag, which is the node-level hole
-//!    [`ElementClose::Missing`](surface::ElementClose).
+//!    [`ElementClose::Missing`](markup::surface::ElementClose).
 //! 2. **Bytes with no structural home at tree level are a typed
-//!    `Unexpected` node** ([`SurfaceChild::Unexpected`](surface::SurfaceChild))
+//!    `Unexpected` node** ([`SurfaceChild::Unexpected`](markup::surface::SurfaceChild))
 //!    carrying the verbatim slice: a stray end tag that matches no open
 //!    element, an empty `</>`, trailing bytes the tokenizer consumed
 //!    without reporting structure.
 //! 3. **Bytes with no structural home inside a tag ride in the next
-//!    token's [`leading`](surface::Token::leading) slice**, under the
+//!    token's [`leading`](markup::surface::Token::leading) slice**, under the
 //!    diagnostic the tokenizer already reported (a stray `/` in
 //!    `<div / a>`, junk between an end-tag name and its `>`). In
 //!    well-formed source `leading` is pure inter-token whitespace; it is
@@ -58,7 +58,7 @@
 //! whose const assertion rejects `Drop` payloads, so the tree is Drop-free
 //! and arena-resident by construction. Node footprints are pinned by
 //! `#[cfg(target_pointer_width = "64")]`-guarded const asserts in
-//! [`surface`].
+//! [`markup::surface`].
 
 #![no_std]
 
@@ -70,20 +70,12 @@ pub mod dialect;
 pub mod edit;
 pub mod embed;
 pub mod markup;
-pub mod parse;
 pub mod pug;
-pub mod render;
-pub mod surface;
 
 mod build;
 mod event;
+mod moved;
 mod slice;
 
-pub use parse::{
-    SurfaceError, SurfaceParseOptions, parse, parse_with_authored, parse_with_options,
-};
-pub use render::{HoleCounts, check_fidelity, hole_counts, render};
-pub use surface::{
-    AttrValue, Attribute, CloseTag, Element, ElementClose, Interpolation, OpenTag, SurfaceChild,
-    SurfaceTree, Token, TokenStatus,
-};
+// The surface was moved under `markup` (#6835); these paths are deprecated.
+pub use moved::*;

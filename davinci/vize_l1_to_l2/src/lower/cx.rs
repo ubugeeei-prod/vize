@@ -24,7 +24,7 @@ use vize_l0::diag::{Advisory, Diagnostic, Stage};
 use vize_l0::id::NodeId;
 use vize_l0::side_table::SideTable;
 use vize_l0::{Allocator, SourceBlock, Span, String};
-use vize_l1::{Element, ElementClose, Token};
+use vize_l1::markup::{Element, ElementClose, Token};
 use vize_l2::provenance::ProvenanceRecord;
 use vize_l2::scope::{ScopeFacts, ScopeTag};
 

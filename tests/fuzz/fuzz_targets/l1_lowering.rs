@@ -3,7 +3,7 @@
 // L1 → L2 lowering fuzz target (Davinci P2-8, TS-20).
 //
 // Drives the full Davinci template front half with arbitrary UTF-8:
-// `vize_l1::parse` (the lossless L1 surface tree, total over
+// `vize_l1::markup::parse` (the lossless L1 surface tree, total over
 // malformed input by the typed-hole policy) followed by
 // `vize_l1_to_l2::lower` (the total L1→L2 lowering — L2 ops or
 // diagnostics, never a panic and never a partial-then-abandoned state).
@@ -20,7 +20,7 @@ use libfuzzer_sys::fuzz_target;
 use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::side_table::SideTable;
 use vize_l0::{Allocator, SourceRoot, Span};
-use vize_l1::parse;
+use vize_l1::markup::parse;
 use vize_l1_to_l2::{Lowered, lower};
 use vize_l2::dump::Page as L2Page;
 use vize_l2::verify::{Rigor, verify, verify_table};

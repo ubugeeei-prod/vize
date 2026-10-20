@@ -10,7 +10,7 @@ use alloc::vec::Vec as StdVec;
 
 use vize_l0::id::NodeId;
 use vize_l0::{Span, String, cstr};
-use vize_l1::Element;
+use vize_l1::markup::Element;
 
 use super::super::cx::{Cx, attr_slice, attr_span};
 use super::super::directive::{Arg, AttrForm, Head};

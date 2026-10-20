@@ -1,8 +1,7 @@
 use super::{NativeRootTextError as Kind, NativeRootTextProfile};
 use crate::{
-    SurfaceChild, SurfaceParseOptions,
     container::{Vue, vue::DescriptorOptions},
-    markup::NativeTemplateComponent,
+    markup::{NativeTemplateComponent, SurfaceChild, SurfaceParseOptions},
 };
 use vize_l0::{
     Allocator,
@@ -65,7 +64,8 @@ fn original_unicode_mixed_text_changes_only_derived_value_and_retains_full_span(
         owner.children().next().ok_or("retained root")?.surface(),
         pointer
     ));
-    crate::check_fidelity(&owner.component().carrier().tree).map_err(|_| "original fidelity")?;
+    crate::markup::check_fidelity(&owner.component().carrier().tree)
+        .map_err(|_| "original fidelity")?;
     Ok(())
 }
 
@@ -100,7 +100,7 @@ fn unchanged_unicode_spaces_and_single_space_or_omission_allocate_no_arena_bytes
             ));
         }
         assert_eq!(receipt.span().slice(source), receipt.raw_text());
-        crate::check_fidelity(&owner.component().carrier().tree).map_err(|_| "fidelity")?;
+        crate::markup::check_fidelity(&owner.component().carrier().tree).map_err(|_| "fidelity")?;
     }
     Ok(())
 }

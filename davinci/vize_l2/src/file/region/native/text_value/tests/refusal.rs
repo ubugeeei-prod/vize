@@ -220,7 +220,7 @@ fn original_raw_nul_and_recovered_carrier_are_retained_without_guessed_decoder_e
             original.selected().component().carrier().errors.len(),
             original_errors,
         )?;
-        vize_l1::check_fidelity(&original.selected().component().carrier().tree)
+        vize_l1::markup::check_fidelity(&original.selected().component().carrier().tree)
             .map_err(|_| "full original malformed source")?;
         let file = original.file().ok_or("normally retained refusal File")?;
         same(file.artifact().node_count(), 0)?;

@@ -1,5 +1,5 @@
 use super::{NativeChild, NativeTemplateComponent, NativeTextValueError as Kind};
-use crate::{Element, ElementClose, SurfaceChild, Token, markup::NativeTemplateGrammar};
+use crate::markup::{Element, ElementClose, NativeTemplateGrammar, SurfaceChild, Token};
 use vize_l0::{SourceBlock, Span};
 
 /// Only original immutable arena addresses survive wrapper movement.

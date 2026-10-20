@@ -3,7 +3,7 @@
 use super::super::text::{TextBinding, TextBoundaryKind};
 use super::ComponentParse;
 use crate::embed::syntax::EmbedHole;
-use crate::{Element, ElementClose, SurfaceChild};
+use crate::markup::{Element, ElementClose, SurfaceChild};
 use oxc_ast::ast::Expression;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -45,7 +45,7 @@ impl ExactSizeIterator for TextChildren<'_, '_> {}
 /// An original direct parent and ordinal, never a caller-selected raw node.
 ///
 /// ```compile_fail
-/// use vize_l1::{SurfaceChild, dialect::vue1::surface::TextChild};
+/// use vize_l1::{dialect::vue1::surface::TextChild, markup::SurfaceChild};
 /// fn forge<'o, 'a>(raw: &'o SurfaceChild<'a>) -> TextChild<'o, 'a> { raw.into() }
 /// ```
 #[derive(Debug)]

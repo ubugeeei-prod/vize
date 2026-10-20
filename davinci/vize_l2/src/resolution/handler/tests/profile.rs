@@ -23,7 +23,7 @@ fn original_ts_profile_is_intrinsic_and_type_annotations_remain_precise_refusals
             DescriptorOptions {
                 version: VueVersion::V3,
                 dialect: VueDialect::Vue,
-                template: vize_l1::SurfaceParseOptions::default(),
+                template: vize_l1::markup::SurfaceParseOptions::default(),
             },
         );
         let selected =

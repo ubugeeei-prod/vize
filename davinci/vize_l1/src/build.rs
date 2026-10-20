@@ -20,7 +20,7 @@ use vize_l0::Namespace;
 use vize_l0::{Allocator, Box, Vec};
 
 use crate::event::{Event, EventKind};
-use crate::surface::{
+use crate::markup::surface::{
     Element, ElementClose, Interpolation, OpenTag, SurfaceChild, SurfaceTree, Token,
 };
 

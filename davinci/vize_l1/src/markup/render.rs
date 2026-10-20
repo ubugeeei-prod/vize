@@ -8,13 +8,13 @@
 //! `Missing` tokens, `ElementClose::Implicit`, and `ElementClose::Missing`
 //! render zero bytes.
 
-use crate::surface::{
+use crate::markup::surface::{
     Attribute, CloseTag, Element, ElementClose, Interpolation, SurfaceChild, SurfaceTree, Token,
 };
 
 /// Feed every rendered piece to `sink`, in canonical order. Concatenating
 /// the pieces reproduces the source bytes exactly (checked by
-/// [`check_fidelity`], debug-asserted on every [`crate::parse::parse`]).
+/// [`check_fidelity`], debug-asserted on every [`crate::markup::parse::parse`]).
 pub fn render<'a>(tree: &SurfaceTree<'a>, sink: &mut dyn FnMut(&'a str)) {
     walk_children(&tree.children, sink);
 }

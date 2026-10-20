@@ -5,7 +5,7 @@ use vize_l3::verify::verify;
 
 fn with_lowered(source: &str, check: impl FnOnce(Lowered<'_>)) {
     let allocator = Allocator::default();
-    let (tree, errors) = vize_l1::parse(&allocator, source);
+    let (tree, errors) = vize_l1::markup::parse(&allocator, source);
     let s2 = vize_l1_to_l2::lower(&allocator, &tree, &errors);
     let s3 = lower(&allocator, &s2.root);
     assert_eq!(verify(&s3.program), []);

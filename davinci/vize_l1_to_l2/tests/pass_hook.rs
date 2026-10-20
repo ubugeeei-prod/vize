@@ -15,7 +15,7 @@ const SOURCE: &str = r#"<Comp v-model="x"><template #a>hi</template></Comp><p>{{
 #[test]
 fn the_hook_sees_every_executed_pass_in_order_with_the_post_pass_tree() {
     let allocator = Allocator::default();
-    let (tree, errors) = vize_l1::parse(&allocator, SOURCE);
+    let (tree, errors) = vize_l1::markup::parse(&allocator, SOURCE);
     let mut lowered = lower(&allocator, &tree, &errors);
     let before = L2Page::of(&lowered.root.ops).print_to_string(DumpMode::Full);
 
@@ -63,7 +63,7 @@ fn the_hook_sees_every_executed_pass_in_order_with_the_post_pass_tree() {
 #[test]
 fn the_hook_only_observes() {
     let allocator = Allocator::default();
-    let (tree, errors) = vize_l1::parse(&allocator, SOURCE);
+    let (tree, errors) = vize_l1::markup::parse(&allocator, SOURCE);
     let mut hooked = lower(&allocator, &tree, &errors);
     let mut plain = lower(&allocator, &tree, &errors);
 

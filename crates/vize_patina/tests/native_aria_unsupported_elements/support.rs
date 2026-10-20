@@ -7,10 +7,10 @@ use vize_l0::{
     diag::{MessageLookup, PartKind, Severity, Stage, Witness},
 };
 use vize_l1::{
-    SurfaceParseOptions, check_fidelity,
     container::{Vue, vue::DescriptorOptions},
-    markup::{NativeChildren, NativeTemplateComponent},
-    render,
+    markup::{
+        NativeChildren, NativeTemplateComponent, SurfaceParseOptions, check_fidelity, render,
+    },
 };
 use vize_patina::{
     LintResult, Linter, RuleRegistry,

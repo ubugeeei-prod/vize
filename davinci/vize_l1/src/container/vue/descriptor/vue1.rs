@@ -45,7 +45,7 @@ mod tests;
 /// Neither the source nor allocator can be released while this owner lives:
 /// ```compile_fail
 /// use vize_l0::{Allocator, String, config::{VueDialect, VueVersion}};
-/// use vize_l1::{SurfaceParseOptions, container::{Vue, vue::DescriptorOptions}};
+/// use vize_l1::{container::{Vue, vue::DescriptorOptions}, markup::SurfaceParseOptions};
 /// let arena = Allocator::default();
 /// let owner = {
 ///     let source = String::from("<template>{{ value }}</template>");
@@ -58,7 +58,7 @@ mod tests;
 /// ```
 /// ```compile_fail
 /// use vize_l0::{Allocator, config::{VueDialect, VueVersion}};
-/// use vize_l1::{SurfaceParseOptions, container::{Vue, vue::DescriptorOptions}};
+/// use vize_l1::{container::{Vue, vue::DescriptorOptions}, markup::SurfaceParseOptions};
 /// let owner = {
 ///     let arena = Allocator::default();
 ///     Vue.observe_vue1_descriptor(&arena, "<template/>" , DescriptorOptions {

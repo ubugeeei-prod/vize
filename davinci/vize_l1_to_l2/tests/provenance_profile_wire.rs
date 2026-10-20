@@ -4,7 +4,7 @@
 use vize_carton::profile_export::{ProfileExportBudget, ProfileExportOptions, export_report};
 use vize_l0::Allocator;
 use vize_l0::profiler::global_profiler;
-use vize_l1::parse;
+use vize_l1::markup::parse;
 use vize_l1_to_l2::lower;
 use vize_l2::provenance::ProvenanceRecord;
 

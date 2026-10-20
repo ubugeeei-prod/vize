@@ -33,7 +33,7 @@
 //!   normally, so a mutation could compare two artifacts that are both
 //!   wrong the same way. Every mutator skips.
 
-use vize_l1::{Element, SurfaceChild, SurfaceTree};
+use vize_l1::markup::{Element, SurfaceChild, SurfaceTree};
 
 use super::predicates::{
     has_attr_named, has_slot_attr, is_branch_name, merge_skip, reorder_skip, wrap_skip,

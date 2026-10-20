@@ -148,7 +148,7 @@ fn original_directive_capacity_fact_stays_precise_under_earliest_recovery_refusa
     assert!(old.syntax().is_none());
     assert_eq!(arena.allocated_bytes(), before);
     assert_eq!(selected.component().block().root_source(), source.as_str());
-    crate::check_fidelity(&selected.component().carrier().tree).unwrap();
+    crate::markup::check_fidelity(&selected.component().carrier().tree).unwrap();
 }
 
 #[test]

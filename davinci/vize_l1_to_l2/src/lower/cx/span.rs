@@ -8,7 +8,7 @@
 //! close fall back to its children's extent instead of guessing.
 
 use vize_l0::Span;
-use vize_l1::{CloseTag, Element, ElementClose, SurfaceChild};
+use vize_l1::markup::{CloseTag, Element, ElementClose, SurfaceChild};
 
 use super::Cx;
 
@@ -51,7 +51,7 @@ pub(crate) fn element_span(cx: &Cx<'_>, element: &Element<'_>) -> Span {
 
 /// The span of one authored attribute: name through the end of its value
 /// (closing quote included when present).
-pub(crate) fn attr_span(cx: &Cx<'_>, attr: &vize_l1::Attribute<'_>) -> Span {
+pub(crate) fn attr_span(cx: &Cx<'_>, attr: &vize_l1::markup::Attribute<'_>) -> Span {
     let start = cx.offset(attr.name.text);
     let end = match &attr.value {
         Some(value) => match &value.close_quote {
@@ -67,7 +67,7 @@ pub(crate) fn attr_span(cx: &Cx<'_>, attr: &vize_l1::Attribute<'_>) -> Span {
 }
 
 /// The authored slice an attribute covers (for provenance `before`).
-pub(crate) fn attr_slice<'a>(cx: &Cx<'a>, attr: &vize_l1::Attribute<'a>) -> &'a str {
+pub(crate) fn attr_slice<'a>(cx: &Cx<'a>, attr: &vize_l1::markup::Attribute<'a>) -> &'a str {
     let span = attr_span(cx, attr);
     cx.source
         .get(span.start as usize..span.end as usize)

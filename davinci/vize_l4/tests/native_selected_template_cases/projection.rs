@@ -1,9 +1,6 @@
 use crate::{check, equal};
 use vize_l0::{Span, id::NodeId};
-use vize_l1::{
-    ElementClose, SurfaceChild,
-    markup::{NativeChild, NativeChildren},
-};
+use vize_l1::markup::{ElementClose, NativeChild, NativeChildren, SurfaceChild};
 use vize_l2::{
     lang::js::NativeTemplateFile,
     op::{ElementOp, Namespace, Op},

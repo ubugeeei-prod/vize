@@ -2,7 +2,7 @@
 
 use vize_l0::{Allocator, Vec};
 use vize_l1::dialect::vue3::surface::ComponentParse;
-use vize_l1::{Element, SurfaceChild};
+use vize_l1::markup::{Element, SurfaceChild};
 
 use super::{Doc, Line};
 

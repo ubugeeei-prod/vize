@@ -1,5 +1,5 @@
-use crate::check_fidelity;
 use crate::dialect::vue2::surface::parse_component_with_authored_block;
+use crate::markup::check_fidelity;
 use vize_l0::{Allocator, SourceRoot};
 
 #[test]

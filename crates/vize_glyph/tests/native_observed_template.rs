@@ -6,7 +6,7 @@ use vize_l0::{Allocator, String};
 use vize_l1::container::Vue;
 use vize_l1::container::vue::DescriptorOptions;
 use vize_l1::markup::{NativeChildren, NativeInterpolationOperand, NativeTemplateComponent};
-use vize_l1::{SurfaceChild, SurfaceParseOptions};
+use vize_l1::markup::{SurfaceChild, SurfaceParseOptions};
 
 #[path = "native_observed_template/budgets.rs"]
 mod budgets;
@@ -61,7 +61,7 @@ fn format(source: &str, options: PrintOptions) -> String {
     let document = observed_native_template_document(&owner, &arena).unwrap();
     assert!(core::ptr::eq(document.original(), &owner));
     assert_eq!(
-        vize_l1::check_fidelity(&owner.component().carrier().tree),
+        vize_l1::markup::check_fidelity(&owner.component().carrier().tree),
         Ok(())
     );
     print(document.document(), &options)

@@ -7,7 +7,7 @@ use vize_l0::{
     dump::capture::CaptureSink,
     pass::{BudgetObserver, NoObserver},
 };
-use vize_l1::{SurfaceError, SurfaceTree};
+use vize_l1::markup::{SurfaceError, SurfaceTree};
 
 /// Invocation-local validation owned by the consumer, not the compiler stage.
 /// A false result stops before lowering; diagnostics stay with that consumer.

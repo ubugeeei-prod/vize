@@ -11,7 +11,7 @@ use vize_l0::{
     cstr,
     line_index::LineBreaks,
 };
-use vize_l1::{SurfaceParseOptions, container::vue::DescriptorOptions};
+use vize_l1::{container::vue::DescriptorOptions, markup::SurfaceParseOptions};
 use vize_l1_to_l2::native_file::lower_sfc_native;
 
 #[path = "native_vue_check/configuration.rs"]

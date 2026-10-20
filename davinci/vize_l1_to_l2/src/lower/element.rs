@@ -13,7 +13,7 @@ use super::features::OpFamily;
 use alloc::vec::Vec as StdVec;
 
 use vize_l0::{Box, String, Vec, cstr, is_native_tag};
-use vize_l1::Element;
+use vize_l1::markup::Element;
 
 use vize_l2::op::{Attribute, BindingOp, ComponentOp, ElementOp, Namespace, Op, Region};
 
@@ -124,7 +124,7 @@ impl<'a> Analyzed<'a> {
     pub(crate) fn branch_attr<'t>(
         &self,
         element: &'t Element<'a>,
-    ) -> Option<(&'t vize_l1::Attribute<'a>, BranchKind)> {
+    ) -> Option<(&'t vize_l1::markup::Attribute<'a>, BranchKind)> {
         let (index, kind) = self.branch?;
         Some((element.open.attrs.get(index)?, kind))
     }
@@ -171,7 +171,7 @@ pub(crate) fn attr_value_text<'a>(element: &Element<'a>, index: usize) -> Option
 }
 
 /// [`attr_value_text`] for an attribute already in hand.
-pub(crate) fn attr_text<'a>(attr: &vize_l1::Attribute<'a>) -> Option<&'a str> {
+pub(crate) fn attr_text<'a>(attr: &vize_l1::markup::Attribute<'a>) -> Option<&'a str> {
     attr.value.as_ref().map(|value| value.content.text)
 }
 

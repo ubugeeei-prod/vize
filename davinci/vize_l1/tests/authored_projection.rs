@@ -1,7 +1,7 @@
 //! Authored and normalized surfaces share bytes and diagnostics.
 
 use vize_l0::{Allocator, CompactString};
-use vize_l1::{SurfaceChild, SurfaceTree, check_fidelity, parse, parse_with_authored};
+use vize_l1::markup::{SurfaceChild, SurfaceTree, check_fidelity, parse, parse_with_authored};
 
 fn paths(tree: &SurfaceTree<'_>) -> Vec<(CompactString, usize)> {
     fn walk(children: &[SurfaceChild<'_>], depth: usize, rows: &mut Vec<(CompactString, usize)>) {

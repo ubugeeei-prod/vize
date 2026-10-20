@@ -246,11 +246,15 @@ fn pre_on_missing_owners_keeps_missing_source_without_parsing_descendants() {
         assert!(lowered.embeds.first().unwrap().syntax.hole().is_none());
         assert_eq!(lowered.artifact.node_count(), 2);
         assert_eq!(lowered.component.tree.children.len(), 2);
-        let Some(vize_l1::SurfaceChild::Element(carrier)) = lowered.component.tree.children.get(1)
+        let Some(vize_l1::markup::SurfaceChild::Element(carrier)) =
+            lowered.component.tree.children.get(1)
         else {
             panic!("retained carrier");
         };
-        assert!(matches!(carrier.close, vize_l1::ElementClose::Missing));
+        assert!(matches!(
+            carrier.close,
+            vize_l1::markup::ElementClose::Missing
+        ));
         assert!(
             lowered
                 .holes

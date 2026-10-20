@@ -1,7 +1,7 @@
 //! Default Vue 3 whitespace at a genuinely selected original root text event.
 
 use super::{NativeChild, NativeTemplateComponent, NativeTemplateGrammar};
-use crate::SurfaceChild;
+use crate::markup::SurfaceChild;
 use vize_l0::{SourceBlock, Span, StringBuilder};
 
 /// The sole policy this bounded source provider can establish.

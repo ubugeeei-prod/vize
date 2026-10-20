@@ -5,13 +5,12 @@ use vize_l0::{
     config::{VueDialect, VueVersion},
 };
 use vize_l1::{
-    SurfaceParseOptions,
     container::{Vue, vue::DescriptorOptions},
     embed::{
         EmbedSource,
         syntax::{ProgramOptions, parse_program_once},
     },
-    markup::NativeTemplateComponent,
+    markup::{NativeTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::{lang::js::NativeTemplateOwner, op::Op};
 use vize_l3::decision::{dom::DomUnsupported, native::build_native_dom_file_decisions};

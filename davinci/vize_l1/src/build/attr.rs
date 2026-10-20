@@ -4,7 +4,7 @@ use crate::markup::token::QuoteType;
 
 use super::Builder;
 use crate::event::{Event, EventKind};
-use crate::surface::{AttrValue, Attribute, Token};
+use crate::markup::surface::{AttrValue, Attribute, Token};
 
 impl<'a, const RAW: bool, const LINT: bool> Builder<'a, '_, RAW, LINT> {
     /// `events[i]` is the first `AttrName` piece. Directive pieces all

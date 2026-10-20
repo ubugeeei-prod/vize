@@ -7,11 +7,11 @@ use vize_l1::embed::{
     syntax::{NativeSyntax, ProgramOptions, parse_program_once},
 };
 use vize_l1::{
-    SurfaceParseOptions,
     container::{
         Vue,
         vue::{DescriptorObservation, DescriptorOptions, ScriptRole, ScriptView},
     },
+    markup::SurfaceParseOptions,
 };
 use vize_l2::file::{
     FileArtifact,

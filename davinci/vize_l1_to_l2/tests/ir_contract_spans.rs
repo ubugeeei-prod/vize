@@ -73,7 +73,7 @@ fn owned_folio_expression_sources_resolve_through_sfc_block_offsets() {
         .expect("template block is an authored slice");
 
     let allocator = Allocator::new();
-    let (tree, errors) = vize_l1::parse(&allocator, template);
+    let (tree, errors) = vize_l1::markup::parse(&allocator, template);
     let lowered = vize_l1_to_l2::lower_source_block(&allocator, &tree, &errors, block);
     let folio = L2Page::of(&lowered.root.ops);
 

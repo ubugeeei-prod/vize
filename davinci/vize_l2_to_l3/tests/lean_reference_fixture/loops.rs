@@ -19,7 +19,7 @@ fn loop_reference_graph_and_values_are_rust_lowered() {
         let stem = fixtures.join(format!("rust-lowered-loop-{name}"));
         let source = std::fs::read_to_string(stem.with_extension("template.txt")).unwrap();
         let allocator = Allocator::default();
-        let (tree, errors) = vize_l1::parse(&allocator, source.trim_end());
+        let (tree, errors) = vize_l1::markup::parse(&allocator, source.trim_end());
         assert!(errors.is_empty(), "{errors:?}");
         let s2 = vize_l1_to_l2::lower(&allocator, &tree, &errors);
         assert!(s2.diagnostics.is_empty(), "{:?}", s2.diagnostics);

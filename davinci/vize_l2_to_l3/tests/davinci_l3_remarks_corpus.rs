@@ -80,7 +80,7 @@ fn file_remarks(path: &str, source: &str, out: &mut Vec<CorpusRemark>) {
     }
     let offset = u32::try_from(template.loc.start).expect("fixture offsets fit u32");
     let allocator = Allocator::new();
-    let (tree, errors) = vize_l1::parse(&allocator, &template.content);
+    let (tree, errors) = vize_l1::markup::parse(&allocator, &template.content);
     let s2 = vize_l1_to_l2::lower(&allocator, &tree, &errors);
     let mut lowered = vize_l2_to_l3::lower(&allocator, &s2.root);
     let mut collector = RemarkCollector::new();

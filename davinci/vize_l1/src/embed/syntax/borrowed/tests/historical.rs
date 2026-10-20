@@ -4,7 +4,7 @@ use vize_l0::{Allocator, SourceRoot, Span};
 
 use crate::dialect::{LegacyVueVersion, vue1, vue2};
 use crate::embed::{Grammar, Lang, Shape};
-use crate::render::check_fidelity;
+use crate::markup::render::check_fidelity;
 
 #[test]
 fn vue2_original_child_chain_borrows_every_existing_operand_without_storage_or_source_changes() {

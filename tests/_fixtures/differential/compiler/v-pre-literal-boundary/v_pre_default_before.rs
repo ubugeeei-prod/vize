@@ -112,7 +112,7 @@ fn actual_ca_default_complete_public_and_lowering_observations() {
     for &(name, source) in LOWER {
         let arena = Allocator::new();
         let (root, parser_errors) = vize_atelier_core::parser::Parser::new(&arena, source).parse();
-        let (tree, surface_errors) = vize_l1::parse(&arena, source);
+        let (tree, surface_errors) = vize_l1::markup::parse(&arena, source);
         let lowered = vize_l1_to_l2::lower(&arena, &tree, &surface_errors);
         lower.push(serde_json::json!({"name":name,"source":source,"parserOptions":"default",
             "rootDebug":format!("{root:#?}"),"parserErrorsDebug":format!("{parser_errors:#?}"),

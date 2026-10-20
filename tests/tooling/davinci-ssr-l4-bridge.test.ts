@@ -37,7 +37,7 @@ test("Davinci SSR compile path imports the L4 string-plan bridge", () => {
   assert.match(compileInner, /SsrL4Selection::Emitted/u);
   assert.match(bridge, /mod source;/u);
   assert.match(bridge, /pub\(crate\) use source::select_ssr_lane_captured/u);
-  assert.match(source, /vize_l1::parse_with_options/u);
+  assert.match(source, /vize_l1::markup::parse_with_options/u);
   assert.match(source, /vize_l1_to_l2::lower/u);
   assert.match(source, /select::select_from_l2/u);
   assert.match(select, /vize_l2_to_l3::lower/u);

@@ -9,7 +9,7 @@
 
 use vize_l0::{Allocator, SourceRoot, cstr};
 use vize_l1::dialect::vue2::{surface, text::TextBoundaryKind};
-use vize_l1::render::check_fidelity;
+use vize_l1::markup::render::check_fidelity;
 
 #[test]
 fn encoded_historical_separators_are_refused_before_expression_edge_trim() {

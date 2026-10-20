@@ -12,7 +12,7 @@ use vize_l0::{Allocator, SourceBlock, SourceRoot, Span, String, id::NodeId};
 use vize_l1::embed::syntax::{EmbedHole, NativeSyntax, RetainedExpression};
 use vize_l1::embed::{Lang, SourceError};
 use vize_l1::markup::{ComponentParse, DirectiveNameError};
-use vize_l1::{SurfaceChild, Token};
+use vize_l1::markup::{SurfaceChild, Token};
 use vize_l2::artifact::{Artifact, ArtifactError, ArtifactParts, Builder, RejectedArtifact};
 use vize_l2::op::{Namespace, Region};
 use vize_l2::provenance::ProvenanceRecord;

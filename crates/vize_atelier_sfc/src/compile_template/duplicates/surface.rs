@@ -4,9 +4,9 @@
 
 use super::{Candidate, SourceLocation};
 use vize_l0::SourceRoot;
-use vize_l1::{
-    SurfaceChild, SurfaceError, SurfaceTree,
-    markup::{ArgSyntax, DirectivePrefix, DirectiveSyntax, VueDirectives},
+use vize_l1::markup::{
+    ArgSyntax, DirectivePrefix, DirectiveSyntax, SurfaceChild, SurfaceError, SurfaceTree,
+    VueDirectives,
 };
 
 /// None retains the whole existing callback result; partial spans never escape.
@@ -122,7 +122,7 @@ fn existing_native_tree_matches_complete_callback_spans_for_original_headers() {
         "<p title='雪🌸' id='a' id='b'><i v-if='x' v-if='y'/></p>",
     ] {
         let arena = vize_l0::Allocator::default();
-        let (tree, errors) = vize_l1::parse(&arena, source);
+        let (tree, errors) = vize_l1::markup::parse(&arena, source);
         let actual =
             find_in_surface(&tree, &errors).expect("declared original neutral-surface controls");
         assert_eq!(
@@ -142,7 +142,7 @@ fn unsupported_surface_keeps_the_complete_original_callback_route() {
         "<div v-pre>{{</div>",
     ] {
         let arena = vize_l0::Allocator::default();
-        let (tree, errors) = vize_l1::parse(&arena, source);
+        let (tree, errors) = vize_l1::markup::parse(&arena, source);
         assert!(find_in_surface(&tree, &errors).is_none(), "{source}");
     }
 }
@@ -154,7 +154,7 @@ fn dialect_frozen_surface_is_not_substituted_for_the_neutral_dom_tree() {
     let arena = vize_l0::Allocator::default();
     let frozen = vize_l1::markup::parse_component(&arena, source).unwrap();
     assert!(find_in_surface(&frozen.tree, &frozen.errors).is_none());
-    let (neutral, errors) = vize_l1::parse(&arena, source);
+    let (neutral, errors) = vize_l1::markup::parse(&arena, source);
     let actual = find_in_surface(&neutral, &errors).unwrap();
     assert_eq!(
         serde_json::to_value(actual).unwrap(),
@@ -173,7 +173,7 @@ fn every_title_observation_declines_without_retaining_partial_spans() {
         "<div id='a' id='b'><svg><title><g id='x' id='y'></g></title></svg></div>",
     ] {
         let arena = vize_l0::Allocator::default();
-        let (tree, errors) = vize_l1::parse(&arena, source);
+        let (tree, errors) = vize_l1::markup::parse(&arena, source);
         assert!(find_in_surface(&tree, &errors).is_none(), "{source}");
     }
 }

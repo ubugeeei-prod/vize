@@ -1,5 +1,5 @@
 //! Text rules belong to the direct owner; pre whitespace also spans descendants.
-use vize_l1::{Element, SurfaceChild};
+use vize_l1::markup::{Element, SurfaceChild};
 
 use super::Cx;
 

@@ -3,7 +3,7 @@
 use super::super::text::{FilterChain, TextBinding, TextBoundaryKind};
 use super::ComponentParse;
 use crate::embed::syntax::EmbedHole;
-use crate::{Element, ElementClose, SurfaceChild};
+use crate::markup::{Element, ElementClose, SurfaceChild};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TextRefusal {
@@ -44,7 +44,7 @@ impl ExactSizeIterator for TextChildren<'_, '_> {}
 /// Sealed original component, direct parent and ordinal membership.
 ///
 /// ```compile_fail
-/// use vize_l1::{SurfaceChild, dialect::vue2::surface::TextChild};
+/// use vize_l1::{dialect::vue2::surface::TextChild, markup::SurfaceChild};
 /// fn forge<'o, 'a>(raw: &'o SurfaceChild<'a>) -> TextChild<'o, 'a> { raw.into() }
 /// ```
 #[derive(Debug)]

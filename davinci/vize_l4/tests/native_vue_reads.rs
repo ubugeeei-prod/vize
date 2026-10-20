@@ -38,7 +38,7 @@ fn options() -> DescriptorOptions {
     DescriptorOptions {
         version: VueVersion::V3,
         dialect: VueDialect::Vue,
-        template: vize_l1::SurfaceParseOptions::default(),
+        template: vize_l1::markup::SurfaceParseOptions::default(),
     }
 }
 

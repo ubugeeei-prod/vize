@@ -26,7 +26,7 @@ use vize_l0::Allocator;
 use vize_l0::diag::Diagnostic;
 use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::pass::BudgetObserver;
-use vize_l1::parse;
+use vize_l1::markup::parse;
 use vize_l1_to_l2::pass::{L2Facts, run_transform};
 use vize_l1_to_l2::{LegacyCaps, LoweringFeatures, OpFamily, lower, lower_with_caps};
 use vize_l2::dump::Page as L2Page;

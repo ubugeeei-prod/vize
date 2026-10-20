@@ -94,7 +94,7 @@ fn transition_payload_owns_wrapper_identity_and_checks_css_mutation() {
     let allocator = Allocator::new();
     let source = r#"<TransitionGroup tag="ul" :css="false"><li v-for="item in items" :key="item.id">{{ item.text }}</li></TransitionGroup>"#;
     let scratch = Allocator::new();
-    let (tree, errors) = vize_l1::parse(&scratch, source);
+    let (tree, errors) = vize_l1::markup::parse(&scratch, source);
     let s2 = vize_l1_to_l2::lower(&scratch, &tree, &errors);
     let retained = crate::l3::retained::Retained::collect(&allocator, &s2.root);
     let mut s3 = vize_l2_to_l3::lower(&allocator, &s2.root);

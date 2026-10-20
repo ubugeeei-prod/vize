@@ -1,7 +1,7 @@
 //! Same-event original attribute selection, expression custody and quoted Doc.
 
 use vize_l0::Vec;
-use vize_l1::{ElementClose, markup::NativeElement};
+use vize_l1::markup::{ElementClose, NativeElement};
 
 use super::super::{
     directive::name_document,

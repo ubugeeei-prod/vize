@@ -8,9 +8,8 @@ use crate::lang::js::file::native::NativeTemplateIssueKind as Kind;
 use crate::op::Namespace;
 use core::ops::DerefMut;
 use vize_l0::{Span, ensure_sufficient_stack, id::NodeId};
-use vize_l1::{
-    ElementClose, SurfaceChild,
-    markup::{NativeChild, NativeElement, NativeTemplateComponent},
+use vize_l1::markup::{
+    ElementClose, NativeChild, NativeElement, NativeTemplateComponent, SurfaceChild,
 };
 
 pub(super) mod header;

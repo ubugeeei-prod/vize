@@ -24,7 +24,7 @@ use crate::virtual_ts::ProjectionMapping;
 /// Project `source`'s template expressions into mapping rows.
 pub fn project_template_expressions(source: &str) -> ProjectionMapping {
     let allocator = Allocator::new();
-    let (tree, errors) = vize_l1::parse(&allocator, source);
+    let (tree, errors) = vize_l1::markup::parse(&allocator, source);
     let lowered = lower(&allocator, &tree, &errors);
     let document = project_template_expression_document(&lowered.root);
     ProjectionMapping::from_emit_document(&document)

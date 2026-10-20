@@ -78,7 +78,7 @@ fn label(block: &str, stage: &str) -> String {
 /// and lowered with file-absolute spans (the production shape).
 fn template_keys(source: &str, block: &str, start: u32) -> (ArtifactKey, ArtifactKey) {
     let allocator = Allocator::default();
-    let (tree, errors) = vize_l1::parse(&allocator, block);
+    let (tree, errors) = vize_l1::markup::parse(&allocator, block);
     let s1 = ArtifactKey::of(&SurfacePage(&tree), start);
     let frame = SourceRoot::new(source)
         .and_then(|root| root.block(block, start))

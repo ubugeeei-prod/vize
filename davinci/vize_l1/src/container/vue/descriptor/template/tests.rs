@@ -1,6 +1,6 @@
 use super::*;
-use crate::SurfaceParseOptions;
 use crate::container::vue::{DescriptorOptions, Vue};
+use crate::markup::SurfaceParseOptions;
 use vize_l0::Allocator;
 use vize_l0::config::{VueDialect, VueVersion};
 

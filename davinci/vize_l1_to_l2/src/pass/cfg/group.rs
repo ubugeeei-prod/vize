@@ -37,7 +37,7 @@ impl FactGroup for TemplateComplexityGroup {
 impl FactProducer<str> for TemplateComplexityGroup {
     fn produce(template: &str, _: &FactView<'_>) -> FactTable<Self> {
         let allocator = Allocator::new();
-        let (tree, errors) = vize_l1::parse(&allocator, template);
+        let (tree, errors) = vize_l1::markup::parse(&allocator, template);
         let lowered = lower(&allocator, &tree, &errors);
         [((), super::run(&lowered))].into_iter().collect()
     }

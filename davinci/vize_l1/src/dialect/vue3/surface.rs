@@ -3,9 +3,9 @@
 use vize_l0::{Allocator, Span, Vec};
 
 use crate::event::Recorder;
+use crate::markup::parse::{SurfaceError, SurfaceParseOptions, construct_with_lint};
+use crate::markup::surface::{LintTagFact, SurfaceTree};
 use crate::markup::{Component, DirectiveNameError, LexOptions, Lexer};
-use crate::parse::{SurfaceError, SurfaceParseOptions, construct_with_lint};
-use crate::surface::{LintTagFact, SurfaceTree};
 
 use super::VueDirectives;
 use crate::dialect::vue::surface::{HeaderPolicy, SurfacePolicy, sink::VueSink};

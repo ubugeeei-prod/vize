@@ -68,7 +68,7 @@ pub fn parse_art<'a>(
     let frame = blocks.art.ok_or(ArtParseError::NoArtBlock)?;
 
     // L1: the `<art>` block as a lossless surface tree.
-    let (tree, _surface_errors) = vize_l1::parse(allocator, frame.source());
+    let (tree, _surface_errors) = vize_l1::markup::parse(allocator, frame.source());
     let art = art_block::art_element(&tree).ok_or(ArtParseError::NoArtBlock)?;
 
     let define_art = blocks
@@ -107,7 +107,7 @@ pub(crate) fn art_status_warnings<'a>(
     else {
         return empty();
     };
-    let (tree, _surface_errors) = vize_l1::parse(allocator, frame.source());
+    let (tree, _surface_errors) = vize_l1::markup::parse(allocator, frame.source());
     let Some(art) = art_block::art_element(&tree) else {
         return empty();
     };

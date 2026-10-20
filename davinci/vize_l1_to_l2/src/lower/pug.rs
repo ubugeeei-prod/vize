@@ -165,7 +165,7 @@ pub fn lower_pug<'a>(
 ) -> PugLowered<'a> {
     let template = derive_template(tree, errors);
     let html = allocator.alloc_str(&template.html);
-    let (surface, surface_errors) = vize_l1::parse(allocator, html);
+    let (surface, surface_errors) = vize_l1::markup::parse(allocator, html);
     let lowered = crate::lower(allocator, &surface, &surface_errors);
     let mut diagnostics = template.diagnostics.clone();
     for diagnostic in &lowered.diagnostics {

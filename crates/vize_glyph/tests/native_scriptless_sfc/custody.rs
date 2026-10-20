@@ -7,9 +7,9 @@ use vize_glyph::native_doc::{
 };
 use vize_l0::Allocator;
 use vize_l0::config::VueVersion;
-use vize_l1::SurfaceChild;
 use vize_l1::container::ContainerErrorCode;
 use vize_l1::container::vue::DescriptorIssueCode;
+use vize_l1::markup::SurfaceChild;
 use vize_l1::markup::{NativeChild, NativeChildren, NativeTemplateComponent};
 
 fn options() -> NativeSfcOptions {

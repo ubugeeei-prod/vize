@@ -59,7 +59,7 @@ pub(super) enum MarkupBindingInner<'a> {
     },
     L2Binding(L2Bound<'a>),
     Surface {
-        attr: &'a vize_l1::Attribute<'a>,
+        attr: &'a vize_l1::markup::Attribute<'a>,
         doc: &'a L2Markup<'a>,
         static_name: Option<&'a str>,
     },
@@ -114,7 +114,7 @@ impl<'a> MarkupBinding<'a> {
     }
 
     pub(super) const fn from_surface(
-        attr: &'a vize_l1::Attribute<'a>,
+        attr: &'a vize_l1::markup::Attribute<'a>,
         doc: &'a L2Markup<'a>,
         static_name: Option<&'a str>,
     ) -> Self {
@@ -330,7 +330,7 @@ pub(super) fn relief_expression<'a>(node: &'a DirectiveNode<'a>) -> Option<&'a s
 
 /// In a v-pre subtree every authored spelling is a static attribute.
 pub(super) fn surface_directive<'a>(
-    attr: &vize_l1::Attribute<'a>,
+    attr: &vize_l1::markup::Attribute<'a>,
     static_name: Option<&'a str>,
 ) -> Option<SurfaceDirective<'a>> {
     static_name

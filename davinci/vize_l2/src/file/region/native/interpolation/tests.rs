@@ -8,9 +8,8 @@ use vize_l0::{
     config::{VueDialect, VueVersion},
 };
 use vize_l1::{
-    SurfaceChild, SurfaceParseOptions,
     container::{Vue, vue::DescriptorOptions},
-    markup::NativeTemplateComponent,
+    markup::{NativeTemplateComponent, SurfaceChild, SurfaceParseOptions},
 };
 
 mod interruption;

@@ -45,7 +45,7 @@ pub(crate) struct Owner<'a> {
 /// component.
 pub(crate) fn lower_attr<'a>(
     cx: &mut Cx<'a>,
-    attr: &vize_l1::Attribute<'a>,
+    attr: &vize_l1::markup::Attribute<'a>,
     directive: &Directive<'a>,
     owner: &Owner<'a>,
     bindings: &mut Vec<'a, BindingOp<'a>>,
@@ -136,7 +136,7 @@ pub(crate) fn defer(
 /// modifiers ride as synthesized attributes carrying the binding's span.
 fn lower_model<'a>(
     cx: &mut Cx<'a>,
-    attr: &vize_l1::Attribute<'a>,
+    attr: &vize_l1::markup::Attribute<'a>,
     directive: &Directive<'a>,
     owner: &Owner<'a>,
 ) -> Option<BindingOp<'a>> {
@@ -203,7 +203,7 @@ fn lower_model<'a>(
 /// op, exactly as authored.
 fn lower_custom<'a>(
     cx: &mut Cx<'a>,
-    attr: &vize_l1::Attribute<'a>,
+    attr: &vize_l1::markup::Attribute<'a>,
     directive: &Directive<'a>,
 ) -> BindingOp<'a> {
     let span = attr_span(cx, attr);
@@ -252,7 +252,7 @@ fn lower_custom<'a>(
 /// identifier-enumeration seam (#4365).
 pub(crate) fn lower_slot_content<'a>(
     cx: &mut Cx<'a>,
-    attr: &vize_l1::Attribute<'a>,
+    attr: &vize_l1::markup::Attribute<'a>,
     directive: &Directive<'a>,
 ) -> BindingOp<'a> {
     let span = attr_span(cx, attr);

@@ -1,6 +1,6 @@
 use crate::{Allocator, NodeId, Op, build_native_dom_file_decisions, check, owner};
 use serde_json::{Value, json};
-use vize_l1::SurfaceChild;
+use vize_l1::markup::SurfaceChild;
 use vize_l3::decision::dom::DomChild;
 
 #[test]

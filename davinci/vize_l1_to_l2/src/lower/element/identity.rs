@@ -1,7 +1,10 @@
 //! Borrowed element identity and markup namespace selection.
 use super::{Analyzed, AttrForm, Cx, Head, attr_slice, attr_span, classify};
 use vize_l0::{String, is_math_ml_tag, is_svg_tag};
-use vize_l1::{Attribute, Element, embed::prepare_attribute_value};
+use vize_l1::{
+    embed::prepare_attribute_value,
+    markup::{Attribute, Element},
+};
 use vize_l2::op::Namespace;
 
 pub(super) fn vue_is<'a>(

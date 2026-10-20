@@ -5,8 +5,8 @@ use vize_l0::{
     Allocator, SourceRoot,
     config::{VueDialect, VueVersion},
 };
-use vize_l1::SurfaceParseOptions;
 use vize_l1::container::{Vue, vue::DescriptorOptions};
+use vize_l1::markup::SurfaceParseOptions;
 use vize_l2::file::FileIssueKind;
 use vize_l2::lang::js::{
     FileProducer, ModuleSourceErrorKind, ProgramInput, ProgramScope, SetupIssueKind, VueSetup,

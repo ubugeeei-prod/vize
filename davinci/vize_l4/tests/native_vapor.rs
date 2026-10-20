@@ -9,9 +9,8 @@ use vize_l0::{
     config::{VueDialect, VueVersion},
 };
 use vize_l1::{
-    SurfaceParseOptions,
     container::{Vue, vue::DescriptorOptions},
-    markup::NativeTemplateComponent,
+    markup::{NativeTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::lang::js::{NativeTemplateFile, NativeTemplateOwner};
 use vize_l3::decision::vapor::{VaporUnsupported, build_native_vapor_file_decisions};

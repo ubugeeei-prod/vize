@@ -5,8 +5,8 @@ use vize_l0::{
     pool,
 };
 use vize_l1::{
-    SurfaceParseOptions,
     container::{Vue, vue::DescriptorOptions},
+    markup::SurfaceParseOptions,
 };
 
 use crate::types::{BlockLocation, PadOption, SfcParseOptions};

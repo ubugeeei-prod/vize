@@ -21,7 +21,7 @@ pub(super) enum MarkupElementInner<'a> {
     /// Source-shaped L1 view used by authored-tree consumers. This is not an
     /// unwrapped L2 template carrier: its kind follows the actual tag/attrs.
     Authored {
-        element: &'a vize_l1::Element<'a>,
+        element: &'a vize_l1::markup::Element<'a>,
         doc: &'a L2Markup<'a>,
         frozen: bool,
         opens_v_pre: bool,
@@ -38,13 +38,13 @@ pub(super) enum MarkupElementInner<'a> {
     L2 {
         op: L2ElementOp<'a>,
         doc: &'a L2Markup<'a>,
-        surface: Option<&'a vize_l1::Element<'a>>,
+        surface: Option<&'a vize_l1::markup::Element<'a>>,
     },
     /// An authored `<template>` carrier L2 unwrapped into a `ui.if` branch or
     /// `ui.for` region: its surface comes from L1, its children from the
     /// region it was unwrapped into.
     L2Carrier {
-        element: &'a vize_l1::Element<'a>,
+        element: &'a vize_l1::markup::Element<'a>,
         doc: &'a L2Markup<'a>,
         region: &'a [vize_l2::op::Op<'a>],
         span: vize_l0::Span,
@@ -90,7 +90,7 @@ impl<'a> MarkupElement<'a> {
     }
 
     pub(super) const fn from_l2_carrier(
-        element: &'a vize_l1::Element<'a>,
+        element: &'a vize_l1::markup::Element<'a>,
         doc: &'a L2Markup<'a>,
         region: &'a [vize_l2::op::Op<'a>],
         span: vize_l0::Span,

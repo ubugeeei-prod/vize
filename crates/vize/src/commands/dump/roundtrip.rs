@@ -22,7 +22,7 @@ pub(super) fn reprint(level: Level, input: &str) -> Result<String, DumpError> {
             // This command checks authored byte fidelity, including retained
             // recoveries and unsupported heads; it does not admit native syntax.
             let mut printed = String::default();
-            vize_l1::render::render(&parsed.tree, &mut |piece| printed.push_str(piece));
+            vize_l1::markup::render::render(&parsed.tree, &mut |piece| printed.push_str(piece));
             Ok(printed)
         }
         Level::L2 => L2Page::parse(input).map(|page| page.print_to_string(DumpMode::Full)),

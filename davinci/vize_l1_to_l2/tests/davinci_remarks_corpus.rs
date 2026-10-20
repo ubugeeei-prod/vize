@@ -41,7 +41,7 @@ use vize_l0::dump::remarks::entry_line;
 use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::pass::{RemarkCollector, RemarkKind};
 use vize_l0::{Allocator, Span, String, cstr};
-use vize_l1::parse;
+use vize_l1::markup::parse;
 use vize_l1_to_l2::pass::run_transform;
 use vize_l1_to_l2::{LegacyCaps, lower_with_caps};
 

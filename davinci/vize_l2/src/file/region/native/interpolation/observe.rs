@@ -7,10 +7,7 @@ use crate::file::region::FileRegion;
 use crate::lang::js::{NativeInterpolationInput, NativeTemplateIssueKind as Kind};
 use core::ops::DerefMut;
 use vize_l0::{Span, id::NodeId};
-use vize_l1::{
-    SurfaceChild,
-    markup::{NativeChild, NativeTemplateComponent},
-};
+use vize_l1::markup::{NativeChild, NativeTemplateComponent, SurfaceChild};
 
 pub(in crate::file::region::native) fn construct<'a: 'b, 'b, R>(
     selected: &NativeTemplateComponent<'a>,

@@ -1,6 +1,6 @@
 use super::condense::{beside_comment, condense_internal, is_vue_ws};
 use vize_l0::Allocator;
-use vize_l1::SurfaceChild;
+use vize_l1::markup::SurfaceChild;
 
 /// The parse-time text view of a whitespace-only conditional gap, for authored
 /// surface consumers. Compiler regions drop these gaps regardless of this view.
@@ -45,7 +45,7 @@ pub fn branch_gap_text_at<'a>(
 mod tests {
     use super::branch_gap_text_at;
     use vize_l0::Allocator;
-    use vize_l1::SurfaceChild;
+    use vize_l1::markup::SurfaceChild;
 
     #[test]
     fn authored_gaps_share_comment_condense_without_erasing_real_text_or_pre() {
@@ -60,7 +60,7 @@ mod tests {
             ("<!--a--> tail <i></i>", false, Some(" tail ")),
         ] {
             let arena = Allocator::new();
-            let (tree, errors) = vize_l1::parse(&arena, source);
+            let (tree, errors) = vize_l1::markup::parse(&arena, source);
             assert!(errors.is_empty(), "{source}: {errors:?}");
             assert!(
                 !tree

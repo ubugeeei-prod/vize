@@ -13,7 +13,7 @@ use super::{calculate_location_with_line, line_of};
 use crate::types::{ArtParseError, ArtVariant};
 use values::{parse_args_json, parse_viewport};
 use vize_l0::{Allocator, SourceBlock, ToCompactString};
-use vize_l1::{Element, ElementClose, SurfaceChild};
+use vize_l1::markup::{Element, ElementClose, SurfaceChild};
 
 /// Collect every `<variant>` element under `children` (the `<art>`
 /// element's contents), in document order.
@@ -123,7 +123,7 @@ mod tests {
     use super::parse_variants;
     use crate::types::{ArtParseError, ArtVariant};
     use vize_l0::{Allocator, SourceRoot};
-    use vize_l1::parse;
+    use vize_l1::markup::parse;
 
     /// Parse `content` as the `<art>` block's contents, framed at offset 0.
     fn variants_of<'a>(

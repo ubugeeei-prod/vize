@@ -13,7 +13,7 @@ fn lowered_values_outlive_both_source_text_and_the_l2_arena() {
             r#"<Widget v-model:title.trim="title" @save.once.capture="save"><template #default="{ item }"><input disabled value="" :[field].prop="item" /><span v-if="ready">{{ item }}</span><span v-else>wait</span><p v-for="(value, key, index) in items">{{ value }}</p><!-- note --></template></Widget>"#,
         );
         let l2_arena = Allocator::default();
-        let (tree, errors) = vize_l1::parse(&l2_arena, &source);
+        let (tree, errors) = vize_l1::markup::parse(&l2_arena, &source);
         assert!(errors.is_empty(), "{errors:?}");
         let s2 = vize_l1_to_l2::lower(&l2_arena, &tree, &errors);
         lower(&l3_arena, &s2.root)

@@ -3,8 +3,8 @@ use super::support::{
 };
 use vize_l0::{Allocator, cstr};
 use vize_l1::{
-    check_fidelity,
     container::{Vue, vue::DescriptorIssueCode},
+    markup::check_fidelity,
 };
 use vize_patina::native::{NativeLintRefusal, NativeSyntaxLint};
 

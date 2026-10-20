@@ -14,7 +14,7 @@ use vize_l2::op::{BindingOp, DynamicName};
 #[derive(Clone, Copy)]
 pub(in crate::markup) struct L2Bound<'a> {
     pub(in crate::markup) op: &'a BindingOp<'a>,
-    pub(in crate::markup) surface: Option<&'a vize_l1::Attribute<'a>>,
+    pub(in crate::markup) surface: Option<&'a vize_l1::markup::Attribute<'a>>,
 }
 
 fn dynamic_name<'a>(name: Option<&DynamicName<'a>>) -> Option<(&'a str, bool)> {

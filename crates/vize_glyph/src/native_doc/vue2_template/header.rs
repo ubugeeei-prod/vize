@@ -1,7 +1,7 @@
 //! Conservative plain original Vue 2 attributes in the same layout visit.
 
 use vize_l0::{Allocator, SourceBlock, Vec};
-use vize_l1::{Attribute, Element};
+use vize_l1::markup::{Attribute, Element};
 
 use super::{Cursor, Doc, NativeVue2SfcRefusal, TemplateRefusal, span, verbatim};
 use crate::native_doc::Line;

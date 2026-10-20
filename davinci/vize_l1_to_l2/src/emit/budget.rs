@@ -3,7 +3,7 @@ use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::level::Level;
 use vize_l0::pass::{BudgetObserver, NoObserver, PassObserver};
 use vize_l0::{Allocator, String, ensure_sufficient_stack};
-use vize_l1::{SurfaceParseOptions, parse_with_options};
+use vize_l1::markup::{SurfaceParseOptions, parse_with_options};
 use vize_l2::dump::Page as L2Page;
 
 use crate::lower::{LegacyCaps, lower_with_caps_and_comment_policy};
@@ -298,7 +298,7 @@ fn emit_dom_source_with_options_and_observer_captured<'a, O: PassObserver, C: Ca
         }
         capture.page(Level::L1, "parse", || {
             let mut text = String::default();
-            vize_l1::render::render(&tree, &mut |slice| text.push_str(slice));
+            vize_l1::markup::render::render(&tree, &mut |slice| text.push_str(slice));
             text
         });
         let mut lowered = lower_with_caps_and_comment_policy(

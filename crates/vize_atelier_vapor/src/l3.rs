@@ -13,7 +13,7 @@ mod text;
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::{Allocator, String, cstr, profile, profiler::global_profiler};
 use vize_l0::{dump::capture::CaptureSink, level::Level};
-use vize_l1::SurfaceParseOptions;
+use vize_l1::markup::SurfaceParseOptions;
 use vize_l2_to_l3::Lowered;
 use vize_l3::verify::verify;
 
@@ -175,7 +175,7 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
         let scratch = Allocator::new();
         let (tree, errors) = bridge_profile!(
             "atelier.vapor.bridge.s1_parse",
-            vize_l1::parse_with_options(
+            vize_l1::markup::parse_with_options(
                 &scratch,
                 source,
                 SurfaceParseOptions {
@@ -185,7 +185,7 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
         );
         capture.page(Level::L1, "parse", || {
             let mut text = String::default();
-            vize_l1::render::render(&tree, &mut |part| text.push_str(part));
+            vize_l1::markup::render::render(&tree, &mut |part| text.push_str(part));
             text
         });
         let s2 = bridge_profile!(

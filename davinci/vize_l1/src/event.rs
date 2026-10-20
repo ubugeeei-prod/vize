@@ -16,8 +16,8 @@ use crate::markup::token::QuoteType;
 use vize_l0::ErrorCode;
 use vize_l0::Vec;
 
-use crate::parse::SurfaceError;
-use crate::surface::{LintHeaderFact, LintTagFact};
+use crate::markup::parse::SurfaceError;
+use crate::markup::surface::{LintHeaderFact, LintTagFact};
 
 /// What a tokenizer callback reported. Directive name pieces
 /// (`on_dir_name` / `on_dir_arg` / `on_dir_modifier`) all record as

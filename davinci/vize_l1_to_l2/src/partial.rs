@@ -14,7 +14,7 @@ use alloc::vec::Vec;
 
 use vize_l0::fact::FactManager;
 use vize_l0::{Allocator, Span, String};
-use vize_l1::{SurfaceTree, parse};
+use vize_l1::markup::{SurfaceTree, parse};
 
 use crate::lower::{Lowered, lower};
 

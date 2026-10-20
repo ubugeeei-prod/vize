@@ -5,7 +5,7 @@ use vize_l0::{Allocator, SourceRoot, Span};
 use vize_l1::dialect::vue1::surface::{self, TextRefusal};
 use vize_l1::dialect::vue1::text::{TextBinding, TextBoundaryKind};
 use vize_l1::embed::{Grammar, Lang, Shape, syntax::EmbedHole};
-use vize_l1::{SurfaceChild, check_fidelity};
+use vize_l1::markup::{SurfaceChild, check_fidelity};
 
 #[test]
 fn original_callback_cst_and_actual_expression_keep_nonzero_unicode_root_coordinates() {

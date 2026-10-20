@@ -19,13 +19,17 @@ fn check_refused_owner(attributes: &str) -> usize {
     let lowered = lower_component_native(&allocator, &source, Lang::Js).unwrap();
     assert_eq!(lowered.component.errors.len(), 0);
     assert_eq!(lowered.component.unsupported.len(), 0);
-    assert_eq!(vize_l1::check_fidelity(&lowered.component.tree), Ok(()));
+    assert_eq!(
+        vize_l1::markup::check_fidelity(&lowered.component.tree),
+        Ok(())
+    );
     let mut rendered = String::default();
-    vize_l1::render(&lowered.component.tree, &mut |piece| {
+    vize_l1::markup::render(&lowered.component.tree, &mut |piece| {
         rendered.push_str(piece)
     });
     assert_eq!(rendered, source);
-    let Some(vize_l1::SurfaceChild::Element(carrier)) = lowered.component.tree.children.first()
+    let Some(vize_l1::markup::SurfaceChild::Element(carrier)) =
+        lowered.component.tree.children.first()
     else {
         panic!("original verbatim owner");
     };
@@ -150,7 +154,8 @@ fn shorthand_pre_and_refused_dynamic_head_never_invent_a_verbatim_owner() {
         let source = cstr!("<div {head}>{{{{value}}}}</div>");
         let allocator = Allocator::default();
         let lowered = lower_component_native(&allocator, &source, Lang::Js).unwrap();
-        let Some(vize_l1::SurfaceChild::Element(carrier)) = lowered.component.tree.children.first()
+        let Some(vize_l1::markup::SurfaceChild::Element(carrier)) =
+            lowered.component.tree.children.first()
         else {
             panic!("non-control source owner");
         };

@@ -7,7 +7,7 @@ use vize_glyph::native_doc::{
 use vize_l0::Allocator;
 use vize_l1::embed::{Grammar, Lang, Shape, syntax::RetainedExpression};
 use vize_l1::markup::{NativeChildren, NativeTemplateComponent};
-use vize_l1::{SurfaceChild, container::Vue};
+use vize_l1::{container::Vue, markup::SurfaceChild};
 
 pub(super) fn options(width: usize, indent: usize, ending: LineEnding) -> NativeSfcOptions {
     let mut options = prior::options(width, indent, ending);

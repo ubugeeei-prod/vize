@@ -158,7 +158,7 @@ mod tests {
     use crate::partial::page::collect;
     use vize_l0::Allocator;
     use vize_l0::fact::{FactManager, produced_count};
-    use vize_l1::parse;
+    use vize_l1::markup::parse;
 
     #[test]
     fn a_page_produces_each_partial_group_once() {

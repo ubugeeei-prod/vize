@@ -1,5 +1,5 @@
 use vize_l0::String;
-use vize_l1::SurfaceChild;
+use vize_l1::markup::SurfaceChild;
 use vize_l2::op::Op;
 
 use super::super::{TextAction, normalize_special_text};

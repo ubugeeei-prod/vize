@@ -3,7 +3,7 @@ use super::{
     lower_l2_to_string_plan,
 };
 use vize_l0::Allocator;
-use vize_l1::parse;
+use vize_l1::markup::parse;
 use vize_l2_to_l3::{PartitionKind, lower};
 
 fn with_plan(source: &str, check: impl FnOnce(super::SsrStringPlanLowering<'_, '_>)) {

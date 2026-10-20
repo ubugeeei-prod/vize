@@ -111,7 +111,7 @@ fn compare_authenticated(
         }
     }
     let allocator = Allocator::new();
-    let (tree, errors) = vize_l1::parse(&allocator, template);
+    let (tree, errors) = vize_l1::markup::parse(&allocator, template);
     let mut lowered = lower_with_caps(&allocator, &tree, &errors, LegacyCaps::VUE3);
     let facts = vize_l1_to_l2::pass::run_dom_transform_with_profile(
         &mut lowered,

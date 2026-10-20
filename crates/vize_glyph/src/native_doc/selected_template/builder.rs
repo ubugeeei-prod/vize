@@ -1,7 +1,7 @@
 //! The shared original-child traversal and exact interpolation framing.
 
 use vize_l0::{Allocator, Vec};
-use vize_l1::SurfaceChild;
+use vize_l1::markup::SurfaceChild;
 use vize_l1::markup::{
     NativeChild, NativeChildren, NativeInterpolationOperand, NativeTemplateComponent,
 };

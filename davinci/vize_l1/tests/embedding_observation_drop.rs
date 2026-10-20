@@ -121,8 +121,8 @@ fn original_vue2_descriptor_diagnostics_drop_before_arena_and_on_unwind() -> Res
     use std::panic::{AssertUnwindSafe, catch_unwind};
     use vize_l0::config::{VueDialect, VueVersion};
     use vize_l1::{
-        SurfaceParseOptions,
         container::{Vue, vue::DescriptorOptions},
+        markup::SurfaceParseOptions,
     };
     mark_installed();
     // Warm only the standard unwind machinery before the isolated heap window.

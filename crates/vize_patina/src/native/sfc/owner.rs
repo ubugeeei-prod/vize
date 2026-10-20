@@ -5,7 +5,6 @@ use vize_l0::{
     config::{VueDialect, VueVersion},
 };
 use vize_l1::{
-    SurfaceParseOptions,
     container::{
         Vue,
         vue::{DescriptorObservation, DescriptorOptions},
@@ -14,7 +13,7 @@ use vize_l1::{
         EmbedSource, Lang,
         syntax::{NativeSyntax, ProgramOptions, parse_program_once},
     },
-    markup::NativeTemplateComponent,
+    markup::{NativeTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::{
     file::FileArtifact,

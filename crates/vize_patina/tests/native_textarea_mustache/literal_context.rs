@@ -2,7 +2,7 @@ use super::support::{
     LOCALES, NeverLookup, complete, error, expected, parity, registered, selected, span,
 };
 use vize_l0::{Allocator, cstr};
-use vize_l1::SurfaceChild;
+use vize_l1::markup::SurfaceChild;
 use vize_patina::native::{NativeSyntaxLint, NativeTextareaLintError};
 
 fn refused(source: &str, depth: usize) {

@@ -1,7 +1,7 @@
 //! Original selected-block custody for the attribute visitor's explicit policy.
 
 use vize_l0::SourceBlock;
-use vize_l1::Token;
+use vize_l1::markup::Token;
 
 use super::super::template::AttributeValuePolicy;
 use super::{NativeTemplateRefusal, TemplateRefusal};

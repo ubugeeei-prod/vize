@@ -45,7 +45,10 @@ fn original(owner: &NativeVue2SfcObservation<'_>, source: &str, expected: Native
         selected.block().span().slice(source),
         selected.block().source()
     );
-    assert_eq!(vize_l1::check_fidelity(selected.component().tree()), Ok(()));
+    assert_eq!(
+        vize_l1::markup::check_fidelity(selected.component().tree()),
+        Ok(())
+    );
 }
 fn fixed(source: &str, expected: &str, options: NativeVue2SfcOptions) {
     let arena = Allocator::default();

@@ -6,8 +6,8 @@ use super::{HeaderPolicy, SurfacePolicy};
 use crate::build::scope::{Frame, Recovery};
 use crate::event::{EventKind, Recorder};
 use crate::markup::entity::DecodedEntity;
+use crate::markup::surface::LintHeaderFact;
 use crate::markup::token::{LexErrorCode, LexMode, QuoteType, Sink};
-use crate::surface::LintHeaderFact;
 use core::marker::PhantomData;
 
 struct ModeFrame<'a> {

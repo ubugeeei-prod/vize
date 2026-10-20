@@ -2,7 +2,7 @@ use super::{Context, Directive, NativeHoleKind, PreparedAttribute};
 use crate::native::ConstructionFactory;
 use vize_l0::Span;
 use vize_l1::markup::directive::DirectivePrefix;
-use vize_l1::{Element, ElementClose};
+use vize_l1::markup::{Element, ElementClose};
 use vize_l2::op::{Attribute, Namespace};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -205,8 +205,8 @@ mod tests {
     use crate::native::{NativeComponent, NativeObservations};
     use alloc::vec::Vec;
     use vize_l0::{Allocator, SourceRoot, cstr};
-    use vize_l1::SurfaceChild;
     use vize_l1::embed::Lang;
+    use vize_l1::markup::SurfaceChild;
     use vize_l2::artifact::Builder;
     use vize_l2::op::{Namespace, Op};
 

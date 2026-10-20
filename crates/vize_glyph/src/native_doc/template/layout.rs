@@ -3,7 +3,7 @@
 use vize_l0::{Allocator, SourceRoot, Vec};
 use vize_l1::dialect::vue3::VueDirectives;
 use vize_l1::markup::DirectiveSyntax;
-use vize_l1::{Attribute, Element, ElementClose};
+use vize_l1::markup::{Attribute, Element, ElementClose};
 
 use super::{
     AttributeValuePolicy, Cursor, Doc, Line, TemplateRefusal, UnsupportedSyntax, verbatim,
@@ -131,7 +131,7 @@ pub(in crate::native_doc) fn attribute_with_name<'a, R: From<TemplateRefusal>>(
     parts: &mut Vec<'a, Doc<'a>>,
     cursor: &mut Cursor<'a>,
     allocator: &'a Allocator,
-    mut value_document: impl FnMut(&vize_l1::Token<'a>, usize) -> Result<Option<Doc<'a>>, R>,
+    mut value_document: impl FnMut(&vize_l1::markup::Token<'a>, usize) -> Result<Option<Doc<'a>>, R>,
 ) -> Result<(), R> {
     cursor.trivia(&attribute.name)?;
     let mut value_parts = Vec::new_in(&allocator);

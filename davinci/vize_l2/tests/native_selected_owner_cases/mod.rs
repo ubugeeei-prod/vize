@@ -3,7 +3,6 @@ use vize_l0::{
     config::{VueDialect, VueVersion},
 };
 use vize_l1::{
-    SurfaceParseOptions,
     container::{
         Vue,
         vue::{DescriptorObservation, DescriptorOptions},
@@ -12,7 +11,7 @@ use vize_l1::{
         EmbedSource,
         syntax::{NativeSyntax, ProgramOptions, parse_program_once},
     },
-    markup::{NativeTemplateComponent, NativeTemplateGrammar},
+    markup::{NativeTemplateComponent, NativeTemplateGrammar, SurfaceParseOptions},
 };
 use vize_l2::lang::js::{
     NativeTemplateIssue, NativeTemplateIssueKind as Kind, NativeTemplateOwner,

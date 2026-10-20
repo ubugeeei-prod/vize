@@ -55,7 +55,7 @@ fn original_special_parent_names_and_inherited_verbatim_refuse_before_preparatio
         assert_eq!(failure.span().unwrap().slice(source), "&amp;");
         assert_eq!(failure.parent_tag(), Some(parent.surface().tag()));
         assert!(core::ptr::eq(failure.block().root_source(), source));
-        crate::check_fidelity(&owner.component().carrier().tree).unwrap();
+        crate::markup::check_fidelity(&owner.component().carrier().tree).unwrap();
     }
     let owner = selected(
         &arena,
@@ -93,7 +93,7 @@ fn actual_nontext_events_keep_original_kind_instead_of_preparing_their_content()
     }
     assert_eq!(visits, 6);
     assert_eq!(arena.allocated_bytes(), before);
-    crate::check_fidelity(&owner.component().carrier().tree).unwrap();
+    crate::markup::check_fidelity(&owner.component().carrier().tree).unwrap();
 }
 
 #[test]
@@ -106,7 +106,7 @@ fn genuine_missing_parent_close_keeps_full_raw_token_even_without_diagnostic_row
     assert!(owner.component().carrier().unsupported.is_empty());
     assert!(matches!(
         parent.surface().close,
-        crate::ElementClose::Missing
+        crate::markup::ElementClose::Missing
     ));
     let before = arena.allocated_bytes();
     let failure = owner
@@ -115,11 +115,14 @@ fn genuine_missing_parent_close_keeps_full_raw_token_even_without_diagnostic_row
         .unwrap();
     assert_eq!(failure.kind(), NativeTextValueError::RecoveredComponent);
     assert_eq!(arena.allocated_bytes(), before);
-    assert_eq!(failure.token().unwrap().status, crate::TokenStatus::Present);
+    assert_eq!(
+        failure.token().unwrap().status,
+        crate::markup::TokenStatus::Present
+    );
     assert_eq!(failure.token().unwrap().text, "&amp;");
     assert_eq!(failure.span(), Some(Span::new(13, 18)));
     assert!(core::ptr::eq(failure.block().root_source(), source));
-    crate::check_fidelity(&owner.component().carrier().tree).unwrap();
+    crate::markup::check_fidelity(&owner.component().carrier().tree).unwrap();
 }
 
 #[test]
@@ -145,7 +148,7 @@ fn original_unsupported_carrier_refuses_and_retains_prefix_text_and_diagnostics(
         original
     ));
     assert_eq!(owner.component().carrier().unsupported.len(), 1);
-    crate::check_fidelity(&owner.component().carrier().tree).unwrap();
+    crate::markup::check_fidelity(&owner.component().carrier().tree).unwrap();
 }
 
 #[test]
@@ -168,5 +171,5 @@ fn source_value_never_lifts_existing_root_condense_entity_or_nested_refusals() {
         owner.prepare_condensed_root_text(child),
         Err(NativeRootTextError::NestedChild)
     ));
-    crate::check_fidelity(&owner.component().carrier().tree).unwrap();
+    crate::markup::check_fidelity(&owner.component().carrier().tree).unwrap();
 }

@@ -1,7 +1,7 @@
 //! `v-cloak` lowering into the Vue dialect cloak marker.
 
 use vize_l0::{Box, String};
-use vize_l1::Attribute;
+use vize_l1::markup::Attribute;
 use vize_l2::op::{BindingOp, VueCloakOp};
 
 use super::cx::{Cx, attr_slice, attr_span};

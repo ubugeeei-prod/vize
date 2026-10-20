@@ -7,7 +7,7 @@
 
 use vize_l0::Allocator;
 use vize_l1::markup::parse_component;
-use vize_l1::{SurfaceChild, check_fidelity};
+use vize_l1::markup::{SurfaceChild, check_fidelity};
 
 fn observe(children: &[SurfaceChild<'_>], values: &mut Vec<String>) {
     for child in children {
@@ -44,7 +44,7 @@ fn native_svg_title_children_preserve_complete_html_rcdata_controls() {
         let mut actual = Vec::new();
         observe(&parsed.tree.children, &mut actual);
         assert_eq!(actual, expected, "{name}: entire ordered structure");
-        let (tree, errors) = vize_l1::parse(&allocator, source);
+        let (tree, errors) = vize_l1::markup::parse(&allocator, source);
         assert!(errors.is_empty(), "{name}: generic parse errors");
         assert_eq!(check_fidelity(&tree), Ok(()), "{name}: generic fidelity");
         let mut projected = Vec::new();
@@ -76,10 +76,10 @@ fn generic_projection_retains_neutral_heads_entities_comments_and_errors() {
     ];
     for (source, in_tag_comments, expected) in cases {
         let allocator = Allocator::new();
-        let (tree, errors) = vize_l1::parse_with_options(
+        let (tree, errors) = vize_l1::markup::parse_with_options(
             &allocator,
             source,
-            vize_l1::SurfaceParseOptions {
+            vize_l1::markup::SurfaceParseOptions {
                 experimental_in_tag_comments: in_tag_comments,
             },
         );
@@ -96,7 +96,7 @@ fn generic_projection_retains_neutral_heads_entities_comments_and_errors() {
     }
     let source = "<div :[broken>{{ value }}</div>";
     let allocator = Allocator::new();
-    let (tree, errors) = vize_l1::parse(&allocator, source);
+    let (tree, errors) = vize_l1::markup::parse(&allocator, source);
     assert_eq!(check_fidelity(&tree), Ok(()));
     assert_eq!(errors.len(), 1);
     assert_eq!(
@@ -118,7 +118,7 @@ fn pinned_vue36_scope_controls(generic: bool) {
         let allocator = Allocator::new();
         let mut actual = Vec::new();
         if generic {
-            let (tree, errors) = vize_l1::parse(&allocator, fields[1]);
+            let (tree, errors) = vize_l1::markup::parse(&allocator, fields[1]);
             assert!(errors.is_empty(), "{}: {errors:?}", fields[0]);
             assert_eq!(check_fidelity(&tree), Ok(()));
             observe(&tree.children, &mut actual);

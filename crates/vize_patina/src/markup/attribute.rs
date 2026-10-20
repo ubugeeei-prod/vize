@@ -24,7 +24,7 @@ enum MarkupAttributeInner<'a> {
         doc: &'a L2Markup<'a>,
     },
     Surface {
-        attr: &'a vize_l1::Attribute<'a>,
+        attr: &'a vize_l1::markup::Attribute<'a>,
         doc: &'a L2Markup<'a>,
         name: &'a str,
     },
@@ -58,7 +58,7 @@ impl<'a> MarkupAttribute<'a> {
     }
 
     pub(super) const fn from_surface(
-        attr: &'a vize_l1::Attribute<'a>,
+        attr: &'a vize_l1::markup::Attribute<'a>,
         doc: &'a L2Markup<'a>,
     ) -> Self {
         Self::from_inner(MarkupAttributeInner::Surface {
@@ -69,7 +69,7 @@ impl<'a> MarkupAttribute<'a> {
     }
 
     pub(super) const fn from_authored(
-        attr: &'a vize_l1::Attribute<'a>,
+        attr: &'a vize_l1::markup::Attribute<'a>,
         doc: &'a L2Markup<'a>,
         name: &'a str,
     ) -> Self {

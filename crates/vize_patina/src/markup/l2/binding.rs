@@ -9,7 +9,7 @@ use vize_l0::Span;
 use vize_l2::op::{Attribute, BindingOp};
 
 /// Directive-name boundaries are case-sensitive; arguments/modifiers stay pre.
-pub(in crate::markup) fn is_v_pre(attr: &vize_l1::Attribute<'_>) -> bool {
+pub(in crate::markup) fn is_v_pre(attr: &vize_l1::markup::Attribute<'_>) -> bool {
     attr.name
         .text
         .strip_prefix("v-pre")
@@ -20,7 +20,7 @@ pub(in crate::markup) fn is_v_pre(attr: &vize_l1::Attribute<'_>) -> bool {
 /// attribute. The retained parser drops all semantic pre spellings here.
 pub(in crate::markup) fn opens_v_pre(
     doc: &L2Markup<'_>,
-    element: &vize_l1::Element<'_>,
+    element: &vize_l1::markup::Element<'_>,
     attributes: &[Attribute<'_>],
 ) -> bool {
     element
@@ -49,7 +49,7 @@ pub(in crate::markup) enum L2Item<'a> {
     /// read back off L1. Structural directives never appear: the facade
     /// consumes them into scopes.
     Surface {
-        attr: &'a vize_l1::Attribute<'a>,
+        attr: &'a vize_l1::markup::Attribute<'a>,
         doc: &'a L2Markup<'a>,
     },
 }
@@ -87,7 +87,7 @@ pub(in crate::markup) fn walk_items<'a>(
     doc: &'a L2Markup<'a>,
     attributes: &'a [Attribute<'a>],
     bindings: &'a [BindingOp<'a>],
-    surface: Option<&'a vize_l1::Element<'a>>,
+    surface: Option<&'a vize_l1::markup::Element<'a>>,
     visitor: &mut dyn FnMut(L2Item<'a>),
 ) {
     if let Some(element) = surface {
@@ -143,7 +143,7 @@ pub(in crate::markup) fn walk_items<'a>(
 /// facade consumes rather than restores: a structural directive (it became a
 /// scope), or the `v-pre` that opened a raw subtree (the parser drops it; a
 /// nested `v-pre` inside the subtree is a frozen attribute L2 keeps).
-pub(in crate::markup) fn is_consumed_spelling(attr: &vize_l1::Attribute<'_>) -> bool {
+pub(in crate::markup) fn is_consumed_spelling(attr: &vize_l1::markup::Attribute<'_>) -> bool {
     is_v_pre(attr)
         || SurfaceDirective::parse(attr.name.text)
             .is_some_and(|directive| directive.is_structural())
@@ -186,7 +186,7 @@ pub(in crate::markup) fn kind_of_directive(name: &str) -> MarkupBindingKind {
 /// argument is a plain identifier (a `<slot :name>` outlet's name), so the
 /// camelized form is the argument slice itself.
 pub(in crate::markup) fn surface_expression<'a>(
-    attr: &'a vize_l1::Attribute<'a>,
+    attr: &'a vize_l1::markup::Attribute<'a>,
     directive: &SurfaceDirective<'a>,
 ) -> Option<&'a str> {
     match attr_value(attr) {

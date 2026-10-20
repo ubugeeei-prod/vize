@@ -7,7 +7,7 @@ use alloc::vec::Vec as StdVec;
 
 use vize_l0::diag::Diagnostic;
 use vize_l0::{Span, String, cstr};
-use vize_l1::Token;
+use vize_l1::markup::Token;
 use vize_l1::pug::{
     PugBlock, PugCode, PugComment, PugHtmlItem, PugInline, PugNode, PugTag, PugText, PugTextPiece,
     PugTree,

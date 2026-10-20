@@ -5,9 +5,8 @@ use vize_l0::{
     config::{VueDialect, VueVersion},
 };
 use vize_l1::{
-    SurfaceChild, SurfaceParseOptions,
     container::{Vue, vue::DescriptorOptions},
-    markup::NativeTemplateComponent,
+    markup::{NativeTemplateComponent, SurfaceChild, SurfaceParseOptions},
 };
 use vize_l2::lang::js::{NativeInterpolationInput, NativeTemplateFile, NativeTemplateOwner};
 use vize_l3::decision::native::build_native_dom_file_decisions;

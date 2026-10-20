@@ -8,9 +8,8 @@ use vize_l0::{
     id::NodeId,
 };
 use vize_l1::{
-    SurfaceParseOptions,
     container::{Vue, vue::DescriptorOptions},
-    markup::NativeTemplateComponent,
+    markup::{NativeTemplateComponent, SurfaceParseOptions},
 };
 mod interruption;
 mod ownership;

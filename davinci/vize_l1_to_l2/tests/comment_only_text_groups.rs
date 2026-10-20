@@ -5,7 +5,7 @@
 use crate::support;
 
 use vize_l0::{Allocator, Span, String};
-use vize_l1::SurfaceChild;
+use vize_l1::markup::SurfaceChild;
 use vize_l1_to_l2::{Lowered, lower, lower_preserving_comments};
 use vize_l2::dump::{Expr as DumpExpr, Op as DumpOp, Page as L2Page};
 
@@ -119,7 +119,7 @@ fn comments_before_text_remain_in_the_whitespace_group() {
 fn preserved_comments_remain_distinct_children_in_authored_order() {
     let source = "<div><!--a--><!--b--><i/><!--c--><!--d--></div>";
     let allocator = Allocator::new();
-    let (tree, errors) = vize_l1::parse(&allocator, source);
+    let (tree, errors) = vize_l1::markup::parse(&allocator, source);
     assert!(errors.is_empty());
     let lowered = lower_preserving_comments(&allocator, &tree, &errors);
     let folio = L2Page::of(&lowered.root.ops);
@@ -160,7 +160,7 @@ fn preserved_comments_remain_distinct_children_in_authored_order() {
 fn recovered_leading_bytes_still_break_comment_text_groups() {
     let source = "<div>a<!--a-->gap<!--b--> b</div>";
     let allocator = Allocator::new();
-    let (mut tree, errors) = vize_l1::parse(&allocator, source);
+    let (mut tree, errors) = vize_l1::markup::parse(&allocator, source);
     assert!(errors.is_empty());
     let SurfaceChild::Element(root) = &mut tree.children[0] else {
         panic!("expected the div root");
@@ -175,7 +175,7 @@ fn recovered_leading_bytes_still_break_comment_text_groups() {
         panic!("expected the following comment");
     };
     comment.leading = gap.text;
-    assert_eq!(vize_l1::check_fidelity(&tree), Ok(()));
+    assert_eq!(vize_l1::markup::check_fidelity(&tree), Ok(()));
     let lowered = lower(&allocator, &tree, &errors);
     let folio = L2Page::of(&lowered.root.ops);
     let [DumpOp::Element(root)] = folio.ops.as_slice() else {

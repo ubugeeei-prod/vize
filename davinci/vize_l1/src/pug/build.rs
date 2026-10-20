@@ -20,7 +20,7 @@ use super::error::{PugError, PugErrorCode};
 use super::lex::{Tk, Tok};
 use super::logical::Logical;
 use super::tree::{PugCode, PugComment, PugNode, PugRefused, PugTree, PugUnexpected};
-use crate::surface::Token;
+use crate::markup::surface::Token;
 
 pub(crate) struct Builder<'a, 't> {
     allocator: &'a Allocator,

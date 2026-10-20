@@ -4,10 +4,7 @@ use super::support::{
 };
 use std::{borrow::Cow, cell::Cell};
 use vize_l0::{Allocator, cstr, diag::MessageLookup};
-use vize_l1::{
-    check_fidelity,
-    markup::{NativeComponent, NativeTemplateGrammar},
-};
+use vize_l1::markup::{NativeComponent, NativeTemplateGrammar, check_fidelity};
 use vize_patina::{
     Linter,
     native::{NativeLintRefusal, NativeSyntaxLint},

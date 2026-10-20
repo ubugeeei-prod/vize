@@ -11,7 +11,7 @@ fn format(source: &str, width: usize) -> String {
     let parsed = parse_component(&allocator, source).unwrap();
     let document = template_document(&parsed, &allocator).unwrap();
     assert!(core::ptr::eq(document.original(), &parsed));
-    assert_eq!(vize_l1::check_fidelity(&parsed.tree), Ok(()));
+    assert_eq!(vize_l1::markup::check_fidelity(&parsed.tree), Ok(()));
     print(
         document.document(),
         &PrintOptions {
@@ -109,7 +109,7 @@ fn recovered_syntax_keeps_original_errors_and_bytes_on_refusal() {
             Err(TemplateRefusal::Recovered { .. })
         ));
         assert_eq!(parsed.errors.len(), count);
-        assert_eq!(vize_l1::check_fidelity(&parsed.tree), Ok(()));
+        assert_eq!(vize_l1::markup::check_fidelity(&parsed.tree), Ok(()));
         assert_eq!(parsed.tree.source, source);
     }
 }
@@ -132,7 +132,7 @@ fn incomplete_directives_use_shared_l1_syntax_and_are_explicitly_unsupported() {
                 ..
             })
         ));
-        assert_eq!(vize_l1::check_fidelity(&parsed.tree), Ok(()));
+        assert_eq!(vize_l1::markup::check_fidelity(&parsed.tree), Ok(()));
     }
 }
 
@@ -147,7 +147,7 @@ fn embedded_expression_is_not_reparsed_or_silently_admitted() {
             ..
         })
     ));
-    assert_eq!(vize_l1::check_fidelity(&parsed.tree), Ok(()));
+    assert_eq!(vize_l1::markup::check_fidelity(&parsed.tree), Ok(()));
 }
 
 #[test]

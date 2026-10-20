@@ -109,7 +109,7 @@ fn every_pinned_original_root_text_matches_whole_source_qualified_golden_windows
                 "{id}"
             );
         }
-        crate::check_fidelity(&owner.component().carrier().tree)
+        crate::markup::check_fidelity(&owner.component().carrier().tree)
             .map_err(|_| "complete original source fidelity")?;
     }
     assert_eq!(executed, 28, "actual complete eligible cases");
@@ -135,8 +135,8 @@ fn original_span(
         SurfaceChild::Element(element) => {
             let start = span(element.open.lt_name.text)?.start;
             let end = match &element.close {
-                crate::ElementClose::Present(close) => span(close.gt.text)?.end,
-                crate::ElementClose::NotExpected => span(element.open.gt.text)?.end,
+                crate::markup::ElementClose::Present(close) => span(close.gt.text)?.end,
+                crate::markup::ElementClose::NotExpected => span(element.open.gt.text)?.end,
                 _ => return Err("complete original element frame"),
             };
             Ok(("element", Span::new(start, end)))

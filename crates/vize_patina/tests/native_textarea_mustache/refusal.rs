@@ -180,11 +180,11 @@ fn missing_original_parent_close_retains_parser_error_without_claiming_body_clea
 fn unsupported_descriptor_version_dialect_and_options_never_mint_marker_custody() {
     use vize_l0::config::{VueDialect, VueVersion};
     use vize_l1::{
-        SurfaceParseOptions,
         container::{
             Vue,
             vue::{DescriptorIssue, DescriptorIssueCode, DescriptorOptions},
         },
+        markup::SurfaceParseOptions,
     };
     let source = "<template><textarea>{{x}}</textarea></template>";
     let supported = DescriptorOptions {
@@ -273,11 +273,11 @@ fn unterminated_marker_refuses_recovery_and_retains_original_parser_only_order()
 fn missing_outer_template_boundary_preserves_descriptor_refusal_and_original_empty_route() {
     use vize_l0::config::{VueDialect, VueVersion};
     use vize_l1::{
-        SurfaceParseOptions,
         container::{
             ContainerError, ContainerErrorCode, Vue,
             vue::{DescriptorIssue, DescriptorIssueCode, DescriptorOptions},
         },
+        markup::SurfaceParseOptions,
     };
     let source = "<template><textarea>{{x}}</textarea>";
     let arena = Allocator::default();

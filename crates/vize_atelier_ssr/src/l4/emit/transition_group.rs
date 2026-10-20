@@ -144,7 +144,7 @@ mod tests {
             ),
         ] {
             let allocator = Allocator::new();
-            let (tree, errors) = vize_l1::parse(&allocator, source);
+            let (tree, errors) = vize_l1::markup::parse(&allocator, source);
             assert_eq!(errors.len(), 0);
             let lowered = vize_l1_to_l2::lower(&allocator, &tree, &errors);
             let partitioned = vize_l2_to_l3::lower(&allocator, &lowered.root);

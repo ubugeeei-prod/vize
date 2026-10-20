@@ -29,7 +29,7 @@ macro_rules! assert_extraction_snapshot {
 
 fn decisions(source: &str, tier: OptTier) -> String {
     let allocator = Allocator::default();
-    let (tree, errors) = vize_l1::parse(&allocator, source);
+    let (tree, errors) = vize_l1::markup::parse(&allocator, source);
     let s2 = vize_l1_to_l2::lower(&allocator, &tree, &errors);
     let mut lowered = lower(&allocator, &s2.root);
     let graph = L3Page::of(&lowered.program).print_to_string(DumpMode::Full);

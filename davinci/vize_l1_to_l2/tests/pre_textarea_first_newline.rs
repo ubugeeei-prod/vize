@@ -60,7 +60,7 @@ fn native_first_newline_rule_keeps_second_newline_and_source_spans() {
 fn native_comment_option_controls_first_visible_text_without_changing_spans() {
     let source = "<pre><!-- keep -->\nline</pre>";
     let allocator = vize_l0::Allocator::new();
-    let (tree, errors) = vize_l1::parse(&allocator, source);
+    let (tree, errors) = vize_l1::markup::parse(&allocator, source);
     assert!(errors.is_empty());
     for comments in [false, true] {
         let lowered = if comments {

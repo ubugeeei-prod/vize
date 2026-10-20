@@ -19,7 +19,7 @@
 //! bare `v-bind` an empty spread, both kept as authored.
 
 use vize_l0::{Box, String, Vec, cstr};
-use vize_l1::Attribute;
+use vize_l1::markup::Attribute;
 
 use vize_l2::op::{BindOp, BindingOp, DynamicName, OnOp, VueSyncOp};
 

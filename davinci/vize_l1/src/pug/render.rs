@@ -9,7 +9,7 @@ use super::tree::{
     PugAttrItem, PugBlock, PugHtmlItem, PugInline, PugNode, PugTag, PugTagPart, PugText,
     PugTextPiece, PugTree,
 };
-use crate::surface::Token;
+use crate::markup::surface::Token;
 
 /// Feed every rendered piece to `sink`, in canonical order.
 pub fn render_pug<'a>(tree: &PugTree<'a>, sink: &mut dyn FnMut(&'a str)) {

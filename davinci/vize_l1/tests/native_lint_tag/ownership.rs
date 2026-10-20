@@ -78,7 +78,7 @@ fn arbitrary_native_blocks_and_raw_compatibility_construction_cannot_mint_select
         rendered(&arbitrary.carrier().tree),
         rendered(&owner.component().carrier().tree)
     );
-    let compat = vize_l1::parse(&arena, block.source());
+    let compat = vize_l1::markup::parse(&arena, block.source());
     assert_eq!(
         cstr!("{:?}", owner.component().carrier().tree.children),
         cstr!("{:?}", compat.0.children)

@@ -2,7 +2,6 @@ use vize_l0::{
     Allocator,
     config::{VueDialect, VueVersion},
 };
-use vize_l1::SurfaceParseOptions;
 use vize_l1::container::{
     Vue,
     vue::{DescriptorObservation, DescriptorOptions, ScriptRole, ScriptView},
@@ -11,6 +10,7 @@ use vize_l1::embed::{
     EmbedSource,
     syntax::{NativeSyntax, ProgramOptions, parse_program_once},
 };
+use vize_l1::markup::SurfaceParseOptions;
 use vize_l2::file::{
     FileArtifact,
     vue::{ExposureIssue, ExposureIssueKind, VueExposure},

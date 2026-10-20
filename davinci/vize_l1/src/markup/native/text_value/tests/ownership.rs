@@ -45,7 +45,7 @@ fn one_actual_child_visit_parks_grows_and_short_joins_without_repreparation() {
     );
     assert_eq!(parked[0].source().text(), "雪 &lt;");
     assert_eq!(parked[1].source().text(), "tail");
-    crate::check_fidelity(&moved.component().carrier().tree).unwrap();
+    crate::markup::check_fidelity(&moved.component().carrier().tree).unwrap();
 }
 
 #[test]
@@ -138,6 +138,6 @@ fn original_js_ts_selection_and_neutral_source_transfer_do_not_authorize_a_new_o
             .unwrap();
         assert_eq!(actual.source().text(), prepared.text());
         assert!(!core::ptr::eq(actual.source().text(), prepared.text()));
-        crate::check_fidelity(&owner.component().carrier().tree).unwrap();
+        crate::markup::check_fidelity(&owner.component().carrier().tree).unwrap();
     }
 }

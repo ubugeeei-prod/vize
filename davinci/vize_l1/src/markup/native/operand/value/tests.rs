@@ -12,7 +12,7 @@ fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponen
         DescriptorOptions {
             version: VueVersion::V3,
             dialect: VueDialect::Vue,
-            template: crate::SurfaceParseOptions::default(),
+            template: crate::markup::SurfaceParseOptions::default(),
         },
     );
     NativeTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())

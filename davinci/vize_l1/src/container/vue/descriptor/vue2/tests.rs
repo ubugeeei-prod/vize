@@ -1,10 +1,10 @@
 use super::*;
-use crate::SurfaceParseOptions;
 use crate::container::{ContainerFormat, Vue};
 use crate::dialect::vue2::surface::{self, TextRefusal};
 use crate::dialect::vue2::text::TextBoundaryKind;
 use crate::embed::syntax::EmbedHole;
-use crate::{SurfaceChild, check_fidelity};
+use crate::markup::SurfaceParseOptions;
+use crate::markup::{SurfaceChild, check_fidelity};
 use vize_l0::config::{VueDialect, VueVersion};
 use vize_l0::{Allocator, Span, String};
 

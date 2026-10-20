@@ -116,7 +116,7 @@ impl<'a> NativeComponent<'a> {
         NativeChildren::root(self)
     }
     /// The immutable original root slot; no iteration or membership fabrication.
-    fn root_child_at(&self, ordinal: usize) -> Option<&crate::SurfaceChild<'a>> {
+    fn root_child_at(&self, ordinal: usize) -> Option<&crate::markup::SurfaceChild<'a>> {
         self.component.tree.children.get(ordinal)
     }
     #[must_use]

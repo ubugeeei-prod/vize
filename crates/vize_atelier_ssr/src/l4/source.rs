@@ -38,7 +38,7 @@ fn lower_and_emit_plain(
     source: &str,
     request: &SsrL4Request<'_>,
 ) -> SsrL4Selection {
-    let (tree, surface_errors) = vize_l1::parse_with_options(
+    let (tree, surface_errors) = vize_l1::markup::parse_with_options(
         allocator,
         source,
         SurfaceParseOptions {
@@ -152,7 +152,7 @@ fn lower_and_emit<C: CaptureSink>(
     request: &SsrL4Request<'_>,
     capture: &mut C,
 ) -> SsrL4Selection {
-    let (tree, surface_errors) = vize_l1::parse_with_options(
+    let (tree, surface_errors) = vize_l1::markup::parse_with_options(
         allocator,
         source,
         SurfaceParseOptions {
@@ -161,7 +161,7 @@ fn lower_and_emit<C: CaptureSink>(
     );
     capture.page(Level::L1, "parse", || {
         let mut text = String::default();
-        vize_l1::render::render(&tree, &mut |part| text.push_str(part));
+        vize_l1::markup::render::render(&tree, &mut |part| text.push_str(part));
         text
     });
     let lowered = match request.frozen {

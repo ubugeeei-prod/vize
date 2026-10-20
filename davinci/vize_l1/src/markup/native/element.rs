@@ -1,6 +1,6 @@
 use super::child::Parent;
 use super::{NativeChildren, NativeComponent};
-use crate::{Attribute, Element};
+use crate::markup::{Attribute, Element};
 
 mod names;
 pub use names::{NativeElementClosingName, NativeElementNameRefusal, NativeElementNames};

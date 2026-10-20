@@ -10,7 +10,7 @@ use super::attrs::{attr_value, has_attr};
 use super::status::{classify_status, is_unknown_status, unknown_status_warning};
 use crate::types::{ArtMetadata, ArtParseError, ArtStatus};
 use vize_l0::Allocator;
-use vize_l1::{Element, OpenTag, SurfaceChild, SurfaceTree};
+use vize_l1::markup::{Element, OpenTag, SurfaceChild, SurfaceTree};
 
 /// The `<art>` element at the root of the block's L1 tree.
 ///
@@ -115,9 +115,12 @@ mod tests {
     use super::{art_element, parse_metadata, parse_status};
     use crate::types::ArtStatus;
     use vize_l0::Allocator;
-    use vize_l1::parse;
+    use vize_l1::markup::parse;
 
-    fn with_art<R>(source: &str, check: impl FnOnce(&Allocator, &vize_l1::Element<'_>) -> R) -> R {
+    fn with_art<R>(
+        source: &str,
+        check: impl FnOnce(&Allocator, &vize_l1::markup::Element<'_>) -> R,
+    ) -> R {
         let allocator = Allocator::new();
         let (tree, _) = parse(&allocator, source);
         let art = art_element(&tree).expect("an <art> root element");
@@ -143,7 +146,7 @@ mod tests {
         let art = art_element(&tree).expect("art");
         let frame = vize_l0::SourceRoot::new(source).unwrap().whole_block();
         let at = |slice: &str| frame.offset_of(slice).unwrap() as usize;
-        let vize_l1::ElementClose::Present(close) = &art.close else {
+        let vize_l1::markup::ElementClose::Present(close) = &art.close else {
             panic!("closed <art>");
         };
         let name_end = at(art.open.lt_name.text) + art.open.lt_name.text.len();

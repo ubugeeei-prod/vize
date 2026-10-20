@@ -6,7 +6,7 @@ use vize_l0::{Allocator, String};
 use vize_l1::container::Vue;
 use vize_l1::container::vue::DescriptorOptions;
 use vize_l1::markup::{NativeChildren, NativeInterpolationOperand, NativeTemplateComponent};
-use vize_l1::{SurfaceChild, SurfaceParseOptions};
+use vize_l1::markup::{SurfaceChild, SurfaceParseOptions};
 
 #[path = "native_template_interpolations/array.rs"]
 mod array;
@@ -82,7 +82,7 @@ fn format(source: &str, options: PrintOptions) -> String {
     assert!(core::ptr::eq(doc.original(), &selected));
     assert!(core::ptr::eq(doc.operands(), borrowed.as_slice()));
     assert_eq!(
-        vize_l1::check_fidelity(&selected.component().carrier().tree),
+        vize_l1::markup::check_fidelity(&selected.component().carrier().tree),
         Ok(())
     );
     print(doc.document(), &options)

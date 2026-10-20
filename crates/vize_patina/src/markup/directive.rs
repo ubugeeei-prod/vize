@@ -20,7 +20,7 @@ enum MarkupDirectiveInner<'a> {
     },
     L2(L2Bound<'a>),
     Surface {
-        attr: &'a vize_l1::Attribute<'a>,
+        attr: &'a vize_l1::markup::Attribute<'a>,
         doc: &'a L2Markup<'a>,
     },
 }
@@ -51,7 +51,7 @@ impl<'a> MarkupDirective<'a> {
     }
 
     pub(super) const fn from_surface(
-        attr: &'a vize_l1::Attribute<'a>,
+        attr: &'a vize_l1::markup::Attribute<'a>,
         doc: &'a L2Markup<'a>,
     ) -> Self {
         Self {
@@ -59,7 +59,7 @@ impl<'a> MarkupDirective<'a> {
         }
     }
 
-    fn surface(attr: &'a vize_l1::Attribute<'a>) -> Option<SurfaceDirective<'a>> {
+    fn surface(attr: &'a vize_l1::markup::Attribute<'a>) -> Option<SurfaceDirective<'a>> {
         SurfaceDirective::parse(attr.name.text)
     }
 

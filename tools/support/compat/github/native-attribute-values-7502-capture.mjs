@@ -4,7 +4,6 @@ const sourceTrees = [
   "davinci/vize_l0/src",
   "davinci/vize_l0_derive/src",
   "davinci/vize_l1/src/markup",
-  "davinci/vize_l1/src/parse",
   "davinci/vize_l1/src/container/vue",
   "davinci/vize_l1/src/embed",
   "davinci/vize_l1_to_l2/src/native",

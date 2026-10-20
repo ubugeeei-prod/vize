@@ -1,7 +1,7 @@
 use super::{
     NativeChild, NativeInterpolationError, NativeTemplateComponent, NativeTemplateGrammar,
 };
-use crate::{Element, Interpolation, SurfaceChild};
+use crate::markup::{Element, Interpolation, SurfaceChild};
 use vize_l0::{SourceBlock, Span};
 
 /// Addresses identify immutable original arena backing and are compared only.

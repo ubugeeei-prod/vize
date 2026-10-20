@@ -53,9 +53,9 @@ use super::payload::InspectorSourceFile;
 #[must_use]
 pub fn l1_page(path: &str, template: &str) -> StagePage {
     let allocator = Allocator::default();
-    let (tree, _errors) = vize_l1::parse(&allocator, template);
+    let (tree, _errors) = vize_l1::markup::parse(&allocator, template);
     let mut text = String::default();
-    vize_l1::render::render(&tree, &mut |slice| text.push_str(slice));
+    vize_l1::markup::render::render(&tree, &mut |slice| text.push_str(slice));
     StagePage {
         path: Some(String::from(path)),
         stage: cstr!("s1"),
@@ -72,7 +72,7 @@ pub fn l1_page(path: &str, template: &str) -> StagePage {
 #[must_use]
 pub fn template_remarks(path: &str, template: &str) -> Vec<StageRemark> {
     let allocator = Allocator::default();
-    let (tree, errors) = vize_l1::parse(&allocator, template);
+    let (tree, errors) = vize_l1::markup::parse(&allocator, template);
     let mut lowered =
         vize_l1_to_l2::lower_with_caps(&allocator, &tree, &errors, vize_l1_to_l2::LegacyCaps::VUE3);
     let mut collector = RemarkCollector::new();

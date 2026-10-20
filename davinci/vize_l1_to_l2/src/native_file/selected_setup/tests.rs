@@ -3,7 +3,7 @@ extern crate std;
 use super::*;
 use crate::native_file::{NativeSelectedSfcIssueKind as Kind, lower_selected_sfc_native};
 use vize_l0::config::{VueDialect, VueVersion};
-use vize_l1::{SurfaceParseOptions, container::vue::ScriptRole};
+use vize_l1::{container::vue::ScriptRole, markup::SurfaceParseOptions};
 mod accepted;
 mod refusal;
 fn options() -> DescriptorOptions {

@@ -3,8 +3,8 @@
 use super::{Event, EventKind, Recorder};
 use crate::markup::lex::compat::Callbacks;
 use crate::markup::lex::compat::Tokenizer;
+use crate::markup::parse::SurfaceError;
 use crate::markup::{Component, LexOptions, Lexer};
-use crate::parse::SurfaceError;
 use vize_l0::{Allocator, Vec, cstr};
 
 fn record<'a>(
@@ -154,7 +154,7 @@ fn raw_interpolation_width_is_disjoint_from_quote_and_opening_aux() {
 
 #[test]
 fn selected_lint_tag_aux_never_changes_mode_quotes_width_or_event_layout() {
-    use crate::surface::{LintHeaderFact, LintTagFact};
+    use crate::markup::surface::{LintHeaderFact, LintTagFact};
     let allocator = Allocator::new();
     let (mut events, mut errors) = record(&allocator, "", true, false);
     let mut recorder = Recorder {

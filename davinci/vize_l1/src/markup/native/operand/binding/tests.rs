@@ -11,7 +11,7 @@ fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponen
         DescriptorOptions {
             version: VueVersion::V3,
             dialect: VueDialect::Vue,
-            template: crate::SurfaceParseOptions::default(),
+            template: crate::markup::SurfaceParseOptions::default(),
         },
     );
     let selected = NativeTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
@@ -21,7 +21,7 @@ fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponen
         selected.component().block().root_source(),
         source
     ));
-    crate::check_fidelity(&selected.component().carrier().tree).unwrap();
+    crate::markup::check_fidelity(&selected.component().carrier().tree).unwrap();
     selected
 }
 

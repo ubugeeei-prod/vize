@@ -285,7 +285,7 @@ fn original_bigint_method_double_closer_keeps_earliest_selected_safety_refusal()
         assert_eq!(syntax.source().span(), view.span());
         assert_eq!(operand.content_span().slice(&source), operand.raw_content());
         assert_eq!(
-            vize_l1::check_fidelity(&owner.component().carrier().tree),
+            vize_l1::markup::check_fidelity(&owner.component().carrier().tree),
             Ok(())
         );
     }

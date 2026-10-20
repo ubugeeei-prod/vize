@@ -8,9 +8,11 @@ use vize_l0::{
     cstr,
 };
 use vize_l1::{
-    SurfaceParseOptions, check_fidelity,
     container::{Vue, vue::DescriptorOptions},
-    markup::{NativeChildren, NativeLintTagKind, NativeLintTagRefusal, NativeTemplateComponent},
+    markup::{
+        NativeChildren, NativeLintTagKind, NativeLintTagRefusal, NativeTemplateComponent,
+        SurfaceParseOptions, check_fidelity,
+    },
 };
 use vize_patina::{
     LintContext, LintResult, Linter, Locale, MarkupBinding, MarkupContext, MarkupElement,

@@ -1,10 +1,7 @@
 //! One original child traversal for the bounded complete parser-output profile.
 
 use vize_l0::{SmallVec, Span, is_html_tag, is_math_ml_tag, is_svg_tag};
-use vize_l1::{
-    SurfaceChild, Token,
-    markup::{NativeChildren, NativeComponent, NativeLintTagKind},
-};
+use vize_l1::markup::{NativeChildren, NativeComponent, NativeLintTagKind, SurfaceChild, Token};
 
 use super::{
     attribute, header, header_rules,
@@ -118,7 +115,8 @@ pub(in crate::native) fn children<'o, 'a>(
                     if let Some(slash) = &element.surface().open.slash {
                         checked_token(component, slash)?;
                     }
-                    if let vize_l1::ElementClose::Present(close) = &element.surface().close {
+                    if let vize_l1::markup::ElementClose::Present(close) = &element.surface().close
+                    {
                         checked_token(component, &close.lt_slash_name)?;
                         checked_token(component, &close.gt)?;
                         if close
@@ -175,7 +173,7 @@ fn gap(token: &Token<'_>) -> bool {
         .all(|byte| matches!(byte, b' ' | b'\t' | b'\r' | b'\n' | 12))
 }
 
-fn header_gaps(attribute: &vize_l1::Attribute<'_>) -> bool {
+fn header_gaps(attribute: &vize_l1::markup::Attribute<'_>) -> bool {
     gap(&attribute.name)
         && attribute.eq.as_ref().is_none_or(gap)
         && attribute.value.as_ref().is_none_or(|value| {

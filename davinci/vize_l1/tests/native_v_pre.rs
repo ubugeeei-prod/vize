@@ -4,7 +4,7 @@
 
 use vize_l0::{Allocator, Span, String, cstr};
 use vize_l1::markup::{DirectiveNameError, parse_component, parse_component_with_authored};
-use vize_l1::{SurfaceChild, check_fidelity};
+use vize_l1::markup::{SurfaceChild, check_fidelity};
 
 fn interpolations<'a>(children: &[SurfaceChild<'a>]) -> Vec<&'a str> {
     fn collect<'a>(children: &[SurfaceChild<'a>], values: &mut Vec<&'a str>) {

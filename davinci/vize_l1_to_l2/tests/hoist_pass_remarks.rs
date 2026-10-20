@@ -21,7 +21,7 @@ use vize_l0::assert_dump_snapshot;
 use vize_l0::dump::remarks::RemarkLog;
 use vize_l0::pass::{NoObserver, RemarkCollector, RemarkKind};
 use vize_l0::{Allocator, Span, String};
-use vize_l1::parse;
+use vize_l1::markup::parse;
 use vize_l1_to_l2::pass::hoist::{STATIC_PROPS, STATIC_SUBTREE};
 use vize_l1_to_l2::pass::{StaticFacts, StaticLevel, run_transform};
 use vize_l1_to_l2::{LegacyCaps, lower_with_caps};

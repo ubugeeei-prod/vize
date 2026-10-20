@@ -7,10 +7,9 @@ use vize_l0::{
     config::{VueDialect, VueVersion},
 };
 use vize_l1::{
-    SurfaceParseOptions,
     container::vue::{AdmittedDescriptor, DescriptorObservation},
     css::{EmptyClassStyle, StyleIssue, StyleSyntax},
-    markup::NativeTemplateGrammar,
+    markup::{NativeTemplateGrammar, SurfaceParseOptions},
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

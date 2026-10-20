@@ -28,7 +28,7 @@ pub enum LintDocumentKind {
 /// reads the P2-16 L2 projection. Astro and Svelte have no L1 dialect yet.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum L1InputDialect {
-    /// Vue template surface (`vize_l1::parse`), including HTML fragments.
+    /// Vue template surface (`vize_l1::markup::parse`), including HTML fragments.
     VueTemplate,
     /// Pug surface (`vize_l1::pug`).
     Pug,

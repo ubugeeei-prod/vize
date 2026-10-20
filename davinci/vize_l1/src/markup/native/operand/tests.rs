@@ -19,7 +19,7 @@ fn selected<'a>(
         DescriptorOptions {
             version: VueVersion::V3,
             dialect: VueDialect::Vue,
-            template: crate::SurfaceParseOptions::default(),
+            template: crate::markup::SurfaceParseOptions::default(),
         },
     );
     let admitted = descriptor
@@ -241,7 +241,7 @@ fn recovered_component_is_retained_without_a_conditional_operand() {
     );
     assert!(matches!(
         element.surface().close,
-        crate::ElementClose::Missing
+        crate::markup::ElementClose::Missing
     ));
     assert_eq!(owner.component().block().root_source(), source);
 }

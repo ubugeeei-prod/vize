@@ -8,7 +8,7 @@
 
 use vize_l0::{Box, Vec};
 
-use crate::surface::Token;
+use crate::markup::surface::Token;
 
 /// pug constructs the Vue lowering refuses: they execute JavaScript at
 /// build time, link other files, or define/expand mixins — none of which

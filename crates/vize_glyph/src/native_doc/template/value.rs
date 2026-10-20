@@ -1,6 +1,6 @@
 //! A policy hook at the existing checked attribute-value content visit.
 
-use vize_l1::Token;
+use vize_l1::markup::Token;
 
 use super::TemplateRefusal;
 

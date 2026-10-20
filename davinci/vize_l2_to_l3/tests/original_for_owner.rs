@@ -13,13 +13,12 @@ use vize_l0::{
     dump::{Dump, Mode},
 };
 use vize_l1::{
-    SurfaceParseOptions,
     container::{Vue, vue::DescriptorOptions},
     embed::{
         EmbedSource,
         syntax::{ProgramOptions, parse_program_once},
     },
-    markup::NativeTemplateComponent,
+    markup::{NativeTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::{
     dump::{Op as DumpOp, Page},

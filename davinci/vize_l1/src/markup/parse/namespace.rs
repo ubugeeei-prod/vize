@@ -168,8 +168,8 @@ mod tests {
 
     use super::NamespaceSink;
     use crate::event::{Event, Recorder};
+    use crate::markup::parse::SurfaceError;
     use crate::markup::{Component, LexOptions, Lexer};
-    use crate::parse::SurfaceError;
 
     fn record<'a>(
         allocator: &'a Allocator,
@@ -220,8 +220,8 @@ mod tests {
                     .eq(eager_errors.iter().map(|error| (error.code, error.offset))),
                 "all exact diagnostics: {source}"
             );
-            let (tree, _) = crate::parse(&allocator, source);
-            assert_eq!(crate::check_fidelity(&tree), Ok(()), "{source}");
+            let (tree, _) = crate::markup::parse(&allocator, source);
+            assert_eq!(crate::markup::check_fidelity(&tree), Ok(()), "{source}");
         }
     }
 }

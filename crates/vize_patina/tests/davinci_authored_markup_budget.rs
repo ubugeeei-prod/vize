@@ -62,9 +62,9 @@ fn authored_projection_reuses_ordinary_storage_and_holds_the_facade_budget() {
     ] {
         let normal_arena = Allocator::new();
         let authored_arena = Allocator::new();
-        let (_normal, normal) = measure_returning(|| vize_l1::parse(&normal_arena, source));
+        let (_normal, normal) = measure_returning(|| vize_l1::markup::parse(&normal_arena, source));
         let ((_tree, extra, _errors), projected) =
-            measure_returning(|| vize_l1::parse_with_authored(&authored_arena, source));
+            measure_returning(|| vize_l1::markup::parse_with_authored(&authored_arena, source));
         assert!(
             extra.is_none(),
             "ordinary source must reuse its existing tree"

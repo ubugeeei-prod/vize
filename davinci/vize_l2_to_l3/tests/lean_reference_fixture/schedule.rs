@@ -124,7 +124,7 @@ fn schedule_contract_codes_match_lean_reference() {
         let source = source(stem);
         for scenario in SCENARIOS {
             let allocator = Allocator::default();
-            let (tree, errors) = vize_l1::parse(&allocator, source.trim_end());
+            let (tree, errors) = vize_l1::markup::parse(&allocator, source.trim_end());
             assert!(errors.is_empty(), "{errors:?}");
             let s2 = vize_l1_to_l2::lower(&allocator, &tree, &errors);
             let mut program = vize_l2_to_l3::lower(&allocator, &s2.root).program;

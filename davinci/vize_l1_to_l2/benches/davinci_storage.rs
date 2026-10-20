@@ -16,7 +16,7 @@ use criterion::{Criterion, criterion_group};
 use davinci_harness::stage::bench_stage_with_metrics;
 use vize_l0::pass::NoObserver;
 use vize_l0::{Allocator, cstr};
-use vize_l1::parse;
+use vize_l1::markup::parse;
 use vize_l1_to_l2::{emit_dom, lower};
 
 const VFOR_THREE_ALIASES: &str = r#"<li v-for="(item, key, index) in items">{{ item }}</li>"#;

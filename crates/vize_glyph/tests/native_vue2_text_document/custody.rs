@@ -2,8 +2,8 @@
 
 use super::*;
 use vize_l0::{SourceRoot, Span};
-use vize_l1::SurfaceChild;
 use vize_l1::embed::{Grammar, Lang, Shape, syntax::NativeSyntax};
+use vize_l1::markup::SurfaceChild;
 
 #[derive(Debug, PartialEq)]
 struct Facts {

@@ -106,8 +106,8 @@ mod tests {
         config::{VueDialect, VueVersion},
     };
     use vize_l1::{
-        SurfaceParseOptions,
         container::{Vue, vue::DescriptorOptions},
+        markup::SurfaceParseOptions,
     };
 
     #[test]

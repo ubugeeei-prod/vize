@@ -5,7 +5,7 @@
 //! well-formed spellings; DOM realization stays later (P2-11 emit).
 
 use vize_l0::{Box, String, cstr};
-use vize_l1::Attribute;
+use vize_l1::markup::Attribute;
 
 use vize_l2::op::{BindingOp, VueMemoOp, VueOnceOp};
 

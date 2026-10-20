@@ -3,7 +3,6 @@ use vize_l0::{
     config::{VueDialect, VueVersion},
 };
 use vize_l1::{
-    SurfaceParseOptions,
     container::{
         Vue,
         vue::{DescriptorObservation, DescriptorOptions, ScriptRole, ScriptView},
@@ -12,6 +11,7 @@ use vize_l1::{
         EmbedSource,
         syntax::{NativeSyntax, ProgramOptions, parse_program_once},
     },
+    markup::SurfaceParseOptions,
 };
 use vize_l2::{
     file::FileArtifact,

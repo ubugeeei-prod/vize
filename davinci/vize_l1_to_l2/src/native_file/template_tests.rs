@@ -11,9 +11,9 @@ use vize_l0::{
     config::{VueDialect, VueVersion},
 };
 use vize_l1::{
-    SurfaceParseOptions,
     container::{Vue, vue::DescriptorOptions},
     embed::Lang,
+    markup::SurfaceParseOptions,
 };
 use vize_l2::{artifact::Builder, file::FileIssueKind};
 

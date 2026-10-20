@@ -3,13 +3,9 @@
 #[cfg(test)]
 mod native_lint_component {
     use vize_l0::{Allocator, ErrorCode, SourceRoot, Span, cstr};
-    use vize_l1::{
-        ElementClose, SurfaceChild, check_fidelity,
-        markup::{
-            DirectiveNameError, NativeComponent, NativeLintComponent, NativeLintTagKind,
-            NativeLintTagRefusal,
-        },
-        render,
+    use vize_l1::markup::{
+        DirectiveNameError, ElementClose, NativeComponent, NativeLintComponent, NativeLintTagKind,
+        NativeLintTagRefusal, SurfaceChild, check_fidelity, render,
     };
 
     fn rendered(owner: &NativeLintComponent<'_>) -> vize_l0::String {

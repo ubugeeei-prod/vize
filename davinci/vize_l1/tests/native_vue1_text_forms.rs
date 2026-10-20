@@ -2,7 +2,7 @@
 
 use vize_l0::Allocator;
 use vize_l1::dialect::vue1::surface;
-use vize_l1::{SurfaceChild, check_fidelity};
+use vize_l1::markup::{SurfaceChild, check_fidelity};
 
 #[test]
 fn original_escaped_expression_forms_keep_lf_ecmascript_trim_and_module_js_profile() {

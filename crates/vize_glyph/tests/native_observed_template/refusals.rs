@@ -6,8 +6,8 @@ use vize_glyph::native_doc::{
     UnsupportedSyntax, observed_native_template_document,
 };
 use vize_l0::{Allocator, Span};
-use vize_l1::SurfaceChild;
 use vize_l1::markup::NativeInterpolationError;
+use vize_l1::markup::SurfaceChild;
 
 use super::{SCRIPTS, selected};
 

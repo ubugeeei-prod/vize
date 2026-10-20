@@ -11,7 +11,7 @@ use super::l2::binding::{is_consumed_spelling, is_v_pre};
 use super::l2::surface::{SurfaceDirective, offset_in, token_range};
 use super::{MarkupAttribute, MarkupElementKind, MarkupNode, MarkupText};
 use crate::ir::ByteRange;
-use vize_l1::{Attribute, Element, SurfaceChild};
+use vize_l1::markup::{Attribute, Element, SurfaceChild};
 use vize_relief::Namespace;
 
 fn wrap<'a>(

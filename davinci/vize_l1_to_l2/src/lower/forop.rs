@@ -6,7 +6,7 @@ use super::features::OpFamily;
 use alloc::vec::Vec as StdVec;
 
 use vize_l0::{Box, String, Vec, cstr};
-use vize_l1::Element;
+use vize_l1::markup::Element;
 
 use vize_l2::expr::{ExprRef, OpaqueReason};
 use vize_l2::op::{ForBinding, ForOp, Namespace, Op, Region};

@@ -2,7 +2,7 @@ use super::*;
 use crate::container::{Vue, vue::DescriptorOptions};
 use crate::embed::{DecodeSegmentKind, SourceError};
 use crate::markup::{NativeRootTextError, NativeTemplateGrammar};
-use crate::{SurfaceChild, SurfaceParseOptions};
+use crate::markup::{SurfaceChild, SurfaceParseOptions};
 use vize_l0::{
     Allocator,
     config::{VueDialect, VueVersion},

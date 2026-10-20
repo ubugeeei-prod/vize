@@ -2,10 +2,10 @@ extern crate std;
 
 use super::super::hooks;
 use super::*;
-use crate::SurfaceParseOptions;
 use crate::container::Vue;
 use crate::embed::syntax::EmbedHole;
-use crate::{SurfaceChild, check_fidelity};
+use crate::markup::SurfaceParseOptions;
+use crate::markup::{SurfaceChild, check_fidelity};
 use oxc_ast::ast::Expression;
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use vize_l0::config::{VueDialect, VueVersion};
