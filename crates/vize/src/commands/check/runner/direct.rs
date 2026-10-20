@@ -62,12 +62,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         &config.type_checker,
     )
     .with_explicit_tsconfig(args.tsconfig.as_deref());
-    let discover_tsconfig = !args.no_config || args.tsconfig.is_some();
-    let effective_tsconfig = if discover_tsconfig {
-        project.tsconfig().map(Path::to_path_buf)
-    } else {
-        None
-    };
+    let effective_tsconfig = project.tsconfig().map(Path::to_path_buf);
     let effective_corsa_path = args.corsa_path.as_ref().map(PathBuf::from).or_else(|| {
         config
             .type_checker
@@ -86,14 +81,8 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     } else {
         &cwd
     };
-    let (invocation_project_root, invocation_tsconfig_path) = if discover_tsconfig {
-        resolve_invocation_program(effective_tsconfig.as_deref(), default_root)
-    } else {
-        (
-            vize_carton::path::canonicalize_non_verbatim(default_root),
-            None,
-        )
-    };
+    let (invocation_project_root, invocation_tsconfig_path) =
+        resolve_invocation_program(effective_tsconfig.as_deref(), default_root);
     super::input_scope::validate_selected_tsconfig(args, invocation_tsconfig_path.as_deref());
     let nuxt_project_root = resolve_nuxt_project_root(
         effective_tsconfig.as_deref(),
@@ -130,7 +119,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let candidates = split_program_candidates(
         collected,
         invocation_tsconfig_path.as_deref(),
-        discover_tsconfig && !args.patterns.is_empty() && effective_tsconfig.is_none(),
+        !args.patterns.is_empty() && effective_tsconfig.is_none(),
         jsx_typecheck,
         &mut tsconfig_input_cache,
         &mut canonical_paths,
@@ -166,7 +155,6 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             &nuxt_project_root,
             &explicit_input_root,
             validate_inputs,
-            discover_tsconfig,
             jsx_typecheck,
             &settings,
             &mut tsconfig_input_cache,

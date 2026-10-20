@@ -21,7 +21,6 @@ pub(super) fn project_graph_allows_js(
 
 pub(super) struct ProgramInputContext<'a> {
     pub(super) tsconfig_path: Option<&'a Path>,
-    pub(super) discover_tsconfig: bool,
     pub(super) explicit: bool,
     pub(super) include_jsx: bool,
     pub(super) files: &'a mut Vec<PathBuf>,
@@ -32,16 +31,12 @@ pub(super) struct ProgramInputContext<'a> {
 }
 
 pub(super) fn filter_for_program(context: ProgramInputContext<'_>) -> Option<PathBuf> {
-    let program_tsconfig_path = if context.discover_tsconfig {
-        resolve_tsconfig_for_files(
-            context.tsconfig_path,
-            context.inputs,
-            context.include_jsx,
-            context.cache,
-        )
-    } else {
-        context.tsconfig_path.map(Path::to_path_buf)
-    };
+    let program_tsconfig_path = resolve_tsconfig_for_files(
+        context.tsconfig_path,
+        context.inputs,
+        context.include_jsx,
+        context.cache,
+    );
     if !context.explicit {
         return program_tsconfig_path;
     }

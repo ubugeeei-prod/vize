@@ -141,7 +141,6 @@ fn prepare_and_execute(
     nuxt_project_root: &Path,
     explicit_input_root: &Path,
     validate_inputs: bool,
-    discover_tsconfig: bool,
     jsx_typecheck: bool,
     settings: &CheckerSettings,
     cache: &mut TsconfigInputCache,
@@ -214,18 +213,12 @@ fn prepare_and_execute(
         import_time += import_start.elapsed();
         package_routes.extend(discovered.package_routes);
     }
-    let project_root = if discover_tsconfig {
-        resolve_project_root(candidate.tsconfig_path.as_deref(), cwd, &candidate.files)
-    } else {
-        resolve::resolve_config_free_project_root(cwd, &candidate.files)
-    };
-    let discovered_tsconfig_path = candidate.tsconfig_path.clone().or_else(|| {
-        if discover_tsconfig {
-            resolve_tsconfig_path(None, cwd, &project_root, &candidate.files)
-        } else {
-            None
-        }
-    });
+    let project_root =
+        resolve_project_root(candidate.tsconfig_path.as_deref(), cwd, &candidate.files);
+    let discovered_tsconfig_path = candidate
+        .tsconfig_path
+        .clone()
+        .or_else(|| resolve_tsconfig_path(None, cwd, &project_root, &candidate.files));
     // A nested selected owner may reject every explicit JavaScript input.
     // Validate its authored chain before the file filter can end the run.
     if let Some(path) = discovered_tsconfig_path.as_deref() {
@@ -233,7 +226,6 @@ fn prepare_and_execute(
     }
     let program_tsconfig_path = filter_for_program(ProgramInputContext {
         tsconfig_path: discovered_tsconfig_path.as_deref(),
-        discover_tsconfig,
         explicit: !args.patterns.is_empty(),
         include_jsx: jsx_typecheck,
         files: &mut candidate.files,
@@ -281,11 +273,8 @@ fn prepare_and_execute(
         package_routes.extend(registered.package_routes);
         explicit_program_declarations = registered.program_declarations;
     }
-    let project_root = if discover_tsconfig {
-        resolve_project_root(program_tsconfig_path.as_deref(), cwd, &candidate.files)
-    } else {
-        resolve::resolve_config_free_project_root(cwd, &candidate.files)
-    };
+    let project_root =
+        resolve_project_root(program_tsconfig_path.as_deref(), cwd, &candidate.files);
     let logical_program_root = logical_program_root.unwrap_or_else(|| project_root.clone());
     resolve::retain_project_files(
         &mut candidate.files,
