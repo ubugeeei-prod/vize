@@ -119,7 +119,7 @@ Vue 2.7・Nuxt 2 への対応は、別途 `legacy` ビルドで有効にする�
 
 ## 実験的なフラットエントリ
 
-モノレポでは、パッケージごとの TypeScript プロジェクトと Vite 設定を使います。`vue.entries` には `basePath`、`files`、`ignores`、`linter` を指定でき、一致する Vue Lint の設定を上書きします。ネイティブの共有設定は Vite オブジェクトの `vue:` に置き、配列を Vite 設定としてエクスポートしないでください。スコープ別のコンパイラ設定が必要な JavaScript 統合では、プラグインのインライン `config` を使います。
+モノレポでは、パッケージごとの TypeScript プロジェクトと Vite 設定を使います。`vue.entries` には `name`、`basePath`、`files`、`ignores`、`linter` を指定でき、一致する Vue Lint の設定を上書きします。ネイティブの共有設定は Vite オブジェクトの `vue:` に置き、配列を Vite 設定としてエクスポートしないでください。スコープ別のコンパイラ設定が必要な JavaScript 統合では、プラグインのインライン `config` を使います。
 
 ```ts
 export default defineConfig({

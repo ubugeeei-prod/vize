@@ -39,7 +39,10 @@ type VueOptionKeys =
   | "lib";
 
 /** Native scopes retain the same authored options inside the Vue namespace. */
-export type VueOptionsEntry = Pick<VizeConfigEntry, "basePath" | "files" | "ignores" | "linter">;
+export type VueOptionsEntry = Pick<
+  VizeConfigEntry,
+  "name" | "basePath" | "files" | "ignores" | "linter"
+>;
 
 /** Section option values reuse the native types rather than a second schema. */
 export type VueOptions = Pick<VizeConfig, VueOptionKeys> & {

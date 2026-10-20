@@ -50,9 +50,9 @@ const vue: VueOptions = {
   entries: [{ files: ["widgets/**/*.vue"], linter: { enabled: false } }],
 };
 const rootVue: RootVueOptions = vue;
-const scope: VueOptionsEntry = { basePath: "src", files: ["**/*.vue"], ignores: ["generated/**"], linter: { enabled: false } };
+const scope: VueOptionsEntry = { name: "application sources", basePath: "src", files: ["**/*.vue"], ignores: ["generated/**"], linter: { enabled: false } };
 const rootScope: RootVueOptionsEntry = scope;
-const scopeKeys: Record<keyof VueOptionsEntry, true> = { basePath: true, files: true, ignores: true, linter: true };
+const scopeKeys: Record<keyof VueOptionsEntry, true> = { name: true, basePath: true, files: true, ignores: true, linter: true };
 const rootScopeKeys: Record<keyof RootVueOptionsEntry, true> = scopeKeys;
 withVue({ entries: [rootScope] }, {});
 const vpConfig: UserConfig = { futureOption: { enabled: true }, server: { host: true } };

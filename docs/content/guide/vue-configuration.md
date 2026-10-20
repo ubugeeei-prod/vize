@@ -75,7 +75,7 @@ export default defineConfig({
 });
 ```
 
-Canonical entries currently accept only `basePath`, `files`, `ignores` and
+Canonical entries currently accept `name`, `basePath`, `files`, `ignores` and
 `linter`. Other sections and `version` remain project-wide; placing them in an
 entry is an error. The CLI's scoped linter policy retains its existing behavior.
 Per-file editor scope support and additional scoped sections remain unfinished.

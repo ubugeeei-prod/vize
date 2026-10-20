@@ -29,7 +29,7 @@ void test("Elk setupSFC host options project in development and both build envir
 
     // Without the private constructor context, these remain invalid native options.
     assert.equal(nativeProjectSource(source), source);
-    await assert.rejects(projectViteConfigSource(source, env), /unknown option script/);
+    await assert.rejects(projectViteConfigSource(source, env), /unknown option "script"/);
     const projected = await projectViteConfigSource(nativeProjectSource(source, "nuxt"), env);
     assert.deepEqual(projected, expected);
     assert.equal(source.vue, host);
@@ -129,7 +129,7 @@ void test("spoofable host flags and all canonical, mixed, unknown or nonplain ob
     nuxtPageMeta: true,
   };
   assert.equal(nativeProjectSource(spoofed), spoofed);
-  await assert.rejects(projectViteConfigSource(spoofed), /unknown option script/);
+  await assert.rejects(projectViteConfigSource(spoofed), /unknown option "script"/);
   for (const vue of [
     {},
     { version: "3" },

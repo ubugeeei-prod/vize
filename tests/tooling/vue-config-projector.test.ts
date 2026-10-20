@@ -237,7 +237,7 @@ test("explicit canonical scoped vectors replace inherited vectors and preserve w
   const retiredScopedFormatter = { files: [], formatter: { tabWidth: 4 } };
   assert.throws(
     () => mergeVueConfigOptions({ entries: [retiredScopedFormatter] }, {}),
-    /unknown option formatter/,
+    /unknown option "formatter"/,
   );
   const entries = [{ files: [] }, { basePath: "old", files: ["*.vue"] }, { ignores: ["old/**"] }];
   const vue = {

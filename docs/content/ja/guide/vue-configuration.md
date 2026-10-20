@@ -76,7 +76,7 @@ export default defineConfig({
 });
 ```
 
-`vue.entries` の各エントリに指定できるのは、現在 `basePath`、`files`、`ignores`、`linter` だけです。
+`vue.entries` の各エントリには、現在 `name`、`basePath`、`files`、`ignores`、`linter` を指定できます。
 ほかのセクションと `version` はプロジェクト全体に指定し、エントリに置くとエラーになります。
 CLI のスコープ別の lint は従来どおり動作します。エディターでのファイル単位のスコープ適用と、
 ほかのセクションのスコープ対応は未完了です。

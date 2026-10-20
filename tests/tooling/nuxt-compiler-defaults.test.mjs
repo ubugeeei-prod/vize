@@ -101,7 +101,7 @@ await test("the current Nuxt probe carries every authored scoped compiler policy
   // native canonical schema must continue to reject unsupported compiler scopes.
   await assert.rejects(
     projectViteConfigSource({ vue: originalOptions.config }),
-    /vue\.entries\[0\]: unknown option compiler/u,
+    /vue\.entries\[0\]: unknown option "compiler"/u,
   );
   assert.deepEqual(original, frozen);
   assert.deepEqual(bytes("vize.config.json.txt"), frozen);
