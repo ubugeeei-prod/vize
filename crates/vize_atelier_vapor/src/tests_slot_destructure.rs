@@ -156,18 +156,21 @@ fn an_array_loop_value_with_a_rest_element_slices_the_item() {
 #[test]
 fn annotated_loop_aliases_bind_their_names() {
     let source = r#"<span v-for="(item: string, index?: number) in data" :key="item" @click="go(item, index)">{{ item }}{{ index }}</span>"#;
+    // The key callback is plain JavaScript, like upstream's.
+    let expected = r#"import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, on as _on, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';
+const t0 = _template("<span>  </span>")
+
+export function render(_ctx) {
+  const n0 = _createFor(() => (_ctx.data), (_for_item0, _for_key0) => {
+    const n2 = t0()
+    const x2 = _txt(n2)
+    _on(n2, "click", $event => (_ctx.go(_for_item0.value, _for_key0.value)))
+    _renderEffect(() => _setText(x2, _toDisplayString(_for_item0.value) + _toDisplayString(_for_key0.value)))
+    return n2
+  }, (item, index) => (item), 8 /* IS_SINGLE_NODE */)
+  return n0
+}"#;
     for retained in [false, true] {
-        let code = compile(source, retained);
-        assert!(
-            code.contains("_toDisplayString(_for_item0.value) + _toDisplayString(_for_key0.value)"),
-            "{code}"
-        );
-        assert!(
-            code.contains("_ctx.go(_for_item0.value, _for_key0.value)"),
-            "{code}"
-        );
-        // The key callback is plain JavaScript, like upstream's.
-        assert!(code.contains("(item, index) => (item)"), "{code}");
-        assert!(!code.contains("_ctx.item"), "{code}");
+        assert_eq!(compile(source, retained).trim_end(), expected);
     }
 }
