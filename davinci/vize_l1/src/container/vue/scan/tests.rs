@@ -31,7 +31,7 @@ fn vectorized_template_scan_matches_bytewise_boundaries() {
             for third in tokens {
                 let source = format!("<template>{first}{second}{third}</template>");
                 assert_eq!(
-                    find_template_close(&arena, &source, 10),
+                    find_template_close(&source, 10),
                     bytewise_template_close(&arena, &source, 10),
                     "{source}"
                 );
@@ -54,13 +54,12 @@ fn boundary_only_open_tag_scan_keeps_spelling_and_rejects_malformed_attributes()
         "<div 雪=🌸>",
     ] {
         let captured = read_open(&arena, source, 0);
-        let boundary = read_open_with::<false>(&arena, source, 0);
+        let boundary = read_open_boundary(source, 0, |_| {});
         match (captured, boundary) {
             (Ok(Some(captured)), Ok(Some(boundary))) => {
                 assert_eq!(captured.name, boundary.name);
                 assert_eq!(captured.end, boundary.end);
                 assert_eq!(captured.self_closing, boundary.self_closing);
-                assert!(boundary.attrs.is_empty());
             }
             (Ok(None), Ok(None)) | (Err(()), Err(())) => {}
             _ => panic!("boundary/capture disagreement: {source}"),

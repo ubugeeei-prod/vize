@@ -14,9 +14,10 @@ mod scan;
 pub use descriptor::{
     AdmittedDescriptor, DescriptorIssue, DescriptorIssueCode, DescriptorObservation,
     DescriptorOptions, DescriptorRefusal, NativeTemplateFrameNameRefusal, NativeTemplateFrameNames,
-    ScriptRole, ScriptView, StyleView, TemplateView, Vue1DescriptorObservation,
-    Vue1DescriptorRefusal, Vue1TemplateView, Vue2DescriptorExpressionPool,
-    Vue2DescriptorObservation, Vue2DescriptorRefusal, Vue2RetainedTemplateView, Vue2TemplateView,
+    ScriptRole, ScriptView, StyleView, TemplateOnlyDescriptor, TemplateView,
+    Vue1DescriptorObservation, Vue1DescriptorRefusal, Vue1TemplateView,
+    Vue2DescriptorExpressionPool, Vue2DescriptorObservation, Vue2DescriptorRefusal,
+    Vue2RetainedTemplateView, Vue2TemplateView,
 };
 
 #[cfg(test)]
@@ -33,6 +34,12 @@ impl ContainerFormat for Vue {
 }
 
 impl Vue {
+    /// Observe a single attribute-free template with default Vue policy.
+    /// The original boundary scanner checks the complete source without an arena.
+    pub fn observe_template_only<'a>(&self, source: &'a str) -> Option<TemplateOnlyDescriptor<'a>> {
+        descriptor::observe_template_only(source)
+    }
+
     /// Observe original blocks and descriptor policy in the same splitter pass.
     /// Public capture records cannot be converted into an admitted descriptor.
     pub fn observe_descriptor<'a>(
@@ -120,7 +127,7 @@ fn split_with<'a>(
         let (content_end, closing, uncertain) = if open.self_closing {
             (open.end, None, false)
         } else if open.name.eq_ignore_ascii_case("template") {
-            find_template_close(allocator, source, open.end)
+            find_template_close(source, open.end)
         } else {
             find_close(bytes, open.end, open.name).map_or((bytes.len(), None, false), |close| {
                 (close.start(), Some(close), false)

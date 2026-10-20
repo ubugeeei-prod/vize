@@ -1,6 +1,6 @@
 //! Preserve the public descriptor while admitting a bounded native container.
 //!
-//! Template-only observations can supply their checked original block geometry.
+//! Template-only observations supply checked original block geometry without an arena.
 //! Other input families keep the existing parser, including all its diagnostics.
 //! A compatibility descriptor grants no native Component/File or compiler credit.
 //!

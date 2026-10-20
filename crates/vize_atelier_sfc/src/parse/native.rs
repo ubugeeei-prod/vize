@@ -1,51 +1,18 @@
 //! Project only geometry admitted by the canonical original Vue descriptor.
 
-use vize_l0::{
-    config::{VueDialect, VueVersion},
-    pool,
-};
-use vize_l1::{
-    container::{Vue, vue::DescriptorOptions},
-    markup::SurfaceParseOptions,
-};
+use vize_l1::container::Vue;
 
 use crate::types::{BlockLocation, PadOption, SfcParseOptions};
 
 pub(super) fn try_parse(source: &str, options: &SfcParseOptions) -> Option<BlockLocation> {
-    // Rejection only: avoid observing ordinary script/style inputs twice. The
-    // original descriptor below remains the sole authority for admission.
-    let envelope = source.trim_ascii();
-    if !envelope.starts_with("<template>")
-        || !envelope.ends_with("</template>")
-        || options.pad != PadOption::None
+    if options.pad != PadOption::None
         || options.ignore_empty
         || options.template_parse_options.is_some()
     {
         return None;
     }
-    let arena = pool::acquire();
-    let observed = Vue.observe_descriptor(
-        &arena,
-        source,
-        DescriptorOptions {
-            version: VueVersion::V3,
-            dialect: VueDialect::Vue,
-            template: SurfaceParseOptions::default(),
-        },
-    );
-    let admitted = observed.admitted().ok()?;
-    let [block] = observed.container().blocks.as_slice() else {
-        return None;
-    };
-    if !block.attrs.is_empty()
-        || admitted.ordinary().is_some()
-        || admitted.setup().is_some()
-        || admitted.styles().len() != 0
-    {
-        return None;
-    }
-    let template = admitted.template()?;
-    let span = template.block().span();
+    let observed = Vue.observe_template_only(source)?;
+    let span = observed.block().span();
     // The returned public value borrows the caller's source, never arena data.
     // All coordinates come from this exact source's genuine original owner.
     let start = span.start as usize;
@@ -61,8 +28,8 @@ pub(super) fn try_parse(source: &str, options: &SfcParseOptions) -> Option<Block
     Some(BlockLocation {
         start,
         end,
-        tag_start: block.open_tag.start as usize,
-        tag_end: block.close_tag?.end as usize,
+        tag_start: observed.open_tag().start as usize,
+        tag_end: observed.close_tag().end as usize,
         start_line,
         start_column,
         end_line,

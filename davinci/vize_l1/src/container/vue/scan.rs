@@ -39,14 +39,27 @@ pub(super) fn read_open<'a>(
     source: &'a str,
     at: usize,
 ) -> Result<Option<Open<'a>>, ()> {
-    read_open_with::<true>(allocator, source, at)
+    let mut attrs = Vec::new_in(&allocator);
+    let boundary = read_open_boundary(source, at, |attr| attrs.push(attr))?;
+    Ok(boundary.map(|boundary| Open {
+        name: boundary.name,
+        end: boundary.end,
+        attrs,
+        self_closing: boundary.self_closing,
+    }))
 }
 
-fn read_open_with<'a, const ATTRS: bool>(
-    allocator: &'a Allocator,
+struct OpenBoundary<'a> {
+    name: &'a str,
+    end: usize,
+    self_closing: bool,
+}
+
+fn read_open_boundary<'a>(
     source: &'a str,
     at: usize,
-) -> Result<Option<Open<'a>>, ()> {
+    mut attribute: impl FnMut(BlockAttr<'a>),
+) -> Result<Option<OpenBoundary<'a>>, ()> {
     let bytes = source.as_bytes();
     if bytes.get(at) != Some(&b'<') || !bytes.get(at + 1).is_some_and(u8::is_ascii_alphabetic) {
         return Ok(None);
@@ -56,7 +69,6 @@ fn read_open_with<'a, const ATTRS: bool>(
         pos += 1;
     }
     let name = source.get(at + 1..pos).ok_or(())?;
-    let mut attrs = Vec::new_in(&allocator);
     loop {
         while bytes
             .get(pos)
@@ -66,18 +78,16 @@ fn read_open_with<'a, const ATTRS: bool>(
         }
         match bytes.get(pos) {
             Some(b'>') => {
-                return Ok(Some(Open {
+                return Ok(Some(OpenBoundary {
                     name,
                     end: pos + 1,
-                    attrs,
                     self_closing: false,
                 }));
             }
             Some(b'/') if bytes.get(pos + 1) == Some(&b'>') => {
-                return Ok(Some(Open {
+                return Ok(Some(OpenBoundary {
                     name,
                     end: pos + 2,
-                    attrs,
                     self_closing: true,
                 }));
             }
@@ -134,19 +144,16 @@ fn read_open_with<'a, const ATTRS: bool>(
         } else {
             None
         };
-        if ATTRS {
-            attrs.push(BlockAttr {
-                name,
-                value,
-                span: Span::new(start as u32, pos as u32),
-            });
-        }
+        attribute(BlockAttr {
+            name,
+            value,
+            span: Span::new(start as u32, pos as u32),
+        });
     }
 }
 
-pub(super) fn find_template_close<'a>(
-    allocator: &'a Allocator,
-    source: &'a str,
+pub(super) fn find_template_close(
+    source: &str,
     from: usize,
 ) -> (usize, Option<MatchedClose>, bool) {
     let bytes = source.as_bytes();
@@ -189,7 +196,7 @@ pub(super) fn find_template_close<'a>(
         }
         // Nested tags only contribute boundary geometry. Parse the same
         // spelling and quoted values without allocating discarded attributes.
-        if let Ok(Some(open)) = read_open_with::<false>(allocator, source, pos) {
+        if let Ok(Some(open)) = read_open_boundary(source, pos, |_| {}) {
             if open.name.eq_ignore_ascii_case("template") && !open.self_closing {
                 depth += 1;
             }

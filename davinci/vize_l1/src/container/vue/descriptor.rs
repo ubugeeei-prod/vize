@@ -330,3 +330,54 @@ pub(super) fn observe<'a>(
         styles: state.styles,
     }
 }
+
+/// Original-source geometry for the bounded, default-policy template-only SFC.
+/// No public capture or caller coordinates can construct this owner. It grants
+/// no template grammar, Component/File, or compiler acceptance capability.
+///
+/// ```compile_fail
+/// use vize_l1::container::vue::TemplateOnlyDescriptor;
+/// let forged = TemplateOnlyDescriptor { block: todo!(), opening: todo!(), closing: todo!() };
+/// ```
+#[derive(Debug)]
+pub struct TemplateOnlyDescriptor<'a> {
+    block: SourceBlock<'a>,
+    opening: Span,
+    closing: Span,
+}
+
+impl<'a> TemplateOnlyDescriptor<'a> {
+    pub fn block(&self) -> SourceBlock<'a> {
+        self.block
+    }
+    pub fn open_tag(&self) -> Span {
+        self.opening
+    }
+    pub fn close_tag(&self) -> Span {
+        self.closing
+    }
+}
+
+pub(super) fn observe_template_only(source: &str) -> Option<TemplateOnlyDescriptor<'_>> {
+    let root = SourceRoot::new(source).ok()?;
+    let envelope = source.trim_ascii();
+    if !envelope.starts_with("<template>") || !envelope.ends_with("</template>") {
+        return None;
+    }
+    let start = source.len() - source.trim_ascii_start().len();
+    let content_start = start + "<template>".len();
+    let (content_end, closing, uncertain) = super::scan::find_template_close(source, content_start);
+    let closing = closing?;
+    if uncertain || !source.get(closing.end()..)?.trim_ascii().is_empty() {
+        return None;
+    }
+    let content = source.get(content_start..content_end)?;
+    Some(TemplateOnlyDescriptor {
+        block: root.block(content, content_start as u32).ok()?,
+        opening: Span::new(start as u32, content_start as u32),
+        closing: Span::new(closing.start() as u32, closing.end() as u32),
+    })
+}
+
+#[cfg(test)]
+mod template_only_tests;
