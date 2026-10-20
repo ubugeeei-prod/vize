@@ -99,12 +99,20 @@ fn ascii_whitespace_keeps_between_element_spans_in_all_modes() {
 /// Child list of `root.children[0]` as (kind, text) pairs; interpolations are
 /// reported by their expression source.
 fn vue2_preserve_children(source: &str) -> std::vec::Vec<(&'static str, std::string::String)> {
+    vue2_preserve_children_with_comments(source, true)
+}
+
+fn vue2_preserve_children_with_comments(
+    source: &str,
+    comments: bool,
+) -> std::vec::Vec<(&'static str, std::string::String)> {
     let allocator = Allocator::new();
     let (root, errors) = crate::parser::with_vue2_preserve_whitespace(|| {
         crate::parse_with_options(
             &allocator,
             source,
             ParserOptions {
+                comments,
                 is_pre_tag: |tag| tag == "pre",
                 ..ParserOptions::default()
             },
@@ -210,6 +218,50 @@ fn vue2_preserve_whitespace_only_runs_and_pre() {
         [("text", "  a\n  "), ("element", "b"), ("text", "\n")],
         "<pre> keeps its content apart from the ignored first newline"
     );
+}
+
+#[test]
+fn vue2_preserve_keeps_removed_comments_as_text_run_boundaries() {
+    let after_text = vue2_preserve_children_with_comments(
+        "<p>\n  {{ a }}\n  <!-- explain -->\n  <b>x</b>\n</p>",
+        false,
+    );
+    let kinds: std::vec::Vec<_> = after_text
+        .iter()
+        .map(|(kind, text)| (*kind, text.as_str()))
+        .collect();
+    assert_eq!(
+        kinds,
+        [
+            ("text", "\n  "),
+            ("interp", "{{ a }}"),
+            ("text", "\n  "),
+            ("text", " "),
+            ("element", "b"),
+        ]
+    );
+
+    let comment_first = vue2_preserve_children_with_comments(
+        "<span>\n  <!-- keep on its own line -->\n  {{ kind }}</span>",
+        false,
+    );
+    let kinds: std::vec::Vec<_> = comment_first
+        .iter()
+        .map(|(kind, text)| (*kind, text.as_str()))
+        .collect();
+    assert_eq!(kinds, [("text", "\n  "), ("interp", "{{ kind }}")]);
+}
+
+#[test]
+fn vue2_preserve_drops_default_slot_tail_before_named_templates() {
+    let children = vue2_preserve_children(
+        "<MyCard>\n  <span>body</span>\n  <template #footer>f</template>\n</MyCard>",
+    );
+    let kinds: std::vec::Vec<_> = children
+        .iter()
+        .map(|(kind, text)| (*kind, text.as_str()))
+        .collect();
+    assert_eq!(kinds, [("element", "span"), ("element", "template")]);
 }
 
 #[test]

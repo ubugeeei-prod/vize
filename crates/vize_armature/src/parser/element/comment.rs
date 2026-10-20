@@ -50,6 +50,9 @@ impl<'a> Parser<'a> {
         // Always preserve directive comments (even when options.comments = false)
         // so they can be explicitly handled by codegen and linter
         if directive.is_none() && !self.options.comments {
+            if super::super::current_vue2_preserve() {
+                self.split_text_after_removed_comment = true;
+            }
             return;
         }
 

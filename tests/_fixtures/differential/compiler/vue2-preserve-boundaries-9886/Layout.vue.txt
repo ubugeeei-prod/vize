@@ -1,0 +1,21 @@
+<template>
+  <section>
+    <p class="note">
+      {{ a }}
+      <!-- explain b -->
+      <b>x</b>
+    </p>
+    <span class="label">
+      <!-- keep on its own line -->
+      {{ kind }}</span
+    >
+    <MyCard>
+      <span>body</span>
+      <template #footer>f</template>
+    </MyCard>
+  </section>
+</template>
+<script setup>
+const a = "a";
+const kind = "kind";
+</script>

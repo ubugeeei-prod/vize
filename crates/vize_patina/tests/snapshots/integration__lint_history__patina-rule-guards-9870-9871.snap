@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "patina-rule-guards-9870-9871",
+    history: "04541e20047f0cc3bf30bb219e127d59fe8ad44b",
+    source: "<script setup lang=\"ts\">\nimport { useAttrs } from \"vue\";\n\ndefineOptions({ inheritAttrs: false });\nconst attrs = useAttrs();\nfunction onClick(): void {}\n</script>\n\n<template>\n  <button type=\"button\" class=\"base-button\" @click=\"onClick\" v-bind=\"attrs\">\n    <slot />\n  </button>\n</template>\n",
+    filename: "BaseButton.vue",
+    entry: "sfc",
+    rule: "vue/attribute-order",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "BaseButton.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "BaseButton.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

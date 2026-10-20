@@ -142,7 +142,10 @@ fn run_serve(args: ServeArgs) {
     match status {
         Ok(status) => {
             if !status.success() {
-                eprintln!("vize musea: Vite exited with status {}", status);
+                match status.code() {
+                    Some(code) => eprintln!("vize musea: Vite exited with status {}", code),
+                    None => eprintln!("vize musea: Vite terminated without an exit status"),
+                }
             }
             std::process::exit(status.code().unwrap_or(1));
         }

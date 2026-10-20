@@ -186,5 +186,9 @@
   "linter/current-api/shared-rule-options-9876": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__shared-rule-options-9876.snap",
     "sha256": "e09030554f0c1b0758a6106dec91268c9b61339c6c77ceeaef4dffcd71fb245f"
+  },
+  "linter/current-api/patina-rule-guards-9870-9871": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__patina-rule-guards-9870-9871.snap",
+    "sha256": "8c9dbcb06f8545e12b78d8b7d24c142aa486db42fc103bea1310b82e187fcfbe"
   }
 }

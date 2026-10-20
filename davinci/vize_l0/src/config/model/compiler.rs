@@ -86,6 +86,8 @@ pub(crate) struct RawCompilerCompatibilityConfig {
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(default, rename_all = "camelCase")]
 pub(crate) struct RawCompilerConfig {
+    /// Explicit SFC SSR mode switch from `compiler.ssr`.
+    pub(crate) ssr: Option<bool>,
     /// Explicit SFC Vapor mode switch from `compiler.vapor`.
     pub(crate) vapor: Option<bool>,
     pub(crate) template_syntax: Option<RawTemplateSyntaxConfig>,

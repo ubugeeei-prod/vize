@@ -37,6 +37,51 @@ fn configured_vue2_preserve_reaches_ssr_and_vapor() {
     }
 }
 
+#[test]
+fn vue2_preserve_keeps_removed_comment_and_named_slot_boundaries() {
+    let comment_in_text = compiler_code_for(
+        "<template><p>\n  {{ a }}\n  <!-- explain -->\n  <b>x</b>\n</p></template>",
+        false,
+        false,
+    );
+    assert_eq!(
+        interpolated_runs(&comment_in_text),
+        [r#""\n  " + _toDisplayString(_ctx.a) + "\n  ""#.to_owned()],
+        "{comment_in_text}",
+    );
+    let comment_first = compiler_code_for(
+        "<template><span>\n  <!-- keep -->\n  {{ kind }}</span></template>",
+        false,
+        false,
+    );
+    assert_eq!(
+        interpolated_runs(&comment_first),
+        [r#""\n  " + _toDisplayString(_ctx.kind)"#.to_owned()],
+        "{comment_first}",
+    );
+    assert_eq!(
+        comment_first.matches(r#"\n  \n  "#).count(),
+        0,
+        "{comment_first}",
+    );
+
+    let slot_tail = compiler_code_for(
+        "<template><MyCard>\n  <span>body</span>\n  <template #footer>f</template>\n</MyCard></template>",
+        false,
+        false,
+    );
+    let default = slot_tail
+        .split("default: _withCtx(() => [")
+        .nth(1)
+        .and_then(|tail| tail.split("]),").next())
+        .expect("default slot body");
+    assert_eq!(
+        default.matches(r#"_createTextVNode(" ")"#).count(),
+        0,
+        "{slot_tail}",
+    );
+}
+
 fn vue2_interpolated_runs() -> Vec<String> {
     VUE27_RENDER
         .split("_vm._v(")
@@ -141,8 +186,12 @@ fn build_with(ssr: bool, vapor: bool) -> String {
 }
 
 fn compiler_code(ssr: bool, vapor: bool) -> String {
+    compiler_code_for(SOURCE, ssr, vapor)
+}
+
+fn compiler_code_for(source: &str, ssr: bool, vapor: bool) -> String {
     let descriptor = parse_sfc(
-        SOURCE,
+        source,
         SfcParseOptions {
             filename: "App.vue".into(),
             ..Default::default()

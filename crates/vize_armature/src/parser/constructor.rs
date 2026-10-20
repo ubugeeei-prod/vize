@@ -68,6 +68,7 @@ impl<'a> Parser<'a> {
             template_syntax,
             interner: Interner::new(allocator),
             pending_text: None,
+            split_text_after_removed_comment: false,
             stack: Vec::new_in(&allocator),
             flattened_tags: Vec::new_in(&allocator),
             implicitly_closed_tags: Vec::new_in(&allocator),

@@ -55,6 +55,18 @@ fn document_projects_only_documented_compiler_whitespace_modes() {
 }
 
 #[test]
+fn document_projects_compiler_ssr() {
+    for (json, expected) in [
+        (r#"{}"#, None),
+        (r#"{"compiler":{"ssr":true}}"#, Some(true)),
+        (r#"{"compiler":{"ssr":false}}"#, Some(false)),
+    ] {
+        let document: ConfigDocument = serde_json::from_str(json).unwrap();
+        assert_eq!(document.compiler_ssr(), expected, "{json}");
+    }
+}
+
+#[test]
 fn document_ignores_non_string_whitespace_without_losing_other_compiler_fields() {
     for value in ["1e400", "-1e400", "[1e400]", "{\"nested\":[1e400]}"] {
         let json = format!(r#"{{"compiler":{{"whitespace":{value},"vapor":true}}}}"#);

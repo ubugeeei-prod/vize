@@ -160,6 +160,43 @@
       }
     },
     {
+      "id": "compiler/sfc/vue2-preserve-boundaries-9886",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "vue2-preserve-boundaries-9886",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "db0377c5904376566468808c49189266fbeeea25fb6305c2849395c761e882f4",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "vue2-preserve-boundaries-9886/module.expected.txt",
+        "sha256": "0224e97f4f870c7b6417e8467f94976fa79009dc937672fe59e9124f19c58dd8",
+        "source": "crates/vize/tests/build_vue2_preserve_cli.rs:vue2_preserve_keeps_removed_comment_and_named_slot_boundaries"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); parser and codegen remain legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/package-import-prop-type-9894",
       "state": "active",
       "targets": ["ssr"],

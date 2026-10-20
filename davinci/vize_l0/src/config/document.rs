@@ -130,6 +130,11 @@ impl ConfigDocument {
             .or_else(|| self.0.experimentals.vapor_enabled().then_some(true))
     }
 
+    /// Stable SSR selection when explicitly supplied.
+    pub fn compiler_ssr(&self) -> Option<bool> {
+        self.0.compiler.ssr
+    }
+
     /// Consume the declared custom-element patterns without cloning them.
     pub fn into_compiler_custom_elements(self) -> Vec<crate::String> {
         self.0.compiler.custom_elements
