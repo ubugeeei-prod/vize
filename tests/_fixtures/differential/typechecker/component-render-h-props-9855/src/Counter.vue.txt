@@ -1,0 +1,1 @@
+<script setup lang="ts">\ndefineProps<{ count: number; label?: string }>();\n</script>\n<template><span>{{ label }}: {{ count }}</span></template>\n

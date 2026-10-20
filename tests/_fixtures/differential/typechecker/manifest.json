@@ -1371,6 +1371,7 @@
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
       },
+<<<<<<< HEAD
       "pack": "allow-importing-ts-extensions-9890",
       "case": "declaration-generated-routes",
       "test": "authored_ts_extensions_report_ts5097_by_default",
@@ -1908,6 +1909,43 @@
           "file": "src/Parent.vue",
           "path": "runtime-props-report-10100-10101/src/Parent.vue.txt",
           "sha256": "aade42cac2d727457bb3b897a58a831f92a867524e3bcc74462901d529429074"
+        }
+      ]
+    },
+    {
+      "id": "typechecker/component-render-h-props-9855/missing-and-wrong-props",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "component-render-h-props-9855",
+      "case": "missing-and-wrong-props",
+      "test": "imported_sfc_h_calls_check_missing_and_wrong_props",
+      "regressionCommit": "f15ca234a4bdd73bde9caea07e652f3a345eb342",
+      "sourceRevision": "f15ca234a4bdd73bde9caea07e652f3a345eb342",
+      "packReference": {
+        "path": "component-render-h-props-9855/cases.json",
+        "sha256": "19f970ede08c19240288ba143cbcacc669db89bf5a2e68f2a987b5da7764c547"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "component-render-h-props-9855/tsconfig.json.txt",
+          "sha256": "e36b280dce185f4be85cbff1838c0ee06d8d7a46b38b3e63df995c0decd7b13b"
+        },
+        {
+          "file": "src/Counter.vue",
+          "path": "component-render-h-props-9855/src/Counter.vue.txt",
+          "sha256": "cb225908eac39ef24e7945f539d892df9ca8744b4069779ee4330f590830bf0e"
+        },
+        {
+          "file": "src/render.ts",
+          "path": "component-render-h-props-9855/src/render.ts.txt",
+          "sha256": "18fd5f567d31dc70658810cf5cbfb53f148925a35fd9ab6433863e03305be10f"
         }
       ]
     }

@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 9855,
+  "regressionCommit": "f15ca234a4bdd73bde9caea07e652f3a345eb342",
+  "sourceRevision": "f15ca234a4bdd73bde9caea07e652f3a345eb342",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "missing-and-wrong-props",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Counter.vue",
+          "source": "src/Counter.vue.txt"
+        },
+        {
+          "file": "src/render.ts",
+          "source": "src/render.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+import { h } from "vue";\nimport Counter from "./Counter.vue";\n\nexport const missing = h(Counter, {});\nexport const wrong = h(Counter, { count: "three" });\nexport const valid = h(Counter, { count: 3 });\n
