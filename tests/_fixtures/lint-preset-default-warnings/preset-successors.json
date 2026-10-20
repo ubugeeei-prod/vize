@@ -625,13 +625,13 @@
       "sha256": "3d124f479afe964ce8955fbeeb951ed6e4b1348a7ca0a156f17179694ffd880b"
     },
     "after": {
-      "bytes": 8786,
-      "sha256": "75a1702fd5e337286b4992fa6ab0c602eca940d07db38aaa3cca83a5ae3bdca0"
+      "bytes": 8816,
+      "sha256": "fe72fddccbd1df7a1cd3d6def30172ab4ea69d5767dabb18943b83215be848df"
     },
     "hunks": [
       {
         "before": "        registry.register(Box::new(crate::rules::vue::ValidVSlot));",
-        "after": "        // Vue's parser records dots in static slot names as directive\n        // modifiers. Component libraries intentionally use names such as\n        // `item.name`, so the default preset keeps the historical behavior\n        // of accepting them. Projects that need the stricter eslint-plugin-vue\n        // policy can still set `allowModifiers: false` explicitly.\n        registry.register(Box::new(crate::rules::vue::ValidVSlot::allowing_modifiers()));"
+        "after": "        // Vue's parser records dots in static slot names as directive\n        // modifiers. Component libraries intentionally use names such as\n        // `item.name`, so the default preset keeps the historical behavior\n        // of accepting them. Projects that need the stricter eslint-plugin-vue\n        // policy can still set `allowModifiers: false` explicitly.\n        registry.register(Box::new(\n            crate::rules::vue::ValidVSlot::allowing_static_name_dots(),\n        ));"
       }
     ]
   }
