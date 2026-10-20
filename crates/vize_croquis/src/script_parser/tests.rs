@@ -1571,7 +1571,8 @@ const topLevelItems = items
 
 function labelAt(index: number): string {
   const list = items
-  return list[index] ?? ''
+  const castList = items as string[]
+  return list[index] ?? castList[index] ?? ''
 }
 
 const range = computed(() => {
