@@ -113,7 +113,9 @@ await test("the JSR public wait survives server processing and proves immutable 
       attempts: 2,
       intervalMs: 30_000,
       readMetadata: async () => metadata.shift(),
-      sleep: async (milliseconds) => sleeps.push(milliseconds),
+      sleep: async (milliseconds) => {
+        sleeps.push(milliseconds);
+      },
     }),
     "2026-10-20T15:55:00Z",
   );
