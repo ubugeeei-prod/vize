@@ -54,6 +54,7 @@ const checkFixtures = [
   "naive-ui",
   "npmx.dev",
   "nuxt-ui",
+  "openvue",
   "primevue",
   "reka-ui",
   "voicevox",

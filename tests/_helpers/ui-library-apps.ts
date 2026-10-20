@@ -36,16 +36,25 @@ function componentLibraryApp(
   };
 }
 
+const primeVueLayoutPatterns = [
+  "packages/primevue/src/**/*.vue",
+  "packages/icons/src/**/*.vue",
+  "packages/forms/src/**/*.vue",
+  "apps/showcase/**/*.vue",
+  "apps/volt/**/*.vue",
+];
+
 export const primeVueApp = componentLibraryApp(
   "primevue",
   "primevue",
-  [
-    "packages/primevue/src/**/*.vue",
-    "packages/icons/src/**/*.vue",
-    "packages/forms/src/**/*.vue",
-    "apps/showcase/**/*.vue",
-    "apps/volt/**/*.vue",
-  ],
+  [...primeVueLayoutPatterns],
+  "packages/primevue/tsconfig.json",
+);
+
+export const openVueApp = componentLibraryApp(
+  "openvue",
+  "openvue",
+  [...primeVueLayoutPatterns],
   "packages/primevue/tsconfig.json",
 );
 
