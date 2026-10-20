@@ -25,7 +25,11 @@ const fluent = defineConfig(Promise.resolve({ plugins: [vue()] })).withVue({
 });
 fluent.withVue({ compiler: { sourceMap: true } });
 defineConfig(async () => ({ plugins: [vue()] })).withVue({ version: "3" });
-defineConfig({}).withVue({
+defineConfig({
+  server: { port: 3000 },
+  lint: { rules: { "no-debugger": "error" }, ignorePatterns: ["dist/**"] },
+  fmt: { ignorePatterns: ["dist/**"] },
+}).withVue({
   compile: { sourceMap: true },
   typeCheck: { strict: true },
   lint: defineVizeLintConfig(...flatConfigs.recommended, ...flatConfigs.ecosystem, {

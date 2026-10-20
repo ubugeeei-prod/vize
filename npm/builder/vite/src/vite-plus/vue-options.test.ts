@@ -161,7 +161,7 @@ void test("action options route flat lint to Vite+ and native settings to the lo
     },
     integration,
   );
-  assert.equal(result.lint, hostLint, "withVue lint takes ownership of the host Vite+ block");
+  assert.deepEqual(result.lint, hostLint, "the Vue flat config overlays the root Vite+ block");
   assert.equal(metadata.options.plugin, false);
   assert.equal(metadata.options.tasks, false);
   assert.equal(metadata.options.lint, false);
@@ -195,6 +195,52 @@ void test("action options route flat lint to Vite+ and native settings to the lo
     return 0;
   });
   assert.deepEqual(calls, [["vp", "lint", "src"]], "the host bridge owns the native lint pass");
+});
+
+void test("the documented root and Vue lint layers compose without duplicate native work", async () => {
+  const { vp: result, metadata } = normalizeConfig(
+    {
+      server: { port: 3000 },
+      lint: {
+        rules: { "no-debugger": "error" },
+        ignorePatterns: ["dist/**"],
+      },
+      fmt: { ignorePatterns: ["dist/**"] },
+      vue: {
+        lint: {
+          jsPlugins: ["oxlint-plugin-vize"],
+          plugins: ["vue"],
+          rules: { "no-console": "warn" },
+          settings: { vize: { preset: "recommended" } },
+          ignorePatterns: ["dist/**"],
+        },
+        fmt: { singleQuote: true },
+        entries: [
+          {
+            files: ["src/admin/**/*.vue"],
+            linter: { rules: { "vue/no-v-html": "off" } },
+          },
+        ],
+      },
+    },
+    integration,
+  );
+  assert.deepEqual(result.lint, {
+    jsPlugins: ["oxlint-plugin-vize"],
+    plugins: ["vue"],
+    rules: { "no-debugger": "error", "no-console": "warn" },
+    settings: { vize: { preset: "recommended" } },
+    ignorePatterns: ["dist/**"],
+  });
+  assert.deepEqual(result.fmt, { ignorePatterns: ["dist/**"] });
+  assert.equal(metadata.options.lint, false, "Vite+ owns the one lint pass");
+  assert.equal(metadata.options.fmt, true);
+  const native = await resolveConfigExport(metadata.config!, env);
+  assert.deepEqual(native.linter, { preset: "recommended" });
+  assert.deepEqual(native.formatter, { singleQuote: true });
+  assert.deepEqual(native.entries?.at(-1)?.linter, {
+    rules: { "vue/no-v-html": "off" },
+  });
 });
 
 void test("fluent Vue settings merge native leaves and replace canonical arrays immutably", async () => {

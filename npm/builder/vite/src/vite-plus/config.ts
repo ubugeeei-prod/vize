@@ -53,10 +53,14 @@ export function normalizeConfig(source: VueConfigObject, integration: VizePlusOp
   const { compiler: compilerOption, typecheck, lint, fmt, vue: _vue, ...rest } = source;
   const vue = vueConfigOptions(source);
   const hostLint = vue?.lint;
-  const hostVizeSettings = hostLint?.settings.vize;
   const configDirectory = process.cwd();
   const { vue: nativeLint, ...oxlint } = lint ?? {};
   const { vue: nativeFmt, ...oxfmt } = fmt ?? {};
+  const resolvedHostLint = composeHostLint(
+    (lint ? oxlint : undefined) as UserConfig["lint"],
+    hostLint as UserConfig["lint"],
+  );
+  const hostVizeSettings = recordValue(resolvedHostLint?.settings?.vize);
   const lintConfig = nativeLint;
   const compiler = vueCompiler(compilerOption ?? integration.plugin ?? {}, vue);
   const options: VizePlusOptions = {
@@ -113,10 +117,50 @@ export function normalizeConfig(source: VueConfigObject, integration: VizePlusOp
     // Both Vite and Vite+ accept named plugins, but their hook types may be
     // instantiated from different Vite packages in a consumer's dependency tree.
     plugins: rest.plugins as UserConfig["plugins"],
-    lint: (hostLint ?? (lint ? oxlint : undefined)) as UserConfig["lint"],
+    lint: resolvedHostLint,
     fmt: fmt ? oxfmt : undefined,
   };
   return { vp, metadata, compiler };
+}
+
+/** Compose the plain Vite+ lint policy with the Vue flat-config layer. */
+function composeHostLint(base: UserConfig["lint"], vue: UserConfig["lint"]): UserConfig["lint"] {
+  if (base === undefined) return vue;
+  if (vue === undefined) return base;
+  const overrides = [...(base.overrides ?? []), ...(vue.overrides ?? [])];
+  const baseVize = recordValue(base.settings?.vize);
+  const vueVize = recordValue(vue.settings?.vize);
+  const settings = {
+    ...base.settings,
+    ...vue.settings,
+    vize: {
+      ...baseVize,
+      ...vueVize,
+    },
+  };
+  return {
+    ...base,
+    ...vue,
+    jsPlugins: mergeUnique(base.jsPlugins, vue.jsPlugins),
+    plugins: mergeUnique(base.plugins, vue.plugins),
+    ignorePatterns: mergeUnique(base.ignorePatterns, vue.ignorePatterns),
+    rules: { ...base.rules, ...vue.rules },
+    settings,
+    ...(overrides.length === 0 ? {} : { overrides }),
+  };
+}
+
+function mergeUnique<T>(
+  base: readonly T[] | null | undefined,
+  vue: readonly T[] | null | undefined,
+): T[] {
+  return [...new Set([...(base ?? []), ...(vue ?? [])])];
+}
+
+function recordValue(value: unknown): Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
 }
 
 /** Keep plugin-only fields while native canonical leaves choose their own values. */
