@@ -126,6 +126,21 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn fallback_only_interp_uses_a_text_vnode() {
+    assert_eq!(
+        assembled("<slot>{{ label }}</slot>"),
+        "\
+const { toDisplayString: _toDisplayString, renderSlot: _renderSlot, createTextVNode: _createTextVNode } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return _renderSlot(_ctx.$slots, \"default\", {}, () => [
+    _createTextVNode(_toDisplayString(label), 1 /* TEXT */)
+  ])
+}"
+    );
+}
+
+#[test]
 fn v_pre_fallback_interp_keeps_the_old_default_child_boundary() {
     assert_eq!(
         assembled("<slot v-pre>{{ not }} an interpolation</slot>"),

@@ -12,8 +12,7 @@ use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::children::{
     emit_create_text_vnode, emit_dynamic_part, emit_interpolation, emit_plain_text_vnode,
-    emit_raw_interpolation_or_refuse, emit_slot_compound_parts, emit_to_display_string,
-    is_empty_interpolation,
+    emit_raw_interpolation_or_refuse, emit_slot_compound_parts, is_empty_interpolation,
 };
 use super::hoist::{emit_hoisted_element, is_hoistable};
 use super::js::escape_js_string;
@@ -242,10 +241,11 @@ fn emit_fallback_comment(
     Ok(())
 }
 
-/// Slot fallback walks each L1 child (`generate_node`). A compound L2
-/// interpolation represents one adjacent text run, so preserve it as one
-/// `_createTextVNode` like authored component slot children, except where the
-/// old/default `v-pre` outlet contract retains the original child boundary.
+/// Slot fallback walks each L1 child (`generate_node`). Every fallback array
+/// entry must be a VNode, so wrap a lone interpolation in `_createTextVNode`
+/// too. A compound L2 interpolation represents one adjacent text run and stays
+/// one text VNode, except where the old/default `v-pre` outlet contract retains
+/// the original child boundary.
 fn emit_fallback_interp(
     cx: &mut EmitCx<'_>,
     interp: &InterpolationOp<'_>,
@@ -257,7 +257,7 @@ fn emit_fallback_interp(
     match interp.expression {
         ExprRef::Js(_) => {
             start_fallback_item(cx, compact, first);
-            emit_interpolation(cx, interp, id)
+            emit_fallback_interpolation_vnode(cx, interp, id)
         }
         ExprRef::Opaque(opaque) if opaque.reason == OpaqueReason::Compound => {
             let id = id.ok_or(EmitError::unsupported_at(
@@ -292,14 +292,31 @@ fn emit_fallback_interp(
         }
         ExprRef::Opaque(opaque) if is_empty_interpolation(opaque) => {
             start_fallback_item(cx, compact, first);
-            emit_to_display_string(cx, "");
-            Ok(())
+            emit_fallback_interpolation_vnode(cx, interp, id)
         }
         _ => {
             start_fallback_item(cx, compact, first);
-            emit_raw_interpolation_or_refuse(cx, interp.expression)
+            cx.buf.use_create_text();
+            cx.buf.push(Buf::create_text_alias());
+            cx.buf.push("(");
+            emit_raw_interpolation_or_refuse(cx, interp.expression)?;
+            cx.buf.push(", 1 /* TEXT */)");
+            Ok(())
         }
     }
+}
+
+fn emit_fallback_interpolation_vnode(
+    cx: &mut EmitCx<'_>,
+    interp: &InterpolationOp<'_>,
+    id: Option<vize_l0::id::NodeId>,
+) -> Result<(), EmitError> {
+    cx.buf.use_create_text();
+    cx.buf.push(Buf::create_text_alias());
+    cx.buf.push("(");
+    emit_interpolation(cx, interp, id)?;
+    cx.buf.push(", 1 /* TEXT */)");
+    Ok(())
 }
 
 /// The old/default DOM provider keeps a `v-pre` slot outlet's fallback text
