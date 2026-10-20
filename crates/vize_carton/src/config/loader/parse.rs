@@ -89,18 +89,6 @@ pub(super) fn parse_explicit_vite_config_file_with_compile_cache(
     before_read: &mut BeforeConfigRead<'_>,
     compile_cache: Option<&Path>,
 ) -> Result<ConfigDocument, Box<dyn std::error::Error>> {
-    // Differential and host contracts reserve this basename for an explicit
-    // serialized ConfigDocument. It bypasses Vite projection while arbitrary
-    // user-selected filenames continue to use the Vite config shape.
-    if is_native_serialization_carrier(path) {
-        return parse_raw_config_file_with_compile_cache(
-            path,
-            dependencies,
-            complete,
-            before_read,
-            compile_cache,
-        );
-    }
     if let Some(observe) = before_read.as_deref_mut() {
         observe(&[path.to_path_buf()]);
     }
@@ -126,15 +114,6 @@ pub(super) fn parse_explicit_vite_config_file_with_compile_cache(
     }
 }
 
-fn is_native_serialization_carrier(path: &Path) -> bool {
-    path.file_stem()
-        .is_some_and(|stem| stem == "serialized-config")
-        && matches!(
-            path.extension().and_then(|extension| extension.to_str()),
-            Some("pkl" | "ts" | "js" | "mjs" | "cjs" | "mts" | "cts" | "json")
-        )
-}
-
 fn explicit_vite_json(path: &Path) -> Result<ConfigDocument, Box<dyn std::error::Error>> {
     let content = std::fs::read(path)?;
     let value: serde_json::Value = serde_json::from_slice(&content)?;
@@ -146,6 +125,29 @@ fn explicit_vite_json(path: &Path) -> Result<ConfigDocument, Box<dyn std::error:
         )
         .into());
     };
+    // Differential fixtures transport the immutable bytes of retired native
+    // JSON under this neutral filename. Modern callers also use the same name
+    // for an explicit Vite-shaped object, so the basename alone cannot select
+    // the legacy decoder. Only legacy top-level native sections opt into it.
+    if path
+        .file_stem()
+        .is_some_and(|stem| stem == "serialized-config")
+        && [
+            "compiler",
+            "typeChecker",
+            "linter",
+            "formatter",
+            "languageServer",
+            "globalTypes",
+            "files",
+            "ignores",
+            "entries",
+        ]
+        .iter()
+        .any(|key| source.contains_key(*key))
+    {
+        return document_from_json(&content, path);
+    }
     if [
         "linter",
         "formatter",
