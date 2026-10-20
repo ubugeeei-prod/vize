@@ -76,13 +76,12 @@ pub(crate) fn append_props_literal(
     let merge_class_bindings = class_bindings.len() > 1;
     let mut emitted_merged_class = false;
     let mut spreads = usage.spread_props.iter().peekable();
-    let mut named_keys_before_spread = FxHashSet::default();
+    let mut authored_named_keys = FxHashSet::default();
     for prop in &usage.props {
         if !is_checkable_prop(prop) {
             continue;
         }
         while let Some(spread) = spreads.next_if(|pending| pending.start < prop.start) {
-            named_keys_before_spread.clear();
             append_spread_entry(
                 ts,
                 mappings,
@@ -105,11 +104,10 @@ pub(crate) fn append_props_literal(
             &class_bindings,
             &mut emitted_merged_class,
             spreads.peek().is_some(),
-            &mut named_keys_before_spread,
+            &mut authored_named_keys,
         );
     }
     for spread in spreads {
-        named_keys_before_spread.clear();
         append_spread_entry(
             ts,
             mappings,

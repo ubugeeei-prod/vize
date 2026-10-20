@@ -24,7 +24,7 @@ pub(super) fn append_prop_entry(
     class_bindings: &[(&PassedProp, String)],
     emitted_merged_class: &mut bool,
     before_following_spread: bool,
-    named_keys_before_spread: &mut FxHashSet<String>,
+    authored_named_keys: &mut FxHashSet<String>,
 ) {
     let template_offset = source_context.offset;
     let mut merged_value_ranges = Vec::new();
@@ -72,11 +72,7 @@ pub(super) fn append_prop_entry(
     };
     let camel_prop_name = component_prop_key(prop.name.as_str());
 
-    if !before_following_spread {
-        named_keys_before_spread.clear();
-    }
-    let repeated_named_key =
-        before_following_spread && !named_keys_before_spread.insert(camel_prop_name.clone());
+    let repeated_named_key = !authored_named_keys.insert(camel_prop_name.clone());
     if before_following_spread && !repeated_named_key {
         // Keep named props direct so TypeScript contextually elaborates their
         // value errors at the property instead of reporting a second TS2345 on

@@ -165,6 +165,20 @@ fn duplicate_named_props_before_a_spread_stay_visible_to_typescript() {
 }
 
 #[test]
+fn duplicate_named_props_across_spreads_stay_visible_to_typescript() {
+    let code = generated_props_literal(
+        r#"<Child :count="1" v-bind="bag" :count="2" v-bind="bag" />"#,
+    );
+
+    assert_eq!(code.matches("\"count\":").count(), 2, "{code}");
+    assert_eq!(
+        code.matches("// @ts-ignore Named prop diagnostics").count(),
+        1,
+        "only the first authored key may hide a synthetic overwrite warning; the later duplicate across a spread must stay visible to TypeScript: {code}"
+    );
+}
+
+#[test]
 fn duplicate_bare_props_before_a_spread_keep_the_duplicate_diagnostic() {
     let code = generated_props_literal(r#"<Child disabled disabled v-bind="bag" />"#);
 
