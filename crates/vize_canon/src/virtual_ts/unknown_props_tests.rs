@@ -89,18 +89,16 @@ fn dynamic_component_union_does_not_own_listener_inference_diagnostics() {
         r#"<component :is="is" value="text" @input="() => {}" />"#,
         false,
     );
-    let suppression =
-        "// @ts-ignore Inference-only dynamic target/props; the canonical component-props call owns diagnostics.\n";
-    let suppression_start = code.find(suppression).expect("dynamic inference suppression");
+    let suppression = "// @ts-ignore Inference-only dynamic target/props; the canonical component-props call owns diagnostics.\n";
+    let suppression_start = code
+        .find(suppression)
+        .expect("dynamic inference suppression");
     let call = &code[suppression_start + suppression.len()..];
     assert!(
         call.starts_with("  const __vize_emit_props_0 = (undefined as unknown as "),
         "{code}"
     );
-    assert!(
-        call.contains(")(is)({\n    \"value\": \"text\","),
-        "{code}"
-    );
+    assert!(call.contains(")(is)({\n    \"value\": \"text\","), "{code}");
 }
 
 #[test]
