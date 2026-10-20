@@ -1,0 +1,6 @@
+<script setup>
+import Child from './Child.js'
+import { useThing } from './thing.js'
+const { value } = useThing()
+</script>
+<template><Child v-model="value" /></template>
