@@ -74,8 +74,19 @@ runs:
         echo "CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16" >> "$GITHUB_ENV"
     - name: Setup Zig
       if: inputs.cross-compile == 'true'
+      id: zig
+      continue-on-error: true
       uses: goto-bus-stop/setup-zig@abea47f85e598557f500fa1fd2ab7464fcb39406 # v2
       # A pinned release: the default nightly master re-downloads (and can time out) every run.
+      with: { version: 0.15.1 }
+    # The Zig download hit ETIMEDOUT and failed the whole release run once (39358791933).
+    - name: Back off before retrying Zig
+      if: inputs.cross-compile == 'true' && steps.zig.outcome == 'failure'
+      shell: bash
+      run: sleep 20
+    - name: Retry Setup Zig
+      if: inputs.cross-compile == 'true' && steps.zig.outcome == 'failure'
+      uses: goto-bus-stop/setup-zig@abea47f85e598557f500fa1fd2ab7464fcb39406 # v2
       with: { version: 0.15.1 }
     - name: Clean native build outputs
       shell: bash
