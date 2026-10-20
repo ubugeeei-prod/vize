@@ -23,6 +23,7 @@ fn newly_created_and_removed_nested_config_refreshes_without_document_requests()
             serde_json::to_string(&runtime).unwrap()
         ),
     );
+    write(root, "nested/package.json", "{}");
     const BAD: &str = include_str!(
         "../../../../../tests/_fixtures/differential/config/nested-project-settings-8371/Marker.vue.txt"
     );
