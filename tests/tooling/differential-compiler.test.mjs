@@ -106,6 +106,7 @@ void test("compiler fixture pins a real full-module reference without native cre
       "compiler/sfc/v-model-maybe-ref-9897",
       "compiler/sfc/maybe-ref-model-parity-10044",
       "compiler/sfc/vue2-preserve-boundaries-9886",
+      "compiler/sfc/vue2-preserve-comment-edges-10065",
       "compiler/sfc/package-import-prop-type-9894",
       "compiler/sfc/scoped-where-nesting-9830",
       "compiler/sfc/scoped-keyframes-nesting-9829",
@@ -114,10 +115,10 @@ void test("compiler fixture pins a real full-module reference without native cre
   const report = syntheticReport();
   assert.deepEqual(validateCompilerReport(loaded, report, build), report.summary);
   assert.deepEqual(summarizeNativeAcceptance(loaded, report, { sourceRevision }).total, {
-    planned: 10,
+    planned: 11,
     nativeHandled: 0,
     nativeEquivalent: 0,
-    unsupported: 10,
+    unsupported: 11,
     legacyBacked: 0,
     unverified: 0,
   });

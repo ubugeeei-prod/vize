@@ -228,6 +228,37 @@
       }
     },
     {
+      "id": "compiler/sfc/vue2-preserve-comment-edges-10065",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "vue2-preserve-comment-edges-10065",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "15aaa7ef66e436629bdebb0934d3e7a88fb9b6b42772768cfd6a9d0f69997b91",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "vue2-preserve-comment-edges-10065/module.expected.txt",
+        "sha256": "144fbf422e71e4e406e811594503d52666096f1eb9df39f39091f329216024f8",
+        "source": "crates/vize/tests/build_vue2_preserve_cli.rs:vue2_preserve_matches_vue2_comment_and_named_slot_edges"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); parser and codegen remain legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      }
+    },
+    {
       "id": "compiler/sfc/package-import-prop-type-9894",
       "state": "active",
       "targets": ["ssr"],

@@ -253,6 +253,42 @@ fn vue2_preserve_keeps_removed_comments_as_text_run_boundaries() {
 }
 
 #[test]
+fn vue2_preserve_collapses_whitespace_across_removed_comments() {
+    for source in [
+        "<p>\n  <b>a</b>\n  <!-- c -->\n  <i>b</i>\n</p>",
+        "<p><b>a</b> <!-- c --> <i>b</i></p>",
+        "<p><b>a</b> <!-- c1 --> <!-- c2 --> <i>b</i></p>",
+    ] {
+        let children = vue2_preserve_children_with_comments(source, false);
+        let kinds: std::vec::Vec<_> = children
+            .iter()
+            .map(|(kind, text)| (*kind, text.as_str()))
+            .collect();
+        assert_eq!(
+            kinds,
+            [("element", "b"), ("text", " "), ("element", "i")],
+            "{source}"
+        );
+    }
+}
+
+#[test]
+fn vue2_preserve_removes_all_trailing_whitespace_runs_after_comments() {
+    for source in [
+        "<div>\n  <b>x</b>\n  <!-- c -->\n</div>",
+        "<div>\n  <b>x</b>\n  <!-- c1 -->\n  <!-- c2 -->\n</div>",
+        "<MyCard>\n  <b>x</b>\n  <!-- c -->\n</MyCard>",
+    ] {
+        let children = vue2_preserve_children_with_comments(source, false);
+        let kinds: std::vec::Vec<_> = children
+            .iter()
+            .map(|(kind, text)| (*kind, text.as_str()))
+            .collect();
+        assert_eq!(kinds, [("element", "b")], "{source}");
+    }
+}
+
+#[test]
 fn vue2_preserve_drops_default_slot_tail_before_named_templates() {
     let children = vue2_preserve_children(
         "<MyCard>\n  <span>body</span>\n  <template #footer>f</template>\n</MyCard>",
@@ -262,6 +298,22 @@ fn vue2_preserve_drops_default_slot_tail_before_named_templates() {
         .map(|(kind, text)| (*kind, text.as_str()))
         .collect();
     assert_eq!(kinds, [("element", "span"), ("element", "template")]);
+
+    let interpolation =
+        vue2_preserve_children("<MyCard>\n  {{ a }}\n  <template #footer>f</template>\n</MyCard>");
+    let kinds: std::vec::Vec<_> = interpolation
+        .iter()
+        .map(|(kind, text)| (*kind, text.as_str()))
+        .collect();
+    assert_eq!(
+        kinds,
+        [
+            ("text", "\n  "),
+            ("interp", "{{ a }}"),
+            ("text", "\n  "),
+            ("element", "template"),
+        ]
+    );
 }
 
 #[test]
