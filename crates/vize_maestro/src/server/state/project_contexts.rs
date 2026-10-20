@@ -426,38 +426,56 @@ impl ServerState {
 
 fn document_root(path: &Path, workspace: &Path) -> PathBuf {
     let mut directory = path.parent().unwrap_or(workspace);
-    while directory != workspace && directory.starts_with(workspace) {
-        if directory.join("tsconfig.json").is_file()
-            || directory.join("jsconfig.json").is_file()
-            || std::fs::read_dir(directory).is_ok_and(|entries| {
-                entries
-                    .flatten()
-                    .any(|entry| is_project_boundary_marker(&entry.path()))
-            })
-        {
+    let mut package_root = None;
+    while directory.starts_with(workspace) {
+        let mut has_package = false;
+        let mut has_vite = false;
+        let mut has_project_config = false;
+        if let Ok(entries) = std::fs::read_dir(directory) {
+            for entry in entries.flatten() {
+                let path = entry.path();
+                has_package |=
+                    path.file_name().and_then(|name| name.to_str()) == Some("package.json");
+                has_vite |= path
+                    .file_name()
+                    .and_then(|name| name.to_str())
+                    .is_some_and(|name| name.starts_with("vite.config."));
+                has_project_config |= is_typescript_project_marker(&path);
+            }
+        }
+        if has_project_config || package_root.is_none() && has_vite {
             return directory.to_path_buf();
+        }
+        if package_root.is_none() && has_package {
+            package_root = Some(directory.to_path_buf());
+        }
+        if directory == workspace {
+            break;
         }
         let Some(parent) = directory.parent() else {
             break;
         };
         directory = parent;
     }
-    workspace.to_path_buf()
+    package_root.unwrap_or_else(|| workspace.to_path_buf())
 }
 
-fn is_project_boundary_marker(path: &Path) -> bool {
+fn is_typescript_project_marker(path: &Path) -> bool {
     path.file_name()
         .and_then(|name| name.to_str())
         .is_some_and(|name| {
-            name.starts_with("vite.config.")
-                || (name.starts_with("tsconfig") && name.ends_with(".json"))
-                || name == "jsconfig.json"
+            (name.starts_with("tsconfig") && name.ends_with(".json")) || name == "jsconfig.json"
         })
 }
 
 fn is_config_marker(path: &Path) -> bool {
-    is_project_boundary_marker(path)
-        || path.file_name().and_then(|name| name.to_str()) == Some("package.json")
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| {
+            name.starts_with("vite.config.")
+                || name == "package.json"
+                || is_typescript_project_marker(path)
+        })
 }
 
 #[cfg(test)]
