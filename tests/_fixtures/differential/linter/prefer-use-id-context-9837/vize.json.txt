@@ -1,0 +1,8 @@
+{
+  "linter": {
+    "preset": "incremental",
+    "rules": {
+      "script/prefer-use-id": "warn"
+    }
+  }
+}

@@ -3406,7 +3406,7 @@ const id = useId();
 
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_id.rs#L48) · [全ルール](all.md)
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_id.rs#L45) · [全ルール](all.md)
 
 ### `script/prefer-use-slots`
 

@@ -3406,7 +3406,7 @@ const id = useId();
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_id.rs#L48) · [All rules](all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_id.rs#L45) · [All rules](all.md)
 
 ### `script/prefer-use-slots`
 

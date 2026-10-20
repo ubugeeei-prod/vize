@@ -58,6 +58,36 @@
   },
   "cases": [
     {
+          "id": "linter/current-api/prefer-use-id-context-9837",
+          "state": "active",
+          "targets": ["lint"],
+          "inputs": {
+            "root": "prefer-use-id-context-9837",
+            "files": [
+              {
+                "path": "request-id.ts.txt",
+                "role": "issue-authored-reproduction",
+                "sha256": "b02131cdc6f2aad72cf087058a0fcae88b99c2f9cfa1c2750b45bc7cd37c2084"
+              },
+              {
+                "path": "folder.test.ts.txt",
+                "role": "issue-authored-reproduction",
+                "sha256": "574354304ea31cd00c8dd8913bed9f1530448bb0a021465c3d85c924f13d0f4c"
+              },
+              {
+                "path": "Field.vue.txt",
+                "role": "regression-control",
+                "sha256": "6cf946d094e5911ee9add3cb9c73fa177776e46b2a62faf71a9e18b2ce446472"
+              },
+              {
+                "path": "vize.json.txt",
+                "role": "issue-authored-config",
+                "sha256": "f1bd1d90ff9d35967079c3da66c9286e8e246e6995409493969eed0fb8a9fc90"
+              }
+            ]
+          }
+        },
+    {
       "id": "linter/current-api/incomplete-type-project-10005",
       "state": "active",
       "targets": ["lint"],
