@@ -141,10 +141,18 @@ pub(super) fn external_input_tsconfig_boundary(
     let mut found_external = false;
     for pattern in patterns {
         let path = Path::new(pattern);
-        if !path.is_absolute() || !path.exists() {
+        if !path.is_absolute() {
             continue;
         }
-        let path = canonicalize(path);
+        let input_root = if path.exists() {
+            path.to_path_buf()
+        } else {
+            super::collect::base_dir_from_pattern(pattern)
+        };
+        if !input_root.exists() {
+            continue;
+        }
+        let path = canonicalize(&input_root);
         if path.starts_with(&cwd) {
             continue;
         }
@@ -484,5 +492,24 @@ mod tests {
             Path::new("volume-b/source.ts")
         ));
         assert!(boundary.as_os_str().is_empty());
+    }
+
+    #[test]
+    fn absolute_glob_uses_its_existing_static_prefix_for_the_boundary() {
+        let workspace = unique_case_dir("external-input-glob-boundary");
+        let _ = std::fs::remove_dir_all(&workspace);
+        let fixture = workspace.join("fixture");
+        let cwd = fixture.join("cwd");
+        let source = fixture.join("source/src");
+        std::fs::create_dir_all(&cwd).unwrap();
+        std::fs::create_dir_all(&source).unwrap();
+        let pattern = format!("{}/**/*.ts", source.display());
+        assert!(!Path::new(&pattern).exists());
+
+        assert_eq!(
+            external_input_tsconfig_boundary(&[pattern], &cwd),
+            Some(fixture)
+        );
+        let _ = std::fs::remove_dir_all(&workspace);
     }
 }
