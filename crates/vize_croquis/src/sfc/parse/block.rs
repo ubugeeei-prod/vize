@@ -2,16 +2,17 @@ mod compat;
 mod end;
 mod literals;
 mod regex;
+mod script;
 
-use memchr::{memchr, memchr_iter, memmem};
+use memchr::{memchr, memrchr};
 use std::borrow::Cow;
 use vize_carton::{FxHashMap, String, cstr};
 
-use compat::{can_start_string_literal, is_void_block};
+use compat::is_void_block;
 use end::find_block_end;
-use literals::script_regex_end;
 pub(super) use literals::{can_start_regex_literal, skip_script_string_literal};
 pub(super) use regex::skip_regex_literal;
+use script::find_script_block_end;
 
 // Tag name bytes for fast comparison
 pub(super) const TAG_TEMPLATE: &[u8] = b"template";
@@ -79,24 +80,33 @@ pub(super) fn is_whitespace_fast(b: u8) -> bool {
     matches!(b, b' ' | b'\t' | b'\n' | b'\r')
 }
 
+/// Newline count and the offset of the last newline. A vectorized count beats
+/// stepping `memchr_iter` through every line of a block.
+#[inline]
+pub(super) fn newlines(bytes: &[u8]) -> (usize, Option<usize>) {
+    let count = bytes.iter().filter(|&&b| b == b'\n').count();
+    let last = if count == 0 {
+        None
+    } else {
+        memrchr(b'\n', bytes)
+    };
+    (count, last)
+}
+
 #[inline]
 pub(super) fn advance_line(bytes: &[u8], base: usize, line: &mut usize, last_newline: &mut usize) {
-    for offset in memchr_iter(b'\n', bytes) {
-        *line += 1;
+    let (count, last) = newlines(bytes);
+    *line += count;
+    if let Some(offset) = last {
         *last_newline = base + offset;
     }
 }
 
 #[inline]
 fn position_after(bytes: &[u8], line: usize, column: usize) -> (usize, usize) {
-    let mut end_line = line;
-    let mut last_newline = None;
-    for offset in memchr_iter(b'\n', bytes) {
-        end_line += 1;
-        last_newline = Some(offset);
-    }
-    let end_column = last_newline.map_or(column + bytes.len(), |offset| bytes.len() - offset);
-    (end_line, end_column)
+    let (count, last) = newlines(bytes);
+    let end_column = last.map_or(column + bytes.len(), |offset| bytes.len() - offset);
+    (line + count, end_column)
 }
 
 #[inline]
@@ -344,8 +354,6 @@ pub(super) fn parse_block_fast<'a>(
     }
 
     // Find closing tag based on tag type
-    let mut line = content_start_line;
-    let mut last_newline = content_start;
 
     // Handle known tags with static closing tags
     if tag_name.eq_ignore_ascii_case(TAG_TEMPLATE) {
@@ -391,123 +399,15 @@ pub(super) fn parse_block_fast<'a>(
         });
     }
 
-    // For script blocks, we need to be aware of string literals to avoid
-    // matching closing tags inside strings like: const x = `</script>`
-    let is_script = tag_name.eq_ignore_ascii_case(TAG_SCRIPT);
-
-    // Track the previous non-whitespace character to determine string context
-    let mut prev_significant_char: u8 = b'\n'; // Start as if at beginning of line
-
-    while let Some(&b) = bytes.get(pos) {
-        if b == b'\n' {
-            line += 1;
-            last_newline = pos;
-            prev_significant_char = b'\n';
-            pos += 1;
-            continue;
-        }
-
-        // Skip whitespace but don't update prev_significant_char
-        if b == b' ' || b == b'\t' || b == b'\r' {
-            pos += 1;
-            continue;
-        }
-
-        if is_script {
-            // Check for single-line comment
-            if b == b'/' && pos + 1 < len && bytes.get(pos + 1) == Some(&b'/') {
-                // Skip to end of line
-                pos += 2;
-                if let Some(newline_offset) = memchr(b'\n', bytes.get(pos..).unwrap_or_default()) {
-                    pos += newline_offset;
-                } else {
-                    pos = len;
-                }
-                continue;
-            }
-
-            // Check for multi-line comment
-            if b == b'/' && pos + 1 < len && bytes.get(pos + 1) == Some(&b'*') {
-                pos += 2;
-                if let Some(end_offset) = memmem::find(bytes.get(pos..).unwrap_or_default(), b"*/")
-                {
-                    advance_line(
-                        bytes.get(pos..pos + end_offset).unwrap_or_default(),
-                        pos,
-                        &mut line,
-                        &mut last_newline,
-                    );
-                    pos += end_offset + 2;
-                } else {
-                    advance_line(
-                        bytes.get(pos..).unwrap_or_default(),
-                        pos,
-                        &mut line,
-                        &mut last_newline,
-                    );
-                    pos = len;
-                }
-                continue;
-            }
-
-            if b == b'/'
-                && can_start_regex_literal(prev_significant_char)
-                && let Some(next_pos) =
-                    script_regex_end(bytes, pos, len, &mut line, &mut last_newline, &attrs)
-            {
-                prev_significant_char = b'/';
-                pos = next_pos;
-                continue;
-            }
-
-            // Check for string literals (', ", `)
-            // Only treat as string if in a context where strings are expected
-            // (after =, (, [, ,, :, {, or at start of expression)
-            // This avoids treating quotes inside regex literals as strings
-            //
-            // For backticks specifically, also allow after alphanumeric characters
-            // to handle tagged templates (e.g., html`...`) and keywords (e.g., return `...`)
-            if (b == b'\'' || b == b'"' || b == b'`')
-                && can_start_string_literal(prev_significant_char, b)
-            {
-                pos = skip_script_string_literal(bytes, pos, len, b, &mut line, &mut last_newline);
-                prev_significant_char = b; // String ended with quote
-                continue;
-            }
-        }
-
-        // Check for closing tag (allows optional whitespace before '>')
-        if b == b'<'
-            && let Some(end_tag_pos) = find_closing_tag_end(bytes, pos, len, tag_name)
-        {
-            let content_end = pos;
-            let col = content_end_column(
-                content_start,
-                content_start_line,
-                content_start_column,
-                content_end,
-                line,
-                last_newline,
-            );
-            let content = Cow::Borrowed(source.get(content_start..content_end).unwrap_or_default());
-            return Ok(Some((
-                tag_name,
-                attrs,
-                content,
-                content_start,
-                content_end,
-                end_tag_pos,
-                line,
-                col,
-            )));
-        }
-
-        prev_significant_char = b;
-        pos += 1;
-    }
-
-    Err(build_malformed_error(
+    find_script_block_end(BlockEndSearch {
+        bytes,
+        source,
         tag_name,
-        "the closing tag is missing",
-    ))
+        pos,
+        content_start,
+        start_line: content_start_line,
+        start_column: content_start_column,
+        initial_last_newline: content_start,
+        attrs,
+    })
 }

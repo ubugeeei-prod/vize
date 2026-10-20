@@ -34,6 +34,5 @@ pub mod __internal {
 }
 
 pub(crate) fn extract_css_vars(css: &str) -> Vec<vize_carton::String> {
-    let bump = vize_carton::pool::acquire();
-    css_transform::extract_and_transform_v_bind(&bump, css).1
+    css_transform::extract_v_bind_vars(css)
 }

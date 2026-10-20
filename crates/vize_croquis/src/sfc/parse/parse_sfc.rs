@@ -2,10 +2,10 @@ use crate::sfc::types::{
     BlockLocation, SfcCustomBlock, SfcDescriptor, SfcError, SfcParseOptions, SfcScriptBlock,
     SfcStyleBlock, SfcTemplateBlock,
 };
-use memchr::{memchr, memchr_iter, memmem::Finder};
+use memchr::{memchr, memmem::Finder};
 use std::borrow::Cow;
 
-use super::block::{parse_block_fast, tag_name_eq};
+use super::block::{newlines, parse_block_fast, tag_name_eq};
 
 // Tag name bytes for fast comparison
 const TAG_TEMPLATE: &[u8] = b"template";
@@ -14,12 +14,8 @@ const TAG_STYLE: &[u8] = b"style";
 
 #[inline]
 fn advance_line_column(bytes: &[u8], line: &mut usize, column: &mut usize) {
-    let mut last_newline = None;
-    for offset in memchr_iter(b'\n', bytes) {
-        *line += 1;
-        last_newline = Some(offset);
-    }
-
+    let (count, last_newline) = newlines(bytes);
+    *line += count;
     if let Some(offset) = last_newline {
         *column = bytes.len() - offset;
     } else {

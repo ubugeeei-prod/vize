@@ -95,6 +95,24 @@ pub fn extract_and_transform_v_bind_with_context<'a>(
     (result_str, vars)
 }
 
+/// The expressions [`extract_and_transform_v_bind`] collects, without building
+/// the transformed stylesheet.
+pub(crate) fn extract_v_bind_vars(css: &str) -> Vec<String> {
+    let mut vars = Vec::new();
+    let mut pos = 0;
+    while let Some(open) = find_next_v_bind(css, pos) {
+        let start = open + 7;
+        let Some(end) = css.get(start..).and_then(find_matching_paren) else {
+            break;
+        };
+        if let Some(expr) = css.get(start..start + end) {
+            vars.push(trim_outer_quotes(expr.trim()).to_compact_string());
+        }
+        pos = start + end + 1;
+    }
+    vars
+}
+
 /// Authored JavaScript expression ranges, excluding CSS whitespace and quotes.
 /// Shares the compiler scanner, including its comment/string and nesting rules.
 #[doc(hidden)]
