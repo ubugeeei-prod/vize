@@ -279,7 +279,10 @@ impl Rule for StaticNameValidVSlot {
         element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        let static_name = matches!(directive.arg.as_ref(), Some(ExpressionNode::Simple(_)));
+        let static_name = matches!(
+            directive.arg.as_ref(),
+            Some(ExpressionNode::Simple(arg)) if arg.is_static
+        );
         ValidVSlot.check_slot_directive(ctx, element, directive, static_name);
     }
 }
