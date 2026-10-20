@@ -7,10 +7,9 @@ import { parseTomlLite } from "../../support/compat/davinci/toml-lite.ts";
 export const MEASUREMENT_RUST = "1.99.1";
 
 export function measurementToolchain(root: string): string {
-  const manifest = fs.readFileSync(path.join(root, "rust-toolchain.toml"), "utf8");
-  const { toolchain: { channel: toolchain } } = parseTomlLite(manifest) as {
-    toolchain: { channel: string };
-  };
+  const text = fs.readFileSync(path.join(root, "rust-toolchain.toml"), "utf8");
+  const manifest = parseTomlLite(text) as { toolchain: { channel: string } };
+  const toolchain = manifest.toolchain.channel;
   assert.equal(
     toolchain,
     MEASUREMENT_RUST,
