@@ -141,7 +141,30 @@ pub(super) fn generate_scope_node(
                 .slot_outlets
                 .covers_event_handler_scope(scope.span.start, scope.span.end) => {}
         ScopeData::EventHandler(data) if ctx.check_options.check_event_handlers() => {
-            generate_event_handler_scope(ts, mappings, ctx, scope, data, indent, &inner_indent);
+            let enclosing_guard = data.target_component.as_ref().and_then(|_| {
+                ctx.expressions_by_scope
+                    .get(&scope_id)
+                    .and_then(|exprs| super::vif_guard::common_vif_guard_prefix(exprs))
+            });
+            let handler_indent = if let Some(guard) = enclosing_guard.as_deref() {
+                super::append_chained_vif_guard_open(ts, indent, guard, "Listener branch guard");
+                inner_indent.clone()
+            } else {
+                String::from(indent)
+            };
+            let handler_inner_indent = cstr!("{handler_indent}  ");
+            generate_event_handler_scope(
+                ts,
+                mappings,
+                ctx,
+                scope,
+                data,
+                enclosing_guard.as_deref(),
+                (handler_indent.as_str(), handler_inner_indent.as_str()),
+            );
+            if enclosing_guard.is_some() {
+                super::append_chained_vif_guard_close(ts, indent);
+            }
         }
         _ => {
             generate_scope_contents(ts, mappings, ctx, scope, indent);

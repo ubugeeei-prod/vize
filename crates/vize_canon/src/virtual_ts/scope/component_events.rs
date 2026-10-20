@@ -46,6 +46,7 @@ pub(super) struct ComponentEventTypeContext<'a> {
     pub(super) fallthrough_listeners: bool,
     /// The `@vue-generic` binding this listener's component resolves through.
     pub(super) explicit_generic: Option<&'a str>,
+    pub(super) enclosing_vif_guard: Option<&'a str>,
     pub(super) indent: &'a str,
 }
 
@@ -66,6 +67,7 @@ pub(super) fn generate_component_event_types(
         needs_typed_handler_assignment,
         fallthrough_listeners,
         explicit_generic,
+        enclosing_vif_guard,
         indent,
     } = ctx;
     let component_name = data.target_component.as_ref()?;
@@ -215,6 +217,7 @@ pub(super) fn generate_component_event_types(
             prop_key: &prop_key,
             template_binding_access,
             source_context,
+            enclosing_vif_guard,
             indent,
         },
     );

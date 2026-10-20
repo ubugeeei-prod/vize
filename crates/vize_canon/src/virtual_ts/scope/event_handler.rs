@@ -11,6 +11,7 @@ use crate::virtual_ts::types::{VizeMapping, VizeSubSpan};
 use super::context::EventHandlerExprContext;
 use super::handler_shape::is_single_expression_statement;
 use super::vif_guard::append_ignored_vif_guard_open;
+use super::vif_guard::callback_vif_guard;
 
 /// Generate event handler expressions inside a closure.
 pub(super) fn generate_event_handler_expressions(
@@ -49,6 +50,11 @@ pub(super) fn generate_event_handler_expressions(
                 rewrite_reserved_template_binding(trimmed_guard, ctx.template_binding_access)
                     .unwrap_or_else(|| String::from(guard.as_str()))
             });
+            let guard = match (guard, ctx.enclosing_vif_guard) {
+                (Some(guard), Some(_)) => callback_vif_guard(guard.as_str()),
+                (guard, None) => guard,
+                (None, _) => None,
+            };
             // A handler declared against the listener type returns its lone
             // expression, so its guard is an early exit (`vue-tsc`'s own
             // `if (!cond) throw 0`) rather than a block: a block would add
