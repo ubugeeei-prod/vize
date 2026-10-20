@@ -15,6 +15,19 @@ use vize_atelier_core::{
 
 use super::{context::TransformContext, transform_children};
 
+/// [`super::merged_props::uses_computed_props`], once per element.
+fn merged_props(ctx: &mut TransformContext<'_>, el: &ElementNode<'_>) -> bool {
+    let address = core::ptr::from_ref(el).addr();
+    match ctx.merged_props_of {
+        Some((of, merged)) if of == address => merged,
+        _ => {
+            let merged = super::merged_props::uses_computed_props(el);
+            ctx.merged_props_of = Some((address, merged));
+            merged
+        }
+    }
+}
+
 /// Transform directive
 pub(crate) fn transform_directive<'a>(
     ctx: &mut TransformContext<'a>,
@@ -23,7 +36,7 @@ pub(crate) fn transform_directive<'a>(
     el: &ElementNode<'a>,
     block: &mut BlockIRNode<'a>,
 ) {
-    if dir.name == "bind" && super::merged_props::uses_computed_props(el) {
+    if dir.name == "bind" && merged_props(ctx, el) {
         super::merged_props::transform(ctx, dir, element_id, el, block);
         return;
     }

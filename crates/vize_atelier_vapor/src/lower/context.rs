@@ -34,6 +34,9 @@ pub(crate) struct TransformContext<'a> {
     pub(crate) diagnostics: std::vec::Vec<String>,
     /// Recoverable notices, such as an ignored `v-memo`.
     pub(crate) warnings: std::vec::Vec<String>,
+    /// The last element asked whether its bindings merge into one
+    /// `setDynamicProps`, by address; each binding of it asks again.
+    pub(crate) merged_props_of: Option<(usize, bool)>,
     /// `Some` when a source map is requested.
     pub(crate) template_spans: Option<TemplateSpans>,
 }
@@ -57,6 +60,7 @@ impl<'a> TransformContext<'a> {
             slot_content_depth: 0,
             diagnostics: std::vec::Vec::new(),
             warnings: std::vec::Vec::new(),
+            merged_props_of: None,
             template_spans: None,
         }
     }
