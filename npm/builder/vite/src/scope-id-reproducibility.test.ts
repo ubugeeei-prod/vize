@@ -26,7 +26,10 @@ function digest(body: string): string {
 
 async function buildCheckout(root: string): Promise<BuiltAsset[]> {
   fs.mkdirSync(path.join(root, "src"), { recursive: true });
-  fs.writeFileSync(path.join(root, "entry.js"), 'export { default } from "./src/App.vue";\n');
+  fs.writeFileSync(
+    path.join(root, "entry.js"),
+    'import App from "./src/App.vue"; globalThis.__vizeScopeApp = App;\n',
+  );
   fs.writeFileSync(path.join(root, "src", "App.vue"), SFC);
 
   const result = (await build({
@@ -75,7 +78,14 @@ void test("production CSS and JS asset hashes are stable across checkout directo
     for (const asset of first) {
       assert.match(asset.fileName, /^assets\/entry-[A-Za-z0-9_-]+\.(?:css|js)$/u);
     }
-    assert.ok(first.every((asset) => asset.scopeIds.length === 1));
+    assert.deepEqual(
+      first.map((asset) => ({ type: asset.type, scopeIds: asset.scopeIds })),
+      [
+        { type: "css", scopeIds: [first[0]?.scopeIds[0]] },
+        { type: "js", scopeIds: [first[0]?.scopeIds[0]] },
+      ],
+      "the CSS and JS assets must share exactly one scope id",
+    );
     assert.deepEqual(first, second);
   } finally {
     fs.rmSync(parent, { recursive: true, force: true });
