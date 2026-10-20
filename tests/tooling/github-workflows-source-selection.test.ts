@@ -281,8 +281,11 @@ test("unchanged queue gate hydrates the same pinned fixture for all five full Ru
   });
   assert.deepEqual(RUST_TEST_COHORT_IDS, [
     "compiler",
+    "sfc-compiler",
+    "vapor-compiler",
     "typechecker",
     "language-server",
+    "language-server-cli",
     "lint-and-format",
     "cli-and-integrations",
   ]);

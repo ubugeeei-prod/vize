@@ -3,8 +3,11 @@ import type { CargoMetadata } from "./plan-affected-rust.ts";
 
 export const RUST_TEST_COHORT_IDS = [
   "compiler",
+  "sfc-compiler",
+  "vapor-compiler",
   "typechecker",
   "language-server",
+  "language-server-cli",
   "lint-and-format",
   "cli-and-integrations",
 ] as const;
@@ -18,6 +21,8 @@ type Definition = {
 
 // Every workspace package has one owner. The CLI's integration test modules follow
 // their product feature; its remaining tests belong to CLI and integrations.
+// The SFC and Vapor compilers' runtime traces (about 1,000 and 700 test-seconds)
+// and the CLI LSP tests (about 1,600) are split so no cohort runs much over a minute.
 const definitions: Record<RustTestCohortId, Definition> = {
   compiler: {
     name: "Compiler",
@@ -36,16 +41,16 @@ const definitions: Record<RustTestCohortId, Definition> = {
       "vize_croquis",
       "vize_atelier_core",
       "vize_atelier_dom",
-      "vize_atelier_sfc",
       "vize_atelier_jsx",
       "vize_atelier_ssr",
-      "vize_atelier_vapor",
       "vize_oxc_parser",
       "vize_lightningcss",
       "vize_parcel_sourcemap",
       "vize_incremental",
     ],
   },
+  "sfc-compiler": { name: "SFC compiler", packages: ["vize_atelier_sfc"] },
+  "vapor-compiler": { name: "Vapor compiler", packages: ["vize_atelier_vapor"] },
   typechecker: {
     name: "Type checker",
     packages: ["vize_canon", "vize_croquis_cf"],
@@ -54,7 +59,12 @@ const definitions: Record<RustTestCohortId, Definition> = {
   "language-server": {
     name: "Language server",
     packages: ["vize_maestro"],
-    cliPrefixes: ["lsp_"],
+    cliPrefixes: ["lsp_[a-m]"],
+  },
+  "language-server-cli": {
+    name: "Language server CLI",
+    packages: [],
+    cliPrefixes: ["lsp_[n-z]"],
   },
   "lint-and-format": {
     name: "Lint and format",

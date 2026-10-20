@@ -81,7 +81,9 @@ test("every existing CLI integration module belongs to exactly one semantic coho
   for (const [module, cohort] of [
     ["check_new_project", "typechecker"],
     ["typecheck_new_project", "typechecker"],
-    ["lsp_new_request", "language-server"],
+    ["lsp_new_request", "language-server-cli"],
+    ["lsp_bound_event", "language-server"],
+    ["lsp_9_digit_led", "cli-and-integrations"],
     ["lint_new_rule", "lint-and-format"],
     ["fmt_new_document", "lint-and-format"],
     ["format_new_document", "lint-and-format"],
@@ -103,6 +105,8 @@ test("affected selection starts only cohorts that contain selected packages", ()
   const selected = (...packages: string[]) =>
     rustTestMatrix(metadata, packages).include.map((cohort) => cohort.cohort);
   assert.deepEqual(selected("vize_relief"), ["compiler"]);
+  assert.deepEqual(selected("vize_atelier_sfc"), ["sfc-compiler"]);
+  assert.deepEqual(selected("vize_atelier_vapor"), ["vapor-compiler"]);
   assert.deepEqual(selected("vize_canon"), ["typechecker"]);
   assert.deepEqual(selected("vize_maestro"), ["language-server"]);
   assert.deepEqual(selected("vize_patina", "vize_glyph"), ["lint-and-format"]);
@@ -110,10 +114,14 @@ test("affected selection starts only cohorts that contain selected packages", ()
   assert.deepEqual(selected("vize"), [
     "typechecker",
     "language-server",
+    "language-server-cli",
     "lint-and-format",
     "cli-and-integrations",
   ]);
-  assert.deepEqual(selected("vize", "vize_relief"), RUST_TEST_COHORT_IDS);
+  assert.deepEqual(
+    selected("vize", "vize_relief", "vize_atelier_sfc", "vize_atelier_vapor"),
+    RUST_TEST_COHORT_IDS,
+  );
 });
 
 test("unknown packages and empty selections fail closed, even outside the affected set", () => {
