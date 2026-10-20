@@ -244,6 +244,17 @@ fn generic_fallthrough_spread_preserves_valid_values() {
     );
 }
 
+#[test]
+fn named_prop_before_spread_reports_once_with_or_without_listener() {
+    check_pack(
+        "component-v-bind-duplicate-diagnostic-10069",
+        "named_prop_before_spread_reports_once_with_or_without_listener",
+        "7174c46d55825c155325e6314305e661d50ec95a",
+        Some(10069),
+        &["wrong-prop-with-spread-and-listener"],
+    );
+}
+
 fn check_pack(
     name: &str,
     test: &str,
@@ -278,7 +289,8 @@ fn check_pack(
             | "cache-maintenance-9860"
             | "nuxt-unknown-template-options-10013"
             | "reactive-props-destructure-10008"
-            | "generic-fallthrough-spread-9956" => regression,
+            | "generic-fallthrough-spread-9956"
+            | "component-v-bind-duplicate-diagnostic-10069" => regression,
             _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
         }
     );

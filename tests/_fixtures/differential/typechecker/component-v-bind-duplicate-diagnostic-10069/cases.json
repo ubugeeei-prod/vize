@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10069,
+  "regressionCommit": "7174c46d55825c155325e6314305e661d50ec95a",
+  "sourceRevision": "7174c46d55825c155325e6314305e661d50ec95a",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "wrong-prop-with-spread-and-listener",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/MyInput.vue",
+          "source": "src/MyInput.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "src/App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 10,
+          "column": 13,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 11,
+          "column": 13,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 12,
+          "column": 13,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 13,
+          "column": 13,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}
