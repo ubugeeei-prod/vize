@@ -14,6 +14,7 @@ type Step = {
   if?: string;
   with?: Record<string, unknown>;
   shell?: string;
+  env?: Record<string, string>;
 };
 const release = parse(readRepoFile(".github", "workflows", "release.yml"));
 const seed = parse(readRepoFile(".github", "workflows", "release-build-cache.yml"));
@@ -35,6 +36,12 @@ test("release and cache warming share every exact-checkout binary recipe", () =>
     assert.equal(seedStep.with["authorized-release"], undefined);
     assert.equal(seedStep.with["upload-artifacts"], "false");
     assert.equal(releaseStep.with.target, seedStep.with.target);
+    assert.equal(releaseStep.with["release-version"], "${{ needs.version.outputs.version }}");
+    assert.equal(seedStep.with["release-version"], "${{ needs.plan.outputs.version }}");
+    const builds = recipe(action).runs.steps.filter((step) => step.name?.startsWith("Build "));
+    for (const step of builds) {
+      assert.equal(step.env?.VIZE_RELEASE_VERSION, "${{ inputs.release-version }}");
+    }
     for (const step of recipe(action).runs.steps) if (step.run) assert.ok(step.shell);
   }
   assert.deepEqual(seed.permissions, { contents: "read" });
