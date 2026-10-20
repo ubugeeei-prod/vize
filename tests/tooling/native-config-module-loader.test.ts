@@ -27,6 +27,7 @@ import { resolveViteConfigExport } from "../../crates/vize_carton/src/config/loa
 
 const require = createRequire(join(process.cwd(), "package.json"));
 const vitePackage = dirname(require.resolve("vite/package.json"));
+const vitePlusPackage = dirname(require.resolve("vite-plus/package.json"));
 const execute = promisify(execFile);
 
 async function nativeLoaderScript() {
@@ -45,19 +46,41 @@ async function project(
   run: (directory: string) => Promise<void>,
   withVite = true,
   installedVite = vitePackage,
+  packageName = "vite",
 ) {
   const directory = await realpath(await mkdtemp(join(tmpdir(), "vize-config-original-")));
   try {
     await writeFile(join(directory, "package.json"), '{"type":"module","value":7}');
     if (withVite) {
       await mkdir(join(directory, "node_modules"));
-      await symlink(installedVite, join(directory, "node_modules/vite"), "junction");
+      await symlink(installedVite, join(directory, `node_modules/${packageName}`), "junction");
     }
     await run(directory);
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
 }
+
+await test("project Vite+ bundles extensionless TypeScript config imports without standalone Vite", async () => {
+  await project(
+    async (directory) => {
+      await writeFile(join(directory, "helper.ts"), "export const printWidth: number = 93;");
+      const selected = join(directory, "vite.config.ts");
+      await writeFile(
+        selected,
+        "import { printWidth } from './helper'; export default {formatter:{printWidth}};",
+      );
+
+      await assert.rejects(import(pathToFileURL(selected).href), { code: "ERR_MODULE_NOT_FOUND" });
+      assert.deepEqual((await importConfigModule(selected)).default, {
+        formatter: { printWidth: 93 },
+      });
+    },
+    true,
+    vitePlusPackage,
+    "vite-plus",
+  );
+});
 
 await test("Vite's real bundle loader preserves authored JSON, helper resolution and file scopes", async () => {
   await project(async (directory) => {
