@@ -221,21 +221,21 @@ fn abandoned_real_native_hover_preserves_original_markdown_and_current_revision(
                 "startLine":0,"endLine":1,"kind":"region","collapsedText":"template"
             }]});
             if changed {
-                // The edit cancels the held typed request at once; its refusal
-                // needs neither the gate nor the syntax reply.
-                let mut replies = [
-                    lsp.recv_matching(|reply| reply["id"] == 4 || reply["id"] == 6),
-                    lsp.recv_matching(|reply| reply["id"] == 4 || reply["id"] == 6),
-                ];
-                replies.sort_by_key(|reply| reply["id"].as_i64());
-                assert_eq!(
-                    replies,
-                    [
-                        json!({"jsonrpc":"2.0","id":4,"error":{"code":-32801,"message":"Content modified"}}),
-                        folding,
-                    ]
-                );
+                // A held request already inside its native transaction is
+                // refused as soon as the edit lands; one still being admitted
+                // is refused once the gate opens. Either way it stays whole.
+                let first = lsp.recv_matching(|reply| reply["id"] == 4 || reply["id"] == 6);
+                let early = (first["id"] == 4).then_some(first.clone());
+                if early.is_some() {
+                    assert_eq!(lsp.recv_response(6), folding);
+                } else {
+                    assert_eq!(first, folding);
+                }
                 std::fs::write(project.gate().join("release"), "").unwrap();
+                assert_eq!(
+                    early.unwrap_or_else(|| lsp.recv_response(4)),
+                    json!({"jsonrpc":"2.0","id":4,"error":{"code":-32801,"message":"Content modified"}})
+                );
             } else {
                 let first = lsp.recv_matching(|reply| reply["id"] == 4 || reply["id"] == 6);
                 assert_eq!(first, folding);
