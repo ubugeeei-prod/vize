@@ -217,21 +217,34 @@ fn abandoned_real_native_hover_preserves_original_markdown_and_current_revision(
                 "textDocument/foldingRange",
                 json!({"textDocument":{"uri":syntax_uri}}),
             );
-            let first = lsp.recv_matching(|reply| reply["id"] == 4 || reply["id"] == 6);
-            assert_eq!(
-                first,
-                json!({"jsonrpc":"2.0","id":6,"result":[{
-                    "startLine":0,"endLine":1,"kind":"region","collapsedText":"template"
-                }]}),
-            );
-            std::fs::write(project.gate().join("release"), "").unwrap();
-            let answer = lsp.recv_response(4);
-            let expected_answer = if changed {
-                json!({"jsonrpc":"2.0","id":4,"error":{"code":-32801,"message":"Content modified"}})
+            let folding = json!({"jsonrpc":"2.0","id":6,"result":[{
+                "startLine":0,"endLine":1,"kind":"region","collapsedText":"template"
+            }]});
+            if changed {
+                // The edit cancels the held typed request at once; its refusal
+                // needs neither the gate nor the syntax reply.
+                let mut replies = [
+                    lsp.recv_matching(|reply| reply["id"] == 4 || reply["id"] == 6),
+                    lsp.recv_matching(|reply| reply["id"] == 4 || reply["id"] == 6),
+                ];
+                replies.sort_by_key(|reply| reply["id"].as_i64());
+                assert_eq!(
+                    replies,
+                    [
+                        json!({"jsonrpc":"2.0","id":4,"error":{"code":-32801,"message":"Content modified"}}),
+                        folding,
+                    ]
+                );
+                std::fs::write(project.gate().join("release"), "").unwrap();
             } else {
-                json!({"jsonrpc":"2.0","id":4,"result":expected(&source,DOCUMENTATION)})
-            };
-            assert_eq!(answer, expected_answer);
+                let first = lsp.recv_matching(|reply| reply["id"] == 4 || reply["id"] == 6);
+                assert_eq!(first, folding);
+                std::fs::write(project.gate().join("release"), "").unwrap();
+                assert_eq!(
+                    lsp.recv_response(4),
+                    json!({"jsonrpc":"2.0","id":4,"result":expected(&source,DOCUMENTATION)})
+                );
+            }
             let documentation = if changed {
                 "**Updated** invoice slot shown in the summary."
             } else {

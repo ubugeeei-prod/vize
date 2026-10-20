@@ -384,7 +384,10 @@ fn authored_revision_precedes_admission_but_valid_policy_reload_remains_usable()
 }
 
 #[test]
-#[expect(clippy::disallowed_types, reason = "ArcWake counts wakeups through an Arc")]
+#[expect(
+    clippy::disallowed_types,
+    reason = "ArcWake counts wakeups through an Arc"
+)]
 fn an_edit_cancels_pending_requests_without_waiting_for_their_work() {
     struct Wake(std::sync::atomic::AtomicUsize);
     impl futures::task::ArcWake for Wake {

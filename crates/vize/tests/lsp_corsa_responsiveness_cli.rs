@@ -297,16 +297,28 @@ fn changed_root_and_open_dependency_refuse_the_entire_original_request_on_the_wi
             "textDocument/documentSymbol",
             json!({"textDocument":{"uri":uri}}),
         ));
-        assert!(lsp.recv_response(30).get("error").is_none());
-        // Retire this deliberately non-answering backend. The fixture tests
-        // real IPC failure and whole RPC refusal, not a successful native query.
-        backend.stop();
+        // The edit cancels the held request at once, so its whole refusal
+        // can arrive on either side of the barrier, before the backend dies.
+        let mut stale = None;
+        let mut barrier = None;
+        while stale.is_none() || barrier.is_none() {
+            let message = lsp
+                .recv_matching(|message| message["id"] == "stale-original" || message["id"] == 30);
+            if message["id"] == 30 {
+                barrier = Some(message);
+            } else {
+                stale = Some(message);
+            }
+        }
+        assert!(barrier.unwrap().get("error").is_none());
         assert_eq!(
-            lsp.recv_matching(|message| message["id"] == "stale-original"),
+            stale.unwrap(),
             json!({
                 "jsonrpc":"2.0","id":"stale-original","error":{"code":-32801,"message":"Content modified"}
             })
         );
+        // Retire this deliberately non-answering backend.
+        backend.stop();
         lsp.send(request(json!(31), "shutdown", Value::Null));
         assert_eq!(
             lsp.recv_response(31),
