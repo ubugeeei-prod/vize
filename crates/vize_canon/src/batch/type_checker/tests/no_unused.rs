@@ -8,6 +8,7 @@ mod css_v_bind;
 mod define_emits_unused;
 mod define_props_template_object;
 mod macro_hygiene;
+mod reactive_props_destructure;
 mod template_props_read;
 
 #[test]

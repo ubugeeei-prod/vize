@@ -747,7 +747,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             &script_source_offset,
         );
     }
-    emit_setup_scope_macro_anchors(&mut ts, summary, &setup_helpers);
+    emit_setup_scope_macro_anchors(&mut ts, &setup_helpers);
     let define_emits_runtime_args = setup_helpers::define_emits_runtime_args(summary);
     let mut setup_return_fields: Vec<String> = Vec::new();
     template_record.push_template_return(&mut setup_return_fields, inferred_slots, has_root_el);

@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10008,
+  "regressionCommit": "f276e4d59cdaf765fd7d3f14eb3d679f5b685f98",
+  "sourceRevision": "f276e4d59cdaf765fd7d3f14eb3d679f5b685f98",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "unused-binding",
+      "inputs": [
+        {
+          "file": "src/MyBadge.vue",
+          "source": "MyBadge.vue.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/MyBadge.vue",
+          "line": 2,
+          "column": 16,
+          "severity": 1,
+          "code": 6133,
+          "message": "'color' is declared but its value is never read."
+        },
+        {
+          "file": "src/MyBadge.vue",
+          "line": 3,
+          "column": 7,
+          "severity": 1,
+          "code": 6133,
+          "message": "'unusedLocal' is declared but its value is never read."
+        }
+      ]
+    }
+  ]
+}

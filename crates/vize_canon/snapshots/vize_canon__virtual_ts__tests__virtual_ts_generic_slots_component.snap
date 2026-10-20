@@ -192,9 +192,6 @@ function __setup<T extends string = 'a'>() {
   // Compiler-macro results contribute to the component signature
   void emit;
 
-  // Reference destructured props (prevent TS6133)
-  void value;
-
   return { __vize_setup_props };
 }
 

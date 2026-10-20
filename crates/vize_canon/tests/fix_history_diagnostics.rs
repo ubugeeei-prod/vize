@@ -222,6 +222,17 @@ fn nuxt_unknown_template_options_preserve_explicit_checks() {
     );
 }
 
+#[test]
+fn reactive_props_destructure_preserves_unused_diagnostics() {
+    check_pack(
+        "reactive-props-destructure-10008",
+        "reactive_props_destructure_preserves_unused_diagnostics",
+        "f276e4d59cdaf765fd7d3f14eb3d679f5b685f98",
+        Some(10008),
+        &["unused-binding"],
+    );
+}
+
 fn check_pack(
     name: &str,
     test: &str,
@@ -254,7 +265,8 @@ fn check_pack(
             | "declared-prop-names-original"
             | "template-suppression-original"
             | "cache-maintenance-9860"
-            | "nuxt-unknown-template-options-10013" => regression,
+            | "nuxt-unknown-template-options-10013"
+            | "reactive-props-destructure-10008" => regression,
             _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
         }
     );
