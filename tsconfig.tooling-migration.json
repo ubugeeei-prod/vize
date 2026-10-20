@@ -11,6 +11,8 @@
     "tools/support/typescript/check-project.ts",
     "tools/support/compat/github/comparison-base.ts",
     "tools/support/compat/github/plan-source-checks.ts",
+    "tools/support/compat/github/report-legacy-fix-fixtures.ts",
+    "tests/tooling/legacy-fix-fixture-report.test.ts",
     "tools/support/compat/fixtures/fixture-compatibility-ledger.ts",
     "tools/support/compat/fixtures/glyph-corpus.ts",
     "tools/support/compat/fixtures/glyph-corpus-waiver-audit.ts",

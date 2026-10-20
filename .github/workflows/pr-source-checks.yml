@@ -49,13 +49,13 @@ jobs:
           BASE_SHA: ${{ steps.comparison.outputs.base }}
           PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
         run: node tools/support/compat/github/plan-pr-checks.ts "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"
-      - name: Report legacy fix differential inputs
+      - name: Require legacy fix differential inputs
         if: ${{ github.event_name == 'pull_request' }}
-        continue-on-error: true
         env:
           BASE_SHA: ${{ steps.comparison.outputs.base }}
           PR_TITLE: ${{ github.event.pull_request.title }}
-        run: node tools/support/compat/github/report-legacy-fix-fixtures.mjs "$BASE_SHA" "$GITHUB_SHA"
+          PR_CREATED_AT: ${{ github.event.pull_request.created_at }}
+        run: node tools/support/compat/github/report-legacy-fix-fixtures.ts "$BASE_SHA" "$GITHUB_SHA"
       - name: Plan canonical corpus inputs
         id: canonical-corpus-plan
         env: { BASE_SHA: "${{ steps.comparison.outputs.base }}" }

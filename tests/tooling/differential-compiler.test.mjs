@@ -133,6 +133,60 @@ void test("compiler input and reference digests fail closed", () => {
   }
 });
 
+void test("compiler plans and byte-compares every registered SSR case", () => {
+  const copy = fs.mkdtempSync(path.join(os.tmpdir(), "vize-compiler-multiple-"));
+  try {
+    fs.cpSync(pack, copy, { recursive: true });
+    fs.cpSync(path.join(copy, "ssr-slot-scope"), path.join(copy, "second-slot-scope"), {
+      recursive: true,
+    });
+    const manifest = JSON.parse(fs.readFileSync(path.join(copy, "manifest.json"), "utf8"));
+    const second = structuredClone(manifest.cases[0]);
+    second.id = "compiler/sfc/second-slot-scope";
+    second.inputs.root = "second-slot-scope";
+    second.reference.path = "second-slot-scope/module.expected.txt";
+    manifest.cases.push(second);
+    fs.writeFileSync(path.join(copy, "manifest.json"), JSON.stringify(manifest));
+    const multiple = loadCompilerManifest(path.join(copy, "manifest.json"));
+    assert.equal(multiple.cases.length, 2);
+
+    const report = syntheticReport();
+    report.manifestSha256 = multiple.manifestSha256;
+    report.rows.push({ ...structuredClone(report.rows[0]), id: second.id });
+    report.summary = { ...report.summary, plannedCases: 2, legacyMatches: 2, nativeUnsupported: 2 };
+    assert.deepEqual(validateCompilerReport(multiple, report, build), report.summary);
+
+    const changed = structuredClone(report);
+    const output = JSON.parse(
+      Buffer.from(changed.rows[1].legacy.observation.jsonBase64, "base64").toString("utf8"),
+    );
+    output.code += "\n";
+    changed.rows[1].legacy.observation = compilerAttempt(
+      { status: 0, signal: null, stdout: Buffer.alloc(0), stderr: Buffer.alloc(0) },
+      Buffer.from(JSON.stringify(output)),
+      multiple.cases[1].expected,
+    );
+    changed.rows[1].legacy.verdict = "baseline-drift";
+    changed.summary.legacyMatches = 1;
+    changed.summary.baselineDrift = 1;
+    assert.deepEqual(validateCompilerReport(multiple, changed, build), changed.summary);
+    assert.throws(() =>
+      validateCompilerReport(multiple, { ...report, rows: report.rows.slice(0, 1) }, build),
+    );
+
+    const unavailable = runCompilerPack({
+      manifestPath: path.join(copy, "manifest.json"),
+      binaryPath: path.join(root, "target/ci/missing-vize"),
+      sourceRevision,
+      repoRoot: root,
+    });
+    assert.equal(unavailable.rows.length, 2);
+    assert.equal(unavailable.summary.legacyFailures, 2);
+  } finally {
+    fs.rmSync(copy, { recursive: true, force: true });
+  }
+});
+
 void test("malformed compiler output retains raw evidence and cannot complete", () => {
   const raw = Buffer.from("{broken JSON");
   const observation = compilerAttempt(

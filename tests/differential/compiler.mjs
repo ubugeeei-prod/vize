@@ -37,11 +37,15 @@ export function loadCompilerManifest(manifestPath) {
       assert.equal(fixture.adapters.legacy, "compiler-cli-ssr-v1");
       assert.equal(fixture.adapters.native, null);
       assert.equal(typeof fixture.adapters.reasons.native, "string");
-      assert.equal(fixture.inputs.root, "ssr-slot-scope");
+      assert.match(fixture.inputs.root, /^[a-z0-9-]+$/);
+      assert.equal(fixture.id, `compiler/sfc/${fixture.inputs.root}`);
       assert.equal(fixture.inputs.files.length, 1);
       const entry = fixture.inputs.files[0];
       assert.equal(entry.path, "Layout.vue.txt");
       assert.equal(entry.role, "entry");
+      assert.equal(fixture.reference.path, `${fixture.inputs.root}/module.expected.txt`);
+      assert.equal(typeof fixture.reference.source, "string");
+      assert(fixture.reference.source.length > 0, "compiler reference source is required");
       assert.equal(fixture.comparison.contract, "compiler-ssr-module-bytes-v1");
       assert.deepEqual(fixture.comparison.requiredFacets, [
         "code",
