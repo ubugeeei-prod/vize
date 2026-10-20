@@ -104,11 +104,17 @@ impl VirtualProject {
         expected_files: &FxHashSet<PathBuf>,
     ) -> Vec<PackageNodeModulesLink> {
         let mut links = Vec::new();
+        // Importers of one package share its routes; each route walks every
+        // expected file, so visit it once.
+        let mut visited = FxHashSet::default();
         for binding in self.package_routes.values() {
             let Some(root_route) = binding.route.as_ref() else {
                 continue;
             };
             for route in root_route.all_routes() {
+                if !visited.insert((&route.package_root, &route.manifest_path)) {
+                    continue;
+                }
                 let real_dir = route.package_root.join("node_modules");
                 if !real_dir.is_dir() {
                     continue;

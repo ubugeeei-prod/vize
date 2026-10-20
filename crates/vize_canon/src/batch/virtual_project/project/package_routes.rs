@@ -352,18 +352,17 @@ impl VirtualProject {
         importer: &Path,
         specifier: &str,
     ) -> Option<&Path> {
-        self.package_routes
-            .values()
-            .find(|binding| {
-                binding.importer_path == importer
-                    && binding.specifier == specifier
-                    && binding
-                        .route
-                        .as_ref()
-                        .is_some_and(|route| route.workspace_source)
-            })
-            .and_then(|binding| binding.route.as_ref())
+        // Partitioning asks once per import; scan the importer's own
+        // bindings instead of every route in the project.
+        self.package_route_importers
+            .get(importer)?
+            .iter()
+            .filter_map(|key| self.package_routes.get(key))
+            .filter(|binding| binding.specifier == specifier)
+            .filter_map(|binding| binding.route.as_ref())
+            .filter(|route| route.workspace_source)
             .map(|route| route.package_root.as_path())
+            .min()
     }
 
     pub(crate) fn finalize_package_routes(&mut self) -> CorsaResult<()> {
