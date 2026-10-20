@@ -47,15 +47,24 @@ export class Square implements Shape {
 export type Point = { x: number; y: number }
 ";
 
-const CARD: &str = r#"<script setup lang="ts">
+const CARD: &str = r#"<script lang="ts">
+import type { Shape as Plain } from './shapes'
+export function measure(plain: Plain, scale: number): number {
+  return plain.area() * scale
+}
+</script>
+
+<script setup lang="ts">
 import type { Shape, Point } from './shapes'
 import { Circle } from './shapes'
 const shape: Shape = new Circle(1)
 const origin: Point = { x: 0, y: 0 }
+function pick(point: Point): void {}
 </script>
 
 <template>
   <p>{{ shape.area() }} {{ origin.x }}</p>
+  <p v-if="origin.y" :title="String(measure(shape, 2))" @click="pick(origin)">x</p>
 </template>
 "#;
 
@@ -180,12 +189,19 @@ fn navigation_from_vue_lands_on_authored_sources() {
             return;
         };
         let project = Project::open(tsgo).await;
+        let mut mismatches = Vec::new();
+        // Like plain TypeScript, tsgo also lists the renamed specifier in
+        // `import type { Shape as Plain }` as an implementation of `Shape`.
         for (request, needle, nth, expected) in [
             (
                 Request::Implementation,
                 "Shape, Point",
                 2,
-                vec![("shapes.ts", "Circle"), ("shapes.ts", "Square")],
+                vec![
+                    ("Card.vue", "Shape"),
+                    ("shapes.ts", "Circle"),
+                    ("shapes.ts", "Square"),
+                ],
             ),
             (
                 Request::Implementation,
@@ -217,13 +233,105 @@ fn navigation_from_vue_lands_on_authored_sources() {
                 2,
                 vec![("shapes.ts", "Shape")],
             ),
+            (
+                Request::Implementation,
+                "plain.area()",
+                "plain.ar".len(),
+                vec![("shapes.ts", "area"), ("shapes.ts", "area")],
+            ),
+            (
+                Request::Implementation,
+                "Shape as Plain",
+                1,
+                vec![
+                    ("Card.vue", "Shape"),
+                    ("shapes.ts", "Circle"),
+                    ("shapes.ts", "Square"),
+                ],
+            ),
+            (
+                Request::TypeDefinition,
+                "plain.area()",
+                2,
+                vec![("shapes.ts", "Shape")],
+            ),
+            (
+                Request::Declaration,
+                "plain.area()",
+                2,
+                vec![("Card.vue", "plain")],
+            ),
+            (
+                Request::Implementation,
+                "Shape = new",
+                1,
+                vec![
+                    ("Card.vue", "Shape"),
+                    ("shapes.ts", "Circle"),
+                    ("shapes.ts", "Square"),
+                ],
+            ),
+            (
+                Request::TypeDefinition,
+                "origin: Point",
+                1,
+                vec![("shapes.ts", "{ x: number; y: number }")],
+            ),
+            (
+                Request::TypeDefinition,
+                "origin.y\"",
+                2,
+                vec![("shapes.ts", "{ x: number; y: number }")],
+            ),
+            (
+                Request::Declaration,
+                "measure(shape",
+                2,
+                vec![("Card.vue", "measure")],
+            ),
+            (
+                Request::TypeDefinition,
+                "shape, 2",
+                1,
+                vec![("shapes.ts", "Shape")],
+            ),
+            (
+                Request::Implementation,
+                "shape, 2",
+                1,
+                vec![("Card.vue", "shape")],
+            ),
+            (
+                Request::Implementation,
+                "shape.area()",
+                2,
+                vec![("Card.vue", "shape")],
+            ),
+            (
+                Request::Declaration,
+                "pick(origin)",
+                1,
+                vec![("Card.vue", "pick")],
+            ),
+            (
+                Request::TypeDefinition,
+                "origin)\"",
+                2,
+                vec![("shapes.ts", "{ x: number; y: number }")],
+            ),
+            (
+                Request::Implementation,
+                "pick(origin)",
+                1,
+                vec![("Card.vue", "pick")],
+            ),
         ] {
-            assert_eq!(
-                project.targets(request, needle, nth).await,
-                targets(&expected),
-                "{needle} @{nth}"
-            );
+            let actual = project.targets(request, needle, nth).await;
+            if actual != targets(&expected) {
+                mismatches.push(vize_l0::cstr!("{needle} @{nth}: {actual:?}"));
+            }
         }
         project.close().await;
+        assert!(mismatches.is_empty(), "{mismatches:#?}");
     });
 }

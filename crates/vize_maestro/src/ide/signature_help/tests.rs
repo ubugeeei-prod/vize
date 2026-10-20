@@ -43,6 +43,61 @@ fn signature_help_maps_sfc_script_and_template_with_crlf_and_utf16() {
 }
 
 #[test]
+fn signature_help_maps_template_directives_and_event_handlers() {
+    crate::runtime::block_on(async {
+        let Some(corsa_path) = resolve_tsgo_binary() else {
+            return;
+        };
+        let fixture = Fixture::new(&corsa_path);
+        let source = "<script setup lang=\"ts\">\nconst items = ['🦀']\nfunction format(value: string, precision: number): string { return value.repeat(precision) }\nfunction pick(index: number, label: string): void {}\n</script>\n\n<template>\n  <p v-if=\"format('if', )\" :title=\"format('bind', )\" @click=\"pick(0, )\">\n    <span v-for=\"item in items\" @click=\"() => pick(1, )\">{{ item }}</span>\n  </p>\n</template>\n";
+        let (state, uri) = fixture.vue("Directives.vue", source);
+        let bridge = fixture.bridge();
+        bridge.spawn().await.unwrap();
+
+        for (marker, label, active_parameter) in [
+            (
+                "format('if', ",
+                "format(value: string, precision: number): string",
+                1,
+            ),
+            (
+                "format('bind', ",
+                "format(value: string, precision: number): string",
+                1,
+            ),
+            ("pick(0, ", "pick(index: number, label: string): void", 1),
+            ("pick(1, ", "pick(index: number, label: string): void", 1),
+            (
+                "v-if=\"format(",
+                "format(value: string, precision: number): string",
+                0,
+            ),
+        ] {
+            let offset = source.find(marker).unwrap() + marker.len();
+            let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+            let help = SignatureHelpService::signature_help_with_corsa(&ctx, Some(bridge.clone()))
+                .await
+                .unwrap_or_else(|| panic!("signature help at {marker}"));
+            let labels: Vec<_> = help.signatures.iter().map(|s| s.label.as_str()).collect();
+            assert_eq!(labels, [label], "{marker}");
+            assert_eq!(help.active_parameter, Some(active_parameter), "{marker}");
+        }
+
+        for outside in ["v-if", "item in", "{{ item"] {
+            let offset = source.find(outside).unwrap() + 1;
+            let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+            assert_eq!(
+                SignatureHelpService::signature_help_with_corsa(&ctx, Some(bridge.clone())).await,
+                None,
+                "{outside}"
+            );
+        }
+
+        bridge.shutdown().await.unwrap();
+    });
+}
+
+#[test]
 fn signature_help_maps_art_variant_template() {
     crate::runtime::block_on(async {
         let Some(corsa_path) = resolve_tsgo_binary() else {

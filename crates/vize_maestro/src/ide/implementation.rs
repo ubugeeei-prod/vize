@@ -65,8 +65,37 @@ impl ImplementationService {
             .implementation(&document.request_uri, line, character)
             .await
             .ok()?;
-        let locations = corsa_support::map_canonical_corsa_locations(ctx, &document, locations);
-        TypeDefinitionService::convert_locations(locations)
+        let mut mapped = Vec::new();
+        for location in locations {
+            if let Some(found) =
+                corsa_support::map_canonical_corsa_location(ctx, &document, &location)
+            {
+                mapped.push(found);
+                continue;
+            }
+            // A template ref-unwrap shadow (`var name: __U<__R_name>`) has no
+            // authored span; its semantic link leads to the setup binding.
+            for position in
+                corsa_support::linked_semantic_positions(&document, &location.uri, &location.range)
+            {
+                let Ok(found) = bridge
+                    .implementation(&position.request_uri, position.line, position.character)
+                    .await
+                else {
+                    continue;
+                };
+                mapped.extend(corsa_support::map_canonical_corsa_locations(
+                    ctx, &document, found,
+                ));
+            }
+        }
+        let mut unique = Vec::with_capacity(mapped.len());
+        for location in mapped {
+            if !unique.contains(&location) {
+                unique.push(location);
+            }
+        }
+        TypeDefinitionService::convert_locations(unique)
     }
 
     async fn implementation_in_split_script(
