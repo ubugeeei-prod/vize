@@ -140,6 +140,20 @@ fn default_preset_accepts_dotted_static_slot_names() {
         "{:?}",
         strict.diagnostics
     );
+
+    let dynamic = r#"<DataTable><template #[name].memo="{ row }">{{ row }}</template></DataTable>"#;
+    let default_dynamic =
+        Linter::with_preset(LintPreset::HappyPath).lint_template(dynamic, "App.vue");
+    assert_eq!(
+        default_dynamic
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.rule_name == "vue/valid-v-slot")
+            .count(),
+        1,
+        "{:?}",
+        default_dynamic.diagnostics
+    );
 }
 
 #[test]

@@ -220,7 +220,7 @@ fn authored_modifier_options_reach_the_real_rule_instances() {
         (rule, r#"<div @click.custom="handler" />"#, config),
         (
             "vue/valid-v-slot",
-            r#"<v-data-table><template v-slot:item.memo="{ item }">{{ item.memo }}</template></v-data-table>"#,
+            r#"<v-data-table><template #[name].memo="{ item }">{{ item.memo }}</template></v-data-table>"#,
             configuration(&configuration_page(
                 &serde_json::json!({ "ruleOptions": { "vue/valid-v-slot": { "allowModifiers": true } } }),
                 true,

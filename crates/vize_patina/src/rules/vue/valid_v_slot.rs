@@ -233,10 +233,15 @@ mod mixed_default_tests;
 mod tests;
 
 struct ConfiguredValidVSlot;
+struct StaticNameValidVSlot;
 
 impl ValidVSlot {
     pub(crate) fn allowing_modifiers() -> impl Rule {
         ConfiguredValidVSlot
+    }
+
+    pub(crate) fn allowing_static_name_dots() -> impl Rule {
+        StaticNameValidVSlot
     }
 }
 
@@ -256,5 +261,25 @@ impl Rule for ConfiguredValidVSlot {
         directive: &DirectiveNode<'a>,
     ) {
         ValidVSlot.check_slot_directive(ctx, element, directive, true);
+    }
+}
+
+impl Rule for StaticNameValidVSlot {
+    fn meta(&self) -> &'static RuleMeta {
+        ValidVSlot.meta()
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+        ValidVSlot.enter_element(ctx, element);
+    }
+
+    fn check_directive<'a>(
+        &self,
+        ctx: &mut LintContext<'a>,
+        element: &ElementNode<'a>,
+        directive: &DirectiveNode<'a>,
+    ) {
+        let static_name = matches!(directive.arg.as_ref(), Some(ExpressionNode::Simple(_)));
+        ValidVSlot.check_slot_directive(ctx, element, directive, static_name);
     }
 }
