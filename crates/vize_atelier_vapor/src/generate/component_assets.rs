@@ -7,7 +7,10 @@
 //! where it is created (upstream's single-use `createAssetComponent`).
 
 use crate::ir::{BlockIRNode, ComponentKind, NegativeBranch, OperationNode};
-use vize_carton::ensure_sufficient_stack;
+use vize_carton::{SmallVec, ensure_sufficient_stack};
+
+/// Inline for the few asset components a template uses.
+type Usages<'a> = SmallVec<[Usage<'a>; 4]>;
 
 struct Usage<'a> {
     tag: &'a str,
@@ -17,7 +20,7 @@ struct Usage<'a> {
 
 /// The tags to resolve before the render's first operation.
 pub(super) fn hoisted<'a>(block: &BlockIRNode<'a>) -> impl Iterator<Item = &'a str> {
-    let mut usages = std::vec::Vec::new();
+    let mut usages = Usages::new();
     visit_block(block, true, &mut usages);
     usages
         .into_iter()
@@ -25,7 +28,7 @@ pub(super) fn hoisted<'a>(block: &BlockIRNode<'a>) -> impl Iterator<Item = &'a s
         .map(|usage| usage.tag)
 }
 
-fn visit_block<'a>(block: &BlockIRNode<'a>, root: bool, usages: &mut std::vec::Vec<Usage<'a>>) {
+fn visit_block<'a>(block: &BlockIRNode<'a>, root: bool, usages: &mut Usages<'a>) {
     ensure_sufficient_stack(|| {
         for operation in block.operation.iter() {
             visit_operation(operation, root, usages);
@@ -38,7 +41,7 @@ fn visit_block<'a>(block: &BlockIRNode<'a>, root: bool, usages: &mut std::vec::V
     });
 }
 
-fn visit_negative<'a>(branch: &NegativeBranch<'a>, usages: &mut std::vec::Vec<Usage<'a>>) {
+fn visit_negative<'a>(branch: &NegativeBranch<'a>, usages: &mut Usages<'a>) {
     match branch {
         NegativeBranch::Block(block) => visit_block(block, false, usages),
         NegativeBranch::If(node) => {
@@ -50,11 +53,7 @@ fn visit_negative<'a>(branch: &NegativeBranch<'a>, usages: &mut std::vec::Vec<Us
     }
 }
 
-fn visit_operation<'a>(
-    operation: &OperationNode<'a>,
-    root: bool,
-    usages: &mut std::vec::Vec<Usage<'a>>,
-) {
+fn visit_operation<'a>(operation: &OperationNode<'a>, root: bool, usages: &mut Usages<'a>) {
     match operation {
         OperationNode::CreateComponent(component) => {
             for slot in component.slots.iter() {
