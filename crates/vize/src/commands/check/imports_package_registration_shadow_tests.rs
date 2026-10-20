@@ -250,3 +250,84 @@ fn absent_vue_package_candidates_are_not_authored_members() {
         }
     }
 }
+
+#[test]
+#[cfg(unix)]
+fn workspace_vue_reachability_uses_the_main_import_graph() {
+    use std::os::unix::fs::symlink;
+
+    let root = tempfile::tempdir().unwrap();
+    let app = root.path().join("app");
+    let entry = write(
+        &app,
+        "src/entry.ts",
+        "import { Widget } from '@workspace/ui';\nvoid Widget;\n",
+    );
+    let package = root.path().join("packages/ui");
+    let index = write(
+        root.path(),
+        "packages/ui/src/index.ts",
+        "export { default as Widget } from './widget';\n",
+    );
+    let barrel = write(
+        root.path(),
+        "packages/ui/src/widget.d.ts",
+        "export { default } from './Widget.vue';\n",
+    );
+    let widget = write(
+        root.path(),
+        "packages/ui/src/Widget.vue",
+        "<template><button /></template>\n",
+    );
+    write(
+        root.path(),
+        "packages/ui/package.json",
+        r#"{"name":"@workspace/ui","type":"module","exports":{".":"./src/index.ts"}}"#,
+    );
+    let link = app.join("node_modules/@workspace/ui");
+    std::fs::create_dir_all(link.parent().unwrap()).unwrap();
+    symlink(&package, &link).unwrap();
+
+    let mut resolver = PackageRouteResolver::default();
+    let mut canonical_paths = CanonicalPathCache::default();
+    let mut session = LocalImportSession::new(&mut resolver);
+    let discovered = collect_transitive_local_imports_with_session(
+        &[entry],
+        &app,
+        &mut canonical_paths,
+        false,
+        None,
+        &mut resolver,
+        &mut session,
+    );
+
+    let route = discovered.package_routes[0]
+        .route
+        .as_ref()
+        .expect("the workspace route reaches an SFC and needs a shadow");
+    let canonical_index = index.canonicalize().unwrap();
+    let canonical_barrel = barrel.canonicalize().unwrap();
+    let canonical_widget = widget.canonicalize().unwrap();
+    let mut expected_dependencies = vec![
+        canonical_index.clone(),
+        canonical_barrel,
+        canonical_widget.clone(),
+    ];
+    expected_dependencies.sort();
+    assert_eq!(route.dependency_paths, expected_dependencies);
+    let mut authored = discovered.authored;
+    authored.sort();
+    let mut expected_authored = vec![canonical_index, canonical_widget];
+    expected_authored.sort();
+    assert_eq!(authored, expected_authored);
+    assert_eq!(
+        session.registration_cache.source_reads(),
+        0,
+        "workspace sources are classified by the main graph without a registration walk"
+    );
+    assert_eq!(
+        resolver.metrics().reachability_checks,
+        0,
+        "workspace sources do not need the bounded external-package scan"
+    );
+}
