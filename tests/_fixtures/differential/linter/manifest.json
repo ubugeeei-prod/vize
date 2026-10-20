@@ -16,7 +16,7 @@
       "api": "--current-api",
       "cases": {
         "path": "crates/vize_patina/tests/fixtures/lint-history/cases.json",
-        "sha256": "d0b7d4de710848dbeb14509e2cf2e1ae0d25a127cb909e7b7a2669d7e0b02ac2"
+        "sha256": "51af5513b27fdf892acad2889d98aee52fd45ac2ba5da58cc6cf50d1df588b53"
       }
     },
     {
@@ -54,43 +54,47 @@
   ],
   "oracles": {
     "path": "tests/_fixtures/differential/linter/oracle-index.json",
-    "sha256": "c81a821187526d5a0fa38b86b8a7007a8a1fadad4c63f6cb128c6ce9f878ea26"
+    "sha256": "384ce06321d16515c5345c562fa28fb0836a577a36019e6756a617daeac156f5"
   },
   "cases": [
     {
-          "id": "linter/current-api/prefer-use-id-context-9837",
-          "state": "active",
-          "targets": ["lint"],
-          "inputs": {
-            "root": "prefer-use-id-context-9837",
-            "files": [
-              {
-                "path": "request-id.ts.txt",
-                "role": "issue-authored-reproduction",
-                "sha256": "b02131cdc6f2aad72cf087058a0fcae88b99c2f9cfa1c2750b45bc7cd37c2084"
-              },
-              {
-                "path": "folder.test.ts.txt",
-                "role": "issue-authored-reproduction",
-                "sha256": "574354304ea31cd00c8dd8913bed9f1530448bb0a021465c3d85c924f13d0f4c"
-              },
-              {
-                "path": "Field.vue.txt",
-                "role": "regression-control",
-                "sha256": "6cf946d094e5911ee9add3cb9c73fa177776e46b2a62faf71a9e18b2ce446472"
-              },
-              {
-                "path": "vize.json.txt",
-                "role": "issue-authored-config",
-                "sha256": "f1bd1d90ff9d35967079c3da66c9286e8e246e6995409493969eed0fb8a9fc90"
-              }
-            ]
+      "id": "linter/current-api/prefer-use-id-context-9837",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "prefer-use-id-context-9837",
+        "files": [
+          {
+            "path": "request-id.ts.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "b02131cdc6f2aad72cf087058a0fcae88b99c2f9cfa1c2750b45bc7cd37c2084"
+          },
+          {
+            "path": "folder.test.ts.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "574354304ea31cd00c8dd8913bed9f1530448bb0a021465c3d85c924f13d0f4c"
+          },
+          {
+            "path": "Field.vue.txt",
+            "role": "regression-control",
+            "sha256": "6cf946d094e5911ee9add3cb9c73fa177776e46b2a62faf71a9e18b2ce446472"
+          },
+          {
+            "path": "vize.json.txt",
+            "role": "issue-authored-config",
+            "sha256": "f1bd1d90ff9d35967079c3da66c9286e8e246e6995409493969eed0fb8a9fc90"
           }
-        },
+        ]
+      }
+    },
     {
       "id": "linter/current-api/incomplete-type-project-10005",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "incomplete-type-project-10005",
         "files": [
@@ -672,6 +676,22 @@
             "path": "PugBox.vue.txt",
             "role": "issue-authored-pug-reproduction",
             "sha256": "49bc1fa6701612529326ad14f213f63ff349433d7292c8640fffccdaab311f8a"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/type-aware-slot-outlet-9834",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "type-aware-slot-outlet-9834",
+        "files": [
+          {
+            "path": "MyList.vue.txt",
+            "sha256": "6dbc44473a588d921a1edc40a75f260ae38de476b138270c271d2dcf702fba62"
           }
         ]
       }

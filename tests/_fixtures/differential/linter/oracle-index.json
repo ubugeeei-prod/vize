@@ -222,5 +222,9 @@
   "linter/current-api/prefer-use-id-context-9837": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__prefer-use-id-context-9837.snap",
     "sha256": "28543706721f9b2c15c52b5c626725bdfc86662a73adb8b32a8893427f85434a"
+  },
+  "linter/current-api/type-aware-slot-outlet-9834": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__type-aware-slot-outlet-9834.snap",
+    "sha256": "0d3d6fb49ee5f33b0cf8ec72414556c6d100860a467d877b877346067c0651fb"
   }
 }
