@@ -1466,6 +1466,38 @@
       ]
     },
     {
+      "id": "typechecker/dynamic-component-union-listener-10026/native-element-union",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "dynamic-component-union-listener-10026",
+      "case": "native-element-union",
+      "test": "dynamic_component_union_listener_preserves_clean_diagnostics",
+      "regressionCommit": "0aafae7e41f1ac381d07fa9f0154084cc1e6f211",
+      "sourceRevision": "0aafae7e41f1ac381d07fa9f0154084cc1e6f211",
+      "packReference": {
+        "path": "dynamic-component-union-listener-10026/cases.json",
+        "sha256": "8ce291701dada237a6601f985cf50e6ddf1453ccd5f4bd2a6e69315b5f4c2149"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "dynamic-component-union-listener-10026/tsconfig.json.txt",
+          "sha256": "211008defcbd0abd98982ee3f034e4ef4749345d085fdb139d454e00f9eac8ea"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "dynamic-component-union-listener-10026/App.vue.txt",
+          "sha256": "318006797785b6647010bbb8c07269a9d6aac7d0a72ee9fc8de60a02962a10f5"
+        }
+      ]
+    },
+    {
       "id": "typechecker/cache-maintenance-9860/bounded-maintenance",
       "state": "active",
       "targets": [
