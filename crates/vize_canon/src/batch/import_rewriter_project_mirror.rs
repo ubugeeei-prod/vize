@@ -254,13 +254,8 @@ impl ImportRewriter {
             return Some(rewritten);
         }
         let candidate = Path::new(path);
-        let canonical_candidate = vize_carton::path::canonicalize_non_verbatim(candidate);
-        let canonical_project_root = vize_carton::path::canonicalize_non_verbatim(roots.0);
-        if candidate.is_absolute()
-            && let Ok(relative) = canonical_candidate
-                .strip_prefix(canonical_project_root.as_path())
-                .or_else(|_| candidate.strip_prefix(roots.0))
-            && is_rewritable_project_specifier(relative)
+        if let Some(relative) = absolute_project_relative(candidate, roots.0)
+            && is_rewritable_project_specifier(&relative)
         {
             if let Some(rewritten) =
                 self.rewrite_known_virtual_project_specifier(path, roots, mirrorable_project_files)
@@ -270,7 +265,7 @@ impl ImportRewriter {
             if !path.ends_with(".vue") && !absolute_import_needs_virtual_rewrite(candidate) {
                 return None;
             }
-            let mut rewritten = cstr!("{}", roots.1.join(relative).display());
+            let mut rewritten = cstr!("{}", roots.1.join(&relative).display());
             if path.ends_with(".vue") {
                 rewritten.push_str(".ts");
             }
@@ -332,4 +327,20 @@ impl ImportRewriter {
         }
         Some(rewritten)
     }
+}
+
+/// `candidate` relative to the project root, physical spelling first. Only an
+/// absolute spelling can name a project file, so bare and relative specifiers
+/// skip both `realpath` calls (each specifier paid them before #9727).
+fn absolute_project_relative(candidate: &Path, project_root: &Path) -> Option<PathBuf> {
+    if !candidate.is_absolute() {
+        return None;
+    }
+    let canonical_candidate = vize_carton::path::canonicalize_non_verbatim(candidate);
+    let canonical_project_root = vize_carton::path::canonicalize_non_verbatim(project_root);
+    canonical_candidate
+        .strip_prefix(&canonical_project_root)
+        .or_else(|_| candidate.strip_prefix(project_root))
+        .ok()
+        .map(Path::to_path_buf)
 }
