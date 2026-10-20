@@ -358,7 +358,7 @@ crates/vize_maestro/src/ide/diagnostics/component_props_tests.rs	3
 crates/vize_maestro/src/ide/diagnostics/corsa/art_variant_tests.rs	3
 crates/vize_maestro/src/ide/diagnostics/corsa/prop_default_key_link_tests.rs	1
 crates/vize_maestro/src/ide/diagnostics/corsa/relative_import_tests.rs	5
-crates/vize_maestro/src/ide/diagnostics/corsa/semantic_link_tests.rs	2
+crates/vize_maestro/src/ide/diagnostics/corsa/semantic_link_tests.rs	1
 crates/vize_maestro/src/ide/diagnostics/corsa/tests.rs	9
 crates/vize_maestro/src/ide/diagnostics/editor_typecheck_fixture.rs	2
 crates/vize_maestro/src/ide/diagnostics/editor_typecheck_tests.rs	9
