@@ -427,13 +427,12 @@ impl ServerState {
 fn document_root(path: &Path, workspace: &Path) -> PathBuf {
     let mut directory = path.parent().unwrap_or(workspace);
     while directory != workspace && directory.starts_with(workspace) {
-        if directory.join("package.json").is_file()
-            || directory.join("tsconfig.json").is_file()
+        if directory.join("tsconfig.json").is_file()
             || directory.join("jsconfig.json").is_file()
             || std::fs::read_dir(directory).is_ok_and(|entries| {
                 entries
                     .flatten()
-                    .any(|entry| is_config_marker(&entry.path()))
+                    .any(|entry| is_project_boundary_marker(&entry.path()))
             })
         {
             return directory.to_path_buf();
@@ -446,15 +445,19 @@ fn document_root(path: &Path, workspace: &Path) -> PathBuf {
     workspace.to_path_buf()
 }
 
-fn is_config_marker(path: &Path) -> bool {
+fn is_project_boundary_marker(path: &Path) -> bool {
     path.file_name()
         .and_then(|name| name.to_str())
         .is_some_and(|name| {
             name.starts_with("vite.config.")
                 || (name.starts_with("tsconfig") && name.ends_with(".json"))
-                || name == "package.json"
                 || name == "jsconfig.json"
         })
+}
+
+fn is_config_marker(path: &Path) -> bool {
+    is_project_boundary_marker(path)
+        || path.file_name().and_then(|name| name.to_str()) == Some("package.json")
 }
 
 #[cfg(test)]
