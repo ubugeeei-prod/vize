@@ -5,6 +5,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { gunzipSync } from "node:zlib";
+import { reviewLocalizedRequireScopedStyle } from "./support/lint-output-policy-review.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const review = path.join(
@@ -181,11 +182,14 @@ test("complete corrected captures retract exactly three positive client-guard wa
   const reviews = read("whole-correction-review.json.gz");
   const witnesses = read("original-source-witnesses.json.gz");
   const observed: unknown[] = [];
-  let files = 0;
+  let files = 0,
+    reviewedMessages = 0;
   for (const capture of captures) {
     assert.equal(hash(capture.raw), capture.sha256);
     assert.equal(hash(capture.baselineRaw), capture.baselineSha256);
-    assert.equal(fs.readFileSync(path.join(root, capture.path), "utf8"), capture.raw);
+    const reviewed = reviewLocalizedRequireScopedStyle(capture.raw);
+    reviewedMessages += reviewed.reviewedMessages;
+    assert.equal(fs.readFileSync(path.join(root, capture.path), "utf8"), reviewed.raw);
     const actual = JSON.parse(capture.raw),
       previous = JSON.parse(capture.baselineRaw);
     assert.deepEqual(
@@ -230,6 +234,7 @@ test("complete corrected captures retract exactly three positive client-guard wa
     }
   }
   assert.equal(files, 874);
+  assert.equal(reviewedMessages, 19);
   assert.equal(reviews.length, 3);
   assert.deepEqual(observed, [
     ["npmx.dev", "app/app.vue"],

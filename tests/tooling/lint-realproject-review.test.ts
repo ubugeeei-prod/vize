@@ -5,6 +5,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { gunzipSync } from "node:zlib";
+import { reviewLocalizedRequireScopedStyle } from "./support/lint-output-policy-review.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const review = path.join(root, "tests/_fixtures/_projects/lint-review/2026-10-11");
@@ -26,7 +27,8 @@ test("reviewed snapshots retain every whole provider packet and all 1977 ordered
   const original = compressed("original-provider-packets.json.gz");
   const provenance = compressed("source-provenance.json.gz");
   let files = 0,
-    changed = 0;
+    changed = 0,
+    reviewedMessages = 0;
   for (const capture of original) {
     const corrected = JSON.parse(
       gunzipSync(
@@ -39,9 +41,16 @@ test("reviewed snapshots retain every whole provider packet and all 1977 ordered
       ).toString(),
     ).find((entry: { path: string }) => entry.path === capture.path);
     const admitted = corrected ?? capture;
+    const reviewed = reviewLocalizedRequireScopedStyle(admitted.raw);
+    reviewedMessages += reviewed.reviewedMessages;
     const bytes = fs.readFileSync(path.join(root, capture.path));
-    assert.equal(bytes.toString(), admitted.raw, "reviewed whole packet bytes must stay intact");
-    assert.equal(sha256(bytes), admitted.sha256);
+    assert.equal(bytes.toString(), reviewed.raw, "reviewed whole packet bytes must stay intact");
+    assert.equal(
+      sha256(admitted.raw),
+      admitted.sha256,
+      "admitted producer evidence remains intact",
+    );
+    assert.equal(sha256(bytes), sha256(reviewed.raw));
     assert.equal(sha256(capture.raw), capture.sha256, "original producer evidence remains intact");
     const packets = JSON.parse(capture.raw);
     const source = provenance.find(
@@ -65,6 +74,7 @@ test("reviewed snapshots retain every whole provider packet and all 1977 ordered
   }
   assert.equal(files, 1977);
   assert.equal(changed, 316);
+  assert.equal(reviewedMessages, 37);
 });
 
 test("every added and removed whole diagnostic has a reviewed source policy", () => {
