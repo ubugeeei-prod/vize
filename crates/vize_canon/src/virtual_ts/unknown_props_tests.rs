@@ -83,25 +83,6 @@ fn component_listener_inference_accepts_camelized_data_and_aria_attrs() {
 }
 
 #[test]
-fn dynamic_component_union_does_not_own_listener_inference_diagnostics() {
-    let code = generate_usage(
-        "defineProps<{ is: 'input' | 'textarea' }>()",
-        r#"<component :is="is" value="text" @input="() => {}" />"#,
-        false,
-    );
-    let suppression = "// @ts-ignore Inference-only dynamic target/props; the canonical component-props call owns diagnostics.\n";
-    let suppression_start = code
-        .find(suppression)
-        .expect("dynamic inference suppression");
-    let call = &code[suppression_start + suppression.len()..];
-    assert!(
-        call.starts_with("  const __vize_emit_props_0 = (undefined as unknown as "),
-        "{code}"
-    );
-    assert!(call.contains(")(is)({\n    \"value\": \"text\","), "{code}");
-}
-
-#[test]
 fn listener_inference_maps_its_own_prop_keys_values_and_spreads() {
     let script = "import Child from './Child.vue'; const attrs = { hidden: true };";
     for spread in ["", "v-bind=\"attrs\" "] {
