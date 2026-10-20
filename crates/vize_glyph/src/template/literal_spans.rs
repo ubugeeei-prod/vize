@@ -50,7 +50,7 @@ impl ValueLines {
         match parsed_raw_lines(value, Representation::Html) {
             Some(raw) => Self::Parsed { raw, next: 1 },
             None => Self::Lexed(LiteralLineState::from_attribute(
-                attr.split('\n').next().unwrap_or_default(),
+                attr.split(['\n', '\r']).next().unwrap_or_default(),
             )),
         }
     }
@@ -77,7 +77,7 @@ impl ValueLines {
 /// Per-line "starts inside a string or quasi" flags for a value that parses
 /// as one expression (or, outside interpolations, as handler statements).
 pub(crate) fn parsed_raw_lines(value: &str, representation: Representation) -> Option<Vec<bool>> {
-    if !value.contains('\n') {
+    if !value.contains(['\n', '\r']) {
         return None;
     }
     let decoded = match representation {
@@ -104,8 +104,9 @@ pub(crate) fn parsed_raw_lines(value: &str, representation: Representation) -> O
         Err(_) => return None,
     }
     let mut raw = vec![false];
-    for (index, byte) in decoded.bytes().enumerate() {
-        if byte == b'\n' {
+    let bytes = decoded.as_bytes();
+    for (index, &byte) in bytes.iter().enumerate() {
+        if byte == b'\n' || (byte == b'\r' && bytes.get(index + 1) != Some(&b'\n')) {
             let start = (index + 1) as u32;
             raw.push(
                 spans

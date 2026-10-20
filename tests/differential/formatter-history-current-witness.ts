@@ -116,7 +116,7 @@ const OWNERS: Record<string, { originalSha256: string; functions: Record<string,
     originalSha256: "94b99ca1dcf0833d5706b73f95e41c9cdf280160e1dccdb751340ad86607b675",
     functions: {
       ranges_track_pragma_placement:
-        "8120d76a61ca7b815e73c633c93431ba5399f1227d8274a699d09c7d2a5a5400",
+        "136137b0db3b70b54c43bc36eafe0b67cb28f7fd5e6031bc72f518d0068ad97d",
     },
   },
 };

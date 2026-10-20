@@ -25,12 +25,12 @@ pub(super) fn write_indented_block(
     let trimmed = content.trim_end_matches('\n').trim_end_matches('\r');
     let mut inside_template_literal = false;
 
-    let separator = if newline == b"\r" { '\r' } else { '\n' };
-    for raw_line in trimmed.split(separator) {
-        // Split on '\n' leaves the '\r' of a CRLF pair attached to the line.
-        // Strip it so the configured newline is the only terminator emitted:
-        // otherwise CRLF content plus a CRLF `newline` yields "\r\r\n".
-        let line = raw_line.strip_suffix('\r').unwrap_or(raw_line);
+    // Every terminator, LF, CRLF or a lone CR, becomes the configured newline:
+    // a body kept as written may still use another ending than the layout.
+    let lines = trimmed
+        .split('\n')
+        .flat_map(|line| line.strip_suffix('\r').unwrap_or(line).split('\r'));
+    for line in lines {
         if !line.is_empty() && !inside_template_literal {
             output.extend_from_slice(indent);
         }
@@ -41,9 +41,66 @@ pub(super) fn write_indented_block(
     }
 }
 
+/// Trim a block body kept as written and remove the indentation its lines
+/// share, so a body indented by an earlier pass is not indented again.
+pub(super) fn kept_block_body(content: &str) -> vize_l0::String {
+    let is_terminator = |c: char| c == '\n' || c == '\r';
+    // Start at the first non-blank line, keeping its indentation.
+    let start = content
+        .find(|c: char| !c.is_whitespace())
+        .and_then(|first| content.get(..first))
+        .and_then(|blank| blank.rfind(is_terminator))
+        .map_or(0, |terminator| terminator + 1);
+    let body = content.get(start..).unwrap_or_default().trim_end();
+    let mut shared: Option<&str> = None;
+    let mut inside_template_literal = false;
+    for line in body
+        .split('\n')
+        .flat_map(|line| line.strip_suffix('\r').unwrap_or(line).split('\r'))
+    {
+        let text = line.trim_start_matches([' ', '\t']);
+        if !inside_template_literal && !text.is_empty() {
+            let indent = line.strip_suffix(text).unwrap_or_default();
+            shared = Some(shared.map_or(indent, |shared| {
+                let common = shared
+                    .bytes()
+                    .zip(indent.bytes())
+                    .take_while(|(a, b)| a == b)
+                    .count();
+                shared.get(..common).unwrap_or_default()
+            }));
+        }
+        inside_template_literal =
+            template_literal_state_after_line_from(inside_template_literal, line);
+    }
+    let shared = shared.unwrap_or_default();
+    if shared.is_empty() {
+        return body.into();
+    }
+    let mut output = vize_l0::String::with_capacity(body.len());
+    let mut inside_template_literal = false;
+    for (index, line) in body
+        .split('\n')
+        .flat_map(|line| line.strip_suffix('\r').unwrap_or(line).split('\r'))
+        .enumerate()
+    {
+        if index > 0 {
+            output.push('\n');
+        }
+        if inside_template_literal {
+            output.push_str(line);
+        } else {
+            output.push_str(line.strip_prefix(shared).unwrap_or(line));
+        }
+        inside_template_literal =
+            template_literal_state_after_line_from(inside_template_literal, line);
+    }
+    output
+}
+
 #[cfg(test)]
 mod tests {
-    use super::write_indented_block;
+    use super::{kept_block_body, write_indented_block};
 
     fn indent(content: &str) -> vize_l0::String {
         indent_with(content, b"\n")
@@ -111,5 +168,13 @@ mod tests {
             indent_with("const a = 1\r\nconst b = 2\r\n", b"\n"),
             "  const a = 1\n  const b = 2\n"
         );
+    }
+
+    #[test]
+    fn kept_template_literal_bytes_reach_a_fixed_point() {
+        let source = "const css = `\nbody {\n  color: red;\n}\n`\nconst x = ;\n";
+        let first = indent(&kept_block_body(source));
+        let second = indent(&kept_block_body(&first));
+        assert_eq!(second, first);
     }
 }

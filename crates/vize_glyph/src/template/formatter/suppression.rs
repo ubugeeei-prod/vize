@@ -101,7 +101,7 @@ impl<'s> LineJoiner<'s> {
             // The source gap must contain only whitespace; text and directive
             // expression newlines must never become template layout.
             blank_line = self.source.get(start) == Some(&b'<')
-                && gap.iter().filter(|&&byte| byte == b'\n').take(2).count() == 2
+                && line_breaks(gap) >= 2
                 && gap.iter().copied().all(is_whitespace);
         }
         if self.current.is_none() || self.current != previous {
@@ -274,7 +274,7 @@ fn locked_line_ranges(source: &[u8]) -> Vec<(usize, usize)> {
     let mut line_start = 0;
     let mut pragma_above = false;
     loop {
-        let line_end = memchr::memchr(b'\n', source.get(line_start..).unwrap_or_default())
+        let line_end = memchr::memchr2(b'\n', b'\r', source.get(line_start..).unwrap_or_default())
             .map_or(source.len(), |offset| line_start + offset);
         let line = source.get(line_start..line_end).unwrap_or_default();
         // A blank line ends nothing and covers nothing: ESLint would apply the
@@ -288,7 +288,11 @@ fn locked_line_ranges(source: &[u8]) -> Vec<(usize, usize)> {
         if line_end >= source.len() {
             break;
         }
-        line_start = line_end + 1;
+        line_start = line_end
+            + usize::from(
+                source.get(line_end) == Some(&b'\r') && source.get(line_end + 1) == Some(&b'\n'),
+            )
+            + 1;
     }
     locked
 }
@@ -307,6 +311,16 @@ fn contains_any(haystack: &[u8], needles: &[&[u8]]) -> bool {
     needles
         .iter()
         .any(|needle| memchr::memmem::find(haystack, needle).is_some())
+}
+
+/// LF, CRLF and a lone CR each end one line.
+fn line_breaks(gap: &[u8]) -> usize {
+    gap.iter()
+        .enumerate()
+        .filter(|&(index, &byte)| {
+            byte == b'\n' || (byte == b'\r' && gap.get(index + 1) != Some(&b'\n'))
+        })
+        .count()
 }
 
 #[cfg(test)]
@@ -328,5 +342,14 @@ mod tests {
         let both = b"<!-- eslint-disable-next-line -->\n<p/> <!-- eslint-disable-line -->";
         assert_eq!(locked_line_ranges(both), [(34, 67)]);
         assert_eq!(&both[34..67], b"<p/> <!-- eslint-disable-line -->");
+
+        for newline in [b"\r".as_slice(), b"\r\n"] {
+            let mut source = b"<!-- eslint-disable-next-line -->".to_vec();
+            source.extend_from_slice(newline);
+            let start = source.len() + 2;
+            source.extend_from_slice(b"  a <b/>");
+            assert_eq!(locked_line_ranges(&source), [(start, source.len())]);
+            assert_eq!(&source[start..], b"a <b/>");
+        }
     }
 }

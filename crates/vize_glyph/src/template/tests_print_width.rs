@@ -97,6 +97,27 @@ fn hugged_inline_children_contribute_to_opening_tag_width() {
 }
 
 #[test]
+fn authored_multiline_mixed_child_uses_its_formatted_width_on_the_first_pass() {
+    let options = FormatOptions {
+        print_width: 80,
+        ..FormatOptions::default()
+    };
+    let source = r#"<div>
+  <span class="variant-count"
+    >{{ parsed.variants.length }} variant{{
+      parsed.variants.length != 1 ? "s" : ""
+    }}</span
+  >
+</div>"#;
+
+    let formatted = format_template_content(source, &options).unwrap();
+    assert_eq!(
+        format_template_content(&formatted, &options).unwrap(),
+        formatted
+    );
+}
+
+#[test]
 fn authored_hugged_text_wrap_does_not_rejoin_past_print_width() {
     let options = FormatOptions {
         print_width: 100,
@@ -178,6 +199,22 @@ fn hugged_multiline_interpolation_with_trailing_text_uses_parent_depth() {
 
     let formatted = format_template_content(source, &options).unwrap();
     assert_eq!(formatted.as_str(), expected);
+    assert_eq!(
+        format_template_content(&formatted, &options).unwrap(),
+        formatted
+    );
+}
+
+#[test]
+fn newly_wrapped_hugged_interpolation_with_trailing_text_is_stable() {
+    let options = FormatOptions {
+        print_width: 40,
+        ..FormatOptions::default()
+    };
+    let source =
+        r#"<div><h3>{{ CODE_OUTPUT_LABELS[codeOutputTarget] }} Compilation Error</h3></div>"#;
+
+    let formatted = format_template_content(source, &options).unwrap();
     assert_eq!(
         format_template_content(&formatted, &options).unwrap(),
         formatted

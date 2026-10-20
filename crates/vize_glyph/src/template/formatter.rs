@@ -88,7 +88,9 @@ impl<'a> TemplateFormatter<'a> {
                 && byte_at(source, pos + 1) == b'{'
                 && let Some((expr_start, expr_end, end_pos)) =
                     parse_interpolation_range(source, pos)
-                && sub_slice(source, pos..end_pos).contains(&b'\n')
+                && sub_slice(source, pos..end_pos)
+                    .iter()
+                    .any(|byte| matches!(byte, b'\n' | b'\r'))
             {
                 self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
                 let expr = input.get(expr_start..expr_end).unwrap_or_default();
@@ -251,14 +253,19 @@ impl<'a> TemplateFormatter<'a> {
             // Accumulate text content until newline or tag
             let content_start = pos;
             while pos < len {
-                let Some(offset) = memchr3(b'\n', b'<', b'{', sub_slice(source, pos..)) else {
+                // A CR ends the line too: `endOfLine: "cr"` output has no LF.
+                let tail = sub_slice(source, pos..);
+                let Some(offset) = earliest_offset(
+                    memchr3(b'\n', b'<', b'{', tail),
+                    memchr::memchr(b'\r', tail),
+                ) else {
                     pos = len;
                     break;
                 };
                 pos += offset;
 
                 match byte_at(source, pos) {
-                    b'\n' | b'<' => break,
+                    b'\n' | b'\r' | b'<' => break,
                     b'{' if pos + 1 < len && byte_at(source, pos + 1) == b'{' => {
                         if let Some((_, _, end_pos)) = parse_interpolation_range(source, pos) {
                             pos = end_pos;
@@ -284,7 +291,7 @@ impl<'a> TemplateFormatter<'a> {
             }
 
             // Handle newline
-            if pos < len && byte_at(source, pos) == b'\n' {
+            if pos < len && matches!(byte_at(source, pos), b'\n' | b'\r') {
                 self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
                 pos += 1;
             }
@@ -328,5 +335,12 @@ fn normalize_inline_styles(attrs: &mut [super::attributes::ParsedAttribute]) {
         {
             attr.value = Some(normalized);
         }
+    }
+}
+
+fn earliest_offset(left: Option<usize>, right: Option<usize>) -> Option<usize> {
+    match (left, right) {
+        (Some(left), Some(right)) => Some(left.min(right)),
+        (offset, None) | (None, offset) => offset,
     }
 }

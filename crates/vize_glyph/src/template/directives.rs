@@ -135,6 +135,14 @@ pub(super) fn reanchor_continuation_lines(
     options: &FormatOptions,
     representation: Representation,
 ) -> (String, bool) {
+    // A lone CR ends a line like LF; the lines are rebuilt with LF below.
+    let normalized;
+    let value = if value.contains('\r') && !value.contains('\n') {
+        normalized = value.replace('\r', "\n");
+        normalized.as_str()
+    } else {
+        value
+    };
     let Some(first_break) = value.find('\n') else {
         return (value.to_compact_string(), false);
     };

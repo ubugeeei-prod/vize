@@ -27,7 +27,13 @@ pub(super) fn write_script_block(
         source_type,
         sort_imports,
     )
-    .unwrap_or_else(|_| trimmed.to_compact_string());
+    .unwrap_or_else(|_| {
+        if options.vue_indent_script_and_style {
+            block_indent::kept_block_body(content)
+        } else {
+            trimmed.to_compact_string()
+        }
+    });
 
     if let Some(opening_tag) = &opening_tag {
         opening_tag::write_raw(output, opening_tag);

@@ -66,8 +66,9 @@ pub(in crate::formatter) fn starts_v_pre_attribute(bytes: &[u8], cursor: usize) 
     }
     let terminated = bytes
         .get(cursor + NAME.len())
-        .is_none_or(|byte| matches!(byte, b' ' | b'\t' | b'\r' | b'=' | b'/' | b'>'));
-    let separated = cursor == 0 || matches!(bytes.get(cursor - 1), Some(b' ' | b'\t' | b'\n'));
+        .is_none_or(|byte| matches!(byte, b' ' | b'\t' | b'\r' | b'\n' | b'=' | b'/' | b'>'));
+    let separated =
+        cursor == 0 || matches!(bytes.get(cursor - 1), Some(b' ' | b'\t' | b'\r' | b'\n'));
     terminated && separated
 }
 

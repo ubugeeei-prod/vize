@@ -3,7 +3,7 @@
 
 use super::compat::can_start_string_literal;
 use super::{BlockAttrs, advance_line, find_closing_tag_end, skip_regex_literal};
-use memchr::{memchr, memmem};
+use memchr::{memchr2, memmem};
 
 pub(in crate::sfc::parse) fn can_start_regex_literal(prev_significant_char: u8) -> bool {
     matches!(
@@ -73,11 +73,19 @@ pub(in crate::sfc::parse) fn skip_script_string_literal(
         }
 
         if c == b'\\' && pos + 1 < len {
-            if bytes.get(pos + 1) == Some(&b'\n') {
-                *line += 1;
-                *last_newline = pos + 1;
+            match bytes.get(pos + 1) {
+                Some(b'\n') => {
+                    *line += 1;
+                    *last_newline = pos + 1;
+                    pos += 2;
+                }
+                Some(b'\r') if bytes.get(pos + 2) == Some(&b'\n') => {
+                    *line += 1;
+                    *last_newline = pos + 2;
+                    pos += 3;
+                }
+                _ => pos += 2,
             }
-            pos += 2;
             continue;
         }
 
@@ -90,7 +98,7 @@ pub(in crate::sfc::parse) fn skip_script_string_literal(
             return pos + 1;
         }
 
-        if quote != b'`' && c == b'\n' {
+        if quote != b'`' && matches!(c, b'\n' | b'\r') {
             return pos + 1;
         }
 
@@ -122,14 +130,20 @@ fn skip_template_expression(
             continue;
         }
 
-        if b == b' ' || b == b'\t' || b == b'\r' {
+        // A lone CR ends a JS line, though only LF counts lines.
+        if matches!(b, b' ' | b'\t' | b'\r') {
+            if b == b'\r' {
+                prev_significant_char = b'\n';
+            }
             pos += 1;
             continue;
         }
 
         if b == b'/' && pos + 1 < len && bytes.get(pos + 1) == Some(&b'/') {
             pos += 2;
-            if let Some(newline_offset) = memchr(b'\n', bytes.get(pos..).unwrap_or_default()) {
+            if let Some(newline_offset) =
+                memchr2(b'\n', b'\r', bytes.get(pos..).unwrap_or_default())
+            {
                 pos += newline_offset;
             } else {
                 pos = len;
@@ -202,7 +216,7 @@ fn skip_template_expression(
 
 #[cfg(test)]
 mod tests {
-    use super::{BlockAttrs, script_regex_end, skip_regex_literal};
+    use super::{BlockAttrs, script_regex_end, skip_regex_literal, skip_script_string_literal};
     use std::borrow::Cow;
 
     #[test]
@@ -244,5 +258,24 @@ mod tests {
                 assert_eq!((line, last), (old_line, old_last));
             }
         }
+    }
+
+    #[test]
+    fn script_strings_respect_cr_line_terminators() {
+        let bytes = b"\"unterminated\r</script>";
+        let (mut line, mut last_newline) = (4, 0);
+        assert_eq!(
+            skip_script_string_literal(bytes, 0, bytes.len(), b'\"', &mut line, &mut last_newline),
+            14
+        );
+        assert_eq!((line, last_newline), (4, 0));
+
+        let bytes = b"\"before\\\r\nafter\"";
+        let (mut line, mut last_newline) = (4, 0);
+        assert_eq!(
+            skip_script_string_literal(bytes, 0, bytes.len(), b'\"', &mut line, &mut last_newline),
+            bytes.len()
+        );
+        assert_eq!((line, last_newline), (5, 9));
     }
 }

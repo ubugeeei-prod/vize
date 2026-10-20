@@ -3,7 +3,7 @@
 
 use std::borrow::Cow;
 
-use memchr::{memchr, memchr2, memchr3, memmem};
+use memchr::{memchr2, memchr3, memmem};
 
 use super::compat::can_start_string_literal;
 use super::literals::{can_start_regex_literal, script_regex_end, skip_script_string_literal};
@@ -56,12 +56,8 @@ pub(super) fn find_script_block_end<'a>(search: BlockEndSearch<'a>) -> BlockPars
             let run = bytes
                 .get(pos..next_quote.min(next_slash_or_lt))
                 .unwrap_or_default();
-            if let Some(&last) = run
-                .iter()
-                .rev()
-                .find(|&&c| !matches!(c, b' ' | b'\t' | b'\r'))
-            {
-                prev_significant_char = last;
+            if let Some(&last) = run.iter().rev().find(|&&c| !matches!(c, b' ' | b'\t')) {
+                prev_significant_char = if last == b'\r' { b'\n' } else { last };
             }
             advance_line(run, pos, &mut line, &mut last_newline);
             pos += run.len();
@@ -72,7 +68,9 @@ pub(super) fn find_script_block_end<'a>(search: BlockEndSearch<'a>) -> BlockPars
         if b == b'/' && pos + 1 < len && bytes.get(pos + 1) == Some(&b'/') {
             // Skip to end of line
             pos += 2;
-            if let Some(newline_offset) = memchr(b'\n', bytes.get(pos..).unwrap_or_default()) {
+            if let Some(newline_offset) =
+                memchr2(b'\n', b'\r', bytes.get(pos..).unwrap_or_default())
+            {
                 pos += newline_offset;
             } else {
                 pos = len;

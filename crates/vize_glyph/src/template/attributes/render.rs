@@ -60,7 +60,10 @@ pub(super) fn write_rendered_attribute(
     continuation_depth: usize,
     indent_continuation: bool,
 ) {
-    let mut lines = attr.split('\n');
+    // LF, CRLF and a lone CR each end a line.
+    let mut lines = attr
+        .split('\n')
+        .flat_map(|line| line.strip_suffix('\r').unwrap_or(line).split('\r'));
     let mut literal = ValueLines::for_attribute(attr);
     if let Some(first) = lines.next() {
         output.extend_from_slice(first.trim_end_matches('\r').as_bytes());

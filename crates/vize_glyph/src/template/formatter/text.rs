@@ -29,9 +29,16 @@ impl TemplateFormatter<'_> {
         let end = text.end();
         let multiline = formatted.contains('\n');
         let depth = if multiline
-            && parse_interpolation_range(text.as_str().as_bytes(), 0)
-                .is_some_and(|(_, _, end)| end == text.as_str().len())
-        {
+            && parse_interpolation_range(text.as_str().as_bytes(), 0).is_some_and(
+                |(_, _, interpolation_end)| {
+                    let tail = text
+                        .as_str()
+                        .as_bytes()
+                        .get(interpolation_end..)
+                        .unwrap_or_default();
+                    memchr::memmem::find(tail, b"{{").is_none()
+                },
+            ) {
             joiner.interpolation_depth(start, end, depth)
         } else {
             depth

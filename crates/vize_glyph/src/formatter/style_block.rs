@@ -19,11 +19,26 @@ pub(super) fn write_style_block(
         block.content.as_ref(),
         opening_tag.as_ref(),
     );
+    let kept = || {
+        if options.vue_indent_script_and_style {
+            block_indent::kept_block_body(content)
+        } else {
+            content.trim().to_compact_string()
+        }
+    };
     let formatted_content = if is_plain_css {
-        style::format_style_content(content, options)
-            .unwrap_or_else(|_| content.trim().to_compact_string())
+        // Comments keep their authored indentation, so an indented body is
+        // formatted from its dedented form.
+        let kept = kept();
+        let source = if options.vue_indent_script_and_style {
+            kept.as_str()
+        } else {
+            content
+        };
+        style::format_style_content(source, options).unwrap_or(kept)
     } else if scss_or_less(block.lang.as_deref()) {
-        let content = content.trim();
+        let kept = kept();
+        let content = kept.as_str();
         let requoted = options
             .normalize_css_quotes
             .then(|| style::requote_preprocessor_strings(content, options));
@@ -34,7 +49,7 @@ pub(super) fn write_style_block(
             .flatten()
             .unwrap_or_else(|| content.to_compact_string())
     } else {
-        content.trim().to_compact_string()
+        kept()
     };
 
     if let Some(opening_tag) = &opening_tag {

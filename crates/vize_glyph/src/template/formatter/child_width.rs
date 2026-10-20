@@ -56,12 +56,23 @@ impl TemplateFormatter<'_> {
         let source = input.as_bytes();
         let close = start + memchr::memchr(b'<', source.get(start..)?)?;
         let child = input.get(start..close)?;
-        if child.is_empty()
-            || child
-                .as_bytes()
-                .iter()
-                .any(|byte| matches!(byte, b'\r' | b'\n'))
-        {
+        if child.is_empty() {
+            return None;
+        }
+        // An authored multiline leading interpolation owns its established
+        // layout. Later multiline interpolations in a mixed text run may be
+        // normalized to one line, so they still contribute their formatted
+        // width to the opening-tag decision.
+        if parse_interpolation_range(child.as_bytes(), 0).is_some_and(
+            |(expression_start, expression_end, _)| {
+                child
+                    .as_bytes()
+                    .get(expression_start..expression_end)
+                    .is_some_and(|expression| {
+                        expression.iter().any(|byte| matches!(byte, b'\r' | b'\n'))
+                    })
+            },
+        ) {
             return None;
         }
         let (closing_name, _) = parse_closing_tag(input, close)?;

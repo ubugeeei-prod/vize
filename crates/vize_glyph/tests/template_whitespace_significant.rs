@@ -127,3 +127,57 @@ fn non_significant_empty_element_still_collapses() {
         "<span></span>"
     );
 }
+
+#[test]
+fn split_v_pre_tag_keeps_its_content_on_every_pass() {
+    // `v-pre` followed by a line break skipped the raw-line preflight, so each
+    // pass indented the verbatim content one more level.
+    let options = FormatOptions {
+        single_attribute_per_line: true,
+        ..FormatOptions::default()
+    };
+    let source = "<template>\n  <code v-pre class=\"a\">\n    {{ x }}\n  </code>\n</template>\n";
+    let first = format_sfc(source, &options).unwrap().code;
+    assert_eq!(
+        first.as_str(),
+        "<template>\n  <code\n    v-pre\n    class=\"a\"\n  >\n    {{ x }}\n  </code>\n</template>\n"
+    );
+    assert_eq!(format_sfc(&first, &options).unwrap().code, first);
+}
+
+#[test]
+fn indented_bodies_kept_as_written_reach_a_fixed_point() {
+    // A body the formatter keeps as written was indented again on every pass.
+    let options = FormatOptions {
+        vue_indent_script_and_style: true,
+        ..FormatOptions::default()
+    };
+    for source in [
+        "<style lang=\"scss\">\n.a {\n  color: red;\n}\n</style>\n",
+        "<style lang=\"stylus\">\n.a\n  color red\n</style>\n",
+        "<style>\n/* first\n   second */\n</style>\n",
+        "<style>\n.a {\n  /* note */\n  .b { color: blue; }\n}\n</style>\n",
+    ] {
+        let first = format_sfc(source, &options).unwrap().code;
+        assert_eq!(
+            format_sfc(&first, &options).unwrap().code,
+            first,
+            "{source}"
+        );
+    }
+}
+
+#[test]
+fn unparseable_script_keeps_template_literal_bytes_on_every_pass() {
+    let options = FormatOptions {
+        vue_indent_script_and_style: true,
+        ..FormatOptions::default()
+    };
+    let source = "<script>\nconst css = `\nbody {\n  color: red;\n}\n`\nconst x = ;\n@@@ not valid javascript\n</script>\n";
+    let first = format_sfc(source, &options).unwrap().code;
+    assert_eq!(
+        first.as_str(),
+        "<script>\n  const css = `\nbody {\n  color: red;\n}\n`\n  const x = ;\n  @@@ not valid javascript\n</script>\n"
+    );
+    assert_eq!(format_sfc(&first, &options).unwrap().code, first);
+}

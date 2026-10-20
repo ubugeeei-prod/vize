@@ -22,18 +22,26 @@ pub(in crate::sfc::parse) fn skip_regex_literal(
     while pos < len
         && let Some(&c) = bytes.get(pos)
     {
-        if c == b'\n' {
+        if matches!(c, b'\n' | b'\r') {
             // An unescaped newline terminates JavaScript regex literals. Stop
             // treating this as regex so normal malformed-block handling wins.
             return None;
         }
 
         if c == b'\\' {
-            if pos + 1 < len && bytes.get(pos + 1) == Some(&b'\n') {
-                scanned_line += 1;
-                scanned_last_newline = pos + 1;
+            match bytes.get(pos + 1) {
+                Some(b'\n') => {
+                    scanned_line += 1;
+                    scanned_last_newline = pos + 1;
+                    pos += 2;
+                }
+                Some(b'\r') if bytes.get(pos + 2) == Some(&b'\n') => {
+                    scanned_line += 1;
+                    scanned_last_newline = pos + 2;
+                    pos += 3;
+                }
+                _ => pos = (pos + 2).min(len),
             }
-            pos = (pos + 2).min(len);
             continue;
         }
 
@@ -95,6 +103,25 @@ mod tests {
             Some(bytes.len())
         );
         assert_eq!((line, last_newline), (5, 3));
+    }
+
+    #[test]
+    fn cr_terminates_regex_and_escaped_crlf_stays_transactional() {
+        let bytes = b"/a\r</script>";
+        let (mut line, mut last_newline) = (4, 0);
+        assert_eq!(
+            skip_regex_literal(bytes, 0, bytes.len(), &mut line, &mut last_newline),
+            None
+        );
+        assert_eq!((line, last_newline), (4, 0));
+
+        let bytes = b"/a\\\r\nb/g";
+        let (mut line, mut last_newline) = (4, 0);
+        assert_eq!(
+            skip_regex_literal(bytes, 0, bytes.len(), &mut line, &mut last_newline),
+            Some(bytes.len())
+        );
+        assert_eq!((line, last_newline), (5, 4));
     }
 
     #[test]

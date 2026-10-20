@@ -163,7 +163,16 @@ pub(super) fn write_rebased_opaque_template(
     indent: &[u8],
     newline: &[u8],
 ) {
-    let raw_lines: Vec<_> = source.as_bytes().split(|byte| *byte == b'\n').collect();
+    // LF, CRLF and a lone CR each end a line.
+    let raw_lines: Vec<_> = source
+        .as_bytes()
+        .split(|byte| *byte == b'\n')
+        .flat_map(|line| {
+            line.strip_suffix(b"\r")
+                .unwrap_or(line)
+                .split(|byte| *byte == b'\r')
+        })
+        .collect();
     let Some(first) = raw_lines.iter().position(|line| !is_blank(line)) else {
         return;
     };
