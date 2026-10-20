@@ -1,6 +1,7 @@
 //! Keep the bytewise boundary walk as an independent optimization oracle.
 #![expect(clippy::disallowed_macros, reason = "tests assemble boundary fixtures")]
 use super::*;
+use alloc::format;
 
 #[test]
 fn vectorized_template_scan_matches_bytewise_boundaries() {
