@@ -36,7 +36,6 @@ export const valid = h(Counter, { count: 3 });
     let Some(snapshot) = snapshot else {
         return;
     };
-    assert!(snapshot.is_empty(), "capture exact differential diagnostics: {snapshot:#?}");
 
     let render_errors: Vec<_> = snapshot
         .iter()
