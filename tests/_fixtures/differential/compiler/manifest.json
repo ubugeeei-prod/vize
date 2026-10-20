@@ -260,6 +260,39 @@
         "contract": "compiler-ssr-module-bytes-v1",
         "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
       }
+    },
+    {
+      "id": "compiler/sfc/scoped-keyframes-nesting-9829",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "scoped-keyframes-nesting-9829",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "2db0530ad0e8be72b0b576f1e842b5af4d0ca101be4e28c90a07bba9b41a15e2",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "scoped-keyframes-nesting-9829/module.expected.txt",
+        "sha256": "b945742cb8eeacf6a241e21a074ad9862024a2e4591428bdbd36b5402b1e49c1",
+        "cssPath": "scoped-keyframes-nesting-9829/style.expected.css",
+        "cssSha256": "73515a00f438aede769725e91c8ced4ca0968d81a1ebb747326888ed02c2929f",
+        "source": "crates/vize_atelier_sfc/src/vite_plugin/css_scope/tests.rs:scopes_keyframes_when_unrelated_rules_use_nesting"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); scoped style compilation remains legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      }
     }
   ],
   "runtimePacks": [

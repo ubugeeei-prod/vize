@@ -147,6 +147,18 @@ fn preserves_nested_where_parent_specificity() {
 }
 
 #[test]
+fn scopes_keyframes_when_unrelated_rules_use_nesting() {
+    assert_eq!(
+        scope_css_for_pipeline(
+            ".card{animation:spin 1s linear infinite;animation-name:spin;-webkit-animation-name:spin;& :deep(.title){color:red;}}@keyframes spin{to{opacity:0;}}@-webkit-keyframes spin{to{opacity:0;}}",
+            "data-v-b84fad59"
+        )
+        .as_str(),
+        ".card[data-v-b84fad59]{animation:spin-b84fad59 1s linear infinite;animation-name:spin-b84fad59;-webkit-animation-name:spin-b84fad59;}.card[data-v-b84fad59] .title{color:red;}@keyframes spin-b84fad59{to{opacity:0;}}@-webkit-keyframes spin-b84fad59{to{opacity:0;}}"
+    );
+}
+
+#[test]
 fn preserves_comments_before_media_rules() {
     assert_eq!(
         scope_css_for_pipeline(

@@ -107,20 +107,29 @@ void test("compiler fixture pins a real full-module reference without native cre
       "compiler/sfc/vue2-preserve-boundaries-9886",
       "compiler/sfc/package-import-prop-type-9894",
       "compiler/sfc/scoped-where-nesting-9830",
+      "compiler/sfc/scoped-keyframes-nesting-9829",
     ],
   );
   const report = syntheticReport();
   assert.deepEqual(validateCompilerReport(loaded, report, build), report.summary);
   assert.deepEqual(summarizeNativeAcceptance(loaded, report, { sourceRevision }).total, {
-    planned: 8,
+    planned: 9,
     nativeHandled: 0,
     nativeEquivalent: 0,
-    unsupported: 8,
+    unsupported: 9,
     legacyBacked: 0,
     unverified: 0,
   });
-  assert.equal(loaded.cases.at(-2).comparison.scriptLang, "ts");
-  assert(Buffer.isBuffer(loaded.cases.at(-1).expectedCss));
+  assert.equal(
+    loaded.cases.find((current) => current.id === "compiler/sfc/package-import-prop-type-9894")
+      .comparison.scriptLang,
+    "ts",
+  );
+  assert(
+    loaded.cases
+      .filter((current) => current.id.includes("scoped-"))
+      .every((current) => Buffer.isBuffer(current.expectedCss)),
+  );
 });
 
 void test("compiler comparison checks every code byte and rejects forged native completion", () => {

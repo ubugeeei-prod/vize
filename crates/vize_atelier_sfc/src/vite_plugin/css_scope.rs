@@ -10,7 +10,8 @@ use attribute::add_scope_to_selector_end;
 
 /// Scope CSS with the Vite plugin pipeline's selector model.
 pub(super) fn scope_css_for_pipeline(css: &str, scope_id: &str) -> String {
-    transform_css_block(css, scope_id)
+    let scoped = transform_css_block(css, scope_id);
+    crate::style::scope_keyframes(scoped.as_str(), scope_id)
 }
 
 pub(super) fn unwrap_deep_selectors(css: &str) -> String {

@@ -5,6 +5,7 @@ mod nested;
 mod plain;
 mod where_selector;
 
+pub(crate) use keyframes::scope_keyframes;
 use plain::{is_preprocessor_lang, plain_style_output};
 use vize_carton::{String, ToCompactString};
 use where_selector::add_scope_to_element;
@@ -264,7 +265,7 @@ pub fn apply_scoped_css(css: &str, scope_id: &str) -> String {
 
     let scoped =
         nested::scope_nested_selectors(output.as_str(), attr_selector.as_str()).unwrap_or(output);
-    keyframes::scope_keyframes(scoped.as_str(), scope_id)
+    scope_keyframes(scoped.as_str(), scope_id)
 }
 
 /// Text buffered since `start`, without the `{` that was just pushed.
