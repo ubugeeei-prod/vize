@@ -1,1 +1,4 @@
-<script setup lang="ts">\ndefineProps<{ title: string; elevated?: boolean }>();\n</script>\n<template><section>{{ title }}</section></template>\n
+<script setup lang="ts">
+defineProps<{ title: string; elevated?: boolean }>();
+</script>
+<template><section>{{ title }}</section></template>

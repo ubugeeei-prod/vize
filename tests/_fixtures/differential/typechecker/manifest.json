@@ -1775,7 +1775,7 @@
       "sourceRevision": "f07065df35d25bc76f355e5f106c80dbefa922b5",
       "packReference": {
         "path": "art-variant-implicit-component-9854/cases.json",
-        "sha256": "56019dd9de231ece1fc32ce9412d000b9b33fecb73435a161b4050d29a146a82"
+        "sha256": "d946d578578d678addf1df61eddaf91ab2b812677a807a83e6e8bc79927884f5"
       },
       "inputs": [
         {
@@ -1786,17 +1786,17 @@
         {
           "file": "src/MyCard.vue",
           "path": "art-variant-implicit-component-9854/src/MyCard.vue.txt",
-          "sha256": "8dddbb77b3b5f90ce6f73ccbed76dae2a2b2f6ca0ecdc721cd80fd6bbb925e30"
+          "sha256": "455de116ba8d563f320c6b90d5a655a7c9cef4d8305e00e6705adf289420df35"
         },
         {
           "file": "src/MyCard.art.vue",
           "path": "art-variant-implicit-component-9854/src/MyCard.art.vue.txt",
-          "sha256": "7bd09ffd4b538bb4e50bfe9b885dee989f024e81779a403b4eb7015a5d39215a"
+          "sha256": "8244d93074da638cd1c9f7a93845de4e7cf146f4da11b7c170ac7eff39ae3eea"
         },
         {
           "file": "src/MyCardExplicit.art.vue",
           "path": "art-variant-implicit-component-9854/src/MyCardExplicit.art.vue.txt",
-          "sha256": "919d27f882ff1356d1fcd301be00ac63bc393298d7789bb3a9dae6b9fbd99c07"
+          "sha256": "224008e13f14210912b95eadfed63f36f18ffc1ee8108261f418d0f11bc9600a"
         }
       ]
     }

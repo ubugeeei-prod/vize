@@ -50,24 +50,31 @@ defineArt("./MyCard.vue", { title: "MyCard" });
         return;
     };
 
-    for file in ["src/MyCard.art.vue", "src/MyCardExplicit.art.vue"] {
-        assert!(
-            snapshot
-                .iter()
-                .any(|(candidate, code, message)| candidate == file
-                    && *code == Some(2322)
-                    && message.contains("number")
-                    && message.contains("string")),
-            "{file} must report the wrong title type: {snapshot:#?}"
-        );
-        assert!(
-            snapshot
-                .iter()
-                .any(|(candidate, code, message)| candidate == file
-                    && *code == Some(2345)
-                    && message.contains("title")
-                    && message.contains("missing")),
-            "{file} must report the missing required title: {snapshot:#?}"
-        );
-    }
+    let wrong_type = "Type 'number' is not assignable to type 'string'.";
+    let missing_title = concat!(
+        "Argument of type '{ elevated: true; }' is not assignable to parameter of type ",
+        "'__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { [x: string]: unknown; } & ",
+        "{ [x: `data${string}`]: unknown; } & Record<string, unknown>>'.\n",
+        "Property 'title' is missing in type '{ elevated: true; }' but required in type ",
+        "'{ readonly title: string; readonly elevated?: boolean | undefined; }'.",
+    );
+    let expected: Vec<(vize_carton::String, Option<u32>, vize_carton::String)> = vec![
+        ("src/MyCard.art.vue".into(), Some(2322), wrong_type.into()),
+        (
+            "src/MyCard.art.vue".into(),
+            Some(2345),
+            missing_title.into(),
+        ),
+        (
+            "src/MyCardExplicit.art.vue".into(),
+            Some(2322),
+            wrong_type.into(),
+        ),
+        (
+            "src/MyCardExplicit.art.vue".into(),
+            Some(2345),
+            missing_title.into(),
+        ),
+    ];
+    assert_eq!(snapshot, expected);
 }

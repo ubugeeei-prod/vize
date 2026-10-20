@@ -37,7 +37,40 @@
           "source": "src/MyCardExplicit.art.vue.txt"
         }
       ],
-      "diagnostics": []
+      "diagnostics": [
+        {
+          "file": "src/MyCard.art.vue",
+          "line": 5,
+          "column": 34,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        },
+        {
+          "file": "src/MyCard.art.vue",
+          "line": 6,
+          "column": 28,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ elevated: true; }' is not assignable to parameter of type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { [x: string]: unknown; } & { [x: `data${string}`]: unknown; } & Record<string, unknown>>'.\nProperty 'title' is missing in type '{ elevated: true; }' but required in type '{ readonly title: string; readonly elevated?: boolean | undefined; }'."
+        },
+        {
+          "file": "src/MyCardExplicit.art.vue",
+          "line": 6,
+          "column": 34,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        },
+        {
+          "file": "src/MyCardExplicit.art.vue",
+          "line": 7,
+          "column": 28,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ elevated: true; }' is not assignable to parameter of type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { [x: string]: unknown; } & { [x: `data${string}`]: unknown; } & Record<string, unknown>>'.\nProperty 'title' is missing in type '{ elevated: true; }' but required in type '{ readonly title: string; readonly elevated?: boolean | undefined; }'."
+        }
+      ]
     }
   ]
 }

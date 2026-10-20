@@ -48,19 +48,15 @@ fn define_art_string_source_types_its_implicit_variant_component() {
         false,
     );
 
-    assert!(
+    assert_eq!(
         output
             .code
-            .contains(r#"declare const MyCard: typeof import("./MyCard.vue").default;"#),
-        "the implicit art subject must resolve to its authored module:\n{}",
-        output.code
-    );
-    assert!(
-        !output
-            .code
-            .contains(r#"declare const MyCard: import("vue").GlobalComponents extends"#),
-        "the implicit art subject must not fall back to an ambient `any`:\n{}",
-        output.code
+            .lines()
+            .filter_map(|line| line.strip_prefix("declare const MyCard: "))
+            .collect::<Vec<_>>(),
+        vec![r#"typeof import("./MyCard.vue").default;"#],
+        "the implicit art subject must resolve exactly to its authored module:\n{}",
+        output.code,
     );
 }
 
