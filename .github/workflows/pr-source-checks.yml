@@ -84,10 +84,9 @@ jobs:
         if: ${{ env.AFFECTED == 'true' }}
   # Tooling tests otherwise ran only in scheduled Full qualification, so docs
   # and tooling breaks reached main. The PR tier selects what a change affects.
+  # Built beside the planner, not after it: nearly every PR selects tooling.
   affected-tooling-cli:
     name: Affected tooling CLI
-    needs: pr-source-plan
-    if: ${{ needs.pr-source-plan.outputs.affected-tooling == 'true' }}
     uses: ./.github/workflows/full-source-cli.yml
   affected-tooling:
     name: Affected tooling (${{ matrix.name }})
@@ -124,8 +123,9 @@ jobs:
           WORKERS: ${{ needs.affected-tooling.result }}
         run: |
           echo "selected=$SELECTED cli=$CLI workers=$WORKERS"
-          if [[ "$SELECTED" == true ]]; then [[ "$CLI" == success && "$WORKERS" == success ]]
-          else [[ "$SELECTED" == false && "$CLI" == skipped && "$WORKERS" == skipped ]]; fi
+          [[ "$CLI" == success ]]
+          if [[ "$SELECTED" == true ]]; then [[ "$WORKERS" == success ]]
+          else [[ "$SELECTED" == false && "$WORKERS" == skipped ]]; fi
   # Beside the lanes, not before them: every lane already waits for the source
   # report, which requires this job.
   ci-selection-tests:
