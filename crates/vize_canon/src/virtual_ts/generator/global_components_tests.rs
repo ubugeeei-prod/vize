@@ -41,6 +41,30 @@ fn generate(script: &str, template: &str, check_unknown_components: bool) -> Vir
 }
 
 #[test]
+fn define_art_string_source_types_its_implicit_variant_component() {
+    let output = generate(
+        r#"defineArt("./MyCard.vue", { title: "MyCard" });"#,
+        r#"<variant><MyCard :title="123" /></variant>"#,
+        false,
+    );
+
+    assert!(
+        output
+            .code
+            .contains(r#"declare const MyCard: typeof import("./MyCard.vue").default;"#),
+        "the implicit art subject must resolve to its authored module:\n{}",
+        output.code
+    );
+    assert!(
+        !output
+            .code
+            .contains(r#"declare const MyCard: import("vue").GlobalComponents extends"#),
+        "the implicit art subject must not fall back to an ambient `any`:\n{}",
+        output.code
+    );
+}
+
+#[test]
 fn unknown_component_flag_preserves_complete_dynamic_code_and_projection() {
     for (script, template) in [
         ("", "<component :is=\"'button'\">x</component>"),
