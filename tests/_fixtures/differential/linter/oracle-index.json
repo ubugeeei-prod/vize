@@ -209,6 +209,6 @@
   },
   "linter/current-api/vue-path-alias-types-9864": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__vue-path-alias-types-9864.snap",
-    "sha256": "74d0dbeac227560db42a66f7d795b76b7168d67be0e79d01b562622705cd4390"
+    "sha256": "52e4ec70e7a4e05c3ea6fbc8b4800057c60d8f3620756c6e7e96cedafc7973c1"
   }
 }
