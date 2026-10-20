@@ -128,6 +128,33 @@
       }
     },
     {
+      "id": "linter/current-api/nuxt-builtins-9866",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "nuxt-builtins-9866",
+        "files": [
+          {
+            "path": "app.vue.txt",
+            "role": "issue-authored-root",
+            "sha256": "63c1fb3634b5ab76dca3c9935629cda7582f157b4638da766f73b8f690864f7e"
+          },
+          {
+            "path": "HomeLink.vue.txt",
+            "role": "issue-authored-component",
+            "sha256": "5362dc0aab5809c4729ee24efd00b452b0eeae794a17a53f965eb5470d2c7b69"
+          },
+          {
+            "path": "nuxt.config.ts.txt",
+            "role": "issue-authored-config",
+            "sha256": "0c0a194972dba8a1d34f6bb042145b632e449a4d972806b4e9afd42bfdae44d6"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/current-api/patina-rule-guards-9870-9871",
       "state": "active",
       "targets": [
