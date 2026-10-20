@@ -206,7 +206,21 @@ fn project<P>(
         .import_map
         .get_original_offset(diagnostic.end as u32) as usize;
     let projected = match document.mapping {
-        Some(mapping) => mapping.diagnostic_range_to_authored(pre_start, pre_end),
+        Some(mapping) => mapping
+            .diagnostic_range_to_authored(pre_start, pre_end)
+            .or_else(|| {
+                rules::is_checker_give_up(diagnostic.code)
+                    .then(|| {
+                        let end = rules::give_up_statement_end(
+                            document.generated,
+                            diagnostic.start,
+                            diagnostic.end,
+                        );
+                        let end = document.import_map.get_original_offset(end as u32) as usize;
+                        mapping.enclosed_range_to_authored(pre_start, end.max(pre_end))
+                    })
+                    .flatten()
+            }),
         None => Some((pre_start, pre_end.max(pre_start))),
     };
     let FinishedDiagnostic {

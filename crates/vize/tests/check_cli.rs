@@ -10,6 +10,8 @@ mod corsa_requirement;
 mod empty_inputs;
 #[path = "check_cli/global_component_value_imports.rs"]
 mod global_component_value_imports;
+#[path = "check_cli/spread_instantiation_depth.rs"]
+mod spread_instantiation_depth;
 #[path = "check_cli/stubs.rs"]
 mod stubs;
 #[path = "support/vite_config.rs"]

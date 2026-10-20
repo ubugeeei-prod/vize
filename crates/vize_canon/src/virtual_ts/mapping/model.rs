@@ -267,6 +267,22 @@ impl ProjectionMapping {
         let (start, end) = super::map_generated_range_to_source(&self.spans, start, end)?;
         Some((start + self.authored_base, end + self.authored_base))
     }
+
+    /// The authored range of the widest row lying inside a checker range whose
+    /// start has no row: a give-up over a whole generated call (`TS2589` on
+    /// `check({ ...props })`) belongs to the construct its literal maps to.
+    pub fn enclosed_range_to_authored(&self, start: usize, end: usize) -> Option<(usize, usize)> {
+        self.spans
+            .iter()
+            .filter(|span| start <= span.gen_range.start && span.gen_range.end <= end)
+            .max_by_key(|span| span.gen_range.len())
+            .map(|span| {
+                (
+                    span.src_range.start + self.authored_base,
+                    span.src_range.end + self.authored_base,
+                )
+            })
+    }
 }
 
 /// `offset` in `from` moved to the same relative byte of `to`, clamped to

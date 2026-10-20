@@ -88,3 +88,56 @@ fn a_give_up_with_an_authored_range_is_an_ordinary_diagnostic() {
         AssembledOrigin::Checker(2589)
     ));
 }
+
+const CALL_SFC: &str = "<template><CountTo v-bind=\"props\" /></template>\n";
+const CALL: &str = "(undefined as unknown as Check)({\n  ...props,\n});\nvoid x;\n";
+
+fn assemble_call(start: usize, end: usize) -> Vec<AssembledDiagnostic<u32>> {
+    let tag = CALL_SFC.find("CountTo").unwrap();
+    let literal = CALL.find('{').unwrap()..CALL.find('}').unwrap() + 1;
+    let mapping = ProjectionMapping::from_spans(vec![VizeMapping::new(literal, tag..tag + 7)]);
+    let import_map = ImportSourceMap::empty();
+    let documents = [ProjectedDocument {
+        generated: CALL,
+        import_map: &import_map,
+        mapping: Some(&mapping),
+        tsx: false,
+    }];
+    let finished = vec![FinishedDiagnostic {
+        document: 0,
+        start,
+        end,
+        code: Some(2589),
+        severity: Some(1),
+        message: "Type instantiation is excessively deep and possibly infinite.".into(),
+        payload: 2589,
+    }];
+    assemble_diagnostics(&AuthoredSource::vue(CALL_SFC), &documents, finished, POLICY)
+}
+
+/// `check({ ...props })` with a deep spread is the user's own TS2589, so it is
+/// reported on the component tag the props literal belongs to.
+#[test]
+fn a_give_up_over_a_mapped_call_lands_on_its_authored_owner() {
+    let tag = CALL_SFC.find("CountTo").unwrap();
+    for end in [0, CALL.find(';').unwrap() + 1] {
+        assert_eq!(
+            assemble_call(0, end),
+            [AssembledDiagnostic {
+                start: tag,
+                end: tag + 7,
+                code: Some(2589),
+                severity: Some(1),
+                message: "Type instantiation is excessively deep and possibly infinite.".into(),
+                origin: AssembledOrigin::Checker(2589),
+            }],
+            "end {end}"
+        );
+    }
+    // The following statement holds no authored row.
+    let after = CALL.find("void").unwrap();
+    assert_eq!(
+        assemble_call(after, after)[0].origin,
+        AssembledOrigin::GeneratedGiveUp(2589)
+    );
+}
