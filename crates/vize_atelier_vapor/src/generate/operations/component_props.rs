@@ -17,6 +17,9 @@ pub(super) fn generate_component_props_str(
     if component.props.is_empty() {
         return "null".to_compact_string();
     }
+    if (component.props.iter()).any(|p| p.value_kind == PropValueKind::DisplayString) {
+        ctx.use_helper("toDisplayString");
+    }
     let has_dynamic_sources = component
         .props
         .iter()
@@ -66,7 +69,7 @@ fn generate_component_spread_props_str(ctx: &GenerateContext, props: &[IRProp<'_
             let key = match prop.value_kind {
                 PropValueKind::ModelUpdate => cstr!("\"update:\" + ({key})"),
                 PropValueKind::ModelModifiers => cstr!("({key}) + \"Modifiers\""),
-                PropValueKind::Expression => key,
+                PropValueKind::Expression | PropValueKind::DisplayString => key,
             };
             // Dynamic handler keys retain the event-name expression through
             // lowering; convert after resolving its authored lexical scope.
@@ -230,6 +233,9 @@ fn component_prop_expression_value(ctx: &GenerateContext, prop: &IRProp<'_>) -> 
                 return super::super::expression_retained::resolve_model_update_node(ctx, first);
             }
             PropValueKind::ModelModifiers => return first.content.to_compact_string(),
+            PropValueKind::DisplayString => {
+                return cstr!("_toDisplayString({})", ctx.resolve_expression_node(first));
+            }
             PropValueKind::Expression => {}
         }
         if let Some(raw) = first.content.strip_prefix("__RAW__") {
