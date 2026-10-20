@@ -149,11 +149,23 @@ pub(super) fn external_input_tsconfig_boundary(
             continue;
         }
         found_external = true;
-        while !path.starts_with(&boundary) {
-            boundary.pop();
+        if !retain_common_ancestor(&mut boundary, &path) {
+            // Different Windows volume prefixes have no shared ancestor. Keep
+            // the cwd as a non-matching ceiling so implicit source discovery
+            // stays disabled for that input.
+            return Some(cwd);
         }
     }
     found_external.then_some(boundary)
+}
+
+fn retain_common_ancestor(boundary: &mut PathBuf, path: &Path) -> bool {
+    while !path.starts_with(&*boundary) {
+        if !boundary.pop() || boundary.as_os_str().is_empty() {
+            return false;
+        }
+    }
+    true
 }
 
 pub(super) fn explicit_input_root(project_root: &Path, cwd: &Path) -> PathBuf {
@@ -462,5 +474,15 @@ mod tests {
             Some(ancestor_config)
         );
         let _ = std::fs::remove_dir_all(&workspace);
+    }
+
+    #[test]
+    fn unrelated_path_prefixes_refuse_an_unbounded_common_ancestor() {
+        let mut boundary = PathBuf::from("volume-a/work");
+        assert!(!super::retain_common_ancestor(
+            &mut boundary,
+            Path::new("volume-b/source.ts")
+        ));
+        assert!(boundary.as_os_str().is_empty());
     }
 }
