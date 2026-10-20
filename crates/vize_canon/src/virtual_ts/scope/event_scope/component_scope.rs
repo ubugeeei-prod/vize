@@ -43,6 +43,7 @@ pub(super) fn generate_component_handler_scope(
             scope,
             syntactic_type_only_imported_names: ctx.syntactic_type_only_imported_names,
             template_binding_access: ctx.template_binding_access,
+            template_ast: ctx.template_ast,
             source_context: ComponentPropSource::new(
                 ctx.template_source,
                 ctx.template_offset,

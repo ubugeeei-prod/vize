@@ -13,7 +13,7 @@ use crate::virtual_ts::expressions::{
 };
 use crate::virtual_ts::types::VizeMapping;
 
-pub(super) struct EmitInferenceContext<'a> {
+pub(super) struct EmitInferenceContext<'a, 'template> {
     pub(super) summary: &'a Croquis,
     pub(super) component_name: &'a str,
     pub(super) data: &'a EventHandlerScopeData,
@@ -23,6 +23,7 @@ pub(super) struct EmitInferenceContext<'a> {
     pub(super) safe_event_name: &'a str,
     pub(super) prop_key: &'a str,
     pub(super) template_binding_access: &'a TemplateBindingAccess,
+    pub(super) template_ast: Option<&'a vize_relief::RootNode<'template>>,
     pub(super) source_context: ComponentPropSource<'a>,
     pub(super) enclosing_vif_guard: Option<&'a str>,
     pub(super) event_inference_usages: &'a std::cell::RefCell<FxHashSet<usize>>,
@@ -32,7 +33,7 @@ pub(super) struct EmitInferenceContext<'a> {
 pub(super) fn generate_inferred_emit_args(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
-    ctx: &EmitInferenceContext<'_>,
+    ctx: &EmitInferenceContext<'_, '_>,
 ) -> Option<String> {
     let (usage_idx, usage) =
         find_component_usage_for_event(ctx.summary, ctx.component_name, ctx.data, ctx.scope)?;
@@ -57,6 +58,10 @@ pub(super) fn generate_inferred_emit_args(
         ctx.safe_event_name
     );
     let first_listener = ctx.event_inference_usages.borrow_mut().insert(usage_idx);
+    let dynamic_component = crate::virtual_ts::scope::is_owned_dynamic_component_alias(
+        ctx.template_ast,
+        usage,
+    ) || crate::virtual_ts::scope::is_owned_named_dynamic_component(ctx.template_ast, usage);
     let guard = usage
         .vif_guard
         .as_ref()
@@ -98,10 +103,10 @@ pub(super) fn generate_inferred_emit_args(
             ctx.component_ref,
         );
     } else if first_listener {
-        if !usage.spread_props.is_empty() {
+        if dynamic_component || !usage.spread_props.is_empty() {
             append!(
                 *ts,
-                "{}// @ts-ignore Inference-only props; the canonical component-props call owns diagnostics.\n",
+                "{}// @ts-ignore Inference-only dynamic target/props; the canonical component-props call owns diagnostics.\n",
                 ctx.indent
             );
         }

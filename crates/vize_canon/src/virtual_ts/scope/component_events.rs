@@ -32,13 +32,14 @@ pub(super) struct ComponentEventTypes {
     pub(super) listener_type_expr: String,
 }
 
-pub(super) struct ComponentEventTypeContext<'a> {
+pub(super) struct ComponentEventTypeContext<'a, 'template> {
     pub(super) summary: &'a Croquis,
     pub(super) virtual_ts_options: &'a VirtualTsOptions,
     pub(super) data: &'a EventHandlerScopeData,
     pub(super) scope: &'a Scope,
     pub(super) syntactic_type_only_imported_names: &'a FxHashSet<CompactString>,
     pub(super) template_binding_access: &'a TemplateBindingAccess,
+    pub(super) template_ast: Option<&'a vize_relief::RootNode<'template>>,
     pub(super) source_context: ComponentPropSource<'a>,
     pub(super) legacy_vue2: bool,
     pub(super) needs_typed_handler_assignment: bool,
@@ -56,7 +57,7 @@ pub(super) struct ComponentEventTypeContext<'a> {
 pub(super) fn generate_component_event_types(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
-    ctx: ComponentEventTypeContext<'_>,
+    ctx: ComponentEventTypeContext<'_, '_>,
 ) -> Option<ComponentEventTypes> {
     let ComponentEventTypeContext {
         summary,
@@ -65,6 +66,7 @@ pub(super) fn generate_component_event_types(
         scope,
         syntactic_type_only_imported_names,
         template_binding_access,
+        template_ast,
         source_context,
         legacy_vue2,
         needs_typed_handler_assignment,
@@ -251,6 +253,7 @@ pub(super) fn generate_component_event_types(
             safe_event_name: &safe_event_name,
             prop_key: &prop_key,
             template_binding_access,
+            template_ast,
             source_context,
             enclosing_vif_guard,
             event_inference_usages,
