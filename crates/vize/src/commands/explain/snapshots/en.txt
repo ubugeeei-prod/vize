@@ -4469,7 +4469,7 @@ tier: exact
 domain: the SFC's top-level blocks, their order and their attributes
 severity: warning
 category: recommended
-autofix: yes
+autofix: no
 docs: docs/content/rules/vue.md
 === vue/no-reserved-component-names
 vue/no-reserved-component-names · lint rule
@@ -4580,7 +4580,7 @@ tier: exact
 domain: the SFC's top-level blocks, their order and their attributes
 severity: warning
 category: recommended
-autofix: yes
+autofix: no
 docs: docs/content/rules/vue.md
 === vue/no-template-shadow
 vue/no-template-shadow · lint rule

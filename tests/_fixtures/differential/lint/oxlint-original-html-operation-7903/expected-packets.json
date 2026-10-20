@@ -119,10 +119,19 @@
         "severity": "error",
         "message": "Attribute should be hyphenated",
         "start": 37,
-        "end": 47,
+        "end": 43,
         "help": "Use kebab-case for attribute names",
         "labels": [],
-        "fix": null
+        "fix": {
+          "message": "Use kebab-case for attribute names",
+          "edits": [
+            {
+              "end": 43,
+              "new_text": "foo-bar",
+              "start": 37
+            }
+          ]
+        }
       }
     ]
   },
@@ -135,10 +144,19 @@
         "severity": "error",
         "message": "Attribute should not be hyphenated",
         "start": 48,
-        "end": 59,
+        "end": 55,
         "help": "Use camelCase or a single-word attribute name instead of kebab-case.",
         "labels": [],
-        "fix": null
+        "fix": {
+          "message": "Use camelCase or a single-word attribute name instead of kebab-case.",
+          "edits": [
+            {
+              "end": 55,
+              "new_text": "fooBar",
+              "start": 48
+            }
+          ]
+        }
       }
     ]
   },
