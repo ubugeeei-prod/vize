@@ -233,6 +233,17 @@ fn reactive_props_destructure_preserves_unused_diagnostics() {
     );
 }
 
+#[test]
+fn inferred_project_tsconfig_preserves_owned_batch_inputs() {
+    check_pack(
+        "inferred-project-tsconfig-9718",
+        "inferred_project_tsconfig_preserves_owned_batch_inputs",
+        "f95557dadaab83dc0f7d4a7613bdb7ed4e59d323",
+        Some(9718),
+        &["outside-root-include"],
+    );
+}
+
 fn check_pack(
     name: &str,
     test: &str,
@@ -266,7 +277,8 @@ fn check_pack(
             | "template-suppression-original"
             | "cache-maintenance-9860"
             | "nuxt-unknown-template-options-10013"
-            | "reactive-props-destructure-10008" => regression,
+            | "reactive-props-destructure-10008"
+            | "inferred-project-tsconfig-9718" => regression,
             _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
         }
     );

@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "id": "lsp/regression/inferred-project-tsconfig-9718",
+  "provenance": {
+    "fixCommit": "f95557dadaab83dc0f7d4a7613bdb7ed4e59d323",
+    "issue": 9718,
+    "witnessPath": "crates/vize_maestro/src/server/state/project_contexts/reference_tests.rs",
+    "witnessTest": "source_outside_a_single_tsconfig_uses_an_inferred_project",
+    "meaning": "a source excluded by the only tsconfig remains a distinct inferred-project input"
+  },
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": [
+    {
+      "source": "template/code/App.vue.txt",
+      "runtimePath": "template/code/App.vue",
+      "sha256": "a6b9b98ede93ce6a05925dab002db48152949441499a8e362befe2078de3b135"
+    },
+    {
+      "source": "src/Owned.vue.txt",
+      "runtimePath": "src/Owned.vue",
+      "sha256": "bfc43c6754b2eb18471dab82dc9c14a043c5942e6f87dd86c0795ffb9b8ecdfe"
+    },
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "2c9f1e78a63f68e4d7161b882e398236b2bfd21c06cb4bf0df257e3c823fd4ae"
+    }
+  ],
+  "entry": "template/code/App.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "745946f18dd11d6151f46120d48ca0d1506e503f43578c39bd5cf446cad032ca"
+  },
+  "method": "textDocument/foldingRange",
+  "scope": "pinned single-tsconfig ownership input; the Rust witness asserts inferred compiler authority"
+}

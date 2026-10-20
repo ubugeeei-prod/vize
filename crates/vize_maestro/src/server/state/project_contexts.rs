@@ -27,6 +27,21 @@ use super::{
 pub(super) struct ProjectContextKey {
     pub(super) root: PathBuf,
     pub(super) tsconfig: Option<PathBuf>,
+    pub(super) inferred: bool,
+}
+
+impl ProjectContextKey {
+    fn inferred(root: PathBuf) -> Self {
+        Self {
+            root,
+            tsconfig: None,
+            inferred: true,
+        }
+    }
+
+    pub(super) fn is_root(&self) -> bool {
+        self.tsconfig.is_none() && !self.inferred
+    }
 }
 
 impl From<PathBuf> for ProjectContextKey {
@@ -34,6 +49,7 @@ impl From<PathBuf> for ProjectContextKey {
         Self {
             root,
             tsconfig: None,
+            inferred: false,
         }
     }
 }
@@ -220,7 +236,7 @@ impl ServerState {
         let context = {
             let mut contexts = self.project_contexts.contexts.lock();
             if !contexts.contains_key(&root)
-                && root.tsconfig.is_none()
+                && root.is_root()
                 && self.is_primary_boundary(&root.root)
             {
                 return None;

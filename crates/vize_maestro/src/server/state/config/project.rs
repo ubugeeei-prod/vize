@@ -83,17 +83,14 @@ impl ServerState {
             .as_deref()
             .and_then(Path::parent)
             .unwrap_or(directory);
-        if key.is_none_or(|key| key.tsconfig.is_none())
-            && loaded.config.type_checker.tsconfig.is_none()
-        {
-            observations.extend(&vize_canon::ConfigurationObservations::capture(&[
-                root.join("tsconfig.json"),
-                root.join("jsconfig.json"),
-                base.join("tsconfig.json"),
-                base.join("jsconfig.json"),
-            ]));
-        }
-        let selected = key
+        let inferred = key.is_some_and(|key| key.inferred);
+        let conventional = [
+            root.join("tsconfig.json"),
+            root.join("jsconfig.json"),
+            base.join("tsconfig.json"),
+            base.join("jsconfig.json"),
+        ];
+        let configured = key
             .and_then(|key| key.tsconfig.clone())
             .or_else(|| {
                 loaded
@@ -104,23 +101,33 @@ impl ServerState {
                     .map(|path| base.join(path))
             })
             .unwrap_or_else(|| {
-                [
-                    root.join("tsconfig.json"),
-                    root.join("jsconfig.json"),
-                    base.join("tsconfig.json"),
-                    base.join("jsconfig.json"),
-                ]
-                .into_iter()
-                .find(|path| path.is_file())
-                .unwrap_or_else(|| root.join("tsconfig.json"))
+                conventional
+                    .iter()
+                    .cloned()
+                    .find(|path| path.is_file())
+                    .unwrap_or_else(|| root.join("tsconfig.json"))
             });
-        if !selected.is_file()
+        if inferred
+            || (key.is_none_or(|key| key.is_root())
+                && loaded.config.type_checker.tsconfig.is_none())
+        {
+            let mut observed = conventional.to_vec();
+            if !observed.contains(&configured) {
+                observed.push(configured.clone());
+            }
+            observations.extend(&vize_canon::ConfigurationObservations::capture(&observed));
+        }
+        let selected = (!inferred).then_some(configured);
+        if selected
+            .as_ref()
+            .is_some_and(|selected| !selected.is_file())
             && (key.is_some_and(|key| key.tsconfig.is_some())
                 || loaded.config.type_checker.tsconfig.is_some())
         {
+            let selected = selected.as_ref().expect("selected project");
             loaded.watch_dependencies.push(selected.clone());
             observations.extend(&vize_canon::ConfigurationObservations::capture(
-                std::slice::from_ref(&selected),
+                std::slice::from_ref(selected),
             ));
             return Err(vize_l0::cstr!(
                 "selected TypeScript configuration does not exist: {}",
@@ -129,7 +136,7 @@ impl ServerState {
         }
         let mut dependencies = loaded.project.dependencies.clone();
         let compiler;
-        if selected.is_file() {
+        if let Some(selected) = selected.as_ref().filter(|selected| selected.is_file()) {
             // Keep the checker on the same TS project when Vite moves the source root.
             loaded.config.type_checker.tsconfig =
                 Some(selected.to_string_lossy().into_owned().into());
@@ -156,14 +163,19 @@ impl ServerState {
                 }
             }
         } else {
-            let attempt = vize_canon::CompilerConfigurationSnapshot::capture_attempt(root, None);
+            loaded.config.type_checker.tsconfig = None;
+            let attempt = if inferred {
+                vize_canon::CompilerConfigurationSnapshot::capture_inferred_attempt(root)
+            } else {
+                vize_canon::CompilerConfigurationSnapshot::capture_attempt(root, None)
+            };
             loaded.watch_dependencies.extend(attempt.dependencies);
             observations.extend(&attempt.observations);
             let snapshot = attempt.outcome.map_err(|error| vize_l0::cstr!("{error}"))?;
             dependencies.extend(snapshot.dependencies().iter().cloned());
             compiler = Arc::new(snapshot);
         }
-        dependencies.push(selected);
+        dependencies.extend(selected);
         dependencies.sort();
         dependencies.dedup();
         loaded.project.dependencies = dependencies;

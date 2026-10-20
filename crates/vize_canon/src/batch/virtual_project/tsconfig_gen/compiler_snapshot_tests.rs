@@ -108,6 +108,24 @@ fn admitted_absence_does_not_adopt_a_new_invalid_live_config() {
 }
 
 #[test]
+fn inferred_capture_observes_but_does_not_adopt_an_existing_config() {
+    let root = tempfile::tempdir().unwrap();
+    let root = root.path().canonicalize().unwrap();
+    let config = root.join("tsconfig.json");
+    std::fs::write(&config, r#"{"compilerOptions":{"strict":true}}"#).unwrap();
+
+    assert!(CompilerConfigurationSnapshot::capture(&root, None).is_err());
+    let inferred = CompilerConfigurationSnapshot::capture_inferred_attempt(&root);
+    assert!(inferred.dependencies.contains(&config));
+    let inferred = inferred.outcome.unwrap();
+    let configured = CompilerConfigurationSnapshot::capture(&root, Some(&config)).unwrap();
+
+    assert!(inferred.tsconfig_path.is_none());
+    assert!(inferred.flattened.options.is_empty());
+    assert!(!inferred.same_authority(&configured));
+}
+
+#[test]
 #[expect(
     clippy::disallowed_types,
     reason = "the fixture shares admitted immutable snapshots between native project owners"
@@ -185,6 +203,7 @@ fn concurrent_base_change_rejects_mixed_options_paths_and_vue_target() {
         let result = CompilerConfigurationSnapshot::capture_with_observer(
             root.path(),
             Some(&config),
+            false,
             || {
                 barrier.wait();
                 barrier.wait();
@@ -224,10 +243,14 @@ fn package_manifest_retarget_rejects_byte_identical_configs_with_different_path_
     }
     let config = root.path().join("tsconfig.json");
     std::fs::write(&config, r#"{"extends":"policy"}"#).unwrap();
-    let result =
-        CompilerConfigurationSnapshot::capture_with_observer(root.path(), Some(&config), || {
+    let result = CompilerConfigurationSnapshot::capture_with_observer(
+        root.path(),
+        Some(&config),
+        false,
+        || {
             std::fs::write(&manifest, r#"{"tsconfig":"second/base.json"}"#).unwrap();
-        });
+        },
+    );
     assert!(
         vize_carton::cstr!("{}", result.err().unwrap())
             .contains("configuration changed while it was being read")
@@ -256,11 +279,15 @@ fn package_link_retarget_rejects_identical_config_bytes_at_a_new_real_anchor() {
     std::os::unix::fs::symlink(root.path().join("first"), &link).unwrap();
     let config = root.path().join("tsconfig.json");
     std::fs::write(&config, r#"{"extends":"policy"}"#).unwrap();
-    let result =
-        CompilerConfigurationSnapshot::capture_with_observer(root.path(), Some(&config), || {
+    let result = CompilerConfigurationSnapshot::capture_with_observer(
+        root.path(),
+        Some(&config),
+        false,
+        || {
             std::fs::remove_file(&link).unwrap();
             std::os::unix::fs::symlink(root.path().join("second"), &link).unwrap();
-        });
+        },
+    );
     assert!(
         vize_carton::cstr!("{}", result.err().unwrap())
             .contains("configuration changed while it was being read")
@@ -284,10 +311,14 @@ fn higher_priority_extends_candidate_creation_rejects_the_previous_resolution() 
     )
     .unwrap();
     let preferred = root.path().join("policy");
-    let result =
-        CompilerConfigurationSnapshot::capture_with_observer(root.path(), Some(&config), || {
+    let result = CompilerConfigurationSnapshot::capture_with_observer(
+        root.path(),
+        Some(&config),
+        false,
+        || {
             std::fs::write(&preferred, r#"{"compilerOptions":{"strict":false}}"#).unwrap();
-        });
+        },
+    );
     assert!(
         vize_carton::cstr!("{}", result.err().unwrap())
             .contains("configuration changed while it was being read")
@@ -342,7 +373,7 @@ fn admitted_absence_rejects_primary_or_fallback_configuration_creation_during_ca
         let root = tempfile::tempdir().unwrap();
         let candidate = root.path().join(name);
         let result =
-            CompilerConfigurationSnapshot::capture_with_observer(root.path(), None, || {
+            CompilerConfigurationSnapshot::capture_with_observer(root.path(), None, false, || {
                 std::fs::write(&candidate, "{}").unwrap();
             });
         assert!(
@@ -470,9 +501,10 @@ fn rejected_absence_attempt_retains_both_default_config_candidates() {
     let absent = CompilerConfigurationSnapshot::capture_attempt(&root, None);
     assert!(absent.outcome.is_ok());
     assert_eq!(absent.dependencies, expected);
-    let raced = CompilerConfigurationSnapshot::capture_attempt_with_observer(&root, None, || {
-        std::fs::write(&config, "{}").unwrap();
-    });
+    let raced =
+        CompilerConfigurationSnapshot::capture_attempt_with_observer(&root, None, false, || {
+            std::fs::write(&config, "{}").unwrap();
+        });
     assert!(raced.outcome.is_err());
     assert!(raced.observations.needs_confirmation());
     assert_eq!(raced.dependencies, expected);

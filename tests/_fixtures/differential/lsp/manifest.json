@@ -770,6 +770,40 @@
         "lint": false,
         "typecheck": false
       }
+    },
+    {
+      "id": "lsp/regression/inferred-project-tsconfig-9718",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "inferred-project-tsconfig-9718",
+        "files": [
+          {
+            "path": "template/code/App.vue.txt",
+            "sha256": "a6b9b98ede93ce6a05925dab002db48152949441499a8e362befe2078de3b135"
+          },
+          {
+            "path": "src/Owned.vue.txt",
+            "sha256": "bfc43c6754b2eb18471dab82dc9c14a043c5942e6f87dd86c0795ffb9b8ecdfe"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "2c9f1e78a63f68e4d7161b882e398236b2bfd21c06cb4bf0df257e3c823fd4ae"
+          }
+        ]
+      },
+      "case": {
+        "path": "inferred-project-tsconfig-9718/case.json",
+        "sha256": "4958c3912cec65168462a519842f0a05694eafe0a358a40052f302f935147206"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
     }
   ]
 }

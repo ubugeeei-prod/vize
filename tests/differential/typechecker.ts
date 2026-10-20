@@ -34,6 +34,7 @@ export const TYPECHECKER_TESTS = {
   "reactive-props-destructure-10008": "reactive_props_destructure_preserves_unused_diagnostics",
   "nuxt-unknown-template-options-10013": "nuxt_unknown_template_options_preserve_explicit_checks",
   "native-inline-event-handler-9835": "native_inline_event_handler_is_contextually_typed",
+  "inferred-project-tsconfig-9718": "inferred_project_tsconfig_preserves_owned_batch_inputs",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
@@ -61,6 +62,7 @@ const sourceRevisions = {
   "reactive-props-destructure-10008": "f276e4d59cdaf765fd7d3f14eb3d679f5b685f98",
   "nuxt-unknown-template-options-10013": "fb700551a3a3a69f8976efa6fe31bca43ebc19b4",
   "native-inline-event-handler-9835": "8ac6ce1668e9bede8d73411e63a247dbd6f8eb56",
+  "inferred-project-tsconfig-9718": "f95557dadaab83dc0f7d4a7613bdb7ed4e59d323",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 
 export type Artifact = { path: string; sha256: string };
