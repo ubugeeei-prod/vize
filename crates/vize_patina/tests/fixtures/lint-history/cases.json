@@ -264,6 +264,18 @@
     "fixes": 0
   },
   {
+    "id": "multiline-v-for-source-9880",
+    "history": "c29c1099121beba537aad04f318ce7cb2bc77161",
+    "source": "<script setup lang=\"ts\">\nconst pages: string[][] = [[\"a\", \"b\"], [\"c\"]];\nconst current = 0;\nfunction pick(index: number): string[] {\n  return pages[index] ?? [];\n}\n</script>\n\n<template>\n  <ul>\n    <li\n      v-for=\"item in pages[\n        current\n      ]\"\n      :key=\"item\"\n    >{{ item }}</li>\n    <li\n      v-for=\"item in pick(\n        current\n      )\"\n      :key=\"item\"\n    >{{ item }}</li>\n    <li\n      v-for=\"item in\n        pick(current)\"\n      :key=\"item\"\n    >{{ item }}</li>\n    <li v-for=\"item in pick(current)\" :key=\"item\">{{ item }}</li>\n  </ul>\n</template>\n",
+    "filename": "MultilineVFor.vue",
+    "entry": "sfc",
+    "rule": "type/no-unsafe-template-binding",
+    "vue_version": "3",
+    "vapor": null,
+    "diagnostics": 0,
+    "fixes": 0
+  },
+  {
     "id": "vue-path-alias-types-9864",
     "history": "673c6fa430aba9ca81c87a81e3e63a4a8c844921",
     "source": "<script setup lang=\"ts\">\nimport { setupPanel } from \"#ui/side-panel.vue\";\nimport { setupPanel as setupPanelRelative } from \"../ui/side-panel.vue\";\nimport { label } from \"#ui/helpers\";\n\nconst viaAlias = setupPanel();\nconst viaRelative = setupPanelRelative();\n</script>\n\n<template>\n  <button type=\"button\" @click=\"viaAlias.open\">alias</button>\n  <button type=\"button\" @click=\"viaRelative.open\">relative</button>\n  <span>{{ label() }}</span>\n</template>\n",

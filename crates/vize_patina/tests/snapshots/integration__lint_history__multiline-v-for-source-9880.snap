@@ -1,0 +1,35 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "multiline-v-for-source-9880",
+    history: "c29c1099121beba537aad04f318ce7cb2bc77161",
+    source: "<script setup lang=\"ts\">\nconst pages: string[][] = [[\"a\", \"b\"], [\"c\"]];\nconst current = 0;\nfunction pick(index: number): string[] {\n  return pages[index] ?? [];\n}\n</script>\n\n<template>\n  <ul>\n    <li\n      v-for=\"item in pages[\n        current\n      ]\"\n      :key=\"item\"\n    >{{ item }}</li>\n    <li\n      v-for=\"item in pick(\n        current\n      )\"\n      :key=\"item\"\n    >{{ item }}</li>\n    <li\n      v-for=\"item in\n        pick(current)\"\n      :key=\"item\"\n    >{{ item }}</li>\n    <li v-for=\"item in pick(current)\" :key=\"item\">{{ item }}</li>\n  </ul>\n</template>\n",
+    filename: "MultilineVFor.vue",
+    entry: "sfc",
+    rule: "type/no-unsafe-template-binding",
+    vue_version: Some(
+        "3",
+    ),
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "MultilineVFor.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "MultilineVFor.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}
