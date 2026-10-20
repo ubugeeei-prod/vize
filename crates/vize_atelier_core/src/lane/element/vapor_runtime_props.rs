@@ -6,7 +6,9 @@
 
 use vize_l0::Box;
 
-use crate::{DirectiveNode, ElementNode, ExpressionNode, PropNode, SimpleExpressionNode};
+use crate::{
+    AttributeNode, DirectiveNode, ElementNode, ExpressionNode, PropNode, SimpleExpressionNode,
+};
 
 use super::TransformContext;
 
@@ -29,13 +31,15 @@ impl RuntimeOnlyContext {
         }
     }
 
-    pub(super) fn bind_attr<'a>(self, ctx: &TransformContext<'a>, prop: &mut PropNode<'a>) {
-        let PropNode::Attribute(attr) = prop else {
-            return;
-        };
-        if !runtime_only(attr.name, self.form, self.checkbox) {
-            return;
-        }
+    #[inline(always)]
+    pub(super) fn matches(self, name: &str) -> bool {
+        runtime_only(name, self.form, self.checkbox)
+    }
+
+    pub(super) fn directive<'a>(
+        ctx: &TransformContext<'a>,
+        attr: &AttributeNode<'a>,
+    ) -> PropNode<'a> {
         let mut dir = DirectiveNode::new(ctx.allocator, "bind", attr.loc.clone());
         let arg = SimpleExpressionNode::new(attr.name, true, attr.name_loc.clone());
         let value = attr.value.as_ref().map_or_else(
@@ -44,7 +48,7 @@ impl RuntimeOnlyContext {
         );
         dir.arg = Some(ExpressionNode::Simple(Box::new_in(arg, &ctx.allocator)));
         dir.exp = Some(ExpressionNode::Simple(Box::new_in(value, &ctx.allocator)));
-        *prop = PropNode::Directive(Box::new_in(dir, &ctx.allocator));
+        PropNode::Directive(Box::new_in(dir, &ctx.allocator))
     }
 }
 
