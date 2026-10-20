@@ -56,6 +56,7 @@ impl RuntimeOnlyContext {
 /// comparison (wide static elements pay one branch per attribute).
 /// `form` is `Some(true)` on an `<input>`, `Some(false)` on a `<textarea>` or
 /// `<select>`.
+#[inline(always)]
 fn runtime_only(name: &str, form: Option<bool>, checkbox: bool) -> bool {
     match name.as_bytes().first() {
         Some(b'i') => name == "innerHTML",
