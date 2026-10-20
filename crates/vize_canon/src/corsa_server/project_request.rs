@@ -71,7 +71,8 @@ impl CorsaServer {
                 .iter()
                 .zip(&params.files)
                 .zip(&paths)
-                .filter_map(|((old, new), path)| (old != new).then(|| path.clone()))
+                .filter(|((old, new), _)| old != new)
+                .map(|(_, path)| path.clone())
                 .collect::<Vec<_>>();
             let result = if changed.is_empty() {
                 session.checker.check_persistent_project()
