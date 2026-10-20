@@ -140,6 +140,16 @@ pub fn slot_navigation_prelude_utf16_len() -> usize {
     SLOT_NAVIGATION_PRELUDE.encode_utf16().count()
 }
 
+/// UTF-16 length of the root-typed attribute helper that a non-strict program
+/// no longer emits before the query (#3984).
+pub fn untyped_fallthrough_helper_utf16_len() -> usize {
+    include_str!(
+        "../../../../tests/_fixtures/differential/lsp/component-native-events/fallthrough-value-helper-before-3984.txt"
+    )
+    .encode_utf16()
+    .count()
+}
+
 /// UTF-16 growth from the complete helper at the original test's source
 /// baseline (da26dc4b2bb9f02492f8682929d29c4dfc1f7ec9). The older hosted
 /// counterfactual remains untouched; it predates other helper changes too.

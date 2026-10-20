@@ -208,6 +208,8 @@ pub(super) fn emit_scope_closures(
         legacy_vue2: options.legacy_vue2,
         check_unknown_props: check_options.check_unknown_props,
         check_unknown_fallthrough_props: check_options.check_unknown_fallthrough_props,
+        typed_fallthrough_values: check_options.fallthrough_attributes
+            || check_options.check_unknown_props,
         strict_component_attrs: check_options.strict_component_attrs(),
         experimental_strict_slot_children: options.experimental_strict_slot_children,
         relaxed_required_usage_starts: &relaxed_required_usage_starts,

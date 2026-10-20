@@ -398,7 +398,7 @@ fn replay_prior_runtime_tuple_read(
 // are generated declarations, not arbitrary diagnostic-name exemptions.
 const EVENT_HINTS: &[&str] = &[
     "__VizeHasRawProps",
-    "__VizeFallthroughValue",
+    "__VizePropValue",
     "__VizeNavigationSlots",
     "__VizeEmitPropsFactory",
 ];

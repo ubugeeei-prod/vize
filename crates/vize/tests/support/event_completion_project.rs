@@ -221,6 +221,7 @@ impl Project {
             assert_eq!(
                 observed.historical_query_position,
                 21_425 + witness::public_input_prelude_utf16_delta()
+                    - witness::untyped_fallthrough_helper_utf16_len()
             );
             assert_eq!(
                 observed.query_position,
