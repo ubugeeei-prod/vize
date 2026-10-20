@@ -11,8 +11,9 @@ use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::children::{
-    emit_create_text_vnode, emit_interpolation, emit_raw_interpolation_or_refuse,
-    emit_slot_compound_parts, emit_to_display_string, is_empty_interpolation,
+    emit_create_text_vnode, emit_dynamic_part, emit_interpolation, emit_plain_text_vnode,
+    emit_raw_interpolation_or_refuse, emit_slot_compound_parts, emit_to_display_string,
+    is_empty_interpolation,
 };
 use super::hoist::{emit_hoisted_element, is_hoistable};
 use super::js::escape_js_string;
@@ -82,7 +83,8 @@ pub(super) fn emit_outlet(
             cx.buf.push("{}");
         }
         cx.buf.push(", () => [");
-        emit_fallback(cx, &slot.fallback, compact_fallback)?;
+        let split_compound = opens_v_pre(slot, cx.source);
+        emit_fallback(cx, &slot.fallback, compact_fallback, split_compound)?;
         cx.buf.push("]");
         finish_outlet(cx, true, true);
     } else if props {
@@ -155,6 +157,7 @@ pub(super) fn emit_fallback(
     cx: &mut EmitCx<'_>,
     region: &Region<'_>,
     compact: bool,
+    split_compound: bool,
 ) -> Result<(), EmitError> {
     if !compact {
         cx.buf.indent();
@@ -168,7 +171,7 @@ pub(super) fn emit_fallback(
             let _id = cx.walk.mint();
             continue;
         }
-        emit_fallback_units(cx, op, compact, &mut first)?;
+        emit_fallback_units(cx, op, compact, split_compound, &mut first)?;
     }
     if !compact {
         cx.buf.deindent();
@@ -191,6 +194,7 @@ fn emit_fallback_units(
     cx: &mut EmitCx<'_>,
     op: &Op<'_>,
     compact: bool,
+    split_compound: bool,
     first: &mut bool,
 ) -> Result<(), EmitError> {
     match op {
@@ -198,7 +202,9 @@ fn emit_fallback_units(
             start_fallback_item(cx, compact, first);
             emit_create_text_vnode(cx, core::slice::from_ref(op))
         }
-        Op::Interpolation(interp) => emit_fallback_interp(cx, interp, compact, first),
+        Op::Interpolation(interp) => {
+            emit_fallback_interp(cx, interp, compact, split_compound, first)
+        }
         Op::Comment(comment) => emit_fallback_comment(cx, comment, compact, first),
         Op::Element(element) if cx.hoist_static && is_hoistable(element, cx.is_ts) => {
             start_fallback_item(cx, compact, first);
@@ -238,11 +244,13 @@ fn emit_fallback_comment(
 
 /// Slot fallback walks each L1 child (`generate_node`). A compound L2
 /// interpolation represents one adjacent text run, so preserve it as one
-/// `_createTextVNode` just like authored component slot children.
+/// `_createTextVNode` like authored component slot children, except where the
+/// old/default `v-pre` outlet contract retains the original child boundary.
 fn emit_fallback_interp(
     cx: &mut EmitCx<'_>,
     interp: &InterpolationOp<'_>,
     compact: bool,
+    split_compound: bool,
     first: &mut bool,
 ) -> Result<(), EmitError> {
     let id = cx.walk.mint();
@@ -267,8 +275,20 @@ fn emit_fallback_interp(
                 ))?
                 .parts
                 .clone();
-            start_fallback_item(cx, compact, first);
-            emit_slot_compound_parts(cx, &parts, interp.span)
+            if split_compound {
+                for part in parts.iter() {
+                    start_fallback_item(cx, compact, first);
+                    if part.dynamic {
+                        emit_dynamic_part(cx, part.text.as_str(), Site::Expression)?;
+                    } else {
+                        emit_plain_text_vnode(cx, part.text.as_str());
+                    }
+                }
+                Ok(())
+            } else {
+                start_fallback_item(cx, compact, first);
+                emit_slot_compound_parts(cx, &parts, interp.span)
+            }
         }
         ExprRef::Opaque(opaque) if is_empty_interpolation(opaque) => {
             start_fallback_item(cx, compact, first);
@@ -280,6 +300,26 @@ fn emit_fallback_interp(
             emit_raw_interpolation_or_refuse(cx, interp.expression)
         }
     }
+}
+
+/// The old/default DOM provider keeps a `v-pre` slot outlet's fallback text
+/// parts separate. L2 otherwise merges adjacent slot fallback text to match
+/// Vue, so retain the authored boundary only for this compatibility surface.
+fn opens_v_pre(slot: &SlotOp<'_>, source: &str) -> bool {
+    let opening = slot
+        .span
+        .slice(source)
+        .split_once('>')
+        .map_or("", |(open, _)| open);
+    opening.split_ascii_whitespace().skip(1).any(|part| {
+        part.strip_prefix("v-pre").is_some_and(|suffix| {
+            suffix.is_empty()
+                || suffix.starts_with('=')
+                || suffix.starts_with('.')
+                || suffix.starts_with(':')
+                || suffix.starts_with('[')
+        })
+    })
 }
 
 fn skip_region(cx: &mut EmitCx<'_>, region: &Region<'_>) {

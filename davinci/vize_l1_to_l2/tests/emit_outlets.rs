@@ -126,6 +126,22 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn v_pre_fallback_interp_keeps_the_old_default_child_boundary() {
+    assert_eq!(
+        assembled("<slot v-pre>{{ not }} an interpolation</slot>"),
+        "\
+const { toDisplayString: _toDisplayString, renderSlot: _renderSlot, createTextVNode: _createTextVNode } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return _renderSlot(_ctx.$slots, \"default\", {}, () => [
+    _toDisplayString(not),
+    _createTextVNode(\" an interpolation\")
+  ])
+}"
+    );
+}
+
+#[test]
 fn fallback_interp_keeps_trailing_condensed_space_in_the_same_text_vnode() {
     assert_shipped_parity(
         "<p><slot>{{ label }}\n<span v-if=\"required\" class=\"required\">*</span></slot></p>",
