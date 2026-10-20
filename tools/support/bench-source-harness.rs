@@ -214,16 +214,10 @@ fn source(root: &Path, tree: &BTreeMap<String, GitFile>, file: &str) -> Result<V
     );
     Ok(body)
 }
-// Select only a committed measurement manifest; historical trees used the
-// contributor manifest for the same exact compiler. Each arm authenticates the
-// complete selected Git blob before comparing the unchanged measurement recipe.
-fn measurement_toolchain_file(tree: &BTreeMap<String, GitFile>) -> &'static str {
-    if tree.contains_key("rust-measurement-toolchain.toml") {
-        "rust-measurement-toolchain.toml"
-    } else {
-        "rust-toolchain.toml"
-    }
-}
+// Measurements use the contributor pin. Each arm authenticates its complete
+// Git blob before comparing the unchanged measurement recipe.
+const TOOLCHAIN_FILE: &str = "rust-toolchain.toml";
+const MEASUREMENT_RUST: &str = "1.99.1";
 fn source_toml(
     root: &Path,
     tree: &BTreeMap<String, GitFile>,
@@ -426,7 +420,7 @@ fn arm(out: &Path, measurement: &Value, name: &str, head_root: &Path) -> Result<
     command(
         &cargo_resolve,
         "rustup",
-        serde_json::json!(["which", "--toolchain", "1.99.0", "cargo"]),
+        serde_json::json!(["which", "--toolchain", MEASUREMENT_RUST, "cargo"]),
         &root,
     )?;
     let cargo_path = utf8(cargo_path)?.trim().to_owned();
@@ -434,7 +428,7 @@ fn arm(out: &Path, measurement: &Value, name: &str, head_root: &Path) -> Result<
     command(
         &rustc_resolve,
         "rustup",
-        serde_json::json!(["which", "--toolchain", "1.99.0", "rustc"]),
+        serde_json::json!(["which", "--toolchain", MEASUREMENT_RUST, "rustc"]),
         &root,
     )?;
     let rustc_path = utf8(rustc_path)?.trim().to_owned();
@@ -448,7 +442,7 @@ fn arm(out: &Path, measurement: &Value, name: &str, head_root: &Path) -> Result<
     pinned_image(&rustc_process, &rustc_path)?;
     require!(
         text(&rustc_process, "executable")? == rustc_path
-            && utf8(rustc)?.starts_with("rustc 1.99.0 "),
+            && utf8(rustc)?.starts_with(&format!("rustc {MEASUREMENT_RUST} ")),
         "wrong build compiler"
     );
     let (metadata_process, metadata_stdout) = completed(&build.join("cargo-metadata"))?;
@@ -471,7 +465,7 @@ fn arm(out: &Path, measurement: &Value, name: &str, head_root: &Path) -> Result<
         pinned_image(process, &cargo_path)?;
         for (key, expected) in [
             ("RUSTC", rustc_path.as_str()),
-            ("RUSTUP_TOOLCHAIN", "1.99.0"),
+            ("RUSTUP_TOOLCHAIN", MEASUREMENT_RUST),
             ("RUSTFLAGS", "-C target-cpu=x86-64"),
             ("CARGO_INCREMENTAL", "0"),
             ("RUSTC_WRAPPER", ""),
@@ -720,9 +714,9 @@ fn arm(out: &Path, measurement: &Value, name: &str, head_root: &Path) -> Result<
             "duplicate external lock identity"
         );
     }
-    let toolchain = source_toml(&root, &tree, measurement_toolchain_file(&tree))?;
+    let toolchain = source_toml(&root, &tree, TOOLCHAIN_FILE)?;
     require!(
-        toml_at(&toolchain, &["toolchain", "channel"])?.as_str() == Some("1.99.0"),
+        toml_at(&toolchain, &["toolchain", "channel"])?.as_str() == Some(MEASUREMENT_RUST),
         "foreign source toolchain pin"
     );
     Ok(Arm {
@@ -774,15 +768,8 @@ fn comparable(base: &Arm, head: &Arm) -> Result<(), String> {
         "changed paired build profile"
     );
     require!(
-        source(
-            &base.root,
-            &base.tree,
-            measurement_toolchain_file(&base.tree)
-        )? == source(
-            &head.root,
-            &head.tree,
-            measurement_toolchain_file(&head.tree)
-        )?,
+        source(&base.root, &base.tree, TOOLCHAIN_FILE)?
+            == source(&head.root, &head.tree, TOOLCHAIN_FILE)?,
         "changed protocol toolchain"
     );
     for file in [".cargo/config", ".cargo/config.toml"] {

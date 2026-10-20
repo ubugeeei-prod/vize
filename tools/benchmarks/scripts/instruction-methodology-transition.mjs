@@ -7,6 +7,9 @@ import { isDeepStrictEqual } from "node:util";
 const FROM = "rustc 1.98.0 (88d9e12ae 2026-08-18)";
 const TO = "rustc 1.99.0 (b940084d7 2026-09-28)";
 const CURRENT = "rustc 1.99.1 (58cf8f9c3 2026-10-13)";
+// Single-toolchain re-baseline evidence: the same rows and inputs measured on 1.99.1.
+const REBASE_SOURCE = "e40813b3306bf85e5f61d96b19ebd432cae10334";
+const REBASE_RUN = "https://github.com/ubugeeei-prod/vize/actions/runs/39370420052";
 const SOURCE = "1a3996963af208c13cd732420bdee586df88bf7a";
 const RUN = "https://github.com/ubugeeei-prod/vize/actions/runs/37653130635";
 const ORIGINALS = [
@@ -34,10 +37,36 @@ function canonical(value) {
   );
 }
 
-// One reviewed toolchain transition. The complete old contract includes every
+function identities(budgets) {
+  return Object.fromEntries(
+    Object.entries(budgets.instruction).map(([id, { instructions: _, ...row }]) => [id, row]),
+  );
+}
+
+// 1.99.0 to 1.99.1 keeps every row, input and non-rustc method field; caps
+// still pass the caller's downward ratchet against the 1.99.0 registry.
+function rebaselineInstructionToolchain(current, base) {
+  assert.equal(base.source_commit, SOURCE, "unauthenticated 1.99.0 instruction provenance");
+  assert.equal(base.recorded_run, RUN, "unauthenticated 1.99.0 instruction provenance");
+  assert.equal(current.methodology.rustc, CURRENT, "unauthorized forward instruction compiler");
+  assert.deepEqual(
+    { ...current, instruction: identities(current) },
+    {
+      ...base,
+      source_commit: REBASE_SOURCE,
+      recorded_run: REBASE_RUN,
+      methodology: { ...base.methodology, rustc: CURRENT },
+      instruction: identities(base),
+    },
+    "toolchain re-baseline must preserve every row, input identity and method field",
+  );
+}
+
+// Reviewed toolchain transitions. The complete 1.98 contract includes every
 // row, cap, input path/digest/window, provenance and non-rustc method field.
 export function ratchetInstructionMethodology(current, base) {
   if (isDeepStrictEqual(current.methodology, base.methodology)) return;
+  if (base.methodology.rustc === TO) return rebaselineInstructionToolchain(current, base);
   assert.equal(base.methodology.rustc, FROM, "unauthorized original instruction compiler");
   assert.equal(current.methodology.rustc, TO, "unauthorized forward instruction compiler");
   const original = ORIGINALS.find(

@@ -1,4 +1,4 @@
-import { measurementToolchain } from "./measurement-toolchain.ts";
+import { MEASUREMENT_RUST, measurementToolchain } from "./measurement-toolchain.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -114,7 +114,6 @@ export function build(root, target, out) {
   fs.mkdirSync(out, { recursive: true });
   writeJson(path.join(out, "harness-source-before.json"), sourcePin);
   const toolchain = measurementToolchain(root);
-  assert.equal(toolchain, "1.99.0", "same-input memory recipe requires pinned Rust 1.99.0");
   const compiler = run(
     "rustup",
     ["which", "--toolchain", toolchain, "rustc"],
@@ -132,7 +131,7 @@ export function build(root, target, out) {
     "pinned toolchain image resolution missing",
   );
   const rust = run(compiler, ["-Vv"], root, path.join(out, "rustc"));
-  assert.match(rust.stdout, /^rustc 1\.99\.0 /);
+  assert.ok(rust.stdout.startsWith(`rustc ${MEASUREMENT_RUST} `), "pinned compiler mismatch");
   const buildEnvironment = {
     ...process.env,
     RUSTC: compiler,

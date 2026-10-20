@@ -307,19 +307,19 @@ await test("source-owned version admission leaves platform peak equality and con
   assert.match(result.stdout, /wall baseline not yet recorded/);
 });
 
-await test("paired memory builds preserve the historical compiler across development patch updates", (t) => {
+await test("paired memory builds select the single contributor toolchain pin", (t) => {
   const f = sourceJudgeFixture(t);
-  const manifest = path.join(f.arms.base.root, "rust-measurement-toolchain.toml");
-  const original = fs.readFileSync(manifest);
-  // The old arm predates the separate measurement manifest.
-  fs.writeFileSync(path.join(f.arms.base.root, "rust-toolchain.toml"), original);
-  fs.unlinkSync(manifest);
+  // A retired measurement manifest in an older arm no longer selects the compiler.
+  fs.writeFileSync(
+    path.join(f.arms.base.root, "rust-measurement-toolchain.toml"),
+    '[toolchain]\nchannel = "1.99.0"\n',
+  );
   f.refresh("base");
   f.save();
-  const historical = sourceCompare(f);
-  assert.equal(historical.status, 0, historical.stderr);
-  const head = path.join(f.arms.head.root, "rust-measurement-toolchain.toml");
-  fs.writeFileSync(head, original.toString().replace("1.99.0", "1.99.1"));
+  const retired = sourceCompare(f);
+  assert.equal(retired.status, 0, retired.stderr);
+  const head = path.join(f.arms.head.root, "rust-toolchain.toml");
+  fs.writeFileSync(head, fs.readFileSync(head, "utf8").replace("1.99.1", "1.99.0"));
   f.refresh("head");
   f.save();
   const changed = sourceCompare(f);

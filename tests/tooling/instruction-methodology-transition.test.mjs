@@ -20,7 +20,8 @@ import {
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const fixture = path.join(root, "tests/_fixtures/tooling/instruction-methodology-transition");
 const source = "1a3996963af208c13cd732420bdee586df88bf7a";
-const context = { sourceCommit: source, toolchain: "1.99.0" };
+const rebaseSource = "e40813b3306bf85e5f61d96b19ebd432cae10334";
+const context = { sourceCommit: rebaseSource, toolchain: "1.99.1" };
 const families = [
   {
     name: "level",
@@ -28,6 +29,8 @@ const families = [
     count: 100,
     oldHash: "3c221a56f364a4aaf352729d9b9d0cf1eba2c7e4aa088174fdb6b6099bddb5aa",
     reportHash: "61803d7a6d12b6ed3e29168d4f61b91bb3bbdee7d93ae48a28364b481bb07f2c",
+    rust199Hash: "ba1acd1b285b0ded41799e3d5ac59384acecb621d103f2dfa9dae5766ed6a924",
+    rebaseHash: "ccb192e7b9817f2980fe216e7721a5f095d387265318b33be355eece817d6b9d",
   },
   {
     name: "formatter",
@@ -35,13 +38,23 @@ const families = [
     count: 4,
     oldHash: "e49d7c38a43fcdfa3bf7114c50ef91734f355d943269d42bc1d18821d444de99",
     reportHash: "100823ff2a4cf4a4af7c493912e6653e465332c38e8a154a55e3505f3caebeb4",
+    rust199Hash: "6cdf8a43941edb8a69ee05313ee1a8420a0ef03d57f1df53e90504587463c60e",
+    rebaseHash: "011272dc10abdac22f8bff19a51b9047f4719b5b60ba701a6526db80be42335c",
   },
 ];
 function packet(family) {
   const old = loadBudgets(path.join(fixture, `${family.name}-rust198.toml`));
   const registry = new Set(Object.keys(old.instruction));
-  const current = loadBudgets(path.join(root, "docs/davinci/plan", family.active), registry);
+  const current = loadBudgets(path.join(fixture, `${family.name}-rust199.toml`), registry);
   const raw = fs.readFileSync(path.join(fixture, `${family.name}-rust199.json`));
+  const report = validateMeasurement(JSON.parse(raw), registry);
+  return { old, current, report, registry };
+}
+// 1.99.0 registry, committed 1.99.1 registry and its three-run same-input evidence.
+function rebase(family) {
+  const { current: old, registry } = packet(family);
+  const current = loadBudgets(path.join(root, "docs/davinci/plan", family.active), registry);
+  const raw = fs.readFileSync(path.join(fixture, `${family.name}-rust1991.json`));
   const report = validateMeasurement(JSON.parse(raw), registry);
   return { old, current, report, registry };
 }
@@ -68,7 +81,7 @@ for (const family of families) {
     assert.equal(current.source_commit, source);
     assert.equal(current.recorded_run, report.recorded_run);
     ratchetBudgets(current, old);
-    authenticateInstructionMeasurementSource(report, context);
+    assert.equal(report.methodology.rustc, current.methodology.rustc);
     checkMeasurement(report, current);
     // This explicit context authenticates the archived producer, not our HEAD.
     assert.equal(report.source_commit, source);
@@ -152,7 +165,7 @@ for (const family of families) {
         key,
       );
     }
-    assert.throws(() => ratchetBudgets(old, current), /unauthorized original instruction compiler/);
+    assert.throws(() => ratchetBudgets(old, current), /unauthorized forward instruction compiler/);
     for (const compiler of [
       "rustc 1.100.0 (future)",
       "rustc 1.99.0 (wrong build)",
@@ -198,7 +211,7 @@ for (const family of families) {
   });
 
   void test(`${family.name}: current measurement requires exact checkout and pinned Rust, preserving regression refusal`, () => {
-    const { current, report } = packet(family);
+    const { current, report } = rebase(family);
     authenticateInstructionMeasurementSource(report, context);
     assert.throws(
       () =>
@@ -212,14 +225,14 @@ for (const family of families) {
       () => authenticateInstructionMeasurementSource(report, { ...context, sourceCommit: "main" }),
       /invalid current checkout identity/,
     );
-    for (const toolchain of ["1.98.0", "1.100.0", "stable"]) {
+    for (const toolchain of ["1.98.0", "1.99.0", "1.100.0", "stable"]) {
       assert.throws(
         () => authenticateInstructionMeasurementSource(report, { ...context, toolchain }),
-        /must be 1.99.0/,
+        /must be 1.99.1/,
       );
     }
     const wrongCompiler = structuredClone(report);
-    wrongCompiler.methodology.rustc = "rustc 1.99.0 (wrong build)";
+    wrongCompiler.methodology.rustc = "rustc 1.99.1 (wrong build)";
     assert.throws(
       () => authenticateInstructionMeasurementSource(wrongCompiler, context),
       /measurement compiler mismatch/,
@@ -237,7 +250,7 @@ for (const family of families) {
       ...mode,
       "--verify-budgets",
       "--base-budgets",
-      path.join(fixture, `${family.name}-rust198.toml`),
+      path.join(fixture, `${family.name}-rust199.toml`),
     ]);
     assert.equal(verified.status, 0, verified.stderr);
     assert.match(
@@ -248,31 +261,96 @@ for (const family of families) {
       ...mode,
       "--check",
       "--measurement",
-      path.join(fixture, `${family.name}-rust199.json`),
+      path.join(fixture, `${family.name}-rust1991.json`),
     ]);
     assert.equal(replay.status, 1);
     assert.match(replay.stderr, /measurement source is not current checkout/);
+  });
+
+  void test(`${family.name}: the 1.99.1 re-baseline keeps every 1.99.0 row, input and cap`, () => {
+    assert.equal(
+      digest(fs.readFileSync(path.join(fixture, `${family.name}-rust199.toml`))),
+      family.rust199Hash,
+    );
+    assert.equal(
+      digest(fs.readFileSync(path.join(fixture, `${family.name}-rust1991.json`))),
+      family.rebaseHash,
+    );
+    const { old, current, report } = rebase(family);
+    assert.deepEqual(current.instruction, old.instruction);
+    assert.equal(current.source_commit, rebaseSource);
+    assert.equal(current.recorded_run, report.recorded_run);
+    ratchetBudgets(current, old);
+    authenticateInstructionMeasurementSource(report, context);
+    checkMeasurement(report, current);
+    const id = Object.keys(old.instruction)[0];
+    const lowered = structuredClone(current);
+    lowered.instruction[id].instructions -= 1;
+    ratchetBudgets(lowered, old);
+    const raised = structuredClone(current);
+    raised.instruction[id].instructions += 1;
+    assert.throws(() => ratchetBudgets(raised, old), /instruction budget loosened/);
+    for (const key of ["fixture", "fixture_sha256", "window"]) {
+      const changed = structuredClone(current);
+      changed.instruction[id][key] += "-changed";
+      assert.throws(() => ratchetBudgets(changed, old), /preserve every row, input identity/);
+    }
+    const missing = structuredClone(current);
+    delete missing.instruction[id];
+    assert.throws(() => ratchetBudgets(missing, old), /preserve every row, input identity/);
+    const extra = structuredClone(current);
+    extra.instruction.foreign_probe = structuredClone(current.instruction[id]);
+    assert.throws(() => ratchetBudgets(extra, old), /preserve every row, input identity/);
+  });
+
+  void test(`${family.name}: the 1.99.1 re-baseline pins compiler, method and both provenances`, () => {
+    const { old, current } = rebase(family);
+    for (const key of Object.keys(old.methodology).filter((item) => item !== "rustc")) {
+      const candidate = structuredClone(current);
+      candidate.methodology[key] += "-changed";
+      assert.throws(() => ratchetBudgets(candidate, old), /preserve every row, input identity/);
+    }
+    for (const compiler of ["rustc 1.99.1 (wrong build)", "rustc 1.100.0 (future)"]) {
+      const candidate = structuredClone(current);
+      candidate.methodology.rustc = compiler;
+      assert.throws(
+        () => ratchetBudgets(candidate, old),
+        /unauthorized forward instruction compiler/,
+      );
+    }
+    for (const key of ["source_commit", "recorded_run"]) {
+      const value =
+        key === "source_commit"
+          ? "a".repeat(40)
+          : "https://github.com/ubugeeei-prod/vize/actions/runs/1";
+      const base = structuredClone(old);
+      base[key] = value;
+      assert.throws(() => ratchetBudgets(current, base), /unauthenticated 1.99.0 instruction/);
+      const candidate = structuredClone(current);
+      candidate[key] = value;
+      assert.throws(() => ratchetBudgets(candidate, old), /preserve every row, input identity/);
+    }
   });
 }
 
 void test("repository source pin remains strict independently of an archived report", () => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "instruction-source-pin-"));
   try {
-    const { current } = packet(families[0]);
-    for (const channel of ["1.98.0", "1.100.0", "stable"]) {
+    const { current } = rebase(families[0]);
+    for (const channel of ["1.98.0", "1.99.0", "1.100.0", "stable"]) {
       fs.writeFileSync(
         path.join(temporary, "rust-toolchain.toml"),
         `[toolchain]\nchannel = "${channel}"\n`,
       );
-      assert.throws(() => verifyRepositoryInstructionBudgets(current, temporary), /must be 1.99.0/);
+      assert.throws(() => verifyRepositoryInstructionBudgets(current, temporary), /must be 1.99.1/);
     }
     fs.writeFileSync(
       path.join(temporary, "rust-toolchain.toml"),
-      '[toolchain]\nchannel = "1.99.0"\n',
+      '[toolchain]\nchannel = "1.99.1"\n',
     );
     verifyRepositoryInstructionBudgets(current, temporary);
     const wrong = structuredClone(current);
-    wrong.methodology.rustc = "rustc 1.98.0 (88d9e12ae 2026-08-18)";
+    wrong.methodology.rustc = "rustc 1.99.0 (b940084d7 2026-09-28)";
     assert.throws(
       () => verifyRepositoryInstructionBudgets(wrong, temporary),
       /budget compiler mismatch/,
@@ -282,23 +360,19 @@ void test("repository source pin remains strict independently of an archived rep
   }
 });
 
-void test("development patch updates cannot change the pinned measurement compiler", () => {
+void test("measurements read only the contributor toolchain pin", () => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "instruction-measurement-pin-"));
   try {
-    const { current } = packet(families[0]);
+    const { current } = rebase(families[0]);
     fs.writeFileSync(
       path.join(temporary, "rust-toolchain.toml"),
       '[toolchain]\nchannel = "1.99.1"\n',
     );
-    assert.throws(() => verifyRepositoryInstructionBudgets(current, temporary), /must be 1.99.0/);
-    const explicit = path.join(temporary, "rust-measurement-toolchain.toml");
-    fs.writeFileSync(explicit, '[toolchain]\nchannel = "1.99.0"\n');
+    // A retired separate measurement manifest cannot select another compiler.
+    const retired = path.join(temporary, "rust-measurement-toolchain.toml");
+    fs.writeFileSync(retired, '[toolchain]\nchannel = "1.99.0"\n');
     verifyRepositoryInstructionBudgets(current, temporary);
-    for (const channel of ["1.99.1", "stable", "1.98.0"]) {
-      fs.writeFileSync(explicit, `[toolchain]\nchannel = "${channel}"\n`);
-      assert.throws(() => verifyRepositoryInstructionBudgets(current, temporary), /must be 1.99.0/);
-    }
-    fs.writeFileSync(explicit, "invalid TOML\n");
+    fs.writeFileSync(path.join(temporary, "rust-toolchain.toml"), "invalid TOML\n");
     assert.throws(() => verifyRepositoryInstructionBudgets(current, temporary));
   } finally {
     fs.rmSync(temporary, { recursive: true, force: true });

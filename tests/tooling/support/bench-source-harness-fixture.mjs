@@ -67,7 +67,6 @@ export function sourceJudgeFixture(t) {
       "Cargo.toml",
       "Cargo.lock",
       "rust-toolchain.toml",
-      "rust-measurement-toolchain.toml",
       "tools/benchmarks/scripts/instruction-counts-suites.mjs",
       "docs/davinci/plan/budgets.toml",
       "docs/davinci/plan/instruction-budgets.toml",
@@ -151,7 +150,7 @@ export function sourceJudgeFixture(t) {
       path.join(build, "resolve-cargo"),
       root,
       `${tool}\n`,
-      ["which", "--toolchain", "1.99.0", "cargo"],
+      ["which", "--toolchain", "1.99.1", "cargo"],
       {},
       "rustup",
     );
@@ -159,16 +158,16 @@ export function sourceJudgeFixture(t) {
       path.join(build, "resolve-rustc"),
       root,
       `${tool}\n`,
-      ["which", "--toolchain", "1.99.0", "rustc"],
+      ["which", "--toolchain", "1.99.1", "rustc"],
       {},
       "rustup",
     );
-    processRecord(path.join(build, "rustc"), root, "rustc 1.99.0 synthetic source-law receipt\n", [
+    processRecord(path.join(build, "rustc"), root, "rustc 1.99.1 synthetic source-law receipt\n", [
       "-Vv",
     ]);
     const environment = {
       RUSTC: tool,
-      RUSTUP_TOOLCHAIN: "1.99.0",
+      RUSTUP_TOOLCHAIN: "1.99.1",
       RUSTFLAGS: "-C target-cpu=x86-64",
       CARGO_INCREMENTAL: "0",
       RUSTC_WRAPPER: "",

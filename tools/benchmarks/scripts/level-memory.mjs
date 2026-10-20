@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { reconcile } from "./instruction-counts-lib.mjs";
+import { MEASUREMENT_RUST } from "./measurement-toolchain.ts";
 import {
   compareMemoryMetrics,
   compareStrings,
@@ -56,7 +57,7 @@ const manifest = {
   methodology: {
     profile: "ci-opt",
     target: "x86_64-unknown-linux-gnu",
-    rust: "1.99.0",
+    rust: MEASUREMENT_RUST,
     suites: 13,
     population: 104,
     planes: { level: 100, formatter: 4 },
@@ -284,7 +285,7 @@ try {
           ],
           roots.head,
           path.join(out, "gates", `${side}-${repetition}`),
-          { ...process.env, RUSTUP_TOOLCHAIN: "1.99.0" },
+          { ...process.env, RUSTUP_TOOLCHAIN: MEASUREMENT_RUST },
         );
         accepted = true;
       } catch (error) {
