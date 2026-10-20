@@ -404,6 +404,8 @@ const text = ref("bad");
     // binding. Declaring that slot must not add a missing-slot diagnostic to
     // any invocation that omits it.
     let normalized_stdout = normalize_check_output(stdout, &project_root)
+        .replace("__Child_CheckProps_0", "__Child_CheckProps_<id>")
+        .replace("__Child_CheckProps_1", "__Child_CheckProps_<id>")
         .replace(
             "Types of parameters 'id' and 'id' are incompatible.",
             "Types of parameters 'id' and '<target>' are incompatible.",
@@ -417,7 +419,7 @@ const text = ref("bad");
         concat!(
             "\n<project>/src/App.vue\n",
             "  error:9:10 [TS2322] Type 'string' is not assignable to type 'number'. (source: <Child v-model=\"text\" />; binding: modelValue)\n",
-            "  error:10:4 [TS2345] Argument of type '{ kind: \"num\"; s: string; }' is not assignable to parameter of type '__VizeComponentCheckProps<__Child_CheckProps_1, __VizePublicComponentAttrs & Record<string, unknown>>'.\n",
+            "  error:10:4 [TS2345] Argument of type '{ kind: \"num\"; s: string; }' is not assignable to parameter of type '__VizeComponentCheckProps<__Child_CheckProps_<id>, __VizePublicComponentAttrs & Record<string, unknown>>'.\n",
             "Type '{ kind: \"num\"; s: string; }' is missing the following properties from type '{ readonly modelValue: number; readonly kind: \"num\"; readonly n: number; readonly label?: string | undefined; readonly value?: number | undefined; readonly first?: number | undefined; readonly second?: number | undefined; readonly onSave?: ((id: number) => any) | undefined; }': modelValue, n (source: <Child kind=\"num\" :s=\"'bad'\" />; binding: 's')\n",
             "  error:11:50 [TS2322] Type 'string' is not assignable to type 'number'. (source: <Child label=\"v-model:fake\" kind=\"num\" :n=\"1\" :value=\"'bad'\" />; binding: 'value')\n",
             "  error:12:51 [TS2322] Type 'string' is not assignable to type 'number'. (source: <Child label=\"😀\" kind=\"num\" :n=\"1\" :first=\"1\" :second=\"'bad'\" />; binding: 'second')\n",
