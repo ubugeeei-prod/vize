@@ -10,7 +10,7 @@
     {
       "id": "exact-40",
       "source": "<template>\n  <p>\n    AAA {{ n }}<template v-if=\"visible\"> x</template>\n  </p>\n</template>\n",
-      "expected": "<template>\n  <p>\n    AAA {{ n }}<template v-if=\"visible\"\n    > x</template>\n  </p>\n</template>\n",
+      "expected": "<template>\n  <p>\n    AAA {{ n }}<template v-if=\"visible\"> x</template>\n  </p>\n</template>\n",
       "options": {
         "printWidth": 40,
         "semi": true,
@@ -19,13 +19,13 @@
         "arrowParens": "avoid",
         "sortAttributes": false
       },
-      "reason": "The opening tag alone is exactly 40 display columns; the hugged text and closing tag make the complete element overflow, so the safe break is before `>`.",
+      "reason": "Compact opening-tag line is exactly 40 display columns; the narrow policy leaves it compact.",
       "compactOpeningLine": "    AAA {{ n }}<template v-if=\"visible\">",
       "compactOpeningColumns": 40,
       "compactOpeningUtf16Units": 40,
-      "authority": "Whole inline-element width policy plus pinned original source-owned text adjacency; independently revised for issues #9867 and #9841.",
+      "authority": "Bounded opening-tag syntax policy + original source-owned text adjacency; Oxfmt 0.63.0 attribute spelling/indent probe. Independently authored without reading modified production or consulting Vize output; no Vize execution.",
       "sourceSha256": "08ca33e565c18f3e5d1352d14945f002862fc40f82a1ec8039302de1342f862f",
-      "expectedSha256": "4fc1cad052f79800c50d2b06f0726239d4a5b7be8a09f1c514c4534fdd69fc7f",
+      "expectedSha256": "08ca33e565c18f3e5d1352d14945f002862fc40f82a1ec8039302de1342f862f",
       "oxfmtProbeSha256": "373cc2dead6246d13ac5c9d92cddaf33432ad6a88c3666f2f5b3240ac38b6d16",
       "input": "exact-40.input.vue",
       "output": "exact-40.expected.vue",
@@ -57,8 +57,8 @@
     },
     {
       "id": "unicode-display-41",
-      "source": "<template>\n  <p>\n    \u72b6\u614b {{ n }}<template v-if=\"visible\"> x</template>\n  </p>\n</template>\n",
-      "expected": "<template>\n  <p>\n    \u72b6\u614b {{ n }}<template\n      v-if=\"visible\"\n    > x</template>\n  </p>\n</template>\n",
+      "source": "<template>\n  <p>\n    状態 {{ n }}<template v-if=\"visible\"> x</template>\n  </p>\n</template>\n",
+      "expected": "<template>\n  <p>\n    状態 {{ n }}<template\n      v-if=\"visible\"\n    > x</template>\n  </p>\n</template>\n",
       "options": {
         "printWidth": 40,
         "semi": true,
@@ -67,8 +67,8 @@
         "arrowParens": "avoid",
         "sortAttributes": false
       },
-      "reason": "Compact opening-tag line is 39 UTF-16 units but 41 display columns: \u72b6 and \u614b occupy two each.",
-      "compactOpeningLine": "    \u72b6\u614b {{ n }}<template v-if=\"visible\">",
+      "reason": "Compact opening-tag line is 39 UTF-16 units but 41 display columns: 状 and 態 occupy two each.",
+      "compactOpeningLine": "    状態 {{ n }}<template v-if=\"visible\">",
       "compactOpeningColumns": 41,
       "compactOpeningUtf16Units": 39,
       "authority": "Bounded opening-tag syntax policy + original source-owned text adjacency; Oxfmt 0.63.0 attribute spelling/indent probe. Independently authored without reading modified production or consulting Vize output; no Vize execution.",

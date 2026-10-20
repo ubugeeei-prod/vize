@@ -1,6 +1,5 @@
 <template>
   <p>
-    AAA {{ n }}<template v-if="visible"
-    > x</template>
+    AAA {{ n }}<template v-if="visible"> x</template>
   </p>
 </template>

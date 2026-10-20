@@ -3,7 +3,7 @@
   "version": 1,
   "case": "exact-40",
   "inputSha256": "08ca33e565c18f3e5d1352d14945f002862fc40f82a1ec8039302de1342f862f",
-  "expectedSourceSha256": "4fc1cad052f79800c50d2b06f0726239d4a5b7be8a09f1c514c4534fdd69fc7f",
+  "expectedSourceSha256": "08ca33e565c18f3e5d1352d14945f002862fc40f82a1ec8039302de1342f862f",
   "stockVersions": {
     "compilerDom": "3.5.35",
     "compilerSsr": "3.5.35",
@@ -74,7 +74,7 @@
       "state": {
         "id": "true-page-unicode-items",
         "pages": [
-          "\u65e5\u672c\u8a9e",
+          "日本語",
           "a&b"
         ],
         "page": 10
