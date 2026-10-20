@@ -238,5 +238,17 @@
     "vapor": null,
     "diagnostics": 1,
     "fixes": 0
+  },
+  {
+    "id": "require-symbol-provide-range-9882",
+    "history": "04541e20047f0cc3bf30bb219e127d59fe8ad44b",
+    "source": "const items = inject<Ref<string[]>>(\"items\")",
+    "filename": "History.ts",
+    "entry": "script",
+    "rule": "script/require-symbol-provide",
+    "vue_version": null,
+    "vapor": null,
+    "diagnostics": 1,
+    "fixes": 0
   }
 ]
