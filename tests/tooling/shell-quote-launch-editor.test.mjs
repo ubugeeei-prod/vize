@@ -20,7 +20,7 @@ const actualEditor = fs.realpathSync(devtools.resolve("launch-editor"));
 const store = path.join(root, "node_modules/.pnpm");
 const entries = fs
   .readdirSync(store)
-  .filter((entry) => entry === "launch-editor@2.14.1" || entry.startsWith("launch-editor@2.14.1_"));
+  .filter((entry) => entry === "launch-editor@2.14.2" || entry.startsWith("launch-editor@2.14.2_"));
 assert.ok(entries.length > 0, "the frozen Nuxt editor consumer must be installed");
 assert.ok(
   entries.some((entry) =>
@@ -33,7 +33,7 @@ for (const entry of entries) {
   await test(`${entry} resolves patched shell-quote and retains explicit editor parsing`, () => {
     const directory = path.join(store, entry, "node_modules/launch-editor");
     const editor = createRequire(path.join(directory, "package.json"));
-    assert.equal(editor(path.join(directory, "package.json")).version, "2.14.1");
+    assert.equal(editor(path.join(directory, "package.json")).version, "2.14.2");
     const quoteManifest = editor.resolve("shell-quote/package.json");
     assert.equal(editor(quoteManifest).version, "1.11.0");
     const shellQuote = editor("shell-quote");
