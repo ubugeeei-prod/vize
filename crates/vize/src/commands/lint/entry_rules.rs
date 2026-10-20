@@ -46,18 +46,21 @@ impl ResolvedLinterRuleGroups {
         configured_corsa_path: Option<PathBuf>,
         custom_elements: &vize_relief::options::CustomElementMatcher,
     ) -> Vec<Linter> {
+        let availability = self
+            .pinia_available
+            .iter()
+            .zip(&self.vue_router_available)
+            .zip(&self.nuxt_available);
         self.configs
             .iter()
-            .enumerate()
+            .zip(availability)
             .zip(&self.rule_options)
-            .map(|((index, config), rule_options)| {
-                let pinia_available = self.pinia_available[index];
-                let vue_router_available = self.vue_router_available[index];
-                let nuxt_available = self.nuxt_available[index];
+            .map(|(group, rule_options)| {
+                let (config, ((pinia_available, vue_router_available), nuxt_available)) = group;
                 let type_aware =
                     args.type_aware || args.strict_reactivity || config.type_aware_lint_enabled();
                 let mut additional_rules = config.enabled_rules();
-                let disabled_rules = resolved_disabled_rules(config, pinia_available);
+                let disabled_rules = resolved_disabled_rules(config, *pinia_available);
                 let restricted_globals = rule_options.restricted_globals();
                 let restricted_members = rule_options.restricted_members();
                 let musea_design_tokens = rule_options.musea_design_tokens();
@@ -107,8 +110,8 @@ impl ResolvedLinterRuleGroups {
                     .with_musea_design_tokens(musea_design_tokens);
                 if let Some(globals) = component_registration_globals(
                     rule_options.component_registration_globals(),
-                    vue_router_available,
-                    nuxt_available,
+                    *vue_router_available,
+                    *nuxt_available,
                 ) {
                     linter = linter.with_component_registration_globals(globals);
                 }
