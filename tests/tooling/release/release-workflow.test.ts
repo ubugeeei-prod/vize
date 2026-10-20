@@ -114,7 +114,8 @@ test("builds use the untagged candidate; only a fully built release is tagged", 
   const prePublish = (name: string) =>
     name.startsWith("build-") || name === "smoke" || name === "tag";
   for (const [name, job] of Object.entries(workflow.jobs)) {
-    if (name === "version" || job.uses) continue;
+    // publish-jsr only dispatches release-jsr.yml and checks nothing out.
+    if (name === "version" || name === "publish-jsr") continue;
     assert.ok(needs(name).includes("version"), `${name} needs version`);
     const checkout = job.steps?.find((step) => step.uses?.startsWith("actions/checkout@"));
     const ref = prePublish(name) ? "ref" : "tag";
@@ -164,7 +165,13 @@ test("registry visibility is checked once, after publishing, and gates only JSR"
   assert.deepEqual(needs("verify-npm"), ["version", "publish-npm"]);
   assert.deepEqual(needs("publish-jsr"), ["version", "verify-npm"]);
   assert.ok(!needs("github-release").includes("verify-npm"));
-  assert.equal(workflow.jobs["publish-jsr"].uses, "./.github/workflows/release-jsr.yml");
+  // JSR runs as its own workflow so its slow server-side processing never
+  // holds this run (and with it the cadence) open.
+  const jsr = workflow.jobs["publish-jsr"];
+  assert.equal(jsr.uses, undefined);
+  assert.equal(jsr.environment, "release-operator");
+  assert.match(JSON.stringify(jsr.steps), /gh workflow run release-jsr\.yml/);
+  assert.match(JSON.stringify(jsr.steps), /secrets\.RELEASE_OPERATOR_TOKEN/);
 });
 
 test("the stamp reaches every tracked non-private npm and editor manifest", async () => {
@@ -195,6 +202,7 @@ test("the stamp rewrites aliased fork pins and keeps upstream versions", () => {
 test("Open VSX publication tolerates ovsx dependency build scripts", () => {
   const job = (workflow.jobs["publish-open-vsx"] as Job & { env?: Record<string, string> }).env;
   assert.equal(job?.PNPM_CONFIG_STRICT_DEP_BUILDS, "false");
+  assert.ok(Number(job?.PUBLISH_RESOLUTION_RETRY_LIMIT) * 10 >= 600, "waits 10 min for the scan");
 });
 
 test("the automatic cadence releases a green main commit only after user-facing changes", () => {
@@ -225,16 +233,16 @@ test("the automatic cadence releases a green main commit only after user-facing 
     }).release,
     "no second release while one is still building",
   );
-  const hour = 60 * 60 * 1000;
+  const minute = 60 * 1000;
   const spaced = (releasedAt: number) =>
     cadenceDecision({
       greenSha: green,
       releasedSha: released,
       subjects: ["fix: x"],
       releasedAt,
-      now: 10 * hour,
+      now: 600 * minute,
     }).release;
-  assert.ok(spaced(9 * hour) && !spaced(9.5 * hour), "at most one release per 50 minutes");
+  assert.ok(spaced(589 * minute) && !spaced(595 * minute), "at most one release per 10 minutes");
   const cadence = parse(readRepoFile(".github", "workflows", "release-cadence.yml")) as {
     on: {
       schedule?: Array<{ cron: string }>;
@@ -247,8 +255,9 @@ test("the automatic cadence releases a green main commit only after user-facing 
   // JSR rejects OIDC publishes by github-actions[bot]; dispatch as the maintainer.
   assert.match(JSON.stringify(cadence.jobs.dispatch.steps), /secrets\.RELEASE_OPERATOR_TOKEN/);
   assert.equal(on.schedule?.length, 1);
+  // A Release completion re-decides, so fixes that land mid-release ship next.
   assert.deepEqual(on.workflow_run, {
-    workflows: ["Check"],
+    workflows: ["Check", "Release"],
     types: ["completed"],
     branches: ["main"],
   });

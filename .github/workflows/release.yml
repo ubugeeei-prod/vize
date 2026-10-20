@@ -321,12 +321,15 @@ jobs:
     name: Publish Open VSX extension
     needs: [version, tag]
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 20
     environment: open-vsx-registry
     env:
       OVSX_PAT: ${{ secrets.OVSX_PAT }}
       # The publisher runs ovsx through `vp dlx`, whose deps have build scripts.
       PNPM_CONFIG_STRICT_DEP_BUILDS: "false"
+      # Open VSX scans an upload before exposing it: about 2 min, but 0.484.0
+      # and 0.485.0 took over 4. Wait up to 10 min (60 x 10 s).
+      PUBLISH_RESOLUTION_RETRY_LIMIT: "60"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
@@ -409,6 +412,8 @@ jobs:
 
   # After publishing, never blocking it: one registry visibility wait plus an
   # install of the CLI from npm, then JSR (its facade resolves the npm packages).
+  # JSR runs as its own workflow: its server-side processing takes 10-60 min,
+  # and inside this run it kept the cadence from starting the next release.
   verify-npm:
     name: Verify npm packages
     needs: [version, publish-npm]
@@ -428,10 +433,19 @@ jobs:
           node tools/support/release/verify_published/main.ts "$RELEASE_VERSION" "${packages[@]}"
 
   publish-jsr:
-    name: Publish JSR
+    name: Dispatch the JSR publication
     needs: [version, verify-npm]
-    permissions: { contents: read, id-token: write }
-    uses: ./.github/workflows/release-jsr.yml
-    with:
-      version: ${{ needs.version.outputs.tag }}
-      source_sha: ${{ needs.version.outputs.sha }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    # JSR only accepts OIDC publishes whose actor is a scope member, never
+    # github-actions[bot], so dispatch as the maintainer.
+    environment: release-operator
+    steps:
+      - name: Dispatch release-jsr.yml
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_OPERATOR_TOKEN }}
+          JSR_VERSION: ${{ needs.version.outputs.tag }}
+          JSR_SOURCE: ${{ needs.version.outputs.sha }}
+        run: |
+          gh workflow run release-jsr.yml --repo "$GITHUB_REPOSITORY" --ref main \
+            -f version="$JSR_VERSION" -f source_sha="$JSR_SOURCE"

@@ -1,19 +1,21 @@
 name: Release cadence
-# Starts a release on its own. After every completed Check on main (and on an
-# hourly fallback schedule) `main.ts cadence` picks the newest main commit whose
-# push Check passed and dispatches release.yml for it when fix/feat/perf commits
-# landed since the last release, at most once per 50 minutes, never retrying a
-# commit whose release candidate already failed. It dispatches instead of
+# Starts a release on its own. After every completed Check or Release on main
+# (and on a 15-minute fallback schedule, which GitHub often delays or drops)
+# `main.ts cadence` picks the newest main commit whose push Check passed and
+# dispatches release.yml for it when fix/feat/perf commits landed since the last
+# release, at most once per 10 minutes, never retrying a commit whose release
+# candidate already failed. Re-deciding when a Release completes picks up fixes
+# that landed while it ran. It dispatches instead of
 # releasing in place because crates.io trusted publishing refuses workflow_run
 # and schedule triggers. It dispatches as the maintainer: JSR only accepts
 # OIDC publishes whose actor is a scope member, never github-actions[bot].
 on:
   workflow_run:
-    workflows: [Check]
+    workflows: [Check, Release]
     types: [completed]
     branches: [main]
   schedule:
-    - cron: "23 * * * *"
+    - cron: "8,23,38,53 * * * *"
 permissions: { contents: read }
 concurrency:
   group: release-cadence

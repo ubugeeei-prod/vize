@@ -1,9 +1,10 @@
 // Automatic release cadence: release the newest main commit whose push Check
 // passed when it adds a user-facing change since the last release tag, at most
-// once per MIN_INTERVAL.
+// once per MIN_INTERVAL. Releases serialize on `running`; the interval only
+// stops a burst of Check completions from cutting back-to-back versions.
 
 const USER_FACING = /^(fix|feat|perf)(\([^)]*\))?!?:/;
-export const MIN_INTERVAL_MS = 50 * 60 * 1000;
+export const MIN_INTERVAL_MS = 10 * 60 * 1000;
 
 export interface CadenceInput {
   /** Newest main commit whose push `Check` run succeeded, if any. */
@@ -36,7 +37,7 @@ export function cadenceDecision({
   // Retry only from a newer green commit; dispatch retries the same one.
   if (attempted) return { release: false, reason: "a release of this commit already failed" };
   if (releasedAt !== null && now - releasedAt < MIN_INTERVAL_MS)
-    return { release: false, reason: "the last release is under 50 minutes old" };
+    return { release: false, reason: "the last release is under 10 minutes old" };
   const changes = subjects.filter((subject) => USER_FACING.test(subject));
   return changes.length > 0
     ? { release: true, reason: `${changes.length} fix/feat/perf commits since the last release` }

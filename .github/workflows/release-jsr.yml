@@ -1,27 +1,23 @@
 name: Release JSR
 # Publishes `@vizejs/vize` to JSR after the same version is public on npm, then
 # installs the published package from JSR in fresh Node, Deno and Bun projects.
+# release.yml dispatches it as the maintainer once npm has the version.
 # Every release runs the publish dry-run against the just-published npm
 # packages. The real publication and the consumers wait for
 # `jsr/vize/channel.json` to enable them.
 on:
-  workflow_call:
-    inputs:
-      version:
-        description: Published npm release version or tag
-        required: true
-        type: string
-      source_sha:
-        description: Release source commit
-        required: false
-        default: ""
-        type: string
   workflow_dispatch:
     inputs:
       version:
         description: Published npm release version or tag
         required: true
         type: string
+      source_sha:
+        description: Release source commit (default the dispatched commit)
+        required: false
+        default: ""
+        type: string
+run-name: Release JSR ${{ inputs.version }}
 permissions: { contents: read }
 concurrency:
   group: release-jsr-${{ inputs.version }}
@@ -44,9 +40,10 @@ jobs:
     name: Publish the JSR package
     needs: channel
     runs-on: ubuntu-24.04
-    # JSR processes the npm-backed facade server-side for 10-30 min before
-    # `deno publish` returns; a shorter limit cancels a publication that lands anyway.
-    timeout-minutes: 45
+    # JSR processes the npm-backed facade server-side for 10-60 min before
+    # `deno publish` returns (0.485.0 took 59); a shorter limit cancels a
+    # publication that lands anyway and skips the consumers.
+    timeout-minutes: 75
     permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
