@@ -107,15 +107,18 @@ test("checker quick fixes apply to the current authored Vue buffer without lint"
           [{ title: "Implement interface 'Greeting'", kind: "quickfix" }],
         );
         const sourceActions = await request(range, ["source"]);
-        assert.deepEqual(sourceActions?.map(({ title, kind }) => ({ title, kind })), [
-          ...(source.includes("export { Welcome }")
-            ? [
-                { title: "Organize Imports", kind: "source.organizeImports" },
-                { title: "Sort Imports", kind: "source.sortImports" },
-              ]
-            : []),
-          { title: "Fix All", kind: "source.fixAll" },
-        ]);
+        assert.deepEqual(
+          sourceActions?.map(({ title, kind }) => ({ title, kind })),
+          [
+            ...(source.includes("export { Welcome }")
+              ? [
+                  { title: "Organize Imports", kind: "source.organizeImports" },
+                  { title: "Sort Imports", kind: "source.sortImports" },
+                ]
+              : []),
+            { title: "Fix All", kind: "source.fixAll" },
+          ],
+        );
         // The only fixable error makes fix all apply exactly the quick fix.
         assert.deepEqual(sourceActions?.at(-1)?.edit, actions![0].edit);
         assert.equal(await request(range, []), null);
