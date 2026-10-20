@@ -155,7 +155,7 @@ pub(super) fn generate_event_handler_expressions(
                     indent = handler_indent,
                 );
                 mapped_start..mapped_end
-            } else if is_reference {
+            } else if is_reference || inline_callback_arg.is_some() {
                 let handler_name = cstr!("__vize_handler_{scope_id}_{}", expr.start);
                 append!(
                     *ts,
@@ -171,28 +171,6 @@ pub(super) fn generate_event_handler_expressions(
                     *ts,
                     "{indent}if ({handler_name}) {handler_name}({event_value});  // handler expression\n",
                     indent = handler_indent,
-                );
-                mapped_start..mapped_end
-            } else if let Some(event_arg) = inline_callback_arg {
-                // The generated argument must not shadow an authored `$event`
-                // capture inside an arrow or function expression.
-                let event_arg = if event_arg.is_empty() {
-                    ""
-                } else {
-                    "__vize_handler_event"
-                };
-                append!(
-                    *ts,
-                    "{indent}((__vize_handler_event: {event_type}) => {{ (",
-                    indent = handler_indent,
-                    event_type = ctx.event_type,
-                );
-                let mapped_start = ts.len();
-                ts.push_str(content);
-                let mapped_end = ts.len();
-                append!(
-                    *ts,
-                    ")({event_arg}); }})({event_value});  // handler expression\n"
                 );
                 mapped_start..mapped_end
             } else if ctx.return_single_expression

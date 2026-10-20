@@ -1,0 +1,9 @@
+<script setup lang="ts">
+defineProps<{ readonly?: boolean }>();
+</script>
+
+<template>
+  <select @mousedown="(e) => readonly && e.preventDefault()">
+    <option value="a">a</option>
+  </select>
+</template>

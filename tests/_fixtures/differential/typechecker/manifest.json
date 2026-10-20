@@ -1640,6 +1640,38 @@
           "sha256": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881"
         }
       ]
+    },
+    {
+      "id": "typechecker/native-inline-event-handler-9835/native-mousedown-arrow",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "native-inline-event-handler-9835",
+      "case": "native-mousedown-arrow",
+      "test": "native_inline_event_handler_is_contextually_typed",
+      "regressionCommit": "8ac6ce1668e9bede8d73411e63a247dbd6f8eb56",
+      "sourceRevision": "8ac6ce1668e9bede8d73411e63a247dbd6f8eb56",
+      "packReference": {
+        "path": "native-inline-event-handler-9835/cases.json",
+        "sha256": "8906687fd797bccea4ce97e82680817ec48fc80fa5432c8a3c9be203f70983b7"
+      },
+      "inputs": [
+        {
+          "file": "src/App.vue",
+          "path": "native-inline-event-handler-9835/App.vue.txt",
+          "sha256": "2daeb04aa03667616195929ceaf901d9bf2432c1043112c7fce67892e79f5f50"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "native-inline-event-handler-9835/tsconfig.json.txt",
+          "sha256": "97fe2cd88a02b6ee5680212cba048feac1cb807d26fd4a5ef3c2dede7874117e"
+        }
+      ]
     }
   ]
 }
