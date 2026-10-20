@@ -11,7 +11,7 @@
         "column": 1,
         "endLine": 182,
         "endColumn": 8,
-        "help": "Add scoped attribute: <style scoped>"
+        "help": "Add the 'scoped' attribute to the style block"
       }
     ],
     "errorCount": 0,
@@ -95,9 +95,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 195,
-        "column": 7,
+        "column": 8,
         "endLine": 195,
-        "endColumn": 52,
+        "endColumn": 18,
         "help": "Use kebab-case for attribute names"
       }
     ],
@@ -113,9 +113,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 296,
-        "column": 11,
+        "column": 12,
         "endLine": 296,
-        "endColumn": 57,
+        "endColumn": 22,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -544,9 +544,9 @@
         "severity": 2,
         "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <li>",
         "line": 4,
-        "column": 22,
+        "column": 5,
         "endLine": 4,
-        "endColumn": 37,
+        "endColumn": 38,
         "help": "Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\nFix: Add a unique identifier as the key:\n  <li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n  </li>\nBest practices:\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)"
       },
       {
@@ -612,14 +612,25 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 224,
-        "column": 11,
+        "column": 12,
         "endLine": 224,
         "endColumn": 25,
         "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/v-on-event-hyphenation] Custom event listeners on components should be hyphenated: use 'hover-index'",
+        "line": 225,
+        "column": 11,
+        "endLine": 225,
+        "endColumn": 35,
+        "help": "Rename the listener to kebab-case so it matches the emitted event name."
       }
     ],
     "errorCount": 0,
-    "warningCount": 4
+    "warningCount": 5
   },
   {
     "file": "app/components/Code/DirectoryListing.vue",
@@ -755,7 +766,7 @@
         "column": 1,
         "endLine": 16,
         "endColumn": 8,
-        "help": "Add scoped attribute: <style scoped>"
+        "help": "Add the 'scoped' attribute to the style block"
       }
     ],
     "errorCount": 0,
@@ -832,9 +843,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 292,
-        "column": 7,
+        "column": 8,
         "endLine": 292,
-        "endColumn": 48,
+        "endColumn": 18,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -843,9 +854,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 293,
-        "column": 7,
+        "column": 8,
         "endLine": 293,
-        "endColumn": 41,
+        "endColumn": 21,
         "help": "Use kebab-case for attribute names"
       }
     ],
@@ -881,7 +892,7 @@
         "column": 1,
         "endLine": 364,
         "endColumn": 8,
-        "help": "Add scoped attribute: <style scoped>"
+        "help": "Add the 'scoped' attribute to the style block"
       }
     ],
     "errorCount": 0,
@@ -987,6 +998,17 @@
     "file": "app/components/Compare/FacetSelector.vue",
     "messages": [
       {
+        "ruleId": "html/no-duplicate-class",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "severity": 1,
+        "message": "[vize:html/no-duplicate-class] Duplicate class name 'bg-bg-subtle'",
+        "line": 113,
+        "column": 11,
+        "endLine": 113,
+        "endColumn": 332,
+        "help": "Remove the duplicate occurrence so each class name appears only once in the class attribute."
+      },
+      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -999,7 +1021,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 2
   },
   {
     "file": "app/components/Compare/LineChart.vue",
@@ -1311,6 +1333,17 @@
         "help": "Reorder attributes to follow the recommended order"
       },
       {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/v-on-event-hyphenation] Custom event listeners on components should be hyphenated: use 'update:model-value'",
+        "line": 268,
+        "column": 15,
+        "endLine": 268,
+        "endColumn": 89,
+        "help": "Rename the listener to kebab-case so it matches the emitted event name."
+      },
+      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1320,10 +1353,21 @@
         "endLine": 269,
         "endColumn": 27,
         "help": "Reorder attributes to follow the recommended order"
+      },
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/v-on-event-hyphenation] Custom event listeners on components should be hyphenated: use 'update:model-value'",
+        "line": 292,
+        "column": 15,
+        "endLine": 292,
+        "endColumn": 89,
+        "help": "Rename the listener to kebab-case so it matches the emitted event name."
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 4
   },
   {
     "file": "app/components/Header/AccountMenu.client.vue",
@@ -1403,9 +1447,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 74,
-        "column": 5,
+        "column": 6,
         "endLine": 74,
-        "endColumn": 41,
+        "endColumn": 16,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -1443,9 +1487,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 70,
-        "column": 5,
+        "column": 6,
         "endLine": 70,
-        "endColumn": 46,
+        "endColumn": 16,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -1693,17 +1737,6 @@
     "file": "app/components/Input/Base.vue",
     "messages": [
       {
-        "ruleId": "a11y/form-control-has-label",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
-        "line": 56,
-        "column": 3,
-        "endLine": 73,
-        "endColumn": 5,
-        "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
-      },
-      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1749,7 +1782,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 5
+    "warningCount": 4
   },
   {
     "file": "app/components/InstantSearch.vue",
@@ -1834,9 +1867,21 @@
   },
   {
     "file": "app/components/Link/Base.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
+        "line": 100,
+        "column": 5,
+        "endLine": 100,
+        "endColumn": 11,
+        "help": "Reorder attributes to follow the recommended order"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/LoadingSpinner.vue",
@@ -1877,6 +1922,17 @@
         "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       },
       {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 58,
+        "column": 15,
+        "endLine": 58,
+        "endColumn": 21,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      },
+      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1889,7 +1945,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 3
   },
   {
     "file": "app/components/Noodle/Artemis/Logo.vue",
@@ -1906,9 +1962,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 3,
-        "column": 51,
+        "column": 52,
         "endLine": 3,
-        "endColumn": 73,
+        "endColumn": 61,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -1917,9 +1973,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 4,
-        "column": 24,
+        "column": 25,
         "endLine": 4,
-        "endColumn": 47,
+        "endColumn": 34,
         "help": "Use kebab-case for attribute names"
       }
     ],
@@ -1938,7 +1994,7 @@
         "column": 1,
         "endLine": 5,
         "endColumn": 8,
-        "help": "Add scoped attribute: <style scoped>"
+        "help": "Add the 'scoped' attribute to the style block"
       },
       {
         "ruleId": "vue/sfc-element-order",
@@ -2287,6 +2343,17 @@
         "help": "Reorder attributes to follow the recommended order"
       },
       {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/v-on-event-hyphenation] Custom event listeners on components should be hyphenated: use 'update:model-value'",
+        "line": 480,
+        "column": 15,
+        "endLine": 480,
+        "endColumn": 95,
+        "help": "Rename the listener to kebab-case so it matches the emitted event name."
+      },
+      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -2332,7 +2399,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 7
+    "warningCount": 8
   },
   {
     "file": "app/components/Org/OperationsQueue.vue",
@@ -2446,9 +2513,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 47,
-        "column": 36,
+        "column": 37,
         "endLine": 47,
-        "endColumn": 64,
+        "endColumn": 49,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -2497,9 +2564,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 149,
-        "column": 5,
+        "column": 6,
         "endLine": 149,
-        "endColumn": 42,
+        "endColumn": 16,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -2551,6 +2618,17 @@
     "file": "app/components/Package/DownloadButton.vue",
     "messages": [
       {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 28,
+        "column": 15,
+        "endLine": 28,
+        "endColumn": 21,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      },
+      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -2574,7 +2652,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 3
   },
   {
     "file": "app/components/Package/ExternalLinks.vue",
@@ -2625,7 +2703,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 261,
-        "column": 23,
+        "column": 24,
         "endLine": 261,
         "endColumn": 35,
         "help": "Use kebab-case for attribute names"
@@ -2821,7 +2899,7 @@
         "column": 1,
         "endLine": 255,
         "endColumn": 8,
-        "help": "Add scoped attribute: <style scoped>"
+        "help": "Add the 'scoped' attribute to the style block"
       }
     ],
     "errorCount": 0,
@@ -3021,7 +3099,7 @@
         "column": 1,
         "endLine": 184,
         "endColumn": 8,
-        "help": "Add scoped attribute: <style scoped>"
+        "help": "Add the 'scoped' attribute to the style block"
       }
     ],
     "errorCount": 0,
@@ -3375,7 +3453,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 950,
-        "column": 13,
+        "column": 14,
         "endLine": 950,
         "endColumn": 23,
         "help": "Use kebab-case for attribute names"
@@ -3386,7 +3464,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 954,
-        "column": 13,
+        "column": 14,
         "endLine": 954,
         "endColumn": 23,
         "help": "Use kebab-case for attribute names"
@@ -3397,9 +3475,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 955,
-        "column": 13,
-        "endLine": 957,
-        "endColumn": 14,
+        "column": 14,
+        "endLine": 955,
+        "endColumn": 23,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -3408,9 +3486,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 958,
-        "column": 13,
-        "endLine": 962,
-        "endColumn": 14,
+        "column": 14,
+        "endLine": 958,
+        "endColumn": 29,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -3419,9 +3497,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 982,
-        "column": 13,
+        "column": 14,
         "endLine": 982,
-        "endColumn": 94,
+        "endColumn": 31,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -3430,9 +3508,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 990,
-        "column": 13,
+        "column": 14,
         "endLine": 990,
-        "endColumn": 88,
+        "endColumn": 29,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -3441,9 +3519,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 991,
-        "column": 13,
+        "column": 14,
         "endLine": 991,
-        "endColumn": 88,
+        "endColumn": 29,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -3452,9 +3530,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 993,
-        "column": 13,
+        "column": 14,
         "endLine": 993,
-        "endColumn": 51,
+        "endColumn": 28,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -3463,9 +3541,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 994,
-        "column": 13,
+        "column": 14,
         "endLine": 994,
-        "endColumn": 69,
+        "endColumn": 29,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -3474,7 +3552,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 995,
-        "column": 13,
+        "column": 14,
         "endLine": 995,
         "endColumn": 26,
         "help": "Use kebab-case for attribute names"
@@ -3496,9 +3574,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 1091,
-        "column": 13,
+        "column": 14,
         "endLine": 1091,
-        "endColumn": 86,
+        "endColumn": 31,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -3507,9 +3585,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 1093,
-        "column": 13,
+        "column": 14,
         "endLine": 1093,
-        "endColumn": 69,
+        "endColumn": 29,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -3518,7 +3596,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 1094,
-        "column": 13,
+        "column": 14,
         "endLine": 1094,
         "endColumn": 26,
         "help": "Use kebab-case for attribute names"
@@ -3529,7 +3607,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 1102,
-        "column": 13,
+        "column": 14,
         "endLine": 1102,
         "endColumn": 23,
         "help": "Use kebab-case for attribute names"
@@ -3672,7 +3750,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 1681,
-        "column": 13,
+        "column": 14,
         "endLine": 1681,
         "endColumn": 38,
         "help": "Use kebab-case for attribute names"
@@ -3683,9 +3761,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 1682,
-        "column": 13,
+        "column": 14,
         "endLine": 1682,
-        "endColumn": 98,
+        "endColumn": 41,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -3709,6 +3787,39 @@
         "endLine": 1690,
         "endColumn": 43,
         "help": "Reorder attributes to follow the recommended order"
+      },
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/v-on-event-hyphenation] Custom event listeners on components should be hyphenated: use 'zoom-start'",
+        "line": 1702,
+        "column": 13,
+        "endLine": 1702,
+        "endColumn": 35,
+        "help": "Rename the listener to kebab-case so it matches the emitted event name."
+      },
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/v-on-event-hyphenation] Custom event listeners on components should be hyphenated: use 'zoom-end'",
+        "line": 1703,
+        "column": 13,
+        "endLine": 1703,
+        "endColumn": 33,
+        "help": "Rename the listener to kebab-case so it matches the emitted event name."
+      },
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/v-on-event-hyphenation] Custom event listeners on components should be hyphenated: use 'zoom-reset'",
+        "line": 1704,
+        "column": 13,
+        "endLine": 1704,
+        "endColumn": 42,
+        "help": "Rename the listener to kebab-case so it matches the emitted event name."
       },
       {
         "ruleId": "vue/no-v-html",
@@ -3829,11 +3940,11 @@
         "column": 1,
         "endLine": 2063,
         "endColumn": 8,
-        "help": "Add scoped attribute: <style scoped>"
+        "help": "Add the 'scoped' attribute to the style block"
       }
     ],
     "errorCount": 1,
-    "warningCount": 21
+    "warningCount": 24
   },
   {
     "file": "app/components/Package/VersionDistribution.vue",
@@ -3990,7 +4101,7 @@
         "column": 1,
         "endLine": 705,
         "endColumn": 8,
-        "help": "Add scoped attribute: <style scoped>"
+        "help": "Add the 'scoped' attribute to the style block"
       }
     ],
     "errorCount": 0,
@@ -4066,7 +4177,7 @@
         "column": 1,
         "endLine": 407,
         "endColumn": 8,
-        "help": "Add scoped attribute: <style scoped>"
+        "help": "Add the 'scoped' attribute to the style block"
       }
     ],
     "errorCount": 0,
@@ -4407,9 +4518,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 15,
-        "column": 13,
+        "column": 14,
         "endLine": 15,
-        "endColumn": 41,
+        "endColumn": 26,
         "help": "Use kebab-case for attribute names"
       }
     ],
@@ -4447,28 +4558,141 @@
         "endLine": 57,
         "endColumn": 24,
         "help": "Reorder attributes to follow the recommended order"
+      },
+      {
+        "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
+        "line": 59,
+        "column": 9,
+        "endLine": 59,
+        "endColumn": 17,
+        "help": "Reorder attributes to follow the recommended order"
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 2
   },
   {
     "file": "app/components/Settings/AccentColorPicker.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "html/no-duplicate-class",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "severity": 1,
+        "message": "[vize:html/no-duplicate-class] Duplicate class name 'ring-fg'",
+        "line": 37,
+        "column": 7,
+        "endLine": 37,
+        "endColumn": 238,
+        "help": "Remove the duplicate occurrence so each class name appears only once in the class attribute."
+      },
+      {
+        "ruleId": "html/no-duplicate-class",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "severity": 1,
+        "message": "[vize:html/no-duplicate-class] Duplicate class name 'ring-offset-2'",
+        "line": 37,
+        "column": 7,
+        "endLine": 37,
+        "endColumn": 238,
+        "help": "Remove the duplicate occurrence so each class name appears only once in the class attribute."
+      },
+      {
+        "ruleId": "html/no-duplicate-class",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "severity": 1,
+        "message": "[vize:html/no-duplicate-class] Duplicate class name 'ring-offset-bg-subtle)'",
+        "line": 37,
+        "column": 7,
+        "endLine": 37,
+        "endColumn": 238,
+        "help": "Remove the duplicate occurrence so each class name appears only once in the class attribute."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 3
   },
   {
     "file": "app/components/Settings/BgThemePicker.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "html/no-duplicate-class",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "severity": 1,
+        "message": "[vize:html/no-duplicate-class] Duplicate class name 'ring-fg'",
+        "line": 35,
+        "column": 7,
+        "endLine": 35,
+        "endColumn": 238,
+        "help": "Remove the duplicate occurrence so each class name appears only once in the class attribute."
+      },
+      {
+        "ruleId": "html/no-duplicate-class",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "severity": 1,
+        "message": "[vize:html/no-duplicate-class] Duplicate class name 'ring-offset-2'",
+        "line": 35,
+        "column": 7,
+        "endLine": 35,
+        "endColumn": 238,
+        "help": "Remove the duplicate occurrence so each class name appears only once in the class attribute."
+      },
+      {
+        "ruleId": "html/no-duplicate-class",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "severity": 1,
+        "message": "[vize:html/no-duplicate-class] Duplicate class name 'ring-offset-bg-subtle)'",
+        "line": 35,
+        "column": 7,
+        "endLine": 35,
+        "endColumn": 238,
+        "help": "Remove the duplicate occurrence so each class name appears only once in the class attribute."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 3
   },
   {
     "file": "app/components/Settings/FgThemePicker.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "html/no-duplicate-class",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "severity": 1,
+        "message": "[vize:html/no-duplicate-class] Duplicate class name 'ring-fg'",
+        "line": 35,
+        "column": 7,
+        "endLine": 35,
+        "endColumn": 238,
+        "help": "Remove the duplicate occurrence so each class name appears only once in the class attribute."
+      },
+      {
+        "ruleId": "html/no-duplicate-class",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "severity": 1,
+        "message": "[vize:html/no-duplicate-class] Duplicate class name 'ring-offset-2'",
+        "line": 35,
+        "column": 7,
+        "endLine": 35,
+        "endColumn": 238,
+        "help": "Remove the duplicate occurrence so each class name appears only once in the class attribute."
+      },
+      {
+        "ruleId": "html/no-duplicate-class",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "severity": 1,
+        "message": "[vize:html/no-duplicate-class] Duplicate class name 'ring-offset-bg-subtle)'",
+        "line": 35,
+        "column": 7,
+        "endLine": 35,
+        "endColumn": 238,
+        "help": "Remove the duplicate occurrence so each class name appears only once in the class attribute."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 3
   },
   {
     "file": "app/components/Settings/Toggle.client.vue",
@@ -4505,10 +4729,54 @@
         "endLine": 60,
         "endColumn": 24,
         "help": "Reorder attributes to follow the recommended order"
+      },
+      {
+        "ruleId": "html/no-duplicate-class",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "severity": 1,
+        "message": "[vize:html/no-duplicate-class] Duplicate class name 'absolute'",
+        "line": 61,
+        "column": 7,
+        "endLine": 61,
+        "endColumn": 744,
+        "help": "Remove the duplicate occurrence so each class name appears only once in the class attribute."
+      },
+      {
+        "ruleId": "html/no-duplicate-class",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "severity": 1,
+        "message": "[vize:html/no-duplicate-class] Duplicate class name 'duration-200'",
+        "line": 61,
+        "column": 7,
+        "endLine": 61,
+        "endColumn": 744,
+        "help": "Remove the duplicate occurrence so each class name appears only once in the class attribute."
+      },
+      {
+        "ruleId": "html/no-duplicate-class",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "severity": 1,
+        "message": "[vize:html/no-duplicate-class] Duplicate class name 'ease-in-out)'",
+        "line": 61,
+        "column": 7,
+        "endLine": 61,
+        "endColumn": 744,
+        "help": "Remove the duplicate occurrence so each class name appears only once in the class attribute."
+      },
+      {
+        "ruleId": "html/no-duplicate-class",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "severity": 1,
+        "message": "[vize:html/no-duplicate-class] Duplicate class name 'rounded-full'",
+        "line": 61,
+        "column": 7,
+        "endLine": 61,
+        "endColumn": 744,
+        "help": "Remove the duplicate occurrence so each class name appears only once in the class attribute."
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 7
   },
   {
     "file": "app/components/Settings/Toggle.server.vue",
@@ -4661,7 +4929,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 13,
-        "column": 22,
+        "column": 23,
         "endLine": 13,
         "endColumn": 32,
         "help": "Use kebab-case for attribute names"
@@ -4679,7 +4947,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 55,
-        "column": 5,
+        "column": 6,
         "endLine": 55,
         "endColumn": 15,
         "help": "Use kebab-case for attribute names"
@@ -4725,35 +4993,47 @@
   },
   {
     "file": "app/components/User/Avatar.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/return-in-computed-property",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/return-in-computed-property] Expected to return a value in this computed property.",
+        "line": 7,
+        "column": 29,
+        "endLine": 14,
+        "endColumn": 2,
+        "help": "A computed getter must return the derived value. Add a return that yields a value on every path through the getter."
+      },
+      {
+        "ruleId": "script/return-in-computed-property",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/return-in-computed-property] Expected to return a value in this computed property.",
+        "line": 16,
+        "column": 28,
+        "endLine": 23,
+        "endColumn": 2,
+        "help": "A computed getter must return the derived value. Add a return that yields a value on every path through the getter."
+      },
+      {
+        "ruleId": "script/return-in-computed-property",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/return-in-computed-property] Expected to return a value in this computed property.",
+        "line": 25,
+        "column": 28,
+        "endLine": 32,
+        "endColumn": 2,
+        "help": "A computed getter must return the derived value. Add a return that yields a value on every path through the getter."
+      }
+    ],
+    "errorCount": 3,
     "warningCount": 0
   },
   {
     "file": "app/components/UserCombobox.vue",
     "messages": [
-      {
-        "ruleId": "a11y/interactive-supports-focus",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
-        "line": 173,
-        "column": 7,
-        "endLine": 180,
-        "endColumn": 8,
-        "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
-      },
-      {
-        "ruleId": "a11y/interactive-supports-focus",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
-        "line": 182,
-        "column": 9,
-        "endLine": 196,
-        "endColumn": 10,
-        "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
-      },
       {
         "ruleId": "a11y/mouse-events-have-key-events",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
@@ -4767,7 +5047,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 1
   },
   {
     "file": "app/components/VersionSelector.vue",
@@ -5078,6 +5358,17 @@
     "file": "app/pages/index.vue",
     "messages": [
       {
+        "ruleId": "vue/valid-v-on",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/valid-v-on] v-on does not support the modifier 'trim'",
+        "line": 38,
+        "column": 29,
+        "endLine": 38,
+        "endColumn": 33,
+        "help": "Use a built-in event modifier, keyboard alias, or a configured custom modifier."
+      },
+      {
         "ruleId": "a11y/no-refer-to-non-existent-id",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -5100,7 +5391,7 @@
         "help": "Reorder attributes to follow the recommended order"
       }
     ],
-    "errorCount": 0,
+    "errorCount": 1,
     "warningCount": 2
   },
   {
@@ -5220,6 +5511,17 @@
     "file": "app/pages/package-changelog/[[org]]/[name].vue",
     "messages": [
       {
+        "ruleId": "script/return-in-computed-property",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/return-in-computed-property] Expected to return a value in this computed property.",
+        "line": 60,
+        "column": 30,
+        "endLine": 68,
+        "endColumn": 2,
+        "help": "A computed getter must return the derived value. Add a return that yields a value on every path through the getter."
+      },
+      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -5236,7 +5538,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 112,
-        "column": 7,
+        "column": 8,
         "endLine": 112,
         "endColumn": 25,
         "help": "Use kebab-case for attribute names"
@@ -5247,7 +5549,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 114,
-        "column": 7,
+        "column": 8,
         "endLine": 114,
         "endColumn": 21,
         "help": "Use kebab-case for attribute names"
@@ -5258,9 +5560,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 145,
-        "column": 9,
+        "column": 10,
         "endLine": 145,
-        "endColumn": 51,
+        "endColumn": 21,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -5269,9 +5571,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 146,
-        "column": 9,
+        "column": 10,
         "endLine": 146,
-        "endColumn": 50,
+        "endColumn": 31,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -5302,9 +5604,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 150,
-        "column": 11,
+        "column": 12,
         "endLine": 150,
-        "endColumn": 31,
+        "endColumn": 19,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -5313,9 +5615,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 152,
-        "column": 11,
+        "column": 12,
         "endLine": 152,
-        "endColumn": 38,
+        "endColumn": 21,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -5324,9 +5626,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 158,
-        "column": 9,
+        "column": 10,
         "endLine": 158,
-        "endColumn": 26,
+        "endColumn": 18,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -5335,9 +5637,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 159,
-        "column": 9,
+        "column": 10,
         "endLine": 159,
-        "endColumn": 51,
+        "endColumn": 21,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -5346,9 +5648,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 160,
-        "column": 9,
+        "column": 10,
         "endLine": 160,
-        "endColumn": 50,
+        "endColumn": 31,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -5379,9 +5681,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 164,
-        "column": 11,
+        "column": 12,
         "endLine": 164,
-        "endColumn": 31,
+        "endColumn": 19,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -5390,9 +5692,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 166,
-        "column": 11,
+        "column": 12,
         "endLine": 166,
-        "endColumn": 38,
+        "endColumn": 21,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -5429,7 +5731,7 @@
         "help": "Reorder attributes to follow the recommended order"
       }
     ],
-    "errorCount": 2,
+    "errorCount": 3,
     "warningCount": 17
   },
   {
@@ -5467,7 +5769,7 @@
         "column": 1,
         "endLine": 621,
         "endColumn": 8,
-        "help": "Add scoped attribute: <style scoped>"
+        "help": "Add the 'scoped' attribute to the style block"
       }
     ],
     "errorCount": 0,
@@ -5485,7 +5787,7 @@
         "column": 1,
         "endLine": 211,
         "endColumn": 8,
-        "help": "Add scoped attribute: <style scoped>"
+        "help": "Add the 'scoped' attribute to the style block"
       }
     ],
     "errorCount": 0,
@@ -5506,7 +5808,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 358,
-        "column": 13,
+        "column": 14,
         "endLine": 358,
         "endColumn": 23,
         "help": "Use kebab-case for attribute names"
@@ -5517,7 +5819,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 359,
-        "column": 13,
+        "column": 14,
         "endLine": 359,
         "endColumn": 30,
         "help": "Use kebab-case for attribute names"
@@ -5528,7 +5830,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 360,
-        "column": 13,
+        "column": 14,
         "endLine": 360,
         "endColumn": 29,
         "help": "Use kebab-case for attribute names"
@@ -5539,7 +5841,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 361,
-        "column": 13,
+        "column": 14,
         "endLine": 361,
         "endColumn": 29,
         "help": "Use kebab-case for attribute names"
@@ -5590,7 +5892,7 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 575,
-        "column": 40,
+        "column": 41,
         "endLine": 575,
         "endColumn": 48,
         "help": "Use kebab-case for attribute names"
@@ -5612,9 +5914,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 967,
-        "column": 15,
+        "column": 16,
         "endLine": 967,
-        "endColumn": 38,
+        "endColumn": 27,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -5623,9 +5925,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 969,
-        "column": 15,
+        "column": 16,
         "endLine": 969,
-        "endColumn": 55,
+        "endColumn": 26,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -5634,9 +5936,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 970,
-        "column": 15,
+        "column": 16,
         "endLine": 970,
-        "endColumn": 33,
+        "endColumn": 23,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -5881,9 +6183,9 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 280,
-        "column": 30,
+        "column": 31,
         "endLine": 280,
-        "endColumn": 48,
+        "endColumn": 41,
         "help": "Use kebab-case for attribute names"
       }
     ],
@@ -6044,10 +6346,21 @@
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 172,
-        "column": 15,
+        "column": 16,
         "endLine": 172,
-        "endColumn": 51,
+        "endColumn": 26,
         "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/v-on-event-hyphenation] Custom event listeners on components should be hyphenated: use 'update:model-value'",
+        "line": 173,
+        "column": 15,
+        "endLine": 173,
+        "endColumn": 63,
+        "help": "Rename the listener to kebab-case so it matches the emitted event name."
       },
       {
         "ruleId": "vue/attribute-order",
@@ -6128,7 +6441,7 @@
       }
     ],
     "errorCount": 2,
-    "warningCount": 10
+    "warningCount": 11
   },
   {
     "file": "app/pages/sponsors.vue",
