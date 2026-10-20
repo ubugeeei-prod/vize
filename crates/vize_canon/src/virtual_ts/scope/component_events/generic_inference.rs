@@ -123,6 +123,9 @@ pub(super) fn generate_inferred_emit_args(
         }
     } else {
         ts.push_str("{\n");
+        // A static `class` next to `:class` is one Vue prop; a second key in
+        // this literal would be TS1117 on authored markup that vue-tsc accepts.
+        let mut emitted = vize_carton::FxHashSet::default();
         for prop in &usage.props {
             if prop.name_is_dynamic || prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
                 continue;
@@ -132,6 +135,9 @@ pub(super) fn generate_inferred_emit_args(
                 continue;
             };
             let camel_prop_name = to_camel_case(prop.name.as_str());
+            if !emitted.insert(camel_prop_name.clone()) {
+                continue;
+            }
             if is_inline_callback_prop(prop) {
                 append!(
                     *ts,

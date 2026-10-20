@@ -347,3 +347,27 @@ const total = 1
         "initializer sub-span should keep the authored value bytes after multibyte text"
     );
 }
+
+#[test]
+fn emit_inference_literal_keeps_one_class_key() {
+    let script = r#"import Child from "./Child.vue"
+const c = 'x'
+function h(n: number) { void n }
+"#;
+    let template = r#"<Child class="a" :class="c" @go="h" />"#;
+    let allocator = vize_carton::Allocator::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+    let resolver = output
+        .code
+        .split("const __vize_emit_props_")
+        .nth(1)
+        .and_then(|rest| rest.split("});").next())
+        .unwrap_or_default();
+    // `class="a" :class="c"` is one prop; a second key would be TS1117.
+    assert_eq!(resolver.matches("\"class\":").count(), 1, "{}", output.code);
+}
