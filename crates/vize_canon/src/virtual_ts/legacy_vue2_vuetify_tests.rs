@@ -193,14 +193,14 @@ defineProps<Props>()
 
     let standard = standard_virtual_ts(script, template, &VirtualTsOptions::default());
     assert!(
-        standard.contains("\"width\" satisfies keyof Props"),
+        standard.contains("\"width\" satisfies keyof typeof __vize_keyed_template_context"),
         "standard keyed prop fallback should still catch unknown props:\n{standard}"
     );
 
     let legacy = legacy_virtual_ts(script, template, &VirtualTsOptions::default());
     assert!(
         legacy.contains("(props as Record<string, unknown>)[\"width\"]")
-            && !legacy.contains("satisfies keyof Props"),
+            && !legacy.contains("satisfies keyof typeof __vize_keyed_template_context"),
         "legacy Vue 2 keyed prop fallback should not reject Vuetify/mixin names:\n{legacy}"
     );
 }
@@ -215,7 +215,7 @@ defineProps<Props>()
 
     let standard = standard_virtual_ts(script, template, &VirtualTsOptions::default());
     assert!(
-        standard.contains("\"isMini\" satisfies keyof Props"),
+        standard.contains("\"isMini\" satisfies keyof typeof __vize_keyed_template_context"),
         "standard keyed prop fallback should still catch unknown props:\n{standard}"
     );
 
@@ -230,7 +230,7 @@ defineProps<Props>()
             && vue2.contains("(props as Record<string, unknown>)[\"hideDetails\"]")
             && vue2.contains("(props as Record<string, unknown>)[\"chips\"]")
             && vue2.contains("(props as Record<string, unknown>)[\"width\"]")
-            && !vue2.contains("satisfies keyof Props"),
+            && !vue2.contains("satisfies keyof typeof __vize_keyed_template_context"),
         "Vue 2 dialect keyed prop fallback should not reject Vuetify/mixin names:\n{vue2}"
     );
 }

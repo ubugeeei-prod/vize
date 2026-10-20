@@ -331,6 +331,10 @@ defineProps<Props>();
     "props.ts": `export type InferProps<T extends (...args: any[]) => any> = Awaited<ReturnType<T>>;`,
     "plugins.d.ts": `import 'vue';
 declare module 'vue' { interface ComponentCustomProperties { plugin: { name: string } } }`,
+    "PluginMember.vue": `<script setup lang="ts">
+const loader = () => ({ title: "x" });
+defineProps<ReturnType<typeof loader>>();
+</script><template>{{ plugin.nmae }}</template>`,
     "Ignored.vue": `<script setup lang="ts">
 const loader = () => ({ title: "x" });
 defineProps<ReturnType<typeof loader>>();
@@ -343,7 +347,12 @@ defineProps<ReturnType<typeof loader>>();
       assert.equal(errors.length, 3, `${file}: oracle must report all typo occurrences`);
       assert.ok(errors.every((d) => d.code === 2339 || d.code === 2551));
     }
-    assert.equal(expected.length, 9, "valid plugin and ignored typo are negative controls");
+    assert.equal(
+      expected.filter((d) => d.file === "PluginMember.vue").length,
+      1,
+      "plugin members must retain their actual type",
+    );
+    assert.equal(expected.length, 10, "valid plugin and ignored typo are negative controls");
     for (const strictTemplates of [false, true]) {
       const configFile = path.join(directory, "tsconfig.json");
       const config = JSON.parse(fs.readFileSync(configFile, "utf8"));

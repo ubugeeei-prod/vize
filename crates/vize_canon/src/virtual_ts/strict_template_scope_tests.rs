@@ -169,7 +169,9 @@ fn keyed_imported_props_are_read_through_the_props_object() {
     let template = "<section>\n  <template v-for=\"group in groups\" :key=\"group.id\">\n    <Card :selectable=\"selectable\" :picked=\"picked.size\" :missing=\"missingKey\" />\n  </template>\n</section>";
     let code = strict_virtual_ts(template, Some(script));
     assert!(
-        code.contains("const selectable = props[(\"selectable\" satisfies keyof"),
+        code.contains(
+            "const selectable = __vize_keyed_template_context[(\"selectable\" satisfies keyof"
+        ),
         "the case needs the keyed props projection:\n{code}"
     );
     assert_eq!(

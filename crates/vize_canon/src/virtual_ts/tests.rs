@@ -503,7 +503,7 @@ defineProps<Props>();
 fn test_define_props_local_intersection_alias_emits_keyed_bindings() {
     // A local `type Props = A & B` resolves through the now-populated
     // TypeResolver: its body carries a top-level `&`, so the generator falls
-    // back to keyed `satisfies keyof Props` bindings rather than field-by-field
+    // back to keyed `satisfies keyof typeof __vize_keyed_template_context` bindings rather than field-by-field
     // extraction. This path previously relied on the definitions map being
     // empty; registering local types from the AST drives it correctly.
     use vize_croquis::{Analyzer, AnalyzerOptions};
@@ -528,7 +528,9 @@ defineProps<Props>();
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
     assert!(
-        output.code.contains("satisfies keyof Props"),
+        output
+            .code
+            .contains("satisfies keyof typeof __vize_keyed_template_context"),
         "an intersection prop alias should emit keyed template bindings:\n{}",
         output.code
     );
