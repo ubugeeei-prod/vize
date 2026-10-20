@@ -1,4 +1,6 @@
-use super::super::{resolve_nuxt_project_root, resolve_program_nuxt_project_root};
+use super::super::{
+    CanonicalPathCache, resolve_nuxt_project_root, resolve_program_nuxt_project_root,
+};
 use super::unique_case_dir;
 
 #[test]
@@ -31,9 +33,15 @@ fn mixed_external_inputs_keep_nuxt_support_for_the_cwd_program() {
     std::fs::write(&local, "<template />\n").unwrap();
     std::fs::write(&external, "<template />\n").unwrap();
 
-    let resolved = resolve_program_nuxt_project_root(&cwd, &case_root, None, &[local, external]);
+    let resolved = resolve_program_nuxt_project_root(
+        &cwd,
+        &case_root,
+        None,
+        &[local, external],
+        &mut CanonicalPathCache::default(),
+    );
 
-    assert_eq!(resolved, vize_carton::path::canonicalize_non_verbatim(&cwd));
+    assert_eq!(resolved, cwd.canonicalize().unwrap());
     assert!(crate::commands::check::nuxt::is_nuxt_project_root(
         &resolved
     ));
@@ -57,6 +65,7 @@ fn external_only_input_does_not_inherit_the_cwd_nuxt_project() {
         &external_root,
         None,
         std::slice::from_ref(&external),
+        &mut CanonicalPathCache::default(),
     );
 
     assert_eq!(resolved, external_root);

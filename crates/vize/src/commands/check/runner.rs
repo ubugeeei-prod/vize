@@ -310,6 +310,7 @@ fn prepare_and_execute(
         &project_root,
         program_tsconfig_path.as_deref(),
         &candidate.inputs,
+        canonical_paths,
     );
 
     sort_package_route_bindings(&mut package_routes);

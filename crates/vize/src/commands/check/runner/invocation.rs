@@ -2,6 +2,8 @@
 
 use std::path::{Path, PathBuf};
 
+use crate::commands::check::path_cache::CanonicalPathCache;
+
 use super::resolve::{resolve_project_root, resolve_tsconfig_path};
 
 /// Resolve before collecting transitive imports: imports outside the package
@@ -51,12 +53,12 @@ pub(super) fn resolve_program_nuxt_project_root(
     project_root: &Path,
     tsconfig: Option<&Path>,
     inputs: &[PathBuf],
+    canonical_paths: &mut CanonicalPathCache,
 ) -> PathBuf {
-    let cwd = vize_carton::path::canonicalize_non_verbatim(cwd);
+    let cwd = canonical_paths.canonicalize(cwd);
     let has_cwd_input = inputs
         .iter()
-        .map(|input| vize_carton::path::canonicalize_non_verbatim(input))
-        .any(|input| input.starts_with(&cwd));
+        .any(|input| canonical_paths.canonicalize(input).starts_with(&cwd));
     let fallback = if has_cwd_input {
         cwd.as_path()
     } else {
