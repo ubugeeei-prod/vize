@@ -439,6 +439,7 @@ mod define_macros_order_options_tests {
             Linter::new().with_enabled_rules(Some(vec!["script/define-macros-order".into()])),
             &options,
             false,
+            false,
         );
         let result = linter.lint_sfc(
             r#"<script setup>
