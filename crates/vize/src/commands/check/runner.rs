@@ -64,9 +64,10 @@ use output::{exit_after_execution_error, finish_executions};
 use program_inputs::{ProgramInputContext, filter_for_program, project_graph_allows_js};
 use programs::{CollectedRoots, ProgramCandidate, split_program_candidates};
 use resolve::{
-    display_path, explicit_input_root, resolve_declaration_emit_options, resolve_from_config_dir,
-    resolve_project_root, resolve_tsconfig_path, validate_corsa_server_count,
-    validate_inputs_in_root,
+    display_path, explicit_input_root, external_input_tsconfig_boundary,
+    resolve_declaration_emit_options, resolve_from_config_dir, resolve_project_root,
+    resolve_project_root_with_boundary, resolve_tsconfig_path, resolve_tsconfig_path_with_boundary,
+    validate_corsa_server_count, validate_inputs_in_root,
 };
 #[cfg(test)]
 use resolve::{find_nearest_tsconfig_dir, resolve_declaration_dir};
@@ -141,6 +142,7 @@ fn prepare_and_execute(
     nuxt_project_root: &Path,
     explicit_input_root: &Path,
     validate_inputs: bool,
+    tsconfig_boundary: Option<&Path>,
     jsx_typecheck: bool,
     settings: &CheckerSettings,
     cache: &mut TsconfigInputCache,
@@ -213,12 +215,21 @@ fn prepare_and_execute(
         import_time += import_start.elapsed();
         package_routes.extend(discovered.package_routes);
     }
-    let project_root =
-        resolve_project_root(candidate.tsconfig_path.as_deref(), cwd, &candidate.files);
-    let discovered_tsconfig_path = candidate
-        .tsconfig_path
-        .clone()
-        .or_else(|| resolve_tsconfig_path(None, cwd, &project_root, &candidate.files));
+    let project_root = resolve_project_root_with_boundary(
+        candidate.tsconfig_path.as_deref(),
+        cwd,
+        &candidate.files,
+        tsconfig_boundary,
+    );
+    let discovered_tsconfig_path = candidate.tsconfig_path.clone().or_else(|| {
+        resolve_tsconfig_path_with_boundary(
+            None,
+            cwd,
+            &project_root,
+            &candidate.files,
+            tsconfig_boundary,
+        )
+    });
     // A nested selected owner may reject every explicit JavaScript input.
     // Validate its authored chain before the file filter can end the run.
     if let Some(path) = discovered_tsconfig_path.as_deref() {
@@ -273,8 +284,12 @@ fn prepare_and_execute(
         package_routes.extend(registered.package_routes);
         explicit_program_declarations = registered.program_declarations;
     }
-    let project_root =
-        resolve_project_root(program_tsconfig_path.as_deref(), cwd, &candidate.files);
+    let project_root = resolve_project_root_with_boundary(
+        program_tsconfig_path.as_deref(),
+        cwd,
+        &candidate.files,
+        tsconfig_boundary,
+    );
     let logical_program_root = logical_program_root.unwrap_or_else(|| project_root.clone());
     resolve::retain_project_files(
         &mut candidate.files,
