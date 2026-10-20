@@ -65,7 +65,7 @@ vp run lint
 
 **悪い**
 
-style の lang に SCSS を指定しています。プリプロセッサーを使わない規約の例で、現在の SFC 検査ではこのルール固有の診断は出ません。
+style の lang に SCSS を指定しているため、プリプロセッサーを禁止するルールが記述されたブロックを報告します。
 
 ```vue annotate="remove:2"
 <template><p>Notice</p></template>
@@ -78,7 +78,7 @@ style の lang に SCSS を指定しています。プリプロセッサーを�
 
 **良い**
 
-同じ CSS からプリプロセッサーの lang を取り除きます。規約の修正例で、現在の SFC 検査で診断の有無に差が出る例ではありません。
+同じ宣言を、プリプロセッサーの lang を指定せずに通常の CSS で記述します。
 
 ```vue annotate="add:2"
 <template><p>Notice</p></template>
@@ -266,7 +266,7 @@ vp run lint
 
 **悪い**
 
-template の lang に Pug を指定しています。HTML のみを使う規約の例で、現在の SFC 検査ではこの ID の診断は出ません。
+template の lang に Pug を指定しているため、HTML のみを許可するルールが記述されたブロックを報告します。
 
 ```vue annotate="remove:1,2"
 <template lang="pug">
@@ -278,7 +278,7 @@ p Notice
 
 **良い**
 
-lang を取り除き、通常の HTML の p を直接記述します。規約の例で、現在の SFC 検査で診断が出ることを示すものではありません。
+lang を指定せず、通常の HTML の p を直接記述します。
 
 ```vue annotate="add:1,2"
 <template>

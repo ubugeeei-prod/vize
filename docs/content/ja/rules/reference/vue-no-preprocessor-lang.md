@@ -37,7 +37,7 @@ vp run lint
 
 ## 悪い
 
-style の lang に SCSS を指定しています。プリプロセッサーを使わない規約の例で、現在の SFC 検査ではこのルール固有の診断は出ません。
+style の lang に SCSS を指定しているため、プリプロセッサーを禁止するルールが記述されたブロックを報告します。
 
 ```vue
 <template><p>Notice</p></template>
@@ -48,7 +48,7 @@ style の lang に SCSS を指定しています。プリプロセッサーを�
 
 ## 良い
 
-同じ CSS からプリプロセッサーの lang を取り除きます。規約の修正例で、現在の SFC 検査で診断の有無に差が出る例ではありません。
+同じ宣言を、プリプロセッサーの lang を指定せずに通常の CSS で記述します。
 
 ```vue
 <template><p>Notice</p></template>

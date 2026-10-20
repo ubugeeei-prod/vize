@@ -37,7 +37,7 @@ vp run lint
 
 ## Bad
 
-The template selects Pug through lang. This is an intended HTML-only convention; the current SFC path does not diagnose this catalog ID.
+The template selects Pug through lang, so the HTML-only policy reports the authored block.
 
 ```vue
 <template lang="pug">
@@ -47,7 +47,7 @@ p Notice
 
 ## Good
 
-An ordinary HTML template omits lang and uses the paragraph directly. This illustrates the convention without claiming a current SFC finding.
+An ordinary HTML template omits lang and uses the paragraph directly.
 
 ```vue
 <template>

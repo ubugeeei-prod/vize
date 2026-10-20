@@ -37,7 +37,7 @@ vp run lint
 
 ## 悪い
 
-template の lang に Pug を指定しています。HTML のみを使う規約の例で、現在の SFC 検査ではこの ID の診断は出ません。
+template の lang に Pug を指定しているため、HTML のみを許可するルールが記述されたブロックを報告します。
 
 ```vue
 <template lang="pug">
@@ -47,7 +47,7 @@ p Notice
 
 ## 良い
 
-lang を取り除き、通常の HTML の p を直接記述します。規約の例で、現在の SFC 検査で診断が出ることを示すものではありません。
+lang を指定せず、通常の HTML の p を直接記述します。
 
 ```vue
 <template>

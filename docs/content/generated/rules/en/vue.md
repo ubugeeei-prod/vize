@@ -2677,7 +2677,7 @@ vp run lint
 
 **Bad**
 
-The style block selects SCSS with lang. This describes the intended no-preprocessor convention; the current SFC path does not emit this rule.
+The style block selects SCSS through lang, so the no-preprocessor policy reports the authored block.
 
 ```vue annotate="remove:2"
 <template><p>Notice</p></template>
@@ -2690,7 +2690,7 @@ The style block selects SCSS with lang. This describes the intended no-preproces
 
 **Good**
 
-The same CSS declarations omit the preprocessor lang. This is the convention repair, not an executable Bad/Good diagnostic difference today.
+The same declarations use plain CSS without a preprocessor lang.
 
 ```vue annotate="add:2"
 <template><p>Notice</p></template>
@@ -3131,7 +3131,7 @@ vp run lint
 
 **Bad**
 
-The template selects Pug through lang. This is an intended HTML-only convention; the current SFC path does not diagnose this catalog ID.
+The template selects Pug through lang, so the HTML-only policy reports the authored block.
 
 ```vue annotate="remove:1,2"
 <template lang="pug">
@@ -3143,7 +3143,7 @@ p Notice
 
 **Good**
 
-An ordinary HTML template omits lang and uses the paragraph directly. This illustrates the convention without claiming a current SFC finding.
+An ordinary HTML template omits lang and uses the paragraph directly.
 
 ```vue annotate="add:1,2"
 <template>

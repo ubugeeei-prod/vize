@@ -37,7 +37,7 @@ vp run lint
 
 ## Bad
 
-The style block selects SCSS with lang. This describes the intended no-preprocessor convention; the current SFC path does not emit this rule.
+The style block selects SCSS through lang, so the no-preprocessor policy reports the authored block.
 
 ```vue
 <template><p>Notice</p></template>
@@ -48,7 +48,7 @@ The style block selects SCSS with lang. This describes the intended no-preproces
 
 ## Good
 
-The same CSS declarations omit the preprocessor lang. This is the convention repair, not an executable Bad/Good diagnostic difference today.
+The same declarations use plain CSS without a preprocessor lang.
 
 ```vue
 <template><p>Notice</p></template>
