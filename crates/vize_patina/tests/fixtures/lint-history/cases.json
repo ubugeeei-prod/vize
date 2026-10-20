@@ -202,5 +202,17 @@
     "vapor": null,
     "diagnostics": 0,
     "fixes": 0
+  },
+  {
+    "id": "dotted-slot-name-9865",
+    "history": "673c6fa430aba9ca81c87a81e3e63a4a8c844921",
+    "source": "<script setup lang=\"ts\">\nimport DataTable from \"./DataTable.vue\";\n\nconst rows = [{ name: \"a\" }];\n</script>\n\n<template>\n  <DataTable :rows=\"rows\">\n    <template #item.name=\"{ row }\">{{ row.name.toUpperCase() }}</template>\n  </DataTable>\n</template>\n",
+    "filename": "App.vue",
+    "entry": "sfc",
+    "rule": "vue/valid-v-slot",
+    "vue_version": "3",
+    "vapor": null,
+    "diagnostics": 0,
+    "fixes": 0
   }
 ]
