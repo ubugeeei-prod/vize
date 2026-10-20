@@ -279,13 +279,6 @@ function applyRuleOptions(
 ): ProjectLintRules {
   const rules = { ...source };
   for (const [ruleId, option] of Object.entries(options)) {
-    const arguments_ = bridgedRuleOptions(ruleId, option);
-    if (!arguments_) {
-      warnings.push(
-        `${scope}.ruleOptions[${JSON.stringify(ruleId)}] is not supported by oxlint-vize`,
-      );
-      continue;
-    }
     const configured = rules[ruleId] ?? fallback[ruleId];
     const severity = Array.isArray(configured) ? configured[0] : configured;
     if (!isSeverity(severity)) {
@@ -294,35 +287,11 @@ function applyRuleOptions(
       );
       continue;
     }
-    rules[ruleId] = [severity, ...arguments_];
+    // `createVizeLintConfig` accepts the shared CLI option shape directly;
+    // keep the generated Nuxt config on that same bridge contract.
+    rules[ruleId] = [severity, option];
   }
   return rules;
-}
-
-function bridgedRuleOptions(ruleId: string, value: unknown): unknown[] | undefined {
-  if (ruleId === "vue/v-on-event-hyphenation" || ruleId === "vue/attribute-hyphenation") {
-    return value === "always" || value === "never" ? [value] : undefined;
-  }
-  if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
-  const option = value as Record<string, unknown>;
-  switch (ruleId) {
-    case "vue/component-name-in-template-casing":
-      return Object.keys(option).every((key) => key === "casing") &&
-        (option.casing === "PascalCase" || option.casing === "kebab-case")
-        ? [option.casing]
-        : undefined;
-    case "script/custom-event-name-casing":
-      return Object.keys(option).every((key) => key === "casing") &&
-        (option.casing === "camelCase" || option.casing === "kebab-case")
-        ? [option.casing]
-        : undefined;
-    case "vue/no-mutating-props":
-    case "vue/sfc-element-order":
-    case "vue/html-self-closing":
-      return [value];
-    default:
-      return undefined;
-  }
 }
 
 function isConfigPreset(value: unknown): value is ConfigPreset {

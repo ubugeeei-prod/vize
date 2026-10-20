@@ -83,7 +83,7 @@ void test("Vite+ Oxlint rules are retained with their authored namespaces", asyn
   });
 });
 
-void test("Vue entry rules and supported rule options reach generated Oxlint overrides", async (t) => {
+void test("Vue entry rules and bridge-supported rule options reach generated Oxlint config", async (t) => {
   const root = await temporaryRoot(t, "vize-nuxt-project-entry-rules-");
   await mkdir(path.join(root, "app"));
   await writeFile(
@@ -93,11 +93,17 @@ void test("Vue entry rules and supported rule options reach generated Oxlint ove
         rules: {
           "vue/no-inline-style": "warn",
           "script/custom-event-name-casing": "error",
-          "vue/require-component-registration": "error"
+          "vue/require-component-registration": "error",
+          "html/no-empty-palpable-content": "warn",
+          "script/no-restricted-globals": "error"
         },
         ruleOptions: {
           "script/custom-event-name-casing": { casing: "kebab-case" },
-          "vue/require-component-registration": { globals: ["NuxtLink"] }
+          "vue/require-component-registration": { globals: ["NuxtLink"] },
+          "html/no-empty-palpable-content": { contentDirectives: ["safe-html"] },
+          "script/no-restricted-globals": {
+            globals: [{ name: "localStorage", message: "Use the storage wrapper." }]
+          }
         }
       },
       entries: [{
@@ -120,19 +126,21 @@ void test("Vue entry rules and supported rule options reach generated Oxlint ove
         ignores: [path.join("app", "components/legacy/generated/**")],
         name: "legacy",
         rules: {
-          "script/custom-event-name-casing": ["error", "camelCase"],
+          "script/custom-event-name-casing": ["error", { casing: "camelCase" }],
           "vue/no-inline-style": "off",
         },
       },
     ],
     vize: {
-      "script/custom-event-name-casing": ["error", "kebab-case"],
+      "script/custom-event-name-casing": ["error", { casing: "kebab-case" }],
       "vue/no-inline-style": "warn",
-      "vue/require-component-registration": "error",
+      "vue/require-component-registration": ["error", { globals: ["NuxtLink"] }],
+      "html/no-empty-palpable-content": ["warn", { contentDirectives: ["safe-html"] }],
+      "script/no-restricted-globals": [
+        "error",
+        { globals: [{ name: "localStorage", message: "Use the storage wrapper." }] },
+      ],
     },
-    warnings: [
-      'vue.linter.ruleOptions["vue/require-component-registration"] is not supported by oxlint-vize',
-    ],
   });
 
   const warnings: string[] = [];
@@ -148,21 +156,34 @@ void test("Vue entry rules and supported rule options reach generated Oxlint ove
     }>;
     rules: Record<string, unknown>;
   };
-  assert.deepEqual(artifact.rules["vize/script/custom-event-name-casing"], ["error", "kebab-case"]);
+  assert.deepEqual(artifact.rules["vize/script/custom-event-name-casing"], [
+    "error",
+    { casing: "kebab-case" },
+  ]);
+  assert.deepEqual(artifact.rules["vize/vue/require-component-registration"], [
+    "error",
+    { globals: ["NuxtLink"] },
+  ]);
+  assert.deepEqual(artifact.rules["vize/html/no-empty-palpable-content"], [
+    "warn",
+    { contentDirectives: ["safe-html"] },
+  ]);
+  assert.deepEqual(artifact.rules["vize/script/no-restricted-globals"], [
+    "error",
+    { globals: [{ name: "localStorage", message: "Use the storage wrapper." }] },
+  ]);
   assert.deepEqual(
     artifact.overrides.find(({ files }) => files.includes("app/components/legacy/**/*.vue")),
     {
       excludeFiles: ["app/components/legacy/generated/**"],
       files: ["app/components/legacy/**/*.vue"],
       rules: {
-        "vize/script/custom-event-name-casing": ["error", "camelCase"],
+        "vize/script/custom-event-name-casing": ["error", { casing: "camelCase" }],
         "vize/vue/no-inline-style": "off",
       },
     },
   );
-  assert.deepEqual(warnings, [
-    '@vizejs/nuxt lint config: vue.linter.ruleOptions["vue/require-component-registration"] is not supported by oxlint-vize',
-  ]);
+  assert.deepEqual(warnings, []);
 });
 
 void test("Nuxt Vite factories receive serve and retired files cannot override them", async (t) => {
