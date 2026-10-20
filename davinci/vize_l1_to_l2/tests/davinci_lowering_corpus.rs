@@ -58,7 +58,7 @@ fn lowering_corpus_is_total() {
     // `lower.for-fact` before the transform table.
     assert_eq!(
         (ops, diagnostics, provenance, scopes),
-        (83, 28, 106, 1),
+        (83, 27, 106, 1),
         "battery census moved: re-pin in both lanes deliberately"
     );
 
