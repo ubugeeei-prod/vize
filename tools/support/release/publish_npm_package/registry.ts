@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import { collectOutput, println, sleepSeconds, writeStderr } from "../command_io.ts";
-import { replaceEvery } from "../command_runtime.ts";
+import { parseMoonInt, replaceEvery } from "../command_runtime.ts";
 import { isJsonObject, parseJson, stringMember, type JsonValue } from "../ordered_json.ts";
 
 /** Minimal package metadata for registry checks. */
@@ -9,6 +9,11 @@ export interface NpmPackageInfo {
   name: string;
   version: string;
   tag: string;
+}
+
+export interface RegistryVisibilityOptions {
+  /** Accept a release channel tag that has advanced beyond an older target. */
+  allowNewerTag?: boolean;
 }
 
 /** Public, bounded HTTP facts only; never registry bodies or request credentials. */
@@ -25,6 +30,42 @@ type ProbeObserver = (observation: RegistryProbeObservation) => void;
 export function jsonDistTagMatches(value: JsonValue, tag: string, version: string): boolean {
   const tagVersion = stringMember(value, tag);
   return tagVersion !== undefined && tagVersion === version;
+}
+
+interface ComparableVersion {
+  major: number;
+  minor: number;
+  patch: number;
+  channel: string | null;
+  channelVersion: number | null;
+}
+
+function comparableVersion(value: string): ComparableVersion | null {
+  const match = /^(\d+)\.(\d+)\.(\d+)(?:-([A-Za-z][0-9A-Za-z-]*)(?:\.(\d+))?)?$/.exec(value);
+  if (match === null) return null;
+  const major = parseMoonInt(match[1]);
+  const minor = parseMoonInt(match[2]);
+  const patch = parseMoonInt(match[3]);
+  const channelVersion = match[5] === undefined ? null : parseMoonInt(match[5]);
+  if (
+    major === null ||
+    minor === null ||
+    patch === null ||
+    (match[5] !== undefined && channelVersion === null)
+  ) {
+    return null;
+  }
+  return { major, minor, patch, channel: match[4] ?? null, channelVersion };
+}
+
+/** True when a dist-tag has moved forward within the target's release channel. */
+export function isNewerVersionOnSameChannel(candidate: string, target: string): boolean {
+  const left = comparableVersion(candidate);
+  const right = comparableVersion(target);
+  if (left === null || right === null || left.channel !== right.channel) return false;
+  const stable = left.major - right.major || left.minor - right.minor || left.patch - right.patch;
+  if (stable !== 0) return stable > 0;
+  return (left.channelVersion ?? -1) > (right.channelVersion ?? -1);
 }
 
 /** Escapes scoped package names for npm's registry URL path. */
@@ -248,17 +289,28 @@ export async function npmTagPointsToVersion(
   probe: number,
   observe?: ProbeObserver,
 ): Promise<boolean> {
+  return (await npmTagVersion(name, tag, probe, observe)) === version;
+}
+
+async function npmTagVersion(
+  name: string,
+  tag: string,
+  probe: number,
+  observe?: ProbeObserver,
+): Promise<string | undefined> {
   const value = await npmRegistryJson(name, null, probe, observe);
-  if (!isJsonObject(value)) return false;
+  if (!isJsonObject(value)) return undefined;
   const returnedName = stringMember(value, "name");
-  if (returnedName === undefined || returnedName !== name) return false;
+  if (returnedName === undefined || returnedName !== name) return undefined;
   const tags = value.get("dist-tags");
-  if (tags === undefined) return false;
-  return jsonDistTagMatches(tags, tag, version);
+  if (tags === undefined) return undefined;
+  return stringMember(tags, tag);
 }
 
 /**
- * Polls until exact metadata, dist-tag and the whole SRI-verified archive are visible.
+ * Polls until exact metadata and the whole SRI-verified archive are visible.
+ * Newly published versions also require their release channel dist-tag; idempotent
+ * backfills may preserve a tag that has already advanced on the same channel.
  * Publishing to npm is eventually consistent. This helper turns that
  * propagation window into an explicit, bounded retry loop so workflow failures
  * point to a real timeout rather than a transient post-publish race.
@@ -267,19 +319,29 @@ export async function waitForRegistryVisibility(
   info: NpmPackageInfo,
   maxAttempts: number,
   delaySeconds: number,
+  options: RegistryVisibilityOptions = {},
 ): Promise<number> {
+  const allowNewerTag = options.allowNewerTag === true;
+  const tagExpectation = allowNewerTag
+    ? `dist-tag ${info.tag} or a safely advanced tag`
+    : `dist-tag ${info.tag}`;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     const deadline = performance.now() + 6000;
     const requests: RegistryProbeObservation[] = [];
     const observe: ProbeObserver = (value) => requests.push(value);
-    const [manifest, tagVisible] = await Promise.all([
+    const [manifest, tagVersion] = await Promise.all([
       npmRegistryJson(info.name, info.version, attempt, observe),
-      npmTagPointsToVersion(info.name, info.tag, info.version, attempt, observe),
+      npmTagVersion(info.name, info.tag, attempt, observe),
     ]);
     const versionMatches = manifestMatches(manifest, info.name, info.version);
+    const tagVisible = tagVersion === info.version;
+    const tagAdvanceAccepted =
+      allowNewerTag &&
+      tagVersion !== undefined &&
+      isNewerVersionOnSameChannel(tagVersion, info.version);
     const archiveVisible =
       versionMatches &&
-      tagVisible &&
+      (tagVisible || tagAdvanceAccepted) &&
       manifest !== undefined &&
       (await npmTarballIsVisible(manifest, deadline - performance.now(), observe));
     println(
@@ -290,22 +352,27 @@ export async function waitForRegistryVisibility(
         attempt,
         versionMatches,
         tagVisible,
+        tagAdvanceAccepted,
         archiveVisible,
         requests,
       })}`,
     );
     if (archiveVisible) {
-      println(`${info.name}@${info.version} is visible in npm with dist-tag ${info.tag}.`);
+      println(
+        tagAdvanceAccepted
+          ? `${info.name}@${info.version} is visible in npm with an SRI-verified archive; dist-tag ${info.tag} has advanced.`
+          : `${info.name}@${info.version} is visible in npm with dist-tag ${info.tag}.`,
+      );
       return 0;
     }
     if (attempt >= maxAttempts) {
       writeStderr(
-        `Timed out waiting for ${info.name}@${info.version} to appear in npm with dist-tag ${info.tag}.\n`,
+        `Timed out waiting for ${info.name}@${info.version} to appear in npm with ${tagExpectation}.\n`,
       );
       return 1;
     }
     println(
-      `Waiting for ${info.name}@${info.version} to appear in npm with dist-tag ${info.tag}... (${attempt}/${maxAttempts})`,
+      `Waiting for ${info.name}@${info.version} to appear in npm with ${tagExpectation}... (${attempt}/${maxAttempts})`,
     );
     await sleepSeconds(delaySeconds);
   }

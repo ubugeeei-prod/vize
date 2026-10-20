@@ -250,7 +250,9 @@ export async function publishNpmPackage(args: readonly string[]): Promise<number
   if (await npmVersionIsVisible(info.name, info.version, 0)) {
     println(`${info.name}@${info.version} is already published. Skipping publish.`);
     return waitVisible
-      ? waitForRegistryVisibility(info, resolutionRetries, resolutionDelaySeconds)
+      ? waitForRegistryVisibility(info, resolutionRetries, resolutionDelaySeconds, {
+          allowNewerTag: true,
+        })
       : 0;
   }
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {

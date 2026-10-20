@@ -8,6 +8,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import {
+  isNewerVersionOnSameChannel,
   npmTarballIsVisible,
   type RegistryProbeObservation,
 } from "../../tools/support/release/publish_npm_package/registry.ts";
@@ -25,6 +26,16 @@ const metadata = (tarball: string, sri = integrity) => {
   assert.ok(result);
   return result;
 };
+
+test("only a newer version on the same release channel can supersede the target tag", () => {
+  assert.equal(isNewerVersionOnSameChannel("0.506.0", "0.505.0"), true);
+  assert.equal(isNewerVersionOnSameChannel("0.504.0", "0.505.0"), false);
+  assert.equal(isNewerVersionOnSameChannel("0.505.0", "0.505.0"), false);
+  assert.equal(isNewerVersionOnSameChannel("0.506.0-beta.1", "0.505.0-beta.2"), true);
+  assert.equal(isNewerVersionOnSameChannel("0.505.0-beta.3", "0.505.0-beta.2"), true);
+  assert.equal(isNewerVersionOnSameChannel("0.506.0-rc.1", "0.505.0-beta.2"), false);
+  assert.equal(isNewerVersionOnSameChannel("not-a-version", "0.505.0"), false);
+});
 
 async function fixture() {
   const requests: { path: string; method?: string; range?: string }[] = [];
@@ -167,7 +178,7 @@ await test("both missing response headers and a stalled successful body retain t
   }
 });
 
-await test("already-created versions cannot release through metadata plus latest while their archive is absent", async () => {
+await test("already-created versions verify the exact archive without requiring the current dist-tag", async () => {
   const http = await fixture();
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), "vize-npm-archive-gate-"));
   const bin = path.join(temp, "bin"),
@@ -201,7 +212,7 @@ await test("already-created versions cannot release through metadata plus latest
       "if (process.env.TEST_METADATA_DELAY_MS && url.searchParams.get('vize-publish-check')?.endsWith('-1')) await new Promise((resolve) => setTimeout(resolve, Number(process.env.TEST_METADATA_DELAY_MS)));",
       "const probe = url.searchParams.get('vize-publish-check')?.endsWith('-1');",
       "const mode = process.env.TEST_PROBE_MODE;",
-      "const body = { name: '@vizejs/example', version: probe && mode === 'version' ? '9.9.9' : '1.2.3', 'dist-tags': { latest: probe && mode === 'tag' ? '9.9.9' : '1.2.3' },",
+      "const body = { name: '@vizejs/example', version: probe && mode === 'version' ? '9.9.9' : '1.2.3', 'dist-tags': { latest: probe && mode === 'tag' ? '9.9.9' : probe && mode === 'tag-older' ? '0.9.9' : '1.2.3' },",
       `  dist: { tarball: process.env.TEST_TARBALL_URL, integrity: ${JSON.stringify(integrity)} } };`,
       "process.stdout.write(JSON.stringify(body) + 'VIZE_HTTP_STATUS:200');",
     ].join("\n"),
@@ -240,25 +251,57 @@ await test("already-created versions cannot release through metadata plus latest
     return JSON.parse(line.slice("Registry visibility probe: ".length)) as {
       versionMatches: boolean;
       tagVisible: boolean;
+      tagAdvanceAccepted: boolean;
       archiveVisible: boolean;
       requests: RegistryProbeObservation[];
     };
   };
   try {
-    for (const mode of ["version", "tag"]) {
-      const result = await run("correct", 0, mode);
-      assert.equal(result.code, 1, result.stdout + result.stderr);
-      const observed = probe(result.stdout);
-      assert.equal(observed.versionMatches, mode !== "version");
-      assert.equal(observed.tagVisible, mode !== "tag");
-      assert.equal(observed.archiveVisible, false);
-      assert.equal(observed.requests.length, 2, "wrong metadata/tag must not request an archive");
-      assert.ok(
-        observed.requests.every((entry) => entry.httpStatus === "200" && entry.reason === "json"),
-      );
-      assert.doesNotMatch(result.stdout + result.stderr, /9\.9\.9|TEST_PROBE_MODE|dist-tags/);
-      assert.equal(http.requests.length, 0);
-    }
+    const wrongVersion = await run("correct", 0, "version");
+    assert.equal(wrongVersion.code, 1, wrongVersion.stdout + wrongVersion.stderr);
+    const wrongVersionProbe = probe(wrongVersion.stdout);
+    assert.equal(wrongVersionProbe.versionMatches, false);
+    assert.equal(wrongVersionProbe.tagVisible, true);
+    assert.equal(wrongVersionProbe.tagAdvanceAccepted, false);
+    assert.equal(wrongVersionProbe.archiveVisible, false);
+    assert.equal(
+      wrongVersionProbe.requests.length,
+      2,
+      "wrong metadata must not request an archive",
+    );
+    assert.ok(
+      wrongVersionProbe.requests.every(
+        (entry) => entry.httpStatus === "200" && entry.reason === "json",
+      ),
+    );
+    assert.doesNotMatch(
+      wrongVersion.stdout + wrongVersion.stderr,
+      /9\.9\.9|TEST_PROBE_MODE|dist-tags/,
+    );
+    assert.equal(http.requests.length, 0);
+
+    const advancedTag = await run("correct", 0, "tag");
+    assert.equal(advancedTag.code, 0, advancedTag.stdout + advancedTag.stderr);
+    assert.match(advancedTag.stdout, /already published.*Skipping publish/);
+    assert.match(advancedTag.stdout, /SRI-verified archive/);
+    const advancedTagProbe = probe(advancedTag.stdout);
+    assert.equal(advancedTagProbe.versionMatches, true);
+    assert.equal(advancedTagProbe.tagVisible, false);
+    assert.equal(advancedTagProbe.tagAdvanceAccepted, true);
+    assert.equal(advancedTagProbe.archiveVisible, true);
+    assert.equal(
+      advancedTagProbe.requests.find((entry) => entry.phase === "archive")?.reason,
+      "verified",
+    );
+
+    const olderTag = await run("correct", 0, "tag-older");
+    assert.equal(olderTag.code, 1, olderTag.stdout + olderTag.stderr);
+    const olderTagProbe = probe(olderTag.stdout);
+    assert.equal(olderTagProbe.versionMatches, true);
+    assert.equal(olderTagProbe.tagVisible, false);
+    assert.equal(olderTagProbe.tagAdvanceAccepted, false);
+    assert.equal(olderTagProbe.archiveVisible, false);
+    assert.equal(olderTagProbe.requests.length, 2, "an older tag must not request an archive");
     for (const route of ["missing", "corrupt-tail"]) {
       const result = await run(route);
       assert.equal(result.code, 1, result.stdout + result.stderr);
@@ -302,6 +345,7 @@ await test("already-created versions cannot release through metadata plus latest
     const success = probe(result.stdout);
     assert.equal(success.versionMatches, true);
     assert.equal(success.tagVisible, true);
+    assert.equal(success.tagAdvanceAccepted, false);
     assert.equal(success.archiveVisible, true);
     const archive = success.requests.find((entry) => entry.phase === "archive");
     assert.ok(archive);
@@ -311,7 +355,14 @@ await test("already-created versions cannot release through metadata plus latest
     assert.equal(fs.existsSync(trace), false, "an existing version must never be published again");
     assert.deepEqual(
       http.requests.map((request) => request.path),
-      ["/missing.tgz", "/corrupt-tail.tgz", "/body-stall.tgz", "/correct.tgz", "/correct.tgz"],
+      [
+        "/correct.tgz",
+        "/missing.tgz",
+        "/corrupt-tail.tgz",
+        "/body-stall.tgz",
+        "/correct.tgz",
+        "/correct.tgz",
+      ],
     );
   } finally {
     await http.close();
