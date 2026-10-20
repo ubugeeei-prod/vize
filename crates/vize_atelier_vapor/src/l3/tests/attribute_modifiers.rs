@@ -17,7 +17,7 @@ fn static_force_modifiers_are_native_and_merge_in_authored_order() {
         (
             r#"<div :title.attr="v" v-bind="attrs" id="static"></div>"#,
             [
-                "_setDynamicProps(n0, [{ \"^title\": _ctx.v }, _ctx.attrs, { id: \"static\" }])",
+                "_setDynamicProps(n0, [{ \"^title\": _ctx.v }, _ctx.attrs, { id: \"static\" }], [\"^title\"])",
                 "_template(\"<div></div>\", true)",
             ],
         ),
