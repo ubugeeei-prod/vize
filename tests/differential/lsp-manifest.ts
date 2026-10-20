@@ -29,12 +29,15 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
     assert.equal(data.id, planned.id);
     assert.match(data.provenance.fixCommit, /^[a-f0-9]{40}$/);
     assert.equal(data.documentVersion, 1);
-    assert.deepEqual(planned.initializationOptions, {
-      editor: true,
-      lint: false,
-      typecheck: false,
-      ...(data.method === "textDocument/onTypeFormatting" ? { formatting: true } : {}),
-    });
+    assert.deepEqual(
+      planned.initializationOptions,
+      data.initializationOptions ?? {
+        editor: true,
+        lint: false,
+        typecheck: false,
+        ...(data.method === "textDocument/onTypeFormatting" ? { formatting: true } : {}),
+      },
+    );
     if (data.initializationOptions) {
       assert.deepEqual(planned.initializationOptions, data.initializationOptions);
     }
@@ -95,6 +98,9 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
       assert(data.provenance.witness, "original issue custody is required");
       readPinnedArtifact(packRoot, data.provenance.witness);
       requests = [{ params: {}, result: expected }];
+    } else if (data.method === "textDocument/codeAction") {
+      assert(Array.isArray(expected) && expected.length === 2, "both script rules are required");
+      requests = expected as LspFixture["requests"];
     } else {
       assert.equal(data.method, "textDocument/onTypeFormatting", "unregistered LSP method");
       assert.deepEqual(data.options, { tabSize: 2, insertSpaces: true });

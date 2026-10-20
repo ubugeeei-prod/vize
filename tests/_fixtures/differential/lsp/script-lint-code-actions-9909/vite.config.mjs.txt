@@ -1,0 +1,6 @@
+export default {
+  vue: {
+    linter: { preset: "opinionated" },
+    languageServer: { lint: true, codeActions: true },
+  },
+};

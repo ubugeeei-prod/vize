@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "id": "lsp/regression/script-lint-code-actions-9909",
+  "provenance": {
+    "fixCommit": "2c9857a02a08f3c34bfcab0f586b1e95140b3478",
+    "issue": 9909
+  },
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "codeActions": true,
+    "typecheck": false
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "41b44eede41d5dc643a98fca85c19261a326db77509159efe31b9b592bf589c0"
+    },
+    {
+      "source": "vite.config.mjs.txt",
+      "runtimePath": "vite.config.mjs",
+      "sha256": "55162119963a60558044eb0c2850bc80444983c750b2ed69157f7955172f6b4e"
+    }
+  ],
+  "entry": "App.vue",
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "fdb4c46013e9d3b772c64c5e00d436073b4718c3e8d0beb1ab694577dc951bbd"
+  },
+  "method": "textDocument/codeAction",
+  "scope": "configured Patina script diagnostics and their authored eslint-disable-next-line edits"
+}
