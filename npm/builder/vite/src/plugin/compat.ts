@@ -18,6 +18,7 @@ import { applyDefineReplacements } from "../transform.ts";
 import { transformVirtualTypeScript } from "./vite-transform.ts";
 import { PLUGIN_VUE_COMPAT_VERSION } from "./plugin-vue-options.ts";
 import { normalizeStyleVirtualId as normalizeVirtualStyleId } from "./style-request.ts";
+import { oxContentModuleToSfc } from "./markdown.ts";
 
 type FilterPatterns = string | RegExp | (string | RegExp)[];
 type VueCompatTemplateCompilerOptions = {
@@ -176,7 +177,10 @@ export function createPostTransformPlugin(state: VizePluginState): Plugin {
       id: string,
       transformOptions?: { ssr?: boolean },
     ): Promise<TransformResult | null> {
-      if (shouldPostTransformSfcLikeModule(state, id) && isSfcLikeSource(code)) {
+      if (!shouldPostTransformSfcLikeModule(state, id)) return null;
+
+      const source = isSfcLikeSource(code) ? code : oxContentModuleToSfc(code);
+      if (source) {
         state.logger.log(`post-transform: compiling virtual SFC content from ${id}`);
         try {
           const isSsr = !!transformOptions?.ssr;
@@ -185,7 +189,7 @@ export function createPostTransformPlugin(state: VizePluginState): Plugin {
             id,
             getEnvironmentCache(state, isSsr),
             getCompileOptionsForRequest(state, isSsr, id),
-            code,
+            source,
           );
           syncCollectedCssForFile({ ...state, extractCss }, id, compiled);
 

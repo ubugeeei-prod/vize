@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 
 import {
@@ -6,6 +7,7 @@ import {
   createVueCompatPlugin,
   transformScopedPreprocessorCss,
 } from "./compat.ts";
+import { oxContentModuleToSfc } from "./markdown.ts";
 import type { VizePluginState } from "./state.ts";
 
 function createState(overrides: Partial<VizePluginState> = {}): VizePluginState {
@@ -56,6 +58,11 @@ const msg = 'hello'
 .card { color: rebeccapurple; }
 </style>
 `;
+
+const oxContentFixture = readFileSync(
+  path.resolve(import.meta.dirname, "../test/fixtures/ox-content/Page.module.txt"),
+  "utf8",
+);
 
 {
   const state = createState();
@@ -143,6 +150,38 @@ const msg = 'hello'
     "Virtual SFC styles should use Vite CSS imports in development",
   );
   assert.doesNotMatch(result.code, /__vize_css__/, "Virtual SFC CSS must not bypass Vite");
+}
+
+{
+  const source = oxContentModuleToSfc(oxContentFixture);
+  assert.ok(source, "Ox Content's generated module contract should produce an SFC");
+  assert.match(source, /export const frontmatter = \{"title":"Markdown fixture"/);
+  assert.match(source, /Hello \{\{ frontmatter\.title \}\}/);
+  assert.match(
+    source,
+    /&#x3C;MyCard>&#123;&#123; mustStayInert &#125;&#125;&#x3C;\/MyCard>/,
+    "Markdown code fences should remain escaped template text",
+  );
+}
+
+for (const ssr of [false, true]) {
+  const state = createState({ filter: () => false });
+  const plugin = createPostTransformPlugin(state);
+  const markdownId = path.join("/docs", "Page.md");
+  const result = await plugin.transform?.(oxContentFixture, markdownId, { ssr });
+
+  assert.ok(
+    result && typeof result === "object",
+    `Ox Content ${ssr ? "SSR" : "DOM"} output should compile`,
+  );
+  assert.match(result.code, /export const frontmatter/);
+  assert.match(result.code, /export const toc/);
+  assert.match(result.code, /frontmatter\.title/);
+  assert.doesNotMatch(
+    result.code,
+    /_ctx\.mustStayInert/,
+    "Vue expressions inside fenced code must stay inert",
+  );
 }
 
 {
