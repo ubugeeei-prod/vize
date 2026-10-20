@@ -103,13 +103,31 @@ test("stamping moves every versioned manifest and leaves the native pins alone",
   }
 });
 
-test("release is dispatched on main with an optional exact version", () => {
+test("release is dispatched on main with an optional exact version or npm resume run", () => {
   // Dispatch only: crates.io trusted publishing refuses workflow_run and schedule.
   assert.deepEqual(Object.keys(workflow.on), ["workflow_dispatch"]);
-  assert.deepEqual(Object.keys(workflow.on.workflow_dispatch.inputs), ["version", "source"]);
+  assert.deepEqual(Object.keys(workflow.on.workflow_dispatch.inputs), [
+    "version",
+    "source",
+    "npm_resume_run",
+  ]);
   const version = workflow.jobs.version;
-  assert.deepEqual(version.permissions, { contents: "write" });
+  assert.deepEqual(version.permissions, { actions: "read", contents: "write" });
   assert.match(JSON.stringify(version.steps), /release\/release\/main\.ts cut/);
+  assert.match(JSON.stringify(version.steps), /release\/npm_resume\/main\.ts/);
+});
+
+test("npm resume preserves the trusted workflow and restores only the selected run artifacts", () => {
+  const npm = workflow.jobs["publish-npm"];
+  const release = workflow.jobs["github-release"];
+  assert.equal(npm.environment, "npm");
+  assert.deepEqual(npm.permissions, { actions: "read", contents: "read", "id-token": "write" });
+  assert.match(String((npm as Job & { if?: string }).if), /inputs\.npm_resume_run/);
+  assert.match(String((release as Job & { if?: string }).if), /inputs\.npm_resume_run/);
+  assert.match(JSON.stringify(npm.steps), /"run-id":"\$\{\{ inputs\.npm_resume_run \}\}"/);
+  assert.match(JSON.stringify(release.steps), /"run-id":"\$\{\{ inputs\.npm_resume_run \}\}"/);
+  assert.equal(npm.env?.NPM_PUBLISH_TAG, "${{ needs.version.outputs.publish_tag }}");
+  assert.equal(npm.env?.NPM_ALLOW_NEWER_TAG, "${{ needs.version.outputs.allow_newer_tag }}");
 });
 
 test("builds use the untagged candidate; only a fully built release is tagged", () => {
@@ -121,7 +139,11 @@ test("builds use the untagged candidate; only a fully built release is tagged", 
     assert.ok(needs(name).includes("version"), `${name} needs version`);
     const checkout = job.steps?.find((step) => step.uses?.startsWith("actions/checkout@"));
     const ref = prePublish(name) ? "ref" : "tag";
-    assert.equal(checkout?.with?.ref, `${"${{"} needs.version.outputs.${ref} }}`, name);
+    const expected =
+      name === "publish-npm"
+        ? "${{ inputs.npm_resume_run != '' && github.sha || needs.version.outputs.tag }}"
+        : `${"${{"} needs.version.outputs.${ref} }}`;
+    assert.equal(checkout?.with?.ref, expected, name);
   }
   for (const gate of ["smoke", "build-cli", "build-editor-extensions"]) {
     assert.ok(needs("tag").includes(gate), `tag waits for ${gate}`);
