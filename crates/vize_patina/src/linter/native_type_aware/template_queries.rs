@@ -253,17 +253,30 @@ fn generated_offset_for_content(
 /// of its generated expression. A trailing call parenthesis or `as T[]` type
 /// assertion has no useful symbol type even when the iterable is fully typed.
 pub(super) fn v_for_source_binding_offset(generated: &str, expression_offset: u32) -> Option<u32> {
-    let offset = expression_offset as usize;
-    let line_start = generated.get(..offset)?.rfind('\n').map_or(0, |at| at + 1);
-    let line_end = generated
-        .get(offset..)?
-        .find('\n')
-        .map_or(generated.len(), |at| offset + at);
-    let line = generated.get(line_start..line_end)?;
+    let offset = usize::min(expression_offset as usize, generated.len().checked_sub(1)?);
     let marker = "const __vize_v_for_source_";
-    let name_start = line.find(marker)? + "const ".len();
-    let name_end = name_start + line.get(name_start..)?.find(" = ")?;
-    u32::try_from(line_start + name_end.checked_sub(1)?).ok()
+    let before_expression = generated.get(..=offset)?;
+    for (marker_start, _) in before_expression.rmatch_indices(marker) {
+        let line_start = generated
+            .get(..marker_start)?
+            .rfind('\n')
+            .map_or(0, |at| at + 1);
+        if !generated
+            .get(line_start..marker_start)?
+            .bytes()
+            .all(|byte| matches!(byte, b' ' | b'\t'))
+        {
+            continue;
+        }
+        let id_start = marker_start + marker.len();
+        let suffix = generated.get(id_start..)?;
+        let id_len = suffix.bytes().take_while(u8::is_ascii_digit).count();
+        if id_len == 0 || !suffix.get(id_len..)?.starts_with(" = __vForList(") {
+            continue;
+        }
+        return u32::try_from(id_start + id_len - 1).ok();
+    }
+    None
 }
 
 fn probe_offset_for_text(source_start: u32, source_text: &str) -> Option<u32> {
