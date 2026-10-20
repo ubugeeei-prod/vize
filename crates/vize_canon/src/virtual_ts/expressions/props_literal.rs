@@ -8,7 +8,8 @@
 
 use super::super::types::{VizeMapping, VizeSubSpan};
 use super::component_props::{
-    ComponentPropSource, collect_generated_class_bindings, is_checkable_prop,
+    ComponentPropSource, collect_generated_class_bindings, collect_generated_named_bindings,
+    is_checkable_prop,
 };
 use super::prop_sources::append_prop_value;
 use super::spread_reserved_props::rewrite_reserved_spread_references;
@@ -75,6 +76,9 @@ pub(crate) fn append_props_literal(
     let class_bindings = collect_generated_class_bindings(usage, template_binding_access);
     let merge_class_bindings = class_bindings.len() > 1;
     let mut emitted_merged_class = false;
+    let style_bindings = collect_generated_named_bindings(usage, template_binding_access, "style");
+    let merge_style_bindings = style_bindings.len() > 1;
+    let mut emitted_merged_style = false;
     let mut spreads = usage.spread_props.iter().peekable();
     let mut authored_named_keys = FxHashSet::default();
     for prop in &usage.props {
@@ -93,6 +97,19 @@ pub(crate) fn append_props_literal(
             );
         }
 
+        let (merge_bindings, bindings, emitted_merged) = if prop.name.as_str() == "style" {
+            (
+                merge_style_bindings,
+                style_bindings.as_slice(),
+                &mut emitted_merged_style,
+            )
+        } else {
+            (
+                merge_class_bindings,
+                class_bindings.as_slice(),
+                &mut emitted_merged_class,
+            )
+        };
         append_prop_entry(
             ts,
             mappings,
@@ -100,9 +117,9 @@ pub(crate) fn append_props_literal(
             template_binding_access,
             source_context,
             expr_indent,
-            merge_class_bindings,
-            &class_bindings,
-            &mut emitted_merged_class,
+            merge_bindings,
+            bindings,
+            emitted_merged,
             spreads.peek().is_some(),
             &mut authored_named_keys,
         );

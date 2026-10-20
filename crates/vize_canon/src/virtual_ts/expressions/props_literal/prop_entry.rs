@@ -28,7 +28,9 @@ pub(super) fn append_prop_entry(
 ) {
     let template_offset = source_context.offset;
     let mut merged_value_ranges = Vec::new();
-    let generated_value = if merge_class_bindings && prop.name.as_str() == "class" {
+    let merge_named_bindings =
+        merge_class_bindings && matches!(prop.name.as_str(), "class" | "style");
+    let generated_value = if merge_named_bindings {
         if *emitted_merged_class {
             return;
         }
@@ -49,7 +51,7 @@ pub(super) fn append_prop_entry(
         generated_value = PropSpan::plain(String::from("undefined as never"));
     }
 
-    let (prop_src_start, prop_src_end) = if merge_class_bindings && prop.name.as_str() == "class" {
+    let (prop_src_start, prop_src_end) = if merge_named_bindings {
         let start = class_bindings
             .iter()
             .map(|(binding, _)| binding.start)
@@ -105,7 +107,7 @@ pub(super) fn append_prop_entry(
     };
     ts.push_str(",\n");
 
-    let sub_spans = match merge_class_bindings && prop.name.as_str() == "class" {
+    let sub_spans = match merge_named_bindings {
         true => class_bindings
             .iter()
             .zip(&merged_value_ranges)
@@ -133,8 +135,7 @@ pub(super) fn append_prop_entry(
         src_range: prop_src_start..prop_src_end,
         sub_spans,
     });
-    if merge_class_bindings && prop.name.as_str() == "class" && !template_binding_access.is_empty()
-    {
+    if merge_named_bindings && !template_binding_access.is_empty() {
         for ((binding, _), generated) in class_bindings.iter().zip(&merged_value_ranges) {
             if binding.is_dynamic
                 && let Some(value) = binding.value.as_ref()
@@ -155,7 +156,7 @@ pub(super) fn append_prop_entry(
     if !template_binding_access.is_empty()
         && prop.is_dynamic
         && !inline_callback
-        && !(merge_class_bindings && prop.name.as_str() == "class")
+        && !merge_named_bindings
         && let Some(value) = prop.value.as_ref()
         && let Some(source) = prop_value_source_range(source_context, prop)
     {

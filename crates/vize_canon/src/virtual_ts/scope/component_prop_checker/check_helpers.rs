@@ -155,8 +155,9 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
             .any(|(_, usage)| !usage.spread_props.is_empty())
     {
         ts.push_str(
-            "  type __VizeInvalidFallthroughSpreadKeys<P, F, A> = { [K in keyof A]: K extends keyof P | keyof __VizeKebabProps<P> ? never : K extends keyof F ? __VizeIsAny<A[K]> extends true ? never : A[K] extends F[K] ? never : K : never }[keyof A];\n",
+            "  type __VizeInvalidFallthroughSpreadKeys<P, F, A> = { [K in keyof A]: K extends keyof P | keyof __VizeKebabProps<P> ? never : K extends keyof F ? __VizeIsAny<A[K]> extends true ? never : A[K] extends F[K] ? never : K extends \"id\" ? A[K] extends string | number ? never : K : K : never }[keyof A];\n",
         );
+        ts.push_str("  type __VizeSpreadIdentity = <A>(props: A) => A;\n");
         ts.push_str(
             "  type __VizeFallthroughSpreadGuard<C, P, A, __K = __VizeInvalidFallthroughSpreadKeys<P, __VizeFallthroughProps<C>, A>> = [__K] extends [never] ? unknown : { readonly __vizeInvalidFallthroughSpreadValues: __K };\n",
         );

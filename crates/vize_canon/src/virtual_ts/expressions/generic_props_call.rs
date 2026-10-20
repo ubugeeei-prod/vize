@@ -59,7 +59,9 @@ pub(super) fn generate_generic_props_call(
         "{expr_indent}(undefined as unknown as __{component_type_name}_Check_{idx})(",
     );
     let check_spread_values = typed_fallthrough_values && !usage.spread_props.is_empty();
+    let spread_check_start = ts.len();
     if check_spread_values {
+        append!(*ts, "(undefined as unknown as __VizeSpreadIdentity)(");
         append!(
             *ts,
             "(undefined as unknown as __VizeFallthroughSpreadChecker<__{component_type_name}_Component_{idx}, __{component_type_name}_Props_{idx}>)(",
@@ -84,7 +86,7 @@ pub(super) fn generate_generic_props_call(
         expr_indent.as_str(),
     );
     if check_spread_values {
-        ts.push(')');
+        ts.push_str("))");
     }
     ts.push_str(");\n");
     // Anchored on the tag *name*, not on `usage.start`, which is the `<` one
@@ -98,7 +100,11 @@ pub(super) fn generate_generic_props_call(
         usage,
     ) {
         mappings.push(VizeMapping {
-            gen_range: literal_range,
+            gen_range: if check_spread_values {
+                spread_check_start..ts.len() - 2
+            } else {
+                literal_range
+            },
             src_range,
             sub_spans: Vec::new(),
         });
