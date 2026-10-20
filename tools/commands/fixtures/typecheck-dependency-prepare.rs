@@ -357,16 +357,25 @@ fn run_baseline_prepare(
             result.status
         ));
     }
+    // vue-tsc resolves these workspace packages through their built entries;
+    // without them it reports TS2307 and every downstream error as a false negative.
     if project.get("id").and_then(Value::as_str) == Some("misskey") {
-        let declaration = fixture_root.join("packages/misskey-js/built/index.d.ts");
-        let bytes = fs::read(&declaration)
-            .map_err(|error| format!("misskey-js declaration output is missing: {error}"))?;
-        let metadata = fs::symlink_metadata(&declaration)
-            .map_err(|error| format!("cannot inspect misskey-js declaration output: {error}"))?;
-        if bytes.is_empty() || !metadata.file_type().is_file() {
-            return Err(
-                "misskey-js declaration output must be a nonempty regular file".to_string(),
-            );
+        for package in [
+            "misskey-js",
+            "misskey-reversi",
+            "misskey-bubble-game",
+            "i18n",
+        ] {
+            let declaration = fixture_root.join(format!("packages/{package}/built/index.d.ts"));
+            let bytes = fs::read(&declaration)
+                .map_err(|error| format!("{package} declaration output is missing: {error}"))?;
+            let metadata = fs::symlink_metadata(&declaration)
+                .map_err(|error| format!("cannot inspect {package} declaration output: {error}"))?;
+            if bytes.is_empty() || !metadata.file_type().is_file() {
+                return Err(format!(
+                    "{package} declaration output must be a nonempty regular file"
+                ));
+            }
         }
     }
     Ok(json!({

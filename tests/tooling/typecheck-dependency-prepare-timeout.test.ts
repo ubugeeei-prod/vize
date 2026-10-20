@@ -117,6 +117,12 @@ test("Misskey declaration preparation rejects failed, missing and empty emitter 
     "pnpm",
     "--filter",
     "misskey-js",
+    "--filter",
+    "misskey-reversi",
+    "--filter",
+    "misskey-bubble-game",
+    "--filter",
+    "i18n",
     "exec",
     "tsgo",
     "--project",
@@ -157,8 +163,10 @@ test("Misskey declaration preparation rejects failed, missing and empty emitter 
         `if (managerArgs[0] === "install") { ${successBody} } else {
           const emitted = ${JSON.stringify(emitted)};
           if (emitted !== null) {
-            fs.mkdirSync("packages/misskey-js/built", { recursive: true });
-            fs.writeFileSync("packages/misskey-js/built/index.d.ts", emitted);
+            for (const name of ["misskey-js", "misskey-reversi", "misskey-bubble-game", "i18n"]) {
+              fs.mkdirSync("packages/" + name + "/built", { recursive: true });
+              fs.writeFileSync("packages/" + name + "/built/index.d.ts", emitted);
+            }
           }
           process.exit(${exitCode});
         }`,
