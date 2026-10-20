@@ -133,8 +133,8 @@ fn collect_ambient_declaration_files_from(
 
     files
         .into_iter()
-        .filter(|path| is_declaration_file(path))
         .filter(|path| match fs::read_to_string(path) {
+            Ok(content) if !is_declaration_file(path) => augments_modules(path, &content),
             Ok(content) => {
                 if is_nuxt_import_manifest_path(path) || declares_shadowing_ambient_module(&content)
                 {
@@ -181,6 +181,19 @@ fn declares_shadowing_ambient_module(content: &str) -> bool {
     ambient_module_specifiers(content)
         .iter()
         .any(|specifier| is_shadowed_vue_package_specifier(specifier))
+}
+
+/// A source module the tsconfig selects that augments another module
+/// (`declare module 'vue' { interface GlobalComponents }` in misskey's
+/// `components/index.ts`) changes types for every file of the program, as
+/// under `tsc -p`, even when nothing checked imports it.
+fn augments_modules(path: &Path, content: &str) -> bool {
+    path.extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| matches!(extension, "ts" | "mts" | "cts" | "tsx"))
+        && has_top_level_import_or_export(content)
+        && (contains_declare_scope(content, "declare global")
+            || contains_declare_scope(content, "declare module"))
 }
 
 fn contributes_ambient_declarations(content: &str) -> bool {

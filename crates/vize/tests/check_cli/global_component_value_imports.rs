@@ -23,7 +23,7 @@ declare module 'vue' {
 export {}
 "#;
 
-fn diagnostics(registration: &str, handler_read: &str) -> Vec<serde_json::Value> {
+fn diagnostics(registration: &str, handler_read: &str, inputs: &[&str]) -> Vec<serde_json::Value> {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return Vec::new();
     };
@@ -52,7 +52,9 @@ const file = ref<string | null>(null)
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&project_root)
         .env("CORSA_PATH", corsa_path)
-        .args(["check", ".", "--format", "json"])
+        .arg("check")
+        .args(inputs)
+        .args(["--format", "json", "--tsconfig", "tsconfig.json"])
         .output()
         .unwrap();
     let _ = std::fs::remove_dir_all(&project_root);
@@ -67,13 +69,19 @@ const file = ref<string | null>(null)
 
 #[test]
 fn global_generic_component_infers_its_event_payload_like_vue_tsc() {
-    for registration in ["src/global-components.ts", "src/components.d.ts"] {
+    // An explicit `src/App.vue` run still loads the registration the tsconfig
+    // selects, as `tsc -p` does, although nothing checked imports it.
+    for (registration, inputs) in [
+        ("src/global-components.ts", &["."][..]),
+        ("src/components.d.ts", &["."]),
+        ("src/global-components.ts", &["src/App.vue"]),
+    ] {
         assert_eq!(
-            diagnostics(registration, "file"),
+            diagnostics(registration, "file", inputs),
             Vec::<serde_json::Value>::new(),
-            "{registration}"
+            "{registration} {inputs:?}"
         );
-        let broken = diagnostics(registration, "nope");
+        let broken = diagnostics(registration, "nope", inputs);
         if broken.is_empty() {
             return;
         }
@@ -82,7 +90,7 @@ fn global_generic_component_infers_its_event_payload_like_vue_tsc() {
             [serde_json::json!(
                 "error:10:62 [TS2339] Property 'nope' does not exist on type '{ file: string; info: number; }'."
             )],
-            "{registration}"
+            "{registration} {inputs:?}"
         );
     }
 }

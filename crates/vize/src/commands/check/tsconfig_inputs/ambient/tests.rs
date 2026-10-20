@@ -360,3 +360,41 @@ fn ambient_collection_resolves_compiler_options_types_from_tsconfig_dir() {
     );
     let _ = std::fs::remove_dir_all(&root);
 }
+
+#[test]
+fn ambient_collection_keeps_selected_source_modules_that_augment_modules() {
+    let root = unique_case_dir("module-augmentation-sources");
+    let _ = std::fs::remove_dir_all(&root);
+    write(
+        &root,
+        "src/components/index.ts",
+        "import MkSuspense from './MkSuspense.vue'\ndeclare module 'vue' {\n  export interface GlobalComponents { MkSuspense: typeof MkSuspense }\n}\nexport default [MkSuspense]\n",
+    );
+    write(
+        &root,
+        "src/router.ts",
+        "export {}\ndeclare global { interface Window { app: unknown } }\n",
+    );
+    write(&root, "src/util.ts", "export const value = 1\n");
+    // A script without imports or exports is not a module, so this is no augmentation.
+    write(&root, "src/script.ts", "declare module 'x'\n");
+    write(&root, "src/components/MkSuspense.vue", "<template />\n");
+    write(
+        &root,
+        "tsconfig.json",
+        r#"{ "include": ["src/**/*.ts", "src/**/*.vue"] }"#,
+    );
+
+    let project_root = root.canonicalize().unwrap();
+    let mut files = collect_ambient_declaration_files(
+        &project_root,
+        Some(&project_root.join("tsconfig.json")),
+        &mut TsconfigInputCache::default(),
+    );
+    files.sort();
+    assert_eq!(
+        relative_paths(&project_root, &files),
+        vec!["src/components/index.ts", "src/router.ts"]
+    );
+    let _ = std::fs::remove_dir_all(&root);
+}
