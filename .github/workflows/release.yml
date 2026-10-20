@@ -254,13 +254,13 @@ jobs:
     name: Publish npm packages
     needs: [version, tag]
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    timeout-minutes: 55
     environment: npm
     permissions: { contents: read, id-token: write }
     env:
-      # Native packages have taken up to 12 minutes to become visible. Give the
-      # dependent-package barrier a 15-minute propagation window.
-      PUBLISH_RESOLUTION_RETRY_LIMIT: "90"
+      # Native tarballs can remain unavailable after their versions appear in
+      # the registry. Give the dependent-package barrier a 30-minute window.
+      PUBLISH_RESOLUTION_RETRY_LIMIT: "180"
       PUBLISH_RESOLUTION_RETRY_DELAY: "10"
     outputs:
       packages: ${{ steps.publish.outputs.packages }}
