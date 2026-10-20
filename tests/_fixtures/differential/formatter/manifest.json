@@ -2218,7 +2218,8 @@
       },
       "provenance": {
         "issues": [
-          10071
+          9867,
+          9841
         ],
         "commits": [
           {
