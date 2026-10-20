@@ -262,7 +262,10 @@ fn emit_fallback_interp(
     first: &mut bool,
 ) -> Result<(), EmitError> {
     let id = cx.walk.mint();
-    let normalize_text = matches!(text_mode, FallbackTextMode::SlotOutlet { .. });
+    // A slot emitted directly as an array child normalizes its lone text to a
+    // VNode. The compact branch/template path follows legacy `generate_node`,
+    // which keeps a lone interpolation as the raw display-string expression.
+    let normalize_text = matches!(text_mode, FallbackTextMode::SlotOutlet { .. }) && !compact;
     let split_compound = match text_mode {
         FallbackTextMode::SlotOutlet { split_compound } => split_compound,
         FallbackTextMode::BuiltinArray => true,
