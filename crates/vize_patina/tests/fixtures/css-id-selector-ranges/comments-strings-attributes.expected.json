@@ -35,7 +35,7 @@
       "warningCount": 1
     }
   ],
-  "plain": "Patina lint report: 1 warning in 1 file\n\nCommentsStringsAttributes.vue\n  CommentsStringsAttributes.vue:2:42 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      Replace with a class selector for lower specificity\n",
+  "plain": "Patina lint report: 1 warning in 1 file\n\nCommentsStringsAttributes.vue\n  CommentsStringsAttributes.vue:2:42 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n",
   "authoredSlices": [
     "#real"
   ]

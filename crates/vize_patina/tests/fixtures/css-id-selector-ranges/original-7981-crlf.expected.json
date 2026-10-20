@@ -55,7 +55,7 @@
       "warningCount": 2
     }
   ],
-  "plain": "Patina lint report: 2 warnings in 1 file\n\nOriginal7981Crlf.vue\n  Original7981Crlf.vue:12:1 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      Replace with a class selector for lower specificity\n  Original7981Crlf.vue:17:3 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      Replace with a class selector for lower specificity\n",
+  "plain": "Patina lint report: 2 warnings in 1 file\n\nOriginal7981Crlf.vue\n  Original7981Crlf.vue:12:1 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n  Original7981Crlf.vue:17:3 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n",
   "authoredSlices": [
     "#main-banner",
     "#banner-text"

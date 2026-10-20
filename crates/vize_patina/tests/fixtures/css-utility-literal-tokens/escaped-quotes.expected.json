@@ -35,7 +35,7 @@
       "warningCount": 1
     }
   ],
-  "plain": "Patina lint report: 1 warning in 1 file\n\nEscapedQuotes.vue\n  EscapedQuotes.vue:9:1 warning css/no-utility-classes Utility class should be in global styles, not component styles\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      Use semantic class names in components, or import utility classes from a global stylesheet\n",
+  "plain": "Patina lint report: 1 warning in 1 file\n\nEscapedQuotes.vue\n  EscapedQuotes.vue:9:1 warning css/no-utility-classes Utility class should be in global styles, not component styles\n    Reference: docs/content/rules/musea-and-css.md\n",
   "authoredSlices": [
     ".pl-3"
   ]

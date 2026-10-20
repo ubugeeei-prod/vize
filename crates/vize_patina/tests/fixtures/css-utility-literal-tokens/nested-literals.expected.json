@@ -55,7 +55,7 @@
       "warningCount": 2
     }
   ],
-  "plain": "Patina lint report: 2 warnings in 1 file\n\nNestedLiterals.vue\n  NestedLiterals.vue:10:5 warning css/no-utility-classes Utility class should be in global styles, not component styles\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      Use semantic class names in components, or import utility classes from a global stylesheet\n  NestedLiterals.vue:10:12 warning css/no-utility-classes Utility class should be in global styles, not component styles\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      Use semantic class names in components, or import utility classes from a global stylesheet\n",
+  "plain": "Patina lint report: 2 warnings in 1 file\n\nNestedLiterals.vue\n  NestedLiterals.vue:10:5 warning css/no-utility-classes Utility class should be in global styles, not component styles\n    Reference: docs/content/rules/musea-and-css.md\n  NestedLiterals.vue:10:12 warning css/no-utility-classes Utility class should be in global styles, not component styles\n    Reference: docs/content/rules/musea-and-css.md\n",
   "authoredSlices": [
     ".flex",
     ".pl-3"
