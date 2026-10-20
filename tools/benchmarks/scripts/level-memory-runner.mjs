@@ -1,4 +1,4 @@
-import { measurementToolchain } from "./measurement-toolchain.mjs";
+import { measurementToolchain } from "./measurement-toolchain.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";

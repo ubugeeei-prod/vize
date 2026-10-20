@@ -17,7 +17,7 @@ jobs:
     timeout-minutes: 45
     env:
       CARGO_TERM_COLOR: never
-      RUSTUP_TOOLCHAIN: "1.99.0"
+      RUSTUP_TOOLCHAIN: "1.99.1"
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       MEMORY_BASE_SHA: ${{ inputs.base_sha }}
       MEMORY_HEAD_SHA: ${{ inputs.head_sha }}
@@ -53,7 +53,7 @@ jobs:
           run-install: false
       - name: Install exact measurement Rust and Callgrind identity provider
         run: |
-          rustup toolchain install 1.99.0 --profile minimal
+          rustup toolchain install 1.99.1 --profile minimal
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends valgrind
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0

@@ -16,7 +16,7 @@ concurrency:
 env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  RUSTUP_TOOLCHAIN: "1.99.0"
+  RUSTUP_TOOLCHAIN: "1.99.1"
 
 jobs:
   instruction-counts:
@@ -36,7 +36,7 @@ jobs:
           run-install: false
       - name: Install pinned measurement Rust
         if: env.MEASURE == 'true'
-        run: rustup toolchain install 1.99.0 --profile minimal
+        run: rustup toolchain install 1.99.1 --profile minimal
       - name: Install Callgrind and matching client request headers
         if: env.MEASURE == 'true'
         run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends valgrind

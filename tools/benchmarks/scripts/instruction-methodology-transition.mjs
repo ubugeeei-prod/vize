@@ -1,4 +1,4 @@
-import { measurementToolchain } from "./measurement-toolchain.mjs";
+import { MEASUREMENT_RUST, measurementToolchain } from "./measurement-toolchain.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
@@ -6,6 +6,7 @@ import { isDeepStrictEqual } from "node:util";
 
 const FROM = "rustc 1.98.0 (88d9e12ae 2026-08-18)";
 const TO = "rustc 1.99.0 (b940084d7 2026-09-28)";
+const CURRENT = "rustc 1.99.1 (58cf8f9c3 2026-10-13)";
 const SOURCE = "1a3996963af208c13cd732420bdee586df88bf7a";
 const RUN = "https://github.com/ubugeeei-prod/vize/actions/runs/37653130635";
 const ORIGINALS = [
@@ -65,8 +66,12 @@ export function ratchetInstructionMethodology(current, base) {
 
 export function authenticateInstructionMeasurementSource(report, context) {
   assert.match(context.sourceCommit, /^[a-f0-9]{40}$/, "invalid current checkout identity");
-  assert.equal(context.toolchain, "1.99.0", "instruction source toolchain must be 1.99.0");
-  assert.equal(report.methodology.rustc, TO, "instruction measurement compiler mismatch");
+  assert.equal(
+    context.toolchain,
+    MEASUREMENT_RUST,
+    `instruction source toolchain must be ${MEASUREMENT_RUST}`,
+  );
+  assert.equal(report.methodology.rustc, CURRENT, "instruction measurement compiler mismatch");
   assert.equal(
     report.source_commit,
     context.sourceCommit,
@@ -75,9 +80,8 @@ export function authenticateInstructionMeasurementSource(report, context) {
 }
 
 export function verifyRepositoryInstructionBudgets(budgets, root) {
-  const toolchain = measurementToolchain(root);
-  assert.equal(toolchain, "1.99.0", "instruction source toolchain must be 1.99.0");
-  assert.equal(budgets.methodology.rustc, TO, "instruction budget compiler mismatch");
+  measurementToolchain(root);
+  assert.equal(budgets.methodology.rustc, CURRENT, "instruction budget compiler mismatch");
 }
 
 export function verifyRepositoryInstructionSource(report, root) {
@@ -86,6 +90,6 @@ export function verifyRepositoryInstructionSource(report, root) {
   assert.equal(head.status, 0, "cannot authenticate current instruction checkout");
   authenticateInstructionMeasurementSource(report, {
     sourceCommit: head.stdout.trim(),
-    toolchain: "1.99.0",
+    toolchain: MEASUREMENT_RUST,
   });
 }
