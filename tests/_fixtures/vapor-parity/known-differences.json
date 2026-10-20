@@ -88,11 +88,7 @@
         "up.transforms.vOnce.8",
         "up.transforms.vOnce.9",
         "up.transforms.vSlot.22",
-        "up.transforms.vSlot.25",
         "up.transforms.vSlot.43",
-        "up.transforms.vSlot.58",
-        "up.transforms.vSlot.59",
-        "up.transforms.vSlot.6",
         "up.transforms.vText.1",
         "up.transforms.vText.12",
         "up.transforms.vText.2",
@@ -204,11 +200,7 @@
         "up.transforms.vOnce.9",
         "up.transforms.vShow.1",
         "up.transforms.vSlot.22",
-        "up.transforms.vSlot.25",
         "up.transforms.vSlot.43",
-        "up.transforms.vSlot.58",
-        "up.transforms.vSlot.59",
-        "up.transforms.vSlot.6",
         "up.transforms.vText.1",
         "up.transforms.vText.10",
         "up.transforms.vText.11",
@@ -223,12 +215,9 @@
     },
     "upstream-runtime-vapor-hydration": {
       "hydrate": [
-        "hy.basic.16",
         "hy.basic.20"
       ],
-      "mount": [
-        "hy.basic.16"
-      ]
+      "mount": []
     }
   },
   "vue": "3.6.0-rc.11"

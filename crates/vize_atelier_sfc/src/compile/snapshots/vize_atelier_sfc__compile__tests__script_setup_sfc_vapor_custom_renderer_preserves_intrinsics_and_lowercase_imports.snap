@@ -9,13 +9,13 @@ const t0 = _template("<group></group>", true)
 const t1 = _template("<mesh></mesh>", true)
 
 function render(_ctx, $props, $emit, $attrs, $slots) {
+  const _component_primitive = _ctx.Primitive
   const n0 = t1()
   _setInsertionState(n0)
   const n1 = _createIf(() => (visible), () => {
     const n4 = t0()
-    const _component_primitive = _ctx.Primitive
     _setInsertionState(n4)
-    const n3 = _createComponentWithFallback(_component_primitive, null, null, false)
+    const n3 = _createComponentWithFallback(_component_primitive)
     return n4
   })
   return n0

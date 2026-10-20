@@ -6,8 +6,8 @@ use vize_carton::Box;
 
 use crate::ir::{BlockIRNode, ForIRNode, IfIRNode, InsertionAnchor, NegativeBranch, OperationNode};
 use vize_atelier_core::{
-    ExpressionNode, ForNode, IfNode, PropNode, SimpleExpressionNode, SourceLocation,
-    TemplateChildNode,
+    ElementNode, ElementType, ExpressionNode, ForNode, IfNode, PropNode, SimpleExpressionNode,
+    SourceLocation, TemplateChildNode,
 };
 
 use super::context::TransformContext;
@@ -262,7 +262,7 @@ fn transform_for_node_with_options<'a>(
         key_prop,
         render,
         once: false,
-        component: false,
+        component: component_rows(for_node),
         // Upstream fast removal clears the insertion parent; the loop must be
         // that element's sole child, not merely render a single element.
         only_child,
@@ -277,6 +277,25 @@ fn transform_for_node_with_options<'a>(
         .push(OperationNode::For(Box::new_in(ir_for, &ctx.allocator)));
     if add_return {
         block.returns.push(for_id);
+    }
+}
+
+/// Rows that are one component each unmount one by one (upstream's
+/// `IS_COMPONENT`): the loop's element is a component, or a `<template>`
+/// holds only one.
+fn component_rows(for_node: &ForNode<'_>) -> bool {
+    let component =
+        |el: &ElementNode<'_>| el.tag_type == ElementType::Component || el.tag == "component";
+    match for_node.children.as_slice() {
+        [TemplateChildNode::Element(carrier)] if carrier.tag_type == ElementType::Template => {
+            let mut rows = carrier
+                .children
+                .iter()
+                .filter(|child| !matches!(child, TemplateChildNode::Comment(_)));
+            matches!((rows.next(), rows.next()), (Some(TemplateChildNode::Element(row)), None) if component(row))
+        }
+        [TemplateChildNode::Element(el)] => component(el),
+        _ => false,
     }
 }
 

@@ -1,6 +1,7 @@
 //! Vapor code generation.
 //!
 //! Generates JavaScript code from Vapor IR.
+mod component_assets;
 mod context;
 mod destructure;
 mod effect_order;

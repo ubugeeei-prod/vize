@@ -5,10 +5,10 @@ expression: code.as_str()
 import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
 const t0 = _template("<div></div>", true)
 export function render(_ctx) {
-const n1 = t0()
 const _component_CodeHighlight = _resolveComponent("CodeHighlight")
+const n1 = t0()
 _setInsertionState(n1)
-const n0 = _createComponentWithFallback(_component_CodeHighlight, null, null, false)
+const n0 = _createComponentWithFallback(_component_CodeHighlight)
 _setInsertionState(n1, 1)
 const n2 = _createIf(() => (_ctx.visible), () => {
 const n4 = _createComponentWithFallback(_component_CodeHighlight)

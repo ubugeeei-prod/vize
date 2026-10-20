@@ -252,7 +252,7 @@ fn test_compile_branch_component_under_existing_parent() {
 }
 
 #[test]
-fn test_compile_component_resolution_is_scoped_per_branch() {
+fn test_compile_component_resolution_is_hoisted_out_of_branches() {
     let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,

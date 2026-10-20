@@ -10,7 +10,7 @@ use super::{
     structural_slots::{declare_slot_caches, generate_dynamic_slot},
 };
 
-pub(super) fn component_resolution_var(tag: &str) -> String {
+pub(in crate::generate) fn component_resolution_var(tag: &str) -> String {
     let mut ident = String::with_capacity(tag.len() + 11);
     ident.push_str("_component_");
     for ch in tag.chars() {
@@ -23,7 +23,11 @@ pub(super) fn component_resolution_var(tag: &str) -> String {
     ident
 }
 
-pub(super) fn emit_component_resolution(ctx: &mut GenerateContext, component_var: &str, tag: &str) {
+pub(in crate::generate) fn emit_component_resolution(
+    ctx: &mut GenerateContext,
+    component_var: &str,
+    tag: &str,
+) {
     if let Some(binding_expr) = ctx.resolve_component_binding_expr(tag) {
         ctx.push_line(&cstr!("const {} = {}", component_var, binding_expr));
         return;
@@ -160,7 +164,11 @@ pub(super) fn generate_create_component(
     // Check if this is a simple inner component (pre-resolved, no props, no slots)
     // In that case, emit simplified call: _createComponentWithFallback(_component_Foo)
     let is_pre_resolved = was_already_resolved;
-    if is_pre_resolved && !has_slots && props == "null" && creation_flags(ctx, component) == "false"
+    if is_pre_resolved
+        && !has_slots
+        && props == "null"
+        && creation_flags(ctx, component) == "false"
+        && once_flag(component, create_fn).is_empty()
     {
         ctx.push_line(&cstr!(
             "const n{} = _{}({})",
@@ -168,10 +176,40 @@ pub(super) fn generate_create_component(
             create_fn,
             component_var
         ));
-        return;
+    } else {
+        generate_component_call(
+            ctx,
+            component,
+            element_template_map,
+            &component_var,
+            create_fn,
+            &props,
+        );
     }
 
-    // Start component creation line
+    // v-show after component creation
+    if let Some(ref v_show) = component.v_show {
+        ctx.use_helper("applyVShow");
+        let resolved = ctx.resolve_expression_node(v_show);
+        ctx.push_line(&cstr!(
+            "_applyVShow(n{}, () => ({}))",
+            component.id,
+            resolved
+        ));
+    }
+}
+
+/// `const nX = _create…(component, props, slots, flags)` across its slot lines.
+fn generate_component_call(
+    ctx: &mut GenerateContext,
+    component: &CreateComponentIRNode<'_>,
+    element_template_map: &FxHashMap<usize, usize>,
+    component_var: &str,
+    create_fn: &str,
+    props: &str,
+) {
+    let kind = component.kind;
+    let has_slots = !component.slots.is_empty();
     ctx.push_indent();
     ctx.push(&cstr!(
         "const n{} = _{}({}, {}",
@@ -236,17 +274,6 @@ pub(super) fn generate_create_component(
             ", null, {}{})\n",
             creation_flags(ctx, component),
             once_flag(component, create_fn)
-        ));
-    }
-
-    // v-show after component creation
-    if let Some(ref v_show) = component.v_show {
-        ctx.use_helper("applyVShow");
-        let resolved = ctx.resolve_expression_node(v_show);
-        ctx.push_line(&cstr!(
-            "_applyVShow(n{}, () => ({}))",
-            component.id,
-            resolved
         ));
     }
 }

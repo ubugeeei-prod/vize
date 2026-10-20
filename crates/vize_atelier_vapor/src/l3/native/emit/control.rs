@@ -73,6 +73,12 @@ impl<'a> Emitter<'a, '_> {
                             )
                         })
                     );
+                let component = matches!(
+                    members.as_slice(),
+                    [member] if self.artifact.nodes.get(*member).is_some_and(|row| {
+                        matches!(row.content, Content::Component { .. })
+                    })
+                );
                 self.id();
                 let render = self.body(&members);
                 let spans = body.spans;
@@ -98,7 +104,8 @@ impl<'a> Emitter<'a, '_> {
                     }),
                     render,
                     once: false,
-                    component: false,
+                    // Component rows unmount one by one (upstream's `IS_COMPONENT`).
+                    component,
                     // Upstream's fast-remove flag clears the whole parent, so it
                     // is sound only when the loop is the parent's sole child.
                     only_child: placement.is_some_and(|(_, _, only)| only),

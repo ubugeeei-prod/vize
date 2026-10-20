@@ -95,13 +95,15 @@ fn root_flag_correction_preserves_every_other_historical_output_byte() {
     let old_call = "_createComponentWithFallback(_component_Child, null, null, true)";
     assert_eq!(old_code.matches(old_call).count(), 1);
     let mut authorized = historical.clone();
+    // #8625 cleared the sibling-root flag; #8859 hoists the resolution, so the
+    // call drops its default arguments as upstream's does.
     authorized["output"]["code"] = Value::String(old_code.replacen(
         old_call,
-        "_createComponentWithFallback(_component_Child, null, null, false)",
+        "_createComponentWithFallback(_component_Child)",
         1,
     ));
     assert_eq!(
         current, authorized,
-        "only the explicit #8625 sibling-root flag changes"
+        "only the #8625 sibling-root flag and its #8859 default arguments change"
     );
 }

@@ -3,6 +3,7 @@
 //! Each function emits JavaScript code for a specific IR operation node.
 
 mod component;
+pub(super) use component::{component_resolution_var, emit_component_resolution};
 mod component_props;
 mod component_slots;
 mod directives;

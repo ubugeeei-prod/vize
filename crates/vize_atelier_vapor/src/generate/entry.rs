@@ -187,6 +187,14 @@ pub(crate) fn generate_vapor_with_spans(
         }
     }
 
+    for tag in super::component_assets::hoisted(&ir.block) {
+        if !ctx.is_component_resolved(tag) {
+            let var = super::operations::component_resolution_var(tag);
+            super::operations::emit_component_resolution(&mut ctx, var.as_str(), tag);
+            ctx.mark_component_resolved(tag);
+        }
+    }
+
     let custom_directives = collect_custom_directives(&ir.block);
     if !custom_directives.is_empty() {
         for directive in custom_directives {
