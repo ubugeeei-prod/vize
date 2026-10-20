@@ -211,11 +211,11 @@ mod tests {
     fn observes_explicit_policy_before_reading_without_observing_directory_mtimes() {
         let root = tempfile::tempdir().unwrap();
         let path = root.path().join("serialized-config.json");
-        std::fs::write(&path, r#"{"formatter":{"printWidth":91}}"#).unwrap();
+        std::fs::write(&path, r#"{"vue":{"formatter":{"printWidth":91}}}"#).unwrap();
         let mut observed = Vec::new();
         let snapshot = load_lsp_config_snapshot_observed(Some(&path), &mut |paths| {
             observed.extend_from_slice(paths);
-            std::fs::write(&path, r#"{"formatter":{"printWidth":93}}"#).unwrap();
+            std::fs::write(&path, r#"{"vue":{"formatter":{"printWidth":93}}}"#).unwrap();
         });
         assert!(snapshot.valid);
         assert_eq!(snapshot.config.formatter.print_width, 93);

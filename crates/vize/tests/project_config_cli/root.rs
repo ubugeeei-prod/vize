@@ -132,11 +132,11 @@ fn canonical_vite_scopes_keep_global_settings_and_root_relative_entries() {
 }
 
 #[test]
-fn explicit_native_configuration_keeps_the_existing_invocation_root() {
+fn explicit_vite_configuration_keeps_the_existing_invocation_root() {
     let project = project();
     let root = project.path();
     write(root, "vize.config.json", DEDICATED);
-    write(root, "manual.json", DEDICATED);
+    write(root, "manual.json", EXPLICIT);
     let (output, report) = lint_report(root, &["--config", "manual.json"]);
     assert_eq!(output.status.code(), Some(1), "{output:?}");
     assert_eq!(report, oracle!("lint-dedicated.json"));
@@ -154,7 +154,7 @@ fn explicit_native_configuration_keeps_the_existing_invocation_root() {
     );
     assert_eq!(
         fs::read_to_string(root.join("manual.json")).unwrap(),
-        DEDICATED
+        EXPLICIT
     );
     assert_configuration(root, &SETTINGS, true, None);
 }
@@ -250,14 +250,14 @@ fn omitted_check_inputs_use_vite_tsconfig_and_explicit_tsconfig_stays_local() {
     write(
         root,
         "manual.json",
-        r#"{"typeChecker":{"tsconfig":"tsconfig.json"}}"#,
+        r#"{"vue":{"typeChecker":{"tsconfig":"tsconfig.json"}}}"#,
     );
     let (output, report) = check(&["--config", "manual.json"]);
     assert_eq!(output.status.code(), Some(1), "{output:?}");
     assert_eq!(report, oracle!("check-manual.json"));
     assert_eq!(
         fs::read_to_string(root.join("manual.json")).unwrap(),
-        r#"{"typeChecker":{"tsconfig":"tsconfig.json"}}"#
+        r#"{"vue":{"typeChecker":{"tsconfig":"tsconfig.json"}}}"#
     );
     assert_configuration(root, &SETTINGS, false, None);
 }

@@ -42,7 +42,11 @@ fn validate_explicit_config_path_malformed_errors() {
 fn validate_explicit_config_path_valid_ok() {
     let dir = tempfile::tempdir().unwrap();
     let config_path = dir.path().join("serialized-config.json");
-    std::fs::write(&config_path, r#"{ "formatter": { "singleQuote": true } }"#).unwrap();
+    std::fs::write(
+        &config_path,
+        r#"{ "vue": { "formatter": { "singleQuote": true } } }"#,
+    )
+    .unwrap();
 
     assert!(validate_explicit_config_path(&config_path).is_ok());
 }

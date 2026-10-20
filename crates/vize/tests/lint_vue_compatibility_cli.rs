@@ -119,7 +119,7 @@ withDefaults(defineProps<Props>(), { height: '' })
     write_project_file(
         &project_root,
         "config.json",
-        r#"{ "compatibility": { "vueVersion": "2.7" } }"#,
+        r#"{ "vue": { "compatibility": { "vueVersion": "2.7" } } }"#,
     );
 
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))

@@ -173,7 +173,7 @@ fn parse(
     failure_identity: &mut Option<ConfigLoadFailureIdentity>,
     compile_cache: Option<&Path>,
 ) -> Result<LoadedRawConfig, std::string::String> {
-    super::parse::parse_raw_config_file_with_compile_cache(
+    super::parse::parse_explicit_vite_config_file_with_compile_cache(
         path,
         dependencies,
         complete,

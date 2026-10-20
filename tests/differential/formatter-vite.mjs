@@ -168,7 +168,7 @@ export async function runPublicViteFormatter(root) {
       };
       row.publicAfterResolution = publicIdentity(vp, originalPublic);
       assert.deepEqual(resolved, expectedNative);
-      const transported = JSON.stringify(relocateTaskConfig(resolved, workspace));
+      const transported = JSON.stringify({ vue: relocateTaskConfig(resolved, workspace) });
       const oracle = await reference.format("control.ts", fixture.script, fixture.formatter);
       row.referenceResult = oracle;
       assert.deepEqual(oracle.errors, []);

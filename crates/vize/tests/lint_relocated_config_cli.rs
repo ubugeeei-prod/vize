@@ -26,7 +26,11 @@ fn temporary_config_and_dot_config_keep_original_project_scopes() {
     relocated["ignores"] = serde_json::json!([root.join("gen/**")]);
     relocated["entries"][0]["basePath"] = serde_json::json!(root);
     let temporary = outside.path().join(".vize-vp-config.json");
-    fs::write(&temporary, serde_json::to_vec(&relocated).unwrap()).unwrap();
+    fs::write(
+        &temporary,
+        serde_json::to_vec(&serde_json::json!({ "vue": relocated })).unwrap(),
+    )
+    .unwrap();
 
     let mut reference = None;
     for config_path in [

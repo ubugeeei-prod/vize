@@ -154,7 +154,7 @@ export async function runNative(
       : await resolveConfigExport(metadata.config, env);
   const file = path.join(os.tmpdir(), `.vize-vp-${randomUUID()}.json`);
   try {
-    await writeFile(file, JSON.stringify(relocateTaskConfig(config, process.cwd())), {
+    await writeFile(file, JSON.stringify({ vue: relocateTaskConfig(config, process.cwd()) }), {
       flag: "wx",
       mode: 0o600,
     });

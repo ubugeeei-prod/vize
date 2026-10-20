@@ -27,7 +27,7 @@ void test("Vite+ tasks use one project projection with JSX defaults and explicit
     let checks = 0;
     assert.equal(
       await runNative("check", [], metadata, "native", async (_command, argv) => {
-        const transported = JSON.parse(readFileSync(argv[3], "utf8"));
+        const transported = JSON.parse(readFileSync(argv[3], "utf8")).vue;
         assert.equal(transported.typeChecker.jsxTypecheck, true);
         assert.equal(transported.formatter.singleQuote, true);
         checks++;

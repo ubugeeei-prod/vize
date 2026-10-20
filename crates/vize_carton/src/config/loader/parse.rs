@@ -56,9 +56,14 @@ pub(super) fn parse_raw_config_file_with_compile_cache(
     }
     let mut config = match path.extension().and_then(|ext| ext.to_str()) {
         Some("pkl") => pkl::parse_pkl_config(path)?,
-        Some("ts" | "js" | "mjs" | "cjs" | "mts" | "cts") => {
-            parse_js_config_observed(path, dependencies, complete, before_read, compile_cache)?
-        }
+        Some("ts" | "js" | "mjs" | "cjs" | "mts" | "cts") => parse_js_config_observed(
+            path,
+            dependencies,
+            complete,
+            before_read,
+            compile_cache,
+            false,
+        )?,
         Some("json") => {
             let content = std::fs::read_to_string(path)?;
             document_from_json(content.as_bytes(), path)?
@@ -73,6 +78,115 @@ pub(super) fn parse_raw_config_file_with_compile_cache(
         config.clear_project_root();
     }
     Ok(config)
+}
+
+/// Parse an explicitly selected CLI path as a Vite configuration regardless
+/// of its basename. The retired dedicated shape is never accepted here.
+pub(super) fn parse_explicit_vite_config_file_with_compile_cache(
+    path: &Path,
+    dependencies: &mut Vec<PathBuf>,
+    complete: &mut bool,
+    before_read: &mut BeforeConfigRead<'_>,
+    compile_cache: Option<&Path>,
+) -> Result<ConfigDocument, Box<dyn std::error::Error>> {
+    if let Some(observe) = before_read.as_deref_mut() {
+        observe(&[path.to_path_buf()]);
+    }
+    dependencies.push(path.to_path_buf());
+    if is_retired_config(path) {
+        return Err(std::io::Error::new(std::io::ErrorKind::InvalidInput, CONFIG_MIGRATION).into());
+    }
+    match path.extension().and_then(|ext| ext.to_str()) {
+        Some("ts" | "js" | "mjs" | "cjs" | "mts" | "cts") => parse_js_config_observed(
+            path,
+            dependencies,
+            complete,
+            before_read,
+            compile_cache,
+            true,
+        ),
+        Some("json") => explicit_vite_json(path),
+        _ => Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidInput,
+            "explicit --config must be a JavaScript, TypeScript, or JSON Vite config",
+        )
+        .into()),
+    }
+}
+
+fn explicit_vite_json(path: &Path) -> Result<ConfigDocument, Box<dyn std::error::Error>> {
+    let content = std::fs::read(path)?;
+    let value: serde_json::Value = serde_json::from_slice(&content)?;
+    reject_custom_config_extends(&value)?;
+    let Some(source) = value.as_object() else {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidInput,
+            "Vite config must export an object",
+        )
+        .into());
+    };
+    if [
+        "linter",
+        "formatter",
+        "languageServer",
+        "globalTypes",
+        "files",
+        "ignores",
+        "entries",
+    ]
+    .iter()
+    .any(|key| source.contains_key(*key))
+    {
+        return Err(std::io::Error::new(std::io::ErrorKind::InvalidInput, CONFIG_MIGRATION).into());
+    }
+    let Some(vue) = source.get("vue") else {
+        return Err(std::io::Error::new(std::io::ErrorKind::InvalidInput, CONFIG_MIGRATION).into());
+    };
+    let Some(vue) = vue.as_object() else {
+        return Err(
+            std::io::Error::new(std::io::ErrorKind::InvalidInput, "vue: must be object").into(),
+        );
+    };
+    let mut projected = vue.clone();
+    if let Some(version) = projected.remove("version") {
+        projected.insert("vue".into(), serde_json::json!({ "version": version }));
+    }
+    let type_checker = projected
+        .entry("typeChecker")
+        .or_insert_with(|| serde_json::json!({}));
+    let Some(type_checker) = type_checker.as_object_mut() else {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidInput,
+            "vue.typeChecker: must be object",
+        )
+        .into());
+    };
+    type_checker
+        .entry("jsxTypecheck")
+        .or_insert(serde_json::Value::Bool(true));
+    reject_custom_config_extends(&serde_json::Value::Object(projected.clone()))?;
+    Ok(serde_json::from_value(serde_json::Value::Object(
+        projected,
+    ))?)
+}
+
+fn reject_custom_config_extends(
+    value: &serde_json::Value,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let has_extends = |value: &serde_json::Value| {
+        value
+            .as_object()
+            .is_some_and(|object| object.contains_key("extends"))
+    };
+    let entries = value
+        .get("entries")
+        .and_then(serde_json::Value::as_array)
+        .or_else(|| value.as_array());
+    if has_extends(value) || entries.is_some_and(|entries| entries.iter().any(has_extends)) {
+        return Err(std::io::Error::new(std::io::ErrorKind::InvalidInput,
+            "Custom config extends is no longer supported; use defineConfig(vpConfig).withVue(vueConfig); standard tsconfig extends remains supported").into());
+    }
+    Ok(())
 }
 
 /// Deserialize one evaluated native payload, refusing retired custom inheritance.
@@ -91,19 +205,7 @@ pub(super) fn document_from_json(
         .any(|part| part == b"\"extends\"")
     {
         let value: serde_json::Value = serde_json::from_slice(json)?;
-        let has_extends = |value: &serde_json::Value| {
-            value
-                .as_object()
-                .is_some_and(|object| object.contains_key("extends"))
-        };
-        let entries = value
-            .get("entries")
-            .and_then(serde_json::Value::as_array)
-            .or_else(|| value.as_array());
-        if has_extends(&value) || entries.is_some_and(|entries| entries.iter().any(has_extends)) {
-            return Err(std::io::Error::new(std::io::ErrorKind::InvalidInput,
-                "Custom config extends is no longer supported; use defineConfig(vpConfig).withVue(vueConfig); standard tsconfig extends remains supported").into());
-        }
+        reject_custom_config_extends(&value)?;
         return Ok(serde_json::from_value::<ConfigDocument>(value)?);
     }
     Ok(serde_json::from_slice::<ConfigDocument>(json)?)
