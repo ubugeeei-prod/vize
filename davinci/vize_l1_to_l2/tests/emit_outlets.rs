@@ -176,8 +176,11 @@ fn compact_slot_fallback_keeps_compound_child_boundaries() {
     let source = "<slot v-if=\"ready\"> {{ value }}</slot>";
     let current = assembled(source);
     assert_eq!(current, shipped(source), "{source}");
-    assert!(
-        current.contains("_createTextVNode(),_toDisplayString(value)"),
+    assert_eq!(
+        current
+            .matches("_createTextVNode(),_toDisplayString(value)")
+            .count(),
+        1,
         "compact fallback must preserve the legacy whitespace/interpolation boundary: {current}"
     );
 }

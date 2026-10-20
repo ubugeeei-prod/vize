@@ -110,10 +110,11 @@ fn test_codegen_self_component_normalizes_file_name_spelling() {
         );
         let output = result_output(&result);
 
-        assert!(
-            output.contains(&format!(
-                "const _component_{component} = _resolveComponent(\"{component}\", true)"
-            )),
+        let expected =
+            format!("const _component_{component} = _resolveComponent(\"{component}\", true)");
+        assert_eq!(
+            output.matches(&expected).count(),
+            1,
             "{component}/{component_name}: legacy self-reference must normalize the file stem:\n{output}"
         );
     }
