@@ -36,6 +36,17 @@ pub fn snapshot_tsconfig_vue_target(
     vue_target_from_options(project_root, tsconfig_path, &options, None)
 }
 
+/// Flatten the effective `vueCompilerOptions` for a TypeScript project.
+///
+/// Generated checker configs use this alongside the compiler-options snapshot
+/// so selecting the generated config does not discard Vue-specific semantics.
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
+pub fn snapshot_tsconfig_vue_compiler_options(
+    tsconfig_path: &Path,
+) -> CorsaResult<Map<std::string::String, Value>> {
+    snapshot_vue_compiler_options(tsconfig_path).map(|(options, _)| options)
+}
+
 #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
 pub(super) fn vue_target_from_options(
     project_root: &Path,

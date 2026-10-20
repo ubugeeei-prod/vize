@@ -20,8 +20,10 @@ mod jsx_files;
 mod remap;
 mod vue_alias;
 mod vue_compiler_options;
-pub use vue_compiler_options::snapshot_tsconfig_vue_target;
 pub(super) use vue_compiler_options::snapshot_vue_compiler_options;
+pub use vue_compiler_options::{
+    snapshot_tsconfig_vue_compiler_options, snapshot_tsconfig_vue_target,
+};
 
 use jsx_files::compiler_option_enabled;
 use std::path::{Path, PathBuf};
