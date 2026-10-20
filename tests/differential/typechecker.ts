@@ -29,8 +29,7 @@ export const TYPECHECKER_TESTS = {
   "nuxt-plugin-injection-types": "nuxt_reference_graph_preserves_plugin_injection_import_types",
   "listener-attribute-parity-9852": "listener_keeps_class_style_and_spread_attribute_parity",
   "cache-maintenance-9860": "bounded_cache_maintenance_preserves_project_diagnostics",
-  "nuxt-unknown-template-options-10013":
-    "nuxt_unknown_template_options_preserve_explicit_checks",
+  "nuxt-unknown-template-options-10013": "nuxt_unknown_template_options_preserve_explicit_checks",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
