@@ -96,7 +96,7 @@ counts or fixture availability changes.
 - **Active and blocked: 0 of 22 — none.**
 - **Ready: 0 of 22 — none.**
 - **Open and dependency-blocked: 0 of 22 — none.**
-- **Executable corpus inventory:** 148 gitlinks, including 143 ecosystem
+- **Executable corpus inventory:** 149 gitlinks, including 143 ecosystem
   projects, as asserted by
   [`fixture-compatibility-ledger.test.ts`](../../../tests/tooling/fixture-compatibility-ledger.test.ts).
   A worktree's initialized or uninitialized submodule count is transient and
