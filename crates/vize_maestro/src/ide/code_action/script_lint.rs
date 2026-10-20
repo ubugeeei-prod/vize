@@ -1,7 +1,6 @@
 //! Script lint suppression actions over the configured SFC lint pass.
 #![expect(
     clippy::disallowed_types,
-    clippy::disallowed_methods,
     clippy::disallowed_macros,
     reason = "tower-lsp action titles and edits use std String/HashMap"
 )]
@@ -26,7 +25,7 @@ impl CodeActionService {
     ) -> Option<ScriptLint> {
         let descriptor = ctx.descriptor()?;
         let requests_script_action = if requested.is_empty() {
-            script_block_at(&descriptor, ctx.offset).is_some()
+            script_block_at(descriptor, ctx.offset).is_some()
         } else {
             requested.iter().any(|diagnostic| {
                 diagnostic.source.as_deref() == Some(crate::ide::diagnostics::sources::LINTER)
@@ -35,7 +34,7 @@ impl CodeActionService {
                         diagnostic.range.start.line,
                         diagnostic.range.start.character,
                     )
-                    .is_some_and(|offset| script_block_at(&descriptor, offset).is_some())
+                    .is_some_and(|offset| script_block_at(descriptor, offset).is_some())
             })
         };
         if !requests_script_action {
@@ -70,7 +69,7 @@ impl CodeActionService {
 
         for lint_diag in &lint.result.diagnostics {
             let start = lint_diag.start as usize;
-            let Some(block) = script_block_at(&descriptor, start) else {
+            let Some(block) = script_block_at(descriptor, start) else {
                 continue;
             };
             let diag_range = absolute_range(&ctx.content, start, lint_diag.end as usize);

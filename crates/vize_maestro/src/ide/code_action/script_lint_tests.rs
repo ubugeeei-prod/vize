@@ -121,10 +121,12 @@ fn template_rule_diagnostics_do_not_get_script_suppressions() {
         diagnostic.range,
         std::slice::from_ref(diagnostic),
     );
-    assert!(actions.iter().all(|action| match action {
-        CodeActionOrCommand::CodeAction(action) => {
-            !action.title.contains("eslint-disable-next-line")
-        }
-        CodeActionOrCommand::Command(_) => true,
-    }));
+    assert_eq!(actions.len(), 1);
+    let CodeActionOrCommand::CodeAction(action) = &actions[0] else {
+        panic!("expected a code action: {actions:?}");
+    };
+    assert_eq!(
+        action.title,
+        "Suppress with @vize:forget (a11y/click-events-have-key-events)"
+    );
 }
