@@ -32,6 +32,10 @@ permissions: { contents: read }
 env:
   CARGO_INCREMENTAL: 0
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  # Build exactly what the next release builds: vize_carton reads this with
+  # option_env!, and the version stamp changes every workspace crate, so a
+  # warm disk without either rebuilt the whole workspace in each release.
+  VIZE_RELEASE_BUILD: "1"
 jobs:
   plan:
     runs-on: ubuntu-24.04
@@ -39,6 +43,7 @@ jobs:
     outputs:
       cli: ${{ steps.plan.outputs.cli_matrix }}
       native: ${{ steps.plan.outputs.native_matrix }}
+      version: ${{ steps.next.outputs.version }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -46,6 +51,9 @@ jobs:
       - id: plan
         # Platform coverage is independent of the current workspace version.
         run: node tools/support/github/release-platforms.ts github-output v0.0.0
+      - id: next
+        name: Read the version the next release stamps
+        run: echo "version=$(node tools/support/release/release/main.ts next)" >> "$GITHUB_OUTPUT"
   cli:
     name: Cache CLI - ${{ matrix.settings.target }}
     needs: plan
@@ -57,6 +65,12 @@ jobs:
         settings: ${{ fromJSON(needs.plan.outputs.cli) }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - name: Stamp the next release version like the release candidate
+        shell: bash
+        env: { NEXT_VERSION: "${{ needs.plan.outputs.version }}" }
+        run: node tools/support/release/release/main.ts stamp "$NEXT_VERSION"
       - uses: ./.github/actions/build-release-cli
         with:
           target: ${{ matrix.settings.target }}
@@ -73,6 +87,12 @@ jobs:
         settings: ${{ fromJSON(needs.plan.outputs.native) }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - name: Stamp the next release version like the release candidate
+        shell: bash
+        env: { NEXT_VERSION: "${{ needs.plan.outputs.version }}" }
+        run: node tools/support/release/release/main.ts stamp "$NEXT_VERSION"
       - uses: ./.github/actions/build-release-native
         with:
           target: ${{ matrix.settings.target }}
