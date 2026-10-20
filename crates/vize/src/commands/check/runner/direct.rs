@@ -9,9 +9,8 @@ use super::{
     CanonicalPathCache, CheckArgs, CheckerSettings, TsconfigInputCache, build_virtual_ts_options,
     collect_roots, exit_after_execution_error, explicit_input_root,
     external_input_tsconfig_boundary, finish_executions, prepare_and_execute, report_no_inputs,
-    resolve_from_config_dir, resolve_invocation_program, resolve_nuxt_project_root,
-    split_program_candidates, template_syntax_mode, validate_corsa_server_count,
-    warn_for_disabled_legacy,
+    resolve_from_config_dir, resolve_invocation_program, split_program_candidates,
+    template_syntax_mode, validate_corsa_server_count, warn_for_disabled_legacy,
 };
 
 /// Run type checking directly with materialized Corsa projects.
@@ -91,11 +90,6 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             |boundary| (boundary.clone(), None),
         );
     super::input_scope::validate_selected_tsconfig(args, invocation_tsconfig_path.as_deref());
-    let nuxt_project_root = resolve_nuxt_project_root(
-        effective_tsconfig.as_deref(),
-        &cwd,
-        &invocation_project_root,
-    );
     let explicit_input_root = explicit_input_root(&invocation_project_root, &cwd);
     let mut tsconfig_input_cache = TsconfigInputCache::default();
     let mut canonical_paths = CanonicalPathCache::default();
@@ -160,7 +154,6 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             candidate,
             &cwd,
             &invocation_project_root,
-            &nuxt_project_root,
             &explicit_input_root,
             validate_inputs,
             tsconfig_boundary.as_deref(),

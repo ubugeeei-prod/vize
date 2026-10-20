@@ -58,7 +58,9 @@ use global_components::{
     template_syntax_mode,
 };
 use input_scope::{exit_if_default_run_leaves_cwd, report_no_inputs};
-use invocation::{resolve_invocation_program, resolve_nuxt_project_root};
+#[cfg(test)]
+use invocation::resolve_nuxt_project_root;
+use invocation::{resolve_invocation_program, resolve_program_nuxt_project_root};
 use nuxt_tsconfig::resolve_checker_tsconfig_path;
 use output::{exit_after_execution_error, finish_executions};
 use program_inputs::{ProgramInputContext, filter_for_program, project_graph_allows_js};
@@ -139,7 +141,6 @@ fn prepare_and_execute(
     mut candidate: ProgramCandidate,
     cwd: &Path,
     invocation_project_root: &Path,
-    nuxt_project_root: &Path,
     explicit_input_root: &Path,
     validate_inputs: bool,
     tsconfig_boundary: Option<&Path>,
@@ -304,6 +305,13 @@ fn prepare_and_execute(
         });
     }
 
+    let nuxt_project_root = resolve_program_nuxt_project_root(
+        cwd,
+        &project_root,
+        program_tsconfig_path.as_deref(),
+        &candidate.inputs,
+    );
+
     sort_package_route_bindings(&mut package_routes);
     let discover_global_component_declarations =
         !args.patterns.is_empty() && program_tsconfig_path.is_none();
@@ -315,7 +323,7 @@ fn prepare_and_execute(
             project_root: &project_root,
             program_root: logical_program_root,
             tsconfig_path: program_tsconfig_path,
-            nuxt_project_root,
+            nuxt_project_root: &nuxt_project_root,
             package_route_resolver: package_route_resolver.clone(),
             discover_global_component_declarations,
             ensure_included_sources: args.patterns.is_empty(),

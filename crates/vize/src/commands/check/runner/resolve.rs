@@ -131,6 +131,7 @@ pub(super) fn resolve_tsconfig_path_with_boundary(
         .find_map(|file| find_nearest_tsconfig_path_within(file, boundary))
 }
 
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub(super) fn external_input_tsconfig_boundary(
     patterns: &[std::string::String],
     cwd: &Path,

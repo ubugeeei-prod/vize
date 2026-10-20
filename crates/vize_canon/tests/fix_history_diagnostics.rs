@@ -414,7 +414,9 @@ fn normalize_generated_check_ordinals(diagnostics: &[Diagnostic]) -> Vec<Diagnos
                     .bytes()
                     .take_while(u8::is_ascii_digit)
                     .count();
-                normalized.push('#');
+                if digit_count > 0 {
+                    normalized.push('#');
+                }
                 message = &message[after_marker + digit_count..];
             }
             normalized.push_str(message);
@@ -422,4 +424,23 @@ fn normalize_generated_check_ordinals(diagnostics: &[Diagnostic]) -> Vec<Diagnos
             diagnostic
         })
         .collect()
+}
+
+#[test]
+fn generated_check_ordinal_normalization_preserves_markers_without_digits() {
+    let diagnostics = [Diagnostic {
+        file: String::from("src/App.vue"),
+        line: 1,
+        column: 1,
+        severity: 1,
+        code: Some(2322),
+        message: String::from("_CheckProps_ stays distinct from _CheckProps_12"),
+    }];
+
+    let normalized = normalize_generated_check_ordinals(&diagnostics);
+
+    assert_eq!(
+        normalized[0].message,
+        "_CheckProps_ stays distinct from _CheckProps_#"
+    );
 }

@@ -45,3 +45,22 @@ pub(super) fn resolve_nuxt_project_root(
     }
     tsconfig_dir
 }
+
+pub(super) fn resolve_program_nuxt_project_root(
+    cwd: &Path,
+    project_root: &Path,
+    tsconfig: Option<&Path>,
+    inputs: &[PathBuf],
+) -> PathBuf {
+    let cwd = vize_carton::path::canonicalize_non_verbatim(cwd);
+    let has_cwd_input = inputs
+        .iter()
+        .map(|input| vize_carton::path::canonicalize_non_verbatim(input))
+        .any(|input| input.starts_with(&cwd));
+    let fallback = if has_cwd_input {
+        cwd.as_path()
+    } else {
+        project_root
+    };
+    resolve_nuxt_project_root(tsconfig, &cwd, fallback)
+}
