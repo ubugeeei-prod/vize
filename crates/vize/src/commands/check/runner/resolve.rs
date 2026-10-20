@@ -77,6 +77,11 @@ pub(super) fn resolve_project_root(
     cwd.to_path_buf()
 }
 
+pub(super) fn resolve_config_free_project_root(cwd: &Path, files: &[PathBuf]) -> PathBuf {
+    resolve_project_root_from_files_without_config(files)
+        .unwrap_or_else(|| vize_carton::path::canonicalize_non_verbatim(cwd))
+}
+
 pub(super) fn resolve_tsconfig_path(
     explicit_tsconfig: Option<&Path>,
     cwd: &Path,
@@ -187,6 +192,10 @@ pub(super) use config::{
 fn resolve_project_root_from_files(files: &[PathBuf]) -> Option<PathBuf> {
     let common = common_file_parent(files)?;
     Some(find_nearest_tsconfig_dir(&common).unwrap_or(common))
+}
+
+fn resolve_project_root_from_files_without_config(files: &[PathBuf]) -> Option<PathBuf> {
+    common_file_parent(files)
 }
 
 fn common_file_parent(files: &[PathBuf]) -> Option<PathBuf> {
