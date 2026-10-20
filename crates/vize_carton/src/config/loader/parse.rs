@@ -89,6 +89,18 @@ pub(super) fn parse_explicit_vite_config_file_with_compile_cache(
     before_read: &mut BeforeConfigRead<'_>,
     compile_cache: Option<&Path>,
 ) -> Result<ConfigDocument, Box<dyn std::error::Error>> {
+    // Differential and host contracts reserve this basename for an explicit
+    // serialized ConfigDocument. It bypasses Vite projection while arbitrary
+    // user-selected filenames continue to use the Vite config shape.
+    if is_native_serialization_carrier(path) {
+        return parse_raw_config_file_with_compile_cache(
+            path,
+            dependencies,
+            complete,
+            before_read,
+            compile_cache,
+        );
+    }
     if let Some(observe) = before_read.as_deref_mut() {
         observe(&[path.to_path_buf()]);
     }
@@ -112,6 +124,15 @@ pub(super) fn parse_explicit_vite_config_file_with_compile_cache(
         )
         .into()),
     }
+}
+
+fn is_native_serialization_carrier(path: &Path) -> bool {
+    path.file_stem()
+        .is_some_and(|stem| stem == "serialized-config")
+        && matches!(
+            path.extension().and_then(|extension| extension.to_str()),
+            Some("pkl" | "ts" | "js" | "mjs" | "cjs" | "mts" | "cts" | "json")
+        )
 }
 
 fn explicit_vite_json(path: &Path) -> Result<ConfigDocument, Box<dyn std::error::Error>> {

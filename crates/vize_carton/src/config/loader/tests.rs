@@ -6,7 +6,7 @@ use super::{
     load_compiler_vue_version, load_config_and_linter_plan_with_lint_features_and_source,
     load_config_and_linter_with_source, load_config_entry_files_with_source,
     load_config_entry_ignores_with_source, load_config_with_source, load_linter_config,
-    validate_explicit_config_path,
+    try_load_formatter_snapshot, validate_explicit_config_path,
 };
 use crate::config::{LintRuleSeverity, VueVersion};
 
@@ -39,16 +39,31 @@ fn validate_explicit_config_path_malformed_errors() {
 }
 
 #[test]
-fn validate_explicit_config_path_valid_ok() {
+fn explicit_serialized_config_preserves_native_formatter_profile() {
     let dir = tempfile::tempdir().unwrap();
     let config_path = dir.path().join("serialized-config.json");
-    std::fs::write(
-        &config_path,
-        r#"{ "vue": { "formatter": { "singleQuote": true } } }"#,
-    )
-    .unwrap();
+    let native = r#"{ "formatter": { "singleQuote": true } }"#;
+    std::fs::write(&config_path, native).unwrap();
 
     assert!(validate_explicit_config_path(&config_path).is_ok());
+    assert_eq!(
+        try_load_formatter_snapshot(Some(&config_path))
+            .unwrap()
+            .formatter_profile
+            .options,
+        serde_json::json!({ "singleQuote": true })
+    );
+
+    let arbitrary_path = dir.path().join("formatter-options.json");
+    std::fs::write(&arbitrary_path, native).unwrap();
+    assert_eq!(
+        validate_explicit_config_path(&arbitrary_path).unwrap_err(),
+        format!(
+            "failed to parse {}: {}",
+            arbitrary_path.display(),
+            super::discovery::CONFIG_MIGRATION
+        )
+    );
 }
 
 #[test]
