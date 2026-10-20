@@ -1,5 +1,8 @@
+import { execFile } from "node:child_process";
 import { readdir, readFile } from "node:fs/promises";
+import { availableParallelism } from "node:os";
 import path from "node:path";
+import { promisify } from "node:util";
 
 interface SfcDiagnostic {
   readonly rule?: unknown;
@@ -45,14 +48,17 @@ export interface SfcLintFunction {
  * @param lint Native Vize SFC lint function.
  * @param sourceRoots Directories containing SFC sources.
  * @default "src"
+ * @param shard Lint only every `total`th file, starting at zero-based `index`.
  */
 export async function lintSfcFiles(
   lint: SfcLintFunction,
   sourceRoots: string | readonly string[] = "src",
+  shard: { readonly index: number; readonly total: number } = { index: 0, total: 1 },
 ): Promise<readonly LintedFile[]> {
   const roots = typeof sourceRoots === "string" ? [sourceRoots] : sourceRoots;
   const discovered = await Promise.all(roots.map((root) => collectVueFiles(path.resolve(root))));
-  const files = [...new Set(discovered.flat())].sort();
+  const sorted = [...new Set(discovered.flat())].sort();
+  const files = sorted.filter((_, position) => position % shard.total === shard.index);
   const results: LintedFile[] = [];
 
   for (const filename of files) {
@@ -96,6 +102,28 @@ export function formatSfcLintResults(results: readonly LintedFile[]): string {
     .join("\n");
 }
 
+const shardVariable = "VIZE_UI_SFC_LINT_SHARD";
+
+// Each file's type-aware lint is synchronous and mostly waits on Corsa, so the
+// CLI re-runs its own script over disjoint shards and merges them in path order.
+async function lintInShards(): Promise<readonly LintedFile[]> {
+  const total = Math.min(8, availableParallelism());
+  const shards = await Promise.all(
+    Array.from({ length: total }, async (_, index) => {
+      const { stdout } = await promisify(execFile)(
+        process.execPath,
+        [...process.execArgv, ...process.argv.slice(1)],
+        {
+          env: { ...process.env, [shardVariable]: `${index}/${total}` },
+          maxBuffer: 256 * 1024 * 1024,
+        },
+      );
+      return JSON.parse(stdout) as LintedFile[];
+    }),
+  );
+  return shards.flat().sort((left, right) => (left.filename < right.filename ? -1 : 1));
+}
+
 /**
  * Run the shared SFC gate and set a failing process status for any diagnostic.
  *
@@ -107,7 +135,13 @@ export async function runSfcLintCli(
   lint: SfcLintFunction,
   sourceRoots: string | readonly string[] = "src",
 ): Promise<void> {
-  const results = await lintSfcFiles(lint, sourceRoots);
+  const shard = /^(\d+)\/(\d+)$/.exec(process.env[shardVariable] ?? "");
+  if (shard) {
+    const [index, total] = [Number(shard[1]), Number(shard[2])];
+    process.stdout.write(JSON.stringify(await lintSfcFiles(lint, sourceRoots, { index, total })));
+    return;
+  }
+  const results = await lintInShards();
   const report = formatSfcLintResults(results);
   if (report) process.stderr.write(`${report}\n`);
   if (results.some((result) => result.diagnostics.length > 0)) process.exitCode = 1;
