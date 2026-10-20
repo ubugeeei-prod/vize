@@ -46,7 +46,68 @@ pub(super) fn find_node_modules_native(dir: &Path) -> Option<Candidate> {
         return Some(Candidate::Legacy(path));
     }
 
+    if let Some(path) = find_node_modules_tsrs_native(dir) {
+        return Some(Candidate::Wrapper(path));
+    }
+
     None
+}
+
+/// Resolve the native binary selected by the `tsrs` launcher package.
+///
+/// This avoids making a standalone Vize binary depend on `node` merely to run
+/// the JavaScript launcher. `tsrs` is kept behind the TypeScript/Corsa runtime
+/// tiers unless it is explicitly selected through `TSRS_PATH` or
+/// `typeChecker.tsrsPath`.
+pub(super) fn find_node_modules_tsrs_native(dir: &Path) -> Option<PathBuf> {
+    let node_modules = dir.join("node_modules");
+    let package_dir = node_modules.join("tsrs");
+    let manifest = std::fs::read_to_string(package_dir.join("package.json")).ok()?;
+    let manifest: serde_json::Value = serde_json::from_str(&manifest).ok()?;
+    let platform_package = tsrs_platform_package()?;
+    if !manifest
+        .get("optionalDependencies")
+        .and_then(serde_json::Value::as_object)
+        .is_some_and(|dependencies| dependencies.contains_key(platform_package))
+    {
+        return None;
+    }
+
+    let real_package_dir = package_dir.canonicalize().unwrap_or(package_dir);
+    for ancestor in real_package_dir.ancestors() {
+        let candidate = ancestor
+            .join("node_modules")
+            .join(platform_package)
+            .join("tsrs");
+        if candidate.is_file() {
+            return Some(candidate);
+        }
+    }
+    None
+}
+
+pub(super) fn tsrs_platform_package() -> Option<&'static str> {
+    if cfg!(all(target_os = "macos", target_arch = "aarch64")) {
+        Some("@tsrs/darwin-arm64")
+    } else if cfg!(all(
+        target_os = "linux",
+        target_arch = "aarch64",
+        target_env = "musl"
+    )) {
+        Some("@tsrs/linux-arm64-musl")
+    } else if cfg!(all(target_os = "linux", target_arch = "aarch64")) {
+        Some("@tsrs/linux-arm64-gnu")
+    } else if cfg!(all(
+        target_os = "linux",
+        target_arch = "x86_64",
+        target_env = "musl"
+    )) {
+        Some("@tsrs/linux-x64-musl")
+    } else if cfg!(all(target_os = "linux", target_arch = "x86_64")) {
+        Some("@tsrs/linux-x64-gnu")
+    } else {
+        None
+    }
 }
 
 fn find_stable_typescript_native(node_modules: &Path, suffix: &str) -> Option<PathBuf> {

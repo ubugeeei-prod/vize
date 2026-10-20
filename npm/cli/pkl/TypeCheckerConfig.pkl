@@ -53,6 +53,10 @@ class TypeCheckerConfig {
   /// Deprecated alias for `corsaPath`.
   tsgoPath: String? = null
 
+  /// Path to the experimental tsrs executable. Used when `corsaPath` and
+  /// `tsgoPath` are not set.
+  tsrsPath: String? = null
+
   /// Path to a .d.ts file that declares template globals.
   globalsFile: String? = null
 

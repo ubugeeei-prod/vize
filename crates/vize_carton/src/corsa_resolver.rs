@@ -9,8 +9,9 @@
 //!
 //! 1. Explicit configuration ([`CorsaResolveRequest::explicit_path`]).
 //! 2. Environment variables, in precedence order: `CORSA_PATH`,
-//!    `CORSA_EXECUTABLE`, `TSGO_PATH`, `TSGO_EXECUTABLE`. The first one set
-//!    wins; its value must point at an existing file.
+//!    `CORSA_EXECUTABLE`, `TSGO_PATH`, `TSGO_EXECUTABLE`, `TSRS_PATH`,
+//!    `TSRS_EXECUTABLE`. The first one set wins; its value must point at an
+//!    existing file.
 //! 3. Project discovery: an ancestor walk from the project root (and the
 //!    current directory) probing project caches, dev-checkout paths, stable
 //!    `typescript@7` platform packages, the bundled `node_modules/vize`
@@ -30,21 +31,25 @@ use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
 mod packages;
-use packages::{find_node_modules_native, find_node_modules_wrapper};
+use packages::{
+    find_node_modules_native, find_node_modules_tsrs_native, find_node_modules_wrapper,
+};
 
 #[cfg(test)]
 mod normalize_tests;
 
 /// Environment variables honored by the resolver, in precedence order.
-pub const CORSA_ENV_VARS: [&str; 4] = [
+pub const CORSA_ENV_VARS: [&str; 6] = [
     "CORSA_PATH",
     "CORSA_EXECUTABLE",
     "TSGO_PATH",
     "TSGO_EXECUTABLE",
+    "TSRS_PATH",
+    "TSRS_EXECUTABLE",
 ];
 
 /// Executable names probed by every discovery source, in precedence order.
-pub const CORSA_EXECUTABLE_NAMES: [&str; 2] = ["corsa", "tsgo"];
+pub const CORSA_EXECUTABLE_NAMES: [&str; 3] = ["corsa", "tsgo", "tsrs"];
 
 /// Environment variable gating developer-checkout discovery paths.
 pub const CORSA_DEV_PATHS_ENV: &str = "VIZE_CORSA_DEV_PATHS";
@@ -113,6 +118,11 @@ pub fn discover_corsa_in_ancestors(start: &Path) -> Option<PathBuf> {
 /// Non-wrapper paths are returned unchanged.
 pub fn normalize_corsa_path(path: &Path) -> PathBuf {
     normalize_corsa_path_with_discovery(path, |project_root| {
+        if path.file_name().is_some_and(|name| name == "tsrs")
+            && let Some(native) = find_node_modules_tsrs_native(project_root)
+        {
+            return Some(native);
+        }
         discover_in_walk(&[project_root.to_path_buf()], dev_paths_enabled())
     })
 }

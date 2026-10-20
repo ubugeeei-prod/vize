@@ -49,9 +49,10 @@ const companions: Partial<Record<Command, string>> = {
   doctor: "docs/content/guide/doctor.md",
 };
 
-/** Hidden clap aliases accepted by the binary but absent from `--help`. */
+/** Clap aliases accepted by the binary, including aliases rendered separately in `--help`. */
 const aliases: Partial<Record<Command, string[]>> = {
   build: ["--dts"],
+  check: ["--tsrs-path"],
 };
 
 function helpFlags(command: Command): Set<string> {

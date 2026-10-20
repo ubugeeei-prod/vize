@@ -146,7 +146,11 @@ test("Vite root projects scoped paths while preserving global entries and author
     vue: {
       files: ["src/**/*.vue"],
       ignores: ["src/Ignored.vue", "!src/Keep.vue", String.raw`src/\[id\].vue`],
-      typeChecker: { tsconfig: "tsconfig.json", corsaPath: "tools/corsa" },
+      typeChecker: {
+        tsconfig: "tsconfig.json",
+        corsaPath: "tools/corsa",
+        tsrsPath: "node_modules/.bin/tsrs",
+      },
       entries: [
         { files: ["src/**/*.vue"], linter: { rules: { "a11y/alt-text": "error" } } },
         { basePath: "packages/ui", files: ["*.vue"] },
@@ -164,6 +168,7 @@ test("Vite root projects scoped paths while preserving global entries and author
       jsxTypecheck: true,
       tsconfig: path.join(root, "app/tsconfig.json"),
       corsaPath: path.join(root, "app/tools/corsa"),
+      tsrsPath: path.join(root, "app/node_modules/.bin/tsrs"),
     },
     entries: [
       {

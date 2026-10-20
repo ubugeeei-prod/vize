@@ -217,6 +217,7 @@ class TypeCheckerConfig {
   tsconfig: String? = null
   corsaPath: String? = null
   tsgoPath: String? = null
+  tsrsPath: String? = null
   globalsFile: String? = null
   servers: Int(isBetween(1, 32))? = null
   lspRequestTimeoutMs: Int? = null

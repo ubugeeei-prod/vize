@@ -84,8 +84,9 @@ pub struct CheckArgs {
     #[arg(long)]
     pub profile: bool,
 
-    /// Path to the Corsa executable (can also use `CORSA_PATH`)
-    #[arg(long)]
+    /// Path to the native TypeScript checker (Corsa/tsgo, or experimental tsrs).
+    /// Can also use `CORSA_PATH`, `TSGO_PATH`, or `TSRS_PATH`.
+    #[arg(long, visible_alias = "tsrs-path")]
     pub corsa_path: Option<String>,
 
     /// Number of parallel Corsa servers to use (defaults to an auto-tuned value)

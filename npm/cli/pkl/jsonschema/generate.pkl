@@ -121,6 +121,10 @@ local typeCheckerConfigDef: JsonSchema = new JsonSchema {
       type = "string"
       description = "Deprecated alias for typeChecker.corsaPath"
     }
+    ["tsrsPath"] = new JsonSchema {
+      type = "string"
+      description = "Path to the experimental tsrs executable. Used when corsaPath and tsgoPath are not set."
+    }
     ["globalsFile"] = new JsonSchema {
       type = "string"
       description = "Path to a .d.ts file that declares template globals"

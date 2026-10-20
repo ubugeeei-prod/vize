@@ -229,13 +229,15 @@ Key options:
 | `-q, --quiet`       | Show summary only                                  |
 | `--profile`         | Write profile artifacts under `node_modules/.vize` |
 | `--corsa-path`      | Override the native TypeScript (Corsa) executable path |
+| `--tsrs-path`       | Use an experimental tsrs executable                 |
 | `--servers`         | Parallel Corsa CLI servers (`1`–`32`); auto-tuned when omitted |
 | `--checkers`        | Checker workers per Corsa process (default `1`)    |
 | `--declaration`     | Emit `.d.ts` output                                |
 | `--declaration-dir` | Output directory for emitted declarations          |
 
 Use `--corsa-path` to pin a local Corsa build. The shared config key is `typeChecker.corsaPath`;
-`typeChecker.tsgoPath` remains only as a compatibility alias.
+`typeChecker.tsgoPath` remains only as a compatibility alias. Use `--tsrs-path` with
+`typeChecker.tsrsPath` to evaluate the experimental tsrs backend.
 
 Project-wide template values and Vue ambient types should be visible through TypeScript project
 configuration. Include generated files such as `auto-imports.d.ts`, `components.d.ts`, or your own
