@@ -365,6 +365,7 @@ test("slow suites use schedules or explicit dispatch without starting on PRs", (
     "fuzz.yml",
     "miri.yml",
     "tool-benchmark.yml",
+    "vue-benchmarks-current-qualification.yml",
     "vue-benchmarks-replay.yml",
   ];
   for (const name of [

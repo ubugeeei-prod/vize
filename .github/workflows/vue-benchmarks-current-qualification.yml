@@ -1,0 +1,132 @@
+name: Vue Benchmarks Current Qualification
+
+# Periodically replay the complete original 5489 lint and typecheck validators
+# against the source-built CLI from this exact main commit. This is a
+# correctness observation: any remaining plant failure keeps the workflow red
+# and every raw stream is retained for attribution.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "53 6 * * 1"
+
+permissions: { contents: read }
+
+concurrency:
+  group: vue-benchmarks-current-qualification-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  EXPECTED_SOURCE_SHA: ${{ github.sha }}
+  EXECUTED_WORKFLOW_SHA: ${{ github.workflow_sha }}
+
+jobs:
+  source-cli:
+    uses: ./.github/workflows/full-source-cli.yml
+
+  current-qualification:
+    name: current-qualification
+    needs: source-cli
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    steps:
+      - name: Refuse a branch, stale main, or unreviewed workflow source
+        shell: bash
+        run: |
+          [[ "$EXPECTED_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$GITHUB_REF" = refs/heads/main
+          test "$EXECUTED_WORKFLOW_SHA" = "$EXPECTED_SOURCE_SHA"
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify current main and hydrate the fixed read-only upstream input
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
+          test "$(git ls-remote origin refs/heads/main | cut -f1)" = "$EXPECTED_SOURCE_SHA"
+          test "$(git ls-tree HEAD tests/_fixtures/_git/vue-benchmarks | cut -f1)" = '160000 commit 5489aee433cd1054b9d72973457498544da7c467'
+          git submodule update --init --depth 1 -- tests/_fixtures/_git/vue-benchmarks
+          test "$(git -C tests/_fixtures/_git/vue-benchmarks rev-parse HEAD)" = 5489aee433cd1054b9d72973457498544da7c467
+          test -z "$(git -C tests/_fixtures/_git/vue-benchmarks status --porcelain --untracked-files=all)"
+
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: false
+          run-install: false
+
+      - uses: ./.github/actions/restore-source-cli
+        with: { producer: "${{ toJSON(needs.source-cli.outputs) }}" }
+
+      - name: Run process-custody controls
+        run: node --test tools/benchmarks/scripts/vue-benchmarks-current-typecheck.test.mjs
+
+      - name: Materialize the frozen minimal reference installation
+        shell: bash
+        run: |
+          provider_source=tools/benchmarks/fixtures/vue-benchmarks-current-typecheck-provider
+          provider_prefix="$RUNNER_TEMP/vue-benchmarks-current-provider"
+          mkdir "$provider_prefix"
+          cp "$provider_source/package.json" "$provider_source/package-lock.json" "$provider_prefix/"
+          npm ci --prefix "$provider_prefix" --ignore-scripts --no-audit --no-fund
+          cmp "$provider_source/package-lock.json" "$provider_prefix/package-lock.json"
+          sha256sum "$provider_prefix/package.json" "$provider_prefix/package-lock.json"
+
+      - name: Observe all eleven original lint pairs
+        id: lint
+        continue-on-error: true
+        env:
+          VIZE_SOURCE_CLI_RECEIPT_SHA256: ${{ needs.source-cli.outputs.receipt-sha256 }}
+        run: node --test tests/tooling/vue-benchmarks-current-lint.test.ts
+
+      - name: Observe all 154 original typecheck plants
+        id: typecheck
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        shell: bash
+        run: |
+          provider_prefix="$RUNNER_TEMP/vue-benchmarks-current-provider"
+          node tools/benchmarks/scripts/vue-benchmarks-current-typecheck.mjs \
+            --source-sha "$EXPECTED_SOURCE_SHA" \
+            --vize-bin "$GITHUB_WORKSPACE/target/ci/vize" \
+            --corsa-bin "$provider_prefix/node_modules/@typescript/typescript-linux-x64/lib/tsc" \
+            --vue-dir "$provider_prefix/node_modules/vue" \
+            --vue-tsc-bin "$provider_prefix/node_modules/.bin/vue-tsc" \
+            --output "$RUNNER_TEMP/vue-benchmarks-current-typecheck"
+
+      - name: Recheck source, gitlink, and provider custody
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
+          test -z "$(git status --porcelain --untracked-files=no)"
+          test -z "$(git -C tests/_fixtures/_git/vue-benchmarks status --porcelain --untracked-files=all)"
+          cmp tools/benchmarks/fixtures/vue-benchmarks-current-typecheck-provider/package-lock.json "$RUNNER_TEMP/vue-benchmarks-current-provider/package-lock.json"
+
+      - name: Retain every successful and failed observation
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: vue-benchmarks-current-qualification-${{ github.sha }}-${{ github.run_attempt }}
+          path: |
+            target/differential/vue-benchmarks-current-lint/
+            target/ci/vize.differential-build.json
+            ${{ runner.temp }}/vue-benchmarks-current-typecheck/
+            ${{ runner.temp }}/vue-benchmarks-current-provider/package.json
+            ${{ runner.temp }}/vue-benchmarks-current-provider/package-lock.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Require complete original lint and typecheck qualification
+        if: ${{ always() && !cancelled() }}
+        env:
+          LINT_OUTCOME: ${{ steps.lint.outcome }}
+          TYPECHECK_OUTCOME: ${{ steps.typecheck.outcome }}
+        run: |
+          echo "lint=$LINT_OUTCOME typecheck=$TYPECHECK_OUTCOME"
+          test "$LINT_OUTCOME" = success
+          test "$TYPECHECK_OUTCOME" = success
