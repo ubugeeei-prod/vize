@@ -18,10 +18,12 @@ import { readRepoFile, root } from "../support/github-workflows.ts";
 
 type Job = {
   needs?: string | string[];
+  "timeout-minutes"?: number;
   environment?: string;
+  env?: Record<string, string>;
   permissions?: Record<string, string>;
   uses?: string;
-  steps?: Array<{ uses?: string; run?: string; with?: Record<string, unknown> }>;
+  steps?: Array<{ id?: string; uses?: string; run?: string; with?: Record<string, unknown> }>;
 };
 const workflow = parse(readRepoFile(".github", "workflows", "release.yml")) as {
   on: { workflow_dispatch: { inputs: Record<string, unknown> } };
@@ -148,11 +150,6 @@ test("registries publish in parallel behind one credential-free smoke", () => {
     assert.ok(needs(name).includes("tag"), name);
     assert.ok(!needs(name).some((other) => other.startsWith("publish-")), name);
   }
-  const npm = JSON.stringify(workflow.jobs["publish-npm"].steps);
-  assert.match(
-    npm,
-    /publish_npm_package_dirs\/main\.ts \\"\$\{dirs\[@\]\}\\" --concurrency 16 --provenance --no-wait/,
-  );
   for (const dir of workflow.env.RELEASE_JS_PACKAGES.split(" ")) {
     assert.match(
       readRepoFile(".github", "actions", "release-build-packages", "action.yml"),
@@ -161,7 +158,52 @@ test("registries publish in parallel behind one credential-free smoke", () => {
   }
 });
 
-test("registry visibility is checked once, after publishing, and gates only JSR", () => {
+test("npm exposes every native platform before packages that depend on it", () => {
+  const job = workflow.jobs["publish-npm"];
+  const run = job.steps?.find((step) => step.id === "publish")?.run ?? "";
+  const platformPublish =
+    'node tools/support/release/publish_npm_package_dirs/main.ts "${platforms[@]}" --concurrency 8 --provenance';
+  const nativePublish =
+    'node tools/support/release/publish_npm_package_dirs/main.ts "${native[@]}" --concurrency 1 --provenance';
+  const dependentPublish =
+    'node tools/support/release/publish_npm_package_dirs/main.ts "${dependents[@]}" --concurrency 16 --provenance --no-wait';
+  const platformLine = run
+    .split("\n")
+    .find((line) => line.includes(platformPublish))
+    ?.trim();
+  const nativeLine = run
+    .split("\n")
+    .find((line) => line.includes(nativePublish))
+    ?.trim();
+
+  assert.match(run, /^platforms=\(npm\/native\/npm\)$/m);
+  assert.match(run, /^native=\(npm\/native\)$/m);
+  assert.match(run, /^dependents=\(npm\/fresco-native npm\/wasm "\$\{js\[@\]\}"\)$/m);
+  assert.equal(platformLine, platformPublish, "waits for every platform package to become visible");
+  assert.equal(nativeLine, nativePublish, "waits for the native wrapper to become visible");
+  assert.ok(
+    run.indexOf(nativePublish) > run.indexOf(platformPublish),
+    "publishes the native wrapper only after the platform visibility barrier",
+  );
+  assert.ok(
+    run.indexOf(dependentPublish) > run.indexOf(nativePublish),
+    "publishes vize and other dependents only after the native wrapper visibility barrier",
+  );
+  assert.match(
+    run,
+    /--names "\$\{platforms\[@\]\}" "\$\{native\[@\]\}" "\$\{dependents\[@\]\}"/,
+    "final verification retains every package name",
+  );
+  assert.ok(
+    Number(job.env?.PUBLISH_RESOLUTION_RETRY_LIMIT) *
+      Number(job.env?.PUBLISH_RESOLUTION_RETRY_DELAY) >=
+      15 * 60,
+    "the platform barrier tolerates npm propagation for 15 minutes",
+  );
+  assert.ok((job["timeout-minutes"] ?? 0) >= 40, "the job can outlive both visibility barriers");
+});
+
+test("final registry verification checks every package and gates only JSR", () => {
   assert.deepEqual(needs("verify-npm"), ["version", "publish-npm"]);
   assert.deepEqual(needs("publish-jsr"), ["version", "verify-npm"]);
   assert.ok(!needs("github-release").includes("verify-npm"));

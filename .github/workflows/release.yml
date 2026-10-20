@@ -8,10 +8,11 @@ name: Release
 # platforms build that candidate in parallel and one pre-publish smoke checks
 # the tarballs. Only when every artifact exists does `tag` push vX.Y.0, so a
 # failed build burns no version: the next run retries the same number. Every
-# registry then publishes in parallel; npm publishes all packages at once
-# because it does not resolve dependencies at publish time. Registry visibility
-# is checked once, after publishing. Re-running failed jobs is safe: every
-# publisher skips versions that exist.
+# registry then publishes in parallel. npm publishes and verifies every native
+# platform package before exposing @vizejs/native or vize, so an install can
+# never resolve a wrapper while its binding is still propagating. Registry
+# visibility is checked again after publishing. Re-running failed jobs is safe:
+# every publisher skips versions that exist.
 # release-cadence.yml dispatches this workflow automatically. It is always a
 # workflow_dispatch run because crates.io trusted publishing refuses
 # workflow_run and schedule triggers.
@@ -253,9 +254,14 @@ jobs:
     name: Publish npm packages
     needs: [version, tag]
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 40
     environment: npm
     permissions: { contents: read, id-token: write }
+    env:
+      # Native packages have taken up to 12 minutes to become visible. Give the
+      # dependent-package barrier a 15-minute propagation window.
+      PUBLISH_RESOLUTION_RETRY_LIMIT: "90"
+      PUBLISH_RESOLUTION_RETRY_DELAY: "10"
     outputs:
       packages: ${{ steps.publish.outputs.packages }}
     steps:
@@ -266,13 +272,17 @@ jobs:
       - uses: ./.github/actions/release-npm-artifacts
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: npm-package-wasm, path: npm/wasm }
-      - name: Publish every package in parallel
+      - name: Publish native platforms before dependent packages
         id: publish
         run: |
           read -ra js <<< "$RELEASE_JS_PACKAGES"
-          dirs=(npm/native/npm npm/native npm/fresco-native npm/wasm "${js[@]}")
-          node tools/support/release/publish_npm_package_dirs/main.ts "${dirs[@]}" --concurrency 16 --provenance --no-wait
-          echo "packages=$(node tools/support/release/publish_npm_package_dirs/main.ts --names "${dirs[@]}")" >> "$GITHUB_OUTPUT"
+          platforms=(npm/native/npm)
+          native=(npm/native)
+          dependents=(npm/fresco-native npm/wasm "${js[@]}")
+          node tools/support/release/publish_npm_package_dirs/main.ts "${platforms[@]}" --concurrency 8 --provenance
+          node tools/support/release/publish_npm_package_dirs/main.ts "${native[@]}" --concurrency 1 --provenance
+          node tools/support/release/publish_npm_package_dirs/main.ts "${dependents[@]}" --concurrency 16 --provenance --no-wait
+          echo "packages=$(node tools/support/release/publish_npm_package_dirs/main.ts --names "${platforms[@]}" "${native[@]}" "${dependents[@]}")" >> "$GITHUB_OUTPUT"
 
   publish-crates:
     name: Publish crates
@@ -412,8 +422,8 @@ jobs:
             vize-${{ needs.version.outputs.tag }}-*.pem
             vize-${{ needs.version.outputs.tag }}-*.cosign.bundle
 
-  # After publishing, never blocking it: one registry visibility wait plus an
-  # install of the CLI from npm, then JSR (its facade resolves the npm packages).
+  # After publishing, never blocking it: verify every package together and
+  # install the CLI from npm, then JSR (its facade resolves the npm packages).
   # JSR runs as its own workflow: its server-side processing takes 10-60 min,
   # and inside this run it kept the cadence from starting the next release.
   verify-npm:
