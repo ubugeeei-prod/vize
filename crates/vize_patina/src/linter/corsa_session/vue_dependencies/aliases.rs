@@ -6,7 +6,7 @@ use serde_json::Value;
 use vize_l0::String;
 
 #[derive(Default)]
-pub(super) struct PathAliases {
+pub(in crate::linter::corsa_session) struct PathAliases {
     project_root: PathBuf,
     patterns: Vec<Pattern>,
 }
@@ -19,7 +19,10 @@ struct Pattern {
 }
 
 impl PathAliases {
-    pub(super) fn from_tsconfig(contents: &str, project_root: &Path) -> Self {
+    pub(in crate::linter::corsa_session) fn from_tsconfig(
+        contents: &str,
+        project_root: &Path,
+    ) -> Self {
         let Some(paths) = serde_json::from_str::<Value>(contents)
             .ok()
             .and_then(|value| value.pointer("/compilerOptions/paths").cloned())
