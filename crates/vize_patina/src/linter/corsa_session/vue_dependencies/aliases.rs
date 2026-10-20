@@ -42,9 +42,7 @@ impl PathAliases {
                 if targets.is_empty() {
                     return None;
                 }
-                let (prefix, suffix) = key
-                    .split_once('*')
-                    .map_or_else(|| (key.as_str(), ""), |parts| parts);
+                let (prefix, suffix) = key.split_once('*').unwrap_or_else(|| (key.as_str(), ""));
                 Some(Pattern {
                     key: key.as_str().into(),
                     prefix: prefix.into(),
