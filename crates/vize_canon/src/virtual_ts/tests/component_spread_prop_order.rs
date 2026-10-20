@@ -321,13 +321,17 @@ const bag = { count: 1 }
     );
     let unmapped_missing =
         output.code.rfind(generated).unwrap() + generated.find("missing").unwrap();
-    assert!(
+    let secondary_mapping_count =
         output
             .mapping
             .spans()
             .iter()
             .flat_map(|mapping| &mapping.sub_spans)
-            .all(|span| !span.gen_range.contains(&unmapped_missing)),
+            .filter(|span| span.gen_range.contains(&unmapped_missing))
+            .count();
+    assert_eq!(
+        secondary_mapping_count,
+        0,
         "the secondary fallthrough literal must stay unmapped to avoid duplicate diagnostics",
     );
 }
