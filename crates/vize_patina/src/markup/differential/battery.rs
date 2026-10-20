@@ -279,7 +279,7 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     // The combobox exemption tests (#9750) add three nonliteral calls.
     // Dynamic slot v-for key ownership (#9924) adds two literal templates.
     // Patina rule guards (#9870, #9871) add one nonliteral call and skip.
-    // Diagnostic output policy (#9869, #9874) adds one nonliteral call.
+    // Patina output policy coverage (#9869, #9874) adds one literal template.
     rule_fixture_calls: 1057 + 4 + 3 + 43 + 2 + 1 + 11 + 5 + 1 + 2 - 5 + 3 + 2 + 1 + 1,
     rule_fixture_skipped: 87 + 4 + 3 + 1 + 1 + 6 + 5 + 1 + 1 + 3 + 1,
     matrix: 90,
