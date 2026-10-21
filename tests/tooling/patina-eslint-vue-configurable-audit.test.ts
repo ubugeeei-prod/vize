@@ -30,7 +30,10 @@ test("the current eslint-plugin-vue configurable surface stays explicit", () => 
     configurableRuleCount: 112,
   });
   assert.equal(audit.configurableRules.length, audit.upstream.configurableRuleCount);
-  assert.deepEqual(audit.configurableRules, [...new Set(audit.configurableRules)].sort());
+  assert.deepEqual(
+    audit.configurableRules,
+    [...new Set(audit.configurableRules)].sort((left, right) => left.localeCompare(right)),
+  );
 
   const statuses = { mapped: 0, unimplemented: 0, intentionalDivergence: 0 };
   for (const rule of audit.configurableRules) {
