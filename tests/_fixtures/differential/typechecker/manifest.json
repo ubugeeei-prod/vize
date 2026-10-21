@@ -2636,11 +2636,11 @@
       "pack": "content-mapper-musea-art-10186",
       "case": "bound-component-props",
       "test": "content_mapper_musea_art_project_preserves_bound_component_diagnostics",
-      "regressionCommit": "40b6bd9c6c1dc49c23f4a1f18eaad579b1b7a159",
-      "sourceRevision": "40b6bd9c6c1dc49c23f4a1f18eaad579b1b7a159",
+      "regressionCommit": "2da3f58de83e500e1d38493d1ea4a463b151be19",
+      "sourceRevision": "2da3f58de83e500e1d38493d1ea4a463b151be19",
       "packReference": {
         "path": "content-mapper-musea-art-10186/cases.json",
-        "sha256": "3cee82977486a5b472afb211b115b7280c398c08a5352a7dccb7c20effa561aa"
+        "sha256": "1471cf8da305d0d6789ba956f5343a8b2bca94fe908531341c00914f9f3090af"
       },
       "inputs": [
         {
