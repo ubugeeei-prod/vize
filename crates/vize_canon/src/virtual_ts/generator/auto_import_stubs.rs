@@ -1,5 +1,6 @@
 use vize_carton::{CompactString, FxHashSet, String, camelize, capitalize, cstr};
 use vize_croquis::Croquis;
+use vize_croquis::macros::DEFINE_ART;
 
 use crate::virtual_ts::component_reference::{
     component_reference_alias, contains_compact_name, has_type_only_component_candidate,
@@ -49,6 +50,7 @@ fn emit_stubs(
         if let Some(name) = name {
             // Skip if already imported or declared in script bindings
             if (crate::virtual_ts::script_facts::contains_binding(summary, name)
+                && !is_musea_macro_call(summary, name)
                 && !contains_compact_name(syntactic_type_only_imported_names, name))
                 || (imported_names.contains(&name)
                     && !contains_compact_name(syntactic_type_only_imported_names, name))
@@ -74,6 +76,14 @@ fn emit_stubs(
         }
         ts.push('\n');
     }
+}
+
+/// The bindings fact records recognized compiler-macro calls under their
+/// macro spelling. That is not an authored declaration which can shadow an
+/// ambient stub: a Musea Art mapper still has to declare `defineArt` for the
+/// TypeScript host.
+fn is_musea_macro_call(summary: &Croquis, name: &str) -> bool {
+    name == DEFINE_ART && summary.macros.define_art().is_some()
 }
 
 fn component_alias_for_type_only_auto_import(
