@@ -6,7 +6,12 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { expectedBuildIdentity, validateBuildReceipt } from "./build-receipt.ts";
 import { assertExactRows, sha256 } from "./harness.mjs";
-import { initializeCapabilities, loadLspManifest, NATIVE_REASON } from "./lsp-manifest.ts";
+import {
+  initializeCapabilities,
+  loadLspManifest,
+  lspFixtureInventory,
+  NATIVE_REASON,
+} from "./lsp-manifest.ts";
 import { inspectLspObservation, validateLspReport } from "./lsp-report.ts";
 import { LspWire } from "./lsp-wire.ts";
 import { lspWorkspace, observeLspWorkspace } from "./lsp-workspace.ts";
@@ -20,7 +25,7 @@ import {
   type BuildReceipt,
 } from "./lsp-types.ts";
 
-export { loadLspManifest, validateLspReport };
+export { loadLspManifest, lspFixtureInventory, validateLspReport };
 
 async function runLspCase(
   fixture: LspFixture,

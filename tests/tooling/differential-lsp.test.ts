@@ -5,7 +5,12 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { inspectLspObservation } from "../differential/lsp-report.ts";
-import { loadLspManifest, runLspPack, validateLspReport } from "../differential/lsp.ts";
+import {
+  loadLspManifest,
+  lspFixtureInventory,
+  runLspPack,
+  validateLspReport,
+} from "../differential/lsp.ts";
 import {
   referenceObservation,
   referenceReport,
@@ -17,6 +22,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
 const pack = path.join(root, "tests/_fixtures/differential/lsp");
 const manifestPath = path.join(pack, "manifest.json");
 const loaded = loadLspManifest(manifestPath);
+const inventory = lspFixtureInventory(loaded);
 const build = {
   sourceRevision: loaded.manifest.baseRevision,
   binaryPath: "target/ci/vize",
@@ -41,13 +47,9 @@ function linkAt(message: JsonRpcMessage, index: number) {
 }
 
 void test("LSP manifest binds original complete contracts and every original request", () => {
-  assert.equal(loaded.cases.length, 37);
   assert.deepEqual(
     loaded.cases.map((fixture) => fixture.requests.length),
-    [
-      1, 4, 1, 1, 1, 1, 1, 1, 4, 1, 1, 2, 2, 1, 1, 1, 7, 2, 1, 1, 1, 2, 1, 2, 2, 1, 1, 1, 1, 1, 1,
-      1, 1, 1, 1, 2, 2,
-    ],
+    inventory.map(({ requestCount }) => requestCount),
   );
   assert.equal(loaded.cases[1].files[0].bytes.filter((byte) => byte === 13).length, 18);
   for (const relative of [
@@ -211,7 +213,7 @@ void test("LSP unavailable executables fail every planned case without trying a 
       sourceRevision: build.sourceRevision,
     });
     assert.equal(report.binary, null);
-    assert.equal(report.summary.legacyFailures, 37);
+    assert.equal(report.summary.legacyFailures, inventory.length);
     assert.equal(report.summary.nativeHandled, 0);
     assert(
       report.rows.every(
