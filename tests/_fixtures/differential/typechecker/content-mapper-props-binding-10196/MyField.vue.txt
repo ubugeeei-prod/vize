@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import { useField } from "./use-field";
+
+defineProps<{ label?: string }>();
+
+const { props, size } = useField();
+</script>
+
+<template>
+  <div class="my-field">{{ props.title }} {{ size }} {{ label }}</div>
+</template>
