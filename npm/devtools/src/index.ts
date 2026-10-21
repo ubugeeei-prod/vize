@@ -20,5 +20,6 @@ export type {
   DevtoolsSnapshot,
   DevtoolsSourceSpecifier,
   DevtoolsSuspenseNode,
+  DevtoolsTraceVisitorHost,
   SerializedDevtoolsEvent,
 } from "./types.ts";
