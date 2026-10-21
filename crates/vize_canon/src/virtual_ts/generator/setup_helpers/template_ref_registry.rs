@@ -11,6 +11,7 @@
 //! and a literal name the template never registers is an error. Only a dynamic
 //! `:ref` binding stays outside it.
 
+use oxc_ast::ast::Expression;
 use vize_carton::{FxHashSet, String, append, is_native_tag};
 use vize_croquis::Croquis;
 use vize_relief::{ElementNode, ElementType, Namespace, PropNode, RootNode, TemplateChildNode};
@@ -360,16 +361,54 @@ fn dynamic_component_reference(element: &ElementNode<'_>, summary: &Croquis) -> 
                 return Some(reference_type);
             }
         }
-    }
 
-    // Complex root-scope targets already have an inference-only alias for
-    // props/listener checking. Reuse it only when Croquis proves ownership;
-    // an authored lookalike must never become a generated type reference.
-    let alias = vize_croquis::drawer::dynamic_component_alias(element.loc.span.start);
-    vize_croquis::facts::component_usage_list(summary)
-        .iter()
-        .any(|usage| usage.start == element.loc.span.start && usage.name.as_str() == alias.as_str())
-        .then(|| vize_carton::cstr!("typeof {alias}"))
+        // The inference-only alias for a complex root target lives inside the
+        // template closure, while this registry is declared in setup scope.
+        // Project supported target unions directly from the retained AST so
+        // the registry never names that inner alias.
+        let alias = vize_croquis::drawer::dynamic_component_alias(element.loc.span.start);
+        let owns_alias = vize_croquis::facts::component_usage_list(summary)
+            .iter()
+            .any(|usage| {
+                usage.start == element.loc.span.start && usage.name.as_str() == alias.as_str()
+            });
+        if owns_alias {
+            let retained = expression.js_ast?.as_expression()?;
+            return dynamic_component_target_type(retained.ast);
+        }
+    }
+    None
+}
+
+fn dynamic_component_target_type(expression: &Expression<'_>) -> Option<String> {
+    match expression {
+        Expression::Identifier(identifier) => {
+            Some(vize_carton::cstr!("typeof {}", identifier.name))
+        }
+        Expression::StringLiteral(literal) => {
+            let mut reference = String::new();
+            push_ts_string_literal(&mut reference, literal.value.as_str());
+            Some(reference)
+        }
+        Expression::ConditionalExpression(conditional) => {
+            let consequent = dynamic_component_target_type(&conditional.consequent)?;
+            let alternate = dynamic_component_target_type(&conditional.alternate)?;
+            Some(vize_carton::cstr!("{consequent} | {alternate}"))
+        }
+        Expression::ParenthesizedExpression(parenthesized) => {
+            dynamic_component_target_type(&parenthesized.expression)
+        }
+        Expression::TSAsExpression(assertion) => {
+            dynamic_component_target_type(&assertion.expression)
+        }
+        Expression::TSSatisfiesExpression(satisfies) => {
+            dynamic_component_target_type(&satisfies.expression)
+        }
+        Expression::TSNonNullExpression(non_null) => {
+            dynamic_component_target_type(&non_null.expression)
+        }
+        _ => None,
+    }
 }
 
 fn is_ascii_identifier(segment: &str) -> bool {
