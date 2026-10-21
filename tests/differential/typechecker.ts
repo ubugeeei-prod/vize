@@ -48,6 +48,7 @@ export const TYPECHECKER_TESTS = {
   "native-pointer-events-original": "native_click_events_preserve_pointer_event_diagnostics",
   "workspace-alias-cache-10063": "workspace_package_alias_cache_preserves_sequential_scopes",
   "component-render-h-props-9855": "imported_sfc_h_calls_check_missing_and_wrong_props",
+  "content-mapper-diagnostics-10187": "content_mapper_diagnostics_keep_single_public_owners",
   "component-listener-alias-scope-10112": "component_listener_aliases_stay_inside_guard_scope",
   "content-mapper-duplicate-attributes-10184":
     "content_mapper_isolates_duplicate_class_and_style_attribute_probes",
@@ -101,6 +102,7 @@ const sourceRevisions = {
   "dynamic-directive-expression-mapping-10182": "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
   "content-mapper-template-expression-syntax": "a5ae4d313fa333c8bc7168d5da4acf3dc2bb8ee3",
   "content-mapper-const-enum-import": "506529117573a96880435dd6466cfd7cf81fdc92",
+  "content-mapper-diagnostics-10187": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
   "content-mapper-dynamic-template-ref-10198": "b7fb3a9aefd31002b8b2d449695a9e14d657654a",
   "content-mapper-dynamic-template-ref-union-10251": "6817c853ca1740fd1070c0ec462c0d457f339c2c",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;

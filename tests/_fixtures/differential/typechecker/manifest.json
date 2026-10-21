@@ -3246,6 +3246,64 @@
       }
     },
     {
+      "id": "typechecker/content-mapper-diagnostics-10187/duplicate-and-missing-props",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "content-mapper-diagnostics-10187",
+      "case": "duplicate-and-missing-props",
+      "test": "content_mapper_diagnostics_keep_single_public_owners",
+      "regressionCommit": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
+      "sourceRevision": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
+      "packReference": {
+        "path": "content-mapper-diagnostics-10187/cases.json",
+        "sha256": "904183c59444929222f7d44773a7d9188b637858afdb6b15b73c2deba9d693a2"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "content-mapper-diagnostics-10187/tsconfig.json.txt",
+          "sha256": "f2256ce256e05fcef921d4fc459159b8d837c9140b628ba3065fa81ace035fad"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "content-mapper-diagnostics-10187/src/App.vue.txt",
+          "sha256": "67186cf948c0e3303b0775b9349878b2f52206f3d3574a08995f4b226eeb1608"
+        },
+        {
+          "file": "src/Child.vue",
+          "path": "content-mapper-diagnostics-10187/src/Child.vue.txt",
+          "sha256": "69d097c9d257e384608799cc2cf12bf51ade98e5802123ec9436eb0376f58392"
+        },
+        {
+          "file": "src/ModelChild.vue",
+          "path": "content-mapper-diagnostics-10187/src/ModelChild.vue.txt",
+          "sha256": "0508350cedbcc0cf20e7e330651535f665f8a3af237a3a5d34a5161cc54eca24"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
+    },
+    {
       "id": "typechecker/component-listener-alias-scope-10112/sibling-guarded-listeners",
       "state": "active",
       "targets": [

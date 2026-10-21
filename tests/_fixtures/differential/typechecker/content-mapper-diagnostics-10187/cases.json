@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10187,
+  "regressionCommit": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
+  "sourceRevision": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "duplicate-and-missing-props",
+      "inputs": [
+        { "file": "tsconfig.json", "source": "tsconfig.json.txt" },
+        { "file": "src/App.vue", "source": "src/App.vue.txt" },
+        { "file": "src/Child.vue", "source": "src/Child.vue.txt" },
+        { "file": "src/ModelChild.vue", "source": "src/ModelChild.vue.txt" }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

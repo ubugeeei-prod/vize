@@ -60,11 +60,11 @@ pub(super) fn generate_generic_props_call(
     );
     let check_spread_values = typed_fallthrough_values && !usage.spread_props.is_empty();
     // TypeScript anchors an *argument* assignability failure — `TS2345` — at the
-    // argument expression, which here is the whole object literal and not any
-    // one property. Without a mapping over that range the diagnostic has no
-    // authored position and the diagnostics path drops it silently, which is
-    // what made the `exactOptionalPropertyTypes` check (#3450) fire in the
-    // generated program and report nothing to the user.
+    // opening brace of the object literal. Mapping only that byte gives the
+    // broad failure an authored owner without overlapping the per-property
+    // rows nested inside the literal. Content Mapper forbids overlapping
+    // virtual spans, so mapping the complete literal made its normalizer drop
+    // this tag-name owner and the host fell through to the end of the tag.
     //
     // The per-entry mappings pushed below stay inside this range and remain the
     // anchor for a per-property failure; this one only catches what TypeScript
@@ -112,7 +112,7 @@ pub(super) fn generate_generic_props_call(
         usage,
     ) {
         mappings.push(VizeMapping {
-            gen_range: literal_range,
+            gen_range: literal_range.start..literal_range.start + 1,
             src_range: src_range.clone(),
             sub_spans: Vec::new(),
         });
