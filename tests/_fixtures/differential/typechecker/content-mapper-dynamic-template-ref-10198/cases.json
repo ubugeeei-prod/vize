@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10198,
+  "regressionCommit": "b7fb3a9aefd31002b8b2d449695a9e14d657654a",
+  "sourceRevision": "b7fb3a9aefd31002b8b2d449695a9e14d657654a",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "component-typed-and-member-values",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/MySwitch.vue",
+          "source": "MySwitch.vue.txt"
+        },
+        {
+          "file": "src/MemberSwitch.vue",
+          "source": "MemberSwitch.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

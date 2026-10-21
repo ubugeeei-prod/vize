@@ -11,6 +11,8 @@ const VUE_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_VUE";
 
 #[path = "content_mapper_tsgo_cli/const_enum_import.rs"]
 mod const_enum_import;
+#[path = "content_mapper_tsgo_cli/dynamic_template_refs.rs"]
+mod dynamic_template_refs;
 #[path = "content_mapper_tsgo_cli/incomplete_tags.rs"]
 mod incomplete_tags;
 #[path = "content_mapper_tsgo_cli/template_expression_syntax.rs"]

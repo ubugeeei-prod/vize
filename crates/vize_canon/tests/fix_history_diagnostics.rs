@@ -496,6 +496,17 @@ fn dynamic_directive_expressions_preserve_typed_slot_payloads() {
     );
 }
 
+#[test]
+fn dynamic_template_refs_preserve_batch_acceptance() {
+    check_pack(
+        "content-mapper-dynamic-template-ref-10198",
+        "dynamic_template_refs_preserve_batch_acceptance",
+        "b7fb3a9aefd31002b8b2d449695a9e14d657654a",
+        Some(10198),
+        &["component-typed-and-member-values"],
+    );
+}
+
 fn check_pack(
     name: &str,
     test: &str,
@@ -554,7 +565,8 @@ fn check_pack(
             | "content-mapper-duplicate-attributes-10184"
             | "dynamic-directive-expression-mapping-10182"
             | "content-mapper-template-expression-syntax"
-            | "content-mapper-const-enum-import" => regression,
+            | "content-mapper-const-enum-import"
+            | "content-mapper-dynamic-template-ref-10198" => regression,
             _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
         }
     );
