@@ -224,7 +224,9 @@ export function assessFormatterDeletionShard({
     });
   }
 
-  const formatterProjects = projects.map(({ id }) => id);
+  const formatterProjects = projects
+    .filter((project) => project.formatterCheck.checkedFileCount > 0)
+    .map(({ id }) => id);
   const oracles = {};
   for (const property of properties) {
     const summary = validatePropertyArtifact(

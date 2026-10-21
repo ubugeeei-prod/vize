@@ -34,7 +34,7 @@ function propertyArtifact(property, changes = {}) {
     version: 1,
     property,
     sourceCommit: sourceRevision,
-    projectIds: ["with-vue", "without-vue"],
+    projectIds: ["with-vue"],
     summary,
     waivedDifferences: Array.from({ length: summary.waivedDifferenceCount }, () => ({})),
     baselineUnusable: Array.from({ length: summary.baselineUnusableCount }, () => ({})),
@@ -194,6 +194,10 @@ void test("formatter verifier rejects reduced shards, forged reports and stale i
     formatterCheck: formatterCheck(0),
   });
   reduced.matrix.projects[0].runs[0].fileCount = 0;
+  for (const artifact of Object.values(reduced.propertyArtifacts)) {
+    artifact.projectIds = [];
+    artifact.summary.cleanFileCount = 0;
+  }
   const reducedArtifact = assessFormatterDeletionShard(reduced);
   assert.equal(reducedArtifact.status, "blocked");
   assert(reducedArtifact.blockers.some((blocker) => blocker.code === "formatter-project-scope"));
