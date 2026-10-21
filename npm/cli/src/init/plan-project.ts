@@ -92,9 +92,13 @@ export function planScripts(
   const scripts = { ...detection.scripts } as Record<string, string>;
   for (const name of missing) {
     scripts[name] =
-      name === "vize:check" && detection.framework === "nuxt"
-        ? "nuxt prepare && vize check"
-        : DEFAULT_SCRIPTS[name as keyof typeof DEFAULT_SCRIPTS];
+      name === "vize:fmt" && detection.framework === "nuxt"
+        ? "vize fmt --check app"
+        : name === "vize:fmt:fix" && detection.framework === "nuxt"
+          ? "vize fmt --write app"
+          : name === "vize:check" && detection.framework === "nuxt"
+            ? "nuxt prepare && vize check"
+            : DEFAULT_SCRIPTS[name as keyof typeof DEFAULT_SCRIPTS];
   }
   packageJson.scripts = scripts;
   draft.files.push({
