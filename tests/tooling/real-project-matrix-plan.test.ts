@@ -110,7 +110,7 @@ test("unknown, unavailable or ambiguous source naming fails closed", () => {
 test("scoped diagnostics select exactly one original pinned row without changing full partitions", () => {
   const registry = JSON.parse(readRepoFile(realProjectRegistryPath));
   const full = realProjectMatrix(registry);
-  assert.equal(registry.projects.length, 145);
+  assert.equal(registry.projects.length, 149);
   assert.deepEqual(realProjectMatrix(registry, ""), full);
   for (const [index, project] of registry.projects.entries()) {
     const scoped = realProjectMatrix(registry, project.id);

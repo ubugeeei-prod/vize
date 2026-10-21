@@ -8908,6 +8908,110 @@
       "diff": "curator-compare"
     },
     {
+      "id": "frontend-phpcon-do-website",
+      "displayName": "Frontend PHP Conference 2025",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/frontend-phpcon-do-website",
+      "repository": "https://github.com/frontend-phpcon-do/frontend-phpcon-do-website.git",
+      "revision": "d5b35ab40b4c4ff5b51a94bf1efd656a3e4160a1",
+      "license": {
+        "spdx": "NONE",
+        "files": []
+      },
+      "vueGlobs": [
+        "app/**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt",
+      "note": "Pinned App/VRT corpus. The upstream revision publishes no license file or package SPDX declaration, so this remains an external read-only gitlink with license NONE."
+    },
+    {
+      "id": "npmx",
+      "displayName": "npmx.dev",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/npmx.dev",
+      "repository": "https://github.com/npmx-dev/npmx.dev",
+      "revision": "c9e8be91e61eeeae956e2068722caa09e293cc68",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "app/**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt",
+      "note": "Pinned App/VRT corpus. The ecosystem matrix exercises the same complete app SFC scope as the existing check and lint lanes."
+    },
+    {
+      "id": "nuxt-ui",
+      "displayName": "Nuxt UI",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/nuxt-ui",
+      "repository": "https://github.com/nuxt/ui",
+      "revision": "3dbca020969582d577c7df9698dc8cd484f76dc1",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE.md"
+        ]
+      },
+      "vueGlobs": [
+        "src/**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt",
+      "note": "Pinned App/HMR corpus. The ecosystem matrix exercises the same authored component-library SFC scope as the existing check and lint lanes."
+    },
+    {
+      "id": "vuefes-2025",
+      "displayName": "Vue Fes Japan 2025",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/vuefes-2025",
+      "repository": "https://github.com/vuejs-jp/vuefes-2025-website.git",
+      "revision": "8eff3cd7dd79a7f47bbf2b78202b9aa2070ec5a6",
+      "license": {
+        "spdx": "NONE",
+        "files": []
+      },
+      "vueGlobs": [
+        "app/**/*.vue"
+      ],
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt",
+      "note": "Pinned App/VRT corpus. The upstream revision publishes no license file or package SPDX declaration, so this remains an external read-only gitlink with license NONE."
+    },
+    {
       "id": "n8n",
       "displayName": "n8n",
       "kind": "application",
