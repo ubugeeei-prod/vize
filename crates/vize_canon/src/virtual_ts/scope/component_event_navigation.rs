@@ -303,10 +303,21 @@ fn emit_resolved_events(
         return;
     }
     ts.push_str("{\n");
+    let suppress_probe_diagnostics =
+        crate::virtual_ts::expressions::inference_probe_has_repeatable_attrs(
+            usage,
+            ctx.template_binding_access,
+        );
     for (_, name, value) in crate::virtual_ts::expressions::collect_inference_probe_props(
         usage,
         ctx.template_binding_access,
     ) {
+        if suppress_probe_diagnostics {
+            append!(
+                *ts,
+                "{indent}  // @ts-ignore Repeatable attrs are checked by the mapped prop owner.\n"
+            );
+        }
         append!(*ts, "{indent}  \"{name}\": {value},\n");
     }
     append!(*ts, "{indent}}});\n");
