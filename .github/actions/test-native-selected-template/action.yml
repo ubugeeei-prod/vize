@@ -44,9 +44,13 @@ runs:
         VIZE_RUNTIME_PATCH_FLAGS_CAPTURE: ${{ runner.temp }}/runtime-patch-flags.json
         VIZE_RUNTIME_PATCH_FLAGS_REQUIRE_CAPTURE: "1"
       run: |
-        # The shared target is a build cache, not exact-head evidence. Force the
-        # changed compiler crate to relink before executing source captures.
-        cargo clean -p vize_atelier_core -p vize_atelier_dom
+        # The shared target is a build cache, not exact-head evidence. Make the
+        # compiler and this capture newer than cached fingerprints before Cargo
+        # decides whether to relink the integration test.
+        touch crates/vize_atelier_core/src/codegen/element/block.rs \
+          crates/vize_atelier_core/src/codegen/slots/detect.rs \
+          crates/vize_atelier_core/src/codegen/slots/generate.rs \
+          crates/vize_atelier_dom/tests/runtime_patch_flags.rs
         cargo test -p vize_atelier_dom --profile ci --test integration runtime_patch_flags::
         vp node --test tests/tooling/runtime-patch-flags.test.ts
     - name: Retain runtime patch-flag modules
