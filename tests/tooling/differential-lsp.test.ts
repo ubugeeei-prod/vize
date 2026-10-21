@@ -206,7 +206,7 @@ void test("LSP unavailable executables fail every planned case without trying a 
       sourceRevision: build.sourceRevision,
     });
     assert.equal(report.binary, null);
-    assert.equal(report.summary.legacyFailures, 29);
+    assert.equal(report.summary.legacyFailures, 30);
     assert.equal(report.summary.nativeHandled, 0);
     assert(
       report.rows.every(
