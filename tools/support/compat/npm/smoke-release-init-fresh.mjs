@@ -68,6 +68,13 @@ export function writePostBootstrapFiles(projectRoot, shape) {
   return files;
 }
 
+/** Selects the packed LSP oracle owned by a fresh project shape. */
+export function freshProjectLspShape(shape, authored) {
+  if (authored["src/App.vue"]?.includes(':msg="title"')) return "vite";
+  if (shape.id === "nuxt-vue-ts" && authored["app/app.vue"]?.includes("{{ title }}")) return "nuxt";
+  return undefined;
+}
+
 /**
  * Installs exactly the dependency plan `init` printed.
  *
@@ -220,7 +227,8 @@ function runFreshProjectCell(context, cell) {
   assert.deepEqual(reportedDiagnostics(repaired.report, projectRoot), []);
 
   assertMissingCorsaGuidance(projectRoot, manager);
-  if (authored["src/App.vue"]?.includes(':msg="title"')) runProjectLspSession(projectRoot);
+  const lspShape = freshProjectLspShape(shape, authored);
+  if (lspShape) runProjectLspSession(projectRoot, lspShape);
   console.log(`runtime: fresh ${shape.id} project via ${manager.id} (init, install, check triple)`);
 }
 

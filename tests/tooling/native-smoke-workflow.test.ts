@@ -51,6 +51,40 @@ test("native smoke keeps MoonBit out of the npm fresh install path", () => {
   assert.match(install, /(?:^| )--filter \.(?: |$)/u);
 });
 
+test("one Linux Node 24 row runs the packed Nuxt LSP release graph", () => {
+  const native = parse(readRepoFile(".github", "workflows", "native-smoke.yml")) as {
+    env: Record<string, string>;
+    jobs: Record<
+      string,
+      { steps: Array<{ name?: string; if?: string; run?: string; uses?: string }> }
+    >;
+  };
+  const release = parse(readRepoFile(".github", "workflows", "release.yml")) as {
+    env: Record<string, string>;
+  };
+  assert.equal(native.env.RELEASE_JS_PACKAGES, release.env.RELEASE_JS_PACKAGES);
+
+  const steps = native.jobs["fresh-install-smoke"].steps;
+  const selected =
+    "${{ matrix.platform.target == 'linux-x64-gnu' && matrix.node-version == '24' }}";
+  const other = "${{ matrix.platform.target != 'linux-x64-gnu' || matrix.node-version != '24' }}";
+  const fullBuild = steps.find((step) => step.name === "Build the packed Nuxt release graph");
+  assert.deepEqual(fullBuild, {
+    name: "Build the packed Nuxt release graph",
+    if: selected,
+    uses: "./.github/actions/release-build-packages",
+  });
+  assert.equal(steps.find((step) => step.name === "Build npm runtime packages")?.if, other);
+  assert.equal(
+    steps.find((step) => step.name === "Fresh install and runtime smoke published tarballs")?.if,
+    other,
+  );
+  const nuxt = steps.find((step) => step.name === "Fresh packed Nuxt init, check, and LSP smoke");
+  assert.equal(nuxt?.if, selected);
+  assert.match(nuxt?.run ?? "", /read -ra js <<< "\$RELEASE_JS_PACKAGES"/u);
+  assert.match(nuxt?.run ?? "", /npm\/native npm\/native\/npm\/\* "\$\{js\[@\]\}"/u);
+});
+
 const selected =
   "github.event_name == 'workflow_dispatch' && inputs.host_only && inputs.target == 'darwin-arm64'";
 const workflowFile = () => readRepoFile(".github", "workflows", "native-smoke.yml");
@@ -86,12 +120,13 @@ function authenticateWorkflow(source: string) {
   for (const anchor of [nodeLaws, msvcArch]) assert.equal(source.split(anchor).length, 2);
   assert.doesNotMatch(source, /setup-moonbit|moon (?:run|test)/u);
   const reversed = source.replace(nodeLaws, moonLaws).replace(msvcArch, msvcArch + originalSetup);
-  // Authenticated whole d3b2f527 workflow; all inputs, commands, pins, outputs and other conditions stay exact.
-  const originalDigest = "25d6dfff5052a85bdbd673af0872ee65ed5f72d5dc3dccb5d792dc78ab138ce5";
+  // Authenticated whole workflow, including the single packed Nuxt row; all
+  // inputs, commands, pins, outputs and other conditions stay exact.
+  const originalDigest = "89a0cdf0739297cbe3f5ed596fc1c81d2d8b1ada3eb2647e36b74427117a1ad1";
   assert.equal(createHash("sha256").update(reversed).digest("hex"), originalDigest);
 }
 
-void test("the complete original workflow changes only the setup predicate and ported token laws", () => {
+void test("the complete workflow retains the original setup and token-law provenance", () => {
   const source = workflowFile();
   authenticateWorkflow(source);
   for (const removed of [

@@ -41,6 +41,10 @@ const extraNames = [
   "Capture selected native image authority",
   "Preserve selected native image",
 ];
+const packedNuxtNames = [
+  "Build the packed Nuxt release graph",
+  "Fresh packed Nuxt init, check, and LSP smoke",
+];
 const moonSelector =
   "github.event_name == 'workflow_dispatch' && inputs.host_only && inputs.target == 'darwin-arm64'";
 
@@ -50,7 +54,9 @@ function authenticateDefaultJob(name: string, configured: Job) {
     condition,
     "github.event_name != 'workflow_dispatch' || !inputs.host_only || inputs.target != 'darwin-arm64'",
   );
-  const steps = job.steps.filter((step) => !extraNames.includes(step.name ?? ""));
+  let steps = job.steps
+    .filter((step) => !extraNames.includes(step.name ?? ""))
+    .map((step) => ({ ...step }));
   assert.equal(
     steps.some((step) => step.uses === "./.github/actions/setup-moonbit"),
     false,
@@ -87,6 +93,15 @@ function authenticateDefaultJob(name: string, configured: Job) {
       uses: "./.github/actions/setup-moonbit",
       if: "matrix.target != 'darwin-x64'",
     });
+  } else {
+    steps = steps.filter((step) => !packedNuxtNames.includes(step.name ?? ""));
+    for (const step of steps) {
+      if (
+        step.name === "Build npm runtime packages" ||
+        step.name === "Fresh install and runtime smoke published tarballs"
+      )
+        delete step.if;
+    }
   }
   assert.deepEqual(
     { ...job, steps },
