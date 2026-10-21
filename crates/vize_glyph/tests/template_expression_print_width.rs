@@ -1,10 +1,10 @@
 //! Original inputs and independent whole references for nested directive calls.
 use std::{error::Error, fs, path::Path};
-use vize_glyph::{FormatOptions, format_sfc};
+use vize_glyph::{format_sfc, FormatOptions};
 
 #[test]
-fn directive_calls_observe_actual_indentation_and_three_public_fixed_points()
--> Result<(), Box<dyn Error>> {
+fn directive_calls_observe_actual_indentation_and_three_public_fixed_points(
+) -> Result<(), Box<dyn Error>> {
     let corpus: serde_json::Value = serde_json::from_str(include_str!(
         "../../../tests/_fixtures/differential/formatter-regressions/expression-print-width-7876/corpus.json"
     ))?;
@@ -64,6 +64,44 @@ fn standalone_directive_expressions_observe_their_actual_indentation() -> Result
               store.progressOfTheView
                 .selectedIndexOfThePaginationInTheCurrentView.value
             "
+            :data-total="currentItem.primaryValue + currentItem.secondaryValue + currentItem.tertiaryValue"
+            class="row"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+"#;
+    let expected = r#"<template>
+  <div>
+    <div>
+      <div>
+        <div>
+          <div
+            v-if="
+              modeStore.get() ===
+              DisplayMode.BulkUpdateOfTheSelectedRowsInTheCurrentView
+            "
+            v-show="
+              isTheSelectedRowVisible &&
+              isTheOtherRowVisibleInTheCurrentView &&
+              true
+            "
+            :title="
+              selectedRowOwner?.displayName ??
+              fallbackOwnerDisplayNameForRows ??
+              '-'
+            "
+            :data-index="
+              store.progressOfTheView
+                .selectedIndexOfThePaginationInTheCurrentView.value
+            "
+            :data-total="
+              currentItem.primaryValue +
+              currentItem.secondaryValue +
+              currentItem.tertiaryValue
+            "
             class="row"
           />
         </div>
@@ -81,7 +119,7 @@ fn standalone_directive_expressions_observe_their_actual_indentation() -> Result
     let first = format_sfc(source, &options)?;
     let second = format_sfc(&first.code, &options)?;
 
-    assert_eq!(first.code.as_str(), source);
+    assert_eq!(first.code.as_str(), expected);
     assert_eq!(first.code, second.code, "fmt; fmt must be a no-op");
     Ok(())
 }
