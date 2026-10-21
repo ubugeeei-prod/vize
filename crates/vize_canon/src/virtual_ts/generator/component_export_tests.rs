@@ -1,4 +1,5 @@
 use super::{emit_component_default_export, generic::strip_synthetic_any_defaults};
+use vize_carton::String;
 
 #[test]
 fn filename_export_does_not_shadow_authored_setup_globals() {
