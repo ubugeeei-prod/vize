@@ -12,7 +12,7 @@ test("real-project workflow schedules every balanced fixture shard nightly", () 
   const workflow = readRealProjectMatrixWorkflow();
   const job = workflow.jobs?.["real-project-matrix"];
   assert.ok(job);
-  assert.deepEqual(workflow.permissions, { contents: "read", issues: "write" });
+  assert.deepEqual(workflow.permissions, { contents: "read" });
   assert.equal(workflow.on?.schedule?.[0]?.cron, "37 5 * * *");
   const dispatch = workflow.on?.workflow_dispatch;
   assert.ok(dispatch, "Missing workflow_dispatch trigger");

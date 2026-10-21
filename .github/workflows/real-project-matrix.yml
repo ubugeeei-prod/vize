@@ -88,7 +88,6 @@ concurrency:
 
 permissions:
   contents: read
-  issues: write
 env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
