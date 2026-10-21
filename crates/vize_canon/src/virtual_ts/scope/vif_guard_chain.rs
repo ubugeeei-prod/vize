@@ -16,7 +16,7 @@
 //! followed by `P` does not let TypeScript recover `!A`. Each condition still
 //! appears once and sibling exclusions flow through the inner chain.
 
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 
 use vize_carton::{String, append};
 
@@ -31,16 +31,35 @@ struct ClosedGuard {
     base: Vec<String>,
     /// Every term of the guard the closed block was opened with.
     terms: Vec<String>,
+    block: u64,
 }
 
 struct OpenGuard {
     base: Vec<String>,
     terms: Vec<String>,
+    /// Identity of the emitted TypeScript block. A reopened block keeps it.
+    block: u64,
 }
 
 thread_local! {
     static OPEN: RefCell<Option<OpenGuard>> = const { RefCell::new(None) };
     static CLOSED: RefCell<Option<ClosedGuard>> = const { RefCell::new(None) };
+    static NEXT_BLOCK: Cell<u64> = const { Cell::new(0) };
+}
+
+/// The emitted block a check written right now lands in, if it is guarded.
+/// Declarations made in one block are not visible from another block with the
+/// same guard, so anything shared between checks must be keyed by it.
+pub(crate) fn open_chained_vif_guard_block() -> Option<u64> {
+    OPEN.with(|open| open.borrow().as_ref().map(|open| open.block))
+}
+
+fn next_block() -> u64 {
+    NEXT_BLOCK.with(|next| {
+        let block = next.get();
+        next.set(block + 1);
+        block
+    })
 }
 
 /// Open a guarded check block, folding it into the block closed right before
@@ -57,6 +76,7 @@ pub(crate) fn append_chained_vif_guard_open(
         .map(String::from)
         .collect();
     let previous = CLOSED.with(|closed| closed.borrow_mut().take());
+    let mut block = None;
     let base = match previous {
         Some(previous) if follows_directly(&previous, ts, indent) => {
             match continuation(&previous.terms, &terms) {
@@ -67,6 +87,7 @@ pub(crate) fn append_chained_vif_guard_open(
                         previous.closed_at,
                         closing_blocks(&previous.base),
                     );
+                    block = Some(previous.block);
                     previous.base
                 }
                 Some(Continuation::NextBranch(own)) => {
@@ -91,7 +112,8 @@ pub(crate) fn append_chained_vif_guard_open(
         }
         _ => open_fresh(ts, indent, guard, purpose, &terms),
     };
-    OPEN.with(|open| *open.borrow_mut() = Some(OpenGuard { base, terms }));
+    let block = block.unwrap_or_else(next_block);
+    OPEN.with(|open| *open.borrow_mut() = Some(OpenGuard { base, terms, block }));
 }
 
 /// Close a block opened by [`append_chained_vif_guard_open`].
@@ -109,6 +131,7 @@ pub(crate) fn append_chained_vif_guard_close(ts: &mut String, indent: &str) {
             indent: String::from(indent),
             base: open.base,
             terms: open.terms,
+            block: open.block,
         });
     });
 }
