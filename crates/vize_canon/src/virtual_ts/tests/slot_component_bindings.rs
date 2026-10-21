@@ -163,7 +163,7 @@ type BadgeInstance = typeof ElBadge
 
     assert!(
         output.code.contains(
-            "declare const __VizeComponent_el_badge: import(\"vue\").GlobalComponents extends { \"el-badge\": infer __C } ? __C : import(\"vue\").GlobalComponents extends { \"ElBadge\": infer __C } ? __C : any;"
+            "declare const __VizeComponent_el_badge: __VizeGlobalComponent<\"el-badge\", \"ElBadge\"> & __VizeGlobalComponentFallback;"
         ),
         "{}",
         output.code,
@@ -203,9 +203,9 @@ fn unresolved_slot_host_uses_vue_global_components_fallback() {
         generate_virtual_ts_with_offsets(&summary, None, Some(&root), 0, 0, &Default::default());
 
     assert!(
-        output.code.contains(
-            "declare const el_badge: import(\"vue\").GlobalComponents extends { \"el-badge\": infer __C } ? __C : import(\"vue\").GlobalComponents extends { \"ElBadge\": infer __C } ? __C : any;"
-        ),
+        output
+            .code
+            .contains("declare const el_badge: __VizeGlobalComponent<\"el-badge\", \"ElBadge\"> & __VizeGlobalComponentFallback;"),
         "{}",
         output.code,
     );

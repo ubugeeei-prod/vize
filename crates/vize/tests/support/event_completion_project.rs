@@ -220,7 +220,9 @@ impl Project {
         if lf {
             assert_eq!(
                 observed.historical_query_position,
-                21_367
+                // #10185 extends the global component prelude by 132 UTF-16
+                // code units while retaining the parent navigation helper.
+                21_499
                     + witness::public_input_prelude_utf16_delta()
                     + witness::component_navigation_helper_utf16_len()
             );

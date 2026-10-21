@@ -201,7 +201,12 @@ impl<'a> GlobalComponentPlan<'a> {
             }
 
             if !has_header {
-                ts.push_str("\n// Global component stubs (vue module augmentations)\n");
+                ts.push_str(concat!(
+                    "\n// Global component stubs (vue module augmentations)\n",
+                    "type __VizeGlobalComponent<__K extends PropertyKey, __F extends PropertyKey = __K, __G = import(\"vue\").GlobalComponents, ",
+                    "__C = __K extends keyof __G ? __G[__K] : __F extends keyof __G ? __G[__F] : any> = unknown extends __C ? any : __C;\n",
+                    "type __VizeGlobalComponentFallback = (props: Record<string, unknown>, ...args: any[]) => any;\n",
+                ));
                 has_header = true;
             }
 
@@ -250,14 +255,14 @@ fn append_global_component_stub(
 ) {
     append!(
         *ts,
-        "declare const {component_ref}: import(\"vue\").GlobalComponents extends {{ \"{name}\": infer __C }} ? __C"
+        "declare const {component_ref}: __VizeGlobalComponent<\"{name}\""
     );
     if pascal_name == name {
-        ts.push_str(" : any;\n");
+        ts.push_str("> & __VizeGlobalComponentFallback;\n");
     } else {
         append!(
             *ts,
-            " : import(\"vue\").GlobalComponents extends {{ \"{pascal_name}\": infer __C }} ? __C : any;\n"
+            ", \"{pascal_name}\"> & __VizeGlobalComponentFallback;\n"
         );
     }
 }

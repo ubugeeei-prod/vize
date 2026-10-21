@@ -677,9 +677,11 @@ fn test_unknown_pascal_component_props_use_the_ambient_fallback() {
         &VirtualTsOptions::default(),
     );
 
-    assert!(output.code.contains(
-        "declare const AutoCard: import(\"vue\").GlobalComponents extends { \"AutoCard\": infer __C } ? __C : any;"
-    ));
+    assert!(
+        output
+            .code
+            .contains("declare const AutoCard: __VizeGlobalComponent<\"AutoCard\"> & __VizeGlobalComponentFallback;")
+    );
     assert!(output.code.contains("type __AutoCard_Props_0"));
     assert!(output.code.contains("__AutoCard_Check_0"));
 }
