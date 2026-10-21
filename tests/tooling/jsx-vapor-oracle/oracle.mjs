@@ -44,7 +44,11 @@ for (const key of [
 }
 
 const require = createRequire(import.meta.url);
-const vueVaporEntry = require.resolve("vue/dist/vue.runtime-with-vapor.esm-browser.js");
+// The development browser build prints a banner to stdout during module
+// evaluation, which would corrupt the machine-readable receipt consumed by
+// the Rust oracle. Production and reference output must share this exact
+// runtime entry so stdout remains a single JSON document.
+const vueVaporEntry = require.resolve("vue/dist/vue.runtime-with-vapor.esm-browser.prod.js");
 const Vue = await import(pathToFileURL(vueVaporEntry));
 const { transformVueJsxVapor } = await import("vue-jsx-vapor/api");
 
