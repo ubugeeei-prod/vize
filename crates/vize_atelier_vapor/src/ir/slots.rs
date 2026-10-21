@@ -62,7 +62,7 @@ impl<'a> IRSlot<'a> {
     }
 
     pub(crate) fn dynamic(&self) -> bool {
-        self.forwarded_source().is_none() && (!self.name.is_static || self.control.is_some())
+        !self.name.is_static || self.control.is_some()
     }
 
     /// All branch bodies, including the final unconditional branch.
