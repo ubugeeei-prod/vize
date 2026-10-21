@@ -33,9 +33,10 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
       planned.initializationOptions,
       data.initializationOptions ?? {
         editor: true,
-        lint: false,
-        typecheck: false,
+        lint: data.method === "textDocument/codeAction",
+        typecheck: data.initializationOptions?.typecheck === true,
         ...(data.method === "textDocument/onTypeFormatting" ? { formatting: true } : {}),
+        ...(data.method === "textDocument/codeAction" ? { codeActions: true } : {}),
       },
     );
     if (data.initializationOptions) {
@@ -99,8 +100,10 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
       readPinnedArtifact(packRoot, data.provenance.witness);
       requests = [{ params: {}, result: expected }];
     } else if (data.method === "textDocument/codeAction") {
-      assert(Array.isArray(expected) && expected.length === 2, "both script rules are required");
-      requests = expected as LspFixture["requests"];
+      assert(Array.isArray(expected) && expected.length === 2, "both actions are required");
+      requests = data.request
+        ? [{ ...data.request, result: expected }]
+        : (expected as LspFixture["requests"]);
     } else {
       assert.equal(data.method, "textDocument/onTypeFormatting", "unregistered LSP method");
       assert.deepEqual(data.options, { tabSize: 2, insertSpaces: true });
@@ -123,7 +126,10 @@ export function materializeWorkspace(value: unknown, workspaceUri: string): unkn
   if (Array.isArray(value)) return value.map((item) => materializeWorkspace(item, workspaceUri));
   if (value && typeof value === "object") {
     return Object.fromEntries(
-      Object.entries(value).map(([key, item]) => [key, materializeWorkspace(item, workspaceUri)]),
+      Object.entries(value).map(([key, item]) => [
+        key.replaceAll("${workspace}", workspaceUri),
+        materializeWorkspace(item, workspaceUri),
+      ]),
     );
   }
   return value;

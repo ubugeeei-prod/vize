@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "id": "lsp/fix-history/code-action-utf16-original",
+  "provenance": {
+    "fixCommit": "4671a8c0f9c4d0127aba18aa2a108f2e6152de6a",
+    "witnessPath": "tests/tooling/lsp-smoke.test.ts",
+    "witnessTest": "vize lsp code actions return UTF-16 quick fix edit ranges",
+    "inputOrigin": "exact source bytes from the original fix test",
+    "contractOrigin": "source-derived UTF-16 range and complete ordered code-action response"
+  },
+  "input": {
+    "source": "CodeActionUtf16.vue.txt",
+    "runtimePath": "CodeActionUtf16.vue",
+    "sha256": "4e334c5f8bdef19e5e77408a7aff23ef11f57362c5171401f6a5f5932c3fc1fd"
+  },
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": false,
+    "codeActions": true
+  },
+  "entry": "CodeActionUtf16.vue",
+  "documentVersion": 1,
+  "method": "textDocument/codeAction",
+  "request": {
+    "params": {
+      "range": {
+        "start": {
+          "line": 1,
+          "character": 17
+        },
+        "end": {
+          "line": 1,
+          "character": 19
+        }
+      },
+      "context": {
+        "diagnostics": []
+      }
+    }
+  },
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "1c0be473aa18dbd49b480b24c9375b40982400fcc64110cbad221149a68cc2ec"
+  },
+  "scope": "original input and complete current stdio response with an empty diagnostic context; original published diagnostic context and broader fix remain pending"
+}
