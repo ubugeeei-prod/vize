@@ -5,7 +5,8 @@
     "**/*.mts",
     "**/*.cts",
     "../vite.config.ts",
-    "../examples/oxlint-vize/check-configs.ts"
+    "../examples/oxlint-vize/check-configs.ts",
+    "../npm/compose/core/scripts/check-size.ts"
   ],
   "exclude": ["**/node_modules/**", "support/compat/*/fixtures/**"]
 }

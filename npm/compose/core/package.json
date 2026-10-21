@@ -980,7 +980,7 @@
     "check": "vp check src scripts vite.config.ts && pnpm check:types",
     "check:fix": "vp check --fix src scripts vite.config.ts",
     "build:registry": "vp exec node scripts/build-source-registry.ts",
-    "check:size": "node scripts/check-size.mjs",
+    "check:size": "node scripts/check-size.ts",
     "check:types": "vp exec tsc --noEmit -p tsconfig.json",
     "check:conformance": "vp exec node scripts/check-conformance.ts",
     "fmt": "vp fmt --write src scripts vite.config.ts"
