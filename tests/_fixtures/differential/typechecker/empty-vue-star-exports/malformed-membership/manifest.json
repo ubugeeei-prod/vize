@@ -21,8 +21,8 @@
       "file": "malformed-membership/part-01.json",
       "mode": "100644",
       "bytes": 7105,
-      "sha256": "d587b8b5fa1fb10fac8fbbad166351fa5861f785b935efc4c4676cc3d8ccf5b7",
-      "gitBlob": "204f1da9007a17c9c3f2ff6dd4d3d74be1be99a8",
+      "sha256": "39835ecc5d7e4d08c079230e436c7b30dc4dd18391814fc95e1f3d2166f2b01f",
+      "gitBlob": "5527050a3e6642e1f68159343a11a3563e05e862",
       "start": 43,
       "entries": 43
     }
@@ -274,6 +274,54 @@
         "actualMembership": "all86 whole bodies/order retained; old committed reference differs exactly74/75, which equal the prior sealed40-byte footer candidates; helper82 equals observed29096/e1d0; other83 bodies and provider manifests equal historical actual bodies",
         "originalJobConclusion": "failure; membership refused old74/75 before latercase assertions; native TS1109 remains observation, no semantic-green credit"
       }
+    },
+    "importedSfcPropsRevision": {
+      "status": "ACTUAL_SOURCE_NATIVE_CAPTURE",
+      "source": "5d6660896f95a889d5ac7e487a7d599c75e1213d",
+      "run": 39584988061,
+      "job": 119171776713,
+      "artifact": 12338129651,
+      "artifactSHA256": "bbab674b367a3785c0135bce99847c4997d046e4fade7b5734a36c3750c93e10",
+      "member": "native-syntax-semantics/empty-vue-star-exports/malformed-refusal.json",
+      "wholePacketSHA256": "9082fba5badf21276d24a578296734afddb88cf835282f511eb3636682fd5244",
+      "priorManifestSHA256": "578f2a9858e6fc9c4dc4f37e7ecbcade065e57fb75d52da13b02db02d920ea4f",
+      "entries": [
+        {
+          "entry": 74,
+          "before": [
+            "project/A.vue.ts",
+            4571,
+            "31ccdf3a6d6105eb101dad0772cf795293bfbf1d90f431032ae8af1a17687c06"
+          ],
+          "after": [
+            "project/A.vue.ts",
+            4621,
+            "eddc2faf6b97a21df641561e9d463adf2f4c3cc5d1d82aff92d54993308296f4"
+          ],
+          "deltaBytes": 50
+        },
+        {
+          "entry": 75,
+          "before": [
+            "project/B.vue.ts",
+            4795,
+            "f0bdb683dd536fff491d3c67bac7b29fb6d8609f1759e01dc3d9840e189dd863"
+          ],
+          "after": [
+            "project/B.vue.ts",
+            4845,
+            "2dcd9d1cf8d7c54fa42764f2d574ead8f29fa930c48df3e9b7662e2871e2d209"
+          ],
+          "deltaBytes": 50
+        }
+      ],
+      "sourceChange": {
+        "path": "crates/vize_canon/src/virtual_ts/generator/component_export.rs",
+        "sourceSHA256": "f77fe7bf4d3ff735e5c5e51b5be08926c56e27641dab7b331a18d04ac3af1dd5",
+        "changes": "Each nongeneric A/B options contract replaces setup:any with a precise readonly raw-props parameter; 50 bytes per module."
+      },
+      "proof": "The complete actual 86-member source-native packet differs only at entries74/75. Both generated/materialized/native-loaded bodies have the recorded exact lengths and SHA256; the other84 rooted references, bodies and order are unchanged.",
+      "scope": "The source-native run intentionally failed the preceding membership reference after preserving the complete packet. The malformed TS1109 response remains an observation; no semantic-green or release acceptance is credited until the renewed exact-head run passes all assertions."
     }
   }
 }
