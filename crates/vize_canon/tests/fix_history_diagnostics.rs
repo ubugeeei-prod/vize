@@ -818,36 +818,36 @@ fn check_pack(
                 ("src/main.ts", "@demo/ui"),
                 ("packages/ui/src/MyButton.vue", "@demo/core"),
             ]
-                .into_iter()
-                .map(|(importer, specifier)| {
-                    let importer = project_root.join(importer);
-                    let (context, mut context_inputs) = resolver.resolution_context(
-                        &importer,
-                        PackageResolutionMode::Import,
-                        Some("bundler"),
-                        Some("esnext"),
-                        std::iter::empty::<&str>(),
-                    );
-                    let (route, mut invalidation_paths) = resolver
-                        .lookup_with_context(
-                            importer.parent().expect("the importer must have a parent"),
-                            specifier,
-                            PackageSourceOptions::new(false, false),
-                            context.clone(),
-                        )
-                        .into_parts();
-                    invalidation_paths.append(&mut context_inputs);
-                    PackageRouteBinding {
-                        importer_path: importer.clone(),
-                        specifier: specifier.into(),
-                        occurrence_mode: PackageResolutionMode::Import,
-                        context,
-                        route: Some(route.expect("the fixture package route must resolve")),
-                        invalidation_paths,
-                        shared_invalidation_paths: Vec::new(),
-                    }
-                })
-                .collect::<Vec<_>>();
+            .into_iter()
+            .map(|(importer, specifier)| {
+                let importer = project_root.join(importer);
+                let (context, mut context_inputs) = resolver.resolution_context(
+                    &importer,
+                    PackageResolutionMode::Import,
+                    Some("bundler"),
+                    Some("esnext"),
+                    std::iter::empty::<&str>(),
+                );
+                let (route, mut invalidation_paths) = resolver
+                    .lookup_with_context(
+                        importer.parent().expect("the importer must have a parent"),
+                        specifier,
+                        PackageSourceOptions::new(false, false),
+                        context.clone(),
+                    )
+                    .into_parts();
+                invalidation_paths.append(&mut context_inputs);
+                PackageRouteBinding {
+                    importer_path: importer.clone(),
+                    specifier: specifier.into(),
+                    occurrence_mode: PackageResolutionMode::Import,
+                    context,
+                    route: Some(route.expect("the fixture package route must resolve")),
+                    invalidation_paths,
+                    shared_invalidation_paths: Vec::new(),
+                }
+            })
+            .collect::<Vec<_>>();
             checker.set_package_route_resolver(resolver);
             checker.set_package_routes(bindings);
         }
