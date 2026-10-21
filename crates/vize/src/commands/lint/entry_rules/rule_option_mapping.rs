@@ -93,7 +93,7 @@ pub(super) fn v_on_style(
 pub(super) fn v_slot_style(
     style: vize_l0::config::VSlotStyle,
 ) -> vize_patina::rules::vue::VSlotStyle {
-    use vize_l0::config::{VSlotNamedStyle, VSlotStyle, VSlotStyleValue, VSlotUniformStyle};
+    use vize_l0::config::{VSlotNamedStyle, VSlotStyle, VSlotUniformStyle};
     use vize_patina::rules::vue::{VSlotStyle as PatinaVSlotStyle, VSlotStyleOption};
 
     match style {
