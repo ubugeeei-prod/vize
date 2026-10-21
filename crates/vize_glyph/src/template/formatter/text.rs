@@ -13,7 +13,7 @@ use vize_l0::String;
 impl TemplateFormatter<'_> {
     /// Flush accumulated text content with interpolation formatting.
     #[inline]
-    pub(super) fn flush_text_buffer<const HAS_CR: bool>(
+    pub(super) fn flush_text_buffer(
         &self,
         output: &mut Vec<u8>,
         text: &mut TextRun,
@@ -52,7 +52,7 @@ impl TemplateFormatter<'_> {
             && let Some(rewrapped) =
                 self.rewrap_text_with_multiline_interpolation(&formatted, depth)
         {
-            let join = joiner.open::<HAS_CR>(start);
+            let join = joiner.open(start);
             if join.is_continuation() {
                 self.open_chunk(output, depth, join);
                 let indent_len = self.indent.len() * depth;
@@ -67,7 +67,7 @@ impl TemplateFormatter<'_> {
             joiner.finish(end);
             return;
         }
-        self.open_chunk(output, depth, joiner.open::<HAS_CR>(start));
+        self.open_chunk(output, depth, joiner.open(start));
         if self.write_wrapped_hugged_child(output, &formatted, start, end, depth, joiner) {
             joiner.finish(end);
             return;

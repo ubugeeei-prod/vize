@@ -105,10 +105,10 @@ impl<'a> TemplateFormatter<'a> {
                     memchr::memchr(b'\n', sub_slice(source, pos..end_pos)).is_some()
                 }
             {
-                self.flush_text_buffer::<HAS_CR>(&mut output, &mut text, depth, &mut joiner);
+                self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
                 let expr = input.get(expr_start..expr_end).unwrap_or_default();
                 let depth = joiner.interpolation_depth(pos, end_pos, depth);
-                self.open_chunk(&mut output, depth, joiner.open::<HAS_CR>(pos));
+                self.open_chunk(&mut output, depth, joiner.open(pos));
                 self.write_multiline_interpolation(&mut output, expr, depth);
                 joiner.finish(end_pos);
                 pos = end_pos;
@@ -117,9 +117,9 @@ impl<'a> TemplateFormatter<'a> {
 
             // HTML comment <!-- ... -->
             if pos + 3 < len && sub_slice(source, pos..pos + 4) == b"<!--" {
-                self.flush_text_buffer::<HAS_CR>(&mut output, &mut text, depth, &mut joiner);
+                self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
                 let comment_start = pos;
-                let join = joiner.open::<HAS_CR>(comment_start);
+                let join = joiner.open(comment_start);
                 if let Some(end_offset) = find_bytes(sub_slice(source, pos..), b"-->") {
                     let comment_end = pos + end_offset + 3;
                     self.open_chunk(&mut output, depth, join);
@@ -144,8 +144,8 @@ impl<'a> TemplateFormatter<'a> {
                     && byte_at(source, pos + 1) == b'/'
                     && let Some((tag_name, end_pos)) = parse_closing_tag(input, pos)
                 {
-                    self.flush_text_buffer::<HAS_CR>(&mut output, &mut text, depth, &mut joiner);
-                    let join = joiner.open::<HAS_CR>(pos);
+                    self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
+                    let join = joiner.open(pos);
                     depth = depth.saturating_sub(1);
                     self.open_chunk(&mut output, depth, join);
                     output.extend_from_slice(b"</");
@@ -166,8 +166,8 @@ impl<'a> TemplateFormatter<'a> {
                 if let Some((tag_name, attrs, is_self_closing, end_pos)) =
                     self.parse_opening_tag(input, pos, depth)
                 {
-                    self.flush_text_buffer::<HAS_CR>(&mut output, &mut text, depth, &mut joiner);
-                    let join = joiner.open::<HAS_CR>(pos);
+                    self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
+                    let join = joiner.open(pos);
                     let mut sorted_attrs = attrs;
                     if self.options.sort_attributes {
                         sort_attributes(&mut sorted_attrs, self.options);
@@ -310,13 +310,13 @@ impl<'a> TemplateFormatter<'a> {
             if pos < len
                 && (byte_at(source, pos) == b'\n' || (HAS_CR && byte_at(source, pos) == b'\r'))
             {
-                self.flush_text_buffer::<HAS_CR>(&mut output, &mut text, depth, &mut joiner);
+                self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
                 pos += 1;
             }
         }
 
         // Flush remaining content
-        self.flush_text_buffer::<HAS_CR>(&mut output, &mut text, depth, &mut joiner);
+        self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
 
         // Remove trailing newline for consistency
         while output.last().is_some_and(|&b| b == b'\n' || b == b'\r') {
