@@ -3506,6 +3506,58 @@
       }
     },
     {
+      "id": "typechecker/content-mapper-dynamic-template-ref-10198/component-typed-and-member-values",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "content-mapper-dynamic-template-ref-10198",
+      "case": "component-typed-and-member-values",
+      "test": "dynamic_template_refs_preserve_batch_acceptance",
+      "regressionCommit": "b7fb3a9aefd31002b8b2d449695a9e14d657654a",
+      "sourceRevision": "b7fb3a9aefd31002b8b2d449695a9e14d657654a",
+      "packReference": {
+        "path": "content-mapper-dynamic-template-ref-10198/cases.json",
+        "sha256": "2f01b0f513c763e048514710ca792a9b3af43f30ff6cbe3b7fe7a1921a9f416b"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "content-mapper-dynamic-template-ref-10198/tsconfig.json.txt",
+          "sha256": "bed6b6f5f33d8a7d30e8f6c3585d833486637812a78150f3a177ab2009ae5175"
+        },
+        {
+          "file": "src/MySwitch.vue",
+          "path": "content-mapper-dynamic-template-ref-10198/MySwitch.vue.txt",
+          "sha256": "1ddf47e4c91b5bd09bf60a4104deaa5db3d95aa84e502169cca62a98794c0b3d"
+        },
+        {
+          "file": "src/MemberSwitch.vue",
+          "path": "content-mapper-dynamic-template-ref-10198/MemberSwitch.vue.txt",
+          "sha256": "46c7b4168bd81989c0a1f7d314ca00acf73b318d88fdf3caf3e480f3cb8f9236"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/content-mapper-type-only-import-use/inferred-type-only-imports",
       "state": "active",
       "targets": [

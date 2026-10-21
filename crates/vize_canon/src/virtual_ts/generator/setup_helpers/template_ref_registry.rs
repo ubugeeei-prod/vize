@@ -63,7 +63,7 @@ enum RegisteredRefKind {
         is_svg: bool,
     },
     Component {
-        reference: String,
+        reference_type: String,
         /// Template-relative start of the element, the identity of its usage.
         start: u32,
     },
@@ -141,11 +141,15 @@ pub(super) fn template_ref_registry(
                     append!(target, "__VizeDomElement<{tag_literal}{svg_argument}>");
                     false
                 }
-                RegisteredRefKind::Component { reference, start } => {
+                RegisteredRefKind::Component {
+                    reference_type,
+                    start,
+                } => {
                     includes_component = true;
                     let declared =
-                        vize_carton::cstr!("__VizeTemplateComponentRef<typeof {reference}>");
-                    target = record.ref_instance(*start, declared.as_str(), reference.as_str());
+                        vize_carton::cstr!("__VizeTemplateComponentRef<{reference_type}>");
+                    target =
+                        record.ref_instance(*start, declared.as_str(), reference_type.as_str());
                     includes_instantiated |= target != declared;
                     true
                 }
@@ -260,32 +264,42 @@ fn collect_element(
             };
             let name = value.content;
             if !name.is_empty() {
-                let kind = match element.tag_type {
-                    ElementType::Element => component_ref_kind_for_element_tag(
-                        summary,
-                        options,
-                        syntactic_type_only_imported_names,
-                        element.ns,
-                        element.tag,
-                    )
-                    .map(|reference| RegisteredRefKind::Component {
-                        reference,
+                let kind = if let Some(reference_type) = dynamic_component_reference(element) {
+                    RegisteredRefKind::Component {
+                        reference_type,
                         start: element.loc.span.start,
-                    })
-                    .unwrap_or_else(|| RegisteredRefKind::Element {
-                        tag: String::from(element.tag),
-                        is_svg: matches!(element.ns, Namespace::Svg),
-                    }),
-                    ElementType::Component => RegisteredRefKind::Component {
-                        reference: component_binding_reference(
+                    }
+                } else {
+                    match element.tag_type {
+                        ElementType::Element => component_ref_kind_for_element_tag(
                             summary,
                             options,
                             syntactic_type_only_imported_names,
+                            element.ns,
                             element.tag,
-                        ),
-                        start: element.loc.span.start,
-                    },
-                    _ => continue,
+                        )
+                        .map(|reference| RegisteredRefKind::Component {
+                            reference_type: vize_carton::cstr!("typeof {reference}"),
+                            start: element.loc.span.start,
+                        })
+                        .unwrap_or_else(|| RegisteredRefKind::Element {
+                            tag: String::from(element.tag),
+                            is_svg: matches!(element.ns, Namespace::Svg),
+                        }),
+                        ElementType::Component => RegisteredRefKind::Component {
+                            reference_type: vize_carton::cstr!(
+                                "typeof {}",
+                                component_binding_reference(
+                                    summary,
+                                    options,
+                                    syntactic_type_only_imported_names,
+                                    element.tag,
+                                )
+                            ),
+                            start: element.loc.span.start,
+                        },
+                        _ => continue,
+                    }
                 };
                 refs.push(RegisteredRef {
                     name: String::from(name),
@@ -305,6 +319,56 @@ fn collect_element(
             refs,
         );
     }
+}
+
+fn dynamic_component_reference(element: &ElementNode<'_>) -> Option<String> {
+    if element.tag != "component" {
+        return None;
+    }
+    let expression = element.props.iter().find_map(|prop| {
+        let PropNode::Directive(directive) = prop else {
+            return None;
+        };
+        if directive.name != "bind"
+            || !matches!(
+                directive.arg.as_ref(),
+                Some(vize_relief::ExpressionNode::Simple(arg))
+                    if arg.is_static && arg.content == "is"
+            )
+        {
+            return None;
+        }
+        directive.exp.as_ref()
+    })?;
+    let vize_relief::ExpressionNode::Simple(expression) = expression else {
+        return None;
+    };
+    let reference = expression.content.trim();
+    let mut segments = reference.split('.');
+    let first = segments.next()?;
+    if !is_ascii_identifier(first) {
+        return None;
+    }
+    let rest = segments.collect::<Vec<_>>();
+    if !rest.iter().all(|segment| is_ascii_identifier(segment)) {
+        return None;
+    }
+    if rest.is_empty() {
+        return Some(vize_carton::cstr!("typeof {first}"));
+    }
+    let mut reference_type = vize_carton::cstr!("import('vue').UnwrapRef<typeof {first}>");
+    for segment in rest {
+        append!(reference_type, "[\"{segment}\"]");
+    }
+    Some(reference_type)
+}
+
+fn is_ascii_identifier(segment: &str) -> bool {
+    let mut chars = segment.chars();
+    chars
+        .next()
+        .is_some_and(|char| char == '_' || char == '$' || char.is_ascii_alphabetic())
+        && chars.all(|char| char == '_' || char == '$' || char.is_ascii_alphanumeric())
 }
 
 fn component_ref_kind_for_element_tag(

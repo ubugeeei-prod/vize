@@ -56,6 +56,7 @@ export const TYPECHECKER_TESTS = {
   "content-mapper-template-expression-syntax":
     "template_expression_syntax_preserves_complete_authored_diagnostics",
   "content-mapper-const-enum-import": "content_mapper_accepts_imported_const_enum_value_anchors",
+  "content-mapper-dynamic-template-ref-10198": "dynamic_template_refs_preserve_batch_acceptance",
   "content-mapper-type-only-import-use":
     "content_mapper_keeps_inferred_type_only_imports_out_of_value_anchors",
 } as const;
@@ -100,6 +101,7 @@ const sourceRevisions = {
   "dynamic-directive-expression-mapping-10182": "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
   "content-mapper-template-expression-syntax": "a5ae4d313fa333c8bc7168d5da4acf3dc2bb8ee3",
   "content-mapper-const-enum-import": "506529117573a96880435dd6466cfd7cf81fdc92",
+  "content-mapper-dynamic-template-ref-10198": "b7fb3a9aefd31002b8b2d449695a9e14d657654a",
   "content-mapper-type-only-import-use": "fb89f41ffc518768e3053ccf9fe6b83bf24a1122",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 
