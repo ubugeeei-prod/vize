@@ -3139,12 +3139,12 @@
       "diff": "curator-compare",
       "lspAuthoredOracle": {
         "templateBinding": {
-          "file": "src/client/theme-default/NotFound.vue",
-          "symbol": "currentLang",
-          "usageAnchor": "        :href=\"withBase(theme.notFound?.link ?? currentLang.link)\"",
-          "declarationAnchor": "const { currentLang } = useLangs()",
-          "hoverContains": ["const currentLang:"],
-          "renameTo": "__vizeRenamedCurrentLang"
+          "file": "src/client/theme-default/components/VPNavScreenMenuLink.vue",
+          "symbol": "isActiveLink",
+          "usageAnchor": "    :class=\"{ VPNavScreenMenuLink: true, active: isActiveLink }\"",
+          "declarationAnchor": "const isActiveLink = computed(() =>",
+          "hoverContains": ["const isActiveLink:"],
+          "renameTo": "__vizeRenamedIsActiveLink"
         },
         "componentBoundary": {
           "importerFile": "src/client/theme-default/Layout.vue",
