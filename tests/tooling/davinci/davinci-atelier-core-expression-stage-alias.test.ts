@@ -3,6 +3,8 @@ import { test } from "node:test";
 
 import { scanConsumerMigrationSurfaces } from "../../../tools/support/compat/davinci/lib/consumer-migration-scan.ts";
 
+type StageAliasRow = readonly [relPath: string, mode: "source" | "test", sites: number];
+
 const expressionRows = [
   ["crates/vize_atelier_core/src/steps/expression.rs", "source", 1],
   ["crates/vize_atelier_core/src/steps/expression/collector.rs", "source", 2],
@@ -18,7 +20,7 @@ const expressionRows = [
   ["crates/vize_atelier_core/src/steps/expression/splice.rs", "test", 1],
   ["crates/vize_atelier_core/src/steps/expression/tests.rs", "test", 1],
   ["crates/vize_atelier_core/src/steps/expression/typescript.rs", "source", 1],
-];
+] satisfies readonly StageAliasRow[];
 
 function compiler() {
   const scan = scanConsumerMigrationSurfaces();

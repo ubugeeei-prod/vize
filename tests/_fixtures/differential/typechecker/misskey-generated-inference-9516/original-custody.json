@@ -1,0 +1,39 @@
+{
+  "scope": "explicit new reproduction derived from pinned Misskey; the historical 415-finding packet is unavailable",
+  "issue": 9516,
+  "fixtureRepository": "https://github.com/misskey-dev/misskey",
+  "fixtureRevision": "810faa8e5db4bbf9d6d408a61df148559340ee99",
+  "sourceRun": 39425591681,
+  "sourceArtifact": "real-project-matrix-12/misskey-generated-diagnostics-9516/generic-component",
+  "sourceRevision": "0aa9e13aa57d0b4b1089717fc469a3feb7aefb5e",
+  "requestedVueDocuments": 583,
+  "observedGeneratedDiagnostics": {
+    "code": 2353,
+    "count": 173,
+    "authoredMappings": 0,
+    "slotPayloadProbe": 172,
+    "genericTemplateRefProbe": 1
+  },
+  "representatives": [
+    {
+      "source": "packages/frontend/src/components/MkCropperDialog.vue",
+      "shape": "MkModalWindow :scroll=false with named slot",
+      "authoredSha256": "f4ccd97a34c488a1af5c8dc6f04584316c3afd26639aadd5356c29170bf79027",
+      "generatedSha256": "4b998e1506c4f651789d15109a8c5b1e1ab30ebfb844546cddd09fe42781cf06",
+      "generatedOffset": 22191,
+      "authoredOwner": null
+    },
+    {
+      "source": "packages/frontend/src/components/MkPasswordDialog.vue",
+      "shape": "generic MkInput ref=passwordInput with withPasswordToggle fallthrough",
+      "authoredSha256": "5f550a5f29a79fb29df57bbda62ecc0f0953e478eed59c0eb85aab75ec2f8951",
+      "generatedSha256": "e6ee0cfcdd088a0bedab009e2492e7d097d4dbd758123724a13dbd554cbce432",
+      "generatedOffset": 44365,
+      "authoredOwner": null
+    }
+  ],
+  "replayAtFixedHead": {
+    "pre9435GeneratedTs2493": 194,
+    "pre9437GeneratedTs2353": 54
+  }
+}

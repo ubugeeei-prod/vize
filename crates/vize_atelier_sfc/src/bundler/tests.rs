@@ -16,6 +16,51 @@ fn scope_id_matches_sha_prefix_and_normalizes_paths() {
 }
 
 #[test]
+fn scope_id_is_checkout_independent_and_separator_neutral() {
+    let source = "<template><p /></template><style scoped>p { color: red }</style>";
+    let first = generate_bundler_scope_id(
+        "/checkout-a/app/src/App.vue",
+        Some("/checkout-a/app"),
+        true,
+        Some(source),
+    );
+    let second = generate_bundler_scope_id(
+        "/checkout-b/somewhere/else/app/src/App.vue",
+        Some("/checkout-b/somewhere/else/app"),
+        true,
+        Some(source),
+    );
+    let windows = generate_bundler_scope_id(
+        r"C:\checkout-b\somewhere\else\app\src\App.vue",
+        Some(r"C:\checkout-b\somewhere\else\app"),
+        true,
+        Some(source),
+    );
+
+    assert_eq!(first, second);
+    assert_eq!(first, windows);
+}
+
+#[test]
+fn scope_id_preserves_parent_segments_for_collision_resistance() {
+    let source = "<template><p /></template><style scoped>p { color: red }</style>";
+    let inside = generate_bundler_scope_id(
+        "/checkout/app/shared/App.vue",
+        Some("/checkout/app"),
+        true,
+        Some(source),
+    );
+    let outside = generate_bundler_scope_id(
+        "/checkout/shared/App.vue",
+        Some("/checkout/app"),
+        true,
+        Some(source),
+    );
+
+    assert_ne!(inside, outside);
+}
+
+#[test]
 fn extracts_sfc_blocks_with_attrs() {
     let source = r#"
 <template><img src="./logo.png"></template>

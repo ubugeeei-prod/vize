@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { test } from "node:test";
 import { runInNewContext } from "node:vm";
 import {
+  mergeVueConfigOptions,
   projectViteConfigSource,
   resolveViteConfigExport,
   vueConfigOptions,
@@ -33,7 +34,7 @@ test("the complete canonical validation graph derives from the authoritative nat
   const optionKeys = /type VueOptionKeys =([\s\S]*?);/u.exec(runtime);
   assert.ok(optionKeys);
   const keys = [...optionKeys[1].matchAll(/"([^"]+)"/gu)].map((match) => match[1]);
-  const entryType = /export type VueOptionsEntry = Pick<\s*VizeConfigEntry,\s*([^>]+)>;/u.exec(
+  const entryType = /export type VueOptionsEntry = Pick<\s*VizeConfigEntry,\s*([^>]+)>/u.exec(
     runtime,
   );
   assert.ok(entryType);
@@ -43,14 +44,36 @@ test("the complete canonical validation graph derives from the authoritative nat
     ["name", "basePath", "files", "ignores", "compiler", "linter"].toSorted(),
   );
   const fields = Object.fromEntries(keys.map((key) => [key, authoritative.properties[key]]));
+  const actionAliases = {
+    compile: "compiler",
+    typeCheck: "typeChecker",
+    fmt: "formatter",
+  };
+  for (const [action, section] of Object.entries(actionAliases)) {
+    fields[action] = authoritative.properties[section];
+  }
+  fields.lint = {
+    type: "object",
+    required: ["jsPlugins", "plugins", "rules", "settings"],
+    properties: {
+      jsPlugins: { type: "array", items: { type: "string" } },
+      plugins: { type: "array", items: { type: "string" } },
+      rules: { type: "object", additionalProperties: true },
+      settings: { type: "object", additionalProperties: true },
+      ignorePatterns: { type: "array", items: { type: "string" } },
+      overrides: { type: "array" },
+    },
+    additionalProperties: true,
+  };
   fields.version = { $ref: "#/definitions/VueVersion" };
+  const scopedFields = Object.fromEntries(
+    scopedKeys.map((key) => [key, authoritative.definitions.VizeConfigEntry.properties[key]]),
+  );
   fields.entries = {
     type: "array",
     items: {
       type: "object",
-      properties: Object.fromEntries(
-        scopedKeys.map((key) => [key, authoritative.definitions.VizeConfigEntry.properties[key]]),
-      ),
+      properties: scopedFields,
       additionalProperties: false,
     },
   };
@@ -102,6 +125,7 @@ test("canonical namespaces refuse unknown roots, entries, native fields and mism
     { compiler: false },
     { typeChecker: [] },
     { linter: "essential" },
+    { lint: { preset: "essential" } },
     { formatter: true },
     { languageServer: null },
     { globalTypes: 1 },
@@ -120,6 +144,18 @@ test("canonical namespaces refuse unknown roots, entries, native fields and mism
     { entries: [null] },
     { entries: [{ lib: { dir: "scoped" } }] },
     { entries: [{ unknown: true }] },
+    {
+      entries: [
+        {
+          lint: {
+            jsPlugins: ["oxlint-plugin-vize"],
+            plugins: ["vue"],
+            rules: {},
+            settings: { vize: {} },
+          },
+        },
+      ],
+    },
     { entries: [{ version: "4" }] },
     { entries: [{ extends: "./old.json" }] },
     { entries: [{ files: [undefined] }] },
@@ -189,6 +225,159 @@ test("all documented canonical native sections accept their original field value
       },
     ],
   });
+});
+
+test("action-oriented tool names project host lint settings and native sections", async () => {
+  const lint = {
+    jsPlugins: ["oxlint-plugin-vize"],
+    plugins: ["vue"],
+    ignorePatterns: ["dist/**"],
+    rules: {
+      "no-console": "warn",
+      "vize/vue/no-v-html": "warn",
+      "vize/vue/valid-v-on": ["error", { modifiers: ["custom"] }],
+      "vize/vue/no-template-shadow": 1,
+      "vize/vue/attribute-hyphenation": [2, "never"],
+    },
+    settings: {
+      vize: { preset: "incremental", typeAware: true },
+    },
+    overrides: [
+      {
+        files: ["src/admin/**/*.vue"],
+        excludeFiles: ["src/admin/generated/**"],
+        rules: {
+          "no-console": "off",
+          "vize/vue/no-v-html": "off",
+          "vize/vue/attribute-hyphenation": [2, "never"],
+        },
+      },
+    ],
+  };
+  const vue = {
+    compile: { whitespace: "preserve" },
+    typeCheck: { strict: true },
+    lint,
+    fmt: { singleQuote: true },
+    entries: [
+      {
+        name: "generated views",
+        files: ["generated/**/*.vue"],
+        linter: { rules: { "vue/no-v-html": "off" } },
+      },
+    ],
+  };
+  assert.equal(vueConfigOptions({ vue }), vue);
+  assert.deepEqual(await projectViteConfigSource({ vue }), {
+    compiler: { whitespace: "preserve" },
+    typeChecker: { jsxTypecheck: true, strict: true },
+    linter: {
+      preset: "incremental",
+      typeAware: true,
+      rules: {
+        "vue/no-v-html": "warn",
+        "vue/valid-v-on": "error",
+        "vue/no-template-shadow": "warn",
+        "vue/attribute-hyphenation": "error",
+      },
+      ruleOptions: {
+        "vue/valid-v-on": { modifiers: ["custom"] },
+        "vue/attribute-hyphenation": "never",
+      },
+    },
+    formatter: { singleQuote: true },
+    entries: [
+      {
+        files: ["src/admin/**/*.vue"],
+        ignores: ["src/admin/generated/**"],
+        linter: {
+          rules: {
+            "vue/no-v-html": "off",
+            "vue/attribute-hyphenation": "error",
+          },
+          ruleOptions: { "vue/attribute-hyphenation": "never" },
+        },
+      },
+      {
+        name: "generated views",
+        files: ["generated/**/*.vue"],
+        linter: { rules: { "vue/no-v-html": "off" } },
+      },
+    ],
+  });
+  assert.deepEqual(vue.lint, lint, "projection must not mutate the host lint config");
+});
+
+test("scoped host lint rejects vize rules whose file ownership cannot be projected", async () => {
+  const vue = {
+    lint: {
+      jsPlugins: ["oxlint-plugin-vize"],
+      plugins: ["vue"],
+      rules: {},
+      settings: { vize: {} },
+      overrides: [{ files: "src/**/*.vue", rules: { "vize/vue/no-v-html": "off" } }],
+    },
+  };
+  await assert.rejects(
+    projectViteConfigSource({ vue }),
+    /vue\.lint\.overrides\[0\]\.files: must be an array of strings to project vize\/\* rules/u,
+  );
+
+  for (const [rule, option, error] of [
+    [
+      "vize/vue/attribute-hyphenation",
+      "sometimes",
+      /vue\.lint\.overrides\[0\]\.ruleOptions\.vue\/attribute-hyphenation: unsupported native option value/u,
+    ],
+    [
+      "vize/vue/not-a-rule",
+      { enabled: true },
+      /vue\.lint\.overrides\[0\]\.ruleOptions: unknown option "vue\/not-a-rule"/u,
+    ],
+  ] as const) {
+    await assert.rejects(
+      projectViteConfigSource({
+        vue: {
+          lint: {
+            ...vue.lint,
+            overrides: [{ files: ["src/**/*.vue"], rules: { [rule]: ["error", option] } }],
+          },
+        },
+      }),
+      error,
+    );
+  }
+});
+
+test("action names reject ambiguous compatibility aliases at the exact scope", async () => {
+  for (const [action, compatibility, value] of [
+    ["compile", "compiler", { whitespace: "preserve" }],
+    ["typeCheck", "typeChecker", { strict: true }],
+    ["fmt", "formatter", { singleQuote: true }],
+  ] as const) {
+    const root = { [action]: value, [compatibility]: value };
+    const rootError = new RegExp(
+      `vue\\.${action}: conflicts with compatibility alias vue\\.${compatibility}; remove vue\\.${compatibility} and use vue\\.${action}`,
+    );
+    assert.throws(() => vueConfigOptions({ vue: root }), rootError);
+    await assert.rejects(projectViteConfigSource({ vue: root }), rootError);
+
+    assert.throws(
+      () => mergeVueConfigOptions({ [compatibility]: value }, { [action]: value }),
+      rootError,
+    );
+  }
+
+  const lint = {
+    jsPlugins: ["oxlint-plugin-vize"],
+    plugins: ["vue"],
+    rules: {},
+    settings: { vize: { preset: "incremental" } },
+  };
+  assert.throws(
+    () => vueConfigOptions({ vue: { lint, linter: { preset: "essential" } } }),
+    /vue\.lint: conflicts with compatibility alias vue\.linter; remove vue\.linter and use vue\.lint, with native rules under settings\.vize/,
+  );
 });
 
 test("retired namespaces fail without invoking any legacy or Vite hooks", async () => {

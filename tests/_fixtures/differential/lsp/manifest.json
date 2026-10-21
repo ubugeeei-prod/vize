@@ -620,6 +620,48 @@
       }
     },
     {
+      "id": "lsp/regression/workspace-tsconfig-inheritance-9842",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "workspace-tsconfig-inheritance-9842",
+        "files": [
+          {
+            "path": "package.json.txt",
+            "sha256": "1ddc4c32d005f30baed4d7b7523da67de2047a8b5ad9201e51f54589bdd08dd3"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "6e602dcdb32f5eac7261a47f022c51d3964ef349bd46a2f10411d5582f802253"
+          },
+          {
+            "path": "globals.d.ts.txt",
+            "sha256": "d3cdea17934734c50f729c77b375216d1c4735eccf13692992113599ab663a0c"
+          },
+          {
+            "path": "package-ui.json.txt",
+            "sha256": "daeb5e493a5d857808a57f2848112573d0c4a47cc92762543ba597475aa95f15"
+          },
+          {
+            "path": "MyFooter.vue.txt",
+            "sha256": "73779e4741bc4769b47ad9dce5c5667d072f9bd6b1945befc284671486ab43db"
+          }
+        ]
+      },
+      "case": {
+        "path": "workspace-tsconfig-inheritance-9842/case.json",
+        "sha256": "1fd2daace94f8410358f3bd9dd83da0826320bcbb3fa528ffcf8d9a82d9c77f2"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": true
+      }
+    },
+    {
       "id": "lsp/regression/nested-vite-project-9856",
       "state": "active",
       "targets": [
@@ -877,6 +919,33 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      }
+    },
+    {
+      "id": "lsp/fix-history/code-action-utf16-original",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "code-action-utf16-original",
+        "files": [
+          {
+            "path": "CodeActionUtf16.vue.txt",
+            "sha256": "4e334c5f8bdef19e5e77408a7aff23ef11f57362c5171401f6a5f5932c3fc1fd"
+          }
+        ]
+      },
+      "case": {
+        "path": "code-action-utf16-original/case.json",
+        "sha256": "98b29c513ea1c28416f0f9a2cc81d5fa61345b82ccb3f5438cf7b39114f995d9"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": true,
+        "typecheck": false,
+        "codeActions": true
       }
     }
   ]

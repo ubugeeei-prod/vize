@@ -177,7 +177,7 @@ assert.equal(
   const previousCompiled = compileFile(
     vueFile,
     new Map(),
-    { sourceMap: false, ssr: false, vapor: false },
+    { root: "/src", sourceMap: false, ssr: false, vapor: false },
     previousSource,
   );
   const visibleVirtualFileModule = { url: `${vueFile}.ts?vue&vize` };
@@ -304,7 +304,7 @@ assert.equal(
   const previousCompiled = compileFile(
     vueFile,
     new Map(),
-    { sourceMap: false, ssr: false, vapor: false },
+    { root: "/src", sourceMap: false, ssr: false, vapor: false },
     previousSource,
   );
   const params = new URLSearchParams();

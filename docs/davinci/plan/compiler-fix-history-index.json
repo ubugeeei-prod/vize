@@ -1,6 +1,6 @@
 {
   "schema": "vize.compiler.fix-history-index",
-  "version": 1,
+  "version": 2,
   "sourceRevision": "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
   "paths": [
     "crates/vize_atelier_core",
@@ -33,6 +33,17 @@
   "conventionalFixSubjects": 661,
   "nonMergeFixSubjects": 626,
   "fixtureLinkedFixSubjects": 30,
+  "boundedReviewedFixtureScopes": 5,
+  "wholeFixReviewedSubjects": 0,
+  "wholeFixReviewPendingSubjects": 626,
+  "reviewLedger": {
+    "path": "docs/davinci/plan/compiler-fix-history-reviews.json",
+    "sha256": "6274138c94833ebdef1380fb0e1a26f6202a6f14bd8efdec328a45292dac68f6",
+    "differentialManifest": {
+      "path": "tests/_fixtures/differential/compiler/sfc-fix-history.manifest.json",
+      "sha256": "1837fd540bbd434055b1e7d11d265aa4d1f51343f7ae78012205c4a2c5d25cb7"
+    }
+  },
   "nonIndexedFixtureReferences": [
     {
       "sha": "0de7787aeac48a931e15bc590a3e3b803286dcb8",
@@ -53,7 +64,7 @@
   ],
   "index": {
     "path": "docs/davinci/plan/compiler-fix-history.tsv",
-    "sha256": "d1682fa7658745b11bb466cf07833f6245478ae8044f0c696a76a05a74263615"
+    "sha256": "284a5e8a7658ea7dad01d444d52fb03341e4d38080c79b83d4b3a9a148e6b479"
   },
   "semanticDenominator": null,
   "nativeAcceptance": 0,
@@ -61,6 +72,7 @@
     "The original 609-fix snapshot has no verified source revision.",
     "Changed witness paths and stable patch equivalence are candidates, not coverage or automatic duplicate exclusions.",
     "Fixture references cover only their recorded entrypoint, target, options and public output facets.",
-    "Every row retains pending semantic and target review; historical or local execution does not certify current Actions or a native route."
+    "Five SFC fixture scopes have bounded semantic review; every fix subject retains whole-fix target and dialect review pending.",
+    "Historical or local execution does not certify current Actions or a native route."
   ]
 }
