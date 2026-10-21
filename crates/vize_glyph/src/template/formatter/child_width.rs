@@ -1,7 +1,7 @@
 //! Width of sole interpolation children hugged to their parent tags.
 use super::{
     TemplateFormatter, format_interpolations_with_vue_version, parse_interpolation_range,
-    suppression::LineJoiner,
+    suppression::{ChunkJoin, LineJoiner},
 };
 use crate::template::helpers::{is_whitespace, parse_closing_tag};
 use unicode_width::UnicodeWidthStr;
@@ -145,6 +145,7 @@ impl TemplateFormatter<'_> {
         end: usize,
         depth: usize,
         joiner: &LineJoiner<'_>,
+        join: ChunkJoin,
     ) -> bool {
         if joiner.locks_current_line() {
             return false;
@@ -161,6 +162,13 @@ impl TemplateFormatter<'_> {
             // Mixed interpolation runs have an established formatter layout
             // and may need several independent width decisions. Keep this
             // narrow path to the single interpolation reported in #10177.
+            return false;
+        }
+        if join.is_continuation() && (first_open != 0 || close != bytes.len()) {
+            // A mixed text/interpolation chunk that continues an existing
+            // output line is part of a larger established layout. Rewrapping
+            // it in isolation would make a formatted second pass differ from
+            // the first (for example, a text suffix after an interpolation).
             return false;
         }
         let hugged_name = joiner.hugged_closing_name(start, end);
