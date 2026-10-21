@@ -26,6 +26,10 @@
       "verdict": "equivalent",
       "basis": "both Vapor and Babel references match falsy, array, nested-VNode and element-identity xlink updates"
     },
+    "props/dynamic-type-value": {
+      "verdict": "equivalent",
+      "basis": "both Vapor and Babel references match falsy, array, nested-VNode and element-identity input type updates"
+    },
     "directives/v-show-component-value": {
       "verdict": "equivalent",
       "basis": "both Vapor and Babel references match falsy, array, nested-VNode and element-identity component visibility updates"

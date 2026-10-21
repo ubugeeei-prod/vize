@@ -6,7 +6,7 @@ under the same pinned Vue Vapor runtime. Each row mounts both components in
 Happy DOM, applies the corpus updates, and compares normalized rendered DOM,
 live form state, diagnostics, and element identity.
 
-The current bounded cohort covers fifteen behaviors. It is not a claim that the
+The current bounded cohort covers sixteen behaviors. It is not a claim that the
 full `vue-jsx-vapor` surface is compatible; issue #6884 remains open until the
 corpus covers the complete dialect inventory.
 
@@ -30,6 +30,7 @@ a reviewed update to the executable verdict inventory.
 | `props/dynamic-boolean-value`       | equivalent | value-sensitive boolean property updates match both real JSX references  |
 | `props/dynamic-aria-value`          | equivalent | value-sensitive ARIA attribute updates match both real JSX references    |
 | `props/dynamic-xlink-value`         | equivalent | value-sensitive namespaced attributes match both real JSX references     |
+| `props/dynamic-type-value`          | equivalent | value-sensitive input type attributes match both real JSX references     |
 | `events/click-closure`              | equivalent | two real clicks run the captured closure and retain the button           |
 | `children/logical-and`              | divergent  | only vue-jsx-vapor replaces the branch across truthy value changes       |
 | `control-flow/conditional-branch`   | equivalent | falsy, array and nested-VNode conditions match both real JSX references  |
@@ -62,11 +63,13 @@ prop and captured slot state independently. The mounted article, prop output,
 slot containers and authored slot elements must all retain identity while their
 complete DOM and diagnostics remain equal.
 
-The dynamic-value, dynamic-boolean-value, dynamic-aria-value,
-dynamic-xlink-value, v-show-value, v-show-component-value, logical-and and
+The dynamic-type-value, dynamic-value, dynamic-boolean-value,
+dynamic-aria-value, dynamic-xlink-value, v-show-value,
+v-show-component-value, logical-and and
 conditional rows are the value-sensitive counterparts of the Babel oracle's equivalent
-`props/dynamic_attr`, `props/boolean_attr`, `props/dashed_attrs`,
-`props/xlink_colon`, `directives/v_show_element`, `directives/v_show_component`,
+`props/static_attr`, `props/dynamic_attr`, `props/boolean_attr`,
+`props/dashed_attrs`, `props/xlink_colon`, `directives/v_show_element`,
+`directives/v_show_component`,
 `children/logical_and` and `children/ternary` rows. Their mounted update
 sequences pass `0`, an empty string, `NaN`, `null`, `undefined`, `false`, `true`,
 an array and a nested VNode through both Vize/reference pairs. The comparison
@@ -78,9 +81,9 @@ using those values only as conditions. The boolean row pins `disabled` as
 present for the empty string, `true`, the array and the nested VNode, and as
 absent for `0`, `NaN`, `null`, `undefined` and `false`. The ARIA row retains
 `"false"` and `"true"` as meaningful attribute strings while removing only the
-nullish phases. The xlink row additionally pins namespaced attribute updates for
-every phase, while the two v-show rows pin truthiness-driven inline display
-updates on both an intrinsic element and a resolved component root.
+nullish phases. The type row pins an input attribute, the xlink row pins a
+namespaced attribute, and the two v-show rows pin truthiness-driven inline
+display updates on both an intrinsic element and a resolved component root.
 The logical-and references agree on DOM and text but differ in
 identity: Babel retains the truthy branch, while `vue-jsx-vapor` replaces it
 when the truthy condition value changes. The executable verdict pins that
