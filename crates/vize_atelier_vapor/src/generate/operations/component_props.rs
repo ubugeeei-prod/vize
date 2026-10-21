@@ -14,6 +14,48 @@ pub(super) fn generate_component_props_str(
     ctx: &mut GenerateContext,
     component: &CreateComponentIRNode<'_>,
 ) -> String {
+    if component
+        .props
+        .iter()
+        .any(|prop| prop.value_kind == PropValueKind::ForwardedSlots)
+    {
+        return generate_component_props_without_forwarded(ctx, component);
+    }
+
+    if component.props.is_empty() {
+        return "null".to_compact_string();
+    }
+    if (component.props.iter()).any(|p| p.value_kind == PropValueKind::DisplayString) {
+        ctx.use_helper("toDisplayString");
+    }
+    let has_dynamic_sources = component
+        .props
+        .iter()
+        .any(|p| !p.key.is_static || p.key.content == "$");
+    if has_dynamic_sources {
+        if component
+            .props
+            .iter()
+            .any(|p| !p.key.is_static && p.key.is_handler_key)
+        {
+            ctx.use_helper("toHandlerKey");
+        }
+        // A `v-on` object source normalizes its keys to `onX` handlers.
+        if (component.props.iter()).any(|p| p.key.content == "$" && p.key.is_handler_key) {
+            ctx.use_helper("toHandlers");
+        }
+        return generate_component_spread_props_str(ctx, &component.props);
+    }
+
+    let prop_refs = component.props.iter().collect::<std::vec::Vec<_>>();
+    let prop_strs = generate_component_prop_entries(ctx, prop_refs.as_slice());
+    format_component_props(prop_strs.as_slice())
+}
+
+fn generate_component_props_without_forwarded(
+    ctx: &mut GenerateContext,
+    component: &CreateComponentIRNode<'_>,
+) -> String {
     let props = component
         .props
         .iter()
@@ -24,7 +66,7 @@ pub(super) fn generate_component_props_str(
     }
     if props
         .iter()
-        .any(|p| p.value_kind == PropValueKind::DisplayString)
+        .any(|prop| prop.value_kind == PropValueKind::DisplayString)
     {
         ctx.use_helper("toDisplayString");
     }
@@ -45,10 +87,14 @@ pub(super) fn generate_component_props_str(
         {
             ctx.use_helper("toHandlers");
         }
-        return generate_component_spread_props_str(ctx, props.as_slice());
+        return generate_component_spread_prop_refs_str(ctx, props.as_slice());
     }
 
     let prop_strs = generate_component_prop_entries(ctx, props.as_slice());
+    format_component_props(prop_strs.as_slice())
+}
+
+fn format_component_props(prop_strs: &[String]) -> String {
     if prop_strs.len() >= 2 {
         let mut result = String::from("{\n");
         for (i, prop_str) in prop_strs.iter().enumerate() {
@@ -66,11 +112,22 @@ pub(super) fn generate_component_props_str(
     }
 }
 
-fn generate_component_spread_props_str(ctx: &GenerateContext, props: &[&IRProp<'_>]) -> String {
+fn generate_component_spread_props_str(ctx: &GenerateContext, props: &[IRProp<'_>]) -> String {
+    generate_component_spread_props(ctx, props.iter())
+}
+
+fn generate_component_spread_prop_refs_str(ctx: &GenerateContext, props: &[&IRProp<'_>]) -> String {
+    generate_component_spread_props(ctx, props.iter().copied())
+}
+
+fn generate_component_spread_props<'a>(
+    ctx: &GenerateContext,
+    props: impl IntoIterator<Item = &'a IRProp<'a>>,
+) -> String {
     let mut sources: std::vec::Vec<String> = std::vec::Vec::new();
     let mut static_group: std::vec::Vec<&IRProp<'_>> = std::vec::Vec::new();
 
-    for &prop in props {
+    for prop in props {
         if !prop.key.is_static {
             push_component_static_prop_group(ctx, &mut sources, &mut static_group);
             let key = ctx.resolve_expression_node(&prop.key);
