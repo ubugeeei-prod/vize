@@ -93,7 +93,7 @@ fn emit_prop_references(
     let completion_offset = ts.len();
     append!(
         *ts,
-        "}} = undefined as unknown as __{component_type_name}_Props_{idx};\n"
+        "}} = undefined as unknown as __VizeComponentNavigationProps<__{component_type_name}_Props_{idx}>;\n"
     );
     semantic_links.push(VizeSemanticLink {
         source_range: component_gen_range.clone(),

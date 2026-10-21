@@ -23,6 +23,8 @@ mod props_binding;
 mod template_expression_syntax;
 #[path = "content_mapper_tsgo_cli/type_only_import_use.rs"]
 mod type_only_import_use;
+#[path = "content_mapper_tsgo_cli/unknown_options_10218.rs"]
+mod unknown_options_10218;
 
 fn workspace_root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))

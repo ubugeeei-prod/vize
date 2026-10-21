@@ -18,6 +18,9 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
     typed_fallthrough_values: bool,
 ) {
     ts.push_str("  type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;\n");
+    ts.push_str(
+        "  type __VizeComponentNavigationProps<P> = __VizeIsAny<P> extends true ? Record<string, unknown> : unknown extends P ? {} : P;\n",
+    );
     // Inline parameter shapes keep `TS2345` messages close to `vue-tsc` while
     // preserving optionality and contextual typing. The strict tail is used
     // only when Vize knows the generated child's fallthrough surface.

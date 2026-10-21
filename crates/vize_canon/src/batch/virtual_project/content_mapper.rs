@@ -67,8 +67,10 @@ pub struct ContentMapperTransformOptions {
     options_api: bool,
     preserve_unused_diagnostics: bool,
     check_javascript: bool,
+    pub(super) check_unknown_components: bool,
     pub(super) check_unknown_props: bool,
     pub(super) check_unknown_fallthrough_props: bool,
+    pub(super) check_unknown_directives: bool,
     pub(super) strict_css_modules: bool,
 }
 
@@ -78,8 +80,10 @@ impl Default for ContentMapperTransformOptions {
             options_api: true,
             preserve_unused_diagnostics: false,
             check_javascript: false,
+            check_unknown_components: false,
             check_unknown_props: true,
             check_unknown_fallthrough_props: false,
+            check_unknown_directives: false,
             strict_css_modules: false,
         }
     }
@@ -181,8 +185,10 @@ pub fn generate_vue_content_mapper_transform_with_options(
         &virtual_ts_options,
         VueCodegenOptions {
             check_options: VirtualTsCheckOptions {
+                check_unknown_components: transform_options.check_unknown_components,
                 check_unknown_props: transform_options.check_unknown_props,
                 check_unknown_fallthrough_props: transform_options.check_unknown_fallthrough_props,
+                check_unknown_directives: transform_options.check_unknown_directives,
                 strict_css_modules: transform_options.strict_css_modules,
                 ..Default::default()
             },
@@ -527,6 +533,10 @@ mod tests;
 #[expect(clippy::expect_used, reason = "fixture assertions fail by panicking")]
 #[path = "content_mapper_unused_props_tests.rs"]
 mod unused_props_tests;
+
+#[cfg(test)]
+#[path = "content_mapper_unknown_options_tests.rs"]
+mod unknown_options_tests;
 
 #[cfg(test)]
 #[path = "content_mapper_directive_tests.rs"]

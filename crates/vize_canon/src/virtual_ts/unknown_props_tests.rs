@@ -261,7 +261,9 @@ fn empty_options_component_does_not_infer_unowned_optional_raw_metadata() {
         "{code}"
     );
     assert!(
-        code.contains("const { } = undefined as unknown as __Div_Props_0;"),
+        code.contains(
+            "const { } = undefined as unknown as __VizeComponentNavigationProps<__Div_Props_0>;"
+        ),
         "{code}"
     );
     assert!(

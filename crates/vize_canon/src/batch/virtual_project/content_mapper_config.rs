@@ -58,11 +58,20 @@ impl ContentMapperTransformOptions {
         mut self,
         options: &Map<std::string::String, Value>,
     ) -> Self {
-        let explicit = options.get("checkUnknownProps").and_then(Value::as_bool);
-        self.check_unknown_props = explicit
-            .or_else(|| options.get("strictTemplates").and_then(Value::as_bool))
+        let strict_templates = options.get("strictTemplates").and_then(Value::as_bool);
+        self.check_unknown_components = options
+            .get("checkUnknownComponents")
+            .and_then(Value::as_bool)
+            .or(strict_templates)
             .unwrap_or(false);
+        let explicit = options.get("checkUnknownProps").and_then(Value::as_bool);
+        self.check_unknown_props = explicit.or(strict_templates).unwrap_or(false);
         self.check_unknown_fallthrough_props = explicit == Some(true);
+        self.check_unknown_directives = options
+            .get("checkUnknownDirectives")
+            .and_then(Value::as_bool)
+            .or(strict_templates)
+            .unwrap_or(false);
         self.strict_css_modules = options
             .get("strictCssModules")
             .and_then(Value::as_bool)
@@ -84,12 +93,16 @@ mod tests {
 
     fn expected_options(
         mut options: ContentMapperTransformOptions,
+        components: bool,
         unknown: bool,
         fallthrough: bool,
+        directives: bool,
         css: bool,
     ) -> ContentMapperTransformOptions {
+        options.check_unknown_components = components;
         options.check_unknown_props = unknown;
         options.check_unknown_fallthrough_props = fallthrough;
+        options.check_unknown_directives = directives;
         options.strict_css_modules = css;
         options
     }
@@ -134,7 +147,7 @@ mod tests {
         let configured = load(&path);
         assert_eq!(
             configured.transform_options,
-            expected_options(Default::default(), false, false, false)
+            expected_options(Default::default(), false, false, false, false, false)
         );
         assert_eq!(
             configured.watched_files,
@@ -143,7 +156,7 @@ mod tests {
         let inferred = load(Path::new(""));
         assert_eq!(
             inferred.transform_options,
-            expected_options(Default::default(), true, false, false)
+            expected_options(Default::default(), false, true, false, false, false)
         );
         assert_eq!(
             inferred.watched_files,
@@ -183,7 +196,7 @@ mod tests {
         let configuration = load(&path);
         assert_eq!(
             configuration.transform_options,
-            expected_options(Default::default(), false, false, false)
+            expected_options(Default::default(), true, false, false, true, false)
         );
         assert_eq!(
             configuration.watched_files,
@@ -210,7 +223,7 @@ mod tests {
         let configuration = load(&path);
         assert_eq!(
             configuration.transform_options,
-            expected_options(Default::default(), true, true, true)
+            expected_options(Default::default(), false, true, true, false, true)
         );
         let mut expected = expected_watches(
             root,
@@ -239,14 +252,14 @@ mod tests {
         let before = load(&path);
         assert_eq!(
             before.transform_options,
-            expected_options(Default::default(), true, false, false)
+            expected_options(Default::default(), true, true, false, true, false)
         );
         assert_eq!(before.config_identity, load(&path).config_identity);
         std::fs::write(&base, r#"{"vueCompilerOptions":{"strictTemplates":true,"checkUnknownProps":false,"strictCssModules":true}}"#).unwrap();
         let after = load(&path);
         assert_eq!(
             after.transform_options,
-            expected_options(Default::default(), false, false, true)
+            expected_options(Default::default(), true, false, false, true, true)
         );
         assert_ne!(before.config_identity, after.config_identity);
         assert_eq!(before.watched_files, after.watched_files);
@@ -270,7 +283,7 @@ mod tests {
         let configuration = load(&path);
         assert_eq!(
             configuration.transform_options,
-            expected_options(Default::default(), false, false, true)
+            expected_options(Default::default(), false, false, false, false, true)
         );
         assert_eq!(
             configuration.watched_files,
