@@ -268,6 +268,8 @@ defineProps<{
         "SlotProvider",
         "Spaced Child",
         "TsxScript",
+        "error",
+        "map",
     ]
     .into_iter()
     .map(str::to_string)
