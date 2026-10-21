@@ -575,7 +575,8 @@ fn check_pack(
             | "content-mapper-template-expression-syntax"
             | "content-mapper-const-enum-import"
             | "content-mapper-dynamic-template-ref-10198"
-            | "content-mapper-type-only-import-use" => regression,
+            | "content-mapper-type-only-import-use"
+            | "content-mapper-dynamic-template-ref-union-10251" => regression,
             _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
         }
     );
