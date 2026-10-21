@@ -37,6 +37,7 @@ function onBlur(): void {}
   <MyInput :type="123" v-bind="attrs" />
   <MyInput :type="123" @blur="onBlur" />
   <MyInput :type="123" v-bind="attrs" @blur="onBlur" />
+  <MyInput v-bind="{ type: 1 }" />
 </template>
 "#,
             ),
@@ -53,19 +54,32 @@ function onBlur(): void {}
         .iter()
         .map(|(file, code, message)| {
             (
-                file.as_str(),
+                file.as_str().replace('\\', "/"),
                 *code,
                 message.split(':').take(2).collect::<Vec<_>>().join(":"),
             )
         })
         .collect();
+    let spread_origin: Vec<_> = actual
+        .iter()
+        .filter(|(_, _, location)| location.starts_with("13:"))
+        .collect();
     assert_eq!(
-        actual,
+        spread_origin.len(),
+        1,
+        "the invalid prop authored inside v-bind must retain one whole-props diagnostic: {snapshot:#?}"
+    );
+    let named_props: Vec<_> = actual
+        .into_iter()
+        .filter(|(_, _, location)| !location.starts_with("13:"))
+        .collect();
+    assert_eq!(
+        named_props,
         vec![
-            ("src/App.vue", Some(2322), "10:13".to_string()),
-            ("src/App.vue", Some(2322), "11:13".to_string()),
-            ("src/App.vue", Some(2322), "12:13".to_string()),
-            ("src/App.vue", Some(2322), "9:13".to_string()),
+            ("src/App.vue".to_string(), Some(2322), "10:13".to_string()),
+            ("src/App.vue".to_string(), Some(2322), "11:13".to_string()),
+            ("src/App.vue".to_string(), Some(2322), "12:13".to_string()),
+            ("src/App.vue".to_string(), Some(2322), "9:13".to_string()),
         ],
         "one authored prop error must produce one attribute-local diagnostic: {snapshot:#?}"
     );
