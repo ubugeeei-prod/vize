@@ -278,18 +278,17 @@ fn standard_tsgo_keeps_musea_art_in_the_pinned_project_contract() {
     };
     assert_eq!(unique_diagnostics("TS2322"), 2, "{stdout}");
     assert_eq!(unique_diagnostics("TS2345"), 2, "{stdout}");
-    for file in ["src/MyCard.art.vue", "src/MyCardExplicit.art.vue"] {
+    for diagnostic in case["diagnostics"].as_array().unwrap() {
+        let file = diagnostic["file"].as_str().unwrap();
+        let line = diagnostic["line"].as_u64().unwrap();
+        let column = diagnostic["column"].as_u64().unwrap();
+        let code = diagnostic["code"].as_u64().unwrap();
+        let needle = cstr!("{file}({line},{column}): error TS{code}:");
         assert!(
             stdout
                 .lines()
-                .any(|line| line.contains(file) && line.contains("TS2322")),
-            "{file} lost its wrong-prop diagnostic:\n{stdout}"
-        );
-        assert!(
-            stdout
-                .lines()
-                .any(|line| line.contains(file) && line.contains("TS2345")),
-            "{file} lost its required-prop diagnostic:\n{stdout}"
+                .any(|output| output.starts_with(needle.as_str())),
+            "missing authored diagnostic {needle}:\n{stdout}"
         );
     }
 
