@@ -54,7 +54,7 @@
   ],
   "oracles": {
     "path": "tests/_fixtures/differential/linter/oracle-index.json",
-    "sha256": "4729622a2311fc7500061b0935762256ff6dfbd766275fee2de40a704e67129c"
+    "sha256": "f1279965f20b418fe998475f9c8710797b748c87a25a3a2321d1a48a786b9da1"
   },
   "cases": [
     {

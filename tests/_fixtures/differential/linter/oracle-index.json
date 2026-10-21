@@ -261,26 +261,26 @@
   },
   "linter/current-api/form-label-hidden-input-report-9751": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__form-label-hidden-input-report-9751.snap",
-    "sha256": "da329579bcc655e299cd9f5317e27f70643a1fe6ec8687280de935887a3e4300"
+    "sha256": "db2160e59eda56af9fba8077dcbec263f6e3945d74d853177ff4abc0af485c1b"
   },
   "linter/current-api/form-label-hidden-select-control": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__form-label-hidden-select-control.snap",
-    "sha256": "53cbb832f4da1a260d9881680c1cf26f692f9d76a58d269ba04d37b8a514be47"
+    "sha256": "e20dcd6905f8399f4ffe4e953d22a953b4c289bda2bb5ee4b6451858d280fb2d"
   },
   "linter/current-api/form-label-hidden-textarea-control": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__form-label-hidden-textarea-control.snap",
-    "sha256": "2e3b5bc9249e070b72706e1bba558c93b0a48674b7df7b19519f1a502ab5c0e5"
+    "sha256": "6ac142034097e8d04e225b6b797ac793d3853e918bf8227cdfd13a0e0fd734fe"
   },
   "linter/current-api/form-label-until-found-control": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__form-label-until-found-control.snap",
-    "sha256": "9ac01c015e6381b822343dbd09e72e24c3c40851d5c5f58ddebf1246288e31e6"
+    "sha256": "a9156431049d8cc4c7797a3eba15d3bbc9bd6df23b7022800c736d062edcdbbe"
   },
   "linter/current-api/form-label-bound-hidden-control": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__form-label-bound-hidden-control.snap",
-    "sha256": "96a51612a09621db56bf79067162d42b07ef9186b2b57cc234b6938e6631f1cf"
+    "sha256": "9227c28346a7b6e4a34151585be4809c884e17876965599a1307568e63b16a4d"
   },
   "linter/current-api/form-label-visible-input-control": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__form-label-visible-input-control.snap",
-    "sha256": "d01c03db0e8db66173fda673afd06ad0ba41f7f13f0d34416fea833d1d1f20e0"
+    "sha256": "7b6c8604ac7002a34bee623a687b2ce13e4689399421aa2504d0fb65046e6322"
   }
 }

@@ -75,6 +75,12 @@
         "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/slot-fallback-vnode.expected.json",
         "sha256": "5ebc501d34723565b01309f47875a360883429c579a67aa3689dbfd4178dfc77"
       },
+      "currentReference": {
+        "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/slot-fallback-vnode-current.expected.json",
+        "sha256": "ea0cd3c0d484b6699ff2e51094a5a04bc9f460df3e5d87277c764d8885659d2f",
+        "supersedesSha256": "5ebc501d34723565b01309f47875a360883429c579a67aa3689dbfd4178dfc77",
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/9455"
+      },
       "historicalObservation": {
         "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/capture-c2451/first.stdout.json",
         "sha256": "27f53d1ece55ea1f63f496bef0700d432491e9679aba63ac4cfb9be72e4481ec"
