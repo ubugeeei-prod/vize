@@ -152,18 +152,19 @@ void test("development styles use Vite imports and metadata-free CSS keeps the f
 });
 
 void test("production style imports are stable across checkout roots", () => {
-  const projectRoot = "/tmp/checkout-a/project";
-  const output = generateOutput(compiled(), {
-    isProduction: true,
-    isDev: false,
-    extractCss: true,
-    filePath: `${projectRoot}/src/Marker.vue`,
-    root: projectRoot,
-  });
+  const outputForRoot = (projectRoot: string) =>
+    generateOutput(compiled(), {
+      isProduction: true,
+      isDev: false,
+      extractCss: true,
+      filePath: `${projectRoot}/src/Marker.vue`,
+      root: projectRoot,
+    });
+  const output = outputForRoot("/tmp/checkout-a/project");
 
   assert.match(
     output,
     /import "\/src\/Marker\.vue\.__vize_style_0\.css\?vue=&type=style&index=0&lang=css&vize-file=%2Fsrc%2FMarker%2Evue";/,
   );
-  assert.doesNotMatch(output, /checkout-a/);
+  assert.equal(output, outputForRoot("/tmp/checkout-b/project"));
 });
