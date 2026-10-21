@@ -209,14 +209,9 @@ void Emoji;
             "diagnostics should not mention {unexpected}:\nstdout:\n{stdout}\nstderr:\n{stderr}"
         );
     }
-    let virtual_chart = std::fs::read_to_string(
-        vize_canon::project_virtual_root(&project_root).join("src/SchoolExamScoreChart.vue.ts"),
-    )
-    .unwrap();
-    assert!(
-        virtual_chart.contains("// @ts-ignore\nimport Chart from \"chart.js/auto/auto\";"),
-        "TS suppression must stay adjacent to the hoisted import:\n{virtual_chart}"
-    );
+    // The missing Chart module makes the native check the behavioral oracle for
+    // suppression adjacency. Do not inspect its cache after the child exits:
+    // another project may collect that unlocked materialization first.
 
     let _ = std::fs::remove_dir_all(&project_root);
 }

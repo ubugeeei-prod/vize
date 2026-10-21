@@ -8,11 +8,11 @@
 //! [`FactConsumer::DEMAND`](vize_l0::fact::FactConsumer::DEMAND), so a
 //! read outside that declaration trips the TS-35 detector.
 
+use vize_l0::Allocator;
 use vize_l0::fact::{
     Demand, FactGroup, FactProducer, FactRegistry, FactTable, FactView, ProducerEntry,
 };
 use vize_l0::pass::AnalysisId;
-use vize_l0::{Allocator, Span};
 
 use super::ComplexityFacts;
 use crate::lower::lower;
@@ -47,18 +47,3 @@ impl FactProducer<str> for TemplateComplexityGroup {
 /// (stratification-checked at compile time).
 pub const TEMPLATE_FACTS: FactRegistry<str> =
     FactRegistry::new(&[ProducerEntry::of::<TemplateComplexityGroup>()]);
-
-impl ComplexityFacts {
-    /// The same facts with every span moved `offset` bytes forward: a
-    /// block-relative table placed in its file.
-    #[must_use]
-    pub fn shifted(mut self, offset: u32) -> Self {
-        for row in &mut self.contributions {
-            row.span = Span::new(
-                row.span.start.saturating_add(offset),
-                row.span.end.saturating_add(offset),
-            );
-        }
-        self
-    }
-}

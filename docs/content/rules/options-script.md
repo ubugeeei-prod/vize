@@ -110,6 +110,8 @@ const env = readServerEnv();
 Use this option when emitted custom events should follow one casing convention across both script
 and template usage. The default is `camelCase`; set `kebab-case` for projects that author emitted
 event names in their template-facing form.
+Component `v-model` events beginning with `update:` are accepted in either mode because their
+suffix mirrors the corresponding prop name.
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";

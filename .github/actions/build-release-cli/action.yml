@@ -2,6 +2,7 @@ name: Build release CLI
 description: Shared exact-checkout CLI recipe for release and trusted cache warming
 inputs:
   target: { required: true, description: Rust target triple }
+  release-version: { required: true, description: Exact version embedded in release binaries }
   archive: { required: true, description: CLI archive name }
   authorized-release:
     {
@@ -90,6 +91,7 @@ runs:
       env:
         CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
         RELEASE_TARGET: ${{ inputs.target }}
+        VIZE_RELEASE_VERSION: ${{ inputs.release-version }}
       run: cargo build --release -p vize --target "$RELEASE_TARGET"
     - name: Create archive (Unix)
       if: runner.os != 'Windows'

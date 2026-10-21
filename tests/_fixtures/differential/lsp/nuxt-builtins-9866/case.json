@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "id": "lsp/fix-history/nuxt-builtins-9866",
+  "provenance": {
+    "fixCommit": "4ed31cc1d682bd7df1102306e8ef8f795c3cc27d",
+    "witnessPath": "crates/vize_maestro/src/server/session/tests.rs",
+    "witnessTest": "nuxt_projects_treat_framework_builtins_as_registered_components",
+    "inputOrigin": "exact HomeLink.vue reproduction from issue 9866",
+    "contractOrigin": "the dedicated package-aware LSP test validates lint diagnostics; this row pins the authored SFC and its complete folding response"
+  },
+  "input": {
+    "source": "HomeLink.vue.txt",
+    "runtimePath": "HomeLink.vue",
+    "sha256": "5362dc0aab5809c4729ee24efd00b452b0eeae794a17a53f965eb5470d2c7b69"
+  },
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "07d120350bbe8f2f53b168884178022ef1c6753a578d32ae06d362085e5f19c6"
+  },
+  "method": "textDocument/foldingRange",
+  "documentVersion": 1,
+  "scope": "exact issue input custody plus source-built package-aware lint witness; no native adapter credit"
+}

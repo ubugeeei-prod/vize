@@ -142,6 +142,23 @@ fn native_projection_borrows_original_bytes_after_the_reused_arena_is_overwritte
 }
 
 #[test]
+fn markdown_template_payload_is_a_borrowed_authored_slice() {
+    let payload = "\r\n---\r\ntitle: \"{{ frontmatter.title }}\"  \r\n---\r\n\r\n# Hello  {{ title }}\r\n\r\n```vue\r\n<template>\r\n  <MyCard :title=\"title\">{{ mustStayInert }}</MyCard>\r\n</template>\r\n```\r\n";
+    let source = format!("<template lang=\"md\">{payload}</template>\r\n");
+    let descriptor = parse_sfc(&source, SfcParseOptions::default()).unwrap();
+    let template = descriptor.template.as_ref().expect("Markdown template");
+
+    assert_eq!(template.lang.as_deref(), Some("md"));
+    assert_eq!(template.content.as_ref(), payload);
+    let authored = source
+        .get(template.loc.start..template.loc.end)
+        .expect("authored Markdown payload");
+    assert_eq!(authored, payload);
+    assert!(matches!(template.content, Cow::Borrowed(_)));
+    assert!(core::ptr::eq(template.content.as_ref(), authored));
+}
+
+#[test]
 fn common_unsupported_envelopes_do_not_acquire_a_native_arena() {
     for source in [
         "<script setup>const value=1;</script><template>{{value}}</template>",

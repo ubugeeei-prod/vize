@@ -18,6 +18,25 @@ fs.mkdirSync(artifacts, { recursive: true });
 const sha256 = (data: Uint8Array) => createHash("sha256").update(data).digest("hex");
 const write = (name: string, data: unknown) =>
   fs.writeFileSync(path.join(artifacts, name), JSON.stringify(data, null, 2) + "\n");
+type RouteInjectionResult = {
+  files: string[];
+  injectedRouteReads: number;
+  routeReads: number;
+};
+function observeRouteInjection(workspace: string): RouteInjectionResult {
+  const clientDir = path.join(workspace, ".output/public/_nuxt");
+  const files = packageFiles(clientDir).filter((filename) => filename.endsWith(".js"));
+  const routeChunks = files.filter((filename) =>
+    fs.readFileSync(filename, "utf8").includes("route-probe"),
+  );
+  assert.ok(routeChunks.length > 0, "built client chunks must retain the route probe");
+  const source = routeChunks.map((filename) => fs.readFileSync(filename, "utf8")).join("\n");
+  return {
+    files: routeChunks.map((filename) => path.relative(workspace, filename)),
+    injectedRouteReads: (source.match(/\._\.provides\[[^\]]+\]\|\|[^)]*\.\$route/g) ?? []).length,
+    routeReads: (source.match(/\.\$route/g) ?? []).length,
+  };
+}
 const versions: Record<string, unknown> = {};
 for (const [name, version] of [
   ["nuxt", "4.5.2"],
@@ -81,6 +100,7 @@ function linkDependencies(workspace: string, candidate: boolean): void {
 }
 
 const results: Record<string, CriticalCssResult> = {};
+const routeInjection: Record<string, RouteInjectionResult> = {};
 for (const variant of ["stock", "published", "candidate"]) {
   const workspace = path.join(artifacts, variant);
   assert.equal(fs.existsSync(workspace), false, "use a new artifact directory per proof run");
@@ -121,11 +141,20 @@ for (const variant of ["stock", "published", "candidate"]) {
   const result = await observeCriticalCss(workspace, root);
   results[variant] = result;
   assertCriticalCss(result, variant === "published");
+  const routeResult = observeRouteInjection(workspace);
+  routeInjection[variant] = routeResult;
+  assert.ok(routeResult.routeReads > 0, `${variant} must compile the route probe`);
+  assert.equal(
+    routeResult.injectedRouteReads > 0,
+    variant !== "published",
+    `${variant} route reads must match Nuxt's PageRouteSymbol injection behavior`,
+  );
   fs.copyFileSync(
     path.join(workspace, ".output/public/index.html"),
     path.join(artifacts, `${variant}-prerender.html`),
   );
   write(`${variant}-observation.json`, result);
+  write(`${variant}-route-injection.json`, routeResult);
   console.log(`${variant}: full style manifest and no-JavaScript computed CSS verified`);
 }
 for (const [filename, hash] of Object.entries(originalPackages))
@@ -145,6 +174,7 @@ for (const dir of ["npm/builder/vite/dist", "npm/framework/nuxt/dist"]) {
 }
 write("proof.json", {
   issue: 6897,
+  regressions: [6897, 10066],
   candidateHead: process.env.GITHUB_SHA ?? null,
   node: process.version,
   versions,
@@ -152,6 +182,7 @@ write("proof.json", {
   nativeAddon: { path: addon, sha256: sha256(fs.readFileSync(addon)) },
   candidateFiles,
   variants: Object.keys(results),
+  routeInjection,
   publishedPackageBytesPreserved: true,
   nativeAcceptance: 0,
 });

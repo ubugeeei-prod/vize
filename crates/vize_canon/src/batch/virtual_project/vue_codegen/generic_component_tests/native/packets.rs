@@ -191,16 +191,29 @@ fn mapped_rows(
             else {
                 continue;
             };
+            let end = &diagnostic.range.end;
+            let end_offset =
+                crate::batch::source_map::line_col_to_offset(code, end.line, end.character)
+                    .unwrap_or(offset);
+            let diagnostic_code = diagnostic.code.as_ref().and_then(|code| {
+                code.as_u64()
+                    .and_then(|code| u32::try_from(code).ok())
+                    .or_else(|| code.as_str().and_then(|code| code.parse().ok()))
+            });
+            if crate::projection::assemble::is_generated_project_import_extension_at(
+                code,
+                diagnostic_code,
+                &diagnostic.message,
+                offset as usize,
+                end_offset as usize,
+            ) {
+                continue;
+            }
             let Some((original, _, _)) = file.source_map.get_original_position(offset) else {
                 continue;
             };
             let (line, column) =
                 crate::batch::source_map::offset_to_line_col(&source, original).unwrap();
-            let code = diagnostic.code.as_ref().and_then(|code| {
-                code.as_u64()
-                    .and_then(|code| u32::try_from(code).ok())
-                    .or_else(|| code.as_str().and_then(|code| code.parse().ok()))
-            });
             rows.push((
                 String::from(
                     file.original_path
@@ -211,7 +224,7 @@ fn mapped_rows(
                 ),
                 line,
                 column,
-                code,
+                diagnostic_code,
                 diagnostic.severity,
                 String::from(diagnostic.message.as_str()),
             ));

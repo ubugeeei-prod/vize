@@ -34,6 +34,7 @@ fn explicit_workspace_inputs_keep_the_actual_nearest_config_filename() {
         },
         Some(&root_config),
         true,
+        None,
         false,
         &mut cache,
         &mut paths,

@@ -707,6 +707,41 @@ function getNames(): string[] { return ['safe'] }
 }
 
 #[test]
+fn multiline_v_for_sources_use_the_inferred_iterable_type() {
+    if !corsa_available() {
+        return;
+    }
+
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let source = r#"<script setup lang="ts">
+const pages: string[][] = [['a', 'b'], ['c']]
+const current = 0
+function pick(index: number): string[] { return pages[index] ?? [] }
+</script>
+<template>
+  <li v-for="item in pages[
+    current
+  ]" :key="item">{{ item }}</li>
+  <li v-for="item in pick(
+    current
+  )" :key="item">{{ item }}</li>
+  <li v-for="item in
+    pick(current)" :key="item">{{ item }}</li>
+  <li v-for="item in pick(current)" :key="item">{{ item }}</li>
+</template>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "MultilineForSources.vue");
+    let warnings: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING)
+        .collect();
+    assert!(
+        warnings.is_empty(),
+        "typed multiline v-for sources should stay safe: {warnings:?}"
+    );
+}
+
+#[test]
 fn unsafe_v_for_source_still_reports() {
     if !corsa_available() {
         return;

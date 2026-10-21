@@ -634,5 +634,23 @@
         "after": "        // Vue's parser records dots in static slot names as directive\n        // modifiers. Component libraries intentionally use names such as\n        // `item.name`, so the default preset keeps the historical behavior\n        // of accepting them. Projects that need the stricter eslint-plugin-vue\n        // policy can still set `allowModifiers: false` explicitly.\n        registry.register(Box::new(\n            crate::rules::vue::ValidVSlot::allowing_static_name_dots(),\n        ));"
       }
     ]
+  },
+  {
+    "reason": "opinionated: expose Nuxt built-in component names to product hosts",
+    "path": "crates/vize_patina/src/rules/opinionated/vue.rs",
+    "before": {
+      "bytes": 5097,
+      "sha256": "171a7deece0972331070dba50e607eb5d1bd20c7fe640729606ceb7eac9316fc"
+    },
+    "after": {
+      "bytes": 5129,
+      "sha256": "06d0c9ea1c17763be857ff973f729dcb0fa9bdd3425475fdac4fef1d0cc92470"
+    },
+    "hunks": [
+      {
+        "before": "pub use require_component_registration::{RequireComponentRegistration, VUE_ROUTER_COMPONENTS};",
+        "after": "pub use require_component_registration::{\n    NUXT_BUILTIN_COMPONENTS, RequireComponentRegistration, VUE_ROUTER_COMPONENTS,\n};"
+      }
+    ]
   }
 ]

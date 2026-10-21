@@ -117,6 +117,7 @@ jobs:
         with:
           target: ${{ matrix.settings.target }}
           archive: ${{ matrix.settings.archive }}
+          release-version: ${{ needs.version.outputs.version }}
           authorized-release: "true"
 
   build-native:
@@ -136,6 +137,7 @@ jobs:
         with:
           target: ${{ matrix.settings.target }}
           cross-compile: ${{ matrix.settings.cross_compile }}
+          release-version: ${{ needs.version.outputs.version }}
           authorized-release: "true"
 
   build-packages:

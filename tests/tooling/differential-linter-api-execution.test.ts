@@ -13,7 +13,7 @@ import { expectedNativeReason } from "../differential/linter-native.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
-void test("shared linter corpus retains all 50 complete actual public observations from source-built Rust", (t) => {
+void test("shared linter corpus retains all 59 complete actual public observations from source-built Rust", (t) => {
   const evidenceDir = path.resolve(
     root,
     process.env.VIZE_LINTER_API_EVIDENCE_DIR ?? "target/differential/linter-api",
@@ -38,11 +38,11 @@ void test("shared linter corpus retains all 50 complete actual public observatio
   assert.deepEqual(
     report.summary,
     {
-      plannedCases: 50,
-      legacyMatches: 50,
+      plannedCases: 59,
+      legacyMatches: 59,
       legacyFailures: 0,
       baselineDrift: 0,
-      nativeUnsupported: 40,
+      nativeUnsupported: 49,
       nativeFailures: 0,
       nativeHandled: 10,
       nativeEquivalent: 10,
