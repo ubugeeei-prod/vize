@@ -132,6 +132,21 @@ test("real-project workflow schedules every balanced fixture shard nightly", () 
     reductionUpload.with?.name,
     "canonical-corpus-dom-reduction-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}",
   );
+  const promotion = workflow.jobs?.["davinci-dom-divergence-promotion"];
+  assert.ok(promotion);
+  assert.equal(promotion.name, "promote canonical DOM divergence fixture");
+  assert.equal(promotion.needs, "davinci-dom-divergence-reduction");
+  assert.deepEqual(promotion.permissions, {
+    actions: "read",
+    contents: "write",
+    "pull-requests": "write",
+  });
+  const promotionStep = findStep(
+    promotion.steps ?? [],
+    "Promote minimized witness to a draft fixture PR",
+  );
+  assert.deepEqual(promotionStep.env, { GH_TOKEN: "${{ github.token }}" });
+  assert.match(promotionStep.run ?? "", /canonical-corpus-divergence-promotion\.mjs publish/);
   const publisher = workflow.jobs?.["davinci-dom-divergence-issue"];
   assert.ok(publisher);
   assert.equal(publisher.name, "file canonical DOM divergence");
@@ -139,7 +154,11 @@ test("real-project workflow schedules every balanced fixture shard nightly", () 
     publisher.if,
     "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}",
   );
-  assert.deepEqual(publisher.needs, ["davinci-dom-corpus", "davinci-dom-divergence-reduction"]);
+  assert.deepEqual(publisher.needs, [
+    "davinci-dom-corpus",
+    "davinci-dom-divergence-reduction",
+    "davinci-dom-divergence-promotion",
+  ]);
   assert.deepEqual(publisher.permissions, {
     contents: "read",
     actions: "read",
@@ -156,10 +175,12 @@ test("real-project workflow schedules every balanced fixture shard nightly", () 
   });
   const issue = findStep(publisherSteps, "File canonical DOM divergence issue");
   assert.deepEqual(issue.env, { GH_TOKEN: "${{ github.token }}" });
-  assert.equal(
-    issue.run,
-    "node tools/support/compat/github/canonical-corpus-divergence-issue.mjs publish real-project-davinci-dom-corpus real-project-davinci-dom-reduction",
+  assert.equal(issue.shell, "bash");
+  assert.match(
+    issue.run ?? "",
+    /if \[\[ -s real-project-davinci-dom-promotion\/promotion\.json \]\]/,
   );
+  assert.match(issue.run ?? "", /canonical-corpus-divergence-issue\.mjs "\$\{args\[@\]\}"/);
   for (const checkout of [
     findStep(job.steps ?? [], "Checkout matrix commit"),
     findStep(corpus.steps ?? [], "Checkout matrix commit"),

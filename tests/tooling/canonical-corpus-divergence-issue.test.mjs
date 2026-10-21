@@ -77,10 +77,21 @@ await test("a matching automatic reduction receipt is linked without copying sou
     sourceCommit: context.sourceCommit,
     runUrl: context.runUrl,
   };
-  const plan = createDivergenceIssue(evidence, ledger, selected, context, receipt);
+  const promotion = {
+    schema: "vize.realProjectDivergenceFixturePromotionReceipt",
+    version: 1,
+    status: "created",
+    fingerprint: first.fingerprint,
+    pullRequestNumber: 93,
+    pullRequestUrl: "https://example.test/pull/93",
+    sourceCommit: context.sourceCommit,
+  };
+  const plan = createDivergenceIssue(evidence, ledger, selected, context, receipt, promotion);
   assert.match(plan.body, /Automatic reduction: `reduced`/);
   assert.match(plan.body, /canonical-corpus-dom-reduction-1234-2-/);
   assert.match(plan.body, /200 -> 40 bytes/);
+  assert.match(plan.body, /Fixture promotion: `created`/);
+  assert.match(plan.body, /https:\/\/example\.test\/pull\/93/);
   assert.doesNotMatch(plan.body, /<template>/);
   assert.throws(
     () =>

@@ -152,7 +152,11 @@ test("passive native LSP capture retains the complete original Matrix workflow",
   assert.deepEqual(divergenceIssue, {
     name: "file canonical DOM divergence",
     if: "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}",
-    needs: ["davinci-dom-corpus", "davinci-dom-divergence-reduction"],
+    needs: [
+      "davinci-dom-corpus",
+      "davinci-dom-divergence-reduction",
+      "davinci-dom-divergence-promotion",
+    ],
     permissions: { contents: "read", actions: "read", issues: "write" },
     "runs-on": "ubuntu-latest",
     "timeout-minutes": 5,
@@ -183,9 +187,24 @@ test("passive native LSP capture retains the complete original Matrix workflow",
         },
       },
       {
+        name: "Download canonical DOM fixture promotion",
+        "continue-on-error": true,
+        uses: "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
+        with: {
+          name: "canonical-corpus-dom-promotion-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}",
+          path: "real-project-davinci-dom-promotion",
+        },
+      },
+      {
         name: "File canonical DOM divergence issue",
         env: { GH_TOKEN: "${{ github.token }}" },
-        run: "node tools/support/compat/github/canonical-corpus-divergence-issue.mjs publish real-project-davinci-dom-corpus real-project-davinci-dom-reduction",
+        shell: "bash",
+        run:
+          "args=(publish real-project-davinci-dom-corpus real-project-davinci-dom-reduction)\n" +
+          "if [[ -s real-project-davinci-dom-promotion/promotion.json ]]; then\n" +
+          "  args+=(real-project-davinci-dom-promotion)\n" +
+          "fi\n" +
+          'node tools/support/compat/github/canonical-corpus-divergence-issue.mjs "${args[@]}"\n',
       },
     ],
   });
@@ -199,6 +218,21 @@ test("passive native LSP capture retains the complete original Matrix workflow",
     true,
   );
   delete current.jobs["davinci-dom-divergence-reduction"];
+  const divergencePromotion = current.jobs["davinci-dom-divergence-promotion"];
+  assert.equal(divergencePromotion.name, "promote canonical DOM divergence fixture");
+  assert.equal(divergencePromotion.needs, "davinci-dom-divergence-reduction");
+  assert.deepEqual(divergencePromotion.permissions, {
+    actions: "read",
+    contents: "write",
+    "pull-requests": "write",
+  });
+  assert.equal(
+    divergencePromotion.steps.some(
+      (step) => step.name === "Promote minimized witness to a draft fixture PR",
+    ),
+    true,
+  );
+  delete current.jobs["davinci-dom-divergence-promotion"];
   assert.deepEqual(current.permissions, { contents: "read" });
   current.permissions = original.permissions;
   const corpus = current.jobs["davinci-dom-corpus"];

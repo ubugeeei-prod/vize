@@ -43,7 +43,7 @@ type PinnedArtifact = { path: string; sha256: string };
 type ReviewDocument = {
   schema: string;
   version: number;
-  manifest: string;
+  manifests: string[];
   scope: string;
   reviews: ScopeReview[];
 };
@@ -80,6 +80,20 @@ const SFC_RESULT_FACETS = [
   "bindings",
   "macroArtifacts",
 ];
+const REVIEW_TARGETS = {
+  dom: {
+    contract: "compiler-complete-public-sfc-result-v1",
+    facets: SFC_RESULT_FACETS,
+  },
+  ssr: {
+    contract: "compiler-complete-public-ssr-result-v1",
+    facets: ["code", "preamble", "map", "diagnostics"],
+  },
+  vapor: {
+    contract: "compiler-complete-public-vapor-result-v1",
+    facets: ["code", "templates", "map", "errorMessages"],
+  },
+} as const;
 
 function assertPinnedArtifact(root: string, artifact: PinnedArtifact) {
   assert.match(artifact.path, /^[a-zA-Z0-9_./-]+$/);
@@ -92,21 +106,30 @@ function reviewedScopes(root: string, links: Map<string, CaseReference[]>) {
   const reviewBytes = fs.readFileSync(path.join(root, REVIEWS), "utf8");
   const document = JSON.parse(reviewBytes) as ReviewDocument;
   assert.equal(document.schema, "vize.compiler.fix-history-reviews");
-  assert.equal(document.version, 1);
+  assert.equal(document.version, 2);
   assert.equal(typeof document.scope, "string");
   assert(document.scope.length > 0);
-  assert.match(document.manifest, /^[a-zA-Z0-9_./-]+$/);
+  assert(Array.isArray(document.manifests));
+  assert(document.manifests.length > 0);
+  assert.equal(new Set(document.manifests).size, document.manifests.length);
+  assert(document.manifests.every((manifest) => /^[a-zA-Z0-9_./-]+$/.test(manifest)));
   assert(Array.isArray(document.reviews));
 
-  const manifestBytes = fs.readFileSync(path.join(root, document.manifest), "utf8");
-  const manifest = JSON.parse(manifestBytes) as DifferentialManifest;
-  assert.equal(manifest.schema, "vize.differential.manifest");
-  assert.equal(manifest.version, 1);
-  assert.equal(manifest.product, "compiler");
-  assert(Array.isArray(manifest.cases));
-  const cases = new Map<string, DifferentialFixture>(
-    manifest.cases.map((fixture) => [fixture.id, fixture]),
-  );
+  const manifests = document.manifests.map((manifestPath) => {
+    const bytes = fs.readFileSync(path.join(root, manifestPath), "utf8");
+    const manifest = JSON.parse(bytes) as DifferentialManifest;
+    assert.equal(manifest.schema, "vize.differential.manifest");
+    assert.equal(manifest.version, 1);
+    assert.equal(manifest.product, "compiler");
+    assert(Array.isArray(manifest.cases));
+    return { path: manifestPath, sha256: digest(bytes), manifest };
+  });
+  const cases = new Map<string, DifferentialFixture>();
+  for (const { manifest } of manifests)
+    for (const fixture of manifest.cases) {
+      assert(!cases.has(fixture.id), `duplicate differential case: ${fixture.id}`);
+      cases.set(fixture.id, fixture);
+    }
   const reviews = new Map<string, ScopeReview>();
 
   for (const review of document.reviews) {
@@ -131,9 +154,12 @@ function reviewedScopes(root: string, links: Map<string, CaseReference[]>) {
     const fixture = cases.get(review.caseId);
     assert(fixture, `reviewed case is absent from the differential manifest: ${review.caseId}`);
     assert.equal(fixture.state, "active");
-    assert.deepEqual(fixture.targets, ["dom"]);
-    assert.equal(fixture.comparison.contract, "compiler-complete-public-sfc-result-v1");
-    assert.deepEqual(fixture.comparison.requiredFacets, SFC_RESULT_FACETS);
+    assert.equal(fixture.targets.length, 1);
+    const target = fixture.targets[0] as keyof typeof REVIEW_TARGETS;
+    const targetContract = REVIEW_TARGETS[target];
+    assert(targetContract, `unsupported compiler review target: ${target}`);
+    assert.equal(fixture.comparison.contract, targetContract.contract);
+    assert.deepEqual(fixture.comparison.requiredFacets, targetContract.facets);
     assert(
       fixture.provenance.commits.some(
         (commit) => commit.sha === review.fixCommit && commit.role === "fix",
@@ -160,7 +186,10 @@ function reviewedScopes(root: string, links: Map<string, CaseReference[]>) {
   return {
     path: REVIEWS,
     sha256: digest(reviewBytes),
-    manifest: { path: document.manifest, sha256: digest(manifestBytes) },
+    manifests: manifests.map(({ path: manifestPath, sha256 }) => ({
+      path: manifestPath,
+      sha256,
+    })),
     reviews,
   };
 }
@@ -191,10 +220,11 @@ function fixtureReferences(root: string): Map<string, CaseReference[]> {
     for (const fixture of document.cases) {
       const fixes: string[] = fixture.fixCommits ?? [fixture.fixCommit];
       assert.equal(typeof fixture.id, "string");
-      const fixtureId =
-        pack === "vize_atelier_sfc/tests/fixtures/fix-history/map-diagnostic-input-provenance.json"
-          ? `compiler/sfc/${fixture.id}`
-          : fixture.id;
+      const target = pack.match(/^vize_atelier_(sfc|ssr|vapor)\//)?.[1];
+      assert(target, `unknown compiler provenance target: ${pack}`);
+      const fixtureId = fixture.id.startsWith("compiler/")
+        ? fixture.id
+        : `compiler/${target}/${fixture.id}`;
       for (const fix of fixes) {
         assert.match(fix, /^[a-f0-9]{40}$/);
         const cases = links.get(fix) ?? [];
@@ -320,7 +350,7 @@ export function renderHistory(history: ReturnType<typeof collectHistory>) {
   const index = `${columns.join("\t")}\n${body.join("\n")}\n`;
   const receipt = {
     schema: "vize.compiler.fix-history-index",
-    version: 2,
+    version: 3,
     sourceRevision: HISTORY_REVISION,
     paths: HISTORY_CRATES.map((name) => `crates/${name}`),
     command: [
@@ -343,7 +373,7 @@ export function renderHistory(history: ReturnType<typeof collectHistory>) {
     reviewLedger: {
       path: history.reviewed.path,
       sha256: history.reviewed.sha256,
-      differentialManifest: history.reviewed.manifest,
+      differentialManifests: history.reviewed.manifests,
     },
     nonIndexedFixtureReferences: history.nonIndexedFixtureReferences,
     patchEquivalentGroups: [...groups.values()].filter((group) => group.length > 1),
@@ -354,7 +384,7 @@ export function renderHistory(history: ReturnType<typeof collectHistory>) {
       "The original 609-fix snapshot has no verified source revision.",
       "Changed witness paths and stable patch equivalence are candidates, not coverage or automatic duplicate exclusions.",
       "Fixture references cover only their recorded entrypoint, target, options and public output facets.",
-      "Ten SFC fixture scopes have bounded semantic review; every fix subject retains whole-fix target and dialect review pending.",
+      "Eleven fixture scopes (ten SFC and one SSR) have bounded semantic review; every fix subject retains whole-fix target and dialect review pending.",
       "Historical or local execution does not certify current Actions or a native route.",
     ],
   };

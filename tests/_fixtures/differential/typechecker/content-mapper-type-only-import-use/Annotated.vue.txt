@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import { Item } from "./model";
+import List from "./List.vue";
+
+const items: Item[] = [{ id: "a" }];
+</script>
+
+<template>
+  <List :items="items" :key-of="(item: Item) => item.id" />
+</template>

@@ -1,0 +1,7 @@
+<script setup lang="ts">
+defineProps<{ items: unknown[]; keyOf: (item: never) => string }>();
+</script>
+
+<template>
+  <ul><li v-for="(item, i) in items" :key="i">{{ item }}</li></ul>
+</template>

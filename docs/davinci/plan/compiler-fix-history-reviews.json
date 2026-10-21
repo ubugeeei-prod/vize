@@ -1,8 +1,11 @@
 {
   "schema": "vize.compiler.fix-history-reviews",
-  "version": 1,
-  "manifest": "tests/_fixtures/differential/compiler/sfc-fix-history.manifest.json",
-  "scope": "Bounded semantic review of ten complete public SFC Result fixtures; this is not whole-fix, whole-history, native, target, or dialect acceptance.",
+  "version": 2,
+  "manifests": [
+    "tests/_fixtures/differential/compiler/sfc-fix-history.manifest.json",
+    "tests/_fixtures/differential/compiler/ssr-fix-history.manifest.json"
+  ],
+  "scope": "Bounded semantic review of ten complete public SFC Result fixtures and one complete public SSR Result fixture; this is not whole-fix, whole-history, native, target, or dialect acceptance.",
   "reviews": [
     {
       "fixCommit": "ceb0fda9c18ed6e40db71a2c582e9fe10950a43a",
@@ -112,6 +115,17 @@
       ],
       "remainingScope": [
         "Other default expressions and prop shapes, multiple diagnostics, alternate syntax, Vapor, SSR, CLI presentation, and editor runtime behavior remain outside this reviewed fixture scope."
+      ]
+    },
+    {
+      "fixCommit": "63d11c41a88db4cead31dbbb512e3a47c8ac29e6",
+      "caseId": "compiler/ssr/textarea-model",
+      "coveredRequirements": [
+        "SSR compilation renders a textarea v-model value as escaped text content instead of dropping the initial value.",
+        "The complete public SSR Result preserves generated code, helper preamble, nullable map, and ordered diagnostics under the pinned default options."
+      ],
+      "remainingScope": [
+        "Other form controls, alternate options and dialects, SFC SSR integration, hydration behavior, and a native compiler route remain outside this reviewed fixture scope."
       ]
     }
   ]

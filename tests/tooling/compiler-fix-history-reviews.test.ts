@@ -13,7 +13,7 @@ const digest = (bytes: string) => createHash("sha256").update(bytes).digest("hex
 
 void test("bounded compiler history reviews stay tied to complete differential fixtures", () => {
   const reviewed = validateHistoryReviews(root);
-  assert.equal(reviewed.reviews.size, 10);
+  assert.equal(reviewed.reviews.size, 11);
 
   const index = fs.readFileSync(indexPath, "utf8");
   const [header, ...rows] = index.trimEnd().split("\n");
@@ -25,12 +25,12 @@ void test("bounded compiler history reviews stay tied to complete differential f
   const reviewedStatus = "fixture-linked;bounded-semantic-scope-reviewed;whole-fix-review-pending";
   for (const commit of reviewed.reviews.keys())
     assert.equal(indexed.get(commit)?.[status], reviewedStatus, commit);
-  assert.equal(rows.filter((line) => line.split("\t")[status] === reviewedStatus).length, 10);
+  assert.equal(rows.filter((line) => line.split("\t")[status] === reviewedStatus).length, 11);
 
   const receipt = JSON.parse(fs.readFileSync(receiptPath, "utf8"));
-  assert.equal(receipt.version, 2);
+  assert.equal(receipt.version, 3);
   assert.equal(receipt.nonMergeFixSubjects, rows.length);
-  assert.equal(receipt.boundedReviewedFixtureScopes, 10);
+  assert.equal(receipt.boundedReviewedFixtureScopes, 11);
   assert.equal(receipt.wholeFixReviewedSubjects, 0);
   assert.equal(receipt.wholeFixReviewPendingSubjects, rows.length);
   assert.equal(receipt.semanticDenominator, null);
@@ -39,6 +39,6 @@ void test("bounded compiler history reviews stay tied to complete differential f
   assert.deepEqual(receipt.reviewLedger, {
     path: reviewed.path,
     sha256: reviewed.sha256,
-    differentialManifest: reviewed.manifest,
+    differentialManifests: reviewed.manifests,
   });
 });

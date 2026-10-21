@@ -127,7 +127,7 @@ full-wire/shared-runner registration added below. This covers only the selected
 CRLF public response witness; it does not establish whole-fix or whole-history
 coverage.
 
-### Shared raw-wire completion candidate
+### Shared raw-wire response coverage
 
 The CRLF on-type case is now bound by name to the shared stdio manifest law
 rather than relying on its incidental position in the manifest. The law retains
@@ -139,9 +139,20 @@ the source-built differential runner.
 
 This makes the one required-response obligation recorded for historical fix
 `4d04bc3e53acfddf835f2db70e613abe85ce8df4` executable in the shared raw-wire
-corpus. The row remains a completion candidate until fresh exact-head Actions
-execute the source-built sessions and protected delivery reaches main. It grants
-no native acceptance and does not reduce any other history row.
+corpus. Exact source head `73874369da642648feadeb45aaefa3b15cb01ea3`
+passed source Check
+[39655452610](https://github.com/ubugeeei-prod/vize/actions/runs/39655452610).
+Its selected tooling report
+[job 119416151572](https://github.com/ubugeeei-prod/vize/actions/runs/39655452610/job/119416151572)
+and final [test report](https://github.com/ubugeeei-prod/vize/actions/runs/39655452610/job/119416353634)
+both succeeded after the complete affected-tooling matrix.
+
+Protected merge-group Check
+[39656151271](https://github.com/ubugeeei-prod/vize/actions/runs/39656151271)
+succeeded for candidate `d5fb90921c2b1e4ebb98aaf0ed737ee35c7c5b2e`,
+which became the actual main merge. The pinned CRLF on-type row is therefore
+`response-fixture-covered`: the third of 255 historical fix rows. This grants
+no native acceptance; the other 252 rows and #6883 remain open.
 
 ### Dated CRLF source proof
 

@@ -94,11 +94,14 @@ pub(super) fn collect_imported_names<'a>(
         .collect()
 }
 
-fn collect_type_only_imported_names(
+/// Syntactic value imports can still resolve to type-only exports when
+/// `verbatimModuleSyntax` is disabled. Until either the script or template
+/// proves a runtime read, generated code must not use those locals as values.
+pub(super) fn collect_imported_names_without_script_value_use(
     summary: &Croquis,
     script_content: Option<&str>,
     usage: &IdentifierUsage,
-) -> FxHashSet<CompactString> {
+) -> FxHashSet<String> {
     let Some(script) = script_content else {
         return FxHashSet::default();
     };
@@ -109,7 +112,8 @@ fn collect_type_only_imported_names(
 
     import_names
         .into_iter()
-        .filter(|name| usage.type_refs.contains(name) && !usage.value_refs.contains(name))
+        .filter(|name| !usage.value_refs.contains(name))
+        .map(|name| String::from(name.as_str()))
         .collect()
 }
 
@@ -118,15 +122,10 @@ pub(super) fn collect_setup_binding_anchor_names(
     script_content: Option<&str>,
     usage: &IdentifierUsage,
     template_referenced_names: Option<&FxHashSet<String>>,
+    template_value_names: &FxHashSet<String>,
 ) -> Vec<String> {
-    let type_only_imported_names = collect_type_only_imported_names(summary, script_content, usage);
-    let mut template_value_names: FxHashSet<CompactString> =
-        vize_croquis::facts::used_component_name_list(summary)
-            .into_iter()
-            .collect();
-    if let Some(names) = template_referenced_names {
-        template_value_names.extend(names.iter().cloned());
-    }
+    let imported_names_without_script_value_use =
+        collect_imported_names_without_script_value_use(summary, script_content, usage);
 
     let mut binding_names: Vec<String> =
         crate::virtual_ts::script_facts::with_bindings(summary, |bindings| {
@@ -157,7 +156,7 @@ pub(super) fn collect_setup_binding_anchor_names(
     }
     binding_names.retain(|name| {
         !usage.const_enums.contains(name.as_str())
-            && (!type_only_imported_names.contains(name.as_str())
+            && (!imported_names_without_script_value_use.contains(name.as_str())
                 || template_value_names.contains(name.as_str()))
     });
     binding_names.sort_unstable();
@@ -187,7 +186,6 @@ pub(super) fn collect_value_import_binding_names(
 
 #[derive(Default)]
 pub(super) struct IdentifierUsage {
-    type_refs: FxHashSet<CompactString>,
     value_refs: FxHashSet<CompactString>,
     const_enums: FxHashSet<CompactString>,
     type_depth: u32,
@@ -210,7 +208,6 @@ impl<'a> Visit<'a> for IdentifierUsage {
     }
 
     fn visit_ts_type_reference(&mut self, ty: &TSTypeReference<'a>) {
-        record_type_name_root(&ty.type_name, &mut self.type_refs);
         self.type_depth += 1;
         walk::walk_ts_type_reference(self, ty);
         self.type_depth -= 1;

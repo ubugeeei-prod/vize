@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10193,
+  "regressionCommit": "fb89f41ffc518768e3053ccf9fe6b83bf24a1122",
+  "sourceRevision": "fb89f41ffc518768e3053ccf9fe6b83bf24a1122",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "inferred-type-only-imports",
+      "inputs": [
+        { "file": "tsconfig.json", "source": "tsconfig.json.txt" },
+        { "file": "src/model.ts", "source": "model.ts.txt" },
+        { "file": "src/List.vue", "source": "List.vue.txt" },
+        { "file": "src/Unused.vue", "source": "Unused.vue.txt" },
+        { "file": "src/Annotated.vue", "source": "Annotated.vue.txt" }
+      ],
+      "diagnostics": []
+    }
+  ]
+}
