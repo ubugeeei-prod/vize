@@ -1836,6 +1836,70 @@
           "sha256": "ee913a6465fcc965617f45c7f3897143cdd177a74a07b4abc4fd2ab30c78060b"
         }
       ]
+    },
+    {
+      "id": "typechecker/native-pointer-events-original/click-pointer-handler",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "native-pointer-events-original",
+      "case": "click-pointer-handler",
+      "test": "native_click_events_preserve_pointer_event_diagnostics",
+      "regressionCommit": "e7d8b1c82a8badec89ec9779838dfa50c1b9b790",
+      "sourceRevision": "e7d8b1c82a8badec89ec9779838dfa50c1b9b790",
+      "packReference": {
+        "path": "native-pointer-events-original/cases.json",
+        "sha256": "9e5a297eb799ddff8fb7e9b08f0009f0d7e174caa503606dc6e4dc0bc3b384f5"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "native-pointer-events-original/click-pointer-handler/tsconfig.json.txt",
+          "sha256": "97fe2cd88a02b6ee5680212cba048feac1cb807d26fd4a5ef3c2dede7874117e"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "native-pointer-events-original/click-pointer-handler/src/App.vue.txt",
+          "sha256": "5d198732686d7ebdf96ad96d0740b14f42ba28e5a2c18185bd5b6c8792e58dad"
+        }
+      ]
+    },
+    {
+      "id": "typechecker/native-pointer-events-original/auxclick-pointer-handler",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "native-pointer-events-original",
+      "case": "auxclick-pointer-handler",
+      "test": "native_click_events_preserve_pointer_event_diagnostics",
+      "regressionCommit": "e7d8b1c82a8badec89ec9779838dfa50c1b9b790",
+      "sourceRevision": "e7d8b1c82a8badec89ec9779838dfa50c1b9b790",
+      "packReference": {
+        "path": "native-pointer-events-original/cases.json",
+        "sha256": "9e5a297eb799ddff8fb7e9b08f0009f0d7e174caa503606dc6e4dc0bc3b384f5"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "native-pointer-events-original/auxclick-pointer-handler/tsconfig.json.txt",
+          "sha256": "97fe2cd88a02b6ee5680212cba048feac1cb807d26fd4a5ef3c2dede7874117e"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "native-pointer-events-original/auxclick-pointer-handler/src/App.vue.txt",
+          "sha256": "f86e1cd968a74e9686dd11cd9a25f06f3c2e77aafcea0f1da975e63cc1ba52a1"
+        }
+      ]
     }
   ]
 }
