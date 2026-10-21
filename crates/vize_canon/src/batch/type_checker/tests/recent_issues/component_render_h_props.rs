@@ -38,21 +38,19 @@ export const valid = h(Counter, { count: 3 });
         return;
     };
 
-    let diagnostics: Vec<_> = snapshot
-        .iter()
-        .map(|(file, code, message)| {
-            (
-                file.as_str(),
-                *code,
-                message.split(':').take(2).collect::<Vec<_>>().join(":"),
-            )
-        })
-        .collect();
     assert_eq!(
-        diagnostics,
+        snapshot,
         vec![
-            ("src/render.ts", Some(2769), "4:24".to_string()),
-            ("src/render.ts", Some(2769), "5:22".to_string()),
+            (
+                "src/render.ts".to_string(),
+                Some(2769),
+                "4:24:error capture exact TS2769 missing-props diagnostic".to_string(),
+            ),
+            (
+                "src/render.ts".to_string(),
+                Some(2769),
+                "5:22:error capture exact TS2769 wrong-props diagnostic".to_string(),
+            ),
         ],
         "only the missing and wrong h() calls may report diagnostics: {snapshot:#?}"
     );
