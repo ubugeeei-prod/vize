@@ -4,11 +4,9 @@ use std::path::{Path, PathBuf};
 
 use crate::batch::error::{CorsaError, CorsaResult};
 
+use super::super::art_usage::apply_musea_art_globals;
 use super::super::build::RegisteredFile;
 use super::super::{SourceArtifacts, VirtualFile, VirtualProject};
-
-const MUSEA_DEFINE_ART_STUB: &str =
-    "declare function defineArt(source: string, options?: Record<string, any>): void;";
 
 impl VirtualProject {
     pub(in crate::batch::virtual_project) fn is_package_route_path(&self, path: &Path) -> bool {
@@ -57,17 +55,7 @@ impl VirtualProject {
             star_projection: registered.star_projection,
             ..Default::default()
         };
-        if is_musea_art_vue_path(&registered.file.original_path)
-            && !self
-                .virtual_ts_options
-                .auto_import_stubs
-                .iter()
-                .any(|stub| stub.contains("defineArt"))
-        {
-            self.virtual_ts_options
-                .auto_import_stubs
-                .push(MUSEA_DEFINE_ART_STUB.into());
-        }
+        apply_musea_art_globals(&registered.file.original_path, &mut self.virtual_ts_options);
         self.diagnostics.extend(registered.diagnostics);
         self.original_index.insert(
             registered.file.original_path.clone(),
@@ -208,12 +196,6 @@ impl VirtualProject {
         }
         removed
     }
-}
-
-pub(super) fn is_musea_art_vue_path(path: &Path) -> bool {
-    path.file_name()
-        .and_then(|name| name.to_str())
-        .is_some_and(|name| name.ends_with(".art.vue"))
 }
 
 #[cfg(test)]

@@ -20,6 +20,7 @@ mod package_routes;
 
 pub(super) use package_routes::RouteBatch;
 
+use super::art_usage::is_musea_art_vue_path;
 use super::build::{
     RegisteredFile, ScriptBuildContext, VirtualBuildContext, build_registered_file,
     build_script_registered_file, build_vue_registered_file, source_type_for_path,
@@ -169,11 +170,7 @@ impl VirtualProject {
     /// file registered.
     pub(crate) fn register_canonical_paths_lenient(&mut self, paths: &[PathBuf]) -> bool {
         // An art file adds the `defineArt` stub that later builds read.
-        if paths.len() <= 1
-            || paths
-                .iter()
-                .any(|path| artifacts::is_musea_art_vue_path(path))
-        {
+        if paths.len() <= 1 || paths.iter().any(|path| is_musea_art_vue_path(path)) {
             let mut registered_any = false;
             for path in paths {
                 registered_any |= self.register_path(path).is_ok();

@@ -1,8 +1,35 @@
+use std::path::Path;
+
 use vize_atelier_core::{
     ParserOptions, TemplateSyntaxMode, parser::parse_with_options_and_template_syntax,
 };
 use vize_atelier_sfc::{SfcDescriptor, script::resolve_template_used_identifiers};
 use vize_carton::{Allocator, FxHashSet, String as CompactString};
+
+use crate::virtual_ts::VirtualTsOptions;
+
+const MUSEA_DEFINE_ART_STUB: &str =
+    "declare function defineArt(source: string, options?: Record<string, any>): void;";
+
+pub(super) fn is_musea_art_vue_path(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| name.ends_with(".art.vue"))
+}
+
+/// Keep the project and single-file content-mapper paths on the same Musea
+/// file-kind contract. Batch projects materialize this declaration in their
+/// ambient stub file; a content mapper has to carry it in the returned module.
+pub(super) fn apply_musea_art_globals(path: &Path, options: &mut VirtualTsOptions) {
+    if is_musea_art_vue_path(path)
+        && !options
+            .auto_import_stubs
+            .iter()
+            .any(|stub| stub.contains("defineArt"))
+    {
+        options.auto_import_stubs.push(MUSEA_DEFINE_ART_STUB.into());
+    }
+}
 
 pub(super) fn collect_art_template_referenced_names(
     descriptor: &SfcDescriptor<'_>,

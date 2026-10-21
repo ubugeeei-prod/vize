@@ -35,6 +35,7 @@ use directives::{sfc_diagnostic_directives, with_generic_echoes};
 mod component_name;
 use component_name::content_mapper_component_name;
 
+use super::art_usage::apply_musea_art_globals;
 use super::build::{descriptor_uses_jsx_script, prepend_vue_jsx_reference};
 use super::diagnostics::invalid_sfc_fallback_virtual_ts;
 use super::javascript_sfc::prepare_script_blocks;
@@ -152,6 +153,8 @@ pub fn generate_vue_content_mapper_transform_with_options(
     let descriptor = prepare_script_blocks(descriptor);
     let use_tsx = descriptor_uses_jsx_script(&descriptor);
     let component_name = content_mapper_component_name(path);
+    let mut virtual_ts_options = VirtualTsOptions::default();
+    apply_musea_art_globals(path, &mut virtual_ts_options);
     let GeneratedVueFile {
         mut code,
         mut mappings,
@@ -164,7 +167,7 @@ pub fn generate_vue_content_mapper_transform_with_options(
         path,
         content,
         &descriptor,
-        &VirtualTsOptions::default(),
+        &virtual_ts_options,
         VueCodegenOptions {
             check_options: VirtualTsCheckOptions {
                 check_unknown_props: transform_options.check_unknown_props,
