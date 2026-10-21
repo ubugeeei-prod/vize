@@ -32,7 +32,7 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
     assert.deepEqual(planned.initializationOptions, {
       editor: true,
       lint: false,
-      typecheck: data.id === "lsp/regression/workspace-tsconfig-inheritance-9842",
+      typecheck: data.initializationOptions?.typecheck === true,
       ...(data.method === "textDocument/onTypeFormatting" ? { formatting: true } : {}),
     });
     if (data.initializationOptions) {
