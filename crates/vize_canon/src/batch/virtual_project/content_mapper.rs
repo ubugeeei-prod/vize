@@ -5,7 +5,7 @@ use std::path::Path;
 
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_atelier_sfc::{SfcError, SfcParseOptions, parse_sfc};
-use vize_l0::{ToCompactString, config::VueVersion};
+use vize_l0::{String as CompactString, ToCompactString, config::VueVersion};
 
 use crate::batch::Diagnostic;
 use crate::batch::error::CorsaResult;
@@ -239,10 +239,7 @@ pub fn generate_vue_content_mapper_transform_with_options(
 /// Script `/// <reference types>` values are copied into the generated prefix
 /// without mappings. Treat those complete lines as authored ranges as well, so
 /// a package that happens to use an internal helper name is never rewritten.
-fn publicize_generated_diagnostic_helpers(
-    code: &mut vize_carton::String,
-    mappings: &[VizeMapping],
-) {
+fn publicize_generated_diagnostic_helpers(code: &mut CompactString, mappings: &[VizeMapping]) {
     let mut ranges = mappings
         .iter()
         .map(|mapping| mapping.gen_range.clone())

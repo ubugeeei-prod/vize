@@ -87,8 +87,6 @@ const café = ref(<span />)
 #[test]
 fn component_input_diagnostics_use_public_display_names() {
     let source = r#"<script setup lang="ts">
-/// <reference types="__VizeComponentCheckProps" />
-/// <reference types="__VizePublicComponentAttrs" />
 import Child from './Child.vue'
 const __VizeComponentCheckProps = 1
 </script>
@@ -104,16 +102,6 @@ const __VizeComponentCheckProps = 1
             .count(),
         1,
         "authored identifiers must remain byte-identical:\n{}",
-        result.text
-    );
-    assert!(
-        result
-            .text
-            .contains("/// <reference types=\"__VizeComponentCheckProps\" />")
-            && result
-                .text
-                .contains("/// <reference types=\"__VizePublicComponentAttrs\" />"),
-        "authored reference packages must remain byte-identical:\n{}",
         result.text
     );
     assert_eq!(
@@ -144,6 +132,33 @@ const __VizeComponentCheckProps = 1
         ),
         (0, 0),
         "internal helper names must not reach TypeScript diagnostics:\n{}",
+        result.text
+    );
+}
+
+#[test]
+fn authored_reference_packages_keep_internal_spellings() {
+    let source = r#"<script setup lang="ts">
+/// <reference types="__VizeComponentCheckProps" />
+/// <reference types="__VizePublicComponentAttrs" />
+</script>
+<template><div /></template>
+"#;
+    let result = generate_vue_content_mapper_transform(Path::new("App.vue"), source)
+        .expect("content mapper transform");
+
+    let references = result
+        .text
+        .lines()
+        .filter_map(|line| line.strip_prefix("/// <reference types="))
+        .collect::<Vec<_>>();
+    assert_eq!(
+        references,
+        [
+            "\"__VizeComponentCheckProps\" />",
+            "\"__VizePublicComponentAttrs\" />",
+        ],
+        "authored reference packages must remain byte-identical:\n{}",
         result.text
     );
 }
