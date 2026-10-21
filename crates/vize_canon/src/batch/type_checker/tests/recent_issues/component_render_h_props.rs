@@ -47,13 +47,22 @@ export const valid = h(Counter, { count: 3 });
         2,
         "missing and wrong props must each report TS2769 while the valid call remains accepted: {snapshot:#?}"
     );
-    assert!(
-        render_errors
-            .iter()
-            .any(|(_, _, message)| message.starts_with("4:"))
-            && render_errors
-                .iter()
-                .any(|(_, _, message)| message.starts_with("5:")),
+    let positions: Vec<_> = render_errors
+        .iter()
+        .map(|(file, code, message)| {
+            (
+                file.as_str(),
+                *code,
+                message.split(':').take(2).collect::<Vec<_>>().join(":"),
+            )
+        })
+        .collect();
+    assert_eq!(
+        positions,
+        vec![
+            ("src/render.ts", Some(2769), "4:24".to_string()),
+            ("src/render.ts", Some(2769), "5:22".to_string()),
+        ],
         "the two diagnostics must map to the authored h() calls: {snapshot:#?}"
     );
 }
