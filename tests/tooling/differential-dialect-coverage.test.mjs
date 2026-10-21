@@ -6,6 +6,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import {
   canonicalDialects,
+  classifyDialectCoverage,
   loadProductManifest,
   normalizeDialectCoverage,
   summarizeDialectCoverage,
@@ -26,13 +27,27 @@ void test("every product manifest contributes to the case-level dialect denomina
   const summaries = Object.fromEntries(
     products.map((product) => [product, summarizeDialectCoverage(manifests[product].cases)]),
   );
+  const custody = Object.fromEntries(
+    products.map((product) => [
+      product,
+      manifests[product].cases.map((fixture) => ({
+        id: fixture.id,
+        ...classifyDialectCoverage(fixture.dialectCoverage),
+      })),
+    ]),
+  );
   assert.deepEqual(
     Object.fromEntries(products.map((product) => [product, summaries[product].plannedCases])),
-    Object.fromEntries(products.map((product) => [product, manifests[product].cases.length])),
+    Object.fromEntries(products.map((product) => [product, custody[product].length])),
   );
   assert.deepEqual(
     Object.fromEntries(products.map((product) => [product, summaries[product].provisionalCases])),
-    { compiler: 12, formatter: 16, linter: 0, lsp: 0, typechecker: 0 },
+    Object.fromEntries(
+      products.map((product) => [
+        product,
+        custody[product].filter((fixture) => fixture.measurement === "provisional").length,
+      ]),
+    ),
   );
   const plannedCases = Object.values(summaries).reduce(
     (count, summary) => count + summary.plannedCases,
@@ -43,12 +58,19 @@ void test("every product manifest contributes to the case-level dialect denomina
     plannedCases,
     "source inspection must not reduce the zero-fallback readiness denominator",
   );
-  assert.deepEqual(summaries.compiler.provisional, {
-    "html-template": 12,
-    ts: 1,
-    "vue3-sfc": 12,
-  });
-  assert.deepEqual(summaries.compiler.verified, {});
+  for (const product of products) {
+    assert.equal(
+      new Set(custody[product].map((fixture) => fixture.id)).size,
+      custody[product].length,
+    );
+    for (const measurement of ["provisional", "verified"]) {
+      const dialects = {};
+      for (const fixture of custody[product].filter((row) => row.measurement === measurement)) {
+        for (const dialect of fixture.dialects) dialects[dialect] = (dialects[dialect] ?? 0) + 1;
+      }
+      assert.deepEqual(summaries[product][measurement], dialects, `${product} ${measurement}`);
+    }
+  }
 });
 
 void test("coverage schema rejects malformed and noncanonical verified claims", () => {
