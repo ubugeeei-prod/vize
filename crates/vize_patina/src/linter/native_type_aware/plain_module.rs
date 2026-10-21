@@ -70,12 +70,7 @@ pub(in crate::linter) fn append_plain_module_type_diagnostics(
         })
     });
     if let Err(error) = corsa_result {
-        push_warning(
-            result,
-            LintDiagnostic::warn("type/corsa-runtime", error, 0, 0).with_help(
-                "Type-aware lint rules were skipped because the Corsa runtime could not be started. Configure `typeChecker.corsaPath` or install `typescript@^7`.",
-            ),
-        );
+        super::push_type_aware_failure(result, error);
     }
     super::super::severity::apply_severity_overrides(result, &linter.severity_overrides);
 }

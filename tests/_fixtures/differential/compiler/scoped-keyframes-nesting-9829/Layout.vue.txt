@@ -1,0 +1,5 @@
+<template>
+  <div class="card"><p class="title">Title</p></div>
+</template>
+
+<style scoped>.card{animation:spin 1s linear infinite;animation-name:spin;-webkit-animation-name:spin;& :deep(.title){color:red;}}@keyframes spin{to{opacity:0;}}@-webkit-keyframes spin{to{opacity:0;}}</style>

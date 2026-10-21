@@ -218,6 +218,17 @@ fn write_nuxt_fallback_tsconfig_in_cache(
 
     let mut config = Map::new();
     config.insert("compilerOptions".into(), Value::Object(compiler_options));
+    if let Some(tsconfig_path) = program_tsconfig_path {
+        let vue_compiler_options =
+            vize_canon::snapshot_tsconfig_vue_compiler_options(tsconfig_path)
+                .map_err(std::io::Error::other)?;
+        if !vue_compiler_options.is_empty() {
+            config.insert(
+                "vueCompilerOptions".into(),
+                Value::Object(vue_compiler_options),
+            );
+        }
+    }
 
     let content =
         serde_json::to_vec_pretty(&Value::Object(config)).map_err(std::io::Error::other)?;

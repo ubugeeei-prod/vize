@@ -849,7 +849,7 @@ Spaces separate the expression from both opening and closing mustache delimiters
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/mustache_interpolation_spacing.rs#L35) · [All rules](all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/mustache_interpolation_spacing.rs#L34) · [All rules](all.md)
 
 ### `vue/no-array-index-key`
 
@@ -2648,15 +2648,11 @@ Discourage CSS preprocessor usage in favor of modern CSS
 
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
-Automatic fix: Not implemented for SFC lint  
+Automatic fix: None; review the suggested change  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.
 
-Current support: `no-sfc-finding`
-
-This catalog entry does not currently emit its rule-specific finding through SFC lint. The Bad/Good pair describes the intended convention, not an executable finding. Enabling the ID does not supply the missing SFC check.
-
-**Configured ID (currently no SFC finding)**
+**Configuration (Vite+)**
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -2681,7 +2677,7 @@ vp run lint
 
 **Bad**
 
-The style block selects SCSS with lang. This describes the intended no-preprocessor convention; the current SFC path does not emit this rule.
+The style block selects SCSS through lang, so the no-preprocessor policy reports the authored block.
 
 ```vue annotate="remove:2"
 <template><p>Notice</p></template>
@@ -2694,7 +2690,7 @@ The style block selects SCSS with lang. This describes the intended no-preproces
 
 **Good**
 
-The same CSS declarations omit the preprocessor lang. This is the convention repair, not an executable Bad/Good diagnostic difference today.
+The same declarations use plain CSS without a preprocessor lang.
 
 ```vue annotate="add:2"
 <template><p>Notice</p></template>
@@ -2703,9 +2699,9 @@ The same CSS declarations omit the preprocessor lang. This is the convention rep
 </style>
 ```
 
-Good illustrates the intended convention; the current SFC path emits neither side's rule-specific finding.
+Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_preprocessor_lang.rs#L22) · [All rules](all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_preprocessor_lang.rs#L11) · [All rules](all.md)
 
 ### `vue/no-reserved-component-names`
 
@@ -3106,15 +3102,11 @@ Discourage lang attribute on template block
 
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
-Automatic fix: Not implemented for SFC lint  
+Automatic fix: None; review the suggested change  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.
 
-Current support: `no-sfc-finding`
-
-This catalog entry does not currently emit its rule-specific finding through SFC lint. The Bad/Good pair describes the intended convention, not an executable finding. Enabling the ID does not supply the missing SFC check.
-
-**Configured ID (currently no SFC finding)**
+**Configuration (Vite+)**
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -3139,7 +3131,7 @@ vp run lint
 
 **Bad**
 
-The template selects Pug through lang. This is an intended HTML-only convention; the current SFC path does not diagnose this catalog ID.
+The template selects Pug through lang, so the HTML-only policy reports the authored block.
 
 ```vue annotate="remove:1,2"
 <template lang="pug">
@@ -3151,7 +3143,7 @@ p Notice
 
 **Good**
 
-An ordinary HTML template omits lang and uses the paragraph directly. This illustrates the convention without claiming a current SFC finding.
+An ordinary HTML template omits lang and uses the paragraph directly.
 
 ```vue annotate="add:1,2"
 <template>
@@ -3159,9 +3151,9 @@ An ordinary HTML template omits lang and uses the paragraph directly. This illus
 </template>
 ```
 
-Good illustrates the intended convention; the current SFC path emits neither side's rule-specific finding.
+Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_template_lang.rs#L38) · [All rules](all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_template_lang.rs#L11) · [All rules](all.md)
 
 ### `vue/no-template-shadow`
 

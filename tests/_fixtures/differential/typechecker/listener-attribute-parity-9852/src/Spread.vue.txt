@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import Card from "./Card.vue";
+const item = ref({ id: 1, title: "t", body: "b" });
+</script>
+<template>
+  <Card v-bind="item" />
+  <Card v-bind="item" @update:title="item.title = $event" />
+</template>

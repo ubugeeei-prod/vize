@@ -2055,6 +2055,286 @@
           "operations": []
         }
       ]
+    },
+    {
+      "id": "formatter/sfc/hugged-inline-child-width",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-hugged-inline-child-width",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "9f1df2e7dbc66eee24d6b881321434d67b6eafb685fd8deb4fdfed6533a04008",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": [
+          {
+            "path": "vize.config.json",
+            "sha256": "f936a6f700d82cc19bcd9080cff3a6fb94ff56f01c71673d318f0bc0e94fcaba",
+            "role": "project-vue-version-and-formatter-options"
+          }
+        ]
+      },
+      "provenance": {
+        "issues": [
+          9867,
+          9841
+        ],
+        "commits": [
+          {
+            "sha": "a89b0206d362e61db80bcba778a39ff253a564a9",
+            "role": "pre-fix-base",
+            "paths": [
+              "crates/vize_glyph/src/template/formatter.rs",
+              "crates/vize_glyph/src/template/formatter/child_width.rs",
+              "crates/vize_glyph/src/template/formatter/text.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "issue-authored-regression",
+            "issue": 9867,
+            "path": "crates/vize_glyph/src/template/tests_print_width.rs",
+            "symbol": "hugged_inline_children_contribute_to_opening_tag_width"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/src/template/tests_print_width.rs",
+          "symbol": "hugged_inline_children_contribute_to_opening_tag_width",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes",
+            "print-width",
+            "idempotence"
+          ],
+          "limitations": [
+            "Current source-built CLI execution remains required on Actions."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "hugged-inline-text",
+              "mixed-interpolation"
+            ],
+            "selector": "vize.config.json:vue.version"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built CLI with the issue-authored printWidth and formatter options.",
+          "native": "No verified native formatter adapter at this base; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "pending",
+          "artifacts": [
+            {
+              "path": "sfc-hugged-inline-child-width/reference.expected.txt",
+              "sha256": "b399b8f1c9e9cfc880d6559014b31f22f6b30308007c6a2111e8012bffea53f2",
+              "role": "issue-authored-regression-reference",
+              "provenance": {
+                "issue": 9867,
+                "path": "crates/vize_glyph/src/template/tests_print_width.rs",
+                "symbol": "hugged_inline_children_contribute_to_opening_tag_width",
+                "assertion": "Complete output stays within printWidth and reaches a fixed point."
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured-FormatResult.changed; public Rust witness covers this field"
+          ],
+          "referenceState": "issue-9867-authored-reference; exact-source Actions required"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
+    },
+    {
+      "id": "formatter/sfc/hugged-child-width-fast-paths",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-hugged-child-width-fast-paths",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "c1fbc42956f36eb0b97fd6bc1389f8c5d3a9c5b9518639bcb9dabb8f9920334d",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": [
+          {
+            "path": "vize.config.json",
+            "sha256": "89a3dac9caaec10acdfb692dc086ec2ff8b0d314716be27b6c55d2875e0c2332",
+            "role": "explicit-default-vue-version"
+          }
+        ]
+      },
+      "provenance": {
+        "issues": [
+          9867,
+          9841
+        ],
+        "commits": [
+          {
+            "sha": "d1e6e8e70ebd15ef43a1a5e7eea550faeecdd219",
+            "role": "fix",
+            "paths": [
+              "crates/vize_glyph/src/template/formatter/child_width.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "repository-authored",
+            "revision": "d1e6e8e70ebd15ef43a1a5e7eea550faeecdd219",
+            "path": "crates/vize_glyph/benches/formatter_instructions.rs",
+            "symbol": "original_sfc"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/benches/formatter_instructions.rs",
+          "symbol": "original_sfc",
+          "executor": "callgrind-stage",
+          "asserts": [
+            "exact-benchmark-input",
+            "stage-return-instruction-ceiling"
+          ],
+          "limitations": [
+            "Exact x86_64 Linux instruction measurement requires merge-group Actions."
+          ]
+        },
+        {
+          "path": "crates/vize_glyph/src/template/tests_print_width.rs",
+          "symbol": "single_long_attribute_wraps_at_print_width",
+          "executor": "rust-test",
+          "asserts": [
+            "sole-interpolation-layout",
+            "plain-text-layout",
+            "idempotence"
+          ],
+          "limitations": [
+            "The differential CLI case supplies complete public SFC output and three-pass coverage."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "sole-interpolation",
+              "mixed-interpolation",
+              "brace-free-hugged-text"
+            ],
+            "selector": "explicit Vue 3 with default formatter options"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built CLI formats the exact instruction benchmark input through sole, mixed and brace-free hugged-child width probes for three whole-output passes.",
+          "native": "No verified native formatter adapter at this base; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "pending",
+          "artifacts": [
+            {
+              "path": "sfc-hugged-child-width-fast-paths/reference.expected.txt",
+              "sha256": "beffd8addc810f513a766b149a17d384198e6d976460da574bd5f09ea81e114f",
+              "role": "source-built-regression-reference",
+              "provenance": {
+                "revision": "d1e6e8e70ebd15ef43a1a5e7eea550faeecdd219",
+                "path": "crates/vize_glyph/benches/fixtures/formatter/simple-sfc.txt",
+                "symbol": "formatter_sfc_simple",
+                "assertion": "The exact benchmark SFC reaches this full byte output and a fixed point while exercising sole, mixed and brace-free hugged children."
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured-FormatResult.changed; public Rust formatter tests cover this field"
+          ],
+          "referenceState": "current-source-generated benchmark reference; exact-source Actions required"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
     }
   ],
   "adapterOptions": {

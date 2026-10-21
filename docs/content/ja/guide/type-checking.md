@@ -162,6 +162,42 @@ vize check-server --socket /tmp/vize-check.sock
 vize check --socket /tmp/vize-check.sock src
 ```
 
+## 実験的な tsrs バックエンドを試す
+
+Vize は [`tsrs`](https://github.com/oxc-project/tsrs) を、チェック、型情報を使う lint ルール、
+エディター機能のネイティブ TypeScript ランタイムとして利用できます。tsrs が TypeScript 7.1 の
+開発版に追従しており、言語サーバーと Node API が upstream で未完成または不安定とされているため、
+この連携は実験的です。
+
+プロジェクトに tsrs をインストールし、ランチャーを明示的に指定します。
+
+```bash
+vp install -D tsrs
+vize check --tsrs-path node_modules/.bin/tsrs
+```
+
+共有設定では次のように指定できます。
+
+```ts
+export default defineConfig({
+  vue: {
+    typeChecker: {
+      tsrsPath: "node_modules/.bin/tsrs",
+    },
+  },
+});
+```
+
+`TSRS_PATH` と `TSRS_EXECUTABLE` も利用できます。プラットフォーム用バイナリーがあれば、Vize は
+JavaScript ランチャーをそのバイナリーへ解決するため、Vize の単体実行ファイルからチェッカーを
+起動するときに Node.js は不要です。TypeScript の診断結果はコンパイラーのバージョン差で変わるため、
+評価中は tsrs のバージョンを固定してください。
+
+現在、Vize は tsrs のコンパイラーと `--lsp` プロトコルを利用します。upstream の `--init` と
+`--showConfig` はこの連携の対象外で、tsrs 0.18.0 は Windows と Intel macOS 向けのネイティブ
+パッケージを公開していません。CI に採用する前に、CLI とエディターの診断を既定バックエンドと
+比較してください。
+
 ## 関連ページ
 
 - [CLI リファレンス: `vize check`](./cli.md#check)

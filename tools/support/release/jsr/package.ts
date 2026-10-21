@@ -12,6 +12,9 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const repository = fileURLToPath(new URL("../../../../", import.meta.url));
 const versionPattern = /^0\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
+const metadataUrl = "https://jsr.io/@vizejs/vize/meta.json";
+export const publicPollIntervalMs = 30_000;
+export const publicPollAttempts = 201;
 
 interface Entrypoint {
   /** Checkout directory of the npm package that the entry point re-exports. */
@@ -85,6 +88,70 @@ export interface Channel {
   readonly enabled: boolean;
 }
 
+export interface PublicationWaitOptions {
+  readonly attempts?: number;
+  readonly intervalMs?: number;
+  readonly readMetadata?: () => Promise<unknown>;
+  readonly sleep?: (milliseconds: number) => Promise<void>;
+}
+
+function record(value: unknown): Record<string, unknown> | undefined {
+  return value !== null && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : undefined;
+}
+
+/** Returns the registry publication time, or undefined while the version is absent. */
+export function publishedAt(metadata: unknown, version: string): string | undefined {
+  if (!versionPattern.test(version)) throw new Error(`Invalid JSR version ${version}`);
+  const versions = record(record(metadata)?.versions);
+  if (!versions || versions[version] === undefined) return undefined;
+  const createdAt = record(versions[version])?.createdAt;
+  if (typeof createdAt !== "string" || Number.isNaN(Date.parse(createdAt))) {
+    throw new Error(`JSR metadata for ${version} has no valid createdAt`);
+  }
+  return createdAt;
+}
+
+async function readPublicMetadata(): Promise<unknown> {
+  const response = await fetch(metadataUrl, {
+    headers: { accept: "application/json", "user-agent": "vize-release-jsr/1.0" },
+  });
+  if (!response.ok) throw new Error(`JSR metadata returned HTTP ${response.status}`);
+  return response.json();
+}
+
+/** Waits for the immutable public registry record after JSR accepts an upload. */
+export async function waitForPublishedVersion(
+  version: string,
+  options: PublicationWaitOptions = {},
+): Promise<string> {
+  const attempts = options.attempts ?? publicPollAttempts;
+  const intervalMs = options.intervalMs ?? publicPollIntervalMs;
+  if (!Number.isSafeInteger(attempts) || attempts < 1) throw new Error("attempts must be positive");
+  if (!Number.isSafeInteger(intervalMs) || intervalMs < 0) {
+    throw new Error("intervalMs must be non-negative");
+  }
+  const readMetadata = options.readMetadata ?? readPublicMetadata;
+  const sleep =
+    options.sleep ??
+    ((milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)));
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      const createdAt = publishedAt(await readMetadata(), version);
+      if (createdAt) return createdAt;
+      lastError = undefined;
+    } catch (error) {
+      lastError = error;
+    }
+    if (attempt < attempts) await sleep(intervalMs);
+  }
+  const duration = ((attempts - 1) * intervalMs) / 60_000;
+  const suffix = lastError instanceof Error ? `; last check failed: ${lastError.message}` : "";
+  throw new Error(`JSR ${version} was not public after ${duration} minutes${suffix}`);
+}
+
 /** Parses `jsr/vize/channel.json`; an unknown shape never reads as disabled. */
 export function parseChannel(text: string): Channel {
   const value: unknown = JSON.parse(text);
@@ -109,7 +176,15 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       readFileSync(resolve(repository, "jsr/vize/channel.json"), "utf8"),
     );
     console.log(`enabled=${channel.enabled}`);
+  } else if (command === "is-public" && args.length === 1) {
+    const createdAt = publishedAt(await readPublicMetadata(), args[0]);
+    console.log(createdAt ? `published=${createdAt}` : "published=");
+    if (!createdAt) process.exitCode = 1;
+  } else if (command === "wait-public" && args.length === 1) {
+    console.log(`published=${await waitForPublishedVersion(args[0])}`);
   } else {
-    throw new Error("Usage: package.ts prepare <staging-directory> [version] | channel");
+    throw new Error(
+      "Usage: package.ts prepare <staging-directory> [version] | channel | is-public <version> | wait-public <version>",
+    );
   }
 }

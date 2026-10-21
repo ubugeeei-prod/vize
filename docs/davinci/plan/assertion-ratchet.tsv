@@ -154,7 +154,6 @@ crates/vize_canon/src/batch/virtual_project/content_mapper_directive_tests.rs	1
 crates/vize_canon/src/batch/virtual_project/content_mapper_model_tests.rs	7
 crates/vize_canon/src/batch/virtual_project/content_mapper_navigation_tests.rs	6
 crates/vize_canon/src/batch/virtual_project/content_mapper_protocol_tests.rs	3
-crates/vize_canon/src/batch/virtual_project/content_mapper_scoped_event_navigation_tests.rs	3
 crates/vize_canon/src/batch/virtual_project/content_mapper_slot_outlet_navigation_tests.rs	4
 crates/vize_canon/src/batch/virtual_project/content_mapper_tests.rs	12
 crates/vize_canon/src/batch/virtual_project/dependency_scan_tests.rs	1
@@ -264,7 +263,6 @@ crates/vize_canon/src/virtual_ts/strict_template_scope_tests.rs	4
 crates/vize_canon/src/virtual_ts/tests.rs	95
 crates/vize_canon/src/virtual_ts/tests/auto_import_shadowing.rs	12
 crates/vize_canon/src/virtual_ts/tests/component_navigation.rs	7
-crates/vize_canon/src/virtual_ts/tests/component_spread_prop_order.rs	13
 crates/vize_canon/src/virtual_ts/tests/define_props_scope.rs	21
 crates/vize_canon/src/virtual_ts/tests/define_props_scope/imported_props.rs	16
 crates/vize_canon/src/virtual_ts/tests/generic_module_type_exports.rs	12
@@ -427,7 +425,6 @@ crates/vize_marquette/src/test_run/validate/tests.rs	4
 crates/vize_marquette/src/validate/tests.rs	4
 crates/vize_musea/src/transform/to_csf/tests.rs	5
 crates/vize_patina/src/linter/corsa_session/session_tests.rs	1
-crates/vize_patina/src/linter/corsa_session/vue_dependencies/tests.rs	4
 crates/vize_patina/src/linter/native_type_aware/public_expression_tests.rs	1
 crates/vize_patina/src/linter/native_type_aware/template_queries/tests.rs	1
 crates/vize_patina/src/linter/native_type_aware/tests.rs	15

@@ -61,7 +61,7 @@ fn ident_byte(byte: u8) -> bool {
     byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'-'
 }
 
-pub(super) fn scope_keyframes(css: &str, scope_id: &str) -> String {
+pub(crate) fn scope_keyframes(css: &str, scope_id: &str) -> String {
     let Some(keyframes_pattern) = KEYFRAMES_PATTERN.as_ref() else {
         return css.into();
     };

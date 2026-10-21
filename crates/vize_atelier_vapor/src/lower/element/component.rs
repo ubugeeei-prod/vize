@@ -33,6 +33,16 @@ pub(super) fn transform_component<'a>(
     let tag = el.tag;
     let kind = match tag {
         _ if let Some(kind) = ComponentKind::builtin(tag) => kind,
+        "Component" if el.props.iter().any(|prop| match prop {
+            PropNode::Attribute(attr) => attr.name == "is",
+            PropNode::Directive(dir) => {
+                dir.name == "bind"
+                    && matches!(&dir.arg, Some(ExpressionNode::Simple(arg)) if arg.is_static && arg.content == "is")
+            }
+        }) =>
+        {
+            ComponentKind::Dynamic
+        }
         "component"
             if vize_l0::general::is_authored_tag(ctx.source, el.loc.span, tag)
                 || el.props.iter().any(|prop| {
@@ -172,6 +182,26 @@ pub(super) fn transform_component<'a>(
                             values.push(Box::new_in(val_node, &ctx.allocator));
                         }
                         props.push(IRProp::new(key, values, true));
+                    }
+                } else if matches!(dir.name, "text" | "html") {
+                    // Content directives become the props that write the
+                    // component root's content, as upstream lowers them.
+                    if let Some(ExpressionNode::Simple(value)) = &dir.exp {
+                        let (name, kind) = if dir.name == "text" {
+                            ("textContent", crate::ir::PropValueKind::DisplayString)
+                        } else {
+                            ("innerHTML", crate::ir::PropValueKind::Expression)
+                        };
+                        let key = SimpleExpressionNode::new(name, true, dir.loc.clone());
+                        let mut values = Vec::new_in(&ctx.allocator);
+                        values.push(Box::new_in(
+                            SimpleExpressionNode::from_node(value),
+                            &ctx.allocator,
+                        ));
+                        props.push(
+                            IRProp::new(Box::new_in(key, &ctx.allocator), values, true)
+                                .with_value_kind(kind),
+                        );
                     }
                 } else if dir.name == "model" {
                     transform_component_v_model(ctx, dir, &mut props);

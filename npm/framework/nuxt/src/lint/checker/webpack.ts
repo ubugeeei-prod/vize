@@ -54,6 +54,7 @@ function checkerError(message: string): Error {
 }
 
 function reportResult(compilation: WebpackCompilation, result: NuxtLintCheckerResult): void {
+  for (const notice of result.notices) compilation.warnings.push(checkerError(notice));
   if (result.hasErrors) compilation.errors.push(checkerError(result.output));
   else if (result.hasWarnings) compilation.warnings.push(checkerError(result.output));
 }

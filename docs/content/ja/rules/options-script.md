@@ -7,8 +7,9 @@ title: スクリプトのルール設定
 
 # スクリプトのルール設定
 
-実行環境のグローバル変数や特定のプロパティへのアクセスを制限したいとき、イベント名を揃えたいとき、
-props の分割代入の方針を決めたいときに、このページの例を使ってください。
+実行環境のグローバル変数や特定のプロパティへのアクセスを制限したいとき、イベント名や
+コンパイラーマクロの順序を揃えたいとき、props の分割代入の方針を決めたいときに、
+このページの例を使ってください。
 設定できるオプションの一覧、未定義のフィールドを指定した場合の動作、ファイルごとの設定の置き換え方は、
 [ルールのオプション](./options.md)で確認できます。
 
@@ -146,6 +147,46 @@ emit("saveItem");
 ```ts
 const emit = defineEmits(["save-item"]);
 emit("save-item");
+```
+
+## `script/define-macros-order`
+
+`order` には、`<script setup>` の先頭に置くコンパイラーマクロと、その順序を指定します。
+既定は `["defineProps", "defineEmits"]` です。リストに含めないマクロは、通常の文として扱います。
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      rules: { "script/define-macros-order": "warn" },
+      ruleOptions: {
+        "script/define-macros-order": {
+          order: ["defineOptions", "defineProps", "defineEmits", "defineSlots"],
+        },
+      },
+    },
+  },
+});
+```
+
+悪い（上の設定では違反）:
+
+```vue
+<script setup lang="ts">
+const props = defineProps<{ label: string }>();
+defineOptions({ inheritAttrs: false });
+</script>
+```
+
+良い:
+
+```vue
+<script setup lang="ts">
+defineOptions({ inheritAttrs: false });
+const props = defineProps<{ label: string }>();
+</script>
 ```
 
 ## `script/define-props-destructuring`

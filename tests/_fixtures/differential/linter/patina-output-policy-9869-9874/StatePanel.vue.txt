@@ -1,0 +1,15 @@
+<script setup lang="ts">
+import { reactive } from "vue";
+
+const state = reactive({ count: 0 });
+</script>
+
+<template>
+  <div style="color: red">{{ state.count }}</div>
+</template>
+
+<style>
+.panel {
+  color: #ff0000;
+}
+</style>

@@ -85,7 +85,7 @@ fn to_oxc_diagnostic(diagnostic: &LintDiagnostic, help_target: HelpRenderTarget)
         Severity::Warning => OxcDiagnostic::warn(formatted_msg),
     };
 
-    diag = diag.with_label(Span::new(diagnostic.start, diagnostic.end));
+    diag = diag.with_label(Span::new(diagnostic.start, diagnostic.end).primary());
 
     let docs_path = rule_docs_path(diagnostic.rule_name);
     let help = diagnostic
@@ -101,6 +101,60 @@ fn to_oxc_diagnostic(diagnostic: &LintDiagnostic, help_target: HelpRenderTarget)
     }
 
     diag
+}
+
+#[cfg(test)]
+mod primary_location_tests {
+    use super::format_text;
+    use crate::{LintDiagnostic, LintResult};
+    use vize_l0::ToCompactString;
+
+    #[test]
+    fn secondary_label_does_not_replace_the_diagnostic_header_location() {
+        let source = "<thead>\n  <th>Name</th>\n</thead>\n";
+        let diagnostic = LintDiagnostic::warn(
+            "vue/permitted-contents",
+            "invalid child",
+            source.find("<th>").unwrap() as u32,
+            (source.find("<th>").unwrap() + 4) as u32,
+        )
+        .with_label("<thead> is open here", 0, 7);
+        let result = LintResult {
+            filename: "ScoreTable.vue".to_compact_string(),
+            diagnostics: vec![diagnostic],
+            error_count: 0,
+            warning_count: 1,
+        };
+        let output = format_text(
+            &[result],
+            &[(
+                "ScoreTable.vue".to_compact_string(),
+                source.to_compact_string(),
+            )],
+        );
+
+        assert_eq!(
+            strip_ansi(&output).lines().nth(2),
+            Some("   ╭─[ScoreTable.vue:2:3]")
+        );
+    }
+
+    fn strip_ansi(text: &str) -> String {
+        let mut output = String::with_capacity(text.len());
+        let mut chars = text.chars();
+        while let Some(ch) = chars.next() {
+            if ch == '\u{1b}' {
+                for next in chars.by_ref() {
+                    if next.is_ascii_alphabetic() {
+                        break;
+                    }
+                }
+            } else {
+                output.push(ch);
+            }
+        }
+        output
+    }
 }
 
 fn result_counts(results: &[LintResult]) -> (usize, usize) {

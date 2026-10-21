@@ -1,0 +1,4 @@
+<script setup lang="ts">
+defineEmits<{ click: [event: MouseEvent] }>();
+</script>
+<template><button @click="$emit('click', $event)"><slot /></button></template>

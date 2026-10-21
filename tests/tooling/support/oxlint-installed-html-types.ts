@@ -27,6 +27,7 @@ export interface HtmlFixture {
   original?: boolean;
   agent?: boolean;
   refused?: boolean;
+  skipped?: boolean;
   status?: number;
 }
 export interface ExpectedPacket {

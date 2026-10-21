@@ -1,0 +1,8 @@
+<template>
+  <div>
+    <span class="status-label" :title="statusText"
+    >{{ statusText }} of {{ totalCount }} entries</span>
+    <div class="message-body" :data-kind="kind"
+    >A plain sentence that is long enough to overflow.</div>
+  </div>
+</template>

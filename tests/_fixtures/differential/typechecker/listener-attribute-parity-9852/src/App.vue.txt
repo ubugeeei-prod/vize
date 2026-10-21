@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import MyButton from "./MyButton.vue";
+const active = ref(false);
+const count = ref(0);
+</script>
+<template>
+  <MyButton class="base" :class="{ active }" @click="count++">class</MyButton>
+  <MyButton style="color: red" :style="{ fontWeight: 'bold' }" @click="count++">style</MyButton>
+</template>

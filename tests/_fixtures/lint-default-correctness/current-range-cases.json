@@ -211,7 +211,7 @@
           "message": "Prefer shorthand `:` over `v-bind:`",
           "start": 18,
           "end": 49,
-          "help": "Use `:attr=\"value\"` instead of `v-bind:attr=\"value\"`",
+          "help": null,
           "labels": [],
           "fix": {
             "message": "Use shorthand syntax",
@@ -240,7 +240,7 @@
           "message": "Prefer shorthand `@` over `v-on:`",
           "start": 50,
           "end": 88,
-          "help": "Use `@event=\"handler\"` instead of `v-on:event=\"handler\"`",
+          "help": null,
           "labels": [],
           "fix": {
             "message": "Use shorthand syntax",
@@ -349,7 +349,7 @@
           "message": "Prefer shorthand `:` over `v-bind:`",
           "start": 18,
           "end": 49,
-          "help": "Use `:attr=\"value\"` instead of `v-bind:attr=\"value\"`",
+          "help": null,
           "labels": [],
           "fix": {
             "message": "Use shorthand syntax",
@@ -368,7 +368,7 @@
           "message": "Prefer shorthand `@` over `v-on:`",
           "start": 50,
           "end": 88,
-          "help": "Use `@event=\"handler\"` instead of `v-on:event=\"handler\"`",
+          "help": null,
           "labels": [],
           "fix": {
             "message": "Use shorthand syntax",
@@ -526,7 +526,7 @@
           "message": "Do not import 'defineProps' - compiler macros are automatically available in <script setup>",
           "start": 34,
           "end": 45,
-          "help": "Remove the macro from the import statement. Compiler macros are auto-imported.",
+          "help": null,
           "labels": [],
           "fix": null
         }
@@ -559,7 +559,7 @@
           "message": "Do not import 'defineProps' - compiler macros are automatically available in <script setup>",
           "start": 34,
           "end": 45,
-          "help": "Remove the macro from the import statement. Compiler macros are auto-imported.",
+          "help": null,
           "labels": [],
           "fix": null
         }
@@ -623,5 +623,9 @@
     "sha256": "0e5efb4ea4d06462604f7d0d5289ead67bca744ff1f7921fd670cae1ca30cc93",
     "reason": "full longform v-on control retains existing default warning/help/safe fix; not newly enabled by this policy"
   },
-  "configuredVueVersions": ["2", "2.7", "3"]
+  "configuredVueVersions": [
+    "2",
+    "2.7",
+    "3"
+  ]
 }

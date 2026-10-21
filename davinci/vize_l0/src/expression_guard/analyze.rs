@@ -68,6 +68,7 @@ pub(super) fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnal
     let mut arrow_frames: Vec<(usize, usize)> = Vec::new();
     let mut pending_arrow_default_paren: Option<usize> = None;
     let mut excessive_arrow_default_speculation = false;
+    let mut unterminated_template = false;
     let mut i = 0;
 
     while let Some(&b) = bytes.get(i) {
@@ -83,6 +84,8 @@ pub(super) fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnal
             }
             b'`' => {
                 let (next, has_interpolation) = skip_template_text(bytes, i + 1);
+                unterminated_template |=
+                    !has_interpolation && (next <= i + 1 || bytes.get(next - 1) != Some(&b'`'));
                 i = next;
                 if has_interpolation {
                     delimiters.push(b'}');
@@ -172,6 +175,8 @@ pub(super) fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnal
                 delimiters_balanced &= delimiters.pop() == Some(b'}');
                 template_interpolation_depths.pop();
                 let (next, has_interpolation) = skip_template_text(bytes, i + 1);
+                unterminated_template |=
+                    !has_interpolation && (next <= i + 1 || bytes.get(next - 1) != Some(&b'`'));
                 i = next;
                 if has_interpolation {
                     delimiters.push(b'}');
@@ -346,5 +351,6 @@ pub(super) fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnal
         excessive_speculative_type_angle_opens,
         excessive_arrow_default_speculation,
         oversized_numeric_token,
+        unterminated_template,
     }
 }

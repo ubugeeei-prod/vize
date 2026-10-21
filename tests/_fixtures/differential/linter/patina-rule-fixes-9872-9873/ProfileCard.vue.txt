@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import UserBadge from "./UserBadge.vue";
+
+const title = "x";
+</script>
+
+<template>
+  <div>
+    <span>{{title}}</span>
+    <UserBadge displayName="a" />
+  </div>
+</template>

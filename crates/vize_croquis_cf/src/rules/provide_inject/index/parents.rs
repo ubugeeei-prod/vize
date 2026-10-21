@@ -193,6 +193,7 @@ pub(super) fn runtime_component_parents(
             continue;
         }
         slot_scopes.record(entry.id, &usages);
+        add_unrepresented_graph_component_parents(&mut component_parents, graph, entry.id, &usages);
 
         for (index, usage) in usages.iter().enumerate() {
             match nearest_containing_usage(&usages, index).and_then(|host| usages.get(host)) {
@@ -290,6 +291,28 @@ fn add_graph_component_parents(
 
     for (child_id, edge_type) in &node.imports {
         if *edge_type == DependencyEdge::ComponentUsage {
+            add_component_parent(component_parents, *child_id, parent_id);
+        }
+    }
+}
+
+fn add_unrepresented_graph_component_parents(
+    component_parents: &mut FxHashMap<FileId, Vec<FileId>>,
+    graph: &DependencyGraph,
+    parent_id: FileId,
+    usages: &[RuntimeUsage],
+) {
+    let Some(node) = graph.get_node(parent_id) else {
+        return;
+    };
+
+    for (child_id, edge_type) in &node.imports {
+        if *edge_type == DependencyEdge::ComponentUsage
+            && !usages.iter().any(|usage| usage.target_id == *child_id)
+        {
+            // Framework render edges such as Nuxt layout -> page do not have a
+            // corresponding authored template usage. Keep those parents while
+            // detailed usages continue to drive slot projection above.
             add_component_parent(component_parents, *child_id, parent_id);
         }
     }

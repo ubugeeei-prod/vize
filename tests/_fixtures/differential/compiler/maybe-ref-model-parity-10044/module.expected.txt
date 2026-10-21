@@ -1,0 +1,24 @@
+import { ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer"
+import { mergeProps as _mergeProps } from "vue"
+
+
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(_ssrRenderComponent($setup.Child, _mergeProps({ modelValue: $setup.value, "onUpdate:modelValue": $event => (($setup.value) = $event) }, _attrs), null, _parent))
+}
+import Child from './Child.js'
+import { useThing } from './thing.js'
+
+
+export default {
+  __name: 'Layout',
+  ssrRender: ssrRender,
+  setup(__props) {
+
+const { value } = useThing()
+
+const __returned__ = { Child, useThing, value }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+}

@@ -14,6 +14,9 @@ use super::editor_typecheck_fixture::{
 };
 use crate::ide::{CodeActionService, IdeContext, position_to_offset};
 
+const REFACTOR_FIXTURE: &str =
+    include_str!("../../../tests/fixtures/native-refactor-expression.vue");
+
 const SOURCE: &str = "<script setup lang=\"ts\">
 import { c, a } from \"./lib\";
 import { b } from \"./lib\";
@@ -295,6 +298,55 @@ fn fix_all_edits_only_authored_script_text() {
             if let Some(bridge) = state.get_corsa_bridge().await {
                 bridge.shutdown().await.expect("shutdown");
             }
+        }
+    });
+}
+
+#[test]
+fn pinned_tsgo_refactor_gap_stays_explicit_and_unadvertised() {
+    let Some(corsa_path) = resolve_test_tsgo_binary() else {
+        assert!(
+            std::env::var_os("VIZE_TEST_REQUIRE_TSGO").is_none(),
+            "required native refactor gap oracle has no configured runtime"
+        );
+        return;
+    };
+    crate::runtime::block_on(async {
+        let project = tempfile::tempdir().expect("fixture root");
+        let root = project.path();
+        std::fs::create_dir_all(root.join("src")).expect("src dir");
+        write_vue_test_package(root);
+        std::fs::write(
+            root.join("tsconfig.json"),
+            r#"{"compilerOptions":{"strict":true,"module":"ESNext","moduleResolution":"bundler","target":"ES2022","noEmit":true},"include":["src/**/*"]}"#,
+        )
+        .expect("tsconfig");
+        write_corsa_config(root, &corsa_path);
+        let app = root.join("src/Refactor.vue");
+        std::fs::write(&app, REFACTOR_FIXTURE).expect("Refactor.vue");
+        let uri = Url::from_file_path(&app).expect("Refactor.vue URI");
+        let state = state_for_fixture(root, &uri, REFACTOR_FIXTURE);
+        state.load_workspace_config(root);
+        let start = REFACTOR_FIXTURE.find("base + 2").expect("selection start");
+        let end = start + "base + 2".len();
+        let (start_line, start_character) = crate::ide::offset_to_position(REFACTOR_FIXTURE, start);
+        let (end_line, end_character) = crate::ide::offset_to_position(REFACTOR_FIXTURE, end);
+        let range = tower_lsp::lsp_types::Range::new(
+            tower_lsp::lsp_types::Position::new(start_line, start_character),
+            tower_lsp::lsp_types::Position::new(end_line, end_character),
+        );
+        let actions = CodeActionService::native_actions(
+            &IdeContext::new(&state, &uri, start).expect("SFC context"),
+            range,
+            std::slice::from_ref(&CodeActionKind::REFACTOR),
+        )
+        .await;
+        assert!(
+            actions.is_empty(),
+            "pinned tsgo unexpectedly exposed a refactor; add a positive whole-SFC oracle and advertise its concrete kind: {actions:?}"
+        );
+        if let Some(bridge) = state.get_corsa_bridge().await {
+            bridge.shutdown().await.expect("bridge shutdown");
         }
     });
 }

@@ -1,0 +1,35 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "dotted-slot-name-9865",
+    history: "673c6fa430aba9ca81c87a81e3e63a4a8c844921",
+    source: "<script setup lang=\"ts\">\nimport DataTable from \"./DataTable.vue\";\n\nconst rows = [{ name: \"a\" }];\n</script>\n\n<template>\n  <DataTable :rows=\"rows\">\n    <template #item.name=\"{ row }\">{{ row.name.toUpperCase() }}</template>\n  </DataTable>\n</template>\n",
+    filename: "App.vue",
+    entry: "sfc",
+    rule: "vue/valid-v-slot",
+    vue_version: Some(
+        "3",
+    ),
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "App.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "App.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

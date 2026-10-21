@@ -431,5 +431,10 @@ fn ranges_overlap(left: &Range<usize>, right: &Range<usize>) -> bool {
 mod tests;
 
 #[cfg(test)]
+#[expect(clippy::expect_used, reason = "fixture assertions fail by panicking")]
+#[path = "content_mapper_unused_props_tests.rs"]
+mod unused_props_tests;
+
+#[cfg(test)]
 #[path = "content_mapper_directive_tests.rs"]
 mod directive_tests;

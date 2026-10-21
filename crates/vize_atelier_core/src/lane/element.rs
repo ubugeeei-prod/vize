@@ -18,6 +18,7 @@ use super::{ExitFns, TransformContext};
 
 mod directive_expressions;
 mod frozen;
+mod vapor_runtime_props;
 mod vue_is;
 use directive_expressions::process_directive_expressions;
 /// Transform element node
@@ -134,11 +135,15 @@ fn is_registered_component(ctx: &TransformContext<'_>, tag: &str) -> bool {
 
 /// Process element properties and directives
 fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, ElementNode<'a>>) {
+    let runtime_only =
+        (ctx.options.vapor && !ctx.options.ssr && el.tag_type == ElementType::Element)
+            .then(|| vapor_runtime_props::RuntimeOnlyContext::new(el));
     if el.props.is_empty()
-        || !el
-            .props
-            .iter()
-            .any(|prop| matches!(prop, PropNode::Directive(_)))
+        || (runtime_only.is_none()
+            && !el
+                .props
+                .iter()
+                .any(|prop| matches!(prop, PropNode::Directive(_))))
     {
         return;
     }
@@ -169,7 +174,17 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
 
     // Collect indices of v-model directives to process (skip in vapor mode)
     let mut model_indices: std::vec::Vec<usize> = std::vec::Vec::new();
-    for (i, prop) in el.props.iter().enumerate() {
+    for (i, prop) in el.props.iter_mut().enumerate() {
+        if let PropNode::Attribute(attr) = prop {
+            if let Some(runtime_only) = runtime_only
+                && runtime_only.matches(attr.name)
+            {
+                *prop = vapor_runtime_props::RuntimeOnlyContext::directive(ctx, attr);
+            }
+            // A converted attribute is always a built-in `v-bind`: unlike an
+            // authored directive it cannot register helpers or v-model work.
+            continue;
+        }
         if let PropNode::Directive(dir) = prop {
             match dir.name {
                 "model" if !ctx.options.vapor => {

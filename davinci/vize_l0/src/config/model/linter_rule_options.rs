@@ -14,6 +14,7 @@ use crate::String;
 mod casing;
 mod component_registration;
 mod content_directives;
+mod define_macros_order;
 mod html_self_closing;
 mod hyphenation;
 mod merge;
@@ -29,6 +30,7 @@ pub use casing::{
     ComponentNameInTemplateCasingOptions, CustomEventNameCasing, CustomEventNameCasingOptions,
     TemplateComponentNameCasing,
 };
+pub use define_macros_order::DefineMacrosOrderOptions;
 pub use html_self_closing::{
     HtmlSelfClosingHtmlOptions, HtmlSelfClosingOptions, HtmlSelfClosingStyle,
 };
@@ -138,6 +140,9 @@ pub struct ConfigLintRuleOptions {
     /// Options for `script/define-props-destructuring`.
     #[serde(rename = "script/define-props-destructuring")]
     define_props_destructuring: Option<DefinePropsDestructuringOptions>,
+    /// Options for `script/define-macros-order`.
+    #[serde(rename = "script/define-macros-order")]
+    define_macros_order: Option<DefineMacrosOrderOptions>,
     /// Options for `vue/component-name-in-template-casing`.
     #[serde(rename = "vue/component-name-in-template-casing")]
     component_name_in_template_casing: Option<ComponentNameInTemplateCasingOptions>,
@@ -196,6 +201,7 @@ impl ConfigLintRuleOptions {
             && self.no_empty_palpable_content.is_none()
             && self.stable.is_empty()
             && self.define_props_destructuring.is_none()
+            && self.define_macros_order.is_none()
             && self.component_name_in_template_casing.is_none()
             && self.custom_event_name_casing.is_none()
             && self.no_mutating_props.is_none()
@@ -240,6 +246,12 @@ impl ConfigLintRuleOptions {
     pub fn define_props_destructuring(&self) -> Option<PropsDestructureMode> {
         self.define_props_destructuring
             .map(|options| options.destructure)
+    }
+
+    /// Configured macro order for `script/define-macros-order`.
+    #[inline]
+    pub fn define_macros_order(&self) -> Option<DefineMacrosOrderOptions> {
+        self.define_macros_order.clone()
     }
 
     /// Configured casing for `vue/component-name-in-template-casing`.

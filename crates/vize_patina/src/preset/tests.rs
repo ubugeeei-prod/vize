@@ -114,6 +114,49 @@ defineProps<{ href: string; src: string; alt: string }>();
 }
 
 #[test]
+fn default_preset_accepts_dotted_static_slot_names() {
+    let source =
+        r#"<DataTable><template #item.name="{ row }">{{ row.name }}</template></DataTable>"#;
+    let result = Linter::with_preset(LintPreset::HappyPath).lint_template(source, "App.vue");
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule_name != "vue/valid-v-slot"),
+        "{:?}",
+        result.diagnostics
+    );
+
+    let strict = Linter::with_preset(LintPreset::HappyPath)
+        .with_valid_v_slot_allow_modifiers(false)
+        .lint_template(source, "App.vue");
+    assert_eq!(
+        strict
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.rule_name == "vue/valid-v-slot")
+            .count(),
+        1,
+        "{:?}",
+        strict.diagnostics
+    );
+
+    let dynamic = r#"<DataTable><template #[name].memo="{ row }">{{ row }}</template></DataTable>"#;
+    let default_dynamic =
+        Linter::with_preset(LintPreset::HappyPath).lint_template(dynamic, "App.vue");
+    assert_eq!(
+        default_dynamic
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.rule_name == "vue/valid-v-slot")
+            .count(),
+        1,
+        "{:?}",
+        default_dynamic.diagnostics
+    );
+}
+
+#[test]
 fn narrow_img_alt_rule_remains_explicitly_selectable() {
     let linter = Linter::with_preset(LintPreset::HappyPath)
         .with_enabled_rules(Some(vec!["a11y/img-alt".into()]));

@@ -27,7 +27,11 @@ test("SDK publication uses the built artifact and waits for the tagged release",
   assert.deepEqual(manifest.peerDependencies, { "@vizejs/native": ">=0.429.0" });
   assert.deepEqual(manifest.peerDependenciesMeta, { "@vizejs/native": { optional: true } });
   assert.equal(publish.environment, "npm");
-  assert.deepEqual(publish.permissions, { contents: "read", "id-token": "write" });
+  assert.deepEqual(publish.permissions, {
+    actions: "read",
+    contents: "read",
+    "id-token": "write",
+  });
 });
 
 test("the release contracts execute the complete SDK release contracts", () => {

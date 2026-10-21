@@ -1,0 +1,8 @@
+<script setup lang="ts">
+const id = `field-${Math.random()}`;
+</script>
+
+<template>
+  <label :for="id">Name</label>
+  <input :id="id" />
+</template>

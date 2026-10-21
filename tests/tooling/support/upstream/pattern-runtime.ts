@@ -102,7 +102,7 @@ export async function installDom(): Promise<void> {
     "MouseEvent",
     "navigator",
   ]) {
-    Object.defineProperty(globalThis, key, { value: window[key], configurable: true });
+    Object.defineProperty(globalThis, key, { value: Reflect.get(window, key), configurable: true });
   }
   Object.defineProperty(globalThis, "window", { value: window, configurable: true });
 }

@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 9860,
+  "regressionCommit": "4714c0f264dedffaa81377df9545fbfa9514a64e",
+  "sourceRevision": "4714c0f264dedffaa81377df9545fbfa9514a64e",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "bounded-maintenance",
+      "inputs": [
+        {
+          "file": "App.vue",
+          "source": "App.vue.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

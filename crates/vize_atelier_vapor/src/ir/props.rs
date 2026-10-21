@@ -12,6 +12,9 @@ pub enum PropValueKind {
     ModelUpdate,
     /// A compiler-owned object of escaped modifier names and true values.
     ModelModifiers,
+    /// `v-text` on a component: its `textContent` prop renders the value as
+    /// interpolated text.
+    DisplayString,
 }
 
 /// IR prop

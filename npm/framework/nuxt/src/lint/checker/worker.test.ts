@@ -31,6 +31,7 @@ void test("worker execution reports the complete filtered diagnostic payload", a
   const result = await runNuxtLintCheckerTask(task());
   assert.equal(result.hasErrors, true);
   assert.equal(result.hasWarnings, true);
+  assert.deepEqual(result.notices, []);
   assert.equal(result.diagnosticCount, 2);
   assert.equal(result.diagnostics.length, 2);
   const payload = JSON.parse(result.output) as {
@@ -83,6 +84,7 @@ void test("worker execution honours emitError and emitWarning independently", as
     diagnosticCount: 0,
     hasErrors: false,
     hasWarnings: false,
+    notices: [],
     output: "",
   });
   await assert.rejects(
@@ -96,6 +98,16 @@ void test("worker execution honours emitError and emitWarning independently", as
     ),
     /Failed to start oxlint/u,
   );
+});
+
+void test("worker preserves stderr notices alongside JSON output", async () => {
+  const result = await runNuxtLintCheckerTask(task({ targets: ["/project/app/pages/notice.vue"] }));
+
+  assert.deepEqual(result.notices, [
+    "[oxlint-plugin-vize] Skipped standalone HTML lint: unsupported host",
+  ]);
+  assert.equal(result.hasErrors, true);
+  assert.equal(result.hasWarnings, true);
 });
 
 void test("long-lived worker runs outside the main thread and closes cleanly", async (t) => {

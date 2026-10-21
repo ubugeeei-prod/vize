@@ -1,0 +1,2 @@
+<script lang="ts" src="./component.tsx"></script>
+<template><div /></template>

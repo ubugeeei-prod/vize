@@ -1,4 +1,4 @@
-//! Quick-fix diagnostics and edits share one synchronized editor snapshot.
+//! Range-action diagnostics and edits share one synchronized editor snapshot.
 
 use corsa::runtime::block_on;
 use serde_json::{Value, json};
@@ -20,11 +20,12 @@ impl CorsaProjectClient {
         &mut self,
         uri: &str,
         range: &LspRange,
+        kinds: &[String],
     ) -> Result<Option<Value>, String> {
-        if !self.document_texts.contains_key(uri) {
+        if !self.document_texts.contains_key(uri) || kinds.is_empty() {
             return Ok(None);
         }
-        self.request_with_editor_lsp_recovery(|session| session.code_actions(uri, range))
+        self.request_with_editor_lsp_recovery(|session| session.code_actions(uri, range, kinds))
     }
 
     /// Whole-document source actions (organize, sort or remove imports, fix
@@ -42,29 +43,41 @@ impl CorsaProjectClient {
 }
 
 impl EditorLspSession {
-    fn code_actions(&mut self, uri: &str, range: &LspRange) -> Result<Option<Value>, String> {
-        // Client diagnostics can belong to an older edit, or to Patina. Ask
-        // the same backend snapshot that will compute the edits for its codes.
-        let report = serde_json::to_value(self.diagnostics(uri)?)
-            .map_err(|error| cstr!("Failed to encode code-action diagnostics: {error}"))?;
-        let diagnostics: Vec<_> = report
-            .get("items")
-            .and_then(Value::as_array)
-            .into_iter()
-            .flatten()
-            .filter(|diagnostic| {
-                diagnostic
-                    .get("range")
-                    .and_then(|range| serde_json::from_value::<LspRange>(range.clone()).ok())
-                    .is_some_and(|diagnostic| ranges_intersect(range, &diagnostic))
-            })
-            .collect();
-        if diagnostics.is_empty() {
+    fn code_actions(
+        &mut self,
+        uri: &str,
+        range: &LspRange,
+        kinds: &[String],
+    ) -> Result<Option<Value>, String> {
+        let requests_quick_fixes = kinds.iter().any(|kind| kind == "quickfix");
+        let diagnostics = if requests_quick_fixes {
+            // Client diagnostics can belong to an older edit, or to Patina.
+            // Ask the same backend snapshot that computes the edits for its
+            // codes. Refactors are range based and need no diagnostic.
+            let report = serde_json::to_value(self.diagnostics(uri)?)
+                .map_err(|error| cstr!("Failed to encode code-action diagnostics: {error}"))?;
+            report
+                .get("items")
+                .and_then(Value::as_array)
+                .into_iter()
+                .flatten()
+                .filter(|diagnostic| {
+                    diagnostic
+                        .get("range")
+                        .and_then(|range| serde_json::from_value::<LspRange>(range.clone()).ok())
+                        .is_some_and(|diagnostic| ranges_intersect(range, &diagnostic))
+                })
+                .cloned()
+                .collect::<Vec<_>>()
+        } else {
+            vec![]
+        };
+        if diagnostics.is_empty() && kinds.iter().all(|kind| kind == "quickfix") {
             return Ok(None);
         }
         block_on(self.client.request::<CodeActionRequest>(json!({
             "textDocument": { "uri": uri }, "range": range,
-            "context": { "diagnostics": diagnostics, "only": ["quickfix"] },
+            "context": { "diagnostics": diagnostics, "only": kinds },
         })))
         .map_err(|error| cstr!("Failed to request editor LSP code actions: {error}"))
     }

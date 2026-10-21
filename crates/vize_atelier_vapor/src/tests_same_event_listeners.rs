@@ -148,7 +148,7 @@ fn listener_props_merge_into_a_spread() {
     for retained in [false, true] {
         let code = compile(r#"<p v-bind="obj" :onClick="f" :id="x"/>"#, retained);
         assert!(
-            code.contains(r#"_setDynamicProps(n0, [_ctx.obj, { onClick: _ctx.f, id: _ctx.x }])"#),
+            code.contains(r#"_setDynamicProps(n0, [_ctx.obj, { onClick: _ctx.f, id: _ctx.x }], ["onClick","id"])"#),
             "{code}"
         );
         assert!(!code.contains("_setListener"), "{code}");

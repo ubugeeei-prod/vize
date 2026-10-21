@@ -39,6 +39,8 @@ pub(super) const SHARED_SFC_DESCRIPTOR_RULES: &[&str] = &[
     "vue/require-scoped-style",
     "vue/single-style-block",
     "vue/no-src-attribute",
+    "vue/no-preprocessor-lang",
+    "vue/no-template-lang",
     "vue/warn-custom-block",
     "a11y/no-redundant-roles",
     "ecosystem/void-link-require-href",

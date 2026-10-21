@@ -67,6 +67,24 @@
         }
       ],
       "diagnostics": []
+    },
+    {
+      "id": "generated-external-script-route",
+      "inputs": [
+        {
+          "file": "App.vue",
+          "source": "generated-external-script/App.vue.txt"
+        },
+        {
+          "file": "component.tsx",
+          "source": "generated-external-script/component.tsx.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "generated-external-script/tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": []
     }
   ]
 }

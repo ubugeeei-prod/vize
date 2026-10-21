@@ -1330,7 +1330,7 @@ fn test_inline_arrow_event_handler_is_called_with_event() {
     assert!(
         output
             .code
-            .contains("((payload) => console.log(payload))(__vize_handler_event);"),
+            .contains("(__vize_event);  // handler expression"),
         "inline arrow handler should be invoked with the event:\n{}",
         output.code
     );
@@ -1366,10 +1366,46 @@ fn test_inline_arrow_event_handler_preserves_a_free_dollar_event_reference() {
 
     assert!(
         output.code.contains(
-            "((__vize_handler_event: InputEvent) => { ((e) => handleInput($event, e))(__vize_handler_event); })(__vize_event);"
+            "((__vize_cb: ((_e: InputEvent) => unknown) | null | undefined) => __vize_cb)(((e) => handleInput($event, e)));"
         ),
-        "the native callback parameter must not shadow the authored free `$event`:\n{}",
+        "the native callback parameter must be typed without shadowing the authored free `$event`:\n{}",
         output.code
+    );
+}
+
+#[test]
+fn test_native_inline_arrow_parameter_is_contextually_typed() {
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    let script = "const readonly = true as boolean\n";
+    let template =
+        r#"<select @mousedown="(e) => readonly && e.preventDefault()"><option /></select>"#;
+
+    let allocator = vize_carton::Allocator::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+    let handler_initializers = output
+        .code
+        .lines()
+        .filter_map(|line| line.trim().strip_prefix("const __vize_handler_"))
+        .map(|line| {
+            line.split_once(" = ")
+                .expect("generated handler assignment")
+                .1
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(
+        handler_initializers,
+        [
+            "((__vize_cb: ((_e: MouseEvent) => unknown) | null | undefined) => __vize_cb)(((e) => readonly && e.preventDefault()));"
+        ]
     );
 }
 
@@ -1990,7 +2026,7 @@ function handleTest(value1: string, value2: number) {
     );
     assert!(
         output.code.contains(
-            "const __vize_handler_9_40: __Test_9_test_handler | __Test_9_test_prop_arrays | null | undefined = ((value1, value2) => handleTest(value1, value2));"
+            "const __vize_handler_9_40: __Test_9_test_handler | __Test_8_test_prop_arrays | null | undefined = ((value1, value2) => handleTest(value1, value2));"
         ),
         "inline multi-arg arrow must be typed through the emit handler alias:\n{}",
         output.code

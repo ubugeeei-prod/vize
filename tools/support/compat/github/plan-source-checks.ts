@@ -3,8 +3,8 @@ import { appendFileSync } from "node:fs";
 
 const censusScripts = new Set([
   "tools/support/compat/davinci/croquis-consumers.ts",
-  "tools/support/compat/davinci/lib/croquis-render.mjs",
-  "tools/support/compat/davinci/lib/croquis-shards.mjs",
+  "tools/support/compat/davinci/lib/croquis-render.ts",
+  "tools/support/compat/davinci/lib/croquis-shards.ts",
 ]);
 
 // These Node-only census renderers and their owned generated reports have no

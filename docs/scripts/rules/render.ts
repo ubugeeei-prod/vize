@@ -15,6 +15,7 @@ export const configurableRules = new Set([
   "html/no-empty-palpable-content",
   "musea/prefer-design-tokens",
   "script/custom-event-name-casing",
+  "script/define-macros-order",
   "script/define-props-destructuring",
   "script/no-restricted-globals",
   "script/no-restricted-members",

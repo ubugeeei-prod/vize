@@ -117,7 +117,7 @@ for (const row of cases) {
           "  || (state.publishCalls === 1 && (!exact || state.versionChecks >= 3)));",
           "if (!visible) { process.stdout.write('{}VIZE_HTTP_STATUS:404'); process.exit(0); }",
           "const name = '@vizejs/native-darwin-arm64';",
-          "const tag = process.env.WRAP_WRONG_TAG === '1' ? '0.432.0' : '0.433.0';",
+          "const tag = process.env.WRAP_WRONG_TAG === '1' ? '0.434.0' : '0.433.0';",
           "const body = exact ? { name, version: '0.433.0', dist: fakeDist(name, '0.433.0') } : { name, 'dist-tags': { latest: tag } };",
           "process.stdout.write(JSON.stringify(body) + 'VIZE_HTTP_STATUS:200');",
         ].join("\n"),

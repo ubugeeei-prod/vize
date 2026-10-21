@@ -37,7 +37,7 @@ fn element_objects_emit_upstream_ordered_sources() {
     for (source, expected) in [
         (
             r#"<div class="a" :class="c" v-bind="o" style="color:red" :style="s" data-x="1" :aria-label="l" disabled></div>"#,
-            "const t0 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setDynamicProps(n0, [{ class: [\"a\", _ctx.c] }, _ctx.o, { style: [\"color:red\", _ctx.s], \"data-x\": \"1\", \"aria-label\": _ctx.l, disabled: \"\" }]))\n  return n0\n}",
+            "const t0 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setDynamicProps(n0, [{ class: [\"a\", _ctx.c] }, _ctx.o, { style: [\"color:red\", _ctx.s], \"data-x\": \"1\", \"aria-label\": _ctx.l, disabled: \"\" }], [\"aria-label\"]))\n  return n0\n}",
         ),
         (
             r#"<div class="a" v-bind="o" :class="c" id="z"></div>"#,
@@ -45,7 +45,7 @@ fn element_objects_emit_upstream_ordered_sources() {
         ),
         (
             r#"<div :id="i" v-bind="o"><span v-bind="p">{{ t }}</span></div>"#,
-            "const t0 = _template(\"<div><span> </span></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  const n1 = _child(n0)\n  const x1 = _txt(n1)\n  _renderEffect(() => {\n    _setDynamicProps(n0, [{ id: _ctx.i }, _ctx.o])\n    _setDynamicProps(n1, [_ctx.p])\n    _setText(x1, _toDisplayString(_ctx.t))\n  })\n  return n0\n}",
+            "const t0 = _template(\"<div><span> </span></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  const n1 = _child(n0)\n  const x1 = _txt(n1)\n  _renderEffect(() => {\n    _setDynamicProps(n0, [{ id: _ctx.i }, _ctx.o], [\"id\"])\n    _setDynamicProps(n1, [_ctx.p])\n    _setText(x1, _toDisplayString(_ctx.t))\n  })\n  return n0\n}",
         ),
     ] {
         accepted(source);
@@ -132,5 +132,34 @@ fn unsupported_object_shapes_select_exact_legacy_reasons() {
             matches!(status, VaporL3BridgeStatus::Legacy(actual) if actual == reason),
             "{source}: expected {reason:?}, got {status:?}"
         );
+    }
+}
+
+/// Hydration skips a spread's server-rendered values unless they are named
+/// in `staticKeys`: a statically named prop that can change is listed, so a
+/// client value that differs from the server's is written.
+#[test]
+fn spread_groups_name_their_changing_static_keys() {
+    let source = r#"<p v-bind="obj" :title="t" :n="1" :onClick="f" :class="c" id="a">x</p>"#;
+    let expected = r#"import { setDynamicProps as _setDynamicProps, renderEffect as _renderEffect, template as _template } from 'vue';
+const t0 = _template("<p>x</p>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  _renderEffect(() => _setDynamicProps(n0, [_ctx.obj, { title: _ctx.t, n: 1, onClick: _ctx.f, class: _ctx.c, id: "a" }], ["title","onClick"]))
+  return n0
+}"#;
+    for davinci_retained_lane in [false, true] {
+        let allocator = Allocator::new();
+        let result = crate::compile_vapor(
+            &allocator,
+            source,
+            crate::VaporCompilerOptions {
+                prefix_identifiers: true,
+                davinci_retained_lane,
+                ..Default::default()
+            },
+        );
+        assert_eq!(result.code.trim_end(), expected);
     }
 }

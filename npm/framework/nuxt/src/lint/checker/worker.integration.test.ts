@@ -87,6 +87,7 @@ void test("real worker re-reads its oxlint + Patina config on every pass", async
     diagnosticCount: 0,
     hasErrors: false,
     hasWarnings: false,
+    notices: [],
     output: "",
   });
   assert.match(await readFile(configFile, "utf8"), /"off"/u);

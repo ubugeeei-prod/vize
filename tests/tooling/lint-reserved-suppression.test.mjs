@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.ts";
 import { sha256, wholeJson } from "./lint-default-correctness-reference.mjs";
+import { withoutHelp } from "./support/lint-help-policy.mjs";
 import { vueConfigFixtureSource, writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 await test("registered reserved-key suppression preserves whole CLI packets and source boundaries", () => {
@@ -156,7 +157,7 @@ await test("registered reserved-key suppression preserves whole CLI packets and 
         signal: result.signal,
         stdout: result.stdout ?? "",
         stderr: result.stderr ?? "",
-        expected: wholeJson(entry, findings),
+        expected: withoutHelp(wholeJson(entry, findings)),
         expectedStatus: findings.some((d) => d.severity === "error") ? 1 : 0,
       };
       evidence.runs.push(run);

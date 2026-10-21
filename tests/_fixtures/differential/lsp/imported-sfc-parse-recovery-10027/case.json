@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "id": "lsp/regression/imported-sfc-parse-recovery-10027",
+  "provenance": {
+    "fixCommit": "3ff5a8888e621d3754415566e726267e7f8aa575",
+    "witnessPath": "tests/tooling/lsp-imported-sfc-parse-recovery.test.ts",
+    "witnessTest": "an imported SFC block parse error keeps importer diagnostics clean and the Corsa session warm",
+    "inputOrigin": "exact issue 10027 importer and malformed dependency inputs",
+    "contractOrigin": "the dedicated stdio regression validates diagnostics and Corsa session stability; this differential row pins the authored inputs"
+  },
+  "files": [
+    {
+      "source": "Entry.vue.txt",
+      "runtimePath": "Entry.vue",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "Parent.vue.txt",
+      "runtimePath": "src/Parent.vue",
+      "sha256": "c1d63e80557c43ca5c4ae1a1ef6ab1c273b5ee8c753bb19f59af19b667ae8eee"
+    },
+    {
+      "source": "Child.broken.vue.txt",
+      "runtimePath": "src/Child.vue",
+      "sha256": "dfded8ea3ce80c059b8cd5f7de190592fdcc66b8ad4bb68caf4ee80f09f2a996"
+    }
+  ],
+  "entry": "Entry.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "38e0b9de817f645c4bec37c0d4a3e58baecccb040f5718dc069a72c7385a0bed"
+  },
+  "method": "textDocument/foldingRange",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "scope": "pins the importer and malformed dependency bytes that caused TS2307 and Corsa respawn"
+}

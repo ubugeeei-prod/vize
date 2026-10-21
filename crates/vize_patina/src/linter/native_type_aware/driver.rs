@@ -6,7 +6,7 @@ use super::document::project_type_aware;
 use super::{
     LintResult, Linter, RULE_NO_FLOATING_PROMISES, RULE_NO_REACTIVITY_LOSS,
     RULE_NO_UNSAFE_TEMPLATE_BINDING, RULE_REQUIRE_TYPED_EMITS, RULE_REQUIRE_TYPED_PROPS,
-    RULE_STRICT_BOOLEAN, push_warning, strict_boolean, with_corsa_session,
+    RULE_STRICT_BOOLEAN, strict_boolean, with_corsa_session,
 };
 use super::{
     markers::{QueryKind, push_promise_marker},
@@ -15,7 +15,6 @@ use super::{
     rule_queries::{MacroWarning, collect_emit_queries, collect_prop_queries, push_macro_warning},
     template_queries::collect_template_query_sets,
 };
-use crate::diagnostic::LintDiagnostic;
 use planning::{
     collect_emit_static_warning_or_probe_need, collect_prop_static_warning_or_probe_need,
     is_type_rule_active,
@@ -325,12 +324,7 @@ pub(super) fn lint_with_descriptor<'a>(
         })
     );
     if let Err(error) = corsa_result {
-        push_warning(
-            &mut result,
-            LintDiagnostic::warn("type/corsa-runtime", error, 0, 0).with_help(
-                "Type-aware lint rules were skipped because the Corsa runtime could not be started. Configure `typeChecker.corsaPath` or install `typescript@^7`.",
-            ),
-        );
+        super::push_type_aware_failure(&mut result, error);
     }
 
     push_macro_warning(

@@ -9,7 +9,10 @@ use std::path::{Path, PathBuf};
 use rayon::prelude::*;
 
 use vize_canon::batch::is_vue_runtime_support_specifier;
-use vize_canon::{PackageRouteBinding, PackageRouteResolver, PackageSourceOptions};
+use vize_canon::{
+    PackageResolutionContext, PackageResolutionMode, PackageRoute, PackageRouteBinding,
+    PackageRouteResolver, PackageSourceOptions,
+};
 #[cfg(test)]
 use vize_l0::cstr;
 use vize_l0::{FxHashMap, FxHashSet, String};
@@ -46,6 +49,88 @@ pub(super) use session::LocalImportSession;
 #[path = "imports_options.rs"]
 mod options;
 pub(super) use options::{ImportFileOptions, TransitiveLocalImports};
+
+#[derive(Default)]
+struct ImportReachabilityGraph {
+    edges: FxHashMap<PathBuf, FxHashSet<PathBuf>>,
+    direct_materialization: FxHashSet<PathBuf>,
+}
+
+impl ImportReachabilityGraph {
+    fn add_edge(&mut self, importer: &Path, dependency: &Path) {
+        self.edges
+            .entry(importer.to_path_buf())
+            .or_default()
+            .insert(dependency.to_path_buf());
+    }
+
+    fn mark_direct_materialization(&mut self, path: &Path) {
+        self.direct_materialization.insert(path.to_path_buf());
+    }
+
+    fn reaches_materialized_source(&self) -> FxHashSet<PathBuf> {
+        let mut reverse: FxHashMap<&Path, Vec<&Path>> = FxHashMap::default();
+        let mut reached = self.direct_materialization.clone();
+        let mut queue = self
+            .direct_materialization
+            .iter()
+            .cloned()
+            .collect::<Vec<_>>();
+        for (importer, dependencies) in &self.edges {
+            if importer
+                .extension()
+                .is_some_and(|extension| extension == "vue")
+                && reached.insert(importer.clone())
+            {
+                queue.push(importer.clone());
+            }
+            for dependency in dependencies {
+                reverse.entry(dependency).or_default().push(importer);
+                if dependency
+                    .extension()
+                    .is_some_and(|extension| extension == "vue")
+                    && reached.insert(dependency.clone())
+                {
+                    queue.push(dependency.clone());
+                }
+            }
+        }
+        while let Some(path) = queue.pop() {
+            if let Some(importers) = reverse.get(path.as_path()) {
+                for importer in importers {
+                    if reached.insert((*importer).to_path_buf()) {
+                        queue.push((*importer).to_path_buf());
+                    }
+                }
+            }
+        }
+        reached
+    }
+
+    fn reachable_files(&self, roots: impl IntoIterator<Item = PathBuf>) -> FxHashSet<PathBuf> {
+        let mut reached = FxHashSet::default();
+        let mut queue = roots.into_iter().collect::<Vec<_>>();
+        while let Some(path) = queue.pop() {
+            if !reached.insert(path.clone()) {
+                continue;
+            }
+            if let Some(dependencies) = self.edges.get(&path) {
+                queue.extend(dependencies.iter().cloned());
+            }
+        }
+        reached
+    }
+}
+
+struct DeferredWorkspaceRoute {
+    importer_path: PathBuf,
+    specifier: String,
+    occurrence_mode: PackageResolutionMode,
+    context: PackageResolutionContext,
+    route: PackageRoute,
+    invalidation_paths: Vec<PathBuf>,
+    package_graph: bool,
+}
 
 /// Walk the local import graph reachable from `roots`. The returned sets keep
 /// virtual registrations separate from authored in-place diagnostic sources;
@@ -98,6 +183,8 @@ pub(super) fn collect_transitive_local_imports_with_session(
     let mut registrations: Vec<PathBuf> = Vec::new();
     let mut authored: Vec<PathBuf> = Vec::new();
     let mut package_routes = Vec::new();
+    let mut reachability_graph = ImportReachabilityGraph::default();
+    let mut deferred_workspace_routes = Vec::new();
     let mut alias_targets: FxHashMap<String, Option<PathBuf>> = FxHashMap::default();
 
     while let Some((file, materialized_parent, package_graph)) = queue.pop() {
@@ -256,9 +343,49 @@ pub(super) fn collect_transitive_local_imports_with_session(
             // Never register an ambient declaration file — its `declare module`
             // statements would shadow real modules as a program root.
             if package_route.is_none()
-                && (is_declaration_file(&resolved)
-                    || (!package_graph && is_node_modules_path(&resolved)))
+                && !package_graph
+                && (is_declaration_file(&resolved) || is_node_modules_path(&resolved))
             {
+                continue;
+            }
+            if package_route.is_none() {
+                reachability_graph.add_edge(&file, &resolved);
+            }
+            let own_package_entry = !package_graph
+                && package_route.is_some_and(|route| {
+                    registration::importer_is_inside_own_package_entry(
+                        &file,
+                        route,
+                        specifier.as_str(),
+                    )
+                });
+            if let Some(route) = package_route
+                && route.workspace_source
+                && !own_package_entry
+                && !specifier.starts_with('#')
+                && let Some((_, invalidation_paths, mode, context, _)) = package_lookup.as_ref()
+            {
+                for candidate in route.all_source_paths() {
+                    reachability_graph.add_edge(&file, candidate);
+                    if visited.insert(candidate.clone()) {
+                        if !is_declaration_file(candidate) && candidate.is_file() {
+                            authored.push(candidate.clone());
+                        }
+                        queue.push((candidate.clone(), false, true));
+                    }
+                }
+                if route.requires_workspace_source_shadow() {
+                    reachability_graph.mark_direct_materialization(&file);
+                }
+                deferred_workspace_routes.push(DeferredWorkspaceRoute {
+                    importer_path: file.clone(),
+                    specifier: specifier.clone(),
+                    occurrence_mode: *mode,
+                    context: context.clone(),
+                    route: route.clone(),
+                    invalidation_paths: invalidation_paths.clone(),
+                    package_graph,
+                });
                 continue;
             }
             let mut discovery = registration::VirtualRegistrationDiscovery::default();
@@ -294,14 +421,6 @@ pub(super) fn collect_transitive_local_imports_with_session(
             // sources through a self-import. Once an app has already reached
             // that package, however, nested self-references are authored
             // members of the same dependency graph and own diagnostics.
-            let own_package_entry = !package_graph
-                && package_route.is_some_and(|route| {
-                    registration::importer_is_inside_own_package_entry(
-                        &file,
-                        route,
-                        specifier.as_str(),
-                    )
-                });
             if !own_package_entry {
                 package_routes.extend(discovery.package_routes);
             }
@@ -312,6 +431,7 @@ pub(super) fn collect_transitive_local_imports_with_session(
                 && !own_package_entry
                 && let Some((_, invalidation_paths, mode, context, _)) = package_lookup.as_ref()
             {
+                reachability_graph.mark_direct_materialization(&file);
                 if !package_graph && registered.insert(file.clone()) {
                     registrations.push(file.clone());
                 }
@@ -371,7 +491,7 @@ pub(super) fn collect_transitive_local_imports_with_session(
             let first_registration = package_route.is_none()
                 && needs_registration
                 && registered.insert(resolved.clone());
-            if first_visit {
+            if first_visit && !is_declaration_file(&resolved) {
                 authored.push(resolved.clone());
             }
             // Canon registers bare routes after fixing the project root. Adding
@@ -387,6 +507,52 @@ pub(super) fn collect_transitive_local_imports_with_session(
             .registration_cache
             .module_specifiers
             .insert(file, Some(occurrences));
+    }
+
+    let reaches_materialized_source = reachability_graph.reaches_materialized_source();
+    for pending in deferred_workspace_routes {
+        let source_paths = pending
+            .route
+            .all_source_paths()
+            .into_iter()
+            .cloned()
+            .collect::<Vec<_>>();
+        let needs_registration = pending.route.requires_workspace_source_shadow()
+            || source_paths
+                .iter()
+                .any(|path| reaches_materialized_source.contains(path));
+        if !needs_registration {
+            continue;
+        }
+        if !pending.package_graph && registered.insert(pending.importer_path.clone()) {
+            registrations.push(pending.importer_path.clone());
+        }
+        let positive_roots = source_paths
+            .iter()
+            .filter(|path| reaches_materialized_source.contains(*path))
+            .cloned()
+            .collect::<Vec<_>>();
+        let package_sources = reachability_graph.reachable_files(positive_roots);
+        let mut route = pending.route;
+        let before = route.dependency_paths.len();
+        route.dependency_paths.extend(
+            package_sources
+                .into_iter()
+                .filter(|path| path.starts_with(&route.package_root)),
+        );
+        if route.dependency_paths.len() != before {
+            route.dependency_paths.sort();
+            route.dependency_paths.dedup();
+        }
+        package_routes.push(PackageRouteBinding {
+            importer_path: pending.importer_path,
+            specifier: pending.specifier,
+            occurrence_mode: pending.occurrence_mode,
+            context: pending.context,
+            route: Some(route),
+            invalidation_paths: pending.invalidation_paths,
+            shared_invalidation_paths: Vec::new(),
+        });
     }
 
     sort_package_route_bindings(&mut package_routes);

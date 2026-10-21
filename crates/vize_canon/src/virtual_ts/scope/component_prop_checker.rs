@@ -93,7 +93,38 @@ pub(super) fn append_prop_checker_alias(
     component_ref: &str,
     idx: usize,
     relax_required: bool,
+    sharing: (Option<usize>, bool),
 ) {
+    let (shared_idx, force_value_props) = sharing;
+    if let Some(shared_idx) = shared_idx {
+        append!(
+            *ts,
+            "  type __{component_type_name}_Component_{idx} = __{component_type_name}_Component_{shared_idx};\n",
+        );
+        append!(
+            *ts,
+            "  type __{component_type_name}_CheckProps_{idx} = __{component_type_name}_CheckProps_{shared_idx};\n",
+        );
+        append!(
+            *ts,
+            "  type __{component_type_name}_CheckTail_{idx} = __{component_type_name}_CheckTail_{shared_idx};\n",
+        );
+        if usage_needs_per_prop_aliases(usage) {
+            append!(
+                *ts,
+                "  type __{component_type_name}_ValueProps_{idx} = __{component_type_name}_ValueProps_{shared_idx};\n",
+            );
+            append!(
+                *ts,
+                "  type __{component_type_name}_FallthroughValue_{idx}<K extends PropertyKey> = __{component_type_name}_FallthroughValue_{shared_idx}<K>;\n",
+            );
+        }
+        append!(
+            *ts,
+            "  type __{component_type_name}_Check_{idx} = __{component_type_name}_Check_{shared_idx};\n",
+        );
+        return;
+    }
     append!(
         *ts,
         "  type __{component_type_name}_Component_{idx} = typeof {component_ref};\n",
@@ -122,7 +153,7 @@ pub(super) fn append_prop_checker_alias(
         *ts,
         "  type __{component_type_name}_CheckTail_{idx} = __VizeComponentCheckTail<__{component_type_name}_Component_{idx}>;\n",
     );
-    if usage_needs_per_prop_aliases(usage) {
+    if force_value_props || usage_needs_per_prop_aliases(usage) {
         append!(
             *ts,
             "  type __{component_type_name}_ValueProps_{idx} = __VizeIsLibraryGenericExport<__{component_type_name}_Component_{idx}> extends true ? Record<string, any> : __{component_type_name}_Props_{idx} & __VizeEmitListeners<__{component_type_name}_Component_{idx}> & __VizePublicComponentAttrs;\n",
@@ -138,7 +169,7 @@ pub(super) fn append_prop_checker_alias(
     );
 }
 
-fn usage_needs_per_prop_aliases(usage: &ComponentUsage) -> bool {
+pub(super) fn usage_needs_per_prop_aliases(usage: &ComponentUsage) -> bool {
     usage.props.iter().any(|prop| {
         (!prop.name_is_dynamic && prop.name.as_str() != "key" && prop.value.is_some())
             && (prop.name.as_str() != "ref" || is_inline_ref_callback_prop(prop))

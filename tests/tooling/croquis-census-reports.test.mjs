@@ -6,8 +6,8 @@ import { test } from "node:test";
 import {
   gateViolations,
   renderSummary,
-} from "../../tools/support/compat/davinci/lib/croquis-render.mjs";
-import { renderCroquisArtifacts } from "../../tools/support/compat/davinci/lib/croquis-shards.mjs";
+} from "../../tools/support/compat/davinci/lib/croquis-render.ts";
+import { renderCroquisArtifacts } from "../../tools/support/compat/davinci/lib/croquis-shards.ts";
 
 const products = {
   typeProducts: new Map([["Span", { module: "scope" }]]),

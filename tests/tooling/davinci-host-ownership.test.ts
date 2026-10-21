@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import { metadata, readRepoFile } from "./support/davinci-stage-dependencies.ts";
-import { scanConsumerMigrationSurfaces } from "../../tools/support/compat/davinci/lib/consumer-migration-scan.mjs";
+import { scanConsumerMigrationSurfaces } from "../../tools/support/compat/davinci/lib/consumer-migration-scan.ts";
 
 test("stage catalogue names every actual level package and excludes host facades", () => {
   const source = readRepoFile("davinci/vize_l0/src/stage.rs");

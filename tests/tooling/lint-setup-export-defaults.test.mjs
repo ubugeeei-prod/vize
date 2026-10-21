@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.ts";
 import { sha256 } from "./lint-default-correctness-reference.mjs";
+import { withoutHelp } from "./support/lint-help-policy.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const fixture = path.join(root, "tests/_fixtures/differential/lint/setup-export-default-8090");
@@ -95,7 +96,7 @@ await test("setup export defaults preserve seventy whole source CLI packets", ()
         argv,
         originalArgv: route.argv,
         config: route.config,
-        expected: route.afterCliPacket,
+        expected: withoutHelp(route.afterCliPacket),
         expectedStatus: route.afterStatus,
         status: run.status,
         signal: run.signal,

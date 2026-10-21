@@ -36,6 +36,7 @@ function ok(overrides: Partial<NuxtLintCheckerResult> = {}): NuxtLintCheckerResu
     diagnosticCount: 0,
     hasErrors: false,
     hasWarnings: false,
+    notices: [],
     output: "",
     ...overrides,
   };
@@ -139,4 +140,16 @@ void test("webpack addon honours lintOnStart false, warning output, and closes i
   state.compiler.watchCloseHook?.();
   await new Promise<void>((resolve) => setImmediate(resolve));
   assert.equal(state.closed, 1);
+});
+
+void test("webpack addon reports subprocess notices without diagnostics", async () => {
+  const state = harness(resolved());
+  state.responses.push(ok({ notices: ["Skipped standalone HTML lint: unsupported host"] }));
+  state.compiler.watchRunHook?.(state.compiler);
+  const built = compilation();
+  await state.compiler.afterCompileHook?.(built);
+
+  assert.equal(built.errors.length, 0);
+  assert.equal(built.warnings.length, 1);
+  assert.match(built.warnings[0].message, /Skipped standalone HTML lint/u);
 });

@@ -92,6 +92,35 @@ fn test_codegen_self_component_resolve_marks_maybe_self_reference() {
 }
 
 #[test]
+fn test_codegen_self_component_normalizes_file_name_spelling() {
+    for (component, component_name) in [
+        ("TreeItem", "tree-item"),
+        ("TreeItem", "treeItem"),
+        ("VaConfig", "va-config"),
+        ("Play", "play"),
+        ("Perms", "perms"),
+    ] {
+        let source = format!("<{component} />");
+        let result = compile!(
+            &source,
+            super::CodegenOptions {
+                component_name: Some(component_name.into()),
+                ..Default::default()
+            }
+        );
+        let output = result_output(&result);
+
+        let expected =
+            format!("const _component_{component} = _resolveComponent(\"{component}\", true)");
+        assert_eq!(
+            output.matches(&expected).count(),
+            1,
+            "{component}/{component_name}: legacy self-reference must normalize the file stem:\n{output}"
+        );
+    }
+}
+
+#[test]
 fn test_codegen_inline_setup_ref_component_prop_uses_value() {
     let allocator = vize_l0::Allocator::new();
     let (mut root, errors) = crate::parse(&allocator, r#"<Child :initialText="initialText" />"#);

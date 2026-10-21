@@ -9,7 +9,7 @@ const DIRECTORY = "tests/_fixtures/differential/formatter-regressions/sole-child
 const AUTHORITY = `${DIRECTORY}/current-vue-references.json`;
 const HASH = "bf8c553b9fd93908061acbeb8a239a0ee945c7f59209ce25d406d53ef28a3d36";
 const CLI_MANIFEST = "tests/_fixtures/differential/formatter/manifest.json";
-const CLI_HASH = "6ab3a71cbb9ec75a4073a315c1f9610b12673c60ff2178517aed94cbb60621e0";
+const CLI_HASH = "804bbc7c45d938ac644c206d098340f835d9804d8cd4ba0cf9f2a72ce03081dc";
 const API_MANIFEST = "tests/_fixtures/differential/formatter-history/vue-version-manifest.json";
 const API_HASH = "e18b9c2595b7a5dbbe655930d83692e2ecdb04e1a60e0e7a2ec490577e0c88fc";
 const OWNER = "crates/vize_glyph/tests/vue2_filters.rs";
@@ -42,7 +42,7 @@ export function soleChildVueAuthority(root) {
       "native-hardcoded-3",
     ],
   );
-  assert.equal(hash(bytes(root, CLI_MANIFEST)), CLI_HASH, "whole shared16 manifest changed");
+  assert.equal(hash(bytes(root, CLI_MANIFEST)), CLI_HASH, "whole formatter manifest changed");
   assert.equal(hash(bytes(root, API_MANIFEST)), API_HASH, "whole Vue14 manifest changed");
   assert.equal(result.nativeOwner.path, "tests/tooling/glyph-vue2-native.test.ts");
   assert.equal(hash(Buffer.from(result.nativeOwner.content)), result.nativeOwner.sha256);

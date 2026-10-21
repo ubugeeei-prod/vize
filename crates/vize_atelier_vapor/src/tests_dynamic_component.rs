@@ -112,3 +112,35 @@ fn reserved_keys_never_render_and_constant_keys_need_no_fragment() {
         assert_eq!(compiled(r#"<div :key="k" />"#, retained), keyed);
     }
 }
+
+/// `<Component is>` is the built-in dynamic component (upstream's
+/// `isComponentTag`); without `is` it is an asset named `Component`.
+#[test]
+fn pascal_case_component_with_is_is_the_builtin() {
+    let source = r#"<div><Component is="foo" /><Component :x="y"/></div>"#;
+    let expected = r#"import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, resolveDynamicComponent as _resolveDynamicComponent, setInsertionState as _setInsertionState, template as _template } from 'vue';
+const t0 = _template("<div></div>", true)
+
+export function render(_ctx) {
+  const n2 = t0()
+  _setInsertionState(n2)
+  const n0 = _createComponentWithFallback(_resolveDynamicComponent("foo"), null, null, false)
+  const _component_Component = _resolveComponent("Component")
+  _setInsertionState(n2, 1)
+  const n1 = _createComponentWithFallback(_component_Component, { x: () => (_ctx.y) }, null, false)
+  return n2
+}"#;
+    for davinci_retained_lane in [false, true] {
+        let allocator = Allocator::new();
+        let result = compile_vapor(
+            &allocator,
+            source,
+            VaporCompilerOptions {
+                prefix_identifiers: true,
+                davinci_retained_lane,
+                ..Default::default()
+            },
+        );
+        assert_eq!(result.code.trim_end(), expected);
+    }
+}

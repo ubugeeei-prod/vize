@@ -161,6 +161,44 @@ vize check-server --socket /tmp/vize-check.sock
 vize check --socket /tmp/vize-check.sock src
 ```
 
+## Try the experimental tsrs backend
+
+Vize can use [`tsrs`](https://github.com/oxc-project/tsrs) as the native
+TypeScript runtime for checks, type-aware lint rules, and editor features. The
+integration is experimental because tsrs follows a TypeScript 7.1 development
+snapshot and its language server and Node API are still marked incomplete or
+unstable upstream.
+
+Install tsrs in the project and select its launcher explicitly:
+
+```bash
+vp install -D tsrs
+vize check --tsrs-path node_modules/.bin/tsrs
+```
+
+The equivalent shared configuration is:
+
+```ts
+export default defineConfig({
+  vue: {
+    typeChecker: {
+      tsrsPath: "node_modules/.bin/tsrs",
+    },
+  },
+});
+```
+
+`TSRS_PATH` and `TSRS_EXECUTABLE` are also supported. Vize resolves the
+JavaScript launcher to tsrs's platform binary when one is available, so a
+standalone Vize executable does not need Node.js to start the checker. Keep the
+package version pinned while evaluating it: compiler version drift can change
+which TypeScript diagnostics a project receives.
+
+Vize currently exercises tsrs through its compiler and `--lsp` protocols. The
+upstream `--init` and `--showConfig` commands are outside this integration, and
+tsrs 0.18.0 does not publish Windows or Intel macOS native packages. Compare
+CLI and editor diagnostics with the default backend before adopting it in CI.
+
 ## Related
 
 - [CLI reference: `vize check`](./cli.md#check)

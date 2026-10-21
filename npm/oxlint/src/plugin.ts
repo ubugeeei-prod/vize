@@ -187,6 +187,8 @@ function ruleOptionsSchema(ruleName: string): unknown[] {
       return [restrictedMembersSchema()];
     case "vue/no-mutating-props":
       return [noMutatingPropsSchema()];
+    case "script/define-macros-order":
+      return [defineMacrosOrderSchema()];
     case "vue/sfc-element-order":
       return [sfcElementOrderSchema()];
     case "vue/html-self-closing":
@@ -205,6 +207,16 @@ function ruleOptionsSchema(ruleName: string): unknown[] {
     default:
       return [];
   }
+}
+
+function defineMacrosOrderSchema(): unknown {
+  return objectSchema({
+    order: {
+      type: "array",
+      items: { type: "string", minLength: 1 },
+      uniqueItems: true,
+    },
+  });
 }
 
 function objectSchema(properties: Record<string, unknown>): Record<string, unknown> {

@@ -26,6 +26,29 @@ pub(in super::super) fn find_nearest_tsconfig_path(path: &Path) -> Option<PathBu
     None
 }
 
+pub(in super::super) fn find_nearest_tsconfig_path_within(
+    path: &Path,
+    boundary: &Path,
+) -> Option<PathBuf> {
+    let mut current = if path.is_dir() {
+        Some(path)
+    } else {
+        path.parent()
+    };
+
+    while let Some(dir) = current.filter(|dir| dir.starts_with(boundary)) {
+        if let Some(config) = project_config_path(dir) {
+            return Some(config);
+        }
+        if dir == boundary {
+            break;
+        }
+        current = dir.parent();
+    }
+
+    None
+}
+
 pub(in super::super) fn find_nearest_tsconfig_dir(path: &Path) -> Option<PathBuf> {
     find_nearest_tsconfig_path(path).and_then(|config| config.parent().map(Path::to_path_buf))
 }

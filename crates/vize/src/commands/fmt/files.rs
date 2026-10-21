@@ -3,7 +3,7 @@ use ignore::WalkBuilder;
 use std::path::{Component, Path, PathBuf};
 
 use super::ignores::FmtIgnoreSet;
-use super::patterns::is_format_extension;
+use super::patterns::{is_format_extension, is_unimplemented_document_extension};
 
 const NODE_MODULES_DIR: &str = "node_modules";
 
@@ -18,7 +18,9 @@ pub(crate) fn collect_files(
     }
 
     for pattern in patterns {
-        let normalized = normalize_fmt_pattern(pattern.as_ref());
+        let input = pattern.as_ref();
+        let is_directory_input = !contains_glob_char(input) && Path::new(input).is_dir();
+        let normalized = normalize_fmt_pattern(input);
         // File-based routes (`pages/[id].vue`) contain `[` but are literal files.
         // A glob would treat the brackets as a character class and skip them.
         let literal = PathBuf::from(normalized.as_str());
@@ -33,7 +35,13 @@ pub(crate) fn collect_files(
         }
         if contains_glob_char(&normalized) {
             if let Some(pattern) = FmtPattern::new(&normalized, &cwd) {
-                collect_walked_files(&pattern, &normalized, ignore_set, &mut files);
+                collect_walked_files(
+                    &pattern,
+                    &normalized,
+                    is_directory_input,
+                    ignore_set,
+                    &mut files,
+                );
             }
         } else {
             let path = PathBuf::from(&normalized);
@@ -52,6 +60,7 @@ pub(crate) fn collect_files(
 fn collect_walked_files(
     pattern: &FmtPattern,
     input: &str,
+    exclude_unimplemented_documents: bool,
     ignore_set: Option<&FmtIgnoreSet>,
     files: &mut Vec<PathBuf>,
 ) {
@@ -81,10 +90,20 @@ fn collect_walked_files(
 
     for entry in walker.filter_map(Result::ok) {
         let path = entry.path();
-        if pattern.matches(path) && should_include_format_file(path, ignore_set) {
+        if pattern.matches(path)
+            && should_include_format_file(path, ignore_set)
+            && (!exclude_unimplemented_documents || !is_unimplemented_document(path))
+        {
             files.push(path.strip_prefix(".").unwrap_or(path).to_path_buf());
         }
     }
+}
+
+#[inline]
+fn is_unimplemented_document(path: &Path) -> bool {
+    path.extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(is_unimplemented_document_extension)
 }
 
 fn should_include_format_file(path: &Path, ignore_set: Option<&FmtIgnoreSet>) -> bool {

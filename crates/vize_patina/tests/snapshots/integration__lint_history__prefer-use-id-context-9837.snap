@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "prefer-use-id-context-9837",
+    history: "28bec978df7f381859345bdce55b91b917289ab8",
+    source: "export function createRequestId(): string {\n  return crypto.randomUUID();\n}\n\ndeclare function createFolder(name: string): Promise<number>;\n\nexport async function run(): Promise<void> {\n  const folderId = await createFolder(`e2e-folder-${Date.now()}`);\n  console.log(folderId);\n}\n",
+    filename: "request-id.ts",
+    entry: "script",
+    rule: "script/prefer-use-id",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "request-id.ts",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "request-id.ts",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

@@ -467,6 +467,21 @@
     "LintRuleOptions": {
       "type": "object",
       "properties": {
+        "script/define-macros-order": {
+          "type": "object",
+          "properties": {
+            "order": {
+              "default": ["defineProps", "defineEmits"],
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "uniqueItems": true
+            }
+          },
+          "additionalProperties": false
+        },
         "script/define-props-destructuring": {
           "type": "object",
           "properties": {
@@ -757,6 +772,10 @@
         },
         "tsgoPath": {
           "description": "Deprecated alias for typeChecker.corsaPath",
+          "type": "string"
+        },
+        "tsrsPath": {
+          "description": "Path to the experimental tsrs executable. Used when corsaPath and tsgoPath are not set.",
           "type": "string"
         },
         "globalsFile": {

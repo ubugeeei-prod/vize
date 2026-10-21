@@ -11,8 +11,8 @@ import { fixture } from "./_helpers/rust-workspace-fixture.mjs";
 void test("known census renderers and owned reports retain tooling without product source lanes", () => {
   const paths = [
     "tools/support/compat/davinci/croquis-consumers.ts",
-    "tools/support/compat/davinci/lib/croquis-render.mjs",
-    "tools/support/compat/davinci/lib/croquis-shards.mjs",
+    "tools/support/compat/davinci/lib/croquis-render.ts",
+    "tools/support/compat/davinci/lib/croquis-shards.ts",
     "docs/davinci/plan/croquis-consumption.md",
     "docs/davinci/plan/croquis-consumption/vize.md",
     "docs/davinci/plan/croquis-consumption/vize_l0_derive.md",
@@ -52,7 +52,7 @@ void test("mixed census changes retain every native, workflow and shared configu
 
 void test("unknown census helpers and authored contracts keep the full conservative source fallback", () => {
   for (const path of [
-    "tools/support/compat/davinci/lib/croquis-analysis.mjs",
+    "tools/support/compat/davinci/lib/croquis-analysis.ts",
     "tools/support/compat/davinci/lib/new-census-helper.mjs",
     "tools/support/compat/davinci/croquis-consumers.rs",
     "docs/davinci/plan/croquis-consumption.schema.json",
@@ -108,8 +108,8 @@ void test("census-only reports and exact Node renderers select no workspace Rust
     "docs/davinci/plan/croquis-consumption.md",
     "docs/davinci/plan/croquis-consumption/vize_atelier_sfc.md",
     "tools/support/compat/davinci/croquis-consumers.ts",
-    "tools/support/compat/davinci/lib/croquis-render.mjs",
-    "tools/support/compat/davinci/lib/croquis-shards.mjs",
+    "tools/support/compat/davinci/lib/croquis-render.ts",
+    "tools/support/compat/davinci/lib/croquis-shards.ts",
   ]);
   assert.equal(plan.scope, "none");
   assert.deepEqual(plan.packages, []);
@@ -122,7 +122,7 @@ void test("mixed census and Rust changes preserve every transitive actual consum
     planAffectedRust(fixture(), [
       path,
       "docs/davinci/plan/croquis-consumption/vize_l1.md",
-      "tools/support/compat/davinci/lib/croquis-render.mjs",
+      "tools/support/compat/davinci/lib/croquis-render.ts",
     ]),
     planAffectedRust(fixture(), [path]),
   );

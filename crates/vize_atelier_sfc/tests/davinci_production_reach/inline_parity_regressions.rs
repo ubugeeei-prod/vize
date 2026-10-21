@@ -78,6 +78,20 @@ fn typed_slot_handlers_keep_the_current_scope_and_outside_cache() {
     }
 }
 
+#[test]
+fn maybe_ref_model_writes_match_shipped_compiler() {
+    let _guard = crate::PROFILER_TEST_LOCK.lock().unwrap();
+    assert_inline_parity(
+        "maybe-ref-model.vue",
+        r#"<script setup>
+import Child from './Child.js'
+import { useThing } from './thing.js'
+const { value } = useThing()
+</script>
+<template><Child v-model="value" /></template>"#,
+    );
+}
+
 fn assert_inline_parity(filename: &str, source: &str) {
     let descriptor = parse_sfc(
         source,

@@ -850,7 +850,7 @@ vp run lint
 
 正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
 
-[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/mustache_interpolation_spacing.rs#L35) · [全部规则](all.md)
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/mustache_interpolation_spacing.rs#L34) · [全部规则](all.md)
 
 ### `vue/no-array-index-key`
 
@@ -2649,15 +2649,11 @@ KeepAlive 有条件地包装原生 div，而没有直接缓存 UserCard。
 
 默认严重程度: `warning`  
 预设: `nuxt`, `opinionated`  
-自动修复: 尚未在 SFC lint 中实现  
+自动修复: 无；请检查建议的修改  
 适用范围: Vue SFC 模板和代码块，包括规则所需的脚本上下文  
 选项: 没有规则专属选项。可以配置严重程度和预设。
 
-当前支持情况: `no-sfc-finding`
-
-此目录条目目前不会通过 SFC lint 报告该规则特有的问题。Bad/Good 对照描述的是预期规范，并非可执行的诊断。启用此 ID 也不会补上缺失的 SFC 检查。
-
-**可配置的 ID（当前没有 SFC 诊断）**
+**配置（Vite+）**
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -2704,9 +2700,9 @@ style 块通过 lang 选择 SCSS。这描述了不使用预处理器的预期规
 </style>
 ```
 
-正确示例展示预期规范；当前 SFC 流程不会为任一示例生成这条规则的诊断。
+正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
 
-[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_preprocessor_lang.rs#L22) · [全部规则](all.md)
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_preprocessor_lang.rs#L11) · [全部规则](all.md)
 
 ### `vue/no-reserved-component-names`
 
@@ -3107,15 +3103,11 @@ key 属于 template v-for 迭代，用来标识每个重复的片段。
 
 默认严重程度: `warning`  
 预设: `nuxt`, `opinionated`  
-自动修复: 尚未在 SFC lint 中实现  
+自动修复: 无；请检查建议的修改  
 适用范围: Vue SFC 模板和代码块，包括规则所需的脚本上下文  
 选项: 没有规则专属选项。可以配置严重程度和预设。
 
-当前支持情况: `no-sfc-finding`
-
-此目录条目目前不会通过 SFC lint 报告该规则特有的问题。Bad/Good 对照描述的是预期规范，并非可执行的诊断。启用此 ID 也不会补上缺失的 SFC 检查。
-
-**可配置的 ID（当前没有 SFC 诊断）**
+**配置（Vite+）**
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -3160,9 +3152,9 @@ p Notice
 </template>
 ```
 
-正确示例展示预期规范；当前 SFC 流程不会为任一示例生成这条规则的诊断。
+正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
 
-[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_template_lang.rs#L38) · [全部规则](all.md)
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_template_lang.rs#L11) · [全部规则](all.md)
 
 ### `vue/no-template-shadow`
 

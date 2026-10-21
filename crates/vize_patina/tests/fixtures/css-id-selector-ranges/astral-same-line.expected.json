@@ -8,7 +8,7 @@
         "message": "Avoid ID selectors - use class selectors for better reusability",
         "start": 55,
         "end": 63,
-        "help": "Replace with a class selector for lower specificity",
+        "help": null,
         "labels": [],
         "fix": null
       }
@@ -28,15 +28,14 @@
           "line": 2,
           "column": 19,
           "endLine": 2,
-          "endColumn": 22,
-          "help": "Replace with a class selector for lower specificity"
+          "endColumn": 22
         }
       ],
       "errorCount": 0,
       "warningCount": 1
     }
   ],
-  "plain": "Patina lint report: 1 warning in 1 file\n\nAstralSameLine.vue\n  AstralSameLine.vue:2:19 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      Replace with a class selector for lower specificity\n",
+  "plain": "Patina lint report: 1 warning in 1 file\n\nAstralSameLine.vue\n  AstralSameLine.vue:2:19 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n",
   "authoredSlices": [
     "#雪😀"
   ]

@@ -1,5 +1,5 @@
 //! Authored effective options keep their native indexed-access semantics.
-use super::session_tsconfig_contents;
+use super::{session_tsconfig_contents, validate_tsconfig};
 use serde_json::{Value, json};
 use std::{fs, path::PathBuf, time::SystemTime};
 
@@ -156,4 +156,28 @@ fn native_session_retains_whole_config_for_authored_index_access_options() {
             );
         }
     }
+}
+
+#[test]
+fn type_aware_project_validation_rejects_and_recovers_missing_extends() {
+    let project = Project::new();
+    let tsconfig = project.0.join("tsconfig.json");
+    project.write(
+        "tsconfig.json",
+        r#"{"extends":"./.generated/tsconfig.base.json","compilerOptions":{"strict":true}}"#,
+    );
+
+    assert_eq!(
+        validate_tsconfig(&project.0, &tsconfig).unwrap_err(),
+        format!(
+            "Cannot load type-aware project configuration {}:\n- File './.generated/tsconfig.base.json' not found.",
+            tsconfig.display()
+        )
+    );
+
+    project.write(
+        ".generated/tsconfig.base.json",
+        r#"{"compilerOptions":{"moduleResolution":"Bundler"}}"#,
+    );
+    assert_eq!(validate_tsconfig(&project.0, &tsconfig), Ok(()));
 }

@@ -14,6 +14,7 @@ function result(overrides: Partial<NuxtLintCheckerResult> = {}): NuxtLintChecker
     diagnosticCount: 0,
     hasErrors: false,
     hasWarnings: false,
+    notices: [],
     output: "",
     ...overrides,
   };
@@ -202,6 +203,23 @@ void test("Vite addon turns worker failures into actionable terminal and overlay
 
   assert.match(state.errors[0], /Nuxt lint checker failed: oxlint disappeared/u);
   assert.equal((state.messages[0] as { type: string }).type, "error");
+});
+
+void test("Vite addon reports subprocess notices without diagnostics", async () => {
+  const state = harness([result({ notices: ["Skipped standalone HTML lint: unsupported host"] })]);
+  const plugin = createNuxtLintCheckerVitePlugin(
+    {
+      configFile: "/project/.nuxt/oxlint.config.json",
+      options: options(),
+      rootDir: "/project",
+    },
+    { createRunner: () => state.runner },
+  );
+  plugin.configureServer?.(state.server as never);
+  await flush();
+
+  assert.deepEqual(state.warnings, ["Skipped standalone HTML lint: unsupported host"]);
+  assert.deepEqual(state.messages, []);
 });
 
 void test("Vite addon stays silent when shutdown cancels an active pass", async () => {

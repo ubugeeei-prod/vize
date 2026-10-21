@@ -1,0 +1,5 @@
+<script setup lang="ts">
+defineProps<{ title?: string; body?: string }>();
+defineEmits<{ "update:title": [value: string] }>();
+</script>
+<template><div>{{ title }} {{ body }}</div></template>

@@ -52,6 +52,28 @@ fn fmt_check_refuses_even_normalized_yaml() {
     assert_unsupported_unchanged(project.path(), "ok.yaml", "name: vize\n");
 }
 
+#[test]
+fn fmt_check_directory_skips_unsupported_documents() {
+    let project = tempfile::tempdir().unwrap();
+    write_project_file(
+        project.path(),
+        "src/my-card.vue",
+        "<template>\n  <div class=\"my-card\">Card</div>\n</template>\n",
+    );
+    write_project_file(project.path(), "src/README.md", "# Notes\n");
+    write_project_file(project.path(), "src/config.yaml", "name: fixture\n");
+
+    let output = run_fmt(project.path(), &["--no-config", "--check", "src"]);
+
+    assert_eq!(output.status.code(), Some(0), "{output:?}");
+    assert_eq!(output.stdout, b"");
+    let stderr = String::from_utf8(output.stderr).unwrap();
+    assert!(stderr.contains("Found 1 file(s)"), "{stderr}");
+    assert!(stderr.contains("1 file(s) already formatted"), "{stderr}");
+    assert!(!stderr.contains("README.md"), "{stderr}");
+    assert!(!stderr.contains("config.yaml"), "{stderr}");
+}
+
 fn assert_unsupported_unchanged(root: &Path, name: &str, original: &str) {
     for command in ["--check", "--write", "--write", "--write", "--check"] {
         let output = run_fmt(root, &[command, name]);

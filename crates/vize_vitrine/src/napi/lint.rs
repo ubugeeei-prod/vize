@@ -71,6 +71,7 @@ pub fn lint_patina_sfc(source: String, options: Option<PatinaLintOptionsNapi>) -
     let event_casing = opts.custom_event_name_casing.as_deref();
     let include_fixes = opts.include_fixes.unwrap_or(false);
     let no_mutating_props = opts.no_mutating_props;
+    let define_macros_order = opts.define_macros_order;
     let sfc_element_order = opts.sfc_element_order;
     let html_self_closing = opts.html_self_closing;
     let v_on_event_hyphenation = opts.v_on_event_hyphenation.as_deref();
@@ -101,6 +102,7 @@ pub fn lint_patina_sfc(source: String, options: Option<PatinaLintOptionsNapi>) -
         component_casing,
         event_casing,
         no_mutating_props,
+        define_macros_order,
         sfc_element_order,
         html_self_closing,
         v_on_event_hyphenation,

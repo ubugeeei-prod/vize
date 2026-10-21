@@ -48,7 +48,8 @@ fn build_config_whitespace_reaches_client_ssr_and_vapor_whole_outputs() {
         ),
     ] {
         let config = if config_name.ends_with(".json") {
-            config.to_owned()
+            serde_json::json!({ "vue": serde_json::from_str::<serde_json::Value>(config).unwrap() })
+                .to_string()
         } else if let Some(native) = config.strip_prefix("export default ") {
             format!(
                 "export default {{ vue: {} }};\n",

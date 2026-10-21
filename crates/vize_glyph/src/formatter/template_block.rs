@@ -3,7 +3,9 @@
 //! Native HTML templates are reformatted by the HTML template formatter and
 //! re-indented one level from the `<template>` tag. Every other template
 //! language is opaque: its bytes are preserved and only the common outer
-//! indentation is rebased.
+//! indentation is rebased. Markdown is stricter: Ox Content owns its complete
+//! authored payload, so the formatter does not even rebase indentation or line
+//! endings between the template tags.
 
 use super::{
     opening_tag, template_indent, write_attr, write_authored_attrs, write_remaining_attrs,
@@ -24,10 +26,9 @@ pub(super) fn write_template_block(
     // Haml, Markdown, or another preprocessor language through it turns
     // indentation-sensitive source into unrelated HTML text nodes and can
     // flatten the program while still reaching a formatter fixed point.
-    let native_html = block
-        .lang
-        .as_deref()
-        .is_none_or(|lang| lang.eq_ignore_ascii_case("html"));
+    let language = block.lang.as_deref();
+    let native_html = language.is_none_or(|lang| lang.eq_ignore_ascii_case("html"));
+    let authored_markdown = language.is_some_and(|lang| lang.eq_ignore_ascii_case("md"));
     let opening_tag = opening_tag::raw_templated_opening_tag(source, &block.loc);
     let content = opening_tag::content_after_opening_tag(
         source,
@@ -53,6 +54,15 @@ pub(super) fn write_template_block(
             write_remaining_attrs(output, &block.attrs, &["lang"]);
         }
         output.push(b'>');
+    }
+    if authored_markdown {
+        // Frontmatter delimiters, code fences and their indentation are all
+        // Markdown syntax owned by Ox Content. Until explicit Markdown
+        // formatting exists, copying this slice is the only semantics-safe
+        // operation, including when the SFC formatter uses another EOL mode.
+        output.extend_from_slice(content.as_bytes());
+        output.extend_from_slice(b"</template>");
+        return Ok(());
     }
     // An empty block stays empty on one line, as Prettier prints it.
     if content.trim().is_empty() {

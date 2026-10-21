@@ -85,6 +85,7 @@ export interface PatinaBinding {
       componentNameInTemplateCasing?: ComponentNameInTemplateCasingOption;
       customEventNameCasing?: CustomEventNameCasingOption;
       noMutatingProps?: NoMutatingPropsOption;
+      defineMacrosOrder?: DefineMacrosOrderOption;
       sfcElementOrder?: SfcElementOrderOption;
       htmlSelfClosing?: HtmlSelfClosingOption;
       vOnEventHyphenation?: HyphenationStyle;
@@ -119,6 +120,7 @@ export interface PatinaRuleOptions {
   componentNameInTemplateCasing?: ComponentNameInTemplateCasingOption;
   customEventNameCasing?: CustomEventNameCasingOption;
   noMutatingProps?: NoMutatingPropsOption;
+  defineMacrosOrder?: DefineMacrosOrderOption;
   sfcElementOrder?: SfcElementOrderOption;
   htmlSelfClosing?: HtmlSelfClosingOption;
   vOnEventHyphenation?: HyphenationStyle;
@@ -176,6 +178,9 @@ export type ComponentNameInTemplateCasingOption = "PascalCase" | "kebab-case";
 export type CustomEventNameCasingOption = "camelCase" | "kebab-case";
 export interface NoMutatingPropsOption {
   shallowOnly?: boolean;
+}
+export interface DefineMacrosOrderOption {
+  order?: string[];
 }
 export type SfcElementOrderGroup = string | string[];
 export interface SfcElementOrderOption {

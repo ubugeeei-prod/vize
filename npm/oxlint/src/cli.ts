@@ -10,7 +10,12 @@ import { prepareScopedSelection } from "./cli/scoped-selection.js";
 import { mergeProjectOutput } from "./cli/project-output.js";
 import { isStandaloneHtmlFile } from "./file-kinds.ts";
 import { prepareHtmlContext, executeHtml } from "./cli/html-operation.ts";
-import { mergeHtmlOutput, unavailableHtml, qualifyHtmlHost } from "./cli/html-project-output.ts";
+import {
+  mergeHtmlOutput,
+  skippedHtml,
+  unavailableHtml,
+  qualifyHtmlHost,
+} from "./cli/html-project-output.ts";
 import { runOxlint } from "./cli/process.ts";
 import { requestsTypeAware, runVueTypeAwarePass } from "./cli/type-aware-vue.ts";
 
@@ -83,7 +88,10 @@ async function main(): Promise<void> {
           if (!outcome.completed) throw new Error("original HTML operation is incomplete");
           merged = mergeHtmlOutput(merged, outcome.completed, forwardedArgs);
         } catch (error) {
-          merged = unavailableHtml(merged, error);
+          merged =
+            html.skipReason && !html.failure
+              ? skippedHtml(merged, error)
+              : unavailableHtml(merged, error);
         }
       }
       if (requestsTypeAware(forwardedArgs, cwd))

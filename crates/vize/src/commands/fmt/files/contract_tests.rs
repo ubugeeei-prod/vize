@@ -44,7 +44,7 @@ fn collect_files_skips_generated_vize_workspace() {
 }
 
 #[test]
-fn collect_files_matches_vue_scripts_and_jsx() {
+fn directory_walk_collects_only_implemented_formats() {
     let root = unique_case_dir("format-targets");
     let src = root.join("src");
     let _ = fs::remove_dir_all(&root);
@@ -70,13 +70,36 @@ fn collect_files_matches_vue_scripts_and_jsx() {
             src.join("Panel.jsx"),
             src.join("Widget.tsx"),
             src.join("config.js"),
-            src.join("config.yaml"),
-            src.join("notes.md"),
             src.join("package.json"),
             src.join("store.ts"),
             src.join("types.d.ts"),
         ]
     );
+}
+
+#[test]
+fn explicit_document_inputs_remain_available_for_unsupported_format_errors() {
+    let root = unique_case_dir("explicit-document-inputs");
+    let src = root.join("src");
+    let markdown = src.join("notes.md");
+    let yaml = src.join("config.yaml");
+    let _ = fs::remove_dir_all(&root);
+    fs::create_dir_all(&src).unwrap();
+    fs::write(&markdown, "# notes").unwrap();
+    fs::write(&yaml, "a: 1\n").unwrap();
+
+    let explicit_files = collect_files(
+        &[
+            markdown.to_string_lossy().into_owned(),
+            yaml.to_string_lossy().into_owned(),
+        ],
+        None,
+    );
+    let explicit_glob = collect_files(&[src.join("*.md").to_string_lossy().into_owned()], None);
+    let _ = fs::remove_dir_all(&root);
+
+    assert_eq!(explicit_files, vec![yaml, markdown.clone()]);
+    assert_eq!(explicit_glob, vec![markdown]);
 }
 
 #[test]

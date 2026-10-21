@@ -121,6 +121,11 @@ class DefinePropsDestructuringOptions {
   destructure: "only-when-assigned"|"always"|"never" = "only-when-assigned"
 }
 
+/// Options for `script/define-macros-order`.
+class DefineMacrosOrderOptions {
+  order: Listing<String> = new Listing { "defineProps"; "defineEmits" }
+}
+
 class ValidVOnOptions {
   modifiers: Listing<String> = new Listing {}
 }
@@ -130,6 +135,7 @@ class ValidVSlotOptions {
 }
 
 class LintRuleOptions {
+  `script/define-macros-order`: DefineMacrosOrderOptions? = null
   `script/define-props-destructuring`: DefinePropsDestructuringOptions? = null
   `type/strict-boolean-expressions`: StrictBooleanExpressionsOptions? = null
   `script/no-restricted-globals`: NoRestrictedGlobalsOptions? = null

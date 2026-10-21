@@ -185,6 +185,39 @@ fn authored_paths_override_inherited_and_nuxt_only_fills_missing_aliases() {
 }
 
 #[test]
+fn wrapper_preserves_flattened_vue_compiler_options() {
+    let case = tempfile::tempdir().unwrap();
+    write(
+        case.path(),
+        "base.json",
+        r#"{ "vueCompilerOptions": { "strictTemplates": true, "checkUnknownProps": false } }"#,
+    );
+    write(
+        case.path(),
+        "tsconfig.json",
+        r#"{
+  "extends": "./base.json",
+  "compilerOptions": { "paths": { "~/*": ["src/*"] } },
+  "vueCompilerOptions": { "checkUnknownProps": true, "checkUnknownDirectives": true }
+}"#,
+    );
+
+    let config = case.path().join("tsconfig.json");
+    let prepared = prepare(case.path(), &config);
+    let value: serde_json::Value =
+        serde_json::from_slice(&fs::read(prepared.path().unwrap()).unwrap()).unwrap();
+
+    assert_eq!(
+        value["vueCompilerOptions"],
+        serde_json::json!({
+            "strictTemplates": true,
+            "checkUnknownProps": true,
+            "checkUnknownDirectives": true
+        })
+    );
+}
+
+#[test]
 fn invalid_path_options_survive_for_the_authored_option_probe() {
     let case = tempfile::tempdir().unwrap();
     write(

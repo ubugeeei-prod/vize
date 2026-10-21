@@ -8,7 +8,7 @@
         "message": "Utility class should be in global styles, not component styles",
         "start": 160,
         "end": 165,
-        "help": "Use semantic class names in components, or import utility classes from a global stylesheet",
+        "help": null,
         "labels": [],
         "fix": null
       }
@@ -28,15 +28,14 @@
           "line": 8,
           "column": 1,
           "endLine": 8,
-          "endColumn": 6,
-          "help": "Use semantic class names in components, or import utility classes from a global stylesheet"
+          "endColumn": 6
         }
       ],
       "errorCount": 0,
       "warningCount": 1
     }
   ],
-  "plain": "Patina lint report: 1 warning in 1 file\n\nInlineDisabled.vue\n  InlineDisabled.vue:8:1 warning css/no-utility-classes Utility class should be in global styles, not component styles\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      Use semantic class names in components, or import utility classes from a global stylesheet\n",
+  "plain": "Patina lint report: 1 warning in 1 file\n\nInlineDisabled.vue\n  InlineDisabled.vue:8:1 warning css/no-utility-classes Utility class should be in global styles, not component styles\n    Reference: docs/content/rules/musea-and-css.md\n",
   "authoredSlices": [
     ".pl-3"
   ]

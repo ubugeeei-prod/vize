@@ -43,6 +43,8 @@ const label = "x"
 `;
 const KEY = "vue/require-v-for-key";
 const HTML = "vue/no-v-html";
+const CONFIG_MIGRATION =
+  "vize.config.* is no longer supported; move Vue settings to vue: in vite.config.* and TypeScript settings to tsconfig.json";
 const npm = process.platform === "win32" ? "npm.cmd" : "npm";
 
 // A failed setup step skips the rest of its scenario.
@@ -78,6 +80,13 @@ export async function install(dir: string, packages: string[]): Promise<string |
 
 function vize(bin: string, cwd: string, args: string[]) {
   return collectOutput(process.execPath, [bin, ...args], { cwd });
+}
+
+async function retiredConfigRefused(bin: string, cwd: string): Promise<string | null> {
+  const out = await vize(bin, cwd, ["lint", "src/App.vue"]);
+  const output = `${out.stdout}${out.stderr}`;
+  if (out.status !== 2) return `expected migration exit 2, got ${out.status}: ${output}`;
+  return output.includes(CONFIG_MIGRATION) ? null : `no migration guidance: ${output}`;
 }
 
 /** Lints src/App.vue from `cwd`; fails unless exactly `expected` rules report. */
@@ -189,11 +198,7 @@ function migration(dir: string, version: string): Step[] {
       "a lone vize.config.json is refused with migration guidance",
       async () => {
         write(dedicated, stale);
-        const out = await vize(bin, dir, ["lint", "src/App.vue"]);
-        if (out.status === 0) return "lint accepted a retired config";
-        return `${out.stdout}${out.stderr}`.includes("vite.config")
-          ? null
-          : `no migration guidance: ${out.stderr}`;
+        return retiredConfigRefused(bin, dir);
       },
     ],
     [
@@ -214,17 +219,17 @@ function migration(dir: string, version: string): Step[] {
       },
     ],
     [
-      "vite.config.ts wins over a stale vize.config.json",
-      () => {
+      "a stale vize.config.json is refused alongside vite.config.ts",
+      async () => {
         write(
           join(dir, "vite.config.ts"),
           viteConfig({ linter: { rules: { [KEY]: "off" } } }, true),
         );
-        return lintRules(bin, dir, [HTML]);
+        return retiredConfigRefused(bin, dir);
       },
     ],
     [
-      "same result once vize.config.json is removed",
+      "vite.config.ts is used once vize.config.json is removed",
       () => {
         rmSync(dedicated);
         return lintRules(bin, dir, [HTML]);

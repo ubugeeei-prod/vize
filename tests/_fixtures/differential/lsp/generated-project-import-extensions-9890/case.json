@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "id": "lsp/regression/generated-project-import-extensions-9890",
+  "provenance": {
+    "fixCommit": "f1b07174a4a86ffc3433f31b8c78406d5bf5b760",
+    "witnessPath": "tests/tooling/lsp-fresh-vue-jsx-defaults.test.ts",
+    "witnessTest": "fresh workspace Vue imports stay diagnostic-free in TSX and JSX",
+    "inputOrigin": "byte-exact fresh Vue JSX regression inputs",
+    "contractOrigin": "empty control request with pinned generated-project diagnostic inputs"
+  },
+  "files": [
+    {
+      "source": "Entry.vue.txt",
+      "runtimePath": "Entry.vue",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "Counter.vue.txt",
+      "runtimePath": "src/Counter.vue",
+      "sha256": "be05ff1c36344add48c9950caeacaa6e3b9c708d7f324a36799aea6a6537af07"
+    },
+    {
+      "source": "Consumer.valid.tsx.txt",
+      "runtimePath": "src/Consumer.tsx",
+      "sha256": "f84d32ace2d1da89f9edfd6d8eb9deaa5834427a9165f0552e40b0411ae66abe"
+    },
+    {
+      "source": "Consumer.valid.jsx.txt",
+      "runtimePath": "src/Consumer.jsx",
+      "sha256": "f84d32ace2d1da89f9edfd6d8eb9deaa5834427a9165f0552e40b0411ae66abe"
+    },
+    {
+      "source": "Intrinsic.tsx.txt",
+      "runtimePath": "src/Intrinsic.tsx",
+      "sha256": "caa41ae4d258f0769897cf8563e62ffd25fd35c8c74153e8dafdab13e6685676"
+    }
+  ],
+  "entry": "Entry.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "38e0b9de817f645c4bec37c0d4a3e58baecccb040f5718dc069a72c7385a0bed"
+  },
+  "method": "textDocument/foldingRange",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "scope": "pins the four fresh Vue JSX generated-project inputs that produced TS5097"
+}

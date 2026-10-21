@@ -1,0 +1,4 @@
+export interface Settings {
+  country: boolean
+  platform: boolean
+}

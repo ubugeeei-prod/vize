@@ -11,8 +11,7 @@
           "line": 3,
           "column": 1,
           "endLine": 3,
-          "endColumn": 6,
-          "help": "Replace with a class selector for lower specificity"
+          "endColumn": 6
         },
         {
           "ruleId": "css/no-id-selectors",
@@ -22,8 +21,7 @@
           "line": 3,
           "column": 6,
           "endLine": 3,
-          "endColumn": 11,
-          "help": "Replace with a class selector for lower specificity"
+          "endColumn": 11
         },
         {
           "ruleId": "css/no-id-selectors",
@@ -33,8 +31,7 @@
           "line": 3,
           "column": 13,
           "endLine": 3,
-          "endColumn": 18,
-          "help": "Replace with a class selector for lower specificity"
+          "endColumn": 18
         },
         {
           "ruleId": "css/no-id-selectors",
@@ -44,13 +41,12 @@
           "line": 3,
           "column": 26,
           "endLine": 3,
-          "endColumn": 32,
-          "help": "Replace with a class selector for lower specificity"
+          "endColumn": 32
         }
       ],
       "errorCount": 0,
       "warningCount": 4
     }
   ],
-  "plain": "Patina lint report: 4 warnings in 1 file\n\nRepeatedCompoundIds.vue\n  RepeatedCompoundIds.vue:3:1 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      Replace with a class selector for lower specificity\n  RepeatedCompoundIds.vue:3:6 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      Replace with a class selector for lower specificity\n  RepeatedCompoundIds.vue:3:13 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      Replace with a class selector for lower specificity\n  RepeatedCompoundIds.vue:3:26 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      Replace with a class selector for lower specificity\n"
+  "plain": "Patina lint report: 4 warnings in 1 file\n\nRepeatedCompoundIds.vue\n  RepeatedCompoundIds.vue:3:1 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n  RepeatedCompoundIds.vue:3:6 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n  RepeatedCompoundIds.vue:3:13 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n  RepeatedCompoundIds.vue:3:26 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n"
 }

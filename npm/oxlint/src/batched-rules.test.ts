@@ -208,6 +208,19 @@ it("complete Oxlint maps select only Vize entries and ignore disabled rules", ()
   });
 });
 
+it("projects define-macros-order options into the native batch", () => {
+  const options = getRuleOptions("script/define-macros-order", [
+    { order: ["defineOptions", "defineProps", "defineEmits"] },
+  ]);
+  assert.deepEqual(options, {
+    defineMacrosOrder: { order: ["defineOptions", "defineProps", "defineEmits"] },
+  });
+  assert.equal(
+    getRuleOptions("script/define-macros-order", [{ order: ["defineProps", "defineProps"] }]),
+    undefined,
+  );
+});
+
 it("collects every CLI-shaped rule option into one native option map", () => {
   const authored = {
     "script/define-props-destructuring": { destructure: "always" },

@@ -56,7 +56,9 @@ fn setup_emits_return_checks_preserve_owned_macros_and_sibling_offsets() {
         }
         for (linter, findings) in [
             (
-                Linter::new().with_disabled_rules(disabled.clone()),
+                Linter::new()
+                    .with_help_level(HelpLevel::None)
+                    .with_disabled_rules(disabled.clone()),
                 case["disabledDiagnostics"].clone(),
             ),
             (Linter::with_preset(LintPreset::Incremental), json!([])),

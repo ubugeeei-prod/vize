@@ -67,6 +67,37 @@
       }
     },
     {
+      "id": "compiler/sfc/slot-fallback-adjacent-text-10087",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "slot-fallback-adjacent-text-10087",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "11729d67a2cbdad14811822d77e99459d416341d8b0066a499c7241c0024af67",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "slot-fallback-adjacent-text-10087/module.expected.txt",
+        "sha256": "32e2297fa43035ab507b32efd978f6cd4bede8730c8730da460f194a781de882",
+        "source": "davinci/vize_l1_to_l2/tests/emit_outlets.rs:fallback_interp_keeps_the_compound_in_one_text_vnode"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); Croquis descriptor and armature tokenizer remain legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      }
+    },
+    {
       "id": "compiler/sfc/production-v-if-comment-9920",
       "state": "active",
       "targets": ["ssr"],
@@ -160,6 +191,37 @@
       }
     },
     {
+      "id": "compiler/sfc/maybe-ref-model-parity-10044",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "maybe-ref-model-parity-10044",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "129ec64c760961a649ba0227648435a5128c9d6768d18df4d6ecdb637cdaf610",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "maybe-ref-model-parity-10044/module.expected.txt",
+        "sha256": "d907caac9a5a86b41f85e042b1a3d5cff59647d7447ee3feaae370a8eb388754",
+        "source": "crates/vize_atelier_sfc/tests/davinci_production_reach/inline_parity_regressions.rs:maybe_ref_model_writes_match_shipped_compiler"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); Croquis descriptor and armature tokenizer remain legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      }
+    },
+    {
       "id": "compiler/sfc/vue2-preserve-boundaries-9886",
       "state": "active",
       "targets": ["ssr"],
@@ -197,6 +259,37 @@
       }
     },
     {
+      "id": "compiler/sfc/vue2-preserve-comment-edges-10065",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "vue2-preserve-comment-edges-10065",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "15aaa7ef66e436629bdebb0934d3e7a88fb9b6b42772768cfd6a9d0f69997b91",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "vue2-preserve-comment-edges-10065/module.expected.txt",
+        "sha256": "144fbf422e71e4e406e811594503d52666096f1eb9df39f39091f329216024f8",
+        "source": "crates/vize/tests/build_vue2_preserve_cli.rs:vue2_preserve_matches_vue2_comment_and_named_slot_edges"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); parser and codegen remain legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      }
+    },
+    {
       "id": "compiler/sfc/package-import-prop-type-9894",
       "state": "active",
       "targets": ["ssr"],
@@ -225,6 +318,72 @@
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
         "scriptLang": "ts",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      }
+    },
+    {
+      "id": "compiler/sfc/scoped-where-nesting-9830",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "scoped-where-nesting-9830",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "1a3f415e27c6a2a541da2b717ddd5b1b3e4bf8b9b3770e7975a6e39990f47526",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "scoped-where-nesting-9830/module.expected.txt",
+        "sha256": "b945742cb8eeacf6a241e21a074ad9862024a2e4591428bdbd36b5402b1e49c1",
+        "cssPath": "scoped-where-nesting-9830/style.expected.css",
+        "cssSha256": "ff300afe7b2eae5a7118d2f5f92212b6937d48557fbde2e9259a6c5955cd3c73",
+        "source": "crates/vize_atelier_sfc/src/vite_plugin/css_scope/tests.rs:preserves_nested_where_parent_specificity"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); scoped style compilation remains legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      }
+    },
+    {
+      "id": "compiler/sfc/scoped-keyframes-nesting-9829",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "scoped-keyframes-nesting-9829",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "2db0530ad0e8be72b0b576f1e842b5af4d0ca101be4e28c90a07bba9b41a15e2",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "scoped-keyframes-nesting-9829/module.expected.txt",
+        "sha256": "b945742cb8eeacf6a241e21a074ad9862024a2e4591428bdbd36b5402b1e49c1",
+        "cssPath": "scoped-keyframes-nesting-9829/style.expected.css",
+        "cssSha256": "73515a00f438aede769725e91c8ced4ca0968d81a1ebb747326888ed02c2929f",
+        "source": "crates/vize_atelier_sfc/src/vite_plugin/css_scope/tests.rs:scopes_keyframes_when_unrelated_rules_use_nesting"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); scoped style compilation remains legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
         "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
       }
     }

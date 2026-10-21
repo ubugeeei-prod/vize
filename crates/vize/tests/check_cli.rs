@@ -33,13 +33,16 @@ fn check_json_reports_type_errors_via_project_typechecker() {
     };
     let project_root = create_cli_project(
         "json-type-errors",
-        &[(
-            "src/App.vue",
-            r#"<script setup lang="ts">
+        &[
+            (
+                "src/App.vue",
+                r#"<script setup lang="ts">
 const count: string = 0;
 </script>
 "#,
-        )],
+            ),
+            ("src/plain.ts", "export const plain: number = 1;\n"),
+        ],
     );
 
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
@@ -216,7 +219,6 @@ fn check_save_virtual_ts_for_writes_shared_helpers_target() {
             "<script setup lang=\"ts\">\nconst foo = 1\n</script>\n<template><div>{{ foo }}</div></template>\n",
         )],
     );
-
     let helpers_name = vize_canon::virtual_ts::SHARED_PREAMBLE_FILE_NAME;
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&project_root)
@@ -2238,6 +2240,11 @@ const count: string = 0;
 "#,
         )],
     );
+    std::fs::write(
+        project_root.join("src/plain.ts"),
+        "export const plain: number = 1;\n",
+    )
+    .unwrap();
     let socket_path = std::path::PathBuf::from(
         cstr!("/tmp/vize-check-{}-socket-json.sock", std::process::id()).as_str(),
     );
@@ -2250,7 +2257,19 @@ const count: string = 0;
             .read_line(&mut line)
             .unwrap();
         let request: serde_json::Value = serde_json::from_str(&line).unwrap();
-        assert_eq!(request["method"], "check");
+        assert_eq!(request["method"], "check-project");
+        let files = request["params"]["files"].as_array().unwrap();
+        assert_eq!(files.len(), 2);
+        assert!(
+            files
+                .iter()
+                .any(|file| file["uri"].as_str().unwrap().ends_with("plain.ts"))
+        );
+        let file = files
+            .iter()
+            .find(|file| file["uri"].as_str().unwrap().ends_with("App.vue"))
+            .unwrap()["uri"]
+            .clone();
 
         let response = serde_json::json!({
             "jsonrpc": "2.0",
@@ -2258,13 +2277,15 @@ const count: string = 0;
             "result": {
                 "diagnostics": [
                     {
+                        "file": file,
                         "message": "Type 'number' is not assignable to type 'string'.",
                         "severity": "error",
                         "line": 2,
                         "column": 7,
-                        "code": "2322"
+                        "code": "TS2322"
                     },
                     {
+                        "file": file,
                         "message": "Unused binding.",
                         "severity": "warning",
                         "line": 2,
@@ -2272,8 +2293,9 @@ const count: string = 0;
                         "code": null
                     }
                 ],
-                "virtualTs": "const count: string = 0;",
-                "errorCount": 1
+                "errorCount": 1,
+                "warningCount": 1,
+                "fileCount": 2
             }
         });
         writeln!(stream, "{response}").unwrap();
@@ -2300,7 +2322,8 @@ const count: string = 0;
     assert_eq!(output.status.code(), Some(1));
     assert_eq!(json["errorCount"], 1);
     assert_eq!(json["warningCount"], 1);
-    assert_eq!(json["fileCount"], 1);
+    assert_eq!(json["fileCount"], 2);
+    assert_eq!(json["files"].as_array().unwrap().len(), 2);
     assert_eq!(json["files"][0]["file"], "src/App.vue");
     assert!(json["files"][0].get("virtualTs").is_none(), "{json:#}");
     assert_eq!(

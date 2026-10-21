@@ -154,13 +154,21 @@ pub(super) fn apply_rule_options(
     mut linter: vize_patina::Linter,
     options: &vize_l0::config::ConfigLintRuleOptions,
     vue_router_installed: bool,
+    nuxt_installed: bool,
 ) -> vize_patina::Linter {
     let configured = options.component_registration_globals();
-    if configured.is_some() || vue_router_installed {
+    if configured.is_some() || vue_router_installed || nuxt_installed {
         let mut globals = configured.map(<[String]>::to_vec).unwrap_or_default();
         if vue_router_installed {
             globals.extend(
                 vize_patina::VUE_ROUTER_COMPONENTS
+                    .iter()
+                    .map(|name| String::from(*name)),
+            );
+        }
+        if nuxt_installed {
+            globals.extend(
+                vize_patina::NUXT_BUILTIN_COMPONENTS
                     .iter()
                     .map(|name| String::from(*name)),
             );
@@ -175,6 +183,9 @@ pub(super) fn apply_rule_options(
     }
     if let Some(mode) = options.define_props_destructuring() {
         linter = linter.with_define_props_destructuring(mode);
+    }
+    if let Some(options) = options.define_macros_order() {
+        linter = linter.with_define_macros_order(options);
     }
     if let Some(options) = options.component_name_in_template_casing_options() {
         linter = linter.with_component_name_in_template_casing_policy(
@@ -369,7 +380,7 @@ mod valid_v_on_options_tests {
             serde_json::from_str(r#"{"vue/valid-v-on":{"modifiers":["custom"]}}"#).unwrap();
         let mut registry = RuleRegistry::new();
         registry.register(Box::new(ValidVOn));
-        let linter = apply_rule_options(Linter::with_registry(registry), &options, false)
+        let linter = apply_rule_options(Linter::with_registry(registry), &options, false, false)
             .with_locale(Locale::En)
             .with_help_level(HelpLevel::Full);
         let result = linter.lint_template(
@@ -403,7 +414,41 @@ mod valid_v_on_options_tests {
             vize_l0::cstr!("{expected:#?}"),
             "complete LSP-configured modifier diagnostic, including receiver and fix fields"
         );
-        let empty = apply_rule_options(Linter::with_registry(RuleRegistry::new()), &options, false);
+        let empty = apply_rule_options(
+            Linter::with_registry(RuleRegistry::new()),
+            &options,
+            false,
+            false,
+        );
         assert!(!empty.registry().has_rule("vue/valid-v-on"));
+    }
+}
+
+#[cfg(test)]
+mod define_macros_order_options_tests {
+    use super::apply_rule_options;
+    use vize_patina::Linter;
+
+    #[test]
+    fn lsp_custom_macro_order_reaches_the_configured_rule() {
+        let options = serde_json::from_str(
+            r#"{"script/define-macros-order":{"order":["defineOptions","defineProps","defineEmits"]}}"#,
+        )
+        .unwrap();
+        let linter = apply_rule_options(
+            Linter::new().with_enabled_rules(Some(vec!["script/define-macros-order".into()])),
+            &options,
+            false,
+            false,
+        );
+        let result = linter.lint_sfc(
+            r#"<script setup>
+defineOptions({ inheritAttrs: false })
+const props = defineProps()
+const emit = defineEmits()
+</script>"#,
+            "App.vue",
+        );
+        assert!(result.diagnostics.is_empty(), "{result:#?}");
     }
 }

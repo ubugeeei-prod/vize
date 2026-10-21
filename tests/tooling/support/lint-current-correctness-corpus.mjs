@@ -32,8 +32,26 @@ export function loadCurrentCorpus(root) {
     row.lspDiagnostics[0].range.start.character = before.lspDiagnostics[0].range.start.character;
     row.lspDiagnostics[0].range.end.character = before.lspDiagnostics[0].range.end.character;
   }
+  restoreHistoricalHelp(inverse, original);
   assert.deepEqual(inverse, original, "only the approved full byte/UTF-16 range differences");
   return current;
+}
+
+export function restoreHistoricalHelp(packet, historical) {
+  const fields = ["diagnostics", "essentialDiagnostics", "baselineDiagnostics"];
+  for (const [caseIndex, row] of packet.cases.entries()) {
+    const before = historical.cases[caseIndex];
+    assert.equal(row.id, before.id);
+    for (const field of fields) {
+      if (!row[field] && !before[field]) continue;
+      assert.equal(row[field].length, before[field].length, `${row.id} / ${field}`);
+      for (const [diagnosticIndex, diagnostic] of row[field].entries()) {
+        const previous = before[field][diagnosticIndex];
+        if (Object.hasOwn(previous, "help")) diagnostic.help = previous.help;
+        else delete diagnostic.help;
+      }
+    }
+  }
 }
 
 // #9643 enabled vue/v-bind-style by default, after the original corpus; its

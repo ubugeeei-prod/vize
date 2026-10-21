@@ -113,3 +113,63 @@ fn entry_rule_options_enable_project_local_rules_for_matching_files() {
         output_details(&output),
     );
 }
+
+#[test]
+fn define_macros_order_accepts_define_options_first_from_vite_config() {
+    let project_root = tempfile::tempdir().unwrap();
+    write_file(
+        project_root.path(),
+        "vite.config.mjs",
+        &vite_config::source(
+            r#"{
+  "linter": {
+    "preset": "incremental",
+    "rules": { "script/define-macros-order": "error" },
+    "ruleOptions": {
+      "script/define-macros-order": {
+        "order": ["defineOptions", "defineProps", "defineEmits", "defineSlots"]
+      }
+    }
+  }
+}"#,
+        ),
+    );
+    write_file(
+        project_root.path(),
+        "src/MyInput.vue",
+        r#"<script setup lang="ts">
+defineOptions({ inheritAttrs: false })
+const { label } = defineProps<{ label: string }>()
+const emit = defineEmits<{ select: [] }>()
+defineSlots<{ default(): unknown }>()
+</script>
+"#,
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(project_root.path())
+        .args([
+            "lint",
+            "--config",
+            "vite.config.mjs",
+            "--format",
+            "json",
+            "src/MyInput.vue",
+        ])
+        .output()
+        .unwrap();
+
+    assert!(output.status.success(), "{}", output_details(&output));
+    let actual = serde_json::from_slice::<serde_json::Value>(&output.stdout).unwrap();
+    assert_eq!(
+        actual,
+        serde_json::json!([{
+            "file": "src/MyInput.vue",
+            "messages": [],
+            "errorCount": 0,
+            "warningCount": 0
+        }]),
+        "{}",
+        output_details(&output),
+    );
+}

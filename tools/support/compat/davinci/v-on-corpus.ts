@@ -12,13 +12,13 @@
 //   node tools/support/compat/davinci/v-on-corpus.ts --write   # regenerate
 //   node tools/support/compat/davinci/v-on-corpus.ts --check   # diff committed
 
-import { checkArtifactSet, writeArtifactSet } from "./lib/artifact-set.mjs";
+import { checkArtifactSet, writeArtifactSet } from "./lib/artifact-set.ts";
 import {
   V_ON_CORPUS_DIR,
   V_ON_CORPUS_REGEN,
   renderVOnCorpus,
   trackedNaturalSources,
-} from "./lib/v-on-corpus.mjs";
+} from "./lib/v-on-corpus.ts";
 
 function main() {
   const mode = process.argv[2];

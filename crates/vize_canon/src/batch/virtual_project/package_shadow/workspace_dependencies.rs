@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 
 use vize_carton::{FxHashMap, FxHashSet, String};
 
-use super::{PackageShadowTopology, VirtualProject};
+use super::{PackageShadowTopology, PackageShadowTraversal, VirtualProject};
 
 type PackageIdentity = (PathBuf, PathBuf);
 
@@ -157,7 +157,7 @@ impl VirtualProject {
         &self,
         route: &crate::PackageRoute,
         shadow_root: &Path,
-        ancestors: &mut FxHashSet<PathBuf>,
+        traversal: &mut PackageShadowTraversal,
         topology: &mut PackageShadowTopology,
         plan: &WorkspaceShadowPlan,
     ) {
@@ -229,12 +229,12 @@ impl VirtualProject {
                 topology.aliases.insert(shadow.clone(), target.clone());
                 // Pin the target's authored files and raw manifest under this
                 // owner too; another binding's refresh/removal cannot dangle it.
-                self.collect_route_shadow_topology(dependency, target, ancestors, topology, plan);
+                self.collect_route_shadow_topology(dependency, target, traversal, topology, plan);
             } else {
                 // An uncertain or divergent incoming scope retains the bound
                 // installation's own topology rather than aliasing by name.
                 for (_, route, _) in group {
-                    self.collect_route_shadow_topology(route, shadow, ancestors, topology, plan);
+                    self.collect_route_shadow_topology(route, shadow, traversal, topology, plan);
                 }
                 if dependency.workspace_source
                     && topology.manifests.get(&shadow.join("package.json"))

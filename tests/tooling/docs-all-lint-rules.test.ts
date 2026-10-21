@@ -303,8 +303,12 @@ await test("all five Vue categories keep every rule and whole Bad/Good source on
       /`&lt;(?:template|component|KeepAlive)&gt;`/,
       `${locale}: inline-code element names retain literal spelling`,
     );
-    const noProducer = category.split("### `vue/no-preprocessor-lang`")[1].split("### `")[0];
-    assert.match(noProducer, /`no-sfc-finding`/, `${locale}: support boundary remains explicit`);
+    const preprocessor = category.split("### `vue/no-preprocessor-lang`")[1].split("### `")[0];
+    assert.doesNotMatch(preprocessor, /`no-sfc-finding`/, `${locale}: executable SFC support`);
+    assert.match(preprocessor, /<style lang="scss">/, `${locale}: SCSS source remains complete`);
+    const templateLang = category.split("### `vue/no-template-lang`")[1].split("### `")[0];
+    assert.doesNotMatch(templateLang, /`no-sfc-finding`/, `${locale}: executable SFC support`);
+    assert.match(templateLang, /<template lang="pug">/, `${locale}: Pug source remains complete`);
   }
 });
 

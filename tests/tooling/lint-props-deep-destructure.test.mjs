@@ -8,11 +8,11 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.ts";
 import { sha256 } from "./lint-default-correctness-reference.mjs";
+import { withoutHelp } from "./support/lint-help-policy.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const fixture = path.join(root, "tests/_fixtures/differential/lint/props-deep-destructure-8090");
 const rule = "script/no-deep-destructure-in-props";
-
 await test("owned prop destructuring preserves thirty six whole source CLI packets", async () => {
   const bytes = fs.readFileSync(path.join(fixture, "cases.json"));
   const corpus = JSON.parse(bytes);
@@ -22,7 +22,7 @@ await test("owned prop destructuring preserves thirty six whole source CLI packe
     entry,
     route: "scoped",
     config: JSON.stringify({ linter: entry.config }, null, 2) + "\n",
-    expected: entry.afterCli,
+    expected: withoutHelp(entry.afterCli),
     expectedStatus: entry.afterStatus,
   }));
   for (const id of ["vue35-nested-object", "vue35-nested-array", "standalone-local-function"]) {

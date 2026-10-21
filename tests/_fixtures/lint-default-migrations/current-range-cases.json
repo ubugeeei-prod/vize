@@ -5,7 +5,11 @@
     "vue/no-deprecated-v-on-number-modifiers",
     "vue/no-deprecated-functional-template"
   ],
-  "configuredVueVersions": ["2", "2.7", "3"],
+  "configuredVueVersions": [
+    "2",
+    "2.7",
+    "3"
+  ],
   "cases": [
     {
       "id": "numeric-shorthand",
@@ -91,7 +95,7 @@
           "message": "Prefer shorthand `@` over `v-on:`",
           "start": 32,
           "end": 54,
-          "help": "Use `@event=\"handler\"` instead of `v-on:event=\"handler\"`",
+          "help": null,
           "labels": [],
           "fix": {
             "message": "Use shorthand syntax",
@@ -131,7 +135,7 @@
           "message": "Prefer shorthand `@` over `v-on:`",
           "start": 32,
           "end": 54,
-          "help": "Use `@event=\"handler\"` instead of `v-on:event=\"handler\"`",
+          "help": null,
           "labels": [],
           "fix": {
             "message": "Use shorthand syntax",
@@ -313,7 +317,7 @@
           "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
           "start": 10,
           "end": 20,
-          "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+          "help": null,
           "labels": [],
           "fix": null
         }
@@ -326,7 +330,7 @@
           "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
           "start": 10,
           "end": 20,
-          "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+          "help": null,
           "labels": [],
           "fix": null
         }
@@ -367,7 +371,7 @@
           "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
           "start": 10,
           "end": 20,
-          "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+          "help": null,
           "labels": [],
           "fix": null
         },
@@ -399,7 +403,7 @@
           "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
           "start": 10,
           "end": 20,
-          "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+          "help": null,
           "labels": [],
           "fix": null
         },
@@ -538,7 +542,7 @@
           "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
           "start": 30,
           "end": 40,
-          "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+          "help": null,
           "labels": [],
           "fix": null
         },
@@ -570,7 +574,7 @@
           "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
           "start": 30,
           "end": 40,
-          "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+          "help": null,
           "labels": [],
           "fix": null
         },

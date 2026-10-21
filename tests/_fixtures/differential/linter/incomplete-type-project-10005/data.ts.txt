@@ -1,0 +1,6 @@
+export interface Row {
+  id: number;
+  name: string;
+}
+
+export const rows: Row[] = [{ id: 1, name: "a" }];

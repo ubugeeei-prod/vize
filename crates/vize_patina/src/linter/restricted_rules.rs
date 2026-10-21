@@ -14,7 +14,7 @@ use crate::rules::opinionated::vue::{
     VOnEventHyphenationStyle,
 };
 use crate::rules::script::{CustomEventNameCasing, EventNameCasing};
-use crate::rules::script::{NoRestrictedMembers, RestrictedGlobals};
+use crate::rules::script::{DefineMacrosOrder, NoRestrictedMembers, RestrictedGlobals};
 use crate::rules::vue::{
     AttributeHyphenation, HyphenationStyle, NoMutatingProps, NoMutatingPropsOptions,
     SfcElementOrder, SfcElementOrderOptions,
@@ -22,6 +22,19 @@ use crate::rules::vue::{
 use vize_l0::String;
 
 impl Linter {
+    /// Configure `script/define-macros-order` without enabling the rule.
+    #[inline]
+    pub fn with_define_macros_order(
+        mut self,
+        options: vize_l0::config::DefineMacrosOrderOptions,
+    ) -> Self {
+        self.script_rule_overrides.insert(
+            "script/define-macros-order",
+            Box::new(DefineMacrosOrder::configured(options)),
+        );
+        self
+    }
+
     /// Configure custom event modifiers without enabling an unselected rule.
     pub fn with_valid_v_on_modifiers(mut self, modifiers: Vec<String>) -> Self {
         if self.registry.has_rule("vue/valid-v-on") {

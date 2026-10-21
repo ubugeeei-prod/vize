@@ -34,11 +34,10 @@ const handleConfirm = (value: "conditional") => value;
         .expect("event resolver");
 
     assert!(guard < resolver, "{}", result.text);
-    assert!(
-        result.text[resolver..].contains("\"value\": conditionalValue"),
-        "{}",
-        result.text
-    );
+    let resolved_value = result.text[resolver..]
+        .find("\"value\": conditionalValue")
+        .expect("resolved value");
+    assert!(resolver + resolved_value > guard, "{}", result.text);
     assert_eq!(
         result.text.matches("const __vize_events_resolved_").count(),
         1
@@ -47,13 +46,13 @@ const handleConfirm = (value: "conditional") => value;
         .text
         .find("const __vize_emit_props_")
         .expect("handler inference");
-    assert!(
-        result.text[handler_inference..].contains("= (() => {")
-            && result.text[handler_inference..]
-                .contains("if ((conditionalValue)) return (undefined as unknown as"),
-        "{}",
-        result.text
-    );
+    let direct_inference = result.text[handler_inference..]
+        .find("= (undefined as unknown as __ConditionalGenericChild_")
+        .expect("direct handler inference");
+    let inferred_value = result.text[handler_inference..]
+        .find("\"value\": conditionalValue")
+        .expect("inferred value");
+    assert!(direct_inference < inferred_value, "{}", result.text);
 
     let original = source.find("@confirm").unwrap() + 1;
     assert!(result.mappings.iter().any(|mapping| {

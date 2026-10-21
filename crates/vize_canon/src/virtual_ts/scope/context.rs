@@ -10,10 +10,22 @@ use vize_croquis::{Croquis, EventHandlerScopeData, ScopeId, analysis::ComponentU
 
 use crate::virtual_ts::expressions::{ComponentPropSource, TemplateValueChecks};
 use crate::virtual_ts::types::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapping};
+use std::cell::RefCell;
 use std::ops::{Deref, DerefMut};
 
 use super::explicit_generics::ExplicitGenerics;
 use super::slot_outlet_props::SlotOutletChecks;
+
+pub(crate) type EventContractKey = (
+    String,
+    String,
+    String,
+    bool,
+    bool,
+    bool,
+    Option<String>,
+    Option<u32>,
+);
 
 #[derive(Clone, Copy)]
 pub(crate) enum GlobalComponentCheck {
@@ -75,6 +87,11 @@ pub(crate) struct ScopeGenContext<'a, 'template> {
     pub(crate) check_options: VirtualTsCheckOptions,
     pub(crate) legacy_vue2: bool,
     pub(crate) explicit_generics: &'a ExplicitGenerics,
+    /// Component usages whose props have already been materialized for event
+    /// inference. Every listener on one usage reads the same resolved object.
+    pub(crate) event_inference_usages: &'a RefCell<FxHashSet<usize>>,
+    /// First scope that resolved each stable component/event listener contract.
+    pub(crate) event_contracts: &'a RefCell<FxHashMap<EventContractKey, u32>>,
 }
 
 pub(crate) struct ScopeGenerationOptions<'a, 'template> {
@@ -127,6 +144,7 @@ pub(crate) struct VForPropsContext<'a, 'template> {
     pub(crate) preserve_event_navigation: bool,
     pub(crate) check_unknown_events: bool,
     pub(crate) strict_v_model: bool,
+    pub(crate) typed_fallthrough_values: bool,
     pub(crate) experimental_strict_slot_children: bool,
     pub(crate) explicit_generics: &'a ExplicitGenerics,
 }
@@ -155,6 +173,11 @@ pub(super) struct EventHandlerExprContext<'a> {
     /// the expression's type where `@click="(() => 1);"` yields `void`,
     /// exactly as an authored inline handler does under `vue-tsc`.
     pub(super) return_single_expression: bool,
+    /// Guard already active around the generated listener declaration. The
+    /// callback only needs the positive terms repeated to restore captured
+    /// property narrowing; the cumulative v-else exclusions stay in the
+    /// surrounding linear branch chain.
+    pub(super) enclosing_vif_guard: Option<&'a str>,
     pub(super) template_binding_access: &'a TemplateBindingAccess,
     pub(super) template_offset: u32,
     pub(super) indent: &'a str,
@@ -178,6 +201,9 @@ pub(super) struct ComponentPropsContext<'a, 'template> {
     pub(super) legacy_vue2: bool,
     pub(super) check_unknown_props: bool,
     pub(super) check_unknown_fallthrough_props: bool,
+    /// Validate undeclared values against an inherited fallthrough surface.
+    /// This follows the same opt-in boundary as named fallthrough values.
+    pub(super) typed_fallthrough_values: bool,
     pub(super) strict_component_attrs: bool,
     pub(super) experimental_strict_slot_children: bool,
     /// Starts of the component usages that are this component's fallthrough

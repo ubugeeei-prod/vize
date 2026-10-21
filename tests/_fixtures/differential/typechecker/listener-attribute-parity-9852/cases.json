@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 9852,
+  "regressionCommit": "11cb03950bc8d2a4e9cb8d164b0aaca79e302291",
+  "sourceRevision": "11cb03950bc8d2a4e9cb8d164b0aaca79e302291",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "class-style-and-spread-listeners",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/MyButton.vue",
+          "source": "src/MyButton.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "src/App.vue.txt"
+        },
+        {
+          "file": "src/Card.vue",
+          "source": "src/Card.vue.txt"
+        },
+        {
+          "file": "src/Spread.vue",
+          "source": "src/Spread.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

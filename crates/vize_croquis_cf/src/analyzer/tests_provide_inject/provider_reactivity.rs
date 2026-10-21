@@ -1,6 +1,70 @@
 use super::*;
 
 #[test]
+fn test_provide_services_keep_ref_and_function_members_live() {
+    use crate::rules::CrossFileReactivityIssueKind;
+    use std::collections::BTreeSet;
+
+    let mut analyzer =
+        CrossFileAnalyzer::new(CrossFileOptions::default().with_reactivity_tracking(true));
+    analyzer.add_file_with_analysis(
+        Path::new("Provider.vue"),
+        "",
+        script_analysis(
+            r#"import { provide, ref } from 'vue'
+const location = ref('North Pole')
+function updateLocation() { location.value = 'South Pole' }
+const { state, open } = useToast()
+const snapshot = location.value
+
+provide('docs', { location, updateLocation })
+provide('destructured-composable', { state, open })
+provide('whole-composable', useToast())
+provide('snapshot', { location: location.value, updateLocation })
+provide('snapshot-binding', { snapshot, updateLocation })
+provide('unknown-call', getToast())"#,
+            &["Consumer"],
+        ),
+    );
+    analyzer.add_file_with_analysis(
+        Path::new("Consumer.vue"),
+        "",
+        script_analysis(
+            r#"import { inject } from 'vue'
+const docs = inject('docs')
+const destructuredComposable = inject('destructured-composable')
+const wholeComposable = inject('whole-composable')
+const snapshot = inject('snapshot')
+const snapshotBinding = inject('snapshot-binding')
+const unknownCall = inject('unknown-call')"#,
+            &[],
+        ),
+    );
+    analyzer.rebuild_component_edges();
+
+    let reported = analyzer
+        .analyze()
+        .cross_file_reactivity_issues
+        .iter()
+        .filter_map(|issue| match &issue.kind {
+            CrossFileReactivityIssueKind::NonReactiveProvide { key } => {
+                Some(key.as_str().to_owned())
+            }
+            _ => None,
+        })
+        .collect::<BTreeSet<_>>();
+
+    assert_eq!(
+        reported,
+        BTreeSet::from([
+            "snapshot".to_owned(),
+            "snapshot-binding".to_owned(),
+            "unknown-call".to_owned()
+        ])
+    );
+}
+
+#[test]
 fn test_shared_child_reactivity_loss_reports_each_provider_context() {
     use crate::rules::CrossFileReactivityIssueKind;
 

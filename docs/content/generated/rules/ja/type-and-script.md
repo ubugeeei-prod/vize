@@ -286,7 +286,7 @@ script setup のコンパイラーマクロを一定の順に宣言します。
 プリセット: `opinionated`, `nuxt`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+オプション: [型付きオプションと既定値](options.md)を参照してください。
 
 **設定（Vite+）**
 
@@ -341,7 +341,7 @@ const value = ref(0)
 
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_macros_order.rs#L45) · [全ルール](all.md)
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_macros_order.rs#L44) · [全ルール](all.md)
 
 ### `script/define-props-declaration`
 
@@ -3406,7 +3406,7 @@ const id = useId();
 
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_id.rs#L48) · [全ルール](all.md)
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_id.rs#L45) · [全ルール](all.md)
 
 ### `script/prefer-use-slots`
 

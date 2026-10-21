@@ -313,7 +313,7 @@ test("suppression telemetry reports the mapped FP candidate and the unmapped nam
 // hooks. The real current-recall oracle above retains its unchanged 0/3 + 4/4 law.
 test("compatibility seeded assertion carries the same opt-in policy through canonical Vite", async () => {
   const { assertSeededTree } =
-    await import("../../tools/support/compat/davinci/lib/fpfn-seed-assert.mjs");
+    await import("../../tools/support/compat/davinci/lib/fpfn-seed-assert.ts");
   const { baseline, seeded } = syntheticTrees();
   const baselineLintJson = path.join(seedOut, "compatibility-baseline.json");
   const seededLintJson = path.join(seedOut, "compatibility-seeded.json");

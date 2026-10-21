@@ -1,0 +1,6 @@
+
+:where(.card) {&[data-v-b84fad59]{color: red;}
+
+  & > .title[data-v-b84fad59]{
+    font-weight: bold;
+  }}

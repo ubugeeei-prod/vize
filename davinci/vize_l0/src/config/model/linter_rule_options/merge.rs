@@ -14,6 +14,9 @@ impl ConfigLintRuleOptions {
         if let Some(options) = overlay.define_props_destructuring {
             self.define_props_destructuring = Some(options);
         }
+        if let Some(options) = &overlay.define_macros_order {
+            self.define_macros_order = Some(options.clone());
+        }
         if let Some(options) = &overlay.no_empty_palpable_content {
             self.no_empty_palpable_content = Some(options.clone());
         }

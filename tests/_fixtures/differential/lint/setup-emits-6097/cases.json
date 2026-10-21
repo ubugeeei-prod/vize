@@ -28,7 +28,7 @@
           "message": "Expected to return a boolean value in this emits validator.",
           "start": 58,
           "end": 84,
-          "help": "An emits validator must return whether the payload is valid. Add a `return` that yields a boolean on every path through the validator.",
+          "help": null,
           "labels": [
             {
               "message": "emits validator without a return value",
@@ -56,7 +56,7 @@
           "message": "Expected to return a boolean value in this emits validator.",
           "start": 45,
           "end": 71,
-          "help": "An emits validator must return whether the payload is valid. Add a `return` that yields a boolean on every path through the validator.",
+          "help": null,
           "labels": [
             {
               "message": "emits validator without a return value",
@@ -84,7 +84,7 @@
           "message": "Expected to return a boolean value in this emits validator.",
           "start": 60,
           "end": 104,
-          "help": "An emits validator must return whether the payload is valid. Add a `return` that yields a boolean on every path through the validator.",
+          "help": null,
           "labels": [
             {
               "message": "emits validator without a return value",
@@ -112,7 +112,7 @@
           "message": "Expected to return a boolean value in this emits validator.",
           "start": 58,
           "end": 117,
-          "help": "An emits validator must return whether the payload is valid. Add a `return` that yields a boolean on every path through the validator.",
+          "help": null,
           "labels": [
             {
               "message": "emits validator without a return value",
@@ -195,7 +195,7 @@
           "message": "Do not import 'defineEmits' - compiler macros are automatically available in <script setup>",
           "start": 34,
           "end": 45,
-          "help": "Remove the macro from the import statement. Compiler macros are auto-imported.",
+          "help": null,
           "labels": [],
           "fix": null
         },
@@ -205,7 +205,7 @@
           "message": "Expected to return a boolean value in this emits validator.",
           "start": 92,
           "end": 118,
-          "help": "An emits validator must return whether the payload is valid. Add a `return` that yields a boolean on every path through the validator.",
+          "help": null,
           "labels": [
             {
               "message": "emits validator without a return value",
@@ -223,7 +223,7 @@
           "message": "Do not import 'defineEmits' - compiler macros are automatically available in <script setup>",
           "start": 34,
           "end": 45,
-          "help": "Remove the macro from the import statement. Compiler macros are auto-imported.",
+          "help": null,
           "labels": [],
           "fix": null
         }
@@ -235,7 +235,7 @@
           "message": "Do not import 'defineEmits' - compiler macros are automatically available in <script setup>",
           "start": 34,
           "end": 45,
-          "help": "Remove the macro from the import statement. Compiler macros are auto-imported.",
+          "help": null,
           "labels": [],
           "fix": null
         }
@@ -332,7 +332,7 @@
           "message": "Expected to return a boolean value in this emits validator.",
           "start": 105,
           "end": 131,
-          "help": "An emits validator must return whether the payload is valid. Add a `return` that yields a boolean on every path through the validator.",
+          "help": null,
           "labels": [
             {
               "message": "emits validator without a return value",
@@ -360,7 +360,7 @@
           "message": "Expected to return a boolean value in this emits validator.",
           "start": 95,
           "end": 121,
-          "help": "An emits validator must return whether the payload is valid. Add a `return` that yields a boolean on every path through the validator.",
+          "help": null,
           "labels": [
             {
               "message": "emits validator without a return value",
@@ -410,7 +410,7 @@
           "message": "Expected to return a boolean value in this emits validator.",
           "start": 103,
           "end": 129,
-          "help": "An emits validator must return whether the payload is valid. Add a `return` that yields a boolean on every path through the validator.",
+          "help": null,
           "labels": [
             {
               "message": "emits validator without a return value",
@@ -438,7 +438,7 @@
           "message": "Expected to return a boolean value in this emits validator.",
           "start": 95,
           "end": 121,
-          "help": "An emits validator must return whether the payload is valid. Add a `return` that yields a boolean on every path through the validator.",
+          "help": null,
           "labels": [
             {
               "message": "emits validator without a return value",
@@ -510,7 +510,7 @@
           "message": "Expected to return a boolean value in this emits validator.",
           "start": 59,
           "end": 85,
-          "help": "An emits validator must return whether the payload is valid. Add a `return` that yields a boolean on every path through the validator.",
+          "help": null,
           "labels": [
             {
               "message": "emits validator without a return value",
@@ -538,7 +538,7 @@
           "message": "Expected to return a boolean value in this emits validator.",
           "start": 63,
           "end": 89,
-          "help": "An emits validator must return whether the payload is valid. Add a `return` that yields a boolean on every path through the validator.",
+          "help": null,
           "labels": [
             {
               "message": "emits validator without a return value",
@@ -566,7 +566,7 @@
           "message": "Expected to return a boolean value in this emits validator.",
           "start": 46,
           "end": 72,
-          "help": "An emits validator must return whether the payload is valid. Add a `return` that yields a boolean on every path through the validator.",
+          "help": null,
           "labels": [
             {
               "message": "emits validator without a return value",
@@ -582,7 +582,7 @@
           "message": "defineEmits() cannot reference locally-declared variables.",
           "start": 126,
           "end": 136,
-          "help": "defineEmits() is hoisted above the component setup, so its argument can only use imports or literals, not locally-declared variables.",
+          "help": null,
           "labels": [],
           "fix": null
         }
@@ -594,7 +594,7 @@
           "message": "defineEmits() cannot reference locally-declared variables.",
           "start": 126,
           "end": 136,
-          "help": "defineEmits() is hoisted above the component setup, so its argument can only use imports or literals, not locally-declared variables.",
+          "help": null,
           "labels": [],
           "fix": null
         }
@@ -606,7 +606,7 @@
           "message": "defineEmits() cannot reference locally-declared variables.",
           "start": 126,
           "end": 136,
-          "help": "defineEmits() is hoisted above the component setup, so its argument can only use imports or literals, not locally-declared variables.",
+          "help": null,
           "labels": [],
           "fix": null
         }
@@ -626,7 +626,7 @@
           "message": "defineEmits() cannot reference locally-declared variables.",
           "start": 105,
           "end": 115,
-          "help": "defineEmits() is hoisted above the component setup, so its argument can only use imports or literals, not locally-declared variables.",
+          "help": null,
           "labels": [],
           "fix": null
         }
@@ -638,7 +638,7 @@
           "message": "defineEmits() cannot reference locally-declared variables.",
           "start": 105,
           "end": 115,
-          "help": "defineEmits() is hoisted above the component setup, so its argument can only use imports or literals, not locally-declared variables.",
+          "help": null,
           "labels": [],
           "fix": null
         }
@@ -650,7 +650,7 @@
           "message": "defineEmits() cannot reference locally-declared variables.",
           "start": 105,
           "end": 115,
-          "help": "defineEmits() is hoisted above the component setup, so its argument can only use imports or literals, not locally-declared variables.",
+          "help": null,
           "labels": [],
           "fix": null
         }
@@ -681,7 +681,7 @@
           "message": "Expected to return a boolean value in this emits validator.",
           "start": 46,
           "end": 72,
-          "help": "An emits validator must return whether the payload is valid. Add a `return` that yields a boolean on every path through the validator.",
+          "help": null,
           "labels": [
             {
               "message": "emits validator without a return value",
@@ -709,7 +709,7 @@
           "message": "Expected to return a boolean value in this emits validator.",
           "start": 60,
           "end": 86,
-          "help": "An emits validator must return whether the payload is valid. Add a `return` that yields a boolean on every path through the validator.",
+          "help": null,
           "labels": [
             {
               "message": "emits validator without a return value",
@@ -781,7 +781,7 @@
           "message": "defineEmits() cannot reference locally-declared variables.",
           "start": 161,
           "end": 171,
-          "help": "defineEmits() is hoisted above the component setup, so its argument can only use imports or literals, not locally-declared variables.",
+          "help": null,
           "labels": [],
           "fix": null
         }
@@ -793,7 +793,7 @@
           "message": "defineEmits() cannot reference locally-declared variables.",
           "start": 161,
           "end": 171,
-          "help": "defineEmits() is hoisted above the component setup, so its argument can only use imports or literals, not locally-declared variables.",
+          "help": null,
           "labels": [],
           "fix": null
         }
@@ -805,7 +805,7 @@
           "message": "defineEmits() cannot reference locally-declared variables.",
           "start": 161,
           "end": 171,
-          "help": "defineEmits() is hoisted above the component setup, so its argument can only use imports or literals, not locally-declared variables.",
+          "help": null,
           "labels": [],
           "fix": null
         }
@@ -825,7 +825,7 @@
           "message": "Expected to return a boolean value in this emits validator.",
           "start": 118,
           "end": 144,
-          "help": "An emits validator must return whether the payload is valid. Add a `return` that yields a boolean on every path through the validator.",
+          "help": null,
           "labels": [
             {
               "message": "emits validator without a return value",
@@ -864,7 +864,7 @@
           "message": "Expected to return a boolean value in this emits validator.",
           "start": 56,
           "end": 82,
-          "help": "An emits validator must return whether the payload is valid. Add a `return` that yields a boolean on every path through the validator.",
+          "help": null,
           "labels": [
             {
               "message": "emits validator without a return value",
@@ -925,7 +925,7 @@
           "message": "Expected to return a boolean value in this emits validator.",
           "start": 43,
           "end": 78,
-          "help": "An emits validator must return whether the payload is valid. Add a `return` that yields a boolean on every path through the validator.",
+          "help": null,
           "labels": [
             {
               "message": "emits validator without a return value",
@@ -943,7 +943,7 @@
           "message": "Expected to return a boolean value in this emits validator.",
           "start": 43,
           "end": 78,
-          "help": "An emits validator must return whether the payload is valid. Add a `return` that yields a boolean on every path through the validator.",
+          "help": null,
           "labels": [
             {
               "message": "emits validator without a return value",
@@ -970,7 +970,7 @@
           "message": "Expected to return a boolean value in this emits validator.",
           "start": 29,
           "end": 55,
-          "help": "An emits validator must return whether the payload is valid. Add a `return` that yields a boolean on every path through the validator.",
+          "help": null,
           "labels": [
             {
               "message": "emits validator without a return value",
@@ -998,7 +998,7 @@
           "message": "Do not import 'defineEmits' - compiler macros are automatically available in <script setup>",
           "start": 23,
           "end": 34,
-          "help": "Remove the macro from the import statement. Compiler macros are auto-imported.",
+          "help": null,
           "labels": [],
           "fix": null
         }
@@ -1010,7 +1010,7 @@
           "message": "Do not import 'defineEmits' - compiler macros are automatically available in <script setup>",
           "start": 23,
           "end": 34,
-          "help": "Remove the macro from the import statement. Compiler macros are auto-imported.",
+          "help": null,
           "labels": [],
           "fix": null
         }
@@ -1022,7 +1022,7 @@
           "message": "Do not import 'defineEmits' - compiler macros are automatically available in <script setup>",
           "start": 23,
           "end": 34,
-          "help": "Remove the macro from the import statement. Compiler macros are auto-imported.",
+          "help": null,
           "labels": [],
           "fix": null
         }
@@ -1042,7 +1042,7 @@
           "message": "defineEmits() cannot accept both a type argument and a runtime argument.",
           "start": 37,
           "end": 117,
-          "help": "Declare emitted events either with the type argument (`defineEmits<{ change: [id: number] }>()`) or with a runtime argument (`defineEmits(['change'])`), not both.",
+          "help": null,
           "labels": [],
           "fix": null
         }
@@ -1054,7 +1054,7 @@
           "message": "defineEmits() cannot accept both a type argument and a runtime argument.",
           "start": 37,
           "end": 117,
-          "help": "Declare emitted events either with the type argument (`defineEmits<{ change: [id: number] }>()`) or with a runtime argument (`defineEmits(['change'])`), not both.",
+          "help": null,
           "labels": [],
           "fix": null
         }
@@ -1066,7 +1066,7 @@
           "message": "defineEmits() cannot accept both a type argument and a runtime argument.",
           "start": 37,
           "end": 117,
-          "help": "Declare emitted events either with the type argument (`defineEmits<{ change: [id: number] }>()`) or with a runtime argument (`defineEmits(['change'])`), not both.",
+          "help": null,
           "labels": [],
           "fix": null
         }

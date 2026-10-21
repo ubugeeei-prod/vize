@@ -153,7 +153,12 @@ class DefinePropsDestructuringOptions {
   destructure: "only-when-assigned"|"always"|"never" = "only-when-assigned"
 }
 
+class DefineMacrosOrderOptions {
+  order: Listing<String> = new Listing { "defineProps"; "defineEmits" }
+}
+
 class LintRuleOptions {
+  `script/define-macros-order`: DefineMacrosOrderOptions? = null
   `script/define-props-destructuring`: DefinePropsDestructuringOptions? = null
   `html/no-empty-palpable-content`: ContentDirectivesOptions? = null
   `type/strict-boolean-expressions`: StrictBooleanExpressionsOptions? = null
@@ -212,6 +217,7 @@ class TypeCheckerConfig {
   tsconfig: String? = null
   corsaPath: String? = null
   tsgoPath: String? = null
+  tsrsPath: String? = null
   globalsFile: String? = null
   servers: Int(isBetween(1, 32))? = null
   lspRequestTimeoutMs: Int? = null

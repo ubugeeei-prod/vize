@@ -13,6 +13,7 @@ import { presentationContext, implicitDefault } from "./presentation-context.ts"
 export interface HtmlContext {
   options?: OxlintHtmlOptions;
   failure?: string;
+  skipReason?: string;
   provider?: {
     requestedEntrypoint: string;
     entrypoint: string;
@@ -28,6 +29,8 @@ export interface HtmlContext {
 
 const digest = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 
+class HtmlSkip extends Error {}
+
 /** Capture original root/provider/piped-child context without executing a provider query. */
 export function prepareHtmlContext(
   cwd: string,
@@ -41,7 +44,7 @@ export function prepareHtmlContext(
   };
   try {
     if (!["1.78.0", "1.81.0", "1.86.0"].includes(version))
-      throw new Error("original HTML requires a qualified Oxlint 1.78.0, 1.81.0 or 1.86.0 host");
+      throw new HtmlSkip("original HTML requires a qualified Oxlint 1.78.0, 1.81.0 or 1.86.0 host");
     const targets = getLintTargets(args);
     if (targets.length !== 1) throw new Error("original HTML requires one literal original target");
     const config = readScopedConfig(cwd, args);
@@ -147,7 +150,7 @@ export function prepareHtmlContext(
     if (!["default", "json", "unix", "stylish"].includes(format))
       throw new Error("original HTML requires an explicit default, json, unix or stylish report");
     if (!explicitFormat && !implicitDefault(context.environment))
-      throw new Error(
+      throw new HtmlSkip(
         "original HTML requires an explicit supported format when the host selects agent/GitHub output",
       );
     const forceColor =
@@ -174,15 +177,19 @@ export function prepareHtmlContext(
     };
     context.custody = captureHtmlCustody(context.options, candidates);
   } catch (error) {
-    context.failure = error instanceof Error ? error.message : String(error);
+    const detail = error instanceof Error ? error.message : String(error);
+    if (error instanceof HtmlSkip) context.skipReason = detail;
+    else context.failure = detail;
   }
   return context;
 }
 
 /** One genuine native operation after normal stock/Vue setup, never a carrier. */
 export function executeHtml(context: HtmlContext): OxlintHtmlOutcome {
-  if (context.failure || !context.options)
-    throw new Error(context.failure ?? "original HTML context is unavailable");
+  if (context.failure || context.skipReason || !context.options)
+    throw new Error(
+      context.failure ?? context.skipReason ?? "original HTML context is unavailable",
+    );
   const binding = loadBinding();
   if (typeof binding.lintOxlintHtml !== "function")
     throw new Error("installed native binding does not expose original HTML execution");

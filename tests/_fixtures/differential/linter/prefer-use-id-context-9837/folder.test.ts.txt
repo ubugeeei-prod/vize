@@ -1,0 +1,6 @@
+declare function createFolder(name: string): Promise<number>;
+
+export async function run(): Promise<void> {
+  const folderId = await createFolder(`e2e-folder-${Date.now()}`);
+  console.log(folderId);
+}

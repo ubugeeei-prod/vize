@@ -8,8 +8,8 @@ import {
   STORAGE_INVENTORY_REL,
   renderStorageSummary,
 } from "../../../../tests/tooling/davinci-storage-summary.ts";
-import { aggregateMain } from "./lib/aggregate-artifact.mjs";
-import { repoRoot } from "./lib/paths.mjs";
+import { aggregateMain } from "./lib/aggregate-artifact.ts";
+import { repoRoot } from "./lib/paths.ts";
 
 aggregateMain(
   "storage-summary.md",

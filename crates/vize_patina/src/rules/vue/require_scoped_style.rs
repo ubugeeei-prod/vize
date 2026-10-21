@@ -101,15 +101,9 @@ impl Rule for RequireScopedStyle {
             .collect::<Vec<_>>();
 
         for (start, end) in unscoped_style_ranges {
-            ctx.report(
-                LintDiagnostic::warn(
-                    META.name,
-                    "Style block should use `scoped` or `module` attribute to prevent CSS leaking",
-                    start,
-                    end,
-                )
-                .with_help("Add `scoped` attribute: `<style scoped>`"),
-            );
+            let message = ctx.t("vue/require-scoped-style.message").into_owned();
+            let help = ctx.t("vue/require-scoped-style.help").into_owned();
+            ctx.report(LintDiagnostic::warn(META.name, message, start, end).with_help(help));
         }
     }
 }
@@ -119,6 +113,7 @@ mod tests {
     use super::RequireScopedStyle;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
+    use crate::{HelpLevel, Locale};
 
     fn create_linter() -> Linter {
         let mut registry = RuleRegistry::new();
@@ -139,6 +134,23 @@ mod tests {
         );
         assert_eq!(result.warning_count, 1);
         assert_eq!(result.diagnostics[0].rule_name, "vue/require-scoped-style");
+    }
+
+    #[test]
+    fn locale_and_help_level_apply_to_sfc_document_diagnostics() {
+        let result = create_linter()
+            .with_locale(Locale::Ja)
+            .with_help_level(HelpLevel::None)
+            .lint_sfc(
+                "<template><div /></template><style>.x { color: red }</style>",
+                "Card.vue",
+            );
+        assert_eq!(result.warning_count, 1);
+        assert_eq!(
+            result.diagnostics[0].message,
+            "styleブロックはスタイルの漏れを防ぐためにscoped属性を使用する必要があります"
+        );
+        assert!(result.diagnostics[0].help.is_none());
     }
 
     #[test]

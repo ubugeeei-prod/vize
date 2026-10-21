@@ -39,6 +39,12 @@ use vize_curator::profile::ProfileFileRow;
 use vize_l0::{String, ToCompactString, cstr, profile, profiler::global_profiler};
 use vize_patina::{HelpLevel, LintPreset, OutputFormat};
 
+#[derive(Clone, Copy)]
+pub(super) enum ResolvedLintPreset {
+    Builtin(LintPreset),
+    All,
+}
+
 pub fn run(mut args: LintArgs) {
     let start = Instant::now();
     let (format, rich) = rich::parse_format(args.format.as_str());
@@ -99,11 +105,16 @@ pub fn run(mut args: LintArgs) {
     };
     let preset_name: String = args
         .preset
-        .as_deref()
+        .as_ref()
+        .map(|preset| preset.as_str())
         .or(linter_plan.plan.base.preset.as_deref())
         .unwrap_or("happy-path")
         .into();
-    let preset = LintPreset::parse(preset_name.as_str()).unwrap_or_default();
+    let preset = if preset_name == "all" {
+        ResolvedLintPreset::All
+    } else {
+        ResolvedLintPreset::Builtin(LintPreset::parse(preset_name.as_str()).unwrap_or_default())
+    };
     let resolved_rules =
         LinterRuleResolver::new(linter_plan, config_dir, &cwd).resolve_files(&files, &cwd);
     let linters = resolved_rules.build_linters(

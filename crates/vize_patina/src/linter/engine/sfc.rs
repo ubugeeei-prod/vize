@@ -168,10 +168,10 @@ impl Linter {
     #[inline]
     pub fn lint_sfc(&self, source: &str, filename: &str) -> LintResult {
         // `<template lang="pug">` lints through its derived Vue template.
-        if let Some(result) = self.lint_pug_sfc(source, filename) {
-            return result;
-        }
-        self.lint_sfc_unrouted(source, filename)
+        let result = self
+            .lint_pug_sfc(source, filename)
+            .unwrap_or_else(|| self.lint_sfc_unrouted(source, filename));
+        self.apply_diagnostic_policy(result)
     }
 
     /// [`Self::lint_sfc`] without the template-dialect selector.

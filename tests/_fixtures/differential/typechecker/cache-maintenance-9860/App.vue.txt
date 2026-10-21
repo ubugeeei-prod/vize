@@ -1,0 +1,4 @@
+<script setup lang="ts">
+const message: string = "ready";
+</script>
+<template><p>{{ message }}</p></template>

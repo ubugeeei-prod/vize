@@ -2,12 +2,11 @@
 //!
 //! Enforce the order of the Vue compiler macros in `<script setup>`.
 //!
-//! Matches eslint-plugin-vue's `vue/define-macros-order` with its default
-//! options: `defineProps` and then `defineEmits` must be the first statements
-//! of `<script setup>`, after imports, type declarations, enums and exports.
-//! Other macros (`defineOptions`, `defineModel`, `defineSlots`) are not
-//! ordered, but they count as ordinary statements. Like the upstream rule, it
-//! reports at most one statement per block.
+//! Matches eslint-plugin-vue's `vue/define-macros-order`: the configured macros
+//! must be the first statements of `<script setup>`, after imports, type
+//! declarations, enums and exports. The default order is `defineProps` and then
+//! `defineEmits`; other macros count as ordinary statements unless configured.
+//! Like the upstream rule, it reports at most one statement per block.
 //!
 //! A macro statement is a top-level expression statement or variable declaration
 //! whose value is (possibly through `withDefaults(...)`) a call to the macro.
@@ -48,11 +47,19 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
     default_severity: Severity::Warning,
 };
 
-/// The macros this rule orders: eslint-plugin-vue's default `order` option.
-const MACRO_ORDER: [&str; 2] = ["defineProps", "defineEmits"];
+/// eslint-plugin-vue's default `order` option.
+const DEFAULT_MACRO_ORDER: [&str; 2] = ["defineProps", "defineEmits"];
 
 /// Enforce the order of the Vue compiler macros in `<script setup>`.
 pub struct DefineMacrosOrder;
+
+impl DefineMacrosOrder {
+    pub fn configured(options: vize_l0::config::DefineMacrosOrderOptions) -> impl ScriptRule {
+        ConfiguredDefineMacrosOrder(options.order)
+    }
+}
+
+struct ConfiguredDefineMacrosOrder(Vec<vize_l0::String>);
 
 impl ScriptRule for DefineMacrosOrder {
     fn meta(&self) -> &'static ScriptRuleMeta {
@@ -71,44 +78,75 @@ impl ScriptRule for DefineMacrosOrder {
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
-        let body = &program.body;
-        // The last declaration of each ordered macro, in the expected order.
-        let ordered: Vec<(&'static str, usize)> = MACRO_ORDER
-            .iter()
-            .filter_map(|name| {
-                body.iter()
-                    .rposition(|statement| macro_name(statement) == Some(name))
-                    .map(|index| (*name, index))
-            })
-            .collect();
-        if ordered.is_empty() {
-            return;
+        check(program, offset, result, &DEFAULT_MACRO_ORDER);
+    }
+}
+
+impl ScriptRule for ConfiguredDefineMacrosOrder {
+    fn meta(&self) -> &'static ScriptRuleMeta {
+        &META
+    }
+
+    #[inline]
+    fn uses_ast(&self) -> bool {
+        true
+    }
+
+    fn check_program<'a>(
+        &self,
+        program: &'a Program<'a>,
+        _source: &str,
+        offset: usize,
+        result: &mut ScriptLintResult,
+    ) {
+        let order = self.0.iter().map(|name| name.as_str()).collect::<Vec<_>>();
+        check(program, offset, result, &order);
+    }
+}
+
+fn check<'a>(
+    program: &'a Program<'a>,
+    offset: usize,
+    result: &mut ScriptLintResult,
+    macro_order: &[&str],
+) {
+    let body = &program.body;
+    // The last declaration of each ordered macro, in the expected order.
+    let ordered: Vec<(&str, usize)> = macro_order
+        .iter()
+        .filter_map(|name| {
+            body.iter()
+                .rposition(|statement| macro_name(statement) == Some(name))
+                .map(|index| (*name, index))
+        })
+        .collect();
+    if ordered.is_empty() {
+        return;
+    }
+    let first = body
+        .iter()
+        .position(|statement| !is_skipped_statement(statement))
+        .unwrap_or(body.len());
+    for (position, &(name, index)) in ordered.iter().enumerate() {
+        let target = first + position;
+        if index == target {
+            continue;
         }
-        let first = body
-            .iter()
-            .position(|statement| !is_skipped_statement(statement))
-            .unwrap_or(body.len());
-        for (position, &(name, index)) in ordered.iter().enumerate() {
-            let target = first + position;
-            if index == target {
-                continue;
-            }
-            let before = body
-                .get(target)
-                .and_then(macro_name)
-                .filter(|macro_name| MACRO_ORDER.contains(macro_name));
-            let message = match before {
-                Some(before) => cstr!("`{name}` should be above `{before}`."),
-                None => cstr!(
-                    "`{name}` should be placed at the top of `<script setup>` (after any \
+        let before = body
+            .get(target)
+            .and_then(macro_name)
+            .filter(|macro_name| macro_order.contains(macro_name));
+        let message = match before {
+            Some(before) => cstr!("`{name}` should be above `{before}`."),
+            None => cstr!(
+                "`{name}` should be placed at the top of `<script setup>` (after any \
                      potential import statements or type definitions)."
-                ),
-            };
-            if let Some(statement) = body.get(index) {
-                report(statement.span(), offset, message, result);
-            }
-            return;
+            ),
+        };
+        if let Some(statement) = body.get(index) {
+            report(statement.span(), offset, message, result);
         }
+        return;
     }
 }
 
@@ -155,7 +193,7 @@ fn macro_of_expression<'s>(expression: &Expression<'s>) -> Option<&'s str> {
             .and_then(|argument| argument.as_expression())
             .and_then(macro_of_expression);
     }
-    name.starts_with("define").then_some(name)
+    Some(name)
 }
 
 /// Statements that may precede the macros, as in eslint-plugin-vue: imports,

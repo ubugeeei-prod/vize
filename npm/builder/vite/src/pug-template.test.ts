@@ -14,7 +14,11 @@ import { build, type Rollup } from "vite";
 import { vize } from "./index.ts";
 
 const require = createRequire(import.meta.url);
-const twins = require("../../shared/pug-twins.cjs") as { pug: string; html: string };
+const twins = require("../../shared/pug-twins.cjs") as {
+  pug: string;
+  jade: string;
+  html: string;
+};
 const vueRuntime = require.resolve("vue");
 const serverRenderer = require.resolve("vue/server-renderer");
 
@@ -65,6 +69,7 @@ for (const ssr of [false, true]) {
   void test(`vite ${ssr ? "SSR" : "client"}: a pug template renders like its HTML twin`, async () => {
     const [pug, html] = [await render(twins.pug, ssr), await render(twins.html, ssr)];
     assert.equal(pug, html);
+    assert.equal(await render(twins.jade, ssr), html);
     assert.match(html, /^<section id="app" class="card active">/);
   });
 }

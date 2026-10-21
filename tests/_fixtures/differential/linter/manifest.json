@@ -16,7 +16,7 @@
       "api": "--current-api",
       "cases": {
         "path": "crates/vize_patina/tests/fixtures/lint-history/cases.json",
-        "sha256": "286948a85fd4f8d96149865a9bc8177b35dad2ca364853a8540b9339c24e8f1d"
+        "sha256": "12b8d0e8af897e4d33238c06017f5237a08d3c70bbca2da09725e1fee726bbbf"
       }
     },
     {
@@ -54,13 +54,112 @@
   ],
   "oracles": {
     "path": "tests/_fixtures/differential/linter/oracle-index.json",
-    "sha256": "afc9c66c8e3f1e593394d878c385b7c5aacd04d950753c2db88d7d7b596ba1ec"
+    "sha256": "acdb141f572354bca2aff1bd2f535293c2057f0df84567389eef6e855344b9e7"
   },
   "cases": [
     {
-      "id": "linter/current-api/patina-rule-guards-9870-9871",
+          "id": "linter/current-api/prefer-use-id-context-9837",
+          "state": "active",
+          "targets": ["lint"],
+          "inputs": {
+            "root": "prefer-use-id-context-9837",
+            "files": [
+              {
+                "path": "request-id.ts.txt",
+                "role": "issue-authored-reproduction",
+                "sha256": "b02131cdc6f2aad72cf087058a0fcae88b99c2f9cfa1c2750b45bc7cd37c2084"
+              },
+              {
+                "path": "folder.test.ts.txt",
+                "role": "issue-authored-reproduction",
+                "sha256": "574354304ea31cd00c8dd8913bed9f1530448bb0a021465c3d85c924f13d0f4c"
+              },
+              {
+                "path": "Field.vue.txt",
+                "role": "regression-control",
+                "sha256": "6cf946d094e5911ee9add3cb9c73fa177776e46b2a62faf71a9e18b2ce446472"
+              },
+              {
+                "path": "vize.json.txt",
+                "role": "issue-authored-config",
+                "sha256": "f1bd1d90ff9d35967079c3da66c9286e8e246e6995409493969eed0fb8a9fc90"
+              }
+            ]
+          }
+        },
+    {
+      "id": "linter/current-api/incomplete-type-project-10005",
       "state": "active",
       "targets": ["lint"],
+      "inputs": {
+        "root": "incomplete-type-project-10005",
+        "files": [
+          {
+            "path": "package.json",
+            "role": "issue-authored-package",
+            "sha256": "ee27549d82bca7cde54306e886ff85ef408fd80e55e7b574da2d2be426755256"
+          },
+          {
+            "path": "tsconfig.json",
+            "role": "issue-authored-broken-config",
+            "sha256": "d8acd38ce951b8063ac256f9e6a934b2efb45d9e972286f8dc4983b6f634acb6"
+          },
+          {
+            "path": "base.json",
+            "role": "issue-authored-generated-config",
+            "sha256": "8f9ec0f27edcd9bb7d73567a6736599cff3117a720830eccf9ec54852645a28f"
+          },
+          {
+            "path": "lint.json",
+            "role": "issue-authored-lint-config",
+            "sha256": "d2ae1baf4b12fbc63f80e1709127f01af4dfb7336f804dc2abe4bacc20ccb461"
+          },
+          {
+            "path": "data.ts.txt",
+            "role": "issue-authored-aliased-module",
+            "sha256": "c7c0f197f35bf85d7cd6b5b720008a6f25e1412d3cfa5ad87396cfccd590440a"
+          },
+          {
+            "path": "MyList.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "1a358f9e731698f87e550832669cce93c9c9f3f0459ac4ee5d00ff5f2096835f"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/nuxt-builtins-9866",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "nuxt-builtins-9866",
+        "files": [
+          {
+            "path": "app.vue.txt",
+            "role": "issue-authored-root",
+            "sha256": "63c1fb3634b5ab76dca3c9935629cda7582f157b4638da766f73b8f690864f7e"
+          },
+          {
+            "path": "HomeLink.vue.txt",
+            "role": "issue-authored-component",
+            "sha256": "5362dc0aab5809c4729ee24efd00b452b0eeae794a17a53f965eb5470d2c7b69"
+          },
+          {
+            "path": "nuxt.config.ts.txt",
+            "role": "issue-authored-config",
+            "sha256": "0c0a194972dba8a1d34f6bb042145b632e449a4d972806b4e9afd42bfdae44d6"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/patina-rule-guards-9870-9871",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "patina-rule-guards-9870-9871",
         "files": [
@@ -175,7 +274,9 @@
     {
       "id": "linter/current-api/shared-rule-options-9876",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "shared-rule-options-9876",
         "files": [
@@ -188,6 +289,40 @@
             "path": "App.vue.txt",
             "role": "issue-authored-reproduction",
             "sha256": "79e4817baa6d3345b3f74ec23dc73d2a316c4ea035ba2f0ab37fc753de83038d"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/custom-event-name-casing-9879",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "custom-event-name-casing-9879",
+        "files": [
+          {
+            "path": "source.vue",
+            "role": "issue-authored-reproduction",
+            "sha256": "a9711f14967743c5c2833a96e09f532bb5f29fe84fc0f86b4f9292b1fe1b0587"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/require-symbol-provide-range-9882",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "require-symbol-provide-range-9882",
+        "files": [
+          {
+            "path": "source.vue",
+            "role": "issue-authored-reproduction",
+            "sha256": "ece0c3c069e19ff060a66cefdd576174b8a5c1452b0f736daa5a400bb6bbfba3"
           }
         ]
       }
@@ -346,6 +481,150 @@
       "id": "linter/component-name/invalid-dotted-name",
       "state": "active",
       "targets": ["lint"]
+    },
+    {
+      "id": "linter/current-api/dotted-slot-name-9865",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "dotted-slot-9865",
+        "files": [
+          {
+            "path": "DataTable.vue.txt",
+            "role": "issue-authored-component",
+            "sha256": "b7890743b18dfd491834a954025cf720a67a52c8b9015d244920888111b341fd"
+          },
+          {
+            "path": "App.vue.txt",
+            "role": "issue-authored-consumer",
+            "sha256": "40ded3f92b93b19e2a600e28daf56d8dac316f6466db7c38a7b9ed76cae28214"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/cli-preset-validation-9853",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "cli-preset-validation-9853",
+        "files": [
+          {
+            "path": "GreetingCard.vue.txt",
+            "sha256": "4adee56134928fe85a8773dc35daf5703e35cac33f48bf5f69ee3a2af1122993"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/patina-output-policy-9869-9874",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-output-policy-9869-9874",
+        "files": [
+          {
+            "path": "ScoreTable.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "64d9f5ef73906112029a54ab2ce2fccc3cddf5896c19feba4d53616c60bf1af8"
+          },
+          {
+            "path": "StatePanel.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "19d1f6b0d716ab1b4599f83b012781539a696d9dfbf658d3294c9ac90367be23"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/multiline-v-for-source-9880",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "multiline-v-for-source-9880",
+        "files": [
+          {
+            "path": "source.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "95edcd796c639638b428ca35e4fc7fe7aa94708754ab2652308eca6e902c1875"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/vue-path-alias-types-9864",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "vue-alias-types-9864",
+        "files": [
+          {
+            "path": "tsconfig.json",
+            "role": "issue-authored-config",
+            "sha256": "2ddd0f0f16a9b64c0244adf7812d537dcc7c0675db731a7ffb5a72a0de7ed365"
+          },
+          {
+            "path": "src/ui/side-panel.vue",
+            "role": "issue-authored-component",
+            "sha256": "611ef6b1087e7f4deef925767ea4554fca9a697d485e888ee58ed6ca17cbe3a6"
+          },
+          {
+            "path": "src/ui/item-list.vue",
+            "role": "issue-authored-component",
+            "sha256": "021013dfb5858864ae8fea736ec69a1478bca3ce0e8ff70c700be69e8f9f0203"
+          },
+          {
+            "path": "src/ui/helpers.ts",
+            "role": "issue-authored-control",
+            "sha256": "50528261e7bd829ae991388f4ec8d8b956cecd140e72bc6db630c87f4f5dc410"
+          },
+          {
+            "path": "src/pages/page-view.vue",
+            "role": "issue-authored-consumer",
+            "sha256": "101475e96ae9d5ff4f8cd8d24d6cdccdc499e54dee68cfb4ac15b885b4c89e0d"
+          },
+          {
+            "path": "src/pages/list-view.vue",
+            "role": "issue-authored-consumer",
+            "sha256": "999459441acb76214dd616f70cfe4b9f1cd25ad423a15436fb29223579113efc"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/patina/rule-fixes-9872-9873",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "patina-rule-fixes-9872-9873",
+        "files": [
+          {
+            "path": "ProfileCard.vue.txt",
+            "role": "issue-authored-fix-reproduction",
+            "sha256": "863e09c5ead9eaba63d9da6a9ba73892359db8ab8bc6159d6e8b4f24a4cb82ab"
+          },
+          {
+            "path": "ScssBox.vue.txt",
+            "role": "issue-authored-scss-reproduction",
+            "sha256": "7b72d5682dde10a0e1a598a50cd83ed44dfbe1ff2decaf1272b2d77e0febbf15"
+          },
+          {
+            "path": "PugBox.vue.txt",
+            "role": "issue-authored-pug-reproduction",
+            "sha256": "49bc1fa6701612529326ad14f213f63ff349433d7292c8640fffccdaab311f8a"
+          }
+        ]
+      }
     }
   ]
 }

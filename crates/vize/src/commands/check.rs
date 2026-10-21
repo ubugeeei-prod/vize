@@ -84,8 +84,9 @@ pub struct CheckArgs {
     #[arg(long)]
     pub profile: bool,
 
-    /// Path to the Corsa executable (can also use `CORSA_PATH`)
-    #[arg(long)]
+    /// Path to the native TypeScript checker (Corsa/tsgo, or experimental tsrs).
+    /// Can also use `CORSA_PATH`, `TSGO_PATH`, or `TSRS_PATH`.
+    #[arg(long, visible_alias = "tsrs-path")]
     pub corsa_path: Option<String>,
 
     /// Number of parallel Corsa servers to use (defaults to an auto-tuned value)
@@ -131,6 +132,33 @@ pub(crate) mod unix_types {
         pub line: u32,
         pub column: u32,
         pub code: Option<String>,
+    }
+
+    #[derive(Deserialize)]
+    pub(crate) struct ServerProjectCheckResult {
+        pub diagnostics: Vec<ServerProjectDiagnostic>,
+        #[serde(rename = "errorCount")]
+        pub error_count: usize,
+        #[serde(rename = "warningCount")]
+        pub warning_count: usize,
+        #[serde(rename = "fileCount")]
+        pub file_count: usize,
+    }
+
+    #[derive(Deserialize)]
+    pub(crate) struct ServerProjectDiagnostic {
+        pub file: String,
+        pub message: String,
+        pub severity: String,
+        pub line: u32,
+        pub column: u32,
+        pub code: Option<String>,
+    }
+
+    #[derive(Deserialize)]
+    pub(crate) struct ProjectJsonRpcResponse {
+        pub result: Option<ServerProjectCheckResult>,
+        pub error: Option<JsonRpcError>,
     }
 
     #[derive(Deserialize)]

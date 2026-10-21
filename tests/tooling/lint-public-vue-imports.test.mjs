@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.ts";
 import { sha256, wholeJson } from "./lint-default-correctness-reference.mjs";
+import { withoutHelp } from "./support/lint-help-policy.mjs";
 import { vueConfigFixtureSource, writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -157,7 +158,7 @@ await test("public Vue imports preserve whole CLI packets and safe final file by
         config,
         configSource,
         input: { source: entry.source, sha256: sha256(bytes) },
-        expected: wholeJson({ ...entry, source: finalSource }, findings),
+        expected: withoutHelp(wholeJson({ ...entry, source: finalSource }, findings)),
         expectedStatus: findings.some((finding) => finding.severity === "error") ? 1 : 0,
         expectedFinalSource: finalSource,
         status: run.status,

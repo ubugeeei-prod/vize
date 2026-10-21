@@ -8,7 +8,7 @@
         "message": "Utility class should be in global styles, not component styles",
         "start": 70,
         "end": 75,
-        "help": "Use semantic class names in components, or import utility classes from a global stylesheet",
+        "help": null,
         "labels": [],
         "fix": null
       },
@@ -18,7 +18,7 @@
         "message": "Utility class should be in global styles, not component styles",
         "start": 162,
         "end": 167,
-        "help": "Use semantic class names in components, or import utility classes from a global stylesheet",
+        "help": null,
         "labels": [],
         "fix": null
       }
@@ -38,8 +38,7 @@
           "line": 2,
           "column": 29,
           "endLine": 2,
-          "endColumn": 34,
-          "help": "Use semantic class names in components, or import utility classes from a global stylesheet"
+          "endColumn": 34
         },
         {
           "ruleId": "css/no-utility-classes",
@@ -49,15 +48,14 @@
           "line": 5,
           "column": 1,
           "endLine": 5,
-          "endColumn": 6,
-          "help": "Use semantic class names in components, or import utility classes from a global stylesheet"
+          "endColumn": 6
         }
       ],
       "errorCount": 0,
       "warningCount": 2
     }
   ],
-  "plain": "Patina lint report: 2 warnings in 1 file\n\nUnicodeMultipleStyles.vue\n  UnicodeMultipleStyles.vue:2:29 warning css/no-utility-classes Utility class should be in global styles, not component styles\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      Use semantic class names in components, or import utility classes from a global stylesheet\n  UnicodeMultipleStyles.vue:5:1 warning css/no-utility-classes Utility class should be in global styles, not component styles\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      Use semantic class names in components, or import utility classes from a global stylesheet\n",
+  "plain": "Patina lint report: 2 warnings in 1 file\n\nUnicodeMultipleStyles.vue\n  UnicodeMultipleStyles.vue:2:29 warning css/no-utility-classes Utility class should be in global styles, not component styles\n    Reference: docs/content/rules/musea-and-css.md\n  UnicodeMultipleStyles.vue:5:1 warning css/no-utility-classes Utility class should be in global styles, not component styles\n    Reference: docs/content/rules/musea-and-css.md\n",
   "authoredSlices": [
     ".flex",
     ".pl-3"

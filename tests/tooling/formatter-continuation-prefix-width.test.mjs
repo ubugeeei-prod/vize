@@ -34,6 +34,15 @@ assert.equal(
 );
 const corpus = JSON.parse(corpusBytes);
 assert.equal(corpus.cases.length, 14);
+const currentReferences = new Map([
+  [
+    "exact-40",
+    {
+      file: "exact-40.hugged-inline-current.expected",
+      sha256: "4fc1cad052f79800c50d2b06f0726239d4a5b7be8a09f1c514c4534fdd69fc7f",
+    },
+  ],
+]);
 
 const framingIds = new Set([
   "dynamic-bind-brackets-arrow-value-lf",
@@ -86,9 +95,14 @@ void test("source CLI keeps complete authored DOM text SSR and event contracts",
       const fixture = corpus.cases.find((item) => item.id === selected.id);
       assert(fixture);
       const input = fs.readFileSync(path.join(fixtureRoot, fixture.input));
-      const expected = fs.readFileSync(path.join(fixtureRoot, fixture.output));
+      const archivedExpected = fs.readFileSync(path.join(fixtureRoot, fixture.output));
       assert.equal(sha256(input), selected.inputSha256);
-      assert.equal(sha256(expected), selected.expectedSourceSha256);
+      assert.equal(sha256(archivedExpected), selected.expectedSourceSha256);
+      const currentReference = currentReferences.get(selected.id) ?? null;
+      const expected = currentReference
+        ? fs.readFileSync(path.join(fixtureRoot, currentReference.file))
+        : archivedExpected;
+      if (currentReference) assert.equal(sha256(expected), currentReference.sha256);
       const states = contract.observations.map((item) => item.state);
       const before = await observeSource(input.toString(), `${selected.id}-original`, states);
       const reference = await observeSource(
@@ -98,7 +112,14 @@ void test("source CLI keeps complete authored DOM text SSR and event contracts",
       );
       assert.deepEqual(before.observations, contract.observations);
       assert.deepEqual(reference.observations, contract.observations);
-      const row = { id: selected.id, before, reference, cli: [], after: [] };
+      const row = {
+        id: selected.id,
+        currentReference,
+        before,
+        reference,
+        cli: [],
+        after: [],
+      };
       if (framingIds.has(selected.id)) {
         row.template = {
           before: templateEvidence(input.toString(), selected.id),

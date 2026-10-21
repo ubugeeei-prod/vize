@@ -8,11 +8,11 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.ts";
 import { sha256, wholeJson } from "./lint-default-correctness-reference.mjs";
+import { withoutHelp } from "./support/lint-help-policy.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const fixture = path.join(root, "tests/_fixtures/differential/lint/runtime-prop-defaults-8564");
 const read = (name) => JSON.parse(fs.readFileSync(path.join(fixture, name), "utf8"));
-
 await test("runtime props preserve whole scoped original packets and full minimal routes", () => {
   const corpus = read("cases.json");
   const scoped = read("scoped-route-contract.json");
@@ -148,7 +148,7 @@ await test("runtime props preserve whole scoped original packets and full minima
         argv,
         originalArgv: route.argv,
         config: route.config,
-        expected: route.afterCliPacket,
+        expected: withoutHelp(route.afterCliPacket),
         expectedStatus: route.afterStatus,
         status: run.status,
         signal: run.signal,

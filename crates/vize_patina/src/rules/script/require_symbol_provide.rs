@@ -32,7 +32,7 @@
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{Argument, CallExpression, Expression, Program};
 use oxc_ast_visit::{Visit, walk::walk_call_expression};
-use oxc_span::Span;
+use oxc_span::{GetSpan, Span};
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 
@@ -97,14 +97,12 @@ impl<'a> Visit<'a> for RequireSymbolProvideVisitor<'_> {
 }
 
 fn string_key_provide_inject_span(call: &CallExpression<'_>) -> Option<Span> {
-    if !is_static_string_argument(call.arguments.first()?) {
-        return None;
-    }
+    let argument = call.arguments.first()?;
     match &call.callee {
         Expression::Identifier(identifier)
             if matches!(identifier.name.as_str(), "provide" | "inject") =>
         {
-            Some(Span::new(identifier.span.start, identifier.span.end + 1))
+            is_static_string_argument(argument).then(|| argument.span())
         }
         _ => None,
     }
@@ -156,6 +154,21 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint("const user = inject('user')", 0);
         assert_eq!(result.warning_count, 1);
+        assert_eq!(result.diagnostics[0].start, 20);
+        assert_eq!(result.diagnostics[0].end, 26);
+    }
+
+    #[test]
+    fn test_reports_generic_inject_string_key() {
+        let linter = create_linter();
+        let source = r#"const items = inject<Ref<string[]>>("items")"#;
+        let result = linter.lint(source, 0);
+        assert_eq!(result.warning_count, 1);
+        let diagnostic = &result.diagnostics[0];
+        assert_eq!(
+            &source[diagnostic.start as usize..diagnostic.end as usize],
+            r#""items""#
+        );
     }
 
     #[test]

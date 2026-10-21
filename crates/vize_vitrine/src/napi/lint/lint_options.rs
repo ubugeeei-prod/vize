@@ -16,7 +16,7 @@ pub struct LintOptionsNapi {
     pub fix: Option<bool>,
     /// Help display level: "full", "short", "none"
     pub help_level: Option<String>,
-    /// Lint preset: "general-recommended", "essential", "incremental", "ecosystem", "opinionated", or "nuxt"
+    /// Lint preset: "general-recommended", "essential", "incremental", "ecosystem", "opinionated", "nuxt", or "all"
     pub preset: Option<String>,
     /// Enable native type-aware lint rules
     pub type_aware: Option<bool>,
@@ -49,7 +49,7 @@ pub struct PatinaLintOptionsNapi {
     pub locale: Option<String>,
     /// Help display level: "full", "short", or "none"
     pub help_level: Option<String>,
-    /// Lint preset: "general-recommended", "essential", "incremental", "ecosystem", "opinionated", or "nuxt"
+    /// Lint preset: "general-recommended", "essential", "incremental", "ecosystem", "opinionated", "nuxt", or "all"
     pub preset: Option<String>,
     /// Optional list of Patina rule names to enable
     pub enabled_rules: Option<Vec<String>>,
@@ -65,6 +65,8 @@ pub struct PatinaLintOptionsNapi {
     pub custom_event_name_casing: Option<String>,
     /// Options for `vue/no-mutating-props`
     pub no_mutating_props: Option<NoMutatingPropsOptionsNapi>,
+    /// Options for `script/define-macros-order`
+    pub define_macros_order: Option<DefineMacrosOrderOptionsNapi>,
     /// Options for `vue/sfc-element-order`
     pub sfc_element_order: Option<SfcElementOrderOptionsNapi>,
     /// Options for `vue/html-self-closing`
@@ -82,6 +84,13 @@ pub struct PatinaLintOptionsNapi {
 #[derive(Default)]
 pub struct NoMutatingPropsOptionsNapi {
     pub shallow_only: Option<bool>,
+}
+
+/// Define-macros-order options for NAPI
+#[cfg_attr(feature = "napi", napi(object))]
+#[derive(Default)]
+pub struct DefineMacrosOrderOptionsNapi {
+    pub order: Option<Vec<String>>,
 }
 
 /// SFC element order options for NAPI
@@ -112,6 +121,7 @@ pub struct HtmlSelfClosingHtmlOptionsNapi {
 pub(super) enum PatinaPresetSelection {
     Builtin(vize_patina::LintPreset),
     Ecosystem,
+    All,
 }
 
 pub(super) fn patina_locale_from_option(locale: Option<&str>) -> vize_patina::Locale {
@@ -141,9 +151,10 @@ pub(super) fn patina_preset_from_option(preset: Option<&str>) -> PatinaPresetSel
             PatinaPresetSelection::Builtin(vize_patina::LintPreset::Incremental)
         }
         Some("ecosystem" | "Ecosystem" | "eco" | "Eco") => PatinaPresetSelection::Ecosystem,
-        Some("opinionated" | "Opinionated" | "Opnionated" | "opnionated" | "strict" | "all") => {
+        Some("opinionated" | "Opinionated" | "Opnionated" | "opnionated" | "strict") => {
             PatinaPresetSelection::Builtin(vize_patina::LintPreset::Opinionated)
         }
+        Some("all") => PatinaPresetSelection::All,
         Some("nuxt" | "Nuxt") => PatinaPresetSelection::Builtin(vize_patina::LintPreset::Nuxt),
         _ => PatinaPresetSelection::Builtin(vize_patina::LintPreset::default()),
     }
@@ -153,6 +164,7 @@ pub(super) fn create_patina_linter(preset: PatinaPresetSelection) -> vize_patina
     match preset {
         PatinaPresetSelection::Builtin(preset) => vize_patina::Linter::with_preset(preset),
         PatinaPresetSelection::Ecosystem => vize_patina::Linter::with_ecosystem(),
+        PatinaPresetSelection::All => vize_patina::Linter::with_all(),
     }
 }
 
@@ -175,6 +187,7 @@ pub(super) fn configure_patina_rule_options(
     component_name_in_template_casing: Option<&str>,
     custom_event_name_casing: Option<&str>,
     no_mutating_props: Option<NoMutatingPropsOptionsNapi>,
+    define_macros_order: Option<DefineMacrosOrderOptionsNapi>,
     sfc_element_order: Option<SfcElementOrderOptionsNapi>,
     html_self_closing: Option<HtmlSelfClosingOptionsNapi>,
     v_on_event_hyphenation: Option<&str>,
@@ -189,6 +202,9 @@ pub(super) fn configure_patina_rule_options(
     if let Some(options) = no_mutating_props.map(no_mutating_props_from_option) {
         linter = linter.with_no_mutating_props_options(options);
     }
+    if let Some(options) = define_macros_order.map(define_macros_order_from_option) {
+        linter = linter.with_define_macros_order(options);
+    }
     if let Some(options) = sfc_element_order.map(sfc_element_order_from_option) {
         linter = linter.with_sfc_element_order_options(options);
     }
@@ -202,6 +218,17 @@ pub(super) fn configure_patina_rule_options(
         linter = linter.with_attribute_hyphenation(style);
     }
     linter
+}
+
+fn define_macros_order_from_option(
+    options: DefineMacrosOrderOptionsNapi,
+) -> vize_l0::config::DefineMacrosOrderOptions {
+    vize_l0::config::DefineMacrosOrderOptions {
+        order: options
+            .order
+            .map(|order| order.into_iter().map(Into::into).collect())
+            .unwrap_or_else(|| vize_l0::config::DefineMacrosOrderOptions::default().order),
+    }
 }
 
 pub(super) fn component_casing_from_option(

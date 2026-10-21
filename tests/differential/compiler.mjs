@@ -46,6 +46,10 @@ export function loadCompilerManifest(manifestPath) {
       assert.equal(fixture.reference.path, `${fixture.inputs.root}/module.expected.txt`);
       assert.equal(typeof fixture.reference.source, "string");
       assert(fixture.reference.source.length > 0, "compiler reference source is required");
+      if (fixture.reference.cssPath !== undefined || fixture.reference.cssSha256 !== undefined) {
+        assert.equal(fixture.reference.cssPath, `${fixture.inputs.root}/style.expected.css`);
+        assert.match(fixture.reference.cssSha256, /^[a-f0-9]{64}$/);
+      }
       assert.equal(fixture.comparison.contract, "compiler-ssr-module-bytes-v1");
       assert(["js", "ts"].includes(fixture.comparison.scriptLang ?? "js"));
       assert.deepEqual(fixture.comparison.requiredFacets, [
@@ -57,12 +61,24 @@ export function loadCompilerManifest(manifestPath) {
       ]);
       const input = readPinnedArtifact(path.join(root, fixture.inputs.root), entry);
       const expected = readPinnedArtifact(root, fixture.reference);
-      return { ...fixture, input, expected };
+      const expectedCss = fixture.reference.cssPath
+        ? readPinnedArtifact(root, {
+            path: fixture.reference.cssPath,
+            sha256: fixture.reference.cssSha256,
+          })
+        : null;
+      return { ...fixture, input, expected, expectedCss };
     }),
   };
 }
 
-export function compilerAttempt(result, output, expected, expectedScriptLang = "js") {
+export function compilerAttempt(
+  result,
+  output,
+  expected,
+  expectedScriptLang = "js",
+  expectedCss = null,
+) {
   const observation = {
     exitStatus: result.status,
     signal: result.signal,
@@ -73,7 +89,10 @@ export function compilerAttempt(result, output, expected, expectedScriptLang = "
     jsonSha256: output ? sha256(output) : null,
     codeBase64: null,
     codeSha256: null,
+    cssBase64: null,
+    cssSha256: null,
     referenceComparison: null,
+    cssReferenceComparison: null,
     facetError: null,
   };
   if (output) {
@@ -90,7 +109,6 @@ export function compilerAttempt(result, output, expected, expectedScriptLang = "
       ]);
       assert.equal(parsed.filename, "Layout.vue");
       assert.equal(parsed.script_lang, expectedScriptLang);
-      assert.equal(parsed.css, null);
       assert.deepEqual(parsed.errors, []);
       assert.deepEqual(parsed.warnings, []);
       assert.deepEqual(parsed.macro_artifacts, []);
@@ -99,6 +117,15 @@ export function compilerAttempt(result, output, expected, expectedScriptLang = "
       observation.codeBase64 = code.toString("base64");
       observation.codeSha256 = sha256(code);
       observation.referenceComparison = compareBytes(expected, code);
+      if (expectedCss === null) {
+        assert.equal(parsed.css, null);
+      } else {
+        assert.equal(typeof parsed.css, "string", "compiler output css must be a string");
+        const css = Buffer.from(parsed.css, "utf8");
+        observation.cssBase64 = css.toString("base64");
+        observation.cssSha256 = sha256(css);
+        observation.cssReferenceComparison = compareBytes(expectedCss, css);
+      }
     } catch (error) {
       observation.facetError = error.message;
     }
@@ -152,6 +179,7 @@ export function validateCompilerReport(loaded, report, expectedBuild) {
         json,
         fixture.expected,
         fixture.comparison.scriptLang,
+        fixture.expectedCss,
       );
       assert.deepEqual(attempt, replay, "compiler observation or byte comparison was forged");
     }
@@ -164,7 +192,11 @@ export function validateCompilerReport(loaded, report, expectedBuild) {
       assert.equal(attempt.facetError, null, "invalid compiler facets cannot complete");
       assert.equal(
         row.legacy.verdict,
-        attempt.referenceComparison.state === "equal" ? "matched-reference" : "baseline-drift",
+        attempt.referenceComparison.state === "equal" &&
+          (attempt.cssReferenceComparison === null ||
+            attempt.cssReferenceComparison.state === "equal")
+          ? "matched-reference"
+          : "baseline-drift",
       );
       summary[row.legacy.verdict === "matched-reference" ? "legacyMatches" : "baselineDrift"] += 1;
     } else {
@@ -210,6 +242,7 @@ function runCompilerCase(fixture, binaryPath, binaryFailure) {
       output,
       fixture.expected,
       fixture.comparison.scriptLang,
+      fixture.expectedCss,
     );
     if (row.legacy.observation.facetError) throw new Error(row.legacy.observation.facetError);
     if (result.error) throw result.error;
@@ -217,7 +250,9 @@ function runCompilerCase(fixture, binaryPath, binaryFailure) {
     assert(output, "compiler JSON output is missing");
     row.legacy.state = "completed";
     row.legacy.verdict =
-      row.legacy.observation.referenceComparison.state === "equal"
+      row.legacy.observation.referenceComparison.state === "equal" &&
+      (row.legacy.observation.cssReferenceComparison === null ||
+        row.legacy.observation.cssReferenceComparison.state === "equal")
         ? "matched-reference"
         : "baseline-drift";
   } catch (error) {

@@ -18,17 +18,17 @@
 //   node tools/support/compat/davinci/consumer-migration-surfaces.ts --check
 //   node tools/support/compat/davinci/consumer-migration-surfaces.ts --summary
 
-import { checkArtifactSet, writeArtifactSet } from "./lib/artifact-set.mjs";
+import { checkArtifactSet, writeArtifactSet } from "./lib/artifact-set.ts";
 import {
   SHARD_DIR_REL,
   renderConsumerMigrationShards,
   renderConsumerMigrationSurfaces,
-} from "./lib/consumer-migration-render.mjs";
-import { scanConsumerMigrationSurfaces } from "./lib/consumer-migration-scan.mjs";
+} from "./lib/consumer-migration-render.ts";
+import { scanConsumerMigrationSurfaces } from "./lib/consumer-migration-scan.ts";
 import {
   SUMMARY_COMMAND,
   renderConsumerMigrationSummary,
-} from "./lib/consumer-migration-summary.mjs";
+} from "./lib/consumer-migration-summary.ts";
 
 const ARTIFACT_REL = "docs/davinci/plan/consumer-migration-surfaces.md";
 const REGEN_COMMAND = "node tools/support/compat/davinci/consumer-migration-surfaces.ts --write";

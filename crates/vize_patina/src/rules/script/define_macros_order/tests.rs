@@ -12,6 +12,21 @@ fn lint(source: &str) -> Vec<String> {
         .collect()
 }
 
+fn lint_with_order(source: &str, order: &[&str]) -> Vec<String> {
+    let mut linter = ScriptLinter::new();
+    linter.add_rule(Box::new(DefineMacrosOrder::configured(
+        vize_l0::config::DefineMacrosOrderOptions {
+            order: order.iter().map(|name| (*name).into()).collect(),
+        },
+    )));
+    linter
+        .lint(source, 0)
+        .diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic.message.to_string())
+        .collect()
+}
+
 const NOT_AT_TOP: &str = "should be placed at the top of `<script setup>` (after any potential import statements or type definitions).";
 
 // --- Valid: eslint-plugin-vue's default order ---
@@ -50,6 +65,49 @@ defineSlots<{ default(props: {}): any }>()
 defineOptions({ name: 'MyComponent' })
 "#;
     assert!(lint(source).is_empty());
+}
+
+#[test]
+fn configured_order_accepts_define_options_first() {
+    let source = r#"
+defineOptions({ inheritAttrs: false })
+const props = defineProps<{ label: string }>()
+const emit = defineEmits<{ select: [] }>()
+defineSlots<{ default(): unknown }>()
+const value = ref(0)
+"#;
+    assert!(
+        lint_with_order(
+            source,
+            &["defineOptions", "defineProps", "defineEmits", "defineSlots"]
+        )
+        .is_empty()
+    );
+}
+
+#[test]
+fn configured_order_reports_the_authored_order() {
+    let source = r#"
+const props = defineProps<{ label: string }>()
+defineOptions({ inheritAttrs: false })
+const emit = defineEmits<{ select: [] }>()
+"#;
+    assert_eq!(
+        lint_with_order(source, &["defineOptions", "defineProps", "defineEmits"]),
+        ["`defineOptions` should be above `defineProps`."]
+    );
+}
+
+#[test]
+fn configured_order_supports_project_macros() {
+    let source = r#"
+const props = defineProps<{ label: string }>()
+definePage({ layout: 'default' })
+"#;
+    assert_eq!(
+        lint_with_order(source, &["definePage", "defineProps"]),
+        ["`definePage` should be above `defineProps`."]
+    );
 }
 
 #[test]

@@ -288,7 +288,7 @@ emit("change", 1);
 预设: `opinionated`, `nuxt`  
 自动修复: 无；请检查建议的修改  
 适用范围: Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式  
-选项: 没有规则专属选项。可以配置严重程度和预设。
+选项: 参见[类型化选项和默认值](/rules/options.md)。
 
 **配置（Vite+）**
 
@@ -343,7 +343,7 @@ const value = ref(0)
 
 正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
 
-[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_macros_order.rs#L45) · [全部规则](all.md)
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_macros_order.rs#L44) · [全部规则](all.md)
 
 ### `script/define-props-declaration`
 
@@ -3408,7 +3408,7 @@ const id = useId();
 
 正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
 
-[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_id.rs#L48) · [全部规则](all.md)
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_id.rs#L45) · [全部规则](all.md)
 
 ### `script/prefer-use-slots`
 

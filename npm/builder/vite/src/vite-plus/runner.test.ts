@@ -44,7 +44,7 @@ void test("check runs native checks, native lint and Oxlint, and both formatters
         if (args[0] === "vize/bin") {
           const file = args[args.indexOf("--config") + 1];
           assert.equal(path.dirname(file), os.tmpdir());
-          assert.equal(JSON.parse(readFileSync(file, "utf8")).linter.preset, "essential");
+          assert.equal(JSON.parse(readFileSync(file, "utf8")).vue.linter.preset, "essential");
         }
         return args[1] === "lint" ? 1 : 0;
       },
@@ -207,7 +207,7 @@ void test("check --fix routes fixes only to lint and format and loads existing s
         calls.push(args);
         if (args[0] === "native") {
           const config = JSON.parse(readFileSync(args[3], "utf8"));
-          assert.equal(config.formatter.singleQuote, true);
+          assert.equal(config.vue.formatter.singleQuote, true);
         }
         return 0;
       },

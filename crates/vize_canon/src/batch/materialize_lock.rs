@@ -35,6 +35,10 @@ impl MaterializeLock {
     }
 
     fn acquire_with_timeout(virtual_root: &Path, timeout: Duration) -> io::Result<Self> {
+        // Cache maintenance can unlink an idle project's lock files. Hold the
+        // shared directory guard until this inode is locked so cleanup cannot
+        // replace the lock path between open and acquisition.
+        let cache_lock = super::cache_lock::acquire_shared(virtual_root)?;
         let path = lock_path_for(virtual_root);
         if let Some(parent) = path.parent() {
             fs::create_dir_all(parent)?;
@@ -54,6 +58,7 @@ impl MaterializeLock {
             || started.elapsed(),
             thread::sleep,
         )?;
+        drop(cache_lock);
         Ok(Self { file })
     }
 }

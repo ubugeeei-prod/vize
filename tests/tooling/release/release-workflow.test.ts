@@ -7,6 +7,7 @@ import { test } from "node:test";
 import { parse } from "yaml";
 
 import { cadenceDecision } from "../../../tools/support/release/release/cadence.ts";
+import { incompletePriorReleaseTargets } from "../../../tools/support/release/release/main.ts";
 import { extraReleasePackageJsonPaths } from "../../../tools/support/release/release/preparation.ts";
 import { stampCargoLock } from "../../../tools/support/release/release/stamp.ts";
 import {
@@ -18,10 +19,12 @@ import { readRepoFile, root } from "../support/github-workflows.ts";
 
 type Job = {
   needs?: string | string[];
+  "timeout-minutes"?: number;
   environment?: string;
+  env?: Record<string, string>;
   permissions?: Record<string, string>;
   uses?: string;
-  steps?: Array<{ uses?: string; run?: string; with?: Record<string, unknown> }>;
+  steps?: Array<{ id?: string; uses?: string; run?: string; with?: Record<string, unknown> }>;
 };
 const workflow = parse(readRepoFile(".github", "workflows", "release.yml")) as {
   on: { workflow_dispatch: { inputs: Record<string, unknown> } };
@@ -39,6 +42,27 @@ test("the next release bumps the minor above every claimed version", () => {
   assert.ok(!isUnclaimedVersion("0.475.0", ["0.474.0", "v0.475.0"]));
   assert.ok(!isUnclaimedVersion("v0.476.0", ["0.474.0"]));
   assert.ok(!isUnclaimedVersion("0.476.0-rc", ["0.474.0"]));
+});
+
+test("a new release requires the prior tag on npm and every crates.io target", async () => {
+  const complete = await incompletePriorReleaseTargets("0.510.0", ["0.510.0"], async () => ({
+    kind: "published",
+  }));
+  assert.deepEqual(complete, []);
+
+  let calls = 0;
+  const incomplete = await incompletePriorReleaseTargets("0.510.0", [], async (crate) => {
+    calls += 1;
+    if (crate === "vize_oxc_parser") return { kind: "missing" };
+    if (crate === "vize_patina") return { kind: "query-failed", message: "HTTP 429" };
+    return { kind: "published" };
+  });
+  assert.equal(calls, 28);
+  assert.deepEqual(incomplete, [
+    "npm:vize@0.510.0",
+    "crates:vize_oxc_parser@0.510.0",
+    "crates:vize_patina@0.510.0",
+  ]);
 });
 
 test("the stamp rewrites only owned Cargo.lock packages", () => {
@@ -101,13 +125,43 @@ test("stamping moves every versioned manifest and leaves the native pins alone",
   }
 });
 
-test("release is dispatched on main with an optional exact version", () => {
+test("release is dispatched on main with an optional exact version or npm resume run", () => {
   // Dispatch only: crates.io trusted publishing refuses workflow_run and schedule.
   assert.deepEqual(Object.keys(workflow.on), ["workflow_dispatch"]);
-  assert.deepEqual(Object.keys(workflow.on.workflow_dispatch.inputs), ["version", "source"]);
+  assert.deepEqual(Object.keys(workflow.on.workflow_dispatch.inputs), [
+    "version",
+    "source",
+    "npm_resume_run",
+  ]);
   const version = workflow.jobs.version;
-  assert.deepEqual(version.permissions, { contents: "write" });
+  assert.deepEqual(version.permissions, { actions: "read", contents: "write" });
   assert.match(JSON.stringify(version.steps), /release\/release\/main\.ts cut/);
+  assert.match(JSON.stringify(version.steps), /release\/npm_resume\/main\.ts/);
+});
+
+test("npm resume preserves the trusted workflow and restores only the selected run artifacts", () => {
+  const npm = workflow.jobs["publish-npm"];
+  const release = workflow.jobs["github-release"];
+  assert.equal(npm.environment, "npm");
+  assert.deepEqual(npm.permissions, { actions: "read", contents: "read", "id-token": "write" });
+  assert.match(String((npm as Job & { if?: string }).if), /inputs\.npm_resume_run/);
+  assert.match(String((release as Job & { if?: string }).if), /inputs\.npm_resume_run/);
+  assert.match(JSON.stringify(npm.steps), /"run-id":"\$\{\{ inputs\.npm_resume_run \}\}"/);
+  assert.match(JSON.stringify(release.steps), /"run-id":"\$\{\{ inputs\.npm_resume_run \}\}"/);
+  assert.equal(npm.env?.NPM_PUBLISH_TAG, "${{ needs.version.outputs.publish_tag }}");
+  assert.equal(npm.env?.NPM_ALLOW_NEWER_TAG, "${{ needs.version.outputs.allow_newer_tag }}");
+
+  const restore = readRepoFile(".github", "actions", "release-npm-artifacts", "action.yml");
+  assert.match(
+    JSON.stringify(npm.steps),
+    /"release-tag":"\$\{\{ inputs\.npm_resume_run != '' && needs\.version\.outputs\.tag \|\| '' \}\}"/,
+  );
+  assert.match(restore, /git fetch --no-tags --depth=1 origin "refs\/tags\/\$RELEASE_TAG"/);
+  assert.match(
+    restore,
+    /for file in pnpm-workspace\.yaml npm\/native\/package\.json npm\/fresco-native\/package\.json/,
+  );
+  assert.match(restore, /git show "FETCH_HEAD:\$file" > "\$file"/);
 });
 
 test("builds use the untagged candidate; only a fully built release is tagged", () => {
@@ -119,7 +173,11 @@ test("builds use the untagged candidate; only a fully built release is tagged", 
     assert.ok(needs(name).includes("version"), `${name} needs version`);
     const checkout = job.steps?.find((step) => step.uses?.startsWith("actions/checkout@"));
     const ref = prePublish(name) ? "ref" : "tag";
-    assert.equal(checkout?.with?.ref, `${"${{"} needs.version.outputs.${ref} }}`, name);
+    const expected =
+      name === "publish-npm"
+        ? "${{ inputs.npm_resume_run != '' && github.sha || needs.version.outputs.tag }}"
+        : `${"${{"} needs.version.outputs.${ref} }}`;
+    assert.equal(checkout?.with?.ref, expected, name);
   }
   for (const gate of ["smoke", "build-cli", "build-editor-extensions"]) {
     assert.ok(needs("tag").includes(gate), `tag waits for ${gate}`);
@@ -148,11 +206,6 @@ test("registries publish in parallel behind one credential-free smoke", () => {
     assert.ok(needs(name).includes("tag"), name);
     assert.ok(!needs(name).some((other) => other.startsWith("publish-")), name);
   }
-  const npm = JSON.stringify(workflow.jobs["publish-npm"].steps);
-  assert.match(
-    npm,
-    /publish_npm_package_dirs\/main\.ts \\"\$\{dirs\[@\]\}\\" --concurrency 16 --provenance --no-wait/,
-  );
   for (const dir of workflow.env.RELEASE_JS_PACKAGES.split(" ")) {
     assert.match(
       readRepoFile(".github", "actions", "release-build-packages", "action.yml"),
@@ -161,9 +214,63 @@ test("registries publish in parallel behind one credential-free smoke", () => {
   }
 });
 
-test("registry visibility is checked once, after publishing, and gates only JSR", () => {
+test("npm exposes every native platform before packages that depend on it", () => {
+  const job = workflow.jobs["publish-npm"];
+  const run = job.steps?.find((step) => step.id === "publish")?.run ?? "";
+  const platformPublish =
+    'node tools/support/release/publish_npm_package_dirs/main.ts "${platforms[@]}" --concurrency 8 --provenance';
+  const nativePublish =
+    'node tools/support/release/publish_npm_package_dirs/main.ts "${native[@]}" --concurrency 1 --provenance';
+  const dependentPublish =
+    'node tools/support/release/publish_npm_package_dirs/main.ts "${dependents[@]}" --concurrency 16 --provenance --no-wait';
+  const platformLine = run
+    .split("\n")
+    .find((line) => line.includes(platformPublish))
+    ?.trim();
+  const nativeLine = run
+    .split("\n")
+    .find((line) => line.includes(nativePublish))
+    ?.trim();
+
+  assert.match(run, /^platforms=\(npm\/native\/npm\)$/m);
+  assert.match(run, /^native=\(npm\/native\)$/m);
+  assert.match(run, /^dependents=\(npm\/fresco-native npm\/wasm "\$\{js\[@\]\}"\)$/m);
+  assert.equal(platformLine, platformPublish, "waits for every platform package to become visible");
+  assert.equal(nativeLine, nativePublish, "waits for the native wrapper to become visible");
+  assert.ok(
+    run.indexOf(nativePublish) > run.indexOf(platformPublish),
+    "publishes the native wrapper only after the platform visibility barrier",
+  );
+  assert.ok(
+    run.indexOf(dependentPublish) > run.indexOf(nativePublish),
+    "publishes vize and other dependents only after the native wrapper visibility barrier",
+  );
+  assert.match(
+    run,
+    /--names "\$\{platforms\[@\]\}" "\$\{native\[@\]\}" "\$\{dependents\[@\]\}"/,
+    "final verification retains every package name",
+  );
+  assert.ok(
+    Number(job.env?.PUBLISH_RESOLUTION_RETRY_LIMIT) *
+      Number(job.env?.PUBLISH_RESOLUTION_RETRY_DELAY) >=
+      30 * 60,
+    "the platform barrier tolerates npm propagation for 30 minutes",
+  );
+  assert.ok((job["timeout-minutes"] ?? 0) >= 55, "the job can outlive both visibility barriers");
+});
+
+test("final registry verification checks every package and gates only JSR", () => {
   assert.deepEqual(needs("verify-npm"), ["version", "publish-npm"]);
   assert.deepEqual(needs("publish-jsr"), ["version", "verify-npm"]);
+  assert.match(String((workflow.jobs["verify-npm"] as Job & { if?: string }).if), /always\(\)/);
+  assert.match(
+    String((workflow.jobs["verify-npm"] as Job & { if?: string }).if),
+    /publish-npm\.result == 'success'/,
+  );
+  assert.match(
+    String((workflow.jobs["publish-jsr"] as Job & { if?: string }).if),
+    /verify-npm\.result == 'success'/,
+  );
   assert.ok(!needs("github-release").includes("verify-npm"));
   // JSR runs as its own workflow so its slow server-side processing never
   // holds this run (and with it the cadence) open.
@@ -177,6 +284,10 @@ test("registry visibility is checked once, after publishing, and gates only JSR"
 test("post-publish product checks follow npm verification and gate nothing", () => {
   for (const check of ["verify-config", "verify-musea-vrt"]) {
     assert.deepEqual(needs(check), ["version", "verify-npm"]);
+    assert.match(
+      String((workflow.jobs[check] as Job & { if?: string }).if),
+      /verify-npm\.result == 'success'/,
+    );
     for (const name of Object.keys(workflow.jobs)) assert.ok(!needs(name).includes(check), name);
   }
   assert.match(
@@ -284,10 +395,16 @@ test("the automatic cadence releases a green main commit only after user-facing 
   }
 });
 
-test("only release builds drop the -dev version suffix", () => {
+test("release builds embed the exact planned version across trusted target caches", () => {
   assert.equal(workflow.env.VIZE_RELEASE_BUILD, "1");
+  for (const build of ["build-cli", "build-native"]) {
+    const recipe = workflow.jobs[build].steps?.find((step) =>
+      step.uses?.startsWith("./.github/actions/build-release-"),
+    );
+    assert.equal(recipe?.with?.["release-version"], "${{ needs.version.outputs.version }}");
+  }
   assert.match(
     readRepoFile("crates", "vize_carton", "src", "lib.rs"),
-    /option_env!\("VIZE_RELEASE_BUILD"\)[\s\S]*concat!\(env!\("CARGO_PKG_VERSION"\), "-dev"\)/,
+    /option_env!\("VIZE_RELEASE_VERSION"\)[\s\S]*option_env!\("VIZE_RELEASE_BUILD"\)[\s\S]*concat!\(env!\("CARGO_PKG_VERSION"\), "-dev"\)/,
   );
 });

@@ -14,7 +14,11 @@ import vizeWebpack from "./webpack.ts";
 import { prepareOutputDir } from "./test/helpers.ts";
 
 const require = createRequire(import.meta.url);
-const twins = require("../../shared/pug-twins.cjs") as { pug: string; html: string };
+const twins = require("../../shared/pug-twins.cjs") as {
+  pug: string;
+  jade: string;
+  html: string;
+};
 const vueRuntime = require.resolve("vue");
 const { renderToString } = require("vue/server-renderer") as {
   renderToString: (app: unknown) => Promise<string>;
@@ -80,6 +84,7 @@ for (const [bundler, render] of [
   void test(`${bundler}: a pug template renders like its HTML twin`, async (t: TestContext) => {
     const html = await render("html", twins.html);
     t.assert.equal(await render("pug", twins.pug), html);
+    t.assert.equal(await render("jade", twins.jade), html);
     t.assert.match(html, /^<section id="app" class="card active">/);
   });
 }

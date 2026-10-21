@@ -1,6 +1,9 @@
 //! Width of sole interpolation children hugged to their parent tags.
-use super::{TemplateFormatter, parse_interpolation_range, suppression::LineJoiner};
-use crate::template::helpers::is_whitespace;
+use super::{
+    TemplateFormatter, format_interpolations_with_vue_version, parse_interpolation_range,
+    suppression::LineJoiner,
+};
+use crate::template::helpers::{is_whitespace, parse_closing_tag};
 use unicode_width::UnicodeWidthStr;
 
 pub(super) fn hugged_closing_name(
@@ -16,7 +19,18 @@ pub(super) fn hugged_closing_name(
     }
     // The successful tag parser already classified this unchanged source name.
     let name = source.get(tag_start + 1..tag_start + 1 + name_len)?;
-    let closing = source.get(end..)?;
+    // A multiline interpolation may be followed by plain inline runtime text
+    // before the matching close (`{{ value }}%`). That tail remains
+    // byte-adjacent; a later interpolation keeps the established mixed-run
+    // depth instead.
+    let closing_start = end + memchr::memchr(b'<', source.get(end..)?)?;
+    let tail = source.get(end..closing_start)?;
+    if tail.iter().any(|byte| matches!(byte, b'\r' | b'\n'))
+        || tail.windows(2).any(|window| window == b"{{")
+    {
+        return None;
+    }
+    let closing = source.get(closing_start..)?;
     (closing.starts_with(b"</")
         && closing.get(2..2 + name_len) == Some(name)
         && closing
@@ -29,6 +43,90 @@ pub(super) fn hugged_closing_name(
 }
 
 impl TemplateFormatter<'_> {
+    /// Width after the attributes when a same-line child is immediately hugged
+    /// by its matching closing tag. Including this in the opening-tag decision
+    /// lets the formatter use whitespace inside the tag as the safe break point
+    /// before runtime text would push the completed element past print width.
+    pub(super) fn hugged_inline_suffix_width(
+        &self,
+        input: &str,
+        start: usize,
+        tag_name: &str,
+    ) -> Option<usize> {
+        let source = input.as_bytes();
+        let close = start + memchr::memchr(b'<', source.get(start..)?)?;
+        let child = input.get(start..close)?;
+        if child.is_empty()
+            || child
+                .as_bytes()
+                .iter()
+                .any(|byte| matches!(byte, b'\r' | b'\n'))
+        {
+            return None;
+        }
+        let (closing_name, _) = parse_closing_tag(input, close)?;
+        if closing_name != tag_name {
+            return None;
+        }
+
+        let child_bytes = child.as_bytes();
+        // Sole interpolations are deliberately excluded below. Detect them
+        // before formatting so the opening-tag width probe does not parse and
+        // print the same JavaScript expression that the text pass owns.
+        if parse_interpolation_range(child_bytes, 0)
+            .is_some_and(|(_, _, end)| end == child_bytes.len())
+        {
+            return None;
+        }
+        // Interpolation formatting is identity for brace-free text. Measure
+        // it directly instead of allocating a duplicate child string.
+        if memchr::memchr(b'{', child_bytes).is_none() {
+            return Some(1 + child.width() + 3 + tag_name.width());
+        }
+
+        let formatted =
+            format_interpolations_with_vue_version(child, self.options, self.vue_version);
+        // Sole interpolations have a syntax-only break inside `{{ }}` and keep
+        // the established #7876 layout. Text and mixed children need the
+        // opening tag itself to supply the semantics-preserving break.
+        if parse_interpolation_range(formatted.as_bytes(), 0)
+            .is_some_and(|(_, _, end)| end == formatted.len())
+            || formatted
+                .as_bytes()
+                .iter()
+                .any(|byte| matches!(byte, b'\r' | b'\n'))
+        {
+            return None;
+        }
+
+        Some(1 + formatted.width() + 3 + tag_name.width())
+    }
+
+    pub(super) fn hugged_inline_suffix_overflows(
+        &self,
+        output: &[u8],
+        suffix_width: usize,
+    ) -> bool {
+        let line = output
+            .rsplit(|byte| matches!(byte, b'\r' | b'\n'))
+            .next()
+            .unwrap_or_default();
+        let tabs = line.iter().filter(|&&byte| byte == b'\t').count();
+        let byte_width = line.len()
+            + suffix_width
+            + self.base_depth * self.options.tab_width as usize
+            + tabs * self.options.tab_width.saturating_sub(1) as usize;
+        if byte_width <= self.options.print_width as usize && line.is_ascii() {
+            return false;
+        }
+        let line = core::str::from_utf8(line).unwrap_or_default();
+        line.split('\t').map(str::width).sum::<usize>()
+            + suffix_width
+            + self.base_depth * self.options.tab_width as usize
+            + tabs * self.options.tab_width as usize
+            > self.options.print_width as usize
+    }
+
     #[inline]
     pub(super) fn write_wrapped_hugged_child(
         &self,

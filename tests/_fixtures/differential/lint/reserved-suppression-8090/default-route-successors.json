@@ -1204,10 +1204,10 @@
         {
           "rule_name": "vue/require-scoped-style",
           "severity": "warning",
-          "message": "Style block should use `scoped` or `module` attribute to prevent CSS leaking",
+          "message": "Style blocks should use scoped attribute to prevent style leaking",
           "start": 0,
           "end": 7,
-          "help": "Add `scoped` attribute: `<style scoped>`",
+          "help": "Add the 'scoped' attribute to the style block",
           "labels": [],
           "fix": null
         },
@@ -1226,10 +1226,10 @@
         {
           "rule_name": "vue/require-scoped-style",
           "severity": "warning",
-          "message": "Style block should use `scoped` or `module` attribute to prevent CSS leaking",
+          "message": "Style blocks should use scoped attribute to prevent style leaking",
           "start": 0,
           "end": 7,
-          "help": "Add `scoped` attribute: `<style scoped>`",
+          "help": "Add the 'scoped' attribute to the style block",
           "labels": [],
           "fix": null
         },
@@ -1264,10 +1264,10 @@
         {
           "rule_name": "vue/require-scoped-style",
           "severity": "warning",
-          "message": "Style block should use `scoped` or `module` attribute to prevent CSS leaking",
+          "message": "Style blocks should use scoped attribute to prevent style leaking",
           "start": 0,
           "end": 7,
-          "help": "Add `scoped` attribute: `<style scoped>`",
+          "help": "Add the 'scoped' attribute to the style block",
           "labels": [],
           "fix": null
         },
@@ -1302,10 +1302,10 @@
         {
           "rule_name": "vue/require-scoped-style",
           "severity": "warning",
-          "message": "Style block should use `scoped` or `module` attribute to prevent CSS leaking",
+          "message": "Style blocks should use scoped attribute to prevent style leaking",
           "start": 0,
           "end": 7,
-          "help": "Add `scoped` attribute: `<style scoped>`",
+          "help": "Add the 'scoped' attribute to the style block",
           "labels": [],
           "fix": null
         },

@@ -15,10 +15,14 @@ use super::CorsaServer;
 impl CorsaServer {
     pub(crate) fn project_inits(&self) -> u64 {
         self.observed_project_inits
+            .saturating_add(self.project_session.as_ref().map_or(0, |session| {
+                u64::try_from(session.checker.incremental_metrics().session_starts)
+                    .unwrap_or(u64::MAX)
+            }))
     }
 
     pub(crate) fn live_sessions(&self) -> usize {
-        self.sessions.len()
+        self.sessions.len() + usize::from(self.project_session.is_some())
     }
 
     /// Drop sessions that have been idle since before `now`.

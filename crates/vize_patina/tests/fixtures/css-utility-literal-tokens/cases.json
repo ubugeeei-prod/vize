@@ -53,8 +53,8 @@
       "bytes": 218,
       "sha256": "8e7262a78ca9e62a5d317e03bf5a243270b7216c3d69114a51a6f925418a6c3e",
       "expected": "literal-before-real.expected.json",
-      "expectedBytes": 2671,
-      "expectedSha256": "59e949af31cf98942909073197b6816d2ea1ac0c7d6187885be4c3cf76720d7e",
+      "expectedBytes": 2053,
+      "expectedSha256": "bdb90d06382603747ab69e4976630b51e45d96f035a5734678a4812d381caee5",
       "authority": "Same named literals precede genuine unchanged exact/prefix selectors"
     },
     {
@@ -64,8 +64,8 @@
       "bytes": 274,
       "sha256": "cfbf0a99c0cc9e3e76c42a77eafdc702c7a6ce99e2b97f07c10da502ecdf9bcf",
       "expected": "escaped-quotes.expected.json",
-      "expectedBytes": 1509,
-      "expectedSha256": "1b725aaf379820a1361bfbc2229e83f3ec23479aea7c86f1279abd33554e71e4",
+      "expectedBytes": 1200,
+      "expectedSha256": "ed0b93fa89f9d680abcc734e668aa477f5980925025e8ea2148b60f09cd69e15",
       "authority": "Escaped quote parity and comment markers remain owned by actual CSS strings"
     },
     {
@@ -75,8 +75,8 @@
       "bytes": 249,
       "sha256": "84826758647e4f75194812485354b474f980093bee500f48632702b3328e9791",
       "expected": "nested-literals.expected.json",
-      "expectedBytes": 2666,
-      "expectedSha256": "c30fed24d42510febebba2208beda5d36abc29d265f0ca78ddf11395602f9b16",
+      "expectedBytes": 2048,
+      "expectedSha256": "17df85ce84e657b2cadccded8a673595b24b027eb89f971b607ca69486a7316e",
       "authority": "Comments/strings nested in parsed CSS blocks do not hide real selector-list matches"
     },
     {
@@ -86,8 +86,8 @@
       "bytes": 263,
       "sha256": "4af330aa162eb231ee89da2e855700458226f400401d44e2148171cd4667df50",
       "expected": "urls-and-functions.expected.json",
-      "expectedBytes": 2673,
-      "expectedSha256": "dd657a71969d3318e85f8d2f2773e02005823d4fa9a0adb4b6c6a86cdd7a1aaa",
+      "expectedBytes": 2055,
+      "expectedSha256": "124f3515265b39e39ff7bbb10c6e42a1574178c392063c304a08431cf6085c4a",
       "authority": "URL token and function string ownership; old digit-prefix suffix extent remains unchanged"
     },
     {
@@ -97,8 +97,8 @@
       "bytes": 203,
       "sha256": "3a2a5dcd0d487bba204bfd4d7c3db07bb40f74c6af69c1d6820fea17fba81a91",
       "expected": "unicode-multiple-styles.expected.json",
-      "expectedBytes": 2692,
-      "expectedSha256": "aba1e63bdd0ef3551ce49d3e90d80299c1a3e58d9b1e58d5ee259fe714640212",
+      "expectedBytes": 2074,
+      "expectedSha256": "af216d765dae788d676eff8c27139bd1718a0d217f9c3ff94cafa07a55854d2e",
       "authority": "Astral UTF-8 offsets, CRLF and independent multiple inline style blocks"
     },
     {
@@ -119,8 +119,8 @@
       "bytes": 199,
       "sha256": "8aec67f12362cccb1ee2a8293db93f5e7db7f2547de529dc14f82a222aae23b3",
       "expected": "inline-disabled.expected.json",
-      "expectedBytes": 1513,
-      "expectedSha256": "74a5a944ea09a57a41bcd2f956a966894ff0aa4dd9eacdc8f84ff13e53bd77e8",
+      "expectedBytes": 1204,
+      "expectedSha256": "101d3b9c749b25d4c636e2a3da642a80d72561847d0194d95c2fa960de7aa900",
       "authority": "Existing CSS next-line disable still suppresses the real exact selector"
     }
   ]

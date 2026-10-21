@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import DataTable from "./DataTable.vue";
+
+const rows = [{ name: "a" }];
+</script>
+
+<template>
+  <DataTable :rows="rows">
+    <template #item.name="{ row }">{{ row.name.toUpperCase() }}</template>
+  </DataTable>
+</template>

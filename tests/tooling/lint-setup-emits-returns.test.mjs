@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.ts";
 import { sha256, wholeJson } from "./lint-default-correctness-reference.mjs";
+import { withoutHelp } from "./support/lint-help-policy.mjs";
 import { vueConfigFixtureSource, writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -93,7 +94,7 @@ await test("setup emits validators preserve compiler ownership and complete CLI 
         error: run.error ? { name: run.error.name, message: run.error.message } : null,
         stdout: run.stdout ?? "",
         stderr: run.stderr ?? "",
-        expected: wholeJson(entry, findings),
+        expected: withoutHelp(wholeJson(entry, findings)),
         expectedStatus: findings.some((finding) => finding.severity === "error") ? 1 : 0,
       };
       evidence.runs.push(observed);

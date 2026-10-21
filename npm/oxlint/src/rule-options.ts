@@ -8,6 +8,7 @@ import {
 import type {
   ComponentNameInTemplateCasingOption,
   CustomEventNameCasingOption,
+  DefineMacrosOrderOption,
   HtmlSelfClosingOption,
   HyphenationStyle,
   NoMutatingPropsOption,
@@ -36,6 +37,11 @@ export function getRuleOptions(
     case "vue/no-mutating-props":
       if (isNoMutatingPropsOption(firstOption)) {
         return { noMutatingProps: firstOption };
+      }
+      break;
+    case "script/define-macros-order":
+      if (isDefineMacrosOrderOption(firstOption)) {
+        return { defineMacrosOrder: firstOption };
       }
       break;
     case "vue/sfc-element-order":
@@ -71,6 +77,20 @@ export function getRuleOptions(
       break;
   }
   return undefined;
+}
+
+function isDefineMacrosOrderOption(value: unknown): value is DefineMacrosOrderOption {
+  if (!isRecord(value) || !hasOnlyKeys(value, ["order"])) {
+    return false;
+  }
+  const order = value.order;
+  return (
+    order === undefined ||
+    (Array.isArray(order) &&
+      order.every(
+        (name, index) => isString(name) && name.length > 0 && order.indexOf(name) === index,
+      ))
+  );
 }
 
 function cliRuleOptions(ruleName: string, option: Record<string, unknown>): PatinaRuleOptions {

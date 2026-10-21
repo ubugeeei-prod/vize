@@ -29,9 +29,12 @@ fn editor_timeout_loads_from_serialized_json_without_changing_the_shared_struct(
         60_000
     );
     for (document, expected) in [
-        (r#"{"typeChecker":{"lspRequestTimeoutMs":90000}}"#, 90_000),
-        (r#"{"typeChecker":{"lspRequestTimeoutMs":0}}"#, 1),
-        (r#"{"typeChecker":{}}"#, 60_000),
+        (
+            r#"{"vue":{"typeChecker":{"lspRequestTimeoutMs":90000}}}"#,
+            90_000,
+        ),
+        (r#"{"vue":{"typeChecker":{"lspRequestTimeoutMs":0}}}"#, 1),
+        (r#"{"vue":{"typeChecker":{}}}"#, 60_000),
     ] {
         std::fs::write(&path, document).unwrap();
         assert_eq!(

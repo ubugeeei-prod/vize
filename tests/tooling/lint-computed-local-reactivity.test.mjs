@@ -144,13 +144,8 @@ await test("source CLI reruns current ref reads and retains real snapshot/deferr
         /Assigning 'held\.value'|Spreading 'h\.shape'/.test(message.message),
       );
       assert.equal(snapshots.length, scenario.expectedSnapshotAndSpreadWarnings, scenario.id);
-      // A stale alias keeps its independent existing warning as well.
-      assert.equal(
-        findings.length,
-        scenario.expectedSnapshotAndSpreadWarnings +
-          (scenario.id === "captured-outside-alias" ? 1 : 0),
-        scenario.id,
-      );
+      // Rerun-scope aliases stay fresh; only setup-scope snapshots keep warnings.
+      assert.equal(findings.length, scenario.expectedSnapshotAndSpreadWarnings, scenario.id);
       assert.equal(fs.readFileSync(path.join(directory, filename), "utf8"), scenario.source);
       evidence.qualified++;
       save();

@@ -129,7 +129,7 @@ jobs:
           FILES: ${{ matrix.files }}
         run: >-
           timeout --signal=TERM --kill-after=30s 15m
-          vp exec node tools/support/compat/davinci/lsp-resources.mjs
+          vp exec node tools/support/compat/davinci/lsp-resources.ts
           --server target/ci-opt/vize --files "$FILES" --warm-providers "$FILES"
           --runs 1 --idle-seconds 10 --out "$RUNNER_TEMP/lsp-resource.json"
       - name: Save binary identity and exact command with every result

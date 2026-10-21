@@ -187,7 +187,7 @@ async function replay(mode: Mode) {
       },
       observe(command, stdout, stderr) {
         assert.deepEqual(command.slice(0, 3), ["node", "--input-type=module", "--eval"]);
-        assert.match(command[3] ?? "", /lsp-resource-sampler\.mjs/);
+        assert.match(command[3] ?? "", /lsp-resource-sampler\.ts/);
         assert.deepEqual(command.slice(4), [String(process.pid), directory]);
         streams.push(stdout, stderr);
         if (mode === "observer-spawn-failure") throw new Error("fixture observer spawn failure");

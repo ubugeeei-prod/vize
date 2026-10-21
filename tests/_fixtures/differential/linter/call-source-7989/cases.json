@@ -581,38 +581,15 @@
       "service": {
         "filename": "case.ts",
         "error_count": 0,
-        "warning_count": 1,
-        "diagnostics": [
-          {
-            "rule_name": "script/prefer-use-id",
-            "severity": "warning",
-            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
-            "start": 20,
-            "end": 33,
-            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
-            "labels": [],
-            "fix": null
-          }
-        ]
+        "warning_count": 0,
+        "diagnostics": []
       },
       "cli": [
         {
           "file": "case.ts",
-          "messages": [
-            {
-              "ruleId": "script/prefer-use-id",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 1,
-              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
-              "line": 1,
-              "column": 21,
-              "endLine": 1,
-              "endColumn": 34,
-              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
-            }
-          ],
+          "messages": [],
           "errorCount": 0,
-          "warningCount": 1
+          "warningCount": 0
         }
       ]
     },
@@ -625,38 +602,15 @@
       "service": {
         "filename": "case.ts",
         "error_count": 0,
-        "warning_count": 1,
-        "diagnostics": [
-          {
-            "rule_name": "script/prefer-use-id",
-            "severity": "warning",
-            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
-            "start": 23,
-            "end": 33,
-            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
-            "labels": [],
-            "fix": null
-          }
-        ]
+        "warning_count": 0,
+        "diagnostics": []
       },
       "cli": [
         {
           "file": "case.ts",
-          "messages": [
-            {
-              "ruleId": "script/prefer-use-id",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 1,
-              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
-              "line": 1,
-              "column": 24,
-              "endLine": 1,
-              "endColumn": 34,
-              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
-            }
-          ],
+          "messages": [],
           "errorCount": 0,
-          "warningCount": 1
+          "warningCount": 0
         }
       ]
     },
@@ -669,38 +623,15 @@
       "service": {
         "filename": "case.ts",
         "error_count": 0,
-        "warning_count": 1,
-        "diagnostics": [
-          {
-            "rule_name": "script/prefer-use-id",
-            "severity": "warning",
-            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
-            "start": 13,
-            "end": 32,
-            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
-            "labels": [],
-            "fix": null
-          }
-        ]
+        "warning_count": 0,
+        "diagnostics": []
       },
       "cli": [
         {
           "file": "case.ts",
-          "messages": [
-            {
-              "ruleId": "script/prefer-use-id",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 1,
-              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
-              "line": 1,
-              "column": 14,
-              "endLine": 1,
-              "endColumn": 33,
-              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
-            }
-          ],
+          "messages": [],
           "errorCount": 0,
-          "warningCount": 1
+          "warningCount": 0
         }
       ]
     },
@@ -797,38 +728,15 @@
       "service": {
         "filename": "case.ts",
         "error_count": 0,
-        "warning_count": 1,
-        "diagnostics": [
-          {
-            "rule_name": "script/prefer-use-id",
-            "severity": "warning",
-            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
-            "start": 13,
-            "end": 26,
-            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
-            "labels": [],
-            "fix": null
-          }
-        ]
+        "warning_count": 0,
+        "diagnostics": []
       },
       "cli": [
         {
           "file": "case.ts",
-          "messages": [
-            {
-              "ruleId": "script/prefer-use-id",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 1,
-              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
-              "line": 2,
-              "column": 3,
-              "endLine": 2,
-              "endColumn": 16,
-              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
-            }
-          ],
+          "messages": [],
           "errorCount": 0,
-          "warningCount": 1
+          "warningCount": 0
         }
       ]
     },
@@ -841,38 +749,15 @@
       "service": {
         "filename": "case.ts",
         "error_count": 0,
-        "warning_count": 1,
-        "diagnostics": [
-          {
-            "rule_name": "script/prefer-use-id",
-            "severity": "warning",
-            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
-            "start": 11,
-            "end": 53,
-            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
-            "labels": [],
-            "fix": null
-          }
-        ]
+        "warning_count": 0,
+        "diagnostics": []
       },
       "cli": [
         {
           "file": "case.ts",
-          "messages": [
-            {
-              "ruleId": "script/prefer-use-id",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 1,
-              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
-              "line": 1,
-              "column": 12,
-              "endLine": 1,
-              "endColumn": 54,
-              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
-            }
-          ],
+          "messages": [],
           "errorCount": 0,
-          "warningCount": 1
+          "warningCount": 0
         }
       ]
     },
@@ -885,80 +770,15 @@
       "service": {
         "filename": "case.ts",
         "error_count": 0,
-        "warning_count": 3,
-        "diagnostics": [
-          {
-            "rule_name": "script/prefer-use-id",
-            "severity": "warning",
-            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
-            "start": 17,
-            "end": 30,
-            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
-            "labels": [],
-            "fix": null
-          },
-          {
-            "rule_name": "script/prefer-use-id",
-            "severity": "warning",
-            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
-            "start": 33,
-            "end": 43,
-            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
-            "labels": [],
-            "fix": null
-          },
-          {
-            "rule_name": "script/prefer-use-id",
-            "severity": "warning",
-            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
-            "start": 46,
-            "end": 65,
-            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
-            "labels": [],
-            "fix": null
-          }
-        ]
+        "warning_count": 0,
+        "diagnostics": []
       },
       "cli": [
         {
           "file": "case.ts",
-          "messages": [
-            {
-              "ruleId": "script/prefer-use-id",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 1,
-              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
-              "line": 1,
-              "column": 18,
-              "endLine": 1,
-              "endColumn": 31,
-              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
-            },
-            {
-              "ruleId": "script/prefer-use-id",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 1,
-              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
-              "line": 1,
-              "column": 34,
-              "endLine": 1,
-              "endColumn": 44,
-              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
-            },
-            {
-              "ruleId": "script/prefer-use-id",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 1,
-              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
-              "line": 1,
-              "column": 47,
-              "endLine": 1,
-              "endColumn": 66,
-              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
-            }
-          ],
+          "messages": [],
           "errorCount": 0,
-          "warningCount": 3
+          "warningCount": 0
         }
       ]
     },
@@ -971,59 +791,15 @@
       "service": {
         "filename": "case.ts",
         "error_count": 0,
-        "warning_count": 2,
-        "diagnostics": [
-          {
-            "rule_name": "script/prefer-use-id",
-            "severity": "warning",
-            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
-            "start": 13,
-            "end": 26,
-            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
-            "labels": [],
-            "fix": null
-          },
-          {
-            "rule_name": "script/prefer-use-id",
-            "severity": "warning",
-            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
-            "start": 45,
-            "end": 55,
-            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
-            "labels": [],
-            "fix": null
-          }
-        ]
+        "warning_count": 0,
+        "diagnostics": []
       },
       "cli": [
         {
           "file": "case.ts",
-          "messages": [
-            {
-              "ruleId": "script/prefer-use-id",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 1,
-              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
-              "line": 1,
-              "column": 14,
-              "endLine": 1,
-              "endColumn": 27,
-              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
-            },
-            {
-              "ruleId": "script/prefer-use-id",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 1,
-              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
-              "line": 1,
-              "column": 46,
-              "endLine": 1,
-              "endColumn": 56,
-              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
-            }
-          ],
+          "messages": [],
           "errorCount": 0,
-          "warningCount": 2
+          "warningCount": 0
         }
       ]
     },
@@ -1036,59 +812,15 @@
       "service": {
         "filename": "case.ts",
         "error_count": 0,
-        "warning_count": 2,
-        "diagnostics": [
-          {
-            "rule_name": "script/prefer-use-id",
-            "severity": "warning",
-            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
-            "start": 20,
-            "end": 33,
-            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
-            "labels": [],
-            "fix": null
-          },
-          {
-            "rule_name": "script/prefer-use-id",
-            "severity": "warning",
-            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
-            "start": 45,
-            "end": 55,
-            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
-            "labels": [],
-            "fix": null
-          }
-        ]
+        "warning_count": 0,
+        "diagnostics": []
       },
       "cli": [
         {
           "file": "case.ts",
-          "messages": [
-            {
-              "ruleId": "script/prefer-use-id",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 1,
-              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
-              "line": 1,
-              "column": 21,
-              "endLine": 1,
-              "endColumn": 34,
-              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
-            },
-            {
-              "ruleId": "script/prefer-use-id",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 1,
-              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
-              "line": 1,
-              "column": 46,
-              "endLine": 1,
-              "endColumn": 56,
-              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
-            }
-          ],
+          "messages": [],
           "errorCount": 0,
-          "warningCount": 2
+          "warningCount": 0
         }
       ]
     },
@@ -1101,38 +833,15 @@
       "service": {
         "filename": "case.ts",
         "error_count": 0,
-        "warning_count": 1,
-        "diagnostics": [
-          {
-            "rule_name": "script/prefer-use-id",
-            "severity": "warning",
-            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
-            "start": 20,
-            "end": 33,
-            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
-            "labels": [],
-            "fix": null
-          }
-        ]
+        "warning_count": 0,
+        "diagnostics": []
       },
       "cli": [
         {
           "file": "case.ts",
-          "messages": [
-            {
-              "ruleId": "script/prefer-use-id",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 1,
-              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
-              "line": 1,
-              "column": 21,
-              "endLine": 1,
-              "endColumn": 34,
-              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
-            }
-          ],
+          "messages": [],
           "errorCount": 0,
-          "warningCount": 1
+          "warningCount": 0
         }
       ]
     },
@@ -1145,38 +854,15 @@
       "service": {
         "filename": "case.ts",
         "error_count": 0,
-        "warning_count": 1,
-        "diagnostics": [
-          {
-            "rule_name": "script/prefer-use-id",
-            "severity": "warning",
-            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
-            "start": 11,
-            "end": 24,
-            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
-            "labels": [],
-            "fix": null
-          }
-        ]
+        "warning_count": 0,
+        "diagnostics": []
       },
       "cli": [
         {
           "file": "case.ts",
-          "messages": [
-            {
-              "ruleId": "script/prefer-use-id",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 1,
-              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
-              "line": 1,
-              "column": 12,
-              "endLine": 1,
-              "endColumn": 25,
-              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
-            }
-          ],
+          "messages": [],
           "errorCount": 0,
-          "warningCount": 1
+          "warningCount": 0
         }
       ]
     },
@@ -1231,7 +917,7 @@
       "service": {
         "filename": "Both.vue",
         "error_count": 0,
-        "warning_count": 2,
+        "warning_count": 1,
         "diagnostics": [
           {
             "rule_name": "script/prefer-ref-over-reactive",
@@ -1242,16 +928,6 @@
             "help": "ref() is more explicit with `.value` access, easier to pass around, and avoids reactivity loss from destructuring. Use `const count = ref(0)` instead of `const state = reactive({ count: 0 })`",
             "labels": [],
             "fix": null
-          },
-          {
-            "rule_name": "script/prefer-use-id",
-            "severity": "warning",
-            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
-            "start": 20,
-            "end": 33,
-            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
-            "labels": [],
-            "fix": null
           }
         ]
       },
@@ -1259,17 +935,6 @@
         {
           "file": "Both.vue",
           "messages": [
-            {
-              "ruleId": "script/prefer-use-id",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 1,
-              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
-              "line": 2,
-              "column": 12,
-              "endLine": 2,
-              "endColumn": 25,
-              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
-            },
             {
               "ruleId": "script/prefer-ref-over-reactive",
               "ruleDocsPath": "docs/content/rules/type-and-script.md",
@@ -1283,7 +948,7 @@
             }
           ],
           "errorCount": 0,
-          "warningCount": 2
+          "warningCount": 1
         }
       ]
     },
@@ -1296,18 +961,8 @@
       "service": {
         "filename": "case.js",
         "error_count": 0,
-        "warning_count": 2,
+        "warning_count": 1,
         "diagnostics": [
-          {
-            "rule_name": "script/prefer-use-id",
-            "severity": "warning",
-            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
-            "start": 11,
-            "end": 21,
-            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
-            "labels": [],
-            "fix": null
-          },
           {
             "rule_name": "script/prefer-ref-over-reactive",
             "severity": "warning",
@@ -1325,17 +980,6 @@
           "file": "case.js",
           "messages": [
             {
-              "ruleId": "script/prefer-use-id",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 1,
-              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
-              "line": 1,
-              "column": 12,
-              "endLine": 1,
-              "endColumn": 22,
-              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
-            },
-            {
               "ruleId": "script/prefer-ref-over-reactive",
               "ruleDocsPath": "docs/content/rules/type-and-script.md",
               "severity": 1,
@@ -1348,7 +992,7 @@
             }
           ],
           "errorCount": 0,
-          "warningCount": 2
+          "warningCount": 1
         }
       ]
     },
@@ -1361,18 +1005,8 @@
       "service": {
         "filename": "case.ts",
         "error_count": 0,
-        "warning_count": 2,
+        "warning_count": 1,
         "diagnostics": [
-          {
-            "rule_name": "script/prefer-use-id",
-            "severity": "warning",
-            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
-            "start": 61,
-            "end": 74,
-            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
-            "labels": [],
-            "fix": null
-          },
           {
             "rule_name": "script/prefer-ref-over-reactive",
             "severity": "warning",
@@ -1390,17 +1024,6 @@
           "file": "case.ts",
           "messages": [
             {
-              "ruleId": "script/prefer-use-id",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 1,
-              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
-              "line": 2,
-              "column": 29,
-              "endLine": 2,
-              "endColumn": 42,
-              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
-            },
-            {
               "ruleId": "script/prefer-ref-over-reactive",
               "ruleDocsPath": "docs/content/rules/type-and-script.md",
               "severity": 1,
@@ -1413,7 +1036,7 @@
             }
           ],
           "errorCount": 0,
-          "warningCount": 2
+          "warningCount": 1
         }
       ]
     },
@@ -1491,38 +1114,15 @@
       "service": {
         "filename": "case.ts",
         "error_count": 0,
-        "warning_count": 1,
-        "diagnostics": [
-          {
-            "rule_name": "script/prefer-use-id",
-            "severity": "warning",
-            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
-            "start": 29,
-            "end": 42,
-            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
-            "labels": [],
-            "fix": null
-          }
-        ]
+        "warning_count": 0,
+        "diagnostics": []
       },
       "cli": [
         {
           "file": "case.ts",
-          "messages": [
-            {
-              "ruleId": "script/prefer-use-id",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 1,
-              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
-              "line": 1,
-              "column": 30,
-              "endLine": 1,
-              "endColumn": 43,
-              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
-            }
-          ],
+          "messages": [],
           "errorCount": 0,
-          "warningCount": 1
+          "warningCount": 0
         }
       ]
     },
@@ -1535,38 +1135,15 @@
       "service": {
         "filename": "case.ts",
         "error_count": 0,
-        "warning_count": 1,
-        "diagnostics": [
-          {
-            "rule_name": "script/prefer-use-id",
-            "severity": "warning",
-            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
-            "start": 29,
-            "end": 42,
-            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
-            "labels": [],
-            "fix": null
-          }
-        ]
+        "warning_count": 0,
+        "diagnostics": []
       },
       "cli": [
         {
           "file": "case.ts",
-          "messages": [
-            {
-              "ruleId": "script/prefer-use-id",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 1,
-              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
-              "line": 1,
-              "column": 30,
-              "endLine": 1,
-              "endColumn": 43,
-              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
-            }
-          ],
+          "messages": [],
           "errorCount": 0,
-          "warningCount": 1
+          "warningCount": 0
         }
       ]
     },
@@ -1600,59 +1177,15 @@
       "service": {
         "filename": "case.ts",
         "error_count": 0,
-        "warning_count": 2,
-        "diagnostics": [
-          {
-            "rule_name": "script/prefer-use-id",
-            "severity": "warning",
-            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
-            "start": 14,
-            "end": 27,
-            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
-            "labels": [],
-            "fix": null
-          },
-          {
-            "rule_name": "script/prefer-use-id",
-            "severity": "warning",
-            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
-            "start": 47,
-            "end": 57,
-            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
-            "labels": [],
-            "fix": null
-          }
-        ]
+        "warning_count": 0,
+        "diagnostics": []
       },
       "cli": [
         {
           "file": "case.ts",
-          "messages": [
-            {
-              "ruleId": "script/prefer-use-id",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 1,
-              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
-              "line": 1,
-              "column": 15,
-              "endLine": 1,
-              "endColumn": 28,
-              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
-            },
-            {
-              "ruleId": "script/prefer-use-id",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 1,
-              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
-              "line": 1,
-              "column": 48,
-              "endLine": 1,
-              "endColumn": 58,
-              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
-            }
-          ],
+          "messages": [],
           "errorCount": 0,
-          "warningCount": 2
+          "warningCount": 0
         }
       ]
     }

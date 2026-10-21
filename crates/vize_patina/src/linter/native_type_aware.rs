@@ -9,6 +9,11 @@ use corsa::utils::{
 use vize_atelier_sfc::SfcDescriptor;
 use vize_l0::{String, ToCompactString, profile};
 
+pub(super) enum TypeAwareFailure {
+    ProjectConfiguration { message: String, report: bool },
+    Runtime(String),
+}
+
 pub(in crate::linter) mod document;
 mod driver;
 mod expression_bindings;
@@ -152,9 +157,41 @@ pub(super) fn with_corsa_session<T>(
     linter: &Linter,
     filename: &str,
     f: impl FnOnce(&mut CorsaTypeAwareSession) -> Result<T, String>,
-) -> Result<T, String> {
-    let mut guard = profile!("patina.type_aware.corsa.lock", linter.native_corsa.lock())
-        .map_err(|_| "Failed to lock corsa type session".to_compact_string())?;
+) -> Result<T, TypeAwareFailure> {
+    let project_root = super::corsa_session::resolve_project_root(filename);
+    if let Some(tsconfig) = super::corsa_session::nearest_tsconfig(filename) {
+        let configuration_error = {
+            let mut configs = linter.type_aware_project_configs.lock().map_err(|_| {
+                TypeAwareFailure::Runtime(
+                    "Failed to lock type-aware project configurations".to_compact_string(),
+                )
+            })?;
+            configs
+                .entry(tsconfig.clone())
+                .or_insert_with(|| {
+                    super::corsa_session::validate_tsconfig(&project_root, &tsconfig).err()
+                })
+                .clone()
+        };
+        if let Some(message) = configuration_error {
+            let report = linter
+                .reported_type_aware_project_configs
+                .lock()
+                .map_err(|_| {
+                    TypeAwareFailure::Runtime(
+                        "Failed to lock reported type-aware project configurations"
+                            .to_compact_string(),
+                    )
+                })?
+                .insert(tsconfig);
+            return Err(TypeAwareFailure::ProjectConfiguration { message, report });
+        }
+    }
+
+    let mut guard =
+        profile!("patina.type_aware.corsa.lock", linter.native_corsa.lock()).map_err(|_| {
+            TypeAwareFailure::Runtime("Failed to lock corsa type session".to_compact_string())
+        })?;
 
     let needs_new_session = guard
         .as_ref()
@@ -164,22 +201,49 @@ pub(super) fn with_corsa_session<T>(
         if let Some(session) = guard.as_mut() {
             session.close();
         }
-        *guard = Some(profile!(
-            "patina.type_aware.corsa.new_session",
-            CorsaTypeAwareSession::new_with_corsa_path(filename, linter.corsa_path.as_deref())
-        )?);
+        *guard = Some(
+            profile!(
+                "patina.type_aware.corsa.new_session",
+                CorsaTypeAwareSession::new_with_corsa_path(filename, linter.corsa_path.as_deref())
+            )
+            .map_err(TypeAwareFailure::Runtime)?,
+        );
     }
 
-    let session = guard
-        .as_mut()
-        .ok_or_else(|| "Failed to initialize corsa type session".to_compact_string())?;
+    let session = guard.as_mut().ok_or_else(|| {
+        TypeAwareFailure::Runtime("Failed to initialize corsa type session".to_compact_string())
+    })?;
 
-    let result = profile!("patina.type_aware.corsa.session_work", f(session));
+    let result = profile!("patina.type_aware.corsa.session_work", f(session))
+        .map_err(TypeAwareFailure::Runtime);
     if result.is_err() {
         session.close();
         *guard = None;
     }
     result
+}
+
+pub(super) fn push_type_aware_failure(result: &mut LintResult, failure: TypeAwareFailure) {
+    match failure {
+        TypeAwareFailure::ProjectConfiguration {
+            message,
+            report: true,
+        } => {
+            result.error_count += 1;
+            result.diagnostics.push(
+                LintDiagnostic::error("type/project-configuration", message, 0, 0).with_help(
+                    "Generate or repair the referenced TypeScript configuration before running type-aware lint.",
+                ),
+            );
+        }
+        TypeAwareFailure::ProjectConfiguration { report: false, .. } => {}
+        TypeAwareFailure::Runtime(error) => push_warning(
+            result,
+            LintDiagnostic::warn("type/corsa-runtime", error, 0, 0).with_help(
+                "Type-aware lint rules were skipped because the Corsa runtime could not be started. Configure `typeChecker.corsaPath` or install `typescript@^7`.",
+            ),
+        ),
+    }
 }
 
 pub(super) fn should_warn_for_prop_access(probe: Option<&TypeProbe>) -> bool {

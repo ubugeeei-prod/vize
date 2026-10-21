@@ -252,6 +252,9 @@ export interface LinterConfig {
   };
 }
 export interface LintRuleOptions {
+  "script/define-macros-order"?: {
+    order?: string[];
+  };
   "script/define-props-destructuring"?: {
     destructure?: "only-when-assigned" | "always" | "never";
   };
@@ -399,6 +402,10 @@ export interface TypeCheckerConfig {
    * Deprecated alias for typeChecker.corsaPath
    */
   tsgoPath?: string;
+  /**
+   * Path to the experimental tsrs executable. Used when corsaPath and tsgoPath are not set.
+   */
+  tsrsPath?: string;
   /**
    * Path to a .d.ts file that declares template globals
    */

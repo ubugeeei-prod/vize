@@ -27,9 +27,9 @@ mod keyof;
 mod rules;
 
 pub use dedup::widen_leading_literal_type;
+pub use rules::is_generated_project_import_extension_at;
 pub(crate) use rules::{
-    is_authored_vue_import_extension, is_generated_vue_ts_import_extension_at,
-    is_rewritten_ts_import_extension, sfc_template_block_range,
+    is_authored_vue_import_extension, is_rewritten_ts_import_extension, sfc_template_block_range,
 };
 pub use rules::{is_exhaustiveness_elaboration, is_reportable};
 
@@ -165,7 +165,7 @@ pub fn assemble_diagnostics<P>(
             diagnostic.severity,
             &diagnostic.message,
             policy,
-        ) || rules::is_generated_vue_ts_import_extension(document.generated, &diagnostic)
+        ) || rules::is_generated_project_import_extension(document.generated, &diagnostic)
         {
             continue;
         }

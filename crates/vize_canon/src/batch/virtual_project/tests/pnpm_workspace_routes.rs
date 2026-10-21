@@ -51,10 +51,13 @@ fn copy_tree(source: &Path, target: &Path) {
 }
 
 fn load(root: &Path) -> VirtualProject {
+    load_entry(root, &root.join(SOURCES[0]))
+}
+
+fn load_entry(root: &Path, entry: &Path) -> VirtualProject {
     let mut project = VirtualProject::new(root).unwrap();
-    let entry = root.join(SOURCES[0]);
-    project.register_path(&entry).unwrap();
-    project.reconcile_package_routes_for_importers(&[entry]);
+    project.register_path(entry).unwrap();
+    project.reconcile_package_routes_for_importers(&[entry.to_path_buf()]);
     project.register_package_route_targets().unwrap();
     // The bare local walk has no package provider. Reconcile newly reached
     // importers too, matching the CLI's complete local/package preparation.
@@ -72,6 +75,98 @@ fn load(root: &Path) -> VirtualProject {
     project.finalize_package_routes().unwrap();
     project.materialize().unwrap();
     project
+}
+
+fn fibonacci_workspace(packages: usize) -> tempfile::TempDir {
+    let temp = tempfile::tempdir().unwrap();
+    let root = temp.path();
+    fs::create_dir_all(root.join("src")).unwrap();
+    fs::create_dir_all(root.join("node_modules/@ws")).unwrap();
+    fs::write(
+        root.join("package.json"),
+        r#"{"name":"ws-root","private":true,"type":"module"}"#,
+    )
+    .unwrap();
+    fs::write(
+        root.join("tsconfig.json"),
+        r#"{"compilerOptions":{"moduleResolution":"Bundler","strict":true}}"#,
+    )
+    .unwrap();
+    fs::write(
+        root.join("src/App.vue"),
+        "<script setup lang=\"ts\">\nimport { value0 } from '@ws/pkg-0';\nvoid value0;\n</script>\n",
+    )
+    .unwrap();
+    std::os::unix::fs::symlink("../../packages/pkg-0", root.join("node_modules/@ws/pkg-0"))
+        .unwrap();
+
+    for index in 0..packages {
+        let package_root = root.join(format!("packages/pkg-{index}"));
+        fs::create_dir_all(package_root.join("src")).unwrap();
+        fs::create_dir_all(package_root.join("node_modules/@ws")).unwrap();
+        fs::write(
+            package_root.join("package.json"),
+            format!(
+                r#"{{"name":"@ws/pkg-{index}","private":true,"type":"module","exports":{{".":"./src/index.ts"}}}}"#
+            ),
+        )
+        .unwrap();
+
+        let mut source = String::new();
+        let mut values = vec!["1".to_owned()];
+        for dependency in [index + 1, index + 2] {
+            if dependency >= packages {
+                continue;
+            }
+            source.push_str(&format!(
+                "import {{ value{dependency} }} from '@ws/pkg-{dependency}';\n"
+            ));
+            values.push(format!("value{dependency}"));
+            std::os::unix::fs::symlink(
+                format!("../../../pkg-{dependency}"),
+                package_root.join(format!("node_modules/@ws/pkg-{dependency}")),
+            )
+            .unwrap();
+        }
+        source.push_str(&format!(
+            "export const value{index}: number = {};\n",
+            values.join(" + ")
+        ));
+        source.push_str(&format!(
+            "export {{ default as Widget{index} }} from './Widget{index}.vue';\n"
+        ));
+        fs::write(package_root.join("src/index.ts"), source).unwrap();
+        fs::write(
+            package_root.join(format!("src/Widget{index}.vue")),
+            "<script setup lang=\"ts\">defineProps<{ label: string }>();</script>\n<template><span>{{ label }}</span></template>\n",
+        )
+        .unwrap();
+    }
+
+    temp
+}
+
+#[test]
+fn converging_workspace_dependency_paths_visit_each_shadow_route_once() {
+    const PACKAGE_COUNT: usize = 10;
+    let temp = fibonacci_workspace(PACKAGE_COUNT);
+    let root = temp.path().canonicalize().unwrap();
+    let entry = root.join("src/App.vue");
+    let project = load_entry(&root, &entry);
+    let root_topology = project
+        .package_routes
+        .iter()
+        .find(|(key, _)| key.importer_path == entry && key.specifier == "@ws/pkg-0")
+        .and_then(|(key, _)| project.package_shadow_artifacts.get(key))
+        .expect("root workspace package shadow topology");
+
+    // Every package can be reached through Fibonacci-many dependency paths.
+    // Each physical package is expanded exactly once; alternate paths become
+    // aliases to that primary copy instead of recursive copies.
+    assert_eq!(
+        root_topology.route_visits,
+        root_topology.traversal_roots * PACKAGE_COUNT
+    );
 }
 
 fn assert_complete(project: &VirtualProject, root: &Path) {

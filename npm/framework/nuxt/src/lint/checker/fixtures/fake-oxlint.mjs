@@ -1,6 +1,10 @@
 const argv = process.argv.slice(2);
 const message = argv.join(" ");
 
+if (argv.at(-1)?.endsWith("notice.vue")) {
+  process.stderr.write("[oxlint-plugin-vize] Skipped standalone HTML lint: unsupported host\n");
+}
+
 process.stdout.write(
   `${JSON.stringify({
     diagnostics: [

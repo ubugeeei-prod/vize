@@ -1,11 +1,11 @@
 mod store;
 pub(super) use store::remove_finished_process_sessions;
 pub(super) use store::resolve_corsa_executable;
-pub(super) use store::resolve_project_root;
 pub(super) use store::session_tsconfig_contents;
 use store::{
     cleanup_stale_session_roots, push_u64, remove_empty_session_parents, session_store_root,
 };
+pub(in crate::linter) use store::{nearest_tsconfig, resolve_project_root, validate_tsconfig};
 
 use serde_json::Value;
 use std::{

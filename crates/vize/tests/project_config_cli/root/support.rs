@@ -17,6 +17,8 @@ pub(super) const TSCONFIG: &str = include_str!(
 pub(super) const ARRAY: &str = "export default {root:'app',__vizeProjectRoot:'decoy',vue:{linter:{preset:'essential',rules:{'a11y/alt-text':'off'}},entries:[{files:['src/**/*.vue'],ignores:['src/Ignored.vue'],linter:{rules:{'a11y/alt-text':'error'}}}]}};";
 pub(super) const DEDICATED: &str =
     r#"{"linter":{"preset":"essential","rules":{"a11y/alt-text":"off"}}}"#;
+pub(super) const EXPLICIT: &str =
+    r#"{"vue":{"linter":{"preset":"essential","rules":{"a11y/alt-text":"off"}}}}"#;
 pub(super) static IGNORE_SETTINGS: LazyLock<String> = LazyLock::new(|| {
     canonical_settings(include_str!(
         "../../../../../tests/_fixtures/differential/config/vite-root-8371/ignore.config.mjs.txt"

@@ -36,34 +36,52 @@ pub(super) async fn code_actions(
     };
 
     #[cfg(feature = "native")]
-    let actions =
-        {
-            let mut actions = actions;
-            if features.typecheck
-                && params.context.only.as_deref().is_none_or(|only| {
-                    code_action_kind_is_requested(&CodeActionKind::QUICKFIX, only)
-                })
-            {
-                let offset = position_to_offset(&content, range.start.line, range.start.character)?;
-                let ctx = IdeContext::new(&server.state, uri, offset)?;
-                actions.extend(CodeActionService::native_actions(&ctx, range).await);
-            }
-            // Source actions rewrite the whole script, so they are returned only
-            // when the client asks for them (`only`), as on save.
-            let source_kinds = native_source_kinds(params.context.only.as_deref());
-            if features.typecheck && !source_kinds.is_empty() {
-                let offset = position_to_offset(&content, range.start.line, range.start.character)?;
-                let ctx = IdeContext::new(&server.state, uri, offset)?;
-                actions.extend(CodeActionService::native_source_actions(&ctx, &source_kinds).await);
-            }
-            actions
-        };
+    let actions = {
+        let mut actions = actions;
+        let range_kinds = native_range_kinds(params.context.only.as_deref());
+        if features.typecheck && !range_kinds.is_empty() {
+            let offset = position_to_offset(&content, range.start.line, range.start.character)?;
+            let ctx = IdeContext::new(&server.state, uri, offset)?;
+            actions.extend(CodeActionService::native_actions(&ctx, range, &range_kinds).await);
+        }
+        // Source actions rewrite the whole script, so they are returned only
+        // when the client asks for them (`only`), as on save.
+        let source_kinds = native_source_kinds(params.context.only.as_deref());
+        if features.typecheck && !source_kinds.is_empty() {
+            let offset = position_to_offset(&content, range.start.line, range.start.character)?;
+            let ctx = IdeContext::new(&server.state, uri, offset)?;
+            actions.extend(CodeActionService::native_source_actions(&ctx, &source_kinds).await);
+        }
+        actions
+    };
 
     if server.state.documents.get(uri)?.revision() != revision {
         return None;
     }
 
     filter_requested_code_actions(actions, params.context.only.as_deref())
+}
+
+/// Native range actions requested from tsgo. Refactors remain unadvertised
+/// until a concrete kind has a real-tsgo whole-SFC oracle, but explicit client
+/// requests can already use the same safe authored-edit path as quick fixes.
+#[cfg(feature = "native")]
+fn native_range_kinds(only: Option<&[CodeActionKind]>) -> Vec<CodeActionKind> {
+    let Some(only) = only else {
+        return vec![CodeActionKind::QUICKFIX];
+    };
+    let mut kinds = Vec::new();
+    if code_action_kind_is_requested(&CodeActionKind::QUICKFIX, only) {
+        kinds.push(CodeActionKind::QUICKFIX);
+    }
+    for kind in only {
+        if (kind == &CodeActionKind::REFACTOR || kind.as_str().starts_with("refactor."))
+            && !kinds.contains(kind)
+        {
+            kinds.push(kind.clone());
+        }
+    }
+    kinds
 }
 
 /// The native source kinds an explicit `only` request covers, by the LSP
@@ -177,5 +195,33 @@ mod tests {
             &CodeActionKind::QUICKFIX,
             &[]
         ));
+    }
+
+    #[cfg(feature = "native")]
+    #[test]
+    fn explicit_refactor_kinds_reach_only_the_native_range_path() {
+        let kinds = |only: Option<&[&str]>| {
+            let only = only.map(|only| {
+                only.iter()
+                    .map(|kind| CodeActionKind::from((*kind).to_owned()))
+                    .collect::<Vec<_>>()
+            });
+            native_range_kinds(only.as_deref())
+                .into_iter()
+                .map(|kind| kind.as_str().to_owned())
+                .collect::<Vec<_>>()
+        };
+        assert_eq!(kinds(None), ["quickfix"]);
+        assert_eq!(kinds(Some(&["quickfix"])), ["quickfix"]);
+        assert_eq!(kinds(Some(&["refactor"])), ["refactor"]);
+        assert_eq!(
+            kinds(Some(&["refactor.extract.function"])),
+            ["refactor.extract.function"]
+        );
+        assert_eq!(
+            kinds(Some(&["quickfix", "refactor.extract.function"])),
+            ["quickfix", "refactor.extract.function"]
+        );
+        assert!(kinds(Some(&["source"])).is_empty());
     }
 }

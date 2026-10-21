@@ -178,10 +178,13 @@ for (const fixture of fixtures)
         "original stock/Vue phases are conserved; HTML adds no provider phase",
       );
 
-      if (fixture.refused) {
+      if (fixture.refused || fixture.skipped) {
         assert.equal(nativeCalls.length, 0);
         assert.equal(wrapper.stdout, originalOutput);
-        assert.match(wrapper.stderr, /Original HTML unavailable/u);
+        assert.match(
+          wrapper.stderr,
+          fixture.skipped ? /Skipped standalone HTML lint/u : /Original HTML unavailable/u,
+        );
         completeCase(capture, nativeCalls, hostPhases);
         save();
         continue;

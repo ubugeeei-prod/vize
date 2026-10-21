@@ -28,6 +28,6 @@ impl Linter {
         result
             .diagnostics
             .sort_unstable_by_key(|diagnostic| (diagnostic.start, diagnostic.end));
-        result
+        self.apply_diagnostic_policy(result)
     }
 }

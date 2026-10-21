@@ -49,6 +49,35 @@ fn original_typed_template_binding_corpus_is_safe() {
 }
 
 #[test]
+fn tsconfig_path_aliased_vue_exports_and_slots_remain_typed() {
+    if !runtime_available() {
+        return;
+    }
+    let linter = Linter::new().with_rule(Box::new(NoUnsafeTemplateBinding::new()));
+    let fixtures = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../tests/_fixtures/differential/linter/vue-alias-types-9864/src/pages");
+    let mut failures = Vec::new();
+    for name in ["page-view.vue", "list-view.vue"] {
+        let path = fixtures.join(name);
+        let source = std::fs::read_to_string(&path).expect("issue-authored alias fixture");
+        let result = lint_sfc_with_corsa(&linter, &source, &path.to_string_lossy());
+        let diagnostics: Vec<_> = result
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| {
+                diagnostic.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING
+                    || diagnostic.rule_name == "type/corsa-runtime"
+            })
+            .cloned()
+            .collect();
+        if !diagnostics.is_empty() {
+            failures.push((name, diagnostics));
+        }
+    }
+    assert!(failures.is_empty(), "{failures:?}");
+}
+
+#[test]
 fn unresolved_component_imports_remain_unsafe() {
     if !runtime_available() {
         return;

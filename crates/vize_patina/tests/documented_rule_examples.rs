@@ -52,10 +52,7 @@ fn verify_examples(type_aware: bool) {
             no_finding,
             matches!(
                 rule,
-                "vapor/require-vapor-attribute"
-                    | "vue/no-template-lang"
-                    | "vue/no-preprocessor-lang"
-                    | "vue/no-script-non-standard-lang"
+                "vapor/require-vapor-attribute" | "vue/no-script-non-standard-lang"
             ),
             "only the audited unsupported SFC boundaries"
         );
@@ -106,7 +103,7 @@ fn verify_examples(type_aware: bool) {
         }
     }
     assert_eq!(checked, if type_aware { 6 } else { 252 });
-    assert_eq!(unavailable, if type_aware { 0 } else { 4 });
+    assert_eq!(unavailable, if type_aware { 0 } else { 2 });
     assert_eq!(parser_owned, if type_aware { 0 } else { 1 });
     eprintln!(
         "documentation corpus: catalog={checked} non_emitted={unavailable} parser_owned={parser_owned} type_aware={type_aware}"
@@ -120,7 +117,7 @@ fn configuration(page: &str) -> Value {
 
 fn parse_configuration(page: &str) -> Result<Value, &'static str> {
     // Notes can contain other configuration examples. Execute only the authored
-    // configuration section, including the explicitly unsupported SFC rules.
+    // configuration section, including explicitly unsupported SFC rules.
     let sections: Vec<_> = page
         .split("\n## ")
         .filter_map(|section| {
@@ -220,7 +217,7 @@ fn authored_modifier_options_reach_the_real_rule_instances() {
         (rule, r#"<div @click.custom="handler" />"#, config),
         (
             "vue/valid-v-slot",
-            r#"<v-data-table><template v-slot:item.memo="{ item }">{{ item.memo }}</template></v-data-table>"#,
+            r#"<v-data-table><template #[name].memo="{ item }">{{ item.memo }}</template></v-data-table>"#,
             configuration(&configuration_page(
                 &serde_json::json!({ "ruleOptions": { "vue/valid-v-slot": { "allowModifiers": true } } }),
                 true,

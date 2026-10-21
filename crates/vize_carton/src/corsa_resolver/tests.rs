@@ -23,6 +23,27 @@ fn write_typescript_manifest(path: &Path, suffix: &str, version: &str) {
     .unwrap();
 }
 
+fn write_tsrs_install(root: &Path) -> (PathBuf, PathBuf) {
+    let platform_package = super::packages::tsrs_platform_package().unwrap();
+    let wrapper = root.join("node_modules").join(".bin").join("tsrs");
+    let package = root.join("node_modules").join("tsrs").join("package.json");
+    let native = root
+        .join("node_modules")
+        .join(platform_package)
+        .join("tsrs");
+    write_file(&wrapper);
+    write_file(&native);
+    fs::create_dir_all(package.parent().unwrap()).unwrap();
+    fs::write(
+        package,
+        &*crate::cstr!(
+            r#"{{"name":"tsrs","optionalDependencies":{{"{platform_package}":"0.18.0"}}}}"#
+        ),
+    )
+    .unwrap();
+    (wrapper, native)
+}
+
 fn resolve(
     explicit_path: Option<&Path>,
     project_root: Option<&Path>,
@@ -78,6 +99,75 @@ fn env_vars_resolve_in_documented_precedence_order() {
             targets[first_set].0
         );
     }
+}
+
+#[cfg(any(
+    all(target_os = "macos", target_arch = "aarch64"),
+    all(
+        target_os = "linux",
+        any(target_arch = "aarch64", target_arch = "x86_64")
+    )
+))]
+#[test]
+fn tsrs_env_resolves_launcher_to_its_native_binary() {
+    let temp_dir = TempDir::new().unwrap();
+    let (wrapper, native) = write_tsrs_install(temp_dir.path());
+
+    let resolved = resolve(
+        None,
+        Some(temp_dir.path()),
+        &[("TSRS_PATH", wrapper.as_path())],
+    )
+    .unwrap();
+
+    assert_eq!(resolved, native.canonicalize().unwrap());
+}
+
+#[cfg(any(
+    all(target_os = "macos", target_arch = "aarch64"),
+    all(
+        target_os = "linux",
+        any(target_arch = "aarch64", target_arch = "x86_64")
+    )
+))]
+#[test]
+fn discovers_tsrs_native_when_it_is_the_only_project_runtime() {
+    let temp_dir = TempDir::new().unwrap();
+    let (_, native) = write_tsrs_install(temp_dir.path());
+
+    let resolved = discover_in_walk(&[temp_dir.path().join("src")], false);
+
+    assert_eq!(resolved, Some(native.canonicalize().unwrap()));
+}
+
+#[cfg(any(
+    all(target_os = "macos", target_arch = "aarch64"),
+    all(
+        target_os = "linux",
+        any(target_arch = "aarch64", target_arch = "x86_64")
+    )
+))]
+#[test]
+fn explicit_tsrs_wrapper_does_not_normalize_to_typescript() {
+    let suffix = platform_suffix();
+    let temp_dir = TempDir::new().unwrap();
+    let root = temp_dir.path();
+    let (wrapper, native) = write_tsrs_install(root);
+    write_typescript_manifest(
+        &root.join("node_modules/typescript/package.json"),
+        suffix,
+        "7.0.2",
+    );
+    write_file(
+        &root
+            .join("node_modules/@typescript")
+            .join(&*crate::cstr!("typescript-{suffix}"))
+            .join("lib/tsc"),
+    );
+
+    let resolved = resolve(Some(&wrapper), Some(root), &[]).unwrap();
+
+    assert_eq!(resolved, native.canonicalize().unwrap());
 }
 
 #[test]

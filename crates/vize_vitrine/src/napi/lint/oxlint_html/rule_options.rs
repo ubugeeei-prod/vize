@@ -4,8 +4,9 @@ use serde_json::Value;
 use vize_l0::{String, cstr};
 
 use super::super::lint_options::{
-    HtmlSelfClosingHtmlOptionsNapi, HtmlSelfClosingOptionsNapi, NoMutatingPropsOptionsNapi,
-    PatinaLintOptionsNapi, SfcElementOrderOptionsNapi, configure_patina_rule_options,
+    DefineMacrosOrderOptionsNapi, HtmlSelfClosingHtmlOptionsNapi, HtmlSelfClosingOptionsNapi,
+    NoMutatingPropsOptionsNapi, PatinaLintOptionsNapi, SfcElementOrderOptionsNapi,
+    configure_patina_rule_options,
 };
 
 /// The caller owns catalog validation and tuple arity; omission keeps defaults.
@@ -38,6 +39,30 @@ pub(super) fn parse_rule_option(
                 })
                 .transpose()?;
             options.no_mutating_props = Some(NoMutatingPropsOptionsNapi { shallow_only });
+        }
+        "script/define-macros-order" => {
+            let object = strict_object(payload, &["order"])?;
+            let order = object
+                .get("order")
+                .map(|value| {
+                    let items = value
+                        .as_array()
+                        .ok_or_else(|| cstr!("order must be an array"))?;
+                    let mut order = Vec::with_capacity(items.len());
+                    for item in items {
+                        let name = item
+                            .as_str()
+                            .filter(|name| !name.is_empty())
+                            .ok_or_else(|| cstr!("order entries must be non-empty strings"))?;
+                        if order.iter().any(|existing| existing == name) {
+                            return Err(cstr!("order entries must be unique"));
+                        }
+                        order.push(name.to_owned());
+                    }
+                    Ok(order)
+                })
+                .transpose()?;
+            options.define_macros_order = Some(DefineMacrosOrderOptionsNapi { order });
         }
         "vue/sfc-element-order" => {
             let object = strict_object(payload, &["order"])?;
@@ -90,6 +115,7 @@ pub(super) fn apply_rule_options(
         options.component_name_in_template_casing.as_deref(),
         options.custom_event_name_casing.as_deref(),
         options.no_mutating_props,
+        options.define_macros_order,
         options.sfc_element_order,
         options.html_self_closing,
         options.v_on_event_hyphenation.as_deref(),
@@ -154,6 +180,10 @@ mod tests {
             ("script/custom-event-name-casing", json!("camelCase")),
             ("vue/no-mutating-props", json!({ "shallowOnly": true })),
             (
+                "script/define-macros-order",
+                json!({ "order": ["defineOptions", "defineProps"] }),
+            ),
+            (
                 "vue/sfc-element-order",
                 json!({ "order": [[], ["template"], "script"] }),
             ),
@@ -176,6 +206,10 @@ mod tests {
         );
         assert_eq!(options.no_mutating_props.unwrap().shallow_only, Some(true));
         assert_eq!(
+            options.define_macros_order.unwrap().order,
+            Some(vec!["defineOptions".into(), "defineProps".into()])
+        );
+        assert_eq!(
             options.sfc_element_order.unwrap().order,
             Some(vec![json!([]), json!(["template"]), json!("script")])
         );
@@ -197,12 +231,14 @@ mod tests {
         assert!(options.html_self_closing.is_none());
         for name in [
             "vue/no-mutating-props",
+            "script/define-macros-order",
             "vue/sfc-element-order",
             "vue/html-self-closing",
         ] {
             parse_rule_option(name, Some(&json!({})), &mut options).unwrap();
         }
         assert_eq!(options.no_mutating_props.unwrap().shallow_only, None);
+        assert_eq!(options.define_macros_order.unwrap().order, None);
         assert_eq!(options.sfc_element_order.unwrap().order, None);
         let self_closing = options.html_self_closing.unwrap();
         assert!(self_closing.html.is_none());
@@ -264,6 +300,11 @@ mod tests {
                 json!({ "shallowOnly": true, "extra": false }),
             ),
             (
+                "script/define-macros-order",
+                json!({ "order": ["defineProps", "defineProps"] }),
+            ),
+            ("script/define-macros-order", json!({ "order": [""] })),
+            (
                 "vue/sfc-element-order",
                 json!({ "order": [["template", 1]] }),
             ),
@@ -289,6 +330,7 @@ mod tests {
         assert!(options.component_name_in_template_casing.is_none());
         assert!(options.custom_event_name_casing.is_none());
         assert!(options.no_mutating_props.is_none());
+        assert!(options.define_macros_order.is_none());
         assert!(options.sfc_element_order.is_none());
         assert!(options.html_self_closing.is_none());
         assert!(options.v_on_event_hyphenation.is_none());
