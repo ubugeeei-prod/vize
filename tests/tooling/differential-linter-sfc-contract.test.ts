@@ -28,6 +28,12 @@ function missing(rule: string) {
     detail: `UnprovidedRule { rule: "${rule}" }`,
   };
 }
+const unsupportedTypeAware = {
+  api: "--native-current-api",
+  entry: "sfc",
+  kind: "UnsupportedTypeAwareMode",
+  detail: "UnsupportedTypeAwareMode",
+};
 function row(id: string) {
   return loaded.cases.find((fixture: any) => fixture.id === `linter/${id}`);
 }
@@ -99,9 +105,9 @@ void test("all current SFC wires have the complete bounded transition and old pa
     ["current-api/dynamic-slot-v-for-component-bodies", missing("vue/valid-v-for")],
     ["current-api/incomplete-type-project-10005", missing("vue/valid-v-for")],
     ["current-api/dotted-slot-name-9865", missing("vue/valid-v-slot")],
-    ["current-api/multiline-v-for-source-9880", missing("type/no-unsafe-template-binding")],
+    ["current-api/multiline-v-for-source-9880", unsupportedTypeAware],
     ["current-api/type-aware-slot-outlet-9834", missing("vue/valid-v-for")],
-    ["current-api/vue-path-alias-types-9864", missing("type/no-unsafe-template-binding")],
+    ["current-api/vue-path-alias-types-9864", unsupportedTypeAware],
     ["current-api/nuxt-builtins-9866", missing("vue/require-component-registration")],
     ["current-api/patina-rule-guards-9870-9871", missing("vue/attribute-order")],
     ["next-tick/valid-arrow-expression-return-sfc", missing("script/valid-next-tick")],

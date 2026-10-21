@@ -75,6 +75,13 @@ export function expectedSfcReason(input: any, api: string) {
     );
     return { api, entry: "sfc", kind: "Descriptor", detail: ORIGINAL_DISABLED_VAPOR_REFUSAL };
   }
+  if (input.rule.startsWith("type/"))
+    return {
+      api,
+      entry: "sfc",
+      kind: "UnsupportedTypeAwareMode",
+      detail: "UnsupportedTypeAwareMode",
+    };
   if (input.rule !== "script/prefer-use-template-ref")
     return {
       api,
