@@ -15,7 +15,7 @@ import { renderNativeAcceptanceMarkdown } from "../differential/acceptance-rates
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
-void test("shared linter corpus retains all 71 complete actual public observations from source-built Rust", (t) => {
+void test("shared linter corpus retains every complete actual public observation from source-built Rust", (t) => {
   const evidenceDir = path.resolve(
     root,
     process.env.VIZE_LINTER_API_EVIDENCE_DIR ?? "target/differential/linter-api",
@@ -33,6 +33,7 @@ void test("shared linter corpus retains all 71 complete actual public observatio
     repoRoot: root,
     ...built,
   });
+  const plannedCases = report.rows.length;
   fs.writeFileSync(path.join(evidenceDir, "report.json"), `${JSON.stringify(report, null, 2)}\n`);
   t.diagnostic(
     `Complete raw public observations, Cargo artifact and build receipt: ${evidenceDir}`,
@@ -40,11 +41,11 @@ void test("shared linter corpus retains all 71 complete actual public observatio
   assert.deepEqual(
     report.summary,
     {
-      plannedCases: 71,
-      legacyMatches: 71,
+      plannedCases,
+      legacyMatches: plannedCases,
       legacyFailures: 0,
       baselineDrift: 0,
-      nativeUnsupported: 61,
+      nativeUnsupported: plannedCases - 10,
       nativeFailures: 0,
       nativeHandled: 10,
       nativeEquivalent: 10,
@@ -65,10 +66,10 @@ void test("shared linter corpus retains all 71 complete actual public observatio
   if (process.env.GITHUB_STEP_SUMMARY)
     fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${markdown}\n`);
   assert.deepEqual(acceptance.total, {
-    planned: 71,
+    planned: plannedCases,
     nativeHandled: 10,
     nativeEquivalent: 10,
-    unsupported: 61,
+    unsupported: plannedCases - 10,
     legacyBacked: 0,
     unverified: 0,
   });

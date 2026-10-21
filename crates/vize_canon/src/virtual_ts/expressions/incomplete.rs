@@ -56,6 +56,21 @@ impl<'a> IsolatedExpression<'a> {
     pub(crate) fn is_owned(&self) -> bool {
         matches!(self, Self::Owned { .. })
     }
+
+    /// Whether TypeScript receives an authored syntax error verbatim.
+    ///
+    /// Callers that add synthetic closing tokens can use this to map recovery
+    /// diagnostics without perturbing the mapping table for valid expressions
+    /// or editor-only repairs.
+    pub(crate) fn has_unrepaired_syntax_error(&self) -> bool {
+        match self {
+            Self::Borrowed(text) => {
+                let trimmed = text.trim();
+                !trimmed.is_empty() && !expression_parses(trimmed)
+            }
+            Self::Owned { .. } => false,
+        }
+    }
 }
 
 pub(crate) fn isolate_incomplete_expression(source: &str) -> IsolatedExpression<'_> {
@@ -68,6 +83,26 @@ pub(crate) fn isolate_incomplete_expression(source: &str) -> IsolatedExpression<
         text,
         mapped_start,
         mapped_len,
+    }
+}
+
+/// Isolate interactive member/call edits, but leave a dangling operator with
+/// its authored diagnostic owner. The latter must reach TypeScript verbatim:
+/// repairing `count +` to `count` silently turned a syntax error into a
+/// misleading type error (#10188).
+pub(crate) fn isolate_diagnostic_expression(source: &str) -> IsolatedExpression<'_> {
+    let isolated = isolate_incomplete_expression(source);
+    if !isolated.is_owned() {
+        return isolated;
+    }
+    let trimmed = source.trim();
+    let preserves_editor_recovery = trimmed.ends_with('.') || delimiter_imbalance(trimmed);
+    if preserves_editor_recovery {
+        isolated
+    } else if ends_with_dangling_operator(trimmed) || has_trailing_keyword_before_closers(trimmed) {
+        IsolatedExpression::Borrowed(source)
+    } else {
+        isolated
     }
 }
 
@@ -378,5 +413,21 @@ mod tests {
         assert_eq!(isolate_incomplete_expression("foo(bar").as_str(), "foo");
         assert_eq!(isolate_incomplete_expression("foo(").as_str(), "foo");
         assert_eq!(isolate_incomplete_expression("foo..").as_str(), "foo");
+    }
+
+    #[test]
+    fn dangling_operators_remain_with_the_diagnostic_owner() {
+        for source in ["count +", "ready &&", "value as"] {
+            let isolated = super::isolate_diagnostic_expression(source);
+            assert_eq!(isolated.as_str(), source, "{source}");
+            assert!(!isolated.is_owned(), "{source}");
+            assert!(isolated.has_unrepaired_syntax_error(), "{source}");
+        }
+        for (source, emitted) in [("foo.", "foo. x"), ("foo(", "foo")] {
+            let isolated = super::isolate_diagnostic_expression(source);
+            assert_eq!(isolated.as_str(), emitted, "{source}");
+            assert!(!isolated.has_unrepaired_syntax_error(), "{source}");
+        }
+        assert!(!super::isolate_diagnostic_expression("count + 1").has_unrepaired_syntax_error());
     }
 }

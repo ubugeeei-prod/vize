@@ -29,6 +29,42 @@
       "expectedElementIdentities": [[0], [0], [0]]
     },
     {
+      "id": "events/click-closure",
+      "source": "const App = () => <button onClick={() => state.count += 1}>count:{state.count}</button>;",
+      "initial": { "count": 0 },
+      "steps": [
+        { "event": { "selector": "button", "type": "click" } },
+        { "event": { "selector": "button", "type": "click" } }
+      ],
+      "expectedText": ["count:0", "count:1", "count:2"],
+      "expectedElementIdentities": [[0], [0], [0]],
+      "expectedEvents": [
+        [],
+        [
+          {
+            "selector": "button",
+            "type": "click",
+            "defaultPrevented": false,
+            "dispatchResult": true
+          }
+        ],
+        [
+          {
+            "selector": "button",
+            "type": "click",
+            "defaultPrevented": false,
+            "dispatchResult": true
+          },
+          {
+            "selector": "button",
+            "type": "click",
+            "defaultPrevented": false,
+            "dispatchResult": true
+          }
+        ]
+      ]
+    },
+    {
       "id": "children/logical-and",
       "babelCorpusId": "children/logical_and",
       "valueMatrix": true,

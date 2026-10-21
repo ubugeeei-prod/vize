@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
+import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -10,7 +11,10 @@ import {
 } from "../differential/compiler-api.ts";
 import { buildProductObserver } from "../differential/observer-build.ts";
 import { compilerFailure, type CompilerBuildReceipt } from "../differential/compiler-api-types.ts";
-import { summarizeNativeAcceptance } from "../differential/acceptance-rates.mjs";
+import {
+  renderNativeAcceptanceMarkdown,
+  summarizeNativeAcceptance,
+} from "../differential/acceptance-rates.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -72,18 +76,23 @@ for (const [target, contract] of Object.entries(COMPILER_TARGET_CONTRACTS)) {
       JSON.stringify(report.rows, null, 2),
     );
     const loaded = loadCompilerApiManifest(manifestPath, root);
-    assert.deepEqual(
-      summarizeNativeAcceptance(loaded, report, {
-        sourceRevision: report.sourceRevision,
-      }).total,
-      {
-        planned: plannedCases,
-        nativeHandled: 0,
-        nativeEquivalent: 0,
-        unsupported: plannedCases,
-        legacyBacked: 0,
-        unverified: 0,
-      },
-    );
+    const acceptance = summarizeNativeAcceptance(loaded, report, {
+      sourceRevision: report.sourceRevision,
+    });
+    assert.deepEqual(acceptance.total, {
+      planned: plannedCases,
+      nativeHandled: 0,
+      nativeEquivalent: 0,
+      unsupported: plannedCases,
+      legacyBacked: 0,
+      unverified: 0,
+    });
+    const acceptanceArtifact = path.join(evidenceDir, "acceptance.json");
+    const markdown = renderNativeAcceptanceMarkdown([acceptance]);
+    fs.writeFileSync(acceptanceArtifact, `${JSON.stringify(acceptance, null, 2)}\n`);
+    t.diagnostic(markdown);
+    t.diagnostic(`Native acceptance: ${acceptanceArtifact}`);
+    if (process.env.GITHUB_STEP_SUMMARY)
+      fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${markdown}\n`);
   });
 }

@@ -4,7 +4,10 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { summarizeNativeAcceptance } from "../differential/acceptance-rates.mjs";
+import {
+  renderNativeAcceptanceMarkdown,
+  summarizeNativeAcceptance,
+} from "../differential/acceptance-rates.mjs";
 import { loadLspManifest, runLspPack } from "../differential/lsp.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -27,15 +30,23 @@ void test("source-built LSP registers complete fix-history response sessions wit
   const acceptance = summarizeNativeAcceptance(loaded, report, {
     sourceRevision: revision.stdout.trim(),
   });
+  const count = loaded.cases.length;
   assert.deepEqual(acceptance.total, {
-    planned: 36,
+    planned: count,
     nativeHandled: 0,
     nativeEquivalent: 0,
-    unsupported: 36,
+    unsupported: count,
     legacyBacked: 0,
     unverified: 0,
   });
-  assert.equal(report.summary.legacyMatches, 36, JSON.stringify(report.rows, null, 2));
+  const acceptanceArtifact = path.join(root, "target/differential/lsp-acceptance.json");
+  const markdown = renderNativeAcceptanceMarkdown([acceptance]);
+  fs.writeFileSync(acceptanceArtifact, `${JSON.stringify(acceptance, null, 2)}\n`);
+  t.diagnostic(markdown);
+  t.diagnostic(`Native acceptance: ${acceptanceArtifact}`);
+  if (process.env.GITHUB_STEP_SUMMARY)
+    fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${markdown}\n`);
+  assert.equal(report.summary.legacyMatches, count, JSON.stringify(report.rows, null, 2));
   assert.equal(report.summary.legacyFailures, 0);
   assert.equal(report.summary.baselineDrift, 0);
 });

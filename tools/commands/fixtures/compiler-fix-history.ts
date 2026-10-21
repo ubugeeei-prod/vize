@@ -191,10 +191,14 @@ function fixtureReferences(root: string): Map<string, CaseReference[]> {
     for (const fixture of document.cases) {
       const fixes: string[] = fixture.fixCommits ?? [fixture.fixCommit];
       assert.equal(typeof fixture.id, "string");
+      const fixtureId =
+        pack === "vize_atelier_sfc/tests/fixtures/fix-history/map-diagnostic-input-provenance.json"
+          ? `compiler/sfc/${fixture.id}`
+          : fixture.id;
       for (const fix of fixes) {
         assert.match(fix, /^[a-f0-9]{40}$/);
         const cases = links.get(fix) ?? [];
-        cases.push({ id: fixture.id, evidence });
+        cases.push({ id: fixtureId, evidence });
         links.set(fix, cases);
       }
     }
@@ -350,7 +354,7 @@ export function renderHistory(history: ReturnType<typeof collectHistory>) {
       "The original 609-fix snapshot has no verified source revision.",
       "Changed witness paths and stable patch equivalence are candidates, not coverage or automatic duplicate exclusions.",
       "Fixture references cover only their recorded entrypoint, target, options and public output facets.",
-      "Eight SFC fixture scopes have bounded semantic review; every fix subject retains whole-fix target and dialect review pending.",
+      "Ten SFC fixture scopes have bounded semantic review; every fix subject retains whole-fix target and dialect review pending.",
       "Historical or local execution does not certify current Actions or a native route.",
     ],
   };

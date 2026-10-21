@@ -2,7 +2,7 @@
   "schema": "vize.compiler.fix-history-reviews",
   "version": 1,
   "manifest": "tests/_fixtures/differential/compiler/sfc-fix-history.manifest.json",
-  "scope": "Bounded semantic review of eight complete public SFC Result fixtures; this is not whole-fix, whole-history, native, target, or dialect acceptance.",
+  "scope": "Bounded semantic review of ten complete public SFC Result fixtures; this is not whole-fix, whole-history, native, target, or dialect acceptance.",
   "reviews": [
     {
       "fixCommit": "ceb0fda9c18ed6e40db71a2c582e9fe10950a43a",
@@ -90,6 +90,28 @@
       ],
       "remainingScope": [
         "Multiple invalid expressions, alternate syntax, Vapor, SSR, CLI exit behavior, and bundler diagnostics remain outside this reviewed fixture scope."
+      ]
+    },
+    {
+      "fixCommit": "0494c409b07a58c6296cdc2f50739b8e947366f4",
+      "caseId": "compiler/sfc/counter-source-map",
+      "coveredRequirements": [
+        "Source-map-enabled public SFC compilation maps the generated Counter module back to the authored /app/src/Counter.vue source and retains its complete sourcesContent.",
+        "The complete public SFC Result preserves generated module bytes, populated structured map fields, binding metadata, and empty diagnostics."
+      ],
+      "remainingScope": [
+        "Other map modes and consumers, separate-template output, alternate syntax, Vapor, SSR, bundler remapping, and mounted runtime behavior remain outside this reviewed fixture scope."
+      ]
+    },
+    {
+      "fixCommit": "7b821f8d0c46c56ab48d0a954def515a9219838e",
+      "caseId": "compiler/sfc/props-default-type-diagnostic",
+      "coveredRequirements": [
+        "A destructured defineProps default with a mismatched type returns DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE at the authored default-value range.",
+        "The complete public compile Result preserves the error code, message, and all compiler-relative location fields; the existing capture separately preserves the document-relative located-validator Result."
+      ],
+      "remainingScope": [
+        "Other default expressions and prop shapes, multiple diagnostics, alternate syntax, Vapor, SSR, CLI presentation, and editor runtime behavior remain outside this reviewed fixture scope."
       ]
     }
   ]

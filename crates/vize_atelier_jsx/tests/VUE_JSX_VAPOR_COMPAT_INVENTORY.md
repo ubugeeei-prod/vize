@@ -6,9 +6,9 @@ under the same pinned Vue Vapor runtime. Each row mounts both components in
 Happy DOM, applies the corpus updates, and compares normalized rendered DOM,
 live form state, diagnostics, and element identity.
 
-The first slice intentionally covers four core behaviors. It is not a claim
-that the full `vue-jsx-vapor` surface is compatible; issue #6884 remains open
-until the corpus covers the complete dialect inventory.
+The current bounded cohort covers six behaviors. It is not a claim that the
+full `vue-jsx-vapor` surface is compatible; issue #6884 remains open until the
+corpus covers the complete dialect inventory.
 
 ## Pinned oracle
 
@@ -26,6 +26,7 @@ a reviewed update to the executable verdict inventory.
 | --------------------------------- | ---------- | ----------------------------------------------------------------------- |
 | `children/dynamic-text`           | equivalent | initial DOM and three text updates retain the authored element          |
 | `props/dynamic-attributes`        | equivalent | attributes and text update while the authored element remains live      |
+| `events/click-closure`            | equivalent | two real clicks run the captured closure and retain the button          |
 | `children/logical-and`            | divergent  | only vue-jsx-vapor replaces the branch across truthy value changes      |
 | `control-flow/conditional-branch` | equivalent | falsy, array and nested-VNode conditions match both real JSX references |
 | `props/live-input-value`          | equivalent | the live input value and sibling output update without replacing either |
@@ -34,6 +35,11 @@ The JSON corpus and verdict table are checked bidirectionally, so adding or
 removing a case without a verdict fails. The runtime comparison is the source
 of each `equivalent` verdict; generated-code shape is not used as a substitute
 for mounted behavior.
+
+The event row dispatches two bubbling, cancelable `click` events through the
+mounted button. Its receipt pins dispatch success, `defaultPrevented`, the
+closure's rendered counter side effect, diagnostics, and element identity for
+every phase before checking complete unmount.
 
 The logical-and and conditional rows are the value-sensitive counterparts of
 the Babel oracle's equivalent `children/logical_and` and `children/ternary`
