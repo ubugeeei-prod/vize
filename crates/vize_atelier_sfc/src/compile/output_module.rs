@@ -6,43 +6,6 @@ use vize_atelier_core::CodegenOptions;
 use vize_carton::{String, ToCompactString, cstr};
 use vize_l4::module::RenderFunctionName;
 
-/// Structural output module used before SFC code is flattened into a string.
-///
-/// This is intentionally small: it gives the SFC layer a typed boundary for
-/// imports/hoists/functions/exports without changing backend emitters yet.
-#[derive(Debug, Default)]
-pub(crate) struct OutputModule {
-    pub(crate) imports: String,
-    pub(crate) hoists: String,
-    pub(crate) functions: String,
-    pub(crate) exports: String,
-}
-
-impl OutputModule {
-    pub(crate) fn from_render_chunks(imports: String, functions: String) -> Self {
-        Self {
-            imports,
-            functions,
-            ..Self::default()
-        }
-    }
-
-    pub(crate) fn function_base_offset(&self) -> usize {
-        self.imports.len() + self.hoists.len() + 1
-    }
-
-    pub(crate) fn into_code(self) -> String {
-        let mut code = String::default();
-        code.push_str(&self.imports);
-        code.push_str(&self.hoists);
-        code.push('\n');
-        code.push_str(&self.functions);
-        code.push('\n');
-        code.push_str(&self.exports);
-        code
-    }
-}
-
 fn create_standalone_import_warning() -> SfcError {
     SfcError {
         message: "Standalone SFC output still contains non-Vue ES module imports; CDN evaluation requires those dependencies to be provided separately."

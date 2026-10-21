@@ -1,0 +1,19 @@
+{
+  "schema": "vize.product-dependency-allowlist",
+  "version": 1,
+  "baselineRevision": "d9bab8d2708f66e53606b5ad29e42f2a471de51d",
+  "root": "vize_glyph",
+  "entries": [
+    {
+      "from": "vize_glyph",
+      "to": "vize_atelier_sfc",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_glyph"],
+      "issue": 6851,
+      "reason": "Remove Glyph's legacy SFC compiler dependency after its L1 formatting route lands."
+    }
+  ]
+}

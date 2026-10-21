@@ -60,9 +60,14 @@ void test("audit lookup rejects absent, stale, or unrelated runs", () => {
 });
 
 void test("retiring a retained compiler route witness triggers the guard", () => {
+  const build = "crates/vize/src/commands/build/runner/compile.rs";
+  const buildStats = "crates/vize/src/commands/build/runner/compile_stats.rs";
   const dom = "crates/vize_atelier_dom/src/compile/inner.rs";
   const vapor = "crates/vize_atelier_vapor/src/compile/inner.rs";
   const base = {
+    [build]: "compile_sfc_with_custom_elements_template_syntax_codegen_and_experimental_options(",
+    [buildStats]:
+      "compile_sfc_with_custom_elements_template_syntax_codegen_and_experimental_options(",
     [dom]: "generate_with_sections_and_experimental_options_slot_scope_and_environment(",
     [vapor]: [
       "transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id(",
@@ -71,6 +76,12 @@ void test("retiring a retained compiler route witness triggers the guard", () =>
   };
 
   assert.deepEqual(retiredLegacyRouteWitnesses(base, base), []);
+  assert.deepEqual(retiredLegacyRouteWitnesses(base, { ...base, [build]: "" }), [
+    `CLI build compatibility compiler (${build})`,
+  ]);
+  assert.deepEqual(retiredLegacyRouteWitnesses(base, { ...base, [buildStats]: "" }), [
+    `CLI build stats compatibility compiler (${buildStats})`,
+  ]);
   assert.deepEqual(retiredLegacyRouteWitnesses(base, { ...base, [dom]: "" }), [
     `DOM compatibility emitter (${dom})`,
   ]);
@@ -90,6 +101,8 @@ void test("retiring a retained compiler route witness triggers the guard", () =>
 void test("the checked-in compiler routes retain every guarded witness", () => {
   const files = Object.fromEntries(
     [
+      "crates/vize/src/commands/build/runner/compile.rs",
+      "crates/vize/src/commands/build/runner/compile_stats.rs",
       "crates/vize_atelier_dom/src/compile/inner.rs",
       "crates/vize_atelier_dom/src/compile/sfc.rs",
       "crates/vize_atelier_ssr/src/compile.rs",

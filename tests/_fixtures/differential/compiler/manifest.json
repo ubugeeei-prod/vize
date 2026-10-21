@@ -545,6 +545,37 @@
         "contract": "compiler-ssr-module-bytes-v1",
         "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
       }
+    },
+    {
+      "id": "compiler/sfc/jsx-vapor-runtime-slots-6889",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "jsx-vapor-runtime-slots-6889",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "d0efd072e39bb5c7979ccf95061f62811d565883764dce352e07e2a2cb3aebf2",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "jsx-vapor-runtime-slots-6889/module.expected.txt",
+        "sha256": "42baf830e802063a3364fb42cccdd5c7393ac4678979504ef597e2c4167692ef",
+        "source": "crates/vize_atelier_jsx/tests/v_slots_forwarding.rs:vapor_runtime_slots_capture_all_complete_modules"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); client Vapor runtime qualification is retained separately by the seven-module capture."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      }
     }
   ],
   "runtimePacks": [

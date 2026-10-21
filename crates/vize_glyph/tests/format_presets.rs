@@ -125,6 +125,39 @@ const id = "a";
 }
 
 #[test]
+fn compact_preset_keeps_dense_authored_layout_at_a_fixed_point() {
+    let source = include_str!("fixtures/profiles/compact.input.vue");
+    let expected = include_str!("fixtures/profiles/compact.expected.vue");
+    let mut options = FormatOptions::prettier_compat();
+    options.apply_preset(FormatPreset::Compact);
+
+    assert_eq!(options.print_width, 120);
+    assert!(options.bracket_same_line);
+    assert!(!options.sort_attributes);
+    assert!(!options.sort_blocks);
+    assert!(options.normalize_directive_shorthands);
+    assert!(!options.normalize_css_quotes);
+    assert!(!options.normalize_inline_styles);
+    assert!(!options.normalize_v_for_parens);
+    assert!(!options.self_close_void_elements);
+    assert!(!options.reindent_preprocessor_styles);
+
+    let formatted = format_sfc(source, &options).expect("compact format").code;
+    assert_eq!(formatted.as_str(), expected);
+    assert_eq!(
+        format_sfc(&formatted, &options)
+            .expect("compact second pass")
+            .code,
+        formatted
+    );
+
+    let vize = format_sfc(source, &FormatOptions::default())
+        .expect("default format")
+        .code;
+    assert_ne!(vize, formatted);
+}
+
+#[test]
 fn prettier_preset_requotes_css_strings() {
     let source = "<style>\n@import 'a.css';\n.a {\n  content: 'it\\'s';\n  font-family: 'A \"B\"';\n}\n</style>\n";
     let kept = format_sfc(source, &FormatOptions::default()).expect("format");

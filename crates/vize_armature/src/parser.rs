@@ -63,10 +63,10 @@ mod first_newline_tests;
 #[cfg(test)]
 mod tests;
 
-use vize_l0::{Allocator, String, Vec, interner::Interner};
+use vize_l0::{Allocator, ErrorCode, String, Vec, interner::Interner};
 use vize_relief::{
     ElementNode, PropNode, RootNode, SourceLocation, TemplateChildNode,
-    errors::{CompilerError, ErrorCode},
+    errors::CompilerError,
     options::{CustomElementMatcher, ParserOptions, TemplateSyntaxMode, WhitespaceStrategy},
 };
 

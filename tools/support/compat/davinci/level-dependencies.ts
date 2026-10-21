@@ -15,6 +15,12 @@ import {
   requireEvidence,
   validateAllowlist,
 } from "./level-dependency-policy.ts";
+import {
+  assertProductAllowlistRatchet,
+  productPolicyPath,
+  readBaseProductAllowlist,
+  validateProductAllowlist,
+} from "./product-dependency-policy.ts";
 export {
   assertAllowlistRatchet,
   initialEntries,
@@ -22,6 +28,13 @@ export {
   readBaseAllowlist,
   validateAllowlist,
 } from "./level-dependency-policy.ts";
+export {
+  assertProductAllowlistRatchet,
+  initialGlyphProductAllowlist,
+  productPolicyPath,
+  readBaseProductAllowlist,
+  validateProductAllowlist,
+} from "./product-dependency-policy.ts";
 const levelName = /^vize_l[0-9]+(?:_to_l[0-9]+|_derive)?$/u;
 
 export function readMetadata(cwd = repoRoot): unknown {
@@ -71,6 +84,7 @@ export interface DependencyReport {
     readonly id: string;
     readonly manifest: string;
   }[];
+  readonly protectedProducts: readonly string[];
   readonly aliases: Readonly<Record<string, string>>;
   readonly exceptions: number;
   readonly witnesses: readonly Witness[];
@@ -136,7 +150,11 @@ function workspacePackage(pkg: Record_): Package {
   };
 }
 
-export function inspectLevelDependencies(metadata: unknown, policy: unknown): DependencyReport {
+export function inspectLevelDependencies(
+  metadata: unknown,
+  policy: unknown,
+  protectedProducts: readonly string[] = [],
+): DependencyReport {
   const allowlist = validateAllowlist(policy);
   requireEvidence(
     isRecord(metadata) &&
@@ -218,6 +236,15 @@ export function inspectLevelDependencies(metadata: unknown, policy: unknown): De
     }
     edges.set(pkg.name, declarations);
   }
+  requireEvidence(
+    new Set(protectedProducts).size === protectedProducts.length,
+    "duplicate protected product root",
+  );
+  for (const product of protectedProducts) {
+    requireEvidence(byName.has(product), "missing protected product root: " + product);
+    requireEvidence(!levelName.test(product), "level root cannot be repeated as a product root");
+    roots.add(product);
+  }
   requireEvidence(roots.size > 0, "no level roots found in workspace metadata");
   const witnesses: Witness[] = [];
   for (const root of [...roots].sort(byCodeUnit)) {
@@ -274,6 +301,7 @@ export function inspectLevelDependencies(metadata: unknown, policy: unknown): De
       requireEvidence(pkg, "missing level root package: " + name);
       return { name, id: pkg.id, manifest: path.relative(workspaceRoot, pkg.manifest_path) };
     }),
+    protectedProducts: [...protectedProducts].sort(byCodeUnit),
     aliases: Object.fromEntries([...aliases].sort(([a], [b]) => a.localeCompare(b))),
     exceptions: allowlist.entries.length,
     witnesses,
@@ -300,7 +328,7 @@ export function assertDependencyReport(report: DependencyReport): void {
   );
   requireEvidence(
     report.unlisted.length === 0,
-    "new level-to-legacy normal dependency paths: " + JSON.stringify(report.unlisted),
+    "new protected-root-to-legacy normal dependency paths: " + JSON.stringify(report.unlisted),
   );
   requireEvidence(
     report.stale.length === 0,
@@ -317,9 +345,18 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const policy = validateAllowlist(
     JSON.parse(readFileSync(path.join(repoRoot, policyPath), "utf8")),
   );
+  const productPolicy = validateProductAllowlist(
+    JSON.parse(readFileSync(path.join(repoRoot, productPolicyPath), "utf8")),
+  );
   const previous = readBaseAllowlist(repoRoot, args[1]);
+  const previousProduct = readBaseProductAllowlist(repoRoot, args[1]);
   assertAllowlistRatchet(policy, previous);
-  const report = inspectLevelDependencies(readMetadata(), policy);
+  assertProductAllowlistRatchet(productPolicy, previousProduct);
+  const report = inspectLevelDependencies(
+    readMetadata(),
+    validateAllowlist({ ...policy, entries: [...policy.entries, ...productPolicy.entries] }),
+    [productPolicy.root],
+  );
   const sha = execFileSync("git", ["rev-parse", "HEAD"], {
     cwd: repoRoot,
     encoding: "utf8",
@@ -332,7 +369,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
       "### Level dependencies",
       "",
       report.roots.length +
-        " physical roots; " +
+        " protected roots (" +
+        report.protectedProducts.length +
+        " product); " +
         report.exceptions +
         " existing legacy entries; " +
         report.witnesses.length +

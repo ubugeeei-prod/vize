@@ -250,7 +250,7 @@ class FormatterConfig {
   mergeBindAndNonBindAttrs: Boolean? = null
   maxAttributesPerLine: Int? = null
   attributeGroups: Listing<Listing<String>>? = null
-  preset: ("vize"|"prettier")? = null
+  preset: ("vize"|"prettier"|"compact")? = null
   normalizeDirectiveShorthands: Boolean? = null
   sortBlocks: Boolean? = null
   normalizeCssQuotes: Boolean? = null

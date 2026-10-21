@@ -293,7 +293,7 @@ function assertInventory(corpus) {
   const ids = corpus.cases.map(({ id }) => id).sort();
   assert.deepEqual(Object.keys(verdicts.cases).sort(), ids);
   for (const id of ids) {
-    assert.equal(verdicts.cases[id].verdict, "equivalent", id);
+    assert.ok(["equivalent", "divergent"].includes(verdicts.cases[id].verdict), id);
     assert.equal(typeof verdicts.cases[id].basis, "string", id);
   }
   const babelIds = new Set(babelCorpus.cases.map(({ id }) => id));
@@ -304,6 +304,14 @@ function assertInventory(corpus) {
       `${spec.id}: equivalent Babel verdict`,
     );
   }
+  for (const spec of corpus.cases) {
+    const divergent = verdicts.cases[spec.id].verdict === "divergent";
+    assert.equal(
+      "expectedReferenceElementIdentities" in spec,
+      divergent,
+      `${spec.id}: divergent rows pin reference identity`,
+    );
+  }
   const documented = [
     ...inventory.matchAll(/^\| `([^`]+)`\s+\| (?:equivalent|divergent|deferred)\s+\|/gmu),
   ]
@@ -312,7 +320,7 @@ function assertInventory(corpus) {
   assert.deepEqual(documented, ids);
 }
 
-function assertBehavior(spec, phases) {
+function assertBehavior(spec, phases, expectedElementIdentities = spec.expectedElementIdentities) {
   assert.equal(phases.length, spec.steps.length + 1, `${spec.id}: initial render plus updates`);
   assert.deepEqual(
     phases.map(({ text }) => text),
@@ -321,9 +329,13 @@ function assertBehavior(spec, phases) {
   );
   assert.deepEqual(
     phases.map(({ elementIdentities }) => elementIdentities),
-    spec.expectedElementIdentities,
+    expectedElementIdentities,
     `${spec.id}: element update identity trace`,
   );
+}
+
+function semanticTrace(phases) {
+  return phases.map(({ dom, text, warnings }) => ({ dom, text, warnings }));
 }
 
 assertInventory(recordedCorpus);
@@ -352,6 +364,7 @@ if (process.argv.includes("--reference")) {
   const receipt = {
     cases: recordedCorpus.cases.length,
     equivalent: 0,
+    divergent: 0,
     babelCases: recordedCorpus.cases.filter(({ babelCorpusId }) => babelCorpusId).length,
     babelEquivalent: 0,
     failures: 0,
@@ -360,9 +373,17 @@ if (process.argv.includes("--reference")) {
     const compiled = input.compiled[index];
     const reference = await trace(vaporReferenceCode(spec), "App", spec);
     const actual = await trace(compiled.code, compiled.functionName, spec);
-    assert.deepEqual(actual, reference, spec.id);
-    assertBehavior(spec, actual);
-    receipt.equivalent += 1;
+    if (verdicts.cases[spec.id].verdict === "equivalent") {
+      assert.deepEqual(actual, reference, spec.id);
+      assertBehavior(spec, actual);
+      receipt.equivalent += 1;
+    } else {
+      assert.deepEqual(semanticTrace(actual), semanticTrace(reference), `${spec.id}: semantics`);
+      assert.notDeepEqual(actual, reference, `${spec.id}: recorded divergence remains observable`);
+      assertBehavior(spec, actual);
+      assertBehavior(spec, reference, spec.expectedReferenceElementIdentities);
+      receipt.divergent += 1;
+    }
     if (spec.babelCorpusId) {
       assert.deepEqual(Object.keys(compiled.vdom), ["code", "functionName"]);
       const babel = await trace(babelReferenceCode(spec), "App", spec, "vdom");

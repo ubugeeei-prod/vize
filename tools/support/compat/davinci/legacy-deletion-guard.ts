@@ -14,6 +14,16 @@ interface LegacyRouteWitness {
 
 const legacyRouteWitnesses: readonly LegacyRouteWitness[] = [
   {
+    route: "CLI build compatibility compiler",
+    path: "crates/vize/src/commands/build/runner/compile.rs",
+    marker: "compile_sfc_with_custom_elements_template_syntax_codegen_and_experimental_options(",
+  },
+  {
+    route: "CLI build stats compatibility compiler",
+    path: "crates/vize/src/commands/build/runner/compile_stats.rs",
+    marker: "compile_sfc_with_custom_elements_template_syntax_codegen_and_experimental_options(",
+  },
+  {
     route: "DOM compatibility emitter",
     path: "crates/vize_atelier_dom/src/compile/inner.rs",
     marker: "generate_with_sections_and_experimental_options_slot_scope_and_environment(",

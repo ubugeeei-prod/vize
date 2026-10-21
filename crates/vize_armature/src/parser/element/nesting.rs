@@ -14,10 +14,8 @@
 //! of the flattened elements here so their end tags can be consumed silently,
 //! and reports the limit once per over-limit region instead of once per element.
 
-use vize_relief::{
-    ElementNode,
-    errors::{CompilerError, ErrorCode},
-};
+use vize_l0::ErrorCode;
+use vize_relief::{ElementNode, errors::CompilerError};
 
 use super::super::Parser;
 

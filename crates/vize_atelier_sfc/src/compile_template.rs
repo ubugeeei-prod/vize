@@ -26,9 +26,9 @@ use vize_l0::Allocator;
 
 use vize_atelier_core::CompilerErrorWithSource;
 
-use crate::compile::output_module::OutputModule;
 use crate::types::{BindingMetadata, SfcError, SfcTemplateBlock, TemplateCompileOptions};
 use vize_atelier_core::options::CustomElementMatcher;
+use vize_l4::module::OutputModule;
 
 pub(crate) struct TemplateBlockCompileResult {
     pub(crate) code: String,

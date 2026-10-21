@@ -46,5 +46,29 @@
       }
     },
     "isPreferred": false
+  },
+  {
+    "title": "Suppress with @vize:forget (vue/attribute-order)",
+    "kind": "quickfix",
+    "edit": {
+      "changes": {
+        "${workspace}/CodeActionUtf16.vue": [
+          {
+            "range": {
+              "start": {
+                "line": 1,
+                "character": 0
+              },
+              "end": {
+                "line": 1,
+                "character": 0
+              }
+            },
+            "newText": "  <!-- @vize:forget vue/attribute-order -->\n"
+          }
+        ]
+      }
+    },
+    "isPreferred": false
   }
 ]

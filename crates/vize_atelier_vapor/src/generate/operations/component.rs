@@ -1,4 +1,4 @@
-use crate::ir::{ComponentKind, CreateComponentIRNode, IRSlot, OperationNode};
+use crate::ir::{ComponentKind, CreateComponentIRNode, IRSlot, OperationNode, PropValueKind};
 use vize_atelier_core::codegen::document::EmitDocument;
 use vize_carton::{FxHashMap, String, ToCompactString, cstr};
 
@@ -154,7 +154,7 @@ pub(super) fn generate_create_component(
     };
 
     let props = generate_component_props_str(ctx, component);
-    let has_slots = !component.slots.is_empty();
+    let has_slots = !component.slots.is_empty() || forwarded_slots_source(component).is_some();
     // Keep each computed slot's function stable when only its name getter
     // re-evaluates. A new function would remount content at an unchanged name.
     declare_slot_caches(ctx, component);
@@ -209,7 +209,9 @@ fn generate_component_call(
     props: &str,
 ) {
     let kind = component.kind;
-    let has_slots = !component.slots.is_empty();
+    let raw_slots = forwarded_slots_source(component);
+    let has_authored_slots = !component.slots.is_empty();
+    let has_slots = has_authored_slots || raw_slots.is_some();
     ctx.push_indent();
     ctx.push(&cstr!(
         "const n{} = _{}({}, {}",
@@ -219,7 +221,15 @@ fn generate_component_call(
         props
     ));
 
-    if has_slots {
+    if !has_authored_slots && let Some(raw_slots) = raw_slots {
+        let raw_slots = ctx.resolve_expression_node(raw_slots);
+        ctx.push(&cstr!(
+            ", {}, {}{})\n",
+            raw_slots,
+            creation_flags(ctx, component),
+            once_flag(component, create_fn)
+        ));
+    } else if has_slots {
         ctx.push(", {\n");
         ctx.indent();
 
@@ -242,21 +252,25 @@ fn generate_component_call(
             name.push_str("\":");
             ctx.push_spanned(&name);
             generate_slot_fn(ctx, slot, element_template_map, kind);
-            if i < static_slots.len() - 1 || !dynamic_slots.is_empty() {
+            if i < static_slots.len() - 1 || !dynamic_slots.is_empty() || raw_slots.is_some() {
                 ctx.push(",");
             }
             ctx.push("\n");
         }
 
-        if !dynamic_slots.is_empty() {
+        if !dynamic_slots.is_empty() || raw_slots.is_some() {
             ctx.push_line("$: [");
             ctx.indent();
             for (i, slot) in dynamic_slots.iter().enumerate() {
                 generate_dynamic_slot(ctx, slot, element_template_map, component.id, i);
-                if i < dynamic_slots.len() - 1 {
+                if i < dynamic_slots.len() - 1 || raw_slots.is_some() {
                     ctx.push(",");
                 }
                 ctx.push("\n");
+            }
+            if let Some(raw_slots) = raw_slots {
+                let raw_slots = ctx.resolve_expression_node(raw_slots);
+                ctx.push_line(&raw_slots);
             }
             ctx.deindent();
             ctx.push_line("]");
@@ -276,6 +290,18 @@ fn generate_component_call(
             once_flag(component, create_fn)
         ));
     }
+}
+
+fn forwarded_slots_source<'a>(
+    component: &'a CreateComponentIRNode<'a>,
+) -> Option<&'a vize_atelier_core::SimpleExpressionNode<'a>> {
+    component
+        .props
+        .iter()
+        .rev()
+        .find(|prop| prop.value_kind == PropValueKind::ForwardedSlots)
+        .and_then(|prop| prop.values.first())
+        .map(|value| value.as_ref())
 }
 
 /// The trailing `once` argument of a component created under `v-once`.

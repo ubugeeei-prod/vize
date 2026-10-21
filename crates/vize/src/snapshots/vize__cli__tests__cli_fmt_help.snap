@@ -68,6 +68,7 @@ Options:
           Possible values:
           - vize:     The Vize defaults
           - prettier: Prettier's Vue layout, as listed in the formatter guide
+          - compact:  Dense application layout that preserves authored order
 
       --profile
           Show detailed timing profile

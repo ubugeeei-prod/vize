@@ -18,6 +18,9 @@ await test("original native Vapor source qualifies a fresh affected-PR capture w
     "davinci/vize_l4/src/expr/vue.rs",
     "davinci/vize_l4/src/write/source_map.rs",
     "davinci/vize_l4/tests/native_vapor.rs",
+    "crates/vize_atelier_jsx/src/vapor.rs",
+    "crates/vize_atelier_jsx/tests/v_slots_forwarding.rs",
+    "crates/vize_atelier_vapor/src/generate/operations/component.rs",
     "crates/vize_atelier_sfc/src/lib.rs",
     "crates/vize_atelier_sfc/src/native_vapor.rs",
     "crates/vize_atelier_sfc/src/native_vapor_setup.rs",
@@ -27,6 +30,8 @@ await test("original native Vapor source qualifies a fresh affected-PR capture w
     "crates/vize_atelier_sfc/tests/fixtures/native_vapor_sfc_vue_3_6_rc9.json",
     "tests/tooling/native-vapor-sfc-reference.test.mjs",
     "tests/tooling/native-vapor-setup-sfc-reference.test.mjs",
+    "tests/tooling/jsx-runtime-slots-vapor.test.mjs",
+    "tests/tooling/support/davinci-runtime-trace.mjs",
     "tests/tooling/support/native-vapor-sfc-oracle.mjs",
     "tests/tooling/support/native-vapor-primary-lifecycle.mjs",
     "tests/tooling/support/native-vapor-process-capture.mjs",
@@ -65,6 +70,8 @@ await test("the required Vapor lane preserves mandatory whole-source payloads", 
     "native-vapor-processes.jsonl",
     "native-vapor-setup-sfc-modules.json",
     "native-vapor-setup-sfc-runtime.json",
+    "jsx-runtime-slots-vapor.json",
+    "jsx-runtime-slots-vapor.json.runtime.json",
   ])
     assert.ok(action.includes(path), path);
   assert.match(action, /cargo test --locked --profile ci -p vize_l4 --test native_vapor/);
@@ -72,6 +79,11 @@ await test("the required Vapor lane preserves mandatory whole-source payloads", 
     action,
     /cargo test --locked --profile ci -p vize_atelier_sfc --test native_vapor_sfc/,
   );
+  assert.match(
+    action,
+    /cargo test --locked --profile ci -p vize_atelier_jsx --test v_slots_forwarding/,
+  );
+  assert.ok(action.includes("tests/tooling/jsx-runtime-slots-vapor.test.mjs"));
   assert.match(action, /VIZE_NATIVE_VAPOR_REQUIRE_CAPTURE: "1"/);
   assert.match(action, /if-no-files-found: error/);
   assert.match(action, /if: \$\{\{ always\(\) \}\}/);

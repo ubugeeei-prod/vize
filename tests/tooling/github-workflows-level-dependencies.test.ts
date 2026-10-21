@@ -25,12 +25,16 @@ const dependencyWorkflow = parse(
 ) as Workflow;
 
 test("docs-only dependency policy changes still run a mandatory metadata gate", () => {
-  assert.deepEqual(planSourceChecks(["docs/davinci/plan/level-dependency-allowlist.json"]), {
-    rust: true,
-    js: true,
-    tooling: true,
-    playground: true,
-  });
+  for (const policy of [
+    "docs/davinci/plan/level-dependency-allowlist.json",
+    "docs/davinci/plan/product-dependency-allowlists/vize_glyph.json",
+  ])
+    assert.deepEqual(planSourceChecks([policy]), {
+      rust: true,
+      js: true,
+      tooling: true,
+      playground: true,
+    });
   const gate = workflow.jobs?.["level-dependency-direction"];
   assert.ok(gate);
   assert.equal(gate.if, undefined);

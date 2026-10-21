@@ -92,7 +92,8 @@ fn real_vue_jsx_vapor_mount_and_updates_match_inventory() {
     let receipt: Value = serde_json::from_slice(&output.stdout).expect("oracle receipt");
     assert_eq!(receipt["failures"], 0);
     assert_eq!(receipt["cases"], case_count);
-    assert_eq!(receipt["equivalent"], case_count);
-    assert_eq!(receipt["babelCases"], 1);
-    assert_eq!(receipt["babelEquivalent"], 1);
+    assert_eq!(receipt["equivalent"], case_count - 1);
+    assert_eq!(receipt["divergent"], 1);
+    assert_eq!(receipt["babelCases"], 2);
+    assert_eq!(receipt["babelEquivalent"], 2);
 }

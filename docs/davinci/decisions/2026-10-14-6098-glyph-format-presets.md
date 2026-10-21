@@ -12,23 +12,23 @@ normalization. The rest are intended differences listed in the formatter
 guide under "Coming from Prettier".
 
 Decision: a preset is a named assignment of existing options, not a new
-formatting mode. `vize_glyph::FormatPreset` has two values. `vize` assigns the
-Vize defaults. `prettier` sets `printWidth: 80`, `sortAttributes: false`,
-`sortBlocks: false` and `normalizeDirectiveShorthands: false`. A preset owns
-only those four options and never adds a code path of its own, so every preset
-output is an output that some explicit option combination already produces and
-is covered by the same idempotence tests and corpus sweeps.
+formatting mode. `vize_glyph::FormatPreset` has three values. `vize` assigns the
+Vize defaults. `prettier` assigns `printWidth: 80`, authored attribute and block
+order, long closing brackets and the Prettier-compatible normalization options.
+Each preset only assigns existing options and never adds a code path of its own,
+so every preset output is an output that some explicit option combination already
+produces and is covered by the same idempotence tests and corpus sweeps.
 
 The public name is "preset", because `vize fmt --profile` already prints a
-timing profile. The CLI takes `--preset <vize|prettier>`. Options resolve in
+timing profile. The CLI takes `--preset <vize|prettier|compact>`. Options resolve in
 this order: config file, then the preset, then individual CLI flags.
 `sortAttributes: false` now also keeps the authored attribute order on
 `<script>`, `<template>`, `<style>` and custom block tags, so the Prettier
 preset matches Prettier on those tags.
 
-The `preset` config key was left to a follow-up; see below. Presets for compact application
-code and documentation examples are also left open; they should be added only
-with corpus evidence that a fixed option set serves them.
+The `preset` config key was left to a follow-up; see below. A compact application
+profile is recorded below. A profile for documentation examples remains open;
+it should be added only with corpus evidence that a fixed option set serves it.
 
 ## CSS string quotes
 
@@ -93,3 +93,17 @@ flags. Pkl's `FormatterConfig` options are now nullable, because a Pkl
 default would otherwise always count as an authored key; null values are
 treated as unset. A legacy `fmt` section is used only when `formatter` has no
 keys at all.
+
+## Compact application layout
+
+The `compact` preset is a named assignment of existing options, not a new
+printer mode. It sets `printWidth: 120`, `bracketSameLine: true`,
+`sortAttributes: false` and `sortBlocks: false`. Directive shorthands stay
+enabled, while the Prettier-only CSS, inline-style, `v-for`, void-element and
+preprocessor normalization switches are reset to `false`.
+
+The fixed fixture under `crates/vize_glyph/tests/fixtures/profiles` proves the
+denser tag layout, authored attribute and block order, and byte-identical
+second pass. Config, CLI and native Node tests cover the public typed paths and
+override order. The JSON Schema, generated TypeScript declaration and Pkl
+declaration expose the same three-value enum.

@@ -47,11 +47,20 @@ const id = "a";
   <div :id="id" class="a">{{ id }}</div>
 </template>
 `;
+  const compact = `<template>
+  <div :id="id" class="a">{{ id }}</div>
+</template>
+
+<script lang="ts" setup>
+const id = "a";
+</script>
+`;
   assert.deepEqual(formatSfc(source), { code: vize, changed: true });
   for (const [options, expected] of [
     [{}, vize],
     [{ preset: "vize" }, vize],
     [{ preset: "prettier" }, source],
+    [{ preset: "compact" }, compact],
   ] satisfies Array<[FormatOptionsNapi, string]>) {
     Object.freeze(options);
     assert.deepEqual(formatSfc(source, options), { code: expected, changed: expected !== source });
@@ -125,7 +134,7 @@ const id = 'a'
 });
 
 void test("public formatter rejects unknown presets and wrong JavaScript types", () => {
-  for (const preset of ["", "compact", "documentation", "PRETTIER", 1, true, {}, []]) {
+  for (const preset of ["", "documentation", "PRETTIER", 1, true, {}, []]) {
     assert.throws(
       () => formatSfc("<template />", { preset } as FormatOptionsNapi),
       (error: unknown) => {
@@ -135,7 +144,10 @@ void test("public formatter rejects unknown presets and wrong JavaScript types",
           typeof preset === "string" ? "InvalidArg" : "StringExpected",
         );
         if (typeof preset === "string") {
-          assert.equal(error.message, "Unknown formatter preset; expected 'vize' or 'prettier'");
+          assert.equal(
+            error.message,
+            "Unknown formatter preset; expected 'vize', 'prettier', or 'compact'",
+          );
         } else {
           assert.match(error.message, /preset|string/i);
         }

@@ -25,7 +25,7 @@ pub enum EndOfLineNapi {
 #[derive(Default)]
 pub struct FormatOptionsNapi {
     /// Existing formatter defaults; explicit options below take precedence.
-    #[napi(ts_type = "'vize' | 'prettier'")]
+    #[napi(ts_type = "'vize' | 'prettier' | 'compact'")]
     pub preset: Option<String>,
     /// Explicit Vue version; omitted uses Vue 3.
     pub vue_version: Option<String>,
@@ -60,10 +60,11 @@ fn apply_options(opts: FormatOptionsNapi) -> Result<FormatOptions> {
         options.apply_preset(match preset {
             "vize" => FormatPreset::Vize,
             "prettier" => FormatPreset::Prettier,
+            "compact" => FormatPreset::Compact,
             _ => {
                 return Err(Error::new(
                     Status::InvalidArg,
-                    "Unknown formatter preset; expected 'vize' or 'prettier'",
+                    "Unknown formatter preset; expected 'vize', 'prettier', or 'compact'",
                 ));
             }
         });

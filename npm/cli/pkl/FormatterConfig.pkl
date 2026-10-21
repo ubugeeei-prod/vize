@@ -6,8 +6,8 @@ module vize.FormatterConfig
 import "SortImportsConfig.pkl"
 
 class FormatterConfig {
-  /// Named set of defaults: "vize" or "prettier". Options set here still win.
-  preset: ("vize"|"prettier")? = null
+  /// Named set of defaults: "vize", "prettier", or "compact". Options set here still win.
+  preset: ("vize"|"prettier"|"compact")? = null
 
   /// Oxfmt-compatible import sorting; false disables it.
   sortImports: Boolean(this == false) | SortImportsConfig.SortImportsConfig? = null

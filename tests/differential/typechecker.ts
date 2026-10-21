@@ -91,6 +91,15 @@ export type Diagnostic = {
   code: number | null;
   message: string;
 };
+type DialectCoverage = {
+  state: "unknown" | "source-inspected";
+  registryRef: null;
+  evidence: Array<{
+    kind: "source-inspection";
+    dialects: string[];
+    selector: string;
+  }>;
+};
 export type TypecheckerCase = {
   id: string;
   targets: string[];
@@ -105,6 +114,7 @@ export type TypecheckerCase = {
   projectOptions?: { vuePackage: "absent" };
   packReference: Artifact;
   inputs: Array<Artifact & { file: string }>;
+  dialectCoverage: DialectCoverage;
   diagnostics: Diagnostic[];
 };
 type Pack = {
@@ -219,6 +229,45 @@ const contract = {
 };
 const matchedContract = "batch-start-diagnostics-v1";
 const unbaselinedFields = ["diagnostics[].blockType", "exitCode", "success"];
+const dialectOrder = ["vue3-sfc", "html-template", "js", "ts", "jsx", "tsx"];
+
+function typecheckerDialectCoverage(
+  root: string,
+  inputs: TypecheckerCase["inputs"],
+): DialectCoverage {
+  const dialects = new Set<string>();
+  for (const input of inputs) {
+    const source = readPinnedArtifact(root, input).toString("utf8");
+    const file = input.file.toLowerCase();
+    if (file.endsWith(".vue")) {
+      dialects.add("vue3-sfc");
+      if (/<template(?:\s|>)/i.test(source)) dialects.add("html-template");
+      for (const match of source.matchAll(/<script\b([^>]*)>/gi)) {
+        const attributes = match[1];
+        if (/\blang\s*=\s*["']tsx["']/i.test(attributes)) dialects.add("tsx");
+        else if (/\blang\s*=\s*["']ts["']/i.test(attributes)) dialects.add("ts");
+        else if (/\blang\s*=\s*["']jsx["']/i.test(attributes)) dialects.add("jsx");
+        else dialects.add("js");
+      }
+    } else if (file.endsWith(".tsx")) dialects.add("tsx");
+    else if (file.endsWith(".jsx")) dialects.add("jsx");
+    else if (file.endsWith(".d.ts") || file.endsWith(".ts")) dialects.add("ts");
+    else if (file.endsWith(".js")) dialects.add("js");
+  }
+  const ordered = dialectOrder.filter((dialect) => dialects.has(dialect));
+  if (ordered.length === 0) return { state: "unknown", registryRef: null, evidence: [] };
+  return {
+    state: "source-inspected",
+    registryRef: null,
+    evidence: [
+      {
+        kind: "source-inspection",
+        dialects: ordered,
+        selector: "batch-typechecker-fixture-v1 pinned authored sources",
+      },
+    ],
+  };
+}
 
 // Each pack remains an independently authored oracle. Registration adds source
 // identities and shared accounting; it never recaptures the expected values.
@@ -263,7 +312,11 @@ export function loadTypecheckerManifest(manifestPath: string) {
       fixture.inputs.map((input) => [input.file, input.path]),
       original.inputs.map((input) => [input.file, `${fixture.pack}/${input.source}`]),
     );
-    for (const input of fixture.inputs) readPinnedArtifact(root, input);
+    assert.deepEqual(
+      fixture.dialectCoverage,
+      typecheckerDialectCoverage(root, fixture.inputs),
+      "dialect coverage must match the pinned authored sources",
+    );
     packs.set(fixture.pack, pack);
     return { ...fixture, diagnostics: original.diagnostics };
   });

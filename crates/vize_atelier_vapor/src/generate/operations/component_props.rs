@@ -14,6 +14,14 @@ pub(super) fn generate_component_props_str(
     ctx: &mut GenerateContext,
     component: &CreateComponentIRNode<'_>,
 ) -> String {
+    if component
+        .props
+        .iter()
+        .any(|prop| prop.value_kind == PropValueKind::ForwardedSlots)
+    {
+        return generate_component_props_without_forwarded(ctx, component);
+    }
+
     if component.props.is_empty() {
         return "null".to_compact_string();
     }
@@ -41,6 +49,52 @@ pub(super) fn generate_component_props_str(
 
     let prop_refs = component.props.iter().collect::<std::vec::Vec<_>>();
     let prop_strs = generate_component_prop_entries(ctx, prop_refs.as_slice());
+    format_component_props(prop_strs.as_slice())
+}
+
+fn generate_component_props_without_forwarded(
+    ctx: &mut GenerateContext,
+    component: &CreateComponentIRNode<'_>,
+) -> String {
+    let props = component
+        .props
+        .iter()
+        .filter(|prop| prop.value_kind != PropValueKind::ForwardedSlots)
+        .collect::<std::vec::Vec<_>>();
+    if props.is_empty() {
+        return "null".to_compact_string();
+    }
+    if props
+        .iter()
+        .any(|prop| prop.value_kind == PropValueKind::DisplayString)
+    {
+        ctx.use_helper("toDisplayString");
+    }
+    let has_dynamic_sources = props
+        .iter()
+        .any(|p| !p.key.is_static || p.key.content == "$");
+    if has_dynamic_sources {
+        if props
+            .iter()
+            .any(|p| !p.key.is_static && p.key.is_handler_key)
+        {
+            ctx.use_helper("toHandlerKey");
+        }
+        // A `v-on` object source normalizes its keys to `onX` handlers.
+        if props
+            .iter()
+            .any(|p| p.key.content == "$" && p.key.is_handler_key)
+        {
+            ctx.use_helper("toHandlers");
+        }
+        return generate_component_spread_prop_refs_str(ctx, props.as_slice());
+    }
+
+    let prop_strs = generate_component_prop_entries(ctx, props.as_slice());
+    format_component_props(prop_strs.as_slice())
+}
+
+fn format_component_props(prop_strs: &[String]) -> String {
     if prop_strs.len() >= 2 {
         let mut result = String::from("{\n");
         for (i, prop_str) in prop_strs.iter().enumerate() {
@@ -59,6 +113,17 @@ pub(super) fn generate_component_props_str(
 }
 
 fn generate_component_spread_props_str(ctx: &GenerateContext, props: &[IRProp<'_>]) -> String {
+    generate_component_spread_props(ctx, props.iter())
+}
+
+fn generate_component_spread_prop_refs_str(ctx: &GenerateContext, props: &[&IRProp<'_>]) -> String {
+    generate_component_spread_props(ctx, props.iter().copied())
+}
+
+fn generate_component_spread_props<'a>(
+    ctx: &GenerateContext,
+    props: impl IntoIterator<Item = &'a IRProp<'a>>,
+) -> String {
     let mut sources: std::vec::Vec<String> = std::vec::Vec::new();
     let mut static_group: std::vec::Vec<&IRProp<'_>> = std::vec::Vec::new();
 
@@ -69,7 +134,9 @@ fn generate_component_spread_props_str(ctx: &GenerateContext, props: &[IRProp<'_
             let key = match prop.value_kind {
                 PropValueKind::ModelUpdate => cstr!("\"update:\" + ({key})"),
                 PropValueKind::ModelModifiers => cstr!("({key}) + \"Modifiers\""),
-                PropValueKind::Expression | PropValueKind::DisplayString => key,
+                PropValueKind::Expression
+                | PropValueKind::DisplayString
+                | PropValueKind::ForwardedSlots => key,
             };
             // Dynamic handler keys retain the event-name expression through
             // lowering; convert after resolving its authored lexical scope.
@@ -236,7 +303,7 @@ fn component_prop_expression_value(ctx: &GenerateContext, prop: &IRProp<'_>) -> 
             PropValueKind::DisplayString => {
                 return cstr!("_toDisplayString({})", ctx.resolve_expression_node(first));
             }
-            PropValueKind::Expression => {}
+            PropValueKind::Expression | PropValueKind::ForwardedSlots => {}
         }
         if let Some(raw) = first.content.strip_prefix("__RAW__") {
             return cstr!("({})()", raw);
