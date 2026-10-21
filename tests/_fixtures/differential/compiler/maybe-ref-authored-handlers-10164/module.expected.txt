@@ -1,0 +1,26 @@
+import { ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer"
+
+
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(`<!--[--><button>assign</button><button>compound</button><button>update</button>`)
+  _push(_ssrRenderComponent($setup.Child, { "model-value": $setup.count, "onUpdate:modelValue": $event => ($setup.count = $event) }, null, _parent))
+  _push(_ssrRenderComponent($setup.Child, { modelValue: $setup.count, "onUpdate:modelValue": $event => (($setup.count) = $event) }, null, _parent))
+  _push(`<!--]-->`)
+}
+import Child from './Child.js'
+import { useThing } from './thing.js'
+
+
+export default {
+  __name: 'Layout',
+  ssrRender: ssrRender,
+  setup(__props) {
+
+const { count } = useThing()
+
+const __returned__ = { Child, useThing, count }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+}

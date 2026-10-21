@@ -22,6 +22,24 @@ pub fn process_inline_handler<'a>(
     ctx: &mut TransformContext<'a>,
     exp: &ExpressionNode<'a>,
 ) -> ExpressionNode<'a> {
+    process_inline_handler_role(ctx, exp, false)
+}
+
+/// Process a compiler-generated `v-model` callback. Vue guards maybe-ref
+/// writes only in this role; authored event handlers use normal assignment
+/// expression lowering and write through `.value` directly.
+pub(crate) fn process_model_handler<'a>(
+    ctx: &mut TransformContext<'a>,
+    exp: &ExpressionNode<'a>,
+) -> ExpressionNode<'a> {
+    process_inline_handler_role(ctx, exp, true)
+}
+
+fn process_inline_handler_role<'a>(
+    ctx: &mut TransformContext<'a>,
+    exp: &ExpressionNode<'a>,
+    guard_maybe_ref_write: bool,
+) -> ExpressionNode<'a> {
     let allocator = ctx.allocator;
 
     let normalized = normalize_expression(exp, allocator, ctx.source);
@@ -59,7 +77,13 @@ pub fn process_inline_handler<'a>(
     if is_function {
         // Process identifiers in the handler
         if ctx.options.prefix_identifiers {
-            let result = rewrite_expression(content, ctx, false, retained.as_ref());
+            let result = rewrite_expression(
+                content,
+                ctx,
+                false,
+                retained.as_ref(),
+                guard_maybe_ref_write,
+            );
             if result.used_unref {
                 ctx.helper(crate::RuntimeHelper::Unref);
             }
@@ -117,7 +141,13 @@ pub fn process_inline_handler<'a>(
                     (*content).into()
                 }
             } else {
-                let result = rewrite_expression(content, ctx, false, retained.as_ref());
+                let result = rewrite_expression(
+                    content,
+                    ctx,
+                    false,
+                    retained.as_ref(),
+                    guard_maybe_ref_write,
+                );
                 if result.used_unref {
                     ctx.helper(crate::RuntimeHelper::Unref);
                 }
@@ -159,7 +189,13 @@ pub fn process_inline_handler<'a>(
         // references and authored functions retain their ordinary lexical scope.
         ctx.enter_scope(vize_croquis::ScopeKind::EventHandler);
         ctx.add_identifier("$event");
-        let result = rewrite_expression(content, ctx, false, retained.as_ref());
+        let result = rewrite_expression(
+            content,
+            ctx,
+            false,
+            retained.as_ref(),
+            guard_maybe_ref_write,
+        );
         ctx.exit_scope();
         if result.used_unref {
             ctx.helper(crate::RuntimeHelper::Unref);

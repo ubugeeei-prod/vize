@@ -26,7 +26,10 @@ impl IdentifierCollector<'_, '_> {
             .as_ref()
             .filter(|table| table.is_script_setup)
             .and_then(|table| table.bindings.get(name).copied())
-            .filter(|kind| matches!(kind, BindingType::SetupLet | BindingType::SetupMaybeRef))
+            .filter(|kind| {
+                matches!(kind, BindingType::SetupLet)
+                    || (self.guard_maybe_ref_write && matches!(kind, BindingType::SetupMaybeRef))
+            })
     }
 
     pub(super) fn guard_setup_assignment(&mut self, expr: &AssignmentExpression<'_>) {
@@ -244,7 +247,7 @@ mod tests {
         {
             let allocator = Allocator::new();
             let ctx = TransformContext::new(&allocator, source, options());
-            let actual = rewrite_expression(source, &ctx, false, None);
+            let actual = rewrite_expression(source, &ctx, false, None, false);
             assert_eq!(actual.parse_error, None);
             assert_eq!(actual.code.as_str(), expected);
             assert_eq!(actual.used_is_ref, index < 11);
@@ -302,7 +305,23 @@ mod tests {
     }
 
     #[test]
-    fn maybe_ref_setup_writes_use_null_fallback() {
+    fn maybe_ref_authored_writes_use_value_without_a_guard() {
+        for (source, expected) in [
+            ("maybe = next(n)", "maybe.value = _ctx.next(n.value)"),
+            ("maybe += next(n)", "maybe.value += _ctx.next(n.value)"),
+            ("maybe++", "maybe.value++"),
+        ] {
+            let allocator = Allocator::new();
+            let ctx = TransformContext::new(&allocator, source, options());
+            let actual = rewrite_expression(source, &ctx, false, None, false);
+            assert_eq!(actual.parse_error, None);
+            assert_eq!(actual.code.as_str(), expected);
+            assert!(!actual.used_is_ref);
+        }
+    }
+
+    #[test]
+    fn maybe_ref_model_writes_keep_the_null_guard() {
         for (source, expected) in [
             (
                 "maybe = next(n)",
@@ -312,7 +331,7 @@ mod tests {
         ] {
             let allocator = Allocator::new();
             let ctx = TransformContext::new(&allocator, source, options());
-            let actual = rewrite_expression(source, &ctx, false, None);
+            let actual = rewrite_expression(source, &ctx, false, None, true);
             assert_eq!(actual.parse_error, None);
             assert_eq!(actual.code.as_str(), expected);
             assert!(actual.used_is_ref);
@@ -335,7 +354,7 @@ mod tests {
             options.vapor = vapor;
             options.binding_metadata.as_mut().unwrap().is_script_setup = setup;
             let ctx = TransformContext::new(&allocator, source, options);
-            let actual = rewrite_expression(source, &ctx, false, None);
+            let actual = rewrite_expression(source, &ctx, false, None, false);
             assert_eq!(
                 (actual.code.as_str(), actual.used_is_ref, actual.parse_error),
                 (expected, false, None)
@@ -345,7 +364,7 @@ mod tests {
         let allocator = Allocator::new();
         let mut ctx = TransformContext::new(&allocator, source, options());
         ctx.add_identifier("evt");
-        let actual = rewrite_expression(source, &ctx, false, None);
+        let actual = rewrite_expression(source, &ctx, false, None, false);
         // This inverse role law preserves the existing transform-scope carrier.
         // The new conditional helper has no admission for an external local.
         assert_eq!(
