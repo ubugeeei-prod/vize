@@ -230,11 +230,12 @@ fn standard_tsgo_builds_package_exported_vue_project_references() {
         "broken package reference build passed unexpectedly"
     );
     let broken_text = output_text(&broken);
+    // The two project-reference checks both map to the authored binding coordinate.
     assert_eq!(
         diagnostic_lines(&broken_text),
         vec![
             "references/app/src/App.vue(8,13): error TS2322: Type 'string' is not assignable to type 'number'.",
-            "references/app/src/App.vue(8,35): error TS2322: Type 'string' is not assignable to type 'number'.",
+            "references/app/src/App.vue(8,13): error TS2322: Type 'string' is not assignable to type 'number'.",
         ]
     );
 
