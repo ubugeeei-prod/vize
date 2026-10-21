@@ -52,7 +52,7 @@
           "column": 28,
           "severity": 1,
           "code": 2345,
-          "message": "Argument of type '{ elevated: true; }' is not assignable to parameter of type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { [x: string]: unknown; } & { [x: `data${string}`]: unknown; } & Record<string, unknown>>'.\nProperty 'title' is missing in type '{ elevated: true; }' but required in type '{ readonly title: string; readonly elevated?: boolean | undefined; }'."
+          "message": "Argument of type '{ elevated: true; }' is not assignable to parameter of type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; ... 673 more ...; zoomAndPan?: unknown; } & { ...; } & Record<...>>'.\nProperty 'title' is missing in type '{ elevated: true; }' but required in type '{ readonly title: string; readonly elevated?: boolean | undefined; }'."
         },
         {
           "file": "src/MyCardExplicit.art.vue",
@@ -68,9 +68,27 @@
           "column": 28,
           "severity": 1,
           "code": 2345,
-          "message": "Argument of type '{ elevated: true; }' is not assignable to parameter of type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { [x: string]: unknown; } & { [x: `data${string}`]: unknown; } & Record<string, unknown>>'.\nProperty 'title' is missing in type '{ elevated: true; }' but required in type '{ readonly title: string; readonly elevated?: boolean | undefined; }'."
+          "message": "Argument of type '{ elevated: true; }' is not assignable to parameter of type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; ... 673 more ...; zoomAndPan?: unknown; } & { ...; } & Record<...>>'.\nProperty 'title' is missing in type '{ elevated: true; }' but required in type '{ readonly title: string; readonly elevated?: boolean | undefined; }'."
         }
       ]
+    },
+    {
+      "id": "implicit-subject-avoids-unknown-global-diagnostics",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/MyCard.vue",
+          "source": "src/MyCard.vue.txt"
+        },
+        {
+          "file": "src/MyCardValid.art.vue",
+          "source": "src/MyCardValid.art.vue.txt"
+        }
+      ],
+      "diagnostics": []
     }
   ]
 }
