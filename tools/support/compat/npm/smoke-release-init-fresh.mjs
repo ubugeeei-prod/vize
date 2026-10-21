@@ -130,7 +130,7 @@ function runFreshProjectCell(context, cell) {
   const beforeInit = snapshotFiles(projectRoot, tracked);
   assert.equal(
     runInit(context, projectRoot, [...shape.initFlags, "--dry-run"]),
-    expectedInitOutput(shape, projectRoot, manager, "dry"),
+    expectedInitOutput(shape, projectRoot, manager, "dry", { bootstrapped: true }),
   );
   assert.deepEqual(
     snapshotFiles(projectRoot, tracked),
@@ -140,7 +140,7 @@ function runFreshProjectCell(context, cell) {
 
   assert.equal(
     runInit(context, projectRoot, [...shape.initFlags, "--no-install"]),
-    expectedInitOutput(shape, projectRoot, manager, "apply"),
+    expectedInitOutput(shape, projectRoot, manager, "apply", { bootstrapped: true }),
   );
   for (const [name, source] of Object.entries(shape.expectedFiles)) {
     assert.equal(fs.readFileSync(path.join(projectRoot, name), "utf8"), source, `${name} mismatch`);
@@ -173,7 +173,7 @@ function runFreshProjectCell(context, cell) {
   const afterInit = snapshotFiles(projectRoot, tracked);
   assert.equal(
     runInit(context, projectRoot, [...shape.initFlags, "--no-install"]),
-    expectedInitOutput(shape, projectRoot, manager, "rerun"),
+    expectedInitOutput(shape, projectRoot, manager, "rerun", { bootstrapped: true }),
   );
   assert.deepEqual(
     snapshotFiles(projectRoot, tracked),

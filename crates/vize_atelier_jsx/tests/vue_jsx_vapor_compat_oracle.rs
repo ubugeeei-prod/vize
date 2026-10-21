@@ -18,6 +18,25 @@ use vize_l0::Allocator;
 
 const CORPUS: &str = include_str!("vue_jsx_vapor_compat/fixtures/corpus.json");
 
+fn compile_case(id: &str, source: &str, mode: JsxOutputMode, function_name: &str) -> Value {
+    let allocator = Allocator::new();
+    let output = compile_jsx(
+        &allocator,
+        source,
+        JsxLang::Jsx,
+        &JsxCompileConfig {
+            default_mode: mode,
+            ..Default::default()
+        },
+    );
+    assert!(!output.has_errors(), "{id}: {:?}", output.diagnostics);
+    assert_eq!(output.components.len(), 1, "{id}: one authored component");
+    json!({
+        "code": output.module_code(),
+        "functionName": function_name,
+    })
+}
+
 #[test]
 fn real_vue_jsx_vapor_mount_and_updates_match_inventory() {
     let corpus: Value = serde_json::from_str(CORPUS).expect("valid semantic corpus");
@@ -28,24 +47,17 @@ fn real_vue_jsx_vapor_mount_and_updates_match_inventory() {
         .map(|case| {
             let id = case["id"].as_str().expect("case id");
             let source = case["source"].as_str().expect("case source");
-            let allocator = Allocator::new();
-            let output = compile_jsx(
-                &allocator,
-                source,
-                JsxLang::Jsx,
-                &JsxCompileConfig {
-                    default_mode: JsxOutputMode::Vapor,
-                    ..Default::default()
-                },
-            );
-            assert!(!output.has_errors(), "{id}: {:?}", output.diagnostics);
-            assert_eq!(output.components.len(), 1, "{id}: one authored component");
-            json!({
+            let vapor = compile_case(id, source, JsxOutputMode::Vapor, "render");
+            let mut record = json!({
                 "id": id,
                 "source": source,
-                "code": output.module_code(),
-                "functionName": "render",
-            })
+                "code": vapor["code"],
+                "functionName": vapor["functionName"],
+            });
+            if case["babelCorpusId"].is_string() {
+                record["vdom"] = compile_case(id, source, JsxOutputMode::Vdom, "App");
+            }
+            record
         })
         .collect::<Vec<_>>();
 
@@ -81,4 +93,6 @@ fn real_vue_jsx_vapor_mount_and_updates_match_inventory() {
     assert_eq!(receipt["failures"], 0);
     assert_eq!(receipt["cases"], case_count);
     assert_eq!(receipt["equivalent"], case_count);
+    assert_eq!(receipt["babelCases"], 1);
+    assert_eq!(receipt["babelEquivalent"], 1);
 }

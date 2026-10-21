@@ -67,6 +67,20 @@ function detection(manager) {
   ];
 }
 
+function bootstrappedDetection(manager) {
+  return [
+    "  framework:       Nuxt (nuxt.config.ts)",
+    `  package manager: ${manager.detectedPackageManager}`,
+    "  language:        TypeScript (tsconfig.json)",
+    "  lint command:    oxlint",
+    "  Vue settings:    defaults",
+    // Nuxt's prepare hook creates this file before `vize init` runs. Oxlint
+    // does not read the `.mts` name, so the CLI must surface it without
+    // treating lint as already configured (#3474).
+    "  oxlint config:   oxlint.config.mts — present but oxlint does not read this name (#3474)",
+  ];
+}
+
 /**
  * One representative Nuxt cell joins the packed release to a real Nuxt
  * consumer. Package-manager compatibility is already covered by the Vite
@@ -80,6 +94,7 @@ export const NUXT_VUE_TS_SHAPE = {
   initFlags: ["--yes", "--no-lint", "--nuxt", "--fmt", "--typecheck", "--editor"],
   initialAbsentFiles: [".vscode"],
   detection,
+  bootstrappedDetection,
   features: [
     "  lint      skipped    not selected",
     "  bundler   configured adds @vizejs/nuxt to nuxt.config.ts",
@@ -88,6 +103,7 @@ export const NUXT_VUE_TS_SHAPE = {
     "  editor    configured writes .vscode/extensions.json recommending ubugeeei.vize",
   ],
   reconfiguredDetection: detection,
+  bootstrappedReconfiguredDetection: bootstrappedDetection,
   reconfiguredFeatures: [
     "  lint      skipped    not selected",
     "  bundler   unchanged  nuxt.config.ts already lists @vizejs/nuxt",

@@ -5,7 +5,10 @@ use crate::{
 use unicode_width::UnicodeWidthStr;
 use vize_l0::String;
 
-use super::directives::should_format_expression;
+#[cfg(test)]
+use super::directives::directive_head;
+use super::directives::{directive_name, should_format_expression, static_directive_argument};
+use vize_l1::markup::{DirectiveName, DirectivePrefix};
 mod render;
 #[cfg(test)]
 use render::write_rendered_attribute;
@@ -135,67 +138,52 @@ fn attr_sort_key(name: &str, merge_bind: bool) -> (u8, String) {
 /// `ref`/`key`/`slot`/`slot-scope`; 6 `v-model`; 7 other directives
 /// `v-slot`/`#xxx`; 8 other attributes; 9 events `@xxx`/`v-on`; 10 content
 /// `v-html`/`v-text`.
+#[cfg(test)]
 pub(crate) fn attribute_priority(name: &str) -> u8 {
-    // Exact directive name or an `:arg`/`.mod` boundary (so `v-models` etc. fall through to 7).
-    fn matches_directive(name: &str, directive: &str) -> bool {
-        name.strip_prefix(directive)
-            .is_some_and(|rest| rest.is_empty() || rest.starts_with([':', '.']))
-    }
-    if matches!(name, "is" | ":is" | "v-bind:is") {
+    let head = directive_head(name);
+    attribute_priority_with_head(name, head.as_ref())
+}
+
+pub(crate) fn attribute_priority_with_head(name: &str, head: Option<&DirectiveName>) -> u8 {
+    if name == "is" {
         return 0;
     }
-    if name == "v-for" {
-        return 1;
-    }
-    if matches!(name, "v-if" | "v-else-if" | "v-else" | "v-show" | "v-cloak") {
-        return 2;
-    }
-    if matches!(name, "v-pre" | "v-once") {
-        return 3;
-    }
-    if matches!(name, "id" | ":id" | "v-bind:id") {
+    if name == "id" {
         return 4;
     }
-    if matches!(
-        name,
-        "ref"
-            | "key"
-            | "slot"
-            | "slot-scope"
-            | ":ref"
-            | ":key"
-            | ":slot"
-            | ":slot-scope"
-            | "v-bind:ref"
-            | "v-bind:key"
-            | "v-bind:slot"
-            | "v-bind:slot-scope"
-    ) {
+    if matches!(name, "ref" | "key" | "slot" | "slot-scope") {
         return 5;
     }
-    if matches_directive(name, "v-model") {
-        return 6;
-    }
-    if matches!(name, "v-html" | "v-text") {
-        return 10;
-    }
-    // Events precede the directive fallback so `v-on` cannot swallow `v-once`.
-    if name.starts_with('@') || matches_directive(name, "v-on") {
-        return 9;
-    }
-    // Slots and every other directive form are patina's OtherDirectives.
-    if name.starts_with('#') || name.starts_with("v-slot") {
-        return 7;
-    }
-    // Bindings stay with plain attributes (patina: OtherAttrs).
-    if name.starts_with(':') || matches_directive(name, "v-bind") || name.starts_with('.') {
+    let Some(head) = head else {
         return 8;
+    };
+    match head.prefix {
+        DirectivePrefix::Bind => match static_directive_argument(name, head) {
+            Some("is") => 0,
+            Some("id") => 4,
+            Some("ref" | "key" | "slot" | "slot-scope") => 5,
+            _ => 8,
+        },
+        // Patina currently keeps property shorthand in OtherAttrs.
+        DirectivePrefix::Prop => 8,
+        DirectivePrefix::On => 9,
+        DirectivePrefix::Slot => 7,
+        DirectivePrefix::Full => match directive_name(name, head) {
+            Some("for") => 1,
+            Some("if" | "else-if" | "else" | "show" | "cloak") => 2,
+            Some("pre" | "once") => 3,
+            Some("model") => 6,
+            Some("html" | "text") => 10,
+            Some("on") => 9,
+            Some("bind") => match static_directive_argument(name, head) {
+                Some("is") => 0,
+                Some("id") => 4,
+                Some("ref" | "key" | "slot" | "slot-scope") => 5,
+                _ => 8,
+            },
+            Some("slot") | Some(_) | None => 7,
+        },
     }
-    if name.starts_with("v-") {
-        return 7;
-    }
-    // Plain attributes (class, style, data-*, ...).
-    8
 }
 
 /// Render an attribute back to its string representation.
