@@ -1,6 +1,6 @@
 //! Original inputs and independent whole references for nested directive calls.
 use std::{error::Error, fs, path::Path};
-use vize_glyph::{format_sfc, FormatOptions};
+use vize_glyph::{FormatOptions, format_sfc};
 
 #[test]
 fn directive_calls_observe_actual_indentation_and_three_public_fixed_points(
