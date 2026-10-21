@@ -100,7 +100,7 @@ const sourceRevisions = {
   "component-v-bind-duplicate-diagnostic-10069": "7174c46d55825c155325e6314305e661d50ec95a",
   "runtime-props-report-10100-10101": "5dfe002a9467d152c8545693df33def3aa5f3bf7",
   "native-pointer-events-original": "e7d8b1c82a8badec89ec9779838dfa50c1b9b790",
-  "workspace-alias-cache-10063": "7174c46d55825c155325e6314305e661d50ec95a",
+  "workspace-alias-cache-10063": "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
   "component-render-h-props-9855": "f15ca234a4bdd73bde9caea07e652f3a345eb342",
   "component-listener-alias-scope-10112": "7cefe3a00e6184de1e121d39b0e153f08a428aa6",
   "content-mapper-duplicate-attributes-10184": "0038b601e41dccb6f037aa68c3fc0207ea635e3b",

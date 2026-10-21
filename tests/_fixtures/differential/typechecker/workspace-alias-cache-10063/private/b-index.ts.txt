@@ -1,0 +1,2 @@
+export { makeThing } from "./x/make";
+export * from "@demo/c";

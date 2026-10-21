@@ -78,6 +78,14 @@ function syntheticReport(code = fixture.expected) {
                 id: current.dialectInputId,
                 sha256: current.dialectInputSha256,
                 transport: current.dialectTransport,
+                ...(current.dialectConfig
+                  ? {
+                      config: {
+                        path: current.dialectConfigPath,
+                        sha256: current.dialectConfigSha256,
+                      },
+                    }
+                  : {}),
               },
             }
           : {}),
@@ -135,6 +143,8 @@ void test("compiler fixture pins a real full-module reference without native cre
       "compiler/sfc/jsx-vapor-runtime-slots-6889",
       "compiler/sfc/root-text-patch-flag-10168",
       "compiler/sfc/scoped-slot-closure-10169",
+      "compiler/dialect/vue0-10-repeat",
+      "compiler/dialect/vue0-11-repeat",
       "compiler/dialect/quirks-adjacent-attributes",
       "compiler/dialect/quirks-void-close",
     ],
@@ -143,14 +153,22 @@ void test("compiler fixture pins a real full-module reference without native cre
   assert.deepEqual(validateCompilerReport(loaded, report, build), report.summary);
   const acceptance = summarizeNativeAcceptance(loaded, report, { sourceRevision });
   assert.deepEqual(acceptance.total, {
-    planned: 19,
+    planned: 21,
     nativeHandled: 0,
     nativeEquivalent: 0,
-    unsupported: 19,
+    unsupported: 21,
     legacyBacked: 0,
     unverified: 0,
   });
   assert.deepEqual(acceptance.dialectCoverage.verified["vue-quirks"], {
+    planned: 2,
+    nativeHandled: 0,
+    nativeEquivalent: 0,
+    unsupported: 2,
+    legacyBacked: 0,
+    unverified: 0,
+  });
+  assert.deepEqual(acceptance.dialectCoverage.verified["vue0-template"], {
     planned: 2,
     nativeHandled: 0,
     nativeEquivalent: 0,
@@ -169,7 +187,9 @@ void test("compiler fixture pins a real full-module reference without native cre
       .filter((current) => current.expectedCss !== null)
       .every((current) => Buffer.isBuffer(current.expectedCss)),
   );
-  const quirks = loaded.cases.filter((current) => current.dialectInput);
+  const dialects = loaded.cases.filter((current) => current.dialectInput);
+  assert.equal(dialects.length, 4);
+  const quirks = dialects.filter((current) => current.dialectInputId.includes("quirks"));
   assert.equal(quirks.length, 2);
   for (const current of quirks) {
     assert.deepEqual(current.argv, [
@@ -179,13 +199,43 @@ void test("compiler fixture pins a real full-module reference without native cre
       "--no-config",
     ]);
     assert.deepEqual(
-      compilerArgv({ dialectInput: { selector: { templateSyntax: "quirks" } } }),
+      compilerArgv({
+        dialectInput: { selector: { vueVersion: "3", templateSyntax: "quirks" } },
+      }),
       current.argv,
     );
     assert.equal(sha256(current.dialectInput), current.dialectInputSha256);
     assert.equal(current.dialectTransport, "sfc-template-wrapper-v1");
     assert.equal(current.dialectCoverage.state, "verified");
     assert.deepEqual(current.dialectCoverage.evidence[0].dialects, ["vue-quirks"]);
+  }
+  const vue0 = dialects.filter((current) => current.dialectInputId.includes("vue0-"));
+  assert.deepEqual(
+    vue0.map((current) => current.dialectInputId),
+    ["dialect/vue0-10-repeat", "dialect/vue0-11-repeat"],
+  );
+  for (const current of vue0) {
+    assert.deepEqual(current.argv, [
+      ...COMPILER_ARGV.slice(0, -1),
+      "--template-syntax",
+      "standard",
+      "--config",
+      "vite.config.mjs",
+    ]);
+    assert.deepEqual(
+      compilerArgv({ dialectInput: { selector: current.inputs.dialectInput.selector } }),
+      current.argv,
+    );
+    assert.equal(sha256(current.dialectInput), current.dialectInputSha256);
+    assert.equal(current.dialectTransport, "sfc-template-wrapper-v1");
+    assert.equal(current.dialectConfigPath, "vite.config.mjs");
+    assert.equal(sha256(current.dialectConfig), current.dialectConfigSha256);
+    assert.equal(
+      current.dialectConfig.toString(),
+      `export default { vue: { version: "${current.inputs.dialectInput.selector.vueVersion}" } };\n`,
+    );
+    assert.equal(current.dialectCoverage.state, "verified");
+    assert.deepEqual(current.dialectCoverage.evidence[0].dialects, ["vue0-template"]);
   }
 });
 

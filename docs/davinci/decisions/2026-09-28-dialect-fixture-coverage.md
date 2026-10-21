@@ -45,10 +45,19 @@ the complete SSR module bytes. These rows verify the `vue-quirks` dialect label,
 while their native lane remains explicitly unsupported and receives no native
 or equivalence credit.
 
-Remaining #6892 work is to promote the five grammar-generated Vue 0.x/1.x
-inputs into product manifests with actual adapter results, and make #6854
-aggregate each dialect and unknown bucket. Keep these as unfinished until
-actual case execution and provenance are recorded.
+The Vue 0.10 and 0.11 inventory rows intentionally share the same `v-repeat`
+template bytes, while retaining distinct historical selectors and parser
+modes. The compiler adapter generates a deterministic `vite.config.mjs` for
+each exact version, wraps the shared raw template in the same SFC transport,
+executes the source-built CLI with explicit standard syntax, and compares every
+emitted SSR module byte. The result verifies both `vue0-template` coordinates,
+not their semantic equivalence: native handling remains unsupported and earns
+no readiness credit.
+
+Remaining #6892 work is to promote the three grammar-generated Vue 1 inputs
+into product manifests with actual adapter results, and make #6854 aggregate
+each dialect and unknown bucket. Keep these as unfinished until actual case
+execution and provenance are recorded.
 
 The first shared case-ledger slice makes coverage a common manifest contract.
 Every planned case in compiler, formatter, linter, typechecker and LSP now
@@ -63,8 +72,9 @@ Fifteen of the seventeen ordinary compiler SSR cases have bounded
 selection; three typed-script cases also record `ts`. Their input bytes were
 already pinned by SHA-256, and the compiler loader binds these labels to its
 `--no-config` Vue 3 adapter. This is provisional measurement only. Together
-with the two verified quirks rows, the compiler manifest has nineteen cases;
-whole-product native compiler execution remains unsupported for all nineteen.
+with the two verified Vue 0 and two verified quirks rows, the compiler manifest
+has twenty-one cases; whole-product native compiler execution remains
+unsupported for all twenty-one.
 
 The typechecker registry also derives bounded `source-inspected` labels from
 each immutable authored input after its SHA-256 check. Sixty of 61 cases
@@ -84,6 +94,6 @@ immutable runtime files. The manifests cover Vue 2 and Vue 3 SFCs, HTML and Pug
 templates, JS, TS, JSX and TSX where those bytes exist; generic JSX is not
 promoted to the distinct Babel JSX dialect. Loader checks reject stale labels.
 All 121 linter and LSP cases remain in the unknown readiness denominator because
-source inspection is not native acceptance. The five Vue 0.x/1.x input-only
-rows remain outside the executed denominator; the two quirks rows are now
-registered compiler coordinates whose native result is still unsupported.
+source inspection is not native acceptance. The three Vue 1 input-only rows
+remain outside the executed denominator; the two Vue 0 and two quirks rows are
+now registered compiler coordinates whose native result is still unsupported.

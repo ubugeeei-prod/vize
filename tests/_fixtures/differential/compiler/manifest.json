@@ -706,6 +706,94 @@
       }
     },
     {
+      "id": "compiler/dialect/vue0-10-repeat",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "dialectInput": {
+          "id": "dialect/vue0-10-repeat",
+          "sha256": "8b430e9d9280334db4eddf403679f653f2e5db00cb17f7aaf6c44343a532b8aa",
+          "selector": {
+            "vueVersion": "0.10",
+            "templateSyntax": "standard"
+          },
+          "expectedParserMode": "legacy-v0.10",
+          "transport": "sfc-template-wrapper-v1"
+        }
+      },
+      "reference": {
+        "path": "vue0-10-repeat/module.expected.txt",
+        "sha256": "66ce3130ab756a9bc170a5c2f7e5328b6d5dfdbe27a466064ecf5bc10035a959",
+        "source": "davinci/vize_l1/src/dialect/vue.rs:Templates iterate with v-repeat"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-template-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native Vue 0.10 compilation remains unavailable; this row records the source-built compatibility adapter result only."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "verified",
+        "registryRef": "tests/_fixtures/differential/dialect-inputs/inventory.json",
+        "evidence": [
+          {
+            "kind": "adapter-execution",
+            "dialects": ["vue0-template"],
+            "selector": "compiler-cli-ssr-template-v1 Vue 0.10 via generated vite.config.mjs; --template-syntax standard; parser legacy-v0.10"
+          }
+        ]
+      }
+    },
+    {
+      "id": "compiler/dialect/vue0-11-repeat",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "dialectInput": {
+          "id": "dialect/vue0-11-repeat",
+          "sha256": "8b430e9d9280334db4eddf403679f653f2e5db00cb17f7aaf6c44343a532b8aa",
+          "selector": {
+            "vueVersion": "0.11",
+            "templateSyntax": "standard"
+          },
+          "expectedParserMode": "legacy-v0.11",
+          "transport": "sfc-template-wrapper-v1"
+        }
+      },
+      "reference": {
+        "path": "vue0-11-repeat/module.expected.txt",
+        "sha256": "66ce3130ab756a9bc170a5c2f7e5328b6d5dfdbe27a466064ecf5bc10035a959",
+        "source": "davinci/vize_l1/src/dialect/vue.rs:Shares the clause-style directive surface with 0.10"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-template-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native Vue 0.11 compilation remains unavailable; this row records the source-built compatibility adapter result only."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "verified",
+        "registryRef": "tests/_fixtures/differential/dialect-inputs/inventory.json",
+        "evidence": [
+          {
+            "kind": "adapter-execution",
+            "dialects": ["vue0-template"],
+            "selector": "compiler-cli-ssr-template-v1 Vue 0.11 via generated vite.config.mjs; --template-syntax standard; parser legacy-v0.11"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/dialect/quirks-adjacent-attributes",
       "state": "active",
       "targets": ["ssr"],

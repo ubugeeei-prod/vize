@@ -1,0 +1,4 @@
+import { authority } from "__vize_pnpm_fixture_provider";
+const providerMustBeTyped: "second" = authority;
+void providerMustBeTyped;
+export class Thing { private readonly brand!: void; }
