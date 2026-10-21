@@ -403,10 +403,7 @@ const save = () => undefined
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
     assert_eq!(
-        output
-            .code
-            .matches("_click_prop_args_library =")
-            .count(),
+        output.code.matches("_click_prop_args_library =").count(),
         2,
         "each sibling generated guard must declare the stable listener contract it references: {}",
         output.code
