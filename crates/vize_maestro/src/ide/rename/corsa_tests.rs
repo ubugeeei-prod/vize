@@ -4,7 +4,10 @@ use std::{fs, sync::Arc};
 use tower_lsp::lsp_types::{PrepareRenameResponse, Range, TextEdit, Url};
 use vize_canon::{CorsaBridge, CorsaBridgeConfig};
 
-use crate::{ide::IdeContext, ide::rename::RenameService, server::ServerState};
+use crate::{
+    ide::{IdeContext, ReferencesService, rename::RenameService},
+    server::ServerState,
+};
 
 mod component_props;
 mod package_routes;
@@ -287,6 +290,105 @@ const handleSave = (id: string) => id;
             &kebab_from_child,
             (&parent_uri, parent_source, "save-item", "final-event"),
             (&child_uri, child_source, "saveItem", "finalEvent"),
+        );
+    });
+}
+
+#[test]
+fn canonical_pug_component_event_references_and_rename_use_authored_name() {
+    crate::runtime::block_on(async {
+        let Some(tsgo_path) = resolve_tsgo_binary() else {
+            return;
+        };
+        let project = tempfile::TempDir::new().expect("temp project");
+        let project_root = project
+            .path()
+            .canonicalize()
+            .expect("canonical project root");
+        let src = project_root.join("src");
+        fs::create_dir_all(&src).expect("src");
+        fs::write(
+            project_root.join("tsconfig.json"),
+            r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "include": ["src/**/*"]
+}"#,
+        )
+        .expect("tsconfig");
+
+        let child_source = r#"<script setup lang="ts">
+defineEmits<{ saveItem: [id: string] }>();
+</script>
+"#;
+        let parent_source = r#"<script setup lang="ts">
+import Child from "./Child.vue";
+const handleSave = (id: string) => id;
+</script>
+<template lang="pug">
+Child(
+  @save-item.once="handleSave"
+)
+</template>
+"#;
+        let child_path = src.join("Child.vue");
+        let parent_path = src.join("Parent.vue");
+        fs::write(&child_path, child_source).expect("child");
+        fs::write(&parent_path, parent_source).expect("parent");
+        let child_uri = Url::from_file_path(&child_path).expect("child uri");
+        let parent_uri = Url::from_file_path(&parent_path).expect("parent uri");
+        let state = ServerState::new();
+        state.set_workspace_root(project_root.clone());
+        for (uri, source) in [(&child_uri, child_source), (&parent_uri, parent_source)] {
+            state
+                .documents
+                .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+            state.update_virtual_docs(uri, source);
+        }
+        let bridge = Arc::new(CorsaBridge::with_config(CorsaBridgeConfig {
+            corsa_path: Some(tsgo_path),
+            working_dir: Some(project_root),
+            timeout_ms: 30_000,
+            ..Default::default()
+        }));
+        bridge.spawn().await.expect("tsgo session");
+
+        let parent_offset = parent_source.find("save-item").expect("parent event") + 2;
+        let parent_ctx = IdeContext::new(&state, &parent_uri, parent_offset).expect("parent ctx");
+        let references =
+            ReferencesService::references_with_corsa(&parent_ctx, true, Some(Arc::clone(&bridge)))
+                .await
+                .expect("Pug event references");
+        assert!(references.iter().any(|location| {
+            location.uri == parent_uri
+                && authored_text(parent_source, location.range) == "save-item"
+        }));
+        assert!(references.iter().any(|location| {
+            location.uri == child_uri && authored_text(child_source, location.range) == "saveItem"
+        }));
+
+        let prepared =
+            RenameService::prepare_rename_with_corsa(&parent_ctx, Some(Arc::clone(&bridge)))
+                .await
+                .expect("prepare Pug event rename");
+        assert_eq!(
+            authored_text(parent_source, prepare_range(prepared)),
+            "save-item"
+        );
+        let edit =
+            RenameService::rename_with_corsa(&parent_ctx, "nextItem", Some(Arc::clone(&bridge)))
+                .await
+                .expect("rename Pug event");
+        bridge.shutdown().await.expect("shutdown");
+        assert_component_event_edits(
+            &edit,
+            (&parent_uri, parent_source, "save-item", "next-item"),
+            (&child_uri, child_source, "saveItem", "nextItem"),
         );
     });
 }

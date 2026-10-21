@@ -14,6 +14,7 @@ import type {
   NoMutatingPropsOption,
   PatinaRuleOptions,
   SfcElementOrderOption,
+  VBindStyle,
   VOnStyle,
 } from "./model.js";
 
@@ -63,6 +64,11 @@ export function getRuleOptions(
     case "vue/v-on-style":
       if (isVOnStyle(firstOption)) {
         return { ruleOptions: { "vue/v-on-style": firstOption } };
+      }
+      break;
+    case "vue/v-bind-style":
+      if (isVBindStyle(firstOption)) {
+        return { ruleOptions: { "vue/v-bind-style": firstOption } };
       }
       break;
     case "vue/attribute-hyphenation":
@@ -157,5 +163,9 @@ function isHyphenationStyle(value: unknown): value is HyphenationStyle {
 }
 
 function isVOnStyle(value: unknown): value is VOnStyle {
+  return value === "shorthand" || value === "longform";
+}
+
+function isVBindStyle(value: unknown): value is VBindStyle {
   return value === "shorthand" || value === "longform";
 }

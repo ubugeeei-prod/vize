@@ -212,6 +212,9 @@ pub(super) fn apply_rule_options(
     if let Some(style) = options.v_on_style() {
         linter = linter.with_v_on_style(v_on_style(style));
     }
+    if let Some(style) = options.v_bind_style() {
+        linter = linter.with_v_bind_style(v_bind_style(style));
+    }
     if let Some(style) = options.attribute_hyphenation() {
         linter = linter.with_attribute_hyphenation(attribute_hyphenation_style(style));
     }
@@ -342,6 +345,17 @@ fn v_on_style(style: vize_l0::config::VOnStyle) -> vize_patina::rules::vue::VOnS
     match style {
         vize_l0::config::VOnStyle::Shorthand => vize_patina::rules::vue::VOnStyleOption::Shorthand,
         vize_l0::config::VOnStyle::Longform => vize_patina::rules::vue::VOnStyleOption::Longform,
+    }
+}
+
+fn v_bind_style(style: vize_l0::config::VBindStyle) -> vize_patina::rules::vue::VBindStyleOption {
+    match style {
+        vize_l0::config::VBindStyle::Shorthand => {
+            vize_patina::rules::vue::VBindStyleOption::Shorthand
+        }
+        vize_l0::config::VBindStyle::Longform => {
+            vize_patina::rules::vue::VBindStyleOption::Longform
+        }
     }
 }
 

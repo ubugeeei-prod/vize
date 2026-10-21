@@ -8,6 +8,198 @@ pub(crate) struct OpeningTagContext {
     pub(crate) inside_attribute_value: bool,
 }
 
+/// Authored byte spans for the Pug tag and attribute name under the cursor.
+///
+/// The attribute span includes Vue shorthand prefixes and event modifiers. It
+/// is intentionally syntax-only so definition, hover, references, and rename
+/// can apply their own semantic normalization to the same authored token.
+pub(crate) struct AttributeNameSpan {
+    pub(crate) tag_start: usize,
+    pub(crate) tag_end: usize,
+    pub(crate) attribute_start: usize,
+    pub(crate) attribute_end: usize,
+}
+
+pub(crate) fn attribute_name_span_at_offset(
+    content: &str,
+    offset: usize,
+) -> Option<AttributeNameSpan> {
+    let cursor = offset.min(content.len());
+    let (_, region_end, tag_start, tag_end) = tag_name_span_at_offset(content, cursor)?;
+    let open = read_tag_suffix_end(content, tag_end, region_end);
+    if content.as_bytes().get(open) != Some(&b'(') {
+        return None;
+    }
+    let close = find_attribute_end(content, open, region_end)?;
+    let mut pos = open + 1;
+
+    while pos < close {
+        pos = skip_attribute_separators(content, pos, close);
+        if pos >= close {
+            break;
+        }
+
+        let attribute_start = pos;
+        while pos < close {
+            let ch = content.get(pos..)?.chars().next()?;
+            if ch.is_ascii_whitespace() || matches!(ch, '=' | ',' | ')') {
+                break;
+            }
+            pos += ch.len_utf8();
+        }
+        let attribute_end = pos;
+        if attribute_start == attribute_end {
+            return None;
+        }
+
+        if cursor >= attribute_start && cursor <= attribute_end {
+            return Some(AttributeNameSpan {
+                tag_start,
+                tag_end,
+                attribute_start,
+                attribute_end,
+            });
+        }
+
+        pos = skip_ascii_whitespace(content, pos, close);
+        if content.as_bytes().get(pos) == Some(&b'=') {
+            pos = skip_attribute_value(content, pos + 1, close);
+        }
+    }
+
+    None
+}
+
+fn skip_attribute_separators(content: &str, mut pos: usize, end: usize) -> usize {
+    while pos < end
+        && content
+            .as_bytes()
+            .get(pos)
+            .is_some_and(|byte| byte.is_ascii_whitespace() || *byte == b',')
+    {
+        pos += 1;
+    }
+    pos
+}
+
+fn skip_ascii_whitespace(content: &str, mut pos: usize, end: usize) -> usize {
+    while pos < end
+        && content
+            .as_bytes()
+            .get(pos)
+            .is_some_and(u8::is_ascii_whitespace)
+    {
+        pos += 1;
+    }
+    pos
+}
+
+fn skip_attribute_value(content: &str, mut pos: usize, end: usize) -> usize {
+    pos = skip_ascii_whitespace(content, pos, end);
+    let value_start = pos;
+    let mut quote = None;
+    let mut escaped = false;
+    let mut paren_depth = 0usize;
+    let mut bracket_depth = 0usize;
+    let mut brace_depth = 0usize;
+
+    while pos < end {
+        let Some(ch) = content.get(pos..).and_then(|rest| rest.chars().next()) else {
+            break;
+        };
+        if let Some(open_quote) = quote {
+            if escaped {
+                escaped = false;
+            } else if ch == '\\' {
+                escaped = true;
+            } else if ch == open_quote {
+                quote = None;
+            }
+        } else {
+            match ch {
+                '"' | '\'' | '`' => quote = Some(ch),
+                '(' => paren_depth += 1,
+                ')' if paren_depth > 0 => paren_depth -= 1,
+                '[' => bracket_depth += 1,
+                ']' if bracket_depth > 0 => bracket_depth -= 1,
+                '{' => brace_depth += 1,
+                '}' if brace_depth > 0 => brace_depth -= 1,
+                ',' if paren_depth == 0 && bracket_depth == 0 && brace_depth == 0 => break,
+                _ if ch.is_ascii_whitespace()
+                    && paren_depth == 0
+                    && bracket_depth == 0
+                    && brace_depth == 0 =>
+                {
+                    let next = skip_ascii_whitespace(content, pos + ch.len_utf8(), end);
+                    if looks_like_attribute_start(content, next, end)
+                        && !starts_with_expression_continuation(content, next, end)
+                        && is_complete_attribute_expression(content, value_start, pos)
+                    {
+                        return next;
+                    }
+                }
+                _ => {}
+            }
+        }
+        pos += ch.len_utf8();
+    }
+
+    pos
+}
+
+fn looks_like_attribute_start(content: &str, start: usize, end: usize) -> bool {
+    let Some(first) = content.as_bytes().get(start) else {
+        return false;
+    };
+    if !first.is_ascii_alphabetic() && !matches!(first, b'_' | b':' | b'@' | b'#') {
+        return false;
+    }
+
+    let mut pos = start;
+    while pos < end {
+        let Some(ch) = content.get(pos..).and_then(|rest| rest.chars().next()) else {
+            return false;
+        };
+        if ch.is_ascii_whitespace() || matches!(ch, '=' | ',' | ')') {
+            break;
+        }
+        if !ch.is_ascii_alphanumeric()
+            && !matches!(ch, '_' | '-' | '$' | ':' | '@' | '#' | '.' | '[' | ']')
+        {
+            return false;
+        }
+        pos += ch.len_utf8();
+    }
+    start < pos
+}
+
+fn starts_with_expression_continuation(content: &str, start: usize, end: usize) -> bool {
+    let Some(rest) = content.get(start..end) else {
+        return false;
+    };
+    let token_end = rest
+        .find(|ch: char| !ch.is_ascii_alphabetic())
+        .unwrap_or(rest.len());
+    matches!(
+        rest.get(..token_end),
+        Some("in" | "instanceof" | "as" | "satisfies")
+    )
+}
+
+fn is_complete_attribute_expression(content: &str, value_start: usize, value_end: usize) -> bool {
+    let Some(value) = content.get(value_start..value_end).map(str::trim) else {
+        return false;
+    };
+    if value.is_empty() {
+        return false;
+    }
+
+    let allocator = oxc_allocator::Allocator::default();
+    oxc_parser::Parser::new(&allocator, value, oxc_span::SourceType::ts())
+        .parse_expression()
+        .is_ok()
+}
+
 pub(crate) fn tag_name_span_at_offset(
     content: &str,
     offset: usize,
@@ -384,7 +576,8 @@ fn is_attribute_name_byte(byte: u8) -> bool {
 #[cfg(test)]
 mod tests {
     use super::{
-        directive_value_start_at_offset, opening_tag_context_at_offset, tag_name_span_at_offset,
+        attribute_name_span_at_offset, directive_value_start_at_offset,
+        opening_tag_context_at_offset, tag_name_span_at_offset,
     };
 
     #[test]
@@ -521,5 +714,123 @@ mod tests {
         let html = "<template>\n  pane(:size=\"pane.size\")\n</template>\n";
         let offset = html.find("pane.size").unwrap() + 1;
         assert_eq!(directive_value_start_at_offset(html, offset), None);
+    }
+
+    #[test]
+    fn reads_authored_attribute_name_spans_for_pug_and_jade() {
+        for language in ["pug", "jade"] {
+            let language_attr = ["lang=\"", language, "\""].concat();
+            let source = r#"<template lang="pug">
+  Child.card(
+    :message="format(value, nested(1))"
+    @save-item.once='save'
+    plain
+    :value=left + right
+  )
+</template>
+"#
+            .replace("lang=\"pug\"", &language_attr);
+
+            for (needle, expected) in [
+                (":message", ":message"),
+                ("save-item", "@save-item.once"),
+                ("plain", "plain"),
+            ] {
+                let offset = source.find(needle).unwrap() + 1;
+                let span = attribute_name_span_at_offset(&source, offset)
+                    .expect("authored Pug attribute name");
+                assert_eq!(
+                    &source[span.tag_start..span.tag_end],
+                    "Child",
+                    "{language}/{needle}"
+                );
+                assert_eq!(
+                    &source[span.attribute_start..span.attribute_end],
+                    expected,
+                    "{language}/{needle}"
+                );
+            }
+
+            let value_offset = source.find("nested").unwrap() + 1;
+            assert!(attribute_name_span_at_offset(&source, value_offset).is_none());
+            let spaced_value_offset = source.find("right").unwrap() + 1;
+            assert!(
+                attribute_name_span_at_offset(&source, spaced_value_offset).is_none(),
+                "{language}: an identifier inside an unquoted expression is not an attribute name",
+            );
+        }
+    }
+
+    #[test]
+    fn separates_bare_attributes_from_complete_unquoted_expressions() {
+        for language in ["pug", "jade"] {
+            let language_attr = ["lang=\"", language, "\""].concat();
+            let source = r#"<template lang="pug">
+  Child(
+    :model=model disabled
+    :binary=left + right required
+    :construct=new Foo readonly
+    :unary=typeof value autofocus
+    :keyword=left instanceof right multiple
+  )
+</template>
+"#
+            .replace("lang=\"pug\"", &language_attr);
+
+            for name in ["disabled", "required", "readonly", "autofocus", "multiple"] {
+                let offset = source.find(name).unwrap() + 1;
+                let span = attribute_name_span_at_offset(&source, offset)
+                    .expect("bare Pug attribute after an unquoted expression");
+                assert_eq!(
+                    source.get(span.attribute_start..span.attribute_end),
+                    Some(name),
+                    "{language}/{name}",
+                );
+            }
+
+            for value_part in [
+                "model disabled",
+                "right required",
+                "Foo readonly",
+                "value autofocus",
+                "instanceof",
+                "right multiple",
+            ] {
+                let offset = source.find(value_part).unwrap() + 1;
+                assert_eq!(
+                    attribute_name_span_at_offset(&source, offset)
+                        .and_then(|span| source.get(span.attribute_start..span.attribute_end)),
+                    None,
+                    "{language}/{value_part}",
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn keeps_quoted_expression_suffixes_inside_attribute_values() {
+        for language in ["pug", "jade"] {
+            let language_attr = ["lang=\"", language, "\""].concat();
+            let source = r#"<template lang="pug">
+  Child(title='a' + b disabled)
+</template>
+"#
+            .replace("lang=\"pug\"", &language_attr);
+
+            let value_offset = source.find("b disabled").unwrap();
+            assert!(
+                attribute_name_span_at_offset(&source, value_offset).is_none(),
+                "{language}: an identifier after a quoted value prefix is not an attribute name",
+            );
+
+            let attribute_offset = source.find("disabled").unwrap() + 1;
+            let span = attribute_name_span_at_offset(&source, attribute_offset)
+                .expect("bare Pug attribute after a quoted expression");
+            assert_eq!(
+                source.get(span.attribute_start..span.attribute_end),
+                Some("disabled"),
+                "{language}",
+            );
+        }
     }
 }

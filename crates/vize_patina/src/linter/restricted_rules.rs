@@ -17,7 +17,8 @@ use crate::rules::script::{CustomEventNameCasing, EventNameCasing};
 use crate::rules::script::{DefineMacrosOrder, NoRestrictedMembers, RestrictedGlobals};
 use crate::rules::vue::{
     AttributeHyphenation, HyphenationStyle, NoMutatingProps, NoMutatingPropsOptions,
-    SfcElementOrder, SfcElementOrderOptions, VOnStyle, VOnStyleOption,
+    SfcElementOrder, SfcElementOrderOptions, VBindStyle, VBindStyleOption, VOnStyle,
+    VOnStyleOption,
 };
 use vize_l0::String;
 
@@ -228,6 +229,13 @@ impl Linter {
     #[inline]
     pub fn with_v_on_style(mut self, style: VOnStyleOption) -> Self {
         self.registry.replace(Box::new(VOnStyle { style }));
+        self
+    }
+
+    /// Configure `vue/v-bind-style` without enabling an unselected rule.
+    #[inline]
+    pub fn with_v_bind_style(mut self, style: VBindStyleOption) -> Self {
+        self.registry.replace(Box::new(VBindStyle { style }));
         self
     }
 

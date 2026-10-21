@@ -866,6 +866,36 @@
       }
     },
     {
+      "id": "lsp/regression/pug-attribute-navigation-8908",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "case": {
+        "path": "pug-attribute-navigation-8908/case.json",
+        "sha256": "c87fe34e5586bf7860648f97d42dd50ce45e799512b01240aece92d85305eb0e"
+      },
+      "inputs": {
+        "root": "pug-attribute-navigation-8908",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "a7a9a51e51043452917f5cf1f85fe7d85dda1d0e3454a2852dae1b0685a68c00"
+          },
+          {
+            "path": "Child.vue.txt",
+            "sha256": "5c46ed7c79b79ee33980737a1033e513b98417178635c177402f505e3fb9a0d4"
+          }
+        ]
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
       "id": "lsp/regression/formatter-whitespace-entries-10031",
       "state": "active",
       "targets": [

@@ -274,6 +274,42 @@ Good:
 </template>
 ```
 
+## `vue/v-bind-style`
+
+Use this option to choose the authored binding-directive spelling. The default `shorthand` style
+requires `:class`; `longform` requires `v-bind:class`. Both modes preserve arguments, modifiers,
+and values when applying a fix. Object syntax such as `v-bind="attrs"` and the `.prop` shorthand
+have no interchangeable form and are therefore left unchanged.
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "rules": {
+        "vue/v-bind-style": "warn"
+      },
+      "ruleOptions": {
+        "vue/v-bind-style": "longform"
+      }
+    }
+  }
+});
+```
+
+Bad with the config above:
+
+```vue
+<a :title.camel="title">Open</a>
+```
+
+Good:
+
+```vue
+<a v-bind:title.camel="title" v-bind="attrs">Open</a>
+```
+
 ## `vue/v-on-style`
 
 Use this option to choose the authored event-directive spelling. The default `shorthand` style

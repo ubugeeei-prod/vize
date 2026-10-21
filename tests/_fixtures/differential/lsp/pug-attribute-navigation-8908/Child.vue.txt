@@ -1,0 +1,4 @@
+<script setup lang="ts">
+defineProps<{ message: string }>()
+defineEmits<{ saveItem: [] }>()
+</script>

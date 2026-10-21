@@ -5,7 +5,9 @@ use oxc_span::SourceType;
 use tower_lsp::lsp_types::{Range, WorkspaceEdit};
 use vize_croquis::{Drawer, DrawerOptions};
 
-use crate::ide::{IdeContext, corsa_support::CanonicalVirtualDocument};
+use crate::ide::{
+    IdeContext, corsa_support::CanonicalVirtualDocument, definition::helpers, is_component_tag,
+};
 
 use super::super::RenameService;
 
@@ -118,9 +120,12 @@ pub(super) fn model_linked_positions(
 }
 
 fn component_event_range_at(ctx: &IdeContext<'_>) -> Option<OffsetRange<usize>> {
-    component_event_ranges(&ctx.content, ctx.uri.path())
-        .into_iter()
-        .find(|range| ctx.offset >= range.start && ctx.offset < range.end)
+    let authored = helpers::raw_attribute_with_source_span_at_offset(ctx)?;
+    if !is_component_tag(&authored.tag_name) {
+        return None;
+    }
+    let (_, start, end) = helpers::event_name_span(&authored.raw_name, authored.name_start)?;
+    (ctx.offset >= start && ctx.offset < end).then_some(start..end)
 }
 
 pub(super) fn component_event_ranges(source: &str, filename: &str) -> Vec<OffsetRange<usize>> {
@@ -165,7 +170,37 @@ pub(super) fn component_event_ranges(source: &str, filename: &str) -> Vec<Offset
             ranges.push(name_start..name_start + event.name.len());
         }
     }
+    append_pug_component_event_ranges(source, &mut ranges);
+    ranges.sort_by_key(|range| (range.start, range.end));
+    ranges.dedup();
     ranges
+}
+
+fn append_pug_component_event_ranges(source: &str, ranges: &mut Vec<OffsetRange<usize>>) {
+    let mut append_at = |offset| {
+        let Some(span) = crate::ide::pug::attribute_name_span_at_offset(source, offset) else {
+            return;
+        };
+        let Some(tag_name) = source.get(span.tag_start..span.tag_end) else {
+            return;
+        };
+        if !is_component_tag(tag_name) {
+            return;
+        }
+        let Some(raw_name) = source.get(span.attribute_start..span.attribute_end) else {
+            return;
+        };
+        let Some((_, start, end)) = helpers::event_name_span(raw_name, span.attribute_start) else {
+            return;
+        };
+        ranges.push(start..end);
+    };
+    for (offset, _) in source.match_indices('@') {
+        append_at(offset);
+    }
+    for (offset, _) in source.match_indices("v-on:") {
+        append_at(offset);
+    }
 }
 
 fn query_is_event_source(ctx: &IdeContext<'_>) -> bool {
@@ -256,6 +291,27 @@ mod tests {
         let ranges = component_event_ranges(source, "Parent.vue");
         assert_eq!(ranges.len(), 1, "{ranges:#?}");
         assert_eq!(&source[ranges[0].clone()], "save-item");
+    }
+
+    #[test]
+    fn finds_multiline_pug_and_jade_component_event_names() {
+        for language in ["pug", "jade"] {
+            let language_attr = ["lang=\"", language, "\""].concat();
+            let source = r#"<script setup>import Child from "./Child.vue"</script>
+<template lang="pug">
+Child(
+  @save-item.once="handler"
+  v-on:close.capture="close"
+)
+</template>"#
+                .replace("lang=\"pug\"", &language_attr);
+            let ranges = component_event_ranges(&source, "Parent.vue");
+            let names = ranges
+                .into_iter()
+                .map(|range| &source[range])
+                .collect::<Vec<_>>();
+            assert_eq!(names, ["save-item", "close"], "{language}");
+        }
     }
 
     #[test]

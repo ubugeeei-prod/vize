@@ -90,6 +90,19 @@ pub(super) fn v_on_style(
     }
 }
 
+pub(super) fn v_bind_style(
+    style: vize_l0::config::VBindStyle,
+) -> vize_patina::rules::vue::VBindStyleOption {
+    match style {
+        vize_l0::config::VBindStyle::Shorthand => {
+            vize_patina::rules::vue::VBindStyleOption::Shorthand
+        }
+        vize_l0::config::VBindStyle::Longform => {
+            vize_patina::rules::vue::VBindStyleOption::Longform
+        }
+    }
+}
+
 pub(super) fn attribute_hyphenation_style(
     style: vize_l0::config::HyphenationStyle,
 ) -> vize_patina::rules::HyphenationStyle {

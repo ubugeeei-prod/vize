@@ -10,6 +10,7 @@ typealias TemplateComponentNameCasing = "PascalCase"|"kebab-case"
 typealias CustomEventNameCasing = "camelCase"|"kebab-case"
 typealias HtmlSelfClosingStyle = "always"|"never"|"any"
 typealias HyphenationStyle = "always"|"never"
+typealias VBindStyle = "shorthand"|"longform"
 typealias VOnStyle = "shorthand"|"longform"
 
 /// A restricted global identifier for `script/no-restricted-globals`.
@@ -148,6 +149,7 @@ class LintRuleOptions {
   `vue/sfc-element-order`: SfcElementOrderOptions? = null
   `vue/html-self-closing`: HtmlSelfClosingOptions? = null
   `vue/v-on-event-hyphenation`: HyphenationStyle? = null
+  `vue/v-bind-style`: VBindStyle? = null
   `vue/v-on-style`: VOnStyle? = null
   `vue/attribute-hyphenation`: HyphenationStyle? = null
   `vue/valid-v-on`: ValidVOnOptions? = null

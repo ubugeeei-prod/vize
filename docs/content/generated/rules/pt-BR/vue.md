@@ -5514,7 +5514,7 @@ Severidade padrão: `warning`
 Predefinições: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correção automática: Disponível para os diagnósticos compatíveis  
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra  
-Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
+Opções: Consulte as [opções tipadas e os valores padrão](/rules/options.md).
 
 **Configuração (Vite+)**
 

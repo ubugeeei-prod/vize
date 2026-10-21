@@ -171,6 +171,7 @@ test("strict boolean rows render within the complete option and type-aware table
     "vue/sfc-element-order",
     "vue/html-self-closing",
     "vue/v-on-event-hyphenation",
+    "vue/v-bind-style",
     "vue/v-on-style",
     "vue/attribute-hyphenation",
     "vue/valid-v-slot",

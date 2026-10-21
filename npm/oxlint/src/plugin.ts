@@ -198,6 +198,8 @@ function ruleOptionsSchema(ruleName: string): unknown[] {
       return [{ enum: ["always", "never"] }];
     case "vue/v-on-style":
       return [{ enum: ["shorthand", "longform"] }];
+    case "vue/v-bind-style":
+      return [{ enum: ["shorthand", "longform"] }];
     case "vue/require-component-registration":
       return [objectSchema({ globals: stringArraySchema() })];
     case "vue/valid-v-on":

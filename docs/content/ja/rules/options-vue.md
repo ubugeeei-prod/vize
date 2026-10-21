@@ -295,6 +295,44 @@ export default defineConfig({
 </template>
 ```
 
+<span id="vue-v-bind-style"></span>
+
+## `vue/v-bind-style`：バインディングディレクティブの表記
+
+バインディングディレクティブをどちらの形式で記述するかを指定します。既定の `shorthand` は
+`:class` を要求し、`longform` は `v-bind:class` を要求します。どちらの設定でも修正時に
+引数・修飾子・値を保持します。`v-bind="attrs"` のように対応する省略記法がないオブジェクト形式と
+`.prop` 省略記法は変更しません。
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "rules": {
+        "vue/v-bind-style": "warn"
+      },
+      "ruleOptions": {
+        "vue/v-bind-style": "longform"
+      }
+    }
+  }
+});
+```
+
+上の設定で報告される例：
+
+```vue
+<a :title.camel="title">開く</a>
+```
+
+設定に沿った例：
+
+```vue
+<a v-bind:title.camel="title" v-bind="attrs">開く</a>
+```
+
 <span id="vue-v-on-style"></span>
 
 ## `vue/v-on-style`：イベントディレクティブの表記

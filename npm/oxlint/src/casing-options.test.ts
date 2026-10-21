@@ -203,6 +203,7 @@ fs.writeFileSync(
           { order: ["template", "script:not([setup])", "script[setup]", "style"] },
         ],
         "vize/vue/v-on-event-hyphenation": ["error", "never"],
+        "vize/vue/v-bind-style": ["error", "longform"],
         "vize/vue/v-on-style": ["error", "longform"],
         "vize/vue/attribute-hyphenation": ["error", "never"],
       },
@@ -214,7 +215,7 @@ fs.writeFileSync(
 fs.writeFileSync(
   ruleOptionsPath,
   `<template>
-  <MyWidget my-prop="value" @my-event="handler" />
+  <MyWidget :modelValue="props.count" my-prop="value" @my-event="handler" />
 </template>
 
 <script setup lang="ts">
@@ -252,6 +253,12 @@ assert.equal(
 assert.equal(
   ruleOptionsPayload.diagnostics.filter(
     (diagnostic) => diagnostic.code === "vize(vue/v-on-event-hyphenation)",
+  ).length,
+  1,
+);
+assert.equal(
+  ruleOptionsPayload.diagnostics.filter(
+    (diagnostic) => diagnostic.code === "vize(vue/v-bind-style)",
   ).length,
   1,
 );

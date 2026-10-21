@@ -228,6 +228,13 @@ it("projects v-on style into the typed CLI-compatible option map", () => {
   assert.equal(getRuleOptions("vue/v-on-style", ["sometimes"]), undefined);
 });
 
+it("projects v-bind style into the typed CLI-compatible option map", () => {
+  assert.deepEqual(getRuleOptions("vue/v-bind-style", ["longform"]), {
+    ruleOptions: { "vue/v-bind-style": "longform" },
+  });
+  assert.equal(getRuleOptions("vue/v-bind-style", ["sometimes"]), undefined);
+});
+
 it("collects every CLI-shaped rule option into one native option map", () => {
   const authored = {
     "script/define-props-destructuring": { destructure: "always" },
