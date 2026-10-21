@@ -1,0 +1,47 @@
+import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer";
+import { createVNode as _createVNode, createTextVNode as _createTextVNode, toDisplayString as _toDisplayString, mergeProps as _mergeProps, withCtx as _withCtx } from "vue";
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(_ssrRenderComponent($setup.MyList, _mergeProps({ items: $props.items }, _attrs), {
+    default: _withCtx(({ item }, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(_ssrRenderComponent($setup.MyChip, { tone: item.tone }, {
+          default: _withCtx((_, _push, _parent, _scopeId) => {
+            if (_push) {
+              _push(`${_ssrInterpolate(item.name)}`);
+            } else {
+              return [_createTextVNode(_toDisplayString(item.name))];
+            }
+          }),
+          _: 1
+        }, _parent, _scopeId));
+      } else {
+        return [_createVNode($setup.MyChip, { tone: item.tone }, {
+          default: _withCtx(() => [_createTextVNode(_toDisplayString(item.name))]),
+          _: 1
+        })];
+      }
+    }),
+    _: 1
+  }, _parent));
+}
+import MyChip from "./MyChip.vue";
+import MyList from "./MyList.vue";
+export default {
+  __name: "Layout",
+  props: { items: {
+    type: Array,
+    required: true
+  } },
+  ssrRender,
+  setup(__props) {
+    const __returned__ = {
+      MyChip,
+      MyList
+    };
+    Object.defineProperty(__returned__, "__isScriptSetup", {
+      enumerable: false,
+      value: true
+    });
+    return __returned__;
+  }
+};

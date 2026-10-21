@@ -1,0 +1,16 @@
+<script setup lang="ts">
+import MyChip from "./MyChip.vue";
+import MyList from "./MyList.vue";
+
+defineProps<{
+  items: Array<{ id: number; tone: string; name: string }>;
+}>();
+</script>
+
+<template>
+  <MyList :items="items">
+    <template #default="{ item }">
+      <MyChip :tone="item.tone">{{ item.name }}</MyChip>
+    </template>
+  </MyList>
+</template>

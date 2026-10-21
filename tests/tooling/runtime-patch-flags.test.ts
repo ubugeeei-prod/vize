@@ -32,8 +32,44 @@ async function execute(code: string) {
   }
 }
 
+async function executeScopedSlot(code: string) {
+  const { component, runtime } = await environment.load(
+    `${code}\nexport default { data: () => ({ items: [{ id: 1, tone: "red", name: "Alpha" }] }), render }\n`,
+    "dom",
+  );
+  const MyList = {
+    props: ["items"],
+    setup(props: { items: object[] }, { slots }: { slots: Record<string, Function> }) {
+      return () =>
+        runtime.h(
+          "div",
+          props.items.flatMap((item) => slots.default?.({ item }) ?? []),
+        );
+    },
+  };
+  const MyChip = {
+    props: ["tone"],
+    setup(props: { tone: string }, { slots }: { slots: Record<string, Function> }) {
+      return () => runtime.h("b", { "data-tone": props.tone }, slots.default?.());
+    },
+  };
+  const host = environment.window.document.createElement("div");
+  const app = runtime.createApp(component);
+  app.component("MyList", MyList);
+  app.component("MyChip", MyChip);
+  try {
+    const proxy = app.mount(host) as { items: object[] };
+    const before = host.textContent;
+    proxy.items = [{ id: 2, tone: "red", name: "Beta" }];
+    await runtime.nextTick();
+    return { before, after: host.textContent };
+  } finally {
+    app.unmount();
+  }
+}
+
 test(
-  "static-attribute text roots update in the actual Vue runtime",
+  "runtime-sensitive patch flags refresh text and slot closures in Vue",
   {
     skip:
       !capturePath && !required ? "source capture is supplied by the native Actions lane" : false,
@@ -41,8 +77,15 @@ test(
   async () => {
     assert(capturePath, "a required source compiler capture must be provided");
     const captures: Capture[] = JSON.parse(readFileSync(capturePath, "utf8"));
-    assert.equal(captures.length, 2);
+    assert.equal(captures.length, 3);
     for (const capture of captures) {
+      if (capture.name === "scoped-slot-closure") {
+        assert.match(capture.code, /_: 2 \/\* DYNAMIC \*\//, capture.name);
+        assert.match(capture.code, /1032 \/\* PROPS, DYNAMIC_SLOTS \*\//, capture.name);
+        const expected = { before: "Alpha", after: "Beta" };
+        assert.deepEqual(await executeScopedSlot(capture.code), expected, capture.name);
+        continue;
+      }
       assert.match(capture.code, /, 1 \/\* TEXT \*\/\)\)/, capture.name);
       const expected = {
         before: capture.name.includes("text-and") ? "Hi first" : "first",

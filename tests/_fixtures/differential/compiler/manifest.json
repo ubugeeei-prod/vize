@@ -661,6 +661,49 @@
           }
         ]
       }
+    },
+    {
+      "id": "compiler/sfc/scoped-slot-closure-10169",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "scoped-slot-closure-10169",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "0fc3d5a1e5ec573861ee0eff9ffeb3b20030a1c19786afed00bd712e7fe161cf",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "scoped-slot-closure-10169/module.expected.txt",
+        "sha256": "e75f0c543bd3573aab098df4f141bbde15d805adde3dc8d90252a3f4717641eb",
+        "source": "crates/vize_atelier_dom/tests/runtime_patch_flags.rs:static_root_props_keep_text_patch_flags"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable; the client DOM runtime is qualified separately by the required selected-template capture."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "scriptLang": "ts",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
     }
   ],
   "runtimePacks": [

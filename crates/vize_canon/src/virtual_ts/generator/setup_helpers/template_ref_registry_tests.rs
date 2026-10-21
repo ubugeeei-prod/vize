@@ -347,3 +347,34 @@ const inner = useTemplateRef("inner");
         r#" "inner": __VizeTemplateComponentRef<import('vue').UnwrapRef<typeof current>["component"]>; "#
     );
 }
+
+#[test]
+fn dynamic_component_ref_preserves_component_and_native_union() {
+    let script = r#"import { useTemplateRef } from "vue";
+import Child from "./Child.vue";
+const condition = true;
+const root = useTemplateRef("root");
+"#;
+    let template = r#"<component :is="condition ? Child : 'div'" ref="root" />"#;
+    let allocator = Allocator::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+
+    let registry = super::template_ref_registry(
+        &summary,
+        &VirtualTsOptions::default(),
+        Some(script),
+        Some(&root),
+        &FxHashSet::default(),
+        (VirtualTsCheckOptions::default(), &TemplateRecord::default()),
+    )
+    .expect("conditional dynamic component ref registry");
+
+    assert_eq!(
+        registry.body.as_str(),
+        r#" "root": __VizeTemplateComponentRef<typeof __vize_dynamic_is_0>; "#
+    );
+}

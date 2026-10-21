@@ -6,5 +6,9 @@
   {
     "name": "static-class-text-and-interpolation",
     "template": "<span class=\"badge\">Hi {{ label }}</span>"
+  },
+  {
+    "name": "scoped-slot-closure",
+    "template": "<MyList :items=\"items\"><template #default=\"{ item }\"><MyChip :tone=\"item.tone\">{{ item.name }}</MyChip></template></MyList>"
   }
 ]

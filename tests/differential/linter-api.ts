@@ -12,6 +12,10 @@ import {
 } from "./linter-native.ts";
 import { summary, validateLinterReport } from "./linter-api-report.ts";
 import { collectLinterAttempts } from "./linter-process.ts";
+import {
+  sourceInspectedDialectCoverage,
+  type SourceDialectInput,
+} from "./source-dialect-coverage.ts";
 export { validateLinterReport } from "./linter-api-report.ts";
 
 export const LINTER_OBSERVER: ObserverSpec = {
@@ -50,9 +54,11 @@ function snapshotBody(bytes: Buffer) {
 
 export function loadLinterManifest(manifestPath: string, repoRoot: string) {
   const loaded = loadProductManifest(manifestPath, "linter");
+  const manifestRoot = path.dirname(manifestPath);
   assert.deepEqual(loaded.manifest.adapterOptions, OPTIONS);
   const oracles = JSON.parse(readPinnedArtifact(repoRoot, loaded.manifest.oracles).toString());
   const inputs = new Map<string, { argv: string[]; input: Buffer; expected: Buffer }>();
+  const authoredCoverage = new Map<string, unknown>();
   const cohortIds = new Set<string>();
   for (const cohort of loaded.manifest.cohorts) {
     assert(Object.hasOwn(APIS, cohort.id), "unregistered linter API cohort");
@@ -66,12 +72,70 @@ export function loadLinterManifest(manifestPath: string, repoRoot: string) {
       const id = `linter/${cohort.id}/${fixture.id}`;
       assert(!inputs.has(id), `duplicate authored input: ${id}`);
       assert(oracles[id], `missing complete oracle: ${id}`);
+      let sources: SourceDialectInput[];
+      if (Array.isArray(fixture.files)) {
+        sources = fixture.files.map((file: any) => {
+          assert.equal(
+            typeof file.source,
+            "string",
+            `${id}: authored source must be a string: ${file.filename ?? "unknown file"}`,
+          );
+          return { filename: file.filename, source: file.source };
+        });
+      } else {
+        assert.equal(
+          typeof fixture.source,
+          "string",
+          `${id}: inline authored source must be a string`,
+        );
+        sources = [
+          {
+            filename:
+              fixture.filename ??
+              (fixture.entry === "script"
+                ? "inline.ts"
+                : fixture.entry === "sfc"
+                  ? "inline.vue"
+                  : "inline.html"),
+            source: fixture.source,
+            entry: fixture.entry,
+            vueVersion: fixture.vue_version,
+          },
+        ];
+      }
+      authoredCoverage.set(
+        id,
+        sourceInspectedDialectCoverage(sources, `${cohort.id} pinned authored sources`),
+      );
       inputs.set(id, {
         argv: [cohort.api],
         input: Buffer.from(JSON.stringify(fixture)),
         expected: snapshotBody(readPinnedArtifact(repoRoot, oracles[id])),
       });
     }
+  }
+  for (const fixture of loaded.cases as any[]) {
+    let expected = authoredCoverage.get(fixture.id);
+    if (!expected) {
+      assert(fixture.inputs?.root, `missing pinned authored inputs: ${fixture.id}`);
+      assert(
+        Array.isArray(fixture.inputs.files),
+        `missing pinned authored input files: ${fixture.id}`,
+      );
+      const inputRoot = path.join(manifestRoot, fixture.inputs.root);
+      expected = sourceInspectedDialectCoverage(
+        fixture.inputs.files.map((file: any) => ({
+          filename: file.path,
+          source: readPinnedArtifact(inputRoot, file),
+        })),
+        "linter manifest pinned authored sources",
+      );
+    }
+    assert.deepEqual(
+      fixture.dialectCoverage,
+      expected,
+      `dialect coverage must match pinned authored sources: ${fixture.id}`,
+    );
   }
   // Input-only registrations satisfy the legacy-fix gate while native product
   // adapters are still unavailable. Keep executable cohort cases exact without

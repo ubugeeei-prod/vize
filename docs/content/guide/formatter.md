@@ -132,7 +132,7 @@ Every option below can be set under `vue.formatter`. An option you leave out tak
 
 | Option                         | Default          | What it does                                                                                                                       |
 | ------------------------------ | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `preset`                       | none             | Applies a named set of defaults: `"vize"`, `"prettier"`, `"compact"` or `"documentation"`. Options set next to it win.          |
+| `preset`                       | none             | Applies a named set of defaults: `"vize"`, `"prettier"`, `"compact"` or `"documentation"`. Options set next to it win.             |
 | `printWidth`                   | `100`            | Maximum line width.                                                                                                                |
 | `tabWidth`                     | `2`              | Spaces per indentation level.                                                                                                      |
 | `useTabs`                      | `false`          | Indents with tabs.                                                                                                                 |
@@ -165,6 +165,10 @@ The native Node `formatSfc` API accepts the five Prettier migration booleans
 `normalizeCssQuotes`, `normalizeInlineStyles`, `normalizeVForParens`,
 `selfCloseVoidElements` and `reindentPreprocessorStyles` under the same names.
 Explicit values override `preset`, including `false`.
+
+Script quote policies are also shared across config, direct CLI overrides and
+Node: `--jsx-single-quote[=false]` maps to `jsxSingleQuote`, while
+`--quote-props <as-needed|consistent|preserve>` maps to `quoteProps`.
 
 ## Compact application code
 
