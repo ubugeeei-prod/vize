@@ -39,7 +39,7 @@
   "initializationOptions": {
     "editor": true,
     "lint": false,
-    "typecheck": false
+    "typecheck": true
   },
   "entry": "packages/ui/src/MyFooter.vue",
   "documentVersion": 1,
@@ -48,5 +48,5 @@
     "source": "response.expected.json",
     "sha256": "2e965f8a6ffef076e9bf0f653ff2da3807cae2229faa6ecd5ecb449a2b870948"
   },
-  "scope": "exact issue input custody plus Maestro project-selection witnesses; folding response only, no type-diagnostic acceptance credit"
+  "scope": "exact issue input custody plus Maestro project-selection witnesses; folding response is paired with an exact type-diagnostic acceptance test"
 }

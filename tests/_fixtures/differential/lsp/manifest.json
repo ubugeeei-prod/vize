@@ -652,13 +652,13 @@
       },
       "case": {
         "path": "workspace-tsconfig-inheritance-9842/case.json",
-        "sha256": "1271785eb4a40724c1d0cb326ac931823750a9846a47de15aeaf5827567dc4a9"
+        "sha256": "1fd2daace94f8410358f3bd9dd83da0826320bcbb3fa528ffcf8d9a82d9c77f2"
       },
       "requestCount": 1,
       "initializationOptions": {
         "editor": true,
         "lint": false,
-        "typecheck": false
+        "typecheck": true
       }
     },
     {
