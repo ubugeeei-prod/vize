@@ -51,6 +51,13 @@ Options:
           - es5:  Print trailing commas where valid in ES5
           - none: Do not print trailing commas
 
+      --arrow-parens <ARROW_PARENS>
+          Change parentheses around a sole arrow function parameter
+
+          Possible values:
+          - always: Always include parentheses around a sole parameter
+          - avoid:  Omit parentheses when a sole parameter permits it
+
       --print-width <PRINT_WIDTH>
           Print width (line length) for formatting
 

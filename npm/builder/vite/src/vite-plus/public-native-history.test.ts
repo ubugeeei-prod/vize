@@ -244,6 +244,23 @@ const result = make(value, true);
   assert.deepEqual(options, { trailingComma: "none" });
 });
 
+void test("public formatter exposes the arrow parentheses policy", () => {
+  const source = `<script setup lang="ts">
+const mapper=(value)=>value+1
+</script>
+`;
+  const expected = `<script setup lang="ts">
+const mapper = value => value + 1;
+</script>
+`;
+  const options = Object.freeze({ arrowParens: "avoid" as const }) satisfies FormatOptionsNapi;
+  assert.deepEqual(formatSfc(source, options), { code: expected, changed: true });
+  for (let pass = 2; pass <= 3; pass += 1) {
+    assert.deepEqual(formatSfc(expected, options), { code: expected, changed: false });
+  }
+  assert.deepEqual(options, { arrowParens: "avoid" });
+});
+
 void test("public formatter rejects unknown presets and wrong JavaScript types", () => {
   for (const preset of ["", "docs", "PRETTIER", 1, true, {}, []]) {
     assert.throws(
@@ -284,6 +301,15 @@ void test("public formatter rejects unknown presets and wrong JavaScript types",
       assert.ok(error instanceof Error);
       assert.equal((error as Error & { code: string }).code, "InvalidArg");
       assert.equal(error.message, "Unknown trailingComma; expected 'all', 'es5', or 'none'");
+      return true;
+    },
+  );
+  assert.throws(
+    () => formatSfc("<template />", { arrowParens: "preserve" } as FormatOptionsNapi),
+    (error: unknown) => {
+      assert.ok(error instanceof Error);
+      assert.equal((error as Error & { code: string }).code, "InvalidArg");
+      assert.equal(error.message, "Unknown arrowParens; expected 'always' or 'avoid'");
       return true;
     },
   );

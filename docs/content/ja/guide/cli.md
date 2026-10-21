@@ -139,6 +139,7 @@ vize fmt --write src
 | `--jsx-single-quote`               | JSX 属性の引用符を切り替える                           |
 | `--quote-props`                    | オブジェクトキーの引用符ポリシーを選ぶ                 |
 | `--trailing-comma`                 | 末尾のカンマを `all`、`es5`、`none` から選ぶ           |
+| `--arrow-parens`                   | 1 引数のアロー関数の括弧を `always`、`avoid` から選ぶ  |
 | `--print-width`                    | 1 行の最大幅                                           |
 | `--tab-width`                      | インデント幅                                           |
 | `--use-tabs`                       | タブとスペースを切り替える                             |
