@@ -1635,6 +1635,17 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["ts", "jsx", "tsx"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     }
   ]
