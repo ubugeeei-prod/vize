@@ -16,7 +16,7 @@ import {
   localImportInputs,
   planToolingTests,
 } from "../../tools/support/compat/github/plan-tooling-tests.mjs";
-import { fixture } from "./_helpers/rust-workspace-fixture.mjs";
+import { fixture } from "./_helpers/rust-workspace-fixture.ts";
 
 const quality = "docs/quality/more-guides-coverage.json";
 const root = fileURLToPath(new URL("../../", import.meta.url));

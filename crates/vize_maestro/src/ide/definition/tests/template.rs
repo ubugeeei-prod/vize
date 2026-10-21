@@ -46,6 +46,47 @@ import MyButton from './MyButton.vue'
 }
 
 #[test]
+fn definition_resolves_registered_lowercase_component_alias() {
+    let dir = tempfile::tempdir().unwrap();
+    let component_path = dir.path().join("lottie.vue");
+    let source_path = dir.path().join("App.vue");
+
+    fs::write(&component_path, "<template><div /></template>\n").unwrap();
+
+    let source = r#"<script>
+import Lottie from './lottie.vue'
+
+export default {
+  components: {
+    'lottie': Lottie
+  }
+}
+</script>
+
+<template>
+  <lottie />
+</template>
+"#;
+    fs::write(&source_path, source).unwrap();
+
+    let uri = Url::from_file_path(&source_path).unwrap();
+    let state = ServerState::new();
+    state
+        .documents
+        .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+    state.update_virtual_docs(&uri, source);
+
+    let offset = source.rfind("lottie />").unwrap();
+    let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+    let location = scalar_location(DefinitionService::definition(&ctx).unwrap());
+
+    assert_eq!(
+        location.uri.to_file_path().unwrap().canonicalize().unwrap(),
+        component_path.canonicalize().unwrap()
+    );
+}
+
+#[test]
 fn test_definition_resolves_define_art_source() {
     let dir = tempfile::tempdir().unwrap();
     let component_path = dir.path().join("Button.vue");

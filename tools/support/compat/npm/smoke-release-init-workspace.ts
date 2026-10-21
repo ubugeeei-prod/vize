@@ -42,11 +42,17 @@ const PACKAGE_DIRECTORY = path.join("packages", "app");
 const LSP_SESSION = fileURLToPath(new URL("./smoke-release-lsp-session.ts", import.meta.url));
 
 /**
- * Runs hover, definition, completion and rename against the project-local
- * `vize lsp` of a TypeScript fresh project (see `smoke-release-lsp-session.ts`).
+ * Runs the shape's authored feature checks against the project-local `vize lsp`
+ * of a TypeScript fresh project (see `smoke-release-lsp-session.ts`).
  */
-export function runProjectLspSession(projectRoot: string): void {
-  run(process.execPath, [LSP_SESSION, projectRoot], { cwd: projectRoot, env: projectEnv() });
+export function runProjectLspSession(
+  projectRoot: string,
+  projectShape: "vite" | "nuxt" = "vite",
+): void {
+  run(process.execPath, [LSP_SESSION, projectRoot, projectShape], {
+    cwd: projectRoot,
+    env: projectEnv(),
+  });
 }
 
 export function runWorkspacePackageCheck(context: SmokeContext): void {

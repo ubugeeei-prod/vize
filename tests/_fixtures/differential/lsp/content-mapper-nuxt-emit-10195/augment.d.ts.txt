@@ -1,0 +1,9 @@
+export {};
+
+type Decorate<T extends Record<string, any>> = {
+  [K in keyof T as K extends string ? `$${K}` : never]: T[K];
+};
+
+declare module "vue" {
+  interface ComponentCustomProperties extends Decorate<Record<string, unknown>> {}
+}

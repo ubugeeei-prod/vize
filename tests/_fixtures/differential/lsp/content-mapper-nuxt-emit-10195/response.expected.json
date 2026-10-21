@@ -1,0 +1,14 @@
+[
+  {
+    "startLine": 8,
+    "endLine": 9,
+    "kind": "region",
+    "collapsedText": "template"
+  },
+  {
+    "startLine": 0,
+    "endLine": 5,
+    "kind": "region",
+    "collapsedText": "script setup"
+  }
+]

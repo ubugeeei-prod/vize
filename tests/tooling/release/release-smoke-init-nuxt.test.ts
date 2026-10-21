@@ -6,6 +6,7 @@ import { test } from "node:test";
 
 import {
   canRunFreshProjectShape,
+  freshProjectLspShape,
   writePostBootstrapFiles,
 } from "../../../tools/support/compat/npm/smoke-release-init-fresh.mjs";
 import { PACKAGE_MANAGERS } from "../../../tools/support/compat/npm/smoke-release-init-managers.mjs";
@@ -67,6 +68,7 @@ test("the packed release adds one bounded Nuxt fresh-consumer cell", () => {
 
 test("the Nuxt consumer owns a complete current project and diagnostic triple", () => {
   const files = shape.files({ typescript: "6.0.3", vue: "3.5.34" });
+  assert.equal(freshProjectLspShape(shape, files), "nuxt");
   assert.deepEqual(Object.keys(files), [
     "package.json",
     "nuxt.config.ts",

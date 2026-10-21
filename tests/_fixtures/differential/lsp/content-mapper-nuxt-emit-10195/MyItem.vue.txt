@@ -1,0 +1,7 @@
+<script setup lang="ts">
+defineEmits<{ change: [] }>();
+</script>
+
+<template>
+  <div class="my-item"><slot></slot></div>
+</template>

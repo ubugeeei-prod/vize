@@ -50,7 +50,12 @@ pub(crate) fn component_surface_completions(ctx: &IdeContext) -> Vec<CompletionI
             .collect();
     }
 
-    if !is_component_tag(&tag_ctx.tag_name) {
+    if !is_component_tag(&tag_ctx.tag_name)
+        && !crate::ide::definition::component_import::is_registered_component(
+            ctx,
+            &tag_ctx.tag_name,
+        )
+    {
         return Vec::new();
     }
 

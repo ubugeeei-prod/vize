@@ -29,6 +29,9 @@ env:
   CARGO_INCREMENTAL: 0
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  # One Linux/Node 24 fresh-install row builds the complete graph so the packed
+  # Nuxt consumer and its LSP run before release, not only in the release job.
+  RELEASE_JS_PACKAGES: npm/cli npm/builder/vite npm/oxlint npm/builder/unplugin npm/fresco npm/mcp-musea npm/builder/vite-musea npm/builder/rspack npm/framework/musea-nuxt npm/framework/nuxt-lint-config npm/framework/nuxt npm/marquette npm/compose/core npm/ui npm/plugin-sdk
 
 jobs:
   host-native-smoke:
@@ -226,16 +229,28 @@ jobs:
             fi
           done
       - name: Build npm runtime packages
+        if: ${{ matrix.platform.target != 'linux-x64-gnu' || matrix.node-version != '24' }}
         shell: bash
         run: |
           vp run --filter './npm/cli' build
           vp run --filter './npm/builder/vite' build
+      - name: Build the packed Nuxt release graph
+        if: ${{ matrix.platform.target == 'linux-x64-gnu' && matrix.node-version == '24' }}
+        uses: ./.github/actions/release-build-packages
       - name: Fresh install and runtime smoke published tarballs
+        if: ${{ matrix.platform.target != 'linux-x64-gnu' || matrix.node-version != '24' }}
         shell: bash
         run: |
           rust-script --force tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks \
             npm/native npm/native/npm/* \
             npm/cli npm/builder/vite
+      - name: Fresh packed Nuxt init, check, and LSP smoke
+        if: ${{ matrix.platform.target == 'linux-x64-gnu' && matrix.node-version == '24' }}
+        shell: bash
+        run: |
+          read -ra js <<< "$RELEASE_JS_PACKAGES"
+          rust-script --force tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks \
+            npm/native npm/native/npm/* "${js[@]}"
 
   selected-host-native-producer:
     if: github.event_name == 'workflow_dispatch' && inputs.host_only && inputs.target == 'darwin-arm64'

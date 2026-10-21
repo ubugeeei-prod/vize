@@ -1,12 +1,10 @@
 /**
  * Drives the project-local `vize lsp` of a fresh project over stdio (#3956).
  *
- * Usage: `smoke-release-lsp-session.ts <project-root>`. The project must be the
- * TypeScript fresh-project shape after `vize init` and the planned install:
- * `src/App.vue` renders `<HelloWorld :msg="title" />` and imports the
- * component from `./components/HelloWorld.vue`. The server binary is the
- * project's own `node_modules/vize/bin/vize`, so the session proves the
- * installed package, not a checkout build.
+ * Usage: `smoke-release-lsp-session.ts <project-root> [vite|nuxt]`. The project
+ * must be a TypeScript fresh-project shape after `vize init` and the planned
+ * install. The server binary is the project's own `node_modules/vize/bin/vize`,
+ * so the session proves the installed package, not a checkout build.
  */
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
@@ -14,12 +12,17 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-const [projectRoot] = process.argv.slice(2);
-assert.ok(projectRoot, "Usage: smoke-release-lsp-session.ts <project-root>");
+const [projectRoot, projectShape = "vite"] = process.argv.slice(2);
+assert.ok(projectRoot, "Usage: smoke-release-lsp-session.ts <project-root> [vite|nuxt]");
+assert.ok(
+  projectShape === "vite" || projectShape === "nuxt",
+  `unsupported LSP smoke project shape: ${projectShape}`,
+);
 const root = fs.realpathSync(projectRoot);
-const appPath = path.join(root, "src", "App.vue");
+const appPath = path.join(root, projectShape === "nuxt" ? "app/app.vue" : "src/App.vue");
 const app = pathToFileURL(appPath).href;
-const componentPath = path.join(root, "src", "components", "HelloWorld.vue");
+const componentPath =
+  projectShape === "vite" ? path.join(root, "src", "components", "HelloWorld.vue") : undefined;
 const appText = fs.readFileSync(appPath, "utf8");
 
 // The server always traces editor preparation, which shows whether a typed
@@ -57,7 +60,7 @@ function writeSessionLog(): void {
   fs.writeFileSync(path.join(logDir, `${name}.stderr.log`), stderr);
   fs.writeFileSync(
     path.join(logDir, `${name}.results.json`),
-    JSON.stringify({ root, app, results }, null, 2),
+    JSON.stringify({ root, projectShape, app, results }, null, 2),
   );
 }
 
@@ -164,36 +167,42 @@ async function expectFeature(
 await expectFeature(
   "hover on title shows its type",
   "textDocument/hover",
-  at(':msg="title"', 6),
+  projectShape === "nuxt" ? at("{{ title }}", 3) : at(':msg="title"', 6),
   (result) =>
     /\btitle\b/.test(JSON.stringify(result) ?? "") && /string/.test(JSON.stringify(result) ?? ""),
 );
-await expectFeature(
-  "definition of HelloWorld reaches the component",
-  "textDocument/definition",
-  at("HelloWorld from", 1),
-  (result) => mentions(result, componentPath),
-);
-await expectFeature(
-  "template completion offers title",
-  "textDocument/completion",
-  at(':msg="title"', 6),
-  (result) => {
-    const items = Array.isArray(result)
-      ? result
-      : ((result as { items?: unknown[] } | null)?.items ?? []);
-    return items.some((item) => (item as { label?: string }).label === "title");
-  },
-);
-await expectFeature(
-  "rename of title edits App.vue",
-  "textDocument/rename",
-  { ...at("const title", 6), newName: "heading" },
-  (result) => mentions(result, appPath),
-);
+if (projectShape === "vite") {
+  await expectFeature(
+    "definition of HelloWorld reaches the component",
+    "textDocument/definition",
+    at("HelloWorld from", 1),
+    (result) => mentions(result, componentPath!),
+  );
+  await expectFeature(
+    "template completion offers title",
+    "textDocument/completion",
+    at(':msg="title"', 6),
+    (result) => {
+      const items = Array.isArray(result)
+        ? result
+        : ((result as { items?: unknown[] } | null)?.items ?? []);
+      return items.some((item) => (item as { label?: string }).label === "title");
+    },
+  );
+  await expectFeature(
+    "rename of title edits App.vue",
+    "textDocument/rename",
+    { ...at("const title", 6), newName: "heading" },
+    (result) => mentions(result, appPath),
+  );
+}
 writeSessionLog();
 assert.deepEqual(failures, [], `project-local vize lsp failed in ${root}\n${serverEvidence()}`);
 
 await request("shutdown", undefined);
 send({ method: "exit" });
-console.log("runtime: project-local vize lsp (hover, definition, completion, rename)");
+console.log(
+  projectShape === "nuxt"
+    ? "runtime: project-local Nuxt vize lsp (hover)"
+    : "runtime: project-local vize lsp (hover, definition, completion, rename)",
+);

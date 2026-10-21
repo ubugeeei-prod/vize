@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -177,20 +177,22 @@ test("writer emits a genuine discoverable module while source fixture bytes stay
   }
 });
 
-test("authored parity projects retain their original native configuration policy through Vite", async () => {
-  for (const [name, original] of [
-    ["options-api", {}],
-    ["class-component", {}],
-    ["vue2-filter-build", { compiler: { compatibility: { vueVersion: "2" } } }],
+test("authored parity projects retain only meaningful native configuration policy through Vite", async () => {
+  for (const [name, original, archived] of [
+    ["options-api", {}, false],
+    ["class-component", {}, false],
+    ["vue2-filter-build", { compiler: { compatibility: { vueVersion: "2" } } }, true],
   ] as const) {
     const root = new URL(`../_fixtures/_projects/${name}/`, import.meta.url);
-    const archived = readFileSync(new URL("vize.config.json", root));
-    assert.deepEqual(JSON.parse(archived.toString()), original);
+    const legacy = new URL("vize.config.json", root);
+    const bytes = archived ? readFileSync(legacy) : undefined;
+    assert.equal(existsSync(legacy), archived);
+    if (bytes) assert.deepEqual(JSON.parse(bytes.toString()), original);
     const { default: exported } = await import(new URL("vite.config.mjs", root).href);
     assert.deepEqual(await projectViteConfigSource(exported), {
       ...original,
       typeChecker: { jsxTypecheck: false },
     });
-    assert.deepEqual(readFileSync(new URL("vize.config.json", root)), archived);
+    if (bytes) assert.deepEqual(readFileSync(legacy), bytes);
   }
 });

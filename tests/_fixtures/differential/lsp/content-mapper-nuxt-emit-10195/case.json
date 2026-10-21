@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "id": "lsp/regression/content-mapper-nuxt-emit-10195",
+  "provenance": {
+    "fixCommit": "369f01b50d8fe6e3b0996cc9a90eecf422dbdd3b",
+    "witnessPath": "crates/vize_maestro/src/ide/corsa_support/canonical/model_links.rs",
+    "witnessTest": "model_prop_locations_follow_the_distinct_native_update_identity",
+    "inputOrigin": "exact Nuxt pattern-injection component pair from issue 10195",
+    "contractOrigin": "the authored project bytes are pinned here while canonical model-link and TypeScript 4.0 snapshots cover generated offset custody"
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "src/App.vue",
+      "sha256": "4b49df4d5622b04548dbc0a1f003c0fb25d98d0469645e544969bfb01c6f6940"
+    },
+    {
+      "source": "MyItem.vue.txt",
+      "runtimePath": "src/MyItem.vue",
+      "sha256": "158ba53462766943952897e3a358d974ef10ae2f9b673b8cc48caeb44fa9e4de"
+    },
+    {
+      "source": "augment.d.ts.txt",
+      "runtimePath": "src/augment.d.ts",
+      "sha256": "72824330228b07923b47dea72f5762eebe50bfe8dd9fe09204e85dcf2cd8302d"
+    },
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "f95ed8e882385f5eba92c77e56ef6bb349a066685fed6511c7b0777f66372c63"
+    }
+  ],
+  "entry": "src/App.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "f579570cabb294e0e64da1c15ab8b5ccef7f27474491ce9a72cadb86d0b8597c"
+  },
+  "method": "textDocument/foldingRange",
+  "documentVersion": 1,
+  "scope": "exact issue input custody plus focused canonical model-link witnesses; no native adapter or broader acceptance credit"
+}

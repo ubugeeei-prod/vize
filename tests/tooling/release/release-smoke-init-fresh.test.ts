@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -17,6 +18,7 @@ import {
   packedRedirects,
 } from "../../../tools/support/compat/npm/smoke-release-init-fresh.mjs";
 import { withPoisonedVizePath } from "../../../tools/support/compat/npm/smoke-release-path-poison.mjs";
+import { createPackedInstallReceipt } from "../../../tools/support/compat/npm/smoke-release-init-receipt.ts";
 import {
   FRESH_INIT_MATRIX,
   PROJECT_SHAPES,
@@ -31,6 +33,113 @@ import {
 } from "../support/release-smoke-init-contract.ts";
 
 const RUNTIME_PACKAGE_MANAGER_ACTION = "./.github/actions/setup-runtime-package-managers";
+
+test("packed install receipt has stable identity, size, and native binary fields", () => {
+  const projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vize-packed-install-receipt-"));
+  const files = new Map<string, Array<string | Buffer>>();
+  const writePackage = (
+    name: string,
+    version: string,
+    packageFiles: Record<string, string | Buffer>,
+    manifest: Record<string, unknown> = {},
+  ) => {
+    const root = path.join(projectRoot, "node_modules", ...name.split("/"));
+    const packageJson = `${JSON.stringify({ name, version, ...manifest }, null, 2)}\n`;
+    fs.mkdirSync(root, { recursive: true });
+    fs.writeFileSync(path.join(root, "package.json"), packageJson);
+    const contents: Array<string | Buffer> = [packageJson];
+    for (const [relative, body] of Object.entries(packageFiles)) {
+      const filename = path.join(root, relative);
+      fs.mkdirSync(path.dirname(filename), { recursive: true });
+      fs.writeFileSync(filename, body);
+      contents.push(body);
+    }
+    files.set(name, contents);
+  };
+
+  try {
+    fs.writeFileSync(path.join(projectRoot, "package.json"), '{"name":"receipt-fixture"}\n');
+    writePackage(
+      "vize",
+      "1.2.3",
+      { "bin/vize": "packed cli\n" },
+      {
+        dependencies: { "@vizejs/native": "1.2.3" },
+      },
+    );
+    writePackage("@vizejs/vite-plugin", "1.2.3", { "dist/index.mjs": "export {};\n" });
+    writePackage(
+      "@vizejs/native",
+      "1.2.3",
+      {
+        "native-targets.js":
+          'module.exports = { nativeTargets() { return ["fixture-target"]; } };\n',
+      },
+      { main: "native-binding.js" },
+    );
+    const native = Buffer.from("packed native binary\0", "utf8");
+    writePackage(
+      "@vizejs/native-fixture-target",
+      "1.2.3",
+      { "vize-vitrine.fixture-target.node": native },
+      { main: "vize-vitrine.fixture-target.node" },
+    );
+
+    const receipt = createPackedInstallReceipt(projectRoot, ["vize", "@vizejs/vite-plugin"], {
+      projectShape: "vite-vue-ts",
+      packageManager: "npm",
+    });
+    assert.deepEqual(Object.keys(receipt), [
+      "schema",
+      "version",
+      "projectShape",
+      "packageManager",
+      "packages",
+      "nativeBinary",
+    ]);
+    assert.equal(receipt.schema, "vize.packedInstallReceipt");
+    assert.equal(receipt.version, 1);
+    assert.equal(receipt.projectShape, "vite-vue-ts");
+    assert.equal(receipt.packageManager, "npm");
+    assert.deepEqual(
+      receipt.packages.map(({ name }) => name),
+      ["@vizejs/native", "@vizejs/native-fixture-target", "@vizejs/vite-plugin", "vize"],
+    );
+    for (const row of receipt.packages) {
+      assert.deepEqual(Object.keys(row), ["name", "version", "installedBytes"]);
+      assert.equal(row.version, "1.2.3");
+      const packageFiles = files.get(row.name);
+      assert.ok(packageFiles, `${row.name} is missing fixture byte inputs`);
+      assert.equal(
+        row.installedBytes,
+        packageFiles.reduce(
+          (total, body) =>
+            total + (typeof body === "string" ? Buffer.byteLength(body) : body.length),
+          0,
+        ),
+      );
+    }
+    assert.deepEqual(Object.keys(receipt.nativeBinary), ["package", "path", "bytes", "sha256"]);
+    assert.deepEqual(receipt.nativeBinary, {
+      package: "@vizejs/native-fixture-target",
+      path: "vize-vitrine.fixture-target.node",
+      bytes: native.length,
+      sha256: createHash("sha256").update(native).digest("hex"),
+    });
+    assert.equal(
+      JSON.stringify(
+        createPackedInstallReceipt(projectRoot, ["@vizejs/vite-plugin", "vize"], {
+          projectShape: "vite-vue-ts",
+          packageManager: "npm",
+        }),
+      ),
+      JSON.stringify(receipt),
+      "receipt must not depend on caller package order",
+    );
+  } finally {
+    fs.rmSync(projectRoot, { force: true, recursive: true });
+  }
+});
 
 test("packed tarball specs use lockfile-stable Windows path separators", () => {
   const tarball = "C:\\Users\\runneradmin\\packs\\vize-0.426.2.tgz";

@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "reporter": "ubugeeei",
+  "typescript": "7.1.0-dev.20261017.1",
+  "vue": "3.5.43",
+  "baselineVize": "0.516.0",
+  "originals": [
+    {
+      "issue": 10195,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"preserve\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"jsx\": \"preserve\",\n    \"isolatedModules\": true,\n    \"verbatimModuleSyntax\": true\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src\"]\n}\n",
+        "src/augment.d.ts": "export {};\n\ntype Decorate<T extends Record<string, any>> = {\n  [K in keyof T as K extends string ? `$${K}` : never]: T[K];\n};\n\ndeclare module \"vue\" {\n  interface ComponentCustomProperties extends Decorate<Record<string, unknown>> {}\n}\n",
+        "src/MyItem.vue": "<script setup lang=\"ts\">\ndefineEmits<{ change: [] }>();\n</script>\n\n<template>\n  <div class=\"my-item\"><slot></slot></div>\n</template>\n",
+        "src/App.vue": "<script setup lang=\"ts\">\nimport MyItem from \"./MyItem.vue\";\n\nfunction onClick(event: MouseEvent) {\n  return event.button;\n}\n</script>\n\n<template>\n  <MyItem role=\"button\" @click=\"onClick\">item</MyItem>\n</template>\n"
+      },
+      "baselineCodes": [2345],
+      "baselineTerms": ["Property '$emit' is missing"],
+      "expectedCodes": [],
+      "expectedTerms": [],
+      "expectedStdout": "",
+      "expectedStderr": "",
+      "baselineStatus": 2,
+      "expectedStatus": 0
+    }
+  ],
+  "controls": [
+    {
+      "name": "pattern-injections-keep-listener-errors",
+      "original": 10195,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"preserve\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src\"]\n}\n",
+        "src/augment.d.ts": "export {};\n\ntype Decorate<T extends Record<string, any>> = {\n  [K in keyof T as K extends string ? `$${K}` : never]: T[K];\n};\n\ndeclare module \"vue\" {\n  interface ComponentCustomProperties extends Decorate<Record<string, unknown>> {}\n}\n",
+        "src/MyItem.vue": "<script setup lang=\"ts\">\ndefineEmits<{ change: [] }>();\n</script>\n",
+        "src/App.vue": "<script setup lang=\"ts\">\nimport MyItem from \"./MyItem.vue\";\nconst onClick = (event: string) => event.length;\n</script>\n<template>\n  <MyItem role=\"button\" @click=\"onClick\" />\n</template>\n"
+      },
+      "codes": [2322],
+      "terms": ["not assignable"],
+      "stderr": "",
+      "status": 2
+    }
+  ]
+}

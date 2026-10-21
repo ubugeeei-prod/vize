@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "id": "lsp/regression/registered-lowercase-component-alias",
+  "provenance": {
+    "fixCommit": "ed74a1c515d4d278d162a801f60989505987345b",
+    "issue": 3952,
+    "meaning": "Options API registration maps a single-word lowercase tag to its imported component"
+  },
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "aa067bd6f444685dbfd54250d8546c9a33b354361200062f8a3a770b2846c5f5"
+    },
+    {
+      "source": "lottie.vue.txt",
+      "runtimePath": "lottie.vue",
+      "sha256": "c7244ef1b281e9c08609c5dec744c8d3cfe8320446c39e95cab8725d0210e542"
+    }
+  ],
+  "entry": "App.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "a6a78223ef9682f2dc1f0e2ee79f4153987f8a99d2ec897a09d5f97251e21ced"
+  },
+  "method": "textDocument/definition",
+  "scope": "registered lowercase Options API component navigation"
+}

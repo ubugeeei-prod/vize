@@ -1,5 +1,11 @@
 {
   "extends": "../tsconfig.json",
-  "include": ["**/*.ts", "**/*.mts", "**/*.cts", "../vite.config.ts"],
+  "include": [
+    "**/*.ts",
+    "**/*.mts",
+    "**/*.cts",
+    "../vite.config.ts",
+    "../examples/oxlint-vize/check-configs.ts"
+  ],
   "exclude": ["**/node_modules/**", "support/compat/*/fixtures/**"]
 }

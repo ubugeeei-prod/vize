@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 
 import { planSourceChecks } from "../../tools/support/compat/github/plan-source-checks.ts";
 import { planAffectedRust } from "../../tools/support/compat/github/plan-affected-rust.ts";
-import { fixture } from "./_helpers/rust-workspace-fixture.mjs";
+import { fixture } from "./_helpers/rust-workspace-fixture.ts";
 
 void test("known census renderers and owned reports retain tooling without product source lanes", () => {
   const paths = [

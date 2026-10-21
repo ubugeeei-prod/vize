@@ -72,6 +72,8 @@ type __VizeComponentInput<T, Declared, Authored> = __VizeUsePublicInstance<Autho
 type __VizeAuthoredKeyWitness<T> = { [K in keyof T]: unknown };
 type __VizeIsUnknown<T> = unknown extends T ? [keyof T] extends [never] ? true : false : false;
 type __VizeUsePublicInstance<T> = __VizeIsAny<T> extends true ? true : __VizeIsUnknown<T>;
+type __VizeLiteralKeys<T> = keyof { [K in keyof T as K extends string ? string extends K ? never : K extends `$${infer R}` ? string extends R ? never : K : K : number extends K ? never : symbol extends K ? never : K]: unknown };
+type __VizeReplaceComponentProps<T, P> = Omit<T, '$props'> & Pick<T, Exclude<__VizeLiteralKeys<T>, '$props'>> & { $props: P };
 type __VizePublicEmit<T, S = __EmitShape<T>, K extends keyof S & string = keyof S & string> = S extends (...args: any[]) => any ? S : [K] extends [never] ? (event: string, ...args: any[]) => void : __EmitFn<T>;
 type __VizePublicSlots<T> = [keyof T] extends [never] ? import('vue').ComponentPublicInstance['$slots'] : T;
 // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.
@@ -127,7 +129,7 @@ function __setup() {
   function handleClick() { count.value++ }
   function handleHover() {}
   
-  // @vize-map: 15095:15192 -> 0:114
+  // @vize-map: 15451:15548 -> 0:114
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
@@ -184,9 +186,7 @@ type __VizeComponentInstance = {
   $emit: __VizePublicEmit<Emits>;
   $slots: __VizePublicSlots<__VizeSlots>;
 } & __VizeComponentPublicBase;
-type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInput<Props, {}, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeComponentInstance : Omit<__VizeComponentInstance, '$props'> & {
-$props: __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInputProps<Props, {}> & __VizeComponentInputGuard<Props, {}, __VizeAuthoredProps>;
-};
+type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInput<Props, {}, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeComponentInstance : __VizeReplaceComponentProps<__VizeComponentInstance, __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInputProps<Props, {}> & __VizeComponentInputGuard<Props, {}, __VizeAuthoredProps>>;
 type __VizeVueComponentOptions = {
   [key: string]: any;
   name?: string;

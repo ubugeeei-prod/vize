@@ -20,7 +20,7 @@ import {
 } from "../../tools/support/compat/github/plan-affected-rust.ts";
 import { rustCommand } from "../../tools/support/compat/github/run-affected-rust.ts";
 
-import { fixture } from "./_helpers/rust-workspace-fixture.mjs";
+import { fixture } from "./_helpers/rust-workspace-fixture.ts";
 
 void test("normal, renamed optional, target-specific build and dev edges retain transitive consumers", () => {
   const metadata = fixture();

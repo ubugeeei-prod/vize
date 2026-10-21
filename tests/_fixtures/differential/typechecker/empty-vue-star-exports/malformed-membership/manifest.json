@@ -21,8 +21,8 @@
       "file": "malformed-membership/part-01.json",
       "mode": "100644",
       "bytes": 7105,
-      "sha256": "99db584e59772bdb103c091232574a47b3b990786a954f9e37b9c3ad447465ec",
-      "gitBlob": "bac3344765a01248e3a189485eab644d726bd78d",
+      "sha256": "d4ad186f7fec213df32bfccce2388ba0a10d150cda200119e671c4238ddb0579",
+      "gitBlob": "d4650c055f441976372251316465022b6266ac4b",
       "start": 43,
       "entries": 43
     }
@@ -352,6 +352,79 @@
       },
       "proof": "The complete source-native 86-member packet retained all rooted paths and order. The configured-native assertion reported only helper entry82: actual29079/688a versus the preceding29137/fb87 reference; the preserved packet independently contains the exact actual helper body and SHA256.",
       "scope": "The source-native run intentionally failed the preceding helper membership reference after preserving the complete packet. The malformed TS1109 response remains an observation; renewed exact-head qualification is still required."
+    },
+    "nuxtLiteralPublicMemberRevision": {
+      "status": "ACTUAL_CAPTURE_WITH_REBASED_HELPER_POSTIMAGE",
+      "source": "70a64dd499544e25efd5faa0a54679406a807738",
+      "run": 39616866145,
+      "job": 119280446667,
+      "artifact": 12352732354,
+      "artifactSHA256": "970425d5488957ae8bd827948f115958be37ed1f554c69c1aaaeef831f5fc879",
+      "member": "native-syntax-semantics/empty-vue-star-exports/malformed-refusal.json",
+      "wholePacketSHA256": "a3eed232614723f57351cad3ca3a3f3c05750d892d03fc5fda9ba324f9a831aa",
+      "priorManifestSHA256": "0c89e28b4ec377230cb8c311a5456856a65466fe583a68d59d0a208b6937296e",
+      "entries": [
+        {
+          "entry": 74,
+          "before": [
+            "project/A.vue.ts",
+            4621,
+            "eddc2faf6b97a21df641561e9d463adf2f4c3cc5d1d82aff92d54993308296f4"
+          ],
+          "after": [
+            "project/A.vue.ts",
+            4620,
+            "a53d5569e14f6d89c8d01c7f74423e222d3af60921261038e6f75241bb74b2af"
+          ],
+          "deltaBytes": -1
+        },
+        {
+          "entry": 75,
+          "before": [
+            "project/B.vue.ts",
+            4845,
+            "2dcd9d1cf8d7c54fa42764f2d574ead8f29fa930c48df3e9b7662e2871e2d209"
+          ],
+          "after": [
+            "project/B.vue.ts",
+            4844,
+            "cd9defc8ed21d94450ae3be8186536e13c0db63c7b4ec8702d27e4403a1d087f"
+          ],
+          "deltaBytes": -1
+        },
+        {
+          "entry": 82,
+          "before": [
+            "project/__vize_helpers.d.ts",
+            29079,
+            "688a8936940e43d48b2477ad2034817e7e536f2d0ec3fbf7e39dd867340f0c99"
+          ],
+          "after": [
+            "project/__vize_helpers.d.ts",
+            29435,
+            "250cfa34bb15f19b83a120d5465ee0424adf023230a390aaeda47ab1edaacc4c"
+          ],
+          "deltaBytes": 356
+        }
+      ],
+      "sourceChanges": {
+        "constructor": "The authored-props branch replaces only $props while retaining literal public instance members, including $emit, across open Nuxt $-prefixed injection patterns.",
+        "sharedHelper": "Two shared type helpers add 356 bytes to the exact hoisted helper body."
+      },
+      "proof": "The child source-native capture authenticates the exact A and B postimages. The merge-group base packet authenticates the rebased 29079-byte shared helper; inserting only the exact 356-byte pair of reviewed type aliases yields the recorded 29435-byte whole-body SHA256. The other 83 rooted references, bodies and order are unchanged.",
+      "scope": "The earlier source-native run intentionally failed the preceding membership reference after preserving its complete packet. The rebased helper postimage is an exact whole-body derivation from the successful parent merge-group packet and is required to pass the renewed exact-head source run; malformed TS1109 remains observational only.",
+      "rebasedBase": {
+        "source": "fd90aebfb168a45e62d452900092fc9413e6589c",
+        "run": 39617911228,
+        "job": 119283730701,
+        "artifact": 12352624959,
+        "artifactSHA256": "30af3d2ead9ac8e37f2416278817be2cfea02385cf1d3c4e50b61456041b2021",
+        "wholePacketSHA256": "52a9b8b5e3933d25938a2a540a035c51ce2445d7a427deba3d921e2294f8b8cd",
+        "helperBefore": [
+          29079,
+          "688a8936940e43d48b2477ad2034817e7e536f2d0ec3fbf7e39dd867340f0c99"
+        ]
+      }
     }
   }
 }

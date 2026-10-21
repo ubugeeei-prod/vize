@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "vp exec node ./check-configs.mjs",
+    "check": "vp exec node ./check-configs.ts",
     "build:deps": "vp run --workspace-root build:native && sh -c 'cd ../../npm/oxlint && vp pack'",
     "prelint": "vp run build:deps",
     "prelint:clean": "vp run build:deps",
