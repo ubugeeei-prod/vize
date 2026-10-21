@@ -94,6 +94,6 @@ fn real_vue_jsx_vapor_mount_and_updates_match_inventory() {
     assert_eq!(receipt["cases"], case_count);
     assert_eq!(receipt["equivalent"], case_count - 1);
     assert_eq!(receipt["divergent"], 1);
-    assert_eq!(receipt["babelCases"], 7);
-    assert_eq!(receipt["babelEquivalent"], 7);
+    assert_eq!(receipt["babelCases"], 8);
+    assert_eq!(receipt["babelEquivalent"], 8);
 }
