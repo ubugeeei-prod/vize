@@ -1095,6 +1095,7 @@
         "type": "fixtures",
         "fixturePaths": [
           "tests/_fixtures/_git/ant-design-vue",
+          "tests/_fixtures/_git/element",
           "tests/_fixtures/_git/element-plus",
           "tests/_fixtures/_git/element-plus-x",
           "tests/_fixtures/_git/epic-spinners",
