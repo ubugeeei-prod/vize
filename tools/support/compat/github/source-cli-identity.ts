@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import fs from "node:fs";
 import { createHash } from "node:crypto";
 import path from "node:path";
@@ -16,12 +16,32 @@ export const ORACLE_RECIPE =
 export const TRANSPORT_MEMBER = "source-cli.json";
 export const digest = (bytes: Buffer): string => createHash("sha256").update(bytes).digest("hex");
 
-export function command(cwd: string, executable: string, args: string[]): string {
-  const result = spawnSync(executable, args, { cwd, encoding: "utf8", timeout: 30_000 });
+type CommandRunner = (
+  executable: string,
+  args: string[],
+  options: { cwd: string; encoding: "utf8"; timeout: number },
+) => SpawnSyncReturns<string>;
+
+function checkedCommand(executable: string, result: SpawnSyncReturns<string>): string {
   assert.equal(result.error, undefined, `${executable}: ${result.error?.message}`);
   assert.equal(result.signal, null, `${executable} interrupted`);
   assert.equal(result.status, 0, result.stderr);
   return result.stdout.trim();
+}
+
+export function command(cwd: string, executable: string, args: string[]): string {
+  const result = spawnSync(executable, args, { cwd, encoding: "utf8", timeout: 30_000 });
+  return checkedCommand(executable, result);
+}
+
+export function rustcIdentity(cwd: string, run: CommandRunner = spawnSync): string {
+  let result: SpawnSyncReturns<string> | undefined;
+  for (const timeout of [30_000, 60_000]) {
+    result = run("rustc", ["-vV"], { cwd, encoding: "utf8", timeout });
+    if ((result.error as NodeJS.ErrnoException | undefined)?.code !== "ETIMEDOUT") break;
+  }
+  assert.ok(result);
+  return checkedCommand("rustc", result);
 }
 
 export function normalizeCargoConfig(config: string, linker: string): string {
@@ -59,7 +79,7 @@ export function runtimeIdentity(root: string) {
     runAttempt,
     platform: process.platform,
     arch: process.arch,
-    rustc: command(root, "rustc", ["-vV"]),
+    rustc: rustcIdentity(root),
     cargo: command(root, "cargo", ["--version"]),
     linker: command(root, linker, ["--version"]),
     linkerSha256: regularMember(linkerRoot, "wild").sha256,

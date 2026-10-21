@@ -824,6 +824,62 @@
       }
     },
     {
+      "id": "lsp/regression/type-aware-slot-outlet-9834",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "type-aware-slot-outlet-9834",
+        "files": [
+          {
+            "path": "MyList.vue.txt",
+            "sha256": "132514fe6d3a21c644af055aa8320102ca9b701cdf72aabf0163ed1de5c9b2fc"
+          }
+        ]
+      },
+      "case": {
+        "path": "type-aware-slot-outlet-9834/case.json",
+        "sha256": "5c6285970941a60b21e340b1759199315db3be4ad37844dff0cf8d4aec95067d"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
+      "id": "lsp/regression/queued-edit-publication-10098",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "case": {
+        "path": "queued-edit-publication-10098/case.json",
+        "sha256": "be901ed1f4365fd0a0961efc36eb59f160ac09e48757576b917f47ddc4539a29"
+      },
+      "inputs": {
+        "root": "queued-edit-publication-10098",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "c043857104a1b9f0b8f16404b2be40d47404c027835ba838be4dcfd5713c2ed5"
+          },
+          {
+            "path": "useToast.ts.txt",
+            "sha256": "7a36f75337837632e610953906ec15beab09bb3034e9478b3d8c65d09b8151da"
+          }
+        ]
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
       "id": "lsp/fix-history/code-action-utf16-original",
       "state": "active",
       "targets": [

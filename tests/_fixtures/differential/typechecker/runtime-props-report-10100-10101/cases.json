@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssues": [10100, 10101],
+  "regressionCommit": "5dfe002a9467d152c8545693df33def3aa5f3bf7",
+  "sourceRevision": "5dfe002a9467d152c8545693df33def3aa5f3bf7",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "imported-helper-spread",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/sharedProps.ts",
+          "source": "src/sharedProps.ts.txt"
+        },
+        {
+          "file": "src/Chart.vue",
+          "source": "src/Chart.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "object-factory-assertion",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/types.ts",
+          "source": "src/types.ts.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "src/Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}
