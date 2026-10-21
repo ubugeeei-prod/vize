@@ -127,6 +127,15 @@ runs:
         set -euo pipefail
         unset VIZE_TEST_DISABLE_TSGO
         cargo test --locked --profile ci -p vize --test integration -- check_flow_depth_isolation_cli:: --nocapture
+    - name: Test complete malformed project membership with the actual CLI
+      shell: bash
+      env:
+        VIZE_TEST_REQUIRE_TSGO: "1"
+        VIZE_NATIVE_SYNTAX_CAPTURE_DIR: ${{ runner.temp }}/native-syntax-semantics
+      run: |
+        set -euo pipefail
+        unset VIZE_TEST_DISABLE_TSGO
+        cargo test --locked --profile ci -p vize_canon --test empty_vue_star_exports -- configured_native_refuses_erasure_at_unproved_source_boundaries --exact --nocapture
     - name: Test native syntax, semantic completion and transport refusals
       shell: bash
       env:

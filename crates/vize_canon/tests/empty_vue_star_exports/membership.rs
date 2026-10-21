@@ -197,6 +197,20 @@ fn normalize(roots: &Roots, members: &[Member]) -> Checked<Value> {
 fn compare(roots: &Roots, members: &[Member], expected: &Value) -> Checked<Value> {
     let actual = normalize(roots, members)?;
     if &actual != expected {
+        let actual_members = actual.as_array().ok_or("normalized actual roster")?;
+        let expected_members = expected.as_array().ok_or("normalized expected roster")?;
+        let mismatch = actual_members
+            .iter()
+            .zip(expected_members)
+            .position(|(actual, expected)| actual != expected)
+            .unwrap_or_else(|| actual_members.len().min(expected_members.len()));
+        eprintln!(
+            "malformed membership mismatch at index {mismatch}; actual count {}; expected count {}; actual {}; expected {}",
+            actual_members.len(),
+            expected_members.len(),
+            actual_members.get(mismatch).unwrap_or(&Value::Null),
+            expected_members.get(mismatch).unwrap_or(&Value::Null),
+        );
         return Err("complete ordered rooted-path/length/SHA256 roster mismatch");
     }
     Ok(actual)
