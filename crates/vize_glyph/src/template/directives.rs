@@ -18,17 +18,23 @@ pub(crate) use normalize::normalize_attribute_with_vue_version;
 
 /// Determine if an attribute's value should be formatted as a JS expression.
 pub(crate) fn should_format_expression(name: &str) -> bool {
-    name.starts_with(':')
-        || name.starts_with('@')
-        || name.starts_with("v-if")
-        || name.starts_with("v-else-if")
-        || name.starts_with("v-show")
-        || name.starts_with("v-for")
-        || name.starts_with("v-model")
-        || name.starts_with("v-bind")
-        || name.starts_with("v-on")
-        || name == "v-html"
-        || name == "v-text"
+    match name.as_bytes().first() {
+        Some(b':' | b'@') => true,
+        Some(b'v') => {
+            let Some(directive) = name.strip_prefix("v-") else {
+                return false;
+            };
+            directive.starts_with("if")
+                || directive.starts_with("else-if")
+                || directive.starts_with("show")
+                || directive.starts_with("for")
+                || directive.starts_with("model")
+                || directive.starts_with("bind")
+                || directive.starts_with("on")
+                || matches!(directive, "html" | "text")
+        }
+        _ => false,
+    }
 }
 
 /// Format a directive value expression.
