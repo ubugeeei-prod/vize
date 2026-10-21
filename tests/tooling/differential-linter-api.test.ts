@@ -7,9 +7,20 @@ import { fileURLToPath } from "node:url";
 import { loadLinterManifest, validateLinterReport } from "../differential/linter-api.ts";
 import { sha256 } from "../differential/harness.mjs";
 import { nativeArgv, NATIVE_APIS, validateNativeContract } from "../differential/linter-native.ts";
+import { sourceInspectedDialectCoverage } from "../differential/source-dialect-coverage.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const manifestPath = path.join(repoRoot, "tests/_fixtures/differential/linter/manifest.json");
+
+void test("source inspection recognizes quoted and unquoted Pug template declarations", () => {
+  for (const declaration of ['lang="pug"', "lang='pug'", "lang=pug"]) {
+    const coverage = sourceInspectedDialectCoverage(
+      [{ filename: "fixture.vue", source: `<template ${declaration}>\np hello\n</template>` }],
+      "Pug declaration",
+    );
+    assert.deepEqual(coverage.evidence[0].dialects, ["vue3-sfc", "pug-template"]);
+  }
+});
 
 void test("component filename history retains the eight original input and option witnesses", () => {
   const file = path.join(

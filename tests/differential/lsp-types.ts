@@ -1,4 +1,5 @@
 import type { LspWorkspaceEvidence } from "./lsp-workspace.ts";
+import type { SourceInspectedDialectCoverage } from "./source-dialect-coverage.ts";
 
 export type JsonRpcMessage = {
   jsonrpc: string;
@@ -34,15 +35,7 @@ export type PlannedLspFixture = {
   inputs: { root: string; files: { path: string; sha256: string }[] };
   requestCount: number;
   initializationOptions: Record<string, boolean>;
-  dialectCoverage: {
-    state: "source-inspected";
-    registryRef: null;
-    evidence: Array<{
-      kind: "source-inspection";
-      dialects: string[];
-      selector: string;
-    }>;
-  };
+  dialectCoverage: SourceInspectedDialectCoverage;
 };
 export type LspFixture = PlannedLspFixture & {
   data: FixtureData;

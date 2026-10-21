@@ -72,22 +72,33 @@ export function loadLinterManifest(manifestPath: string, repoRoot: string) {
       const id = `linter/${cohort.id}/${fixture.id}`;
       assert(!inputs.has(id), `duplicate authored input: ${id}`);
       assert(oracles[id], `missing complete oracle: ${id}`);
-      const sources: SourceDialectInput[] = Array.isArray(fixture.files)
-        ? fixture.files.map((file: any) => ({ filename: file.filename, source: file.source }))
-        : [
-            {
-              filename:
-                fixture.filename ??
-                (fixture.entry === "script"
-                  ? "inline.ts"
-                  : fixture.entry === "sfc"
-                    ? "inline.vue"
-                    : "inline.html"),
-              source: fixture.source,
-              entry: fixture.entry,
-              vueVersion: fixture.vue_version,
-            },
-          ];
+      let sources: SourceDialectInput[];
+      if (Array.isArray(fixture.files)) {
+        sources = fixture.files.map((file: any) => {
+          assert.equal(
+            typeof file.source,
+            "string",
+            `${id}: authored source must be a string: ${file.filename ?? "unknown file"}`,
+          );
+          return { filename: file.filename, source: file.source };
+        });
+      } else {
+        assert.equal(typeof fixture.source, "string", `${id}: inline authored source must be a string`);
+        sources = [
+          {
+            filename:
+              fixture.filename ??
+              (fixture.entry === "script"
+                ? "inline.ts"
+                : fixture.entry === "sfc"
+                  ? "inline.vue"
+                  : "inline.html"),
+            source: fixture.source,
+            entry: fixture.entry,
+            vueVersion: fixture.vue_version,
+          },
+        ];
+      }
       authoredCoverage.set(
         id,
         sourceInspectedDialectCoverage(sources, `${cohort.id} pinned authored sources`),
@@ -103,6 +114,7 @@ export function loadLinterManifest(manifestPath: string, repoRoot: string) {
     let expected = authoredCoverage.get(fixture.id);
     if (!expected) {
       assert(fixture.inputs?.root, `missing pinned authored inputs: ${fixture.id}`);
+      assert(Array.isArray(fixture.inputs.files), `missing pinned authored input files: ${fixture.id}`);
       const inputRoot = path.join(manifestRoot, fixture.inputs.root);
       expected = sourceInspectedDialectCoverage(
         fixture.inputs.files.map((file: any) => ({
