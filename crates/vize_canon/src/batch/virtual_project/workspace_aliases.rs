@@ -148,11 +148,9 @@ impl VirtualProject {
                 }
             }
         }
-        let links = self
-            .workspace_alias_links()
-            .into_iter()
-            .map(|link| (link.virtual_dir, link.real_dir))
-            .collect();
+        let mut link_files = self.expected_materialized_files();
+        link_files.extend(extra_owned_files.iter().cloned());
+        let links = self.desired_package_links_for_files(&link_files);
         self.validate_workspace_alias_links(&links, extra_owned_files)
     }
 
@@ -273,17 +271,9 @@ impl VirtualProject {
                             && !planned
                             && self.materialized_package_links.get(&path) != Some(&target))
                     {
-                        #[cfg(test)]
-                        let message = format!(
-                            "Workspace package alias requires owned directories: {} -> {}",
-                            path.display(),
-                            target.display()
-                        );
-                        #[cfg(not(test))]
-                        let message = "Workspace package alias requires owned directories";
                         return Err(std::io::Error::new(
                             std::io::ErrorKind::InvalidData,
-                            message,
+                            "Workspace package alias requires owned directories",
                         )
                         .into());
                     }

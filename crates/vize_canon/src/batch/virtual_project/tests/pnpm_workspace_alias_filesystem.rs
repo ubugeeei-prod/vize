@@ -41,10 +41,9 @@ fn stale_target_and_root_scope_links_decline_before_raw_sources_are_touched() {
             project.materialize().unwrap_err(),
             project.materialize_incremental_delta().unwrap_err(),
         ] {
-            assert!(
-                error
-                    .to_string()
-                    .contains("Workspace package alias requires owned directories")
+            assert_eq!(
+                error.to_string(),
+                "IO error: Workspace package alias requires owned directories"
             );
             assert_eq!(
                 (fs::read(&manifest).unwrap(), fs::read(&button).unwrap()),
@@ -141,10 +140,9 @@ fn retargeted_committed_parent_declines_without_touching_authored_sources() {
     let manifest = root.join("packages/c/package.json");
     let before = fs::read(&manifest).unwrap();
     let error = project.materialize_incremental_delta().unwrap_err();
-    assert!(
-        error
-            .to_string()
-            .contains("Workspace package alias requires owned directories")
+    assert_eq!(
+        error.to_string(),
+        "IO error: Workspace package alias requires owned directories"
     );
     assert_eq!(fs::read(&manifest).unwrap(), before);
     assert_eq!(fs::read_link(&parent).unwrap(), unexpected);
@@ -254,12 +252,9 @@ fn separate_projects_replace_only_the_selected_leaf_across_alias_directory_alias
     let raw_parent = root.join("packages/b/node_modules/@x");
     std::os::unix::fs::symlink(&raw_parent, parent).unwrap();
     divergent.materialized_package_links.clear();
-    assert!(
-        divergent
-            .materialize()
-            .unwrap_err()
-            .to_string()
-            .contains("Workspace package alias requires owned directories")
+    assert_eq!(
+        divergent.materialize().unwrap_err().to_string(),
+        "IO error: Workspace package alias requires owned directories"
     );
     assert_eq!(fs::read_link(parent).unwrap(), raw_parent);
     assert_eq!(
