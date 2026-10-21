@@ -7,9 +7,20 @@ import { fileURLToPath } from "node:url";
 import { loadLinterManifest, validateLinterReport } from "../differential/linter-api.ts";
 import { sha256 } from "../differential/harness.mjs";
 import { nativeArgv, NATIVE_APIS, validateNativeContract } from "../differential/linter-native.ts";
+import { sourceInspectedDialectCoverage } from "../differential/source-dialect-coverage.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const manifestPath = path.join(repoRoot, "tests/_fixtures/differential/linter/manifest.json");
+
+void test("source inspection recognizes quoted and unquoted Pug template declarations", () => {
+  for (const declaration of ['lang="pug"', "lang='pug'", "lang=pug"]) {
+    const coverage = sourceInspectedDialectCoverage(
+      [{ filename: "fixture.vue", source: `<template ${declaration}>\np hello\n</template>` }],
+      "Pug declaration",
+    );
+    assert.deepEqual(coverage.evidence[0].dialects, ["vue3-sfc", "pug-template"]);
+  }
+});
 
 void test("component filename history retains the eight original input and option witnesses", () => {
   const file = path.join(
@@ -97,6 +108,24 @@ void test("linter registry pins every authored input and complete oracle, includ
     report.expected.includes(Buffer.from("json:")) &&
       report.expected.includes(Buffer.from("text:")),
   );
+});
+
+void test("linter dialect coverage rejects labels that drift from pinned authored sources", () => {
+  const source = path.dirname(manifestPath);
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-linter-dialect-"));
+  try {
+    fs.cpSync(source, temporary, { recursive: true });
+    const file = path.join(temporary, "manifest.json");
+    const manifest = JSON.parse(fs.readFileSync(file, "utf8"));
+    manifest.cases[0].dialectCoverage.evidence[0].dialects = ["tsx"];
+    fs.writeFileSync(file, JSON.stringify(manifest));
+    assert.throws(
+      () => loadLinterManifest(file, repoRoot),
+      /dialect coverage must match pinned authored sources/,
+    );
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
 });
 
 void test("linter manifest rejects omitted/duplicate inputs, unregistered API and oracle inventory drift", () => {

@@ -97,6 +97,18 @@ test("passive native LSP capture retains the complete original Matrix workflow",
     delete step["timeout-minutes"];
   }
 
+  const formatterReadiness = steps.findIndex(
+    (step) => step.name === "Record formatter deletion-readiness evidence",
+  );
+  assert.equal(formatterReadiness, steps.findIndex((step) => step.id === "glyph") + 1);
+  assert.deepEqual(steps.splice(formatterReadiness, 1)[0], {
+    name: "Record formatter deletion-readiness evidence",
+    if: "${{ !cancelled() }}",
+    run:
+      'node tests/differential/formatter-deletion-verifier.mjs "$FIXTURE_REPORT_DIR"\n' +
+      'test -s "$FIXTURE_REPORT_DIR/formatter-deletion-readiness.json"\n',
+  });
+
   const misskey = steps.findIndex(
     (step) => step.name === "Classify pinned Misskey generated diagnostics",
   );

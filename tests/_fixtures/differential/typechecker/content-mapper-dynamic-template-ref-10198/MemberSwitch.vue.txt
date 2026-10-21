@@ -1,0 +1,15 @@
+<script setup lang="ts">
+import { computed, useTemplateRef } from "vue";
+import type { Component } from "vue";
+
+const current = computed<{ component: Component }>(() => ({
+  component: {} as Component,
+}));
+const inner = useTemplateRef<{ $el?: HTMLElement }>("inner");
+
+defineExpose({ inner });
+</script>
+
+<template>
+  <component :is="current.component" ref="inner" />
+</template>

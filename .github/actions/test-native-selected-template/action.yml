@@ -51,7 +51,10 @@ runs:
           crates/vize_atelier_core/src/codegen/slots/detect.rs \
           crates/vize_atelier_core/src/codegen/slots/generate.rs \
           crates/vize_atelier_dom/tests/runtime_patch_flags.rs \
-          davinci/vize_l1_to_l2/src/emit/vnode.rs
+          davinci/vize_l1_to_l2/src/emit/vnode.rs \
+          davinci/vize_l1_to_l2/src/emit/component.rs \
+          davinci/vize_l1_to_l2/src/emit/component/children_arg.rs \
+          davinci/vize_l1_to_l2/src/emit/slots.rs
         cargo test -p vize_atelier_dom --profile ci --test integration runtime_patch_flags::
         NODE_ENV=development vp node --test tests/tooling/runtime-patch-flags.test.ts
     - name: Retain runtime patch-flag modules

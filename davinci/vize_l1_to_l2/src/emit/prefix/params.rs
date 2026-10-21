@@ -29,6 +29,13 @@ pub(in crate::emit) fn destructure_params_contain(trimmed: &str, name: &str) -> 
 /// The shipped scanner's walk; `visit` returns `true` to stop early (the
 /// walk then reports `true`).
 fn walk_destructure_params(trimmed: &str, visit: &mut dyn FnMut(&str) -> bool) -> bool {
+    // Slot parameters may carry a TypeScript annotation after the authored
+    // binding pattern (`{ item }: ListItem<Item>`). The shipped compiler
+    // retains that pattern as a parameter AST and still records `item` as a
+    // codegen-local. Keep the allocation-free default-lane scanner on the
+    // binding side of that top-level annotation.
+    let trimmed =
+        split_at_top_level_char(trimmed, ':').map_or(trimmed, |(pattern, _)| pattern.trim());
     let mut pending = SmallVec::<[&str; 8]>::new();
     pending.push(trimmed);
 
@@ -248,6 +255,15 @@ mod tests {
         assert!(!destructure_params_contain(pattern, "id"));
         assert!(destructure_params_contain("item", "item"));
         assert!(!destructure_params_contain("item.value", "item"));
+    }
+
+    #[test]
+    fn destructure_params_contain_ignores_typescript_slot_annotation() {
+        let pattern = "{ item, meta: { index } }: ListItem<Item>";
+        assert!(destructure_params_contain(pattern, "item"));
+        assert!(destructure_params_contain(pattern, "index"));
+        assert!(!destructure_params_contain(pattern, "meta"));
+        assert!(!destructure_params_contain(pattern, "ListItem"));
     }
 
     #[test]

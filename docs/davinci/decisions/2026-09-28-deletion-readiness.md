@@ -40,11 +40,17 @@ adapters: compiler DOM/SSR/Vapor, linter `lint`, formatter `fmt`, typechecker
 `batch` and LSP `stdio`. A checked-in contract rejects drift between those
 targets and their manifests. This fixes the authored target denominator; it
 does not claim that the registered fixtures are complete product coverage.
-The stability duration/cadence remain unset. No production native observation
-or comparison verifier is registered, and no `davinci-deletion-evidence`
-producer exists. The formatter's current native result is unsupported. The
-manual gate therefore exits nonzero and names these blockers; it grants no
-deletion credit.
+The stability duration/cadence remain unset. The formatter now has the first
+production observation/comparison verifier. It binds the source-built CLI
+receipt to every Real Project Matrix shard, requires all 150 registered
+projects' formatter checks, and requires the non-empty projects' check/write
+agreement, idempotence, parse preservation and lint agreement artifacts.
+Property-artifact project identity is derived from those checks, while explicit
+zero-input projects remain in the shard artifact and the 150-project denominator.
+Differences, waivers, unusable baselines, missing files and partial shard
+identity remain blockers. The other four products still have no verifier, and
+no `davinci-deletion-evidence` producer exists. The manual gate therefore exits
+nonzero and names these blockers; it grants no deletion credit.
 These are remaining #6854 tasks, alongside product adapter and case coverage
 work in #6853, #6891 and #6892. Before any deletion is permitted, wire the
 trusted Real Project Matrix bundle producer to actual per-run result artifacts,
@@ -54,6 +60,6 @@ route-swap gap by keeping custody of the DOM, SSR and Vapor compatibility
 emitters and of both production `vize build` compiler entry points. A route
 swap in either the ordinary build path or its statistics path therefore needs
 successful readiness audits at the exact base and candidate SHAs. Native-only
-lint, formatter, typechecker and LSP adapters and their complete evidence
-remain unfinished, so #6854 stays open. This gate does not certify legacy
-deletion.
+compiler, lint, typechecker and LSP adapters and complete formatter
+candidate/history evidence remain unfinished, so #6854 stays open. This gate
+does not certify legacy deletion.

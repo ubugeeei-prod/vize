@@ -34,7 +34,9 @@ const view = <div title='world' />;
 
 この設定は JSX/TSX のスクリプトに適用され、Vue の `<script lang="tsx">` と `<script lang="jsx">` も対象です。
 通常の Vue テンプレートの HTML 属性は、従来の引用符の規則を保ちます。
-CLI・エディターの設定と WASM の SFC オプションでは使えますが、Node 向けネイティブ API のフォーマッタオプションでは `jsxSingleQuote` をまだ指定できません。
+CLI で直接上書きする場合は `vize fmt --jsx-single-quote` を使います。
+Node の native API では `formatSfc` のオプションに `{ jsxSingleQuote: true }` を渡します。
+設定、CLI、エディター、WASM、Node は同じ真偽値を使います。
 
 [プロパティの引用符の設定](./formatter-property-quotes.md)では、どのオブジェクトキーに引用符を付けるかを選びます。
 JSX 属性の引用符とは独立した設定です。

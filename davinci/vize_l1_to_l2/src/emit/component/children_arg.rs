@@ -14,6 +14,7 @@ pub(super) struct Args<'a> {
     pub(super) emit_flag: bool,
     pub(super) keyed_branch: bool,
     pub(super) transition_slot_root: bool,
+    pub(super) captures_scope: bool,
 }
 
 pub(super) fn emit(
@@ -51,6 +52,7 @@ pub(super) fn emit(
                 facts,
                 args.spread,
                 &component.bindings,
+                args.captures_scope,
             );
             cx.transition_slot_root = previous;
             result

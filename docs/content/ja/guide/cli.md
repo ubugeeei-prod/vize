@@ -136,6 +136,8 @@ vize fmt --write src
 | `--check`                          | 整形すると変更されるファイルを報告する                 |
 | `-w, --write`                      | 整形結果をファイルに書き込む                           |
 | `--single-quote`                   | 文字列の引用符を切り替える                             |
+| `--jsx-single-quote`               | JSX 属性の引用符を切り替える                           |
+| `--quote-props`                    | オブジェクトキーの引用符ポリシーを選ぶ                 |
 | `--print-width`                    | 1 行の最大幅                                           |
 | `--tab-width`                      | インデント幅                                           |
 | `--use-tabs`                       | タブとスペースを切り替える                             |

@@ -322,6 +322,11 @@ jobs:
             glyph_exit_code=1
           fi
           exit "$glyph_exit_code"
+      - name: Record formatter deletion-readiness evidence
+        if: ${{ !cancelled() }}
+        run: |
+          node tests/differential/formatter-deletion-verifier.mjs "$FIXTURE_REPORT_DIR"
+          test -s "$FIXTURE_REPORT_DIR/formatter-deletion-readiness.json"
       - name: Enforce typechecker baseline divergence
         id: typecheck_divergence
         if: ${{ !cancelled() && (inputs.typecheck_divergence_mode || 'enforce') != 'skip' }}

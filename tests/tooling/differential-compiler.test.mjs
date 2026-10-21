@@ -115,15 +115,16 @@ void test("compiler fixture pins a real full-module reference without native cre
       "compiler/sfc/scoped-checkout-stability-10067",
       "compiler/sfc/jsx-vapor-runtime-slots-6889",
       "compiler/sfc/root-text-patch-flag-10168",
+      "compiler/sfc/scoped-slot-closure-10169",
     ],
   );
   const report = syntheticReport();
   assert.deepEqual(validateCompilerReport(loaded, report, build), report.summary);
   assert.deepEqual(summarizeNativeAcceptance(loaded, report, { sourceRevision }).total, {
-    planned: 16,
+    planned: 17,
     nativeHandled: 0,
     nativeEquivalent: 0,
-    unsupported: 16,
+    unsupported: 17,
     legacyBacked: 0,
     unverified: 0,
   });
@@ -134,7 +135,7 @@ void test("compiler fixture pins a real full-module reference without native cre
   );
   assert(
     loaded.cases
-      .filter((current) => current.id.includes("scoped-"))
+      .filter((current) => current.expectedCss !== null)
       .every((current) => Buffer.isBuffer(current.expectedCss)),
   );
 });

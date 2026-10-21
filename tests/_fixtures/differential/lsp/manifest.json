@@ -7,9 +7,7 @@
     {
       "id": "lsp/fix-history/inactive-imports",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "inactive-imports",
         "files": [
@@ -40,14 +38,23 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/fix-history/on-type-crlf",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "on-type-crlf",
         "files": [
@@ -67,14 +74,23 @@
         "lint": false,
         "typecheck": false,
         "formatting": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/fix-history/folding-four-divs",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "folding-four-divs",
         "files": [
@@ -93,14 +109,23 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/fix-history/folding-multi-block",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "folding-multi-block",
         "files": [
@@ -119,14 +144,23 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/fix-history/folding-comment",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "folding-comment",
         "files": [
@@ -145,14 +179,23 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/fix-history/folding-one-line",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "folding-one-line",
         "files": [
@@ -171,14 +214,23 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/fix-history/folding-empty-blocks",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "folding-empty-blocks",
         "files": [
@@ -197,6 +249,17 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
@@ -223,6 +286,15 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [{
+          "kind": "source-inspection",
+          "dialects": ["vue3-sfc", "html-template"],
+          "selector": "LSP manifest pinned authored sources"
+        }]
       }
     },
     {
@@ -249,6 +321,15 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [{
+          "kind": "source-inspection",
+          "dialects": ["vue3-sfc", "html-template"],
+          "selector": "LSP manifest pinned authored sources"
+        }]
       }
     },
     {
@@ -275,6 +356,15 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [{
+          "kind": "source-inspection",
+          "dialects": ["vue3-sfc", "html-template", "ts"],
+          "selector": "LSP manifest pinned authored sources"
+        }]
       }
     },
     {
@@ -301,14 +391,21 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [{
+          "kind": "source-inspection",
+          "dialects": ["vue3-sfc", "html-template", "ts"],
+          "selector": "LSP manifest pinned authored sources"
+        }]
       }
     },
     {
       "id": "lsp/fix-history/highlight-original-rw",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "highlight-original-rw",
         "files": [
@@ -327,14 +424,23 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/fix-history/highlight-original-pair",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "highlight-original-pair",
         "files": [
@@ -353,14 +459,23 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/fix-history/highlight-original-tag",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "highlight-original-tag",
         "files": [
@@ -379,14 +494,23 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/fix-history/highlight-original-crlf",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "highlight-original-crlf",
         "files": [
@@ -405,14 +529,23 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/fix-history/highlight-original-empty",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "highlight-original-empty",
         "files": [
@@ -431,14 +564,23 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/regression/component-hover-readability",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "component-hover-readability",
         "files": [
@@ -465,14 +607,23 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/fix-history/document-link-module-resolution-original",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "document-link-module-resolution-original",
         "files": [
@@ -503,14 +654,23 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/regression/document-symbol-outline-parent",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "document-symbol-outline-original",
         "files": [
@@ -541,14 +701,23 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/regression/document-symbol-outline-myswitch",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "document-symbol-outline-original",
         "files": [
@@ -579,14 +748,23 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/regression/binding-occurrences-original",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "binding-occurrences-original",
         "files": [
@@ -609,14 +787,23 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/regression/html-element-hover-documentation",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "html-element-hover-documentation",
         "files": [
@@ -635,14 +822,23 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/regression/script-setup-completion-dedupe-9908",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "script-setup-completion-dedupe-9908",
         "files": [
@@ -661,14 +857,23 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/regression/template-slot-completion-9907",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "template-slot-completion-9907",
         "files": [
@@ -691,14 +896,23 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/regression/dynamic-slot-expression-completion-10182",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "dynamic-slot-expression-completion-10182",
         "files": [
@@ -717,14 +931,23 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/regression/optional-prop-definition-9857",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "optional-prop-definition-9857",
         "files": [
@@ -747,14 +970,23 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/regression/workspace-tsconfig-inheritance-9842",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "workspace-tsconfig-inheritance-9842",
         "files": [
@@ -789,14 +1021,23 @@
         "editor": true,
         "lint": false,
         "typecheck": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/regression/nested-vite-project-9856",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "nested-vite-project-9856",
         "files": [
@@ -831,14 +1072,23 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/regression/import-specifier-hover-9858",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "import-specifier-hover-9858",
         "files": [
@@ -865,14 +1115,23 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/regression/generated-project-import-extensions-9890",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "case": {
         "path": "generated-project-import-extensions-9890/case.json",
         "sha256": "be2b9d4a68d52bdf25ee759be40e378efc44e707b0c7f74afae6d5de04d827cb"
@@ -907,14 +1166,23 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "ts", "jsx", "tsx"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/fix-history/nuxt-builtins-9866",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "nuxt-builtins-9866",
         "files": [
@@ -933,14 +1201,23 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/regression/imported-sfc-parse-recovery-10027",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "case": {
         "path": "imported-sfc-parse-recovery-10027/case.json",
         "sha256": "f85bc8e9bcf3fec56fbb765f817f764db4bfe04e8fc524759a9ed1f3f0f1f281"
@@ -967,14 +1244,23 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/regression/pug-multiline-attributes-8908",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "case": {
         "path": "pug-multiline-attributes-8908/case.json",
         "sha256": "568e4bb81c181fe86a3087c4e442b8bc96cdc964aaa4c23dccb6d9ada4e37fb3"
@@ -993,14 +1279,23 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "pug-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/regression/pug-attribute-navigation-8908",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "case": {
         "path": "pug-attribute-navigation-8908/case.json",
         "sha256": "c87fe34e5586bf7860648f97d42dd50ce45e799512b01240aece92d85305eb0e"
@@ -1023,14 +1318,23 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "pug-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/regression/formatter-whitespace-entries-10031",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "case": {
         "path": "formatter-whitespace-entries-10031/case.json",
         "sha256": "763bc1e02f27e2ee056056036fe960a60a14434bdeb78dfe839ea4b467828ebf"
@@ -1054,14 +1358,23 @@
         "lint": false,
         "typecheck": false,
         "formatting": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "js"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/regression/type-aware-slot-outlet-9834",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "type-aware-slot-outlet-9834",
         "files": [
@@ -1080,14 +1393,23 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/regression/queued-edit-publication-10098",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "case": {
         "path": "queued-edit-publication-10098/case.json",
         "sha256": "be901ed1f4365fd0a0961efc36eb59f160ac09e48757576b917f47ddc4539a29"
@@ -1110,14 +1432,23 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/fix-history/code-action-utf16-original",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "code-action-utf16-original",
         "files": [
@@ -1137,14 +1468,23 @@
         "lint": true,
         "typecheck": false,
         "codeActions": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/regression/inferred-project-tsconfig-9718",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "inferred-project-tsconfig-9718",
         "files": [
@@ -1171,14 +1511,23 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/regression/script-lint-code-actions-9909",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "script-lint-code-actions-9909",
         "files": [
@@ -1202,14 +1551,23 @@
         "lint": true,
         "codeActions": true,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/fix-history/rename-utf16-original",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "rename-utf16-original",
         "files": [
@@ -1228,6 +1586,17 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
@@ -1266,6 +1635,17 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["ts", "jsx", "tsx"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
