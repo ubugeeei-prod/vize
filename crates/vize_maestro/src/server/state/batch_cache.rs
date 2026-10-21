@@ -78,13 +78,8 @@ impl ServerState {
         }
 
         // Try to initialize
-        let (config, _, config_source) = self.native_checker_settings();
+        let (config, _, project) = self.native_checker_settings();
         let corsa_path = config.runtime_path().map(PathBuf::from);
-        let project = vize_carton::config::ProjectModel::new(
-            Some(&workspace_root),
-            config_source.as_deref(),
-            &config,
-        );
         let options = BatchTypeCheckerOptions {
             tsconfig_path: project.tsconfig().map(PathBuf::from),
             virtual_ts_options: self.virtual_ts_options(),

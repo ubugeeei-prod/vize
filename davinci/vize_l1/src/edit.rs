@@ -219,11 +219,20 @@ impl<'edits, 'source, 'replacement, K: Copy + Eq> EditSet<'edits, 'source, 'repl
         self.edits
     }
 
+    /// Recheck the retained snapshot against the host's current snapshot.
+    ///
+    /// Adapters that publish the checked edits without materializing a new
+    /// source buffer must still perform this check while holding their normal
+    /// host synchronization boundary.
+    pub fn check_current(self, current: VersionedSource<'_, K>) -> Result<(), EditError> {
+        self.snapshot.check(current)
+    }
+
     /// Check the current host snapshot, then produce one new authored string.
     /// Validation and reservation precede emission; errors never mutate source.
     /// The host must serialize this check/application with its document changes.
     pub fn apply(self, current: VersionedSource<'_, K>) -> Result<String, EditError> {
-        self.snapshot.check(current)?;
+        self.check_current(current)?;
         let source = self.snapshot.root.source();
         let mut output =
             String::try_with_capacity(self.output_len).map_err(|_| EditError::AllocationFailed)?;
@@ -343,6 +352,7 @@ mod tests {
         let frame = snapshot(&root);
         let edits = [frame.edit(Span::new(0, 2), "B").unwrap()];
         let set = EditSet::new(frame, &edits).unwrap();
+        assert_eq!(set.check_current(frame), Ok(()));
         let candidates = [
             (
                 VersionedSource::new(frame.key(), 8, frame.root()),
@@ -362,6 +372,7 @@ mod tests {
             ),
         ];
         for (current, error) in candidates {
+            assert_eq!(set.check_current(current), Err(error));
             assert_eq!(set.apply(current), Err(error));
             let mixed = [edits[0], current.edit(Span::new(2, 2), "!").unwrap()];
             assert_eq!(EditSet::new(frame, &mixed).unwrap_err(), error);

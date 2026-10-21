@@ -34,7 +34,7 @@ pub(crate) const REFS_RETURN_KEY: &str = "__vizeRefs";
 /// with a `config` computed from `chart.value` would otherwise make `chart`
 /// depend on itself for every component, not only for the generic ones whose
 /// instance really is a function of their props.
-pub(crate) const REF_INSTANCE_HELPERS: &str = "  type __VizeRefInstanceFactory<_C> = 0 extends (1 & _C) ? (component: _C) => (props: any) => undefined : _C extends (props: any, ctx?: any, expose?: any, ...args: any[]) => any ? (component: _C) => _C : (component: _C) => (props: any) => undefined;\n  type __VizeTemplateRefInstance<_T, _K extends keyof _T, _C> = 0 extends (1 & _C) ? __VizeTemplateComponentRef<_C> : _C extends (props: any, ctx?: any, expose?: any, ...args: any[]) => any ? _T[_K] extends () => infer _R ? _R extends { __ctx?: infer _X } ? NonNullable<_X> extends { expose: (exposed: infer _E) => any } ? NonNullable<_E> : __VizeTemplateComponentRef<_C> : __VizeTemplateComponentRef<_C> : __VizeTemplateComponentRef<_C> : __VizeTemplateComponentRef<_C>;\n";
+pub(crate) const REF_INSTANCE_HELPERS: &str = "  type __VizeRefInstanceFactory<_C> = 0 extends (1 & _C) ? (component: _C) => (props: any) => undefined : _C extends { __vizeResolveRef?: infer _F } ? _F extends (...args: any[]) => any ? (component: _C) => _F : (component: _C) => (props: any) => undefined : _C extends (props: any, ctx?: any, expose?: any, ...args: any[]) => any ? (component: _C) => _C : (component: _C) => (props: any) => undefined;\n  type __VizeTemplateRefInstance<_T, _K extends keyof _T, _C> = 0 extends (1 & _C) ? __VizeTemplateComponentRef<_C> : _C extends (props: any, ctx?: any, expose?: any, ...args: any[]) => any ? _T[_K] extends () => infer _R ? _R extends { __ctx?: infer _X } ? NonNullable<_X> extends { expose: (exposed: infer _E) => any } ? NonNullable<_E> : __VizeTemplateComponentRef<_C> : __VizeTemplateComponentRef<_C> : __VizeTemplateComponentRef<_C> : __VizeTemplateComponentRef<_C>;\n";
 
 /// Template-relative starts of the component usages whose ref is instantiated:
 /// a static `ref` next to at least one bound prop, outside every slot scope.
@@ -204,7 +204,7 @@ fn open_guard(ts: &mut String, indent: &mut String, closers: &mut Vec<String>, g
 
 #[cfg(test)]
 mod tests {
-    use super::instantiated_ref_starts;
+    use super::{REF_INSTANCE_HELPERS, instantiated_ref_starts};
     use vize_carton::Allocator;
     use vize_croquis::{Analyzer, AnalyzerOptions};
 
@@ -242,5 +242,16 @@ mod tests {
         ] {
             assert_eq!(starts(template), Vec::<u32>::new(), "{template}");
         }
+    }
+
+    #[test]
+    fn generated_generic_refs_use_the_open_inference_resolver() {
+        assert_eq!(
+            REF_INSTANCE_HELPERS
+                .matches("__vizeResolveRef?: infer _F")
+                .count(),
+            1,
+            "{REF_INSTANCE_HELPERS}",
+        );
     }
 }

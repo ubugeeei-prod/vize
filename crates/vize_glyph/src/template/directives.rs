@@ -83,6 +83,9 @@ pub(super) fn format_directive_value(
         expression,
         options,
         attribute_depth,
+        name,
+        value,
+        trimmed,
     ) {
         Some(formatted) if formatted.retained_bare_sequence => {
             // These authored bytes retain absolute source indentation. Rebase

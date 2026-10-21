@@ -49,13 +49,13 @@ pub(super) fn read_open<'a>(
     }))
 }
 
-struct OpenBoundary<'a> {
-    name: &'a str,
-    end: usize,
-    self_closing: bool,
+pub(super) struct OpenBoundary<'a> {
+    pub(super) name: &'a str,
+    pub(super) end: usize,
+    pub(super) self_closing: bool,
 }
 
-fn read_open_boundary<'a>(
+pub(super) fn read_open_boundary<'a>(
     source: &'a str,
     at: usize,
     mut attribute: impl FnMut(BlockAttr<'a>),

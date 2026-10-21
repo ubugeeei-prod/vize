@@ -1,0 +1,61 @@
+{
+  "oracle": {
+    "package": "vue-jsx-vapor",
+    "packageVersion": "3.2.26",
+    "vueVersion": "3.6.0-rc.10"
+  },
+  "cases": [
+    {
+      "id": "children/dynamic-text",
+      "source": "const App = () => <p data-kind=\"text\">{state.label}</p>;",
+      "initial": { "label": "alpha" },
+      "steps": [
+        { "patch": { "label": "beta" } },
+        { "patch": { "label": "" } },
+        { "patch": { "label": "gamma" } }
+      ],
+      "expectedText": ["alpha", "beta", "", "gamma"],
+      "expectedElementIdentities": [[0], [0], [0], [0]]
+    },
+    {
+      "id": "props/dynamic-attributes",
+      "source": "const App = () => <section id={state.id} class={state.className}>{state.label}</section>;",
+      "initial": { "id": "one", "className": "cold", "label": "alpha" },
+      "steps": [
+        { "patch": { "id": "two", "className": "hot", "label": "beta" } },
+        { "patch": { "id": "three", "className": "warm", "label": "gamma" } }
+      ],
+      "expectedText": ["alpha", "beta", "gamma"],
+      "expectedElementIdentities": [[0], [0], [0]]
+    },
+    {
+      "id": "control-flow/conditional-branch",
+      "source": "const App = () => <main>{state.show ? <strong>{state.label}</strong> : <em>off</em>}</main>;",
+      "initial": { "show": true, "label": "alpha" },
+      "steps": [
+        { "patch": { "label": "beta" } },
+        { "patch": { "show": false } },
+        { "patch": { "show": true, "label": "gamma" } }
+      ],
+      "expectedText": ["alpha", "beta", "off", "gamma"],
+      "expectedElementIdentities": [
+        [0, 1],
+        [0, 1],
+        [0, 2],
+        [0, 3]
+      ]
+    },
+    {
+      "id": "props/live-input-value",
+      "source": "const App = () => <label>Value<input value={state.value}/><output>{state.value}</output></label>;",
+      "initial": { "value": "alpha" },
+      "steps": [{ "patch": { "value": "beta" } }, { "patch": { "value": "gamma" } }],
+      "expectedText": ["Valuealpha", "Valuebeta", "Valuegamma"],
+      "expectedElementIdentities": [
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2]
+      ]
+    }
+  ]
+}

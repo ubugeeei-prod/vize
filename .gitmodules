@@ -59,6 +59,10 @@
 	path = tests/_fixtures/_git/primevue
 	url = https://github.com/primefaces/primevue
 	shallow = true
+[submodule "tests/_fixtures/_git/openvue"]
+	path = tests/_fixtures/_git/openvue
+	url = https://github.com/openvi-foundation/openvue
+	shallow = true
 
 [submodule "tests/_fixtures/_git/vuetify"]
 	path = tests/_fixtures/_git/vuetify

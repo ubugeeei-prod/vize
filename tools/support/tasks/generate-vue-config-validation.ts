@@ -8,7 +8,7 @@ const schema = JSON.parse(
 ) as { properties: Record<string, unknown>; definitions: Record<string, unknown> };
 const declarations = fs.readFileSync(new URL("npm/cli/src/types/runtime.ts", root), "utf8");
 const optionKeys = /type VueOptionKeys =([\s\S]*?);/u.exec(declarations);
-const entryType = /export type VueOptionsEntry = Pick<\s*VizeConfigEntry,\s*([^>]+)>;/u.exec(
+const entryType = /export type VueOptionsEntry = Pick<\s*VizeConfigEntry,\s*([^>]+)>/u.exec(
   declarations,
 );
 assert.ok(optionKeys, "VueOptionKeys declaration is missing");
@@ -21,15 +21,37 @@ const properties: Record<string, unknown> = Object.fromEntries(
     return [key, schema.properties[key]];
   }),
 );
+const actionAliases = {
+  compile: "compiler",
+  typeCheck: "typeChecker",
+  fmt: "formatter",
+} as const;
+for (const [action, section] of Object.entries(actionAliases)) {
+  properties[action] = schema.properties[section];
+}
+properties.lint = {
+  type: "object",
+  required: ["jsPlugins", "plugins", "rules", "settings"],
+  properties: {
+    jsPlugins: { type: "array", items: { type: "string" } },
+    plugins: { type: "array", items: { type: "string" } },
+    rules: { type: "object", additionalProperties: true },
+    settings: { type: "object", additionalProperties: true },
+    ignorePatterns: { type: "array", items: { type: "string" } },
+    overrides: { type: "array" },
+  },
+  additionalProperties: true,
+};
 properties.version = { $ref: "#/definitions/VueVersion" };
 const entries = schema.definitions.VizeConfigEntry as { properties: Record<string, unknown> };
+const entryProperties = Object.fromEntries(
+  keys(entryType[1]!).map((key) => [key, entries.properties[key]]),
+);
 properties.entries = {
   type: "array",
   items: {
     type: "object",
-    properties: Object.fromEntries(
-      keys(entryType[1]!).map((key) => [key, entries.properties[key]]),
-    ),
+    properties: entryProperties,
     additionalProperties: false,
   },
 };

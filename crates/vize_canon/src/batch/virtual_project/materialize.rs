@@ -271,6 +271,13 @@ impl VirtualProject {
                 self.write_tsconfig_file(&path, None, false)
             }
         })?;
+        // Commit link custody only after every materialized artifact succeeds.
+        // An interrupted cold build must fail closed on its next run.
+        self.write_package_link_receipt(&desired_package_links)?;
+        // A caller can inspect the completed mirror after this project drops
+        // its live lock. Keep parallel cache maintenance from reclaiming that
+        // freshly completed result in the hand-off window.
+        super::cache_gc::record_project_cache_access(&self.virtual_root);
         Ok(desired_package_links)
     }
 

@@ -18,6 +18,7 @@ const MAX_SCANNED_PROJECT_ENTRIES: usize = 256;
 const MAX_SCANNED_CACHE_ENTRIES: usize = MAX_SCANNED_PROJECT_ENTRIES * 4;
 const MAX_EVICTIONS_PER_MAINTENANCE: usize = 8;
 const MAX_ORPHAN_LOCK_CLEANUPS_PER_MAINTENANCE: usize = 8;
+const RECENT_ACCESS_GRACE: Duration = Duration::from_secs(60);
 const MAX_UNUSED_AGE: Duration = Duration::from_secs(14 * 24 * 60 * 60);
 
 #[derive(Debug, Default, PartialEq, Eq)]
@@ -34,6 +35,11 @@ struct CacheMaintenanceSummary {
 /// cache and cache maintenance must not make type checking unavailable.
 pub(super) fn maintain_project_cache(current: &Path) {
     let _ = maintain_project_cache_with_summary(current);
+}
+
+/// Refresh the completed mirror's lease before its live usage lock is released.
+pub(super) fn record_project_cache_access(current: &Path) {
+    let _ = touch(&access_path(current));
 }
 
 fn maintain_project_cache_with_summary(current: &Path) -> CacheMaintenanceSummary {
@@ -75,11 +81,13 @@ fn maintain_project_cache_with_summary(current: &Path) -> CacheMaintenanceSummar
         if name.len() != 64 || !name.bytes().all(|byte| byte.is_ascii_hexdigit()) {
             continue;
         }
-        let modified = fs::metadata(access_path(&path))
+        let access = fs::metadata(access_path(&path));
+        let has_access_receipt = access.is_ok();
+        let modified = access
             .or_else(|_| entry.metadata())
             .and_then(|metadata| metadata.modified())
             .unwrap_or(SystemTime::UNIX_EPOCH);
-        entries.push((path, modified));
+        entries.push((path, modified, has_access_receipt));
         if entries.len() == MAX_SCANNED_PROJECT_ENTRIES {
             break;
         }
@@ -88,7 +96,7 @@ fn maintain_project_cache_with_summary(current: &Path) -> CacheMaintenanceSummar
     lock_roots.sort();
     lock_roots.dedup();
 
-    entries.sort_by_key(|(_, modified)| *modified);
+    entries.sort_by_key(|(_, modified, _)| *modified);
     let excess = entries
         .len()
         .saturating_add(1)
@@ -111,14 +119,18 @@ fn maintain_project_cache_with_summary(current: &Path) -> CacheMaintenanceSummar
             summary.orphan_lock_groups_cleaned += 1;
         }
     }
-    for (index, (path, modified)) in entries.into_iter().enumerate() {
+    for (index, (path, modified, has_access_receipt)) in entries.into_iter().enumerate() {
         if summary.evicted == MAX_EVICTIONS_PER_MAINTENANCE {
             break;
         }
         let expired = now
             .duration_since(modified)
             .is_ok_and(|age| age >= MAX_UNUSED_AGE);
-        if (index < excess || expired)
+        let recently_accessed = has_access_receipt
+            && now
+                .duration_since(modified)
+                .is_ok_and(|age| age < RECENT_ACCESS_GRACE);
+        if ((index < excess && !recently_accessed) || expired)
             && let Some(locks) = lock_unused(&path)
             && fs::remove_dir_all(&path).is_ok()
         {
@@ -268,6 +280,27 @@ mod tests {
             .filter(|entry| entry.file_type().is_ok_and(|kind| kind.is_dir()))
             .count();
         assert_eq!(remaining, entry_count - MAX_EVICTIONS_PER_MAINTENANCE);
+    }
+
+    #[test]
+    fn maintenance_keeps_recently_completed_unlocked_entries_during_parallel_bursts() {
+        let cache = tempfile::tempdir().unwrap();
+        let projects = cache.path().join("canon/projects");
+        fs::create_dir_all(&projects).unwrap();
+        let mut recent = Vec::new();
+        for index in 0..(MAX_PROJECT_ENTRIES + MAX_EVICTIONS_PER_MAINTENANCE) {
+            let entry = projects.join(key(index as u8));
+            fs::create_dir(&entry).unwrap();
+            record_project_cache_access(&entry);
+            recent.push(entry);
+        }
+        let current = projects.join(key(255));
+        fs::create_dir(&current).unwrap();
+
+        let summary = maintain_project_cache_with_summary(&current);
+
+        assert_eq!(summary.evicted, 0);
+        assert!(recent.iter().all(|entry| entry.is_dir()));
     }
 
     #[test]

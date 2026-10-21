@@ -8,12 +8,14 @@ import {
   loadLinterManifest,
   LINTER_OBSERVER,
   runLinterApiPack,
+  summarizeLinterAcceptance,
 } from "../differential/linter-api.ts";
 import { expectedNativeReason } from "../differential/linter-native.ts";
+import { renderNativeAcceptanceMarkdown } from "../differential/acceptance-rates.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
-void test("shared linter corpus retains all 59 complete actual public observations from source-built Rust", (t) => {
+void test("shared linter corpus retains all 65 complete actual public observations from source-built Rust", (t) => {
   const evidenceDir = path.resolve(
     root,
     process.env.VIZE_LINTER_API_EVIDENCE_DIR ?? "target/differential/linter-api",
@@ -38,11 +40,11 @@ void test("shared linter corpus retains all 59 complete actual public observatio
   assert.deepEqual(
     report.summary,
     {
-      plannedCases: 59,
-      legacyMatches: 59,
+      plannedCases: 65,
+      legacyMatches: 65,
       legacyFailures: 0,
       baselineDrift: 0,
-      nativeUnsupported: 49,
+      nativeUnsupported: 55,
       nativeFailures: 0,
       nativeHandled: 10,
       nativeEquivalent: 10,
@@ -54,6 +56,22 @@ void test("shared linter corpus retains all 59 complete actual public observatio
     path.join(root, "tests/_fixtures/differential/linter/manifest.json"),
     root,
   );
+  const acceptance = summarizeLinterAcceptance(loaded, report, built.receipt);
+  const acceptanceArtifact = path.join(evidenceDir, "acceptance.json");
+  const markdown = renderNativeAcceptanceMarkdown([acceptance]);
+  fs.writeFileSync(acceptanceArtifact, `${JSON.stringify(acceptance, null, 2)}\n`);
+  t.diagnostic(markdown);
+  t.diagnostic(`Native acceptance: ${acceptanceArtifact}`);
+  if (process.env.GITHUB_STEP_SUMMARY)
+    fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${markdown}\n`);
+  assert.deepEqual(acceptance.total, {
+    planned: 65,
+    nativeHandled: 10,
+    nativeEquivalent: 10,
+    unsupported: 55,
+    legacyBacked: 0,
+    unverified: 0,
+  });
   const handled = report.rows.filter((row: any) => row.native.state === "completed");
   assert.deepEqual(
     handled.map((row: any) => row.id).sort(),

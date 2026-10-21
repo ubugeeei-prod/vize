@@ -407,9 +407,9 @@ function validateRatchets(
   fixtureMap: FixtureMap,
   context: CompatibilityContext,
 ): void {
-  equal(fixtureMap.size, 148, "gitlink count drifted");
+  equal(fixtureMap.size, 149, "gitlink count drifted");
   equal(countMembership(fixtureMap, "ecosystem"), 143, "ecosystem fixture count drifted");
-  equal(countMembership(fixtureMap, "app"), 16, "App fixture count drifted");
+  equal(countMembership(fixtureMap, "app"), 17, "App fixture count drifted");
   const appOnly = [...fixtureMap.values()].filter(
     (fixture) => fixture.memberships.length === 1 && fixture.memberships[0] === "app",
   );
@@ -419,6 +419,7 @@ function validateRatchets(
       "tests/_fixtures/_git/frontend-phpcon-do-website",
       "tests/_fixtures/_git/npmx.dev",
       "tests/_fixtures/_git/nuxt-ui",
+      "tests/_fixtures/_git/openvue",
       "tests/_fixtures/_git/vuefes-2025",
     ],
     "App-only fixture membership drifted",

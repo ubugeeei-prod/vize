@@ -21,6 +21,7 @@ import {
   FRESH_INIT_MATRIX,
   PROJECT_SHAPES,
 } from "../../../tools/support/compat/npm/smoke-release-init-shapes.mjs";
+import { CONFIG_FREE_PROJECT_SHAPES } from "../../../tools/support/compat/npm/smoke-release-init-config-free.mjs";
 import { readRepoFile } from "../support/github-workflows.ts";
 import {
   COREPACK_MANAGER_SPECS,
@@ -67,7 +68,7 @@ test("the fresh-project matrix is data, so new cells need no driver change", () 
   assert.ok(FRESH_INIT_MATRIX.length > 0, "the fresh-project matrix must run at least one cell");
   for (const cell of FRESH_INIT_MATRIX) {
     const manager = PACKAGE_MANAGERS[cell.packageManager];
-    const shape = PROJECT_SHAPES[cell.shape];
+    const shape = CONFIG_FREE_PROJECT_SHAPES[cell.shape];
     assert.ok(manager, `unknown package manager ${cell.packageManager}`);
     assert.ok(shape, `unknown project shape ${cell.shape}`);
     for (const key of MANAGER_KEYS) {
@@ -140,7 +141,7 @@ test("the fresh-project matrix exercises a project path with spaces and non-ASCI
 
 test("the fresh-project matrix covers every declared project shape", () => {
   const matrixShapes = new Set(FRESH_INIT_MATRIX.map((cell) => cell.shape));
-  for (const shape of Object.keys(PROJECT_SHAPES)) {
+  for (const shape of Object.keys(CONFIG_FREE_PROJECT_SHAPES)) {
     assert.ok(matrixShapes.has(shape), `fresh-project matrix does not cover ${shape}`);
   }
 });
@@ -181,7 +182,7 @@ test("fresh-project package managers use exact Corepack runners where needed", (
 });
 
 test("every shape drives a clean, broken, and repaired check", () => {
-  for (const shape of Object.values(PROJECT_SHAPES)) {
+  for (const shape of Object.values(CONFIG_FREE_PROJECT_SHAPES)) {
     const broken = Object.keys(shape.check.broken);
     assert.ok(broken.length > 0, `${shape.id} has no broken variant`);
     const authored = Object.keys(
@@ -212,7 +213,7 @@ test("the smoke only passes init flags the guide documents", () => {
   for (const flag of ["--dry-run", "--no-install"]) {
     assert.ok(documented.has(flag), `docs/content/guide/init.md must document ${flag}`);
   }
-  for (const shape of Object.values(PROJECT_SHAPES)) {
+  for (const shape of Object.values(CONFIG_FREE_PROJECT_SHAPES)) {
     for (const flag of shape.initFlags) {
       assert.ok(documented.has(flag), `${shape.id} passes undocumented init flag ${flag}`);
     }

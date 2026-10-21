@@ -14,7 +14,7 @@ import path from "node:path";
 import { snapshot, test } from "node:test";
 import { resolveConfigExport } from "../../../cli/src/config.ts";
 import { compileFile } from "./compiler.ts";
-import { createFilter, generateOutput } from "./utils/index.ts";
+import { createFilter, generateOutput, generateScopeId } from "./utils/index.ts";
 import { resolveCssImports } from "./utils/css.ts";
 
 snapshot.setDefaultSnapshotSerializers([
@@ -439,25 +439,28 @@ assert.strictEqual(
 // Test: scopeId generation
 // =============================================================================
 
-function generateScopeId(filename: string): string {
-  // Simplified hash function for testing
-  let hash = 0;
-  for (let i = 0; i < filename.length; i++) {
-    const char = filename.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  return Math.abs(hash).toString(16).substring(0, 8);
-}
-
-// Test 13: Different files should have different scope IDs
-const scope1 = generateScopeId("src/components/Button.vue");
-const scope2 = generateScopeId("src/components/Input.vue");
+const scopeSource = `<template><button /></template><style scoped>button{color:red}</style>`;
+const scope1 = generateScopeId(
+  "/checkout-a/app/src/components/Button.vue",
+  "/checkout-a/app",
+  true,
+  scopeSource,
+);
+const scope2 = generateScopeId(
+  "/checkout-a/app/src/components/Input.vue",
+  "/checkout-a/app",
+  true,
+  scopeSource,
+);
 assert.notStrictEqual(scope1, scope2, "Different files should have different scope IDs");
 
-// Test 14: Same file should have same scope ID
-const scope3 = generateScopeId("src/components/Button.vue");
-assert.strictEqual(scope1, scope3, "Same file should have same scope ID");
+const relocatedScope = generateScopeId(
+  "/checkout-b/somewhere/else/app/src/components/Button.vue",
+  "/checkout-b/somewhere/else/app",
+  true,
+  scopeSource,
+);
+assert.strictEqual(scope1, relocatedScope, "Checkout location should not change the scope ID");
 
 // =============================================================================
 // Test: resolveCssImports — @custom-media resolution

@@ -56,6 +56,11 @@ export function assertNoDedicatedConfig(projectRoot) {
   );
 }
 
+/** Whether this invocation packed every artifact a project shape installs. */
+export function canRunFreshProjectShape(context, shape) {
+  return shape.requires.every((name) => context.packed.has(name));
+}
+
 /**
  * Installs exactly the dependency plan `init` printed.
  *
@@ -215,7 +220,7 @@ export function runFreshProjectInitChecks(context) {
   let ran = 0;
   for (const cell of FRESH_INIT_MATRIX) {
     const shape = PROJECT_SHAPES[cell.shape];
-    if (!shape.requires.every((name) => context.packed.has(name))) continue;
+    if (!canRunFreshProjectShape(context, shape)) continue;
     runFreshProjectCell({ ...context, freshRoot }, cell);
     ran += 1;
   }

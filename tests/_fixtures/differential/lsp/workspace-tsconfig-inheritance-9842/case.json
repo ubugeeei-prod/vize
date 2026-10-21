@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "id": "lsp/regression/workspace-tsconfig-inheritance-9842",
+  "provenance": {
+    "fixCommit": "e615c9a4e471e6e14e0f8169c182e97cbdf2923b",
+    "witnessPath": "crates/vize_maestro/src/server/state/project_contexts/tests.rs",
+    "witnessTest": "package_without_a_local_config_inherits_the_workspace_tsconfig",
+    "issue": "https://github.com/ubugeeei-prod/vize/issues/9842",
+    "inputOrigin": "exact root manifest, root tsconfig, ambient declaration, package manifest and SFC from issue #9842",
+    "contractOrigin": "the Maestro project-context tests validate direct and solution-style tsconfig ownership; this row pins and admits the exact authored workspace bytes"
+  },
+  "files": [
+    {
+      "runtimePath": "package.json",
+      "source": "package.json.txt",
+      "sha256": "1ddc4c32d005f30baed4d7b7523da67de2047a8b5ad9201e51f54589bdd08dd3"
+    },
+    {
+      "runtimePath": "tsconfig.json",
+      "source": "tsconfig.json.txt",
+      "sha256": "6e602dcdb32f5eac7261a47f022c51d3964ef349bd46a2f10411d5582f802253"
+    },
+    {
+      "runtimePath": "types/globals.d.ts",
+      "source": "globals.d.ts.txt",
+      "sha256": "d3cdea17934734c50f729c77b375216d1c4735eccf13692992113599ab663a0c"
+    },
+    {
+      "runtimePath": "packages/ui/package.json",
+      "source": "package-ui.json.txt",
+      "sha256": "daeb5e493a5d857808a57f2848112573d0c4a47cc92762543ba597475aa95f15"
+    },
+    {
+      "runtimePath": "packages/ui/src/MyFooter.vue",
+      "source": "MyFooter.vue.txt",
+      "sha256": "73779e4741bc4769b47ad9dce5c5667d072f9bd6b1945befc284671486ab43db"
+    }
+  ],
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "entry": "packages/ui/src/MyFooter.vue",
+  "documentVersion": 1,
+  "method": "textDocument/foldingRange",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "2e965f8a6ffef076e9bf0f653ff2da3807cae2229faa6ecd5ecb449a2b870948"
+  },
+  "scope": "exact issue input custody plus Maestro project-selection witnesses; folding response is paired with an exact type-diagnostic acceptance test"
+}

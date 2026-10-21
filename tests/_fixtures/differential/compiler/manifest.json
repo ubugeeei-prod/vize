@@ -33,6 +33,17 @@
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
         "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
       }
     },
     {
@@ -64,6 +75,17 @@
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
         "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
       }
     },
     {
@@ -95,6 +117,17 @@
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
         "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
       }
     },
     {
@@ -126,6 +159,17 @@
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
         "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
       }
     },
     {
@@ -157,6 +201,17 @@
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
         "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
       }
     },
     {
@@ -188,6 +243,17 @@
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
         "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
       }
     },
     {
@@ -219,6 +285,17 @@
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
         "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
       }
     },
     {
@@ -249,12 +326,17 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": [
-          "code",
-          "css",
-          "errors",
-          "warnings",
-          "macro_artifacts"
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
         ]
       }
     },
@@ -287,6 +369,17 @@
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
         "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
       }
     },
     {
@@ -319,6 +412,17 @@
         "contract": "compiler-ssr-module-bytes-v1",
         "scriptLang": "ts",
         "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
       }
     },
     {
@@ -352,6 +456,17 @@
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
         "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
       }
     },
     {
@@ -374,6 +489,50 @@
         "cssPath": "scoped-keyframes-nesting-9829/style.expected.css",
         "cssSha256": "73515a00f438aede769725e91c8ced4ca0968d81a1ebb747326888ed02c2929f",
         "source": "crates/vize_atelier_sfc/src/vite_plugin/css_scope/tests.rs:scopes_keyframes_when_unrelated_rules_use_nesting"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); scoped style compilation remains legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
+      "id": "compiler/sfc/scoped-checkout-stability-10067",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "scoped-checkout-stability-10067",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "1a3f415e27c6a2a541da2b717ddd5b1b3e4bf8b9b3770e7975a6e39990f47526",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "scoped-checkout-stability-10067/module.expected.txt",
+        "sha256": "b945742cb8eeacf6a241e21a074ad9862024a2e4591428bdbd36b5402b1e49c1",
+        "cssPath": "scoped-checkout-stability-10067/style.expected.css",
+        "cssSha256": "ff300afe7b2eae5a7118d2f5f92212b6937d48557fbde2e9259a6c5955cd3c73",
+        "source": "npm/builder/vite/src/scope-id-reproducibility.test.ts"
       },
       "adapters": {
         "legacy": "compiler-cli-ssr-v1",

@@ -34,8 +34,9 @@ impl ContainerFormat for Vue {
 }
 
 impl Vue {
-    /// Observe a single attribute-free template with default Vue policy.
-    /// The original boundary scanner checks the complete source without an arena.
+    /// Observe a single template with default Vue policy and an optional
+    /// canonical `lang=html` attribute. The original boundary scanner checks
+    /// the complete source without an arena.
     pub fn observe_template_only<'a>(&self, source: &'a str) -> Option<TemplateOnlyDescriptor<'a>> {
         descriptor::observe_template_only(source)
     }
