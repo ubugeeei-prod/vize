@@ -26,7 +26,7 @@ const cases = [
 
 assert.ok(!required || capture, "mandatory fresh JSX client Vapor modules are required");
 
-test(
+void test(
   "seven fresh JSX client Vapor modules retain forwarded slots in the pinned runtime",
   { skip: !capture && !required },
   async () => {
