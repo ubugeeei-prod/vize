@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "target": "esnext",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "vueCompilerOptions": {
+    "checkUnknownComponents": true,
+    "checkUnknownDirectives": true
+  },
+  "include": ["src"]
+}

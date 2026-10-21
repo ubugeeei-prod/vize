@@ -60,8 +60,7 @@ pub(super) fn observe(root: &Path, source: &str, capture: Option<&Path>) -> Obse
     let generated = std::fs::read_to_string(&path).unwrap();
     let child = std::fs::read_to_string(mirror.join("Declared.vue.ts")).unwrap();
     let config = std::fs::read_to_string(mirror.join("tsconfig.json")).unwrap();
-    let construct =
-        "\n  void Declared;\n  const { } = undefined as unknown as __Declared_Props_0;\n";
+    let construct = "\n  void Declared;\n  const { } = undefined as unknown as __VizeComponentNavigationProps<__Declared_Props_0>;\n";
     let tag_start = source.find("<Declared").unwrap();
     let tag_end = tag_start + source[tag_start..].find('>').unwrap() + 1;
     let mapping = format!("// @vize-map: component -> {tag_start}:{tag_end}\n");

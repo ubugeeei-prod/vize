@@ -13,6 +13,7 @@ const PACKAGE: &str = "{\"name\":\"vize-event-fixture\",\"version\":\"0.0.0\",\"
 const SLOT_NAVIGATION_PRELUDE: &str = include_str!(
     "../../../../tests/_fixtures/differential/lsp/component-native-events/slot-navigation-prelude.expected.txt"
 );
+const COMPONENT_NAVIGATION_HELPER: &str = "  type __VizeComponentNavigationProps<P> = __VizeIsAny<P> extends true ? Record<string, unknown> : unknown extends P ? {} : P;\n";
 
 pub(super) struct Witness {
     pub app_path: PathBuf,
@@ -103,8 +104,8 @@ pub(super) fn observe(root: &Path, mut record: impl FnMut(Value)) -> Witness {
     let source_end = source_start + tag.len();
     let mapping = format!("// @vize-map: component -> {source_start}:{source_end}\n");
     assert_eq!(app.matches(&mapping).count(), 1);
-    let construct =
-        "\n  void MySwitch;\n  const { } = undefined as unknown as __MySwitch_Props_0;\n";
+    assert_eq!(app.matches(COMPONENT_NAVIGATION_HELPER).count(), 1);
+    let construct = "\n  void MySwitch;\n  const { } = undefined as unknown as __VizeComponentNavigationProps<__MySwitch_Props_0>;\n";
     assert_eq!(app.matches(construct).count(), 1);
     let cursor = app.find(construct).unwrap() + "\n  void MySwitch;\n  const { ".len();
     assert!(app.find(&mapping).unwrap() < cursor);
@@ -157,6 +158,11 @@ pub fn public_input_prelude_utf16_delta() -> usize {
         .count()
         .checked_sub(before.encode_utf16().count())
         .unwrap()
+}
+
+/// UTF-16 length of the navigation helper added ahead of every prop query.
+pub fn component_navigation_helper_utf16_len() -> usize {
+    COMPONENT_NAVIGATION_HELPER.encode_utf16().count()
 }
 
 // A named source counterfactual preserves the old position; it is not an old backend run.

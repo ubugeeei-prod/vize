@@ -34,8 +34,11 @@ fn unknown_component_and_directive_options_reach_the_mapper_projection() {
     )
     .unwrap();
 
-    assert!(enabled.text.contains("__vize_global_component_"));
-    assert!(enabled.text.contains("__vize_unknown_directive_"));
-    assert!(!disabled.text.contains("__vize_global_component_"));
-    assert!(!disabled.text.contains("__vize_unknown_directive_"));
+    assert_eq!(enabled.text.matches("__vize_global_component_").count(), 2);
+    assert_eq!(enabled.text.matches("__vize_unknown_directive_").count(), 2);
+    assert_eq!(disabled.text.matches("__vize_global_component_").count(), 0);
+    assert_eq!(
+        disabled.text.matches("__vize_unknown_directive_").count(),
+        0
+    );
 }

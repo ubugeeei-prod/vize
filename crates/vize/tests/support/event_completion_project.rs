@@ -220,7 +220,9 @@ impl Project {
         if lf {
             assert_eq!(
                 observed.historical_query_position,
-                21_367 + witness::public_input_prelude_utf16_delta()
+                21_367
+                    + witness::public_input_prelude_utf16_delta()
+                    + witness::component_navigation_helper_utf16_len()
             );
             assert_eq!(
                 observed.query_position,

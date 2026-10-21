@@ -113,6 +113,17 @@ fn content_mapper_keeps_inferred_type_only_imports_out_of_value_anchors() {
 }
 
 #[test]
+fn content_mapper_unknown_options_preserve_requested_diagnostics() {
+    check_pack(
+        "content-mapper-unknown-options-10218",
+        "content_mapper_unknown_options_preserve_requested_diagnostics",
+        "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
+        Some(10218),
+        &["unknown-component-and-directive"],
+    );
+}
+
+#[test]
 fn valueless_directive_imports_preserve_upstream_diagnostic_parity() {
     check_pack(
         "valueless-directive-import-3140",
@@ -754,6 +765,7 @@ fn check_pack(
             | "content-mapper-javascript-checkjs-10217"
             | "content-mapper-dynamic-template-ref-10198"
             | "content-mapper-type-only-import-use"
+            | "content-mapper-unknown-options-10218"
             | "content-mapper-dynamic-template-ref-union-10251"
             | "content-mapper-dynamic-template-ref-scope-10251"
             | "content-mapper-props-binding-10196"

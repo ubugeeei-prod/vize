@@ -74,6 +74,7 @@ function __setup() {
 
   // Component props type declarations
   type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;
+  type __VizeComponentNavigationProps<P> = __VizeIsAny<P> extends true ? Record<string, unknown> : unknown extends P ? {} : P;
   type __VizeEmitListeners<C> = C extends { __vizeEmitProps?: infer __E } ? __VizeIsAny<__E> extends true ? {} : NonNullable<__E> : {};
   type __VizeIsGeneratedComponent<C> = C extends { readonly __vizeComponentMarker: true } ? true : false;
   type __VizeHasFallthroughProps<C> = __VizeIsGeneratedComponent<C> extends true ? C extends { readonly __vizeHasFallthroughProps: true } ? true : false : false;
@@ -117,7 +118,7 @@ function __setup() {
 
   // Component template navigation references
   void Child;
-  const { } = undefined as unknown as __Child_Props_0;
+  const { } = undefined as unknown as __VizeComponentNavigationProps<__Child_Props_0>;
   const __vize_props_nav_0 = undefined as unknown as __Child_Props_0 & Record<string, unknown>;
   void __vize_props_nav_0.as;
   void __vize_props_nav_0.asChild;

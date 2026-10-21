@@ -65,6 +65,8 @@ export const TYPECHECKER_TESTS = {
   "content-mapper-dynamic-template-ref-10198": "dynamic_template_refs_preserve_batch_acceptance",
   "content-mapper-type-only-import-use":
     "content_mapper_keeps_inferred_type_only_imports_out_of_value_anchors",
+  "content-mapper-unknown-options-10218":
+    "content_mapper_unknown_options_preserve_requested_diagnostics",
   "valueless-directive-import-3140":
     "valueless_directive_imports_preserve_upstream_diagnostic_parity",
   "content-mapper-dynamic-template-ref-union-10251":
@@ -132,6 +134,7 @@ const sourceRevisions = {
   "content-mapper-javascript-checkjs-10217": "c9b9b5c368fceeed61c13813a617f7a8b5b8351f",
   "content-mapper-dynamic-template-ref-10198": "b7fb3a9aefd31002b8b2d449695a9e14d657654a",
   "content-mapper-type-only-import-use": "fb89f41ffc518768e3053ccf9fe6b83bf24a1122",
+  "content-mapper-unknown-options-10218": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
   "valueless-directive-import-3140": "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899",
   "content-mapper-dynamic-template-ref-union-10251": "6817c853ca1740fd1070c0ec462c0d457f339c2c",
   "content-mapper-dynamic-template-ref-scope-10251": "8d83800c727eef953852383d46c7324ccdda53b6",
