@@ -83,7 +83,12 @@ impl ServerState {
             return None;
         }
         let source = physical_path(&uri.to_file_path().ok()?);
-        let authored_tsconfig = snapshot.config.type_checker.tsconfig.is_some();
+        let authored_tsconfig = state
+            .project_contexts
+            .loaded_config
+            .read()
+            .as_ref()
+            .is_some_and(|loaded| loaded.config.type_checker.tsconfig.is_some());
         let root = state
             .project_contexts
             .boundary
