@@ -1,0 +1,22 @@
+{
+  "uri": "${workspace}/plain.ts",
+  "version": 1,
+  "diagnostics": [
+    {
+      "range": {
+        "start": {
+          "line": 0,
+          "character": 13
+        },
+        "end": {
+          "line": 0,
+          "character": 14
+        }
+      },
+      "severity": 1,
+      "code": 2322,
+      "source": "vize/types",
+      "message": "Type 'string' is not assignable to type 'number'."
+    }
+  ]
+}

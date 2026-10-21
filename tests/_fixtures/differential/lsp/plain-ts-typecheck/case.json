@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "id": "lsp/fix-history/plain-ts-typecheck",
+  "provenance": {
+    "fixCommit": "7100d7a790146d4252103088f69dbf15756e36a5",
+    "title": "fix(lsp): typecheck plain TypeScript and JavaScript files (#7061)"
+  },
+  "input": {
+    "source": "plain.ts.txt",
+    "runtimePath": "plain.ts",
+    "sha256": "d09703fe54399d99e6f611dcdf143676fb669776846169bd11755a736146ee82"
+  },
+  "config": {
+    "source": "tsconfig.json.txt",
+    "runtimePath": "tsconfig.json"
+  },
+  "expected": {
+    "source": "response.expected.json"
+  },
+  "documentVersion": 1,
+  "languageId": "typescript",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "method": "textDocument/publishDiagnostics"
+}
