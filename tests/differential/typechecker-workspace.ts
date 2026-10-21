@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { sha256 } from "./harness.mjs";
-import { summarizeNativeAcceptance } from "./acceptance-rates.mjs";
+import { renderNativeAcceptanceMarkdown, summarizeNativeAcceptance } from "./acceptance-rates.mjs";
 import { passedFixtureTests, typecheckerSourceIdentity } from "./typechecker-shards.ts";
 import {
   TYPECHECKER_TESTS,
@@ -489,5 +489,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
       path.join(resultDir, `typechecker-workspace-${name}.json`),
       `${JSON.stringify(value, null, 2)}\n`,
     );
+  const markdown = renderNativeAcceptanceMarkdown([result.acceptance]);
+  if (process.env.GITHUB_STEP_SUMMARY)
+    fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${markdown}\n`);
+  console.log(markdown);
   console.log(JSON.stringify(result.report.summary));
 }

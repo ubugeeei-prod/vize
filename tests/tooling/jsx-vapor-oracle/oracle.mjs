@@ -231,6 +231,7 @@ async function trace(code, functionName, spec, runtime = "vapor") {
   window.document.body.append(host);
   const identities = new WeakMap();
   let nextIdentity = 0;
+  const events = [];
 
   function snapshot() {
     assert.deepEqual(warnings, [], `${spec.id}: runtime diagnostics`);
@@ -243,6 +244,7 @@ async function trace(code, functionName, spec, runtime = "vapor") {
       text: host.textContent,
       elementIdentities: elements.map((element) => identities.get(element)),
       warnings: [...warnings],
+      events: structuredClone(events),
     };
   }
 
@@ -251,8 +253,27 @@ async function trace(code, functionName, spec, runtime = "vapor") {
     await Vue.nextTick();
     const phases = [snapshot()];
     for (const step of spec.steps) {
-      assert.deepEqual(Object.keys(step), ["patch"], `${spec.id}: update shape`);
-      Object.assign(state, materialize(structuredClone(step.patch)));
+      if (Object.hasOwn(step, "patch")) {
+        assert.deepEqual(Object.keys(step), ["patch"], `${spec.id}: update shape`);
+        Object.assign(state, materialize(structuredClone(step.patch)));
+      } else {
+        assert.deepEqual(Object.keys(step), ["event"], `${spec.id}: event shape`);
+        assert.deepEqual(
+          Object.keys(step.event).sort(),
+          ["selector", "type"],
+          `${spec.id}: event descriptor`,
+        );
+        const target = host.querySelector(step.event.selector);
+        assert.notEqual(target, null, `${spec.id}: event target ${step.event.selector}`);
+        const event = new window.Event(step.event.type, { bubbles: true, cancelable: true });
+        const dispatchResult = target.dispatchEvent(event);
+        events.push({
+          selector: step.event.selector,
+          type: step.event.type,
+          defaultPrevented: event.defaultPrevented,
+          dispatchResult,
+        });
+      }
       await Vue.nextTick();
       phases.push(snapshot());
     }
@@ -332,10 +353,22 @@ function assertBehavior(spec, phases, expectedElementIdentities = spec.expectedE
     expectedElementIdentities,
     `${spec.id}: element update identity trace`,
   );
+  if (spec.expectedEvents) {
+    assert.deepEqual(
+      phases.map(({ events }) => events),
+      spec.expectedEvents,
+      `${spec.id}: dispatched event trace`,
+    );
+  } else {
+    assert(
+      phases.every(({ events }) => events.length === 0),
+      `${spec.id}: unexpected events`,
+    );
+  }
 }
 
 function semanticTrace(phases) {
-  return phases.map(({ dom, text, warnings }) => ({ dom, text, warnings }));
+  return phases.map(({ dom, text, warnings, events }) => ({ dom, text, warnings, events }));
 }
 
 assertInventory(recordedCorpus);

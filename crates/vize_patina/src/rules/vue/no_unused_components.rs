@@ -172,6 +172,19 @@ impl Rule for NoUnusedComponents {
             return;
         }
 
+        // Split-script Croquis coordinates append `<script setup>` after the
+        // regular script. The fallback parser below reads setup content alone,
+        // so its import spans must use that same local coordinate space.
+        let setup_script_offset = ctx
+            .sfc_descriptor()
+            .and_then(|descriptor| {
+                descriptor
+                    .script
+                    .as_ref()
+                    .zip(descriptor.script_setup.as_ref())
+            })
+            .map_or(0, |(script, _)| script.content.len() as u32 + 1);
+
         // Collect template-unused components first (to avoid borrow conflicts)
         let (template_unused_components, import_statement_ranges): (
             Vec<ComponentCandidate>,
@@ -190,7 +203,12 @@ impl Rule for NoUnusedComponents {
             let import_statement_ranges = analysis
                 .import_statements
                 .iter()
-                .map(|import| (import.start, import.end))
+                .filter_map(|import| {
+                    Some((
+                        import.start.checked_sub(setup_script_offset)?,
+                        import.end.checked_sub(setup_script_offset)?,
+                    ))
+                })
                 .collect();
 
             let template_unused_components = registered_components

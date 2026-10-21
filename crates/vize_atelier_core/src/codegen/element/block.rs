@@ -170,17 +170,11 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 ctx.push(", null");
             }
 
-            // Generate children
-            // When props are hoisted and only TEXT flag is set, omit the patch flag
-            // (Vue optimizes block elements with hoisted static props)
-            // v-memo elements don't need patch flags (memo handles change detection)
-            let should_emit_patch_flag = if memo_cache_index.is_some() {
-                false
-            } else if let Some(flag) = patch_flag {
-                !(el.hoisted_props_index.is_some() && flag == 1)
-            } else {
-                false
-            };
+            // Generate children. Hoisted props do not make dynamic text static:
+            // Vue's block patcher needs TEXT to revisit a text-only child even
+            // when the element's props come from a hoisted object (#10168).
+            // v-memo elements don't need patch flags (memo handles change detection).
+            let should_emit_patch_flag = memo_cache_index.is_none() && patch_flag.is_some();
             let effective_has_patch_info = has_patch_info && should_emit_patch_flag;
             if !el.children.is_empty() {
                 ctx.push(", ");

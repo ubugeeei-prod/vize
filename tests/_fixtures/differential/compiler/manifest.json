@@ -618,6 +618,49 @@
         "contract": "compiler-ssr-module-bytes-v1",
         "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
       }
+    },
+    {
+      "id": "compiler/sfc/root-text-patch-flag-10168",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "root-text-patch-flag-10168",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "9f19b4fdacce1bc7500b4a3ce7a236841e85b3b721d95a0d95a63e0de646df46",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "root-text-patch-flag-10168/module.expected.txt",
+        "sha256": "0fa4d79f148b0243482b904fe1f030d6dabe1d82851bfdd57452643718a822b8",
+        "source": "crates/vize_atelier_dom/tests/runtime_patch_flags.rs:static_root_props_keep_text_patch_flags"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable; the client DOM runtime is qualified separately by the required selected-template capture."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "scriptLang": "ts",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
     }
   ],
   "runtimePacks": [

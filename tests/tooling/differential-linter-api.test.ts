@@ -105,7 +105,11 @@ void test("linter manifest rejects omitted/duplicate inputs, unregistered API an
   const baseline = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
   try {
     for (const mutate of [
-      (manifest: any) => manifest.cases.shift(),
+      (manifest: any) => {
+        manifest.cases = manifest.cases.filter(
+          (fixture: any) => fixture.id !== "linter/current-api/ref-string-untyped",
+        );
+      },
       (manifest: any) => manifest.cases.push(manifest.cases[0]),
       (manifest: any) => {
         manifest.cohorts[0].api = "--private-parser";
@@ -214,12 +218,12 @@ void test("linter result contract rejects omitted rows, incomplete retries and i
     buildReceipt: receipt,
     rows,
     summary: {
-      plannedCases: 71,
-      legacyMatches: 71,
+      plannedCases: loaded.cases.length,
+      legacyMatches: loaded.cases.length,
       legacyFailures: 0,
       baselineDrift: 0,
       nativeUnsupported: 0,
-      nativeFailures: 71,
+      nativeFailures: loaded.cases.length,
       nativeHandled: 0,
       nativeEquivalent: 0,
       pairedComparisons: 0,

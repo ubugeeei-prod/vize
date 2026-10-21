@@ -51,6 +51,7 @@ fn codegen(options: &CodegenOptions) -> Value {
 pub fn snapshot(
     descriptor: &SfcParseOptions,
     options: &SfcCompileOptions,
+    codegen_options: &CodegenOptions,
     mode: SfcScriptOutputMode,
 ) -> Result<Value, Box<dyn std::error::Error>> {
     let SfcCompileOptions {
@@ -113,7 +114,7 @@ pub fn snapshot(
             "vapor": vapor, "scope_id": scope_id },
         "effectiveAdapterInputs": { "templateSyntax": "Standard",
             "customElements": { "construction": "CustomElementMatcher::default()" },
-            "codegen": codegen(&CodegenOptions::default()),
+            "codegen": codegen(codegen_options),
             "scriptOutput": match mode { SfcScriptOutputMode::SeparateTemplate => "SeparateTemplate",
                 SfcScriptOutputMode::InlineTemplate => "InlineTemplate" },
             "experimental": { "self_component": self_component } }

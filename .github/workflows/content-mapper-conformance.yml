@@ -96,6 +96,11 @@ jobs:
         run: |
           go build -tags=noembed -trimpath -o "$RUNNER_TEMP/tsgo" ./cmd/tsc
           cp internal/bundled/libs/*.d.ts "$RUNNER_TEMP/"
+      - name: Run authored template syntax conformance
+        env:
+          VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
+        run: |
+          cargo test -p vize --test integration -- content_mapper_tsgo_cli::template_expression_syntax:: --nocapture
       - name: Build packed Content Mapper runtime
         run: |
           vp run --filter './npm/native' build:ci

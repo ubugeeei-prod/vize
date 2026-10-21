@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10188,
+  "regressionCommit": "a5ae4d313fa333c8bc7168d5da4acf3dc2bb8ee3",
+  "sourceRevision": "a5ae4d313fa333c8bc7168d5da4acf3dc2bb8ee3",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "authored-errors",
+      "inputs": [
+        { "file": "tsconfig.json", "source": "tsconfig.json.txt" },
+        { "file": "src/IncompleteOperator.vue", "source": "incomplete-operator.vue.txt" },
+        { "file": "src/InvalidCharacter.vue", "source": "invalid-character.vue.txt" }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/IncompleteOperator.vue",
+          "line": 6,
+          "column": 21,
+          "severity": 1,
+          "code": 1109,
+          "message": "Expression expected."
+        },
+        {
+          "file": "src/InvalidCharacter.vue",
+          "line": 6,
+          "column": 28,
+          "severity": 1,
+          "code": 1127,
+          "message": "Invalid character."
+        },
+        {
+          "file": "src/InvalidCharacter.vue",
+          "line": 6,
+          "column": 30,
+          "severity": 1,
+          "code": 1005,
+          "message": "',' expected."
+        },
+        {
+          "file": "src/InvalidCharacter.vue",
+          "line": 6,
+          "column": 33,
+          "severity": 1,
+          "code": 1005,
+          "message": "';' expected."
+        },
+        {
+          "file": "src/InvalidCharacter.vue",
+          "line": 6,
+          "column": 28,
+          "severity": 1,
+          "code": 7005,
+          "message": "Variable '#' implicitly has an 'any' type."
+        }
+      ]
+    }
+  ]
+}

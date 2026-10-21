@@ -11,6 +11,8 @@ const VUE_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_VUE";
 
 #[path = "content_mapper_tsgo_cli/incomplete_tags.rs"]
 mod incomplete_tags;
+#[path = "content_mapper_tsgo_cli/template_expression_syntax.rs"]
+mod template_expression_syntax;
 
 fn workspace_root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))

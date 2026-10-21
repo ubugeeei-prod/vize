@@ -58,7 +58,7 @@ function attempts(value = packet()) {
 
 void test("complete SFC Result comparison preserves every CSS and module byte", () => {
   const original = compilerApiRows(loaded, attempts(), null);
-  assert.equal(original.filter((row) => row.legacy.verdict === "matched-reference").length, 8);
+  assert.equal(original.filter((row) => row.legacy.verdict === "matched-reference").length, 10);
   const changed = structuredClone(packet());
   const css = object(changed.cases[1].result.Ok);
   const code = object(changed.cases[3].result.Ok);
@@ -69,10 +69,10 @@ void test("complete SFC Result comparison preserves every CSS and module byte", 
   const drift = compilerApiRows(loaded, attempts(changed), null);
   assert.equal(drift[1].legacy.verdict, "baseline-drift");
   assert.equal(drift[3].legacy.verdict, "baseline-drift");
-  assert.equal(drift.filter((row) => row.legacy.verdict === "matched-reference").length, 6);
+  assert.equal(drift.filter((row) => row.legacy.verdict === "matched-reference").length, 8);
 });
 
-void test("missing, duplicate and wrong-option packets retain all eight failed planned coordinates", () => {
+void test("missing, duplicate and wrong-option packets retain all ten failed planned coordinates", () => {
   const missing = structuredClone(packet());
   missing.cases.pop();
   const duplicate = structuredClone(packet());
@@ -83,7 +83,7 @@ void test("missing, duplicate and wrong-option packets retain all eight failed p
   delete object(omitted.cases[0].result.Ok).bindings;
   for (const invalid of [missing, duplicate, options, omitted]) {
     const rows = compilerApiRows(loaded, attempts(invalid), null);
-    assert.equal(rows.length, 8);
+    assert.equal(rows.length, 10);
     assert(rows.every((row) => row.legacy.state === "failed"));
     assert(rows.every((row) => row.native.state === "unsupported"));
   }
@@ -96,16 +96,16 @@ void test("a missing source-built observer keeps the complete denominator and no
     sourceRevision: loaded.manifest.baseRevision,
     binaryPath: null,
   });
-  assert.equal(report.summary.plannedCases, 8);
-  assert.equal(report.summary.legacyFailures, 8);
+  assert.equal(report.summary.plannedCases, 10);
+  assert.equal(report.summary.legacyFailures, 10);
   const native = summarizeNativeAcceptance(loaded, report, {
     sourceRevision: report.sourceRevision,
   });
   assert.deepEqual(native.total, {
-    planned: 8,
+    planned: 10,
     nativeHandled: 0,
     nativeEquivalent: 0,
-    unsupported: 8,
+    unsupported: 10,
     legacyBacked: 0,
     unverified: 0,
   });
@@ -131,13 +131,13 @@ void test("non-repeating and failed processes cannot certify a compiler Result",
   failed[0].stderrBase64 = Buffer.from("compiler failed").toString("base64");
   for (const observations of [changed, failed]) {
     const rows = compilerApiRows(loaded, observations, null);
-    assert.equal(rows.filter((row) => row.legacy.state === "failed").length, 8);
+    assert.equal(rows.filter((row) => row.legacy.state === "failed").length, 10);
   }
 });
 
 void test("an empty build failure message retains every failed planned coordinate", () => {
   const rows = compilerApiRows(loaded, [], "");
-  assert.equal(rows.length, 8);
+  assert.equal(rows.length, 10);
   assert(rows.every((row) => row.legacy.state === "failed" && row.legacy.error === ""));
   const report = runCompilerApiPack({
     manifestPath,
@@ -148,7 +148,7 @@ void test("an empty build failure message retains every failed planned coordinat
   });
   assert.equal(report.failure, "");
   assert.equal(report.buildReceipt, null);
-  assert.equal(report.summary.legacyFailures, 8);
+  assert.equal(report.summary.legacyFailures, 10);
   assert.equal(report.summary.nativeHandled, 0);
   assert(report.rows.every((row) => row.legacy.result === null && row.legacy.error === ""));
 });
