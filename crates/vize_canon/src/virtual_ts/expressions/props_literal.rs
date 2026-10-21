@@ -85,6 +85,14 @@ pub(crate) fn collect_inference_probe_props<'a>(
     props
 }
 
+pub(crate) fn inference_probe_has_repeatable_attrs(
+    usage: &ComponentUsage,
+    template_binding_access: &TemplateBindingAccess,
+) -> bool {
+    collect_generated_class_bindings(usage, template_binding_access).len() > 1
+        || collect_generated_named_bindings(usage, template_binding_access, "style").len() > 1
+}
+
 fn inference_probe_key(name: &str, index: usize) -> String {
     if index == 0 {
         return String::from(name);

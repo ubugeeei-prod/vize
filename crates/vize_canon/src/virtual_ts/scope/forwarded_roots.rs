@@ -16,7 +16,10 @@ use vize_croquis::{Croquis, analysis::ComponentUsage};
 
 use crate::virtual_ts::{
     component_reference::resolved_component_binding_reference,
-    expressions::{collect_inference_probe_props, rewrite_reserved_template_binding},
+    expressions::{
+        collect_inference_probe_props, inference_probe_has_repeatable_attrs,
+        rewrite_reserved_template_binding,
+    },
     helpers::to_camel_case,
     template_binding_access::TemplateBindingAccess,
     types::VirtualTsOptions,
@@ -110,11 +113,13 @@ fn emit_probe(
         );
         append!(*ts, "{indent}const {name} = {call}\n");
     }
+    let suppress_probe_diagnostics =
+        inference_probe_has_repeatable_attrs(usage, ctx.template_binding_access);
     for (prop, name, value) in collect_inference_probe_props(usage, ctx.template_binding_access) {
-        if super::is_inline_callback_prop(prop) {
+        if suppress_probe_diagnostics || super::is_inline_callback_prop(prop) {
             append!(
                 *ts,
-                "{indent}  // @ts-ignore Inference-only callback prop; the mapped prop owner checks diagnostics.\n"
+                "{indent}  // @ts-ignore Inference-only prop; the mapped prop owner checks diagnostics.\n"
             );
         }
         append!(

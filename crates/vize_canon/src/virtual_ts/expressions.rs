@@ -29,7 +29,7 @@ mod prop_sources;
 mod props_literal;
 pub(crate) use props_literal::{
     append_inference_props_literal, append_props_literal, append_spread_value,
-    collect_inference_probe_props, prop_entry_sub_spans,
+    collect_inference_probe_props, inference_probe_has_repeatable_attrs, prop_entry_sub_spans,
 };
 mod reserved_props;
 #[cfg(test)]
