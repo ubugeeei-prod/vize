@@ -6,6 +6,8 @@
 use super::{Arc, CompilerConfigurationSnapshot, VirtualProject};
 use serde_json::json;
 
+const CONFIGURATION_CHANGED_ERROR: &str = "Configuration error: compiler configuration changed while it was being read; retry after the configuration is stable";
+
 fn assert_observed_once(dependencies: &[std::path::PathBuf], expected: &std::path::Path) {
     assert_eq!(
         dependencies
@@ -221,7 +223,7 @@ fn concurrent_base_change_rejects_mixed_options_paths_and_vue_target() {
         );
         assert_eq!(
             vize_carton::cstr!("{}", result.err().unwrap()),
-            "compiler configuration changed while it was being read; retry after the configuration is stable"
+            CONFIGURATION_CHANGED_ERROR
         );
         writer.join().unwrap();
     });
@@ -263,7 +265,7 @@ fn package_manifest_retarget_rejects_byte_identical_configs_with_different_path_
     );
     assert_eq!(
         vize_carton::cstr!("{}", result.err().unwrap()),
-        "compiler configuration changed while it was being read; retry after the configuration is stable"
+        CONFIGURATION_CHANGED_ERROR
     );
     let fresh = CompilerConfigurationSnapshot::capture(root.path(), Some(&config)).unwrap();
     assert_eq!(
@@ -300,7 +302,7 @@ fn package_link_retarget_rejects_identical_config_bytes_at_a_new_real_anchor() {
     );
     assert_eq!(
         vize_carton::cstr!("{}", result.err().unwrap()),
-        "compiler configuration changed while it was being read; retry after the configuration is stable"
+        CONFIGURATION_CHANGED_ERROR
     );
     let fresh = CompilerConfigurationSnapshot::capture(root.path(), Some(&config)).unwrap();
     assert_eq!(
@@ -331,7 +333,7 @@ fn higher_priority_extends_candidate_creation_rejects_the_previous_resolution() 
     );
     assert_eq!(
         vize_carton::cstr!("{}", result.err().unwrap()),
-        "compiler configuration changed while it was being read; retry after the configuration is stable"
+        CONFIGURATION_CHANGED_ERROR
     );
     let fresh = CompilerConfigurationSnapshot::capture(root.path(), Some(&config)).unwrap();
     assert_eq!(fresh.flattened.options["strict"], json!(false));
@@ -388,13 +390,13 @@ fn admitted_absence_rejects_primary_or_fallback_configuration_creation_during_ca
             });
         assert_eq!(
             vize_carton::cstr!("{}", result.err().unwrap()),
-            "compiler configuration changed while it was being read; retry after the configuration is stable"
+            CONFIGURATION_CHANGED_ERROR
         );
         let result = CompilerConfigurationSnapshot::capture(root.path(), None);
         assert_eq!(
             vize_carton::cstr!("{}", result.err().unwrap()),
             vize_carton::cstr!(
-                "TypeScript configuration {} appeared while admitting configuration absence",
+                "Configuration error: TypeScript configuration {} appeared while admitting configuration absence",
                 candidate.display()
             )
         );
