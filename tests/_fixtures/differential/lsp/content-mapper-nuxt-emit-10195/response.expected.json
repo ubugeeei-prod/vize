@@ -10,5 +10,9 @@
     "endLine": 5,
     "kind": "region",
     "collapsedText": "script setup"
+  },
+  {
+    "startLine": 3,
+    "endLine": 4
   }
 ]

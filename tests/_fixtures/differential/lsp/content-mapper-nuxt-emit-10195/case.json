@@ -33,7 +33,7 @@
   "entry": "src/App.vue",
   "expected": {
     "source": "response.expected.json",
-    "sha256": "f579570cabb294e0e64da1c15ab8b5ccef7f27474491ce9a72cadb86d0b8597c"
+    "sha256": "1fffd96ac7e0849d41b6c3f3d1ba7b08a0abcfbe71dcd77ded5b408b07aa72d2"
   },
   "method": "textDocument/foldingRange",
   "documentVersion": 1,

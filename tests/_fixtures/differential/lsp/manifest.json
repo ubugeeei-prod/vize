@@ -1716,7 +1716,7 @@
       },
       "case": {
         "path": "content-mapper-nuxt-emit-10195/case.json",
-        "sha256": "6e6f37a0cb93121db41388a1c2b7d94a98d88c4f8ea69c05975cfe3c56349027"
+        "sha256": "9950126287a59d699eff0f241836bd3720f7747965b5f9ee37044c9036940225"
       },
       "requestCount": 1,
       "initializationOptions": {
