@@ -1,0 +1,60 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "form-label-bound-hidden-control",
+    history: "708c7fd03f9cfd399d81a246d016abda7e095929",
+    source: "<input :hidden=\"collapsed\" type=\"text\" />",
+    filename: "BoundHiddenInput.vue",
+    entry: "template",
+    rule: "a11y/form-control-has-label",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "BoundHiddenInput.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "a11y/form-control-has-label",
+                severity: Warning,
+                message: "<input> elements must have an associated label",
+                start: 0,
+                end: 41,
+                help: Some(
+                    "**Option 1:** Use `<label>` with `for`:\n```vue\n<label for=\"email\">Email</label>\n<input id=\"email\" type=\"email\">\n```\n\n**Option 2:** Wrap input in label:\n```vue\n<label>\n  Email\n  <input type=\"email\">\n</label>\n```\n\n**Option 3:** Use aria-label:\n```vue\n<input type=\"search\" aria-label=\"Search\">\n```\n\n**Note:** Placeholder is NOT a substitute for a label.",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "BoundHiddenInput.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "a11y/form-control-has-label",
+                    severity: Warning,
+                    message: "<input> elements must have an associated label",
+                    start: 0,
+                    end: 41,
+                    help: Some(
+                        "**Option 1:** Use `<label>` with `for`:\n```vue\n<label for=\"email\">Email</label>\n<input id=\"email\" type=\"email\">\n```\n\n**Option 2:** Wrap input in label:\n```vue\n<label>\n  Email\n  <input type=\"email\">\n</label>\n```\n\n**Option 3:** Use aria-label:\n```vue\n<input type=\"search\" aria-label=\"Search\">\n```\n\n**Note:** Placeholder is NOT a substitute for a label.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}
+

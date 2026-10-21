@@ -258,5 +258,29 @@
   "linter/current-api/target-blank-bound-href-control": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__target-blank-bound-href-control.snap",
     "sha256": "bbb5786939bdf764500c7f5ef315b082ed632fa735d0d0d8ae08ad8bc0151715"
+  },
+  "linter/current-api/form-label-hidden-input-report-9751": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__form-label-hidden-input-report-9751.snap",
+    "sha256": "da329579bcc655e299cd9f5317e27f70643a1fe6ec8687280de935887a3e4300"
+  },
+  "linter/current-api/form-label-hidden-select-control": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__form-label-hidden-select-control.snap",
+    "sha256": "53cbb832f4da1a260d9881680c1cf26f692f9d76a58d269ba04d37b8a514be47"
+  },
+  "linter/current-api/form-label-hidden-textarea-control": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__form-label-hidden-textarea-control.snap",
+    "sha256": "2e3b5bc9249e070b72706e1bba558c93b0a48674b7df7b19519f1a502ab5c0e5"
+  },
+  "linter/current-api/form-label-until-found-control": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__form-label-until-found-control.snap",
+    "sha256": "9ac01c015e6381b822343dbd09e72e24c3c40851d5c5f58ddebf1246288e31e6"
+  },
+  "linter/current-api/form-label-bound-hidden-control": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__form-label-bound-hidden-control.snap",
+    "sha256": "96a51612a09621db56bf79067162d42b07ef9186b2b57cc234b6938e6631f1cf"
+  },
+  "linter/current-api/form-label-visible-input-control": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__form-label-visible-input-control.snap",
+    "sha256": "d01c03db0e8db66173fda673afd06ad0ba41f7f13f0d34416fea833d1d1f20e0"
   }
 }
