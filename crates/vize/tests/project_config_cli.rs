@@ -195,7 +195,7 @@ fn formatter_cli_exposes_bracket_layout_policies() {
     let project = project();
     let root = project.path();
     let source = "<template>\n  <Widget :long-property-name=\"state.currentValue\" other=\"x\" />\n</template>\n<script setup lang=\"ts\">\nconst state={currentValue:1}\n</script>\n";
-    let expected = "<template>\n  <Widget\n    :long-property-name=\"\n      state.currentValue\n    \"\n    other=\"x\" />\n</template>\n<script setup lang=\"ts\">\nconst state = {currentValue: 1};\n</script>\n";
+    let expected = "<script setup lang=\"ts\">\nconst state = {currentValue: 1};\n</script>\n\n<template>\n  <Widget\n    :long-property-name=\"\n      state.currentValue\n    \"\n    other=\"x\" />\n</template>\n";
     write(root, "BracketLayout.vue", source);
     let args = [
         "fmt",

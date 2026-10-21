@@ -269,16 +269,17 @@ void test("public formatter exposes bracket layout policies", () => {
 const state={currentValue:1}
 </script>
 `;
-  const expected = `<template>
+  const expected = `<script setup lang="ts">
+const state = {currentValue: 1};
+</script>
+
+<template>
   <Widget
     :long-property-name="
       state.currentValue
     "
     other="x" />
 </template>
-<script setup lang="ts">
-const state = {currentValue: 1};
-</script>
 `;
   const options = Object.freeze({
     preset: "vize" as const,
