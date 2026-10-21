@@ -82,6 +82,35 @@ const current = computed(() => Child)
     );
 }
 
+#[test]
+fn test_lint_sfc_no_unused_components_keeps_split_script_value_reads() {
+    let linter = Linter::new().with_enabled_rules(Some(vec!["vue/no-unused-components".into()]));
+    let sfc = r#"<script lang="ts">
+import type { IconProps } from "./Icon.vue";
+// split-script offset padding
+</script>
+
+<script setup lang="ts" generic="T extends IconProps">
+import { h } from "vue";
+import UIcon from "./Icon.vue";
+
+const renderItem = (item: { icon?: string }) =>
+  item.icon ? h(UIcon, { name: item.icon }) : null;
+</script>
+
+<template>
+  <div />
+</template>
+"#;
+    let result = linter.lint_sfc(sfc, "EditorSuggestionMenu.vue");
+
+    assert!(
+        result.diagnostics.is_empty(),
+        "script-only component reads must stay live after split-script offset merging: {:?}",
+        result.diagnostics
+    );
+}
+
 /// `Child` really is unused here — the `computed` parameter shadows the import —
 /// but a dynamic `:is` suppresses the whole file, matching
 /// `eslint-plugin-vue`'s `ignoreWhenBindingPresent: true` default (#3223).

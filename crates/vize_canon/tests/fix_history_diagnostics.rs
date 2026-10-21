@@ -77,6 +77,17 @@ fn reserved_prop_shapes_preserve_literal_and_member_diagnostics() {
 }
 
 #[test]
+fn template_expression_syntax_preserves_complete_authored_diagnostics() {
+    check_pack(
+        "content-mapper-template-expression-syntax",
+        "template_expression_syntax_preserves_complete_authored_diagnostics",
+        "a5ae4d313fa333c8bc7168d5da4acf3dc2bb8ee3",
+        Some(10188),
+        &["authored-errors"],
+    );
+}
+
+#[test]
 fn component_event_tuples_preserve_all_argument_diagnostics() {
     check_pack(
         "component-event-tuples",
@@ -515,7 +526,8 @@ fn check_pack(
             | "runtime-props-report-10100-10101"
             | "component-render-h-props-9855"
             | "component-listener-alias-scope-10112"
-            | "dynamic-directive-expression-mapping-10182" => regression,
+            | "dynamic-directive-expression-mapping-10182"
+            | "content-mapper-template-expression-syntax" => regression,
             _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
         }
     );

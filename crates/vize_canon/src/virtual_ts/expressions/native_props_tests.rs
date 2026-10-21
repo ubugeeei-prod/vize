@@ -83,6 +83,37 @@ fn native_prop_check_uses_vue_jsx_type_and_authored_subspans() {
         value_range.start,
         "the wrapper's inclusive end must not steal the expression's first byte"
     );
+    assert!(
+        check_mapping
+            .sub_spans
+            .iter()
+            .all(|span| &output.code[span.gen_range.clone()] != ");"),
+        "a valid expression must not perturb the projection with a recovery anchor"
+    );
+}
+
+#[test]
+fn invalid_native_prop_maps_the_recovery_terminator_to_the_closing_quote() {
+    let script = "const count = 1";
+    let template = r#"<div :title="count +" />"#;
+    let allocator = vize_carton::Allocator::new();
+    let (root, summary) = analyze(&allocator, script, template, false);
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+    let check_mapping = output
+        .mapping
+        .spans()
+        .iter()
+        .find(|mapping| {
+            output.code[mapping.gen_range.clone()].contains("__vize_native_prop_check_")
+        })
+        .expect("native prop check mapping");
+    let terminator_span = check_mapping
+        .sub_spans
+        .iter()
+        .find(|span| &output.code[span.gen_range.clone()] == ");")
+        .expect("malformed expression terminator should have a recovery anchor");
+    let value_end = template.find("count +").unwrap() + "count +".len();
+    assert_eq!(terminator_span.src_range, value_end..value_end + 1);
 }
 
 /// Every statically named `v-bind` on a native element is checked against that

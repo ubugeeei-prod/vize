@@ -58,11 +58,24 @@
   },
   "cases": [
     {
+      "id": "linter/current-api/split-script-component-read-10228",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "split-script-component-read-10228",
+        "files": [
+          {
+            "path": "EditorSuggestionMenu.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "0ee92fe2d10294e7315f5cf7c0cb8760dd2c56831d3c643e7353e45561651a24"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/current-api/prefer-use-id-context-9837",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "prefer-use-id-context-9837",
         "files": [
@@ -92,9 +105,7 @@
     {
       "id": "linter/current-api/require-scoped-style-module-10165",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "require-scoped-style-module-10165",
         "files": [
@@ -124,9 +135,7 @@
     {
       "id": "linter/current-api/incomplete-type-project-10005",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "incomplete-type-project-10005",
         "files": [
@@ -166,9 +175,7 @@
     {
       "id": "linter/current-api/solution-tsconfig-type-aware-10176",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "solution-tsconfig-type-aware-10176",
         "files": [
@@ -213,9 +220,7 @@
     {
       "id": "linter/current-api/nuxt-builtins-9866",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "nuxt-builtins-9866",
         "files": [
@@ -240,9 +245,7 @@
     {
       "id": "linter/current-api/patina-rule-guards-9870-9871",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "patina-rule-guards-9870-9871",
         "files": [
@@ -357,9 +360,7 @@
     {
       "id": "linter/current-api/shared-rule-options-9876",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "shared-rule-options-9876",
         "files": [
@@ -379,9 +380,7 @@
     {
       "id": "linter/current-api/custom-event-name-casing-9879",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "custom-event-name-casing-9879",
         "files": [
@@ -396,9 +395,7 @@
     {
       "id": "linter/current-api/require-symbol-provide-range-9882",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "require-symbol-provide-range-9882",
         "files": [
@@ -568,9 +565,7 @@
     {
       "id": "linter/current-api/dotted-slot-name-9865",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "dotted-slot-9865",
         "files": [
@@ -590,9 +585,7 @@
     {
       "id": "linter/current-api/cli-preset-validation-9853",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "cli-preset-validation-9853",
         "files": [
@@ -606,9 +599,7 @@
     {
       "id": "linter/current-api/patina-output-policy-9869-9874",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "patina-output-policy-9869-9874",
         "files": [
@@ -628,9 +619,7 @@
     {
       "id": "linter/current-api/multiline-v-for-source-9880",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "multiline-v-for-source-9880",
         "files": [
@@ -645,9 +634,7 @@
     {
       "id": "linter/current-api/vue-path-alias-types-9864",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "vue-alias-types-9864",
         "files": [
@@ -712,9 +699,7 @@
     {
       "id": "linter/current-api/type-aware-slot-outlet-9834",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "type-aware-slot-outlet-9834",
         "files": [
@@ -728,9 +713,7 @@
     {
       "id": "linter/current-api/unsafe-template-bindings-10166-10167",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "unsafe-template-bindings-10166-10167",
         "files": [
@@ -750,86 +733,62 @@
     {
       "id": "linter/current-api/target-blank-noopener-only",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/current-api/target-blank-noreferrer-only",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/current-api/target-blank-complete-rel-control",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/current-api/target-blank-relative-control",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/current-api/target-blank-external-control",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/current-api/target-blank-bound-href-control",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/current-api/form-label-hidden-input-report-9751",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/current-api/form-label-hidden-select-control",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/current-api/form-label-hidden-textarea-control",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/current-api/form-label-until-found-control",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/current-api/form-label-bound-hidden-control",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/current-api/form-label-visible-input-control",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     }
   ]
 }
