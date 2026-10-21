@@ -6,7 +6,7 @@ under the same pinned Vue Vapor runtime. Each row mounts both components in
 Happy DOM, applies the corpus updates, and compares normalized rendered DOM,
 live form state, diagnostics, and element identity.
 
-The current bounded cohort covers eight behaviors. It is not a claim that the
+The current bounded cohort covers nine behaviors. It is not a claim that the
 full `vue-jsx-vapor` surface is compatible; issue #6884 remains open until the
 corpus covers the complete dialect inventory.
 
@@ -32,6 +32,7 @@ a reviewed update to the executable verdict inventory.
 | `control-flow/conditional-branch` | equivalent | falsy, array and nested-VNode conditions match both real JSX references  |
 | `props/live-input-value`          | equivalent | the live input value and sibling output update without replacing either  |
 | `directives/v-model-text`         | equivalent | input events and direct state patches preserve the live model binding    |
+| `components/scoped-default-slot`  | equivalent | component props and a scoped slot closure update independently           |
 
 The JSON corpus and verdict table are checked bidirectionally, so adding or
 removing a case without a verdict fails. The runtime comparison is the source
@@ -47,6 +48,12 @@ The model row assigns a real input value before dispatching each bubbling,
 cancelable `input` event, pins the complete dispatch and live-input receipt,
 and interleaves a direct state patch. Both directions must update the mounted
 input and sibling output without replacing any authored element.
+
+The component row resolves a registered VDOM fixture through each Vapor
+compiler's component fallback, passes it a reactive prop and a scoped default
+slot, and updates the prop and captured slot state independently. The mounted
+article, prop output, slot container and authored slot element must all retain
+identity while their complete DOM and diagnostics remain equal.
 
 The dynamic-value, logical-and and conditional rows are the value-sensitive
 counterparts of the Babel oracle's equivalent `props/dynamic_attr`,
