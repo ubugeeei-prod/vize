@@ -45,6 +45,8 @@ pub(super) fn collect_and_emit_scope_preamble(
     summary: &Croquis,
     options_api: bool,
     template_referenced_names: &FxHashSet<String>,
+    template_value_names: &FxHashSet<String>,
+    imported_names_without_script_value_use: &FxHashSet<String>,
     script_content: Option<&str>,
     imported_names: &FxHashSet<&str>,
     options: &VirtualTsOptions,
@@ -57,6 +59,8 @@ pub(super) fn collect_and_emit_scope_preamble(
         summary,
         options_api,
         Some(template_referenced_names),
+        template_value_names,
+        imported_names_without_script_value_use,
         script_content,
         imported_names,
         options,
@@ -76,10 +80,13 @@ pub(super) fn collect_and_emit_scope_preamble(
 }
 
 impl TemplateRefUnwraps {
+    #[expect(clippy::too_many_arguments, reason = "independent collection inputs")]
     pub(super) fn collect(
         summary: &Croquis,
         options_api: bool,
         template_referenced_names: Option<&FxHashSet<String>>,
+        template_value_names: &FxHashSet<String>,
+        imported_names_without_script_value_use: &FxHashSet<String>,
         script_content: Option<&str>,
         imported_names: &FxHashSet<&str>,
         options: &VirtualTsOptions,
@@ -106,6 +113,10 @@ impl TemplateRefUnwraps {
                     .filter(|(name, _)| {
                         template_referenced_names
                             .is_none_or(|referenced| referenced.contains(*name))
+                    })
+                    .filter(|(name, _)| {
+                        !imported_names_without_script_value_use.contains(*name)
+                            || template_value_names.contains(*name)
                     })
                     .filter(|(name, _)| !options_api_setup_binding_names.contains(name))
                     .filter(|(name, binding_type)| {
