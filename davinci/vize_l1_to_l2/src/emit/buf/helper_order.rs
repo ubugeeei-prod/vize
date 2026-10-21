@@ -11,6 +11,7 @@ type RankFiveKey = (usize, u8, u8);
 
 struct OrderCache {
     rank_five_keys: [Option<RankFiveKey>; 8],
+    alias_mask: u64,
     alias_positions: Option<[Option<usize>; 64]>,
 }
 
@@ -34,24 +35,36 @@ impl Buf {
         for helper in Helper::ALL {
             push(helper);
         }
+        let alias_mask = listed.iter().fold(0, |mask, helper| {
+            if matches!(helper.rank(), 2 | 5) {
+                mask | helper.bit()
+            } else {
+                mask
+            }
+        });
         // The ordinary comparator wins on typical modules. A shared lexical
         // scan pays off only after both the helper set and output are large.
-        if listed.len() > 8
+        if alias_mask.count_ones() > 5
             && self
                 .hoists
                 .iter()
                 .fold(self.code.len(), |len, text| len.saturating_add(text.len()))
                 > 65_536
         {
-            self.sort_helpers::<true>(listed)
+            self.sort_helpers::<true>(listed, alias_mask)
         } else {
-            self.sort_helpers::<false>(listed)
+            self.sort_helpers::<false>(listed, 0)
         }
     }
 
-    fn sort_helpers<const SHARED: bool>(&self, mut listed: StdVec<Helper>) -> StdVec<Helper> {
+    fn sort_helpers<const SHARED: bool>(
+        &self,
+        mut listed: StdVec<Helper>,
+        alias_mask: u64,
+    ) -> StdVec<Helper> {
         let mut cache = OrderCache {
             rank_five_keys: [None; 8],
+            alias_mask,
             alias_positions: None,
         };
         listed.sort_by(|left, right| {
@@ -128,10 +141,11 @@ impl Buf {
         helper: Helper,
         cache: &mut OrderCache,
     ) -> Option<usize> {
-        if SHARED {
+        if SHARED && cache.alias_mask & helper.bit() != 0 {
+            let alias_mask = cache.alias_mask;
             let positions = cache
                 .alias_positions
-                .get_or_insert_with(|| self.scan_alias_positions());
+                .get_or_insert_with(|| self.scan_alias_positions(alias_mask));
             return positions
                 .get(helper.bit().trailing_zeros() as usize)
                 .copied()
@@ -140,9 +154,9 @@ impl Buf {
         self.scan_alias_position(helper)
     }
 
-    fn scan_alias_positions(&self) -> [Option<usize>; 64] {
+    fn scan_alias_positions(&self, alias_mask: u64) -> [Option<usize>; 64] {
         let mut positions = [None; 64];
-        let mut remaining = self.used;
+        let mut remaining = alias_mask;
         let mut offset = 0;
         for text in self
             .hoists
@@ -326,7 +340,7 @@ mod tests {
                 buf.push_hoist(hoist.into());
             }
             buf.push(code);
-            let positions = buf.scan_alias_positions();
+            let positions = buf.scan_alias_positions(buf.used);
             for helper in Helper::ALL {
                 assert_eq!(
                     positions
@@ -355,7 +369,7 @@ mod tests {
         let shared = buf.ordered_helpers();
         let mut listed = Helper::ALL.to_vec();
         listed.reverse();
-        let ordinary = buf.sort_helpers::<false>(listed);
+        let ordinary = buf.sort_helpers::<false>(listed, 0);
 
         assert!(
             shared
@@ -365,11 +379,22 @@ mod tests {
         );
         let mut cache = OrderCache {
             rank_five_keys: [None; 8],
+            alias_mask: Helper::ALL.iter().fold(0, |mask, helper| {
+                if matches!(helper.rank(), 2 | 5) {
+                    mask | helper.bit()
+                } else {
+                    mask
+                }
+            }),
             alias_positions: None,
         };
         assert!(
             buf.first_alias_position::<true>(Helper::MergeProps, &mut cache)
                 .is_some()
+        );
+        assert_eq!(
+            buf.first_alias_position::<true>(Helper::CreateVNode, &mut cache),
+            buf.scan_alias_position(Helper::CreateVNode)
         );
     }
 
