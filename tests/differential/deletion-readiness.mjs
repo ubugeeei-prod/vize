@@ -24,7 +24,9 @@ export function assessDeletionReadiness({
   const targets = policy?.targets ?? {};
   const days = policy?.minimumStableDays;
   const gap = policy?.maximumGapDays;
-  if (!Number.isInteger(days) || days < 1 || !Number.isInteger(gap) || gap < 1) {
+  const validDays = Number.isInteger(days) && days > 0;
+  const validGap = Number.isInteger(gap) && gap > 0;
+  if (!validDays || !validGap) {
     block(
       "stability-policy",
       "Approved positive minimumStableDays and maximumGapDays are required",
@@ -37,8 +39,8 @@ export function assessDeletionReadiness({
     block("registry-sha", "Project registry digest is required");
   if (typeof verifyRun !== "function") block("run-verifier", "Actions run verifier is required");
   const projects = new Set(projectIds ?? []);
-  if (projects.size !== projectIds?.length || projects.size < 146) {
-    block("project-registry", "Pinned project registry must retain at least 146 unique projects");
+  if (projects.size !== projectIds?.length || projects.size < 150) {
+    block("project-registry", "Pinned project registry must retain at least 150 unique projects");
   }
   for (const product of deletionProducts) {
     if (
@@ -82,20 +84,20 @@ export function assessDeletionReadiness({
     : [];
   const dayNumber = (day) => Date.parse(`${day}T00:00:00Z`);
   const windowStart =
-    ordered.length && Number.isInteger(days) && days > 0
+    ordered.length && validDays
       ? ordered.findLastIndex(
           (snapshot) =>
             dayNumber(snapshot.day) <= dayNumber(ordered.at(-1).day) - days * 86_400_000,
         )
       : 0;
   const stable = ordered.slice(Math.max(windowStart, 0));
-  if (windowStart < 0 || stable.length < 2) {
+  if (validDays && (windowStart < 0 || stable.length < 2)) {
     block("stability-history", `Scheduled T2 observations must span at least ${days} days`);
   }
   if (new Set(stable.map((snapshot) => snapshot.day)).size !== stable.length) {
     block("stability-history", "At most one scheduled T2 observation per UTC day is allowed");
   }
-  if (stable.length && Number.isInteger(gap) && gap > 0) {
+  if (stable.length && validGap) {
     const intervals = [
       ...stable.slice(1).map((item, index) => dayNumber(item.day) - dayNumber(stable[index].day)),
       dayNumber(today) - dayNumber(stable.at(-1).day),

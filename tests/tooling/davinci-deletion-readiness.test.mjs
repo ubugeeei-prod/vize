@@ -12,7 +12,15 @@ const candidateSha = "c".repeat(40);
 const policySha = "a".repeat(64);
 const registrySha = "d".repeat(64);
 const receiptSha = "b".repeat(64);
-const projects = Array.from({ length: 146 }, (_, index) => `project-${index}`);
+const projects = Array.from({ length: 150 }, (_, index) => `project-${index}`);
+const checkedInPolicy = JSON.parse(
+  fs.readFileSync(
+    new URL("../../docs/davinci/plan/deletion-readiness-policy.json", import.meta.url),
+  ),
+);
+const checkedInRegistry = JSON.parse(
+  fs.readFileSync(new URL("../_fixtures/vue-ecosystem-fixtures.json", import.meta.url)),
+);
 const adapters = Object.fromEntries(
   deletionProducts.map((product) => [
     product,
@@ -187,6 +195,46 @@ void test("scope and stability cannot pass on reduced plans or selective project
   assert(unstableCodes.has("scope-drift"));
 });
 
+void test("approved product targets match the published acceptance adapters", () => {
+  const manifests = {
+    compiler: [
+      "compiler/sfc-fix-history.manifest.json",
+      "compiler/ssr-fix-history.manifest.json",
+      "compiler/vapor-fix-history.manifest.json",
+    ],
+    linter: ["linter/manifest.json"],
+    formatter: ["formatter/manifest.json"],
+    typechecker: ["typechecker/manifest.json"],
+    lsp: ["lsp/manifest.json"],
+  };
+  const fixtureRoot = new URL("../_fixtures/differential/", import.meta.url);
+  for (const product of deletionProducts) {
+    const targets = new Set();
+    for (const manifest of manifests[product]) {
+      const parsed = JSON.parse(fs.readFileSync(new URL(manifest, fixtureRoot), "utf8"));
+      assert.equal(parsed.product, product);
+      for (const fixture of parsed.cases) {
+        for (const target of fixture.targets) targets.add(target);
+      }
+    }
+    assert.deepEqual(
+      checkedInPolicy.targets[product],
+      [...targets].sort(),
+      `${product} target policy drifted from its published adapter`,
+    );
+  }
+});
+
+void test("the deletion denominator retains the complete 150-project registry", () => {
+  const projectIds = checkedInRegistry.projects.map((project) => project.id);
+  assert.equal(projectIds.length, 150);
+  assert.equal(new Set(projectIds).size, 150);
+
+  const reduced = completeEvidence();
+  reduced.projectIds.pop();
+  assert(codes(reduced).has("project-registry"));
+});
+
 void test("current repository state is explicitly blocked without native product evidence", () => {
   assert.throws(
     () =>
@@ -204,6 +252,9 @@ void test("current repository state is explicitly blocked without native product
       assert.match(output, /stability-policy/);
       assert.match(output, /product-verifier/);
       assert.match(output, /candidate-evidence/);
+      assert.doesNotMatch(output, /target-policy/);
+      assert.doesNotMatch(output, /span at least null days/);
+      assert.match(output, /deletion readiness failed: 10 blocker\(s\)/);
       return true;
     },
   );
