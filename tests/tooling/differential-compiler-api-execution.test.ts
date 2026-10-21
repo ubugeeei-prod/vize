@@ -15,7 +15,8 @@ import { summarizeNativeAcceptance } from "../differential/acceptance-rates.mjs"
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 for (const [target, contract] of Object.entries(COMPILER_TARGET_CONTRACTS)) {
-  void test(`shared compiler ${target} corpus observes five complete outputs from its source-built artifact`, (t) => {
+  const plannedCases = contract.ids.length;
+  void test(`shared compiler ${target} corpus observes ${plannedCases} complete outputs from its source-built artifact`, (t) => {
     const evidenceDir = path.resolve(
       root,
       process.env.VIZE_COMPILER_API_EVIDENCE_DIR ?? "target/differential/compiler-api",
@@ -59,11 +60,11 @@ for (const [target, contract] of Object.entries(COMPILER_TARGET_CONTRACTS)) {
     assert.deepEqual(
       report.summary,
       {
-        plannedCases: 5,
-        legacyMatches: 5,
+        plannedCases,
+        legacyMatches: plannedCases,
         baselineDrift: 0,
         legacyFailures: 0,
-        nativeUnsupported: 5,
+        nativeUnsupported: plannedCases,
         nativeHandled: 0,
         nativeEquivalent: 0,
         pairedComparisons: 0,
@@ -76,10 +77,10 @@ for (const [target, contract] of Object.entries(COMPILER_TARGET_CONTRACTS)) {
         sourceRevision: report.sourceRevision,
       }).total,
       {
-        planned: 5,
+        planned: plannedCases,
         nativeHandled: 0,
         nativeEquivalent: 0,
-        unsupported: 5,
+        unsupported: plannedCases,
         legacyBacked: 0,
         unverified: 0,
       },
