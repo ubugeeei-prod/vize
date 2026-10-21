@@ -109,7 +109,7 @@ function control(changes = {}) {
   };
 }
 
-test("formatter verifier binds the source CLI to every selected real project and file", () => {
+void test("formatter verifier binds the source CLI to every selected real project and file", () => {
   const artifact = assessFormatterDeletionShard(control());
   assert.equal(artifact.status, "ready");
   assert.deepEqual(artifact.blockers, []);
@@ -139,7 +139,7 @@ test("formatter verifier binds the source CLI to every selected real project and
   assert.equal(formatterDeletionAdapter.verifyComparison(row, fixture, report), true);
 });
 
-test("formatter verifier records genuine corpus gaps but never grants readiness credit", () => {
+void test("formatter verifier records genuine corpus gaps but never grants readiness credit", () => {
   for (const summaryChanges of [
     { violationCount: 1 },
     { waivedDifferenceCount: 1 },
@@ -167,7 +167,7 @@ test("formatter verifier records genuine corpus gaps but never grants readiness 
   }
 });
 
-test("formatter verifier rejects reduced shards, forged reports and stale identity", () => {
+void test("formatter verifier rejects reduced shards, forged reports and stale identity", () => {
   const missing = control();
   missing.matrix.projects.pop();
   assert.throws(() => assessFormatterDeletionShard(missing), /matrix\.projects/);
@@ -199,7 +199,7 @@ test("formatter verifier rejects reduced shards, forged reports and stale identi
   assert.throws(() => validateFormatterDeletionArtifact(artifact));
 });
 
-test("the real-project matrix records the formatter verifier artifact on every shard", () => {
+void test("the real-project matrix records the formatter verifier artifact on every shard", () => {
   const workflow = fs.readFileSync(
     new URL("../../.github/workflows/real-project-matrix.yml", import.meta.url),
     "utf8",
