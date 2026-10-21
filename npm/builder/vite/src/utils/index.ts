@@ -44,6 +44,7 @@ function createStyleImportUrl(
       !path.isAbsolute(relativePath)
     ) {
       styleFilePath = `/${relativePath.split(path.sep).join("/")}`;
+      params.set("vize-root-relative", "");
     }
   }
   return createStyleVirtualId(`${styleFilePath}?${params.toString()}`);

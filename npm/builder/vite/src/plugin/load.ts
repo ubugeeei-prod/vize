@@ -207,13 +207,16 @@ export function loadHook(
 
   const styleRequest = classifyVitePluginRequest(styleId);
   if (styleRequest.isVueStyleQuery) {
+    const isRootRelative =
+      !!styleRequest.querySuffix &&
+      new URLSearchParams(styleRequest.querySuffix.slice(1)).has("vize-root-relative");
     const sourceRequest = classifyVitePluginRequest(styleRequest.path);
     let realPath =
       sourceRequest.vizeVirtualPath ??
       sourceRequest.normalizedFsId ??
       sourceRequest.normalizedVuePath ??
       styleRequest.path;
-    if (realPath.startsWith("/") && !fs.existsSync(realPath)) {
+    if (realPath.startsWith("/") && (isRootRelative || !fs.existsSync(realPath))) {
       const projectPath = path.resolve(state.root, realPath.slice(1));
       const projectCache = getEnvironmentCache(state, !!loadOptions?.ssr);
       if (

@@ -109,16 +109,20 @@ async function loadResolvedStyleModule(plugin: Plugin, id: string): Promise<stri
   const styleSource = params.get("vize-file");
   assert.ok(styleSource, "the style import must retain its authored source identity");
   assert.equal(stylePath, `${styleSource}.__vize_style_0.css`);
-  assert.deepEqual(
-    [...params],
-    [
-      ["vue", ""],
-      ["type", "style"],
-      ["index", "0"],
-      ["lang", "css"],
-      ["vize-file", styleSource],
-    ],
-  );
+  assert.equal(params.get("vue"), "");
+  assert.equal(params.get("type"), "style");
+  assert.equal(params.get("index"), "0");
+  assert.equal(params.get("lang"), "css");
+  assert.deepEqual([...params.keys()].filter((key) => key !== "vize-root-relative").sort(), [
+    "index",
+    "lang",
+    "type",
+    "vize-file",
+    "vue",
+  ]);
+  if (params.has("vize-root-relative")) {
+    assert.match(styleSource, /^\//, "root-relative style identities must start at the root");
+  }
   assert.match(styleId, /\.css\?[^.]+$/);
   return loadVueModule(plugin, styleId);
 }
@@ -150,10 +154,13 @@ async function probeProductionCssImport(): Promise<void> {
   const prodPlugin = await bootPlugin(root, { isProduction: true });
   const prodCode = await loadResolvedVueModule(prodPlugin, id);
   assert.doesNotMatch(prodCode, /__vize_css__/);
-  assert.match(
-    prodCode,
-    /import "\/Comp\.vue\.__vize_style_0\.css\?vue=&type=style&index=0&lang=css&vize-file=%2FComp%2Evue";/,
-  );
+  const imports = [...prodCode.matchAll(/import "([^"\n]+)";/g)];
+  assert.equal(imports.length, 1, "production must import its style module exactly once");
+  const [stylePath, query] = imports[0][1].split("?", 2);
+  const params = new URLSearchParams(query);
+  assert.equal(stylePath, "/Comp.vue.__vize_style_0.css");
+  assert.equal(params.get("vize-file"), "/Comp.vue");
+  assert.equal(params.has("vize-root-relative"), true);
   assert.doesNotMatch(prodCode, new RegExp(root.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   assert.match(await loadResolvedStyleModule(prodPlugin, id), /\.probe\{color:red\}/);
 }
