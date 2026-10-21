@@ -167,8 +167,7 @@ fn formatter_cli_exposes_arrow_parentheses_policy() {
     let project = project();
     let root = project.path();
     let source = "<script setup lang=\"ts\">\nconst mapper=(value)=>value+1\n</script>\n";
-    let expected =
-        "<script setup lang=\"ts\">\nconst mapper = value => value + 1;\n</script>\n";
+    let expected = "<script setup lang=\"ts\">\nconst mapper = value => value + 1;\n</script>\n";
     write(root, "ArrowParens.vue", source);
     let args = [
         "fmt",
