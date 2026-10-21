@@ -447,3 +447,29 @@ fn fmt_applies_the_compact_config_preset_end_to_end() {
         "<template>\n  <div :id=\"id\" role=\"status\" aria-live=\"polite\">{{ id }}</div>\n</template>\n\n<script lang=\"ts\" setup>\nconst id = \"saved\";\n</script>\n"
     );
 }
+
+#[test]
+fn fmt_applies_the_documentation_config_preset_end_to_end() {
+    let project = tempfile::tempdir().unwrap();
+    write_project_file(
+        project.path(),
+        "vite.config.mjs",
+        &vite_config::source(r#"{ "formatter": { "preset": "documentation" } }"#),
+    );
+    write_project_file(
+        project.path(),
+        "App.vue",
+        "<template>\n  <Callout v-bind:kind=\"kind\" title=\"Deploy from a clean checkout\" dismissible />\n</template>\n\n<script setup lang=\"ts\">\nconst kind = \"warning\";\n</script>\n",
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(project.path())
+        .args(["fmt", "--write", "App.vue"])
+        .output()
+        .unwrap();
+    assert!(output.status.success(), "{}", output_details(&output));
+    assert_eq!(
+        fs::read_to_string(project.path().join("App.vue")).unwrap(),
+        "<template>\n  <Callout\n    :kind=\"kind\"\n    title=\"Deploy from a clean checkout\"\n    dismissible\n  />\n</template>\n\n<script setup lang=\"ts\">\nconst kind = \"warning\";\n</script>\n"
+    );
+}

@@ -811,7 +811,7 @@
         "preset": {
           "description": "Named set of formatter defaults; options set alongside it win",
           "type": "string",
-          "enum": ["vize", "prettier", "compact"]
+          "enum": ["vize", "prettier", "compact", "documentation"]
         },
         "sortImports": {
           "description": "Oxfmt-compatible import sorting; false disables it",

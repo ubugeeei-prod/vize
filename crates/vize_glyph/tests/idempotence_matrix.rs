@@ -8,7 +8,7 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_glyph::{FormatOptions, format_sfc};
+use vize_glyph::{FormatOptions, FormatPreset, format_sfc};
 
 /// Each axis lists its non-default values as JSON.
 const AXES: &[(&str, &[&str])] = &[
@@ -43,8 +43,12 @@ const AXES: &[(&str, &[&str])] = &[
     ("reindentPreprocessorStyles", &["true"]),
 ];
 
-const PRESETS: &[(&str, fn() -> FormatOptions)] =
-    &[("preset=prettier", FormatOptions::prettier_compat)];
+const PRESETS: &[(&str, FormatPreset)] = &[
+    ("preset=vize", FormatPreset::Vize),
+    ("preset=prettier", FormatPreset::Prettier),
+    ("preset=compact", FormatPreset::Compact),
+    ("preset=documentation", FormatPreset::Documentation),
+];
 
 /// Seeded combinations of several non-default values.
 const COMBINATIONS: u64 = 16;
@@ -83,10 +87,12 @@ fn option_sets() -> Vec<OptionSet> {
         label: "defaults".into(),
         options: FormatOptions::default(),
     }];
-    for (label, preset) in PRESETS {
+    for &(label, preset) in PRESETS {
+        let mut options = FormatOptions::default();
+        options.apply_preset(preset);
         sets.push(OptionSet {
-            label: (*label).into(),
-            options: preset(),
+            label: label.into(),
+            options,
         });
     }
     for (key, values) in AXES {
