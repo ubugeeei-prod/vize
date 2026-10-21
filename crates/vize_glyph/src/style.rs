@@ -33,6 +33,13 @@ use vize_l0::{String, ToCompactString};
 /// comments during parse. Nested comments keep the original block text instead
 /// of risking silent data loss.
 pub fn format_style_content(source: &str, options: &FormatOptions) -> Result<String, FormatError> {
+    // The CSS scanners consume LF-delimited lines. Re-enter with the equivalent
+    // LF document when a prior `endOfLine: "cr"` pass produced lone CRs, then
+    // let the configured printer emit CR again.
+    if !source.contains('\n') && source.contains('\r') {
+        let normalized = source.replace('\r', "\n");
+        return format_style_content(&normalized, options);
+    }
     // Re-quote before layout so a second pass lays out the same tokens.
     if options.normalize_css_quotes {
         let requoted = quotes::normalize(source, options.single_quote, false);

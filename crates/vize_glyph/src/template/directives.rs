@@ -49,7 +49,7 @@ pub(super) fn format_directive_value(
     // Keep the authored tokens and quote placement, but rederive same-line
     // continuations before the attribute and SFC printers add their depth.
     // Values starting on the following line remain verbatim (#6694).
-    if value.contains('\n') && trimmed.starts_with("//") {
+    if value.contains(['\n', '\r']) && trimmed.starts_with("//") {
         let (value, indent) = reanchor_continuation_lines(value, options, Representation::Html);
         return (value, indent, false);
     }

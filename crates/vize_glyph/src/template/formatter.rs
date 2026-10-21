@@ -58,12 +58,15 @@ impl<'a> TemplateFormatter<'a> {
     }
 
     pub(crate) fn format(&self, input: &str) -> Result<String, FormatError> {
+        // A document emitted with `endOfLine: "cr"` contains no LF. Normalize
+        // that uncommon input once, so the ordinary LF scanner keeps its
+        // single-delimiter hot path instead of probing for CR in every run.
+        if !input.contains('\n') && input.contains('\r') {
+            let normalized = input.replace('\r', "\n");
+            return self.format(&normalized);
+        }
         let source = input.as_bytes();
         let len = source.len();
-        // Keep the ordinary LF path on one SIMD delimiter scan per text run.
-        // A source-wide probe is cheaper than rescanning every remaining tail
-        // for CR, while still accepting authored lone-CR input.
-        let has_cr = memchr::memchr(b'\r', source).is_some();
         let mut output = Vec::with_capacity(len + len / 4);
         let mut pos = 0;
         let mut depth: usize = 0;
@@ -257,22 +260,14 @@ impl<'a> TemplateFormatter<'a> {
             // Accumulate text content until newline or tag
             let content_start = pos;
             while pos < len {
-                // A CR ends the line too: `endOfLine: "cr"` output has no LF.
-                let tail = sub_slice(source, pos..);
-                let primary = memchr3(b'\n', b'<', b'{', tail);
-                let offset = if has_cr {
-                    earliest_offset(primary, memchr::memchr(b'\r', tail))
-                } else {
-                    primary
-                };
-                let Some(offset) = offset else {
+                let Some(offset) = memchr3(b'\n', b'<', b'{', sub_slice(source, pos..)) else {
                     pos = len;
                     break;
                 };
                 pos += offset;
 
                 match byte_at(source, pos) {
-                    b'\n' | b'\r' | b'<' => break,
+                    b'\n' | b'<' => break,
                     b'{' if pos + 1 < len && byte_at(source, pos + 1) == b'{' => {
                         if let Some((_, _, end_pos)) = parse_interpolation_range(source, pos) {
                             pos = end_pos;
@@ -298,7 +293,7 @@ impl<'a> TemplateFormatter<'a> {
             }
 
             // Handle newline
-            if pos < len && matches!(byte_at(source, pos), b'\n' | b'\r') {
+            if pos < len && byte_at(source, pos) == b'\n' {
                 self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
                 pos += 1;
             }
@@ -342,12 +337,5 @@ fn normalize_inline_styles(attrs: &mut [super::attributes::ParsedAttribute]) {
         {
             attr.value = Some(normalized);
         }
-    }
-}
-
-fn earliest_offset(left: Option<usize>, right: Option<usize>) -> Option<usize> {
-    match (left, right) {
-        (Some(left), Some(right)) => Some(left.min(right)),
-        (offset, None) | (None, offset) => offset,
     }
 }
