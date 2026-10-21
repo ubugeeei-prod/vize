@@ -478,5 +478,29 @@
     "vapor": null,
     "diagnostics": 1,
     "fixes": 0
+  },
+  {
+    "id": "attribute-hyphenation-aria-data-camel-props",
+    "history": "b731cd547528cdde8cbb1b8fb68d0470afa16ac7",
+    "source": "<IconButton ariaLabel=\"Close\" :dataTestid=\"id\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "rule": "vue/attribute-hyphenation",
+    "vue_version": null,
+    "vapor": null,
+    "diagnostics": 0,
+    "fixes": 0
+  },
+  {
+    "id": "attribute-hyphenation-aria-data-native-attributes",
+    "history": "b731cd547528cdde8cbb1b8fb68d0470afa16ac7",
+    "source": "<IconButton aria-label=\"Close\" data-testid=\"icon\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "rule": "vue/attribute-hyphenation",
+    "vue_version": null,
+    "vapor": null,
+    "diagnostics": 0,
+    "fixes": 0
   }
 ]

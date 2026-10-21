@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "attribute-hyphenation-aria-data-camel-props",
+    history: "b731cd547528cdde8cbb1b8fb68d0470afa16ac7",
+    source: "<IconButton ariaLabel=\"Close\" :dataTestid=\"id\" />",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/attribute-hyphenation",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}
