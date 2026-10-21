@@ -277,11 +277,15 @@ fn collect_element(
                         is_svg: matches!(element.ns, Namespace::Svg),
                     }),
                     ElementType::Component => RegisteredRefKind::Component {
-                        reference: component_binding_reference(
-                            summary,
-                            options,
-                            syntactic_type_only_imported_names,
-                            element.tag,
+                        reference: dynamic_component_reference(summary, element).unwrap_or_else(
+                            || {
+                                component_binding_reference(
+                                    summary,
+                                    options,
+                                    syntactic_type_only_imported_names,
+                                    element.tag,
+                                )
+                            },
                         ),
                         start: element.loc.span.start,
                     },
@@ -305,6 +309,30 @@ fn collect_element(
             refs,
         );
     }
+}
+
+fn dynamic_component_reference(summary: &Croquis, element: &ElementNode<'_>) -> Option<String> {
+    if element.tag != "component"
+        || !element.props.iter().any(|prop| {
+            matches!(
+                prop,
+                PropNode::Directive(directive)
+                    if directive.name == "bind"
+                        && matches!(
+                            directive.arg.as_ref(),
+                            Some(vize_relief::ExpressionNode::Simple(arg))
+                                if arg.is_static && arg.content == "is"
+                        )
+                        && directive.exp.is_some()
+            )
+        })
+    {
+        return None;
+    }
+    vize_croquis::facts::component_usage_list(summary)
+        .iter()
+        .find(|usage| usage.start == element.loc.span.start)
+        .map(|usage| usage.name.clone())
 }
 
 fn component_ref_kind_for_element_tag(
