@@ -271,3 +271,40 @@ synchronously in the calling Node process and have no execution deadline.
 Freezing batches and auditing output do not isolate those callbacks. The measured
 proxy handle remains for spike compatibility. `@vizejs/extension-sdk` is the
 separate versioned WIT guest interface.
+
+## Virtual TypeScript visitors
+
+`defineVisitorPlugin` descriptors with only the `virtual-ts` capability can be
+negotiated for the native type-check host. The ordinary `typeCheck` entrypoint
+remains plugin-free; callers opt in through the separate visitor entrypoint.
+
+```js
+import { typeCheckWithVirtualTsVisitors } from "@vizejs/native";
+import {
+  VISITOR_API_VERSION,
+  createVirtualTsVisitorHost,
+  defineVisitorPlugin,
+} from "@vizejs/plugin-sdk/visitor";
+
+const observer = defineVisitorPlugin({
+  apiVersion: VISITOR_API_VERSION,
+  name: "virtual-ts-observer",
+  version: "1",
+  capabilities: ["virtual-ts"],
+  cacheInputs: [],
+  visitors: {
+    "virtual-ts"({ payload }) {
+      console.log(payload.virtualFile, payload.code, payload.mappings);
+    },
+  },
+});
+
+typeCheckWithVirtualTsVisitors(source, [createVirtualTsVisitorHost(observer)], {
+  filename: "src/App.vue",
+});
+```
+
+The callback receives immutable generated code and source/generated UTF-8 byte
+ranges after the real type-check projection is built. Returning a value,
+requesting another capability, or forging an incomplete host identity refuses
+the invocation.

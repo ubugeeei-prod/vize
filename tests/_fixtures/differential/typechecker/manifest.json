@@ -1754,6 +1754,65 @@
       ]
     },
     {
+      "id": "typechecker/inferred-project-tsconfig-9718/owned-strict",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "inferred-project-tsconfig-9718",
+      "case": "owned-strict",
+      "test": "inferred_project_tsconfig_preserves_owned_batch_inputs",
+      "regressionCommit": "f95557dadaab83dc0f7d4a7613bdb7ed4e59d323",
+      "sourceRevision": "f95557dadaab83dc0f7d4a7613bdb7ed4e59d323",
+      "packReference": {
+        "path": "inferred-project-tsconfig-9718/cases.json",
+        "sha256": "f67fef2d9c91cd5b94444a7448df7d79b532cad6ded90349bdf14d67d84a474e"
+      },
+      "inputs": [
+        {
+          "file": "src/Owned.vue",
+          "path": "inferred-project-tsconfig-9718/src/Owned.vue.txt",
+          "sha256": "df401f321b9ca4c07dadf48c83e02f3da7d07eb2d5a5a774d4c1ab446c8fb627"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "inferred-project-tsconfig-9718/tsconfig.json.txt",
+          "sha256": "3c8047401c47504341017d802f7940ce777a7e7a361894c04f6d965954715003"
+        }
+      ]
+    },
+    {
+      "id": "typechecker/inferred-project-tsconfig-9718/inferred-defaults",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "inferred-project-tsconfig-9718",
+      "case": "inferred-defaults",
+      "test": "inferred_project_tsconfig_preserves_owned_batch_inputs",
+      "regressionCommit": "f95557dadaab83dc0f7d4a7613bdb7ed4e59d323",
+      "sourceRevision": "f95557dadaab83dc0f7d4a7613bdb7ed4e59d323",
+      "packReference": {
+        "path": "inferred-project-tsconfig-9718/cases.json",
+        "sha256": "f67fef2d9c91cd5b94444a7448df7d79b532cad6ded90349bdf14d67d84a474e"
+      },
+      "inputs": [
+        {
+          "file": "template/code/App.vue",
+          "path": "inferred-project-tsconfig-9718/template/code/App.vue.txt",
+          "sha256": "4ee23799e710983bff854b21b4885a73802ebe66db92f95ac552fc7a0ef6eb7b"
+        }
+      ]
+    },
+    {
       "id": "typechecker/generic-fallthrough-spread-9956/broad-index-valid",
       "state": "active",
       "targets": [

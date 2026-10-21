@@ -256,6 +256,17 @@ fn reactive_props_destructure_preserves_unused_diagnostics() {
 }
 
 #[test]
+fn inferred_project_tsconfig_preserves_owned_batch_inputs() {
+    check_pack(
+        "inferred-project-tsconfig-9718",
+        "inferred_project_tsconfig_preserves_owned_batch_inputs",
+        "f95557dadaab83dc0f7d4a7613bdb7ed4e59d323",
+        Some(9718),
+        &["owned-strict", "inferred-defaults"],
+    );
+}
+
+#[test]
 fn generic_fallthrough_spread_preserves_valid_values() {
     check_pack(
         "generic-fallthrough-spread-9956",
@@ -326,7 +337,8 @@ fn check_pack(
             | "reactive-props-destructure-10008"
             | "generic-fallthrough-spread-9956"
             | "misskey-generated-inference-9516"
-            | "component-v-bind-duplicate-diagnostic-10069" => regression,
+            | "component-v-bind-duplicate-diagnostic-10069"
+            | "inferred-project-tsconfig-9718" => regression,
             _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
         }
     );

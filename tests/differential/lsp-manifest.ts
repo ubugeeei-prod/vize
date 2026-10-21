@@ -83,6 +83,13 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
       requests = [{ params: {}, result: expected }];
     } else if (data.method === "textDocument/documentHighlight") {
       requests = loadOriginalHighlightRequests(packRoot, data, expected);
+    } else if (data.method === "textDocument/definition") {
+      assert(
+        expected !== null && typeof expected === "object" && "position" in expected,
+        "definition position and result required",
+      );
+      const definition = expected as { position: unknown; result: unknown };
+      requests = [{ params: { position: definition.position }, result: definition.result }];
     } else if (data.method === "textDocument/hover") {
       assert(
         Array.isArray(expected) && expected.length === 2,

@@ -286,6 +286,7 @@ fn watched_marker_transfers_to_checked_full_key_without_reloading_or_retiring_si
         let expected = ProjectContextKey {
             root: nested.clone(),
             tsconfig: referenced.then(|| super::paths::physical_path(&leaf)),
+            inferred: false,
         };
         assert_eq!(
             state.project_contexts.routes.get(&probe).unwrap().value(),

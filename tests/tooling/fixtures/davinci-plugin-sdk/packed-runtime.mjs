@@ -5,6 +5,7 @@ import { applyFixes } from "@vizejs/plugin-sdk/fixes";
 import { createSandboxRunner, SANDBOX_IMAGE } from "@vizejs/plugin-sdk/sandbox";
 import {
   VISITOR_API_VERSION,
+  createVirtualTsVisitorHost,
   defineVisitorPlugin,
   negotiateVisitorPlugin,
   runVisitorFixture,
@@ -156,5 +157,18 @@ runVisitorFixture(visitor, "virtual-ts", {
   payload: { sourceFile: "Button.vue", virtualFile: "Button.vue.ts", code: "", mappings: [] },
 });
 assert.deepEqual(visitorEvents, ["Button.vue.ts"]);
+const virtualTsHost = createVirtualTsVisitorHost(visitor);
+assert.equal(typeof virtualTsHost.run, "function");
+assert.equal(
+  virtualTsHost.run(
+    JSON.stringify({
+      apiVersion: VISITOR_API_VERSION,
+      capability: "virtual-ts",
+      file: "Button.vue",
+      payload: { sourceFile: "Button.vue", virtualFile: "Button.vue.ts", code: "", mappings: [] },
+    }),
+  ),
+  "",
+);
 assert.ok(import.meta.resolve("@vizejs/plugin-sdk").includes("/node_modules/@vizejs/plugin-sdk/"));
 console.log("packed SDK runtime exports: 8 root, fixes, sandbox and visitor verified");
