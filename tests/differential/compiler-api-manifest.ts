@@ -158,6 +158,7 @@ export function loadCompilerApiManifest(manifestPath: string, repoRoot: string) 
     contract,
     cases: fixtures.map((fixture) => {
       const name = fixture.id.split("/").at(-1);
+      assert(name, "compiler fixture id must include a case name");
       assert.equal(fixture.state, "active");
       assert.deepEqual(fixture.targets, [target]);
       assert.deepEqual(fixture.comparison.requiredFacets, contract.fields);
