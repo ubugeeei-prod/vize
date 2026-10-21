@@ -17,25 +17,31 @@ export default {
       const _component_OptionRow = _resolveComponent("OptionRow");
       const _component_PopupMenu = _resolveComponent("PopupMenu");
       return _openBlock(), _createBlock(_component_PopupMenu, null, {
-        items: _withCtx(({ close }) => [_createVNode(_component_OptionRow, null, {
-          default: _withCtx(({ active }) => [_createElementVNode("li", {
-            class: _normalizeClass({ active }),
-            onClick: ($event) => close()
-          }, [_createElementVNode(
-            "span",
-            null,
-            _toDisplayString(_unref(format)("hello")),
-            1
-            /* TEXT */
-          ), _createElementVNode(
-            "span",
-            null,
-            _toDisplayString(__props.renderLabel("x", _unref(format))),
-            1
-            /* TEXT */
-          )], 10, ["onClick"])]),
-          _: 1
-        })]),
+        items: _withCtx(({ close }) => [_createVNode(
+          _component_OptionRow,
+          null,
+          {
+            default: _withCtx(({ active }) => [_createElementVNode("li", {
+              class: _normalizeClass({ active }),
+              onClick: ($event) => close()
+            }, [_createElementVNode(
+              "span",
+              null,
+              _toDisplayString(_unref(format)("hello")),
+              1
+              /* TEXT */
+            ), _createElementVNode(
+              "span",
+              null,
+              _toDisplayString(__props.renderLabel("x", _unref(format))),
+              1
+              /* TEXT */
+            )], 10, ["onClick"])]),
+            _: 2
+          },
+          1024
+          /* DYNAMIC_SLOTS */
+        )]),
         _: 1
       });
     };

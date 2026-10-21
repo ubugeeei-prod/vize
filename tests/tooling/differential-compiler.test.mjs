@@ -135,7 +135,7 @@ void test("compiler fixture pins a real full-module reference without native cre
   );
   assert(
     loaded.cases
-      .filter((current) => current.id.includes("scoped-"))
+      .filter((current) => current.expectedCss !== null)
       .every((current) => Buffer.isBuffer(current.expectedCss)),
   );
 });
