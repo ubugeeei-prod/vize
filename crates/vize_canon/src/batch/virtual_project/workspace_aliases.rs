@@ -273,9 +273,17 @@ impl VirtualProject {
                             && !planned
                             && self.materialized_package_links.get(&path) != Some(&target))
                     {
+                        #[cfg(test)]
+                        let message = format!(
+                            "Workspace package alias requires owned directories: {} -> {}",
+                            path.display(),
+                            target.display()
+                        );
+                        #[cfg(not(test))]
+                        let message = "Workspace package alias requires owned directories";
                         return Err(std::io::Error::new(
                             std::io::ErrorKind::InvalidData,
-                            "Workspace package alias requires owned directories",
+                            message,
                         )
                         .into());
                     }
