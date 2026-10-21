@@ -6,7 +6,7 @@ use dashmap::DashMap;
 use parking_lot::{Mutex, RwLock};
 use vize_l0::config::{GlobalTypesConfig, TypeCheckerConfig};
 
-use super::{LspFeatureConfig, ServerState, resident};
+use super::{LspFeatureConfig, ServerState, config::host::ProjectModel, resident};
 use crate::document::DocumentStore;
 use crate::virtual_code::VirtualCodeGenerator;
 
@@ -22,6 +22,7 @@ use std::sync::OnceLock;
 impl ServerState {
     pub fn new() -> Self {
         let default_features = LspFeatureConfig::default();
+        let default_type_checker = TypeCheckerConfig::default();
         let package_route_resolver = vize_canon::PackageRouteResolver::default();
         Self {
             documents: DocumentStore::new(),
@@ -46,9 +47,11 @@ impl ServerState {
             lsp_features: RwLock::new(default_features),
             lsp_typecheck_enabled: AtomicBool::new(default_features.typecheck),
             completion_documentation_resolve: AtomicBool::new(false),
-            type_checker_config: RwLock::new((TypeCheckerConfig::default(), 60_000)),
-            #[cfg(feature = "native")]
-            type_checker_config_origin: RwLock::new(None),
+            type_checker_config: RwLock::new((
+                default_type_checker.clone(),
+                60_000,
+                ProjectModel::new(None, None, &default_type_checker),
+            )),
             #[cfg(feature = "experimental-source-navigation")]
             module_links: RwLock::new(module_links::Session::default()),
             global_types: RwLock::new(GlobalTypesConfig::default()),

@@ -2,7 +2,7 @@ use super::ServerState;
 use vize_l0::config::TypeCheckerConfig;
 
 #[test]
-fn native_checker_snapshot_retains_resolved_values_and_separate_origin_on_reload() {
+fn native_checker_snapshot_retains_one_project_model_on_reload() {
     let directory = crate::test_support::tempdir().unwrap();
     let config_path = directory.path().join("vite.config.mjs");
     std::fs::create_dir(directory.path().join("app")).unwrap();
@@ -41,31 +41,36 @@ fn native_checker_snapshot_retains_resolved_values_and_separate_origin_on_reload
         ServerState::load_lsp_config,
     ] {
         let state = ServerState::new();
-        assert_eq!(
-            state.native_checker_settings(),
-            (TypeCheckerConfig::default(), 60_000, None)
-        );
+        let (initial_config, initial_timeout, initial_project) = state.native_checker_settings();
+        assert_eq!(initial_config, TypeCheckerConfig::default());
+        assert_eq!(initial_timeout, 60_000);
+        assert_eq!(initial_project.root(), None);
+        assert_eq!(initial_project.config_source(), None);
+        assert_eq!(initial_project.tsconfig(), None);
         std::fs::write(&config_path, r#"export default { vue: {"typeChecker":{"strict":true,"tsconfig":"app/tsconfig.json","corsaPath":"tools/corsa","globalsFile":"globals.d.ts","servers":2,"lspRequestTimeoutMs":91000}} };"#).unwrap();
         load(&state, directory.path());
+        let (loaded_config, timeout, project) = state.native_checker_settings();
+        assert_eq!(loaded_config, config);
+        assert_eq!(timeout, 91_000);
+        assert_eq!(project.root(), Some(directory.path()));
+        assert_eq!(project.config_source(), Some(config_path.as_path()));
         assert_eq!(
-            state.native_checker_settings(),
-            (config.clone(), 91_000, Some(config_path.clone()))
+            project.tsconfig(),
+            config.tsconfig.as_deref().map(std::path::Path::new)
         );
         std::fs::write(&config_path, "export default { vue: {} };").unwrap();
         load(&state, directory.path());
-        assert_eq!(
-            state.native_checker_settings(),
-            (
-                TypeCheckerConfig::default(),
-                60_000,
-                Some(config_path.clone())
-            )
-        );
+        let (default_config, timeout, project) = state.native_checker_settings();
+        assert_eq!(default_config, TypeCheckerConfig::default());
+        assert_eq!(timeout, 60_000);
+        assert_eq!(project.root(), Some(directory.path()));
+        assert_eq!(project.config_source(), Some(config_path.as_path()));
+        assert_eq!(project.tsconfig(), None);
     }
 }
 
 #[test]
-fn concurrent_native_checker_reads_keep_values_timeout_and_origin_together() {
+fn concurrent_native_checker_reads_keep_values_timeout_and_project_together() {
     let state = ServerState::new();
     let first = (
         TypeCheckerConfig {
@@ -74,6 +79,7 @@ fn concurrent_native_checker_reads_keep_values_timeout_and_origin_together() {
             ..TypeCheckerConfig::default()
         },
         91_000,
+        std::path::PathBuf::from("first"),
         std::path::PathBuf::from("first/vite.config.mjs"),
     );
     let second = (
@@ -83,23 +89,29 @@ fn concurrent_native_checker_reads_keep_values_timeout_and_origin_together() {
             ..TypeCheckerConfig::default()
         },
         92_000,
+        std::path::PathBuf::from("second"),
         std::path::PathBuf::from("second/vite.config.mjs"),
     );
-    state.install_type_checker_snapshot(first.0.clone(), first.1, &first.2);
+    state.install_type_checker_snapshot(&first.2, first.0.clone(), first.1, Some(&first.3));
     std::thread::scope(|scope| {
         scope.spawn(|| {
             for index in 0..2_000 {
                 let packet = if index % 2 == 0 { &second } else { &first };
-                state.install_type_checker_snapshot(packet.0.clone(), packet.1, &packet.2);
+                state.install_type_checker_snapshot(
+                    &packet.2,
+                    packet.0.clone(),
+                    packet.1,
+                    Some(&packet.3),
+                );
             }
         });
         for _ in 0..2_000 {
             let observed = state.native_checker_settings();
             let expected = if observed.0.strict { &first } else { &second };
-            assert_eq!(
-                observed,
-                (expected.0.clone(), expected.1, Some(expected.2.clone()))
-            );
+            assert_eq!(observed.0, expected.0);
+            assert_eq!(observed.1, expected.1);
+            assert_eq!(observed.2.root(), Some(expected.2.as_path()));
+            assert_eq!(observed.2.config_source(), Some(expected.3.as_path()));
         }
     });
 }

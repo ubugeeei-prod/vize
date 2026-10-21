@@ -109,16 +109,22 @@ impl ServerState {
         }
     }
 
-    fn apply_type_checker_config(&self, config: TypeCheckerConfig, timeout_ms: u64, source: &Path) {
+    fn apply_type_checker_config(
+        &self,
+        root: &Path,
+        config: TypeCheckerConfig,
+        timeout_ms: u64,
+        source: Option<&Path>,
+    ) {
         #[cfg(feature = "native")]
         let _change = self.corsa_environment_change();
         #[cfg(feature = "experimental-source-navigation")]
-        self.update_module_link_context(Some(source.to_path_buf()), || {
-            self.install_type_checker_snapshot(config, timeout_ms, source);
+        self.update_module_link_context(source.map(Path::to_path_buf), || {
+            self.install_type_checker_snapshot(root, config, timeout_ms, source);
         });
         #[cfg(not(feature = "experimental-source-navigation"))]
         {
-            self.install_type_checker_snapshot(config, timeout_ms, source);
+            self.install_type_checker_snapshot(root, config, timeout_ms, source);
         }
         self.invalidate_component_interfaces();
         // The tsconfig and runtime this selects decide which project the
@@ -129,7 +135,11 @@ impl ServerState {
             self.invalidate_corsa_overlays();
             self.retire_corsa_configuration();
         }
-        tracing::info!("Loaded type checker config from {}", source.display());
+        if let Some(source) = source {
+            tracing::info!("Loaded type checker config from {}", source.display());
+        } else {
+            tracing::info!("Loaded default type checker config for {}", root.display());
+        }
     }
 
     fn apply_global_types_config(&self, config: GlobalTypesConfig, source: &str) {
@@ -354,11 +364,12 @@ impl ServerState {
         if loaded.source_path.is_none() {
             self.apply_config_features(loaded.features);
             #[cfg(feature = "native")]
-            if let Some(tsconfig) = loaded.config.type_checker.tsconfig.as_deref() {
+            if loaded.config.type_checker.tsconfig.is_some() {
                 self.apply_type_checker_config(
+                    loaded.project.project_root.as_deref().unwrap_or(dir),
                     loaded.config.type_checker.clone(),
                     loaded.request_timeout_ms,
-                    Path::new(tsconfig),
+                    None,
                 );
             }
         }
@@ -391,9 +402,10 @@ impl ServerState {
             *self.linter_rule_options.write() = loaded.lint_rule_options;
             self.apply_global_types_config(config.global_types, &source);
             self.apply_type_checker_config(
+                loaded.project.project_root.as_deref().unwrap_or(dir),
                 config.type_checker,
                 loaded.request_timeout_ms,
-                &source_path,
+                Some(&source_path),
             );
             self.apply_names_configuration(
                 loaded.features,
@@ -445,9 +457,10 @@ impl ServerState {
             *self.linter_rule_options.write() = loaded.lint_rule_options;
             self.apply_global_types_config(config.global_types, &source);
             self.apply_type_checker_config(
+                loaded.project.project_root.as_deref().unwrap_or(dir),
                 config.type_checker,
                 loaded.request_timeout_ms,
-                &source_path,
+                Some(&source_path),
             );
             self.apply_names_configuration(
                 loaded.features,

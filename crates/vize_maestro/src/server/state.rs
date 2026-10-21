@@ -72,6 +72,7 @@ use vize_canon::{BatchTypeChecker, CorsaBridge};
 
 use crate::document::DocumentStore;
 use crate::virtual_code::{VirtualCodeGenerator, VirtualDocuments};
+use config::host::ProjectModel;
 
 #[cfg(feature = "native")]
 pub(crate) use corsa_requests::{CorsaRequestScope, CorsaRequestStamp};
@@ -150,12 +151,9 @@ pub struct ServerState {
     lsp_typecheck_enabled: AtomicBool,
     /// Client can request documentation through the native completion resolver.
     completion_documentation_resolve: AtomicBool,
-    /// Type checker options shared by LSP diagnostics.
-    /// Corsa options and timeout belong to the same config snapshot.
-    type_checker_config: RwLock<(TypeCheckerConfig, u64)>,
-    /// Authored config origin; resolved paths never replace the applied values.
-    #[cfg(feature = "native")]
-    type_checker_config_origin: RwLock<Option<PathBuf>>,
+    /// Type checker options and project identity shared by LSP diagnostics.
+    /// Corsa options, timeout, and the effective tsconfig belong to one snapshot.
+    type_checker_config: RwLock<(TypeCheckerConfig, u64, ProjectModel)>,
     /// User-declared template globals shared by every virtual TypeScript path.
     global_types: RwLock<GlobalTypesConfig>,
     /// Vue 3 Options API binding-resolution opt-in from config.

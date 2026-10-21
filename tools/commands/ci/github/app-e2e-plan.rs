@@ -24,6 +24,7 @@ const CHECK_FIXTURES: &[&str] = &[
     "naive-ui",
     "npmx.dev",
     "nuxt-ui",
+    "openvue",
     "primevue",
     "reka-ui",
     "voicevox",
