@@ -28,7 +28,8 @@ mod prop_name_casing_tests;
 mod prop_sources;
 mod props_literal;
 pub(crate) use props_literal::{
-    append_inference_props_literal, append_props_literal, append_spread_value, prop_entry_sub_spans,
+    append_inference_props_literal, append_props_literal, append_spread_value,
+    collect_inference_probe_props, prop_entry_sub_spans,
 };
 mod reserved_props;
 #[cfg(test)]

@@ -16,9 +16,8 @@ use vize_croquis::{Croquis, Scope, ScopeKind, analysis::ComponentUsage};
 
 use crate::virtual_ts::{
     component_reference::resolved_component_binding_reference,
-    expressions::{
-        ComponentPropSource, append_inference_props_literal, rewrite_reserved_template_binding,
-    },
+    expressions::{collect_inference_probe_props, rewrite_reserved_template_binding},
+    helpers::to_camel_case,
     template_binding_access::TemplateBindingAccess,
     types::VirtualTsOptions,
 };
@@ -162,16 +161,23 @@ fn emit_probe(
     );
     append!(
         *ts,
-        "{indent}var {name} = (undefined as unknown as __VizeRefInstanceFactory<typeof {component}>)({component})("
+        "{indent}var {name} = (undefined as unknown as __VizeRefInstanceFactory<typeof {component}>)({component})({{\n"
     );
-    append_inference_props_literal(
-        ts,
-        usage,
-        ctx.template_binding_access,
-        ComponentPropSource::new(None, ctx.template_offset, &ctx.summary.scopes),
-        indent.as_str(),
-    );
-    ts.push_str(");\n");
+    for (prop, value) in collect_inference_probe_props(usage, ctx.template_binding_access) {
+        if super::is_inline_callback_prop(prop) {
+            append!(
+                *ts,
+                "{indent}  // @ts-ignore Inference-only callback prop; the mapped prop owner checks diagnostics.\n"
+            );
+        }
+        append!(
+            *ts,
+            "{indent}  \"{}\": {},\n",
+            to_camel_case(prop.name.as_str()),
+            value.as_str()
+        );
+    }
+    append!(*ts, "{indent}}});\n");
     for closer in closers.iter().rev() {
         ts.push_str(closer.as_str());
     }

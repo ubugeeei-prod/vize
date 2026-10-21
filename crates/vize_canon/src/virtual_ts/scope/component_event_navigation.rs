@@ -287,18 +287,30 @@ fn emit_resolved_events(
         *ts,
         "{indent}type __vize_events_resolver_{idx} = typeof {component_ref} extends {{ __vizeResolveEvents?: infer __F }} ? (__F extends (...args: any[]) => any ? __F : (props: any) => __VizeComponentEvents<typeof {component_ref}>) : (props: any) => __VizeComponentEvents<typeof {component_ref}>;\n{indent}// @ts-ignore Inference-only call; the authored prop checker owns diagnostics.\n{indent}const {resolved_events} = (undefined as unknown as __vize_events_resolver_{idx})("
     );
-    crate::virtual_ts::expressions::append_inference_props_literal(
-        ts,
+    if !usage.spread_props.is_empty() {
+        crate::virtual_ts::expressions::append_inference_props_literal(
+            ts,
+            usage,
+            ctx.template_binding_access,
+            crate::virtual_ts::expressions::ComponentPropSource::new(
+                ctx.template_source,
+                ctx.template_offset,
+                ctx.scopes,
+            ),
+            indent,
+        );
+        ts.push_str(");\n");
+        return;
+    }
+    ts.push_str("{\n");
+    for (prop, value) in crate::virtual_ts::expressions::collect_inference_probe_props(
         usage,
         ctx.template_binding_access,
-        crate::virtual_ts::expressions::ComponentPropSource::new(
-            ctx.template_source,
-            ctx.template_offset,
-            ctx.scopes,
-        ),
-        indent,
-    );
-    ts.push_str(");\n");
+    ) {
+        let name = to_camel_case(prop.name.as_str());
+        append!(*ts, "{indent}  \"{name}\": {value},\n");
+    }
+    append!(*ts, "{indent}}});\n");
 }
 
 fn event_navigation_source_range(
