@@ -50,10 +50,7 @@ pub(super) fn definition(ctx: &IdeContext<'_>) -> Option<GotoDefinitionResponse>
 /// the barrel re-exports. Uses the same bounded walk as the imported-name jump.
 pub(super) fn component_tag_definition(ctx: &IdeContext<'_>) -> Option<GotoDefinitionResponse> {
     let tag_name = helpers::get_tag_at_offset(&ctx.content, ctx.offset)?;
-    if !crate::ide::is_component_tag(&tag_name) {
-        return None;
-    }
-    for name in crate::ide::component_name_candidates(&tag_name) {
+    for name in component_tag_bound_names(ctx, &tag_name)? {
         // `import { Widget as LocalWidget }` declares `Widget` in the target,
         // so the lookup key is the exported name, not the local alias.
         let exported = bound_import(&ctx.content, &name)
@@ -76,23 +73,31 @@ pub(super) fn component_tag_import_target_is_deleted(ctx: &IdeContext<'_>) -> bo
     let Some(tag_name) = helpers::get_tag_at_offset(&ctx.content, ctx.offset) else {
         return false;
     };
-    if !crate::ide::is_component_tag(&tag_name) {
+    let Some(names) = component_tag_bound_names(ctx, &tag_name) else {
         return false;
-    }
+    };
 
-    crate::ide::component_name_candidates(&tag_name)
-        .into_iter()
-        .any(|name| {
-            helpers::find_import_path(ctx, &name)
-                .and_then(|specifier| {
-                    resolve_import_specifier_with_documents(
-                        ctx.uri,
-                        &specifier,
-                        &ctx.state.documents,
-                    )
-                })
-                .is_some_and(|target| vue_target_is_deleted(ctx, &target))
-        })
+    names.into_iter().any(|name| {
+        helpers::find_import_path(ctx, &name)
+            .and_then(|specifier| {
+                resolve_import_specifier_with_documents(ctx.uri, &specifier, &ctx.state.documents)
+            })
+            .is_some_and(|target| vue_target_is_deleted(ctx, &target))
+    })
+}
+
+fn component_tag_bound_names(ctx: &IdeContext<'_>, tag_name: &str) -> Option<Vec<String>> {
+    let registered = super::super::component_import::registered_component_local_name(ctx, tag_name);
+    if !crate::ide::is_component_tag(tag_name) && registered.is_none() {
+        return None;
+    }
+    let mut names = crate::ide::component_name_candidates(tag_name);
+    if let Some(local_name) = registered
+        && !names.contains(&local_name)
+    {
+        names.push(local_name);
+    }
+    Some(names)
 }
 
 fn vue_target_is_deleted(ctx: &IdeContext<'_>, target: &Path) -> bool {

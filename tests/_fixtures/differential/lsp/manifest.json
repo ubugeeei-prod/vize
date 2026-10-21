@@ -1647,6 +1647,45 @@
           }
         ]
       }
+    },
+    {
+      "id": "lsp/regression/registered-lowercase-component-alias",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "registered-lowercase-component-alias",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "aa067bd6f444685dbfd54250d8546c9a33b354361200062f8a3a770b2846c5f5"
+          },
+          {
+            "path": "lottie.vue.txt",
+            "sha256": "c7244ef1b281e9c08609c5dec744c8d3cfe8320446c39e95cab8725d0210e542"
+          }
+        ]
+      },
+      "case": {
+        "path": "registered-lowercase-component-alias/case.json",
+        "sha256": "459a7e603e71cd299a37a4ed978b0278b4a602628166d83833ea89f02005ed66"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "js"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }

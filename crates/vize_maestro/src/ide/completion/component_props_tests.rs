@@ -86,6 +86,59 @@ Required
 }
 
 #[test]
+fn template_component_prop_completion_resolves_registered_lowercase_alias() {
+    let dir = tempfile::tempdir().unwrap();
+    let child_path = dir.path().join("lottie.vue");
+    fs::write(
+        &child_path,
+        r#"<script>
+export default {
+  props: {
+    options: { type: Object, required: true },
+    height: Number
+  }
+}
+</script>
+"#,
+    )
+    .unwrap();
+
+    let source = r#"<script>
+import Lottie from './lottie.vue'
+
+export default {
+  components: {
+    'lottie': Lottie
+  }
+}
+</script>
+
+<template>
+  <lottie  />
+</template>
+"#;
+    let parent_path = dir.path().join("App.vue");
+    fs::write(&parent_path, source).unwrap();
+
+    let uri = Url::from_file_path(&parent_path).unwrap();
+    let state = ServerState::new();
+    state
+        .documents
+        .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+    state.update_virtual_docs(&uri, source);
+
+    let offset = source.find("<lottie  />").unwrap() + "<lottie ".len();
+    let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+    let labels = completion_items(CompletionService::complete(&ctx).unwrap())
+        .into_iter()
+        .map(|item| item.label)
+        .collect::<Vec<_>>();
+
+    assert!(has_label(&labels, "options"), "{labels:?}");
+    assert!(has_label(&labels, "height"), "{labels:?}");
+}
+
+#[test]
 fn nested_template_slot_completion_only_lists_component_slots() {
     let dir = tempfile::tempdir().unwrap();
     fs::write(

@@ -1,0 +1,19 @@
+{
+  "position": {
+    "line": 11,
+    "character": 4
+  },
+  "result": {
+    "uri": "${workspace}/lottie.vue",
+    "range": {
+      "start": {
+        "line": 0,
+        "character": 0
+      },
+      "end": {
+        "line": 0,
+        "character": 0
+      }
+    }
+  }
+}
