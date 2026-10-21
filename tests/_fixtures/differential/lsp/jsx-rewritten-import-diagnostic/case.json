@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "id": "lsp/regression/jsx-rewritten-import-diagnostic",
+  "provenance": {
+    "fixCommit": "88a363ebcb27067bbb31dace3017b1a1ae06cba7",
+    "witnessPath": "editors/vscode/test/suite/real-tsx.cjs",
+    "witnessTest": "TSX/JSX activation, routing and lifecycle",
+    "inputOrigin": "byte-exact real VS Code host TSX and JSX workspace inputs",
+    "contractOrigin": "the source-built editor host regression validates the complete diagnostics and language-service lifecycle; this differential row pins the authored project bytes"
+  },
+  "files": [
+    {
+      "source": "App.tsx.txt",
+      "runtimePath": "App.tsx",
+      "sha256": "0e3c10a203d4c2aaae854e5d00ed17d50116082b5d205019379c36081ae02ea8"
+    },
+    {
+      "source": "Sibling.jsx.txt",
+      "runtimePath": "Sibling.jsx",
+      "sha256": "a3ba4c119f408171a8d61743135e72c00ebc2d23aacd3184bad8fcd22df50c54"
+    },
+    {
+      "source": "model.ts.txt",
+      "runtimePath": "model.ts",
+      "sha256": "cc6b5fc5837d0e65b20aa3bd9c797bae48f21cda0dabefa04bb4da8f15a8e00b"
+    },
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "e56067e26a4d1687be31dfefc5727aba08f7abc230cecd9dc9c5c6203b531663"
+    }
+  ],
+  "entry": "App.tsx",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "38e0b9de817f645c4bec37c0d4a3e58baecccb040f5718dc069a72c7385a0bed"
+  },
+  "method": "textDocument/foldingRange",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "scope": "pins the real host project that exposed TS5097 after extensionless imports were rewritten to virtual TypeScript paths"
+}
