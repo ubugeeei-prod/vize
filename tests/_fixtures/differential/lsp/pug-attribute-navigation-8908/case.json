@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "id": "lsp/regression/pug-attribute-navigation-8908",
+  "provenance": {
+    "fixCommit": "2d421a2b428015d7de1f1c6396fe0e0154a7263b",
+    "witnessPath": "crates/vize_maestro/src/ide/pug.rs",
+    "witnessTest": "reads_authored_attribute_name_spans_for_pug_and_jade; pug_attribute_names_resolve_component_and_native_contracts; canonical_pug_prop_references_reach_parent_template_usage; canonical_jade_prop_rename_reaches_only_the_matching_parent_usage; canonical_pug_component_event_references_and_rename_use_authored_name",
+    "inputOrigin": "minimal authored Pug attribute-name navigation reproduction from issue 8908",
+    "contractOrigin": "focused Maestro regressions validate definition, hover, references, and rename; this differential row pins the authored SFC bytes"
+  },
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "a7a9a51e51043452917f5cf1f85fe7d85dda1d0e3454a2852dae1b0685a68c00"
+    },
+    {
+      "source": "Child.vue.txt",
+      "runtimePath": "Child.vue",
+      "sha256": "5c46ed7c79b79ee33980737a1033e513b98417178635c177402f505e3fb9a0d4"
+    }
+  ],
+  "entry": "App.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "5f43fd64ca8e9ebb6659c48944ff8bbf5d84cd396ce1e88f3805012673f8ebf0"
+  },
+  "method": "textDocument/foldingRange",
+  "scope": "exact Pug attribute-name input custody plus focused editor witnesses; no native adapter or broader Pug acceptance credit"
+}

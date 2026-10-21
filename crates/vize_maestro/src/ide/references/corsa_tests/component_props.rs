@@ -23,6 +23,19 @@ const greeting = "confirm-lsp";
 </script>
 "#;
 
+const PUG_APP_SOURCE: &str = r#"<template lang="pug">
+section
+  p {{ greeting }}
+  Child(data-seed="🌱" :title="greeting" planted-bad-prop="nope")
+</template>
+
+<script setup lang="ts">
+import Child from "./Child.vue";
+
+const greeting = "confirm-lsp";
+</script>
+"#;
+
 const CHILD_SOURCE: &str = r#"<script setup lang="ts">
 defineProps<{
   /* café 🌱 */ title: string;
@@ -88,6 +101,15 @@ fn write_project_scaffold(project: &Path) -> PathBuf {
 
 #[test]
 fn canonical_prop_references_reach_parent_template_usage() {
+    check_canonical_prop_references(APP_SOURCE);
+}
+
+#[test]
+fn canonical_pug_prop_references_reach_parent_template_usage() {
+    check_canonical_prop_references(PUG_APP_SOURCE);
+}
+
+fn check_canonical_prop_references(app_source: &'static str) {
     crate::runtime::block_on(async {
         let Some(tsgo_path) = resolve_tsgo_binary() else {
             return;
@@ -97,7 +119,7 @@ fn canonical_prop_references_reach_parent_template_usage() {
 
         let app_path = src.join("App.vue");
         let child_path = src.join("Child.vue");
-        fs::write(&app_path, APP_SOURCE).expect("App.vue");
+        fs::write(&app_path, app_source).expect("App.vue");
         fs::write(&child_path, CHILD_SOURCE).expect("Child.vue");
         let app_uri = Url::from_file_path(&app_path).expect("app URI");
         let child_uri = Url::from_file_path(&child_path).expect("child URI");
@@ -107,8 +129,8 @@ fn canonical_prop_references_reach_parent_template_usage() {
         state.set_workspace_root(project.path().to_path_buf());
         state
             .documents
-            .open(app_uri.clone(), APP_SOURCE.to_owned(), 1, "vue".to_owned());
-        state.update_virtual_docs(&app_uri, APP_SOURCE);
+            .open(app_uri.clone(), app_source.to_owned(), 1, "vue".to_owned());
+        state.update_virtual_docs(&app_uri, app_source);
         state.documents.open(
             child_uri.clone(),
             CHILD_SOURCE.to_owned(),
@@ -135,7 +157,7 @@ fn canonical_prop_references_reach_parent_template_usage() {
             ReferencesService::references_with_corsa(&ctx, true, Some(Arc::clone(&bridge)))
                 .await
                 .expect("prop references");
-        let parent_offset = APP_SOURCE.find(":title").expect("parent prop") + 2;
+        let parent_offset = app_source.find(":title").expect("parent prop") + 2;
         let parent_ctx =
             IdeContext::new(&state, &app_uri, parent_offset).expect("parent query context");
         let parent_references =
@@ -174,8 +196,9 @@ fn canonical_prop_references_reach_parent_template_usage() {
             1,
             "the prop declaration must reach the parent template attribute: {references:#?}",
         );
-        assert_eq!(authored_text(APP_SOURCE, app_hits[0]), "title");
-        assert_utf16_location(APP_SOURCE, "title=\"greeting\"", &app_hits);
+        let app_hit = app_hits.first().expect("one parent authored hit");
+        assert_eq!(authored_text(app_source, app_hit), "title");
+        assert_utf16_location(app_source, "title=\"greeting\"", &app_hits);
         assert_utf16_location(CHILD_SOURCE, "title: string", &child_hits);
         assert!(
             references

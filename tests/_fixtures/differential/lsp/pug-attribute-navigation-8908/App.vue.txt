@@ -1,0 +1,16 @@
+<script setup lang="ts">
+import Child from "./Child.vue"
+const label = "hello"
+function save() {}
+</script>
+
+<template lang="pug">
+Child(
+  :message="label"
+  @save-item.once="save"
+)
+input(
+  autocomplete="email"
+  :value=left + right
+)
+</template>
