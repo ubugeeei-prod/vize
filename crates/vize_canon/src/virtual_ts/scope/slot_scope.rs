@@ -117,7 +117,8 @@ fn slot_payload_type(
 
 fn dynamic_slot_name_binding(indent: &str, binding: &str, name: &str) -> String {
     let isolated_name = crate::virtual_ts::expressions::isolate_incomplete_expression(name);
-    cstr!("{indent}const {binding} = {{ name: ({isolated_name}) }} as const;\n")
+    let name = isolated_name.as_str();
+    cstr!("{indent}const {binding} = {{ name: ({name}) }} as const;\n")
 }
 
 /// Generate a `v-slot` scope's closure: the host binding, the slot function,
