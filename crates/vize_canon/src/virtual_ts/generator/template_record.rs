@@ -91,14 +91,14 @@ impl TemplateRecord {
     }
 
     /// The instance a registry entry holds, given its declared one.
-    pub(super) fn ref_instance(&self, start: u32, declared: &str, component: &str) -> String {
+    pub(super) fn ref_instance(&self, start: u32, declared: &str, component_type: &str) -> String {
         if !self.ref_starts.contains(&start) {
             return declared.into();
         }
         let mut instance = String::default();
         append!(
             instance,
-            "__VizeTemplateRefInstance<typeof __vize_template.{REFS_RETURN_KEY}, \"{start}\", typeof {component}>"
+            "__VizeTemplateRefInstance<typeof __vize_template.{REFS_RETURN_KEY}, \"{start}\", {component_type}>"
         );
         instance
     }
