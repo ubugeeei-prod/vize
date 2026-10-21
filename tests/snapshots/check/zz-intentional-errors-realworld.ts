@@ -19,7 +19,7 @@ import {
   vueVbenAdminApp,
   vuefesApp,
 } from "../../_helpers/apps.ts";
-import { naiveUiApp, primeVueApp, vuetifyApp } from "../../_helpers/ui-library-apps.ts";
+import { naiveUiApp, openVueApp, primeVueApp, vuetifyApp } from "../../_helpers/ui-library-apps.ts";
 import { runVizeCheckWithInjectedTypeError } from "../_helpers/realworld.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -75,6 +75,7 @@ const realWorldApps = [
   naiveUiApp,
   npmxApp,
   nuxtUiApp,
+  openVueApp,
   primeVueApp,
   rekaUiApp,
   voicevoxApp,

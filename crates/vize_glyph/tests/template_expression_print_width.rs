@@ -36,3 +36,90 @@ fn directive_calls_observe_actual_indentation_and_three_public_fixed_points()
     }
     Ok(())
 }
+
+#[test]
+fn standalone_directive_expressions_observe_their_actual_indentation() -> Result<(), Box<dyn Error>>
+{
+    let source = r#"<template>
+  <div>
+    <div>
+      <div>
+        <div>
+          <div
+            v-if="
+              modeStore.get() ===
+              DisplayMode.BulkUpdateOfTheSelectedRowsInTheCurrentView
+            "
+            v-show="
+              isTheSelectedRowVisible &&
+              isTheOtherRowVisibleInTheCurrentView &&
+              true
+            "
+            :title="
+              selectedRowOwner?.displayName ??
+              fallbackOwnerDisplayNameForRows ??
+              '-'
+            "
+            :data-index="
+              store.progressOfTheView
+                .selectedIndexOfThePaginationInTheCurrentView.value
+            "
+            :data-total="currentItem.primaryValue + currentItem.secondaryValue + currentItem.tertiaryValue"
+            class="row"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+"#;
+    let expected = r#"<template>
+  <div>
+    <div>
+      <div>
+        <div>
+          <div
+            v-if="
+              modeStore.get() ===
+              DisplayMode.BulkUpdateOfTheSelectedRowsInTheCurrentView
+            "
+            v-show="
+              isTheSelectedRowVisible &&
+              isTheOtherRowVisibleInTheCurrentView &&
+              true
+            "
+            :title="
+              selectedRowOwner?.displayName ??
+              fallbackOwnerDisplayNameForRows ??
+              '-'
+            "
+            :data-index="
+              store.progressOfTheView
+                .selectedIndexOfThePaginationInTheCurrentView.value
+            "
+            :data-total="
+              currentItem.primaryValue +
+              currentItem.secondaryValue +
+              currentItem.tertiaryValue
+            "
+            class="row"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+"#;
+    let options = FormatOptions {
+        print_width: 80,
+        sort_attributes: false,
+        ..FormatOptions::default()
+    };
+
+    let first = format_sfc(source, &options)?;
+    let second = format_sfc(&first.code, &options)?;
+
+    assert_eq!(first.code.as_str(), expected);
+    assert_eq!(first.code, second.code, "fmt; fmt must be a no-op");
+    Ok(())
+}

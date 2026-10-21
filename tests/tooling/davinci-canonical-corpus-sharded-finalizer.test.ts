@@ -116,7 +116,7 @@ function writeArtifacts(root: string, inventory: Inventory, identity: Record<str
 
 await test("finalization re-proves process-sharded observers and their exact shard vectors", () => {
   const root = mkdtempSync(join(tmpdir(), "canonical-sharded-artifacts-"));
-  const inventory = canonicalWorkerInventory(3001, 148) as Inventory;
+  const inventory = canonicalWorkerInventory(3001, 149) as Inventory;
   const { gitlinks, files, proof } = inventory;
   const identity = {
     schema: "vize.canonical-corpus-identity",

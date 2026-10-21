@@ -16,7 +16,7 @@
     },
     "tools/commands/ci/github/app-e2e-plan.rs": {
       "bytes": 11525,
-      "sha256": "46983c8019bfb809f418eccdab5afeb73b3cea5dcc7c4aa8354d2726bf9c617b"
+      "sha256": "6c9bc1bf91bba11efbcede503acf15f8a56082d7f7aea4b970394975c0a0198a"
     },
     "tests/_helpers/visual-parity.ts": {
       "bytes": 7821,

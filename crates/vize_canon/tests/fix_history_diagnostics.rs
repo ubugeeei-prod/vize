@@ -5,7 +5,7 @@
 
 use std::path::Path;
 
-use vize_canon::{BatchTypeChecker, BatchTypeCheckerTrait};
+use vize_canon::{BatchTypeChecker, BatchTypeCheckerOptions, BatchTypeCheckerTrait};
 
 mod support {
     pub(crate) mod fix_history_contract;
@@ -207,7 +207,18 @@ fn bounded_cache_maintenance_preserves_project_diagnostics() {
         "bounded_cache_maintenance_preserves_project_diagnostics",
         "4714c0f264dedffaa81377df9545fbfa9514a64e",
         Some(9860),
-        &["bounded-maintenance"],
+        &["bounded-maintenance", "fresh-helper-handoff"],
+    );
+}
+
+#[test]
+fn workspace_package_alias_cache_preserves_sequential_scopes() {
+    check_pack(
+        "workspace-alias-cache-10063",
+        "workspace_package_alias_cache_preserves_sequential_scopes",
+        "7174c46d55825c155325e6314305e661d50ec95a",
+        Some(10063),
+        &["second-package-selection"],
     );
 }
 
@@ -298,6 +309,7 @@ fn check_pack(
             | "declared-prop-names-original"
             | "template-suppression-original"
             | "cache-maintenance-9860"
+            | "workspace-alias-cache-10063"
             | "nuxt-unknown-template-options-10013"
             | "reactive-props-destructure-10008"
             | "generic-fallthrough-spread-9956"
@@ -361,7 +373,64 @@ fn check_pack(
         if pack.project_options.is_some() {
             assert!(!project_root.join("node_modules").exists());
         }
-        let mut checker = BatchTypeChecker::new(&project_root).expect("the checker must start");
+        if name == "workspace-alias-cache-10063" {
+            for (source, destination) in [
+                ("packages/b", "packages/a/node_modules/@demo/b"),
+                ("packages/c", "packages/b/node_modules/@demo/c"),
+            ] {
+                let destination = project_root.join(destination);
+                std::fs::create_dir_all(
+                    destination
+                        .parent()
+                        .expect("a workspace link must have a parent"),
+                )
+                .expect("workspace link parents must be created");
+                link_vue(&project_root.join(source), &destination);
+            }
+            let mut first = BatchTypeChecker::with_options(
+                &project_root,
+                BatchTypeCheckerOptions {
+                    tsconfig_path: Some(project_root.join("tsconfig.b.json")),
+                    ..Default::default()
+                },
+            )
+            .expect("the first package selection must start");
+            first
+                .scan_project()
+                .expect("the first package selection must scan");
+            let first = first
+                .check_project()
+                .expect("the first package selection must finish");
+            // #10063 is a hard materialization error before diagnostics. Both
+            // orderings must complete and preserve the empty authored result;
+            // the complete diagnostic contract is compared again below.
+            assert!(first.diagnostics.is_empty());
+            assert!(first.diagnostics.is_empty());
+
+            let mut second = BatchTypeChecker::with_options(
+                &project_root,
+                BatchTypeCheckerOptions {
+                    tsconfig_path: Some(project_root.join("tsconfig.a.json")),
+                    ..Default::default()
+                },
+            )
+            .expect("the second package selection must start");
+            second
+                .scan_project()
+                .expect("the second package selection must scan");
+            let second = second
+                .check_project()
+                .expect("the second package selection must finish");
+            assert!(second.diagnostics.is_empty());
+            assert!(second.diagnostics.is_empty());
+        }
+        let options = BatchTypeCheckerOptions {
+            tsconfig_path: (name == "workspace-alias-cache-10063")
+                .then(|| project_root.join("tsconfig.a.json")),
+            ..Default::default()
+        };
+        let mut checker =
+            BatchTypeChecker::with_options(&project_root, options).expect("the checker must start");
         if pack
             .checker_options
             .as_ref()
