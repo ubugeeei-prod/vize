@@ -124,8 +124,6 @@ pub fn needs_dynamic_slots_patch(ctx: &CodegenContext, el: &ElementNode<'_>) -> 
 /// ordinary props compare equal. Vue marks the slots object dynamic whenever a
 /// slot expression references an active `v-slot`/`v-for` binding; this keeps the
 /// child from retaining the previous render's closure (#10169).
-#[cold]
-#[inline(never)]
 pub(super) fn slots_reference_current_scope(ctx: &CodegenContext, el: &ElementNode<'_>) -> bool {
     if !ctx.has_slot_params() || !has_slot_children(el) {
         return false;

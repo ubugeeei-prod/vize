@@ -97,7 +97,7 @@ pub fn is_dynamic_event(dir: &DirectiveNode<'_>) -> bool {
 /// Converts kebab-case to camelCase (e.g., "select-koma" -> "onSelectKoma")
 pub fn create_on_name(event: &str) -> String {
     let mut result = String::with_capacity(2 + event.len());
-    result.push_str("on");
+    append_event_name_segment(&mut result, "on");
     let mut chars = event.char_indices().peekable();
     let mut start = 0;
     let mut first = true;
@@ -106,7 +106,7 @@ pub fn create_on_name(event: &str) -> String {
             && let Some((next_index, next)) =
                 chars.next_if(|(_, next)| next.is_ascii_alphanumeric() || *next == '_')
         {
-            result.push_str(event.split_at(index).0.split_at(start).1);
+            append_event_name_segment(&mut result, &event[start..index]);
             result.push(next.to_ascii_uppercase());
             start = next_index + next.len_utf8();
             first = false;
@@ -116,8 +116,16 @@ pub fn create_on_name(event: &str) -> String {
             first = false;
         }
     }
-    result.push_str(event.split_at(start).1);
+    append_event_name_segment(&mut result, &event[start..]);
     result
+}
+
+// Keep CompactString's growth path out of every create_on_name call site. This
+// transform is used by both DOM code generators, where cross-crate inlining can
+// otherwise duplicate the same append implementation in the emitted compiler.
+#[inline(never)]
+fn append_event_name_segment(result: &mut String, segment: &str) {
+    result.push_str(segment);
 }
 
 #[cfg(test)]
