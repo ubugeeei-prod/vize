@@ -359,7 +359,9 @@ the candidate measured 16,072,012 in run `39524712741`, a reduction of
 three identical measurements. The existing 100 ceilings are byte-for-byte
 unchanged and all held against the candidate measurement.
 
-Full Check run `39525534072` independently passed the 101-row instruction
-gate and measured the new emit window at exactly 656 allocations. That count
-is the fixed allocation witness; no existing allocation or instruction ceiling
-is raised.
+Full Check run `39525534072` on candidate `de26dc57d08965cffa4232bc1d9625fb3cd31f98`
+from main `92f77f13514d93edc98ce58b5318fa0264098b1a` independently passed both
+101-row instruction jobs and measured the new emit window at exactly 656
+allocations. That first allocation run rejected the then-pinned value of one;
+656 is the corrected exact allocation witness. No existing allocation or
+instruction ceiling is raised.

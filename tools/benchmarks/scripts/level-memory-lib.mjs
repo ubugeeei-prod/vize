@@ -65,7 +65,7 @@ export function loadMemoryAuthority(root) {
       allocation_budgets: plane === "level",
     };
   }
-  assert.equal(planes.level.registry.size, 100, "original100 level registry required");
+  assert.equal(planes.level.registry.size, 101, "complete101 level registry required");
   assert.equal(planes.formatter.registry.size, 4, "original4 formatter registry required");
   return { planes, registry };
 }
@@ -79,7 +79,7 @@ export function validateReportPlane(rows, registry, label) {
 }
 
 export function partitionMemoryReports(rows, authority) {
-  validateReportPlane(rows, authority.registry, "whole original104 memory population");
+  validateReportPlane(rows, authority.registry, "whole complete105 memory population");
   return Object.fromEntries(
     Object.entries(authority.planes).map(([plane, original]) => {
       const selected = new Map([...rows].filter(([id]) => original.registry.has(id)));
@@ -214,7 +214,7 @@ export function compareMemoryMetrics(base, head, sourceHarness) {
 // judge independently validates source, build and protocol custody; no JSON
 // version claim or serialized WeakSet witness grants comparison authority.
 export function writeHarnessJudgePair(out, manifest, witnesses, arm, repetition) {
-  assert.equal(manifest.observations_complete, true, "all624 observations must be complete");
+  assert.equal(manifest.observations_complete, true, "all630 observations must be complete");
   assert.ok(["base", "head"].includes(arm), "foreign judge source arm");
   assert.ok(
     Number.isInteger(repetition) && repetition >= 1 && repetition <= 3,
@@ -224,7 +224,7 @@ export function writeHarnessJudgePair(out, manifest, witnesses, arm, repetition)
   for (const side of ["base", "head"]) {
     assert.equal(manifest.measurements[side].length, 3, "three complete repetitions required");
     for (const rows of manifest.measurements[side]) {
-      assert.equal(Object.keys(rows).length, 104, "all104 rows required before judge");
+      assert.equal(Object.keys(rows).length, 105, "all105 rows required before judge");
       validateHarnessReports(new Map(Object.entries(rows)), witnesses[side]);
     }
   }
