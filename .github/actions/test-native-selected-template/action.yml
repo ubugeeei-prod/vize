@@ -50,7 +50,8 @@ runs:
         touch crates/vize_atelier_core/src/codegen/element/block.rs \
           crates/vize_atelier_core/src/codegen/slots/detect.rs \
           crates/vize_atelier_core/src/codegen/slots/generate.rs \
-          crates/vize_atelier_dom/tests/runtime_patch_flags.rs
+          crates/vize_atelier_dom/tests/runtime_patch_flags.rs \
+          davinci/vize_l1_to_l2/src/emit/vnode.rs
         cargo test -p vize_atelier_dom --profile ci --test integration runtime_patch_flags::
         vp node --test tests/tooling/runtime-patch-flags.test.ts
     - name: Retain runtime patch-flag modules

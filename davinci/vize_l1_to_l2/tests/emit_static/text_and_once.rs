@@ -171,7 +171,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
-fn hoisted_static_props_omit_the_text_patch_flag() {
+fn hoisted_static_props_keep_the_text_patch_flag() {
     assert_eq!(
         assembled(r#"<div class="x">{{ msg }}</div>"#),
         "\
@@ -180,7 +180,7 @@ const { toDisplayString: _toDisplayString, openBlock: _openBlock, createElementB
 const _hoisted_1 = { class: \"x\" }
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
-  return (_openBlock(), _createElementBlock(\"div\", _hoisted_1, _toDisplayString(msg)))
+  return (_openBlock(), _createElementBlock(\"div\", _hoisted_1, _toDisplayString(msg), 1 /* TEXT */))
 }"
     );
 }
