@@ -137,9 +137,10 @@ fn emit_setup_binding_anchors(
             ts.push(' ');
         }
         if value_import_names.contains(name.as_str()) {
-            // A direct value read is illegal for imported `const enum`s (TS2475),
-            // while a type query still marks every value import as referenced.
-            append!(*ts, "void (null as unknown as typeof {name});");
+            // A direct value read is illegal for imported `const enum`s (TS2475).
+            // `keyof typeof` consumes the permitted type query without asserting
+            // directly to the enum object type, which TypeScript also rejects.
+            append!(*ts, "void (null as unknown as keyof typeof {name});");
         } else {
             append!(*ts, "void {name};");
         }
@@ -316,7 +317,7 @@ const state = ref(State.Idle);"#;
 
         assert_eq!(
             anchors.as_str(),
-            "\n  // Reference setup bindings (used in template/CSS v-bind)\n  void (null as unknown as typeof State); void (null as unknown as typeof ref); void state;\n"
+            "\n  // Reference setup bindings (used in template/CSS v-bind)\n  void (null as unknown as keyof typeof State); void (null as unknown as keyof typeof ref); void state;\n"
         );
         assert!(!anchors.contains("void State;"));
     }
