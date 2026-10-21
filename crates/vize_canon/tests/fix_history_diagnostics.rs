@@ -812,11 +812,15 @@ fn check_pack(
         let mut checker =
             BatchTypeChecker::with_options(&project_root, options).expect("the checker must start");
         if name == "workspace-package-import-alias-10175" {
-            let importer = project_root.join("src/main.ts");
             let mut resolver = PackageRouteResolver::default();
-            let bindings = ["#app", "@demo/ui"]
+            let bindings = [
+                ("src/main.ts", "#app"),
+                ("src/main.ts", "@demo/ui"),
+                ("packages/ui/src/MyButton.vue", "@demo/core"),
+            ]
                 .into_iter()
-                .map(|specifier| {
+                .map(|(importer, specifier)| {
+                    let importer = project_root.join(importer);
                     let (context, mut context_inputs) = resolver.resolution_context(
                         &importer,
                         PackageResolutionMode::Import,
