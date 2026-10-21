@@ -16,8 +16,9 @@ use vize_croquis::{Croquis, analysis::ComponentUsage};
 
 use crate::virtual_ts::{
     component_reference::resolved_component_binding_reference,
-    expressions::{generated_prop_value, rewrite_reserved_template_binding},
-    helpers::to_camel_case,
+    expressions::{
+        ComponentPropSource, append_inference_props_literal, rewrite_reserved_template_binding,
+    },
     template_binding_access::TemplateBindingAccess,
     types::VirtualTsOptions,
 };
@@ -92,7 +93,7 @@ fn emit_probe(
         rewrite_reserved_template_binding(guard.as_str(), ctx.template_binding_access)
             .unwrap_or_else(|| guard.clone())
     });
-    let call = cstr!("(undefined as unknown as {factory}<typeof {component}>)({component})({{");
+    let call = cstr!("(undefined as unknown as {factory}<typeof {component}>)({component})(");
     let indent = if guard.is_some() { "    " } else { "  " };
     if let Some(guard) = guard.as_deref() {
         let isolated = crate::virtual_ts::expressions::isolate_incomplete_expression(guard);
@@ -110,27 +111,14 @@ fn emit_probe(
         );
         append!(*ts, "{indent}const {name} = {call}\n");
     }
-    for prop in &usage.props {
-        if prop.name_is_dynamic || matches!(prop.name.as_str(), "key" | "ref") {
-            continue;
-        }
-        let Some(value) = generated_prop_value(prop, ctx.template_binding_access) else {
-            continue;
-        };
-        if super::is_inline_callback_prop(prop) {
-            append!(
-                *ts,
-                "{indent}  // @ts-ignore Inference-only callback prop; the mapped prop owner checks diagnostics.\n"
-            );
-        }
-        append!(
-            *ts,
-            "{indent}  \"{}\": {},\n",
-            to_camel_case(prop.name.as_str()),
-            value.as_str()
-        );
-    }
-    append!(*ts, "{indent}}});\n");
+    append_inference_props_literal(
+        ts,
+        usage,
+        ctx.template_binding_access,
+        ComponentPropSource::new(None, 0, &ctx.summary.scopes),
+        indent,
+    );
+    ts.push_str(");\n");
     if guard.is_some() {
         ts.push_str("    return undefined as never;\n  })();\n");
     }

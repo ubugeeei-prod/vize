@@ -7,14 +7,13 @@ use vize_croquis::{Croquis, ScopeKind};
 
 use crate::virtual_ts::{
     component_reference::component_binding_reference,
-    expressions::rewrite_reserved_template_binding, helpers::to_camel_case, types::VizeMapping,
+    expressions::rewrite_reserved_template_binding, types::VizeMapping,
 };
 
 use super::component_navigation::{is_ts_identifier, push_ts_single_quoted_literal};
 use super::context::{ComponentPropsContext, VForPropsContext};
 use super::event_handler::event_name_source_range;
 use super::vif_guard_chain::{append_chained_vif_guard_close, append_chained_vif_guard_open};
-use crate::virtual_ts::expressions::generated_prop_value;
 
 pub(super) fn emit_event_references(
     ts: &mut String,
@@ -288,33 +287,18 @@ fn emit_resolved_events(
         *ts,
         "{indent}type __vize_events_resolver_{idx} = typeof {component_ref} extends {{ __vizeResolveEvents?: infer __F }} ? (__F extends (...args: any[]) => any ? __F : (props: any) => __VizeComponentEvents<typeof {component_ref}>) : (props: any) => __VizeComponentEvents<typeof {component_ref}>;\n{indent}// @ts-ignore Inference-only call; the authored prop checker owns diagnostics.\n{indent}const {resolved_events} = (undefined as unknown as __vize_events_resolver_{idx})("
     );
-    if !usage.spread_props.is_empty() {
-        crate::virtual_ts::expressions::append_inference_props_literal(
-            ts,
-            usage,
-            ctx.template_binding_access,
-            crate::virtual_ts::expressions::ComponentPropSource::new(
-                ctx.template_source,
-                ctx.template_offset,
-                ctx.scopes,
-            ),
-            indent,
-        );
-        ts.push_str(");\n");
-        return;
-    }
-    ts.push_str("{\n");
-    for prop in &usage.props {
-        if prop.name_is_dynamic || prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
-            continue;
-        }
-        let Some(value) = generated_prop_value(prop, ctx.template_binding_access) else {
-            continue;
-        };
-        let name = to_camel_case(prop.name.as_str());
-        append!(*ts, "{indent}  \"{name}\": {value},\n");
-    }
-    append!(*ts, "{indent}}});\n");
+    crate::virtual_ts::expressions::append_inference_props_literal(
+        ts,
+        usage,
+        ctx.template_binding_access,
+        crate::virtual_ts::expressions::ComponentPropSource::new(
+            ctx.template_source,
+            ctx.template_offset,
+            ctx.scopes,
+        ),
+        indent,
+    );
+    ts.push_str(");\n");
 }
 
 fn event_navigation_source_range(
