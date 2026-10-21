@@ -91,6 +91,10 @@ fn old_and_default_whole_sfc_paths_retain_results_and_counted_work() {
     );
     let cases = [
         ("admitted", "<template><div/></template>"),
+        (
+            "admitted-language",
+            "<template lang='html'><div title='雪🌸'/></template>",
+        ),
         ("admitted-attributes", rich.as_str()),
         (
             "guard-script",
@@ -160,7 +164,7 @@ fn old_and_default_whole_sfc_paths_retain_results_and_counted_work() {
     }
     assert_eq!(
         report["rows"].as_array().expect("all measured pairs").len(),
-        40
+        48
     );
     assert!(failures.is_empty(), "{}", failures.join("\n"));
 }

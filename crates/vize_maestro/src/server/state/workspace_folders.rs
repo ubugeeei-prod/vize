@@ -90,11 +90,13 @@ impl ServerState {
         let _change = self.corsa_environment_change();
         #[cfg(feature = "experimental-source-navigation")]
         self.update_module_link_context(None, || {
-            *self.workspace_root.write() = Some(path);
+            *self.workspace_root.write() = Some(path.clone());
+            self.retarget_type_checker_project(&path);
         });
         #[cfg(not(feature = "experimental-source-navigation"))]
         {
-            *self.workspace_root.write() = Some(path);
+            *self.workspace_root.write() = Some(path.clone());
+            self.retarget_type_checker_project(&path);
         }
         self.lint_hover_cache.clear();
         self.package_route_resolver.lock().clear();

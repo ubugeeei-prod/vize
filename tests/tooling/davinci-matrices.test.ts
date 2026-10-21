@@ -145,7 +145,7 @@ test("the fixture-plane staleness check fails on an injected edit", () => {
 // throwaway copy, then prove `--check` rejects a one-member edit there.
 test("the content-model table staleness check fails on an injected edit", () => {
   const generator = "tools/commands/davinci/html-content-model.rs";
-  const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "davinci-html-content-model-"));
+  const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "level-html-content-model-"));
   const table = path.join(scratch, "whatwg.tsv");
   try {
     const write = spawnSync(

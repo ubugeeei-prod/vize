@@ -21,6 +21,10 @@ export function withoutHostRuntimeReferences(source: string, relativePath: strin
       /^pub\(in crate::server::state\) use vize_carton::config::(?:ConfigEvaluationSession|ConfigLoadFailureIdentity|LoadedLspConfig|ProjectModel|load_config_with_source|load_lsp_config_snapshot|load_lsp_config_snapshot_observed|load_project_config_with_source);$/gmu,
       "host_config_snapshot_facade",
     );
+    storage = storage.replace(
+      /^pub\(in crate::server::state\) use vize_carton::config::matcher::CompilerWhitespacePlan;$/gmu,
+      "host_config_matcher_facade",
+    );
   }
   if (file === "crates/vize_maestro/src/server/state/config.rs") {
     storage = storage.replace(

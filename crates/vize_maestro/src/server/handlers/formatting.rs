@@ -27,7 +27,10 @@ pub(super) async fn formatting(
     };
     #[cfg(feature = "glyph")]
     {
-        let (options, preserve) = server.state.get_formatter_context();
+        let formatter_path = uri
+            .to_file_path()
+            .unwrap_or_else(|_| std::path::PathBuf::from(uri.path()));
+        let (options, preserve) = server.state.get_formatter_context_for_path(&formatter_path);
         Ok(
             super::super::format::format_document_with_template_whitespace(
                 &_content,
@@ -62,8 +65,11 @@ pub(super) async fn range_formatting(
     };
     #[cfg(feature = "glyph")]
     {
-        let (options, preserve) = server.state.get_formatter_context();
         let path = uri.path();
+        let formatter_path = uri
+            .to_file_path()
+            .unwrap_or_else(|_| std::path::PathBuf::from(path));
+        let (options, preserve) = server.state.get_formatter_context_for_path(&formatter_path);
         Ok(super::super::format::format_range_with_template_whitespace(
             &_content,
             path,
@@ -97,9 +103,12 @@ pub(super) async fn on_type_formatting(
     };
     #[cfg(feature = "glyph")]
     {
-        let (options, preserve) = server.state.get_formatter_context();
         let position = params.text_document_position.position;
         let path = uri.path();
+        let formatter_path = uri
+            .to_file_path()
+            .unwrap_or_else(|_| std::path::PathBuf::from(path));
+        let (options, preserve) = server.state.get_formatter_context_for_path(&formatter_path);
         Ok(
             super::super::format::format_on_type_with_template_whitespace(
                 &_content,

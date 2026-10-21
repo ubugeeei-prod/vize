@@ -15,7 +15,7 @@ import { renderNativeAcceptanceMarkdown } from "../differential/acceptance-rates
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
-void test("shared linter corpus retains all 59 complete actual public observations from source-built Rust", (t) => {
+void test("shared linter corpus retains all 65 complete actual public observations from source-built Rust", (t) => {
   const evidenceDir = path.resolve(
     root,
     process.env.VIZE_LINTER_API_EVIDENCE_DIR ?? "target/differential/linter-api",
@@ -40,11 +40,11 @@ void test("shared linter corpus retains all 59 complete actual public observatio
   assert.deepEqual(
     report.summary,
     {
-      plannedCases: 59,
-      legacyMatches: 59,
+      plannedCases: 65,
+      legacyMatches: 65,
       legacyFailures: 0,
       baselineDrift: 0,
-      nativeUnsupported: 49,
+      nativeUnsupported: 55,
       nativeFailures: 0,
       nativeHandled: 10,
       nativeEquivalent: 10,
@@ -65,10 +65,10 @@ void test("shared linter corpus retains all 59 complete actual public observatio
   if (process.env.GITHUB_STEP_SUMMARY)
     fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${markdown}\n`);
   assert.deepEqual(acceptance.total, {
-    planned: 59,
+    planned: 65,
     nativeHandled: 10,
     nativeEquivalent: 10,
-    unsupported: 49,
+    unsupported: 55,
     legacyBacked: 0,
     unverified: 0,
   });

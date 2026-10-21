@@ -1,4 +1,6 @@
-use tower_lsp::lsp_types::{TextDocumentContentChangeEvent, Url};
+use tower_lsp::lsp_types::{
+    DocumentChanges, OneOf, Position, Range, TextDocumentContentChangeEvent, Url,
+};
 use vize_l0::{Allocator, SourceRoot, Span};
 use vize_l1::edit::{EditError, EditSet, VersionedSource};
 use vize_l1::embed::{EmbedSource, prepare_attribute_value};
@@ -143,4 +145,95 @@ fn genuine_decoded_embed_projects_to_the_same_retained_authored_root() {
         "xxokyy"
     );
     assert_eq!(snapshot.source(), "xx&fjlig;yy");
+}
+
+#[test]
+fn checked_edits_publish_one_versioned_utf16_workspace_change() {
+    let documents = DocumentStore::new();
+    let uri = open(
+        &documents,
+        "file:///workspace-edit.vue",
+        "<div>\r\n  😀alpha\r\n</div>",
+    )
+    .unwrap();
+    let snapshot = SourceSnapshotCache::default()
+        .capture(&documents, &uri)
+        .unwrap();
+    let frame = snapshot.versioned_source().unwrap();
+    let edits = [
+        frame.edit(Span::new(9, 13), "β").unwrap(),
+        frame.edit(Span::new(18, 18), "!").unwrap(),
+    ];
+    let set = EditSet::new(frame, &edits).unwrap();
+
+    let workspace = snapshot.workspace_edit(&documents, set).unwrap();
+    assert!(workspace.changes.is_none());
+    assert!(workspace.change_annotations.is_none());
+    let Some(DocumentChanges::Edits(changes)) = workspace.document_changes else {
+        panic!("one versioned text document change expected");
+    };
+    assert_eq!(changes.len(), 1);
+    let change = &changes[0];
+    assert_eq!(change.text_document.uri, uri);
+    assert_eq!(change.text_document.version, Some(1));
+    let actual: Vec<_> = change
+        .edits
+        .iter()
+        .map(|edit| match edit {
+            OneOf::Left(edit) => (edit.range, edit.new_text.as_str()),
+            OneOf::Right(_) => panic!("checked native edits are never annotated implicitly"),
+        })
+        .collect();
+    assert_eq!(
+        actual,
+        vec![
+            (Range::new(Position::new(1, 2), Position::new(1, 4)), "β"),
+            (Range::new(Position::new(1, 9), Position::new(1, 9)), "!"),
+        ]
+    );
+    assert_eq!(
+        documents.text(&uri).unwrap(),
+        "<div>\r\n  😀alpha\r\n</div>"
+    );
+}
+
+#[test]
+fn workspace_edit_refuses_foreign_stale_and_reopened_snapshots_before_emission() {
+    let documents = DocumentStore::new();
+    let first_uri = open(&documents, "file:///workspace-first.vue", "<div/>").unwrap();
+    let second_uri = open(&documents, "file:///workspace-second.vue", "<div/>").unwrap();
+    let cache = SourceSnapshotCache::default();
+    let first = cache.capture(&documents, &first_uri).unwrap();
+    let second = cache.capture(&documents, &second_uri).unwrap();
+    let foreign = second.versioned_source().unwrap();
+    let foreign_edits = [foreign.edit(Span::new(1, 4), "span").unwrap()];
+    let foreign_set = EditSet::new(foreign, &foreign_edits).unwrap();
+    assert_eq!(
+        first.workspace_edit(&documents, foreign_set),
+        Err(SourceEditRefusal::Edit(EditError::SnapshotMismatch))
+    );
+
+    let frame = first.versioned_source().unwrap();
+    let edits = [frame.edit(Span::new(1, 4), "span").unwrap()];
+    let set = EditSet::new(frame, &edits).unwrap();
+    assert!(documents.apply_changes(
+        &first_uri,
+        vec![TextDocumentContentChangeEvent {
+            range: None,
+            range_length: None,
+            text: "<div/>".into(),
+        }],
+        2,
+    ));
+    assert_eq!(
+        first.workspace_edit(&documents, set),
+        Err(SourceEditRefusal::Host(SnapshotRefusal::Superseded))
+    );
+
+    documents.close(&first_uri);
+    documents.open(first_uri, "<div/>".into(), 1, "vue".into());
+    assert_eq!(
+        first.workspace_edit(&documents, set),
+        Err(SourceEditRefusal::Host(SnapshotRefusal::Superseded))
+    );
 }
