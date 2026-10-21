@@ -27,12 +27,30 @@ fn static_root_props_keep_text_patch_flags() {
             errors.iter().all(|error| error.is_compatibility_notice()),
             "{name}: {errors:?}",
         );
-        assert_eq!(
-            output.code.matches("1 /* TEXT */").count(),
-            1,
-            "{name}: dynamic text requires the TEXT patch flag:\n{}",
-            output.code,
-        );
+        if name == "scoped-slot-closure" {
+            assert_eq!(
+                output.code.matches("_: 2 /* DYNAMIC */").count(),
+                1,
+                "{name}: captured slot parameters require a dynamic slot object:\n{}",
+                output.code,
+            );
+            assert_eq!(
+                output
+                    .code
+                    .matches("1032 /* PROPS, DYNAMIC_SLOTS */")
+                    .count(),
+                1,
+                "{name}: captured slot parameters require a DYNAMIC_SLOTS vnode:\n{}",
+                output.code,
+            );
+        } else {
+            assert_eq!(
+                output.code.matches("1 /* TEXT */").count(),
+                1,
+                "{name}: dynamic text requires the TEXT patch flag:\n{}",
+                output.code,
+            );
+        }
         capture.push(serde_json::json!({
             "name": name,
             "template": source,
@@ -40,8 +58,43 @@ fn static_root_props_keep_text_patch_flags() {
         }));
     }
 
-    assert_eq!(capture.len(), 2);
+    assert_eq!(capture.len(), 3);
     if let Some(path) = std::env::var_os("VIZE_RUNTIME_PATCH_FLAGS_CAPTURE") {
         std::fs::write(path, serde_json::to_vec_pretty(&capture).unwrap()).unwrap();
+    }
+}
+
+#[test]
+fn scoped_slot_detection_keeps_uncaptured_and_shadowed_slots_stable() {
+    for (name, source) in [
+        (
+            "uncaptured",
+            r#"<MyList><template #default="{ item }"><MyChip tone="red">fixed</MyChip></template></MyList>"#,
+        ),
+        (
+            "shadowed-arrow",
+            r#"<MyList><template #default="{ item }"><MyChip>{{ list.map(item => item.name).join(',') }}</MyChip></template></MyList>"#,
+        ),
+    ] {
+        let allocator = Allocator::new();
+        let (_, errors, output) = compile_template_with_options(
+            &allocator,
+            source,
+            DomCompilerOptions {
+                mode: CodegenMode::Module,
+                prefix_identifiers: true,
+                ..Default::default()
+            },
+        );
+        assert!(
+            errors.iter().all(|error| error.is_compatibility_notice()),
+            "{name}: {errors:?}",
+        );
+        assert_eq!(
+            output.code.matches("DYNAMIC_SLOTS").count(),
+            0,
+            "{name}: a slot that does not capture the outer parameter stays stable:\n{}",
+            output.code,
+        );
     }
 }
