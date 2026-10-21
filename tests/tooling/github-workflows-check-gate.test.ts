@@ -352,7 +352,7 @@ test("full JS qualification retains independent native builds and strictly gates
   }
 });
 test("slow suites use schedules or explicit dispatch without starting on PRs", () => {
-  const pushOrDispatch = ["davinci-html-content-model.yml", "davinci-incremental.yml"];
+  const pushOrDispatch = ["level-html-content-model.yml", "davinci-incremental.yml"];
   const scheduledOrDispatch = [
     "benchmark.yml",
     "check-bench.yml",
