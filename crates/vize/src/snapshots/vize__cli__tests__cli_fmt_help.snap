@@ -68,6 +68,15 @@ Options:
 
           [possible values: true, false]
 
+      --end-of-line <END_OF_LINE>
+          Choose the line ending written by the formatter
+
+          Possible values:
+          - lf:   Line feed
+          - crlf: Carriage return followed by line feed
+          - cr:   Carriage return
+          - auto: Preserve the first line ending found in the source
+
       --print-width <PRINT_WIDTH>
           Print width (line length) for formatting
 
