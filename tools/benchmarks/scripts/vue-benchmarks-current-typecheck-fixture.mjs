@@ -9,7 +9,7 @@ import {
   statSync,
   writeFileSync,
 } from "node:fs";
-import { dirname, isAbsolute, join, relative, resolve } from "node:path";
+import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { fileEvidence, sha256 } from "./vue-benchmarks-current-typecheck-capture.mjs";
@@ -22,11 +22,15 @@ export function git(directory, ...args) {
   return execFileSync("git", args, { cwd: directory, encoding: "utf8" }).trimEnd();
 }
 
+function escapesRoot(relativePath) {
+  return relativePath === ".." || relativePath.startsWith(`..${sep}`) || isAbsolute(relativePath);
+}
+
 export function assertOutside(root, protectedRoot) {
   const rel = relative(resolve(protectedRoot), resolve(root));
-  assert.ok(rel.startsWith("..") || isAbsolute(rel), "work output overlaps read-only fixture");
+  assert.ok(escapesRoot(rel), "work output overlaps read-only fixture");
   const inverse = relative(resolve(root), resolve(protectedRoot));
-  assert.ok(inverse.startsWith("..") || isAbsolute(inverse), "work output contains fixture");
+  assert.ok(escapesRoot(inverse), "work output contains fixture");
 }
 
 export function assertPristine(upstream) {
@@ -66,10 +70,7 @@ export function workspaceInventory(root, allowSymlinks = false) {
       else if (allowSymlinks && entry.isSymbolicLink()) {
         const target = realpathSync(absolute);
         const rel = relative(root, target);
-        assert.ok(
-          !rel.startsWith("..") && !isAbsolute(rel),
-          "provider link escapes pinned installation",
-        );
+        assert.ok(!escapesRoot(rel), "provider link escapes pinned installation");
         assert.ok(
           statSync(target).isFile(),
           "provider directory link requires an explicit closure audit",

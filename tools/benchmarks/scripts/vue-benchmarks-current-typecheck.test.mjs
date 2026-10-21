@@ -106,6 +106,7 @@ await test("error evidence traverses causes/cycles and distinct symbols without 
 
 await test("output containment guard rejects fixture ancestors and descendants without prefix confusion", () => {
   assert.throws(() => assertOutside("/tmp/fixture/work", "/tmp/fixture"));
+  assert.throws(() => assertOutside("/tmp/fixture/..cache", "/tmp/fixture"));
   assert.throws(() => assertOutside("/tmp/fixture", "/tmp/fixture"));
   assert.throws(() => assertOutside("/tmp", "/tmp/fixture"));
   assert.doesNotThrow(() => assertOutside("/tmp/fixture-other", "/tmp/fixture"));
