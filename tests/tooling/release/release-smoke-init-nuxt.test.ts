@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { test } from "node:test";
 
-import { canRunFreshProjectShape } from "../../../tools/support/compat/npm/smoke-release-init-fresh.mjs";
+import {
+  canRunFreshProjectShape,
+  writePostBootstrapFiles,
+} from "../../../tools/support/compat/npm/smoke-release-init-fresh.mjs";
 import { PACKAGE_MANAGERS } from "../../../tools/support/compat/npm/smoke-release-init-managers.mjs";
 import { NUXT_VUE_TS_SHAPE } from "../../../tools/support/compat/npm/smoke-release-init-nuxt-shape.mjs";
 import { expectedInitOutput } from "../../../tools/support/compat/npm/smoke-release-init-project.mjs";
@@ -108,6 +114,22 @@ test("the Nuxt consumer owns a complete current project and diagnostic triple", 
     "  oxlint config:   none",
   ]);
   assert.deepEqual(shape.bootstrappedDetection(manager), detection.slice(1));
+  assert.deepEqual(shape.postBootstrapFiles, {
+    "oxlint.config.mts": "export default {};\n",
+  });
+});
+
+test("the packed Nuxt fixture deterministically owns the unsupported oxlint config", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-nuxt-oxlint-"));
+  try {
+    assert.deepEqual(writePostBootstrapFiles(root, shape), shape.postBootstrapFiles);
+    assert.equal(
+      fs.readFileSync(path.join(root, "oxlint.config.mts"), "utf8"),
+      "export default {};\n",
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });
 
 test("the Nuxt init contract pins the complete dry, apply, and idempotent plans", () => {

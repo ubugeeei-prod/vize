@@ -34,7 +34,8 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
       data.initializationOptions ?? {
         editor: true,
         lint: data.method === "textDocument/codeAction",
-        typecheck: data.initializationOptions?.typecheck === true,
+        // This fallback runs only when the fixture omits initialization options.
+        typecheck: false,
         ...(data.method === "textDocument/onTypeFormatting" ? { formatting: true } : {}),
         ...(data.method === "textDocument/codeAction" ? { codeActions: true } : {}),
       },

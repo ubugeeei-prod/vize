@@ -175,6 +175,13 @@ export interface VirtualTsVisitorHostPlugin {
   /** Host-only serialized boundary consumed by `typeCheckWithVirtualTsVisitors`. */
   readonly run: (eventJson: string) => string;
 }
+export interface DevtoolsTraceVisitorHostPlugin {
+  readonly name: string;
+  readonly version: string;
+  readonly fingerprint: string;
+  /** Host-only serialized boundary consumed by `createDevtoolsTraceRecorder`. */
+  readonly run: (deliveryJson: string) => string;
+}
 
 /** Define an immutable descriptor. This does not register a runtime hook. */
 export declare function defineVisitorPlugin<const C extends readonly VisitorCapability[]>(
@@ -197,3 +204,10 @@ export declare function runVisitorFixture<
 export declare function createVirtualTsVisitorHost(
   plugin: VisitorPlugin<readonly ["virtual-ts"]>,
 ): VirtualTsVisitorHostPlugin;
+/**
+ * Negotiate a devtools-trace-only descriptor and adapt it to the opt-in
+ * `@vizejs/devtools` recorder boundary. Mixed-capability descriptors fail closed.
+ */
+export declare function createDevtoolsTraceVisitorHost(
+  plugin: VisitorPlugin<readonly ["devtools-trace"]>,
+): DevtoolsTraceVisitorHostPlugin;

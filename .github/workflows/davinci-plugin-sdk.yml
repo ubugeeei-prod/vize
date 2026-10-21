@@ -5,6 +5,7 @@ on:
     branches: [main, davinci]
     paths:
       - "npm/plugin-sdk/**"
+      - "npm/devtools/**"
       - "crates/vize_vitrine/**"
       - "crates/vize_croquis/**"
       - "tests/tooling/davinci-plugin-*.test.ts"
@@ -14,6 +15,7 @@ on:
     branches: [main, davinci]
     paths:
       - "npm/plugin-sdk/**"
+      - "npm/devtools/**"
       - "crates/vize_vitrine/**"
       - "crates/vize_croquis/**"
       - "tests/tooling/davinci-plugin-*.test.ts"

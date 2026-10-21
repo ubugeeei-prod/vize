@@ -25,5 +25,20 @@ trace.record({
 const snapshot = trace.snapshot();
 ```
 
+Visitor-style JavaScript observers are an explicit opt-in through
+`@vizejs/plugin-sdk/visitor`:
+
+```ts
+import { createDevtoolsTraceVisitorHost } from "@vizejs/plugin-sdk/visitor";
+
+const trace = createDevtoolsTraceRecorder({
+  sessionId: "request-1",
+  visitorHosts: [createDevtoolsTraceVisitorHost(traceObserver)],
+});
+```
+
+Omitting `visitorHosts` keeps the recorder independent from the plugin SDK. A
+disabled recorder never invokes configured hosts.
+
 The optional `@vizejs/devtools/panel` entry exports a `.vue` panel component for rendering the
 snapshot in host applications.

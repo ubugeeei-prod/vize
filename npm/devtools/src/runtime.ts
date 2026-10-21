@@ -13,12 +13,15 @@ import type {
   DevtoolsSourceSpecifier,
   DevtoolsSuspenseEvent,
   DevtoolsSuspenseNode,
+  DevtoolsTraceVisitorHost,
   SerializedDevtoolsEvent,
 } from "./types.ts";
 
 const DEVTOOLS_ERROR = {
   invalidPanel: "VIZE_DEVTOOLS_PANEL_NOT_VUE",
   invalidSource: "VIZE_DEVTOOLS_SOURCE_NOT_VUE",
+  invalidVisitorHost: "VIZE_DEVTOOLS_INVALID_VISITOR_HOST",
+  invalidVisitorResult: "VIZE_DEVTOOLS_INVALID_VISITOR_RESULT",
 } as const;
 
 /** Create a request-local devtools recorder with no module-global event state. */
@@ -29,6 +32,7 @@ export function createDevtoolsTraceRecorder(
   const maxEvents = options.maxEvents ?? 2_000;
   const now = options.now ?? Date.now;
   const sessionId = options.sessionId ?? options.snapshot?.sessionId ?? "vize-devtools";
+  const visitorHosts = validateVisitorHosts(options.visitorHosts);
   let sequence = options.snapshot?.events.at(-1)?.sequence ?? 0;
   let events = [...(options.snapshot?.events ?? [])];
 
@@ -36,8 +40,14 @@ export function createDevtoolsTraceRecorder(
     record(event) {
       validateEventSource(event);
       if (!enabled) return event;
-      sequence += 1;
-      events.push({ ...event, sequence, timestamp: event.timestamp ?? now() });
+      const recorded = {
+        ...event,
+        sequence: sequence + 1,
+        timestamp: event.timestamp ?? now(),
+      } as SerializedDevtoolsEvent;
+      deliverToVisitors(visitorHosts, sessionId, recorded);
+      sequence = recorded.sequence;
+      events.push(recorded);
       if (events.length > maxEvents) events = events.slice(events.length - maxEvents);
       return event;
     },
@@ -59,6 +69,57 @@ export function createDevtoolsTraceRecorder(
       };
     },
   };
+}
+
+function validateVisitorHosts(
+  value: readonly DevtoolsTraceVisitorHost[] | undefined,
+): readonly DevtoolsTraceVisitorHost[] | undefined {
+  if (value === undefined) return undefined;
+  if (!Array.isArray(value)) {
+    throw new TypeError(`[${DEVTOOLS_ERROR.invalidVisitorHost}] visitorHosts must be an array`);
+  }
+  return Object.freeze(
+    value.map((host, index) => {
+      if (
+        host === null ||
+        typeof host !== "object" ||
+        typeof host.name !== "string" ||
+        host.name.trim() === "" ||
+        typeof host.version !== "string" ||
+        host.version.trim() === "" ||
+        typeof host.fingerprint !== "string" ||
+        host.fingerprint.trim() === "" ||
+        typeof host.run !== "function"
+      ) {
+        throw new TypeError(
+          `[${DEVTOOLS_ERROR.invalidVisitorHost}] visitorHosts[${index}] must expose non-empty name, version, fingerprint and run`,
+        );
+      }
+      return Object.freeze({
+        name: host.name,
+        version: host.version,
+        fingerprint: host.fingerprint,
+        run: host.run,
+      });
+    }),
+  );
+}
+
+function deliverToVisitors(
+  hosts: readonly DevtoolsTraceVisitorHost[] | undefined,
+  sessionId: string,
+  event: SerializedDevtoolsEvent,
+): void {
+  if (hosts === undefined || hosts.length === 0) return;
+  const delivery = JSON.stringify({ schemaVersion: 1, sessionId, event });
+  for (const host of hosts) {
+    const result = host.run(delivery);
+    if (result !== "") {
+      throw new TypeError(
+        `[${DEVTOOLS_ERROR.invalidVisitorResult}] ${host.name} observers must return undefined`,
+      );
+    }
+  }
 }
 
 /** Return a serializable trace snapshot for SSR payloads and trace artifacts. */

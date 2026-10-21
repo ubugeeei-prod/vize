@@ -1,4 +1,5 @@
 file	spelling
+davinci/vize_l1_to_l2/benches/fixtures/helper-rich-large.vue	@keyup.enter.stop.prevent
 davinci/vize_l1_to_l2/tests/davinci_dom_corpus.rs	@contextmenu.prevent
 davinci/vize_l1_to_l2/tests/davinci_dom_corpus_bindings.rs	@keyup.enter
 davinci/vize_l1_to_l2/tests/emit_create_slots/dynamic_entries.rs	@click.prevent

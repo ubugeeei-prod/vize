@@ -5,6 +5,7 @@ import { applyFixes } from "@vizejs/plugin-sdk/fixes";
 import { createSandboxRunner, SANDBOX_IMAGE } from "@vizejs/plugin-sdk/sandbox";
 import {
   VISITOR_API_VERSION,
+  createDevtoolsTraceVisitorHost,
   createVirtualTsVisitorHost,
   defineVisitorPlugin,
   negotiateVisitorPlugin,
@@ -170,5 +171,30 @@ assert.equal(
   ),
   "",
 );
+const traceEvents = [];
+const traceVisitor = defineVisitorPlugin({
+  apiVersion: VISITOR_API_VERSION,
+  name: "packed-trace-visitor",
+  version: "1",
+  capabilities: ["devtools-trace"],
+  cacheInputs: [],
+  visitors: {
+    "devtools-trace"(event) {
+      traceEvents.push(event.payload.events[0].name);
+    },
+  },
+});
+const traceHost = createDevtoolsTraceVisitorHost(traceVisitor);
+assert.equal(
+  traceHost.run(
+    JSON.stringify({
+      schemaVersion: 1,
+      sessionId: "packed",
+      event: { sequence: 1, timestamp: 2, kind: "render:start", source: "Button.vue" },
+    }),
+  ),
+  "",
+);
+assert.deepEqual(traceEvents, ["render:start"]);
 assert.ok(import.meta.resolve("@vizejs/plugin-sdk").includes("/node_modules/@vizejs/plugin-sdk/"));
 console.log("packed SDK runtime exports: 8 root, fixes, sandbox and visitor verified");
