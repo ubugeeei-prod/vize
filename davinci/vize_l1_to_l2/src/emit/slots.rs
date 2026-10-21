@@ -119,7 +119,7 @@ pub(super) fn has_dynamic_names(facts: &SlotFacts) -> bool {
 /// Such closures must be replaced when their parent slot is invoked again even
 /// when the component's ordinary props compare equal (#10169).
 pub(super) fn references_current_scope(cx: &EmitCx<'_>, children: &Region<'_>) -> bool {
-    cx.scope.has_slot_params() && region_references_scope(&cx.scope, children)
+    cx.scope.has_codegen_scope_params() && region_references_scope(&cx.scope, children)
 }
 
 fn region_references_scope(scope: &PrefixScope<'_>, region: &Region<'_>) -> bool {
@@ -221,34 +221,22 @@ fn dynamic_name_references_scope(scope: &PrefixScope<'_>, name: &DynamicName<'_>
 }
 
 fn expression_references_scope(scope: &PrefixScope<'_>, expression: ExprRef<'_>) -> bool {
-    if !scope
-        .slot_params()
-        .iter()
-        .any(|name| contains_identifier(expression.source(), name))
-    {
-        return false;
-    }
     let ExprRef::Js(expression) = expression else {
         // Opaque and foreign expressions cannot prove their binding graph. A
         // token-bounded hit is the safe answer: extra updates preserve output.
-        return true;
+        return contains_codegen_scope_identifier(scope, expression.source());
     };
     let mut visitor = ScopeReferenceVisitor::new(scope);
     visitor.visit_expression(expression.ast);
     visitor.found
 }
 
-fn contains_identifier(content: &str, name: &str) -> bool {
-    let bytes = content.as_bytes();
-    content.match_indices(name).any(|(start, _)| {
-        let end = start + name.len();
-        let boundary = |byte: u8| !byte.is_ascii_alphanumeric() && byte != b'_' && byte != b'$';
-        start
-            .checked_sub(1)
-            .and_then(|index| bytes.get(index))
-            .is_none_or(|byte| boundary(*byte))
-            && bytes.get(end).is_none_or(|byte| boundary(*byte))
-    })
+fn contains_codegen_scope_identifier(scope: &PrefixScope<'_>, content: &str) -> bool {
+    content
+        .split(|character: char| {
+            !character.is_ascii_alphanumeric() && character != '_' && character != '$'
+        })
+        .any(|name| !name.is_empty() && scope.is_codegen_scope_param(name))
 }
 
 struct ScopeReferenceVisitor<'s> {
@@ -306,7 +294,7 @@ impl<'s> ScopeReferenceVisitor<'s> {
 impl<'a> Visit<'a> for ScopeReferenceVisitor<'_> {
     fn visit_identifier_reference(&mut self, ident: &js::IdentifierReference<'a>) {
         let name = ident.name.as_str();
-        if !self.is_local(name) && self.scope.is_slot_param(name) {
+        if !self.is_local(name) && self.scope.is_codegen_scope_param(name) {
             self.found = true;
         }
     }

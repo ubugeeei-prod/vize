@@ -104,6 +104,13 @@ fn a_nested_slot_that_captures_an_outer_slot_param_is_dynamic() {
 }
 
 #[test]
+fn a_named_nested_slot_that_captures_an_outer_slot_param_is_dynamic() {
+    assert_shipped_parity(
+        r#"<MyList><template #default="{ item }"><MyChip><template #title>{{ item.title }}</template></MyChip></template></MyList>"#,
+    );
+}
+
+#[test]
 fn an_uncaptured_nested_slot_stays_stable() {
     assert_shipped_parity(
         r#"<MyList :items="items"><template #default="{ item }"><MyChip tone="neutral">constant</MyChip></template></MyList>"#,
