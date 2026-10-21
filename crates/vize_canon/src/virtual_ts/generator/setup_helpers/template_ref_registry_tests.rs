@@ -3,7 +3,10 @@ use vize_l0::{Allocator, CompactString, FxHashSet};
 use vize_relief::BindingType;
 
 use super::super::super::template_record::TemplateRecord;
-use crate::virtual_ts::types::{VirtualTsCheckOptions, VirtualTsOptions};
+use crate::virtual_ts::{
+    VirtualTsGenerationOptions, generate_virtual_ts_with_offsets_and_checks,
+    types::{VirtualTsCheckOptions, VirtualTsOptions},
+};
 
 fn registry_of(template: &str) -> Option<vize_l0::String> {
     registry_for("const box = useTemplateRef('box')", template).map(|registry| registry.body)
@@ -375,6 +378,26 @@ const root = useTemplateRef("root");
 
     assert_eq!(
         registry.body.as_str(),
-        r#" "root": __VizeTemplateComponentRef<typeof __vize_dynamic_is_0>; "#
+        r#" "root": __VizeTemplateComponentRef<typeof Child | "div">; "#
+    );
+
+    let code = generate_virtual_ts_with_offsets_and_checks(
+        &summary,
+        Some(script),
+        Some(&root),
+        0,
+        0,
+        &VirtualTsOptions::default(),
+        VirtualTsGenerationOptions::default(),
+    )
+    .code;
+    let registry_line = r#"  type __VizeTemplateRefs = { "root": __VizeTemplateComponentRef<typeof Child | "div">; };"#;
+    let alias_line = "  const __vize_dynamic_is_0 = (condition ? Child : 'div');";
+    assert_eq!(
+        code.lines()
+            .filter(|line| *line == registry_line || *line == alias_line)
+            .collect::<Vec<_>>(),
+        vec![registry_line, alias_line],
+        "the setup-scope registry must not reference the template-local alias:\n{code}",
     );
 }

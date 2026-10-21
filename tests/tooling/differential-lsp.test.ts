@@ -104,6 +104,51 @@ void test("folding history retains the unopened-document null response without i
   ]);
 });
 
+void test("inactive-import history retains the complete ordered document links on raw wire", () => {
+  const fixture = loaded.cases.find(
+    (candidate) => candidate.id === "lsp/fix-history/inactive-imports",
+  );
+  assert(fixture);
+  assert.equal(fixture.data.method, "textDocument/documentLink");
+  assert.equal(fixture.entry, "Host.vue");
+  assert.notEqual(fixture.data.openDocument, false);
+  assert.deepEqual(
+    fixture.files.map((file) => file.runtimePath),
+    ["Host.vue", "Multi.vue", "Real.vue", "Exported.vue"],
+  );
+  assert.deepEqual(fixture.requests, [
+    {
+      params: {},
+      result: [
+        {
+          range: {
+            start: { line: 6, character: 7 },
+            end: { line: 6, character: 20 },
+          },
+          target: "${workspace}/Multi.vue",
+        },
+        {
+          range: {
+            start: { line: 7, character: 17 },
+            end: { line: 7, character: 29 },
+          },
+          target: "${workspace}/Real.vue",
+        },
+        {
+          range: {
+            start: { line: 10, character: 7 },
+            end: { line: 10, character: 23 },
+          },
+          target: "${workspace}/Exported.vue",
+        },
+      ],
+    },
+  ]);
+  assert.deepEqual(inspectLspObservation(fixture, referenceObservation(fixture)), [
+    { requestId: 2, state: "equal" },
+  ]);
+});
+
 void test("LSP dialect coverage rejects labels that drift from pinned authored sources", () => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-lsp-dialect-"));
   try {

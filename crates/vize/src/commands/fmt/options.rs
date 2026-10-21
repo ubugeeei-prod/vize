@@ -53,6 +53,9 @@ pub(super) fn build_format_options(
     if let Some(v) = args.trailing_comma {
         opts.trailing_comma = v.into();
     }
+    if let Some(v) = args.arrow_parens {
+        opts.arrow_parens = v.into();
+    }
     if let Some(v) = args.sort_attributes {
         opts.sort_attributes = v;
     }

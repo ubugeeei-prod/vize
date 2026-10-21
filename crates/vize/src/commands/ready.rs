@@ -83,6 +83,7 @@ pub fn run(args: ReadyArgs) {
             jsx_single_quote: None,
             quote_props: None,
             trailing_comma: None,
+            arrow_parens: None,
             print_width: None,
             tab_width: None,
             use_tabs: None,

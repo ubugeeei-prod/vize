@@ -115,6 +115,7 @@ export default defineConfig({}).withVue({
 | `--use-tabs`                       | スペースの代わりにタブでインデントします。                      |
 | `--single-quote`                   | ダブルクォートの代わりにシングルクォートを使います。            |
 | `--trailing-comma`                 | 末尾のカンマを `all`、`es5`、`none` から選びます。               |
+| `--arrow-parens`                   | 1 引数のアロー関数の括弧を `always`、`avoid` から選びます。      |
 | `--no-semi`                        | 文末のセミコロンを省略します。                                  |
 | `--sort-attributes`                | テンプレートとブロックタグの属性を並べ替えます。                |
 | `--single-attribute-per-line`      | 属性を 1 行に 1 つずつ書きます。                                |
@@ -176,6 +177,10 @@ Node の native `formatSfc` API でも、Prettier 移行用の 5 つの真偽値
 末尾のカンマのポリシーも同じように共有されます。
 `--trailing-comma <all|es5|none>` は、型付きの Node・設定オプション
 `trailingComma` に対応します。CLI と Node の明示値は、選択したプリセットより優先されます。
+
+アロー関数の引数の括弧も同じように公開されます。
+`--arrow-parens <always|avoid>` は、型付きの Node・設定オプション
+`arrowParens` に対応し、明示値はプリセットより優先されます。
 
 ## コンパクトなアプリケーションコード
 

@@ -68,6 +68,10 @@ pub struct FmtArgs {
     #[arg(long, value_enum)]
     pub trailing_comma: Option<FmtTrailingComma>,
 
+    /// Change parentheses around a sole arrow function parameter
+    #[arg(long, value_enum)]
+    pub arrow_parens: Option<FmtArrowParens>,
+
     /// Print width (line length) for formatting
     #[arg(long)]
     pub print_width: Option<u32>,
@@ -148,6 +152,15 @@ pub enum FmtTrailingComma {
     None,
 }
 
+/// Arrow function parameter parentheses modes selectable from the CLI.
+#[derive(Debug, Clone, Copy, ValueEnum)]
+pub enum FmtArrowParens {
+    /// Always include parentheses around a sole parameter
+    Always,
+    /// Omit parentheses when a sole parameter permits it
+    Avoid,
+}
+
 impl From<FmtQuoteProps> for vize_glyph::QuoteProps {
     fn from(value: FmtQuoteProps) -> Self {
         match value {
@@ -164,6 +177,15 @@ impl From<FmtTrailingComma> for vize_glyph::TrailingComma {
             FmtTrailingComma::All => Self::All,
             FmtTrailingComma::Es5 => Self::Es5,
             FmtTrailingComma::None => Self::None,
+        }
+    }
+}
+
+impl From<FmtArrowParens> for vize_glyph::ArrowParens {
+    fn from(value: FmtArrowParens) -> Self {
+        match value {
+            FmtArrowParens::Always => Self::Always,
+            FmtArrowParens::Avoid => Self::Avoid,
         }
     }
 }
