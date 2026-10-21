@@ -17,7 +17,7 @@ mod policy;
 
 #[path = "import_rewriter_collect.rs"]
 mod collect;
-use collect::{ModuleSpecifierCollector, collect_specifier_occurrences};
+use collect::{ModuleSpecifierCollector, collect_specifier_occurrences, collect_specifier_spans};
 
 #[path = "import_rewriter_facts.rs"]
 mod facts;
@@ -214,8 +214,22 @@ impl ImportRewriter {
         F: Fn(&str, crate::PackageResolutionMode) -> Option<String>,
     {
         let allocator = Allocator::default();
-        let parser = Parser::new(&allocator, source, source_type);
-        let result = parser.parse();
+        let result = vize_croquis::script_parser::parse_program_for_analysis(
+            &allocator,
+            source,
+            source_type,
+        );
+
+        if result.panicked {
+            return (
+                self.rewrite_occurrences(
+                    source,
+                    &collect_specifier_spans(source, source_type),
+                    rewrite_specifier,
+                ),
+                Vec::new(),
+            );
+        }
 
         self.rewrite_parsed(
             source,
@@ -345,14 +359,9 @@ impl ImportRewriter {
         source: &str,
         source_type: SourceType,
     ) -> Vec<String> {
-        let allocator = Allocator::default();
-        let parser = Parser::new(&allocator, source, source_type);
-        let result = parser.parse();
-        let mut collector = ModuleSpecifierCollector::new();
-        collector.visit_program(&result.program);
         let mut specifiers: Vec<String> = Vec::new();
         let mut seen = FxHashSet::default();
-        for (_, _, path, _) in collector.specifiers {
+        for (_, _, path, _) in collect_specifier_spans(source, source_type) {
             if seen.insert(path.clone()) {
                 specifiers.push(path);
             }

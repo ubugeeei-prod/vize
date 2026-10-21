@@ -1,12 +1,13 @@
 //! Owned syntax facts shared only within one preparation invocation.
 
+#[cfg(test)]
 use oxc_allocator::Allocator;
-use oxc_ast_visit::Visit;
+#[cfg(test)]
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{FxHashMap, FxHashSet, String};
 
-use super::collect::ModuleSpecifierCollector;
+use super::collect::collect_specifier_spans;
 use crate::PackageResolutionMode;
 
 type SpanOccurrence = (u32, u32, String, PackageResolutionMode);
@@ -19,16 +20,12 @@ struct ModuleSpecifierFacts {
 
 impl ModuleSpecifierFacts {
     fn parse(source: &str, source_type: SourceType) -> Self {
-        let allocator = Allocator::default();
-        let parsed = Parser::new(&allocator, source, source_type).parse();
-        let mut collector = ModuleSpecifierCollector::new();
-        // Match uncached collectors, including their partial-AST behavior.
-        collector.visit_program(&parsed.program);
+        let spans = collect_specifier_spans(source, source_type);
         let mut occurrences = Vec::new();
         let mut specifiers = Vec::new();
         let mut seen_occurrences = FxHashSet::default();
         let mut seen_specifiers = FxHashSet::default();
-        for (_, _, specifier, mode) in &collector.specifiers {
+        for (_, _, specifier, mode) in &spans {
             if seen_occurrences.insert((specifier.clone(), *mode)) {
                 occurrences.push((specifier.clone(), *mode));
             }
@@ -37,7 +34,7 @@ impl ModuleSpecifierFacts {
             }
         }
         Self {
-            spans: collector.specifiers,
+            spans,
             occurrences,
             specifiers,
         }
@@ -413,5 +410,63 @@ const sentinel = label;
         assert_eq!(uncached.stats().parses, 4);
         assert_eq!(uncached.stats().hits, 0);
         assert_eq!(uncached.stats().retained_entries, 0);
+    }
+
+    #[test]
+    fn incomplete_edit_recovery_matches_cached_and_uncached_import_facts() {
+        for incomplete in ["items.value.", "pick("] {
+            let source = format!(
+                r#"import Button from './MyButton.vue';
+import type {{ Item }} from './types';
+const items = {{}} as {{ value: Item[] }};
+{incomplete}
+const selected = null;
+"#
+            );
+            let source_type = SourceType::ts();
+            let rewriter = ImportRewriter::new();
+            let mut cache = ModuleSpecifierFactsCache::default();
+
+            assert_eq!(
+                cache.collect_all_specifiers(&source, source_type),
+                vec![String::from("./MyButton.vue"), "./types".into()],
+                "{incomplete}",
+            );
+            assert_eq!(
+                cache.collect_occurrences(&source, source_type),
+                rewriter.collect_all_specifier_occurrences(&source, source_type),
+                "{incomplete}",
+            );
+
+            let resolver = |path: &str, _| path.ends_with(".vue").then(|| path.to_owned() + ".ts");
+            let cached = rewriter.rewrite_with_alias_resolver_and_missing_vue_policy_cached(
+                &source,
+                source_type,
+                None,
+                &resolver,
+                true,
+                &mut cache,
+            );
+            let uncached = rewriter.rewrite_with_alias_resolver_and_missing_vue_policy(
+                &source,
+                source_type,
+                None,
+                &resolver,
+                true,
+            );
+            assert_rewrite_equal(&cached, &uncached);
+            assert_eq!(
+                cached.code,
+                format!(
+                    r#"import Button from './MyButton.vue.ts';
+import type {{ Item }} from './types';
+const items = {{}} as {{ value: Item[] }};
+{incomplete}
+const selected = null;
+"#
+                ),
+                "{incomplete}",
+            );
+        }
     }
 }

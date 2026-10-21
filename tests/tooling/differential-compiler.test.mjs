@@ -147,16 +147,17 @@ void test("compiler fixture pins a real full-module reference without native cre
       "compiler/dialect/vue0-11-repeat",
       "compiler/dialect/quirks-adjacent-attributes",
       "compiler/dialect/quirks-void-close",
+      "compiler/sfc/incomplete-script-setup-recovery-10200",
     ],
   );
   const report = syntheticReport();
   assert.deepEqual(validateCompilerReport(loaded, report, build), report.summary);
   const acceptance = summarizeNativeAcceptance(loaded, report, { sourceRevision });
   assert.deepEqual(acceptance.total, {
-    planned: 21,
+    planned: 22,
     nativeHandled: 0,
     nativeEquivalent: 0,
-    unsupported: 21,
+    unsupported: 22,
     legacyBacked: 0,
     unverified: 0,
   });
@@ -176,7 +177,7 @@ void test("compiler fixture pins a real full-module reference without native cre
     legacyBacked: 0,
     unverified: 0,
   });
-  assert.equal(acceptance.dialectCoverage.unknown.planned, 17);
+  assert.equal(acceptance.dialectCoverage.unknown.planned, 18);
   assert.equal(
     loaded.cases.find((current) => current.id === "compiler/sfc/package-import-prop-type-9894")
       .comparison.scriptLang,

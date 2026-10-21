@@ -50,6 +50,22 @@ fn generated_to_authored_uses_half_open_rows_and_adds_the_base() {
 }
 
 #[test]
+fn zero_width_diagnostic_at_a_row_end_uses_the_preceding_authored_token() {
+    let mut mapping = two_rows();
+    assert_eq!(mapping.to_authored(110), None);
+    assert_eq!(
+        mapping.diagnostic_range_to_authored(110, 110),
+        Some((19, 20))
+    );
+
+    mapping.set_authored_base(50);
+    assert_eq!(
+        mapping.diagnostic_range_to_authored(110, 110),
+        Some((69, 70))
+    );
+}
+
+#[test]
 fn unequal_rows_clamp_to_the_last_byte_of_the_target_range() {
     let mut mapping = ProjectionMapping::new();
     mapping.push(VizeMapping::new(0..3, 10..20));

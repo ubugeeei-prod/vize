@@ -190,8 +190,7 @@ mod tests {
             crate::script_parser::parse_program_for_analysis(&allocator, source, SourceType::ts());
         assert!(!recovered.panicked);
         assert!(!recovered.diagnostics.is_empty());
-        assert_ne!(recovered.program.source_text, source);
-        assert_eq!(recovered.program.source_text.len(), source.len());
+        assert_eq!(recovered.program.source_text, source);
         for setup in [false, true] {
             assert_capture(source, setup, false);
         }

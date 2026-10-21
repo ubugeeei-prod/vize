@@ -1,0 +1,34 @@
+import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs, ssrRenderList as _ssrRenderList } from "@vue/server-renderer"
+
+
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(`<ul${_ssrRenderAttrs(_attrs)}>`)
+  _push(`<!--[-->`)
+  _ssrRenderList($setup.items, (item) => {
+    _push(`<li>${_ssrInterpolate(item.label)}</li>`)
+  })
+  _push(`<!--]-->`)
+  _push(`</ul>`)
+}
+import { ref } from 'vue'
+
+
+export default {
+  __name: 'Layout',
+  ssrRender: ssrRender,
+  setup(__props) {
+
+const items = ref<Item[]>([]);
+const selected = ref<Item | null>(null);
+pick
+(
+function pick(item: Item): void {
+  selected.value = item;
+}
+
+const __returned__ = { pick, selected, items }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+}

@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10200,
+  "regressionCommit": "4a555b0aae0a394fbe4cedc08092638975f06a2a",
+  "sourceRevision": "4a555b0aae0a394fbe4cedc08092638975f06a2a",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "relative-imports-before-incomplete-member",
+      "inputs": [
+        { "file": "tsconfig.json", "source": "tsconfig.json.txt" },
+        { "file": "src/App.vue", "source": "src/App.vue.txt" },
+        { "file": "src/MyButton.vue", "source": "src/MyButton.vue.txt" },
+        { "file": "src/types.ts", "source": "src/types.ts.txt" }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 7,
+          "column": 12,
+          "severity": 1,
+          "code": 1003,
+          "message": "Identifier expected."
+        }
+      ]
+    }
+  ]
+}

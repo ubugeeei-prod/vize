@@ -85,16 +85,41 @@ pub fn map_generated_offset_to_source(mapping: &VizeMapping, generated_offset: u
 
 /// Maps a generated diagnostic range into authored source offsets.
 ///
-/// Returns `None` when no mapping covers the start offset; the end offset is
-/// resolved through [`mapping_for_end_offset`] and never collapses below one
-/// authored byte.
+/// Returns `None` when no mapping covers the start offset. A zero-width
+/// missing-token caret exactly at a row end belongs to the preceding authored
+/// token. The end offset is resolved through [`mapping_for_end_offset`] and
+/// never collapses below one authored byte.
 pub fn map_generated_range_to_source(
     mappings: &[VizeMapping],
     start_offset: usize,
     end_offset: usize,
 ) -> Option<(usize, usize)> {
-    let start_mapping = mapping_for_generated_offset(mappings, start_offset)?;
-    let src_start = map_generated_offset_to_source(start_mapping, start_offset);
+    let start_mapping = mapping_for_generated_offset(mappings, start_offset).or_else(|| {
+        // TypeScript reports missing tokens as a zero-width caret after the
+        // last authored byte. Script-line mappings are half-open and exclude
+        // their generated newline, so that caret is exactly at the row end.
+        // Keep ordinary offset/navigation lookup half-open; only diagnostics
+        // may fall back to the narrowest row ending at the caret.
+        (start_offset == end_offset).then(|| {
+            mappings
+                .iter()
+                .filter(|mapping| {
+                    !mapping.gen_range.is_empty()
+                        && !mapping.src_range.is_empty()
+                        && mapping.gen_range.end == start_offset
+                })
+                .min_by_key(|mapping| mapping.gen_range.len())
+        })?
+    })?;
+    let at_row_end = start_offset == end_offset && start_offset == start_mapping.gen_range.end;
+    let src_start = if at_row_end {
+        // Diagnostic ranges intentionally cover at least one authored byte.
+        // Highlight the token immediately before the missing-token caret
+        // instead of escaping past the row (and possibly past EOF).
+        start_mapping.src_range.end.saturating_sub(1)
+    } else {
+        map_generated_offset_to_source(start_mapping, start_offset)
+    };
     let src_end = mapping_for_end_offset(mappings, start_mapping, end_offset)
         .map(|mapping| map_generated_offset_to_source(mapping, end_offset))
         .unwrap_or_else(|| {

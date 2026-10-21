@@ -880,6 +880,49 @@
           }
         ]
       }
+    },
+    {
+      "id": "compiler/sfc/incomplete-script-setup-recovery-10200",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "incomplete-script-setup-recovery-10200",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "9affa38f35f830eff82bff82d93b760e243b7ffe77e3731b969e3d502ca70a6c",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "incomplete-script-setup-recovery-10200/module.expected.txt",
+        "sha256": "5c01bfc0aef6ad28d3f436a212d9825b3a6fed1b28eaa2b8f3e83e47998458ab",
+        "source": "crates/vize_atelier_sfc/src/script.rs:parse_once_tests::incomplete_call_keeps_the_parse_once_program_and_later_bindings"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable; the parser recovery path is qualified by the legacy compiler and exact editor diagnostics."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "scriptLang": "ts",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
     }
   ],
   "runtimePacks": [

@@ -56,6 +56,7 @@ export const TYPECHECKER_TESTS = {
     "content_mapper_isolates_duplicate_class_and_style_attribute_probes",
   "dynamic-directive-expression-mapping-10182":
     "dynamic_directive_expressions_preserve_typed_slot_payloads",
+  "incomplete-script-setup-recovery-10200": "pins_incomplete_setup_import_corpus",
   "content-mapper-template-expression-syntax":
     "template_expression_syntax_preserves_complete_authored_diagnostics",
   "content-mapper-nuxt-emit-10195": "content_mapper_preserves_emit_with_nuxt_pattern_injections",
@@ -115,6 +116,7 @@ const sourceRevisions = {
   "component-listener-alias-scope-10112": "7cefe3a00e6184de1e121d39b0e153f08a428aa6",
   "content-mapper-duplicate-attributes-10184": "0038b601e41dccb6f037aa68c3fc0207ea635e3b",
   "dynamic-directive-expression-mapping-10182": "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
+  "incomplete-script-setup-recovery-10200": "4a555b0aae0a394fbe4cedc08092638975f06a2a",
   "content-mapper-template-expression-syntax": "a5ae4d313fa333c8bc7168d5da4acf3dc2bb8ee3",
   "content-mapper-nuxt-emit-10195": "369f01b50d8fe6e3b0996cc9a90eecf422dbdd3b",
   "content-mapper-const-enum-import": "506529117573a96880435dd6466cfd7cf81fdc92",
