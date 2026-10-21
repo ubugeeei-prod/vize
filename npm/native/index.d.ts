@@ -559,6 +559,16 @@ export interface FormatOptionsNapi {
   singleAttributePerLine?: boolean;
   maxAttributesPerLine?: number;
   normalizeDirectiveShorthands?: boolean;
+  /** Re-quote CSS, SCSS and Less strings with the singleQuote preference. */
+  normalizeCssQuotes?: boolean;
+  /** Normalize one-line static style attributes. */
+  normalizeInlineStyles?: boolean;
+  /** Parenthesize v-for aliases when more than one alias is present. */
+  normalizeVForParens?: boolean;
+  /** Close HTML void elements with `/>`. */
+  selfCloseVoidElements?: boolean;
+  /** Re-indent SCSS and Less blocks by nesting depth. */
+  reindentPreprocessorStyles?: boolean;
 }
 
 /** Format result for NAPI. */

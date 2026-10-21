@@ -163,6 +163,11 @@ export default defineConfig({}).withVue({
 | `reindentPreprocessorStyles`   | `false`          | SCSS と Less のブロックを入れ子の深さでインデントし直し、空行を整えます。                                                        |
 | `sortImports`                  | 無効             | スクリプトの import を並べ替えます。[import の並べ替え](./formatter-import-sorting.md)を参照してください。                       |
 
+Node の native `formatSfc` API でも、Prettier 移行用の 5 つの真偽値
+`normalizeCssQuotes`、`normalizeInlineStyles`、`normalizeVForParens`、
+`selfCloseVoidElements`、`reindentPreprocessorStyles` を同じ名前で指定できます。
+明示した値は `false` を含めて `preset` より優先されます。
+
 ## コンパクトなアプリケーションコード
 
 アプリケーションのテンプレートを密に保ちつつ、ブロックや属性を書いた順序を変えたくない場合は `compact` プリセットを使います。
