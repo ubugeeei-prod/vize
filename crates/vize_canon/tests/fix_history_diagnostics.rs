@@ -447,6 +447,10 @@ fn check_pack(
                 // pnpm workspace route oracle. This pinned corpus retains the
                 // private-brand sources independently of that filesystem
                 // lifecycle harness.
+                let direct = project_root.join("packages/a/node_modules/@demo/c");
+                std::fs::create_dir_all(direct.parent().expect("a direct link has a parent"))
+                    .expect("the direct link parent must be created");
+                link_vue(&project_root.join("packages/c"), &direct);
                 assert!(check("tsconfig.a.json").diagnostics.is_empty());
             } else {
                 // #10063 is a hard materialization error before diagnostics.
