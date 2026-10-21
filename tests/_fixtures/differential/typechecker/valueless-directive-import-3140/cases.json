@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3140,
+  "regressionCommit": "c3311a010ec5d5cea6669a2b84c4d02d272b1f45",
+  "sourceRevision": "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "imported-valueless-directive",
+      "inputs": [
+        { "file": "tsconfig.json", "source": "tsconfig.json.txt" },
+        { "file": "src/main.vue", "source": "main.vue.txt" },
+        { "file": "src/Focus.ts", "source": "Focus.ts.txt" }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

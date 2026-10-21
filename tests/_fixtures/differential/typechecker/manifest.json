@@ -3897,6 +3897,58 @@
       }
     },
     {
+      "id": "typechecker/valueless-directive-import-3140/imported-valueless-directive",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "valueless-directive-import-3140",
+      "case": "imported-valueless-directive",
+      "test": "valueless_directive_imports_preserve_upstream_diagnostic_parity",
+      "regressionCommit": "c3311a010ec5d5cea6669a2b84c4d02d272b1f45",
+      "sourceRevision": "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899",
+      "packReference": {
+        "path": "valueless-directive-import-3140/cases.json",
+        "sha256": "1229ed3702bae9eb87dc02d633b04995e5b615afb3e5ee2bf88cc28accd8dbaf"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "valueless-directive-import-3140/tsconfig.json.txt",
+          "sha256": "9aef69d6a243d6cbbd1814a8d635e64830f0caff3a204777243ea4e8e61a7e40"
+        },
+        {
+          "file": "src/main.vue",
+          "path": "valueless-directive-import-3140/main.vue.txt",
+          "sha256": "3ea5eb7f07cb620a0ddab864ebcd5c4f68ff3cc56ccc07276f10518aca73deed"
+        },
+        {
+          "file": "src/Focus.ts",
+          "path": "valueless-directive-import-3140/Focus.ts.txt",
+          "sha256": "f83f3c495e89c8592b64798c7cab18d1e6bf2bb38e776ad8102b14a4ea11d879"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/content-mapper-dynamic-template-ref-union-10251/conditional-component-and-native-targets",
       "state": "active",
       "targets": [
