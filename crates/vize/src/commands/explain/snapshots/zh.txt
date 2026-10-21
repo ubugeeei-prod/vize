@@ -1835,7 +1835,7 @@ script/component-options-name-casing · lint 规则
   }
 === script/custom-event-name-casing
 script/custom-event-name-casing · lint 规则
-强制触发的自定义事件名使用 camelCase
+强制触发的自定义事件名使用配置的格式
 
 精度层级: complete
 适用范围: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)

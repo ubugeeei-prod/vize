@@ -62,7 +62,7 @@ overrides:
   h3: "1.15.11"
   hono: "4.13.11"
   ip-address: "10.7.1"
-  launch-editor: "2.14.1"
+  launch-editor: "2.14.2"
   "nanoid@>=3.0.0 <3.3.17": "3.3.17"
   nanotar: "0.3.0"
   nitropack: "2.13.4"
@@ -87,7 +87,8 @@ overrides:
   tar: "7.5.21"
   undici: "8.10.2"
   "vite@>=7.0.0 <7.3.5": "7.3.5"
-  "vite@>=8.0.0 <8.0.16": "8.0.16"
+  "vite@>=8.0.0 <8.1.6": "8.1.6"
+  "vite@>=8.2.0 <8.2.4": "8.2.4"
   yaml: "2.9.0"
 
 catalogs:
@@ -202,7 +203,7 @@ catalogs:
 
   # External framework integrations and native build helpers.
   integrations:
-    "@modelcontextprotocol/sdk": "1.31.0"
+    "@modelcontextprotocol/sdk": "1.32.1"
     "@napi-rs/cli": "3.6.2"
     "@nuxt/kit": "4.5.2"
     "@ox-content/vite-plugin": "2.88.0"

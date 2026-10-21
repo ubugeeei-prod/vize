@@ -18,8 +18,8 @@ use super::{
         },
         props::generate_props,
         slots::{
-            generate_slot_outlet_name, generate_slot_outlet_props, generate_slots,
-            has_slot_children, has_slot_outlet_props, needs_dynamic_slots_patch,
+            generate_slot_outlet_fallback, generate_slot_outlet_name, generate_slot_outlet_props,
+            generate_slots, has_slot_children, has_slot_outlet_props, needs_dynamic_slots_patch,
         },
     },
     directives::{
@@ -104,18 +104,7 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 ctx.push(", {}, () => [");
             }
             ctx.indent();
-            let filtered: Vec<_> = el
-                .children
-                .iter()
-                .filter(|c| !is_directive_comment(c))
-                .collect();
-            for (i, child) in filtered.iter().enumerate() {
-                if i > 0 {
-                    ctx.push(",");
-                }
-                ctx.newline();
-                generate_node(ctx, child);
-            }
+            generate_slot_outlet_fallback(ctx, &el.children);
             ctx.deindent();
             ctx.newline();
             ctx.finish_slot_outlet("])", true, true);
@@ -456,18 +445,7 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 }
                 ctx.push(", () => [");
                 ctx.indent();
-                let filtered: Vec<_> = el
-                    .children
-                    .iter()
-                    .filter(|c| !is_directive_comment(c))
-                    .collect();
-                for (i, child) in filtered.iter().enumerate() {
-                    if i > 0 {
-                        ctx.push(",");
-                    }
-                    ctx.newline();
-                    generate_node(ctx, child);
-                }
+                generate_slot_outlet_fallback(ctx, &el.children);
                 ctx.deindent();
                 ctx.newline();
                 ctx.finish_slot_outlet("])", true, true);

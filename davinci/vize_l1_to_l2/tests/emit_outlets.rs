@@ -23,13 +23,32 @@ fn assembled(source: &str) -> String {
     })
 }
 
+fn assembled_pug(source: &str) -> (String, String) {
+    let allocator = Allocator::new();
+    let (tree, errors) = vize_l1::pug::parse_pug(&allocator, source);
+    let mut pug = vize_l1_to_l2::lower::pug::lower_pug(&allocator, &tree, &errors);
+    assert!(!pug.template.has_errors(), "{source:?}: pug surface errors");
+    assert!(pug.lowered.diagnostics.is_empty(), "{source:?}: L2 errors");
+    let mut budget = vize_l0::pass::BudgetObserver::new();
+    let facts = vize_l1_to_l2::pass::run_transform(&mut pug.lowered, &mut budget);
+    let emitted = emit_dom(&pug.lowered, &facts)
+        .unwrap_or_else(|error| panic!("emit refused {source:?}: {error:?}"))
+        .assembled()
+        .to_string();
+    (emitted, pug.html.to_string())
+}
+
 fn pin(visual: &str) -> String {
     visual.replace(")\n\n  return", ")\n  \n  return")
 }
 
 fn shipped(source: &str) -> String {
     let allocator = Allocator::new();
-    let (_, errors, old) = vize_atelier_dom::compile_template(&allocator, source);
+    let (_, errors, old) = vize_atelier_dom::compile_template_legacy_with_options(
+        &allocator,
+        source,
+        vize_atelier_dom::DomCompilerOptions::default(),
+    );
     let blocking: Vec<_> = errors
         .iter()
         .filter(|error| !error.is_compatibility_notice())
@@ -123,6 +142,43 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   ])
 }"
     );
+}
+
+#[test]
+fn fallback_only_interp_uses_a_text_vnode() {
+    assert_shipped_parity("<slot>{{ label }}</slot>");
+    assert_eq!(
+        assembled("<slot>{{ label }}</slot>"),
+        "\
+const { toDisplayString: _toDisplayString, renderSlot: _renderSlot, createTextVNode: _createTextVNode } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return _renderSlot(_ctx.$slots, \"default\", {}, () => [
+    _createTextVNode(_toDisplayString(label), 1 /* TEXT */)
+  ])
+}"
+    );
+}
+
+#[test]
+fn pug_slot_fallback_keeps_the_legacy_raw_expression_shape() {
+    let source = "\
+Input(v-bind=\"$attrs\")
+    template(v-if=\"$props\" #errorMessage)
+        slot(v-if=\"$attrs\" name=\"errorMessage\")
+            | {{ $props }}";
+    let (current, html) = assembled_pug(source);
+    assert_eq!(current, shipped(&html), "{html}");
+}
+
+#[test]
+fn compact_slot_fallback_keeps_conditional_sibling_boundaries() {
+    // Reduced from VaDataTable.vue: the outer v-else selects the compact
+    // outlet path, while the conditional fallback child leaves a condensed
+    // whitespace/interpolation run after its comment branch.
+    let source = r#"<slot v-if="named"></slot><slot v-else name="cell"><span v-if="grid">head</span> {{ value }}</slot>"#;
+    let current = assembled(source);
+    assert_eq!(current, shipped(source), "{source}");
 }
 
 #[test]

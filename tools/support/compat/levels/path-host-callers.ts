@@ -29,7 +29,7 @@ export const pathHostCallers: Record<string, readonly [number, number, number, n
   "crates/vize/src/commands/check/runner/nuxt_tsconfig.rs": [0, 1, 0, 0],
   "crates/vize/src/commands/check/runner/nuxt_tsconfig/cache.rs": [0, 4, 0, 0],
   "crates/vize/src/commands/check/runner/nuxt_tsconfig/path_options_tests.rs": [0, 1, 0, 0],
-  "crates/vize/src/commands/check/runner/resolve.rs": [0, 5, 0, 0],
+  "crates/vize/src/commands/check/runner/resolve.rs": [0, 6, 0, 0],
   "crates/vize/src/commands/check/tsconfig_inputs.rs": [1, 0, 0, 0],
   "crates/vize/src/commands/check/tsconfig_inputs/collect.rs": [2, 0, 0, 0],
   "crates/vize/src/commands/check/tsconfig_inputs/default_exclude_tests.rs": [0, 1, 0, 0],
