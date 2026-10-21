@@ -1,6 +1,6 @@
 use super::*;
 use crate::{
-    ide::{DiagnosticService, position_to_offset},
+    ide::{position_to_offset, DiagnosticService},
     server::ServerState,
 };
 use tower_lsp::lsp_types::{CodeActionOrCommand, NumberOrString, Url};
@@ -128,5 +128,58 @@ fn template_rule_diagnostics_do_not_get_script_suppressions() {
     assert_eq!(
         action.title,
         "Suppress with @vize:forget (a11y/click-events-have-key-events)"
+    );
+}
+
+#[test]
+fn script_suppression_edits_preserve_crlf_indentation_and_merge_rules() {
+    let source =
+        "<script setup>\r\nif (enabled) {\r\n  const value = source;\r\n}\r\n</script>\r\n";
+    let block_start = source.find("if (enabled)").unwrap();
+    let block_end = source.find("\r\n</script>").unwrap();
+    let block_content = &source[block_start..block_end];
+    let relative_start = block_content.find("const value").unwrap();
+
+    let edit = script_suppression_edit(
+        source,
+        block_content,
+        block_start,
+        relative_start,
+        "script/first-rule",
+        "\r\n",
+    );
+    assert_eq!(
+        edit.range,
+        Range::new(Position::new(2, 0), Position::new(2, 0))
+    );
+    assert_eq!(
+        edit.new_text,
+        "  // eslint-disable-next-line script/first-rule\r\n"
+    );
+
+    let with_directive = source.replacen(
+        "  const value = source;",
+        "  // eslint-disable-next-line script/first-rule\r\n  const value = source;",
+        1,
+    );
+    let block_start = with_directive.find("if (enabled)").unwrap();
+    let block_end = with_directive.find("\r\n</script>").unwrap();
+    let block_content = &with_directive[block_start..block_end];
+    let relative_start = block_content.find("const value").unwrap();
+    let edit = script_suppression_edit(
+        &with_directive,
+        block_content,
+        block_start,
+        relative_start,
+        "script/second-rule",
+        "\r\n",
+    );
+    assert_eq!(
+        edit.range,
+        Range::new(Position::new(2, 0), Position::new(2, 47))
+    );
+    assert_eq!(
+        edit.new_text,
+        "  // eslint-disable-next-line script/first-rule, script/second-rule"
     );
 }

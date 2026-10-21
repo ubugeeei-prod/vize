@@ -5,7 +5,7 @@
     reason = "tower-lsp action titles and edits use std String/HashMap"
 )]
 
-use super::{CodeActionService, IdeContext, get_line_indent, ranges_overlap};
+use super::{get_line_indent, ranges_overlap, CodeActionService, IdeContext};
 use tower_lsp::lsp_types::{
     CodeAction, CodeActionKind, CodeActionOrCommand, Diagnostic, Position, Range, TextEdit,
     WorkspaceEdit,
@@ -85,24 +85,14 @@ impl CodeActionService {
             };
 
             let relative_start = start.saturating_sub(block.loc.start);
-            let line_start = block
-                .content
-                .get(..relative_start)
-                .and_then(|head| head.rfind('\n'))
-                .map_or(0, |offset| offset + 1);
-            let insert_offset = block.loc.start + line_start;
-            let (line, character) = offset_to_line_col(&ctx.content, insert_offset);
-            let insert_position = Position { line, character };
-            let indent = get_line_indent(&block.content, relative_start);
-            let new_text = format!(
-                "{indent}// eslint-disable-next-line {}{newline}",
-                lint_diag.rule_name
+            let edit = script_suppression_edit(
+                &ctx.content,
+                block.content,
+                block.loc.start,
+                relative_start,
+                lint_diag.rule_name,
+                newline,
             );
-
-            let edit = TextEdit {
-                range: Range::new(insert_position, insert_position),
-                new_text,
-            };
             let mut changes = std::collections::HashMap::new();
             changes.insert(ctx.uri.clone(), vec![edit]);
             let action = CodeAction {
@@ -126,6 +116,60 @@ impl CodeActionService {
         }
 
         actions
+    }
+}
+
+fn script_suppression_edit(
+    source: &str,
+    block_content: &str,
+    block_start: usize,
+    relative_start: usize,
+    rule_name: &str,
+    newline: &str,
+) -> TextEdit {
+    let line_start = block_content
+        .get(..relative_start)
+        .and_then(|head| head.rfind('\n'))
+        .map_or(0, |offset| offset + 1);
+
+    if line_start > 0 {
+        let previous_end_with_newline = line_start - 1;
+        let previous_end = previous_end_with_newline
+            - usize::from(
+                block_content
+                    .as_bytes()
+                    .get(previous_end_with_newline.saturating_sub(1))
+                    == Some(&b'\r'),
+            );
+        let previous_start = block_content
+            .get(..previous_end)
+            .and_then(|head| head.rfind('\n'))
+            .map_or(0, |offset| offset + 1);
+        if let Some(previous_line) = block_content.get(previous_start..previous_end) {
+            const DIRECTIVE: &str = "// eslint-disable-next-line ";
+            if previous_line.trim_start().starts_with(DIRECTIVE) {
+                let start = block_start + previous_start;
+                let end = block_start + previous_end;
+                let (start_line, start_character) = offset_to_line_col(source, start);
+                let (end_line, end_character) = offset_to_line_col(source, end);
+                return TextEdit {
+                    range: Range::new(
+                        Position::new(start_line, start_character),
+                        Position::new(end_line, end_character),
+                    ),
+                    new_text: format!("{previous_line}, {rule_name}"),
+                };
+            }
+        }
+    }
+
+    let insert_offset = block_start + line_start;
+    let (line, character) = offset_to_line_col(source, insert_offset);
+    let insert_position = Position { line, character };
+    let indent = get_line_indent(block_content, relative_start);
+    TextEdit {
+        range: Range::new(insert_position, insert_position),
+        new_text: format!("{indent}// eslint-disable-next-line {rule_name}{newline}"),
     }
 }
 
