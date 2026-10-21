@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "placeholder-label-optgroup-report",
+    history: "dbab039dde930c513dea7d1358eebde04296661a",
+    source: "<select required><optgroup label=\"G\"><option value=\"\">Choose</option></optgroup></select>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "a11y/placeholder-label-option",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "a11y/placeholder-label-option",
+                severity: Warning,
+                message: "A required <select> must start with a placeholder <option> whose value is empty",
+                start: 37,
+                end: 54,
+                help: Some(
+                    "With `required`, the first <option> must be an empty choice so the select starts without a value:\n<option value=\"\">Choose one</option>\nThe option may also be disabled or hidden, but need not be.",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "a11y/placeholder-label-option",
+                    severity: Warning,
+                    message: "A required <select> must start with a placeholder <option> whose value is empty",
+                    start: 37,
+                    end: 54,
+                    help: Some(
+                        "With `required`, the first <option> must be an empty choice so the select starts without a value:\n<option value=\"\">Choose one</option>\nThe option may also be disabled or hidden, but need not be.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

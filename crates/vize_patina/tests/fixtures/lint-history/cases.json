@@ -502,5 +502,53 @@
     "vapor": null,
     "diagnostics": 0,
     "fixes": 0
+  },
+  {
+    "id": "placeholder-label-unrequired-empty-control",
+    "history": "dbab039dde930c513dea7d1358eebde04296661a",
+    "source": "<select><option value=\"\">Any</option></select>",
+    "filename": "History.vue",
+    "entry": "template",
+    "rule": "a11y/placeholder-label-option",
+    "vue_version": null,
+    "vapor": null,
+    "diagnostics": 0,
+    "fixes": 0
+  },
+  {
+    "id": "placeholder-label-required-empty-control",
+    "history": "dbab039dde930c513dea7d1358eebde04296661a",
+    "source": "<select required><option value=\"\">Choose</option></select>",
+    "filename": "History.vue",
+    "entry": "template",
+    "rule": "a11y/placeholder-label-option",
+    "vue_version": null,
+    "vapor": null,
+    "diagnostics": 0,
+    "fixes": 0
+  },
+  {
+    "id": "placeholder-label-required-nonempty-report",
+    "history": "dbab039dde930c513dea7d1358eebde04296661a",
+    "source": "<select required><option value=\"a\">A</option></select>",
+    "filename": "History.vue",
+    "entry": "template",
+    "rule": "a11y/placeholder-label-option",
+    "vue_version": null,
+    "vapor": null,
+    "diagnostics": 1,
+    "fixes": 0
+  },
+  {
+    "id": "placeholder-label-optgroup-report",
+    "history": "dbab039dde930c513dea7d1358eebde04296661a",
+    "source": "<select required><optgroup label=\"G\"><option value=\"\">Choose</option></optgroup></select>",
+    "filename": "History.vue",
+    "entry": "template",
+    "rule": "a11y/placeholder-label-option",
+    "vue_version": null,
+    "vapor": null,
+    "diagnostics": 1,
+    "fixes": 0
   }
 ]
