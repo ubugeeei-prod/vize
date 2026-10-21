@@ -118,6 +118,7 @@ export default defineConfig({}).withVue({
 | `--arrow-parens`                   | 1 引数のアロー関数の括弧を `always`、`avoid` から選びます。      |
 | `--bracket-spacing`                | オブジェクトリテラルの波括弧内の空白を切り替えます。            |
 | `--bracket-same-line`              | 複数行タグの `>` を最後の属性行に置きます。                      |
+| `--end-of-line`                    | 改行を `lf`、`crlf`、`cr`、自動検出の `auto` から選びます。       |
 | `--no-semi`                        | 文末のセミコロンを省略します。                                  |
 | `--sort-attributes`                | テンプレートとブロックタグの属性を並べ替えます。                |
 | `--single-attribute-per-line`      | 属性を 1 行に 1 つずつ書きます。                                |
@@ -188,6 +189,10 @@ Node の native `formatSfc` API でも、Prettier 移行用の 5 つの真偽値
 `--bracket-spacing[=false]` と `--bracket-same-line[=false]` は、型付きの
 Node・設定オプション `bracketSpacing` と `bracketSameLine` に対応します。
 明示した `true` または `false` は、選択したプリセットより優先されます。
+
+改行コードも同じように公開されます。
+`--end-of-line <lf|crlf|cr|auto>` は、型付きの Node・設定オプション
+`endOfLine` に対応します。CLI の明示値は、設定と選択したプリセットより優先されます。
 
 ## コンパクトなアプリケーションコード
 

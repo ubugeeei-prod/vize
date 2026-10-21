@@ -80,6 +80,10 @@ pub struct FmtArgs {
     #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
     pub bracket_same_line: Option<bool>,
 
+    /// Choose the line ending written by the formatter
+    #[arg(long, value_enum)]
+    pub end_of_line: Option<FmtEndOfLine>,
+
     /// Print width (line length) for formatting
     #[arg(long)]
     pub print_width: Option<u32>,
@@ -169,6 +173,19 @@ pub enum FmtArrowParens {
     Avoid,
 }
 
+/// Line-ending modes selectable from the CLI.
+#[derive(Debug, Clone, Copy, ValueEnum)]
+pub enum FmtEndOfLine {
+    /// Line feed
+    Lf,
+    /// Carriage return followed by line feed
+    Crlf,
+    /// Carriage return
+    Cr,
+    /// Preserve the first line ending found in the source
+    Auto,
+}
+
 impl From<FmtQuoteProps> for vize_glyph::QuoteProps {
     fn from(value: FmtQuoteProps) -> Self {
         match value {
@@ -194,6 +211,17 @@ impl From<FmtArrowParens> for vize_glyph::ArrowParens {
         match value {
             FmtArrowParens::Always => Self::Always,
             FmtArrowParens::Avoid => Self::Avoid,
+        }
+    }
+}
+
+impl From<FmtEndOfLine> for vize_glyph::EndOfLine {
+    fn from(value: FmtEndOfLine) -> Self {
+        match value {
+            FmtEndOfLine::Lf => Self::Lf,
+            FmtEndOfLine::Crlf => Self::Crlf,
+            FmtEndOfLine::Cr => Self::Cr,
+            FmtEndOfLine::Auto => Self::Auto,
         }
     }
 }

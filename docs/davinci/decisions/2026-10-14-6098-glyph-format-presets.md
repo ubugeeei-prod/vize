@@ -173,3 +173,12 @@ applied after a preset. Public CLI and Node whole-output regressions prove a
 second/third-pass fixed point; the existing option matrix continues to
 exercise `bracketSpacing: false` and `bracketSameLine: true` over the 300+ Vue
 corpus.
+
+## Line-ending option parity
+
+The existing `endOfLine` enum now has a direct CLI override in addition to
+Rust, config schema, generated TypeScript, Pkl, editor, WASM and typed Node
+support. The CLI flag is `--end-of-line <lf|crlf|cr|auto>`. An explicit CLI
+value applies after config and a selected preset. A public CLI whole-output
+regression proves exact CRLF bytes and a second-pass fixed point; the existing
+line-ending fixtures continue to cover all four modes independently.

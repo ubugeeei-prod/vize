@@ -139,6 +139,7 @@ Default discovery formats Vue, JavaScript/TypeScript and JSON/JSONC files. YAML 
 | `--arrow-parens`                   | Choose `always` or `avoid` for sole arrow parameters |
 | `--bracket-spacing`                | Toggle spaces inside object literal braces           |
 | `--bracket-same-line`              | Keep a multi-line tag's `>` on its last attribute line |
+| `--end-of-line`                    | Choose `lf`, `crlf`, `cr` or source-detected `auto`   |
 | `--print-width`                    | Maximum line width                                   |
 | `--tab-width`                      | Indentation width                                    |
 | `--use-tabs`                       | Toggle tabs vs spaces                                |

@@ -142,6 +142,7 @@ vize fmt --write src
 | `--arrow-parens`                   | 1 引数のアロー関数の括弧を `always`、`avoid` から選ぶ  |
 | `--bracket-spacing`                | オブジェクトリテラルの波括弧内の空白を切り替える       |
 | `--bracket-same-line`              | 複数行タグの `>` を最後の属性行に置く                  |
+| `--end-of-line`                    | 改行を `lf`、`crlf`、`cr`、自動検出の `auto` から選ぶ  |
 | `--print-width`                    | 1 行の最大幅                                           |
 | `--tab-width`                      | インデント幅                                           |
 | `--use-tabs`                       | タブとスペースを切り替える                             |

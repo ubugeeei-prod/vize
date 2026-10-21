@@ -62,6 +62,9 @@ pub(super) fn build_format_options(
     if let Some(v) = args.bracket_same_line {
         opts.bracket_same_line = v;
     }
+    if let Some(v) = args.end_of_line {
+        opts.end_of_line = v.into();
+    }
     if let Some(v) = args.sort_attributes {
         opts.sort_attributes = v;
     }

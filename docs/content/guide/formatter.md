@@ -116,6 +116,7 @@ The same options are available as CLI flags:
 | `--arrow-parens`                   | Chooses `always` or `avoid` for sole arrow parameters.        |
 | `--bracket-spacing`                | Toggles spaces inside object literal braces.                  |
 | `--bracket-same-line`              | Keeps a multi-line tag's `>` on its final attribute line.     |
+| `--end-of-line`                    | Chooses `lf`, `crlf`, `cr` or source-detected `auto`.          |
 | `--no-semi`                        | Omits semicolons at the ends of statements.                   |
 | `--sort-attributes`                | Sorts attributes in the template and on block tags.           |
 | `--single-attribute-per-line`      | Puts each attribute on its own line.                          |
@@ -186,6 +187,10 @@ Bracket layout is projected consistently as well:
 `--bracket-spacing[=false]` and `--bracket-same-line[=false]` map to the typed
 Node and config options `bracketSpacing` and `bracketSameLine`. Explicit true
 or false values override a selected preset.
+
+Line endings are projected consistently too:
+`--end-of-line <lf|crlf|cr|auto>` maps to the typed Node and config option
+`endOfLine`. The explicit CLI value overrides config and a selected preset.
 
 ## Compact application code
 

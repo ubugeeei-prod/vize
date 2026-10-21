@@ -225,6 +225,28 @@ fn formatter_cli_exposes_bracket_layout_policies() {
 
 #[cfg(feature = "glyph")]
 #[test]
+fn formatter_cli_exposes_line_ending_policy() {
+    let project = project();
+    let root = project.path();
+    let source = "<script setup lang=\"ts\">\nconst value={answer:42}\n</script>\n";
+    let expected = b"<script setup lang=\"ts\">\r\nconst value = { answer: 42 };\r\n</script>\r\n";
+    write(root, "LineEndings.vue", source);
+    let args = [
+        "fmt",
+        "--write",
+        "LineEndings.vue",
+        "--no-config",
+        "--end-of-line",
+        "crlf",
+    ];
+    assert_success(&run(root, &args));
+    assert_eq!(fs::read(root.join("LineEndings.vue")).unwrap(), expected);
+    assert_success(&run(root, &args));
+    assert_eq!(fs::read(root.join("LineEndings.vue")).unwrap(), expected);
+}
+
+#[cfg(feature = "glyph")]
+#[test]
 fn package_boundaries_precedence_and_sibling_settings_reach_the_formatter() {
     let workspace = tempfile::tempdir().unwrap();
     let root = workspace.path();
