@@ -59,6 +59,7 @@ pub(super) fn transform_component<'a>(
 
     let mut props = Vec::new_in(&ctx.allocator);
     let mut slots = Vec::new_in(&ctx.allocator);
+    let mut raw_slots: Option<Box<'a, SimpleExpressionNode<'a>>> = None;
     let mut v_show_exp: Option<Box<'a, SimpleExpressionNode<'a>>> = None;
     let mut is_expr: Option<Box<'a, SimpleExpressionNode<'a>>> = None;
     let mut is_selected = false;
@@ -95,6 +96,16 @@ pub(super) fn transform_component<'a>(
     for prop in el.props.iter() {
         match prop {
             PropNode::Directive(dir) => {
+                if dir.name == "slots"
+                    && dir.arg.is_none()
+                    && let Some(ExpressionNode::Simple(value)) = &dir.exp
+                {
+                    raw_slots = Some(Box::new_in(
+                        SimpleExpressionNode::from_node(value),
+                        &ctx.allocator,
+                    ));
+                    continue;
+                }
                 if dir.name == "slot" {
                     continue;
                 }
@@ -304,6 +315,7 @@ pub(super) fn transform_component<'a>(
         tag: el.tag,
         props,
         slots,
+        raw_slots,
         asset: kind == ComponentKind::Regular,
         once,
         dynamic_slots: has_dynamic_slot,
@@ -340,6 +352,9 @@ pub(super) fn transform_component<'a>(
                     | "text"
                     | "html"
             )
+            && !(dir.name == "slots"
+                && dir.arg.is_none()
+                && matches!(&dir.exp, Some(ExpressionNode::Simple(_))))
         {
             super::super::directive::transform_directive(ctx, dir, element_id, el, block);
         }

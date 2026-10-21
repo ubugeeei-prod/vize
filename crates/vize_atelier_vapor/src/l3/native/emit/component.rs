@@ -71,6 +71,7 @@ impl<'a> Emitter<'a, '_> {
                 tag,
                 props,
                 slots,
+                raw_slots: None,
                 asset: is.is_none() && kind == ComponentKind::Regular,
                 once: false,
                 dynamic_slots,

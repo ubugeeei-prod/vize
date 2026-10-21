@@ -313,6 +313,10 @@ pub struct CreateComponentIRNode<'a> {
     pub tag: &'a str,
     pub props: Vec<'a, IRProp<'a>>,
     pub slots: Vec<'a, IRSlot<'a>>,
+    /// Opaque slots object forwarded at runtime (for example JSX
+    /// `v-slots={slots}`). Authored slots remain in `slots` and precede this
+    /// source so forwarded entries win name collisions.
+    pub raw_slots: Option<Box<'a, SimpleExpressionNode<'a>>>,
     pub asset: bool,
     pub once: bool,
     pub dynamic_slots: bool,

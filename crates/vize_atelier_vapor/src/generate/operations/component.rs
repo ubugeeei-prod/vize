@@ -154,7 +154,7 @@ pub(super) fn generate_create_component(
     };
 
     let props = generate_component_props_str(ctx, component);
-    let has_slots = !component.slots.is_empty();
+    let has_slots = !component.slots.is_empty() || component.raw_slots.is_some();
     // Keep each computed slot's function stable when only its name getter
     // re-evaluates. A new function would remount content at an unchanged name.
     declare_slot_caches(ctx, component);
@@ -209,7 +209,7 @@ fn generate_component_call(
     props: &str,
 ) {
     let kind = component.kind;
-    let has_slots = !component.slots.is_empty();
+    let has_slots = !component.slots.is_empty() || component.raw_slots.is_some();
     ctx.push_indent();
     ctx.push(&cstr!(
         "const n{} = _{}({}, {}",
@@ -219,7 +219,17 @@ fn generate_component_call(
         props
     ));
 
-    if has_slots {
+    if component.slots.is_empty()
+        && let Some(raw_slots) = component.raw_slots.as_ref()
+    {
+        let raw_slots = ctx.resolve_expression_node(raw_slots);
+        ctx.push(&cstr!(
+            ", {}, {}{})\n",
+            raw_slots,
+            creation_flags(ctx, component),
+            once_flag(component, create_fn)
+        ));
+    } else if has_slots {
         ctx.push(", {\n");
         ctx.indent();
 
@@ -242,21 +252,28 @@ fn generate_component_call(
             name.push_str("\":");
             ctx.push_spanned(&name);
             generate_slot_fn(ctx, slot, element_template_map, kind);
-            if i < static_slots.len() - 1 || !dynamic_slots.is_empty() {
+            if i < static_slots.len() - 1
+                || !dynamic_slots.is_empty()
+                || component.raw_slots.is_some()
+            {
                 ctx.push(",");
             }
             ctx.push("\n");
         }
 
-        if !dynamic_slots.is_empty() {
+        if !dynamic_slots.is_empty() || component.raw_slots.is_some() {
             ctx.push_line("$: [");
             ctx.indent();
             for (i, slot) in dynamic_slots.iter().enumerate() {
                 generate_dynamic_slot(ctx, slot, element_template_map, component.id, i);
-                if i < dynamic_slots.len() - 1 {
+                if i < dynamic_slots.len() - 1 || component.raw_slots.is_some() {
                     ctx.push(",");
                 }
                 ctx.push("\n");
+            }
+            if let Some(raw_slots) = component.raw_slots.as_ref() {
+                let raw_slots = ctx.resolve_expression_node(raw_slots);
+                ctx.push_line(&raw_slots);
             }
             ctx.deindent();
             ctx.push_line("]");
