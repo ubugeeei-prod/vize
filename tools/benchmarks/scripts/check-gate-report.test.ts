@@ -3,7 +3,9 @@ import { test } from "node:test";
 
 import {
   ENGINE_CLASSES,
+  assertDiagnosticParity,
   evaluateBudget,
+  fingerprintVizeDiagnostics,
   measureRows,
   renderMarkdown,
 } from "./check-gate-report.ts";
@@ -52,6 +54,69 @@ void test("evaluateBudget fails only when the threshold is reached", () => {
     changePercent: 10,
     thresholdPercent: 10,
   });
+});
+
+void test("diagnostic fingerprints cover exit status, counts, files and messages", () => {
+  const report = {
+    errorCount: 1,
+    warningCount: 0,
+    fileCount: 2,
+    files: [
+      { file: "Component.vue", diagnostics: ["error:2:4 [TS2322] incompatible value"] },
+      { file: "Clean.vue", diagnostics: [] },
+    ],
+  };
+  const fingerprint = fingerprintVizeDiagnostics(1, report);
+  assert.match(fingerprint, /^[a-f0-9]{64}$/u);
+  assert.equal(fingerprintVizeDiagnostics(1, structuredClone(report)), fingerprint);
+  assert.equal(
+    fingerprintVizeDiagnostics(1, { ...report, files: [...report.files].reverse() }),
+    fingerprint,
+  );
+  assert.notEqual(fingerprintVizeDiagnostics(0, report), fingerprint);
+  assert.notEqual(fingerprintVizeDiagnostics(1, { ...report, fileCount: 1 }), fingerprint);
+  assert.notEqual(
+    fingerprintVizeDiagnostics(1, {
+      ...report,
+      files: [{ file: "Other.vue", diagnostics: report.files[0].diagnostics }],
+    }),
+    fingerprint,
+  );
+  assert.notEqual(
+    fingerprintVizeDiagnostics(1, {
+      ...report,
+      files: [{ file: "Component.vue", diagnostics: ["error:2:4 [TS2322] changed"] }],
+    }),
+    fingerprint,
+  );
+  assert.throws(() => fingerprintVizeDiagnostics(1, null), /cannot fingerprint an invalid/u);
+});
+
+void test("native checker widths must have complete diagnostic parity", () => {
+  const fingerprint = "a".repeat(64);
+  assert.deepEqual(
+    assertDiagnosticParity([
+      { id: "vize-check-1t", diagnosticFingerprint: fingerprint },
+      { id: "vize-check-max", diagnosticFingerprint: fingerprint },
+    ]),
+    {
+      status: "passed",
+      diagnosticFingerprint: fingerprint,
+      variants: ["vize-check-1t", "vize-check-max"],
+    },
+  );
+  assert.throws(
+    () =>
+      assertDiagnosticParity([
+        { id: "vize-check-1t", diagnosticFingerprint: fingerprint },
+        { id: "vize-check-max", diagnosticFingerprint: "b".repeat(64) },
+      ]),
+    /native checker-width diagnostics changed/u,
+  );
+  assert.throws(
+    () => assertDiagnosticParity([{ id: "vize-check-max", diagnosticFingerprint: fingerprint }]),
+    /requires valid diagnostic fingerprints/u,
+  );
 });
 
 void test("cold and warmup observations never enter the rotated steady-state rows", () => {
@@ -137,6 +202,40 @@ void test("every cold, warmup and measured count mismatch refuses a report", () 
   }
 });
 
+void test("every cold, warmup and measured fingerprint mismatch refuses a report", () => {
+  const expectedFingerprint = "a".repeat(64);
+  for (const [failedInvocation, phase] of [
+    [1, "cold startup"],
+    [2, "warmup 0"],
+    [3, "measured run 0"],
+  ] as const) {
+    let invocation = 0;
+    const variant: MeasurementVariant<{
+      ms: number;
+      diagnostics: number;
+      fingerprint: string;
+    }> = {
+      id: "vize-check-max",
+      label: "Vize check (max)",
+      engineClass: "tsgo-native",
+      expectedDiagnostics: 3,
+      expectedDiagnosticFingerprint: expectedFingerprint,
+      measure: () => ({
+        ms: 1,
+        diagnostics: 3,
+        fingerprint: ++invocation === failedInvocation ? "b".repeat(64) : expectedFingerprint,
+      }),
+      countDiagnostics: (output) => output.diagnostics,
+      fingerprintDiagnostics: (output) => output.fingerprint,
+    };
+    assert.throws(() => measureRows([variant], { runs: 2, warmups: 0 }), {
+      name: "Error",
+      message: `check-gate: vize-check-max diagnostics changed during ${phase} (${"b".repeat(64)}, expected ${expectedFingerprint}); refusing to publish a timing`,
+    });
+    assert.equal(invocation, failedInvocation);
+  }
+});
+
 void test("the entire Markdown report retains engine labels, empty rows and attribution", () => {
   assert.deepEqual(ENGINE_CLASSES, {
     "typescript-js": "JS TypeScript engine (tsc)",
@@ -148,7 +247,14 @@ void test("the entire Markdown report retains engine labels, empty rows and attr
       versions: { vize: "0.433.0", tsgo: "7.0.2", vueTsc: null, typescript: null, vue: "3.5.35" },
       binaries: { vize: { sha256: "native-sha" }, tsgo: { sha256: "tsgo-sha" } },
       entry: { tsconfigPath: "corpus/tsconfig.json", fileCount: 2, totalBytes: 1234 },
-      backend: { vize: { typeError: true, corpus: true } },
+      backend: {
+        vize: { typeError: true, corpus: true },
+        diagnosticParity: {
+          status: "passed",
+          diagnosticFingerprint: "a".repeat(64),
+          variants: ["vize-check-1t", "vize-check-max"],
+        },
+      },
       budget: { status: "no-baseline", thresholdPercent: 10 },
       skipped: { "typescript-js": "vue-tsc missing or skipped" },
       rows: [
@@ -174,6 +280,7 @@ void test("the entire Markdown report retains engine labels, empty rows and attr
       "Binaries (sha256 of the measured file, re-checked after the run): vize=`native-sha` tsgo=`tsgo-sha`",
       "Entry point: `corpus/tsconfig.json` — 2 unique SFC files, 1,234 bytes.",
       "Backend readiness (planted-diagnostic gates, all required before timing): typeError=pass corpus=pass",
+      `Native checker-width diagnostic parity: passed for vize-check-1t / vize-check-max (\`${"a".repeat(64)}\`).`,
       "Budget: no-baseline",
       "",
       "### JS TypeScript engine (tsc)",

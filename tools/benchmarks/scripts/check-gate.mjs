@@ -34,7 +34,13 @@ import {
   prepareMinimalPlants,
 } from "./check-gate-plants.mjs";
 import { assertBinariesUnchanged, hashInPlace, pinExecutable } from "./benchmark-binary.mjs";
-import { evaluateBudget, measureRows, renderMarkdown } from "./check-gate-report.ts";
+import {
+  assertDiagnosticParity,
+  evaluateBudget,
+  fingerprintVizeDiagnostics,
+  measureRows,
+  renderMarkdown,
+} from "./check-gate-report.ts";
 
 const benchDir = dirname(fileURLToPath(import.meta.url));
 const rootDir = resolve(benchDir, "..", "..", "..");
@@ -140,24 +146,55 @@ export async function main(argv = process.argv.slice(2)) {
   const corpusPlant = prepareCorpusPlant(corpus.dir, CORPUS_TSCONFIG);
   // Un-timed reference runs: the generated corpus carries its own baseline
   // diagnostics, and the plant gate requires exactly baseline + plant.
-  const vizeBaseline = runVizeCheck(vize.path, tsgo.path, corpus.dir);
-  if (vizeBaseline.report == null) {
-    throw new Error(
-      `check-gate: vize produced no JSON report on the corpus.\n${vizeBaseline.stderr}`,
-    );
-  }
+  const vizeLanes = [
+    {
+      id: "vize-check-1t",
+      label: "Vize check (1T)",
+      notes: "single Corsa server, RAYON_NUM_THREADS=1",
+      run: (cwd) =>
+        runVizeCheck(vize.path, tsgo.path, cwd, ["--servers", "1"], {
+          RAYON_NUM_THREADS: "1",
+        }),
+    },
+    {
+      id: "vize-check-max",
+      label: "Vize check (max)",
+      notes: "auto-tuned Corsa sharding",
+      run: (cwd) => runVizeCheck(vize.path, tsgo.path, cwd),
+    },
+  ];
+  const vizeBaselines = new Map(
+    vizeLanes.map((lane) => {
+      const baseline = lane.run(corpus.dir);
+      if (baseline.report == null) {
+        throw new Error(
+          `check-gate: ${lane.id} produced no JSON report on the corpus.\n${baseline.stderr}`,
+        );
+      }
+      return [lane.id, baseline];
+    }),
+  );
+  const diagnosticParity = assertDiagnosticParity(
+    vizeLanes.map((lane) => {
+      const baseline = vizeBaselines.get(lane.id);
+      return {
+        id: lane.id,
+        diagnosticFingerprint: fingerprintVizeDiagnostics(baseline.status, baseline.report),
+      };
+    }),
+  );
   const vueTscBaselineCount = vueTsc
     ? countVueTscDiagnostics(runVueTscCheck(vueTsc.path, corpus.dir).stdout)
     : null;
-  let vizeReadiness;
+  const vizeReadiness = new Map();
   let vueTscGate = null;
   try {
-    vizeReadiness = gateVize(
-      (dir) => runVizeCheck(vize.path, tsgo.path, dir),
-      plants.dirs,
-      corpusPlant.dir,
-      vizeBaseline.report,
-    );
+    for (const lane of vizeLanes) {
+      vizeReadiness.set(
+        lane.id,
+        gateVize(lane.run, plants.dirs, corpusPlant.dir, vizeBaselines.get(lane.id).report),
+      );
+    }
     if (vueTsc) {
       vueTscGate = gateVueTsc(
         (dir) => runVueTscCheck(vueTsc.path, dir),
@@ -173,30 +210,20 @@ export async function main(argv = process.argv.slice(2)) {
 
   const vizeDiagnostics = (out) =>
     out.report ? out.report.errorCount + out.report.warningCount : -1;
-  const vizeExpected = vizeBaseline.report.errorCount + vizeBaseline.report.warningCount;
-  const variants = [
-    {
-      id: "vize-check-1t",
-      label: "Vize check (1T)",
+  const variants = vizeLanes.map((lane) => {
+    const baseline = vizeBaselines.get(lane.id);
+    return {
+      id: lane.id,
+      label: lane.label,
       engineClass: "tsgo-native",
-      expectedDiagnostics: vizeExpected,
-      notes: "single Corsa server, RAYON_NUM_THREADS=1",
+      expectedDiagnostics: baseline.report.errorCount + baseline.report.warningCount,
+      expectedDiagnosticFingerprint: fingerprintVizeDiagnostics(baseline.status, baseline.report),
+      notes: lane.notes,
       countDiagnostics: vizeDiagnostics,
-      measure: () =>
-        runVizeCheck(vize.path, tsgo.path, corpus.dir, ["--servers", "1"], {
-          RAYON_NUM_THREADS: "1",
-        }),
-    },
-    {
-      id: "vize-check-max",
-      label: "Vize check (max)",
-      engineClass: "tsgo-native",
-      expectedDiagnostics: vizeExpected,
-      notes: "auto-tuned Corsa sharding",
-      countDiagnostics: vizeDiagnostics,
-      measure: () => runVizeCheck(vize.path, tsgo.path, corpus.dir),
-    },
-  ];
+      fingerprintDiagnostics: (out) => fingerprintVizeDiagnostics(out.status, out.report),
+      measure: () => lane.run(corpus.dir),
+    };
+  });
   if (vueTsc && vueTscGate?.ok) {
     variants.unshift({
       id: "vue-tsc",
@@ -251,7 +278,13 @@ export async function main(argv = process.argv.slice(2)) {
       fileCount: corpus.files.length,
       totalBytes: corpus.totalBytes,
     },
-    backend: { corsaPath: tsgo.path, vize: vizeReadiness, vueTsc: vueTscGate?.readiness ?? null },
+    backend: {
+      corsaPath: tsgo.path,
+      vize: vizeReadiness.get("vize-check-max"),
+      vizeByWidth: Object.fromEntries(vizeReadiness),
+      diagnosticParity,
+      vueTsc: vueTscGate?.readiness ?? null,
+    },
     settings: { runs, warmups },
     skipped: {
       "typescript-js": vueTsc

@@ -224,14 +224,26 @@ test("check-gate publishes reproducibility metadata for a gated run", (t) => {
       vue: readVueVersion(),
     });
 
+    const diagnosticFingerprint = data.backend.diagnosticParity.diagnosticFingerprint;
+    assert.match(diagnosticFingerprint, /^[a-f0-9]{64}$/u);
+    const readiness = {
+      script: true,
+      templateProp: true,
+      templateEvent: true,
+      componentProp: true,
+      corpus: true,
+    };
     assert.deepEqual(data.backend, {
       corsaPath: path.resolve(tsgo),
-      vize: {
-        script: true,
-        templateProp: true,
-        templateEvent: true,
-        componentProp: true,
-        corpus: true,
+      vize: readiness,
+      vizeByWidth: {
+        "vize-check-1t": readiness,
+        "vize-check-max": readiness,
+      },
+      diagnosticParity: {
+        status: "passed",
+        diagnosticFingerprint,
+        variants: ["vize-check-1t", "vize-check-max"],
       },
       vueTsc: null,
     });
@@ -273,6 +285,9 @@ test("check-gate publishes reproducibility metadata for a gated run", (t) => {
         runs: (row.runs as number[]).length,
         medianMs: row.medianMs === (row.runs as number[])[0],
         diagnosticCount: typeof row.diagnosticCount,
+        diagnosticFingerprint:
+          typeof row.diagnosticFingerprint === "string" &&
+          /^[a-f0-9]{64}$/u.test(row.diagnosticFingerprint),
       })),
       [
         {
@@ -284,6 +299,7 @@ test("check-gate publishes reproducibility metadata for a gated run", (t) => {
           runs: 1,
           medianMs: true,
           diagnosticCount: "number",
+          diagnosticFingerprint: true,
           warmupPasses: 1,
           notes: "single Corsa server, RAYON_NUM_THREADS=1",
         },
@@ -296,6 +312,7 @@ test("check-gate publishes reproducibility metadata for a gated run", (t) => {
           runs: 1,
           medianMs: true,
           diagnosticCount: "number",
+          diagnosticFingerprint: true,
           warmupPasses: 1,
           notes: "auto-tuned Corsa sharding",
         },
@@ -314,6 +331,7 @@ test("check-gate publishes reproducibility metadata for a gated run", (t) => {
         `Binaries (sha256 of the measured file, re-checked after the run): vize=\`${data.binaries.vize.sha256}\` tsgo=\`${data.binaries.tsgo.sha256}\``,
         `Entry point: \`${data.entry.tsconfigPath}\` — 6 unique SFC files, ${data.entry.totalBytes.toLocaleString("en-US")} bytes.`,
         "Backend readiness (planted-diagnostic gates, all required before timing): script=pass templateProp=pass templateEvent=pass componentProp=pass corpus=pass",
+        `Native checker-width diagnostic parity: passed for vize-check-1t / vize-check-max (\`${diagnosticFingerprint}\`).`,
         "Budget: no-baseline",
         "",
         "### JS TypeScript engine (tsc)",

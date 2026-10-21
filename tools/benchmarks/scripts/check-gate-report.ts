@@ -4,9 +4,11 @@
  * Cold startup is recorded separately from steady state: the first invocation
  * of every row lands in a dedicated cold column and never participates in the
  * warmed median. Measured rows are rotated so no tool owns a fixed slot, and
- * every measured run must repeat the expected diagnostic count so a row that
- * silently stops analysing can never publish a timing.
+ * every measured run must repeat the expected diagnostics so a row that
+ * silently stops or changes its analysis can never publish a timing.
  */
+
+import { createHash } from "node:crypto";
 
 export const ENGINE_CLASSES = {
   "typescript-js": "JS TypeScript engine (tsc)",
@@ -23,6 +25,8 @@ export type MeasurementVariant<Output extends TimedOutput> = {
   notes?: string;
   measure: () => Output;
   countDiagnostics: (output: Output) => number;
+  expectedDiagnosticFingerprint?: string;
+  fingerprintDiagnostics?: (output: Output) => string;
   coldMs?: number;
   runs?: number[];
 };
@@ -39,8 +43,20 @@ export type MeasuredRow = {
   runs: number[];
   medianMs: number;
   diagnosticCount: number;
+  diagnosticFingerprint?: string;
   warmupPasses: number;
   notes?: string;
+};
+type VizeDiagnosticReport = {
+  errorCount: number;
+  warningCount: number;
+  fileCount: number;
+  files: Array<{ file: string; diagnostics: string[] }>;
+};
+export type DiagnosticParity = {
+  status: "passed";
+  diagnosticFingerprint: string;
+  variants: string[];
 };
 type BudgetBaseline = { rows?: Array<{ id: string; medianMs?: number | null }> };
 export type BudgetResult =
@@ -64,11 +80,77 @@ export type CheckBenchmarkReport = {
   };
   binaries: Record<string, { sha256?: string | null }>;
   entry: { tsconfigPath: string; fileCount: number; totalBytes: number };
-  backend: { vize: Record<string, boolean> };
+  backend: { vize: Record<string, boolean>; diagnosticParity?: DiagnosticParity };
   budget: BudgetResult;
   rows: MeasuredRow[];
   skipped: Record<string, string | null | undefined>;
 };
+
+export function fingerprintVizeDiagnostics(
+  status: number | null,
+  report: VizeDiagnosticReport | null,
+): string {
+  if (
+    !Number.isInteger(status) ||
+    report == null ||
+    !Number.isInteger(report.errorCount) ||
+    report.errorCount < 0 ||
+    !Number.isInteger(report.warningCount) ||
+    report.warningCount < 0 ||
+    !Number.isInteger(report.fileCount) ||
+    report.fileCount < 0 ||
+    !Array.isArray(report.files) ||
+    report.files.some(
+      (entry) =>
+        typeof entry.file !== "string" ||
+        !Array.isArray(entry.diagnostics) ||
+        entry.diagnostics.some((diagnostic) => typeof diagnostic !== "string"),
+    )
+  ) {
+    throw new Error("check-gate: cannot fingerprint an invalid vize diagnostic report");
+  }
+  const files = report.files
+    .map((entry) => ({ file: entry.file, diagnostics: [...entry.diagnostics].sort() }))
+    .sort((left, right) => left.file.localeCompare(right.file));
+  return createHash("sha256")
+    .update(
+      JSON.stringify({
+        status,
+        errorCount: report.errorCount,
+        warningCount: report.warningCount,
+        fileCount: report.fileCount,
+        files,
+      }),
+    )
+    .digest("hex");
+}
+
+export function assertDiagnosticParity(
+  variants: Array<{ id: string; diagnosticFingerprint: string }>,
+): DiagnosticParity {
+  if (
+    variants.length < 2 ||
+    variants.some((variant) => !/^[a-f0-9]{64}$/u.test(variant.diagnosticFingerprint))
+  ) {
+    throw new Error(
+      "check-gate: native checker-width parity requires valid diagnostic fingerprints",
+    );
+  }
+  const [expected] = variants;
+  const mismatch = variants.find(
+    (variant) => variant.diagnosticFingerprint !== expected.diagnosticFingerprint,
+  );
+  if (mismatch) {
+    throw new Error(
+      `check-gate: native checker-width diagnostics changed (${expected.id}=${expected.diagnosticFingerprint}, ${mismatch.id}=${mismatch.diagnosticFingerprint}); refusing to publish a timing`,
+    );
+  }
+  return {
+    status: "passed",
+    diagnosticFingerprint: expected.diagnosticFingerprint,
+    variants: variants.map((variant) => variant.id),
+  };
+}
 
 export function median(values: number[]): number {
   const sorted = [...values].sort((a, b) => a - b);
@@ -98,6 +180,14 @@ function checkedRun<Output extends TimedOutput>(
       `check-gate: ${variant.id} reported ${count} diagnostics during ${phase} (expected ${variant.expectedDiagnostics}); refusing to publish a timing`,
     );
   }
+  if (variant.expectedDiagnosticFingerprint != null) {
+    const fingerprint = variant.fingerprintDiagnostics?.(out);
+    if (fingerprint !== variant.expectedDiagnosticFingerprint) {
+      throw new Error(
+        `check-gate: ${variant.id} diagnostics changed during ${phase} (${fingerprint ?? "missing"}, expected ${variant.expectedDiagnosticFingerprint}); refusing to publish a timing`,
+      );
+    }
+  }
   return out;
 }
 
@@ -112,7 +202,7 @@ function recordColdRows<Output extends TimedOutput>(
 
 /**
  * Cold run first, then >=1 rotated warmup passes, then rotated measured runs.
- * Throws (fail closed) when any run's diagnostic count drifts.
+ * Throws (fail closed) when any run's diagnostics drift.
  */
 export function measureRows<Output extends TimedOutput>(
   variants: MeasurementVariant<Output>[],
@@ -137,6 +227,9 @@ export function measureRows<Output extends TimedOutput>(
     runs: variant.runs,
     medianMs: Number(median(variant.runs).toFixed(3)),
     diagnosticCount: variant.expectedDiagnostics,
+    ...(variant.expectedDiagnosticFingerprint == null
+      ? {}
+      : { diagnosticFingerprint: variant.expectedDiagnosticFingerprint }),
     warmupPasses,
     notes: variant.notes,
   }));
@@ -189,6 +282,11 @@ export function renderMarkdown(data: CheckBenchmarkReport): string {
       .map(([gate, ok]) => `${gate}=${ok ? "pass" : "FAIL"}`)
       .join(" ")}`,
   );
+  if (data.backend.diagnosticParity != null) {
+    lines.push(
+      `Native checker-width diagnostic parity: ${data.backend.diagnosticParity.status} for ${data.backend.diagnosticParity.variants.join(" / ")} (\`${data.backend.diagnosticParity.diagnosticFingerprint}\`).`,
+    );
+  }
   lines.push(`Budget: ${data.budget.status}`);
   lines.push("");
   for (const [engineClass, label] of Object.entries(ENGINE_CLASSES)) {
