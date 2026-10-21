@@ -64,3 +64,48 @@ fn vite_compiler_whitespace_preserve_reaches_editor_formatter() {
     let (options, preserve) = state.get_formatter_context();
     assert_eq!((options.single_quote, preserve), (true, true));
 }
+
+#[test]
+fn vue2_preserve_reaches_editor_formatter() {
+    let project = tempfile::tempdir().unwrap();
+    std::fs::write(
+        project.path().join("vite.config.mjs"),
+        r#"export default { vue: { compiler: { whitespace: "vue2-preserve" } } };"#,
+    )
+    .unwrap();
+    let state = crate::server::ServerState::new();
+    state.load_workspace_config(project.path());
+
+    assert!(
+        state
+            .get_formatter_context_for_path(&project.path().join("src/App.vue"))
+            .1
+    );
+}
+
+#[test]
+fn entry_compiler_whitespace_is_resolved_for_each_editor_document() {
+    let project = tempfile::tempdir().unwrap();
+    std::fs::write(
+        project.path().join("vite.config.mjs"),
+        r#"export default { vue: {
+  compiler: { whitespace: "preserve" },
+  entries: [
+    { files: ["src/**"], compiler: { whitespace: "condense" } },
+    { files: ["src/legacy/**"], compiler: { whitespace: "vue2-preserve" } }
+  ]
+} };"#,
+    )
+    .unwrap();
+    let state = crate::server::ServerState::new();
+    state.load_workspace_config(project.path());
+
+    let preserves = |file| {
+        state
+            .get_formatter_context_for_path(&project.path().join(file))
+            .1
+    };
+    assert!(!preserves("src/App.vue"));
+    assert!(preserves("src/legacy/App.vue"));
+    assert!(preserves("outside/App.vue"));
+}
