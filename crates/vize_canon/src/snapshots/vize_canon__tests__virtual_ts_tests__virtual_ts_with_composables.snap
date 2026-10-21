@@ -157,7 +157,7 @@ function __setup() {
   // @vize-map: expr -> 156:157
 
   // Reference setup bindings (used in template/CSS v-bind)
-  void useMouse; void x; void y;
+  void (null as unknown as keyof typeof useMouse); void x; void y;
   })();
 }
 

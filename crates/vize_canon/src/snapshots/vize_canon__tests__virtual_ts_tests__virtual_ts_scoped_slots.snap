@@ -277,7 +277,7 @@ function __setup() {
   void MyList;
 
   // Reference setup bindings (used in template/CSS v-bind)
-  void MyList; void items; void ref;
+  void (null as unknown as keyof typeof MyList); void items; void (null as unknown as keyof typeof ref);
   })();
 }
 

@@ -144,7 +144,7 @@ function __setup() {
   void Child;
 
   // Reference setup bindings (used in template/CSS v-bind)
-  void Child; void as; void asChild; void props;
+  void (null as unknown as keyof typeof Child); void as; void asChild; void props;
   })();
 
   // Compiler-macro results contribute to the component signature
