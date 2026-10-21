@@ -14,7 +14,7 @@ pub(super) use cache::RuntimePropResolveCache;
 
 use default_props::merge_type_based_with_defaults_into_croquis;
 use imports::find_imported_runtime_binding;
-use runtime_props::resolve_imported_runtime_props;
+use runtime_props::{resolve_imported_runtime_props, resolve_inline_runtime_props};
 use syntax::runtime_arg_identifier;
 
 pub(super) fn augment_type_based_props_from_script_context(
@@ -64,30 +64,38 @@ fn merge_imported_runtime_props_into_croquis(
         .define_props()
         .filter(|call| call.type_args.is_none())
         .and_then(|call| call.runtime_args.as_deref())
-        .and_then(runtime_arg_identifier)
     else {
         return;
     };
 
-    let import = find_imported_runtime_binding(&script_setup.content, runtime_arg).or_else(|| {
-        descriptor
-            .script
-            .as_ref()
-            .and_then(|script| find_imported_runtime_binding(&script.content, runtime_arg))
-    });
-    let Some(import) = import else {
-        return;
-    };
-
     let mut visited = FxHashSet::default();
-    let props = resolve_imported_runtime_props(
-        path,
-        import.source.as_str(),
-        import.imported.as_str(),
-        runtime_arg,
-        &mut visited,
-        cache,
-    );
+    let props = if let Some(runtime_binding) = runtime_arg_identifier(runtime_arg) {
+        let import =
+            find_imported_runtime_binding(&script_setup.content, runtime_binding).or_else(|| {
+                descriptor.script.as_ref().and_then(|script| {
+                    find_imported_runtime_binding(&script.content, runtime_binding)
+                })
+            });
+        let Some(import) = import else {
+            return;
+        };
+        resolve_imported_runtime_props(
+            path,
+            import.source.as_str(),
+            import.imported.as_str(),
+            runtime_binding,
+            &mut visited,
+            cache,
+        )
+    } else {
+        resolve_inline_runtime_props(
+            &script_setup.content,
+            path,
+            runtime_arg,
+            &mut visited,
+            cache,
+        )
+    };
     if props.is_empty() {
         return;
     }

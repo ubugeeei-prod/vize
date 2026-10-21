@@ -283,3 +283,132 @@ const value: string = props.label
         "runtime props cache should rebind prop types to each SFC local runtime object, got: {snapshot:#?}"
     );
 }
+
+#[test]
+fn imported_runtime_prop_factory_spread_reaches_setup_and_template() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "imported-runtime-prop-factory-spread",
+        &[
+            (
+                "src/sharedProps.ts",
+                r#"export function sharedProps() {
+  return {
+    accumulated: { type: Boolean, default: false },
+  }
+}
+"#,
+            ),
+            (
+                "src/Chart.vue",
+                r#"<script setup lang="ts">
+import { sharedProps } from './sharedProps'
+
+const props = defineProps({
+  ...sharedProps(),
+  title: { type: String, default: '' },
+})
+</script>
+
+<template>
+  <p v-if="accumulated">{{ title }} (accumulated: {{ props.accumulated }})</p>
+</template>
+"#,
+            ),
+        ],
+    );
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "vueCompilerOptions": { "strictTemplates": true },
+  "include": ["src/**/*.ts", "src/**/*.vue"]
+}"#,
+    )
+    .unwrap();
+
+    let snapshot = snapshot_project_diagnostics(&project_root);
+    let _ = std::fs::remove_dir_all(&project_root);
+    let Some(snapshot) = snapshot else {
+        return;
+    };
+    assert_eq!(
+        snapshot,
+        Vec::new(),
+        "imported runtime prop factory spreads should retain their props, got: {snapshot:#?}"
+    );
+}
+
+#[test]
+fn runtime_object_factory_assertion_retains_authored_type() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "runtime-object-factory-assertion",
+        &[
+            (
+                "src/types.ts",
+                r#"export interface Settings {
+  country: boolean
+  platform: boolean
+}
+"#,
+            ),
+            (
+                "src/Parent.vue",
+                r#"<script setup lang="ts">
+import type { Settings } from './types'
+
+const props = defineProps({
+  settings: {
+    type: Object as () => Settings,
+    default: () => ({ country: true, platform: true }),
+  },
+})
+
+const needsSettings = (settings: Settings) => settings.country
+</script>
+
+<template>
+  <span>{{ needsSettings(props.settings) }}</span>
+</template>
+"#,
+            ),
+        ],
+    );
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "vueCompilerOptions": { "strictTemplates": true },
+  "include": ["src/**/*.ts", "src/**/*.vue"]
+}"#,
+    )
+    .unwrap();
+
+    let snapshot = snapshot_project_diagnostics(&project_root);
+    let _ = std::fs::remove_dir_all(&project_root);
+    let Some(snapshot) = snapshot else {
+        return;
+    };
+    assert_eq!(
+        snapshot,
+        Vec::new(),
+        "runtime object factory assertions should retain their return type, got: {snapshot:#?}"
+    );
+}

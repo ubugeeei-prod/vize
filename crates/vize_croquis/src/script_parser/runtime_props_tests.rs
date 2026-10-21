@@ -41,3 +41,31 @@ fn parenthesizes_function_union_members() {
         "PropType function members need the same union precedence protection"
     );
 }
+
+#[test]
+fn infers_object_factory_assertion_return_type() {
+    let result = parse_script_setup(
+        r#"
+            interface Settings {
+                country: boolean
+                platform: boolean
+            }
+
+            const props = defineProps({
+                settings: {
+                    type: Object as () => Settings,
+                    default: () => ({ country: true, platform: true }),
+                },
+            })
+        "#,
+    );
+
+    let settings = result
+        .macros
+        .props()
+        .iter()
+        .find(|prop| prop.name == "settings")
+        .expect("settings runtime prop");
+    assert_eq!(settings.prop_type.as_deref(), Some("Settings"));
+    assert_eq!(settings.default_value.as_deref(), Some("undefined"));
+}

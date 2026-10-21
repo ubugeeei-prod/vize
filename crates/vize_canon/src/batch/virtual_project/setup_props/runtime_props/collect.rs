@@ -210,7 +210,7 @@ pub(super) fn collect_props_from_expression<'a>(
 }
 
 #[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
-fn collect_props_from_argument<'a>(
+pub(super) fn collect_props_from_argument<'a>(
     arg: &'a Argument<'a>,
     source: &str,
     path: &Path,

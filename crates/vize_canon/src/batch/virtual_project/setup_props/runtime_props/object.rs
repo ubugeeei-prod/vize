@@ -8,7 +8,10 @@ use super::{collect::collect_props_from_expression, resolve_imported_runtime_pro
 use crate::batch::virtual_project::setup_props::{
     RuntimePropResolveCache,
     imports::{RuntimeImport, RuntimePropVisitSet},
-    syntax::{runtime_object_property_name, runtime_prop_shape_member_type},
+    syntax::{
+        runtime_object_property_name, runtime_prop_return_shape_member_type,
+        runtime_prop_shape_member_type,
+    },
 };
 
 #[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
@@ -93,6 +96,26 @@ fn collect_props_from_spread_expression<'a>(
             }
         }
         Expression::CallExpression(call) => {
+            if let Some(name) = shape::call_expression_name(call)
+                && let Some(import) = imports.get(name)
+            {
+                let mut imported_props = resolve_imported_runtime_props(
+                    path,
+                    import.source.as_str(),
+                    import.imported.as_str(),
+                    name,
+                    visited,
+                    cache,
+                );
+                for prop in &mut imported_props {
+                    prop.prop_type = Some(runtime_prop_return_shape_member_type(
+                        name,
+                        prop.name.as_str(),
+                    ));
+                }
+                props.extend(imported_props);
+                return;
+            }
             shape::collect_props_from_string_array_helper_call(call, root_runtime_binding, props);
         }
         Expression::TSAsExpression(ts_as) => collect_props_from_spread_expression(
