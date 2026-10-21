@@ -74,7 +74,7 @@
           "column": 30,
           "severity": 1,
           "code": 2353,
-          "message": "Object literal may only specify known properties, and '\"definitelyNotAProp\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; ... 673 more ...; zoomAndPan?: unknown; } & { ...; }>'."
+          "message": "Object literal may only specify known properties, and '\"definitelyNotAProp\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; ... 673 more ...; zoomAndPan?: unknown; } & __VizeComponentDataAt...'."
         }
       ]
     }
