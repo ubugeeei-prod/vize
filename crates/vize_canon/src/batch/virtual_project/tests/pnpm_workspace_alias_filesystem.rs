@@ -198,6 +198,7 @@ fn separate_projects_replace_only_the_selected_leaf_across_alias_directory_alias
     )
     .unwrap();
     let shared = load(&root);
+    let shared_build_info = shared.cli_build_info_path(&shared.generated_tsconfig_path());
     let selected = shared.virtual_root().join("packages/b/node_modules/@x/c");
     let shared_target = fs::read_link(&selected).unwrap();
     let selected_target = shared
@@ -212,6 +213,23 @@ fn separate_projects_replace_only_the_selected_leaf_across_alias_directory_alias
     fs::write(
         variant.join("src/Btn.vue"),
         "<template><button data-variant=\"second\" /></template>\n",
+    )
+    .unwrap();
+    let provider = variant.join("node_modules/__vize_pnpm_fixture_provider");
+    fs::create_dir_all(&provider).unwrap();
+    fs::write(
+        provider.join("package.json"),
+        "{\"name\":\"__vize_pnpm_fixture_provider\",\"types\":\"./index.d.ts\"}\n",
+    )
+    .unwrap();
+    fs::write(
+        provider.join("index.d.ts"),
+        "export declare const authority: \"second\";\n",
+    )
+    .unwrap();
+    fs::write(
+        variant.join("src/index.ts"),
+        "export * from './util';\nimport { authority } from '__vize_pnpm_fixture_provider';\nconst providerMustBeTyped: 'second' = authority;\nvoid providerMustBeTyped;\n",
     )
     .unwrap();
     let sentinels = ["packages/c", "packages/c-variant"]
@@ -229,6 +247,11 @@ fn separate_projects_replace_only_the_selected_leaf_across_alias_directory_alias
     fs::remove_file(&raw_link).unwrap();
     std::os::unix::fs::symlink("../../../c-variant", &raw_link).unwrap();
     let mut divergent = load(&root);
+    assert_ne!(
+        divergent.cli_build_info_path(&divergent.generated_tsconfig_path()),
+        shared_build_info,
+        "a divergent package selection must not reuse native incremental state"
+    );
     assert!(divergent.materialized_package_links.is_empty());
     assert!(fs::symlink_metadata(&selected).unwrap().is_dir());
     assert!(fs::read_link(&selected).is_err());
@@ -271,7 +294,38 @@ fn separate_projects_replace_only_the_selected_leaf_across_alias_directory_alias
     fs::remove_file(&raw_link).unwrap();
     std::os::unix::fs::symlink("../../../c", &raw_link).unwrap();
     let mut repaired = load(&root);
+    assert_eq!(
+        repaired.cli_build_info_path(&repaired.generated_tsconfig_path()),
+        shared_build_info,
+        "the repaired package graph may reuse only its matching clean state"
+    );
     assert_eq!(fs::read_link(&selected).unwrap(), shared_target);
+    let direct = repaired
+        .virtual_root()
+        .join("packages/a/src/node_modules/@x/c");
+    let nested = repaired
+        .virtual_root()
+        .join("packages/a/src/node_modules/@x/b/node_modules/@x/c");
+    assert_eq!(
+        direct.canonicalize().unwrap(),
+        nested.canonicalize().unwrap(),
+        "the repaired dependency routes must share one TypeScript identity"
+    );
+    let repaired_aliases = repaired.workspace_alias_links();
+    assert!(!repaired_aliases.is_empty());
+    for alias in repaired_aliases {
+        assert!(
+            alias.virtual_dir.is_symlink(),
+            "repaired alias stayed a copied directory: {}",
+            alias.virtual_dir.display()
+        );
+        assert_eq!(
+            alias.virtual_dir.canonicalize().unwrap(),
+            alias.real_dir.canonicalize().unwrap(),
+            "repaired alias selected another package identity: {}",
+            alias.virtual_dir.display()
+        );
+    }
     for (path, bytes) in &sentinels {
         assert_eq!(&fs::read(path).unwrap(), bytes);
     }

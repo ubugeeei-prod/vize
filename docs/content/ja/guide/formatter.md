@@ -116,6 +116,8 @@ export default defineConfig({}).withVue({
 | `--single-quote`                   | ダブルクォートの代わりにシングルクォートを使います。            |
 | `--trailing-comma`                 | 末尾のカンマを `all`、`es5`、`none` から選びます。               |
 | `--arrow-parens`                   | 1 引数のアロー関数の括弧を `always`、`avoid` から選びます。      |
+| `--bracket-spacing`                | オブジェクトリテラルの波括弧内の空白を切り替えます。            |
+| `--bracket-same-line`              | 複数行タグの `>` を最後の属性行に置きます。                      |
 | `--no-semi`                        | 文末のセミコロンを省略します。                                  |
 | `--sort-attributes`                | テンプレートとブロックタグの属性を並べ替えます。                |
 | `--single-attribute-per-line`      | 属性を 1 行に 1 つずつ書きます。                                |
@@ -181,6 +183,11 @@ Node の native `formatSfc` API でも、Prettier 移行用の 5 つの真偽値
 アロー関数の引数の括弧も同じように公開されます。
 `--arrow-parens <always|avoid>` は、型付きの Node・設定オプション
 `arrowParens` に対応し、明示値はプリセットより優先されます。
+
+波括弧とタグの閉じ括弧の配置も同じように公開されます。
+`--bracket-spacing[=false]` と `--bracket-same-line[=false]` は、型付きの
+Node・設定オプション `bracketSpacing` と `bracketSameLine` に対応します。
+明示した `true` または `false` は、選択したプリセットより優先されます。
 
 ## コンパクトなアプリケーションコード
 

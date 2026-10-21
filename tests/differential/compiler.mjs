@@ -23,8 +23,81 @@ export const COMPILER_ARGV = [
   "--ssr",
   "--no-config",
 ];
+const DIALECT_INVENTORY_REF = "tests/_fixtures/differential/dialect-inputs/inventory.json";
+const DIALECT_TEMPLATE_TRANSPORT = "sfc-template-wrapper-v1";
+const DIALECT_TEMPLATE_PREFIX = Buffer.from("<template>\n");
+const DIALECT_TEMPLATE_SUFFIX = Buffer.from("</template>\n");
+const DIALECT_VITE_CONFIG_PATH = "vite.config.mjs";
 const OUTPUT_FILE = "out/Layout.json";
 const NOT_COMPARED = "whole-product native compiler path unavailable";
+
+export function compilerArgv(fixture) {
+  if (!fixture.dialectInput) return [...COMPILER_ARGV];
+  const argv = [
+    ...COMPILER_ARGV.slice(0, -1),
+    "--template-syntax",
+    fixture.dialectInput.selector.templateSyntax,
+  ];
+  return fixture.dialectInput.selector.vueVersion === "3"
+    ? [...argv, "--no-config"]
+    : [...argv, "--config", DIALECT_VITE_CONFIG_PATH];
+}
+
+function dialectViteConfig(registered) {
+  if (registered.selector.vueVersion === "3") return null;
+  return Buffer.from(`export default { vue: { version: "${registered.selector.vueVersion}" } };\n`);
+}
+
+function dialectResultInput(fixture) {
+  return {
+    id: fixture.dialectInputId,
+    sha256: fixture.dialectInputSha256,
+    transport: fixture.dialectTransport,
+    ...(fixture.dialectConfig
+      ? {
+          config: {
+            path: fixture.dialectConfigPath,
+            sha256: fixture.dialectConfigSha256,
+          },
+        }
+      : {}),
+  };
+}
+
+function loadDialectInput(root, fixture) {
+  const registryPath = path.resolve(root, "../dialect-inputs/inventory.json");
+  const registry = JSON.parse(fs.readFileSync(registryPath, "utf8"));
+  assert.equal(registry.schema, "vize.dialectInputInventory");
+  assert.equal(registry.version, 1);
+  const registered = registry.cases.find((entry) => entry.id === fixture.inputs.dialectInput.id);
+  assert(registered, `unknown dialect input: ${fixture.inputs.dialectInput.id}`);
+  assert.deepEqual(fixture.inputs.dialectInput, {
+    id: registered.id,
+    sha256: registered.input.sha256,
+    selector: registered.selector,
+    expectedParserMode: registered.expectedParserMode,
+    transport: DIALECT_TEMPLATE_TRANSPORT,
+  });
+  assert.equal(registered.state, "input-only");
+  const raw = readPinnedArtifact(path.dirname(registryPath), registered.input);
+  const input = Buffer.concat([DIALECT_TEMPLATE_PREFIX, raw, DIALECT_TEMPLATE_SUFFIX]);
+  const config = dialectViteConfig(registered);
+  const selector = config
+    ? `compiler-cli-ssr-template-v1 Vue ${registered.selector.vueVersion} via generated ${DIALECT_VITE_CONFIG_PATH}; --template-syntax ${registered.selector.templateSyntax}; parser ${registered.expectedParserMode}`
+    : `compiler-cli-ssr-template-v1 default Vue ${registered.selector.vueVersion}; --template-syntax ${registered.selector.templateSyntax}; parser ${registered.expectedParserMode}`;
+  assert.deepEqual(fixture.dialectCoverage, {
+    state: "verified",
+    registryRef: DIALECT_INVENTORY_REF,
+    evidence: [
+      {
+        kind: "adapter-execution",
+        dialects: registered.dialects,
+        selector,
+      },
+    ],
+  });
+  return { raw, input, config, registered };
+}
 
 export function loadCompilerManifest(manifestPath) {
   const loaded = loadProductManifest(manifestPath, "compiler");
@@ -34,16 +107,24 @@ export function loadCompilerManifest(manifestPath) {
     cases: loaded.cases.map((fixture) => {
       assert.deepEqual(fixture.targets, ["ssr"]);
       assert.equal(fixture.state, "active");
-      assert.equal(fixture.adapters.legacy, "compiler-cli-ssr-v1");
       assert.equal(fixture.adapters.native, null);
       assert.equal(typeof fixture.adapters.reasons.native, "string");
-      assert.match(fixture.inputs.root, /^[a-z0-9-]+$/);
-      assert.equal(fixture.id, `compiler/sfc/${fixture.inputs.root}`);
-      assert.equal(fixture.inputs.files.length, 1);
-      const entry = fixture.inputs.files[0];
-      assert.equal(entry.path, "Layout.vue.txt");
-      assert.equal(entry.role, "entry");
-      assert.equal(fixture.reference.path, `${fixture.inputs.root}/module.expected.txt`);
+      const isDialectInput = fixture.inputs.dialectInput !== undefined;
+      const dialect = isDialectInput ? loadDialectInput(root, fixture) : null;
+      if (dialect) {
+        assert.equal(fixture.adapters.legacy, "compiler-cli-ssr-template-v1");
+        assert.equal(fixture.id, `compiler/${dialect.registered.id}`);
+      } else {
+        assert.equal(fixture.adapters.legacy, "compiler-cli-ssr-v1");
+        assert.match(fixture.inputs.root, /^[a-z0-9-]+$/);
+        assert.equal(fixture.id, `compiler/sfc/${fixture.inputs.root}`);
+        assert.equal(fixture.inputs.files.length, 1);
+        const entry = fixture.inputs.files[0];
+        assert.equal(entry.path, "Layout.vue.txt");
+        assert.equal(entry.role, "entry");
+      }
+      const referenceRoot = dialect ? path.basename(dialect.registered.id) : fixture.inputs.root;
+      assert.equal(fixture.reference.path, `${referenceRoot}/module.expected.txt`);
       assert.equal(typeof fixture.reference.source, "string");
       assert(fixture.reference.source.length > 0, "compiler reference source is required");
       if (fixture.reference.cssPath !== undefined || fixture.reference.cssSha256 !== undefined) {
@@ -52,7 +133,7 @@ export function loadCompilerManifest(manifestPath) {
       }
       assert.equal(fixture.comparison.contract, "compiler-ssr-module-bytes-v1");
       assert(["js", "ts"].includes(fixture.comparison.scriptLang ?? "js"));
-      if (fixture.dialectCoverage.state !== "unknown") {
+      if (!dialect && fixture.dialectCoverage.state !== "unknown") {
         assert.deepEqual(fixture.dialectCoverage, {
           state: "source-inspected",
           registryRef: null,
@@ -76,7 +157,9 @@ export function loadCompilerManifest(manifestPath) {
         "warnings",
         "macro_artifacts",
       ]);
-      const input = readPinnedArtifact(path.join(root, fixture.inputs.root), entry);
+      const input = dialect
+        ? dialect.input
+        : readPinnedArtifact(path.join(root, fixture.inputs.root), fixture.inputs.files[0]);
       const expected = readPinnedArtifact(root, fixture.reference);
       const expectedCss = fixture.reference.cssPath
         ? readPinnedArtifact(root, {
@@ -84,7 +167,24 @@ export function loadCompilerManifest(manifestPath) {
             sha256: fixture.reference.cssSha256,
           })
         : null;
-      return { ...fixture, input, expected, expectedCss };
+      return {
+        ...fixture,
+        input,
+        expected,
+        expectedCss,
+        argv: compilerArgv(dialect ? { dialectInput: dialect.registered } : fixture),
+        ...(dialect
+          ? {
+              dialectInput: dialect.raw,
+              dialectInputId: dialect.registered.id,
+              dialectInputSha256: dialect.registered.input.sha256,
+              dialectTransport: DIALECT_TEMPLATE_TRANSPORT,
+              dialectConfig: dialect.config,
+              dialectConfigPath: dialect.config ? DIALECT_VITE_CONFIG_PATH : null,
+              dialectConfigSha256: dialect.config ? sha256(dialect.config) : null,
+            }
+          : {}),
+      };
     }),
   };
 }
@@ -176,8 +276,12 @@ export function validateCompilerReport(loaded, report, expectedBuild) {
     assert.equal(row.target, "ssr");
     assert.deepEqual(row.native, { state: "unsupported", reason: fixture.adapters.reasons.native });
     assert.deepEqual(row.comparison, { state: "not-compared", reason: NOT_COMPARED });
-    assert.deepEqual(row.legacy.argv, COMPILER_ARGV);
+    assert.deepEqual(row.legacy.argv, fixture.argv);
     assert.equal(row.legacy.inputSha256, sha256(fixture.input));
+    assert.deepEqual(
+      row.legacy.dialectInput,
+      fixture.dialectInput ? dialectResultInput(fixture) : undefined,
+    );
     assert(["completed", "failed"].includes(row.legacy.state));
     const attempt = row.legacy.observation;
     if (attempt) {
@@ -234,8 +338,13 @@ function runCompilerCase(fixture, binaryPath, binaryFailure) {
     legacy: {
       state: "failed",
       verdict: "failed",
-      argv: COMPILER_ARGV,
+      argv: fixture.argv,
       inputSha256: sha256(fixture.input),
+      ...(fixture.dialectInput
+        ? {
+            dialectInput: dialectResultInput(fixture),
+          }
+        : {}),
       observation: null,
     },
     native: { state: "unsupported", reason: fixture.adapters.reasons.native },
@@ -246,7 +355,10 @@ function runCompilerCase(fixture, binaryPath, binaryFailure) {
     if (binaryFailure) throw new Error(binaryFailure);
     workspace = fs.mkdtempSync(path.join(os.tmpdir(), "vize-differential-compiler-"));
     fs.writeFileSync(path.join(workspace, "Layout.vue"), fixture.input);
-    const result = spawnSync(binaryPath, COMPILER_ARGV, {
+    if (fixture.dialectConfig) {
+      fs.writeFileSync(path.join(workspace, fixture.dialectConfigPath), fixture.dialectConfig);
+    }
+    const result = spawnSync(binaryPath, fixture.argv, {
       cwd: workspace,
       timeout: 30_000,
       maxBuffer: 4 * 1024 * 1024,

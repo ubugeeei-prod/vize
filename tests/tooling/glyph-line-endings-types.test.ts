@@ -282,3 +282,54 @@ test("config schema and shipped Node types share arrow parentheses modes", (t) =
   assert.equal(result.error, undefined);
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
 });
+
+test("config schema and shipped Node types share bracket layout booleans", (t) => {
+  const schema = JSON.parse(
+    fs.readFileSync(path.join(root, "npm/cli/schemas/vize.config.schema.json"), "utf8"),
+  );
+  assert.equal(schema.definitions.FormatterConfig.properties.bracketSpacing.type, "boolean");
+  assert.equal(schema.definitions.FormatterConfig.properties.bracketSameLine.type, "boolean");
+
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "glyph-bracket-layout-types-"));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  fs.writeFileSync(
+    path.join(directory, "consumer.mts"),
+    [
+      `import { formatSfc, type FormatOptionsNapi } from ${JSON.stringify(path.join(root, "npm/native/index.js"))};`,
+      `import type { FormatterConfig } from ${JSON.stringify(path.join(root, "npm/cli/src/types/generated.js"))};`,
+      "const config: FormatterConfig = { bracketSpacing: false, bracketSameLine: true };",
+      "const native: FormatOptionsNapi = {",
+      "  bracketSpacing: config.bracketSpacing,",
+      "  bracketSameLine: config.bracketSameLine,",
+      "};",
+      "formatSfc('', native);",
+      "// @ts-expect-error bracket spacing remains boolean-only.",
+      "formatSfc('', { bracketSpacing: 'never' });",
+      "// @ts-expect-error bracket placement remains boolean-only.",
+      "formatSfc('', { bracketSameLine: 'always' });",
+      "",
+    ].join("\n"),
+  );
+  fs.writeFileSync(
+    path.join(directory, "tsconfig.json"),
+    JSON.stringify({
+      compilerOptions: {
+        module: "NodeNext",
+        moduleResolution: "NodeNext",
+        noEmit: true,
+        skipLibCheck: true,
+        strict: true,
+        target: "ES2022",
+        types: [],
+      },
+      files: ["consumer.mts"],
+    }),
+  );
+  const result = spawnSync(
+    process.execPath,
+    [require.resolve("typescript/bin/tsc"), "-p", directory, "--pretty", "false"],
+    { encoding: "utf8", timeout: 30_000 },
+  );
+  assert.equal(result.error, undefined);
+  assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+});

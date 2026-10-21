@@ -3166,11 +3166,11 @@
       "pack": "workspace-alias-cache-10063",
       "case": "second-package-selection",
       "test": "workspace_package_alias_cache_preserves_sequential_scopes",
-      "regressionCommit": "7174c46d55825c155325e6314305e661d50ec95a",
-      "sourceRevision": "7174c46d55825c155325e6314305e661d50ec95a",
+      "regressionCommit": "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
+      "sourceRevision": "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
       "packReference": {
         "path": "workspace-alias-cache-10063/cases.json",
-        "sha256": "3e6c9a6b0492e17e252cd4ae0d7dde0652c528ff45eb5ca1b8e713110e0ad02f"
+        "sha256": "f9cc217d3e6a52c3e149922d6ef9a36aee1d5566e93ef2011e7f696ea46ee791"
       },
       "inputs": [
         {
@@ -3238,6 +3238,111 @@
             "dialects": [
               "vue3-sfc",
               "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/workspace-alias-cache-10063/repaired-private-package-identity",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "workspace-alias-cache-10063",
+      "case": "repaired-private-package-identity",
+      "test": "workspace_package_alias_cache_preserves_sequential_scopes",
+      "regressionCommit": "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
+      "sourceRevision": "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
+      "packReference": {
+        "path": "workspace-alias-cache-10063/cases.json",
+        "sha256": "f9cc217d3e6a52c3e149922d6ef9a36aee1d5566e93ef2011e7f696ea46ee791"
+      },
+      "inputs": [
+        {
+          "file": "package.json",
+          "path": "workspace-alias-cache-10063/package.json.txt",
+          "sha256": "30d5ed2992f32badf6f34dfeec26a7bcfec29ba7a62ef19c3ad0523d96ba0bf1"
+        },
+        {
+          "file": "pnpm-workspace.yaml",
+          "path": "workspace-alias-cache-10063/pnpm-workspace.yaml.txt",
+          "sha256": "0fb360452b0231d114d0b0ad6cc76bb48fe528382f55827cf93739bf64ec79e1"
+        },
+        {
+          "file": "tsconfig.a.json",
+          "path": "workspace-alias-cache-10063/tsconfig.a.json.txt",
+          "sha256": "7546c13fe53c3a6a3db44d8dadb89551305a98e8bdeaee72538788f5e5ae054c"
+        },
+        {
+          "file": "packages/a/package.json",
+          "path": "workspace-alias-cache-10063/packages/a/package.json.txt",
+          "sha256": "4cfd5466e463b71d0c1412f0c6f10c270ac080984c6debe5f71fbc0c2e6b8a72"
+        },
+        {
+          "file": "packages/a/src/index.ts",
+          "path": "workspace-alias-cache-10063/private/a-index.ts.txt",
+          "sha256": "3aebf663fbbc595597d1939238ff9cfa60cd53a0765d5b306441a8a54663123e"
+        },
+        {
+          "file": "packages/b/package.json",
+          "path": "workspace-alias-cache-10063/packages/b/package.json.txt",
+          "sha256": "199b5382e2f3f8967f3343fa5eab3422a153af7e99745315e826f7b3352e03b5"
+        },
+        {
+          "file": "packages/b/src/index.ts",
+          "path": "workspace-alias-cache-10063/private/b-index.ts.txt",
+          "sha256": "d9c7c3e550464100bf4254eaab2aa0a87bbb343350b204ce6311763db73d275b"
+        },
+        {
+          "file": "packages/b/src/x/make.ts",
+          "path": "workspace-alias-cache-10063/private/b-make.ts.txt",
+          "sha256": "469952728cdbb0a9719e6f64486efdeea2bf5a64357a777c1dd57b1645c704f0"
+        },
+        {
+          "file": "packages/c/package.json",
+          "path": "workspace-alias-cache-10063/packages/c/package.json.txt",
+          "sha256": "f217a5e0b1b3629c9dba14a85fb6c796d485d415d9876a23e01ce9eadde7f79a"
+        },
+        {
+          "file": "packages/c/src/index.ts",
+          "path": "workspace-alias-cache-10063/private/c-index.ts.txt",
+          "sha256": "161b95f921d66982a2d4139b0eb1579a5c948463bca53bc5f686db07d3d9ec38"
+        },
+        {
+          "file": "packages/c-variant/package.json",
+          "path": "workspace-alias-cache-10063/packages/c/package.json.txt",
+          "sha256": "f217a5e0b1b3629c9dba14a85fb6c796d485d415d9876a23e01ce9eadde7f79a"
+        },
+        {
+          "file": "packages/c-variant/src/index.ts",
+          "path": "workspace-alias-cache-10063/private/c-variant-index.ts.txt",
+          "sha256": "bd40952afb11aa6b2480ea3815f47a708c2bbed87c8f1993a262a8cf78cad2fc"
+        },
+        {
+          "file": "packages/c-variant/node_modules/__vize_pnpm_fixture_provider/package.json",
+          "path": "workspace-alias-cache-10063/private/provider-package.json.txt",
+          "sha256": "81c7e28fa3113f2c63901b5f53d5ef97c32f4701cf3fb8908ed100f479ecd461"
+        },
+        {
+          "file": "packages/c-variant/node_modules/__vize_pnpm_fixture_provider/index.d.ts",
+          "path": "workspace-alias-cache-10063/private/provider-index.d.ts.txt",
+          "sha256": "91624c4cf7487b62d9b844fbee33caa968c21e7f83f66b9ebcff4008d548c7db"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
               "ts"
             ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
@@ -3753,6 +3858,58 @@
           "file": "src/Child.vue",
           "path": "content-mapper-dynamic-template-ref-scope-10251/Child.vue.txt",
           "sha256": "1c2698881e58f69f8f576ad4c3a4be997d693e58bf06e3baecee1999478c29df"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/content-mapper-props-binding-10196/authored-props-binding-with-unassigned-define-props",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "content-mapper-props-binding-10196",
+      "case": "authored-props-binding-with-unassigned-define-props",
+      "test": "authored_props_binding_preserves_batch_acceptance",
+      "regressionCommit": "232f8f514e0ea55a7aeef08bc883b46e0608d12f",
+      "sourceRevision": "232f8f514e0ea55a7aeef08bc883b46e0608d12f",
+      "packReference": {
+        "path": "content-mapper-props-binding-10196/cases.json",
+        "sha256": "5a1888ce33199b9e69d3c2b4a9293d35a4f1ef7d112d95bdcd04236480e258fb"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "content-mapper-props-binding-10196/tsconfig.json.txt",
+          "sha256": "bed6b6f5f33d8a7d30e8f6c3585d833486637812a78150f3a177ab2009ae5175"
+        },
+        {
+          "file": "src/use-field.ts",
+          "path": "content-mapper-props-binding-10196/use-field.ts.txt",
+          "sha256": "3161df7a62aefa81f250ec4553a8b14c610139e6c14754936f73476a4c3d442a"
+        },
+        {
+          "file": "src/MyField.vue",
+          "path": "content-mapper-props-binding-10196/MyField.vue.txt",
+          "sha256": "92c301ca39bcd8be4ead820133073918721398c09da7f6278036293c75397f8a"
         }
       ],
       "dialectCoverage": {

@@ -93,7 +93,25 @@ function code(value) {
   return `\`${String(value).replaceAll("`", "\\`")}\``;
 }
 
-export function createDivergenceIssue(log, ledger, selectedGitlinks, context) {
+function validateReductionReceipt(receipt, context, fingerprint, divergenceCount) {
+  if (receipt === undefined) return null;
+  assert.equal(
+    receipt?.schema,
+    "vize.realProjectDivergenceReductionReceipt",
+    "Foreign divergence reduction receipt",
+  );
+  assert.equal(receipt?.version, 1, "Unknown divergence reduction receipt version");
+  assert.equal(receipt?.sourceCommit, context.sourceCommit, "Reduction receipt commit differs");
+  assert.equal(receipt?.fingerprint, fingerprint, "Reduction receipt fingerprint differs");
+  assert.equal(receipt?.divergenceCount, divergenceCount, "Reduction receipt count differs");
+  assert(
+    ["reduced", "not-reproduced", "failed"].includes(receipt?.status),
+    "Invalid divergence reduction status",
+  );
+  return receipt;
+}
+
+export function createDivergenceIssue(log, ledger, selectedGitlinks, context, reductionReceipt) {
   const { divergenceCount, samples: rawSamples } = parseCorpusDivergences(log);
   const owners = fixturePaths(ledger);
   const selected = new Set(
@@ -116,6 +134,7 @@ export function createDivergenceIssue(log, ledger, selectedGitlinks, context) {
     return { fixturePath, ...sample };
   });
   const digest = fingerprint(divergenceCount, samples);
+  const reduction = validateReductionReceipt(reductionReceipt, context, digest, divergenceCount);
   const title = `fix(davinci): triage canonical DOM divergence ${digest}`;
   const fixtures = [...new Set(samples.map((sample) => sample.fixturePath))].sort(
     compareCodepoints,
@@ -125,6 +144,22 @@ export function createDivergenceIssue(log, ledger, selectedGitlinks, context) {
       `- ${code(sample.sourcePath)}: old=${sample.oldLength} bytes, Davinci=${sample.newLength} bytes, first difference=${sample.firstDifference}; old window=${code(sample.oldWindow)}; Davinci window=${code(sample.newWindow)}`,
   );
   const artifact = `canonical-corpus-dom-${context.runId}-${context.runAttempt}-${context.sourceCommit}`;
+  const reductionArtifact = `canonical-corpus-dom-reduction-${context.runId}-${context.runAttempt}-${context.sourceCommit}`;
+  const reductionLines = reduction
+    ? [
+        `- Automatic reduction: ${code(reduction.status)}`,
+        `- Reduced witness artifact: ${code(reductionArtifact)}`,
+        ...(reduction.status === "reduced"
+          ? [
+              `- Reduced witness: ${code(reduction.reducedFile)} (${reduction.sourceBytes} -> ${reduction.reducedBytes} bytes, sha256 ${code(reduction.reducedSha256)})`,
+            ]
+          : []),
+      ]
+    : [];
+  const nextAction =
+    reduction?.status === "reduced"
+      ? "Next action: inspect the reduced witness artifact and commit only the minimized in-repo fixture before fixing the product behavior."
+      : "Next action: reproduce the exact comparison from the workflow artifact, minimize it with `vize reduce`, and commit only the minimized in-repo fixture before fixing the product behavior.";
   const body = [
     `The canonical real-project corpus found ${divergenceCount} legacy-vs-Davinci DOM output divergence(s).`,
     "",
@@ -134,12 +169,13 @@ export function createDivergenceIssue(log, ledger, selectedGitlinks, context) {
     `- Workflow run: ${context.runUrl}`,
     `- Evidence artifact: ${code(artifact)}`,
     `- Pinned fixture owner(s): ${fixtures.map(code).join(", ")}`,
+    ...reductionLines,
     "",
     `Captured comparison sample(s) (${samples.length}/${divergenceCount}):`,
     "",
     ...comparisons,
     "",
-    "Next action: reproduce the exact comparison from the workflow artifact, minimize it with `vize reduce`, and commit only the minimized in-repo fixture before fixing the product behavior.",
+    nextAction,
     "",
     "This report contains paths and mismatch windows only; it does not copy a third-party source file.",
   ].join("\n");
@@ -242,13 +278,21 @@ function workflowContext(env) {
   };
 }
 
-export function publishFromArtifact(artifactDirectory, env = process.env, github) {
+export function publishFromArtifact(
+  artifactDirectory,
+  reductionDirectory,
+  env = process.env,
+  github,
+) {
   const context = workflowContext(env);
   const plan = createDivergenceIssue(
     readFileSync(join(artifactDirectory, "dom-corpus.log"), "utf8"),
     JSON.parse(readFileSync("tests/_fixtures/fixture-compatibility-ledger.json", "utf8")),
     readFileSync(join(artifactDirectory, "selected-gitlinks.txt"), "utf8"),
     context,
+    reductionDirectory
+      ? JSON.parse(readFileSync(join(reductionDirectory, "reduction.json"), "utf8"))
+      : undefined,
   );
   const receipt = publishDivergenceIssue(plan, context, github ?? githubClient(context.repository));
   writeFileSync(join(artifactDirectory, "divergence-issue.json"), `${JSON.stringify(receipt)}\n`);
@@ -259,8 +303,8 @@ export function publishFromArtifact(artifactDirectory, env = process.env, github
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const [command, artifactDirectory, ...extra] = process.argv.slice(2);
   assert(
-    command === "publish" && artifactDirectory && extra.length === 0,
-    "Usage: canonical-corpus-divergence-issue.mjs publish ARTIFACT_DIRECTORY",
+    command === "publish" && artifactDirectory && extra.length <= 1,
+    "Usage: canonical-corpus-divergence-issue.mjs publish ARTIFACT_DIRECTORY [REDUCTION_DIRECTORY]",
   );
-  publishFromArtifact(artifactDirectory);
+  publishFromArtifact(artifactDirectory, extra[0]);
 }

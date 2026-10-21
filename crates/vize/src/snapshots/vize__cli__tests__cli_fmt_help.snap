@@ -58,6 +58,16 @@ Options:
           - always: Always include parentheses around a sole parameter
           - avoid:  Omit parentheses when a sole parameter permits it
 
+      --bracket-spacing[=<BRACKET_SPACING>]
+          Print spaces inside object literal braces
+
+          [possible values: true, false]
+
+      --bracket-same-line[=<BRACKET_SAME_LINE>]
+          Put the closing bracket of a multi-line tag on its last attribute line
+
+          [possible values: true, false]
+
       --print-width <PRINT_WIDTH>
           Print width (line length) for formatting
 

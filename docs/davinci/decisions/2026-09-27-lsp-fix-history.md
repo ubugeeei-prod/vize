@@ -78,7 +78,7 @@ later runs. This dated source proof remains evidence for its exact head; every
 later transport or merged head still requires its own Actions checks. It does
 not establish complete wire/state coverage, native L4 parity or #6883 closure.
 
-### Shared raw-wire completion candidate
+### Shared raw-wire response coverage
 
 The inactive-import case is now bound by name to the shared stdio manifest law
 rather than relying on its incidental position in the manifest. The law retains
@@ -89,9 +89,20 @@ request id, and shutdown lifecycle as the source-built differential runner.
 
 This makes the one required-response obligation recorded for historical fix
 `447716ebc8a2d52e810d2be1de6a8166a95e4c32` executable in the shared raw-wire
-corpus. The row remains a completion candidate until fresh exact-head Actions
-execute the source-built session and protected delivery reaches main. It grants
-no native acceptance and does not reduce any other history row.
+corpus. Exact source head `41704dcfe1b74ae80619c3ce83aafe7b18b3dffd`
+passed source Check
+[39647561916](https://github.com/ubugeeei-prod/vize/actions/runs/39647561916).
+Its selected tooling report
+[job 119392699303](https://github.com/ubugeeei-prod/vize/actions/runs/39647561916/job/119392699303)
+and final [test report](https://github.com/ubugeeei-prod/vize/actions/runs/39647561916/job/119394662240)
+both succeeded after the complete affected-tooling matrix.
+
+Protected merge-group Check
+[39650259457](https://github.com/ubugeeei-prod/vize/actions/runs/39650259457)
+succeeded for candidate `45ccf0ad37738e9fbb90dad9e7a73531049b743d`,
+which became the actual main merge. The pinned inactive-import row is therefore
+`response-fixture-covered`: the second of 255 historical fix rows. This grants
+no native acceptance; the other 253 rows and #6883 remain open.
 
 ## CRLF on-type formatting installment
 
@@ -111,9 +122,26 @@ The fixture must retain exactly four responses before opening the session; an
 empty expectation cannot silently skip every runtime request.
 The helper also requires the entry URI's exact version-1 diagnostics publication.
 All three on-type tests passed against the same pinned historical f59 artifact,
-with zero failures/skips/cancellations. Full-wire/shared-runner registration
-remains pending. This covers only the selected CRLF public response witness;
-it does not establish whole-fix or whole-history coverage.
+with zero failures/skips/cancellations. That dated proof did not include the
+full-wire/shared-runner registration added below. This covers only the selected
+CRLF public response witness; it does not establish whole-fix or whole-history
+coverage.
+
+### Shared raw-wire completion candidate
+
+The CRLF on-type case is now bound by name to the shared stdio manifest law
+rather than relying on its incidental position in the manifest. The law retains
+the exact 211 source bytes and 18 CRLF pairs together with all four authored
+responses: script and style edits, the already-indented empty edit list, and the
+out-of-range null control. It also checks all four request identities through
+the same initialization, versioned readiness barrier, and shutdown lifecycle as
+the source-built differential runner.
+
+This makes the one required-response obligation recorded for historical fix
+`4d04bc3e53acfddf835f2db70e613abe85ce8df4` executable in the shared raw-wire
+corpus. The row remains a completion candidate until fresh exact-head Actions
+execute the source-built sessions and protected delivery reaches main. It grants
+no native acceptance and does not reduce any other history row.
 
 ### Dated CRLF source proof
 
@@ -128,9 +156,9 @@ actual full workflow jobs passed.
 
 That run did not retain the receipt JSON separately, so no binary hash is
 inferred or borrowed from the old f59 artifact. Later transport and merged
-heads require their own Actions proof. Complete wire/state and shared-runner
-registration remain unfinished, and the selected witness gives no native L4
-parity or whole-fix-history credit.
+heads require their own Actions proof. The completion candidate above supersedes
+only the dated registration gap; it still needs fresh protected delivery and
+gives no native L4 parity or whole-fix-history credit.
 
 ## Reuse and remaining work
 

@@ -56,6 +56,12 @@ pub(super) fn build_format_options(
     if let Some(v) = args.arrow_parens {
         opts.arrow_parens = v.into();
     }
+    if let Some(v) = args.bracket_spacing {
+        opts.bracket_spacing = v;
+    }
+    if let Some(v) = args.bracket_same_line {
+        opts.bracket_same_line = v;
+    }
     if let Some(v) = args.sort_attributes {
         opts.sort_attributes = v;
     }

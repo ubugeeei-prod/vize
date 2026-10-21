@@ -114,6 +114,8 @@ The same options are available as CLI flags:
 | `--single-quote`                   | Uses single quotes instead of double quotes.                  |
 | `--trailing-comma`                 | Chooses `all`, `es5` or `none` trailing commas.               |
 | `--arrow-parens`                   | Chooses `always` or `avoid` for sole arrow parameters.        |
+| `--bracket-spacing`                | Toggles spaces inside object literal braces.                  |
+| `--bracket-same-line`              | Keeps a multi-line tag's `>` on its final attribute line.     |
 | `--no-semi`                        | Omits semicolons at the ends of statements.                   |
 | `--sort-attributes`                | Sorts attributes in the template and on block tags.           |
 | `--single-attribute-per-line`      | Puts each attribute on its own line.                          |
@@ -179,6 +181,11 @@ The trailing comma policy is shared in the same way:
 Arrow parameter parentheses are also projected consistently:
 `--arrow-parens <always|avoid>` maps to the typed Node and config option
 `arrowParens`, with explicit values taking precedence over presets.
+
+Bracket layout is projected consistently as well:
+`--bracket-spacing[=false]` and `--bracket-same-line[=false]` map to the typed
+Node and config options `bracketSpacing` and `bracketSameLine`. Explicit true
+or false values override a selected preset.
 
 ## Compact application code
 

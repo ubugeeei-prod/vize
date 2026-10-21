@@ -152,7 +152,7 @@ test("passive native LSP capture retains the complete original Matrix workflow",
   assert.deepEqual(divergenceIssue, {
     name: "file canonical DOM divergence",
     if: "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}",
-    needs: "davinci-dom-corpus",
+    needs: ["davinci-dom-corpus", "davinci-dom-divergence-reduction"],
     permissions: { contents: "read", actions: "read", issues: "write" },
     "runs-on": "ubuntu-latest",
     "timeout-minutes": 5,
@@ -175,13 +175,30 @@ test("passive native LSP capture retains the complete original Matrix workflow",
         },
       },
       {
+        name: "Download canonical DOM reduction",
+        uses: "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
+        with: {
+          name: "canonical-corpus-dom-reduction-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}",
+          path: "real-project-davinci-dom-reduction",
+        },
+      },
+      {
         name: "File canonical DOM divergence issue",
         env: { GH_TOKEN: "${{ github.token }}" },
-        run: "node tools/support/compat/github/canonical-corpus-divergence-issue.mjs publish real-project-davinci-dom-corpus",
+        run: "node tools/support/compat/github/canonical-corpus-divergence-issue.mjs publish real-project-davinci-dom-corpus real-project-davinci-dom-reduction",
       },
     ],
   });
   delete current.jobs["davinci-dom-divergence-issue"];
+  const divergenceReduction = current.jobs["davinci-dom-divergence-reduction"];
+  assert.equal(divergenceReduction.name, "reduce canonical DOM divergence");
+  assert.equal(divergenceReduction.needs, "davinci-dom-corpus");
+  assert.deepEqual(divergenceReduction.permissions, { contents: "read", actions: "read" });
+  assert.equal(
+    divergenceReduction.steps.some((step) => step.name === "Reduce the first divergence witness"),
+    true,
+  );
+  delete current.jobs["davinci-dom-divergence-reduction"];
   assert.deepEqual(current.permissions, { contents: "read" });
   current.permissions = original.permissions;
   const corpus = current.jobs["davinci-dom-corpus"];

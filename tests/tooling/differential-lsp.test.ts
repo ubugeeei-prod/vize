@@ -149,6 +149,58 @@ void test("inactive-import history retains the complete ordered document links o
   ]);
 });
 
+void test("CRLF on-type history retains all authored edit and control responses on raw wire", () => {
+  const fixture = loaded.cases.find((candidate) => candidate.id === "lsp/fix-history/on-type-crlf");
+  assert(fixture);
+  assert.equal(fixture.data.method, "textDocument/onTypeFormatting");
+  assert.equal(fixture.entry, "App.vue");
+  assert.equal(fixture.files.length, 1);
+  assert.equal(fixture.files[0].bytes.length, 211);
+  assert.equal(fixture.files[0].bytes.filter((byte) => byte === 13).length, 18);
+  assert.equal(fixture.files[0].bytes.filter((byte) => byte === 10).length, 18);
+  const options = { tabSize: 2, insertSpaces: true };
+  assert.deepEqual(fixture.requests, [
+    {
+      params: { position: { line: 4, character: 3 }, ch: "}", options },
+      result: [
+        {
+          range: {
+            start: { line: 4, character: 0 },
+            end: { line: 4, character: 2 },
+          },
+          newText: "",
+        },
+      ],
+    },
+    {
+      params: { position: { line: 16, character: 3 }, ch: "}", options },
+      result: [
+        {
+          range: {
+            start: { line: 16, character: 0 },
+            end: { line: 16, character: 2 },
+          },
+          newText: "",
+        },
+      ],
+    },
+    {
+      params: { position: { line: 2, character: 22 }, ch: ";", options },
+      result: [],
+    },
+    {
+      params: { position: { line: 900, character: 0 }, ch: "}", options },
+      result: null,
+    },
+  ]);
+  assert.deepEqual(inspectLspObservation(fixture, referenceObservation(fixture)), [
+    { requestId: 2, state: "equal" },
+    { requestId: 3, state: "equal" },
+    { requestId: 4, state: "equal" },
+    { requestId: 5, state: "equal" },
+  ]);
+});
+
 void test("LSP dialect coverage rejects labels that drift from pinned authored sources", () => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-lsp-dialect-"));
   try {

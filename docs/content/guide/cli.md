@@ -137,6 +137,8 @@ Default discovery formats Vue, JavaScript/TypeScript and JSON/JSONC files. YAML 
 | `--quote-props`                    | Choose object property quote policy                  |
 | `--trailing-comma`                 | Choose `all`, `es5` or `none` trailing commas        |
 | `--arrow-parens`                   | Choose `always` or `avoid` for sole arrow parameters |
+| `--bracket-spacing`                | Toggle spaces inside object literal braces           |
+| `--bracket-same-line`              | Keep a multi-line tag's `>` on its last attribute line |
 | `--print-width`                    | Maximum line width                                   |
 | `--tab-width`                      | Indentation width                                    |
 | `--use-tabs`                       | Toggle tabs vs spaces                                |

@@ -261,6 +261,48 @@ const mapper = value => value + 1;
   assert.deepEqual(options, { arrowParens: "avoid" });
 });
 
+void test("public formatter exposes bracket layout policies", () => {
+  const source = `<template>
+  <Widget :long-property-name="state.currentValue" other="x" />
+</template>
+<script setup lang="ts">
+const state={currentValue:1}
+</script>
+`;
+  const expected = `<script setup lang="ts">
+const state = {currentValue: 1};
+</script>
+
+<template>
+  <Widget
+    :long-property-name="
+      state.currentValue
+    "
+    other="x" />
+</template>
+`;
+  const options = Object.freeze({
+    preset: "vize" as const,
+    printWidth: 40,
+    sortAttributes: false,
+    singleAttributePerLine: true,
+    bracketSpacing: false,
+    bracketSameLine: true,
+  }) satisfies FormatOptionsNapi;
+  assert.deepEqual(formatSfc(source, options), { code: expected, changed: true });
+  for (let pass = 2; pass <= 3; pass += 1) {
+    assert.deepEqual(formatSfc(expected, options), { code: expected, changed: false });
+  }
+  assert.deepEqual(options, {
+    preset: "vize",
+    printWidth: 40,
+    sortAttributes: false,
+    singleAttributePerLine: true,
+    bracketSpacing: false,
+    bracketSameLine: true,
+  });
+});
+
 void test("public formatter rejects unknown presets and wrong JavaScript types", () => {
   for (const preset of ["", "docs", "PRETTIER", 1, true, {}, []]) {
     assert.throws(

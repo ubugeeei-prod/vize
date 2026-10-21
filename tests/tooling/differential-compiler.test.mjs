@@ -8,6 +8,7 @@ import { summarizeNativeAcceptance } from "../differential/acceptance-rates.mjs"
 import { BUILD_RECIPE } from "../differential/build-receipt.ts";
 import {
   COMPILER_ARGV,
+  compilerArgv,
   compilerAttempt,
   loadCompilerManifest,
   runCompilerPack,
@@ -17,6 +18,7 @@ import { sha256 } from "../differential/harness.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const pack = path.join(root, "tests/_fixtures/differential/compiler");
+const dialectPack = path.join(root, "tests/_fixtures/differential/dialect-inputs");
 const manifestPath = path.join(pack, "manifest.json");
 const loaded = loadCompilerManifest(manifestPath);
 const fixture = loaded.cases[0];
@@ -27,6 +29,14 @@ const build = {
   binarySha256: "0".repeat(64),
   cliVersion: "vize 0.429.0-dev",
 };
+
+function copyCompilerPack(prefix) {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+  const compiler = path.join(temporary, "compiler");
+  fs.cpSync(pack, compiler, { recursive: true });
+  fs.cpSync(dialectPack, path.join(temporary, "dialect-inputs"), { recursive: true });
+  return { temporary, compiler };
+}
 
 function syntheticReport(code = fixture.expected) {
   const rows = loaded.cases.map((current, index) => {
@@ -60,8 +70,25 @@ function syntheticReport(code = fixture.expected) {
       legacy: {
         state: "completed",
         verdict,
-        argv: COMPILER_ARGV,
+        argv: current.argv,
         inputSha256: sha256(current.input),
+        ...(current.dialectInput
+          ? {
+              dialectInput: {
+                id: current.dialectInputId,
+                sha256: current.dialectInputSha256,
+                transport: current.dialectTransport,
+                ...(current.dialectConfig
+                  ? {
+                      config: {
+                        path: current.dialectConfigPath,
+                        sha256: current.dialectConfigSha256,
+                      },
+                    }
+                  : {}),
+              },
+            }
+          : {}),
         observation,
       },
       native: { state: "unsupported", reason: current.adapters.reasons.native },
@@ -116,18 +143,40 @@ void test("compiler fixture pins a real full-module reference without native cre
       "compiler/sfc/jsx-vapor-runtime-slots-6889",
       "compiler/sfc/root-text-patch-flag-10168",
       "compiler/sfc/scoped-slot-closure-10169",
+      "compiler/dialect/vue0-10-repeat",
+      "compiler/dialect/vue0-11-repeat",
+      "compiler/dialect/quirks-adjacent-attributes",
+      "compiler/dialect/quirks-void-close",
     ],
   );
   const report = syntheticReport();
   assert.deepEqual(validateCompilerReport(loaded, report, build), report.summary);
-  assert.deepEqual(summarizeNativeAcceptance(loaded, report, { sourceRevision }).total, {
-    planned: 17,
+  const acceptance = summarizeNativeAcceptance(loaded, report, { sourceRevision });
+  assert.deepEqual(acceptance.total, {
+    planned: 21,
     nativeHandled: 0,
     nativeEquivalent: 0,
-    unsupported: 17,
+    unsupported: 21,
     legacyBacked: 0,
     unverified: 0,
   });
+  assert.deepEqual(acceptance.dialectCoverage.verified["vue-quirks"], {
+    planned: 2,
+    nativeHandled: 0,
+    nativeEquivalent: 0,
+    unsupported: 2,
+    legacyBacked: 0,
+    unverified: 0,
+  });
+  assert.deepEqual(acceptance.dialectCoverage.verified["vue0-template"], {
+    planned: 2,
+    nativeHandled: 0,
+    nativeEquivalent: 0,
+    unsupported: 2,
+    legacyBacked: 0,
+    unverified: 0,
+  });
+  assert.equal(acceptance.dialectCoverage.unknown.planned, 17);
   assert.equal(
     loaded.cases.find((current) => current.id === "compiler/sfc/package-import-prop-type-9894")
       .comparison.scriptLang,
@@ -138,6 +187,56 @@ void test("compiler fixture pins a real full-module reference without native cre
       .filter((current) => current.expectedCss !== null)
       .every((current) => Buffer.isBuffer(current.expectedCss)),
   );
+  const dialects = loaded.cases.filter((current) => current.dialectInput);
+  assert.equal(dialects.length, 4);
+  const quirks = dialects.filter((current) => current.dialectInputId.includes("quirks"));
+  assert.equal(quirks.length, 2);
+  for (const current of quirks) {
+    assert.deepEqual(current.argv, [
+      ...COMPILER_ARGV.slice(0, -1),
+      "--template-syntax",
+      "quirks",
+      "--no-config",
+    ]);
+    assert.deepEqual(
+      compilerArgv({
+        dialectInput: { selector: { vueVersion: "3", templateSyntax: "quirks" } },
+      }),
+      current.argv,
+    );
+    assert.equal(sha256(current.dialectInput), current.dialectInputSha256);
+    assert.equal(current.dialectTransport, "sfc-template-wrapper-v1");
+    assert.equal(current.dialectCoverage.state, "verified");
+    assert.deepEqual(current.dialectCoverage.evidence[0].dialects, ["vue-quirks"]);
+  }
+  const vue0 = dialects.filter((current) => current.dialectInputId.includes("vue0-"));
+  assert.deepEqual(
+    vue0.map((current) => current.dialectInputId),
+    ["dialect/vue0-10-repeat", "dialect/vue0-11-repeat"],
+  );
+  for (const current of vue0) {
+    assert.deepEqual(current.argv, [
+      ...COMPILER_ARGV.slice(0, -1),
+      "--template-syntax",
+      "standard",
+      "--config",
+      "vite.config.mjs",
+    ]);
+    assert.deepEqual(
+      compilerArgv({ dialectInput: { selector: current.inputs.dialectInput.selector } }),
+      current.argv,
+    );
+    assert.equal(sha256(current.dialectInput), current.dialectInputSha256);
+    assert.equal(current.dialectTransport, "sfc-template-wrapper-v1");
+    assert.equal(current.dialectConfigPath, "vite.config.mjs");
+    assert.equal(sha256(current.dialectConfig), current.dialectConfigSha256);
+    assert.equal(
+      current.dialectConfig.toString(),
+      `export default { vue: { version: "${current.inputs.dialectInput.selector.vueVersion}" } };\n`,
+    );
+    assert.equal(current.dialectCoverage.state, "verified");
+    assert.deepEqual(current.dialectCoverage.evidence[0].dialects, ["vue0-template"]);
+  }
 });
 
 void test("compiler comparison checks every code byte and rejects forged native completion", () => {
@@ -179,40 +278,61 @@ void test("compiler comparison checks every code byte and rejects forged native 
 });
 
 void test("compiler input and reference digests fail closed", () => {
-  for (const relative of loaded.cases.flatMap((current) => [
-    `${current.inputs.root}/Layout.vue.txt`,
-    `${current.inputs.root}/module.expected.txt`,
-    ...(current.reference.cssPath ? [current.reference.cssPath] : []),
-  ])) {
-    const copy = fs.mkdtempSync(path.join(os.tmpdir(), "vize-compiler-manifest-"));
+  const regularFiles = loaded.cases
+    .filter((current) => !current.dialectInput)
+    .flatMap((current) => [
+      `${current.inputs.root}/Layout.vue.txt`,
+      `${current.inputs.root}/module.expected.txt`,
+      ...(current.reference.cssPath ? [current.reference.cssPath] : []),
+    ]);
+  const dialectFiles = loaded.cases
+    .filter((current) => current.dialectInput)
+    .map((current) => current.reference.path);
+  for (const relative of [...regularFiles, ...dialectFiles]) {
+    const { temporary, compiler } = copyCompilerPack("vize-compiler-manifest-");
     try {
-      fs.cpSync(pack, copy, { recursive: true });
-      fs.appendFileSync(path.join(copy, relative), "drift");
+      fs.appendFileSync(path.join(compiler, relative), "drift");
       assert.throws(
-        () => loadCompilerManifest(path.join(copy, "manifest.json")),
+        () => loadCompilerManifest(path.join(compiler, "manifest.json")),
         /SHA256 mismatch/,
       );
     } finally {
-      fs.rmSync(copy, { recursive: true, force: true });
+      fs.rmSync(temporary, { recursive: true, force: true });
+    }
+  }
+  for (const current of loaded.cases.filter((fixtureCase) => fixtureCase.dialectInput)) {
+    const { temporary, compiler } = copyCompilerPack("vize-compiler-dialect-input-");
+    try {
+      const registry = JSON.parse(
+        fs.readFileSync(path.join(temporary, "dialect-inputs/inventory.json"), "utf8"),
+      );
+      const registered = registry.cases.find((entry) => entry.id === current.dialectInputId);
+      assert(registered);
+      fs.appendFileSync(path.join(temporary, "dialect-inputs", registered.input.path), "drift");
+      assert.throws(
+        () => loadCompilerManifest(path.join(compiler, "manifest.json")),
+        /SHA256 mismatch/,
+      );
+    } finally {
+      fs.rmSync(temporary, { recursive: true, force: true });
     }
   }
 });
 
 void test("compiler plans and byte-compares every registered SSR case", () => {
-  const copy = fs.mkdtempSync(path.join(os.tmpdir(), "vize-compiler-multiple-"));
+  const { temporary, compiler } = copyCompilerPack("vize-compiler-multiple-");
   try {
-    fs.cpSync(pack, copy, { recursive: true });
-    fs.cpSync(path.join(copy, "ssr-slot-scope"), path.join(copy, "second-slot-scope"), {
+    fs.cpSync(path.join(compiler, "ssr-slot-scope"), path.join(compiler, "second-slot-scope"), {
       recursive: true,
     });
-    const manifest = JSON.parse(fs.readFileSync(path.join(copy, "manifest.json"), "utf8"));
+    const manifest = JSON.parse(fs.readFileSync(path.join(compiler, "manifest.json"), "utf8"));
     const second = structuredClone(manifest.cases[0]);
     second.id = "compiler/sfc/second-slot-scope";
     second.inputs.root = "second-slot-scope";
     second.reference.path = "second-slot-scope/module.expected.txt";
     manifest.cases.push(second);
-    fs.writeFileSync(path.join(copy, "manifest.json"), JSON.stringify(manifest));
-    const multiple = loadCompilerManifest(path.join(copy, "manifest.json"));
+    fs.writeFileSync(path.join(compiler, "manifest.json"), JSON.stringify(manifest));
+    const multiple = loadCompilerManifest(path.join(compiler, "manifest.json"));
     assert.equal(multiple.cases.length, loaded.cases.length + 1);
 
     const report = syntheticReport();
@@ -245,7 +365,7 @@ void test("compiler plans and byte-compares every registered SSR case", () => {
     );
 
     const unavailable = runCompilerPack({
-      manifestPath: path.join(copy, "manifest.json"),
+      manifestPath: path.join(compiler, "manifest.json"),
       binaryPath: path.join(root, "target/ci/missing-vize"),
       sourceRevision,
       repoRoot: root,
@@ -253,7 +373,7 @@ void test("compiler plans and byte-compares every registered SSR case", () => {
     assert.equal(unavailable.rows.length, loaded.cases.length + 1);
     assert.equal(unavailable.summary.legacyFailures, loaded.cases.length + 1);
   } finally {
-    fs.rmSync(copy, { recursive: true, force: true });
+    fs.rmSync(temporary, { recursive: true, force: true });
   }
 });
 

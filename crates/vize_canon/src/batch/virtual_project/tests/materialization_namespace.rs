@@ -19,8 +19,9 @@ fn materialize_stays_out_of_checked_tree_when_install_is_absent() {
         !case_dir.join("node_modules").exists(),
         "batch materialization must not create a project-level node_modules"
     );
-    assert!(
-        !project.virtual_root().starts_with(&case_dir),
+    assert_eq!(
+        project.virtual_root().starts_with(&case_dir),
+        false,
         "check must not create generated files in the checked tree"
     );
     assert!(
@@ -56,8 +57,9 @@ fn materialize_stays_out_of_git_storage_without_dirtying_the_checkout() {
         !case_dir.join(".vize").exists(),
         "Git checkouts must stay clean after batch materialization"
     );
-    assert!(
-        !project.virtual_root().starts_with(&case_dir),
+    assert_eq!(
+        project.virtual_root().starts_with(&case_dir),
+        false,
         "check must not write generated files into the checkout or its .git directory"
     );
     assert!(
@@ -127,7 +129,7 @@ fn materialize_resolves_project_and_ancestor_installs_outside_source_tree() {
             "missing or wrong ancestor install for {name}"
         );
     }
-    assert!(!project.virtual_root().starts_with(&project_root));
+    assert_eq!(project.virtual_root().starts_with(&project_root), false);
 }
 
 #[test]
@@ -146,16 +148,19 @@ fn cli_build_info_survives_rematerialization() {
     let shard = config.with_file_name("tsconfig.shard1.json");
     let build_info = project.cli_build_info_path(&config);
     assert_eq!(
-        build_info,
-        project
-            .virtual_root()
-            .join(".vize-buildinfo/tsconfig.tsbuildinfo")
+        build_info.parent(),
+        Some(project.virtual_root().join(".vize-buildinfo").as_path())
+    );
+    assert_eq!(
+        build_info.extension(),
+        Some(std::ffi::OsStr::new("tsbuildinfo"))
     );
     assert_ne!(project.cli_build_info_path(&shard), build_info);
     fs::create_dir_all(build_info.parent().unwrap()).unwrap();
     fs::write(&build_info, "{}").unwrap();
 
     project.materialize().unwrap();
+    assert_eq!(project.cli_build_info_path(&config), build_info);
     assert_eq!(fs::read_to_string(&build_info).unwrap(), "{}");
 
     let _ = fs::remove_dir_all(&case_dir);

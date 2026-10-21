@@ -64,6 +64,7 @@ export const TYPECHECKER_TESTS = {
     "dynamic_template_ref_unions_preserve_batch_acceptance",
   "content-mapper-dynamic-template-ref-scope-10251":
     "dynamic_template_ref_union_registry_stays_in_scope",
+  "content-mapper-props-binding-10196": "authored_props_binding_preserves_batch_acceptance",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
@@ -100,7 +101,7 @@ const sourceRevisions = {
   "component-v-bind-duplicate-diagnostic-10069": "7174c46d55825c155325e6314305e661d50ec95a",
   "runtime-props-report-10100-10101": "5dfe002a9467d152c8545693df33def3aa5f3bf7",
   "native-pointer-events-original": "e7d8b1c82a8badec89ec9779838dfa50c1b9b790",
-  "workspace-alias-cache-10063": "7174c46d55825c155325e6314305e661d50ec95a",
+  "workspace-alias-cache-10063": "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
   "component-render-h-props-9855": "f15ca234a4bdd73bde9caea07e652f3a345eb342",
   "component-listener-alias-scope-10112": "7cefe3a00e6184de1e121d39b0e153f08a428aa6",
   "content-mapper-duplicate-attributes-10184": "0038b601e41dccb6f037aa68c3fc0207ea635e3b",
@@ -111,6 +112,7 @@ const sourceRevisions = {
   "content-mapper-dynamic-template-ref-10198": "b7fb3a9aefd31002b8b2d449695a9e14d657654a",
   "content-mapper-dynamic-template-ref-union-10251": "6817c853ca1740fd1070c0ec462c0d457f339c2c",
   "content-mapper-dynamic-template-ref-scope-10251": "8d83800c727eef953852383d46c7324ccdda53b6",
+  "content-mapper-props-binding-10196": "232f8f514e0ea55a7aeef08bc883b46e0608d12f",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 
 export type Artifact = { path: string; sha256: string };
