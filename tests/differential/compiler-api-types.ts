@@ -37,7 +37,13 @@ export type HistoricalCompilerPacket = {
   profile?: string;
   result?: JsonObject;
   options?: JsonObject;
-  cases?: { id: string; options: JsonObject; output: JsonObject }[];
+  cases?: {
+    id: string;
+    options: JsonObject;
+    output?: JsonObject;
+    compileResult?: JsonObject;
+    entrypoint?: string;
+  }[];
 };
 export type CompilerReference = { options: JsonObject; output: JsonObject };
 export type CompilerObservation = {

@@ -516,6 +516,134 @@
           }
         ]
       }
+    },
+    {
+      "id": "compiler/sfc/counter-source-map",
+      "state": "active",
+      "targets": ["dom"],
+      "inputs": {
+        "files": [
+          {
+            "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/counter-source-map.input.txt",
+            "sha256": "10f1b81837df4d7bcd48f4084a4741b879f7a43338124f1ec272b2b5962e3844",
+            "role": "entry"
+          }
+        ]
+      },
+      "options": {
+        "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/counter-source-map.expected.json",
+        "sha256": "6067bb06a08d17300d6bd794405a6eca585af8728b66177fe97e98aada2a02d8"
+      },
+      "reference": {
+        "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/counter-source-map.expected.json",
+        "sha256": "6067bb06a08d17300d6bd794405a6eca585af8728b66177fe97e98aada2a02d8"
+      },
+      "historicalObservation": {
+        "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/map-diagnostic-capture-72293/first.stdout.json",
+        "sha256": "1d098ac0678e69b723ebb4c1f61672d1e3f3df96b5c39fad6f767349ba8bfe40"
+      },
+      "provenance": {
+        "commits": [
+          {
+            "sha": "0494c409b07a58c6296cdc2f50739b8e947366f4",
+            "role": "fix"
+          }
+        ],
+        "witness": {
+          "path": "crates/vize_atelier_sfc/tests/compiler_fix_history_map_diagnostics.rs",
+          "symbol": "original_map_and_diagnostic_cases_keep_the_complete_measured_results"
+        }
+      },
+      "adapters": {
+        "legacy": "compiler-public-sfc-api-v1",
+        "native": null,
+        "reasons": {
+          "native": "whole-product native compiler path unavailable"
+        }
+      },
+      "comparison": {
+        "contract": "compiler-complete-public-sfc-result-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "map",
+          "errors",
+          "warnings",
+          "bindings",
+          "macroArtifacts"
+        ],
+        "transportMappings": [
+          {
+            "from": "SfcCompileResult.macro_artifacts",
+            "to": "macroArtifacts",
+            "meaning": "Public serde camelCase rename; ordered values are preserved."
+          }
+        ]
+      }
+    },
+    {
+      "id": "compiler/sfc/props-default-type-diagnostic",
+      "state": "active",
+      "targets": ["dom"],
+      "inputs": {
+        "files": [
+          {
+            "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/props-default-type-diagnostic.input.txt",
+            "sha256": "fc237444a2cde6b1c12ef4c01cb356332a328bb23de8895bd4b5796539044638",
+            "role": "entry"
+          }
+        ]
+      },
+      "options": {
+        "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/props-default-type-diagnostic.expected.json",
+        "sha256": "e2f45f683cb507267b8740dad7667294d9b87b9a7bf36cf6e7d81c87f4b68fce"
+      },
+      "reference": {
+        "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/props-default-type-diagnostic.expected.json",
+        "sha256": "e2f45f683cb507267b8740dad7667294d9b87b9a7bf36cf6e7d81c87f4b68fce"
+      },
+      "historicalObservation": {
+        "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/map-diagnostic-capture-72293/first.stdout.json",
+        "sha256": "1d098ac0678e69b723ebb4c1f61672d1e3f3df96b5c39fad6f767349ba8bfe40"
+      },
+      "provenance": {
+        "commits": [
+          {
+            "sha": "7b821f8d0c46c56ab48d0a954def515a9219838e",
+            "role": "fix"
+          }
+        ],
+        "witness": {
+          "path": "crates/vize_atelier_sfc/tests/compiler_fix_history_map_diagnostics.rs",
+          "symbol": "original_map_and_diagnostic_cases_keep_the_complete_measured_results"
+        }
+      },
+      "adapters": {
+        "legacy": "compiler-public-sfc-api-v1",
+        "native": null,
+        "reasons": {
+          "native": "whole-product native compiler path unavailable"
+        }
+      },
+      "comparison": {
+        "contract": "compiler-complete-public-sfc-result-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "map",
+          "errors",
+          "warnings",
+          "bindings",
+          "macroArtifacts"
+        ],
+        "transportMappings": [
+          {
+            "from": "SfcCompileResult.macro_artifacts",
+            "to": "macroArtifacts",
+            "meaning": "Public serde camelCase rename; ordered values are preserved."
+          }
+        ]
+      }
     }
   ]
 }

@@ -16,6 +16,10 @@ const ARCHIVED_SFC_OPTIONS_WITH_EXTERNAL_WITNESS = new Set([
   "dual-script-inline-type-only-imports",
   "separate-template-authored-render-binding",
 ]);
+const COMBINED_SFC_CAPTURE_NAMES = new Set([
+  "counter-source-map",
+  "props-default-type-diagnostic",
+]);
 const names = {
   dom: [
     "imported-component-before-prop",
@@ -26,6 +30,8 @@ const names = {
     "dual-script-inline-type-only-imports",
     "separate-template-authored-render-binding",
     "invalid-template-expression-diagnostic",
+    "counter-source-map",
+    "props-default-type-diagnostic",
   ],
   ssr: [
     "textarea-model",
@@ -182,6 +188,44 @@ export function loadCompilerApiManifest(manifestPath: string, repoRoot: string) 
       );
       let originalOptions: JsonValue, expected: JsonObject, entrypoint: string;
       if (target === "dom") {
+        if (COMBINED_SFC_CAPTURE_NAMES.has(name)) {
+          assert.equal(fixture.options.path, fixture.reference.path);
+          assert.equal(fixture.options.sha256, fixture.reference.sha256);
+          assert.equal(
+            fixture.historicalObservation.path,
+            `${contract.prefix}/map-diagnostic-capture-72293/first.stdout.json`,
+          );
+          const combined = reference as JsonObject & {
+            id: string;
+            entrypoint: string;
+            options: JsonObject;
+            compileResult: JsonObject;
+          };
+          assert.equal(combined.id, name);
+          assert(historical.cases, "historical SFC cases are required");
+          const row = historical.cases.find((candidate) => candidate.id === name);
+          assert(row, "historical SFC case is required");
+          assert.equal(row.entrypoint, combined.entrypoint);
+          assert.deepEqual(row.options, combined.options);
+          assert.deepEqual(row.compileResult, combined.compileResult);
+          const adapter = combined.options.adapterContext as JsonObject;
+          const experimental = adapter.experimental as JsonObject;
+          originalOptions = {
+            descriptorParseOptions: combined.options.descriptorParseOptions,
+            compileOptions: combined.options.compileOptions,
+            effectiveAdapterInputs: {
+              templateSyntax: adapter.templateSyntax,
+              customElements: { construction: "CustomElementMatcher::default()" },
+              codegen: adapter.codegen,
+              scriptOutput: adapter.scriptOutput,
+              experimental: { self_component: experimental.selfComponent },
+            },
+          };
+          expected = combined.compileResult;
+          entrypoint = combined.entrypoint;
+          validateCompilerOutput(expected, target);
+          return { ...fixture, input, originalOptions, expected, entrypoint };
+        }
         assert.equal(fixture.options.path, `${contract.prefix}/${name}.options.json`);
         assert.equal(
           fixture.historicalObservation.path,
