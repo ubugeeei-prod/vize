@@ -209,7 +209,7 @@ pub(super) fn transform_component<'a>(
                     && dir.arg.is_none()
                     && let Some(ExpressionNode::Simple(value)) = &dir.exp
                 {
-                    slots.push(IRSlot::forwarded(&ctx.allocator, value));
+                    slots.push(IRSlot::forwarded(ctx.allocator, value));
                 }
             }
             PropNode::Attribute(attr) => {
