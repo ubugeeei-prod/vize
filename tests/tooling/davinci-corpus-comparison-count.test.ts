@@ -82,7 +82,7 @@ test("P2-11 DOM differential docs pin the hydrated full-corpus comparison count"
   const fixturePaths = uniqueFixturePathCount(manifest);
   const duplicateGroups = duplicateFixtureGroups(manifest);
 
-  assert.equal(compilerComparisons, 145, "intentional ratchet for the current manifest");
+  assert.equal(compilerComparisons, 149, "intentional ratchet for the current manifest");
   assert.equal(fixturePaths, 143, "sanity check: fixture paths are not comparison rows");
   assert.deepEqual(duplicateGroups, [
     ["tests/_fixtures/_git/primevue", ["primevue", "primevue-volt", "primevue-showcase"]],
@@ -99,9 +99,9 @@ test("P2-11 DOM differential docs pin the hydrated full-corpus comparison count"
   );
 
   for (const source of [phase, tasks, countSection]) {
-    assert.match(source, /\b145 DOM-output comparisons\b/u);
+    assert.match(source, /\b149 DOM-output comparisons\b/u);
   }
-  assert.match(tasks, /\b145-project manifest\b/u);
+  assert.match(tasks, /\b149-project manifest\b/u);
   assert.doesNotMatch(tasks, /\b142-project manifest\b/u);
   assert.match(countSection, /\b143 ecosystem fixture\s+paths\b/u);
   assert.match(countSection, /`primevue`, `primevue-volt`, and `primevue-showcase`/u);

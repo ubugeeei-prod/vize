@@ -90,7 +90,7 @@ test("real-project workflow carries a full-canonical L2 DOM corpus job", () => {
     "rust-script tools/commands/fixtures/davinci-dom-corpus-workflow.rs finalize-and-dehydrate",
   );
   assert.match(helperSource, /"record-only"/);
-  assert.match(helperSource, /EXPECTED_DOM_OUTPUT_COMPARISONS: usize = 145/);
+  assert.match(helperSource, /EXPECTED_DOM_OUTPUT_COMPARISONS: usize = 149/);
   assert.match(helperSource, /EXPECTED_OLD_ERROR_SKIPS: usize = 16/);
   assert.match(helperSource, /patch_fact_entries/);
   assert.match(helperSource, /corpus log proves no patch-fact materialization/);
@@ -137,7 +137,7 @@ test("L2 DOM corpus workflow helper extracts canonical evidence", () => {
   assert.equal(verdictFor("failure", "record-only"), "success");
   assert.equal(verdictFor("cancelled", "record-only"), "cancelled");
   assert.equal(expectedGitlinks, 149);
-  assert.equal(expectedDomOutputComparisons, 145);
+  assert.equal(expectedDomOutputComparisons, 149);
   assert.equal(expectedOldErrorSkips, 16);
   assert.deepEqual(expectedOldErrorReasons, {
     ExtendPoint: 1,
@@ -287,7 +287,7 @@ test("L2 DOM corpus workflow validates closure evidence artifacts", () => {
 
     const validation = validateCorpusEvidence(artifact);
     assert.deepEqual(validation.failures, []);
-    assert.equal(validation.manifestDomOutputComparisons, 145);
+    assert.equal(validation.manifestDomOutputComparisons, 149);
     assert.equal(validation.selectedGitlinks, 149);
     assert.equal(validation.submoduleStatusRows, 149);
     assert.deepEqual(parseCorpusEvidence(readFileSync(join(artifact, "dom-corpus.log"), "utf8")), {
