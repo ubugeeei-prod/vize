@@ -44,7 +44,10 @@ void test("LSP manifest binds original complete contracts and every original req
   assert.equal(loaded.cases.length, 32);
   assert.deepEqual(
     loaded.cases.map((fixture) => fixture.requests.length),
-    [1, 4, 1, 1, 1, 1, 1, 1, 4, 1, 1, 2, 2, 1, 1, 1, 7, 2, 1, 1, 2, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1],
+    [
+      1, 4, 1, 1, 1, 1, 1, 1, 4, 1, 1, 2, 2, 1, 1, 1, 7, 2, 1, 1, 2, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1,
+      1,
+    ],
   );
   assert.equal(loaded.cases[1].files[0].bytes.filter((byte) => byte === 13).length, 18);
   for (const relative of [
