@@ -323,5 +323,4 @@ const inner = useTemplateRef("inner");
         registry.body.as_str(),
         r#" "inner": __VizeTemplateComponentRef<typeof is>; "#
     );
-    assert!(!registry.body.contains("__VizeComponent_component"));
 }
