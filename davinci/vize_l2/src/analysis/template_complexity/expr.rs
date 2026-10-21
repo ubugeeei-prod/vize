@@ -6,11 +6,11 @@
 //! consumer can tell "simple" from "not analysed" (pessimal law 1 of the
 //! opaque escape: nothing may be concluded from its text).
 
+use crate::expr::ExprRef;
 use oxc_ast::ast::{ConditionalExpression, Expression, LogicalExpression, LogicalOperator};
 use oxc_ast_visit::{Visit, walk};
 use vize_l0::Span;
 use vize_l0::id::NodeId;
-use vize_l2::expr::ExprRef;
 
 use super::{ComplexityFacts, Contribution, DecisionKind};
 

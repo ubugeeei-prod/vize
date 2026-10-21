@@ -1,0 +1,12 @@
+{
+  "name": "vize-vue-benchmarks-current-typecheck-provider",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@typescript/typescript-linux-x64": "7.0.2",
+    "typescript": "6.0.3",
+    "vue": "3.5.43",
+    "vue-tsc": "3.3.11"
+  }
+}

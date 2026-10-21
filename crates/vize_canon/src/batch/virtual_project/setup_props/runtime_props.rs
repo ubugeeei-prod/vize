@@ -1,6 +1,7 @@
 use std::path::Path;
 
-use oxc_ast::ast::{BindingPattern, Declaration, Statement};
+use oxc_ast::ast::{BindingPattern, CallExpression, Declaration, Expression, Statement};
+use oxc_ast_visit::{Visit, walk::walk_call_expression};
 use vize_carton::{FxHashMap, FxHashSet, cstr};
 use vize_croquis::macros::PropDefinition;
 
@@ -16,7 +17,72 @@ mod collect;
 mod object;
 mod shape;
 
-use collect::{collect_props_from_default_declaration, collect_props_from_expression};
+use collect::{
+    collect_props_from_argument, collect_props_from_default_declaration,
+    collect_props_from_expression, collect_props_from_factory_body,
+};
+
+pub(super) fn resolve_inline_runtime_props(
+    source: &str,
+    path: &Path,
+    root_runtime_binding: &str,
+    visited: &mut RuntimePropVisitSet,
+    cache: &RuntimePropResolveCache,
+) -> Vec<PropDefinition> {
+    parse_ts(source, path, |program| {
+        let imports = collect_imports(program);
+        let local_values = collect_top_level_values(program);
+        let mut props = Vec::new();
+
+        struct DefinePropsVisitor<'ctx, 'a> {
+            source: &'ctx str,
+            path: &'ctx Path,
+            root_runtime_binding: &'ctx str,
+            imports: &'ctx FxHashMap<&'a str, RuntimeImport>,
+            local_values: &'ctx FxHashMap<&'a str, &'a Expression<'a>>,
+            visited: &'ctx mut RuntimePropVisitSet,
+            cache: &'ctx RuntimePropResolveCache,
+            props: &'ctx mut Vec<PropDefinition>,
+        }
+
+        impl<'a> Visit<'a> for DefinePropsVisitor<'_, 'a> {
+            fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
+                if super::syntax::call_expression_name(call) == Some("defineProps") {
+                    if let Some(argument) = call.arguments.first() {
+                        collect_props_from_argument(
+                            argument,
+                            self.source,
+                            self.path,
+                            self.root_runtime_binding,
+                            true,
+                            self.imports,
+                            self.local_values,
+                            self.visited,
+                            self.cache,
+                            self.props,
+                        );
+                    }
+                    return;
+                }
+                walk_call_expression(self, call);
+            }
+        }
+
+        DefinePropsVisitor {
+            source,
+            path,
+            root_runtime_binding,
+            imports: &imports,
+            local_values: &local_values,
+            visited,
+            cache,
+            props: &mut props,
+        }
+        .visit_program(program);
+        dedupe_props(props)
+    })
+    .unwrap_or_default()
+}
 
 pub(super) fn resolve_imported_runtime_props(
     importer: &Path,
@@ -167,6 +233,7 @@ fn collect_exported_specifier_props<'a>(
                 source,
                 path,
                 root_runtime_binding,
+                false,
                 imports,
                 local_values,
                 visited,
@@ -201,30 +268,54 @@ fn collect_exported_declaration_props<'a>(
     cache: &RuntimePropResolveCache,
     props: &mut Vec<PropDefinition>,
 ) {
-    let Declaration::VariableDeclaration(variable) = declaration else {
-        return;
-    };
-    for declarator in &variable.declarations {
-        let BindingPattern::BindingIdentifier(id) = &declarator.id else {
-            continue;
-        };
-        if id.name.as_str() != exported_name {
-            continue;
+    match declaration {
+        Declaration::VariableDeclaration(variable) => {
+            for declarator in &variable.declarations {
+                let BindingPattern::BindingIdentifier(id) = &declarator.id else {
+                    continue;
+                };
+                if id.name.as_str() != exported_name {
+                    continue;
+                }
+                let Some(init) = declarator.init.as_ref() else {
+                    continue;
+                };
+                collect_props_from_expression(
+                    init,
+                    source,
+                    path,
+                    root_runtime_binding,
+                    false,
+                    imports,
+                    local_values,
+                    visited,
+                    cache,
+                    props,
+                );
+            }
         }
-        let Some(init) = declarator.init.as_ref() else {
-            continue;
-        };
-        collect_props_from_expression(
-            init,
-            source,
-            path,
-            root_runtime_binding,
-            imports,
-            local_values,
-            visited,
-            cache,
-            props,
-        );
+        Declaration::FunctionDeclaration(function)
+            if function
+                .id
+                .as_ref()
+                .is_some_and(|id| id.name.as_str() == exported_name) =>
+        {
+            let Some(body) = function.body.as_ref() else {
+                return;
+            };
+            collect_props_from_factory_body(
+                body,
+                source,
+                path,
+                root_runtime_binding,
+                imports,
+                local_values,
+                visited,
+                cache,
+                props,
+            );
+        }
+        _ => {}
     }
 }
 
