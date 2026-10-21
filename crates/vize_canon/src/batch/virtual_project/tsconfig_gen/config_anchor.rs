@@ -3,6 +3,7 @@
 use std::path::{Path, PathBuf};
 
 use serde_json::Value;
+use sha2::{Digest, Sha256};
 use vize_carton::String;
 
 use crate::batch::error::CorsaResult;
@@ -32,19 +33,35 @@ impl VirtualProject {
 
     /// Where the CLI run for `config_path` keeps its `--incremental` state.
     /// Unchanged files then reuse their recorded diagnostics on the next run
-    /// instead of being checked again; Corsa still rechecks every file whose
-    /// content, dependencies or options changed.
+    /// instead of being checked again. Package-link topology participates in
+    /// the identity because Corsa's build info does not otherwise observe a
+    /// symlink retarget whose resolved source bytes are unchanged.
     pub(crate) fn cli_build_info_path(&self, config_path: &Path) -> PathBuf {
         let relative = config_path
             .strip_prefix(&self.virtual_root)
             .unwrap_or(config_path)
             .with_extension("tsbuildinfo");
-        let name: String = relative
+        let mut name: String = relative
             .components()
             .map(|component| component.as_os_str().to_string_lossy())
             .collect::<Vec<_>>()
             .join("__")
             .into();
+        let links = self.desired_package_links();
+        if !links.is_empty() {
+            let mut links = links.into_iter().collect::<Vec<_>>();
+            links.sort();
+            let mut digest = Sha256::new();
+            digest.update(b"vize-cli-build-info-package-links:v1\0");
+            for (path, target) in links {
+                update_path_digest(&mut digest, &path);
+                update_path_digest(&mut digest, &target);
+            }
+            let fingerprint = super::super::identity::encode_digest(digest.finalize());
+            if let Some(stem) = name.strip_suffix(".tsbuildinfo") {
+                name = vize_carton::cstr!("{stem}.{fingerprint}.tsbuildinfo");
+            }
+        }
         self.virtual_root
             .join(CLI_BUILD_INFO_DIR)
             .join(name.as_str())
@@ -87,6 +104,31 @@ impl VirtualProject {
         write_if_changed(path, content.as_bytes())?;
         Ok(())
     }
+}
+
+#[cfg(unix)]
+fn update_path_digest(digest: &mut Sha256, path: &Path) {
+    use std::os::unix::ffi::OsStrExt;
+    let bytes = path.as_os_str().as_bytes();
+    digest.update((bytes.len() as u64).to_le_bytes());
+    digest.update(bytes);
+}
+
+#[cfg(windows)]
+fn update_path_digest(digest: &mut Sha256, path: &Path) {
+    use std::os::windows::ffi::OsStrExt;
+    let units = path.as_os_str().encode_wide().collect::<Vec<_>>();
+    digest.update((units.len() as u64).to_le_bytes());
+    for unit in units {
+        digest.update(unit.to_le_bytes());
+    }
+}
+
+#[cfg(not(any(unix, windows)))]
+fn update_path_digest(digest: &mut Sha256, path: &Path) {
+    let value = path.as_os_str().to_string_lossy();
+    digest.update((value.len() as u64).to_le_bytes());
+    digest.update(value.as_bytes());
 }
 
 fn reanchor_config(config: &mut Value, prefix: &str) {
