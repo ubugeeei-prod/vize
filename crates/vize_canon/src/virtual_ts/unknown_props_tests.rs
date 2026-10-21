@@ -13,6 +13,14 @@ fn check_tail_line(code: &str) -> &str {
         .expect("component prop helpers should declare a check tail")
 }
 
+fn type_declaration<'a>(code: &'a str, name: &str) -> Option<&'a str> {
+    code.lines().find(|line| {
+        line.strip_prefix("  type ")
+            .and_then(|rest| rest.split(['<', '=']).next())
+            .is_some_and(|declared| declared.trim_end() == name)
+    })
+}
+
 fn generate_parent_usage(check_unknown_props: bool) -> vize_carton::String {
     let script = r#"import Child from './Child.vue'
 "#;
@@ -60,9 +68,9 @@ fn unknown_props_on_keeps_native_fallthrough_tail() {
         check_tail_line(&code),
         "  type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeComponentGlobalHtmlAttrs & __VizeAllowedFallthroughAttrs<C> : __VizePublicComponentAttrs & __VizeComponentGlobalHtmlAttrs;",
     );
-    assert!(!code.contains("type __VizeAttrCamel"), "{code}");
-    assert!(!code.contains("type __VizeNativeAttrNames"), "{code}");
-    assert!(!code.contains("type __VizeGlobalHtmlAttrs"), "{code}");
+    assert_eq!(type_declaration(&code, "__VizeAttrCamel"), None);
+    assert_eq!(type_declaration(&code, "__VizeNativeAttrNames"), None);
+    assert_eq!(type_declaration(&code, "__VizeGlobalHtmlAttrs"), None);
 }
 
 #[test]

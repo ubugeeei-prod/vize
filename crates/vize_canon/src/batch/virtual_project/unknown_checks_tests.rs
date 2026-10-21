@@ -71,6 +71,14 @@ fn assert_unknown_checks(content: &str, enabled: bool) {
     assert_eq!(open_tail, !enabled, "{content}");
 }
 
+fn type_declaration<'a>(content: &'a str, name: &str) -> Option<&'a str> {
+    content.lines().find(|line| {
+        line.strip_prefix("  type ")
+            .and_then(|rest| rest.split(['<', '=']).next())
+            .is_some_and(|declared| declared.trim_end() == name)
+    })
+}
+
 #[test]
 fn unknown_checks_follow_vue_compiler_options() {
     assert_unknown_checks(
@@ -99,17 +107,16 @@ fn unknown_checks_follow_vue_compiler_options() {
 #[test]
 fn unknown_props_reuse_the_program_wide_native_attribute_union() {
     let content = project_source("shared-native-attrs", "\"checkUnknownProps\": true");
-    assert!(
-        content.contains("__VizeComponentGlobalHtmlAttrs"),
-        "{content}"
+    assert_eq!(
+        type_declaration(&content, "__VizeAllowedFallthroughAttrs"),
+        Some(
+            "  type __VizeAllowedFallthroughAttrs<C, __K = Exclude<keyof { [K in keyof __VizeFallthroughProps<C> as string extends K ? never : K]: unknown }, keyof __VizePublicComponentAttrs | keyof __VizeComponentGlobalHtmlAttrs>> = [__K] extends [never] ? {} : { [K in __K & PropertyKey]?: unknown };"
+        )
     );
-    assert!(
-        !content.contains("type __VizeComponentAttrCamel"),
-        "{content}"
-    );
-    assert!(
-        !content.contains("type __VizeComponentNativeAttrNames"),
-        "{content}"
+    assert_eq!(type_declaration(&content, "__VizeComponentAttrCamel"), None);
+    assert_eq!(
+        type_declaration(&content, "__VizeComponentNativeAttrNames"),
+        None
     );
 }
 
