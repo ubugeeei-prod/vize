@@ -215,7 +215,7 @@ fs.writeFileSync(
 fs.writeFileSync(
   ruleOptionsPath,
   `<template>
-  <MyWidget my-prop="value" @my-event="handler" />
+  <MyWidget :modelValue="props.count" my-prop="value" @my-event="handler" />
 </template>
 
 <script setup lang="ts">
