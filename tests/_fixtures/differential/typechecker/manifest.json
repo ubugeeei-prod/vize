@@ -358,7 +358,7 @@
       "regressionCommit": "f3a26b0e30c98b135a9e897c3584526eb0a2b96d",
       "packReference": {
         "path": "required-props-edges/cases.json",
-        "sha256": "ddf334e43274c6580d60e4d6fadd89e89f90e18b7fd620e5c600d85b7ccff3ea"
+        "sha256": "ae630791d6eb5e32daaba1cc8b9c8c6b82a29fbaba027fac8216b1d18145a854"
       },
       "inputs": [
         {
