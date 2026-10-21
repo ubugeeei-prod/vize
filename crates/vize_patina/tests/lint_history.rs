@@ -105,7 +105,7 @@ fn full_current_results_and_independent_fix_applications() {
         .expect("strict fixture schema");
     assert_eq!(
         cases.len(),
-        34,
+        40,
         "every reviewed case must remain registered"
     );
     for case in cases {

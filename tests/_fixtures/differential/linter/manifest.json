@@ -16,7 +16,7 @@
       "api": "--current-api",
       "cases": {
         "path": "crates/vize_patina/tests/fixtures/lint-history/cases.json",
-        "sha256": "2d1f4168621d4b10ee82b7bff9eaadb4c8a1a008d42143d34d32734ce759501d"
+        "sha256": "09965ab44323e7ab465c11c194805bbd7a237aa92418071838048036eed6e550"
       }
     },
     {
@@ -54,7 +54,7 @@
   ],
   "oracles": {
     "path": "tests/_fixtures/differential/linter/oracle-index.json",
-    "sha256": "6b680c47dab48f1ada074ea079c67de91f95317d5c9b28da7d58bf3b5003c3b7"
+    "sha256": "4729622a2311fc7500061b0935762256ff6dfbd766275fee2de40a704e67129c"
   },
   "cases": [
     {
@@ -683,6 +683,48 @@
     },
     {
       "id": "linter/current-api/target-blank-bound-href-control",
+      "state": "active",
+      "targets": [
+        "lint"
+      ]
+    },
+    {
+      "id": "linter/current-api/form-label-hidden-input-report-9751",
+      "state": "active",
+      "targets": [
+        "lint"
+      ]
+    },
+    {
+      "id": "linter/current-api/form-label-hidden-select-control",
+      "state": "active",
+      "targets": [
+        "lint"
+      ]
+    },
+    {
+      "id": "linter/current-api/form-label-hidden-textarea-control",
+      "state": "active",
+      "targets": [
+        "lint"
+      ]
+    },
+    {
+      "id": "linter/current-api/form-label-until-found-control",
+      "state": "active",
+      "targets": [
+        "lint"
+      ]
+    },
+    {
+      "id": "linter/current-api/form-label-bound-hidden-control",
+      "state": "active",
+      "targets": [
+        "lint"
+      ]
+    },
+    {
+      "id": "linter/current-api/form-label-visible-input-control",
       "state": "active",
       "targets": [
         "lint"
