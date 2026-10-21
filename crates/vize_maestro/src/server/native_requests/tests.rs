@@ -1,6 +1,7 @@
 //! Complete stale-result and cancellation laws at the real dispatch boundary.
-use futures::{FutureExt, channel::oneshot, executor::block_on};
+use futures::{Future, FutureExt, channel::oneshot, executor::block_on};
 use serde_json::{Value, json};
+use std::{path::Path, pin::Pin};
 use tower_lsp::lsp_types::{TextDocumentContentChangeEvent, Url};
 use tower_lsp::{LanguageServer, jsonrpc::Error};
 
@@ -79,6 +80,42 @@ fn pending_native_reply() -> Value {
         "file:///project/src/App.vue": [{"range":{"start":{"line":3,"character":8},"end":{"line":3,"character":12}},"newText":"notify"}],
         "file:///project/src/useToast.ts": [{"range":{"start":{"line":1,"character":11},"end":{"line":1,"character":15}},"newText":"notify"}]
     }})
+}
+
+fn wait_for_actual_config_admission<F: Future>(mut operation: Pin<&mut F>, entered: &Path) {
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
+    while !entered.is_file() {
+        // A full bounded worker queue leaves the first `now_or_never` poll
+        // pending. Re-poll so released capacity can actually admit the job;
+        // sleeping alone cannot advance a future whose recorded waker was noop.
+        assert!(
+            operation.as_mut().now_or_never().is_none(),
+            "configuration operation completed before entering admission"
+        );
+        assert!(
+            std::time::Instant::now() < deadline,
+            "actual config admission did not enter"
+        );
+        std::thread::sleep(std::time::Duration::from_millis(1));
+    }
+}
+
+#[test]
+fn config_admission_wait_repolls_after_a_saturated_queue() {
+    let project = crate::test_support::tempdir().unwrap();
+    let entered = project.path().join("entered");
+    let polls = std::sync::atomic::AtomicUsize::new(0);
+    let mut operation = Box::pin(std::future::poll_fn(|_| {
+        // The first pending poll models a full project-config queue. The job
+        // becomes admissible only when its future is polled again.
+        if polls.fetch_add(1, std::sync::atomic::Ordering::SeqCst) == 1 {
+            std::fs::write(&entered, "").unwrap();
+        }
+        std::task::Poll::<()>::Pending
+    }));
+
+    wait_for_actual_config_admission(operation.as_mut(), &entered);
+    assert_eq!(polls.load(std::sync::atomic::Ordering::SeqCst), 2);
 }
 
 #[test]
@@ -315,14 +352,7 @@ fn authored_revision_precedes_admission_but_valid_policy_reload_remains_usable()
                 }
             });
             assert!(operation.as_mut().now_or_never().is_none());
-            let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
-            while !root.join("entered").is_file() {
-                assert!(
-                    std::time::Instant::now() < deadline,
-                    "actual config admission did not enter"
-                );
-                std::thread::sleep(std::time::Duration::from_millis(1));
-            }
+            wait_for_actual_config_admission(operation.as_mut(), &root.join("entered"));
             if changed {
                 let replacement = if matches!(mode, Request::LocalCompletion) {
                     vize_l0::cstr!(
