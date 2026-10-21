@@ -256,6 +256,17 @@ fn generic_fallthrough_spread_preserves_valid_values() {
 }
 
 #[test]
+fn misskey_generated_inference_probes_preserve_authored_diagnostics() {
+    check_pack(
+        "misskey-generated-inference-9516",
+        "misskey_generated_inference_probes_preserve_authored_diagnostics",
+        "cf6c83ab16fb7f20f84f0d51112090bbce89c74a",
+        Some(9516),
+        &["inference-probes-valid", "authored-unknown-prop-control"],
+    );
+}
+
+#[test]
 fn named_prop_before_spread_reports_once_with_or_without_listener() {
     check_pack(
         "component-v-bind-duplicate-diagnostic-10069",
@@ -302,6 +313,7 @@ fn check_pack(
             | "nuxt-unknown-template-options-10013"
             | "reactive-props-destructure-10008"
             | "generic-fallthrough-spread-9956"
+            | "misskey-generated-inference-9516"
             | "component-v-bind-duplicate-diagnostic-10069" => regression,
             _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
         }
