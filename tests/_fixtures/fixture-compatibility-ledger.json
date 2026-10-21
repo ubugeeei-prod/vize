@@ -385,7 +385,7 @@
     },
     {
       "fixturePath": "tests/_fixtures/_git/openvue",
-      "memberships": ["app"],
+      "memberships": ["ecosystem", "app"],
       "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {

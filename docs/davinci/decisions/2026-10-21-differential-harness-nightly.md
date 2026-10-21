@@ -10,13 +10,13 @@ selection and every-product execution checks. This prevents the full corpus
 from silently returning to weekly coverage while keeping the workflow off the
 pull-request path.
 
-The nightly selection now covers all 147 ecosystem gitlinks pinned at this
-revision. The registry has 149 project rows because PrimeVue intentionally
+The nightly selection now covers all 148 ecosystem gitlinks pinned at this
+revision. The registry has 150 project rows because PrimeVue intentionally
 provides three separately scoped projects from one gitlink. The only excluded
 gitlink is `vue-benchmarks`, whose independent benchmark registry does not
 grant ecosystem/App membership or product-oracle credit. The four former
-App-only inputs (`frontend-phpcon-do-website`, `npmx.dev`, `nuxt-ui`, and
-`vuefes-2025`) use their existing complete check/lint SFC scopes and now run
+former App-only inputs (`frontend-phpcon-do-website`, `npmx.dev`, `nuxt-ui`,
+`openvue`, and `vuefes-2025`) use their existing complete check/lint SFC scopes and now run
 through compiler, linter, formatter, typechecker, syntax-highlighter, and LSP
 nightly selection as well.
 

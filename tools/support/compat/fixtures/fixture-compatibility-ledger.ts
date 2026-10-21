@@ -408,18 +408,14 @@ function validateRatchets(
   context: CompatibilityContext,
 ): void {
   equal(fixtureMap.size, 149, "gitlink count drifted");
-  equal(countMembership(fixtureMap, "ecosystem"), 147, "ecosystem fixture count drifted");
+  equal(countMembership(fixtureMap, "ecosystem"), 148, "ecosystem fixture count drifted");
   equal(countMembership(fixtureMap, "app"), 17, "App fixture count drifted");
   const appOnly = [...fixtureMap.values()].filter(
     (fixture) => fixture.memberships.length === 1 && fixture.memberships[0] === "app",
   );
-  deepEqual(
-    appOnly.map((fixture) => fixture.fixturePath),
-    ["tests/_fixtures/_git/openvue"],
-    "App-only fixture membership drifted",
-  );
+  deepEqual(appOnly, [], "App fixtures must also belong to the nightly ecosystem matrix");
   for (const kind of ["compiler", "formatter-idempotency", "linter", "typechecker"]) {
-    equal(oracles.get(kind)?.size, 147, `${kind} oracle count drifted`);
+    equal(oracles.get(kind)?.size, 148, `${kind} oracle count drifted`);
   }
   const authoredLsp = oracles.get("authored-lsp") ?? new Set<string>();
   const vueTscParity = oracles.get("vue-tsc-parity") ?? new Set<string>();

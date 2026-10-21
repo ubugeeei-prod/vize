@@ -8987,6 +8987,38 @@
       "note": "Pinned App/HMR corpus. The ecosystem matrix exercises the same authored component-library SFC scope as the existing check and lint lanes."
     },
     {
+      "id": "openvue",
+      "displayName": "OpenVue",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/openvue",
+      "repository": "https://github.com/openvi-foundation/openvue",
+      "revision": "116be30dbadb1b03a26ce080aa1aae2ba70e8972",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE.md"
+        ]
+      },
+      "vueGlobs": [
+        "packages/primevue/src/**/*.vue",
+        "packages/icons/src/**/*.vue",
+        "packages/forms/src/**/*.vue",
+        "apps/showcase/**/*.vue",
+        "apps/volt/**/*.vue"
+      ],
+      "tsconfig": "packages/primevue/tsconfig.json",
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt",
+      "note": "Pinned OpenVue 1.0.0 App corpus. The ecosystem matrix exercises the same complete component, icon, form, showcase, and Volt SFC scope as the existing check and lint lanes."
+    },
+    {
       "id": "vuefes-2025",
       "displayName": "Vue Fes Japan 2025",
       "kind": "application",
