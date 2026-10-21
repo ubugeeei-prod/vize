@@ -48,12 +48,12 @@ export const valid = h(Counter, { count: 3 });
             (
                 "src/render.ts",
                 Some(2769),
-                "4:24:error capture exact TS2769 missing-props diagnostic",
+                "4:35:error No overload matches this call.\nThe last overload gave the following error.\nArgument of type '{}' is not assignable to parameter of type 'VNodeProps & { __v_isVNode?: undefined; [Symbol.iterator]?: undefined; } & Record<string, any> & { $props: Props; readonly __vizeRawProps?: Props | undefined; $emit: (event: string, ...args: any[]) => void; $slots: Readonly<...>; } & __VizeComponentPublicBase'.\nType '{}' is missing the following properties from type '{ $props: Props; readonly __vizeRawProps?: Props | undefined; $emit: (event: string, ...args: any[]) => void; $slots: Readonly<InternalSlots>; }': $props, $emit, $slots",
             ),
             (
                 "src/render.ts",
                 Some(2769),
-                "5:22:error capture exact TS2769 wrong-props diagnostic",
+                "5:33:error No overload matches this call.\nThe last overload gave the following error.\nArgument of type '{ count: string; }' is not assignable to parameter of type 'VNodeProps & { __v_isVNode?: undefined; [Symbol.iterator]?: undefined; } & Record<string, any> & { $props: Props; readonly __vizeRawProps?: Props | undefined; $emit: (event: string, ...args: any[]) => void; $slots: Readonly<...>; } & __VizeComponentPublicBase'.\nType '{ count: string; }' is missing the following properties from type '{ $props: Props; readonly __vizeRawProps?: Props | undefined; $emit: (event: string, ...args: any[]) => void; $slots: Readonly<InternalSlots>; }': $props, $emit, $slots",
             ),
         ],
         "only the missing and wrong h() calls may report diagnostics: {snapshot:#?}"

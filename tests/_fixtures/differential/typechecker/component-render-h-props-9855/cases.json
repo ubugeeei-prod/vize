@@ -37,18 +37,18 @@
         {
           "file": "src/render.ts",
           "line": 4,
-          "column": 24,
+          "column": 35,
           "severity": 1,
           "code": 2769,
-          "message": "capture exact TS2769 missing-props diagnostic"
+          "message": "No overload matches this call.\nThe last overload gave the following error.\nArgument of type '{}' is not assignable to parameter of type 'VNodeProps & { __v_isVNode?: undefined; [Symbol.iterator]?: undefined; } & Record<string, any> & { $props: Props; readonly __vizeRawProps?: Props | undefined; $emit: (event: string, ...args: any[]) => void; $slots: Readonly<...>; } & __VizeComponentPublicBase'.\nType '{}' is missing the following properties from type '{ $props: Props; readonly __vizeRawProps?: Props | undefined; $emit: (event: string, ...args: any[]) => void; $slots: Readonly<InternalSlots>; }': $props, $emit, $slots"
         },
         {
           "file": "src/render.ts",
           "line": 5,
-          "column": 22,
+          "column": 33,
           "severity": 1,
           "code": 2769,
-          "message": "capture exact TS2769 wrong-props diagnostic"
+          "message": "No overload matches this call.\nThe last overload gave the following error.\nArgument of type '{ count: string; }' is not assignable to parameter of type 'VNodeProps & { __v_isVNode?: undefined; [Symbol.iterator]?: undefined; } & Record<string, any> & { $props: Props; readonly __vizeRawProps?: Props | undefined; $emit: (event: string, ...args: any[]) => void; $slots: Readonly<...>; } & __VizeComponentPublicBase'.\nType '{ count: string; }' is missing the following properties from type '{ $props: Props; readonly __vizeRawProps?: Props | undefined; $emit: (event: string, ...args: any[]) => void; $slots: Readonly<InternalSlots>; }': $props, $emit, $slots"
         }
       ]
     }
