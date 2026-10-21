@@ -1,6 +1,7 @@
 use std::path::Path;
 
-use super::{apply_musea_art_globals, generate_vue_content_mapper_transform};
+use super::super::apply_musea_art_globals;
+use super::generate_vue_content_mapper_transform;
 use crate::virtual_ts::VirtualTsOptions;
 
 const DEFINE_ART_STUB: &str =

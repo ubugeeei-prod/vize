@@ -7,7 +7,7 @@ use vize_atelier_sfc::{SfcDescriptor, script::resolve_template_used_identifiers}
 use vize_carton::{Allocator, FxHashSet, String as CompactString};
 use vize_croquis::macros::DEFINE_ART;
 
-use crate::virtual_ts::{extract_declared_name, VirtualTsOptions};
+use crate::virtual_ts::{VirtualTsOptions, extract_declared_name};
 
 const MUSEA_DEFINE_ART_STUB: &str =
     "declare function defineArt(source: string, options?: Record<string, any>): void;";
