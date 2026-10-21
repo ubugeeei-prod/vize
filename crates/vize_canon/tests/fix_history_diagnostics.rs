@@ -224,6 +224,18 @@ fn bounded_cache_maintenance_preserves_project_diagnostics() {
 
 #[test]
 fn workspace_package_alias_cache_preserves_sequential_scopes() {
+    let normalized = normalize_generated_check_ordinals(&[Diagnostic {
+        file: String::from("src/App.vue"),
+        line: 1,
+        column: 1,
+        severity: 1,
+        code: Some(2322),
+        message: String::from("_CheckProps_ stays distinct from _CheckProps_12"),
+    }]);
+    assert_eq!(
+        normalized[0].message,
+        "_CheckProps_ stays distinct from _CheckProps_#"
+    );
     check_pack(
         "workspace-alias-cache-10063",
         "workspace_package_alias_cache_preserves_sequential_scopes",
@@ -541,23 +553,4 @@ fn normalize_generated_check_ordinals(diagnostics: &[Diagnostic]) -> Vec<Diagnos
             diagnostic
         })
         .collect()
-}
-
-#[test]
-fn generated_check_ordinal_normalization_preserves_markers_without_digits() {
-    let diagnostics = [Diagnostic {
-        file: String::from("src/App.vue"),
-        line: 1,
-        column: 1,
-        severity: 1,
-        code: Some(2322),
-        message: String::from("_CheckProps_ stays distinct from _CheckProps_12"),
-    }];
-
-    let normalized = normalize_generated_check_ordinals(&diagnostics);
-
-    assert_eq!(
-        normalized[0].message,
-        "_CheckProps_ stays distinct from _CheckProps_#"
-    );
 }
