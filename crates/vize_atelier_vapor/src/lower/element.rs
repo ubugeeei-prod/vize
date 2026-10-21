@@ -360,7 +360,6 @@ pub(super) fn transform_classified_element<'a>(
                 tag: el.tag,
                 props,
                 slots,
-                raw_slots: None,
                 asset: true,
                 once: false,
                 dynamic_slots: false,
