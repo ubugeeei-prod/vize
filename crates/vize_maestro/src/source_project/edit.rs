@@ -1,8 +1,4 @@
 //! Host binding for the actual source-owned native edit model.
-#![expect(
-    clippy::disallowed_types,
-    reason = "tower-lsp edit payloads own std String values"
-)]
 
 use tower_lsp::lsp_types::{
     DocumentChanges, OneOf, OptionalVersionedTextDocumentIdentifier, Position, Range,
