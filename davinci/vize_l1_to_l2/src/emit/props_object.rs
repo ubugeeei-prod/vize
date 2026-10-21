@@ -124,9 +124,22 @@ pub(super) fn emit_props_object(
         i = 1;
     }
     let mut emitted_merged = StdVec::new();
-    for piece in visible.iter() {
+    // Most props objects are small. Building and sorting a key index costs
+    // more than a short scan; reserve it for wide v-on objects.
+    let event_keys = (visible.len() >= 16)
+        .then(|| super::props_object_merge::EventKeys::of(&visible, event_key_plain_element));
+    for (index, piece) in visible.iter().enumerate() {
         if let Some(key) = super::props_object_merge::event_key(piece, event_key_plain_element)
-            && super::props_object_merge::count(&visible, key.as_str(), event_key_plain_element) > 1
+            && event_keys.as_ref().map_or_else(
+                || {
+                    super::props_object_merge::count(
+                        &visible,
+                        key.as_str(),
+                        event_key_plain_element,
+                    ) > 1
+                },
+                |keys| keys.is_shared(&visible, index, key.as_str(), event_key_plain_element),
+            )
         {
             if emitted_merged.contains(&key) {
                 continue;
