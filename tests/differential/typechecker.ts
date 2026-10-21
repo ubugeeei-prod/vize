@@ -53,8 +53,7 @@ export const TYPECHECKER_TESTS = {
     "dynamic_directive_expressions_preserve_typed_slot_payloads",
   "content-mapper-template-expression-syntax":
     "template_expression_syntax_preserves_complete_authored_diagnostics",
-  "content-mapper-const-enum-import":
-    "content_mapper_accepts_imported_const_enum_value_anchors",
+  "content-mapper-const-enum-import": "content_mapper_accepts_imported_const_enum_value_anchors",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
