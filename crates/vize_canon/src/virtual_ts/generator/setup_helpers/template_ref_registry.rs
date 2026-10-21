@@ -331,14 +331,19 @@ fn dynamic_component_reference(element: &ElementNode<'_>) -> Option<String> {
     let vize_relief::ExpressionNode::Simple(expression) = expression else {
         return None;
     };
-    let js = expression.js_ast?.as_expression()?;
-    (js.raw == expression.content
-        && matches!(
-            js.ast,
-            oxc_ast::ast::Expression::Identifier(_)
-                | oxc_ast::ast::Expression::StaticMemberExpression(_)
-        ))
-    .then(|| String::from(expression.content.trim()))
+    let reference = expression.content.trim();
+    reference
+        .split('.')
+        .all(is_ascii_identifier)
+        .then(|| String::from(reference))
+}
+
+fn is_ascii_identifier(segment: &str) -> bool {
+    let mut chars = segment.chars();
+    chars
+        .next()
+        .is_some_and(|char| char == '_' || char == '$' || char.is_ascii_alphabetic())
+        && chars.all(|char| char == '_' || char == '$' || char.is_ascii_alphanumeric())
 }
 
 fn component_ref_kind_for_element_tag(
