@@ -67,6 +67,46 @@ export default () => { appendFileSync(${JSON.stringify(counter)}, 'once\\n'); re
   }
 });
 
+test("real Vite bundles retain canonical targets but do not expose symlink request routes", async () => {
+  const root = await realpath(await mkdtemp(join(tmpdir(), "vize-vite-config-alias-")));
+  try {
+    const app = join(root, "app");
+    await mkdir(join(app, "node_modules"), { recursive: true });
+    await symlink(vite, join(app, "node_modules/vite"), "junction");
+    const selected = join(app, "vite.config.mjs");
+    const alias = join(root, "policy.mjs");
+    const targets = [join(root, "one.mjs"), join(root, "two.mjs")];
+    await Promise.all(
+      targets.map((file, index) =>
+        writeFile(file, `export default { formatter: { printWidth: ${91 + index} } };`),
+      ),
+    );
+    await writeFile(selected, "import vue from '../policy.mjs'; export default { vue };");
+    const invoke = () =>
+      spawnSync(process.execPath, ["--input-type=module", "-e", embedded, selected], {
+        cwd: app,
+        encoding: "utf8",
+      });
+
+    for (const [index, target] of targets.entries()) {
+      if (index) await rm(alias);
+      await symlink(target, alias);
+      const response = invoke();
+      assert.equal(response.status, 0, response.stderr);
+      const loaded = JSON.parse(response.stdout);
+      assert.equal(loaded.config.formatter.printWidth, 91 + index);
+      assert.ok(loaded.dependencies.includes(target), "the canonical bundle target stays watched");
+      assert.equal(
+        loaded.dependencies.includes(alias) || loaded.watchDependencies.includes(alias),
+        false,
+        "Vite's public bundle result does not expose the requested symlink route",
+      );
+    }
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 for (const installedVite of [false, true]) {
   for (const policyName of ["shared-policy.mjs", "共有 policy.mjs"]) {
     test(`native loader retains an explicit outside failed request and repairs without replacing its loader (Vite: ${installedVite}, path: ${policyName})`, async () => {

@@ -55,6 +55,7 @@ void test("LSP manifest binds original complete contracts and every original req
     "component-hover-readability/responses.expected.json",
     "html-element-hover-documentation/App.vue.txt",
     "html-element-hover-documentation/responses.expected.json",
+    "code-action-utf16-original/response.expected.json",
   ]) {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), "lsp-manifest-law-"));
     try {

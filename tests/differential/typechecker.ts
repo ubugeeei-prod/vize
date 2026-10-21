@@ -43,6 +43,7 @@ export const TYPECHECKER_TESTS = {
   "component-v-bind-duplicate-diagnostic-10069":
     "named_prop_before_spread_reports_once_with_or_without_listener",
   "runtime-props-report-10100-10101": "runtime_props_reports_10100_10101_retain_expected_types",
+  "workspace-alias-cache-10063": "workspace_package_alias_cache_preserves_sequential_scopes",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
@@ -76,6 +77,7 @@ const sourceRevisions = {
   "misskey-generated-inference-9516": "cf6c83ab16fb7f20f84f0d51112090bbce89c74a",
   "component-v-bind-duplicate-diagnostic-10069": "7174c46d55825c155325e6314305e661d50ec95a",
   "runtime-props-report-10100-10101": "5dfe002a9467d152c8545693df33def3aa5f3bf7",
+  "workspace-alias-cache-10063": "7174c46d55825c155325e6314305e661d50ec95a",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 
 export type Artifact = { path: string; sha256: string };

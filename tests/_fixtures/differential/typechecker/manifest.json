@@ -2064,5 +2064,83 @@
         }
       ]
     }
+,
+    {
+      "id": "typechecker/workspace-alias-cache-10063/second-package-selection",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "workspace-alias-cache-10063",
+      "case": "second-package-selection",
+      "test": "workspace_package_alias_cache_preserves_sequential_scopes",
+      "regressionCommit": "7174c46d55825c155325e6314305e661d50ec95a",
+      "sourceRevision": "7174c46d55825c155325e6314305e661d50ec95a",
+      "packReference": {
+        "path": "workspace-alias-cache-10063/cases.json",
+        "sha256": "3e6c9a6b0492e17e252cd4ae0d7dde0652c528ff45eb5ca1b8e713110e0ad02f"
+      },
+      "inputs": [
+        {
+          "file": "package.json",
+          "path": "workspace-alias-cache-10063/package.json.txt",
+          "sha256": "30d5ed2992f32badf6f34dfeec26a7bcfec29ba7a62ef19c3ad0523d96ba0bf1"
+        },
+        {
+          "file": "pnpm-workspace.yaml",
+          "path": "workspace-alias-cache-10063/pnpm-workspace.yaml.txt",
+          "sha256": "0fb360452b0231d114d0b0ad6cc76bb48fe528382f55827cf93739bf64ec79e1"
+        },
+        {
+          "file": "tsconfig.a.json",
+          "path": "workspace-alias-cache-10063/tsconfig.a.json.txt",
+          "sha256": "7546c13fe53c3a6a3db44d8dadb89551305a98e8bdeaee72538788f5e5ae054c"
+        },
+        {
+          "file": "tsconfig.b.json",
+          "path": "workspace-alias-cache-10063/tsconfig.b.json.txt",
+          "sha256": "1352779570fefb199755e8883f789477dfaa1e7fd4a72a67c3b3605f0f0fc311"
+        },
+        {
+          "file": "packages/a/package.json",
+          "path": "workspace-alias-cache-10063/packages/a/package.json.txt",
+          "sha256": "4cfd5466e463b71d0c1412f0c6f10c270ac080984c6debe5f71fbc0c2e6b8a72"
+        },
+        {
+          "file": "packages/a/src/index.ts",
+          "path": "workspace-alias-cache-10063/packages/a/src/index.ts.txt",
+          "sha256": "35dfe45dee2fb46be0393198a56807ad20f787a46a6d79ccb6f5ed960ef8db87"
+        },
+        {
+          "file": "packages/b/package.json",
+          "path": "workspace-alias-cache-10063/packages/b/package.json.txt",
+          "sha256": "199b5382e2f3f8967f3343fa5eab3422a153af7e99745315e826f7b3352e03b5"
+        },
+        {
+          "file": "packages/b/src/index.ts",
+          "path": "workspace-alias-cache-10063/packages/b/src/index.ts.txt",
+          "sha256": "52edd5be90d0d460199eaa63e607396bd773fed88665f0d69078aca44b5b0094"
+        },
+        {
+          "file": "packages/c/package.json",
+          "path": "workspace-alias-cache-10063/packages/c/package.json.txt",
+          "sha256": "f217a5e0b1b3629c9dba14a85fb6c796d485d415d9876a23e01ce9eadde7f79a"
+        },
+        {
+          "file": "packages/c/src/index.ts",
+          "path": "workspace-alias-cache-10063/packages/c/src/index.ts.txt",
+          "sha256": "4bf439b51f0ac83ff44df2486f649282928e1875a31c59585cd894c111499969"
+        },
+        {
+          "file": "packages/c/src/MyBadge.vue",
+          "path": "workspace-alias-cache-10063/packages/c/src/MyBadge.vue.txt",
+          "sha256": "32fa2cf70a75ee2b7d7c5ddecb8df37ef60c8de103217dacf2a2386579cd3ed8"
+        }
+      ]
+    }
   ]
 }

@@ -1,11 +1,10 @@
-//! The hoist-static pass's const-classification of expression positions
-//! — the P2-5b [`ExprRef`] capability consumed for real, split from
-//! `pass/hoist.rs` under the source budget.
+//! Vue surface rules that consume L2's retained-expression constness.
 //!
 //! # The pessimal law's first real consumer
 //!
 //! [`constant_for_hoist`] is the first L2 pass code that *acts* on
-//! P2-5b's const-classification contract: an [`ExprRef::Opaque`] is
+//! P2-5b's const-classification contract: an
+//! [`ExprRef::Opaque`](vize_l2::expr::ExprRef::Opaque) is
 //! **never** constant ([`OpaqueExpr::is_constant`], pessimal law 3 —
 //! "no folding, hoisting, or caching may be justified by an opaque
 //! expression"), and this pass is the first place where that answer
@@ -15,7 +14,9 @@
 //!
 //! # The JS rule (self-bound locals ported, free names still weaker)
 //!
-//! For a retained [`ExprRef::Js`] the shipped classifier
+//! The backend-neutral retained-expression classifier now lives in
+//! [`vize_l2::analysis::constant_expression`]. For a retained
+//! [`ExprRef::Js`](vize_l2::expr::ExprRef::Js) the shipped classifier
 //! (`vize_atelier_core::codegen::is_constant_simple_expression`, called
 //! with `bindings: None` by `hoist_static/props.rs`) admits an
 //! expression whose identifiers are locals it binds itself, allowlisted
@@ -42,27 +43,10 @@
 //!
 //! [`OpaqueExpr::is_constant`]: vize_l2::expr::OpaqueExpr::is_constant
 
-use alloc::vec::Vec as StdVec;
-
-use oxc_ast::ast as js;
-use oxc_ast_visit::Visit;
-use oxc_ast_visit::walk::{walk_arrow_function_expression, walk_binding_pattern, walk_function};
-use oxc_syntax::scope::ScopeFlags;
 use vize_l0::camelize;
-use vize_l2::expr::ExprRef;
 use vize_l2::op::{Attribute, BindingOp, DynamicName, SlotOp};
 
-/// Classify one expression position for hoisting (module docs: the
-/// pessimal law on opaque payloads, the recorded weaker JS rule).
-#[must_use]
-pub fn constant_for_hoist(expr: &ExprRef<'_>) -> bool {
-    match expr {
-        // Pessimal law 3, consumed: never constant, no exceptions.
-        ExprRef::Opaque(opaque) => opaque.is_constant(),
-        ExprRef::Foreign(_) | ExprRef::Filter(_) => false,
-        ExprRef::Js(retained) => self_bound_js_constant(retained.ast, retained.source),
-    }
-}
+use super::constant_for_hoist;
 
 /// Why one attached binding fails the legacy `is_hoistable_static_prop`
 /// rule — `None` when it survives it. The `v-bind` shape gates are
@@ -131,132 +115,6 @@ fn prefixed(prefix: char, name: &str) -> vize_l0::String {
     out.push(prefix);
     out.push_str(name);
     out
-}
-
-/// Whether a retained JS expression is constant under the self-bound
-/// rule (module docs). The DOM props hoist spells the same answer.
-#[must_use]
-pub(crate) fn self_bound_js_constant(expr: &js::Expression<'_>, source: &str) -> bool {
-    if source.contains("_ctx.")
-        || source.contains("$setup.")
-        || source.contains("__props.")
-        || source.contains("$props.")
-    {
-        return false;
-    }
-    let mut walk = ConstWalk {
-        locals: StdVec::new(),
-        dynamic: false,
-    };
-    walk.visit_expression(expr);
-    !walk.dynamic
-}
-
-/// The retained-AST walk. A reference is constant only when the
-/// expression itself binds that name; `this` and TS-only constructs
-/// stay non-constant (module docs).
-struct ConstWalk {
-    locals: StdVec<StdVec<vize_l0::String>>,
-    dynamic: bool,
-}
-
-impl ConstWalk {
-    fn is_local(&self, name: &str) -> bool {
-        self.locals
-            .iter()
-            .any(|frame| frame.iter().any(|bound| bound.as_str() == name))
-    }
-
-    fn bind_pattern(&mut self, pattern: &js::BindingPattern<'_>) {
-        match pattern {
-            js::BindingPattern::BindingIdentifier(ident) => {
-                if let Some(frame) = self.locals.last_mut() {
-                    frame.push(vize_l0::String::from(ident.name.as_str()));
-                }
-            }
-            js::BindingPattern::ObjectPattern(object) => {
-                for property in &object.properties {
-                    self.bind_pattern(&property.value);
-                }
-                if let Some(rest) = &object.rest {
-                    self.bind_pattern(&rest.argument);
-                }
-            }
-            js::BindingPattern::ArrayPattern(array) => {
-                for element in array.elements.iter().flatten() {
-                    self.bind_pattern(element);
-                }
-                if let Some(rest) = &array.rest {
-                    self.bind_pattern(&rest.argument);
-                }
-            }
-            js::BindingPattern::AssignmentPattern(assignment) => {
-                self.bind_pattern(&assignment.left);
-            }
-        }
-    }
-}
-
-impl<'a> Visit<'a> for ConstWalk {
-    fn visit_identifier_reference(&mut self, ident: &js::IdentifierReference<'a>) {
-        if !self.is_local(ident.name.as_str()) {
-            self.dynamic = true;
-        }
-    }
-
-    fn visit_this_expression(&mut self, _this: &js::ThisExpression) {
-        self.dynamic = true;
-    }
-
-    fn visit_arrow_function_expression(&mut self, arrow: &js::ArrowFunctionExpression<'a>) {
-        self.locals.push(StdVec::new());
-        for param in &arrow.params.items {
-            self.bind_pattern(&param.pattern);
-        }
-        walk_arrow_function_expression(self, arrow);
-        self.locals.pop();
-    }
-
-    fn visit_function(&mut self, function: &js::Function<'a>, flags: ScopeFlags) {
-        self.locals.push(StdVec::new());
-        for param in &function.params.items {
-            self.bind_pattern(&param.pattern);
-        }
-        walk_function(self, function, flags);
-        self.locals.pop();
-    }
-
-    fn visit_variable_declarator(&mut self, declarator: &js::VariableDeclarator<'a>) {
-        if let Some(init) = &declarator.init {
-            self.visit_expression(init);
-        }
-        self.bind_pattern(&declarator.id);
-        // Types and default values live on the pattern. Walking them
-        // after the bind keeps a TS annotation dynamic (the shipped
-        // mjs re-parse refuses it) without treating the bound name as
-        // a free reference.
-        walk_binding_pattern(self, &declarator.id);
-    }
-
-    fn visit_ts_as_expression(&mut self, _expr: &js::TSAsExpression<'a>) {
-        self.dynamic = true;
-    }
-
-    fn visit_ts_satisfies_expression(&mut self, _expr: &js::TSSatisfiesExpression<'a>) {
-        self.dynamic = true;
-    }
-
-    fn visit_ts_type_assertion(&mut self, _expr: &js::TSTypeAssertion<'a>) {
-        self.dynamic = true;
-    }
-
-    fn visit_ts_non_null_expression(&mut self, _expr: &js::TSNonNullExpression<'a>) {
-        self.dynamic = true;
-    }
-
-    fn visit_ts_instantiation_expression(&mut self, _expr: &js::TSInstantiationExpression<'a>) {
-        self.dynamic = true;
-    }
 }
 
 /// `props_are_static_attrs` / the prop half of `has_static_props`:

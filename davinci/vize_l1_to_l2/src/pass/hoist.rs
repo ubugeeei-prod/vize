@@ -60,7 +60,7 @@
 //!   cleaner to L2 than to the legacy lane; counted (`builtins_subtrees`).
 //! - **The const rule** admits locals the expression binds and is still
 //!   weaker than the shipped classifier on free names and `this`
-//!   ([`consts::constant_for_hoist`]'s module docs).
+//!   ([`vize_l2::analysis::constant_expression`]).
 //!
 //! # Facts and accounting
 //!
@@ -84,9 +84,8 @@ mod consts;
 mod lattice;
 mod remarks;
 
-pub use consts::constant_for_hoist;
-pub(crate) use consts::self_bound_js_constant;
 pub use remarks::{STATIC_PROPS, STATIC_SUBTREE};
+pub use vize_l2::analysis::constant_expression::is_self_bound_constant as constant_for_hoist;
 
 /// The pass name in pipeline strings and folio pages.
 pub const NAME: &str = "hoist-static";

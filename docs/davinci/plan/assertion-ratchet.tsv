@@ -174,7 +174,6 @@ crates/vize_canon/src/batch/virtual_project/tests/macro_scope.rs	2
 crates/vize_canon/src/batch/virtual_project/tests/materialization_namespace.rs	3
 crates/vize_canon/src/batch/virtual_project/tests/module_augmentations.rs	6
 crates/vize_canon/src/batch/virtual_project/tests/package_shadow_identity_scopes.rs	1
-crates/vize_canon/src/batch/virtual_project/tests/pnpm_workspace_alias_filesystem.rs	6
 crates/vize_canon/src/batch/virtual_project/tests/pnpm_workspace_routes.rs	2
 crates/vize_canon/src/batch/virtual_project/tests/pnpm_workspace_routes_lifecycle.rs	6
 crates/vize_canon/src/batch/virtual_project/tests/pnpm_workspace_shadow_cleanup.rs	10
