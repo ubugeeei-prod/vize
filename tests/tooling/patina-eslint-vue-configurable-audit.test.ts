@@ -18,7 +18,13 @@ const schema = JSON.parse(
   fs.readFileSync(path.join(repoRoot, "npm/cli/schemas/vize.config.schema.json"), "utf8"),
 );
 
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((entry: unknown) => typeof entry === "string");
+}
+
 test("the current eslint-plugin-vue configurable surface stays explicit", () => {
+  const configurableRules: unknown = audit.configurableRules;
+
   assert.equal(audit.schemaVersion, 1);
   assert.deepEqual(audit.upstream, {
     package: "eslint-plugin-vue",
@@ -29,14 +35,15 @@ test("the current eslint-plugin-vue configurable surface stays explicit", () => 
     ruleCount: 253,
     configurableRuleCount: 112,
   });
-  assert.equal(audit.configurableRules.length, audit.upstream.configurableRuleCount);
+  assert.ok(isStringArray(configurableRules));
+  assert.equal(configurableRules.length, audit.upstream.configurableRuleCount);
   assert.deepEqual(
-    audit.configurableRules,
-    [...new Set(audit.configurableRules)].sort((left, right) => left.localeCompare(right)),
+    configurableRules,
+    [...new Set(configurableRules)].sort((left, right) => left.localeCompare(right)),
   );
 
   const statuses = { mapped: 0, unimplemented: 0, intentionalDivergence: 0 };
-  for (const rule of audit.configurableRules) {
+  for (const rule of configurableRules) {
     const entry = ruleMap.entries[rule];
     assert.ok(entry, `${rule} must remain in the pinned compatibility map`);
     if (entry.status === "mapped") statuses.mapped += 1;

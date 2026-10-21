@@ -302,6 +302,13 @@ export interface LintRuleOptions {
   "vue/v-on-event-hyphenation"?: "always" | "never";
   "vue/v-bind-style"?: "shorthand" | "longform";
   "vue/v-on-style"?: "shorthand" | "longform";
+  "vue/v-slot-style"?:
+    | ("shorthand" | "longform")
+    | {
+        atComponent?: "shorthand" | "longform" | "v-slot";
+        default?: "shorthand" | "longform" | "v-slot";
+        named?: "shorthand" | "longform";
+      };
   "vue/attribute-hyphenation"?: "always" | "never";
   "vue/valid-v-on"?: {
     modifiers?: string[];

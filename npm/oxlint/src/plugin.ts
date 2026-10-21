@@ -198,6 +198,19 @@ function ruleOptionsSchema(ruleName: string): unknown[] {
       return [{ enum: ["always", "never"] }];
     case "vue/v-on-style":
       return [{ enum: ["shorthand", "longform"] }];
+    case "vue/v-slot-style":
+      return [
+        {
+          oneOf: [
+            { enum: ["shorthand", "longform"] },
+            objectSchema({
+              atComponent: { enum: ["shorthand", "longform", "v-slot"] },
+              default: { enum: ["shorthand", "longform", "v-slot"] },
+              named: { enum: ["shorthand", "longform"] },
+            }),
+          ],
+        },
+      ];
     case "vue/v-bind-style":
       return [{ enum: ["shorthand", "longform"] }];
     case "vue/require-component-registration":

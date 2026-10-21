@@ -25,6 +25,7 @@ mod sfc_element_order;
 mod strict_boolean;
 mod v_bind_style;
 mod v_on_style;
+mod v_slot_style;
 mod valid_v_on;
 mod valid_v_slot;
 
@@ -47,6 +48,9 @@ pub use sfc_element_order::{SfcElementOrderGroup, SfcElementOrderOptions};
 pub use strict_boolean::StrictBooleanExpressionsOptions;
 pub use v_bind_style::VBindStyle;
 pub use v_on_style::VOnStyle;
+pub use v_slot_style::{
+    VSlotNamedStyle, VSlotStyle, VSlotStyleOptions, VSlotStyleValue, VSlotUniformStyle,
+};
 
 /// Per-rule configuration keyed by rule name.
 ///
@@ -171,6 +175,9 @@ pub struct ConfigLintRuleOptions {
     /// Options for `vue/v-on-style`.
     #[serde(rename = "vue/v-on-style")]
     v_on_style: Option<VOnStyle>,
+    /// Options for `vue/v-slot-style`.
+    #[serde(rename = "vue/v-slot-style")]
+    v_slot_style: Option<VSlotStyle>,
     /// Options for `vue/attribute-hyphenation`.
     #[serde(rename = "vue/attribute-hyphenation")]
     attribute_hyphenation: Option<HyphenationStyle>,
@@ -220,6 +227,7 @@ impl ConfigLintRuleOptions {
             && self.v_on_event_hyphenation.is_none()
             && self.v_bind_style.is_none()
             && self.v_on_style.is_none()
+            && self.v_slot_style.is_none()
             && self.attribute_hyphenation.is_none()
             && self.valid_v_on.is_none()
             && self.valid_v_slot.is_none()
@@ -323,6 +331,12 @@ impl ConfigLintRuleOptions {
     #[inline]
     pub fn v_on_style(&self) -> Option<VOnStyle> {
         self.v_on_style
+    }
+
+    /// Configured spelling policy for `vue/v-slot-style`.
+    #[inline]
+    pub fn v_slot_style(&self) -> Option<VSlotStyle> {
+        self.v_slot_style
     }
 
     /// Configured style for `vue/attribute-hyphenation`.

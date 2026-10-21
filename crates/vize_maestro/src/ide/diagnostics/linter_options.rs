@@ -8,6 +8,9 @@ use vize_patina::{
     rules::musea::{MuseaLintResult, MuseaLinter, PreferDesignTokensConfig},
 };
 
+mod v_slot_style;
+use self::v_slot_style::v_slot_style;
+
 const MUSEA_PREFER_DESIGN_TOKENS: &str = "musea/prefer-design-tokens";
 const SCRIPT_NO_RESTRICTED_MEMBERS: &str = "script/no-restricted-members";
 const PINIA_PREFER_STORE_TO_REFS: &str = "ecosystem/pinia-prefer-store-to-refs";
@@ -211,6 +214,9 @@ pub(super) fn apply_rule_options(
     }
     if let Some(style) = options.v_on_style() {
         linter = linter.with_v_on_style(v_on_style(style));
+    }
+    if let Some(style) = options.v_slot_style() {
+        linter = linter.with_v_slot_style(v_slot_style(style));
     }
     if let Some(style) = options.v_bind_style() {
         linter = linter.with_v_bind_style(v_bind_style(style));

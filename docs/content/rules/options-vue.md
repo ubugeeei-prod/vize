@@ -346,6 +346,47 @@ Good:
 <button v-on:click.stop="save" v-on="listeners">Save</button>
 ```
 
+## `vue/v-slot-style`
+
+Choose one spelling for every slot with `"shorthand"` or `"longform"`, or use the object form to
+set the component default slot, `<template>` default slot, and named slots independently. The
+defaults are `{ atComponent: "v-slot", default: "shorthand", named: "shorthand" }`. The bare
+`"v-slot"` value is valid for `atComponent` and `default`, but not for `named`, because dropping a
+named slot argument would change behavior. Safe fixes preserve slot arguments and values.
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "rules": {
+        "vue/v-slot-style": "warn"
+      },
+      "ruleOptions": {
+        "vue/v-slot-style": {
+          "atComponent": "longform",
+          "default": "v-slot",
+          "named": "longform"
+        }
+      }
+    }
+  }
+});
+```
+
+Bad with the config above:
+
+```vue
+<MyPanel #default="slot"><template #header>Header</template>{{ slot.item }}</MyPanel>
+```
+
+Good:
+
+```vue
+<MyPanel v-slot:default="slot"><template v-slot:header>Header</template>{{ slot.item }}</MyPanel>
+```
+
 ## `vue/attribute-hyphenation`
 
 Use this option for static prop names on custom components. `always` reports camelCase-authored

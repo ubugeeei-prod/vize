@@ -127,6 +127,15 @@ class HtmlSelfClosingOptions {
   math: HtmlSelfClosingStyle = "always"
 }
 
+typealias VSlotUniformStyle = "shorthand"|"longform"
+typealias VSlotStyleValue = VSlotUniformStyle|"v-slot"
+
+class VSlotStyleOptions {
+  atComponent: VSlotStyleValue = "v-slot"
+  `default`: VSlotStyleValue = "shorthand"
+  named: VSlotUniformStyle = "shorthand"
+}
+
 class MuseaDesignToken {
   path: String
   value: String
@@ -175,6 +184,7 @@ class LintRuleOptions {
   `vue/v-on-event-hyphenation`: HyphenationStyle? = null
   `vue/v-bind-style`: VBindStyle? = null
   `vue/v-on-style`: VOnStyle? = null
+  `vue/v-slot-style`: (VSlotUniformStyle|VSlotStyleOptions)? = null
   `vue/attribute-hyphenation`: HyphenationStyle? = null
   `vue/valid-v-on`: LintRuleOptionTypes.ValidVOnOptions? = null
   `vue/valid-v-slot`: LintRuleOptionTypes.ValidVSlotOptions? = null

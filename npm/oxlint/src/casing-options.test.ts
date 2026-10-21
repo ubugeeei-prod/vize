@@ -205,6 +205,10 @@ fs.writeFileSync(
         "vize/vue/v-on-event-hyphenation": ["error", "never"],
         "vize/vue/v-bind-style": ["error", "longform"],
         "vize/vue/v-on-style": ["error", "longform"],
+        "vize/vue/v-slot-style": [
+          "error",
+          { atComponent: "longform", default: "v-slot", named: "longform" },
+        ],
         "vize/vue/attribute-hyphenation": ["error", "never"],
       },
     },
@@ -216,6 +220,8 @@ fs.writeFileSync(
   ruleOptionsPath,
   `<template>
   <MyWidget :modelValue="props.count" my-prop="value" @my-event="handler" />
+  <MyWidget #default="slot">{{ slot.item }}</MyWidget>
+  <MyWidget><template #header>Header</template></MyWidget>
 </template>
 
 <script setup lang="ts">
@@ -266,6 +272,12 @@ assert.equal(
   ruleOptionsPayload.diagnostics.filter((diagnostic) => diagnostic.code === "vize(vue/v-on-style)")
     .length,
   1,
+);
+assert.equal(
+  ruleOptionsPayload.diagnostics.filter(
+    (diagnostic) => diagnostic.code === "vize(vue/v-slot-style)",
+  ).length,
+  2,
 );
 assert.equal(
   ruleOptionsPayload.diagnostics.filter(

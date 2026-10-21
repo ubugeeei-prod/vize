@@ -16,6 +16,7 @@ import type {
   SfcElementOrderOption,
   VBindStyle,
   VOnStyle,
+  VSlotStyle,
 } from "./model.js";
 
 export function getRuleOptions(
@@ -64,6 +65,11 @@ export function getRuleOptions(
     case "vue/v-on-style":
       if (isVOnStyle(firstOption)) {
         return { ruleOptions: { "vue/v-on-style": firstOption } };
+      }
+      break;
+    case "vue/v-slot-style":
+      if (isVSlotStyle(firstOption)) {
+        return { ruleOptions: { "vue/v-slot-style": structuredClone(firstOption) } };
       }
       break;
     case "vue/v-bind-style":
@@ -164,6 +170,18 @@ function isHyphenationStyle(value: unknown): value is HyphenationStyle {
 
 function isVOnStyle(value: unknown): value is VOnStyle {
   return value === "shorthand" || value === "longform";
+}
+
+function isVSlotStyle(value: unknown): value is VSlotStyle {
+  if (value === "shorthand" || value === "longform") return true;
+  if (!isRecord(value) || !hasOnlyKeys(value, ["atComponent", "default", "named"])) return false;
+  const isSlotValue = (entry: unknown) =>
+    entry === undefined || entry === "shorthand" || entry === "longform" || entry === "v-slot";
+  return (
+    isSlotValue(value.atComponent) &&
+    isSlotValue(value.default) &&
+    (value.named === undefined || value.named === "shorthand" || value.named === "longform")
+  );
 }
 
 function isVBindStyle(value: unknown): value is VBindStyle {

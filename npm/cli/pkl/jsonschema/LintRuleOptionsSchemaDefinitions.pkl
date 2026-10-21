@@ -71,6 +71,35 @@ lintRuleOptionsDef: JsonSchema = new JsonSchema {
       type = "string"
       enum = new Listing { "shorthand"; "longform" }
     }
+    ["vue/v-slot-style"] = new JsonSchema {
+      oneOf = new Listing {
+        new JsonSchema {
+          type = "string"
+          enum = new Listing { "shorthand"; "longform" }
+        }
+        new JsonSchema {
+          type = "object"
+          properties {
+            ["atComponent"] = new JsonSchema {
+              type = "string"
+              enum = new Listing { "shorthand"; "longform"; "v-slot" }
+              default = "v-slot"
+            }
+            ["default"] = new JsonSchema {
+              type = "string"
+              enum = new Listing { "shorthand"; "longform"; "v-slot" }
+              default = "shorthand"
+            }
+            ["named"] = new JsonSchema {
+              type = "string"
+              enum = new Listing { "shorthand"; "longform" }
+              default = "shorthand"
+            }
+          }
+          additionalProperties = false
+        }
+      }
+    }
     ["vue/attribute-hyphenation"] = ConfigArtifactDefinitions.hyphenationStyleDef
     ["vue/valid-v-on"] = new JsonSchema {
       type = "object"

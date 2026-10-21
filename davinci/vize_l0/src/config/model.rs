@@ -54,6 +54,7 @@ pub use linter_rule_options::{
     NoRestrictedGlobalsOptions, NoRestrictedMembersOptions, PropsDestructureMode, RestrictedGlobal,
     RestrictedMember, SfcElementOrderGroup, SfcElementOrderOptions,
     StrictBooleanExpressionsOptions, TemplateComponentNameCasing, VBindStyle, VOnStyle,
+    VSlotNamedStyle, VSlotStyle, VSlotStyleOptions, VSlotStyleValue, VSlotUniformStyle,
 };
 pub use type_checker::TypeCheckerConfig;
 pub use vue::{ParseVueVersionError, VueVersion};

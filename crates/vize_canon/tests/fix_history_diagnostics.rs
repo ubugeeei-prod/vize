@@ -456,6 +456,17 @@ fn component_listener_aliases_stay_inside_guard_scope() {
     );
 }
 
+#[test]
+fn content_mapper_isolates_duplicate_class_and_style_attribute_probes() {
+    check_pack(
+        "content-mapper-duplicate-attributes-10184",
+        "content_mapper_isolates_duplicate_class_and_style_attribute_probes",
+        "0038b601e41dccb6f037aa68c3fc0207ea635e3b",
+        Some(10184),
+        &["listener-and-template-ref-class-style"],
+    );
+}
+
 fn native_fixture_runtime_disabled() -> bool {
     std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some()
 }
@@ -526,6 +537,7 @@ fn check_pack(
             | "runtime-props-report-10100-10101"
             | "component-render-h-props-9855"
             | "component-listener-alias-scope-10112"
+            | "content-mapper-duplicate-attributes-10184"
             | "dynamic-directive-expression-mapping-10182"
             | "content-mapper-template-expression-syntax" => regression,
             _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",

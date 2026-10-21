@@ -10,6 +10,8 @@ use vize_l0::config::{
     ConfigLintRuleOptions, CustomEventNameCasing, HtmlSelfClosingStyle as ConfigSelfClosingStyle,
     HyphenationStyle as ConfigHyphenationStyle, TemplateComponentNameCasing,
     VBindStyle as ConfigVBindStyle, VOnStyle as ConfigVOnStyle,
+    VSlotNamedStyle as ConfigVSlotNamedStyle, VSlotStyle as ConfigVSlotStyle,
+    VSlotStyleValue as ConfigVSlotStyleValue, VSlotUniformStyle as ConfigVSlotUniformStyle,
 };
 
 impl Linter {
@@ -85,6 +87,9 @@ impl Linter {
                 ConfigVOnStyle::Longform => crate::rules::vue::VOnStyleOption::Longform,
             });
         }
+        if let Some(value) = options.v_slot_style() {
+            self = self.with_v_slot_style(v_slot_style(value));
+        }
         if let Some(value) = options.v_bind_style() {
             self = self.with_v_bind_style(match value {
                 ConfigVBindStyle::Shorthand => crate::rules::vue::VBindStyleOption::Shorthand,
@@ -104,6 +109,33 @@ impl Linter {
             self = self.with_valid_v_slot_allow_modifiers(value);
         }
         self
+    }
+}
+
+fn v_slot_style(value: ConfigVSlotStyle) -> crate::rules::vue::VSlotStyle {
+    use crate::rules::vue::{VSlotStyle, VSlotStyleOption};
+
+    match value {
+        ConfigVSlotStyle::Uniform(style) => VSlotStyle::uniform(match style {
+            ConfigVSlotUniformStyle::Shorthand => VSlotStyleOption::Shorthand,
+            ConfigVSlotUniformStyle::Longform => VSlotStyleOption::Longform,
+        }),
+        ConfigVSlotStyle::ByPosition(options) => VSlotStyle {
+            at_component: v_slot_style_value(options.at_component),
+            default_slot: v_slot_style_value(options.default_slot),
+            named: match options.named {
+                ConfigVSlotNamedStyle::Shorthand => VSlotStyleOption::Shorthand,
+                ConfigVSlotNamedStyle::Longform => VSlotStyleOption::Longform,
+            },
+        },
+    }
+}
+
+fn v_slot_style_value(value: ConfigVSlotStyleValue) -> crate::rules::vue::VSlotStyleOption {
+    match value {
+        ConfigVSlotStyleValue::Shorthand => crate::rules::vue::VSlotStyleOption::Shorthand,
+        ConfigVSlotStyleValue::Longform => crate::rules::vue::VSlotStyleOption::Longform,
+        ConfigVSlotStyleValue::VSlot => crate::rules::vue::VSlotStyleOption::VSlot,
     }
 }
 
