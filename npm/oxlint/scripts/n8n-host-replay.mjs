@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import { performance } from "node:perf_hooks";
@@ -41,6 +42,9 @@ export function qualifyN8nHost(engine, version, output, environment, reference) 
       fs.copyFileSync(path.join(inventory.fixture, file), target, fs.constants.COPYFILE_EXCL);
       assert.equal(sha256(fs.readFileSync(target)), expected);
     }
+    const dependencyMirrors = [
+      mirrorPackageResolution(inventory.fixture, original, inventory.files, "vue-router"),
+    ];
     const reports = {};
     const modes = ["stock", "reference", "baseline", "shared", "effective"];
     for (const mode of modes) {
@@ -211,6 +215,7 @@ export function qualifyN8nHost(engine, version, output, environment, reference) 
       files: inventory.files.length,
       scriptless: 19,
       disabledFiles: inventory.disabledFiles,
+      dependencyMirrors,
       modes: capture.map(({ mode, elapsedMs, status }) => ({ mode, elapsedMs, status })),
       vectorSha256: sha256(JSON.stringify(reports.baseline.diagnostics)),
       limits: [
@@ -230,6 +235,46 @@ export function qualifyN8nHost(engine, version, output, environment, reference) 
     save();
     fs.rmSync(original, { recursive: true, force: true });
   }
+}
+
+export function mirrorPackageResolution(source, target, files, packageName) {
+  const resolveFrom = (root, file) => {
+    try {
+      return createRequire(path.resolve(root, file)).resolve(packageName);
+    } catch {
+      return undefined;
+    }
+  };
+  const sourceEntry = resolveFrom(source, "__vize_package_resolution__.cjs");
+  let packageVersion;
+  if (sourceEntry) {
+    let packageRoot = path.dirname(sourceEntry);
+    for (;;) {
+      const manifestPath = path.join(packageRoot, "package.json");
+      if (fs.existsSync(manifestPath)) {
+        const packageManifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+        if (packageManifest.name === packageName) {
+          packageVersion = packageManifest.version;
+          break;
+        }
+      }
+      const parent = path.dirname(packageRoot);
+      assert.notEqual(parent, packageRoot, `unable to locate ${packageName} package root`);
+      packageRoot = parent;
+    }
+    const targetPackage = path.join(target, "node_modules", ...packageName.split("/"));
+    fs.mkdirSync(path.dirname(targetPackage), { recursive: true });
+    fs.symlinkSync(packageRoot, targetPackage, "dir");
+  }
+
+  let resolvableFiles = 0;
+  for (const { file } of files) {
+    const sourceResolvable = resolveFrom(source, file) !== undefined;
+    const targetResolvable = resolveFrom(target, file) !== undefined;
+    assert.equal(targetResolvable, sourceResolvable, `${file}: ${packageName} resolution parity`);
+    if (sourceResolvable) resolvableFiles++;
+  }
+  return { package: packageName, version: packageVersion ?? null, resolvableFiles };
 }
 
 export function verifyNativeCalls(custody, expectedPhases) {

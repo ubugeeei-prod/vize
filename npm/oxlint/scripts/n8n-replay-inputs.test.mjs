@@ -4,7 +4,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { expectedHostCalls } from "./n8n-host-replay.mjs";
+import { createRequire } from "node:module";
+import { expectedHostCalls, mirrorPackageResolution } from "./n8n-host-replay.mjs";
 import {
   disabledFiles,
   editorPrefix,
@@ -101,4 +102,30 @@ void test("physical input authority rejects changed bytes, symlinks and invalid 
   fs.symlinkSync(path.join(root, "Other.vue"), file);
   assert.throws(() => verifyPhysicalEntry(root, entry));
   assert.throws(() => verifyPhysicalEntry(root, { ...entry, mode: "120000" }));
+});
+
+void test("host replay preserves package resolution from the source project", (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-n8n-package-resolution-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const source = path.join(root, "source");
+  const target = path.join(root, "target");
+  const packageRoot = path.join(source, "node_modules/vue-router");
+  const file = "packages/frontend/editor-ui/src/App.vue";
+  fs.mkdirSync(packageRoot, { recursive: true });
+  fs.mkdirSync(path.dirname(path.join(target, file)), { recursive: true });
+  fs.writeFileSync(
+    path.join(packageRoot, "package.json"),
+    JSON.stringify({ name: "vue-router", version: "5.3.1", main: "index.js" }),
+  );
+  fs.writeFileSync(path.join(packageRoot, "index.js"), "module.exports = {};\n");
+
+  assert.deepEqual(mirrorPackageResolution(source, target, [{ file }], "vue-router"), {
+    package: "vue-router",
+    version: "5.3.1",
+    resolvableFiles: 1,
+  });
+  assert.equal(
+    createRequire(path.join(target, file)).resolve("vue-router"),
+    fs.realpathSync(path.join(packageRoot, "index.js")),
+  );
 });
