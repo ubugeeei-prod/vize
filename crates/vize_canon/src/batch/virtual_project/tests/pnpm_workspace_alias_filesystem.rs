@@ -291,20 +291,22 @@ fn sequential_package_selections_reclaim_cached_internal_aliases() {
     let selected_b = load_entry(&root, &root.join("packages/b/src/index.ts"));
     assert_eq!(selected_b.virtual_root(), virtual_root.as_path());
     let selected_b_links = selected_b.workspace_alias_links();
-    assert!(!selected_b_links.is_empty());
-    for link in selected_b_links {
-        assert_eq!(
-            link.virtual_dir.canonicalize().unwrap(),
-            link.real_dir.canonicalize().unwrap()
-        );
-    }
+    assert!(selected_b_links.is_empty());
+    let button = root.join("packages/c/src/Btn.vue");
+    assert_eq!(
+        selected_b
+            .find_by_original(&button)
+            .unwrap()
+            .original_path
+            .as_path(),
+        button.as_path()
+    );
     drop(selected_b);
 
     // A separate `vize check` process starts without the first run's in-memory
     // link receipt, but deliberately reuses the project-root cache on disk.
     let selected_a_again = load_entry(&root, &root.join("packages/a/src/index.ts"));
     assert_eq!(selected_a_again.virtual_root(), virtual_root.as_path());
-    let button = root.join("packages/c/src/Btn.vue");
     assert_eq!(
         selected_a_again
             .find_by_original(&button)

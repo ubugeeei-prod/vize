@@ -389,7 +389,7 @@ fn check_pack(
             let first = first
                 .check_project()
                 .expect("the first package selection must finish");
-            assert!(first.success);
+            assert!(first.success, "{:#?}", first.diagnostics);
             assert!(first.diagnostics.is_empty());
 
             let mut second = BatchTypeChecker::with_options(
@@ -406,7 +406,7 @@ fn check_pack(
             let second = second
                 .check_project()
                 .expect("the second package selection must finish");
-            assert!(second.success);
+            assert!(second.success, "{:#?}", second.diagnostics);
             assert!(second.diagnostics.is_empty());
         }
         let options = BatchTypeCheckerOptions {
