@@ -162,7 +162,9 @@ pub use crate::rules::opinionated::vue::{VBindStyle, VBindStyleOption};
 pub use attribute_hyphenation::{AttributeHyphenation, HyphenationStyle};
 pub use component_definition_name_casing::ComponentDefinitionNameCasing;
 pub use html_quotes::{HtmlQuotes, HtmlQuotesOption};
-pub use mustache_interpolation_spacing::MustacheInterpolationSpacing;
+pub use mustache_interpolation_spacing::{
+    MustacheInterpolationSpacing, SpacingStyle as MustacheInterpolationSpacingStyle,
+};
 pub use no_multi_spaces::NoMultiSpaces;
 pub use no_multiple_template_root::NoMultipleTemplateRoot;
 pub use no_static_inline_styles::NoStaticInlineStyles;

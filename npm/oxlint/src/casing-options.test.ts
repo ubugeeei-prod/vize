@@ -210,6 +210,7 @@ fs.writeFileSync(
           { atComponent: "longform", default: "v-slot", named: "longform" },
         ],
         "vize/vue/html-quotes": ["error", "single", { avoidEscape: true }],
+        "vize/vue/mustache-interpolation-spacing": ["error", "never"],
         "vize/vue/attribute-hyphenation": ["error", "never"],
       },
     },
@@ -284,6 +285,12 @@ assert.equal(
   ruleOptionsPayload.diagnostics.filter((diagnostic) => diagnostic.code === "vize(vue/html-quotes)")
     .length,
   4,
+);
+assert.equal(
+  ruleOptionsPayload.diagnostics.filter(
+    (diagnostic) => diagnostic.code === "vize(vue/mustache-interpolation-spacing)",
+  ).length,
+  2,
 );
 assert.equal(
   ruleOptionsPayload.diagnostics.filter(

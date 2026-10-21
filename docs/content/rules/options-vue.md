@@ -44,6 +44,39 @@ Good with this config:
 The first value is safely fixed to `class='card'`; `title="don't"` remains unchanged.
 Options configure the rule without enabling it.
 
+## `vue/mustache-interpolation-spacing`
+
+Use `"always"` to require whitespace immediately inside both mustache delimiters, or `"never"`
+to require tight interpolation delimiters. The default is `"always"`.
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      rules: { "vue/mustache-interpolation-spacing": "warn" },
+      ruleOptions: { "vue/mustache-interpolation-spacing": "never" },
+    },
+  },
+});
+```
+
+Bad with this config:
+
+```vue
+<p>{{ message }}</p>
+```
+
+Good with this config:
+
+```vue
+<p>{{message}}</p>
+```
+
+Both delimiter-adjacent spaces are reported and safely removed. Options configure the rule
+without enabling it.
+
 ## `vue/valid-v-slot`
 
 By default, static and dynamic slot arguments reject modifiers such as

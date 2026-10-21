@@ -50,6 +50,41 @@ export default defineConfig({
 最初の値は `class='card'` に安全に修正しますが、`title="don't"` は変更しません。
 オプションだけではルールを有効にしません。
 
+<span id="vue-mustache-interpolation-spacing"></span>
+
+## `vue/mustache-interpolation-spacing`：補間内の空白
+
+`"always"` はマスタッシュの両側の区切り文字の直内側に空白を必須にし、`"never"` は空白を禁止します。
+既定値は `"always"` です。
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      rules: { "vue/mustache-interpolation-spacing": "warn" },
+      ruleOptions: { "vue/mustache-interpolation-spacing": "never" },
+    },
+  },
+});
+```
+
+この設定で報告される例：
+
+```vue
+<p>{{ message }}</p>
+```
+
+設定に沿った例：
+
+```vue
+<p>{{message}}</p>
+```
+
+区切り文字に接する左右の空白を個別に報告し、安全に削除します。
+オプションだけではルールを有効にしません。
+
 <span id="vue-valid-v-slot"></span>
 
 ## `vue/valid-v-slot`：スロット名の修飾子

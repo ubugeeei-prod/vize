@@ -3,10 +3,35 @@ mod casing;
 use super::{
     ConfigLintRuleOptions, DefineMacrosOrderOptions, HtmlQuoteStyle, HtmlQuotesConfig,
     HtmlQuotesOptions, HtmlSelfClosingHtmlOptions, HtmlSelfClosingOptions, HtmlSelfClosingStyle,
-    HyphenationStyle, LintRuleOptions, MuseaDesignToken, NoMutatingPropsOptions, RestrictedGlobal,
-    RestrictedMember, SfcElementOrderGroup, SfcElementOrderOptions, VBindStyle, VOnStyle,
-    VSlotNamedStyle, VSlotStyle, VSlotStyleOptions, VSlotStyleValue, VSlotUniformStyle,
+    HyphenationStyle, LintRuleOptions, MuseaDesignToken, MustacheInterpolationSpacingStyle,
+    NoMutatingPropsOptions, RestrictedGlobal, RestrictedMember, SfcElementOrderGroup,
+    SfcElementOrderOptions, VBindStyle, VOnStyle, VSlotNamedStyle, VSlotStyle, VSlotStyleOptions,
+    VSlotStyleValue, VSlotUniformStyle,
 };
+
+#[test]
+fn mustache_interpolation_spacing_validates_and_merges() {
+    let mut options: ConfigLintRuleOptions =
+        serde_json::from_str(r#"{"vue/mustache-interpolation-spacing":"never"}"#).unwrap();
+    assert_eq!(
+        options.mustache_interpolation_spacing(),
+        Some(MustacheInterpolationSpacingStyle::Never)
+    );
+
+    let overlay: ConfigLintRuleOptions =
+        serde_json::from_str(r#"{"vue/mustache-interpolation-spacing":"always"}"#).unwrap();
+    options.merge_from(&overlay);
+    assert_eq!(
+        options.mustache_interpolation_spacing(),
+        Some(MustacheInterpolationSpacingStyle::Always)
+    );
+    assert!(
+        serde_json::from_str::<ConfigLintRuleOptions>(
+            r#"{"vue/mustache-interpolation-spacing":"sometimes"}"#
+        )
+        .is_err()
+    );
+}
 
 #[test]
 fn html_quotes_accepts_shorthand_and_detailed_options() {

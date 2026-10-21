@@ -24,6 +24,7 @@ export const configurableRules = new Set([
   "vue/component-name-in-template-casing",
   "vue/html-self-closing",
   "vue/html-quotes",
+  "vue/mustache-interpolation-spacing",
   "vue/no-mutating-props",
   "vue/require-component-registration",
   "vue/sfc-element-order",

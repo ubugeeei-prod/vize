@@ -70,6 +70,19 @@ pub(super) fn html_quotes(
     }
 }
 
+pub(super) fn mustache_interpolation_spacing(
+    style: vize_l0::config::MustacheInterpolationSpacingStyle,
+) -> vize_patina::rules::vue::MustacheInterpolationSpacingStyle {
+    match style {
+        vize_l0::config::MustacheInterpolationSpacingStyle::Always => {
+            vize_patina::rules::vue::MustacheInterpolationSpacingStyle::Always
+        }
+        vize_l0::config::MustacheInterpolationSpacingStyle::Never => {
+            vize_patina::rules::vue::MustacheInterpolationSpacingStyle::Never
+        }
+    }
+}
+
 fn html_self_closing_style(
     style: vize_l0::config::HtmlSelfClosingStyle,
 ) -> vize_patina::rules::HtmlSelfClosingStyle {

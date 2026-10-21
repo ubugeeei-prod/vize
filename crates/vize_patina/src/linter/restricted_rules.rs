@@ -16,9 +16,9 @@ use crate::rules::opinionated::vue::{
 use crate::rules::script::{CustomEventNameCasing, EventNameCasing};
 use crate::rules::script::{DefineMacrosOrder, NoRestrictedMembers, RestrictedGlobals};
 use crate::rules::vue::{
-    AttributeHyphenation, HtmlQuotes, HyphenationStyle, NoMutatingProps, NoMutatingPropsOptions,
-    SfcElementOrder, SfcElementOrderOptions, VBindStyle, VBindStyleOption, VOnStyle,
-    VOnStyleOption, VSlotStyle,
+    AttributeHyphenation, HtmlQuotes, HyphenationStyle, MustacheInterpolationSpacing,
+    MustacheInterpolationSpacingStyle, NoMutatingProps, NoMutatingPropsOptions, SfcElementOrder,
+    SfcElementOrderOptions, VBindStyle, VBindStyleOption, VOnStyle, VOnStyleOption, VSlotStyle,
 };
 use vize_l0::String;
 
@@ -193,6 +193,19 @@ impl Linter {
     pub fn with_html_quotes(mut self, options: HtmlQuotes) -> Self {
         if self.registry.has_rule("vue/html-quotes") {
             self.registry.replace(Box::new(options));
+        }
+        self
+    }
+
+    /// Configure `vue/mustache-interpolation-spacing` without enabling an unselected rule.
+    #[inline]
+    pub fn with_mustache_interpolation_spacing(
+        mut self,
+        style: MustacheInterpolationSpacingStyle,
+    ) -> Self {
+        if self.registry.has_rule("vue/mustache-interpolation-spacing") {
+            self.registry
+                .replace(Box::new(MustacheInterpolationSpacing { style }));
         }
         self
     }

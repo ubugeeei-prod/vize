@@ -260,6 +260,60 @@ fn lint_rule_options_configure_html_quotes_and_avoid_escape() {
 }
 
 #[test]
+fn lint_rule_options_configure_mustache_interpolation_spacing() {
+    let project_root = temp_project_dir();
+    write_project_file(
+        &project_root,
+        "src/Mustache.vue",
+        "<template>\n  <div>{{ value }}</div>\n</template>\n",
+    );
+    write_project_file(
+        &project_root,
+        "vite.config.mjs",
+        &vite_config::source(
+            r#"{
+  "linter": {
+    "preset": "incremental",
+    "rules": { "vue/mustache-interpolation-spacing": "error" },
+    "ruleOptions": {
+      "vue/mustache-interpolation-spacing": "never"
+    }
+  }
+}"#,
+        ),
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args([
+            "lint",
+            "src/Mustache.vue",
+            "--format",
+            "json",
+            "--locale",
+            "en",
+            "--help-level",
+            "none",
+        ])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(1), "{}", output_details(&output));
+    assert_eq!(output.stderr, b"", "{}", output_details(&output));
+
+    let stdout = std::str::from_utf8(&output.stdout).unwrap();
+    let report: serde_json::Value = serde_json::from_str(stdout).unwrap();
+    let messages = report[0]["messages"].as_array().unwrap();
+    assert_eq!(messages.len(), 2, "{stdout}");
+    assert!(
+        messages
+            .iter()
+            .all(|message| { message["ruleId"] == "vue/mustache-interpolation-spacing" })
+    );
+
+    let _ = fs::remove_dir_all(project_root);
+}
+
+#[test]
 fn lint_rule_options_configure_v_on_style() {
     let project_root = temp_project_dir();
     write_project_file(

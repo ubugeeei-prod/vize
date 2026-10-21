@@ -160,6 +160,32 @@ test("canonical validation accepts html quote style and avoidEscape", () => {
   );
 });
 
+test("canonical validation accepts mustache interpolation spacing", () => {
+  for (const style of ["always", "never"]) {
+    const vue = {
+      linter: {
+        ruleOptions: {
+          "vue/mustache-interpolation-spacing": style,
+        },
+      },
+    };
+    assert.equal(vueConfigOptions({ vue }), vue);
+  }
+  assert.throws(
+    () =>
+      vueConfigOptions({
+        vue: {
+          linter: {
+            ruleOptions: {
+              "vue/mustache-interpolation-spacing": "sometimes",
+            },
+          },
+        },
+      }),
+    /unsupported native option value/,
+  );
+});
+
 test("canonical namespaces refuse unknown roots, entries, native fields and mismatched section shapes", () => {
   for (const vue of [
     null,

@@ -212,6 +212,9 @@ pub(super) fn apply_rule_options(
     if let Some(options) = options.html_quotes() {
         linter = linter.with_html_quotes(html_quotes(options));
     }
+    if let Some(style) = options.mustache_interpolation_spacing() {
+        linter = linter.with_mustache_interpolation_spacing(mustache_interpolation_spacing(style));
+    }
     if let Some(style) = options.v_on_event_hyphenation() {
         linter = linter.with_v_on_event_hyphenation(v_on_event_hyphenation_style(style));
     }
@@ -300,6 +303,19 @@ fn html_quotes(options: vize_l0::config::HtmlQuotesConfig) -> vize_patina::rules
             }
         },
         avoid_escape: options.avoid_escape(),
+    }
+}
+
+fn mustache_interpolation_spacing(
+    style: vize_l0::config::MustacheInterpolationSpacingStyle,
+) -> vize_patina::rules::vue::MustacheInterpolationSpacingStyle {
+    match style {
+        vize_l0::config::MustacheInterpolationSpacingStyle::Always => {
+            vize_patina::rules::vue::MustacheInterpolationSpacingStyle::Always
+        }
+        vize_l0::config::MustacheInterpolationSpacingStyle::Never => {
+            vize_patina::rules::vue::MustacheInterpolationSpacingStyle::Never
+        }
     }
 }
 
@@ -497,5 +513,39 @@ const emit = defineEmits()
             "App.vue",
         );
         assert!(result.diagnostics.is_empty(), "{result:#?}");
+    }
+}
+
+#[cfg(test)]
+mod mustache_interpolation_spacing_options_tests {
+    use super::apply_rule_options;
+    use vize_patina::{Linter, RuleRegistry, rules::vue::MustacheInterpolationSpacing};
+
+    #[test]
+    fn lsp_mustache_spacing_reaches_the_configured_rule() {
+        let options =
+            serde_json::from_str(r#"{"vue/mustache-interpolation-spacing":"never"}"#).unwrap();
+        let mut registry = RuleRegistry::new();
+        registry.register(Box::new(MustacheInterpolationSpacing::default()));
+        let result = apply_rule_options(Linter::with_registry(registry), &options, false, false)
+            .lint_template("<div>{{ value }}</div>", "App.vue");
+        assert_eq!(result.warning_count, 2, "{result:#?}");
+        assert!(
+            result
+                .diagnostics
+                .iter()
+                .all(|diagnostic| { diagnostic.rule_name == "vue/mustache-interpolation-spacing" })
+        );
+        let empty = apply_rule_options(
+            Linter::with_registry(RuleRegistry::new()),
+            &options,
+            false,
+            false,
+        );
+        assert!(
+            !empty
+                .registry()
+                .has_rule("vue/mustache-interpolation-spacing")
+        );
     }
 }

@@ -161,6 +161,7 @@ export interface VizeRuleOptions {
   "vue/sfc-element-order"?: SfcElementOrderOption;
   "vue/html-self-closing"?: HtmlSelfClosingOption;
   "vue/html-quotes"?: HtmlQuotesConfig;
+  "vue/mustache-interpolation-spacing"?: MustacheInterpolationSpacingStyle;
   "vue/v-on-event-hyphenation"?: HyphenationStyle;
   "vue/v-bind-style"?: VBindStyle;
   "vue/v-on-style"?: VOnStyle;
@@ -203,6 +204,7 @@ export interface HtmlSelfClosingOption {
 
 export type HtmlQuoteStyle = "double" | "single";
 export type HtmlQuotesConfig = HtmlQuoteStyle | { style?: HtmlQuoteStyle; avoidEscape?: boolean };
+export type MustacheInterpolationSpacingStyle = "always" | "never";
 export type HyphenationStyle = "always" | "never";
 export type VBindStyle = "shorthand" | "longform";
 export type VOnStyle = "shorthand" | "longform";

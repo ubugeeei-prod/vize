@@ -84,6 +84,16 @@ impl Linter {
                 avoid_escape: value.avoid_escape(),
             });
         }
+        if let Some(value) = options.mustache_interpolation_spacing() {
+            self = self.with_mustache_interpolation_spacing(match value {
+                vize_l0::config::MustacheInterpolationSpacingStyle::Always => {
+                    crate::rules::vue::MustacheInterpolationSpacingStyle::Always
+                }
+                vize_l0::config::MustacheInterpolationSpacingStyle::Never => {
+                    crate::rules::vue::MustacheInterpolationSpacingStyle::Never
+                }
+            });
+        }
         if let Some(value) = options.v_on_event_hyphenation() {
             self = self.with_v_on_event_hyphenation(match value {
                 ConfigHyphenationStyle::Always => VOnEventHyphenationStyle::Always,
@@ -214,6 +224,26 @@ mod tests {
         assert_eq!(
             &source[result.diagnostics[0].start as usize..result.diagnostics[0].end as usize],
             "\"card\""
+        );
+    }
+
+    #[test]
+    fn mustache_spacing_config_reaches_the_selected_rule() {
+        let source = "<template><div>{{ value }}</div></template>";
+        let options: ConfigLintRuleOptions = serde_json::from_value(serde_json::json!({
+            "vue/mustache-interpolation-spacing": "never"
+        }))
+        .unwrap();
+        let result = Linter::with_preset(LintPreset::Incremental)
+            .with_enabled_rules(Some(vec!["vue/mustache-interpolation-spacing".into()]))
+            .with_config_rule_options(&options)
+            .lint_sfc(source, "App.vue");
+        assert_eq!(result.warning_count, 2);
+        assert!(
+            result
+                .diagnostics
+                .iter()
+                .all(|diagnostic| { diagnostic.rule_name == "vue/mustache-interpolation-spacing" })
         );
     }
 }

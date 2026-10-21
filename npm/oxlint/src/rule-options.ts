@@ -12,6 +12,7 @@ import type {
   HtmlQuoteStyle,
   HtmlSelfClosingOption,
   HyphenationStyle,
+  MustacheInterpolationSpacingStyle,
   NoMutatingPropsOption,
   PatinaRuleOptions,
   SfcElementOrderOption,
@@ -80,6 +81,11 @@ export function getRuleOptions(
       }
       break;
     }
+    case "vue/mustache-interpolation-spacing":
+      if (isMustacheInterpolationSpacingStyle(firstOption)) {
+        return { ruleOptions: { "vue/mustache-interpolation-spacing": firstOption } };
+      }
+      break;
     case "vue/v-on-event-hyphenation":
       if (isHyphenationStyle(firstOption)) {
         return { vOnEventHyphenation: firstOption };
@@ -189,6 +195,12 @@ function isHtmlSelfClosingOption(value: unknown): value is HtmlSelfClosingOption
 
 function isHtmlQuoteStyle(value: unknown): value is HtmlQuoteStyle {
   return value === "double" || value === "single";
+}
+
+function isMustacheInterpolationSpacingStyle(
+  value: unknown,
+): value is MustacheInterpolationSpacingStyle {
+  return value === "always" || value === "never";
 }
 
 function isHyphenationStyle(value: unknown): value is HyphenationStyle {

@@ -41,6 +41,9 @@ impl ConfigLintRuleOptions {
         if let Some(options) = overlay.html_quotes {
             self.html_quotes = Some(options);
         }
+        if let Some(style) = overlay.mustache_interpolation_spacing {
+            self.mustache_interpolation_spacing = Some(style);
+        }
         if let Some(style) = overlay.v_on_event_hyphenation {
             self.v_on_event_hyphenation = Some(style);
         }

@@ -51,11 +51,12 @@ pub use linter_rule_options::{
     CustomEventNameCasingOptions, DefineMacrosOrderOptions, DefinePropsDestructuringOptions,
     HtmlQuoteStyle, HtmlQuotesConfig, HtmlQuotesOptions, HtmlSelfClosingHtmlOptions,
     HtmlSelfClosingOptions, HtmlSelfClosingStyle, HyphenationStyle, LintRuleOptions,
-    MuseaDesignToken, MuseaPreferDesignTokensOptions, NoMutatingPropsOptions,
-    NoRestrictedGlobalsOptions, NoRestrictedMembersOptions, PropsDestructureMode, RestrictedGlobal,
-    RestrictedMember, SfcElementOrderGroup, SfcElementOrderOptions,
-    StrictBooleanExpressionsOptions, TemplateComponentNameCasing, VBindStyle, VOnStyle,
-    VSlotNamedStyle, VSlotStyle, VSlotStyleOptions, VSlotStyleValue, VSlotUniformStyle,
+    MuseaDesignToken, MuseaPreferDesignTokensOptions, MustacheInterpolationSpacingStyle,
+    NoMutatingPropsOptions, NoRestrictedGlobalsOptions, NoRestrictedMembersOptions,
+    PropsDestructureMode, RestrictedGlobal, RestrictedMember, SfcElementOrderGroup,
+    SfcElementOrderOptions, StrictBooleanExpressionsOptions, TemplateComponentNameCasing,
+    VBindStyle, VOnStyle, VSlotNamedStyle, VSlotStyle, VSlotStyleOptions, VSlotStyleValue,
+    VSlotUniformStyle,
 };
 pub use type_checker::TypeCheckerConfig;
 pub use vue::{ParseVueVersionError, VueVersion};

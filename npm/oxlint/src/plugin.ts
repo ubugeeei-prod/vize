@@ -195,6 +195,8 @@ function ruleOptionsSchema(ruleName: string): unknown[] {
       return [htmlSelfClosingSchema()];
     case "vue/html-quotes":
       return [{ enum: ["double", "single"] }, objectSchema({ avoidEscape: { type: "boolean" } })];
+    case "vue/mustache-interpolation-spacing":
+      return [{ enum: ["always", "never"] }];
     case "vue/v-on-event-hyphenation":
     case "vue/attribute-hyphenation":
       return [{ enum: ["always", "never"] }];

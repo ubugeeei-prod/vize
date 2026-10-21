@@ -261,6 +261,13 @@ it("projects html-quotes style and avoidEscape into the typed option map", () =>
   assert.equal(getRuleOptions("vue/html-quotes", ["double", { avoidEscape: "yes" }]), undefined);
 });
 
+it("projects mustache interpolation spacing into the typed option map", () => {
+  assert.deepEqual(getRuleOptions("vue/mustache-interpolation-spacing", ["never"]), {
+    ruleOptions: { "vue/mustache-interpolation-spacing": "never" },
+  });
+  assert.equal(getRuleOptions("vue/mustache-interpolation-spacing", ["sometimes"]), undefined);
+});
+
 it("projects v-bind style into the typed CLI-compatible option map", () => {
   assert.deepEqual(getRuleOptions("vue/v-bind-style", ["longform"]), {
     ruleOptions: { "vue/v-bind-style": "longform" },

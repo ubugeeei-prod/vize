@@ -686,6 +686,10 @@
             }
           ]
         },
+        "vue/mustache-interpolation-spacing": {
+          "type": "string",
+          "enum": ["always", "never"]
+        },
         "vue/v-on-event-hyphenation": {
           "type": "string",
           "enum": ["always", "never"]

@@ -30,6 +30,10 @@ The next cohort adds `vue/html-quotes`, a strongly recommended, fixable rule, br
 surface to 15 configured mapped rules and leaving 43. It accepts `"double"` or `"single"` as a
 compact style and an object form with `style` plus upstream's `avoidEscape` policy.
 
+The following cohort adds `vue/mustache-interpolation-spacing`, another strongly recommended,
+fixable rule, bringing the typed surface to 16 configured mapped rules and leaving 42. It accepts
+`"always"` or `"never"` and preserves the rule's independent, safe fixes for both delimiters.
+
 ## Provider boundary
 
 The executable differential provider remains pinned to 10.9.2. Moving it to 10.11.1 changes

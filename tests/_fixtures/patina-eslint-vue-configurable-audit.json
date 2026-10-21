@@ -24,8 +24,8 @@
     "mapped": 58,
     "unimplemented": 52,
     "intentionalDivergence": 2,
-    "mappedWithTypedOptions": 15,
-    "mappedWithoutTypedOptions": 43
+    "mappedWithTypedOptions": 16,
+    "mappedWithoutTypedOptions": 42
   },
   "mappedWithTypedOptions": [
     ["vue/attribute-hyphenation", "vue/attribute-hyphenation"],
@@ -36,6 +36,7 @@
     ["vue/define-props-destructuring", "script/define-props-destructuring"],
     ["vue/html-self-closing", "vue/html-self-closing"],
     ["vue/html-quotes", "vue/html-quotes"],
+    ["vue/mustache-interpolation-spacing", "vue/mustache-interpolation-spacing"],
     ["vue/no-mutating-props", "vue/no-mutating-props"],
     ["vue/v-bind-style", "vue/v-bind-style"],
     ["vue/v-on-event-hyphenation", "vue/v-on-event-hyphenation"],

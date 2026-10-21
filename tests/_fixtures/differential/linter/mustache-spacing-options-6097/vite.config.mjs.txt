@@ -1,0 +1,11 @@
+export default {
+  vue: {
+    linter: {
+      preset: "incremental",
+      rules: { "vue/mustache-interpolation-spacing": "warn" },
+      ruleOptions: {
+        "vue/mustache-interpolation-spacing": "never",
+      },
+    },
+  },
+};

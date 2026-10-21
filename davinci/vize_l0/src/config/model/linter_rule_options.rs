@@ -19,6 +19,7 @@ mod html_quotes;
 mod html_self_closing;
 mod hyphenation;
 mod merge;
+mod mustache_spacing;
 mod no_mutating_props;
 mod props_destructuring;
 mod restrictions;
@@ -40,6 +41,7 @@ pub use html_self_closing::{
     HtmlSelfClosingHtmlOptions, HtmlSelfClosingOptions, HtmlSelfClosingStyle,
 };
 pub use hyphenation::HyphenationStyle;
+pub use mustache_spacing::MustacheInterpolationSpacingStyle;
 pub use no_mutating_props::NoMutatingPropsOptions;
 pub use props_destructuring::{DefinePropsDestructuringOptions, PropsDestructureMode};
 pub use restrictions::{
@@ -171,6 +173,9 @@ pub struct ConfigLintRuleOptions {
     /// Options for `vue/html-quotes`.
     #[serde(rename = "vue/html-quotes")]
     html_quotes: Option<HtmlQuotesConfig>,
+    /// Options for `vue/mustache-interpolation-spacing`.
+    #[serde(rename = "vue/mustache-interpolation-spacing")]
+    mustache_interpolation_spacing: Option<MustacheInterpolationSpacingStyle>,
     /// Options for `vue/v-on-event-hyphenation`.
     #[serde(rename = "vue/v-on-event-hyphenation")]
     v_on_event_hyphenation: Option<HyphenationStyle>,
@@ -230,6 +235,7 @@ impl ConfigLintRuleOptions {
             && self.sfc_element_order.is_none()
             && self.html_self_closing.is_none()
             && self.html_quotes.is_none()
+            && self.mustache_interpolation_spacing.is_none()
             && self.v_on_event_hyphenation.is_none()
             && self.v_bind_style.is_none()
             && self.v_on_style.is_none()
@@ -325,6 +331,12 @@ impl ConfigLintRuleOptions {
     #[inline]
     pub fn html_quotes(&self) -> Option<HtmlQuotesConfig> {
         self.html_quotes
+    }
+
+    /// Configured spacing inside Vue mustache interpolations.
+    #[inline]
+    pub fn mustache_interpolation_spacing(&self) -> Option<MustacheInterpolationSpacingStyle> {
+        self.mustache_interpolation_spacing
     }
 
     /// Configured style for `vue/v-on-event-hyphenation`.
