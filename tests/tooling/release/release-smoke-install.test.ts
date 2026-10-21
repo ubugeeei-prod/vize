@@ -95,6 +95,33 @@ test("release install smoke rejects unresolved workspace protocols", () => {
   }
 });
 
+test("release install smoke rejects a vize tarball with a stale native dependency", () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-smoke-test-"));
+  try {
+    const nativeDir = writePackage(tempDir, "native", {
+      name: "@vizejs/native",
+      version: "1.2.3",
+    });
+    const vizeDir = writePackage(tempDir, "vize", {
+      dependencies: {
+        "@vizejs/native": "0.9.0",
+      },
+      name: "vize",
+      version: "1.2.3",
+    });
+
+    const result = runSmoke(vizeDir, nativeDir);
+
+    assert.notEqual(result.status, 0);
+    assert.match(
+      `${result.stderr}\n${result.stdout}`,
+      /vize@1\.2\.3 must depend on @vizejs\/native@1\.2\.3, found 0\.9\.0/,
+    );
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true });
+  }
+});
+
 test("release install smoke prepares workspace dependencies without MoonBit", () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-smoke-test-"));
   const repoDir = path.join(tempDir, "repo");

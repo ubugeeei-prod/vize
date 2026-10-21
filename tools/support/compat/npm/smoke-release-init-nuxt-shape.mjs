@@ -74,9 +74,9 @@ function bootstrappedDetection(manager) {
     "  language:        TypeScript (tsconfig.json)",
     "  lint command:    oxlint",
     "  Vue settings:    defaults",
-    // Nuxt's prepare hook creates this file before `vize init` runs. Oxlint
-    // does not read the `.mts` name, so the CLI must surface it without
-    // treating lint as already configured (#3474).
+    // The packed fixture materializes this unsupported name after dependency
+    // bootstrap, so the CLI must surface it without treating lint as already
+    // configured (#3474).
     "  oxlint config:   oxlint.config.mts — present but oxlint does not read this name (#3474)",
   ];
 }
@@ -94,6 +94,9 @@ export const NUXT_VUE_TS_SHAPE = {
   initFlags: ["--yes", "--no-lint", "--nuxt", "--fmt", "--typecheck", "--editor"],
   initialAbsentFiles: [".vscode"],
   detection,
+  postBootstrapFiles: {
+    "oxlint.config.mts": "export default {};\n",
+  },
   bootstrappedDetection,
   features: [
     "  lint      skipped    not selected",

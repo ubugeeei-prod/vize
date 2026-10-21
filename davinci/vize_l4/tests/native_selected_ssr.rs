@@ -11,7 +11,7 @@ use vize_l3::decision::ssr::{
     NativeSsrBuildError, SsrUnsupported, build_native_ssr_file_decisions,
 };
 use vize_l4::{
-    module::{ModuleParts, RenderPlacement, RenderProperty, assemble, assemble_template},
+    module::{ModuleParts, RenderFunctionName, assemble, assemble_template},
     runtime::{Runtime, vocabulary},
     targets::ssr::{SsrErrorKind, emit_template},
     write::{NoLinks, Recorded},
@@ -100,10 +100,7 @@ fn original_receipts_emit_nine_complete_pinned_modules_and_whole_source_maps() {
         let mut parts =
             ModuleParts::for_runtime(Runtime::VueServerRenderer, "3.5.35", "__sfc__").unwrap();
         parts.render = Some(emit_template::<Recorded>(&receipt).unwrap());
-        parts.placement = RenderPlacement::Function {
-            binding: "ssrRender",
-            property: RenderProperty::SsrRender,
-        };
+        parts.placement = RenderFunctionName::SsrRender.placement();
         let sfc = assemble(parts).unwrap().into_document();
         let sfc_map: serde_json::Value =
             serde_json::from_str(&sfc.source_map("NativeSelectedSsr.vue", source)).unwrap();

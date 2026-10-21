@@ -67,7 +67,7 @@ void test("component filename history retains the eight original input and optio
 
 void test("linter registry pins every authored input and complete oracle, including real fixes and reports", () => {
   const loaded = loadLinterManifest(manifestPath, repoRoot);
-  assert.equal(loaded.cases.length, 65);
+  assert.equal(loaded.cases.length, 71);
   const cohorts: Record<string, number> = {};
   for (const fixture of loaded.cases) {
     const cohort = fixture.id.split("/")[1];
@@ -79,7 +79,7 @@ void test("linter registry pins every authored input and complete oracle, includ
     );
   }
   assert.deepEqual(cohorts, {
-    "current-api": 34,
+    "current-api": 40,
     "next-tick": 10,
     report: 4,
     "static-class": 9,
@@ -214,12 +214,12 @@ void test("linter result contract rejects omitted rows, incomplete retries and i
     buildReceipt: receipt,
     rows,
     summary: {
-      plannedCases: 65,
-      legacyMatches: 65,
+      plannedCases: 71,
+      legacyMatches: 71,
       legacyFailures: 0,
       baselineDrift: 0,
       nativeUnsupported: 0,
-      nativeFailures: 65,
+      nativeFailures: 71,
       nativeHandled: 0,
       nativeEquivalent: 0,
       pairedComparisons: 0,

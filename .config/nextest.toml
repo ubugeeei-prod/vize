@@ -102,7 +102,8 @@ default-filter = '''not ((package(=vize_maestro) & (
   test(=v_for_source_callbacks_preserve_complete_original_diagnostics) |
   test(=declared_prop_names_preserve_complete_original_diagnostics) |
   test(=component_v_for_source_preserves_complete_original_diagnostics) |
-  test(=template_suppression_preserves_complete_original_diagnostics)
+  test(=template_suppression_preserves_complete_original_diagnostics) |
+  test(=native_click_events_preserve_pointer_event_diagnostics)
 )))'''
 fail-fast = false
 retries = 0

@@ -26,6 +26,54 @@ impl RenderProperty {
     }
 }
 
+/// The closed render-function vocabulary shared by prepared module fragments.
+///
+/// A function binding and its component field must move together. Keeping the
+/// three supported pairs here prevents each module assembler from spelling the
+/// same generated identifiers independently.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RenderFunctionName {
+    /// A standalone client render function named `render`.
+    Render,
+    /// A client render function renamed for attachment to an SFC component.
+    SfcRender,
+    /// A server render function named `ssrRender`.
+    SsrRender,
+}
+
+impl RenderFunctionName {
+    /// The generated JavaScript binding for this render function.
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Render => "render",
+            Self::SfcRender => "_sfc_render",
+            Self::SsrRender => "ssrRender",
+        }
+    }
+
+    /// The component field that receives this render function.
+    #[must_use]
+    pub const fn component_field(self) -> &'static str {
+        match self {
+            Self::Render | Self::SfcRender => "render",
+            Self::SsrRender => "ssrRender",
+        }
+    }
+
+    /// A prepared-function placement with the matching binding and field.
+    #[must_use]
+    pub const fn placement(self) -> RenderPlacement<'static> {
+        RenderPlacement::Function {
+            binding: self.as_str(),
+            property: match self {
+                Self::Render | Self::SfcRender => RenderProperty::Render,
+                Self::SsrRender => RenderProperty::SsrRender,
+            },
+        }
+    }
+}
+
 /// How the target's prepared render fragment joins the component.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RenderPlacement<'a> {

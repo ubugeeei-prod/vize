@@ -1,0 +1,34 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "form-label-hidden-input-report-9751",
+    history: "708c7fd03f9cfd399d81a246d016abda7e095929",
+    source: "<input hidden type=\"file\" />",
+    filename: "HiddenInput.vue",
+    entry: "template",
+    rule: "a11y/form-control-has-label",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "HiddenInput.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "HiddenInput.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}
+
