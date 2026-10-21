@@ -6,6 +6,7 @@
 use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
 use vize_carton::{String, profile};
 use vize_l0::dump::capture::StageCapture;
+use vize_l4::module::RenderFunctionName;
 
 use crate::compile_template::{
     TemplateBlockCompileContext, compile_template_block_vapor, compile_template_block_with_capture,
@@ -15,9 +16,7 @@ use crate::types::{
 };
 
 use super::helpers::trim_trailing_newlines;
-use super::output_module::{
-    RenderFunctionName, append_component_render_export, finalize_output_mode,
-};
+use super::output_module::{append_component_render_export, finalize_output_mode};
 use super::styles::CompiledStyles;
 
 /// Everything the template-only path reads from the shared prelude.
