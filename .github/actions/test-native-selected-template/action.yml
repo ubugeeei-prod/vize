@@ -38,3 +38,19 @@ runs:
         path: ${{ runner.temp }}/dev-root-fragment.json
         if-no-files-found: error
         retention-days: 7
+    - name: Verify runtime-sensitive compiler patch flags
+      shell: bash
+      env:
+        VIZE_RUNTIME_PATCH_FLAGS_CAPTURE: ${{ runner.temp }}/runtime-patch-flags.json
+        VIZE_RUNTIME_PATCH_FLAGS_REQUIRE_CAPTURE: "1"
+      run: |
+        cargo test -p vize_atelier_dom --profile ci --test integration runtime_patch_flags::
+        vp node --test tests/tooling/runtime-patch-flags.test.ts
+    - name: Retain runtime patch-flag modules
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: runtime-patch-flags-${{ github.run_id }}-${{ github.sha }}
+        path: ${{ runner.temp }}/runtime-patch-flags.json
+        if-no-files-found: error
+        retention-days: 7
