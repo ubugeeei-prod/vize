@@ -1,7 +1,7 @@
 //! Width of sole interpolation children hugged to their parent tags.
 use super::{
     TemplateFormatter, format_interpolations_with_vue_version, parse_interpolation_range,
-    suppression::LineJoiner,
+    suppression::{ChunkJoin, LineJoiner},
 };
 use crate::template::helpers::{is_whitespace, parse_closing_tag};
 use unicode_width::UnicodeWidthStr;
@@ -146,7 +146,8 @@ impl TemplateFormatter<'_> {
         depth: usize,
         joiner: &LineJoiner<'_>,
     ) -> bool {
-        if !formatted.starts_with("{{ ") || joiner.locks_current_line() {
+        debug_assert!(formatted.starts_with("{{ "));
+        if joiner.locks_current_line() {
             return false;
         }
         let Some(name) = joiner.hugged_closing_name(start, end) else {
@@ -155,8 +156,6 @@ impl TemplateFormatter<'_> {
         let line_start = memchr::memrchr2(b'\r', b'\n', output).map_or(0, |pos| pos + 1);
         let line = output.get(line_start..).unwrap_or_default();
         let suffix_width = name.len() + 3 + self.base_depth * self.options.tab_width as usize;
-        // Without tabs, UTF-8 byte length bounds Unicode display width. Avoid
-        // validation and exact width scans when even that upper bound fits.
         if line.len() + formatted.len() + suffix_width <= self.options.print_width as usize
             && memchr::memchr(b'\t', line).is_none()
             && !formatted.contains('\t')
@@ -184,9 +183,6 @@ impl TemplateFormatter<'_> {
         if close != formatted.len() {
             return false;
         }
-        // Both newlines are inside mustache syntax. The source-owned parent,
-        // child and closing-tag adjacency stays exact; the expression was
-        // formatted once already, including its raw literal continuations.
         let parent_depth = depth.saturating_sub(1);
         output.extend_from_slice(b"{{");
         output.extend_from_slice(self.newline);
@@ -197,6 +193,97 @@ impl TemplateFormatter<'_> {
         );
         self.write_indent(output, parent_depth);
         output.extend_from_slice(b"}}");
+        output.extend_from_slice(self.newline);
+        true
+    }
+
+    #[inline]
+    pub(super) fn write_wrapped_text_interpolation(
+        &self,
+        output: &mut Vec<u8>,
+        formatted: &str,
+        source_range: (usize, usize),
+        depth: usize,
+        joiner: &LineJoiner<'_>,
+        join: ChunkJoin,
+    ) -> bool {
+        let (start, end) = source_range;
+        if joiner.locks_current_line() {
+            return false;
+        }
+        let Some(first_open) = memchr::memmem::find(formatted.as_bytes(), b"{{") else {
+            return false;
+        };
+        let bytes = formatted.as_bytes();
+        let hugged_name = joiner.hugged_closing_name(start, end);
+        let line_start = memchr::memrchr2(b'\r', b'\n', output).map_or(0, |pos| pos + 1);
+        let line = output.get(line_start..).unwrap_or_default();
+        let suffix_width = hugged_name.map_or(0, |name| name.len() + 3)
+            + self.base_depth * self.options.tab_width as usize;
+        // Without tabs, UTF-8 byte length bounds Unicode display width. Avoid
+        // validation and exact width scans when even that upper bound fits.
+        if line.len() + formatted.len() + suffix_width <= self.options.print_width as usize
+            && memchr::memchr(b'\t', line).is_none()
+            && !formatted.contains('\t')
+        {
+            return false;
+        }
+        let width = |value: &str| {
+            if value.is_ascii() && !value.contains('\t') {
+                value.len()
+            } else {
+                value.split('\t').map(str::width).sum::<usize>()
+                    + value.bytes().filter(|byte| *byte == b'\t').count()
+                        * self.options.tab_width as usize
+            }
+        };
+        let line = core::str::from_utf8(line).unwrap_or_default();
+        if width(line) + width(formatted) + suffix_width <= self.options.print_width as usize {
+            return false;
+        }
+        // Only overflowing lines need the structural range scan. Keeping it
+        // after both width fast paths avoids paying for it on ordinary text.
+        let Some((expr_start, expr_end, close)) = parse_interpolation_range(bytes, first_open)
+        else {
+            return false;
+        };
+        if memchr::memmem::find(bytes.get(close..).unwrap_or_default(), b"{{").is_some() {
+            // Mixed interpolation runs have an established formatter layout
+            // and may need several independent width decisions. Keep this
+            // narrow path to the single interpolation reported in #10177.
+            return false;
+        }
+        if join.is_continuation()
+            && (first_open != 0 || close != bytes.len())
+            && (hugged_name.is_some() || joiner.previous_chunk_is_interpolation())
+        {
+            // A mixed text/interpolation chunk that continues an existing
+            // interpolation or is hugged directly by its parent has a larger
+            // established layout. Rewrapping it in isolation would make a
+            // formatted second pass differ from the first. Continuations after
+            // an ordinary closing tag can still wrap at the mustache boundary.
+            return false;
+        }
+        // Break only inside mustache syntax, never between runtime text and an
+        // interpolation. This preserves text such as `<{{ value }}>` byte for
+        // byte while giving the interpolation on the overflowing line a stable
+        // layout. A child touching both parent tags uses the established
+        // parent depth; an authored child line keeps its own depth.
+        let layout_depth = if hugged_name.is_some() {
+            depth.saturating_sub(1)
+        } else {
+            depth
+        };
+        output.extend_from_slice(bytes.get(..first_open + 2).unwrap_or_default());
+        output.extend_from_slice(self.newline);
+        let expression = formatted.get(expr_start..expr_end).unwrap_or_default();
+        output.extend_from_slice(
+            self.render_interpolation_expr_lines(expression, layout_depth)
+                .as_bytes(),
+        );
+        self.write_indent(output, layout_depth);
+        output.extend_from_slice(b"}}");
+        output.extend_from_slice(bytes.get(close..).unwrap_or_default());
         output.extend_from_slice(self.newline);
         true
     }

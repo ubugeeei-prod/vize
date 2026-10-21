@@ -44,6 +44,7 @@ fn deferred_template_reads_preserve_script_diagnostics() {
 
 #[test]
 fn required_props_keep_exact_unicode_diagnostics() {
+    assert_generated_check_ordinal_normalization_preserves_markers_without_digits();
     check_pack(
         "required-props-edges",
         "required_props_keep_exact_unicode_diagnostics",
@@ -278,6 +279,17 @@ fn generic_fallthrough_spread_preserves_valid_values() {
 }
 
 #[test]
+fn optional_fallthrough_spread_preserves_valid_values_and_rejects_invalid_values() {
+    check_pack(
+        "optional-fallthrough-spread-10170",
+        "optional_fallthrough_spread_preserves_valid_values_and_rejects_invalid_values",
+        "8300867552287abb14f4fbb7471c705aea72bbdf",
+        Some(10170),
+        &["optional-valid-invalid-control"],
+    );
+}
+
+#[test]
 fn misskey_generated_inference_probes_preserve_authored_diagnostics() {
     check_pack(
         "misskey-generated-inference-9516",
@@ -299,6 +311,155 @@ fn named_prop_before_spread_reports_once_with_or_without_listener() {
     );
 }
 
+#[test]
+fn authored_ts_extensions_report_ts5097_by_default() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "allow-importing-ts-extensions-9890",
+        "authored_ts_extensions_report_ts5097_by_default",
+        "f1b07174a4a86ffc3433f31b8c78406d5bf5b760",
+        Some(9890),
+        &[
+            "default-policy",
+            "explicit-opt-in",
+            "declaration-generated-routes",
+            "generated-external-script-route",
+        ],
+    );
+}
+
+#[test]
+fn nuxt_reference_graph_preserves_plugin_injection_import_types() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "nuxt-plugin-injection-types",
+        "nuxt_reference_graph_preserves_plugin_injection_import_types",
+        "2c22691f0f8303a28c425213c423e299f9ad5420",
+        Some(9919),
+        &["authored-dependency-identity"],
+    );
+}
+
+#[test]
+fn listener_keeps_class_style_and_spread_attribute_parity() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "listener-attribute-parity-9852",
+        "listener_keeps_class_style_and_spread_attribute_parity",
+        "11cb03950bc8d2a4e9cb8d164b0aaca79e302291",
+        Some(9852),
+        &["class-style-and-spread-listeners"],
+    );
+}
+
+#[test]
+fn dynamic_component_union_listener_preserves_clean_diagnostics() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "dynamic-component-union-listener-10026",
+        "dynamic_component_union_listener_preserves_clean_diagnostics",
+        "0aafae7e41f1ac381d07fa9f0154084cc1e6f211",
+        Some(10026),
+        &["native-element-union"],
+    );
+}
+
+#[test]
+fn native_inline_event_handler_is_contextually_typed() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "native-inline-event-handler-9835",
+        "native_inline_event_handler_is_contextually_typed",
+        "8ac6ce1668e9bede8d73411e63a247dbd6f8eb56",
+        Some(9835),
+        &["native-mousedown-arrow"],
+    );
+}
+
+#[test]
+fn implicit_art_component_reports_the_same_prop_errors_as_an_explicit_import() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "art-variant-implicit-component-9854",
+        "implicit_art_component_reports_the_same_prop_errors_as_an_explicit_import",
+        "f07065df35d25bc76f355e5f106c80dbefa922b5",
+        Some(9854),
+        &[
+            "implicit-and-explicit-props",
+            "implicit-subject-avoids-unknown-global-diagnostics",
+        ],
+    );
+}
+
+#[test]
+fn runtime_props_reports_10100_10101_retain_expected_types() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "runtime-props-report-10100-10101",
+        "runtime_props_reports_10100_10101_retain_expected_types",
+        "5dfe002a9467d152c8545693df33def3aa5f3bf7",
+        None,
+        &["imported-helper-spread", "object-factory-assertion"],
+    );
+}
+
+#[test]
+fn imported_sfc_h_calls_check_missing_and_wrong_props() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "component-render-h-props-9855",
+        "imported_sfc_h_calls_check_missing_and_wrong_props",
+        "f15ca234a4bdd73bde9caea07e652f3a345eb342",
+        Some(9855),
+        &["missing-and-wrong-props"],
+    );
+}
+
+#[test]
+fn component_listener_aliases_stay_inside_guard_scope() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "component-listener-alias-scope-10112",
+        "component_listener_aliases_stay_inside_guard_scope",
+        "7cefe3a00e6184de1e121d39b0e153f08a428aa6",
+        Some(10112),
+        &["sibling-guarded-listeners"],
+    );
+}
+
+fn native_fixture_runtime_disabled() -> bool {
+    std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some()
+}
+
+#[test]
+fn dynamic_directive_expressions_preserve_typed_slot_payloads() {
+    check_pack(
+        "dynamic-directive-expression-mapping-10182",
+        "dynamic_directive_expressions_preserve_typed_slot_payloads",
+        "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
+        None,
+        &["dynamic-slot-and-prop"],
+    );
+}
+
 fn check_pack(
     name: &str,
     test: &str,
@@ -317,6 +478,11 @@ fn check_pack(
     assert_eq!(pack.version, 1);
     assert_eq!(pack.issue, 6879);
     assert_eq!(pack.historical_issue, historical_issue);
+    assert_eq!(
+        pack.historical_issues.as_deref(),
+        (name == "runtime-props-report-10100-10101").then_some(&[10100, 10101][..]),
+        "every historical issue must retain exact fixture custody"
+    );
     assert_eq!(pack.regression_commit, regression);
     assert_eq!(
         pack.source_revision,
@@ -336,9 +502,20 @@ fn check_pack(
             | "nuxt-unknown-template-options-10013"
             | "reactive-props-destructure-10008"
             | "generic-fallthrough-spread-9956"
+            | "optional-fallthrough-spread-10170"
             | "misskey-generated-inference-9516"
             | "component-v-bind-duplicate-diagnostic-10069"
-            | "inferred-project-tsconfig-9718" => regression,
+            | "inferred-project-tsconfig-9718"
+            | "allow-importing-ts-extensions-9890"
+            | "nuxt-plugin-injection-types"
+            | "listener-attribute-parity-9852"
+            | "dynamic-component-union-listener-10026"
+            | "native-inline-event-handler-9835"
+            | "art-variant-implicit-component-9854"
+            | "runtime-props-report-10100-10101"
+            | "component-render-h-props-9855"
+            | "component-listener-alias-scope-10112"
+            | "dynamic-directive-expression-mapping-10182" => regression,
             _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
         }
     );
@@ -531,8 +708,7 @@ fn normalize_generated_check_ordinals(diagnostics: &[Diagnostic]) -> Vec<Diagnos
         .collect()
 }
 
-#[test]
-fn generated_check_ordinal_normalization_preserves_markers_without_digits() {
+fn assert_generated_check_ordinal_normalization_preserves_markers_without_digits() {
     let diagnostics = [Diagnostic {
         file: String::from("src/App.vue"),
         line: 1,

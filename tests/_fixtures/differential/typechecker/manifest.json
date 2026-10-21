@@ -1956,7 +1956,7 @@
         {
           "file": "tsconfig.json",
           "path": "allow-importing-ts-extensions-9890/generated-external-script/tsconfig.json.txt",
-          "sha256": "cb80c8f26ccfff81c52c59285ccd75b0972d7f2a364101590f11431037d3d5b2"
+          "sha256": "40cd1f5dca041b901d1127ab81a2494623ad9376c4811a19a05f6fff95361509"
         }
       ],
       "dialectCoverage": {
@@ -2567,6 +2567,58 @@
       }
     },
     {
+      "id": "typechecker/optional-fallthrough-spread-10170/optional-valid-invalid-control",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "optional-fallthrough-spread-10170",
+      "case": "optional-valid-invalid-control",
+      "test": "optional_fallthrough_spread_preserves_valid_values_and_rejects_invalid_values",
+      "regressionCommit": "8300867552287abb14f4fbb7471c705aea72bbdf",
+      "sourceRevision": "8300867552287abb14f4fbb7471c705aea72bbdf",
+      "packReference": {
+        "path": "optional-fallthrough-spread-10170/cases.json",
+        "sha256": "180278e816865e4e17a8d16828c161e45899230af11047ecab287fa3cc0d96e5"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "optional-fallthrough-spread-10170/tsconfig.json.txt",
+          "sha256": "1d79872a71dfb4571c49b5c60aded1729ac0b15d2d6d5de26db9d2b76ef14961"
+        },
+        {
+          "file": "src/MyInput.vue",
+          "path": "optional-fallthrough-spread-10170/src/MyInput.vue.txt",
+          "sha256": "1ab809928240c6706513e59ecaa339c107e22793633b52e7f6314a6c2841f384"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "optional-fallthrough-spread-10170/src/App.vue.txt",
+          "sha256": "ab48c10bd5cfbb0b0898919e8c9666b404ce1cc6802442c4933be2fbe352d72f"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/art-variant-implicit-component-9854/implicit-and-explicit-props",
       "state": "active",
       "targets": [
@@ -2583,7 +2635,7 @@
       "sourceRevision": "f07065df35d25bc76f355e5f106c80dbefa922b5",
       "packReference": {
         "path": "art-variant-implicit-component-9854/cases.json",
-        "sha256": "d946d578578d678addf1df61eddaf91ab2b812677a807a83e6e8bc79927884f5"
+        "sha256": "ec7cede788c18e7a3f53ca47a32a0833d1940936240b2855a9a5e0563c6f8ac2"
       },
       "inputs": [
         {
@@ -2605,6 +2657,58 @@
           "file": "src/MyCardExplicit.art.vue",
           "path": "art-variant-implicit-component-9854/src/MyCardExplicit.art.vue.txt",
           "sha256": "224008e13f14210912b95eadfed63f36f18ffc1ee8108261f418d0f11bc9600a"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/art-variant-implicit-component-9854/implicit-subject-avoids-unknown-global-diagnostics",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "art-variant-implicit-component-9854",
+      "case": "implicit-subject-avoids-unknown-global-diagnostics",
+      "test": "implicit_art_component_reports_the_same_prop_errors_as_an_explicit_import",
+      "regressionCommit": "f07065df35d25bc76f355e5f106c80dbefa922b5",
+      "sourceRevision": "f07065df35d25bc76f355e5f106c80dbefa922b5",
+      "packReference": {
+        "path": "art-variant-implicit-component-9854/cases.json",
+        "sha256": "ec7cede788c18e7a3f53ca47a32a0833d1940936240b2855a9a5e0563c6f8ac2"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "art-variant-implicit-component-9854/tsconfig.json.txt",
+          "sha256": "e36b280dce185f4be85cbff1838c0ee06d8d7a46b38b3e63df995c0decd7b13b"
+        },
+        {
+          "file": "src/MyCard.vue",
+          "path": "art-variant-implicit-component-9854/src/MyCard.vue.txt",
+          "sha256": "455de116ba8d563f320c6b90d5a655a7c9cef4d8305e00e6705adf289420df35"
+        },
+        {
+          "file": "src/MyCardValid.art.vue",
+          "path": "art-variant-implicit-component-9854/src/MyCardValid.art.vue.txt",
+          "sha256": "766c26dee563a4eb211aded1d2f54a97d5dae4e0a40dfbd3bad655eb3d1bf834"
         }
       ],
       "dialectCoverage": {
@@ -3117,12 +3221,12 @@
         {
           "file": "src/Counter.vue",
           "path": "component-render-h-props-9855/src/Counter.vue.txt",
-          "sha256": "cb225908eac39ef24e7945f539d892df9ca8744b4069779ee4330f590830bf0e"
+          "sha256": "683ecf26044730e8ed0007636d810fd1306d33fd68dad675f26ef44e0f51d852"
         },
         {
           "file": "src/render.ts",
           "path": "component-render-h-props-9855/src/render.ts.txt",
-          "sha256": "18fd5f567d31dc70658810cf5cbfb53f148925a35fd9ab6433863e03305be10f"
+          "sha256": "56b3c17668215a27a6fd32a5f6914bb403413db366e5ceb7393bf2d7e4b95940"
         }
       ],
       "dialectCoverage": {
@@ -3210,12 +3314,12 @@
       },
       "pack": "content-mapper-duplicate-attributes-10184",
       "case": "listener-and-template-ref-class-style",
-      "test": "content_mapper_merges_duplicate_class_and_style_attribute_probes",
-      "regressionCommit": "6fa83a47ba21733ca990fbcc810f42ef5fca1123",
-      "sourceRevision": "6fa83a47ba21733ca990fbcc810f42ef5fca1123",
+      "test": "content_mapper_isolates_duplicate_class_and_style_attribute_probes",
+      "regressionCommit": "0038b601e41dccb6f037aa68c3fc0207ea635e3b",
+      "sourceRevision": "0038b601e41dccb6f037aa68c3fc0207ea635e3b",
       "packReference": {
         "path": "content-mapper-duplicate-attributes-10184/cases.json",
-        "sha256": "869e0481dafb8b88860a9c85ee2d5ee9f4c23dcac4d67f7dd72e8fbd0277c13f"
+        "sha256": "44d2fd4544d512c59a3f3326ccfc256bc63603d4fb3f71dfbea789efac91d86b"
       },
       "inputs": [
         {
@@ -3289,6 +3393,53 @@
           "file": "src/App.vue",
           "path": "content-mapper-nuxt-emit-10195/src/App.vue.txt",
           "sha256": "4b49df4d5622b04548dbc0a1f003c0fb25d98d0469645e544969bfb01c6f6940"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/dynamic-directive-expression-mapping-10182/dynamic-slot-and-prop",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "dynamic-directive-expression-mapping-10182",
+      "case": "dynamic-slot-and-prop",
+      "test": "dynamic_directive_expressions_preserve_typed_slot_payloads",
+      "regressionCommit": "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
+      "sourceRevision": "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
+      "packReference": {
+        "path": "dynamic-directive-expression-mapping-10182/cases.json",
+        "sha256": "40c82be789385cac9a8f0578a9a2dac7747b18b56100dc03c27584fd824915a2"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "dynamic-directive-expression-mapping-10182/tsconfig.json.txt",
+          "sha256": "cf4647e7123e6cfae78263f284ddfa081ffa4a153527745de335ed664207a69d"
+        },
+        {
+          "file": "App.vue",
+          "path": "dynamic-directive-expression-mapping-10182/App.vue.txt",
+          "sha256": "b216a9b764f34acc63a6b60021cf504d59bf6f29c55efc3258005a983294050a"
         }
       ],
       "dialectCoverage": {

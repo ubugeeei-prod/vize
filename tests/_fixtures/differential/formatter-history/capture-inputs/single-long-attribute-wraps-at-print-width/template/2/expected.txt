@@ -1,1 +1,2 @@
-<span class="a-long-inline-element-class-name-that-is-close-to-the-print-width">x</span>
+<span class="a-long-inline-element-class-name-that-is-close-to-the-print-width"
+>x</span>

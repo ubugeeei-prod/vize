@@ -1,0 +1,25 @@
+<script setup lang="ts">
+const MyInput = {} as { new(): { $props: { rules?: (true | string)[] } } };
+const selected: number[] = [1];
+function check(all: number[], current: number[]): true | string {
+  return all.length > 0 || current.length > 0 || "empty";
+}
+const unsafeCheck: any = check;
+</script>
+
+<template>
+  <MyInput
+    :rules="[
+      // checked against the other rows
+      check(selected, [2])
+    ]"
+  />
+  <MyInput :rules="[/* checked */ check(selected, [2])]" />
+  <MyInput
+    :rules="[
+      /* checked against the other rows */
+      check(selected, [2])
+    ]"
+  />
+  <MyInput :rules="[/* unsafe control */ unsafeCheck(selected, [2])]" />
+</template>

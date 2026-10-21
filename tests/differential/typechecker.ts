@@ -36,6 +36,8 @@ export const TYPECHECKER_TESTS = {
   "native-inline-event-handler-9835": "native_inline_event_handler_is_contextually_typed",
   "inferred-project-tsconfig-9718": "inferred_project_tsconfig_preserves_owned_batch_inputs",
   "generic-fallthrough-spread-9956": "generic_fallthrough_spread_preserves_valid_values",
+  "optional-fallthrough-spread-10170":
+    "optional_fallthrough_spread_preserves_valid_values_and_rejects_invalid_values",
   "art-variant-implicit-component-9854":
     "implicit_art_component_reports_the_same_prop_errors_as_an_explicit_import",
   "misskey-generated-inference-9516":
@@ -47,8 +49,11 @@ export const TYPECHECKER_TESTS = {
   "workspace-alias-cache-10063": "workspace_package_alias_cache_preserves_sequential_scopes",
   "component-render-h-props-9855": "imported_sfc_h_calls_check_missing_and_wrong_props",
   "component-listener-alias-scope-10112": "component_listener_aliases_stay_inside_guard_scope",
-  "content-mapper-duplicate-attributes-10184": "content_mapper_merges_duplicate_class_and_style_attribute_probes",
+  "content-mapper-duplicate-attributes-10184":
+    "content_mapper_isolates_duplicate_class_and_style_attribute_probes",
   "content-mapper-nuxt-emit-10195": "content_mapper_preserves_emit_with_nuxt_pattern_injections",
+  "dynamic-directive-expression-mapping-10182":
+    "dynamic_directive_expressions_preserve_typed_slot_payloads",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
@@ -78,6 +83,7 @@ const sourceRevisions = {
   "native-inline-event-handler-9835": "8ac6ce1668e9bede8d73411e63a247dbd6f8eb56",
   "inferred-project-tsconfig-9718": "f95557dadaab83dc0f7d4a7613bdb7ed4e59d323",
   "generic-fallthrough-spread-9956": "2b1e41a5b09005a97d24d1ff34f34c7507bbfb67",
+  "optional-fallthrough-spread-10170": "8300867552287abb14f4fbb7471c705aea72bbdf",
   "art-variant-implicit-component-9854": "f07065df35d25bc76f355e5f106c80dbefa922b5",
   "misskey-generated-inference-9516": "cf6c83ab16fb7f20f84f0d51112090bbce89c74a",
   "component-v-bind-duplicate-diagnostic-10069": "7174c46d55825c155325e6314305e661d50ec95a",
@@ -86,8 +92,9 @@ const sourceRevisions = {
   "workspace-alias-cache-10063": "7174c46d55825c155325e6314305e661d50ec95a",
   "component-render-h-props-9855": "f15ca234a4bdd73bde9caea07e652f3a345eb342",
   "component-listener-alias-scope-10112": "7cefe3a00e6184de1e121d39b0e153f08a428aa6",
-  "content-mapper-duplicate-attributes-10184": "6fa83a47ba21733ca990fbcc810f42ef5fca1123",
+  "content-mapper-duplicate-attributes-10184": "0038b601e41dccb6f037aa68c3fc0207ea635e3b",
   "content-mapper-nuxt-emit-10195": "369f01b50d8fe6e3b0996cc9a90eecf422dbdd3b",
+  "dynamic-directive-expression-mapping-10182": "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 
 export type Artifact = { path: string; sha256: string };

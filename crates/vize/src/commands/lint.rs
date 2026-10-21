@@ -25,7 +25,7 @@ use aggregate::{LintRunAccumulator, should_retain_file_results};
 use collect::{
     LintIgnoreSet, collect_default_lint_files, collect_lint_inputs, resolve_lint_config_path,
 };
-use entry_rules::LinterRuleResolver;
+use entry_rules::{LinterRuleResolver, TypeAwareProjectPaths};
 use fix::lint_source_with_optional_fix;
 use rayon::prelude::*;
 use routes::apply_cross_file_lint;
@@ -76,6 +76,11 @@ pub fn run(mut args: LintArgs) {
         .type_checker
         .runtime_path()
         .map(|path| resolve_lint_config_path(config_dir, path));
+    let configured_type_aware_tsconfig = config
+        .type_checker
+        .tsconfig
+        .as_deref()
+        .map(|path| resolve_lint_config_path(config_dir, path));
     let ignore_set = if project_root.is_some() {
         LintIgnoreSet::for_project(&linter_plan.plan.global_ignores, config_dir)
     } else {
@@ -122,7 +127,10 @@ pub fn run(mut args: LintArgs) {
         help_level,
         &args,
         linter_features,
-        configured_corsa_path,
+        TypeAwareProjectPaths {
+            corsa: configured_corsa_path,
+            tsconfig: configured_type_aware_tsconfig,
+        },
         &custom_elements,
     );
     let write_failures = AtomicUsize::new(0);

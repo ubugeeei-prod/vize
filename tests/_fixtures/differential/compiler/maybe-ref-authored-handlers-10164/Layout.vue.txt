@@ -1,0 +1,12 @@
+<script setup>
+import Child from './Child.js'
+import { useThing } from './thing.js'
+const { count } = useThing()
+</script>
+<template>
+  <button @click="count = 1">assign</button>
+  <button @click="count += 1">compound</button>
+  <button @click="count++">update</button>
+  <Child :model-value="count" @update:model-value="count = $event" />
+  <Child v-model="count" />
+</template>

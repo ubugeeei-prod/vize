@@ -28,7 +28,7 @@ _useCssVars(_ctx => ({
 let color = 'tomato'
 
 return (_ctx, _cache) => {
-  return (_openBlock(), _createElementBlock("div", _hoisted_1, _toDisplayString(_unref(color))))
+  return (_openBlock(), _createElementBlock("div", _hoisted_1, _toDisplayString(_unref(color)), 1 /* TEXT */))
 }
 }
 

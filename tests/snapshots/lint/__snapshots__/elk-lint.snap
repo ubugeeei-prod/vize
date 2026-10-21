@@ -118,12 +118,12 @@
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/require-scoped-style] Style blocks should use scoped attribute to prevent style leaking",
+        "message": "[vize:vue/require-scoped-style] Style blocks should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 273,
         "column": 1,
         "endLine": 273,
         "endColumn": 8,
-        "help": "Add the 'scoped' attribute to the style block"
+        "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`"
       }
     ],
     "errorCount": 2,
@@ -383,12 +383,12 @@
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/require-scoped-style] Style blocks should use scoped attribute to prevent style leaking",
+        "message": "[vize:vue/require-scoped-style] Style blocks should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 38,
         "column": 1,
         "endLine": 38,
         "endColumn": 8,
-        "help": "Add the 'scoped' attribute to the style block"
+        "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`"
       }
     ],
     "errorCount": 0,
@@ -546,12 +546,12 @@
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/require-scoped-style] Style blocks should use scoped attribute to prevent style leaking",
+        "message": "[vize:vue/require-scoped-style] Style blocks should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 30,
         "column": 1,
         "endLine": 30,
         "endColumn": 8,
-        "help": "Add the 'scoped' attribute to the style block"
+        "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`"
       }
     ],
     "errorCount": 0,
@@ -2100,12 +2100,12 @@
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/require-scoped-style] Style blocks should use scoped attribute to prevent style leaking",
+        "message": "[vize:vue/require-scoped-style] Style blocks should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 253,
         "column": 1,
         "endLine": 253,
         "endColumn": 8,
-        "help": "Add the 'scoped' attribute to the style block"
+        "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`"
       }
     ],
     "errorCount": 1,
@@ -2190,12 +2190,12 @@
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/require-scoped-style] Style blocks should use scoped attribute to prevent style leaking",
+        "message": "[vize:vue/require-scoped-style] Style blocks should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 57,
         "column": 1,
         "endLine": 57,
         "endColumn": 8,
-        "help": "Add the 'scoped' attribute to the style block"
+        "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`"
       }
     ],
     "errorCount": 0,
@@ -2410,12 +2410,12 @@
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/require-scoped-style] Style blocks should use scoped attribute to prevent style leaking",
+        "message": "[vize:vue/require-scoped-style] Style blocks should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 300,
         "column": 1,
         "endLine": 300,
         "endColumn": 23,
-        "help": "Add the 'scoped' attribute to the style block"
+        "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`"
       }
     ],
     "errorCount": 1,
@@ -2428,12 +2428,12 @@
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/require-scoped-style] Style blocks should use scoped attribute to prevent style leaking",
+        "message": "[vize:vue/require-scoped-style] Style blocks should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 68,
         "column": 1,
         "endLine": 68,
         "endColumn": 8,
-        "help": "Add the 'scoped' attribute to the style block"
+        "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`"
       }
     ],
     "errorCount": 0,
@@ -2505,12 +2505,12 @@
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/require-scoped-style] Style blocks should use scoped attribute to prevent style leaking",
+        "message": "[vize:vue/require-scoped-style] Style blocks should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 100,
         "column": 1,
         "endLine": 100,
         "endColumn": 8,
-        "help": "Add the 'scoped' attribute to the style block"
+        "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`"
       }
     ],
     "errorCount": 0,
@@ -2547,12 +2547,12 @@
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/require-scoped-style] Style blocks should use scoped attribute to prevent style leaking",
+        "message": "[vize:vue/require-scoped-style] Style blocks should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 36,
         "column": 1,
         "endLine": 36,
         "endColumn": 23,
-        "help": "Add the 'scoped' attribute to the style block"
+        "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`"
       }
     ],
     "errorCount": 0,
@@ -2641,12 +2641,12 @@
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/require-scoped-style] Style blocks should use scoped attribute to prevent style leaking",
+        "message": "[vize:vue/require-scoped-style] Style blocks should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 120,
         "column": 1,
         "endLine": 120,
         "endColumn": 23,
-        "help": "Add the 'scoped' attribute to the style block"
+        "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`"
       }
     ],
     "errorCount": 0,

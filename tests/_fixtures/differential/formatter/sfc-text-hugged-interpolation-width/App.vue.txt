@@ -1,0 +1,14 @@
+<template>
+  <div class="card">
+    <section class="panel">
+      <p class="tag">
+        &lt;{{
+          kind === "primary" ? "my-primary-widget-element-name" : "my-secondary-widget-name"
+        }}&gt;
+      </p>
+      <p class="tag">
+        Name: {{ kind === "primary" ? "my-primary-widget-element-name" : "my-secondary-widget-name-long" }}
+      </p>
+    </section>
+  </div>
+</template>

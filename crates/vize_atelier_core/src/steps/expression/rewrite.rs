@@ -135,6 +135,7 @@ pub(crate) fn rewrite_expression(
     ctx: &TransformContext<'_>,
     as_params: bool,
     retained: Option<&JsExpression<'_>>,
+    guard_maybe_ref_write: bool,
 ) -> RewriteResult {
     // Davinci P1-9: the retained AST drives the whole rewrite when its
     // admission proof holds, checked before any byte re-scan. The caller
@@ -149,7 +150,7 @@ pub(crate) fn rewrite_expression(
         && crate::retained::js_module_compatible(js)
     {
         if !ctx.options.is_ts {
-            return rewrite_retained(js, ctx, as_params);
+            return rewrite_retained(js, ctx, as_params, guard_maybe_ref_write);
         }
         // TS lanes strip first, always: the stripper's detection scan can
         // false-positive on TS-free text (` as ` inside a string literal)
@@ -159,11 +160,11 @@ pub(crate) fn rewrite_expression(
         // which the same armature proof covers.
         let js_content = strip_typescript_from_expression(content);
         if js_content.as_str() == content {
-            return rewrite_retained(js, ctx, as_params);
+            return rewrite_retained(js, ctx, as_params, guard_maybe_ref_write);
         }
         #[cfg(any(test, feature = "legacy-differential"))]
         crate::retained::differential::record_transform_rewrite_legacy_ts_strip();
-        return rewrite_reparsed(js_content, content, ctx, retained);
+        return rewrite_reparsed(js_content, content, ctx, retained, guard_maybe_ref_write);
     }
 
     // Legacy string path. Classify the residual for the P1-9 coverage
@@ -226,5 +227,5 @@ pub(crate) fn rewrite_expression(
         };
     }
 
-    rewrite_reparsed(js_content, content, ctx, retained)
+    rewrite_reparsed(js_content, content, ctx, retained, guard_maybe_ref_write)
 }

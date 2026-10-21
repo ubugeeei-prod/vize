@@ -106,6 +106,7 @@ void test("compiler fixture pins a real full-module reference without native cre
       "compiler/sfc/template-asset-urls-9895",
       "compiler/sfc/v-model-maybe-ref-9897",
       "compiler/sfc/maybe-ref-model-parity-10044",
+      "compiler/sfc/maybe-ref-authored-handlers-10164",
       "compiler/sfc/vue2-preserve-boundaries-9886",
       "compiler/sfc/vue2-preserve-comment-edges-10065",
       "compiler/sfc/package-import-prop-type-9894",
@@ -113,15 +114,16 @@ void test("compiler fixture pins a real full-module reference without native cre
       "compiler/sfc/scoped-keyframes-nesting-9829",
       "compiler/sfc/scoped-checkout-stability-10067",
       "compiler/sfc/jsx-vapor-runtime-slots-6889",
+      "compiler/sfc/root-text-patch-flag-10168",
     ],
   );
   const report = syntheticReport();
   assert.deepEqual(validateCompilerReport(loaded, report, build), report.summary);
   assert.deepEqual(summarizeNativeAcceptance(loaded, report, { sourceRevision }).total, {
-    planned: 14,
+    planned: 16,
     nativeHandled: 0,
     nativeEquivalent: 0,
-    unsupported: 14,
+    unsupported: 16,
     legacyBacked: 0,
     unverified: 0,
   });

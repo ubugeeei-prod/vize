@@ -1,0 +1,16 @@
+import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer";
+import { mergeProps as _mergeProps } from "vue";
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(`<span${_ssrRenderAttrs(_mergeProps({ class: "badge" }, _attrs))}>${_ssrInterpolate($props.label)}</span>`);
+}
+export default {
+  __name: "Layout",
+  props: { label: {
+    type: String,
+    required: true
+  } },
+  ssrRender,
+  setup(__props) {
+    return {};
+  }
+};

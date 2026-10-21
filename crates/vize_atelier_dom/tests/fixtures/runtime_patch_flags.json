@@ -1,0 +1,10 @@
+[
+  {
+    "name": "static-class-interpolation",
+    "template": "<span class=\"badge\">{{ label }}</span>"
+  },
+  {
+    "name": "static-class-text-and-interpolation",
+    "template": "<span class=\"badge\">Hi {{ label }}</span>"
+  }
+]

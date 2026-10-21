@@ -41,9 +41,13 @@ impl Linter {
             #[cfg(not(target_arch = "wasm32"))]
             type_aware_project_configs: Mutex::new(FxHashMap::default()),
             #[cfg(not(target_arch = "wasm32"))]
+            type_aware_project_ownership: Mutex::new(vize_canon::TsconfigOwnershipCache::default()),
+            #[cfg(not(target_arch = "wasm32"))]
             reported_type_aware_project_configs: Mutex::new(FxHashSet::default()),
             #[cfg(not(target_arch = "wasm32"))]
             corsa_path: None,
+            #[cfg(not(target_arch = "wasm32"))]
+            type_aware_tsconfig: None,
         }
     }
 
@@ -77,9 +81,13 @@ impl Linter {
             #[cfg(not(target_arch = "wasm32"))]
             type_aware_project_configs: Mutex::new(FxHashMap::default()),
             #[cfg(not(target_arch = "wasm32"))]
+            type_aware_project_ownership: Mutex::new(vize_canon::TsconfigOwnershipCache::default()),
+            #[cfg(not(target_arch = "wasm32"))]
             reported_type_aware_project_configs: Mutex::new(FxHashSet::default()),
             #[cfg(not(target_arch = "wasm32"))]
             corsa_path: None,
+            #[cfg(not(target_arch = "wasm32"))]
+            type_aware_tsconfig: None,
         }
     }
 
@@ -113,9 +121,13 @@ impl Linter {
             #[cfg(not(target_arch = "wasm32"))]
             type_aware_project_configs: Mutex::new(FxHashMap::default()),
             #[cfg(not(target_arch = "wasm32"))]
+            type_aware_project_ownership: Mutex::new(vize_canon::TsconfigOwnershipCache::default()),
+            #[cfg(not(target_arch = "wasm32"))]
             reported_type_aware_project_configs: Mutex::new(FxHashSet::default()),
             #[cfg(not(target_arch = "wasm32"))]
             corsa_path: None,
+            #[cfg(not(target_arch = "wasm32"))]
+            type_aware_tsconfig: None,
         }
     }
 
@@ -162,9 +174,13 @@ impl Linter {
             #[cfg(not(target_arch = "wasm32"))]
             type_aware_project_configs: Mutex::new(FxHashMap::default()),
             #[cfg(not(target_arch = "wasm32"))]
+            type_aware_project_ownership: Mutex::new(vize_canon::TsconfigOwnershipCache::default()),
+            #[cfg(not(target_arch = "wasm32"))]
             reported_type_aware_project_configs: Mutex::new(FxHashSet::default()),
             #[cfg(not(target_arch = "wasm32"))]
             corsa_path: None,
+            #[cfg(not(target_arch = "wasm32"))]
+            type_aware_tsconfig: None,
         }
     }
 }

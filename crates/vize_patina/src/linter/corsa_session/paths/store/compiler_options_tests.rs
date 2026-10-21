@@ -1,5 +1,5 @@
 //! Authored effective options keep their native indexed-access semantics.
-use super::{session_tsconfig_contents, validate_tsconfig};
+use super::{nearest_tsconfig, session_tsconfig_contents, validate_tsconfig};
 use serde_json::{Value, json};
 use std::{fs, path::PathBuf, time::SystemTime};
 
@@ -134,10 +134,9 @@ fn native_session_retains_whole_config_for_authored_index_access_options() {
         if let Some(flag) = flag {
             expected["compilerOptions"]["noUncheckedIndexedAccess"] = json!(flag);
         }
-        let rendered = session_tsconfig_contents(
-            &project.0,
-            &project.0.join("src/MyTouch.vue").to_string_lossy(),
-        );
+        let source = project.0.join("src/MyTouch.vue");
+        let tsconfig = nearest_tsconfig(&source.to_string_lossy()).unwrap();
+        let rendered = session_tsconfig_contents(&project.0, Some(&tsconfig));
         assert_eq!(
             serde_json::from_str::<Value>(&rendered).unwrap(),
             expected,

@@ -34,8 +34,9 @@ pub(super) fn rewrite_from_wrapped_expr(
     wrapped: &str,
     js_content: &str,
     ctx: &TransformContext<'_>,
+    guard_maybe_ref_write: bool,
 ) -> RewriteResult {
-    let mut collector = IdentifierCollector::new(ctx, wrapped);
+    let mut collector = IdentifierCollector::new(ctx, wrapped, guard_maybe_ref_write);
     collector.visit_expression(expr);
 
     let has_identifiers = collector.has_identifiers;
@@ -62,6 +63,7 @@ pub(super) fn rewrite_reparsed(
     content: &str,
     ctx: &TransformContext<'_>,
     retained: Option<&JsExpression<'_>>,
+    guard_maybe_ref_write: bool,
 ) -> RewriteResult {
     let oxc_allocator = crate::expr_parse_probe::parse_arena();
     let source_type = SourceType::default().with_module(true);
@@ -75,7 +77,9 @@ pub(super) fn rewrite_reparsed(
     let parse_result = parser.parse_expression();
 
     match parse_result {
-        Ok(expr) => rewrite_from_wrapped_expr(&expr, &wrapped, &js_content, ctx),
+        Ok(expr) => {
+            rewrite_from_wrapped_expr(&expr, &wrapped, &js_content, ctx, guard_maybe_ref_write)
+        }
         Err(expression_errors) => {
             // Expression parsing failed - try parsing as a program (multi-statement handlers)
             let oxc_allocator2 = crate::expr_parse_probe::parse_arena();
@@ -86,7 +90,8 @@ pub(super) fn rewrite_reparsed(
                 // Successfully parsed as program - walk the AST and collect
                 // identifiers. Program spans are content-relative already
                 // (no wrapping parens), so the wrapper offset is 0.
-                let mut collector = IdentifierCollector::new(ctx, &js_content);
+                let mut collector =
+                    IdentifierCollector::new(ctx, &js_content, guard_maybe_ref_write);
                 collector.visit_program(&parse_result2.program);
 
                 let has_identifiers = collector.has_identifiers;

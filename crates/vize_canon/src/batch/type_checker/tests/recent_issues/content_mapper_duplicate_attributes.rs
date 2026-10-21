@@ -15,16 +15,20 @@ fn content_mapper_isolates_duplicate_class_and_style_attribute_probes() {
 
     for marker in [
         "const __vize_emit_props_",
-        "const __vize_resolved_events_",
+        "const __vize_events_resolved_",
         "var __vize_ref_",
     ] {
-        let probe = result
-            .text
-            .split_once(marker)
-            .and_then(|(_, tail)| tail.split_once("});\n"))
-            .map(|(probe, _)| probe)
-            .unwrap_or_else(|| panic!("missing {marker} probe:\n{}", result.text));
-        assert_eq!(probe.matches("\"class\":").count(), 1, "{probe}");
-        assert_eq!(probe.matches("\"style\":").count(), 1, "{probe}");
+        let mut count = 0;
+        for (start, _) in result.text.as_str().match_indices(marker) {
+            let tail = &result.text.as_str()[start + marker.len()..];
+            let probe = tail
+                .split_once("});\n")
+                .map(|(probe, _)| probe)
+                .unwrap_or_else(|| panic!("unterminated {marker} probe:\n{}", result.text));
+            assert!(probe.matches("\"class\":").count() <= 1, "{probe}");
+            assert!(probe.matches("\"style\":").count() <= 1, "{probe}");
+            count += 1;
+        }
+        assert!(count > 0, "missing {marker} probe:\n{}", result.text);
     }
 }

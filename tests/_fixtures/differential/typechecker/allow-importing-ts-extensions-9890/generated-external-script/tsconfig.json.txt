@@ -4,6 +4,7 @@
     "target": "ES2022",
     "module": "preserve",
     "moduleResolution": "bundler",
+    "jsx": "preserve",
     "noEmit": true
   },
   "include": ["*.ts", "*.tsx", "*.vue"]

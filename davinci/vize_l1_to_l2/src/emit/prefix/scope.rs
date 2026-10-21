@@ -39,6 +39,7 @@ pub(in crate::emit) struct PrefixScope<'b> {
     is_ts: bool,
     inline: bool,
     vdom_setup_writes: bool,
+    model_maybe_ref_write: bool,
 }
 
 #[derive(Clone, Copy)]
@@ -79,6 +80,13 @@ impl<'b> PrefixScope<'b> {
         self.vdom_setup_writes = true;
     }
 
+    /// Select the synthesized `v-model` callback role while its expression is
+    /// being rewritten. Ordinary authored handlers must not inherit the
+    /// maybe-ref runtime guard.
+    pub(in crate::emit) fn set_model_maybe_ref_write(&mut self, enabled: bool) {
+        self.model_maybe_ref_write = enabled;
+    }
+
     pub(super) fn guarded_setup_write_kind(&self, name: &str) -> Option<BindingKind> {
         if !(self.vdom_setup_writes
             && self.inline
@@ -97,9 +105,12 @@ impl<'b> PrefixScope<'b> {
                 // now-mutable binding according to its final metadata.
                 BindingKind::SetupLet => true,
                 // A tracked direct destructure writes without unwrapping.
-                BindingKind::SetupMaybeRef => self
-                    .bindings
-                    .is_some_and(|table| table.reactive_read(name) != Some(ReactiveRead::Direct)),
+                BindingKind::SetupMaybeRef => {
+                    self.model_maybe_ref_write
+                        && self.bindings.is_some_and(|table| {
+                            table.reactive_read(name) != Some(ReactiveRead::Direct)
+                        })
+                }
                 _ => false,
             })
     }
@@ -470,6 +481,12 @@ mod tests {
         inline.enable_vdom_setup_writes();
         assert_eq!(
             inline.guarded_setup_write_kind("total"),
+            None,
+            "authored handlers do not guard maybe-ref writes"
+        );
+        inline.set_model_maybe_ref_write(true);
+        assert_eq!(
+            inline.guarded_setup_write_kind("total"),
             Some(BindingKind::SetupMaybeRef)
         );
         assert_eq!(
@@ -481,6 +498,7 @@ mod tests {
         let mut direct_maybe_ref_scope =
             PrefixScope::new(Some(&direct_maybe_ref), true, false, true);
         direct_maybe_ref_scope.enable_vdom_setup_writes();
+        direct_maybe_ref_scope.set_model_maybe_ref_write(true);
         assert_eq!(
             direct_maybe_ref_scope.guarded_setup_write_kind("state"),
             None

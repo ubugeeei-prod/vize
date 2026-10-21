@@ -215,6 +215,24 @@ impl ProjectionMapping {
 
     /// Caret lookup restricted to rows serving `feature`.
     pub fn to_generated_for(&self, authored: usize, feature: ProjectionFeatures) -> Option<usize> {
+        // A completion cursor may sit exactly after the final authored byte.
+        // Prefer the narrow expression span so recovery text appended to the
+        // enclosing row cannot pull that cursor back before a trailing dot.
+        if feature == ProjectionFeatures::COMPLETION
+            && let Some(span) = self
+                .rows()
+                .filter(|row| row.meta.features.contains(feature))
+                .flat_map(|row| row.span.sub_spans.iter())
+                .filter(|span| span.src_range.start <= authored && authored <= span.src_range.end)
+                .min_by_key(|span| (span.src_range.len(), span.gen_range.len()))
+        {
+            return Some(
+                span.gen_range.start
+                    + authored
+                        .saturating_sub(span.src_range.start)
+                        .min(span.gen_range.len()),
+            );
+        }
         if self.meta.is_empty() {
             return self.to_generated(authored);
         }

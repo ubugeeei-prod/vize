@@ -18,7 +18,7 @@ use prop_entry::append_prop_entry;
 use vize_carton::{FxHashSet, String, append};
 use vize_croquis::{
     ScopeChain, ScopeId,
-    croquis::{ComponentUsage, PassedProp, SpreadProp},
+    croquis::{ComponentUsage, SpreadProp},
 };
 
 mod prop_entry;
@@ -41,67 +41,6 @@ pub(crate) fn append_inference_props_literal(
         source_context,
         expr_indent,
     );
-}
-
-/// Collect the simple named props used by inference-only probes while isolating
-/// repeatable `class` and `style` bindings from duplicate-key diagnostics.
-///
-/// These probes intentionally preserve their legacy shape instead of using the
-/// mapped prop literal: the authored prop checker remains the diagnostic owner.
-/// Synthetic keys keep every entry and its byte width stable, so diagnostics
-/// from unrelated props retain their existing source positions.
-pub(crate) fn collect_inference_probe_props<'a>(
-    usage: &'a ComponentUsage,
-    template_binding_access: &TemplateBindingAccess,
-) -> Vec<(&'a PassedProp, String, String)> {
-    let class_bindings = collect_generated_class_bindings(usage, template_binding_access);
-    let style_bindings = collect_generated_named_bindings(usage, template_binding_access, "style");
-    let mut class_index = 0;
-    let mut style_index = 0;
-    let mut props = Vec::new();
-
-    for prop in &usage.props {
-        if prop.name_is_dynamic || matches!(prop.name.as_str(), "key" | "ref") {
-            continue;
-        }
-        let value = super::prop_sources::generated_prop_value(prop, template_binding_access);
-        if let Some(value) = value {
-            let key = match prop.name.as_str() {
-                "class" if class_bindings.len() > 1 => {
-                    let key = inference_probe_key("class", class_index);
-                    class_index += 1;
-                    key
-                }
-                "style" if style_bindings.len() > 1 => {
-                    let key = inference_probe_key("style", style_index);
-                    style_index += 1;
-                    key
-                }
-                name => String::from(name),
-            };
-            props.push((prop, key, value));
-        }
-    }
-    props
-}
-
-pub(crate) fn inference_probe_has_repeatable_attrs(
-    usage: &ComponentUsage,
-    template_binding_access: &TemplateBindingAccess,
-) -> bool {
-    collect_generated_class_bindings(usage, template_binding_access).len() > 1
-        || collect_generated_named_bindings(usage, template_binding_access, "style").len() > 1
-}
-
-fn inference_probe_key(name: &str, index: usize) -> String {
-    if index == 0 {
-        return String::from(name);
-    }
-    const DISCRIMINATORS: &[u8] = b"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    let mut key = String::from(name);
-    key.pop();
-    key.push(DISCRIMINATORS[(index - 1) % DISCRIMINATORS.len()] as char);
-    key
 }
 
 /// Append the `{ … }` props literal for `usage`, returning its generated range.

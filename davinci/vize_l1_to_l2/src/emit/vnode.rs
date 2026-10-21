@@ -244,7 +244,6 @@ pub(super) fn emit_call(
     } else {
         None
     };
-    let hoist = hoisted_props.is_some();
     let patch = cx.materialize_patch_facts(id, &element.bindings, false, if_key, for_item);
     let text_flag = !once && !memo_block && children_need_text_flag(cx, &element.children);
     let mut flag = patch.flag;
@@ -261,8 +260,9 @@ pub(super) fn emit_call(
     if memo_block {
         flag = 0;
     }
-    let omit_text_only = hoist && block && flag == 1;
-    let emit_flag = flag != 0 && !omit_text_only;
+    // A hoisted props object only makes the props static. Dynamic text still
+    // needs TEXT so Vue's block patcher revisits the element (#10168).
+    let emit_flag = flag != 0;
     let omit_empty_once_patch_child = once && !has_children && flag & !(2 | 4) == 0;
     let empty_runtime_for = for_item
         && (directive::has_runtime(&element.bindings)

@@ -1,0 +1,9 @@
+<script setup lang="ts">
+const names = { current: 'item' as const };
+</script>
+
+<template>
+  <div>
+    <Comp><template #[names.]="invoice">{{ invoice }}</template></Comp>
+  </div>
+</template>

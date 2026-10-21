@@ -170,6 +170,16 @@ fn exclusive_slot_name_completions(
     {
         return None;
     }
+    // A computed slot argument is a JavaScript expression, not a member of
+    // the component's closed static slot-name domain. Let the typed expression
+    // completion path answer `#[names.]` / `v-slot:[names.]`.
+    let slot_prefix = tag_ctx
+        .current_token
+        .strip_prefix('#')
+        .or_else(|| tag_ctx.current_token.strip_prefix("v-slot:"));
+    if slot_prefix.is_some_and(|prefix| prefix.starts_with('[')) {
+        return None;
+    }
 
     let items = component_meta::component_surface_completions(ctx);
     Some(prepare_open_tag_completions(ctx, tag_ctx, items))

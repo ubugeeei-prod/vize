@@ -48,10 +48,18 @@ pub(crate) struct IdentifierCollector<'a, 'ctx> {
     pub(crate) used_unref: bool,
     pub(crate) used_is_ref: bool,
     pub(crate) has_identifiers: bool,
+    /// Generated `v-model` callbacks are the one expression role where Vue
+    /// guards `SetupMaybeRef` writes with `isRef`. Authored assignments write
+    /// through `.value` directly.
+    guard_maybe_ref_write: bool,
 }
 
 impl<'a, 'ctx> IdentifierCollector<'a, 'ctx> {
-    pub(crate) fn new(ctx: &'a TransformContext<'ctx>, source: &'a str) -> Self {
+    pub(crate) fn new(
+        ctx: &'a TransformContext<'ctx>,
+        source: &'a str,
+        guard_maybe_ref_write: bool,
+    ) -> Self {
         Self {
             ctx,
             source,
@@ -63,14 +71,19 @@ impl<'a, 'ctx> IdentifierCollector<'a, 'ctx> {
             used_unref: false,
             used_is_ref: false,
             has_identifiers: false,
+            guard_maybe_ref_write,
         }
     }
 
     /// Collector over the bare (unwrapped) content — the retained-AST walk.
-    pub(crate) fn new_unwrapped(ctx: &'a TransformContext<'ctx>, source: &'a str) -> Self {
+    pub(crate) fn new_unwrapped(
+        ctx: &'a TransformContext<'ctx>,
+        source: &'a str,
+        guard_maybe_ref_write: bool,
+    ) -> Self {
         Self {
             wrapped: false,
-            ..Self::new(ctx, source)
+            ..Self::new(ctx, source, guard_maybe_ref_write)
         }
     }
 

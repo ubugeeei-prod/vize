@@ -71,6 +71,7 @@ fn cleans_session_root_when_spawn_fails() {
     let error = match CorsaTypeAwareSession::new_with_corsa_path(
         source.to_str().unwrap(),
         Some(invalid_corsa.as_path()),
+        None,
     ) {
         Ok(mut session) => {
             session.close();
@@ -101,6 +102,7 @@ fn starts_type_aware_session_from_package_root() {
     let mut session = match CorsaTypeAwareSession::new_with_corsa_path(
         source.to_str().unwrap(),
         Some(&corsa_path),
+        None,
     ) {
         Ok(session) => session,
         Err(error) if is_standard_tsgo_project_session_gap(&corsa_path, &error) => {

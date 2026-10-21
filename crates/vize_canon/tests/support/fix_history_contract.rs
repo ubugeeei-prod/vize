@@ -55,6 +55,7 @@ pub(crate) struct Pack {
     pub(crate) issue: u32,
     pub(crate) regression_commit: String,
     pub(crate) historical_issue: Option<u32>,
+    pub(crate) historical_issues: Option<Vec<u32>>,
     pub(crate) source_revision: String,
     pub(crate) diagnostic_contract: Contract,
     pub(crate) checker_options: Option<CheckerOptions>,

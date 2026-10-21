@@ -3,6 +3,7 @@ use super::{
     SESSION_DIRECTORY_PREFIX, String, TSCONFIG_CONTENTS, ToCompactString, Value, cstr,
     remove_session_root,
 };
+use vize_canon::{TsconfigOwnershipCache, TsconfigSourceKind};
 
 mod files;
 mod walk;
@@ -171,11 +172,14 @@ fn remove_pid_sessions(session_store: &Path, pid: u64) {
     }
 }
 
-pub(in super::super) fn session_tsconfig_contents(project_root: &Path, filename: &str) -> String {
+pub(in super::super) fn session_tsconfig_contents(
+    project_root: &Path,
+    tsconfig: Option<&Path>,
+) -> String {
     let mut value = stub_tsconfig_value();
-    if let Some(tsconfig) = nearest_tsconfig(filename) {
-        overlay_user_compiler_options(&mut value, project_root, &tsconfig);
-        let declarations = ambient_declaration_files(&tsconfig);
+    if let Some(tsconfig) = tsconfig {
+        overlay_user_compiler_options(&mut value, project_root, tsconfig);
+        let declarations = ambient_declaration_files(tsconfig);
         if !declarations.is_empty() {
             insert_files(&mut value, &declarations);
         }
@@ -187,6 +191,30 @@ pub(in super::super) fn session_tsconfig_contents(project_root: &Path, filename:
             rendered
         }
         Err(_) => TSCONFIG_CONTENTS.to_compact_string(),
+    }
+}
+
+pub(in crate::linter) fn effective_tsconfig_for_source(
+    filename: &str,
+    configured_tsconfig: Option<&Path>,
+    ownership: &mut TsconfigOwnershipCache,
+) -> Option<PathBuf> {
+    let shell = configured_tsconfig
+        .map(absolute_path)
+        .or_else(|| nearest_tsconfig(filename))?;
+    let source = absolute_path(Path::new(filename));
+    let source_kind = match source.extension().and_then(|extension| extension.to_str()) {
+        Some("js" | "jsx" | "mjs" | "cjs") => TsconfigSourceKind::JavaScript,
+        _ => TsconfigSourceKind::Typed,
+    };
+    Some(ownership.effective_config_for_source(&shell, &source, source_kind))
+}
+
+fn absolute_path(path: &Path) -> PathBuf {
+    if path.is_absolute() {
+        path.to_path_buf()
+    } else {
+        std::env::current_dir().map_or_else(|_| path.to_path_buf(), |cwd| cwd.join(path))
     }
 }
 
