@@ -344,6 +344,6 @@ const inner = useTemplateRef("inner");
 
     assert_eq!(
         registry.body.as_str(),
-        r#" "inner": __VizeTemplateComponentRef<typeof current.component>; "#
+        r#" "inner": __VizeTemplateComponentRef<import('vue').UnwrapRef<typeof current>["component"]>; "#
     );
 }

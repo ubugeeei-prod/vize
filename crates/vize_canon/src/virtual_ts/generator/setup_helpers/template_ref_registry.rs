@@ -63,7 +63,7 @@ enum RegisteredRefKind {
         is_svg: bool,
     },
     Component {
-        reference: String,
+        reference_type: String,
         /// Template-relative start of the element, the identity of its usage.
         start: u32,
     },
@@ -141,11 +141,15 @@ pub(super) fn template_ref_registry(
                     append!(target, "__VizeDomElement<{tag_literal}{svg_argument}>");
                     false
                 }
-                RegisteredRefKind::Component { reference, start } => {
+                RegisteredRefKind::Component {
+                    reference_type,
+                    start,
+                } => {
                     includes_component = true;
                     let declared =
-                        vize_carton::cstr!("__VizeTemplateComponentRef<typeof {reference}>");
-                    target = record.ref_instance(*start, declared.as_str(), reference.as_str());
+                        vize_carton::cstr!("__VizeTemplateComponentRef<{reference_type}>");
+                    target =
+                        record.ref_instance(*start, declared.as_str(), reference_type.as_str());
                     includes_instantiated |= target != declared;
                     true
                 }
@@ -260,9 +264,9 @@ fn collect_element(
             };
             let name = value.content;
             if !name.is_empty() {
-                let kind = if let Some(reference) = dynamic_component_reference(element) {
+                let kind = if let Some(reference_type) = dynamic_component_reference(element) {
                     RegisteredRefKind::Component {
-                        reference,
+                        reference_type,
                         start: element.loc.span.start,
                     }
                 } else {
@@ -275,7 +279,7 @@ fn collect_element(
                             element.tag,
                         )
                         .map(|reference| RegisteredRefKind::Component {
-                            reference,
+                            reference_type: vize_carton::cstr!("typeof {reference}"),
                             start: element.loc.span.start,
                         })
                         .unwrap_or_else(|| RegisteredRefKind::Element {
@@ -283,11 +287,14 @@ fn collect_element(
                             is_svg: matches!(element.ns, Namespace::Svg),
                         }),
                         ElementType::Component => RegisteredRefKind::Component {
-                            reference: component_binding_reference(
-                                summary,
-                                options,
-                                syntactic_type_only_imported_names,
-                                element.tag,
+                            reference_type: vize_carton::cstr!(
+                                "typeof {}",
+                                component_binding_reference(
+                                    summary,
+                                    options,
+                                    syntactic_type_only_imported_names,
+                                    element.tag,
+                                )
                             ),
                             start: element.loc.span.start,
                         },
@@ -337,10 +344,23 @@ fn dynamic_component_reference(element: &ElementNode<'_>) -> Option<String> {
         return None;
     };
     let reference = expression.content.trim();
-    reference
-        .split('.')
-        .all(is_ascii_identifier)
-        .then(|| String::from(reference))
+    let mut segments = reference.split('.');
+    let first = segments.next()?;
+    if !is_ascii_identifier(first) {
+        return None;
+    }
+    let rest = segments.collect::<Vec<_>>();
+    if !rest.iter().all(|segment| is_ascii_identifier(segment)) {
+        return None;
+    }
+    if rest.is_empty() {
+        return Some(vize_carton::cstr!("typeof {first}"));
+    }
+    let mut reference_type = vize_carton::cstr!("import('vue').UnwrapRef<typeof {first}>");
+    for segment in rest {
+        append!(reference_type, "[\"{segment}\"]");
+    }
+    Some(reference_type)
 }
 
 fn is_ascii_identifier(segment: &str) -> bool {
