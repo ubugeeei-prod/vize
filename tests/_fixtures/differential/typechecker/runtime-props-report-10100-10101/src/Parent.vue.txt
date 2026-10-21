@@ -1,0 +1,16 @@
+<script setup lang="ts">
+import type { Settings } from './types'
+
+const props = defineProps({
+  settings: {
+    type: Object as () => Settings,
+    default: () => ({ country: true, platform: true }),
+  },
+})
+
+const needsSettings = (settings: Settings) => settings.country
+</script>
+
+<template>
+  <span>{{ needsSettings(props.settings) }}</span>
+</template>

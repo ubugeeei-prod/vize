@@ -302,6 +302,43 @@ mod tests {
     }
 
     #[test]
+    fn slot_outlet_payloads_get_bindings_before_the_checked_call() {
+        let source = "  __vizeSlotOutlet((undefined as unknown as __VizeSlots)[\"default\"])(\n  {\n    \"items\": getItems(),\n    \"attrs\": { id: 'x' },\n  });\n";
+        let call = "getItems()";
+        let object = "{ id: 'x' }";
+        let call_at = source.find(call).expect("call");
+        let object_at = source.find(object).expect("object");
+        let call_authored = 10..10 + call.len();
+        let object_authored = 30..30 + object.len();
+        let mut document = TypeAwareDocument {
+            content: VizeString::from(source),
+            mapping: ProjectionMapping::from_spans(vec![
+                VizeMapping::new(call_at..call_at + call.len(), call_authored.clone()),
+                VizeMapping::new(object_at..object_at + object.len(), object_authored.clone()),
+            ]),
+        };
+
+        bind_template_expressions(&mut document);
+
+        assert_eq!(
+            document.content.as_str(),
+            "  const __expr_0 = (getItems());\n  const __expr_1 = ({ id: 'x' });\n  __vizeSlotOutlet((undefined as unknown as __VizeSlots)[\"default\"])(\n  {\n    \"items\": getItems(),\n    \"attrs\": { id: 'x' },\n  });\n"
+        );
+        let call_probe =
+            super::mapped::inferred_binding_offset(&document, &call_authored).expect("call probe");
+        let object_probe = super::mapped::inferred_binding_offset(&document, &object_authored)
+            .expect("object probe");
+        assert_eq!(
+            &document.content[call_probe as usize..call_probe as usize + 1],
+            "0"
+        );
+        assert_eq!(
+            &document.content[object_probe as usize..object_probe as usize + 1],
+            "1"
+        );
+    }
+
+    #[test]
     fn an_options_prop_binding_uses_the_runtime_shape() {
         let source = "  void (isOpened); // VBind\n  void (type); // VBind\n  const __vize_options_props = ({\n    isOpened: { type: Boolean, required: true },\n  } as const);\n";
         let expr_at = source.find("isOpened").expect("expr");

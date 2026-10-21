@@ -263,3 +263,51 @@ const show = true as boolean;
         result.diagnostics
     );
 }
+
+#[test]
+fn slot_outlet_calls_and_object_literals_use_their_inferred_types() {
+    if !runtime_available() {
+        return;
+    }
+    let linter = Linter::new().with_rule(Box::new(NoUnsafeTemplateBinding::new()));
+    let source = r#"<script setup lang="ts">
+defineSlots<{
+  default?(props: { items: string[]; attrs: Record<string, string>; unsafe: unknown }): unknown;
+}>();
+
+const getItems = (): string[] => ["a", "b"];
+const unsafeValue: any = "unsafe";
+</script>
+
+<template>
+  <div :class="getItems()" :data-x="{ id: 'x' }.id" />
+  <slot :items="getItems()" :attrs="{ id: 'x' }" :unsafe="unsafeValue" />
+</template>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "SlotOutletBindings.vue");
+    let actual: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| {
+            diagnostic.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING
+                || diagnostic.rule_name == "type/corsa-runtime"
+        })
+        .map(|diagnostic| {
+            (
+                diagnostic.rule_name,
+                diagnostic.start,
+                diagnostic.end,
+                diagnostic.message.as_str(),
+            )
+        })
+        .collect();
+    let start = source.rfind("unsafeValue").expect("unsafe binding") as u32;
+    assert_eq!(
+        actual,
+        vec![(
+            RULE_NO_UNSAFE_TEMPLATE_BINDING,
+            start,
+            start + "unsafeValue".len() as u32,
+            "Template binding resolves to an unsafe `any` or `unknown` type"
+        )]
+    );
+}
