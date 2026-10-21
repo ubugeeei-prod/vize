@@ -55,7 +55,8 @@ fn content_mapper_musea_art_project_preserves_bound_component_diagnostics() {
                 concat!(
                     "6:28:error Argument of type '{ elevated: true; }' is not assignable to parameter of type ",
                     "'__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { [x: string]: unknown; } & ",
-                    "{ [x: `data${string}`]: unknown; } & Record<string, unknown>>'.\n",
+                    "{ [x: `data${Capitalize<string>}`]: unknown; [x: `data-${string}`]: unknown; } & ",
+                    "Record<string, unknown>>'.\n",
                     "Property 'title' is missing in type '{ elevated: true; }' but required in type ",
                     "'{ readonly title: string; readonly elevated?: boolean | undefined; }'.",
                 )
