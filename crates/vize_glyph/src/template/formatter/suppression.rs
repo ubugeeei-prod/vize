@@ -312,6 +312,7 @@ fn contains_any(haystack: &[u8], needles: &[&[u8]]) -> bool {
 }
 
 /// Count LF, CRLF or lone-CR boundaries in an all-whitespace source gap.
+#[inline(always)]
 fn whitespace_gap_line_breaks(gap: &[u8]) -> Option<u8> {
     let mut line_breaks = 0_u8;
     let mut index = 0;
