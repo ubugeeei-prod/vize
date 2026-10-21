@@ -8,8 +8,10 @@ import {
   loadLinterManifest,
   LINTER_OBSERVER,
   runLinterApiPack,
+  summarizeLinterAcceptance,
 } from "../differential/linter-api.ts";
 import { expectedNativeReason } from "../differential/linter-native.ts";
+import { renderNativeAcceptanceMarkdown } from "../differential/acceptance-rates.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -54,6 +56,22 @@ void test("shared linter corpus retains all 59 complete actual public observatio
     path.join(root, "tests/_fixtures/differential/linter/manifest.json"),
     root,
   );
+  const acceptance = summarizeLinterAcceptance(loaded, report, built.receipt);
+  const acceptanceArtifact = path.join(evidenceDir, "acceptance.json");
+  const markdown = renderNativeAcceptanceMarkdown([acceptance]);
+  fs.writeFileSync(acceptanceArtifact, `${JSON.stringify(acceptance, null, 2)}\n`);
+  t.diagnostic(markdown);
+  t.diagnostic(`Native acceptance: ${acceptanceArtifact}`);
+  if (process.env.GITHUB_STEP_SUMMARY)
+    fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${markdown}\n`);
+  assert.deepEqual(acceptance.total, {
+    planned: 59,
+    nativeHandled: 10,
+    nativeEquivalent: 10,
+    unsupported: 49,
+    legacyBacked: 0,
+    unverified: 0,
+  });
   const handled = report.rows.filter((row: any) => row.native.state === "completed");
   assert.deepEqual(
     handled.map((row: any) => row.id).sort(),
