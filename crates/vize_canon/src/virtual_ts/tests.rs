@@ -1624,6 +1624,36 @@ const msg = ref('Hello')
 }
 
 #[test]
+fn incomplete_dynamic_slot_name_is_repaired_at_every_generated_use() {
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    let script = r#"declare const Comp: (props: {}, context: { slots: { item(props: { total: number }): void } }) => {};
+const names = { current: 'item' as const };"#;
+    let template = r#"<Comp><template #[names.]="invoice">{{ invoice.total }}</template></Comp>"#;
+    let allocator = vize_carton::Allocator::new();
+    let (root, errors) = vize_armature::parse(&allocator, template);
+    assert!(errors.is_empty(), "{errors:?}");
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+    assert!(
+        output.code.contains("name: (names. x)"),
+        "the slot payload lookup must remain parseable during completion:\n{}",
+        output.code
+    );
+    assert!(
+        output.code.contains("void ({ [names. x]: undefined })"),
+        "the mapped dynamic argument must use the same recovery:\n{}",
+        output.code
+    );
+    assert!(!output.code.contains("name: (names.)"), "{}", output.code);
+}
+
+#[test]
 fn test_source_mappings_target_expression_text() {
     use vize_croquis::{Analyzer, AnalyzerOptions};
 

@@ -108,6 +108,9 @@ fn slot_payload_type(
             ctx.template_binding_access,
         )
         .unwrap_or_else(|| data.name.clone());
+        let isolated_name =
+            crate::virtual_ts::expressions::isolate_incomplete_expression(name.as_str());
+        let name = isolated_name.as_str();
         append!(
             *ts,
             "{}const {name_binding} = {{ name: ({name}) }} as const;\n",
