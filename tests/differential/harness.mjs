@@ -89,7 +89,9 @@ export function normalizeDialectCoverage(value, context) {
 }
 
 export function classifyDialectCoverage(coverage) {
-  const dialects = [...new Set(coverage.evidence.flatMap((item) => item.dialects))].sort();
+  const dialects = [...new Set(coverage.evidence.flatMap((item) => item.dialects))].sort((a, b) =>
+    a.localeCompare(b),
+  );
   return {
     state: coverage.state,
     dialects,

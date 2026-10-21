@@ -21,7 +21,7 @@ function load(product) {
   );
 }
 
-test("every product manifest contributes to the case-level dialect denominator", () => {
+void test("every product manifest contributes to the case-level dialect denominator", () => {
   const summaries = Object.fromEntries(
     products.map((product) => [product, summarizeDialectCoverage(load(product).cases)]),
   );
@@ -50,7 +50,7 @@ test("every product manifest contributes to the case-level dialect denominator",
   assert.deepEqual(summaries.compiler.verified, {});
 });
 
-test("coverage schema rejects malformed and noncanonical verified claims", () => {
+void test("coverage schema rejects malformed and noncanonical verified claims", () => {
   const valid = {
     state: "source-inspected",
     registryRef: null,
@@ -88,7 +88,7 @@ test("coverage schema rejects malformed and noncanonical verified claims", () =>
   normalizeDialectCoverage(verified, "fixture");
 });
 
-test("missing case coverage becomes explicit unknown without changing manifest bytes", () => {
+void test("missing case coverage becomes explicit unknown without changing manifest bytes", () => {
   const source = load("lsp");
   assert(source.cases.every((fixture) => fixture.dialectCoverage.state === "unknown"));
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-dialect-ledger-"));
