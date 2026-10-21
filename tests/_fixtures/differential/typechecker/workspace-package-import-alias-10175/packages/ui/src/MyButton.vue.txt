@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import { label } from "@demo/core";
+</script>
+
+<template>
+  <button type="button">{{ label }}</button>
+</template>

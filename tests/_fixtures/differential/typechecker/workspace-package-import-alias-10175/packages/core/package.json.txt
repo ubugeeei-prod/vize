@@ -1,0 +1,7 @@
+{
+  "name": "@demo/core",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "dependencies": { "vue": "3.5.38" }
+}

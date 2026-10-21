@@ -4155,6 +4155,98 @@
           }
         ]
       }
+    },
+    {
+      "id": "typechecker/workspace-package-import-alias-10175/package-import-and-workspace-package",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "workspace-package-import-alias-10175",
+      "case": "package-import-and-workspace-package",
+      "test": "workspace_package_import_aliases_preserve_clean_diagnostics",
+      "regressionCommit": "c935e00211b3d6ca271e53658f88156921a639a7",
+      "sourceRevision": "c935e00211b3d6ca271e53658f88156921a639a7",
+      "packReference": {
+        "path": "workspace-package-import-alias-10175/cases.json",
+        "sha256": "140785d828e3320ac485d961fb0c4cd52ce66ff31d95a2ecd37547bef6404a41"
+      },
+      "inputs": [
+        {
+          "file": "package.json",
+          "path": "workspace-package-import-alias-10175/package.json.txt",
+          "sha256": "30abbd58b74263867d682851c26bb0ac52b873ddf0604ad409c00cb7b9f48c44"
+        },
+        {
+          "file": "pnpm-workspace.yaml",
+          "path": "workspace-package-import-alias-10175/pnpm-workspace.yaml.txt",
+          "sha256": "0fb360452b0231d114d0b0ad6cc76bb48fe528382f55827cf93739bf64ec79e1"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "workspace-package-import-alias-10175/tsconfig.json.txt",
+          "sha256": "95b6e0fdde1601c7b2d10008b25a1d10acc51b2674e089433ab29caedc140a08"
+        },
+        {
+          "file": "types/app.d.ts",
+          "path": "workspace-package-import-alias-10175/types/app.d.ts.txt",
+          "sha256": "91ea1fab047ca7a168962c751d939101c851d5a24a20d85fbb3795a5d894e4c0"
+        },
+        {
+          "file": "src/main.ts",
+          "path": "workspace-package-import-alias-10175/src/main.ts.txt",
+          "sha256": "887fb7f9681fcf81d275ae48ce63e0738568e5ff794c68778b106f0843577198"
+        },
+        {
+          "file": "packages/ui/package.json",
+          "path": "workspace-package-import-alias-10175/packages/ui/package.json.txt",
+          "sha256": "b9f5a3b22d499731bfd277a918909abeee2b74c965323b30269793951c36b3be"
+        },
+        {
+          "file": "packages/ui/src/index.ts",
+          "path": "workspace-package-import-alias-10175/packages/ui/src/index.ts.txt",
+          "sha256": "6506eaff36228a4106cc855214caee683a0b365a9c01533fe5cd33bca9f6c359"
+        },
+        {
+          "file": "packages/ui/src/MyButton.vue",
+          "path": "workspace-package-import-alias-10175/packages/ui/src/MyButton.vue.txt",
+          "sha256": "25f66df9c794c3056d25b6ba22df10fbd5899e1e992a8dbd0633534719ef821d"
+        },
+        {
+          "file": "packages/core/package.json",
+          "path": "workspace-package-import-alias-10175/packages/core/package.json.txt",
+          "sha256": "e8295241e9186b0d1e8de8b8f5afdac2c0db0a5852346b844c3abcaf66e2ba27"
+        },
+        {
+          "file": "packages/core/src/index.ts",
+          "path": "workspace-package-import-alias-10175/packages/core/src/index.ts.txt",
+          "sha256": "938ec8fe681f161fe485f504ac271b587ecbd2b79d7dc45f3ba9909391e3aa58"
+        },
+        {
+          "file": "packages/core/src/MyIcon.vue",
+          "path": "workspace-package-import-alias-10175/packages/core/src/MyIcon.vue.txt",
+          "sha256": "d989af6921d440bbcad191b29f3d27eee298021270a906a17296dc9c4d8cd4e1"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }

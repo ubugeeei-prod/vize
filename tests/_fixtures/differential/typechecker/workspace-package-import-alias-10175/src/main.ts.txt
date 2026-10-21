@@ -1,0 +1,4 @@
+import { appName } from "#app";
+import { MyButton } from "@demo/ui";
+
+export const entries = [appName, MyButton];

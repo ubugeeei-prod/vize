@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10175,
+  "regressionCommit": "c935e00211b3d6ca271e53658f88156921a639a7",
+  "sourceRevision": "c935e00211b3d6ca271e53658f88156921a639a7",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "package-import-and-workspace-package",
+      "inputs": [
+        { "file": "package.json", "source": "package.json.txt" },
+        { "file": "pnpm-workspace.yaml", "source": "pnpm-workspace.yaml.txt" },
+        { "file": "tsconfig.json", "source": "tsconfig.json.txt" },
+        { "file": "types/app.d.ts", "source": "types/app.d.ts.txt" },
+        { "file": "src/main.ts", "source": "src/main.ts.txt" },
+        {
+          "file": "packages/ui/package.json",
+          "source": "packages/ui/package.json.txt"
+        },
+        {
+          "file": "packages/ui/src/index.ts",
+          "source": "packages/ui/src/index.ts.txt"
+        },
+        {
+          "file": "packages/ui/src/MyButton.vue",
+          "source": "packages/ui/src/MyButton.vue.txt"
+        },
+        {
+          "file": "packages/core/package.json",
+          "source": "packages/core/package.json.txt"
+        },
+        {
+          "file": "packages/core/src/index.ts",
+          "source": "packages/core/src/index.ts.txt"
+        },
+        {
+          "file": "packages/core/src/MyIcon.vue",
+          "source": "packages/core/src/MyIcon.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

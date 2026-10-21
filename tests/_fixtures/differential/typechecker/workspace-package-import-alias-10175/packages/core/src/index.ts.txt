@@ -1,0 +1,2 @@
+export const label: string = "core";
+export { default as MyIcon } from "./MyIcon.vue";

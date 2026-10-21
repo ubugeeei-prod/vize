@@ -114,7 +114,11 @@ fn package_import_and_workspace_dependency_share_terminal_alias_targets() {
     .unwrap();
 
     let project = load_entry(&root, &entry);
-    assert!(project.find_by_original(&root.join("types/app.d.ts")).is_some());
+    assert!(
+        project
+            .find_by_original(&root.join("types/app.d.ts"))
+            .is_some()
+    );
     assert!(
         project
             .find_by_original(&root.join("packages/c/src/Btn.vue"))

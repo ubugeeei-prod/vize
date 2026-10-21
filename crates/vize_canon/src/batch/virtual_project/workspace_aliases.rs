@@ -136,10 +136,7 @@ impl VirtualProject {
                 if targets.len() != 1 {
                     return None;
                 }
-                targets
-                    .into_iter()
-                    .next()
-                    .map(|target| (alias, target))
+                targets.into_iter().next().map(|target| (alias, target))
             })
             .collect::<FxHashMap<_, _>>();
         unique_targets
@@ -150,13 +147,10 @@ impl VirtualProject {
                 // A package-private shadow can reuse a visible workspace alias.
                 // Rebase through every such link so the final filesystem link
                 // points at owned shadow bytes instead of another symlink.
-                loop {
-                    let Some((bridge, target)) = real_dir
-                        .ancestors()
-                        .find_map(|candidate| unique_targets.get_key_value(candidate))
-                    else {
-                        break;
-                    };
+                while let Some((bridge, target)) = real_dir
+                    .ancestors()
+                    .find_map(|candidate| unique_targets.get_key_value(candidate))
+                {
                     if !visited.insert(bridge.clone()) {
                         return None;
                     }

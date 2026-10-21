@@ -282,6 +282,17 @@ fn workspace_package_alias_cache_preserves_sequential_scopes() {
 }
 
 #[test]
+fn workspace_package_import_aliases_preserve_clean_diagnostics() {
+    check_pack(
+        "workspace-package-import-alias-10175",
+        "workspace_package_import_aliases_preserve_clean_diagnostics",
+        "c935e00211b3d6ca271e53658f88156921a639a7",
+        Some(10175),
+        &["package-import-and-workspace-package"],
+    );
+}
+
+#[test]
 fn nuxt_unknown_template_options_preserve_explicit_checks() {
     check_pack(
         "nuxt-unknown-template-options-10013",
@@ -637,6 +648,7 @@ fn check_pack(
             | "native-pointer-events-original"
             | "cache-maintenance-9860"
             | "workspace-alias-cache-10063"
+            | "workspace-package-import-alias-10175"
             | "nuxt-unknown-template-options-10013"
             | "reactive-props-destructure-10008"
             | "generic-fallthrough-spread-9956"
@@ -772,6 +784,21 @@ fn check_pack(
                 // result; the complete contract is compared again below.
                 assert!(check("tsconfig.b.json").diagnostics.is_empty());
                 assert!(check("tsconfig.a.json").diagnostics.is_empty());
+            }
+        }
+        if name == "workspace-package-import-alias-10175" {
+            for (source, destination) in [
+                ("packages/ui", "node_modules/@demo/ui"),
+                ("packages/core", "packages/ui/node_modules/@demo/core"),
+            ] {
+                let destination = project_root.join(destination);
+                std::fs::create_dir_all(
+                    destination
+                        .parent()
+                        .expect("a workspace link must have a parent"),
+                )
+                .expect("workspace link parents must be created");
+                link_vue(&project_root.join(source), &destination);
             }
         }
         let options = BatchTypeCheckerOptions {

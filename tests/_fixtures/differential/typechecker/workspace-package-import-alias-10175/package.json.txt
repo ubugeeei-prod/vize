@@ -1,0 +1,7 @@
+{
+  "name": "root",
+  "private": true,
+  "type": "module",
+  "imports": { "#app": "./types/app.d.ts" },
+  "dependencies": { "vue": "3.5.38", "@demo/ui": "workspace:*" }
+}
