@@ -30,6 +30,7 @@ impl ServerState {
         *settings = (config, timeout_ms, project);
     }
 
+    #[cfg(feature = "native")]
     pub(in crate::server::state) fn retarget_type_checker_project(&self, root: &std::path::Path) {
         let mut settings = self.type_checker_config.write();
         let source = settings.2.config_source().map(std::path::Path::to_path_buf);
