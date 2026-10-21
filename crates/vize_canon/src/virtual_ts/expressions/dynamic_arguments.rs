@@ -133,7 +133,7 @@ mod tests {
                 scope_id: ScopeId::ROOT,
                 vif_guard: None,
             };
-            let mut generated = String::new();
+            let mut generated = String::new("");
             let mut mappings = Vec::new();
 
             generate(

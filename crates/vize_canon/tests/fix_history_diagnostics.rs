@@ -449,6 +449,17 @@ fn native_fixture_runtime_disabled() -> bool {
     std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some()
 }
 
+#[test]
+fn dynamic_directive_expressions_preserve_typed_slot_payloads() {
+    check_pack(
+        "dynamic-directive-expression-mapping-10182",
+        "dynamic_directive_expressions_preserve_typed_slot_payloads",
+        "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
+        None,
+        &["dynamic-slot-and-prop"],
+    );
+}
+
 fn check_pack(
     name: &str,
     test: &str,
@@ -503,7 +514,8 @@ fn check_pack(
             | "art-variant-implicit-component-9854"
             | "runtime-props-report-10100-10101"
             | "component-render-h-props-9855"
-            | "component-listener-alias-scope-10112" => regression,
+            | "component-listener-alias-scope-10112"
+            | "dynamic-directive-expression-mapping-10182" => regression,
             _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
         }
     );

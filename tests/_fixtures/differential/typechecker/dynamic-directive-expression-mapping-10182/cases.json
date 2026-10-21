@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": null,
+  "regressionCommit": "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
+  "sourceRevision": "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "dynamic-slot-and-prop",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "App.vue",
+          "source": "App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}
