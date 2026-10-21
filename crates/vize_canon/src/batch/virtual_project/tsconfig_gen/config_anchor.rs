@@ -33,8 +33,8 @@ impl VirtualProject {
 
     /// Where the CLI run for `config_path` keeps its `--incremental` state.
     /// Unchanged files then reuse their recorded diagnostics on the next run
-    /// instead of being checked again. Package-link topology participates in
-    /// the identity because Corsa's build info does not otherwise observe a
+    /// instead of being checked again. Package topology participates in the
+    /// identity because Corsa's build info does not otherwise observe a
     /// symlink retarget whose resolved source bytes are unchanged.
     pub(crate) fn cli_build_info_path(&self, config_path: &Path) -> PathBuf {
         let relative = config_path
@@ -48,14 +48,22 @@ impl VirtualProject {
             .join("__")
             .into();
         let links = self.desired_package_links();
-        if !links.is_empty() {
+        if !links.is_empty() || !self.package_shadow_manifests.is_empty() {
             let mut links = links.into_iter().collect::<Vec<_>>();
             links.sort();
+            let mut manifests = self.package_shadow_manifests.iter().collect::<Vec<_>>();
+            manifests.sort();
             let mut digest = Sha256::new();
-            digest.update(b"vize-cli-build-info-package-links:v1\0");
+            digest.update(b"vize-cli-build-info-package-topology:v1\0");
             for (path, target) in links {
+                digest.update(b"link\0");
                 update_path_digest(&mut digest, &path);
                 update_path_digest(&mut digest, &target);
+            }
+            for (path, source) in manifests {
+                digest.update(b"manifest\0");
+                update_path_digest(&mut digest, path);
+                update_path_digest(&mut digest, source);
             }
             let fingerprint = super::super::identity::encode_digest(digest.finalize());
             if let Some(stem) = name.strip_suffix(".tsbuildinfo") {
