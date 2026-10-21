@@ -20,6 +20,13 @@ import {
 // 180 s limit left that no room, so the reference mode timed out on every PR
 // that also rebuilt the type checker. The job timeout still bounds a real hang.
 const modeDeadlineMs = 600_000;
+// The fixed pre-optimization reference predates automatic vue-router globals.
+// Freeze its complete known policy delta so every other packet remains an exact
+// behavioral comparison with the current batched implementation.
+const referenceRouterPolicyDelta = {
+  packets: 34,
+  sha256: "161206d473b644ab345ca780bb0390b64295e78013eaaaf71f48aed1879666da",
+};
 
 export function qualifyN8nHost(engine, version, output, environment, reference) {
   const inventory = verifyCorpus();
@@ -154,9 +161,21 @@ export function qualifyN8nHost(engine, version, output, environment, reference) 
         }
       }
     }
+    let observedReferencePolicyDelta;
     for (const mode of ["reference", "shared"]) {
+      const { comparable, policy } =
+        mode === "reference"
+          ? splitReferenceRouterPolicy(reports[mode].diagnostics, original)
+          : { comparable: reports[mode].diagnostics, policy: [] };
+      if (mode === "reference") {
+        observedReferencePolicyDelta = {
+          packets: policy.length,
+          sha256: sha256(JSON.stringify(policy)),
+        };
+        assert.deepEqual(observedReferencePolicyDelta, referenceRouterPolicyDelta);
+      }
       assert.deepEqual(
-        reports[mode].diagnostics,
+        comparable,
         reports.baseline.diagnostics,
         `${version}/${mode}: whole ordered host vectors`,
       );
@@ -165,10 +184,16 @@ export function qualifyN8nHost(engine, version, output, environment, reference) 
       const { start_time: candidateTime, ...candidate } = reports[mode];
       assert.equal(typeof baselineTime, "number");
       assert.equal(typeof candidateTime, "number");
-      assert.deepEqual(candidate, baseline);
+      assert.deepEqual({ ...candidate, diagnostics: comparable }, baseline);
+      const statusFor = (diagnostics) =>
+        diagnostics.some(({ severity }) => severity === "error") ? 1 : 0;
       assert.equal(
         capture.find((row) => row.mode === mode).status,
+        statusFor(reports[mode].diagnostics),
+      );
+      assert.equal(
         capture.find((row) => row.mode === "baseline").status,
+        statusFor(reports.baseline.diagnostics),
       );
     }
     const nativeVectors = fs
@@ -216,6 +241,7 @@ export function qualifyN8nHost(engine, version, output, environment, reference) 
       scriptless: 19,
       disabledFiles: inventory.disabledFiles,
       dependencyMirrors,
+      referenceRouterPolicyDelta: observedReferencePolicyDelta,
       modes: capture.map(({ mode, elapsedMs, status }) => ({ mode, elapsedMs, status })),
       vectorSha256: sha256(JSON.stringify(reports.baseline.diagnostics)),
       limits: [
@@ -235,6 +261,28 @@ export function qualifyN8nHost(engine, version, output, environment, reference) 
     save();
     fs.rmSync(original, { recursive: true, force: true });
   }
+}
+
+export function splitReferenceRouterPolicy(diagnostics, original) {
+  const comparable = [];
+  const policy = [];
+  for (const packet of diagnostics) {
+    if (packet.code === "vize(vue/require-component-registration)" && packet.labels?.length === 1) {
+      const { offset, length } = packet.labels[0].span;
+      const filename = path.resolve(original, packet.filename);
+      assert.ok(filename.startsWith(original + path.sep));
+      const component = fs
+        .readFileSync(filename)
+        .subarray(offset, offset + length)
+        .toString();
+      if (["RouterLink", "RouterView"].includes(component)) {
+        policy.push(packet);
+        continue;
+      }
+    }
+    comparable.push(packet);
+  }
+  return { comparable, policy };
 }
 
 export function mirrorPackageResolution(source, target, files, packageName) {

@@ -5,7 +5,11 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { createRequire } from "node:module";
-import { expectedHostCalls, mirrorPackageResolution } from "./n8n-host-replay.mjs";
+import {
+  expectedHostCalls,
+  mirrorPackageResolution,
+  splitReferenceRouterPolicy,
+} from "./n8n-host-replay.mjs";
 import {
   disabledFiles,
   editorPrefix,
@@ -128,4 +132,33 @@ void test("host replay preserves package resolution from the source project", (t
     createRequire(path.join(target, file)).resolve("vue-router"),
     fs.realpathSync(path.join(packageRoot, "index.js")),
   );
+});
+
+void test("reference comparison isolates only exact router component spans", (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-n8n-router-policy-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const filename = "packages/App.vue";
+  const source = Buffer.from("<template><RouterView/><Other/></template>\n");
+  fs.mkdirSync(path.dirname(path.join(root, filename)), { recursive: true });
+  fs.writeFileSync(path.join(root, filename), source);
+  const packet = (component) => ({
+    code: "vize(vue/require-component-registration)",
+    filename,
+    labels: [
+      {
+        span: {
+          offset: source.indexOf(component),
+          length: Buffer.byteLength(component),
+          line: 1,
+          column: 12,
+        },
+      },
+    ],
+  });
+  const router = packet("RouterView");
+  const other = packet("Other");
+  assert.deepEqual(splitReferenceRouterPolicy([router, other], root), {
+    comparable: [other],
+    policy: [router],
+  });
 });
