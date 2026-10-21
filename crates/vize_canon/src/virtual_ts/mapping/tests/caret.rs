@@ -2,6 +2,7 @@
 
 use super::{
     ProjectionFeatures, ProjectionMapping, ProjectionMeta, ProjectionSpanKind, VizeMapping,
+    VizeSubSpan,
 };
 
 fn two_rows() -> ProjectionMapping {
@@ -100,6 +101,36 @@ fn feature_lookups_skip_rows_that_do_not_serve_the_feature() {
     assert_eq!(
         mapping.to_authored_for(104, ProjectionFeatures::RENAME),
         Some(4)
+    );
+}
+
+#[test]
+fn completion_uses_the_exact_inner_span_including_its_cursor_end() {
+    // Production generators omit the metadata column while every row serves
+    // every feature. Completion endpoint handling must still inspect subspans.
+    let mapping = ProjectionMapping::from_spans(vec![VizeMapping {
+        // Generated `[names.` excludes the synthetic recovery suffix.
+        gen_range: 100..107,
+        // Authored `[names.]` includes the closing bracket.
+        src_range: 11..19,
+        sub_spans: vec![VizeSubSpan {
+            gen_range: 101..107,
+            src_range: 12..18,
+        }],
+    }]);
+
+    assert_eq!(
+        mapping.to_generated_for(15, ProjectionFeatures::COMPLETION),
+        Some(104)
+    );
+    assert_eq!(
+        mapping.to_generated_for(18, ProjectionFeatures::COMPLETION),
+        Some(107)
+    );
+    assert_eq!(mapping.to_generated(18), Some(106));
+    assert_eq!(
+        mapping.to_generated_for(18, ProjectionFeatures::HOVER),
+        Some(106)
     );
 }
 

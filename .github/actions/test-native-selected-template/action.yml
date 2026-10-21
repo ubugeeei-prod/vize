@@ -38,3 +38,27 @@ runs:
         path: ${{ runner.temp }}/dev-root-fragment.json
         if-no-files-found: error
         retention-days: 7
+    - name: Verify runtime-sensitive compiler patch flags
+      shell: bash
+      env:
+        VIZE_RUNTIME_PATCH_FLAGS_CAPTURE: ${{ runner.temp }}/runtime-patch-flags.json
+        VIZE_RUNTIME_PATCH_FLAGS_REQUIRE_CAPTURE: "1"
+      run: |
+        # The shared target is a build cache, not exact-head evidence. Make the
+        # compiler and this capture newer than cached fingerprints before Cargo
+        # decides whether to relink the integration test.
+        touch crates/vize_atelier_core/src/codegen/element/block.rs \
+          crates/vize_atelier_core/src/codegen/slots/detect.rs \
+          crates/vize_atelier_core/src/codegen/slots/generate.rs \
+          crates/vize_atelier_dom/tests/runtime_patch_flags.rs \
+          davinci/vize_l1_to_l2/src/emit/vnode.rs
+        cargo test -p vize_atelier_dom --profile ci --test integration runtime_patch_flags::
+        NODE_ENV=development vp node --test tests/tooling/runtime-patch-flags.test.ts
+    - name: Retain runtime patch-flag modules
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: runtime-patch-flags-${{ github.run_id }}-${{ github.sha }}
+        path: ${{ runner.temp }}/runtime-patch-flags.json
+        if-no-files-found: error
+        retention-days: 7

@@ -51,6 +51,26 @@ work and must be reviewed and freshly verified before admission.
 
 ## Verification and remaining work
 
+### Current audit (2026-10-21)
+
+At main `a5ae4d313fa333c8bc7168d5da4acf3dc2bb8ee3`, the shared registry contains
+34 packs, 61 required batch projects and 208 pinned inputs. Thirteen of the
+original 271 ledger commits are represented by 32 of those projects. Their
+ledger state is now `batch-start-actions-verified`; a tooling assertion keeps
+registered original-history commits from drifting back to an unadmitted state.
+
+The exact merge-group Check run `39601495668` succeeded at that revision. Its
+Type checker job `119227003538` executed the strict integration inventory, and
+the Rust product report `119229342559` and final test report `119230208499`
+also succeeded. This is current batch-start evidence for the registered
+slices, not whole-commit or whole-history completion.
+
+The remaining boundary is explicit: 258 original ledger commits have no
+registered regression-commit admission. All 61 current projects still declare
+their native adapter as unsupported, so native acceptance remains 0/61. End
+ranges, related information and raw backend diagnostics are also outside the
+batch-start contract. Therefore #6879 remains open.
+
 The actual production checker passed all three cases locally at this source
 revision with TypeScript 7.0.2 and Vue 3.6.0-beta.10. The test runtime was 2.50
 seconds after a 79-second cached build; these are fixture timings, not CI

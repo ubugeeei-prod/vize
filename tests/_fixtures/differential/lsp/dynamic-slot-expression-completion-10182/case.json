@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "id": "lsp/regression/dynamic-slot-expression-completion-10182",
+  "provenance": {
+    "fixCommit": "0bef28fde9221c73d2db6c37643e3ad0a2a53b8d",
+    "witnessPath": "crates/vize_maestro/src/ide/completion/dynamic_slot_argument_tests.rs",
+    "witnessTest": "computed_slot_arguments_do_not_claim_the_static_slot_completion_route; static_slot_prefix_still_claims_the_closed_slot_completion_route",
+    "inputOrigin": "exact minimal computed v-slot argument from the canon functional-slot completion contract",
+    "contractOrigin": "focused routing regressions and canon-functional-slot-contracts pin typed completion, resolve, hover, definition, and diagnostics; this row pins the authored LSP input bytes"
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "6cccc6efd605c312fef949069a50b3df9118885462ceab5e1989138e306185f0"
+    }
+  ],
+  "entry": "App.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "5c5553999489e556a70f266c5a760aaba32aeb867906de930e7fc7c1967c06c0"
+  },
+  "method": "textDocument/foldingRange",
+  "documentVersion": 1,
+  "scope": "exact computed slot input custody plus focused typed editor witnesses; no native adapter or acceptance credit"
+}

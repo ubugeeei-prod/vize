@@ -134,6 +134,13 @@ impl<'s> LineJoiner<'s> {
         self.current.is_some()
     }
 
+    #[inline]
+    pub(super) fn previous_chunk_is_interpolation(&self) -> bool {
+        self.previous_end
+            .and_then(|end| self.source.get(end.saturating_sub(2)..end))
+            == Some(b"}}")
+    }
+
     pub(super) fn hugged_closing_name(&self, start: usize, end: usize) -> Option<&[u8]> {
         super::child_width::hugged_closing_name(
             self.source,

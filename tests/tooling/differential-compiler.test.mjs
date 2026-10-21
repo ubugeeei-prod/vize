@@ -114,15 +114,16 @@ void test("compiler fixture pins a real full-module reference without native cre
       "compiler/sfc/scoped-keyframes-nesting-9829",
       "compiler/sfc/scoped-checkout-stability-10067",
       "compiler/sfc/jsx-vapor-runtime-slots-6889",
+      "compiler/sfc/root-text-patch-flag-10168",
     ],
   );
   const report = syntheticReport();
   assert.deepEqual(validateCompilerReport(loaded, report, build), report.summary);
   assert.deepEqual(summarizeNativeAcceptance(loaded, report, { sourceRevision }).total, {
-    planned: 15,
+    planned: 16,
     nativeHandled: 0,
     nativeEquivalent: 0,
-    unsupported: 15,
+    unsupported: 16,
     legacyBacked: 0,
     unverified: 0,
   });

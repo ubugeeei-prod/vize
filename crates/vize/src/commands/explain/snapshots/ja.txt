@@ -5110,7 +5110,7 @@ vue/require-component-registration · lint ルール
 ドキュメント: docs/content/rules/vue.md
 === vue/require-scoped-style
 vue/require-scoped-style · lint ルール
-styleブロックにscoped属性を必須にする
+styleブロックにscoped属性またはmodule属性を必須にする
 
 精度: exact
 対象: the SFC's top-level blocks, their order and their attributes
@@ -5143,7 +5143,7 @@ styleブロックにscoped属性を必須にする
   </style>
 
 ヒント:
-  styleブロックに'scoped'属性を追加してください
+  styleブロックにscoped属性またはmodule属性を追加してください: <style scoped> または <style module>
 === vue/require-toggle-inside-transition
 vue/require-toggle-inside-transition · lint ルール
 `<transition>`で囲む要素にトグルを必須にする

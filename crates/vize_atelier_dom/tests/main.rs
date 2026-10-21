@@ -102,6 +102,7 @@ mod nested_interactive_recovery;
 mod nested_scope_bindings;
 mod production_capture;
 mod public_experimental_options_literal;
+mod runtime_patch_flags;
 mod setup_component_unref;
 mod setup_dynamic_argument_selection;
 mod slot_outlet_hoist;

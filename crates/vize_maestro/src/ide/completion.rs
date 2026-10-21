@@ -48,6 +48,8 @@ mod css_module_tests;
 #[cfg(test)]
 mod dedup_tests;
 #[cfg(test)]
+mod dynamic_slot_argument_tests;
+#[cfg(test)]
 mod split_component_props_tests;
 #[cfg(test)]
 mod static_object_tests;
