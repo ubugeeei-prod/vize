@@ -124,7 +124,7 @@ const uiLocked = true
                 String::from("src/Parent.vue"),
                 Some(2353),
                 cstr!(
-                    "12:33:error Object literal may only specify known properties, and '\"disable\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & {{ disabled?: unknown; type?: unknown; }} & {{ [x: `data${{string}}`]: unknown; }}>'."
+                    "12:33:error Object literal may only specify known properties, and '\"disable\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & {{ disabled?: unknown; type?: unknown; }} & {{ [x: `data${{Capitalize<string>}}`]: unknown; [x: `data-${{string}}`]: unknown; }}>'."
                 ),
             ),
         ],
