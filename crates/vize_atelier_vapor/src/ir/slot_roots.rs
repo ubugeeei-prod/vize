@@ -33,9 +33,6 @@ impl RootIRNode<'_> {
 ///
 /// Stack guards sit only on nested recursion: flat forwarding slots stay cheap.
 pub(crate) fn finish_slot(mut slot: &mut IRSlot<'_>, layout: &Layout<'_>) {
-    if slot.forwarded_source().is_some() {
-        return;
-    }
     loop {
         finish_slot_root(slot, layout);
         match &mut slot.control {
@@ -158,9 +155,6 @@ fn mark_negative(mut negative: Option<&mut NegativeBranch<'_>>, layout: &Layout<
 }
 
 fn visit_slot(slot: &mut IRSlot<'_>, layout: &Layout<'_>) {
-    if slot.forwarded_source().is_some() {
-        return;
-    }
     ensure_sufficient_stack(|| {
         finish_slot_root(slot, layout);
         visit_block(&mut slot.block, layout, true);
