@@ -21,7 +21,12 @@ pub(crate) use normalize::normalize_attribute_with_vue_version;
 
 /// Determine if an attribute's value should be formatted as a JS expression.
 pub(crate) fn should_format_expression(name: &str) -> bool {
-    let Some(head) = directive_head(name) else {
+    let head = directive_head(name);
+    should_format_expression_with_head(name, head.as_ref())
+}
+
+pub(crate) fn should_format_expression_with_head(name: &str, head: Option<&DirectiveName>) -> bool {
+    let Some(head) = head else {
         return false;
     };
     match head.prefix {
@@ -53,11 +58,14 @@ pub(crate) fn directive_head(name: &str) -> Option<DirectiveName> {
     VueDirectives.decompose(name, 0).ok().flatten()
 }
 
-pub(crate) fn directive_name(name: &str, head: DirectiveName) -> Option<&str> {
+pub(crate) fn directive_name<'a>(name: &'a str, head: &DirectiveName) -> Option<&'a str> {
     span_text(name, head.name)
 }
 
-pub(crate) fn static_directive_argument(name: &str, head: DirectiveName) -> Option<&str> {
+pub(crate) fn static_directive_argument<'a>(
+    name: &'a str,
+    head: &DirectiveName,
+) -> Option<&'a str> {
     match head.arg {
         Some(ArgSyntax::Static(span)) => span_text(name, span),
         Some(ArgSyntax::Dynamic(_)) | None => None,

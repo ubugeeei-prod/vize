@@ -5,10 +5,10 @@ use crate::{
 use unicode_width::UnicodeWidthStr;
 use vize_l0::String;
 
-use super::directives::{
-    directive_head, directive_name, should_format_expression, static_directive_argument,
-};
-use vize_l1::markup::DirectivePrefix;
+#[cfg(test)]
+use super::directives::directive_head;
+use super::directives::{directive_name, should_format_expression, static_directive_argument};
+use vize_l1::markup::{DirectiveName, DirectivePrefix};
 mod render;
 #[cfg(test)]
 use render::write_rendered_attribute;
@@ -138,7 +138,13 @@ fn attr_sort_key(name: &str, merge_bind: bool) -> (u8, String) {
 /// `ref`/`key`/`slot`/`slot-scope`; 6 `v-model`; 7 other directives
 /// `v-slot`/`#xxx`; 8 other attributes; 9 events `@xxx`/`v-on`; 10 content
 /// `v-html`/`v-text`.
+#[cfg(test)]
 pub(crate) fn attribute_priority(name: &str) -> u8 {
+    let head = directive_head(name);
+    attribute_priority_with_head(name, head.as_ref())
+}
+
+pub(crate) fn attribute_priority_with_head(name: &str, head: Option<&DirectiveName>) -> u8 {
     if name == "is" {
         return 0;
     }
@@ -148,7 +154,7 @@ pub(crate) fn attribute_priority(name: &str) -> u8 {
     if matches!(name, "ref" | "key" | "slot" | "slot-scope") {
         return 5;
     }
-    let Some(head) = directive_head(name) else {
+    let Some(head) = head else {
         return 8;
     };
     match head.prefix {

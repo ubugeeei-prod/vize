@@ -1,9 +1,9 @@
 //! Directive shorthand and sort-priority normalization.
 
-use super::super::attributes::attribute_priority;
+use super::super::attributes::attribute_priority_with_head;
 use super::{
     custom_attribute_priority, directive_head, directive_name, format_directive_value,
-    should_format_expression,
+    should_format_expression_with_head,
 };
 use crate::options::FormatOptions;
 use vize_l0::{String, ToCompactString, cstr};
@@ -17,7 +17,9 @@ pub(crate) fn normalize_attribute_with_vue_version(
     attribute_depth: usize,
 ) -> (String, Option<String>, u8, bool, bool) {
     // Normalize directive shorthands (only if enabled)
-    let normalized_name: String = directive_head(name)
+    let head = directive_head(name);
+    let normalized_name: String = head
+        .as_ref()
         .filter(|head| {
             options.normalize_directive_shorthands && head.prefix == DirectivePrefix::Full
         })
@@ -28,12 +30,17 @@ pub(crate) fn normalize_attribute_with_vue_version(
             _ => None,
         })
         .unwrap_or_else(|| name.to_compact_string());
+    let normalized_head = if normalized_name == name {
+        head
+    } else {
+        directive_head(&normalized_name)
+    };
 
     // Format JS expressions in directive values
     let mut indent_multiline_value = false;
     let mut owns_value_lines = false;
     let formatted_value = value.map(|v| {
-        if should_format_expression(&normalized_name) {
+        if should_format_expression_with_head(&normalized_name, normalized_head.as_ref()) {
             let (formatted, should_indent, owns_lines) =
                 format_directive_value(&normalized_name, &v, options, vue_version, attribute_depth);
             indent_multiline_value = should_indent;
@@ -47,7 +54,7 @@ pub(crate) fn normalize_attribute_with_vue_version(
     let priority = if let Some(ref groups) = options.attribute_groups {
         custom_attribute_priority(&normalized_name, groups)
     } else {
-        attribute_priority(&normalized_name)
+        attribute_priority_with_head(&normalized_name, normalized_head.as_ref())
     };
 
     (
