@@ -105,15 +105,18 @@ async function loadResolvedStyleModule(plugin: Plugin, id: string): Promise<stri
   assert.equal(imports.length, 1, `${id} must import its style module exactly once`);
   const styleId = imports[0][1];
   const [stylePath, query] = styleId.split("?", 2);
-  assert.equal(stylePath, `${id}.__vize_style_0.css`);
+  const params = new URLSearchParams(query);
+  const styleSource = params.get("vize-file");
+  assert.ok(styleSource, "the style import must retain its authored source identity");
+  assert.equal(stylePath, `${styleSource}.__vize_style_0.css`);
   assert.deepEqual(
-    [...new URLSearchParams(query)],
+    [...params],
     [
       ["vue", ""],
       ["type", "style"],
       ["index", "0"],
       ["lang", "css"],
-      ["vize-file", id],
+      ["vize-file", styleSource],
     ],
   );
   assert.match(styleId, /\.css\?[^.]+$/);
@@ -147,6 +150,11 @@ async function probeProductionCssImport(): Promise<void> {
   const prodPlugin = await bootPlugin(root, { isProduction: true });
   const prodCode = await loadResolvedVueModule(prodPlugin, id);
   assert.doesNotMatch(prodCode, /__vize_css__/);
+  assert.match(
+    prodCode,
+    /import "\/Comp\.vue\.__vize_style_0\.css\?vue=&type=style&index=0&lang=css&vize-file=%2FComp%2Evue";/,
+  );
+  assert.doesNotMatch(prodCode, new RegExp(root.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   assert.match(await loadResolvedStyleModule(prodPlugin, id), /\.probe\{color:red\}/);
 }
 

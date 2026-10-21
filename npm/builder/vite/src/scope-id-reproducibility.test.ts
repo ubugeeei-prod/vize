@@ -18,6 +18,7 @@ interface BuiltAsset {
   fileName: string;
   sha256: string;
   scopeIds: string[];
+  body: string;
 }
 
 function digest(body: string): string {
@@ -59,6 +60,7 @@ async function buildCheckout(root: string): Promise<BuiltAsset[]> {
           fileName: item.fileName,
           sha256: digest(body),
           scopeIds: [...new Set(body.match(/data-v-[0-9a-f]{8}/gu) ?? [])],
+          body,
         },
       ];
     })
