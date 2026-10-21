@@ -21,6 +21,10 @@ interface OxlintConfig {
   jsPlugins?: string[];
 }
 
+interface Tsconfig {
+  include?: string[];
+}
+
 const readJson = <T>(file: string): T => JSON.parse(fs.readFileSync(file, "utf-8")) as T;
 
 const exampleConfigNames = (): string[] =>
@@ -75,14 +79,14 @@ test("oxlint example README documents the plugin path its configs actually use",
 
 test("oxlint example ships a package check that does not depend on lint's exit code", () => {
   const manifest = readJson<Manifest>(path.join(exampleDir, "package.json"));
-  assert.equal(manifest.scripts?.check, "vp exec node ./check-configs.mjs");
+  assert.equal(manifest.scripts?.check, "vp exec node ./check-configs.ts");
 
   // The aggregate CI package check used to skip this example on the grounds that
   // its `lint` script intentionally exits non-zero. The aggregate runs `check`,
   // never `lint`, so the exemption only hid real breakage.
   assert.equal(checkedPackagesViaVpRun.includes("./examples/oxlint-vize"), true);
 
-  const result = spawnSync(process.execPath, ["./check-configs.mjs"], {
+  const result = spawnSync(process.execPath, ["./check-configs.ts"], {
     cwd: exampleDir,
     encoding: "utf-8",
   });
@@ -104,4 +108,9 @@ test("oxlint example ships a package check that does not depend on lint's exit c
     );
   }
   assert.equal(reported.length, names.length, result.stdout);
+});
+
+test("oxlint example config check belongs to the strict tooling project", () => {
+  const toolingTsconfig = readJson<Tsconfig>(path.join(root, "tools/tsconfig.json"));
+  assert.equal(toolingTsconfig.include?.includes("../examples/oxlint-vize/check-configs.ts"), true);
 });
