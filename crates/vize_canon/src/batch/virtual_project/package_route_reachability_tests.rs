@@ -43,7 +43,7 @@ fn scans_sharing_source_facts_match_fresh_scans_and_read_each_file_once() {
     );
     let fresh = fixture.reachability_for_route(&route, budget);
     let mut sources = super::ReachabilitySources::default();
-    let mut scan = |sources: &mut super::ReachabilitySources| {
+    let scan = |sources: &mut super::ReachabilitySources| {
         package_route_reaches_vue_with_budget(
             &route,
             &[],

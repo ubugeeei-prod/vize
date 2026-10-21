@@ -12,7 +12,11 @@ use crate::facts::ErrorBoundaryRule;
 use crate::graph::{DependencyEdge, DependencyGraph};
 use crate::registry::{FileId, ModuleRegistry};
 use vize_carton::{CompactString, FxHashSet};
-use vize_croquis::facts::{Bindings, BindingsTable, CroquisFacts};
+use vize_croquis::{
+    Croquis, ScopeId, ScopeKind,
+    drawer::extract_identifiers_checked,
+    facts::{Bindings, BindingsTable, CroquisFacts},
+};
 
 /// Kind of boundary.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -187,7 +191,7 @@ fn uses_suspense(analysis: &vize_croquis::Croquis) -> bool {
 
 /// Find browser-only API usage in a component.
 fn find_browser_api_usage(
-    analysis: &vize_croquis::Croquis,
+    analysis: &Croquis,
 ) -> Vec<(CompactString, u32, &'static str, DiagnosticSource)> {
     let mut usages = Vec::new();
 
@@ -214,11 +218,17 @@ fn find_browser_api_usage(
         ("prompt", "Browser dialog"),
     ];
 
-    // Check template expressions. Match a whole identifier so `confirmDeleting`
-    // and `fetchItems` are not treated as `confirm` / `fetch`.
+    // Template expressions must resolve through their lexical reads. Text
+    // scanning mistakes static properties for globals (`place.location`) and
+    // cannot see setup/template bindings that shadow browser names.
     for expr in &analysis.template_expressions {
+        let Some(identifiers) = extract_identifiers_checked(expr.content.as_str()) else {
+            continue;
+        };
         for (api, context) in &browser_apis {
-            if contains_ident(expr.content.as_str(), api) {
+            if identifiers.iter().any(|name| name.as_str() == *api)
+                && !template_identifier_is_shadowed(analysis, expr.scope_id, api)
+            {
                 usages.push((
                     CompactString::new(*api),
                     expr.start,
@@ -245,32 +255,27 @@ fn find_browser_api_usage(
     usages
 }
 
-fn contains_ident(haystack: &str, ident: &str) -> bool {
-    let bytes = haystack.as_bytes();
-    let needle = ident.as_bytes();
-    if needle.is_empty() {
-        return false;
+fn template_identifier_is_shadowed(analysis: &Croquis, scope_id: ScopeId, name: &str) -> bool {
+    if analysis.bindings.contains(name) {
+        return true;
     }
-    let mut start = 0;
-    while start + needle.len() <= bytes.len() {
-        if bytes.get(start..start + needle.len()) == Some(needle) {
-            let before_ok = start == 0
-                || bytes
-                    .get(start - 1)
-                    .is_some_and(|byte| !is_ident_byte(*byte));
-            let after = start + needle.len();
-            let after_ok = bytes.get(after).is_none_or(|byte| !is_ident_byte(*byte));
-            if before_ok && after_ok {
-                return true;
-            }
-        }
-        start += 1;
-    }
-    false
-}
 
-fn is_ident_byte(byte: u8) -> bool {
-    byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$'
+    analysis
+        .scopes
+        .bindings_visible_from(scope_id)
+        .into_iter()
+        .find(|(candidate, _, _)| *candidate == name)
+        .is_some_and(|(_, _, kind)| {
+            !matches!(
+                kind,
+                ScopeKind::JsGlobalUniversal
+                    | ScopeKind::JsGlobalBrowser
+                    | ScopeKind::JsGlobalNode
+                    | ScopeKind::JsGlobalDeno
+                    | ScopeKind::JsGlobalBun
+                    | ScopeKind::VueGlobal
+            )
+        })
 }
 
 fn is_in_client_only_context(analysis: &vize_croquis::Croquis, offset: u32) -> bool {

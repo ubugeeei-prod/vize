@@ -3,13 +3,13 @@
 //! attribute. The rules are `complexity-metrics.md`'s; each arm below
 //! names the rule it implements.
 
+use crate::op::{BindingOp, DynamicName, IfOp, Op};
+use crate::walk::PageWalk;
 use vize_l0::ensure_sufficient_stack;
 use vize_l0::id::NodeId;
-use vize_l2::op::{BindingOp, DynamicName, IfOp, Op};
 
 use super::expr::score;
 use super::{ComplexityFacts, Contribution, DecisionKind};
-use crate::pass::walk::PageWalk;
 
 /// Visit one region whose ops stand at nesting `depth`.
 pub(super) fn visit_region(

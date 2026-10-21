@@ -28,10 +28,20 @@ fn l2_slot_outlets_match_the_shipped_dom_lane_byte_for_byte() {
 
 #[test]
 fn l2_slot_outlet_fallback_compound_text_matches_the_shipped_dom_lane() {
-    support::assert_l2_matches_shipped(&[(
-        "interpolation_with_trailing_space_before_conditional_element",
-        "<p><slot>{{ label }}\n<span v-if=\"required\" class=\"required\">*</span></slot></p>",
-    )]);
+    support::assert_l2_matches_shipped(&[
+        (
+            "interpolation_with_trailing_space_before_conditional_element",
+            "<p><slot>{{ label }}\n<span v-if=\"required\" class=\"required\">*</span></slot></p>",
+        ),
+        (
+            "static_and_interpolation_fallback_run",
+            "<slot>Maximum of {{ max }} options selected.</slot>",
+        ),
+        (
+            "interpolation_and_static_fallback_run",
+            "<slot>{{ percent }}% </slot>",
+        ),
+    ]);
 }
 
 const PATCH_SITE_CASES: &[Case] = &[

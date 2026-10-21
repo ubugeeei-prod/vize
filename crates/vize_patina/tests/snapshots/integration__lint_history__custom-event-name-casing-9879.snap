@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "custom-event-name-casing-9879",
+    history: "04541e20047f0cc3bf30bb219e127d59fe8ad44b",
+    source: "const emit = defineEmits([\"update:modelValue\"])\nemit(\"update:modelValue\", value)",
+    filename: "History.ts",
+    entry: "script",
+    rule: "script/custom-event-name-casing",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.ts",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.ts",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

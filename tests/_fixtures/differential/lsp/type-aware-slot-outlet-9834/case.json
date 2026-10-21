@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "id": "lsp/regression/type-aware-slot-outlet-9834",
+  "provenance": {
+    "fixCommit": "29f4cd8b35496d766efe179572d9289abb7bde98",
+    "witnessPath": "crates/vize_patina/src/linter/native_type_aware/unsafe_template_tests.rs",
+    "witnessTest": "slot_outlet_calls_and_object_literals_use_their_inferred_types",
+    "inputOrigin": "single-line form of the issue 9834 minimal reproduction",
+    "contractOrigin": "the focused Corsa regression owns lint acceptance; this row pins the same LSP input surface"
+  },
+  "input": {
+    "source": "MyList.vue.txt",
+    "runtimePath": "MyList.vue",
+    "sha256": "132514fe6d3a21c644af055aa8320102ca9b701cdf72aabf0163ed1de5c9b2fc"
+  },
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "38e0b9de817f645c4bec37c0d4a3e58baecccb040f5718dc069a72c7385a0bed"
+  },
+  "method": "textDocument/foldingRange",
+  "documentVersion": 1
+}

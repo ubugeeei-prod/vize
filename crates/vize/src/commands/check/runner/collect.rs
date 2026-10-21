@@ -215,7 +215,7 @@ fn is_ignored(path: &Path, ignore_set: Option<&CheckIgnoreSet>) -> bool {
     ignore_set.is_some_and(|ignore_set| ignore_set.is_ignored(path))
 }
 
-fn base_dir_from_pattern(pattern: &str) -> PathBuf {
+pub(super) fn base_dir_from_pattern(pattern: &str) -> PathBuf {
     let glob_start = pattern.find(['*', '?', '[', '{']).unwrap_or(pattern.len());
     let prefix = pattern.get(..glob_start).unwrap_or_default();
     let base = if prefix.is_empty() {

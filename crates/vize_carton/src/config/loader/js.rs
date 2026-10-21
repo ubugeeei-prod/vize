@@ -122,7 +122,9 @@ try {
 const loaded = await importConfigModuleWithDependencies(
   configPath, undefined, undefined, async (module) => {
     const exported = module.default ?? module;
-    return process.env.VIZE_EXPLICIT_VITE_CONFIG === "1"
+    return process.env.VIZE_EXPLICIT_NATIVE_CARRIER === "1"
+      ? await resolveExplicitSerializedConfigExport(exported, undefined, dirname(configPath))
+      : process.env.VIZE_EXPLICIT_VITE_CONFIG === "1"
       ? await resolveExplicitViteConfigExport(exported, undefined, dirname(configPath))
       : isViteConfigFile(configPath)
       ? await resolveViteConfigExport(exported, undefined, dirname(configPath))
@@ -163,6 +165,12 @@ evaluated = { config: config ?? {}, dependencies, watchDependencies: attemptedDe
     }
     if explicit_vite_config {
         command.env("VIZE_EXPLICIT_VITE_CONFIG", "1");
+        if config_path
+            .file_stem()
+            .is_some_and(|stem| stem == "serialized-config")
+        {
+            command.env("VIZE_EXPLICIT_NATIVE_CARRIER", "1");
+        }
     }
     let trace = std::env::var_os("VIZE_TRACE_EDITOR_PREPARATION").is_some_and(|value| value == "1");
     let started = trace.then(std::time::Instant::now);

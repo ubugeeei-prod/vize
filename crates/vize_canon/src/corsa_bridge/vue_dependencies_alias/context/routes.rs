@@ -367,7 +367,7 @@ export const DecoratorBase = Vue;
             crate::batch::virtual_project::package_resolution::PackageResolutionSettings::default();
         let mut resolver = crate::PackageRouteResolver::default();
         let aliases = Vec::new();
-        let mut discover = |resolver: &mut crate::PackageRouteResolver| {
+        let discover = |resolver: &mut crate::PackageRouteResolver| {
             let (mut routes, mut reachability) = (FxHashMap::default(), FxHashMap::default());
             let (mut bindings, mut inputs) = (Vec::new(), Vec::new());
             let mut discovery = RouteDiscovery::new(

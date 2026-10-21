@@ -76,7 +76,10 @@ async function resolveVueId(plugin: Plugin, id: string): Promise<string | null> 
     undefined as never,
     {} as never,
   );
-  return typeof resolved === "string" ? resolved : null;
+  if (typeof resolved === "string") return resolved;
+  return typeof (resolved as { id?: unknown } | null)?.id === "string"
+    ? (resolved as { id: string }).id
+    : null;
 }
 
 async function loadVueModule(plugin: Plugin, id: string): Promise<string> {

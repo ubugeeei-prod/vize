@@ -2,6 +2,8 @@
 
 use std::path::{Path, PathBuf};
 
+use crate::commands::check::path_cache::CanonicalPathCache;
+
 use super::resolve::{resolve_project_root, resolve_tsconfig_path};
 
 /// Resolve before collecting transitive imports: imports outside the package
@@ -44,4 +46,23 @@ pub(super) fn resolve_nuxt_project_root(
         return parent.to_path_buf();
     }
     tsconfig_dir
+}
+
+pub(super) fn resolve_program_nuxt_project_root(
+    cwd: &Path,
+    project_root: &Path,
+    tsconfig: Option<&Path>,
+    inputs: &[PathBuf],
+    canonical_paths: &mut CanonicalPathCache,
+) -> PathBuf {
+    let cwd = canonical_paths.canonicalize(cwd);
+    let has_cwd_input = inputs
+        .iter()
+        .any(|input| canonical_paths.canonicalize(input).starts_with(&cwd));
+    let fallback = if has_cwd_input {
+        cwd.as_path()
+    } else {
+        project_root
+    };
+    resolve_nuxt_project_root(tsconfig, &cwd, fallback)
 }

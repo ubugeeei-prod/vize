@@ -9,7 +9,7 @@ pub(crate) struct Input {
     pub(crate) source: String,
 }
 
-#[derive(Debug, Deserialize, Serialize, PartialEq)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Diagnostic {
     pub(crate) file: String,

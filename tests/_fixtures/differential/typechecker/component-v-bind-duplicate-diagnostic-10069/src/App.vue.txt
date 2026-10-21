@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import MyInput from "./MyInput.vue";
+
+const attrs = { label: "name" };
+function onBlur(): void {}
+</script>
+
+<template>
+  <MyInput :type="123" />
+  <MyInput :type="123" v-bind="attrs" />
+  <MyInput :type="123" @blur="onBlur" />
+  <MyInput :type="123" v-bind="attrs" @blur="onBlur" />
+</template>

@@ -84,6 +84,7 @@ fn maybe_ref_event_handler_matches_legacy_module() {
     let sources = [
         "<template><SelectorQuery @selector=\"updateSelector\" /></template><script setup>import { debounce } from './helper'; const updateSelector = debounce(() => {})</script>",
         "<template><SelectorQuery v-model:selector-type=\"state.selectorType\" @selector=\"updateSelector\" /></template><script setup>import { reactive } from 'vue'; import { debounce } from './helper'; const state = reactive({ selectorType: '' }); const updateSelector = debounce(() => {})</script>",
+        "<template><SelectorQuery v-model=\"state\" /></template><script setup>import { reactive } from 'vue'; const state = reactive({ selectorType: '' })</script>",
     ];
     for source in sources {
         let descriptor = parse_sfc(source, SfcParseOptions::default()).unwrap();

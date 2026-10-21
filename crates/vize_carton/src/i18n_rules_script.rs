@@ -12,9 +12,9 @@ pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
     ),
     (
         "script/custom-event-name-casing.description",
-        "Enforce camelCase for emitted custom event names",
-        "発行するカスタムイベント名に camelCase を強制する",
-        "强制触发的自定义事件名使用 camelCase",
+        "Enforce configured casing for emitted custom event names",
+        "発行するカスタムイベント名を設定した形式に統一する",
+        "强制触发的自定义事件名使用配置的格式",
     ),
     (
         "script/define-emits-declaration.description",

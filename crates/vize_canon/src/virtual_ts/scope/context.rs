@@ -144,6 +144,7 @@ pub(crate) struct VForPropsContext<'a, 'template> {
     pub(crate) preserve_event_navigation: bool,
     pub(crate) check_unknown_events: bool,
     pub(crate) strict_v_model: bool,
+    pub(crate) typed_fallthrough_values: bool,
     pub(crate) experimental_strict_slot_children: bool,
     pub(crate) explicit_generics: &'a ExplicitGenerics,
 }
@@ -200,6 +201,9 @@ pub(super) struct ComponentPropsContext<'a, 'template> {
     pub(super) legacy_vue2: bool,
     pub(super) check_unknown_props: bool,
     pub(super) check_unknown_fallthrough_props: bool,
+    /// Validate undeclared values against an inherited fallthrough surface.
+    /// This follows the same opt-in boundary as named fallthrough values.
+    pub(super) typed_fallthrough_values: bool,
     pub(super) strict_component_attrs: bool,
     pub(super) experimental_strict_slot_children: bool,
     /// Starts of the component usages that are this component's fallthrough
