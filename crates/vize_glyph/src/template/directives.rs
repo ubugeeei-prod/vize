@@ -5,9 +5,12 @@
 
 use crate::{options::FormatOptions, script};
 use vize_l0::{Allocator, SmallVec, Span, String, ToCompactString, is_simple_identifier};
-use vize_l1::embed::{
-    Embed, EmbedSource, Grammar, Lang, Shape,
-    syntax::{ForKeyword, parse_vue_for_head_once},
+use vize_l1::{
+    embed::{
+        Embed, EmbedSource, Grammar, Lang, Shape,
+        syntax::{ForKeyword, parse_vue_for_head_once},
+    },
+    markup::{ArgSyntax, DirectiveName, DirectivePrefix, DirectiveSyntax, VueDirectives},
 };
 
 use super::literal_lines::{Representation, encode_reference_data};
@@ -18,17 +21,41 @@ pub(crate) use normalize::normalize_attribute_with_vue_version;
 
 /// Determine if an attribute's value should be formatted as a JS expression.
 pub(crate) fn should_format_expression(name: &str) -> bool {
-    name.starts_with(':')
-        || name.starts_with('@')
-        || name.starts_with("v-if")
-        || name.starts_with("v-else-if")
-        || name.starts_with("v-show")
-        || name.starts_with("v-for")
-        || name.starts_with("v-model")
-        || name.starts_with("v-bind")
-        || name.starts_with("v-on")
-        || name == "v-html"
-        || name == "v-text"
+    let Some(head) = directive_head(name) else {
+        return false;
+    };
+    match head.prefix {
+        DirectivePrefix::Bind | DirectivePrefix::Prop | DirectivePrefix::On => true,
+        DirectivePrefix::Slot => false,
+        DirectivePrefix::Full => matches!(
+            directive_name(name, head),
+            Some("if" | "else-if" | "show" | "for" | "model" | "bind" | "on" | "html" | "text")
+        ),
+    }
+}
+
+/// Use the same allocation-free directive grammar as the L1 Vue parser.
+///
+/// A grammar admission error is not guessed from string prefixes. The legacy
+/// formatter keeps the authored attribute opaque instead of accidentally
+/// treating a custom directive as a built-in expression surface.
+pub(crate) fn directive_head(name: &str) -> Option<DirectiveName> {
+    VueDirectives.decompose(name, 0).ok().flatten()
+}
+
+pub(crate) fn directive_name(name: &str, head: DirectiveName) -> Option<&str> {
+    span_text(name, head.name)
+}
+
+pub(crate) fn static_directive_argument(name: &str, head: DirectiveName) -> Option<&str> {
+    match head.arg {
+        Some(ArgSyntax::Static(span)) => span_text(name, span),
+        Some(ArgSyntax::Dynamic(_)) | None => None,
+    }
+}
+
+fn span_text(source: &str, span: vize_l0::Span) -> Option<&str> {
+    source.get(span.start as usize..span.end as usize)
 }
 
 /// Format a directive value expression.

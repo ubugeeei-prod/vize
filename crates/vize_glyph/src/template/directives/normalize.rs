@@ -1,9 +1,13 @@
 //! Directive shorthand and sort-priority normalization.
 
 use super::super::attributes::attribute_priority;
-use super::{custom_attribute_priority, format_directive_value, should_format_expression};
+use super::{
+    custom_attribute_priority, directive_head, directive_name, format_directive_value,
+    should_format_expression,
+};
 use crate::options::FormatOptions;
 use vize_l0::{String, ToCompactString, cstr};
+use vize_l1::markup::DirectivePrefix;
 
 pub(crate) fn normalize_attribute_with_vue_version(
     name: &str,
@@ -13,19 +17,17 @@ pub(crate) fn normalize_attribute_with_vue_version(
     attribute_depth: usize,
 ) -> (String, Option<String>, u8, bool, bool) {
     // Normalize directive shorthands (only if enabled)
-    let normalized_name: String = if options.normalize_directive_shorthands {
-        if let Some(rest) = name.strip_prefix("v-bind:") {
-            cstr!(":{rest}")
-        } else if let Some(rest) = name.strip_prefix("v-on:") {
-            cstr!("@{rest}")
-        } else if let Some(rest) = name.strip_prefix("v-slot:") {
-            cstr!("#{rest}")
-        } else {
-            name.to_compact_string()
-        }
-    } else {
-        name.to_compact_string()
-    };
+    let normalized_name: String = directive_head(name)
+        .filter(|head| {
+            options.normalize_directive_shorthands && head.prefix == DirectivePrefix::Full
+        })
+        .and_then(|head| match directive_name(name, head)? {
+            "bind" => name.strip_prefix("v-bind:").map(|rest| cstr!(":{rest}")),
+            "on" => name.strip_prefix("v-on:").map(|rest| cstr!("@{rest}")),
+            "slot" => name.strip_prefix("v-slot:").map(|rest| cstr!("#{rest}")),
+            _ => None,
+        })
+        .unwrap_or_else(|| name.to_compact_string());
 
     // Format JS expressions in directive values
     let mut indent_multiline_value = false;

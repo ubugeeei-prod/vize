@@ -89,6 +89,33 @@ fn object_directive_modifiers_are_also_ordering_barriers() {
 }
 
 #[test]
+fn custom_directive_prefixes_remain_opaque() {
+    let source = r#"<Comp v-onboarding="a+b" v-binding="a+b" v-iffoo="a+b" v-forge="a+b" v-models="a+b" v-showcase="a+b" />"#;
+    let options = FormatOptions {
+        print_width: 200,
+        ..FormatOptions::default()
+    };
+
+    let first = format_template(source, &options).unwrap();
+    let second = format_template(&first, &options).unwrap();
+
+    assert_eq!(first.as_str(), source);
+    assert_eq!(first, second);
+}
+
+#[test]
+fn property_shorthand_value_uses_the_l1_bind_expression_role() {
+    let source = r#"<input .value="a+b" />"#;
+    let options = FormatOptions::default();
+
+    let first = format_template(source, &options).unwrap();
+    let second = format_template(&first, &options).unwrap();
+
+    assert_eq!(first.as_str(), r#"<input .value="a + b" />"#);
+    assert_eq!(first, second);
+}
+
+#[test]
 fn multiline_directive_attribute_value_is_indented_from_attribute_depth() {
     let source = r#"<span
   :class='[
