@@ -65,3 +65,10 @@ foreign namespaces, formatting/raw elements and Vue syntax remain refused.
 container's exact authored opening/closing bytes and ignored-slash flag. Native
 Rust compares the whole frame packet, including case, CRLF/NUL and attribute
 spelling; it does not infer an expected slash from a suffix of actual output.
+
+`html-grouping-body-containers.json` keeps eight complete original sources and
+whole ancestry, effective attributes, direct child nodes and authored frames
+for `address`, `blockquote`, `figure`, `figcaption`, `hgroup` and `search`.
+Native Rust and actual Chromium consume the same packets. Every admitted case
+uses explicit matching ends; the existing implied-end, table, foreign, raw,
+formatting and Vue-syntax refusals remain authoritative.
