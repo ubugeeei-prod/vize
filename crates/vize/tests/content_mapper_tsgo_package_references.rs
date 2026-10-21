@@ -66,6 +66,7 @@ fn install_packages(project_root: &Path) {
                 "contentMapper": {
                     "exec": [env!("CARGO_BIN_EXE_vize"), "content-mapper"],
                     "compilerOptions": ["noUnusedLocals"],
+                    "dynamicConfig": true,
                 },
             },
         }))

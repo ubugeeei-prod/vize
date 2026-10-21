@@ -21,6 +21,7 @@ fn install_mapper_package(project_root: &Path) {
             "typescript": { "contentMapper": {
                 "exec": [env!("CARGO_BIN_EXE_vize"), "content-mapper"],
                 "compilerOptions": ["noUnusedLocals"],
+                "dynamicConfig": true,
             } },
         }))
         .unwrap(),

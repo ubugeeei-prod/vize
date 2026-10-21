@@ -137,7 +137,8 @@ fn run_session(
             client.notify::<RawInitialized>(json!({})).unwrap();
             let contribution = json!({"contributions":[{"contributorId":"vize","extensions":[".vue"],
                 "inferredProjectContribution":{"options":{},"manifest":{"name":"vize",
-                    "exec":[env!("CARGO_BIN_EXE_vize"),"content-mapper"],"compilerOptions":["noUnusedLocals"]}}}],
+                    "exec":[env!("CARGO_BIN_EXE_vize"),"content-mapper"],"compilerOptions":["noUnusedLocals"],
+                    "dynamicConfig":true}}}],
                 "openDocuments":[{"uri":uri_text},{"uri":comp_uri}]});
             write_json(
                 retained.join("contribution.json"),
