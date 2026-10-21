@@ -4487,6 +4487,54 @@
         ]
       },
       "diagnostics": []
+    },
+    {
+      "id": "typechecker/content-mapper-define-slots-typeof-10197/setup-function",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "content-mapper-define-slots-typeof-10197",
+      "case": "setup-function",
+      "test": "content_mapper_define_slots_resolves_setup_scoped_types",
+      "regressionCommit": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
+      "sourceRevision": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
+      "packReference": {
+        "path": "content-mapper-define-slots-typeof-10197/cases.json",
+        "sha256": "eb888efcdda8ca43575333d4436b5f01efd6f9cb7d950087e9e743eabd0e2c18"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "content-mapper-define-slots-typeof-10197/tsconfig.json.txt",
+          "sha256": "bed6b6f5f33d8a7d30e8f6c3585d833486637812a78150f3a177ab2009ae5175"
+        },
+        {
+          "file": "src/MyList.vue",
+          "path": "content-mapper-define-slots-typeof-10197/src/MyList.vue.txt",
+          "sha256": "582866b7d2bbe38c61b35fabcb3953ec6a5081eb5be07d0f6a56b5f52a65bf44"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
     }
   ]
 }

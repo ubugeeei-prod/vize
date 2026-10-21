@@ -26,14 +26,29 @@ pub(super) fn emit_slots_type(
         .and_then(|m| m.type_args.as_ref());
     let is_generic = if let Some(type_args) = slots_type_args {
         let inner_type = inner_type_of(type_args);
-        let suffix = module_alias_generic_suffix(generic_injection, inner_type);
-        append!(*ts, "type __VizeSlots{suffix} = ");
-        let start = ts.len();
-        ts.push_str(inner_type);
-        let end = ts.len();
-        ts.push_str(";\n");
-        mappings.map_slot_keys(start..end, &summary.macros);
-        !suffix.is_empty()
+        if super::setup_scope::define_slots_type_requires_setup_scope(summary) {
+            let (declaration, arguments) = generic_injection
+                .map(|(declaration, names)| {
+                    (cstr!("<{declaration}>"), cstr!("<{}>", names.join(", ")))
+                })
+                .unwrap_or_default();
+            append!(
+                *ts,
+                "type __VizeSlots{declaration} = Awaited<ReturnType<typeof __setup{arguments}>>['__vize_typed_slots']"
+            );
+            mappings.emit_slot_key_witnesses(ts, &summary.macros);
+            ts.push_str(";\n");
+            generic_injection.is_some()
+        } else {
+            let suffix = module_alias_generic_suffix(generic_injection, inner_type);
+            append!(*ts, "type __VizeSlots{suffix} = ");
+            let start = ts.len();
+            ts.push_str(inner_type);
+            let end = ts.len();
+            ts.push_str(";\n");
+            mappings.map_slot_keys(start..end, &summary.macros);
+            !suffix.is_empty()
+        }
     } else if inferred_slots {
         let (declaration, arguments) = generic_injection
             .map(|(declaration, names)| (cstr!("<{declaration}>"), cstr!("<{}>", names.join(", "))))

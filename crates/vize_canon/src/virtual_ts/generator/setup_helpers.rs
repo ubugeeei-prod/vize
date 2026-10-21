@@ -47,6 +47,19 @@ pub(super) fn emit_return_artifacts(
     if preserve_authored_component && !fields.iter().any(|field| field == "__default__") {
         fields.push("__default__".into());
     }
+    if super::setup_scope::define_slots_type_requires_setup_scope(summary)
+        && let Some(type_args) = summary
+            .macros
+            .define_slots()
+            .and_then(|call| call.type_args.as_deref())
+    {
+        let inner = super::emits::inner_type_of(type_args);
+        append!(
+            *ts,
+            "\n  const __vize_typed_slots = undefined as unknown as {inner};\n"
+        );
+        fields.push("__vize_typed_slots".into());
+    }
     if let Some(expose) = summary.macros.define_expose()
         && expose.type_args.is_none()
         && let Some(runtime_args) = expose.runtime_args.as_ref()

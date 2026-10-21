@@ -45,6 +45,14 @@ pub(super) fn define_emits_type_requires_setup_scope(summary: &Croquis) -> bool 
             })
 }
 
+pub(super) fn define_slots_type_requires_setup_scope(summary: &Croquis) -> bool {
+    summary
+        .macros
+        .define_slots()
+        .and_then(|call| call.type_args.as_deref())
+        .is_some_and(|args| macro_type_requires_setup_scope(summary, args))
+}
+
 /// Imports and hoisted declarations are visible to module-level aliases.
 /// Setup values (including classes/enums in type position) and dependent local
 /// types must be evaluated inside setup. The AST query excludes property names,

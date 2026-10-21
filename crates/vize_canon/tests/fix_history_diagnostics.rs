@@ -659,6 +659,20 @@ fn content_mapper_multiline_callbacks_keep_contextual_parameters() {
     );
 }
 
+#[test]
+fn content_mapper_define_slots_resolves_setup_scoped_types() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "content-mapper-define-slots-typeof-10197",
+        "content_mapper_define_slots_resolves_setup_scoped_types",
+        "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
+        Some(10197),
+        &["setup-function"],
+    );
+}
+
 fn check_pack(
     name: &str,
     test: &str,
@@ -730,7 +744,8 @@ fn check_pack(
             | "content-mapper-dynamic-template-ref-scope-10251"
             | "content-mapper-props-binding-10196"
             | "strict-fallthrough-default-7856"
-            | "content-mapper-multiline-callback-10191" => regression,
+            | "content-mapper-multiline-callback-10191"
+            | "content-mapper-define-slots-typeof-10197" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
             }

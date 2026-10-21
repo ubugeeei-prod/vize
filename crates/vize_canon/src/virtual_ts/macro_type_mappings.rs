@@ -108,6 +108,37 @@ impl<'a> MacroTypeMappings<'a> {
         }
     }
 
+    /// Add a semantically neutral key-only intersection for a slot type whose
+    /// payload must be evaluated inside setup. The captured setup type remains
+    /// authoritative; these optional `unknown` properties only give each
+    /// authored key a module-alias declaration for editor navigation.
+    pub(crate) fn emit_slot_key_witnesses(
+        &mut self,
+        ts: &mut String,
+        declarations: &vize_croquis::macros::MacroTracker,
+    ) {
+        let keys = declarations
+            .static_slot_declarations()
+            .filter_map(|authored| {
+                self.authored_text(authored)
+                    .map(String::from)
+                    .map(|key| (authored, key))
+            })
+            .collect::<Vec<_>>();
+        if keys.is_empty() {
+            return;
+        }
+
+        ts.push_str(" & { ");
+        for (authored, key) in keys {
+            let start = ts.len();
+            ts.push_str(key.as_str());
+            self.map_exact(start..ts.len(), authored);
+            ts.push_str("?: unknown; ");
+        }
+        ts.push('}');
+    }
+
     pub(crate) fn map_model_props(
         &mut self,
         ts: &str,

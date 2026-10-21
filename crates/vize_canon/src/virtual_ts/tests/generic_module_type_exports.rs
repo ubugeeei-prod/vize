@@ -191,6 +191,65 @@ defineEmits<{ 'change': [value: Value] }>()
 }
 
 #[test]
+fn setup_value_in_slot_type_is_captured_before_module_export() {
+    let source = r#"<script setup lang="ts">
+defineSlots<{ item?(scope: ReturnType<typeof itemScope>): unknown }>();
+function itemScope(index: number) {
+  return { index, label: `#${index}` };
+}
+</script>"#;
+    let virtual_ts = generate_virtual_ts_from_sfc(source);
+
+    assert_eq!(
+        virtual_ts
+            .matches(
+                "const __vize_typed_slots = undefined as unknown as { item?(scope: ReturnType<typeof itemScope>): unknown };"
+            )
+            .count(),
+        1,
+        "the authored type must be evaluated beside its setup binding:\n{virtual_ts}"
+    );
+    assert_eq!(
+        virtual_ts
+            .matches(
+                "type __VizeSlots = Awaited<ReturnType<typeof __setup>>['__vize_typed_slots'] & { item?: unknown; };"
+            )
+            .count(),
+        1,
+        "the module alias must read the captured setup type:\n{virtual_ts}"
+    );
+    assert_eq!(
+        virtual_ts
+            .matches("type __VizeSlots = { item?(scope: ReturnType<typeof itemScope>): unknown };")
+            .count(),
+        0,
+        "a module-scope copy cannot resolve the setup-local function:\n{virtual_ts}"
+    );
+}
+
+#[test]
+fn generic_setup_value_in_slot_type_keeps_the_public_alias_generic() {
+    let source = r#"<script setup lang="ts" generic="T extends string">
+defineProps<{ value: T }>();
+defineSlots<{ item?(scope: ReturnType<typeof itemScope>): unknown }>();
+function itemScope(value: T) { return { value }; }
+</script>"#;
+    let virtual_ts = generate_virtual_ts_from_sfc(source);
+
+    for expected in [
+        "const __vize_typed_slots = undefined as unknown as { item?(scope: ReturnType<typeof itemScope>): unknown };",
+        "type __VizeSlots<T extends string = any> = Awaited<ReturnType<typeof __setup<T>>>['__vize_typed_slots'] & { item?: unknown; };",
+        "slots: __VizeSlots<T>",
+    ] {
+        assert_eq!(
+            virtual_ts.matches(expected).count(),
+            1,
+            "wrong count for {expected}:\n{virtual_ts}"
+        );
+    }
+}
+
+#[test]
 fn generic_event_alias_keeps_indirect_callable_and_model_contracts() {
     for (emits, model, expected) in [
         ("{ change: [value: Alias] }", "", "type Alias = Value\n"),
