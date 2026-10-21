@@ -18,7 +18,7 @@
     {
       "source": "template/code/App.vue.txt",
       "runtimePath": "template/code/App.vue",
-      "sha256": "a6b9b98ede93ce6a05925dab002db48152949441499a8e362befe2078de3b135"
+      "sha256": "de238d982cfda3227024dbbeffd9c9e815c7c4a4e3a15b23a23ffa166de08ca5"
     },
     {
       "source": "src/Owned.vue.txt",
@@ -28,14 +28,14 @@
     {
       "source": "tsconfig.json.txt",
       "runtimePath": "tsconfig.json",
-      "sha256": "2c9f1e78a63f68e4d7161b882e398236b2bfd21c06cb4bf0df257e3c823fd4ae"
+      "sha256": "0014b81552bc7019acaea9d211ff8022e272cbdbd29651e30f84a92489dfae91"
     }
   ],
   "entry": "template/code/App.vue",
   "expected": {
     "source": "response.expected.json",
-    "sha256": "745946f18dd11d6151f46120d48ca0d1506e503f43578c39bd5cf446cad032ca"
+    "sha256": "ddd704586adc597601b6bd62324d01c99042a3adc27e6cd754a3dd197ae496c3"
   },
-  "method": "textDocument/foldingRange",
-  "scope": "pinned single-tsconfig ownership input; the Rust witness asserts inferred compiler authority"
+  "method": "textDocument/definition",
+  "scope": "an excluded source cannot resolve the root tsconfig path alias through inferred compiler authority"
 }

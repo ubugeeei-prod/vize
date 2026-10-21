@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import Owned from "#owned"
+
 const count = 1
 </script>
 
@@ -6,5 +8,6 @@ const count = 1
   <div class="a">
     <div class="b">{{ count }}</div>
   </div>
+  <Owned />
   <div class="c" />
 </template>

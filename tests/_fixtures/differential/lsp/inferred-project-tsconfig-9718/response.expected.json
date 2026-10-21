@@ -1,18 +1,7 @@
-[
-  {
-    "startLine": 4,
-    "endLine": 8,
-    "kind": "region",
-    "collapsedText": "template"
+{
+  "position": {
+    "line": 1,
+    "character": 20
   },
-  {
-    "startLine": 0,
-    "endLine": 1,
-    "kind": "region",
-    "collapsedText": "script setup"
-  },
-  {
-    "startLine": 5,
-    "endLine": 6
-  }
-]
+  "result": null
+}

@@ -24,7 +24,16 @@
         { "file": "template/code/App.vue", "source": "template/code/App.vue.txt" },
         { "file": "tsconfig.json", "source": "tsconfig.json.txt" }
       ],
-      "diagnostics": []
+      "diagnostics": [
+        {
+          "file": "src/Owned.vue",
+          "line": 3,
+          "column": 18,
+          "severity": 1,
+          "code": 7006,
+          "message": "Parameter 'value' implicitly has an 'any' type."
+        }
+      ]
     }
   ]
 }

@@ -119,7 +119,7 @@ impl ServerState {
             }
             observations.extend(&vize_canon::ConfigurationObservations::capture(&observed));
         }
-        let selected = (!inferred || has_explicit_tsconfig).then_some(configured);
+        let selected = (!inferred).then_some(configured);
         if let Some(selected) = selected
             .as_ref()
             .filter(|selected| !selected.is_file() && has_explicit_tsconfig)

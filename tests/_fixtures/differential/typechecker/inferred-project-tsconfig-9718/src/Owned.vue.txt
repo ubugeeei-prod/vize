@@ -1,7 +1,8 @@
 <script setup lang="ts">
 const label: string = "owned"
+const display = (value) => String(value)
 </script>
 
 <template>
-  <p>{{ label }}</p>
+  <p>{{ display(label) }}</p>
 </template>

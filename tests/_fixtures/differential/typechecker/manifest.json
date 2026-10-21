@@ -1733,18 +1733,18 @@
       "sourceRevision": "f95557dadaab83dc0f7d4a7613bdb7ed4e59d323",
       "packReference": {
         "path": "inferred-project-tsconfig-9718/cases.json",
-        "sha256": "9b88cac8c8f5a225dd4f2e3ca72a0e5ffad809e4b17995fed76dcc52d2d6c870"
+        "sha256": "147b22acb45c497749203b5fd9e767e47b0db7069792445284f006a4ac70acbf"
       },
       "inputs": [
         {
           "file": "src/Owned.vue",
           "path": "inferred-project-tsconfig-9718/src/Owned.vue.txt",
-          "sha256": "bfc43c6754b2eb18471dab82dc9c14a043c5942e6f87dd86c0795ffb9b8ecdfe"
+          "sha256": "df401f321b9ca4c07dadf48c83e02f3da7d07eb2d5a5a774d4c1ab446c8fb627"
         },
         {
           "file": "template/code/App.vue",
           "path": "inferred-project-tsconfig-9718/template/code/App.vue.txt",
-          "sha256": "a6b9b98ede93ce6a05925dab002db48152949441499a8e362befe2078de3b135"
+          "sha256": "4ee23799e710983bff854b21b4885a73802ebe66db92f95ac552fc7a0ef6eb7b"
         },
         {
           "file": "tsconfig.json",

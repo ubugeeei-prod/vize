@@ -932,7 +932,7 @@
         "files": [
           {
             "path": "template/code/App.vue.txt",
-            "sha256": "a6b9b98ede93ce6a05925dab002db48152949441499a8e362befe2078de3b135"
+            "sha256": "de238d982cfda3227024dbbeffd9c9e815c7c4a4e3a15b23a23ffa166de08ca5"
           },
           {
             "path": "src/Owned.vue.txt",
@@ -940,13 +940,13 @@
           },
           {
             "path": "tsconfig.json.txt",
-            "sha256": "2c9f1e78a63f68e4d7161b882e398236b2bfd21c06cb4bf0df257e3c823fd4ae"
+            "sha256": "0014b81552bc7019acaea9d211ff8022e272cbdbd29651e30f84a92489dfae91"
           }
         ]
       },
       "case": {
         "path": "inferred-project-tsconfig-9718/case.json",
-        "sha256": "4958c3912cec65168462a519842f0a05694eafe0a358a40052f302f935147206"
+        "sha256": "6302431e94ce2ca8ca171413fc81502c3e3ddce8d1c46e3d9c4e9dcf861502b4"
       },
       "requestCount": 1,
       "initializationOptions": {

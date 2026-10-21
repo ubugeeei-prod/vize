@@ -83,6 +83,7 @@ impl ServerState {
             return None;
         }
         let source = physical_path(&uri.to_file_path().ok()?);
+        let authored_tsconfig = snapshot.config.type_checker.tsconfig.is_some();
         let root = state
             .project_contexts
             .boundary
@@ -107,6 +108,11 @@ impl ServerState {
                 .iter()
                 .any(|project| ownership.project_owns_source(project, &source, kind));
             if !owned {
+                // An authored checker path is the project's explicit authority,
+                // even when its TypeScript include set omits this source.
+                if authored_tsconfig {
+                    return None;
+                }
                 return Some(ProjectContextKey::inferred(root));
             }
             if projects.len() < 2 {
