@@ -110,6 +110,60 @@ fn assert_projection(state: &ServerState, uri: &Url, marker: &str) {
 }
 
 #[test]
+fn source_outside_a_single_tsconfig_uses_an_inferred_project() {
+    let directory = tempfile::tempdir().unwrap();
+    let root = directory.path().canonicalize().unwrap();
+    std::fs::create_dir_all(root.join("src")).unwrap();
+    std::fs::create_dir_all(root.join("template/code")).unwrap();
+    let owned_path = root.join("src/Owned.vue");
+    let outside_path = root.join("template/code/App.vue");
+    std::fs::write(&owned_path, "<template><div /></template>").unwrap();
+    std::fs::write(&outside_path, "<template><div /></template>").unwrap();
+    std::fs::write(root.join("package.json"), "{}").unwrap();
+    let tsconfig = root.join("tsconfig.json");
+    std::fs::write(
+        &tsconfig,
+        r#"{"compilerOptions":{"strict":true},"include":["src/**/*.vue"]}"#,
+    )
+    .unwrap();
+
+    let state = Arc::new(ServerState::new());
+    state.set_workspace_root(root.clone());
+    state.load_workspace_config(&root);
+    state.apply_initialize_workspace_folders(None, Some(&root));
+    let outside = Url::from_file_path(&outside_path).unwrap();
+    state.documents.open(
+        outside.clone(),
+        "<template><div /></template>".into(),
+        1,
+        "vue".into(),
+    );
+    let inferred = state.document_project_state(&outside).unwrap();
+    let key = inferred.project_contexts.key.read().clone().unwrap();
+
+    assert_eq!(key, ProjectContextKey::inferred(root.clone()));
+    assert_ne!(key, ProjectContextKey::from(root.clone()));
+    assert_eq!(inferred.get_type_checker_config().tsconfig, None);
+    let actual = inferred
+        .project_contexts
+        .compiler_configuration
+        .read()
+        .clone()
+        .unwrap();
+    let defaults = vize_canon::CompilerConfigurationSnapshot::capture_inferred_attempt(&root)
+        .outcome
+        .unwrap();
+    let configured =
+        vize_canon::CompilerConfigurationSnapshot::capture(&root, Some(&tsconfig)).unwrap();
+    assert!(actual.same_authority(&defaults));
+    assert!(!actual.same_authority(&configured));
+
+    let owned = Url::from_file_path(owned_path).unwrap();
+    assert!(state.document_reference_key(&owned, &state).is_none());
+    assert_eq!(state.cached_project_states().len(), 1);
+}
+
+#[test]
 fn same_directory_references_isolate_dialects_and_reuse_the_effective_project() {
     let fixture = ReferenceFixture::new("export default {};");
     let source = fixture.open_dirty(&fixture.legacy, "unsavedLegacy", 7);

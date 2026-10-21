@@ -4,9 +4,10 @@
 //! Other input families keep the existing parser, including all its diagnostics.
 //! A compatibility descriptor grants no native Component/File or compiler credit.
 //!
-//! The first family has one attribute-free `<template>` and default parser
-//! policy, with optional outer ASCII whitespace. Scripts, styles, custom/src/
-//! language blocks and uncertain native boundaries retain the original parser.
+//! The first family has one `<template>` and default parser policy, with
+//! optional outer ASCII whitespace and an optional canonical `lang="html"`
+//! attribute. Scripts, styles, custom/src/non-HTML language blocks and
+//! uncertain native boundaries retain the original parser.
 //! In particular `<template><div v-pre>{{</div></template>` is valid official
 //! Vue, but the native container still refuses its literal opening braces;
 //! that original source deliberately keeps the retained route here.
@@ -17,6 +18,7 @@
 //! contracts. This does not establish whole-product native-only acceptance.
 
 use std::borrow::Cow;
+use vize_carton::FxHashMap;
 
 use crate::types::{SfcDescriptor, SfcError, SfcParseOptions, SfcTemplateBlock};
 
@@ -36,20 +38,29 @@ fn with_legacy<'a>(
     options: SfcParseOptions,
     legacy: impl FnOnce(&'a str, SfcParseOptions) -> Result<SfcDescriptor<'a>, SfcError>,
 ) -> Result<SfcDescriptor<'a>, SfcError> {
-    if let Some((loc, content)) = native::try_parse(source, &options)
-        .and_then(|loc| source.get(loc.start..loc.end).map(|content| (loc, content)))
+    if let Some((projection, content)) =
+        native::try_parse(source, &options).and_then(|projection| {
+            source
+                .get(projection.loc.start..projection.loc.end)
+                .map(|content| (projection, content))
+        })
     {
         // The native owner checked these original-source coordinates. Move the
         // caller's filename exactly as the retained parser does; do not copy it.
+        let lang = projection.lang.map(Cow::Borrowed);
+        let mut attrs = FxHashMap::default();
+        if let Some(value) = projection.lang {
+            attrs.insert(Cow::Borrowed("lang"), Cow::Borrowed(value));
+        }
         return Ok(SfcDescriptor {
             filename: Cow::Owned(options.filename.into()),
             source: Cow::Borrowed(source),
             template: Some(SfcTemplateBlock {
                 content: Cow::Borrowed(content),
-                loc,
-                lang: None,
+                loc: projection.loc,
+                lang,
                 src: None,
-                attrs: Default::default(),
+                attrs,
             }),
             ..Default::default()
         });

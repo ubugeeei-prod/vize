@@ -332,18 +332,20 @@ pub(super) fn observe<'a>(
 }
 
 /// Original-source geometry for the bounded, default-policy template-only SFC.
+/// Its sole optional attribute is canonical `lang=html`.
 /// No public capture or caller coordinates can construct this owner. It grants
 /// no template grammar, Component/File, or compiler acceptance capability.
 ///
 /// ```compile_fail
 /// use vize_l1::container::vue::TemplateOnlyDescriptor;
-/// let forged = TemplateOnlyDescriptor { block: todo!(), opening: todo!(), closing: todo!() };
+/// let forged = TemplateOnlyDescriptor { block: todo!(), opening: todo!(), closing: todo!(), lang: todo!() };
 /// ```
 #[derive(Debug)]
 pub struct TemplateOnlyDescriptor<'a> {
     block: SourceBlock<'a>,
     opening: Span,
     closing: Span,
+    lang: Option<&'a str>,
 }
 
 impl<'a> TemplateOnlyDescriptor<'a> {
@@ -356,16 +358,30 @@ impl<'a> TemplateOnlyDescriptor<'a> {
     pub fn close_tag(&self) -> Span {
         self.closing
     }
+    pub fn lang(&self) -> Option<&'a str> {
+        self.lang
+    }
 }
 
 pub(super) fn observe_template_only(source: &str) -> Option<TemplateOnlyDescriptor<'_>> {
     let root = SourceRoot::new(source).ok()?;
-    let envelope = source.trim_ascii();
-    if !envelope.starts_with("<template>") || !envelope.ends_with("</template>") {
+    let start = source.len() - source.trim_ascii_start().len();
+    let mut attr_count = 0;
+    let mut lang = None;
+    let mut canonical_attrs = true;
+    let opening = super::scan::read_open_boundary(source, start, |attr| {
+        attr_count += 1;
+        if attr_count == 1 && attr.name == "lang" && attr.value == Some("html") {
+            lang = attr.value;
+        } else {
+            canonical_attrs = false;
+        }
+    })
+    .ok()??;
+    if opening.name != "template" || opening.self_closing || !canonical_attrs {
         return None;
     }
-    let start = source.len() - source.trim_ascii_start().len();
-    let content_start = start + "<template>".len();
+    let content_start = opening.end;
     let (content_end, closing, uncertain) = super::scan::find_template_close(source, content_start);
     let closing = closing?;
     if uncertain || !source.get(closing.end()..)?.trim_ascii().is_empty() {
@@ -376,6 +392,7 @@ pub(super) fn observe_template_only(source: &str) -> Option<TemplateOnlyDescript
         block: root.block(content, content_start as u32).ok()?,
         opening: Span::new(start as u32, content_start as u32),
         closing: Span::new(closing.start() as u32, closing.end() as u32),
+        lang,
     })
 }
 

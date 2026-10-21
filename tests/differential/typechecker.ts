@@ -34,6 +34,7 @@ export const TYPECHECKER_TESTS = {
   "reactive-props-destructure-10008": "reactive_props_destructure_preserves_unused_diagnostics",
   "nuxt-unknown-template-options-10013": "nuxt_unknown_template_options_preserve_explicit_checks",
   "native-inline-event-handler-9835": "native_inline_event_handler_is_contextually_typed",
+  "inferred-project-tsconfig-9718": "inferred_project_tsconfig_preserves_owned_batch_inputs",
   "generic-fallthrough-spread-9956": "generic_fallthrough_spread_preserves_valid_values",
   "art-variant-implicit-component-9854":
     "implicit_art_component_reports_the_same_prop_errors_as_an_explicit_import",
@@ -70,6 +71,7 @@ const sourceRevisions = {
   "reactive-props-destructure-10008": "f276e4d59cdaf765fd7d3f14eb3d679f5b685f98",
   "nuxt-unknown-template-options-10013": "fb700551a3a3a69f8976efa6fe31bca43ebc19b4",
   "native-inline-event-handler-9835": "8ac6ce1668e9bede8d73411e63a247dbd6f8eb56",
+  "inferred-project-tsconfig-9718": "f95557dadaab83dc0f7d4a7613bdb7ed4e59d323",
   "generic-fallthrough-spread-9956": "2b1e41a5b09005a97d24d1ff34f34c7507bbfb67",
   "art-variant-implicit-component-9854": "f07065df35d25bc76f355e5f106c80dbefa922b5",
   "misskey-generated-inference-9516": "cf6c83ab16fb7f20f84f0d51112090bbce89c74a",

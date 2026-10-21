@@ -85,6 +85,13 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
       requests = [{ params: {}, result: expected }];
     } else if (data.method === "textDocument/documentHighlight") {
       requests = loadOriginalHighlightRequests(packRoot, data, expected);
+    } else if (data.method === "textDocument/definition") {
+      assert(
+        expected !== null && typeof expected === "object" && "position" in expected,
+        "definition position and result required",
+      );
+      const definition = expected as { position: unknown; result: unknown };
+      requests = [{ params: { position: definition.position }, result: definition.result }];
     } else if (data.method === "textDocument/hover") {
       assert(
         Array.isArray(expected) && expected.length === 2,
@@ -107,7 +114,14 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
     } else {
       assert.equal(data.method, "textDocument/onTypeFormatting", "unregistered LSP method");
       assert.deepEqual(data.options, { tabSize: 2, insertSpaces: true });
-      assert(Array.isArray(expected) && expected.length === 4, "all four CRLF controls required");
+      assert(Array.isArray(expected) && expected.length > 0, "on-type controls required");
+      const expectedCount =
+        data.id === "lsp/fix-history/on-type-crlf"
+          ? 4
+          : data.id === "lsp/regression/formatter-whitespace-entries-10031"
+            ? 1
+            : assert.fail(`unregistered on-type fixture: ${data.id}`);
+      assert.equal(expected.length, expectedCount, "all authored on-type controls required");
       requests = (expected as { position: unknown; ch: string; result: unknown }[]).map(
         ({ position, ch, result }) => ({
           params: { position, ch, options: data.options },

@@ -132,6 +132,7 @@ export function runNative(
   fixture: any,
   receipt: any,
   invoke?: Parameters<typeof collectLinterAttempts>[3],
+  spawnOptions?: Parameters<typeof collectLinterAttempts>[4],
 ) {
   const native: any = {
     state: "failed",
@@ -142,7 +143,13 @@ export function runNative(
   try {
     let previous: Buffer | undefined;
     let outcome: any;
-    native.attempts = collectLinterAttempts(binaryPath, native.argv, fixture.input, invoke);
+    native.attempts = collectLinterAttempts(
+      binaryPath,
+      native.argv,
+      fixture.input,
+      invoke,
+      spawnOptions,
+    );
     for (const attempt of native.attempts) {
       const stdout = Buffer.from(attempt.stdoutBase64, "base64");
       const stderr = Buffer.from(attempt.stderrBase64, "base64");
