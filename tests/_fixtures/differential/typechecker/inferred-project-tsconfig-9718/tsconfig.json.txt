@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "strict": true
+    "strict": false
   },
   "include": ["src/**/*.vue"]
 }

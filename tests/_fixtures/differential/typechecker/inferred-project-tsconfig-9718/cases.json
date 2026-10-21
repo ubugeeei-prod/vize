@@ -23,9 +23,16 @@
         { "file": "src/Owned.vue", "source": "src/Owned.vue.txt" },
         { "file": "tsconfig.json", "source": "tsconfig.json.txt" }
       ],
+      "diagnostics": []
+    },
+    {
+      "id": "inferred-defaults",
+      "inputs": [
+        { "file": "template/code/App.vue", "source": "template/code/App.vue.txt" }
+      ],
       "diagnostics": [
         {
-          "file": "src/Owned.vue",
+          "file": "template/code/App.vue",
           "line": 3,
           "column": 18,
           "severity": 1,
@@ -33,13 +40,6 @@
           "message": "Parameter 'value' implicitly has an 'any' type."
         }
       ]
-    },
-    {
-      "id": "inferred-defaults",
-      "inputs": [
-        { "file": "template/code/App.vue", "source": "template/code/App.vue.txt" }
-      ],
-      "diagnostics": []
     }
   ]
 }
