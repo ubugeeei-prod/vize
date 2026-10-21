@@ -79,8 +79,8 @@ on:
           - enforce
           - record-only
   schedule:
-    # Weekly full ecosystem sweep. Manual dispatches provide on-demand release evidence.
-    - cron: "37 5 * * 0"
+    # Nightly full ecosystem sweep. Manual dispatches provide on-demand release evidence.
+    - cron: "37 5 * * *"
 
 concurrency:
   group: real-project-matrix-${{ github.ref }}${{ inputs.project && format('-scoped-{0}', inputs.project) || '' }}
