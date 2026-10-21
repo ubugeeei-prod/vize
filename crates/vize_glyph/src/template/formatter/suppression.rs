@@ -106,8 +106,7 @@ impl<'s> LineJoiner<'s> {
                 // Collapse authored empty lines to one between markup chunks.
                 // Text and directive expression newlines must never become
                 // template layout.
-                blank_line = self.source.get(start) == Some(&b'<')
-                    && line_breaks >= 2;
+                blank_line = self.source.get(start) == Some(&b'<') && line_breaks >= 2;
             }
         }
         if self.current.is_none() || self.current != previous {
