@@ -225,7 +225,7 @@ export function assessFormatterDeletionShard({
   }
 
   const formatterProjects = projects
-    .filter((project) => project.formatterCheck.checkedFileCount > 0)
+    .filter((project) => project.expectedFileCount !== 0)
     .map(({ id }) => id);
   const oracles = {};
   for (const property of properties) {
@@ -382,6 +382,7 @@ export const formatterDeletionAdapter = {
         artifact.status === "ready" &&
         artifact.sourceRevision === report.sourceRevision &&
         artifact.buildReceiptSha256 === report.buildReceiptSha256 &&
+        artifact.binarySha256 === report.buildReceipt?.binarySha256 &&
         typeof fixture.projectId === "string" &&
         artifact.projects.some((project) => project.id === fixture.projectId)
       );

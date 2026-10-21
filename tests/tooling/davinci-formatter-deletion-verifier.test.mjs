@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
+import { parse } from "yaml";
 import {
   assessFormatterDeletionShard,
   formatterDeletionAdapter,
@@ -140,6 +141,13 @@ void test("formatter verifier binds the source CLI to every selected real projec
   };
   assert.equal(formatterDeletionAdapter.verifyBuildReceipt(report, sourceRevision), true);
   assert.equal(formatterDeletionAdapter.verifyObservation(artifact, fixture, row, report), true);
+  assert.equal(
+    formatterDeletionAdapter.verifyObservation(artifact, fixture, row, {
+      ...report,
+      buildReceipt: { ...report.buildReceipt, binarySha256: "0".repeat(64) },
+    }),
+    false,
+  );
   assert.equal(formatterDeletionAdapter.verifyComparison(row, fixture, report), true);
 });
 
@@ -195,7 +203,6 @@ void test("formatter verifier rejects reduced shards, forged reports and stale i
   });
   reduced.matrix.projects[0].runs[0].fileCount = 0;
   for (const artifact of Object.values(reduced.propertyArtifacts)) {
-    artifact.projectIds = [];
     artifact.summary.cleanFileCount = 0;
   }
   const reducedArtifact = assessFormatterDeletionShard(reduced);
@@ -203,19 +210,36 @@ void test("formatter verifier rejects reduced shards, forged reports and stale i
   assert(reducedArtifact.blockers.some((blocker) => blocker.code === "formatter-project-scope"));
 
   const artifact = assessFormatterDeletionShard(control());
-  artifact.projects[0].formatterCheck.checkedFileCount = 1;
-  assert.throws(() => validateFormatterDeletionArtifact(artifact));
+  artifact.projects[0].revision = "0".repeat(40);
+  assert.throws(
+    () => validateFormatterDeletionArtifact(artifact),
+    /formatter deletion artifact digest mismatch/,
+  );
 });
 
 void test("the real-project matrix records the formatter verifier artifact on every shard", () => {
-  const workflow = fs.readFileSync(
-    new URL("../../.github/workflows/real-project-matrix.yml", import.meta.url),
-    "utf8",
+  const workflow = parse(
+    fs.readFileSync(
+      new URL("../../.github/workflows/real-project-matrix.yml", import.meta.url),
+      "utf8",
+    ),
   );
-  assert.match(workflow, /- name: Record formatter deletion-readiness evidence/);
+  const steps = workflow.jobs["real-project-matrix"].steps;
+  const glyphIndex = steps.findIndex((step) => step.id === "glyph");
+  const verifierIndex = steps.findIndex(
+    (step) => step.name === "Record formatter deletion-readiness evidence",
+  );
+  const uploadIndex = steps.findIndex((step) =>
+    String(step.uses ?? "").startsWith("actions/upload-artifact@"),
+  );
+  assert(glyphIndex >= 0);
+  assert(verifierIndex > glyphIndex);
+  assert(uploadIndex > verifierIndex);
+  const verifier = steps[verifierIndex];
+  assert.equal(verifier.if, "${{ !cancelled() }}");
   assert.match(
-    workflow,
+    verifier.run,
     /node tests\/differential\/formatter-deletion-verifier\.mjs "\$FIXTURE_REPORT_DIR"/,
   );
-  assert.match(workflow, /formatter-deletion-readiness\.json/);
+  assert.match(verifier.run, /formatter-deletion-readiness\.json/);
 });
