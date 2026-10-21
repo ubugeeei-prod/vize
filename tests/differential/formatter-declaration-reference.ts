@@ -8,7 +8,7 @@ import { retainedFormatterFunction } from "./formatter-history-source-artifact.t
 
 const ID = "capture/style-block-keeps-box-values-and-implicit-nested-selectors/style/1";
 const AUTHORITY = "tests/_fixtures/differential/formatter-history/current-references-7866.json";
-const AUTHORITY_SHA256 = "62f13a706244764aa24ebf1edb1b2f46e087f1dbc5f305c19951ab57a8a30c22";
+const AUTHORITY_SHA256 = "fe19a2dc8b2281c3a0961edbaa34275697ed1a555d3ba7dc7f1ad846931ded1e";
 
 export function declarationCurrentReference(
   root: string,

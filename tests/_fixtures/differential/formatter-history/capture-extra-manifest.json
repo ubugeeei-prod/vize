@@ -12,7 +12,7 @@
   "nativeHandled": 0,
   "captureReceipt": {
     "path": "tests/_fixtures/differential/formatter-history/api-capture-extra-receipt.json",
-    "sha256": "fc885d5faf7529202bfe7507bc677e10040fc908c46439d304ddf7dfd1103f9b"
+    "sha256": "58d628c3cde3cd000d15d9483778e4dbff13b251d93741d1af12965e39b63350"
   },
   "cases": [
     {
@@ -238,7 +238,7 @@
       },
       "expected": {
         "path": "tests/_fixtures/differential/formatter-history/capture-inputs/single-long-attribute-wraps-at-print-width/template/2/expected.txt",
-        "sha256": "73553250546ccc7b4bcc4bcae062718b8334997201a7723a6b40c103f95745db"
+        "sha256": "17e7de9d49e7b1e8e76ba9fb711d9d8c4d8f21c0c5106f5f8a001667c9ea9d8f"
       },
       "witness": {
         "sourceRef": "glyph-src-template-tests-print-width-rs-current",
