@@ -477,7 +477,7 @@ fn component_listener_aliases_stay_inside_guard_scope() {
         "component_listener_aliases_stay_inside_guard_scope",
         "7cefe3a00e6184de1e121d39b0e153f08a428aa6",
         Some(10112),
-        &["sibling-guarded-listeners"],
+        &["sibling-guarded-listeners", "reopened-guard-block"],
     );
 }
 

@@ -1,0 +1,19 @@
+<script setup lang="ts">
+import Toggle from "./Toggle.vue";
+import Radio from "./Radio.vue";
+
+const enabled = true;
+const flag = false;
+const onToggle = (value: unknown) => value;
+const onPick = (value: unknown) => value;
+</script>
+
+<template>
+  <div v-if="enabled">
+    <Toggle @change="onToggle">
+      <span v-if="flag">x</span>
+      <Radio v-else @pick="onPick" />
+    </Toggle>
+    <Toggle @change="onToggle" />
+  </div>
+</template>

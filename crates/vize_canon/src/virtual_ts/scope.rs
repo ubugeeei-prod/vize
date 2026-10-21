@@ -53,4 +53,6 @@ pub(crate) use ref_instances::{REF_INSTANCE_HELPERS, REFS_RETURN_KEY, instantiat
 pub(crate) use slot_scope::emit_slot_payload_helpers;
 pub(crate) use vif_guard::append_ignored_vif_guard_open;
 pub(crate) use vif_guard::remove_enclosing_vif_guard_prefix;
-pub(crate) use vif_guard_chain::{append_chained_vif_guard_close, append_chained_vif_guard_open};
+pub(crate) use vif_guard_chain::{
+    append_chained_vif_guard_close, append_chained_vif_guard_open, open_chained_vif_guard_block,
+};
