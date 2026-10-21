@@ -108,6 +108,8 @@ pub enum FmtPreset {
     Vize,
     /// Prettier's Vue layout, as listed in the formatter guide
     Prettier,
+    /// Dense application layout that preserves authored order
+    Compact,
 }
 
 impl From<FmtPreset> for vize_glyph::FormatPreset {
@@ -115,6 +117,7 @@ impl From<FmtPreset> for vize_glyph::FormatPreset {
         match preset {
             FmtPreset::Vize => Self::Vize,
             FmtPreset::Prettier => Self::Prettier,
+            FmtPreset::Compact => Self::Compact,
         }
     }
 }

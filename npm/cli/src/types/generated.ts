@@ -427,7 +427,7 @@ export interface FormatterConfig {
   /**
    * Named set of formatter defaults; options set alongside it win
    */
-  preset?: "vize" | "prettier";
+  preset?: "vize" | "prettier" | "compact";
   /**
    * Oxfmt-compatible import sorting; false disables it
    */

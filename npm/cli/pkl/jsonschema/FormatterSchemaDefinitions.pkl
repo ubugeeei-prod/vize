@@ -8,7 +8,7 @@ formatterConfigDef: JsonSchema = new JsonSchema {
   properties {
     ["preset"] = new JsonSchema {
       type = "string"
-      enum = new Listing { "vize"; "prettier" }
+      enum = new Listing { "vize"; "prettier"; "compact" }
       description = "Named set of formatter defaults; options set alongside it win"
     }
     ["sortImports"] = ImportSortSchemaDefinitions.sortImportsSettingDef
