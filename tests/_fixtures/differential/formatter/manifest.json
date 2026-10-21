@@ -2305,7 +2305,13 @@
             "runtimeFileName": "App.vue"
           }
         ],
-        "config": []
+        "config": [
+          {
+            "path": "vize.config.json",
+            "sha256": "f1e96d96da29112d781bef55490699d5e2585d94c41a9ce1fddb33a42cd81eab",
+            "role": "project-vue-version-and-formatter-options"
+          }
+        ]
       },
       "provenance": {
         "issues": [
@@ -2356,7 +2362,7 @@
               "html-template",
               "text-hugged-interpolation"
             ],
-            "selector": "default Vue version with --no-config"
+            "selector": "vize.config.json:vue.version"
           }
         ]
       },
