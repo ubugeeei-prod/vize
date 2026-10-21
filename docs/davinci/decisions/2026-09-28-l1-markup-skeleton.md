@@ -14,8 +14,10 @@ Tracked in [#6835](https://github.com/ubugeeei-prod/vize/issues/6835),
   token array. `Sink::mode` exposes `LexMode::Verbatim` for `v-pre` to its
   consumer. Armature's parser currently answers it; the L1 surface tree does
   not yet use the mode.
-- Lex errors are an L1 enum (`LexErrorCode`) for the new lexer. Existing
-  surface-tree and compiler consumers retain legacy `ErrorCode` until #6880.
+- Lex errors are an L1 enum (`LexErrorCode`) for the shared lexer. Compiler
+  diagnostics use the canonical L0 `ErrorCode`; Relief and Armature retain
+  their published compatibility re-exports. Product-route migration remains
+  separately gated by #6880.
 - Directive-name decomposition is the dialect hook `DirectiveSyntax`. It
   returns spans only (`modifiers` is one span over the `.a.b` run), so it
   allocates nothing.
@@ -38,8 +40,9 @@ unchanged. The following paragraphs retain the earlier delivery boundary.
   L1-owned compatibility tokenizer. Armature re-exports that same code for
   Atelier's production parser. The normal L1→Armature edge is gone, so the
   #6831 dependency allowlist drops its corresponding permission for both
-  `vize_l1` and `vize_l1_to_l2`. The L1→Relief vocabulary permission remains.
-  No product parser uses the native lexer yet.
+  `vize_l1` and `vize_l1_to_l2`. At that checkpoint the L1→Relief vocabulary
+  permission remained; later directory and vocabulary slices removed it. No
+  product parser uses the native lexer yet.
 - The new lexer uses L1 `LexErrorCode`. Document and component profiles,
   including Vue 1 raw interpolation, are capabilities of the new lexer only.
   Existing products retain their own error codes and parsing behavior.
@@ -97,10 +100,10 @@ The #6836 child verifies `v-pre` callbacks. The production parser still uses
 the moved compatibility tokenizer. TODO (#6835): run the full legacy output
 corpus and instruction-count gate before switching production to the shared
 lexer, then remove the duplicate state machine after the #6880 product-route
-prerequisite closes. TODO (#6835):
-move the remaining `Namespace`/`ErrorCode`
-vocabulary out of Relief to remove L1's other direct legacy dependency. The
-compiler product route remains gated by #6880.
+prerequisite closes. The later shared-vocabulary slices make L0 the canonical
+owner of `Namespace` and compiler-wide `ErrorCode`; Relief keeps compatibility
+re-exports rather than owning either type. The compiler product route remains
+gated by #6880.
 
 ## Shared quote vocabulary (#6835, partial)
 
@@ -113,7 +116,7 @@ where the other is required.
 
 This is vocabulary ownership only. It does not change callback sequences,
 parser routes, error mapping, namespace selection or product output. The
-legacy `ErrorCode` ownership work stays open.
+compiler `ErrorCode` ownership is recorded below.
 
 ## Shared namespace vocabulary (#6835, partial)
 
@@ -127,4 +130,19 @@ values and serde representation.
 
 This is namespace vocabulary ownership only. It does not change namespace
 selection, callback sequences, parser routes, AST serialization or product
-output. The legacy `ErrorCode` ownership decision remains open.
+output. Compiler `ErrorCode` ownership is recorded below.
+
+## Shared compiler error vocabulary (#6835, partial)
+
+`vize_l0::ErrorCode` remains the canonical compiler-wide diagnostic code type.
+Armature imports it from L0 internally and re-exports that exact type at its
+published root path. Relief also retains its published compatibility
+re-export, so existing consumers keep the same Rust type, variants,
+`repr(u16)` discriminants, messages and stable code names without a conversion.
+An integration law pins exact type identity and representative parse,
+transform and recovery behavior across all three public paths.
+
+L1's `LexErrorCode` remains a narrower lexer-event vocabulary. It is mapped to
+the compiler-wide L0 type only at the existing compatibility boundary; this
+ownership decision does not merge the enums or change callback sequences,
+diagnostic mapping, parser routes, serialized output or product behavior.
