@@ -42,22 +42,42 @@ fn generate(script: &str, template: &str, check_unknown_components: bool) -> Vir
 
 #[test]
 fn define_art_string_source_types_its_implicit_variant_component() {
-    let output = generate(
-        r#"defineArt("./MyCard.vue", { title: "MyCard" });"#,
-        r#"<variant><MyCard :title="123" /></variant>"#,
-        false,
+    fn registry_probes(code: &str) -> Vec<&str> {
+        code.lines()
+            .filter_map(|line| {
+                line.strip_prefix("const { \"")?
+                    .split_once("\": __vize_global_component_")
+                    .map(|(name, _)| name)
+            })
+            .collect::<Vec<_>>()
+    }
+    let script = r#"defineArt("./MyCard.vue", { title: "MyCard" });"#;
+    let template = r#"<variant><MyCard :title="123" /></variant>"#;
+    let default = generate(script, template, false);
+    let checked = generate(script, template, true);
+    assert_eq!(
+        registry_probes(&default.code),
+        Vec::<&str>::new(),
+        "the default mode must not emit registry diagnostics"
+    );
+    assert_eq!(
+        registry_probes(&checked.code),
+        vec!["variant"],
+        "unknown-component checking may probe the variant element but not the implicit art subject"
     );
 
-    assert_eq!(
-        output
-            .code
-            .lines()
-            .filter_map(|line| line.strip_prefix("declare const MyCard: "))
-            .collect::<Vec<_>>(),
-        vec![r#"typeof import("./MyCard.vue").default;"#],
-        "the implicit art subject must resolve exactly to its authored module:\n{}",
-        output.code,
-    );
+    for output in [&default, &checked] {
+        assert_eq!(
+            output
+                .code
+                .lines()
+                .filter_map(|line| line.strip_prefix("declare const MyCard: "))
+                .collect::<Vec<_>>(),
+            vec![r#"typeof import("./MyCard.vue").default;"#],
+            "the implicit art subject must resolve exactly to its authored module:\n{}",
+            output.code,
+        );
+    }
 }
 
 #[test]

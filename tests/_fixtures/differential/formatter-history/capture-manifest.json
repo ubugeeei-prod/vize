@@ -12,7 +12,7 @@
   "nativeHandled": 0,
   "captureReceipt": {
     "path": "tests/_fixtures/differential/formatter-history/api-capture-receipt.json",
-    "sha256": "03960e4fc90700c3309e1d0c3c9c1d2a577300561a833c13a2c7b08cb7b882d4"
+    "sha256": "3a7ec18251dd048e6bd7df1537e2a3b917862eb10e41192f1210e5e9af162fdb"
   },
   "cases": [
     {
@@ -592,7 +592,7 @@
       },
       "expected": {
         "path": "tests/_fixtures/differential/formatter-history/capture-inputs/test-format-sfc-musea-art-block-uses-template-indentation/sfc/0/expected.txt",
-        "sha256": "6878cda8e28c8ab5b5ac6730a8796c1829e3d3b87ea7a53eab4ae9293696c789"
+        "sha256": "b72dec5cac76c022e538debdce4d64c626d0df37b1e483ece547793dd14fcada"
       },
       "witness": {
         "sourceRef": "glyph-src-tests-rs-current",

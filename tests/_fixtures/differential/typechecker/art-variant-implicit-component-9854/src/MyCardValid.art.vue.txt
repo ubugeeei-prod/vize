@@ -1,0 +1,6 @@
+<script setup lang="ts">
+defineArt("./MyCard.vue", { title: "MyCard" });
+</script>
+<art>
+  <variant name="Valid"><MyCard title="ok" /></variant>
+</art>

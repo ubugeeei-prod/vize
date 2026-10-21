@@ -105,6 +105,14 @@ export function loadSortingConfigManifest(root, manifestPath = SORTING_CONFIG_MA
       assert.equal(typeof step.formatted, "boolean");
       const stdout = asset(root, step.stdout);
       const stderr = asset(root, step.stderr);
+      const currentStderr = step.currentStderr ? asset(root, step.currentStderr) : stderr;
+      if (step.currentStderr) {
+        assert(historicalProfile, "current stderr authority requires historical custody");
+        assert.equal(step.currentStderr.issue, 9784);
+        assert.equal(typeof step.currentStderr.justification, "string");
+        assert(step.currentStderr.justification.length > 0);
+        assert(!currentStderr.equals(stderr), "current stderr must retain observable history");
+      }
       const expectedFiles = files(root, step.files);
       assert(Object.hasOwn(expectedFiles, fixture.target));
       const target = expectedFiles[fixture.target];
@@ -117,7 +125,7 @@ export function loadSortingConfigManifest(root, manifestPath = SORTING_CONFIG_MA
         target.equals(step.formatted ? expected : initialFiles[fixture.target]),
         "unbound full file reference",
       );
-      return { ...step, stdout, stderr, expectedFiles };
+      return { ...step, stdout, stderr, currentStderr, expectedFiles };
     });
     const original = { ...fixture, initialFiles, steps };
     return { ...original, execution: explicitSerializationPlan(original) };
@@ -154,7 +162,7 @@ function explicitSerializationPlan(fixture) {
       const argv = step.argv.map((arg) => (arg === historical ? current : arg));
       const selectsRelativeCarrier = !argv.includes("--no-config") && !argv.includes("--config");
       if (selectsRelativeCarrier) argv.splice(1, 0, "--config", current);
-      let stderr = step.stderr.toString().replaceAll(historical, current);
+      let stderr = step.currentStderr.toString().replaceAll(historical, current);
       // Discovery supplied an absolute path in the retained source law. The
       // explicit current argv supplies a relative one; checked::parse displays
       // that exact argument. Keep the complete serde message and coordinates.

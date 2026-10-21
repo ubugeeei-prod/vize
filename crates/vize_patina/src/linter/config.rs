@@ -103,12 +103,18 @@ pub struct Linter {
     /// Authored TypeScript project configurations already admitted for this lint run.
     #[cfg(not(target_arch = "wasm32"))]
     pub(crate) type_aware_project_configs: Mutex<FxHashMap<PathBuf, Option<String>>>,
+    /// Parsed project-reference ownership shared by every file in this lint run.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub(crate) type_aware_project_ownership: Mutex<vize_canon::TsconfigOwnershipCache>,
     /// Invalid project configurations whose run-level diagnostic was already emitted.
     #[cfg(not(target_arch = "wasm32"))]
     pub(crate) reported_type_aware_project_configs: Mutex<FxHashSet<PathBuf>>,
     /// Optional configured Corsa executable for type-aware lint.
     #[cfg(not(target_arch = "wasm32"))]
     pub(crate) corsa_path: Option<PathBuf>,
+    /// Optional project config selected by `typeChecker.tsconfig`.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub(crate) type_aware_tsconfig: Option<PathBuf>,
 }
 
 impl Linter {
@@ -208,6 +214,14 @@ impl Linter {
         self
     }
 
+    /// Select the TypeScript project used by native type-aware lint rules.
+    #[cfg(not(target_arch = "wasm32"))]
+    #[inline]
+    pub fn with_type_aware_tsconfig(mut self, path: Option<PathBuf>) -> Self {
+        self.type_aware_tsconfig = path;
+        self
+    }
+
     /// Get the current locale.
     #[inline]
     pub fn locale(&self) -> Locale {
@@ -261,6 +275,9 @@ impl Linter {
                 }
                 if let Ok(mut configs) = linter.type_aware_project_configs.lock() {
                     configs.clear();
+                }
+                if let Ok(mut ownership) = linter.type_aware_project_ownership.lock() {
+                    *ownership = vize_canon::TsconfigOwnershipCache::default();
                 }
                 if let Ok(mut reported) = linter.reported_type_aware_project_configs.lock() {
                     reported.clear();

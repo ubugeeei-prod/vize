@@ -12,7 +12,7 @@
   "nativeHandled": 0,
   "captureReceipt": {
     "path": "tests/_fixtures/differential/formatter-history/api-capture-final-receipt.json",
-    "sha256": "a93bf3f1771325effaabaff802e63cd1dd373b51b8c16c5de3490f2675465f0d"
+    "sha256": "27207e472aeb35b4ba2b1dd2ba3128e3f60f4f33e8d58d302d32e99b2f8e2a2a"
   },
   "cases": [
     {
@@ -73,7 +73,7 @@
       },
       "expected": {
         "path": "tests/_fixtures/differential/formatter-history/capture-inputs/css-formatting-keeps-media-features-values-and-nested-selectors/style/0/expected.txt",
-        "sha256": "53e00c76f243c767fd0763305f55d229adc5e3f64f5f1c9062a2750baf2af422"
+        "sha256": "4f2104d7ac34d7bb05589fa67c9e1ba87efd681e38719c4296ab1cca2cd15c9b"
       },
       "witness": {
         "sourceRef": "glyph-tests-preserve-authored-content-rs-current",

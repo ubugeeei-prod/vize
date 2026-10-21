@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import { greeting } from "@/labels";
+
+const version = __APP_VERSION__;
+</script>
+
+<template>
+  <p>{{ greeting.toUpperCase() }}</p>
+  <footer>{{ version.toUpperCase() }}</footer>
+</template>

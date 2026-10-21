@@ -168,8 +168,10 @@ impl<'a> GlobalComponentPlan<'a> {
                 } else {
                     to_safe_identifier(name)
                 };
+            let art_source = art_component_source(summary, name);
             if let Some(diagnostics) = diagnostics.as_mut().filter(|_| {
                 !is_self
+                    && art_source.is_none()
                     && !crate::virtual_ts::scope::is_owned_named_dynamic_component(
                         self.template_ast,
                         usage,
@@ -208,7 +210,7 @@ impl<'a> GlobalComponentPlan<'a> {
                     *ts,
                     "declare const {component_ref}: typeof __vize_component__;\n"
                 );
-            } else if let Some(source) = art_component_source(summary, name) {
+            } else if let Some(source) = art_source {
                 let mut source_literal = String::default();
                 push_ts_string_literal(&mut source_literal, source);
                 append!(

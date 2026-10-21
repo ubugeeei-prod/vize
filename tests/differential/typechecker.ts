@@ -36,6 +36,8 @@ export const TYPECHECKER_TESTS = {
   "native-inline-event-handler-9835": "native_inline_event_handler_is_contextually_typed",
   "inferred-project-tsconfig-9718": "inferred_project_tsconfig_preserves_owned_batch_inputs",
   "generic-fallthrough-spread-9956": "generic_fallthrough_spread_preserves_valid_values",
+  "optional-fallthrough-spread-10170":
+    "optional_fallthrough_spread_preserves_valid_values_and_rejects_invalid_values",
   "art-variant-implicit-component-9854":
     "implicit_art_component_reports_the_same_prop_errors_as_an_explicit_import",
   "content-mapper-musea-art-10186":
@@ -78,6 +80,7 @@ const sourceRevisions = {
   "native-inline-event-handler-9835": "8ac6ce1668e9bede8d73411e63a247dbd6f8eb56",
   "inferred-project-tsconfig-9718": "f95557dadaab83dc0f7d4a7613bdb7ed4e59d323",
   "generic-fallthrough-spread-9956": "2b1e41a5b09005a97d24d1ff34f34c7507bbfb67",
+  "optional-fallthrough-spread-10170": "8300867552287abb14f4fbb7471c705aea72bbdf",
   "art-variant-implicit-component-9854": "f07065df35d25bc76f355e5f106c80dbefa922b5",
   "content-mapper-musea-art-10186": "d295b324299c549063fab385b7f308c71ac014e0",
   "misskey-generated-inference-9516": "cf6c83ab16fb7f20f84f0d51112090bbce89c74a",
