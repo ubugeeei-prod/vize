@@ -88,7 +88,6 @@ concurrency:
 
 permissions:
   contents: read
-  issues: read
 env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -393,3 +392,25 @@ jobs:
     uses: ./.github/workflows/davinci-canonical-corpus.yml
     with:
       davinci_dom_corpus_mode: ${{ inputs.davinci_dom_corpus_mode || 'enforce' }}
+
+  davinci-dom-divergence-issue:
+    name: file canonical DOM divergence
+    if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
+    needs: davinci-dom-corpus
+    permissions: { contents: read, actions: read, issues: write }
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout matrix commit
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false, ref: "${{ github.sha }}" }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
+      - name: Download canonical DOM evidence
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: canonical-corpus-dom-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
+          path: real-project-davinci-dom-corpus
+      - name: File canonical DOM divergence issue
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: node tools/support/compat/github/canonical-corpus-divergence-issue.mjs publish real-project-davinci-dom-corpus

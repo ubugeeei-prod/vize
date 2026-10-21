@@ -1,0 +1,9 @@
+<script setup lang="ts">
+defineExpose({
+  $el: document.createElement("div"),
+});
+</script>
+
+<template>
+  <div />
+</template>

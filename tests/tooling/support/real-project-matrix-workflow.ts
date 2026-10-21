@@ -23,6 +23,7 @@ export type WorkflowJob = {
   with?: Record<string, unknown>;
   env?: Record<string, string>;
   name?: string;
+  permissions?: Record<string, string>;
   "runs-on"?: string;
   steps?: WorkflowStep[];
   strategy?: {

@@ -148,6 +148,42 @@ test("passive native LSP capture retains the complete original Matrix workflow",
       "retention-days": 30,
     },
   });
+  const divergenceIssue = current.jobs["davinci-dom-divergence-issue"];
+  assert.deepEqual(divergenceIssue, {
+    name: "file canonical DOM divergence",
+    if: "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}",
+    needs: "davinci-dom-corpus",
+    permissions: { contents: "read", actions: "read", issues: "write" },
+    "runs-on": "ubuntu-latest",
+    "timeout-minutes": 5,
+    steps: [
+      {
+        name: "Checkout matrix commit",
+        uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+        with: { "persist-credentials": false, ref: "${{ github.sha }}" },
+      },
+      {
+        uses: "actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38",
+        with: { "node-version-file": "package.json", "package-manager-cache": false },
+      },
+      {
+        name: "Download canonical DOM evidence",
+        uses: "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
+        with: {
+          name: "canonical-corpus-dom-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}",
+          path: "real-project-davinci-dom-corpus",
+        },
+      },
+      {
+        name: "File canonical DOM divergence issue",
+        env: { GH_TOKEN: "${{ github.token }}" },
+        run: "node tools/support/compat/github/canonical-corpus-divergence-issue.mjs publish real-project-davinci-dom-corpus",
+      },
+    ],
+  });
+  delete current.jobs["davinci-dom-divergence-issue"];
+  assert.deepEqual(current.permissions, { contents: "read" });
+  current.permissions = original.permissions;
   const corpus = current.jobs["davinci-dom-corpus"];
   assert.deepEqual(corpus.permissions, {
     contents: "read",
