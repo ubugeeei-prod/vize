@@ -38,6 +38,9 @@ impl ConfigLintRuleOptions {
         if let Some(options) = &overlay.html_self_closing {
             self.html_self_closing = Some(*options);
         }
+        if let Some(options) = overlay.html_quotes {
+            self.html_quotes = Some(options);
+        }
         if let Some(style) = overlay.v_on_event_hyphenation {
             self.v_on_event_hyphenation = Some(style);
         }

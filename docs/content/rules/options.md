@@ -75,6 +75,7 @@ export default defineConfig({
 | `vue/require-component-registration` | `{ globals?: string[] }` | Explicit application/preview component names; accepts PascalCase and kebab-case spellings. Options do not enable the rule. |
 | `vue/sfc-element-order` | `{ order?: Array<string \| string[]> }` | Defaults to `[["script", "template"], "style"]`. A nested array means any of those block selectors may appear at that rank. |
 | `vue/html-self-closing` | `{ html?: { void?: Style; normal?: Style; component?: Style }; svg?: Style; math?: Style }`, where `Style` is `"always"`, `"never"`, or `"any"` | Defaults are `html.void: "always"`, `html.normal: "any"`, `html.component: "always"`, `svg: "always"`, and `math: "always"`. |
+| `vue/html-quotes` | `"double" \| "single"` or `{ style?: "double" \| "single"; avoidEscape?: boolean }` | Defaults to double quotes and `avoidEscape: false`. With `avoidEscape: true`, a quoted value containing the requested delimiter is left unchanged. |
 | `vue/v-on-event-hyphenation` | `"always" \| "never"` | Configures whether event listener names should be hyphenated. |
 | `vue/v-bind-style` | `"shorthand" \| "longform"` | Defaults to `"shorthand"`. Configures whether binding directives use `:class` or `v-bind:class`; object syntax such as `v-bind="attrs"` and `.prop` shorthand are unchanged. |
 | `vue/v-on-style` | `"shorthand" \| "longform"` | Defaults to `"shorthand"`. Configures whether event directives use `@click` or `v-on:click`; object syntax such as `v-on="listeners"` is unchanged. |

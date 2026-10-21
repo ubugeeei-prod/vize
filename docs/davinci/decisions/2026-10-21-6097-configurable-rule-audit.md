@@ -26,6 +26,10 @@ The stacked implementation updates that count to 14 configured mapped rules and 
 rules without typed options. It exposes both upstream-compatible uniform values and the richer
 position-specific object while rejecting bare `v-slot` for named slots at the config boundary.
 
+The next cohort adds `vue/html-quotes`, a strongly recommended, fixable rule, bringing the typed
+surface to 15 configured mapped rules and leaving 43. It accepts `"double"` or `"single"` as a
+compact style and an object form with `style` plus upstream's `avoidEscape` policy.
+
 ## Provider boundary
 
 The executable differential provider remains pinned to 10.9.2. Moving it to 10.11.1 changes

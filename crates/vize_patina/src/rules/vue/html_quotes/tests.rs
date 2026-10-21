@@ -12,7 +12,10 @@ use crate::rule::RuleRegistry;
 
 fn linter_with(style: HtmlQuotesOption) -> Linter {
     let mut registry = RuleRegistry::new();
-    registry.register(Box::new(HtmlQuotes { style }));
+    registry.register(Box::new(HtmlQuotes {
+        style,
+        avoid_escape: false,
+    }));
     Linter::with_registry(registry)
 }
 
@@ -209,4 +212,36 @@ fn the_single_quote_fix_is_omitted_when_the_value_holds_a_single_quote() {
     let result = linter.lint_template(r#"<div title="don't"></div>"#, "test.vue");
     assert_eq!(result.warning_count, 1);
     assert!(!result.diagnostics[0].has_fix());
+}
+
+#[test]
+fn avoid_escape_skips_a_quoted_value_holding_the_required_quote() {
+    let mut registry = RuleRegistry::new();
+    registry.register(Box::new(HtmlQuotes {
+        style: HtmlQuotesOption::Double,
+        avoid_escape: true,
+    }));
+    let result = Linter::with_registry(registry)
+        .lint_template(r#"<div title='say "hi"'></div>"#, "test.vue");
+    assert_eq!(result.warning_count, 0);
+}
+
+#[test]
+fn avoid_escape_does_not_hide_a_plain_mismatched_value() {
+    let mut registry = RuleRegistry::new();
+    registry.register(Box::new(HtmlQuotes {
+        style: HtmlQuotesOption::Single,
+        avoid_escape: true,
+    }));
+    let source = r#"<div title="hello"></div>"#;
+    let result = Linter::with_registry(registry).lint_template(source, "test.vue");
+    assert_eq!(result.warning_count, 1);
+    assert_eq!(
+        result.diagnostics[0]
+            .fix
+            .as_ref()
+            .expect("safe quote fix")
+            .apply(source),
+        "<div title='hello'></div>"
+    );
 }

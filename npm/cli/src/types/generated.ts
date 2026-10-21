@@ -299,6 +299,12 @@ export interface LintRuleOptions {
     svg?: "always" | "never" | "any";
     math?: "always" | "never" | "any";
   };
+  "vue/html-quotes"?:
+    | ("double" | "single")
+    | {
+        style?: "double" | "single";
+        avoidEscape?: boolean;
+      };
   "vue/v-on-event-hyphenation"?: "always" | "never";
   "vue/v-bind-style"?: "shorthand" | "longform";
   "vue/v-on-style"?: "shorthand" | "longform";

@@ -1,0 +1,11 @@
+export default {
+  vue: {
+    linter: {
+      preset: "incremental",
+      rules: { "vue/html-quotes": "warn" },
+      ruleOptions: {
+        "vue/html-quotes": { style: "single", avoidEscape: true },
+      },
+    },
+  },
+};

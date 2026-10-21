@@ -250,6 +250,17 @@ it("projects v-slot style into the typed CLI-compatible option map", () => {
   assert.equal(getRuleOptions("vue/v-slot-style", [{ named: "v-slot" }]), undefined);
 });
 
+it("projects html-quotes style and avoidEscape into the typed option map", () => {
+  assert.deepEqual(getRuleOptions("vue/html-quotes", ["single"]), {
+    ruleOptions: { "vue/html-quotes": "single" },
+  });
+  assert.deepEqual(getRuleOptions("vue/html-quotes", ["double", { avoidEscape: true }]), {
+    ruleOptions: { "vue/html-quotes": { style: "double", avoidEscape: true } },
+  });
+  assert.equal(getRuleOptions("vue/html-quotes", ["backtick"]), undefined);
+  assert.equal(getRuleOptions("vue/html-quotes", ["double", { avoidEscape: "yes" }]), undefined);
+});
+
 it("projects v-bind style into the typed CLI-compatible option map", () => {
   assert.deepEqual(getRuleOptions("vue/v-bind-style", ["longform"]), {
     ruleOptions: { "vue/v-bind-style": "longform" },

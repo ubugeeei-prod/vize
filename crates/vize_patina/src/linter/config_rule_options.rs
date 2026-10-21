@@ -7,9 +7,9 @@ use crate::rules::{
     VOnEventHyphenationStyle,
 };
 use vize_l0::config::{
-    ConfigLintRuleOptions, CustomEventNameCasing, HtmlSelfClosingStyle as ConfigSelfClosingStyle,
-    HyphenationStyle as ConfigHyphenationStyle, TemplateComponentNameCasing,
-    VBindStyle as ConfigVBindStyle, VOnStyle as ConfigVOnStyle,
+    ConfigLintRuleOptions, CustomEventNameCasing, HtmlQuoteStyle as ConfigHtmlQuoteStyle,
+    HtmlSelfClosingStyle as ConfigSelfClosingStyle, HyphenationStyle as ConfigHyphenationStyle,
+    TemplateComponentNameCasing, VBindStyle as ConfigVBindStyle, VOnStyle as ConfigVOnStyle,
     VSlotNamedStyle as ConfigVSlotNamedStyle, VSlotStyle as ConfigVSlotStyle,
     VSlotStyleValue as ConfigVSlotStyleValue, VSlotUniformStyle as ConfigVSlotUniformStyle,
 };
@@ -73,6 +73,15 @@ impl Linter {
                 },
                 svg: self_closing_style(value.svg),
                 math: self_closing_style(value.math),
+            });
+        }
+        if let Some(value) = options.html_quotes() {
+            self = self.with_html_quotes(crate::rules::vue::HtmlQuotes {
+                style: match value.style() {
+                    ConfigHtmlQuoteStyle::Double => crate::rules::vue::HtmlQuotesOption::Double,
+                    ConfigHtmlQuoteStyle::Single => crate::rules::vue::HtmlQuotesOption::Single,
+                },
+                avoid_escape: value.avoid_escape(),
             });
         }
         if let Some(value) = options.v_on_event_hyphenation() {
@@ -186,6 +195,25 @@ mod tests {
                 .diagnostics
                 .iter()
                 .any(|diagnostic| diagnostic.rule_name == "vue/require-component-registration")
+        );
+    }
+
+    #[test]
+    fn html_quote_config_reaches_style_and_avoid_escape() {
+        let source = r#"<template><div class="card" title="don't"></div></template>"#;
+        let options: ConfigLintRuleOptions = serde_json::from_value(serde_json::json!({
+            "vue/html-quotes": { "style": "single", "avoidEscape": true }
+        }))
+        .unwrap();
+        let result = Linter::with_preset(LintPreset::Incremental)
+            .with_enabled_rules(Some(vec!["vue/html-quotes".into()]))
+            .with_config_rule_options(&options)
+            .lint_sfc(source, "App.vue");
+        assert_eq!(result.warning_count, 1);
+        assert_eq!(result.diagnostics[0].rule_name, "vue/html-quotes");
+        assert_eq!(
+            &source[result.diagnostics[0].start as usize..result.diagnostics[0].end as usize],
+            "\"card\""
         );
     }
 }

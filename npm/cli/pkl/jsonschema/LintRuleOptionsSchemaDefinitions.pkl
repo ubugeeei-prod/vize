@@ -62,6 +62,26 @@ lintRuleOptionsDef: JsonSchema = new JsonSchema {
     }
     ["vue/sfc-element-order"] = ConfigArtifactDefinitions.sfcElementOrderOptionsDef
     ["vue/html-self-closing"] = ConfigArtifactDefinitions.htmlSelfClosingOptionsDef
+    ["vue/html-quotes"] = new JsonSchema {
+      oneOf = new Listing {
+        new JsonSchema {
+          type = "string"
+          enum = new Listing { "double"; "single" }
+        }
+        new JsonSchema {
+          type = "object"
+          properties {
+            ["style"] = new JsonSchema {
+              type = "string"
+              enum = new Listing { "double"; "single" }
+              default = "double"
+            }
+            ["avoidEscape"] = new JsonSchema { type = "boolean"; default = false }
+          }
+          additionalProperties = false
+        }
+      }
+    }
     ["vue/v-on-event-hyphenation"] = ConfigArtifactDefinitions.hyphenationStyleDef
     ["vue/v-bind-style"] = new JsonSchema {
       type = "string"

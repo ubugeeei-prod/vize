@@ -54,6 +54,22 @@ pub(super) fn html_self_closing_options(
     }
 }
 
+pub(super) fn html_quotes(
+    options: vize_l0::config::HtmlQuotesConfig,
+) -> vize_patina::rules::vue::HtmlQuotes {
+    vize_patina::rules::vue::HtmlQuotes {
+        style: match options.style() {
+            vize_l0::config::HtmlQuoteStyle::Double => {
+                vize_patina::rules::vue::HtmlQuotesOption::Double
+            }
+            vize_l0::config::HtmlQuoteStyle::Single => {
+                vize_patina::rules::vue::HtmlQuotesOption::Single
+            }
+        },
+        avoid_escape: options.avoid_escape(),
+    }
+}
+
 fn html_self_closing_style(
     style: vize_l0::config::HtmlSelfClosingStyle,
 ) -> vize_patina::rules::HtmlSelfClosingStyle {

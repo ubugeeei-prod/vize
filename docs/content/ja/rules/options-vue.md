@@ -12,6 +12,44 @@ Vue のルールで、コンポーネント名の表記、props の変更範囲�
 設定できる全オプションの一覧、未定義のフィールドの扱い、スコープごとのオプションの置き換えは、
 [ルールのオプション](./options.md)を参照してください。
 
+<span id="vue-html-quotes"></span>
+
+## `vue/html-quotes`：属性値の引用符
+
+引用符の形式だけを指定する場合は `"double"` または `"single"` を使います。
+オブジェクト形式では `avoidEscape` も指定できます。`true` にすると、変更後の引用符を値の内部に
+含むクォート済みの属性は、エスケープを増やさず元の引用符を維持します。
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      rules: { "vue/html-quotes": "warn" },
+      ruleOptions: {
+        "vue/html-quotes": { style: "single", avoidEscape: true },
+      },
+    },
+  },
+});
+```
+
+この設定で報告される例：
+
+```vue
+<div class="card"></div>
+```
+
+設定に沿った例：
+
+```vue
+<div class='card' title="don't"></div>
+```
+
+最初の値は `class='card'` に安全に修正しますが、`title="don't"` は変更しません。
+オプションだけではルールを有効にしません。
+
 <span id="vue-valid-v-slot"></span>
 
 ## `vue/valid-v-slot`：スロット名の修飾子

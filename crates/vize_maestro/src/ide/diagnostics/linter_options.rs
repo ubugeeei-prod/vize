@@ -209,6 +209,9 @@ pub(super) fn apply_rule_options(
     if let Some(options) = options.html_self_closing() {
         linter = linter.with_html_self_closing_options(html_self_closing_options(options));
     }
+    if let Some(options) = options.html_quotes() {
+        linter = linter.with_html_quotes(html_quotes(options));
+    }
     if let Some(style) = options.v_on_event_hyphenation() {
         linter = linter.with_v_on_event_hyphenation(v_on_event_hyphenation_style(style));
     }
@@ -283,6 +286,20 @@ fn event_name_casing(
         vize_l0::config::CustomEventNameCasing::KebabCase => {
             vize_patina::rules::script::EventNameCasing::KebabCase
         }
+    }
+}
+
+fn html_quotes(options: vize_l0::config::HtmlQuotesConfig) -> vize_patina::rules::vue::HtmlQuotes {
+    vize_patina::rules::vue::HtmlQuotes {
+        style: match options.style() {
+            vize_l0::config::HtmlQuoteStyle::Double => {
+                vize_patina::rules::vue::HtmlQuotesOption::Double
+            }
+            vize_l0::config::HtmlQuoteStyle::Single => {
+                vize_patina::rules::vue::HtmlQuotesOption::Single
+            }
+        },
+        avoid_escape: options.avoid_escape(),
     }
 }
 

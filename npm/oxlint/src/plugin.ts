@@ -193,6 +193,8 @@ function ruleOptionsSchema(ruleName: string): unknown[] {
       return [sfcElementOrderSchema()];
     case "vue/html-self-closing":
       return [htmlSelfClosingSchema()];
+    case "vue/html-quotes":
+      return [{ enum: ["double", "single"] }, objectSchema({ avoidEscape: { type: "boolean" } })];
     case "vue/v-on-event-hyphenation":
     case "vue/attribute-hyphenation":
       return [{ enum: ["always", "never"] }];

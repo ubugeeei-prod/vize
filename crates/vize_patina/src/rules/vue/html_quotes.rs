@@ -78,12 +78,14 @@ impl HtmlQuotesOption {
 /// Enforce HTML attribute quote style
 pub struct HtmlQuotes {
     pub style: HtmlQuotesOption,
+    pub avoid_escape: bool,
 }
 
 impl Default for HtmlQuotes {
     fn default() -> Self {
         Self {
             style: HtmlQuotesOption::Double,
+            avoid_escape: false,
         }
     }
 }
@@ -109,7 +111,9 @@ impl Rule for HtmlQuotes {
             if range.quote == Some(expected) {
                 continue;
             }
-            if is_directive && holds(ctx.source, range, expected) {
+            if (is_directive || (self.avoid_escape && range.quote.is_some()))
+                && holds(ctx.source, range, expected)
+            {
                 continue;
             }
             self.report(ctx, range, expected);

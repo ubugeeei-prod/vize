@@ -9,6 +9,7 @@ import type {
   ComponentNameInTemplateCasingOption,
   CustomEventNameCasingOption,
   DefineMacrosOrderOption,
+  HtmlQuoteStyle,
   HtmlSelfClosingOption,
   HyphenationStyle,
   NoMutatingPropsOption,
@@ -57,6 +58,28 @@ export function getRuleOptions(
         return { htmlSelfClosing: firstOption };
       }
       break;
+    case "vue/html-quotes": {
+      if (!isHtmlQuoteStyle(firstOption)) break;
+      const secondOption = options[1];
+      if (secondOption === undefined) {
+        return { ruleOptions: { "vue/html-quotes": firstOption } };
+      }
+      if (
+        isRecord(secondOption) &&
+        hasOnlyKeys(secondOption, ["avoidEscape"]) &&
+        optionalBooleanField(secondOption.avoidEscape)
+      ) {
+        return {
+          ruleOptions: {
+            "vue/html-quotes": {
+              style: firstOption,
+              avoidEscape: secondOption.avoidEscape ?? false,
+            },
+          },
+        };
+      }
+      break;
+    }
     case "vue/v-on-event-hyphenation":
       if (isHyphenationStyle(firstOption)) {
         return { vOnEventHyphenation: firstOption };
@@ -162,6 +185,10 @@ function isHtmlSelfClosingOption(value: unknown): value is HtmlSelfClosingOption
         optionField(value.html.normal) &&
         optionField(value.html.component)))
   );
+}
+
+function isHtmlQuoteStyle(value: unknown): value is HtmlQuoteStyle {
+  return value === "double" || value === "single";
 }
 
 function isHyphenationStyle(value: unknown): value is HyphenationStyle {

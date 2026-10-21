@@ -16,7 +16,7 @@ use crate::rules::opinionated::vue::{
 use crate::rules::script::{CustomEventNameCasing, EventNameCasing};
 use crate::rules::script::{DefineMacrosOrder, NoRestrictedMembers, RestrictedGlobals};
 use crate::rules::vue::{
-    AttributeHyphenation, HyphenationStyle, NoMutatingProps, NoMutatingPropsOptions,
+    AttributeHyphenation, HtmlQuotes, HyphenationStyle, NoMutatingProps, NoMutatingPropsOptions,
     SfcElementOrder, SfcElementOrderOptions, VBindStyle, VBindStyleOption, VOnStyle,
     VOnStyleOption, VSlotStyle,
 };
@@ -184,6 +184,15 @@ impl Linter {
         } else {
             self.registry
                 .replace(Box::new(HtmlSelfClosing::new(options)));
+        }
+        self
+    }
+
+    /// Configure `vue/html-quotes` without enabling an unselected rule.
+    #[inline]
+    pub fn with_html_quotes(mut self, options: HtmlQuotes) -> Self {
+        if self.registry.has_rule("vue/html-quotes") {
+            self.registry.replace(Box::new(options));
         }
         self
     }

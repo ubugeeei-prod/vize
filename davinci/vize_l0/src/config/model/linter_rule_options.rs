@@ -15,6 +15,7 @@ mod casing;
 mod component_registration;
 mod content_directives;
 mod define_macros_order;
+mod html_quotes;
 mod html_self_closing;
 mod hyphenation;
 mod merge;
@@ -34,6 +35,7 @@ pub use casing::{
     TemplateComponentNameCasing,
 };
 pub use define_macros_order::DefineMacrosOrderOptions;
+pub use html_quotes::{HtmlQuoteStyle, HtmlQuotesConfig, HtmlQuotesOptions};
 pub use html_self_closing::{
     HtmlSelfClosingHtmlOptions, HtmlSelfClosingOptions, HtmlSelfClosingStyle,
 };
@@ -166,6 +168,9 @@ pub struct ConfigLintRuleOptions {
     /// Options for `vue/html-self-closing`.
     #[serde(rename = "vue/html-self-closing")]
     html_self_closing: Option<HtmlSelfClosingOptions>,
+    /// Options for `vue/html-quotes`.
+    #[serde(rename = "vue/html-quotes")]
+    html_quotes: Option<HtmlQuotesConfig>,
     /// Options for `vue/v-on-event-hyphenation`.
     #[serde(rename = "vue/v-on-event-hyphenation")]
     v_on_event_hyphenation: Option<HyphenationStyle>,
@@ -224,6 +229,7 @@ impl ConfigLintRuleOptions {
             && self.no_mutating_props.is_none()
             && self.sfc_element_order.is_none()
             && self.html_self_closing.is_none()
+            && self.html_quotes.is_none()
             && self.v_on_event_hyphenation.is_none()
             && self.v_bind_style.is_none()
             && self.v_on_style.is_none()
@@ -313,6 +319,12 @@ impl ConfigLintRuleOptions {
     #[inline]
     pub fn html_self_closing(&self) -> Option<HtmlSelfClosingOptions> {
         self.html_self_closing
+    }
+
+    /// Configured quote style and escaping policy for `vue/html-quotes`.
+    #[inline]
+    pub fn html_quotes(&self) -> Option<HtmlQuotesConfig> {
+        self.html_quotes
     }
 
     /// Configured style for `vue/v-on-event-hyphenation`.

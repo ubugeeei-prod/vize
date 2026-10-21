@@ -152,18 +152,18 @@ void test("missing case coverage becomes explicit unknown without changing manif
 
 void test("linter and LSP coverage record every pinned authored source dialect", () => {
   assert.deepEqual(summarizeDialectCoverage(load("linter").cases), {
-    plannedCases: 79,
+    plannedCases: 80,
     verifiedCases: 0,
-    provisionalCases: 79,
-    unknownReadinessCases: 79,
+    provisionalCases: 80,
+    unknownReadinessCases: 80,
     verified: {},
     provisional: {
-      "html-template": 45,
-      js: 4,
+      "html-template": 46,
+      js: 5,
       "pug-template": 1,
       ts: 32,
       "vue2-sfc": 2,
-      "vue3-sfc": 60,
+      "vue3-sfc": 61,
     },
   });
   assert.deepEqual(summarizeDialectCoverage(load("lsp").cases), {

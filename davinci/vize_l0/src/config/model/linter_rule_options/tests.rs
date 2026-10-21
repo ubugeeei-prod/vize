@@ -1,12 +1,60 @@
 mod casing;
 
 use super::{
-    ConfigLintRuleOptions, DefineMacrosOrderOptions, HtmlSelfClosingHtmlOptions,
-    HtmlSelfClosingOptions, HtmlSelfClosingStyle, HyphenationStyle, LintRuleOptions,
-    MuseaDesignToken, NoMutatingPropsOptions, RestrictedGlobal, RestrictedMember,
-    SfcElementOrderGroup, SfcElementOrderOptions, VBindStyle, VOnStyle, VSlotNamedStyle,
-    VSlotStyle, VSlotStyleOptions, VSlotStyleValue, VSlotUniformStyle,
+    ConfigLintRuleOptions, DefineMacrosOrderOptions, HtmlQuoteStyle, HtmlQuotesConfig,
+    HtmlQuotesOptions, HtmlSelfClosingHtmlOptions, HtmlSelfClosingOptions, HtmlSelfClosingStyle,
+    HyphenationStyle, LintRuleOptions, MuseaDesignToken, NoMutatingPropsOptions, RestrictedGlobal,
+    RestrictedMember, SfcElementOrderGroup, SfcElementOrderOptions, VBindStyle, VOnStyle,
+    VSlotNamedStyle, VSlotStyle, VSlotStyleOptions, VSlotStyleValue, VSlotUniformStyle,
 };
+
+#[test]
+fn html_quotes_accepts_shorthand_and_detailed_options() {
+    let shorthand: ConfigLintRuleOptions =
+        serde_json::from_str(r#"{"vue/html-quotes":"single"}"#).unwrap();
+    assert_eq!(
+        shorthand.html_quotes(),
+        Some(HtmlQuotesConfig::Style(HtmlQuoteStyle::Single))
+    );
+
+    let mut detailed: ConfigLintRuleOptions =
+        serde_json::from_str(r#"{"vue/html-quotes":{"style":"single","avoidEscape":true}}"#)
+            .unwrap();
+    assert_eq!(
+        detailed.html_quotes(),
+        Some(HtmlQuotesConfig::Options(HtmlQuotesOptions {
+            style: HtmlQuoteStyle::Single,
+            avoid_escape: true,
+        }))
+    );
+
+    let defaults: ConfigLintRuleOptions =
+        serde_json::from_str(r#"{"vue/html-quotes":{"avoidEscape":true}}"#).unwrap();
+    assert_eq!(
+        defaults.html_quotes(),
+        Some(HtmlQuotesConfig::Options(HtmlQuotesOptions {
+            style: HtmlQuoteStyle::Double,
+            avoid_escape: true,
+        }))
+    );
+
+    detailed.merge_from(&shorthand);
+    assert_eq!(
+        detailed.html_quotes(),
+        Some(HtmlQuotesConfig::Style(HtmlQuoteStyle::Single))
+    );
+
+    for invalid in [
+        r#"{"vue/html-quotes":"backtick"}"#,
+        r#"{"vue/html-quotes":{"avoidEscape":"yes"}}"#,
+        r#"{"vue/html-quotes":{"unknown":true}}"#,
+    ] {
+        assert!(
+            serde_json::from_str::<ConfigLintRuleOptions>(invalid).is_err(),
+            "accepted invalid option: {invalid}"
+        );
+    }
+}
 
 #[test]
 fn v_slot_style_accepts_uniform_and_position_specific_options() {

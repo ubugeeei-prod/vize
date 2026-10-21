@@ -205,6 +205,61 @@ fn lint_rule_options_configure_html_self_closing() {
 }
 
 #[test]
+fn lint_rule_options_configure_html_quotes_and_avoid_escape() {
+    let project_root = temp_project_dir();
+    write_project_file(
+        &project_root,
+        "src/Quotes.vue",
+        r#"<template>
+  <div class="card" title="don't"></div>
+</template>
+"#,
+    );
+    write_project_file(
+        &project_root,
+        "vite.config.mjs",
+        &vite_config::source(
+            r#"{
+  "linter": {
+    "preset": "incremental",
+    "rules": { "vue/html-quotes": "error" },
+    "ruleOptions": {
+      "vue/html-quotes": { "style": "single", "avoidEscape": true }
+    }
+  }
+}"#,
+        ),
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args([
+            "lint",
+            "--config",
+            "vite.config.mjs",
+            "--format",
+            "json",
+            "src/Quotes.vue",
+        ])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(1), "{}", output_details(&output));
+    assert_eq!(output.stderr, b"", "{}", output_details(&output));
+
+    let stdout = std::str::from_utf8(&output.stdout).unwrap();
+    let report: serde_json::Value = serde_json::from_str(stdout).unwrap();
+    let messages = report[0]["messages"].as_array().unwrap();
+    assert_eq!(messages.len(), 1, "{stdout}");
+    assert_eq!(messages[0]["ruleId"], "vue/html-quotes");
+    assert_eq!(
+        messages[0]["message"],
+        "[vize:vue/html-quotes] Expected single quotes but found double quotes"
+    );
+
+    let _ = fs::remove_dir_all(project_root);
+}
+
+#[test]
 fn lint_rule_options_configure_v_on_style() {
     let project_root = temp_project_dir();
     write_project_file(

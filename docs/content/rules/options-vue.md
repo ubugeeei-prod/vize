@@ -8,6 +8,42 @@ Vue rule option examples cover component name casing, prop mutation depth, SFC b
 self-closing tags, event names, and attribute casing. The main [Rule Options](./options.md) page lists the complete option table,
 unknown-field behavior, and scoped replacement semantics.
 
+## `vue/html-quotes`
+
+Use `"double"` or `"single"` as a compact quote-style option. The object form also accepts
+`avoidEscape`; when it is `true`, an already quoted attribute containing the requested delimiter
+keeps its existing quotes instead of adding an escape.
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      rules: { "vue/html-quotes": "warn" },
+      ruleOptions: {
+        "vue/html-quotes": { style: "single", avoidEscape: true },
+      },
+    },
+  },
+});
+```
+
+Bad with this config:
+
+```vue
+<div class="card"></div>
+```
+
+Good with this config:
+
+```vue
+<div class='card' title="don't"></div>
+```
+
+The first value is safely fixed to `class='card'`; `title="don't"` remains unchanged.
+Options configure the rule without enabling it.
+
 ## `vue/valid-v-slot`
 
 By default, static and dynamic slot arguments reject modifiers such as

@@ -9,6 +9,7 @@ typealias LintPreset = "general-recommended" | "general_recommended" | "generalR
 typealias TemplateComponentNameCasing = "PascalCase"|"kebab-case"
 typealias CustomEventNameCasing = "camelCase"|"kebab-case"
 typealias HtmlSelfClosingStyle = "always"|"never"|"any"
+typealias HtmlQuoteStyle = "double"|"single"
 typealias HyphenationStyle = "always"|"never"
 typealias VBindStyle = "shorthand"|"longform"
 typealias VOnStyle = "shorthand"|"longform"
@@ -91,6 +92,12 @@ class HtmlSelfClosingOptions {
   math: HtmlSelfClosingStyle = "always"
 }
 
+/// Detailed options for `vue/html-quotes`.
+class HtmlQuotesOptions {
+  style: HtmlQuoteStyle = "double"
+  avoidEscape: Boolean = false
+}
+
 /// Position-specific options for `vue/v-slot-style`.
 class VSlotStyleOptions {
   atComponent: VSlotStyleValue = "v-slot"
@@ -157,6 +164,7 @@ class LintRuleOptions {
   `vue/require-component-registration`: RequireComponentRegistrationOptions? = null
   `vue/sfc-element-order`: SfcElementOrderOptions? = null
   `vue/html-self-closing`: HtmlSelfClosingOptions? = null
+  `vue/html-quotes`: (HtmlQuoteStyle|HtmlQuotesOptions)? = null
   `vue/v-on-event-hyphenation`: HyphenationStyle? = null
   `vue/v-bind-style`: VBindStyle? = null
   `vue/v-on-style`: VOnStyle? = null

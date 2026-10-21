@@ -23,6 +23,7 @@ export const configurableRules = new Set([
   "vue/attribute-hyphenation",
   "vue/component-name-in-template-casing",
   "vue/html-self-closing",
+  "vue/html-quotes",
   "vue/no-mutating-props",
   "vue/require-component-registration",
   "vue/sfc-element-order",

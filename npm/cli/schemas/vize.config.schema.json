@@ -663,6 +663,29 @@
           },
           "additionalProperties": false
         },
+        "vue/html-quotes": {
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": ["double", "single"]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "style": {
+                  "default": "double",
+                  "type": "string",
+                  "enum": ["double", "single"]
+                },
+                "avoidEscape": {
+                  "default": false,
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
         "vue/v-on-event-hyphenation": {
           "type": "string",
           "enum": ["always", "never"]

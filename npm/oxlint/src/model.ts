@@ -160,6 +160,7 @@ export interface VizeRuleOptions {
   "vue/require-component-registration"?: { globals?: string[] };
   "vue/sfc-element-order"?: SfcElementOrderOption;
   "vue/html-self-closing"?: HtmlSelfClosingOption;
+  "vue/html-quotes"?: HtmlQuotesConfig;
   "vue/v-on-event-hyphenation"?: HyphenationStyle;
   "vue/v-bind-style"?: VBindStyle;
   "vue/v-on-style"?: VOnStyle;
@@ -199,6 +200,9 @@ export interface HtmlSelfClosingOption {
   svg?: HtmlSelfClosingStyle;
   math?: HtmlSelfClosingStyle;
 }
+
+export type HtmlQuoteStyle = "double" | "single";
+export type HtmlQuotesConfig = HtmlQuoteStyle | { style?: HtmlQuoteStyle; avoidEscape?: boolean };
 export type HyphenationStyle = "always" | "never";
 export type VBindStyle = "shorthand" | "longform";
 export type VOnStyle = "shorthand" | "longform";

@@ -136,6 +136,30 @@ test("canonical validation preserves native option properties named default", ()
   );
 });
 
+test("canonical validation accepts html quote style and avoidEscape", () => {
+  const vue = {
+    linter: {
+      ruleOptions: {
+        "vue/html-quotes": { style: "single", avoidEscape: true },
+      },
+    },
+  };
+  assert.equal(vueConfigOptions({ vue }), vue);
+  assert.throws(
+    () =>
+      vueConfigOptions({
+        vue: {
+          linter: {
+            ruleOptions: {
+              "vue/html-quotes": { style: "backtick" },
+            },
+          },
+        },
+      }),
+    /must match one documented native option type/,
+  );
+});
+
 test("canonical namespaces refuse unknown roots, entries, native fields and mismatched section shapes", () => {
   for (const vue of [
     null,
