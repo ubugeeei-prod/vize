@@ -20,10 +20,10 @@ pub(in crate::virtual_ts::generator) struct FallthroughComponentScope<'a> {
     pub(in crate::virtual_ts::generator) options: &'a VirtualTsOptions,
     pub(in crate::virtual_ts::generator) syntactic_type_only_imported_names:
         &'a FxHashSet<CompactString>,
-    /// `fallthroughAttributes`: resolve a component root to the rendered
-    /// component's props. Off, a component root keeps the open surface it
-    /// always had, so a project that never asked for fallthrough inference
-    /// sees no new listener or prop types (`vue-tsc` infers nothing either).
+    /// Resolve a component root to the rendered component's props when either
+    /// fallthrough inference or strict component attrs needs that surface.
+    /// Otherwise a component root keeps the open surface it always had, so a
+    /// project that asked for neither sees no new listener or prop types.
     pub(in crate::virtual_ts::generator) resolve_component_roots: bool,
     /// `checkRequiredFallthroughAttributes`: forward the root's props as they
     /// are declared, minus the ones the root binds itself, instead of making
@@ -43,7 +43,8 @@ impl<'a> FallthroughComponentScope<'a> {
             summary,
             options,
             syntactic_type_only_imported_names,
-            resolve_component_roots: checks.fallthrough_attributes,
+            resolve_component_roots: checks.fallthrough_attributes
+                || checks.strict_component_attrs(),
             check_required: checks.fallthrough_attributes
                 && checks.check_required_fallthrough_attributes,
             checks,

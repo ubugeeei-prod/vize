@@ -6,7 +6,7 @@ use vize_relief::{
 };
 
 use super::{FallthroughComponentScope, fallthrough_props_type_ref, possible_raw_if_chain_tags};
-use crate::virtual_ts::types::VirtualTsOptions;
+use crate::virtual_ts::types::{VirtualTsCheckOptions, VirtualTsOptions};
 
 fn fallthrough_type(script: &str, template: &str) -> Option<vize_carton::String> {
     fallthrough_type_with(script, template, false)
@@ -70,6 +70,61 @@ fn component_roots_stay_open_without_fallthrough_attributes() {
         fallthrough_props_type_ref(&scope, Some(&root), false).as_deref(),
         Some("Record<string, unknown>")
     );
+}
+
+#[test]
+fn strict_component_attrs_resolves_single_root_surfaces_without_fallthrough_opt_in() {
+    let checks = VirtualTsCheckOptions {
+        strict_component_attrs: true,
+        fallthrough_attributes: false,
+        ..Default::default()
+    };
+
+    for (script, template, expected) in [
+        (
+            "defineProps<{ title: string }>()",
+            "<button>{{ title }}</button>",
+            "Partial<__VizeNativeElement<\"button\">>",
+        ),
+        (
+            "import Basic from './basic.vue'\ndefineProps<{ title: string }>()",
+            "<Basic>{{ title }}</Basic>",
+            "Partial<__VizeComponentFallthroughProps<typeof Basic>>",
+        ),
+    ] {
+        let allocator = Allocator::new();
+        let (root, _) = vize_armature::parse(&allocator, template);
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        analyzer.analyze_template(&root);
+        let summary = analyzer.finish();
+        let options = VirtualTsOptions::default();
+        let type_imports = Default::default();
+        let scope = FallthroughComponentScope::new(
+            &summary,
+            &options,
+            &type_imports,
+            checks,
+        );
+
+        assert!(scope.resolve_component_roots);
+        assert!(!scope.check_required);
+        assert_eq!(
+            fallthrough_props_type_ref(&scope, Some(&root), false).as_deref(),
+            Some(expected)
+        );
+    }
+
+    let allocator = Allocator::new();
+    let (root, _) = vize_armature::parse(&allocator, "<div /> <span />");
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    let options = VirtualTsOptions::default();
+    let type_imports = Default::default();
+    let scope = FallthroughComponentScope::new(&summary, &options, &type_imports, checks);
+    assert!(!scope.check_required);
+    assert_eq!(fallthrough_props_type_ref(&scope, Some(&root), false), None);
 }
 
 fn raw_branch<'a>(
