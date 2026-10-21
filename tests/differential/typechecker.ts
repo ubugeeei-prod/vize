@@ -62,8 +62,7 @@ export const TYPECHECKER_TESTS = {
     "dynamic_template_ref_unions_preserve_batch_acceptance",
   "content-mapper-dynamic-template-ref-scope-10251":
     "dynamic_template_ref_union_registry_stays_in_scope",
-  "content-mapper-props-binding-10196":
-    "authored_props_binding_preserves_batch_acceptance",
+  "content-mapper-props-binding-10196": "authored_props_binding_preserves_batch_acceptance",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";

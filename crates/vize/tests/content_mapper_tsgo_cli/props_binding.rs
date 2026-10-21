@@ -35,9 +35,8 @@ struct Input {
 }
 
 fn fixture_root() -> PathBuf {
-    workspace_root().join(
-        "tests/_fixtures/differential/typechecker/content-mapper-props-binding-10196",
-    )
+    workspace_root()
+        .join("tests/_fixtures/differential/typechecker/content-mapper-props-binding-10196")
 }
 
 #[test]
