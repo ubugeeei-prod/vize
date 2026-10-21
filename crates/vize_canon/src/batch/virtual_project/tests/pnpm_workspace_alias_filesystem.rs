@@ -126,15 +126,22 @@ fn package_import_and_workspace_dependency_share_terminal_alias_targets() {
     );
     let links = project.workspace_alias_links();
     assert!(!links.is_empty());
+    let traversed_links = links
+        .iter()
+        .flat_map(|link| {
+            links.iter().filter_map(move |other| {
+                (other.virtual_dir != link.virtual_dir
+                    && link.real_dir.strip_prefix(&other.virtual_dir).is_ok())
+                .then(|| (link.virtual_dir.clone(), other.virtual_dir.clone()))
+            })
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(
+        traversed_links,
+        Vec::new(),
+        "workspace alias targets must not traverse another package link"
+    );
     for link in &links {
-        assert!(
-            !links.iter().any(|other| {
-                other.virtual_dir != link.virtual_dir
-                    && link.real_dir.starts_with(&other.virtual_dir)
-            }),
-            "workspace alias target must not traverse another package link: {:?}",
-            link.virtual_dir
-        );
         assert_eq!(
             link.virtual_dir.canonicalize().unwrap(),
             link.real_dir.canonicalize().unwrap()
