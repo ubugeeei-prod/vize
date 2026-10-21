@@ -137,7 +137,7 @@ impl TemplateFormatter<'_> {
     }
 
     #[inline]
-    pub(super) fn write_wrapped_hugged_child(
+    pub(super) fn write_wrapped_text_interpolation(
         &self,
         output: &mut Vec<u8>,
         formatted: &str,
@@ -146,15 +146,20 @@ impl TemplateFormatter<'_> {
         depth: usize,
         joiner: &LineJoiner<'_>,
     ) -> bool {
-        if !formatted.starts_with("{{ ") || joiner.locks_current_line() {
+        if joiner.locks_current_line() {
             return false;
         }
-        let Some(name) = joiner.hugged_closing_name(start, end) else {
+        let Some(first_open) = memchr::memmem::find(formatted.as_bytes(), b"{{") else {
             return false;
         };
+        if parse_interpolation_range(formatted.as_bytes(), first_open).is_none() {
+            return false;
+        }
+        let hugged_name = joiner.hugged_closing_name(start, end);
         let line_start = memchr::memrchr2(b'\r', b'\n', output).map_or(0, |pos| pos + 1);
         let line = output.get(line_start..).unwrap_or_default();
-        let suffix_width = name.len() + 3 + self.base_depth * self.options.tab_width as usize;
+        let suffix_width = hugged_name.map_or(0, |name| name.len() + 3)
+            + self.base_depth * self.options.tab_width as usize;
         // Without tabs, UTF-8 byte length bounds Unicode display width. Avoid
         // validation and exact width scans when even that upper bound fits.
         if line.len() + formatted.len() + suffix_width <= self.options.print_width as usize
@@ -176,27 +181,37 @@ impl TemplateFormatter<'_> {
         if width(line) + width(formatted) + suffix_width <= self.options.print_width as usize {
             return false;
         }
-        let Some((expr_start, expr_end, close)) =
-            parse_interpolation_range(formatted.as_bytes(), 0)
-        else {
-            return false;
+        // Break only inside mustache syntax, never between runtime text and an
+        // interpolation. This preserves text such as `<{{ value }}>` byte for
+        // byte while giving every interpolation on the overflowing line a
+        // stable layout. A child touching both parent tags uses the established
+        // parent depth; an authored child line keeps its own depth.
+        let layout_depth = if hugged_name.is_some() {
+            depth.saturating_sub(1)
+        } else {
+            depth
         };
-        if close != formatted.len() {
-            return false;
+        let bytes = formatted.as_bytes();
+        let mut cursor = 0;
+        while let Some(offset) =
+            memchr::memmem::find(bytes.get(cursor..).unwrap_or_default(), b"{{")
+        {
+            let open = cursor + offset;
+            let Some((expr_start, expr_end, close)) = parse_interpolation_range(bytes, open) else {
+                break;
+            };
+            output.extend_from_slice(bytes.get(cursor..open + 2).unwrap_or_default());
+            output.extend_from_slice(self.newline);
+            let expression = formatted.get(expr_start..expr_end).unwrap_or_default();
+            output.extend_from_slice(
+                self.render_interpolation_expr_lines(expression, layout_depth)
+                    .as_bytes(),
+            );
+            self.write_indent(output, layout_depth);
+            output.extend_from_slice(b"}}");
+            cursor = close;
         }
-        // Both newlines are inside mustache syntax. The source-owned parent,
-        // child and closing-tag adjacency stays exact; the expression was
-        // formatted once already, including its raw literal continuations.
-        let parent_depth = depth.saturating_sub(1);
-        output.extend_from_slice(b"{{");
-        output.extend_from_slice(self.newline);
-        let expression = formatted.get(expr_start..expr_end).unwrap_or_default();
-        output.extend_from_slice(
-            self.render_interpolation_expr_lines(expression, parent_depth)
-                .as_bytes(),
-        );
-        self.write_indent(output, parent_depth);
-        output.extend_from_slice(b"}}");
+        output.extend_from_slice(bytes.get(cursor..).unwrap_or_default());
         output.extend_from_slice(self.newline);
         true
     }

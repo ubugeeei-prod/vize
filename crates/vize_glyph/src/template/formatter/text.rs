@@ -68,7 +68,7 @@ impl TemplateFormatter<'_> {
             return;
         }
         self.open_chunk(output, depth, joiner.open(start));
-        if self.write_wrapped_hugged_child(output, &formatted, start, end, depth, joiner) {
+        if self.write_wrapped_text_interpolation(output, &formatted, start, end, depth, joiner) {
             joiner.finish(end);
             return;
         }

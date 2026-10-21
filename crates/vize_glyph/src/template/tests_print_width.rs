@@ -220,3 +220,50 @@ fn newly_wrapped_hugged_interpolation_with_trailing_text_is_stable() {
         formatted
     );
 }
+
+#[test]
+fn text_hugged_interpolations_respect_print_width() {
+    let options = FormatOptions {
+        print_width: 100,
+        ..FormatOptions::default()
+    };
+    let source = r#"<div class="card">
+  <section class="panel">
+    <p class="tag">
+      &lt;{{
+        kind === "primary" ? "my-primary-widget-element-name" : "my-secondary-widget-name"
+      }}&gt;
+    </p>
+    <p class="tag">
+      Name: {{ kind === "primary" ? "my-primary-widget-element-name" : "my-secondary-widget-name-long" }}
+    </p>
+  </section>
+</div>"#;
+
+    let expected = r#"<div class="card">
+  <section class="panel">
+    <p class="tag">
+      &lt;{{
+        kind === "primary" ? "my-primary-widget-element-name" : "my-secondary-widget-name"
+      }}&gt;
+    </p>
+    <p class="tag">
+      Name: {{
+        kind === "primary" ? "my-primary-widget-element-name" : "my-secondary-widget-name-long"
+      }}
+    </p>
+  </section>
+</div>"#;
+
+    let formatted = format_template_content(source, &options).unwrap();
+    assert_eq!(formatted.as_str(), expected);
+    assert!(
+        formatted.lines().all(|line| line.len() <= 100),
+        "mixed text/interpolation lines must respect print_width"
+    );
+    assert_eq!(
+        format_template_content(&formatted, &options).unwrap(),
+        formatted,
+        "the wrapped layout must be stable"
+    );
+}
