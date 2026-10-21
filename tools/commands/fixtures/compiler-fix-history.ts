@@ -19,6 +19,7 @@ export const HISTORY_CRATES = [
 ];
 const INDEX = "docs/davinci/plan/compiler-fix-history.tsv";
 const RECEIPT = "docs/davinci/plan/compiler-fix-history-index.json";
+const REVIEWS = "docs/davinci/plan/compiler-fix-history-reviews.json";
 const FIX = /^fix(?:\([^)]*\))?!?:/;
 const digest = (bytes: string | Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 
@@ -32,9 +33,141 @@ function git(root: string, args: string[], input?: string): string {
 }
 
 type CaseReference = { id: string; evidence: string };
+type ScopeReview = {
+  fixCommit: string;
+  caseId: string;
+  coveredRequirements: string[];
+  remainingScope: string[];
+};
+type PinnedArtifact = { path: string; sha256: string };
+type ReviewDocument = {
+  schema: string;
+  version: number;
+  manifest: string;
+  scope: string;
+  reviews: ScopeReview[];
+};
+type DifferentialFixture = {
+  id: string;
+  state: string;
+  targets: string[];
+  inputs: { files: PinnedArtifact[] };
+  options: PinnedArtifact;
+  reference: PinnedArtifact;
+  historicalObservation: PinnedArtifact;
+  provenance: {
+    commits: { sha: string; role: string }[];
+    witness: { path: string; symbol: string };
+  };
+  comparison: { contract: string; requiredFacets: string[] };
+};
+type DifferentialManifest = {
+  schema: string;
+  version: number;
+  product: string;
+  cases: DifferentialFixture[];
+};
 const MERGE_ORIGINS = new Map([
   ["0de7787aeac48a931e15bc590a3e3b803286dcb8", "14a4ff375bc1a31dac829da5c650347353130331"],
 ]);
+
+const SFC_RESULT_FACETS = [
+  "code",
+  "css",
+  "map",
+  "errors",
+  "warnings",
+  "bindings",
+  "macroArtifacts",
+];
+
+function assertPinnedArtifact(root: string, artifact: PinnedArtifact) {
+  assert.match(artifact.path, /^[a-zA-Z0-9_./-]+$/);
+  assert.match(artifact.sha256, /^[a-f0-9]{64}$/);
+  const bytes = fs.readFileSync(path.join(root, artifact.path));
+  assert.equal(digest(bytes), artifact.sha256, `stale pinned artifact: ${artifact.path}`);
+}
+
+function reviewedScopes(root: string, links: Map<string, CaseReference[]>) {
+  const reviewBytes = fs.readFileSync(path.join(root, REVIEWS), "utf8");
+  const document = JSON.parse(reviewBytes) as ReviewDocument;
+  assert.equal(document.schema, "vize.compiler.fix-history-reviews");
+  assert.equal(document.version, 1);
+  assert.equal(typeof document.scope, "string");
+  assert(document.scope.length > 0);
+  assert.match(document.manifest, /^[a-zA-Z0-9_./-]+$/);
+  assert(Array.isArray(document.reviews));
+
+  const manifestBytes = fs.readFileSync(path.join(root, document.manifest), "utf8");
+  const manifest = JSON.parse(manifestBytes) as DifferentialManifest;
+  assert.equal(manifest.schema, "vize.differential.manifest");
+  assert.equal(manifest.version, 1);
+  assert.equal(manifest.product, "compiler");
+  assert(Array.isArray(manifest.cases));
+  const cases = new Map<string, DifferentialFixture>(
+    manifest.cases.map((fixture) => [fixture.id, fixture]),
+  );
+  const reviews = new Map<string, ScopeReview>();
+
+  for (const review of document.reviews) {
+    assert.match(review.fixCommit, /^[a-f0-9]{40}$/);
+    assert.equal(typeof review.caseId, "string");
+    assert(review.caseId.length > 0);
+    assert(Array.isArray(review.coveredRequirements));
+    assert(review.coveredRequirements.length > 0);
+    assert(review.coveredRequirements.every((requirement) => requirement.length > 0));
+    assert(Array.isArray(review.remainingScope));
+    assert(
+      review.remainingScope.length > 0,
+      `${review.caseId} must retain explicit remaining scope`,
+    );
+    assert(review.remainingScope.every((remaining) => remaining.length > 0));
+    assert(!reviews.has(review.fixCommit), `duplicate reviewed fix: ${review.fixCommit}`);
+
+    const reference = links
+      .get(review.fixCommit)
+      ?.find((candidate) => candidate.id === review.caseId);
+    assert(reference, `review lacks an explicit fixture provenance link: ${review.caseId}`);
+    const fixture = cases.get(review.caseId);
+    assert(fixture, `reviewed case is absent from the differential manifest: ${review.caseId}`);
+    assert.equal(fixture.state, "active");
+    assert.deepEqual(fixture.targets, ["dom"]);
+    assert.equal(fixture.comparison.contract, "compiler-complete-public-sfc-result-v1");
+    assert.deepEqual(fixture.comparison.requiredFacets, SFC_RESULT_FACETS);
+    assert(
+      fixture.provenance.commits.some(
+        (commit) => commit.sha === review.fixCommit && commit.role === "fix",
+      ),
+      `manifest provenance does not bind ${review.caseId} to ${review.fixCommit}`,
+    );
+    assert.equal(typeof fixture.provenance.witness.path, "string");
+    assert.equal(typeof fixture.provenance.witness.symbol, "string");
+    const witness = fs.readFileSync(path.join(root, fixture.provenance.witness.path), "utf8");
+    assert(
+      witness.includes(fixture.provenance.witness.symbol),
+      `missing authored witness symbol: ${fixture.provenance.witness.symbol}`,
+    );
+    for (const artifact of [
+      ...fixture.inputs.files,
+      fixture.options,
+      fixture.reference,
+      fixture.historicalObservation,
+    ])
+      assertPinnedArtifact(root, artifact);
+    reviews.set(review.fixCommit, review);
+  }
+
+  return {
+    path: REVIEWS,
+    sha256: digest(reviewBytes),
+    manifest: { path: document.manifest, sha256: digest(manifestBytes) },
+    reviews,
+  };
+}
+
+export function validateHistoryReviews(root: string) {
+  return reviewedScopes(root, fixtureReferences(root));
+}
 
 // Only explicit provenance links count. A commit subject or changed snapshot
 // does not establish that its original input or complete target bytes survive.
@@ -95,6 +228,7 @@ export function collectHistory(root: string) {
   const fixes = commits.filter((commit) => FIX.test(commit.subject));
   const nonMergeFixes = fixes.filter((commit) => commit.parents.length < 2);
   const links = fixtureReferences(root);
+  const reviewed = reviewedScopes(root, links);
   const rows = nonMergeFixes.map((commit) => {
     const paths = git(root, ["show", "--format=", "--name-only", commit.sha, "--", ...scopes])
       .trimEnd()
@@ -111,9 +245,12 @@ export function collectHistory(root: string) {
         /(?:\/tests(?:\/|\.rs)|_tests\.rs$|\.snap$)/.test(file),
       ),
       references,
-      review: references.length
-        ? "fixture-linked;target-and-semantic-review-pending"
-        : "semantic-review-pending",
+      scopeReview: reviewed.reviews.get(commit.sha) ?? null,
+      review: reviewed.reviews.has(commit.sha)
+        ? "fixture-linked;bounded-semantic-scope-reviewed;whole-fix-review-pending"
+        : references.length
+          ? "fixture-linked;target-and-semantic-review-pending"
+          : "semantic-review-pending",
     };
   });
   const indexed = new Set(rows.map((row) => row.sha));
@@ -144,7 +281,7 @@ export function collectHistory(root: string) {
           : "semantic-scope-review-pending",
       };
     });
-  return { raw, commits, fixes, rows, nonIndexedFixtureReferences };
+  return { raw, commits, fixes, rows, nonIndexedFixtureReferences, reviewed };
 }
 
 export function renderHistory(history: ReturnType<typeof collectHistory>) {
@@ -179,7 +316,7 @@ export function renderHistory(history: ReturnType<typeof collectHistory>) {
   const index = `${columns.join("\t")}\n${body.join("\n")}\n`;
   const receipt = {
     schema: "vize.compiler.fix-history-index",
-    version: 1,
+    version: 2,
     sourceRevision: HISTORY_REVISION,
     paths: HISTORY_CRATES.map((name) => `crates/${name}`),
     command: [
@@ -196,6 +333,14 @@ export function renderHistory(history: ReturnType<typeof collectHistory>) {
     conventionalFixSubjects: history.fixes.length,
     nonMergeFixSubjects: history.rows.length,
     fixtureLinkedFixSubjects: history.rows.filter((row) => row.references.length).length,
+    boundedReviewedFixtureScopes: history.rows.filter((row) => row.scopeReview).length,
+    wholeFixReviewedSubjects: 0,
+    wholeFixReviewPendingSubjects: history.rows.length,
+    reviewLedger: {
+      path: history.reviewed.path,
+      sha256: history.reviewed.sha256,
+      differentialManifest: history.reviewed.manifest,
+    },
     nonIndexedFixtureReferences: history.nonIndexedFixtureReferences,
     patchEquivalentGroups: [...groups.values()].filter((group) => group.length > 1),
     index: { path: INDEX, sha256: digest(index) },
@@ -205,7 +350,8 @@ export function renderHistory(history: ReturnType<typeof collectHistory>) {
       "The original 609-fix snapshot has no verified source revision.",
       "Changed witness paths and stable patch equivalence are candidates, not coverage or automatic duplicate exclusions.",
       "Fixture references cover only their recorded entrypoint, target, options and public output facets.",
-      "Every row retains pending semantic and target review; historical or local execution does not certify current Actions or a native route.",
+      "Five SFC fixture scopes have bounded semantic review; every fix subject retains whole-fix target and dialect review pending.",
+      "Historical or local execution does not certify current Actions or a native route.",
     ],
   };
   return { index, receipt: `${JSON.stringify(receipt, null, 2)}\n` };
@@ -240,6 +386,8 @@ function main() {
     JSON.stringify({
       nonMergeFixSubjects: receipt.nonMergeFixSubjects,
       fixtureLinkedFixSubjects: receipt.fixtureLinkedFixSubjects,
+      boundedReviewedFixtureScopes: receipt.boundedReviewedFixtureScopes,
+      wholeFixReviewedSubjects: receipt.wholeFixReviewedSubjects,
       semanticDenominator: null,
       nativeAcceptance: 0,
     }),

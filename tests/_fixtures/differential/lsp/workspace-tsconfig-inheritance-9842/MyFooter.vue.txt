@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const version = __APP_VERSION__.toUpperCase();
+</script>
+
+<template>
+  <footer>{{ version }}</footer>
+</template>

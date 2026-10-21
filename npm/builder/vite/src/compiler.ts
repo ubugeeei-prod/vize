@@ -178,9 +178,9 @@ export function compileFile(
 ): CompiledModule {
   const content = source ?? fs.readFileSync(filePath, "utf-8");
   const resolved = resolveSfcSrcImports(filePath, content);
-  const scopeId = generateScopeId(filePath);
+  const scopeId = generateScopeId(filePath, options.root, options.isProd ?? false, content);
 
-  const result = compileSfc(resolved.source, buildCompileFileOptions(filePath, options));
+  const result = compileSfc(resolved.source, buildCompileFileOptions(filePath, options, scopeId));
 
   if (result.errors.length > 0) {
     throw new VizeSfcCompileError(filePath, result.errors);
@@ -300,6 +300,7 @@ export function compileBatch(
     return {
       path: file.path,
       source: resolved.source,
+      scopeId: generateScopeId(file.path, options.root, options.isProd ?? false, file.source),
     };
   });
 
@@ -307,6 +308,42 @@ export function compileBatch(
     resolvedFiles satisfies BatchFileInput[],
     buildCompileBatchOptions(options),
   );
+
+  // Released native bindings predating the batch `scopeId` field ignore it and
+  // return their absolute-path scope instead. Keep the JS adapter compatible
+  // with those bindings by falling back to the older single-file API, which
+  // already accepts an explicit scope ID. Updated bindings retain the native
+  // parallel path without this extra work.
+  const filesByPath = new Map(files.map((file) => [file.path, file]));
+  const requestedScopes = new Map(resolvedFiles.map((file) => [file.path, file.scopeId]));
+  for (const fileResult of result.results) {
+    const requestedScope = requestedScopes.get(fileResult.path);
+    const input = filesByPath.get(fileResult.path);
+    if (
+      fileResult.errors.length > 0 ||
+      requestedScope === undefined ||
+      fileResult.scopeId === requestedScope ||
+      input === undefined
+    ) {
+      continue;
+    }
+
+    const fallback = compileFile(fileResult.path, cache, options, input.source, {
+      logWarnings: false,
+    });
+    fileResult.code = fallback.code;
+    delete fileResult.map;
+    if (fallback.map !== undefined) fileResult.map = fallback.map;
+    delete fileResult.css;
+    if (fallback.css !== undefined) fileResult.css = fallback.css;
+    fileResult.scopeId = fallback.scopeId;
+    fileResult.hasScoped = fallback.hasScoped;
+    delete fileResult.macroArtifacts;
+    if (fallback.macroArtifacts !== undefined) {
+      fileResult.macroArtifacts = fallback.macroArtifacts;
+    }
+    delete fileResult.moduleShape;
+  }
 
   // Update cache with results
   for (const fileResult of result.results) {

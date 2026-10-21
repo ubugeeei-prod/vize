@@ -57,6 +57,33 @@ test("formatter-only init uses defaults and does not scaffold typecheck settings
   }
 });
 
+test("formatter-only Nuxt init covers root and app-directory layouts", async () => {
+  const root = temporaryProject("nuxt-formatter-layouts");
+  try {
+    writeManifest(root, { name: "fixture", private: true, devDependencies: { nuxt: "^4.0.0" } });
+    write(root, "nuxt.config.ts", "export default defineNuxtConfig({});\n");
+    write(root, "app.vue", "<template><main>Root layout</main></template>\n");
+
+    const result = await runInit(root, [
+      "--yes",
+      "--no-lint",
+      "--no-bundler",
+      "--fmt",
+      "--no-typecheck",
+      "--no-editor",
+      "--no-install",
+    ]);
+
+    assert.deepEqual(result.written, ["package.json"]);
+    assert.deepEqual(JSON.parse(read(root, "package.json")).scripts, {
+      "vize:fmt": "vize fmt --check app app.vue",
+      "vize:fmt:fix": "vize fmt --write app app.vue",
+    });
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("setup scaffolds a strict TypeScript project and preserves its project references", () => {
   const root = temporaryProject("setup-typescript");
   try {

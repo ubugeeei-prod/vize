@@ -10,6 +10,8 @@ import type { MacroArtifact, NativeStyleBlockInfo } from "./types.ts";
 export interface BatchFileInput {
   path: string;
   source: string;
+  /** Project-relative scope identity shared with on-demand compilation. */
+  scopeId?: string;
 }
 
 export interface BatchFileResult {
