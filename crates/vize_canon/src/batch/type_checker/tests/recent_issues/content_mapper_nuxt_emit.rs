@@ -14,12 +14,18 @@ fn content_mapper_preserves_emit_with_nuxt_pattern_injections() {
     let result = generate_vue_content_mapper_transform(Path::new("src/MyItem.vue"), source)
         .expect("transform");
 
-    assert!(result.text.contains(
-        "__VizeReplaceComponentProps<__VizeComponentInstance, __VizeAuthoredKeyWitness<__VizeAuthoredProps>"
-    ));
-    assert!(
-        !result
+    assert_eq!(
+        result
             .text
-            .contains(": Omit<__VizeComponentInstance, '$props'> & {")
+            .matches("__VizeReplaceComponentProps<__VizeComponentInstance, __VizeAuthoredKeyWitness<__VizeAuthoredProps>")
+            .count(),
+        1
+    );
+    assert_eq!(
+        result
+            .text
+            .matches(": Omit<__VizeComponentInstance, '$props'> & {")
+            .count(),
+        0
     );
 }

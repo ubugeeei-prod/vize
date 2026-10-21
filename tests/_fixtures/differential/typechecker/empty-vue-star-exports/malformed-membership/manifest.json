@@ -21,8 +21,8 @@
       "file": "malformed-membership/part-01.json",
       "mode": "100644",
       "bytes": 7105,
-      "sha256": "39835ecc5d7e4d08c079230e436c7b30dc4dd18391814fc95e1f3d2166f2b01f",
-      "gitBlob": "5527050a3e6642e1f68159343a11a3563e05e862",
+      "sha256": "b33b0b808ecf30a78e80f36cb6af615e0d58cb6e3dd7427ace625d3bd7607fec",
+      "gitBlob": "15357170c5ca4f5d7eda7004dac96fd947e8f735",
       "start": 43,
       "entries": 43
     }
@@ -321,6 +321,67 @@
         "changes": "Each nongeneric A/B options contract replaces setup:any with a precise readonly raw-props parameter; 50 bytes per module."
       },
       "proof": "The complete actual 86-member source-native packet differs only at entries74/75. Both generated/materialized/native-loaded bodies have the recorded exact lengths and SHA256; the other84 rooted references, bodies and order are unchanged.",
+      "scope": "The source-native run intentionally failed the preceding membership reference after preserving the complete packet. The malformed TS1109 response remains an observation; no semantic-green or release acceptance is credited until the renewed exact-head run passes all assertions."
+    },
+    "nuxtLiteralPublicMemberRevision": {
+      "status": "ACTUAL_SOURCE_NATIVE_CAPTURE",
+      "source": "70a64dd499544e25efd5faa0a54679406a807738",
+      "run": 39616866145,
+      "job": 119280446667,
+      "artifact": 12352732354,
+      "artifactSHA256": "970425d5488957ae8bd827948f115958be37ed1f554c69c1aaaeef831f5fc879",
+      "member": "native-syntax-semantics/empty-vue-star-exports/malformed-refusal.json",
+      "wholePacketSHA256": "a3eed232614723f57351cad3ca3a3f3c05750d892d03fc5fda9ba324f9a831aa",
+      "priorManifestSHA256": "10dcbcf9ee2bc72fc205bdbcc6e2b487373b81265037e65e008b65c93d54975f",
+      "entries": [
+        {
+          "entry": 74,
+          "before": [
+            "project/A.vue.ts",
+            4621,
+            "eddc2faf6b97a21df641561e9d463adf2f4c3cc5d1d82aff92d54993308296f4"
+          ],
+          "after": [
+            "project/A.vue.ts",
+            4620,
+            "a53d5569e14f6d89c8d01c7f74423e222d3af60921261038e6f75241bb74b2af"
+          ],
+          "deltaBytes": -1
+        },
+        {
+          "entry": 75,
+          "before": [
+            "project/B.vue.ts",
+            4845,
+            "2dcd9d1cf8d7c54fa42764f2d574ead8f29fa930c48df3e9b7662e2871e2d209"
+          ],
+          "after": [
+            "project/B.vue.ts",
+            4844,
+            "cd9defc8ed21d94450ae3be8186536e13c0db63c7b4ec8702d27e4403a1d087f"
+          ],
+          "deltaBytes": -1
+        },
+        {
+          "entry": 82,
+          "before": [
+            "project/__vize_helpers.d.ts",
+            29137,
+            "fb8765ca4a5db619b4cba9660f0bff88f13c7889361981e06486294a0fa40718"
+          ],
+          "after": [
+            "project/__vize_helpers.d.ts",
+            29493,
+            "1268b0929e6dc92055e345ea473372d14830ebb8f104faee159db49d2a0accbc"
+          ],
+          "deltaBytes": 356
+        }
+      ],
+      "sourceChanges": {
+        "constructor": "The authored-props branch replaces only $props while retaining literal public instance members, including $emit, across open Nuxt $-prefixed injection patterns.",
+        "sharedHelper": "Two shared type helpers add 356 bytes to the exact hoisted helper body."
+      },
+      "proof": "The complete actual 86-member source-native packet differs only at entries 74, 75 and 82. Generated A and B each replace the prior constructor expression with the exact public-member-preserving form; the shared helper contains the exact two new type aliases. The other 83 rooted references, bodies and order are unchanged.",
       "scope": "The source-native run intentionally failed the preceding membership reference after preserving the complete packet. The malformed TS1109 response remains an observation; no semantic-green or release acceptance is credited until the renewed exact-head run passes all assertions."
     }
   }
