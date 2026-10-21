@@ -273,7 +273,10 @@ const cardProps = { topConfig: { distance: 1 } }
         .filter(|query| query.kind == TemplateQueryKind::Expression)
         .collect();
     assert_eq!(expressions.len(), 2, "{queries:#?}");
-    for expression in expressions {
+    for (expression, expected) in expressions.iter().zip([
+        "const __expr_0 = ({ title });",
+        "const __expr_1 = ({ ...cardProps });",
+    ]) {
         let offset = expression.generated_offset as usize;
         let line_start = document.content[..offset]
             .rfind('\n')
@@ -281,12 +284,10 @@ const cardProps = { topConfig: { distance: 1 } }
         let line_end = document.content[offset..]
             .find('\n')
             .map_or(document.content.len(), |at| offset + at);
-        assert!(
-            document.content[line_start..line_end]
-                .trim_start()
-                .starts_with("const __expr_"),
-            "whole-object v-bind must probe its inferred binding: {}",
-            &document.content[line_start..line_end]
+        assert_eq!(
+            document.content[line_start..line_end].trim_start(),
+            expected,
+            "whole-object v-bind must probe its exact inferred binding"
         );
     }
 }
