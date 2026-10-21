@@ -1,0 +1,3 @@
+import { account } from "./model"; import "./App";
+const wrong = account.missing;
+export const view = <p>{account.label}{wrong}</p>;

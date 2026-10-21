@@ -200,6 +200,110 @@
       }
     },
     {
+      "id": "lsp/fix-history/folding-nested-elements",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "folding-nested-elements",
+        "files": [
+          {
+            "path": "Nested.vue.txt",
+            "sha256": "41ba0238a97c4d8c898b20755da0859bc974a19136653e3d824e8b8e102ed373"
+          }
+        ]
+      },
+      "case": {
+        "path": "folding-nested-elements/case.json",
+        "sha256": "86c7081ad5da34466b9e9a84915b52a2d648aee95ed6d610a1a15384acf1284a"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
+      "id": "lsp/fix-history/folding-unclosed-element",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "folding-unclosed-element",
+        "files": [
+          {
+            "path": "Unclosed.vue.txt",
+            "sha256": "9eb8bf1f60e0c70f3385cb98a9de82cde3a54c8063141aa67953cf1f5d2c5223"
+          }
+        ]
+      },
+      "case": {
+        "path": "folding-unclosed-element/case.json",
+        "sha256": "94515e8f08857ee4a5b1b3796dd8d2b55da65c8164c03ed7da7c3a4d697d1304"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
+      "id": "lsp/fix-history/folding-script-markup",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "folding-script-markup",
+        "files": [
+          {
+            "path": "ScriptMarkup.vue.txt",
+            "sha256": "56ecbb1db4f123a81df572b310124a029c0a957bf27ba64dea9def9a11c29b68"
+          }
+        ]
+      },
+      "case": {
+        "path": "folding-script-markup/case.json",
+        "sha256": "6beb364a6fae8a0c04abb983a465e8618946746b82cfc92f318ddb6de5dcabf8"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
+      "id": "lsp/fix-history/folding-unopened",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "folding-unopened",
+        "files": [
+          {
+            "path": "FourDivs.vue.txt",
+            "sha256": "a6b9b98ede93ce6a05925dab002db48152949441499a8e362befe2078de3b135"
+          }
+        ]
+      },
+      "case": {
+        "path": "folding-unopened/case.json",
+        "sha256": "857978bb10d1034dc1cde225a210789a8f9f0f6ba71346cf2201bad8f756daab"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
       "id": "lsp/fix-history/highlight-original-rw",
       "state": "active",
       "targets": [
@@ -1120,6 +1224,44 @@
         "sha256": "79e878ffe046b9056885a442528b5450bd0e42a44374a09791b4baa5a98b2fdf"
       },
       "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
+      "id": "lsp/regression/jsx-rewritten-import-diagnostic",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "jsx-rewritten-import-diagnostic",
+        "files": [
+          {
+            "path": "App.tsx.txt",
+            "sha256": "0e3c10a203d4c2aaae854e5d00ed17d50116082b5d205019379c36081ae02ea8"
+          },
+          {
+            "path": "Sibling.jsx.txt",
+            "sha256": "a3ba4c119f408171a8d61743135e72c00ebc2d23aacd3184bad8fcd22df50c54"
+          },
+          {
+            "path": "model.ts.txt",
+            "sha256": "cc6b5fc5837d0e65b20aa3bd9c797bae48f21cda0dabefa04bb4da8f15a8e00b"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "e56067e26a4d1687be31dfefc5727aba08f7abc230cecd9dc9c5c6203b531663"
+          }
+        ]
+      },
+      "case": {
+        "path": "jsx-rewritten-import-diagnostic/case.json",
+        "sha256": "e66140a6802a37fdd32edf500fe6dc6435bb7ac5c9b78ce90b0caa5647b36cdc"
+      },
+      "requestCount": 1,
       "initializationOptions": {
         "editor": true,
         "lint": false,

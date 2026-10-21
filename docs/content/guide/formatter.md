@@ -132,7 +132,7 @@ Every option below can be set under `vue.formatter`. An option you leave out tak
 
 | Option                         | Default          | What it does                                                                                                                       |
 | ------------------------------ | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `preset`                       | none             | Applies a named set of defaults: `"vize"`, `"prettier"` or `"compact"`. Options set next to it win.                              |
+| `preset`                       | none             | Applies a named set of defaults: `"vize"`, `"prettier"`, `"compact"` or `"documentation"`. Options set next to it win.          |
 | `printWidth`                   | `100`            | Maximum line width.                                                                                                                |
 | `tabWidth`                     | `2`              | Spaces per indentation level.                                                                                                      |
 | `useTabs`                      | `false`          | Indents with tabs.                                                                                                                 |
@@ -175,6 +175,20 @@ export default defineConfig({}).withVue({
 
 It sets `printWidth: 120` and `bracketSameLine: true`, preserves authored attribute and SFC block order, and still shortens directive names such as `v-bind:id` to `:id`. It is only a named assignment of existing options, so options written next to it still win. The equivalent CLI option is `vize fmt --preset compact`.
 
+## Documentation examples
+
+Use the `documentation` preset for examples that should stay narrow and easy to scan in prose:
+
+```ts
+export default defineConfig({}).withVue({
+  formatter: {
+    preset: "documentation",
+  },
+});
+```
+
+It sets `printWidth: 80` and `singleAttributePerLine: true`, keeps authored attribute and SFC block order, and still shortens directive names. It does not enable the Prettier migration normalizations for CSS, inline styles, `v-for` aliases, void elements or preprocessor layout. The equivalent CLI option is `vize fmt --preset documentation`.
+
 ## Coming from Prettier
 
 Vize is close to Prettier and Oxfmt, but a few defaults differ on purpose. To format Vue files the way Prettier does, set the `prettier` preset:
@@ -201,7 +215,7 @@ The preset keeps attributes and blocks in the written order (`sortAttributes: fa
 
 On the command line, `vize fmt --preset prettier` applies the same preset. Options resolve in this order: the preset in the config file, the other options in the config file, `--preset`, then the other flags.
 
-The Node API accepts the same three presets, `vize`, `prettier` and `compact`:
+The Node API accepts the same four presets, `vize`, `prettier`, `compact` and `documentation`:
 
 ```ts
 import { formatSfc } from "@vizejs/native";

@@ -16,7 +16,7 @@
       "api": "--current-api",
       "cases": {
         "path": "crates/vize_patina/tests/fixtures/lint-history/cases.json",
-        "sha256": "09965ab44323e7ab465c11c194805bbd7a237aa92418071838048036eed6e550"
+        "sha256": "90708c15e8f16d25a57c88d07e2556883d9347a3717b2122287bc5e354dea7d0"
       }
     },
     {
@@ -54,7 +54,7 @@
   ],
   "oracles": {
     "path": "tests/_fixtures/differential/linter/oracle-index.json",
-    "sha256": "9a2dc43784e1546f490a1f6251f1263d064c8adeb6d727dca010d562b234d9b4"
+    "sha256": "b4e54167696be7572b05918d5e518f22b226c52bad3e819e0ba8f396a7f44a55"
   },
   "cases": [
     {
@@ -787,6 +787,16 @@
     },
     {
       "id": "linter/current-api/form-label-visible-input-control",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/current-api/attribute-hyphenation-aria-data-camel-props",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/current-api/attribute-hyphenation-aria-data-native-attributes",
       "state": "active",
       "targets": ["lint"]
     }

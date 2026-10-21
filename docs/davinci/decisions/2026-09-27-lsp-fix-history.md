@@ -155,3 +155,21 @@ not a Patina producer test or stdio trace. The unchanged historical ledger and
 the eighteen shared stdio sessions retain their existing scope. Existing Maestro
 Actions must execute the new controls before runtime credit; no local native
 execution or whole-#6883 completion is inferred from their source registration.
+
+## Folding response completion candidate
+
+Historical fix `89771a14f17fb535201f261ca154aa35c6f77d7e` introduced four
+stdio response regressions and seven direct handler controls. The existing five
+shared fixtures preserve the four stdio cases, including the two independent
+null inputs. Four newly registered sessions preserve the remaining observable
+handler states: nested elements in authored order, recovery from an unclosed
+inner element, script text that resembles markup, and a request for an unopened
+document. Their source text and complete `FoldingRange[]` or `null` responses
+come from the original fix. The unopened session deliberately sends no
+`didOpen`; the shared wire validator rejects an invented readiness diagnostic.
+
+This makes all observable requirements in the pinned row executable through the
+same source-built stdio corpus. It remains a completion candidate until fresh
+exact-head Actions execute all nine sessions and protected delivery reaches
+main. It grants no native acceptance and does not reduce any of the other 254
+history rows.

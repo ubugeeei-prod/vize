@@ -144,7 +144,7 @@ vize fmt --write src
 | `--single-attribute-per-line`      | 属性を 1 行に 1 つずつ配置する                         |
 | `--max-attributes-per-line`        | 指定した属性数で改行する                               |
 | `--normalize-directive-shorthands` | `v-bind:` / `v-on:` / `v-slot:` の省略記法を正規化する |
-| `--preset`                         | `vize`、`prettier`、`compact` のフォーマッタ既定値を適用する |
+| `--preset`                         | `vize`、`prettier`、`compact`、`documentation` のフォーマッタ既定値を適用する |
 | `--profile`                        | 処理時間のプロファイルを表示する                       |
 
 <a id="糸くず"></a>

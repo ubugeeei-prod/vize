@@ -64,23 +64,22 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
             // the strict surface accepts every attribute some native element
             // declares — `id`, `type`, `accept`, kebab `aria-*` plus camelized
             // spellings, custom `data-*` — while a name no element knows
-            // (`depressed`) stays a strict finding (#4966). Derived from the
-            // `__VizeNativeElements` program alias; degrades to `{}` on a `vue`
-            // without `NativeElements`, like the native prop checks degrade.
+            // (`depressed`) stays a strict finding (#4966). Reuse the program-wide
+            // native attribute union: rebuilding it in each generated SFC costs
+            // tens of thousands of type instantiations per module (#10171). It
+            // degrades to `{}` on a `vue` without `NativeElements`, like the native
+            // prop checks degrade.
             // Preserve producer-derived known forwarded names without an open index.
             // Already accepted public/HTML keys need no extra mapped intersection;
             // the no-extra-key case remains literal `{}` in diagnostic type display.
             ts.push_str(if check_unknown_fallthrough_props {
-                "  type __VizeAllowedFallthroughAttrs<C, __K = Exclude<keyof { [K in keyof __VizeFallthroughProps<C> as string extends K ? never : K]: unknown }, keyof __VizePublicComponentAttrs | keyof __VizeGlobalHtmlAttrs>> = [__K] extends [never] ? {} : { [K in __K & PropertyKey]?: unknown };\n"
+                "  type __VizeAllowedFallthroughAttrs<C, __K = Exclude<keyof { [K in keyof __VizeFallthroughProps<C> as string extends K ? never : K]: unknown }, keyof __VizePublicComponentAttrs | keyof __VizeComponentGlobalHtmlAttrs>> = [__K] extends [never] ? {} : { [K in __K & PropertyKey]?: unknown };\n"
             } else {
                 "  type __VizeAllowedFallthroughAttrs<C> = __VizeHasFallthroughProps<C> extends true ? Record<string, unknown> : {};\n"
             });
-            ts.push_str(concat!(
-                "  type __VizeAttrCamel<S extends string> = S extends `${infer __H}-${infer __T}` ? `${__H}${Capitalize<__VizeAttrCamel<__T>>}` : S;\n",
-                "  type __VizeNativeAttrNames = { [K in keyof __VizeNativeElements & string]: keyof __VizeNativeElements[K] }[keyof __VizeNativeElements & string] & string;\n",
-                "  type __VizeGlobalHtmlAttrs = __VizeIsAny<__VizeNativeElements> extends true ? {} : { [K in __VizeNativeAttrNames as K | __VizeAttrCamel<K>]?: unknown } & { [K in `data${string}`]?: unknown };\n",
-                "  type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeGlobalHtmlAttrs & __VizeAllowedFallthroughAttrs<C> : __VizePublicComponentAttrs & __VizeGlobalHtmlAttrs;\n",
-            ));
+            ts.push_str(
+                "  type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeComponentGlobalHtmlAttrs & __VizeAllowedFallthroughAttrs<C> : __VizePublicComponentAttrs & __VizeComponentGlobalHtmlAttrs;\n",
+            );
         }
     } else {
         ts.push_str(

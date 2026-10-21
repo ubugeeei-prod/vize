@@ -237,3 +237,27 @@ fn compact_formatter_preset_is_typed_and_authored_options_win() {
     assert!(!config.formatter.sort_attributes);
     assert!(!config.formatter.sort_blocks);
 }
+
+#[test]
+fn documentation_formatter_preset_is_typed_and_authored_options_win() {
+    let document: ConfigDocument = serde_json::from_str(
+        r#"{"formatter":{"preset":"documentation","printWidth":96,"singleAttributePerLine":false}}"#,
+    )
+    .unwrap();
+    let profile = document.formatter_profile().clone();
+    assert_eq!(
+        profile.preset,
+        Some(crate::config::FormatterPreset::Documentation)
+    );
+    assert_eq!(profile.options["printWidth"], 96);
+    assert_eq!(profile.options["singleAttributePerLine"], false);
+    assert_eq!(profile.options["sortAttributes"], false);
+    assert_eq!(profile.options["sortBlocks"], false);
+    assert_eq!(profile.options["normalizeDirectiveShorthands"], true);
+
+    let (config, _) = document.into_config_and_features();
+    assert_eq!(config.formatter.print_width, 96);
+    assert!(!config.formatter.single_attribute_per_line);
+    assert!(!config.formatter.sort_attributes);
+    assert!(!config.formatter.sort_blocks);
+}

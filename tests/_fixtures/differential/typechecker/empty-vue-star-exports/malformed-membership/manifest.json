@@ -21,8 +21,8 @@
       "file": "malformed-membership/part-01.json",
       "mode": "100644",
       "bytes": 7105,
-      "sha256": "39835ecc5d7e4d08c079230e436c7b30dc4dd18391814fc95e1f3d2166f2b01f",
-      "gitBlob": "5527050a3e6642e1f68159343a11a3563e05e862",
+      "sha256": "99db584e59772bdb103c091232574a47b3b990786a954f9e37b9c3ad447465ec",
+      "gitBlob": "bac3344765a01248e3a189485eab644d726bd78d",
       "start": 43,
       "entries": 43
     }
@@ -322,6 +322,36 @@
       },
       "proof": "The complete actual 86-member source-native packet differs only at entries74/75. Both generated/materialized/native-loaded bodies have the recorded exact lengths and SHA256; the other84 rooted references, bodies and order are unchanged.",
       "scope": "The source-native run intentionally failed the preceding membership reference after preserving the complete packet. The malformed TS1109 response remains an observation; no semantic-green or release acceptance is credited until the renewed exact-head run passes all assertions."
+    },
+    "sharedNativeAttrsRevision": {
+      "status": "ACTUAL_SOURCE_NATIVE_CAPTURE",
+      "source": "98a8177a8f9c25adf7df7b068797f444a82e52f0",
+      "testedMerge": "f017aaed46d67dfdc8a1ce9283a4abd2c5f730d0",
+      "run": 39603287415,
+      "job": 119233168775,
+      "artifact": 12346812439,
+      "artifactSHA256": "b35cb3f6321117a43b469a59ccbc16a1c07db5298bf567f1a0c28576673726bb",
+      "member": "native-syntax-semantics/empty-vue-star-exports/malformed-refusal.json",
+      "wholePacketSHA256": "ed75f15d6cca9a0212c45a3daae731078d2c63d87e9cb2979e15ca99e729a14a",
+      "priorManifestSHA256": "10dcbcf9ee2bc72fc205bdbcc6e2b487373b81265037e65e008b65c93d54975f",
+      "entry": 82,
+      "before": [
+        "project/__vize_helpers.d.ts",
+        29137,
+        "fb8765ca4a5db619b4cba9660f0bff88f13c7889361981e06486294a0fa40718"
+      ],
+      "after": [
+        "project/__vize_helpers.d.ts",
+        29079,
+        "688a8936940e43d48b2477ad2034817e7e536f2d0ec3fbf7e39dd867340f0c99"
+      ],
+      "deltaBytes": -58,
+      "sourceChange": {
+        "path": "crates/vize_canon/src/virtual_ts/helpers/preamble.rs",
+        "changes": "Inline the data-attribute mapped type into the shared global-attribute alias so TypeScript diagnostics expand the object shape instead of exposing an internal alias."
+      },
+      "proof": "The complete source-native 86-member packet retained all rooted paths and order. The configured-native assertion reported only helper entry82: actual29079/688a versus the preceding29137/fb87 reference; the preserved packet independently contains the exact actual helper body and SHA256.",
+      "scope": "The source-native run intentionally failed the preceding helper membership reference after preserving the complete packet. The malformed TS1109 response remains an observation; renewed exact-head qualification is still required."
     }
   }
 }

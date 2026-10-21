@@ -8,6 +8,16 @@ import type { FixtureData, LoadedLspManifest, PlannedLspFixture, LspFixture } fr
 
 export const NATIVE_REASON = "native whole-product LSP adapter unavailable";
 
+export function lspFixtureInventory(loaded: LoadedLspManifest) {
+  const planned = loaded.manifest.cases.map(({ id, requestCount }) => ({ id, requestCount }));
+  assert.deepEqual(
+    loaded.cases.map(({ id, requests }) => ({ id, requestCount: requests.length })),
+    planned,
+    "materialized LSP fixtures must preserve the complete manifest inventory",
+  );
+  return planned;
+}
+
 export function safeRuntimePath(value: unknown): string {
   assert(typeof value === "string");
   assert(value.length > 0 && !path.isAbsolute(value), "relative runtime path required");
@@ -29,6 +39,7 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
     assert.equal(data.id, planned.id);
     assert.match(data.provenance.fixCommit, /^[a-f0-9]{40}$/);
     assert.equal(data.documentVersion, 1);
+    if (Object.hasOwn(data, "openDocument")) assert.equal(data.openDocument, false);
     assert.deepEqual(
       planned.initializationOptions,
       data.initializationOptions ?? {
@@ -163,7 +174,9 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
     assert.equal(requests.length, planned.requestCount, "all authored requests must be planned");
     return { ...planned, data, files, entry, requests };
   });
-  return loaded as LoadedLspManifest;
+  const result = loaded as LoadedLspManifest;
+  lspFixtureInventory(result);
+  return result;
 }
 
 export function materializeWorkspace(value: unknown, workspaceUri: string): unknown {

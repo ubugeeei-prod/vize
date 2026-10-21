@@ -1,0 +1,16 @@
+<script setup lang="ts">
+import { useTemplateRef } from "vue";
+import Child from "./Child.vue";
+
+const child = useTemplateRef("child");
+function onChange(value: number): void {
+  child.value?.reset();
+  void value;
+}
+</script>
+
+<template>
+  <Child :count="1" class="a" :class="['b']" @change="onChange" />
+  <Child :count="2" style="color: red" :style="{ fontWeight: 'bold' }" @change="onChange" />
+  <Child ref="child" :count="3" class="a" :class="['b']" />
+</template>

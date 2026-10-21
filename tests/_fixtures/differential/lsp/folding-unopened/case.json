@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "id": "lsp/fix-history/folding-unopened",
+  "provenance": {
+    "fixCommit": "89771a14f17fb535201f261ca154aa35c6f77d7e",
+    "witnessPath": "crates/vize_maestro/src/server/document_structure/folding/tests.rs",
+    "witnessTest": "an_unopened_document_yields_no_folding_ranges",
+    "inputOrigin": "the original fix's FOUR_DIVS source retained as an unopened disk carrier",
+    "contractOrigin": "complete null response from the original unopened-document control"
+  },
+  "input": {
+    "source": "FourDivs.vue.txt",
+    "runtimePath": "FourDivs.vue",
+    "sha256": "a6b9b98ede93ce6a05925dab002db48152949441499a8e362befe2078de3b135"
+  },
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "38e0b9de817f645c4bec37c0d4a3e58baecccb040f5718dc069a72c7385a0bed"
+  },
+  "method": "textDocument/foldingRange",
+  "documentVersion": 1,
+  "openDocument": false,
+  "scope": "original unopened-document state with a complete null response and no invented readiness"
+}

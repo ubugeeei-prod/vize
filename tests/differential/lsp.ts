@@ -6,7 +6,12 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { expectedBuildIdentity, validateBuildReceipt } from "./build-receipt.ts";
 import { assertExactRows, sha256 } from "./harness.mjs";
-import { initializeCapabilities, loadLspManifest, NATIVE_REASON } from "./lsp-manifest.ts";
+import {
+  initializeCapabilities,
+  loadLspManifest,
+  lspFixtureInventory,
+  NATIVE_REASON,
+} from "./lsp-manifest.ts";
 import { inspectLspObservation, validateLspReport } from "./lsp-report.ts";
 import { LspWire } from "./lsp-wire.ts";
 import { lspWorkspace, observeLspWorkspace } from "./lsp-workspace.ts";
@@ -20,7 +25,7 @@ import {
   type BuildReceipt,
 } from "./lsp-types.ts";
 
-export { loadLspManifest, validateLspReport };
+export { loadLspManifest, lspFixtureInventory, validateLspReport };
 
 async function runLspCase(
   fixture: LspFixture,
@@ -60,23 +65,25 @@ async function runLspCase(
     });
     assert(hasCapabilities(initialized), "initialization must succeed");
     wire.notify("initialized", {});
-    wire.notify("textDocument/didOpen", {
-      textDocument: {
-        uri: entryUri,
-        languageId: "vue",
-        version: fixture.data.documentVersion,
-        text: fixture.files
-          .find((file) => file.runtimePath === fixture.entry)
-          ?.bytes.toString("utf8"),
-      },
-    });
-    await wire.waitFor(
-      (message) =>
-        message.method === "textDocument/publishDiagnostics" &&
-        message.params?.uri === entryUri &&
-        message.params?.version === fixture.data.documentVersion &&
-        Array.isArray(message.params?.diagnostics),
-    );
+    if (fixture.data.openDocument !== false) {
+      wire.notify("textDocument/didOpen", {
+        textDocument: {
+          uri: entryUri,
+          languageId: "vue",
+          version: fixture.data.documentVersion,
+          text: fixture.files
+            .find((file) => file.runtimePath === fixture.entry)
+            ?.bytes.toString("utf8"),
+        },
+      });
+      await wire.waitFor(
+        (message) =>
+          message.method === "textDocument/publishDiagnostics" &&
+          message.params?.uri === entryUri &&
+          message.params?.version === fixture.data.documentVersion &&
+          Array.isArray(message.params?.diagnostics),
+      );
+    }
     for (const request of fixture.requests) {
       await wire.request(request.method ?? fixture.data.method, {
         textDocument: { uri: entryUri },

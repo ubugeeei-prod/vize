@@ -134,7 +134,7 @@ export default defineConfig({}).withVue({
 
 | オプション                     | 既定値           | 説明                                                                                                                             |
 | ------------------------------ | ---------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `preset`                       | なし             | 名前の付いた既定値の組を適用します。`"vize"`、`"prettier"`、`"compact"` のいずれかです。一緒に指定したオプションが優先されます。 |
+| `preset`                       | なし             | 名前の付いた既定値の組を適用します。`"vize"`、`"prettier"`、`"compact"`、`"documentation"` のいずれかです。一緒に指定したオプションが優先されます。 |
 | `printWidth`                   | `100`            | 1 行の最大幅です。                                                                                                               |
 | `tabWidth`                     | `2`              | インデント 1 段あたりのスペース数です。                                                                                          |
 | `useTabs`                      | `false`          | タブでインデントします。                                                                                                         |
@@ -177,6 +177,20 @@ export default defineConfig({}).withVue({
 
 このプリセットは `printWidth: 120` と `bracketSameLine: true` を設定し、属性と SFC ブロックの順序を保ちます。`v-bind:id` を `:id` にする省略記法の正規化は有効です。既存オプションに名前を付けた組み合わせだけなので、一緒に書いたオプションが優先されます。CLI では `vize fmt --preset compact` を使います。
 
+## ドキュメントの例
+
+文章中の例を狭く読みやすく保つには、`documentation` プリセットを使います。
+
+```ts
+export default defineConfig({}).withVue({
+  formatter: {
+    preset: "documentation",
+  },
+});
+```
+
+このプリセットは `printWidth: 80` と `singleAttributePerLine: true` を設定し、属性と SFC ブロックを書いた順に保ち、省略記法は正規化します。CSS、インライン style、`v-for` の別名、空要素、プリプロセッサのレイアウトに対する Prettier 移行用の正規化は有効にしません。CLI では `vize fmt --preset documentation` を使います。
+
 ## Prettier から移行する
 
 Vize の出力は Prettier や Oxfmt とほぼ同じですが、いくつかの既定値は意図して変えています。Vue ファイルを Prettier と同じように整形するには、`prettier` プリセットを指定します。
@@ -203,7 +217,7 @@ export default defineConfig({}).withVue({
 
 コマンドラインでは、`vize fmt --preset prettier` で同じプリセットを指定できます。オプションは、設定ファイルのプリセット、設定ファイルのその他のオプション、`--preset`、その他のフラグの順に適用されます。
 
-Node API でも同じ `vize`、`prettier`、`compact` の3つを指定できます。
+Node API でも同じ `vize`、`prettier`、`compact`、`documentation` の4つを指定できます。
 
 ```ts
 import { formatSfc } from "@vizejs/native";

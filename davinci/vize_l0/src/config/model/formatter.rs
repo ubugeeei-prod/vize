@@ -127,6 +127,8 @@ pub enum FormatterPreset {
     Prettier,
     /// Dense application layout with source-order fidelity.
     Compact,
+    /// Readable examples with one attribute per line and source-order fidelity.
+    Documentation,
 }
 
 impl FormatterPreset {
@@ -160,6 +162,19 @@ impl FormatterPreset {
             Self::Compact => serde_json::json!({
                 "printWidth": 120,
                 "bracketSameLine": true,
+                "sortAttributes": false,
+                "sortBlocks": false,
+                "normalizeDirectiveShorthands": true,
+                "normalizeCssQuotes": false,
+                "normalizeInlineStyles": false,
+                "normalizeVForParens": false,
+                "selfCloseVoidElements": false,
+                "reindentPreprocessorStyles": false,
+            }),
+            Self::Documentation => serde_json::json!({
+                "printWidth": 80,
+                "bracketSameLine": false,
+                "singleAttributePerLine": true,
                 "sortAttributes": false,
                 "sortBlocks": false,
                 "normalizeDirectiveShorthands": true,

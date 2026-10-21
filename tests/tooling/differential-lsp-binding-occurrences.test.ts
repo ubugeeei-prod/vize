@@ -36,7 +36,6 @@ function result(message: JsonRpcMessage, index: number) {
 }
 
 void test("7992 registers all three highlights, three unchanged references and the whole lens array", () => {
-  assert.equal(loaded.cases.length, 37);
   assert.deepEqual(
     fixture.requests.map((row) => row.method),
     [

@@ -18,6 +18,26 @@
       "expectedElementIdentities": [[0], [0], [0], [0]]
     },
     {
+      "id": "props/dynamic-value",
+      "babelCorpusId": "props/dynamic_attr",
+      "valueMatrix": true,
+      "source": "const App = () => <main data-value={state.value}/>;",
+      "initial": { "value": { "$jsxValue": "zero" } },
+      "steps": [
+        { "patch": { "value": { "$jsxValue": "empty-string" } } },
+        { "patch": { "value": { "$jsxValue": "nan" } } },
+        { "patch": { "value": { "$jsxValue": "null" } } },
+        { "patch": { "value": { "$jsxValue": "undefined" } } },
+        { "patch": { "value": { "$jsxValue": "false" } } },
+        { "patch": { "value": { "$jsxValue": "true" } } },
+        { "patch": { "value": { "$jsxValue": "array" } } },
+        { "patch": { "value": { "$jsxValue": "nested-vnode" } } },
+        { "patch": { "value": { "$jsxValue": "zero" } } }
+      ],
+      "expectedText": ["", "", "", "", "", "", "", "", "", ""],
+      "expectedElementIdentities": [[0], [0], [0], [0], [0], [0], [0], [0], [0], [0]]
+    },
+    {
       "id": "props/dynamic-attributes",
       "source": "const App = () => <section id={state.id} class={state.className}>{state.label}</section>;",
       "initial": { "id": "one", "className": "cold", "label": "alpha" },
@@ -206,6 +226,76 @@
         [0, 1, 2],
         [0, 1, 2],
         [0, 1, 2]
+      ]
+    },
+    {
+      "id": "directives/v-model-text",
+      "source": "const App = () => <label>Model<input v-model={state.value}/><output>{state.value}</output></label>;",
+      "initial": { "value": "alpha" },
+      "steps": [
+        {
+          "event": {
+            "selector": "input",
+            "type": "input",
+            "assign": { "value": "beta" }
+          }
+        },
+        { "patch": { "value": "gamma" } },
+        {
+          "event": {
+            "selector": "input",
+            "type": "input",
+            "assign": { "value": "delta" }
+          }
+        }
+      ],
+      "expectedText": ["Modelalpha", "Modelbeta", "Modelgamma", "Modeldelta"],
+      "expectedElementIdentities": [
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2]
+      ],
+      "expectedEvents": [
+        [],
+        [
+          {
+            "selector": "input",
+            "type": "input",
+            "defaultPrevented": false,
+            "dispatchResult": true,
+            "assigned": { "value": "beta" },
+            "input": { "value": "beta", "checked": false }
+          }
+        ],
+        [
+          {
+            "selector": "input",
+            "type": "input",
+            "defaultPrevented": false,
+            "dispatchResult": true,
+            "assigned": { "value": "beta" },
+            "input": { "value": "beta", "checked": false }
+          }
+        ],
+        [
+          {
+            "selector": "input",
+            "type": "input",
+            "defaultPrevented": false,
+            "dispatchResult": true,
+            "assigned": { "value": "beta" },
+            "input": { "value": "beta", "checked": false }
+          },
+          {
+            "selector": "input",
+            "type": "input",
+            "defaultPrevented": false,
+            "dispatchResult": true,
+            "assigned": { "value": "delta" },
+            "input": { "value": "delta", "checked": false }
+          }
+        ]
       ]
     }
   ]

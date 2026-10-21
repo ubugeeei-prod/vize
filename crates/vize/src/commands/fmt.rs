@@ -110,6 +110,8 @@ pub enum FmtPreset {
     Prettier,
     /// Dense application layout that preserves authored order
     Compact,
+    /// Readable documentation examples with one attribute per line
+    Documentation,
 }
 
 impl From<FmtPreset> for vize_glyph::FormatPreset {
@@ -118,6 +120,7 @@ impl From<FmtPreset> for vize_glyph::FormatPreset {
             FmtPreset::Vize => Self::Vize,
             FmtPreset::Prettier => Self::Prettier,
             FmtPreset::Compact => Self::Compact,
+            FmtPreset::Documentation => Self::Documentation,
         }
     }
 }

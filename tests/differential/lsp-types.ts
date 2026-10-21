@@ -15,6 +15,7 @@ export type FixtureData = {
   id: string;
   provenance: { fixCommit: string; witness?: { path: string; sha256: string } };
   documentVersion: number;
+  openDocument?: false;
   initializationOptions?: Record<string, boolean>;
   hierarchicalDocumentSymbols?: true;
   files?: FileReference[];

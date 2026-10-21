@@ -260,19 +260,30 @@ async function trace(code, functionName, spec, runtime = "vapor") {
         assert.deepEqual(Object.keys(step), ["event"], `${spec.id}: event shape`);
         assert.deepEqual(
           Object.keys(step.event).sort(),
-          ["selector", "type"],
+          step.event.assign ? ["assign", "selector", "type"] : ["selector", "type"],
           `${spec.id}: event descriptor`,
         );
         const target = host.querySelector(step.event.selector);
         assert.notEqual(target, null, `${spec.id}: event target ${step.event.selector}`);
+        if (step.event.assign) {
+          for (const [property, value] of Object.entries(step.event.assign)) {
+            assert.ok(property in target, `${spec.id}: event target property ${property}`);
+            target[property] = materialize(structuredClone(value));
+          }
+        }
         const event = new window.Event(step.event.type, { bubbles: true, cancelable: true });
         const dispatchResult = target.dispatchEvent(event);
-        events.push({
+        const receipt = {
           selector: step.event.selector,
           type: step.event.type,
           defaultPrevented: event.defaultPrevented,
           dispatchResult,
-        });
+        };
+        if (step.event.assign) receipt.assigned = structuredClone(step.event.assign);
+        if (target instanceof window.HTMLInputElement) {
+          receipt.input = { value: target.value, checked: target.checked };
+        }
+        events.push(receipt);
       }
       await Vue.nextTick();
       phases.push(snapshot());

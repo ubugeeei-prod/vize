@@ -19,7 +19,7 @@ results and an on-demand T2 Real Project Matrix run at the same SHA. It also
 checks successful scheduled T2 observations over an approved stability period.
 The Real Project Matrix currently runs weekly; `minimumStableDays` and
 `maximumGapDays` are explicit policy fields rather than assuming daily runs.
-The policy and pinned 146-project registry SHA must remain fixed throughout
+The policy and pinned 150-project registry SHA must remain fixed throughout
 the stability period. The workflow verifies the evidence bundle's producer is
 a successful exact-SHA Real Project Matrix run, and the evaluator checks the
 recorded T1 and T2 run IDs against the Actions API.
@@ -35,11 +35,16 @@ whole-product classifier, a verified source-build receipt and runtime
 observation, and an adapter-verified product comparison. Missing, unsupported,
 fallback, unknown and legacy-backed work fails the gate.
 
-The current policy deliberately leaves the target sets for four products and
-the stability duration/cadence unset. No production native observation or
-comparison verifier is registered, and no `davinci-deletion-evidence` producer
-exists. The formatter's current native result is unsupported. The manual gate
-therefore exits nonzero and names these blockers; it grants no deletion credit.
+The current policy pins the target sets exposed by the published acceptance
+adapters: compiler DOM/SSR/Vapor, linter `lint`, formatter `fmt`, typechecker
+`batch` and LSP `stdio`. A checked-in contract rejects drift between those
+targets and their manifests. This fixes the authored target denominator; it
+does not claim that the registered fixtures are complete product coverage.
+The stability duration/cadence remain unset. No production native observation
+or comparison verifier is registered, and no `davinci-deletion-evidence`
+producer exists. The formatter's current native result is unsupported. The
+manual gate therefore exits nonzero and names these blockers; it grants no
+deletion credit.
 These are remaining #6854 tasks, alongside product adapter and case coverage
 work in #6853, #6891 and #6892. Before any deletion is permitted, wire the
 trusted Real Project Matrix bundle producer to actual per-run result artifacts,

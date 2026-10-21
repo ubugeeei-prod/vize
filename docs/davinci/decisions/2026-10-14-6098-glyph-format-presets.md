@@ -12,7 +12,7 @@ normalization. The rest are intended differences listed in the formatter
 guide under "Coming from Prettier".
 
 Decision: a preset is a named assignment of existing options, not a new
-formatting mode. `vize_glyph::FormatPreset` has three values. `vize` assigns the
+formatting mode. `vize_glyph::FormatPreset` has four values. `vize` assigns the
 Vize defaults. `prettier` assigns `printWidth: 80`, authored attribute and block
 order, long closing brackets and the Prettier-compatible normalization options.
 Each preset only assigns existing options and never adds a code path of its own,
@@ -20,15 +20,14 @@ so every preset output is an output that some explicit option combination alread
 produces and is covered by the same idempotence tests and corpus sweeps.
 
 The public name is "preset", because `vize fmt --profile` already prints a
-timing profile. The CLI takes `--preset <vize|prettier|compact>`. Options resolve in
+timing profile. The CLI takes `--preset <vize|prettier|compact|documentation>`. Options resolve in
 this order: config file, then the preset, then individual CLI flags.
 `sortAttributes: false` now also keeps the authored attribute order on
 `<script>`, `<template>`, `<style>` and custom block tags, so the Prettier
 preset matches Prettier on those tags.
 
-The `preset` config key was left to a follow-up; see below. A compact application
-profile is recorded below. A profile for documentation examples remains open;
-it should be added only with corpus evidence that a fixed option set serves it.
+The `preset` config key was left to a follow-up; see below. Compact application
+and documentation-example profiles are recorded below.
 
 ## CSS string quotes
 
@@ -106,4 +105,15 @@ The fixed fixture under `crates/vize_glyph/tests/fixtures/profiles` proves the
 denser tag layout, authored attribute and block order, and byte-identical
 second pass. Config, CLI and native Node tests cover the public typed paths and
 override order. The JSON Schema, generated TypeScript declaration and Pkl
-declaration expose the same three-value enum.
+declaration expose the same four-value enum.
+
+## Documentation examples
+
+The `documentation` preset keeps examples at `printWidth: 80`, places one
+attribute on each line, preserves authored attribute and block order, and
+keeps directive shorthand normalization. It leaves the five Prettier-only
+normalization switches off. The fixed fixture under
+`crates/vize_glyph/tests/fixtures/profiles` proves the intended complete output
+and its second-pass fixed point. The public config, CLI and Node paths use the
+same shared preset assignment, and every preset now runs over the 300+ file
+option-matrix corpus idempotence gate.

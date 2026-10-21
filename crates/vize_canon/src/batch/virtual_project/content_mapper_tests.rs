@@ -326,6 +326,38 @@ export default { data() { return { count: 1 } } }
     assert!(result.text.contains("__VizeOptionsBinding"));
 }
 
+#[test]
+fn component_listener_and_ref_probes_isolate_class_and_style_bindings() {
+    let source = r#"<script setup lang="ts">
+import { useTemplateRef } from "vue";
+import Child from "./Child.vue";
+const child = useTemplateRef("child");
+const dynamicClass = ["dynamic"];
+const dynamicStyle = { fontWeight: "bold" };
+function onChange(): void {
+  child.value?.reset();
+}
+</script>
+<template>
+  <Child class="static" :class="dynamicClass" style="color: red" :style="dynamicStyle" @change="onChange" />
+  <Child ref="child" class="static" :class="dynamicClass" style="color: red" :style="dynamicStyle" />
+</template>
+"#;
+    let result =
+        generate_vue_content_mapper_transform(Path::new("App.vue"), source).expect("transform");
+
+    for marker in ["const __vize_emit_props_", "var __vize_ref_"] {
+        let probe = result
+            .text
+            .split_once(marker)
+            .and_then(|(_, tail)| tail.split_once("});\n"))
+            .map(|(probe, _)| probe)
+            .unwrap_or_else(|| panic!("missing {marker} probe:\n{}", result.text));
+        assert_eq!(probe.matches("\"class\":").count(), 1, "{probe}");
+        assert_eq!(probe.matches("\"style\":").count(), 1, "{probe}");
+    }
+}
+
 #[path = "content_mapper_semantic_link_tests.rs"]
 mod semantic_links;
 

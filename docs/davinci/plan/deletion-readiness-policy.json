@@ -20,10 +20,10 @@
     "vue-quirks"
   ],
   "targets": {
-    "compiler": [],
-    "linter": [],
+    "compiler": ["dom", "ssr", "vapor"],
+    "linter": ["lint"],
     "formatter": ["fmt"],
-    "typechecker": [],
-    "lsp": []
+    "typechecker": ["batch"],
+    "lsp": ["stdio"]
   }
 }
