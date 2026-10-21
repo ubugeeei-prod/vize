@@ -163,7 +163,7 @@ fn emit_probe(
         *ts,
         "{indent}var {name} = (undefined as unknown as __VizeRefInstanceFactory<typeof {component}>)({component})({{\n"
     );
-    for (prop, value) in collect_inference_probe_props(usage, ctx.template_binding_access) {
+    for (prop, name, value) in collect_inference_probe_props(usage, ctx.template_binding_access) {
         if super::is_inline_callback_prop(prop) {
             append!(
                 *ts,
@@ -173,7 +173,7 @@ fn emit_probe(
         append!(
             *ts,
             "{indent}  \"{}\": {},\n",
-            to_camel_case(prop.name.as_str()),
+            to_camel_case(name.as_str()),
             value.as_str()
         );
     }

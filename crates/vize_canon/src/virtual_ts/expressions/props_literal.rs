@@ -9,7 +9,7 @@
 use super::super::types::{VizeMapping, VizeSubSpan};
 use super::component_props::{
     ComponentPropSource, collect_generated_class_bindings, collect_generated_named_bindings,
-    is_checkable_prop, merged_class_binding_value,
+    is_checkable_prop,
 };
 use super::prop_sources::append_prop_value;
 use super::spread_reserved_props::rewrite_reserved_spread_references;
@@ -43,44 +43,57 @@ pub(crate) fn append_inference_props_literal(
     );
 }
 
-/// Collect the simple named props used by inference-only probes while folding
-/// Vue's repeatable `class` and `style` bindings into one object entry.
+/// Collect the simple named props used by inference-only probes while isolating
+/// repeatable `class` and `style` bindings from duplicate-key diagnostics.
 ///
 /// These probes intentionally preserve their legacy shape instead of using the
 /// mapped prop literal: the authored prop checker remains the diagnostic owner.
+/// Synthetic keys keep every entry and its byte width stable, so diagnostics
+/// from unrelated props retain their existing source positions.
 pub(crate) fn collect_inference_probe_props<'a>(
     usage: &'a ComponentUsage,
     template_binding_access: &TemplateBindingAccess,
-) -> Vec<(&'a PassedProp, String)> {
+) -> Vec<(&'a PassedProp, String, String)> {
     let class_bindings = collect_generated_class_bindings(usage, template_binding_access);
     let style_bindings = collect_generated_named_bindings(usage, template_binding_access, "style");
-    let mut emitted_class = false;
-    let mut emitted_style = false;
+    let mut class_index = 0;
+    let mut style_index = 0;
     let mut props = Vec::new();
 
     for prop in &usage.props {
         if prop.name_is_dynamic || matches!(prop.name.as_str(), "key" | "ref") {
             continue;
         }
-        let bindings = match prop.name.as_str() {
-            "class" if class_bindings.len() > 1 => Some((&class_bindings, &mut emitted_class)),
-            "style" if style_bindings.len() > 1 => Some((&style_bindings, &mut emitted_style)),
-            _ => None,
-        };
-        let value = if let Some((bindings, emitted)) = bindings {
-            if *emitted {
-                continue;
-            }
-            *emitted = true;
-            merged_class_binding_value(bindings.as_slice(), None)
-        } else {
-            super::prop_sources::generated_prop_value(prop, template_binding_access)
-        };
+        let value = super::prop_sources::generated_prop_value(prop, template_binding_access);
         if let Some(value) = value {
-            props.push((prop, value));
+            let key = match prop.name.as_str() {
+                "class" if class_bindings.len() > 1 => {
+                    let key = inference_probe_key("class", class_index);
+                    class_index += 1;
+                    key
+                }
+                "style" if style_bindings.len() > 1 => {
+                    let key = inference_probe_key("style", style_index);
+                    style_index += 1;
+                    key
+                }
+                name => String::from(name),
+            };
+            props.push((prop, key, value));
         }
     }
     props
+}
+
+fn inference_probe_key(name: &str, index: usize) -> String {
+    if index == 0 {
+        return String::from(name);
+    }
+    const DISCRIMINATORS: &[u8] = b"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    let mut key = String::from(name);
+    key.pop();
+    key.push(DISCRIMINATORS[(index - 1) % DISCRIMINATORS.len()] as char);
+    key
 }
 
 /// Append the `{ … }` props literal for `usage`, returning its generated range.
