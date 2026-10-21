@@ -386,7 +386,7 @@ fn dynamic_component_target_type(expression: &Expression<'_>) -> Option<String> 
             Some(vize_carton::cstr!("typeof {}", identifier.name))
         }
         Expression::StringLiteral(literal) => {
-            let mut reference = String::new();
+            let mut reference = String::new("");
             push_ts_string_literal(&mut reference, literal.value.as_str());
             Some(reference)
         }
