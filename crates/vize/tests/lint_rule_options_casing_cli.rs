@@ -314,16 +314,18 @@ fn lint_rule_options_configure_v_slot_style_by_position() {
     let report: serde_json::Value = serde_json::from_str(stdout).unwrap();
     let messages = report[0]["messages"].as_array().unwrap();
     assert_eq!(messages.len(), 2, "{stdout}");
-    assert!(
+    assert!(messages
+        .iter()
+        .all(|message| message["ruleId"] == "vue/v-slot-style"));
+    assert_eq!(
         messages
             .iter()
-            .all(|message| message["ruleId"] == "vue/v-slot-style")
-    );
-    assert!(
-        messages.iter().all(|message| message["message"]
-            .as_str()
-            .unwrap()
-            .contains("Expected 'v-slot:")),
+            .map(|message| message["message"].as_str().unwrap())
+            .collect::<Vec<_>>(),
+        [
+            "[vize:vue/v-slot-style] Expected 'v-slot:default' instead of '#default'",
+            "[vize:vue/v-slot-style] Expected 'v-slot:header' instead of '#header'",
+        ],
         "{stdout}"
     );
 
