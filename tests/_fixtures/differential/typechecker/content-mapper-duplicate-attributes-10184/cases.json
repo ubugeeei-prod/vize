@@ -2,8 +2,8 @@
   "version": 1,
   "issue": 6879,
   "historicalIssue": 10184,
-  "regressionCommit": "6fa83a47ba21733ca990fbcc810f42ef5fca1123",
-  "sourceRevision": "6fa83a47ba21733ca990fbcc810f42ef5fca1123",
+  "regressionCommit": "15b21d7ddb9a5a22ed9c01d542ce140f5e5adef7",
+  "sourceRevision": "15b21d7ddb9a5a22ed9c01d542ce140f5e5adef7",
   "diagnosticContract": {
     "requiredTier": "T1",
     "positionBase": 1,
