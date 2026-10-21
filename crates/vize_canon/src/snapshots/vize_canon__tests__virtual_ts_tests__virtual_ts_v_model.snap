@@ -131,7 +131,7 @@ function __setup() {
   const checked = ref(false)
   const selected = ref('option1')
   
-  // @vize-map: 15095:15190 -> 0:108
+  // @vize-map: 15451:15546 -> 0:108
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

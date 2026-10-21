@@ -306,11 +306,11 @@ mod tests {
                 &declaration,
             );
             // Short names round-trip through the synthesized `update:` prefix.
-            let mut expected_generic = vec![(103, 3), (129, 44)];
+            let mut expected_generic = vec![(102, 3), (128, 44)];
             if name.len() < "update:".len() {
                 expected_generic.push(prefix_position);
             }
-            expected_generic.push((169, 35));
+            expected_generic.push((168, 35));
             assert_eq!(generic, expected_generic, "{name}");
             assert!(!direct_model_position(
                 &result,
