@@ -291,6 +291,13 @@ impl<'b> PrefixScope<'b> {
         self.slot_params.iter().any(|entry| entry.as_str() == name)
     }
 
+    /// Whether the codegen scope binds `name` in either emission mode.
+    /// Prefix-identifying lanes materialize parameter names, while the
+    /// default lane retains their authored destructuring patterns.
+    pub(in crate::emit) fn is_codegen_scope_param(&self, name: &str) -> bool {
+        self.is_slot_param(name) || self.binds_in_pattern(name)
+    }
+
     pub(in crate::emit) fn has_slot_params(&self) -> bool {
         !self.slot_params.is_empty()
     }
@@ -395,6 +402,17 @@ mod tests {
         scope.push_for([Some("[dep, version]"), None, None]);
         assert_eq!(scope.identifier_prefix("version"), None);
         assert!(scope.is_slot_param("version"));
+    }
+
+    #[test]
+    fn default_codegen_scope_membership_reads_retained_patterns() {
+        let mut scope = PrefixScope::new(None, false, false, false);
+        scope.push_pattern("{ item, meta: { index } }: ListItem<Item>");
+        assert!(scope.has_codegen_scope_params());
+        assert!(scope.is_codegen_scope_param("item"));
+        assert!(scope.is_codegen_scope_param("index"));
+        assert!(!scope.is_codegen_scope_param("meta"));
+        assert!(!scope.is_codegen_scope_param("other"));
     }
 
     #[test]

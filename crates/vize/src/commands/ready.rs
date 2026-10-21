@@ -80,6 +80,8 @@ pub fn run(args: ReadyArgs) {
             config: args.config.clone(),
             no_config: args.no_config,
             single_quote: None,
+            jsx_single_quote: None,
+            quote_props: None,
             print_width: None,
             tab_width: None,
             use_tabs: None,

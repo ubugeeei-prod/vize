@@ -31,8 +31,9 @@ the preference applies: `title="' &quot;"` becomes `title='&apos; "'`.
 
 The setting applies to JSX/TSX scripts, including Vue `<script lang="tsx">` and
 `<script lang="jsx">` blocks. Ordinary Vue template HTML attributes retain their
-existing quote policy. CLI/editor configuration and WASM SFC options expose the
-setting; native Node formatter options do not expose `jsxSingleQuote` yet.
+existing quote policy. Use `vize fmt --jsx-single-quote` for a direct CLI
+override. The native Node API accepts `{ jsxSingleQuote: true }` in `formatSfc`
+options. Config, CLI, editor, WASM and Node all use the same boolean.
 
 [Property quotes](./formatter-property-quotes.md) choose which object keys need
 quotes and remain independent of JSX attribute quotes.

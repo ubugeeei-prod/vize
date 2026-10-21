@@ -97,6 +97,48 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn a_nested_slot_that_captures_an_outer_slot_param_is_dynamic() {
+    assert_shipped_parity(
+        r#"<MyList :items="items"><template #default="{ item }"><MyChip :tone="item.tone">{{ item.name }}</MyChip></template></MyList>"#,
+    );
+}
+
+#[test]
+fn a_named_nested_slot_that_captures_an_outer_slot_param_is_dynamic() {
+    assert_shipped_parity(
+        r#"<MyList><template #default="{ item }"><MyChip><template #title>{{ item.title }}</template></MyChip></template></MyList>"#,
+    );
+}
+
+#[test]
+fn a_typescript_slot_pattern_still_tracks_its_outer_binding() {
+    let source = r#"<MyList><template #default="{ item }: ListItem<Item>"><MyChip>{{ item.name }}</MyChip></template></MyList>"#;
+    assert_shipped_parity(source);
+    assert_eq!(assembled(source).matches("DYNAMIC_SLOTS").count(), 1);
+}
+
+#[test]
+fn a_typescript_expression_still_captures_an_outer_slot_param() {
+    let source = r#"<MyList><template #default="{ item }"><MyChip>{{ (item as Item).name }}</MyChip></template></MyList>"#;
+    assert_shipped_parity(source);
+    assert_eq!(assembled(source).matches("DYNAMIC_SLOTS").count(), 1);
+}
+
+#[test]
+fn an_uncaptured_nested_slot_stays_stable() {
+    assert_shipped_parity(
+        r#"<MyList :items="items"><template #default="{ item }"><MyChip tone="neutral">constant</MyChip></template></MyList>"#,
+    );
+}
+
+#[test]
+fn an_arrow_parameter_shadows_an_outer_slot_param() {
+    assert_shipped_parity(
+        r#"<MyList><template #default="{ item }"><MyChip>{{ [1].map(item => item + 1) }}</MyChip></template></MyList>"#,
+    );
+}
+
+#[test]
 fn whitespace_only_children_emit_no_slot() {
     assert_eq!(assembled("<Foo>  </Foo>"), assembled("<Foo />"));
 }

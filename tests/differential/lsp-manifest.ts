@@ -4,6 +4,7 @@ import { loadProductManifest, readPinnedArtifact } from "./harness.mjs";
 import { loadOriginalHighlightRequests } from "./lsp-highlight-manifest.ts";
 import { loadModuleResolutionLinks } from "./lsp-module-links-manifest.ts";
 import { BINDING_SESSION, loadBindingOccurrences } from "./lsp-binding-occurrences-manifest.ts";
+import { sourceInspectedDialectCoverage } from "./source-dialect-coverage.ts";
 import type { FixtureData, LoadedLspManifest, PlannedLspFixture, LspFixture } from "./lsp-types.ts";
 
 export const NATIVE_REASON = "native whole-product LSP adapter unavailable";
@@ -69,6 +70,14 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
       runtimePath: safeRuntimePath(file.runtimePath),
       bytes: readPinnedArtifact(fixtureRoot, { path: file.source, sha256: file.sha256 }),
     }));
+    assert.deepEqual(
+      planned.dialectCoverage,
+      sourceInspectedDialectCoverage(
+        files.map((file) => ({ filename: file.runtimePath, source: file.bytes })),
+        "LSP manifest pinned authored sources",
+      ),
+      `dialect coverage must match pinned authored sources: ${planned.id}`,
+    );
     assert.equal(new Set(files.map((file) => file.runtimePath)).size, files.length);
     const entry = safeRuntimePath(data.entry ?? data.input?.runtimePath);
     assert(

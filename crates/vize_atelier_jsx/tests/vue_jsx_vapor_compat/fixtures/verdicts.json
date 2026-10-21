@@ -14,6 +14,10 @@
       "verdict": "equivalent",
       "basis": "both Vapor and Babel references match falsy, array, nested-VNode and element-identity attribute updates"
     },
+    "props/dynamic-boolean-value": {
+      "verdict": "equivalent",
+      "basis": "both Vapor and Babel references match falsy, array, nested-VNode and element-identity boolean property updates"
+    },
     "events/click-closure": {
       "verdict": "equivalent",
       "basis": "two real click dispatches retain the button and produce identical closure side effects, DOM, diagnostics, and event receipts"

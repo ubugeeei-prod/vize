@@ -15,7 +15,7 @@ use super::super::helpers::{escape_js_string, is_valid_js_identifier};
 use super::create_slots::generate_create_slots;
 use super::detect::{
     has_conditional_or_loop_slots, has_forwarded_slot_outlet, slots_are_only_forwarded,
-    slots_spread,
+    slots_reference_current_scope, slots_spread,
 };
 use super::name::{component_root_slot, emit_slot_property_name};
 use super::params::slot_parameters;
@@ -68,6 +68,7 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     let has_dynamic_slots = (ctx.in_v_for || ctx.in_match_scope)
         || root_slot.is_some_and(is_dynamic_slot)
         || collected_slots.iter().any(|s| s.is_dynamic)
+        || slots_reference_current_scope(ctx, el)
         || forwarded_slots_are_dynamic;
     let has_conditional_slots = has_conditional_or_loop_slots(el);
 
