@@ -260,34 +260,39 @@ fn collect_element(
             };
             let name = value.content;
             if !name.is_empty() {
-                let kind = match element.tag_type {
-                    ElementType::Element => component_ref_kind_for_element_tag(
-                        summary,
-                        options,
-                        syntactic_type_only_imported_names,
-                        element.ns,
-                        element.tag,
-                    )
-                    .map(|reference| RegisteredRefKind::Component {
+                let kind = if let Some(reference) = dynamic_component_reference(element) {
+                    RegisteredRefKind::Component {
                         reference,
                         start: element.loc.span.start,
-                    })
-                    .unwrap_or_else(|| RegisteredRefKind::Element {
-                        tag: String::from(element.tag),
-                        is_svg: matches!(element.ns, Namespace::Svg),
-                    }),
-                    ElementType::Component => RegisteredRefKind::Component {
-                        reference: dynamic_component_reference(element).unwrap_or_else(|| {
-                            component_binding_reference(
+                    }
+                } else {
+                    match element.tag_type {
+                        ElementType::Element => component_ref_kind_for_element_tag(
+                            summary,
+                            options,
+                            syntactic_type_only_imported_names,
+                            element.ns,
+                            element.tag,
+                        )
+                        .map(|reference| RegisteredRefKind::Component {
+                            reference,
+                            start: element.loc.span.start,
+                        })
+                        .unwrap_or_else(|| RegisteredRefKind::Element {
+                            tag: String::from(element.tag),
+                            is_svg: matches!(element.ns, Namespace::Svg),
+                        }),
+                        ElementType::Component => RegisteredRefKind::Component {
+                            reference: component_binding_reference(
                                 summary,
                                 options,
                                 syntactic_type_only_imported_names,
                                 element.tag,
-                            )
-                        }),
-                        start: element.loc.span.start,
-                    },
-                    _ => continue,
+                            ),
+                            start: element.loc.span.start,
+                        },
+                        _ => continue,
+                    }
                 };
                 refs.push(RegisteredRef {
                     name: String::from(name),
