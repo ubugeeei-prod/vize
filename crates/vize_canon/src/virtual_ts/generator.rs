@@ -869,6 +869,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         &mut ts,
         generation_options.component_name,
         component_name_is_setup_binding,
+        script_content,
     );
     binding_output::publish(
         ts,
