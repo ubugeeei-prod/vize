@@ -182,8 +182,16 @@ fn standard_tsgo_keeps_musea_art_in_the_pinned_project_contract() {
     assert_eq!(output.stderr, b"", "{}", output_text(&output));
     let stdout = std::str::from_utf8(&output.stdout).unwrap();
     assert!(!stdout.contains("TS2304"), "{stdout}");
-    assert_eq!(stdout.matches("TS2322").count(), 2, "{stdout}");
-    assert_eq!(stdout.matches("TS2345").count(), 2, "{stdout}");
+    // Pin the semantic diagnostic set independently of byte-identical reporter duplicates.
+    let unique_diagnostics = |code: &str| {
+        stdout
+            .lines()
+            .filter(|line| line.contains("error TS") && line.contains(code))
+            .collect::<std::collections::BTreeSet<_>>()
+            .len()
+    };
+    assert_eq!(unique_diagnostics("TS2322"), 2, "{stdout}");
+    assert_eq!(unique_diagnostics("TS2345"), 2, "{stdout}");
     for file in ["src/MyCard.art.vue", "src/MyCardExplicit.art.vue"] {
         assert!(
             stdout
