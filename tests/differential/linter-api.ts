@@ -83,7 +83,11 @@ export function loadLinterManifest(manifestPath: string, repoRoot: string) {
           return { filename: file.filename, source: file.source };
         });
       } else {
-        assert.equal(typeof fixture.source, "string", `${id}: inline authored source must be a string`);
+        assert.equal(
+          typeof fixture.source,
+          "string",
+          `${id}: inline authored source must be a string`,
+        );
         sources = [
           {
             filename:
@@ -114,7 +118,10 @@ export function loadLinterManifest(manifestPath: string, repoRoot: string) {
     let expected = authoredCoverage.get(fixture.id);
     if (!expected) {
       assert(fixture.inputs?.root, `missing pinned authored inputs: ${fixture.id}`);
-      assert(Array.isArray(fixture.inputs.files), `missing pinned authored input files: ${fixture.id}`);
+      assert(
+        Array.isArray(fixture.inputs.files),
+        `missing pinned authored input files: ${fixture.id}`,
+      );
       const inputRoot = path.join(manifestRoot, fixture.inputs.root);
       expected = sourceInspectedDialectCoverage(
         fixture.inputs.files.map((file: any) => ({
