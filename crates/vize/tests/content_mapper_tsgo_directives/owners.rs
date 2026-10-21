@@ -146,9 +146,9 @@ pub(super) fn source(newline: &str, prefix: &str, id: &str, handler: &str) -> vi
 
 fn calibrate(tsgo: &Path, project: &Path, retained: &Path, failures: &mut Vec<vize_l0::String>) {
     for (index, (id, handler, count)) in [
-        ("bad", "wrong", 5),
+        ("bad", "wrong", 4),
         ("ok", "wrong", 2),
-        ("bad", "correct", 4),
+        ("bad", "correct", 3),
         ("ok", "correct", 1),
     ]
     .into_iter()
@@ -187,8 +187,8 @@ fn calibrate(tsgo: &Path, project: &Path, retained: &Path, failures: &mut Vec<vi
     }
 }
 
-// Frozen complete d6 dynamic-config output. Each event inference call checks
-// the id, so the same mapped id diagnostic is reported three times.
+// Frozen complete d6 dynamic-config output. Event inference and prop checking
+// each report the same mapped id diagnostic once.
 fn calibration_expected(id: &str, handler: &str) -> vize_l0::String {
     const BAD_ID: &str = "error TS2322: Type '\"bad\"' is not assignable to type '\"ok\"'.\n";
     let mut output = vize_l0::String::from(
@@ -201,10 +201,7 @@ fn calibration_expected(id: &str, handler: &str) -> vize_l0::String {
         output.push_str("directives/Owner.vue(10,3): error TS2322: Type '(value: string) => void' is not assignable to type '(value: number) => any'.\n  Types of parameters 'value' and 'value' are incompatible.\n    Type 'number' is not assignable to type 'string'.\n");
     }
     if id == "bad" {
-        output.push_str(
-            cstr!("directives/Owner.vue(9,2): {BAD_ID}directives/Owner.vue(9,2): {BAD_ID}")
-                .as_str(),
-        );
+        output.push_str(cstr!("directives/Owner.vue(9,2): {BAD_ID}").as_str());
     }
     output
 }

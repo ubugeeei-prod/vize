@@ -316,16 +316,14 @@ fn expected_report(source: &str, state: &str) -> Value {
         ));
         let handler = source.find("@save=\"wrong\"").unwrap() + 1;
         items.push(diagnostic(source, handler, 4, 2322, "ts", "Type '(value: string) => void' is not assignable to type '(value: number) => any'.\n  Types of parameters 'value' and 'value' are incompatible.\n    Type 'number' is not assignable to type 'string'."));
-        for _ in 0..2 {
-            items.push(diagnostic(
-                source,
-                id,
-                2,
-                2322,
-                "ts",
-                "Type '\"bad\"' is not assignable to type '\"ok\"'.",
-            ));
-        }
+        items.push(diagnostic(
+            source,
+            id,
+            2,
+            2322,
+            "ts",
+            "Type '\"bad\"' is not assignable to type '\"ok\"'.",
+        ));
     }
     items.extend(parameter_suggestions(source));
     json!({"kind":"full","items":items})
