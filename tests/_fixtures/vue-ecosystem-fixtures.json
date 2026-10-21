@@ -2638,13 +2638,13 @@
           "declarationAnchor": "      isHome() {",
           "hoverContains": ["const isHome: any"],
           "renameTo": "__vizeRenamedIsHome",
-          "sharesComponentImporter": true
+          "sharesComponentImporter": false
         },
         "componentBoundary": {
-          "importerFile": "examples/components/header.vue",
-          "componentFile": "examples/components/search.vue",
-          "tagName": "algolia-search",
-          "tagAnchor": "            <algolia-search",
+          "importerFile": "examples/extension/src/editor/gallery.vue",
+          "componentFile": "examples/components/theme/theme-card.vue",
+          "tagName": "theme-card",
+          "tagAnchor": "        <theme-card type=\"user\" ",
           "completionItemCount": 37,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
@@ -2686,19 +2686,19 @@
             { "label": "key", "rank": 36 }
           ],
           "dependencyEdit": {
-            "anchor": "  export default {\n",
-            "replacement": "  export default {\n    props: {\n      vizeOracleProbe: Boolean\n    },\n",
+            "anchor": "  props: {\n",
+            "replacement": "  props: {\n    vizeOracleProbe: Boolean,\n",
             "completionLabel": "vize-oracle-probe"
           }
         },
         "fileLifecycle": {
-          "copiedFile": "examples/components/__VizeOracleSearch.vue",
-          "renamedFile": "examples/components/__VizeOracleRenamedSearch.vue",
-          "originalImportSpecifier": "./search.vue",
-          "copiedImportSpecifier": "./__VizeOracleSearch.vue",
-          "renamedImportSpecifier": "./__VizeOracleRenamedSearch.vue",
+          "copiedFile": "examples/components/theme/__VizeOracleThemeCard.vue",
+          "renamedFile": "examples/components/theme/__VizeOracleRenamedThemeCard.vue",
+          "originalImportSpecifier": "../../../components/theme/theme-card.vue",
+          "copiedImportSpecifier": "../../../components/theme/__VizeOracleThemeCard.vue",
+          "renamedImportSpecifier": "../../../components/theme/__VizeOracleRenamedThemeCard.vue",
           "markerInsertionAnchor": "<script>\n",
-          "markerSymbol": "__vizeElementSearchMarker__"
+          "markerSymbol": "__vizeElementThemeCardMarker__"
         }
       },
       "diff": "curator-compare"
