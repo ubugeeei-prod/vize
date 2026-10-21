@@ -9,13 +9,17 @@
     )
 )]
 
-use tower_lsp::lsp_types::{Hover, Position, Range};
+use tower_lsp::lsp_types::Hover;
 use vize_croquis::{Drawer, DrawerOptions};
-use vize_l0::cstr;
 use vize_relief::BindingType;
 
 #[cfg(feature = "native")]
 use std::sync::Arc;
+
+#[cfg(feature = "native")]
+use tower_lsp::lsp_types::{Position, Range};
+#[cfg(feature = "native")]
+use vize_l0::cstr;
 
 #[cfg(feature = "native")]
 use vize_canon::CorsaBridge;
@@ -108,6 +112,7 @@ impl HoverService {
         Self::hover_script(ctx, is_setup)
     }
 
+    #[cfg(feature = "native")]
     fn hover_module_specifier(ctx: &IdeContext<'_>) -> Option<Hover> {
         let (specifier, span) = crate::ide::definition::module_specifier::specifier_span_at_offset(
             &ctx.content,
