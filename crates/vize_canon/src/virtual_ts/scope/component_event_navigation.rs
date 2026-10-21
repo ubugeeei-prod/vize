@@ -14,6 +14,7 @@ use super::component_navigation::{is_ts_identifier, push_ts_single_quoted_litera
 use super::context::{ComponentPropsContext, VForPropsContext};
 use super::event_handler::event_name_source_range;
 use super::vif_guard_chain::{append_chained_vif_guard_close, append_chained_vif_guard_open};
+use crate::virtual_ts::expressions::generated_prop_value;
 
 pub(super) fn emit_event_references(
     ts: &mut String,
@@ -303,20 +304,17 @@ fn emit_resolved_events(
         return;
     }
     ts.push_str("{\n");
-    let suppress_probe_diagnostics =
-        crate::virtual_ts::expressions::inference_probe_has_repeatable_attrs(
-            usage,
-            ctx.template_binding_access,
-        );
-    for (_, name, value) in crate::virtual_ts::expressions::collect_inference_probe_props(
-        usage,
-        ctx.template_binding_access,
-    ) {
-        if suppress_probe_diagnostics {
-            append!(
-                *ts,
-                "{indent}  // @ts-ignore Repeatable attrs are checked by the mapped prop owner.\n"
-            );
+    let mut emitted = FxHashSet::default();
+    for prop in &usage.props {
+        if prop.name_is_dynamic || prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
+            continue;
+        }
+        let Some(value) = generated_prop_value(prop, ctx.template_binding_access) else {
+            continue;
+        };
+        let name = to_camel_case(prop.name.as_str());
+        if !emitted.insert(name.clone()) {
+            continue;
         }
         append!(*ts, "{indent}  \"{name}\": {value},\n");
     }

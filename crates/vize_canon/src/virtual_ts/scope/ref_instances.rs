@@ -16,10 +16,7 @@ use vize_croquis::{Croquis, Scope, ScopeKind, analysis::ComponentUsage};
 
 use crate::virtual_ts::{
     component_reference::resolved_component_binding_reference,
-    expressions::{
-        collect_inference_probe_props, inference_probe_has_repeatable_attrs,
-        rewrite_reserved_template_binding,
-    },
+    expressions::{generated_prop_value, rewrite_reserved_template_binding},
     helpers::to_camel_case,
     template_binding_access::TemplateBindingAccess,
     types::VirtualTsOptions,
@@ -166,21 +163,25 @@ fn emit_probe(
         *ts,
         "{indent}var {name} = (undefined as unknown as __VizeRefInstanceFactory<typeof {component}>)({component})({{\n"
     );
-    let suppress_probe_diagnostics =
-        inference_probe_has_repeatable_attrs(usage, ctx.template_binding_access);
-    for (prop, name, value) in collect_inference_probe_props(usage, ctx.template_binding_access) {
-        if suppress_probe_diagnostics || super::is_inline_callback_prop(prop) {
+    let mut emitted = FxHashSet::default();
+    for prop in &usage.props {
+        if prop.name_is_dynamic || matches!(prop.name.as_str(), "key" | "ref") {
+            continue;
+        }
+        let Some(value) = generated_prop_value(prop, ctx.template_binding_access) else {
+            continue;
+        };
+        let name = to_camel_case(prop.name.as_str());
+        if !emitted.insert(name.clone()) {
+            continue;
+        }
+        if super::is_inline_callback_prop(prop) {
             append!(
                 *ts,
-                "{indent}  // @ts-ignore Inference-only prop; the mapped prop owner checks diagnostics.\n"
+                "{indent}  // @ts-ignore Inference-only callback prop; the mapped prop owner checks diagnostics.\n"
             );
         }
-        append!(
-            *ts,
-            "{indent}  \"{}\": {},\n",
-            to_camel_case(name.as_str()),
-            value.as_str()
-        );
+        append!(*ts, "{indent}  \"{}\": {},\n", name, value.as_str());
     }
     append!(*ts, "{indent}}});\n");
     for closer in closers.iter().rev() {
