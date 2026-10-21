@@ -35,7 +35,6 @@ export const GATES: Record<string, readonly string[]> = {
   analyze_hoisting: ["Croquis.hoists", "HoistTracker"],
   "symbol-table": ["Croquis.symbols", "Symbol", "SymbolFlags", "SymbolId", "SymbolTable"],
   UndefinedRefs: ["Croquis.undefined_refs"],
-  track_usage: ["Croquis.used_directives"],
   "template-facts": ["ComponentRegistration", "ElementIdInfo", "TemplateInfo"],
   "effect-graph": ["EffectGraph"],
   "provide-inject": ["ProvideInjectTracker", "Croquis.provide_inject"],

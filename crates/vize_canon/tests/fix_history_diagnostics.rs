@@ -110,6 +110,17 @@ fn content_mapper_keeps_inferred_type_only_imports_out_of_value_anchors() {
 }
 
 #[test]
+fn valueless_directive_imports_preserve_upstream_diagnostic_parity() {
+    check_pack(
+        "valueless-directive-import-3140",
+        "valueless_directive_imports_preserve_upstream_diagnostic_parity",
+        "c3311a010ec5d5cea6669a2b84c4d02d272b1f45",
+        Some(3140),
+        &["imported-valueless-directive"],
+    );
+}
+
+#[test]
 fn component_event_tuples_preserve_all_argument_diagnostics() {
     check_pack(
         "component-event-tuples",
@@ -654,6 +665,9 @@ fn check_pack(
             | "content-mapper-dynamic-template-ref-union-10251"
             | "content-mapper-dynamic-template-ref-scope-10251"
             | "content-mapper-props-binding-10196" => regression,
+            "valueless-directive-import-3140" => {
+                "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
+            }
             _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
         }
     );

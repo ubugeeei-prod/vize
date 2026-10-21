@@ -6,7 +6,7 @@ under the same pinned Vue Vapor runtime. Each row mounts both components in
 Happy DOM, applies the corpus updates, and compares normalized rendered DOM,
 live form state, diagnostics, and element identity.
 
-The current bounded cohort covers fourteen behaviors. It is not a claim that the
+The current bounded cohort covers fifteen behaviors. It is not a claim that the
 full `vue-jsx-vapor` surface is compatible; issue #6884 remains open until the
 corpus covers the complete dialect inventory.
 
@@ -38,6 +38,7 @@ a reviewed update to the executable verdict inventory.
 | `directives/v-show-value`           | equivalent | value-sensitive visibility updates match both real JSX references        |
 | `directives/v-show-component-value` | equivalent | value-sensitive component visibility matches both real JSX references    |
 | `components/scoped-default-slot`    | equivalent | component props and a scoped slot closure update independently           |
+| `components/named-slot-updates`     | equivalent | named slot captures and component props update independently             |
 
 The JSON corpus and verdict table are checked bidirectionally, so adding or
 removing a case without a verdict fails. The runtime comparison is the source
@@ -54,11 +55,12 @@ cancelable `input` event, pins the complete dispatch and live-input receipt,
 and interleaves a direct state patch. Both directions must update the mounted
 input and sibling output without replacing any authored element.
 
-The component row resolves a registered VDOM fixture through each Vapor
-compiler's component fallback, passes it a reactive prop and a scoped default
-slot, and updates the prop and captured slot state independently. The mounted
-article, prop output, slot container and authored slot element must all retain
-identity while their complete DOM and diagnostics remain equal.
+The component rows resolve a registered VDOM fixture through each Vapor
+compiler's component fallback. One passes a reactive prop and a scoped default
+slot; the other passes a named `header` slot through `v-slots`. Both update the
+prop and captured slot state independently. The mounted article, prop output,
+slot containers and authored slot elements must all retain identity while their
+complete DOM and diagnostics remain equal.
 
 The dynamic-value, dynamic-boolean-value, dynamic-aria-value,
 dynamic-xlink-value, v-show-value, v-show-component-value, logical-and and

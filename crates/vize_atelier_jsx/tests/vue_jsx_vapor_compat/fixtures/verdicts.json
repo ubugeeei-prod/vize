@@ -57,6 +57,10 @@
     "components/scoped-default-slot": {
       "verdict": "equivalent",
       "basis": "resolved component props and scoped default-slot closures update independently with identical mounted DOM, diagnostics, and identity"
+    },
+    "components/named-slot-updates": {
+      "verdict": "equivalent",
+      "basis": "resolved component props and named-slot closures update independently with identical mounted DOM, diagnostics, and identity"
     }
   }
 }

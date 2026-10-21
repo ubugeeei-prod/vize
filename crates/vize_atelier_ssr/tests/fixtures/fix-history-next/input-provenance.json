@@ -24,7 +24,7 @@
     {
       "id": "component-slot-props",
       "fixCommit": "4819858579748608f8a3837b62ee6a2fb638d11e",
-      "sourcePath": "crates/vize_atelier_ssr/src/lib.rs",
+      "sourcePath": "crates/vize_atelier_ssr/src/component_tests.rs",
       "symbol": "test_ssr_component_level_v_slot_binds_props",
       "inputSha256": "220c156bb2d4e5bc1fb46c732288a63eb4d08f7a6601621af8126d15aca615bb",
       "originalWitness": "positive scoped slot binding, negative context leak and code snapshot; empty diagnostics",

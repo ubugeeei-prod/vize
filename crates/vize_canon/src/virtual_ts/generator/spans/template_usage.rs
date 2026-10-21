@@ -1,7 +1,7 @@
 //! Conservative template reads used by setup binding anchors.
 
 use vize_atelier_sfc::script::resolve_template_read_identifiers;
-use vize_carton::{FxHashSet, String};
+use vize_carton::{FxHashSet, String, camelize, capitalize};
 use vize_croquis::{Croquis, ScopeData};
 
 pub(in crate::virtual_ts::generator) fn template_usage(
@@ -36,6 +36,19 @@ fn collect_template_referenced_names(
     if let Some(extra_names) = extra_template_referenced_names {
         names.extend(extra_names.iter().cloned());
         value_names.extend(extra_names.iter().cloned());
+    }
+
+    // A setup-local custom directive is a runtime value even when it has no
+    // bound expression: `<input v-focus>` resolves the imported `vFocus`.
+    // Keep that read in the value set so the unused-binding anchor does not
+    // discard an import whose only consumer is the directive name (#3140).
+    for directive in &summary.used_directives {
+        let camel = camelize(directive.as_str());
+        let capitalized = capitalize(camel.as_str());
+        let mut binding = String::with_capacity(capitalized.len() + 1);
+        binding.push('v');
+        binding.push_str(capitalized.as_str());
+        value_names.insert(binding);
     }
 
     for expression in &summary.template_expressions {

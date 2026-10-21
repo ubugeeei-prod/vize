@@ -1,0 +1,92 @@
+[
+  {
+    "title": "Fix: Replace multiple spaces with single space",
+    "kind": "quickfix",
+    "diagnostics": [
+      {
+        "range": {
+          "start": {
+            "line": 1,
+            "character": 17
+          },
+          "end": {
+            "line": 1,
+            "character": 19
+          }
+        },
+        "severity": 2,
+        "code": "vue/no-multi-spaces",
+        "codeDescription": {
+          "href": "https://eslint.vuejs.org/rules/no-multi-spaces.html"
+        },
+        "source": "vize/lint",
+        "message": "Multiple consecutive spaces"
+      }
+    ],
+    "edit": {
+      "changes": {
+        "${workspace}/CodeActionUtf16.vue": [
+          {
+            "range": {
+              "start": {
+                "line": 1,
+                "character": 17
+              },
+              "end": {
+                "line": 1,
+                "character": 19
+              }
+            },
+            "newText": " "
+          }
+        ]
+      }
+    },
+    "isPreferred": true
+  },
+  {
+    "title": "Suppress with @vize:forget (vue/no-multi-spaces)",
+    "kind": "quickfix",
+    "diagnostics": [
+      {
+        "range": {
+          "start": {
+            "line": 1,
+            "character": 17
+          },
+          "end": {
+            "line": 1,
+            "character": 19
+          }
+        },
+        "severity": 2,
+        "code": "vue/no-multi-spaces",
+        "codeDescription": {
+          "href": "https://eslint.vuejs.org/rules/no-multi-spaces.html"
+        },
+        "source": "vize/lint",
+        "message": "Multiple consecutive spaces"
+      }
+    ],
+    "edit": {
+      "changes": {
+        "${workspace}/CodeActionUtf16.vue": [
+          {
+            "range": {
+              "start": {
+                "line": 1,
+                "character": 0
+              },
+              "end": {
+                "line": 1,
+                "character": 0
+              }
+            },
+            "newText": "  <!-- @vize:forget vue/no-multi-spaces -->\n"
+          }
+        ]
+      }
+    },
+    "isPreferred": false
+  }
+]

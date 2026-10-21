@@ -142,7 +142,7 @@
           }
         ],
         "witness": {
-          "path": "crates/vize_atelier_ssr/src/lib.rs",
+          "path": "crates/vize_atelier_ssr/src/component_tests.rs",
           "symbol": "test_ssr_component_level_v_slot_binds_props"
         }
       },
