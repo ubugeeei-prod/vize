@@ -97,6 +97,23 @@ test("passive native LSP capture retains the complete original Matrix workflow",
     delete step["timeout-minutes"];
   }
 
+  const misskey = steps.findIndex(
+    (step) => step.name === "Classify pinned Misskey generated diagnostics",
+  );
+  assert.ok(misskey >= 0);
+  assert.deepEqual(steps.splice(misskey, 1)[0], {
+    name: "Classify pinned Misskey generated diagnostics",
+    if: "${{ !cancelled() && contains(matrix.name, 'misskey') }}",
+    env: {
+      CORSA_PATH: "${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc",
+      VIZE_TEST_MISSKEY_GENERATED_DIAGNOSTICS_9516: "1",
+      VIZE_TEST_REQUIRE_TSGO: "1",
+      VIZE_TEST_FIX_HISTORY_CAPTURE_DIR:
+        "${{ github.workspace }}/${{ env.FIXTURE_REPORT_DIR }}/misskey-generated-diagnostics-9516",
+    },
+    run: "cargo test --locked --profile ci -p vize_canon --lib pinned_misskey_preserves_current_and_tuple_diagnostic_boundaries -- --nocapture --test-threads=1",
+  });
+
   const integrity = steps.findIndex((step) => step.name === "Validate source-bound LSP wire");
   assert.equal(integrity, steps.findIndex((step) => step.id === "lsp") + 1);
   assert.deepEqual(steps.splice(integrity, 1)[0], {
