@@ -33,7 +33,7 @@ test("vize package exposes an executable TypeScript content mapper", () => {
   assert.deepEqual(packageJson.typescript?.contentMapper, {
     dynamicConfig: true,
     exec: ["node", "./bin/vize", "content-mapper"],
-    compilerOptions: ["noUnusedLocals"],
+    compilerOptions: ["checkJs", "noUnusedLocals"],
   });
   assert.equal(
     packageJson.tsContentMapper,

@@ -38,7 +38,7 @@ use component_name::content_mapper_component_name;
 use super::art_usage::apply_musea_art_globals;
 use super::build::{descriptor_uses_jsx_script, prepend_vue_jsx_reference};
 use super::diagnostics::invalid_sfc_fallback_virtual_ts;
-use super::javascript_sfc::prepare_script_blocks;
+use super::javascript_sfc::{descriptor_is_unchecked_javascript, prepare_script_blocks};
 use super::vue_codegen::generic_attribute::GenericCopies;
 use super::vue_codegen::{GeneratedVueFile, VueCodegenOptions, generate_vue_virtual_ts};
 
@@ -66,6 +66,7 @@ enum ContentMapperSpanKind {
 pub struct ContentMapperTransformOptions {
     options_api: bool,
     preserve_unused_diagnostics: bool,
+    check_javascript: bool,
     pub(super) check_unknown_props: bool,
     pub(super) check_unknown_fallthrough_props: bool,
     pub(super) strict_css_modules: bool,
@@ -76,6 +77,7 @@ impl Default for ContentMapperTransformOptions {
         Self {
             options_api: true,
             preserve_unused_diagnostics: false,
+            check_javascript: false,
             check_unknown_props: true,
             check_unknown_fallthrough_props: false,
             strict_css_modules: false,
@@ -101,6 +103,13 @@ impl ContentMapperTransformOptions {
     #[must_use]
     pub const fn with_preserve_unused_diagnostics(mut self, enabled: bool) -> Self {
         self.preserve_unused_diagnostics = enabled;
+        self
+    }
+
+    /// Check JavaScript SFC script blocks as TypeScript input.
+    #[must_use]
+    pub const fn with_check_javascript(mut self, enabled: bool) -> Self {
+        self.check_javascript = enabled;
         self
     }
 }
@@ -151,6 +160,8 @@ pub fn generate_vue_content_mapper_transform_with_options(
     };
 
     let descriptor = prepare_script_blocks(descriptor);
+    let suppress_typescript_diagnostics =
+        !transform_options.check_javascript && descriptor_is_unchecked_javascript(&descriptor);
     let use_tsx = descriptor_uses_jsx_script(&descriptor);
     let component_name = content_mapper_component_name(path);
     let mut virtual_ts_options = VirtualTsOptions::default();
@@ -199,6 +210,14 @@ pub fn generate_vue_content_mapper_transform_with_options(
 
     if use_tsx {
         prepend_vue_jsx_reference(
+            &mut code,
+            &mut mappings,
+            &mut semantic_links,
+            &mut prop_default_key_links,
+        );
+    }
+    if suppress_typescript_diagnostics {
+        prepend_typescript_nocheck(
             &mut code,
             &mut mappings,
             &mut semantic_links,
@@ -295,6 +314,32 @@ fn reference_type_directive_ranges(code: &str) -> Vec<Range<usize>> {
                 .then_some(range)
         })
         .collect()
+}
+
+const TYPESCRIPT_NOCHECK_DIRECTIVE: &str = "// @ts-nocheck\n";
+
+fn prepend_typescript_nocheck(
+    code: &mut vize_l0::String,
+    mappings: &mut [VizeMapping],
+    semantic_links: &mut [crate::virtual_ts::VizeSemanticLink],
+    prop_default_key_links: &mut [crate::virtual_ts::VizeSemanticLink],
+) {
+    let offset = TYPESCRIPT_NOCHECK_DIRECTIVE.len();
+    let mut prefixed = vize_l0::String::with_capacity(offset + code.len());
+    prefixed.push_str(TYPESCRIPT_NOCHECK_DIRECTIVE);
+    prefixed.push_str(code.as_str());
+    *code = prefixed;
+    for mapping in mappings {
+        mapping.gen_range.start += offset;
+        mapping.gen_range.end += offset;
+        for sub_span in &mut mapping.sub_spans {
+            sub_span.gen_range.start += offset;
+            sub_span.gen_range.end += offset;
+        }
+    }
+    for link in semantic_links.iter_mut().chain(prop_default_key_links) {
+        link.shift_generated_ranges(offset);
+    }
 }
 
 fn sfc_parse_diagnostic(source: &str, error: &SfcError) -> ContentMapperDiagnostic {

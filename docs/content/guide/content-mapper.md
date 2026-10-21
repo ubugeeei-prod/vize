@@ -84,9 +84,10 @@ A mapper entry accepts an `options` object:
 | `optionsApi` | `true`  | Resolve Vue Options API instance bindings inside templates |
 
 Invalid options never fail the build: Vize reports them as option diagnostics positioned inside
-your tsconfig (`vize1`–`vize3`) and continues with defaults. Vize also declares a dependency on
-the project's `noUnusedLocals` compiler option, so unused-local reporting inside `<script setup>`
-follows each project's own configuration.
+your tsconfig (`vize1`–`vize3`) and continues with defaults. Vize also declares dependencies on
+the project's `checkJs` and `noUnusedLocals` compiler options. Plain JavaScript `<script>` and
+`<script setup>` blocks stay unchecked unless `checkJs` is enabled or a block opts in with a
+leading `// @ts-check`; unused-local reporting follows each project's own configuration.
 
 Vue checks belong in the selected tsconfig's top-level `vueCompilerOptions`:
 

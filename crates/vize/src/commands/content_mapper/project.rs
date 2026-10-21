@@ -102,6 +102,7 @@ pub(super) fn resolve_open_project(
         ContentMapperProjectConfiguration::load(Path::new(params.config_file_name.as_str()))?;
     let mut options_api = true;
     let mut no_unused_locals = false;
+    let mut check_javascript = false;
     let mut diagnostics = Vec::new();
     match &params.options {
         Value::Null => {}
@@ -130,17 +131,17 @@ pub(super) fn resolve_open_project(
             code: OPTION_CODE_NOT_AN_OBJECT,
         }),
     }
-    if let Value::Object(compiler_options) = &params.compiler_options
-        && compiler_options.get("noUnusedLocals") == Some(&Value::Bool(true))
-    {
-        no_unused_locals = true;
+    if let Value::Object(compiler_options) = &params.compiler_options {
+        no_unused_locals = compiler_options.get("noUnusedLocals") == Some(&Value::Bool(true));
+        check_javascript = compiler_options.get("checkJs") == Some(&Value::Bool(true));
     }
     Ok((
         ProjectSettings {
             transform_options: configuration
                 .transform_options
                 .with_options_api(options_api)
-                .with_preserve_unused_diagnostics(no_unused_locals),
+                .with_preserve_unused_diagnostics(no_unused_locals)
+                .with_check_javascript(check_javascript),
         },
         OpenProjectResult {
             config_identity: configuration.config_identity,

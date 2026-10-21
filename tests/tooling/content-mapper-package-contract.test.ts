@@ -26,7 +26,7 @@ function withInstalledMapper(run: (installDir: string, packageRoot: string) => v
           contentMapper: {
             dynamicConfig: true,
             exec: ["node", "./bin/vize", "content-mapper"],
-            compilerOptions: ["noUnusedLocals"],
+            compilerOptions: ["checkJs", "noUnusedLocals"],
           },
         },
       }),
@@ -52,7 +52,7 @@ test("Rust release smoke pins the production Content Mapper contract", () => {
     "        != Some(&json!({",
     '            "dynamicConfig": true,',
     '            "exec": ["node", "./bin/vize", "content-mapper"],',
-    '            "compilerOptions": ["noUnusedLocals"],',
+    '            "compilerOptions": ["checkJs", "noUnusedLocals"],',
     "        }))",
   ].join("\n");
 
@@ -95,8 +95,9 @@ test("installed Content Mapper contract rejects the retired tsContentMapper key"
   });
 });
 
-// "compilerOptions" is the only channel that carries noUnusedLocals into the
-// transform; dropping it silently changes which TS6133 diagnostics Vize emits.
+// "compilerOptions" is the only channel that carries checkJs and
+// noUnusedLocals into the transform; dropping it silently changes which
+// JavaScript and TS6133 diagnostics Vize emits.
 test("installed Content Mapper contract rejects a dropped compilerOptions declaration", () => {
   withInstalledMapper((installDir, packageRoot) => {
     const manifestPath = path.join(packageRoot, "package.json");

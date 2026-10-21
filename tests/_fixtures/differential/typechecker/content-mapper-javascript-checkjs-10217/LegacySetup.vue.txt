@@ -1,0 +1,10 @@
+<script setup>
+const props = defineProps({ label: String });
+function format(value) {
+  return `${props.label}: ${value}`;
+}
+</script>
+
+<template>
+  <span>{{ format(1) }}</span>
+</template>

@@ -330,14 +330,99 @@ fn a_component_without_setup_bindings_declares_no_widening_helpers() {
 #[test]
 fn jsx_scripts_preserve_vue_jsx_type_context() {
     let source = "<script lang=\"tsx\">export default () => <div /></script>";
-    let result =
-        generate_vue_content_mapper_transform(Path::new("Jsx.vue"), source).expect("transform");
+    let result = generate_vue_content_mapper_transform_with_options(
+        Path::new("Jsx.vue"),
+        source,
+        ContentMapperTransformOptions::default().with_check_javascript(true),
+    )
+    .expect("transform");
 
     assert!(
         result
             .text
             .starts_with("/// <reference types=\"vue/jsx\" />")
     );
+}
+
+#[test]
+fn plain_javascript_is_unchecked_without_check_js_and_keeps_mappings_aligned() {
+    let source = "<script setup>\nconst café = value => value\n</script>\n<template>{{ café(1) }}</template>\n";
+    let unchecked =
+        generate_vue_content_mapper_transform(Path::new("Plain.vue"), source).expect("transform");
+    let checked = generate_vue_content_mapper_transform_with_options(
+        Path::new("Plain.vue"),
+        source,
+        ContentMapperTransformOptions::default().with_check_javascript(true),
+    )
+    .expect("checked transform");
+
+    const NO_CHECK: &str = "// @ts-nocheck\n";
+    assert_eq!(
+        unchecked.text.get(..NO_CHECK.len()),
+        Some(NO_CHECK),
+        "{}",
+        unchecked.text
+    );
+    assert_eq!(
+        unchecked.text.get(NO_CHECK.len()..),
+        Some(checked.text.as_str())
+    );
+    assert!(!checked.mappings.is_empty());
+    assert_eq!(unchecked.mappings.len(), checked.mappings.len());
+    for (unchecked, checked) in unchecked.mappings.iter().zip(&checked.mappings) {
+        assert_eq!(unchecked.0[0], checked.0[0] + NO_CHECK.len());
+        assert_eq!(&unchecked.0[1..], &checked.0[1..]);
+    }
+    assert_eq!(unchecked.semantic_links.len(), checked.semantic_links.len());
+    for (unchecked, checked) in unchecked.semantic_links.iter().zip(&checked.semantic_links) {
+        assert_eq!(
+            unchecked.source_start,
+            checked.source_start + NO_CHECK.len()
+        );
+        assert_eq!(unchecked.source_length, checked.source_length);
+        assert_eq!(
+            unchecked.target_start,
+            checked.target_start + NO_CHECK.len()
+        );
+        assert_eq!(unchecked.target_length, checked.target_length);
+        assert_eq!(unchecked.kind, checked.kind);
+    }
+}
+
+#[test]
+fn check_js_and_authored_typescript_opt_into_diagnostics() {
+    let javascript = "<script setup>\nconst value = input => input\n</script>\n";
+    let checked = generate_vue_content_mapper_transform_with_options(
+        Path::new("Checked.vue"),
+        javascript,
+        ContentMapperTransformOptions::default().with_check_javascript(true),
+    )
+    .expect("checked transform");
+    let pragma = generate_vue_content_mapper_transform(
+        Path::new("Pragma.vue"),
+        "<script setup>\n// @ts-check\nconst value = input => input\n</script>\n",
+    )
+    .expect("pragma transform");
+    let typescript = generate_vue_content_mapper_transform(
+        Path::new("Typed.vue"),
+        "<script setup lang=\"ts\">\nconst value = 1\n</script>\n",
+    )
+    .expect("TypeScript transform");
+    let template_only = generate_vue_content_mapper_transform(
+        Path::new("Template.vue"),
+        "<template>{{ missing }}</template>\n",
+    )
+    .expect("template transform");
+
+    const NO_CHECK: &str = "// @ts-nocheck\n";
+    for result in [checked, pragma, typescript, template_only] {
+        assert_ne!(
+            result.text.get(..NO_CHECK.len()),
+            Some(NO_CHECK),
+            "{}",
+            result.text
+        );
+    }
 }
 
 #[test]

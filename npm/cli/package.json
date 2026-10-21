@@ -97,6 +97,7 @@
   "typescript": {
     "contentMapper": {
       "compilerOptions": [
+        "checkJs",
         "noUnusedLocals"
       ],
       "dynamicConfig": true,

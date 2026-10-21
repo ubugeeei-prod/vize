@@ -124,6 +124,17 @@ fn valueless_directive_imports_preserve_upstream_diagnostic_parity() {
 }
 
 #[test]
+fn plain_javascript_sfcs_follow_check_js_policy() {
+    check_pack(
+        "content-mapper-javascript-checkjs-10217",
+        "plain_javascript_sfcs_follow_check_js_policy",
+        "c9b9b5c368fceeed61c13813a617f7a8b5b8351f",
+        Some(10217),
+        &["plain-javascript-unchecked"],
+    );
+}
+
+#[test]
 fn component_event_tuples_preserve_all_argument_diagnostics() {
     check_pack(
         "component-event-tuples",
@@ -675,6 +686,7 @@ fn check_pack(
             | "content-mapper-template-expression-syntax"
             | "content-mapper-const-enum-import"
             | "content-mapper-diagnostics-10187"
+            | "content-mapper-javascript-checkjs-10217"
             | "content-mapper-dynamic-template-ref-10198"
             | "content-mapper-type-only-import-use"
             | "content-mapper-dynamic-template-ref-union-10251"

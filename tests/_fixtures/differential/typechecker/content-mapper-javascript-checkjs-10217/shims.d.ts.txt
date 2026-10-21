@@ -1,0 +1,1 @@
+declare module "some-widget/Widget.vue";

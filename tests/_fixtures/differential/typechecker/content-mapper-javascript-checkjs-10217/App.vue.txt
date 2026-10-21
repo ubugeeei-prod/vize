@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import Legacy from "./Legacy.vue";
+import LegacySetup from "./LegacySetup.vue";
+import Widget from "some-widget/Widget.vue";
+</script>
+
+<template>
+  <Legacy :size="2" />
+  <LegacySetup label="x" />
+  <Widget :size="14" />
+</template>

@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10217,
+  "regressionCommit": "c9b9b5c368fceeed61c13813a617f7a8b5b8351f",
+  "sourceRevision": "c9b9b5c368fceeed61c13813a617f7a8b5b8351f",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "plain-javascript-unchecked",
+      "inputs": [
+        { "file": "tsconfig.json", "source": "tsconfig.json.txt" },
+        { "file": "src/App.vue", "source": "App.vue.txt" },
+        { "file": "src/Legacy.vue", "source": "Legacy.vue.txt" },
+        { "file": "src/LegacySetup.vue", "source": "LegacySetup.vue.txt" },
+        { "file": "src/shims.d.ts", "source": "shims.d.ts.txt" },
+        {
+          "file": "src/node_modules/some-widget/package.json",
+          "source": "package.json.txt"
+        },
+        {
+          "file": "src/node_modules/some-widget/index.js",
+          "source": "index.js.txt"
+        },
+        {
+          "file": "src/node_modules/some-widget/Widget.vue",
+          "source": "Widget.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

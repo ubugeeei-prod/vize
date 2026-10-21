@@ -163,6 +163,33 @@ const unused = 2
 }
 
 #[test]
+fn transform_honors_check_js_compiler_option() {
+    let source = "<script setup>\nconst value = input => input\n</script>\n";
+    let unchecked = frames(&[
+        initialize_request(),
+        open_project_request(2, Value::Null, json!({ "checkJs": false })),
+        transform_request(3, source),
+    ]);
+    let checked = frames(&[
+        initialize_request(),
+        open_project_request(2, Value::Null, json!({ "checkJs": true })),
+        transform_request(3, source),
+    ]);
+    let unchecked = exchange(&unchecked);
+    let checked = exchange(&checked);
+    let unchecked = unchecked[2]["result"]["text"].as_str().unwrap();
+    let checked = checked[2]["result"]["text"].as_str().unwrap();
+
+    const NO_CHECK: &str = "// @ts-nocheck\n";
+    assert_eq!(
+        unchecked.get(..NO_CHECK.len()),
+        Some(NO_CHECK),
+        "{unchecked}"
+    );
+    assert_ne!(checked.get(..NO_CHECK.len()), Some(NO_CHECK), "{checked}");
+}
+
+#[test]
 fn transform_exposes_template_diagnostic_directives() {
     let source = r#"<script setup lang="ts">
 const count = 1

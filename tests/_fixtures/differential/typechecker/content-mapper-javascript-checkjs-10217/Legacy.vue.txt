@@ -1,0 +1,14 @@
+<script>
+export default {
+  props: { size: Number },
+  methods: {
+    scale(factor) {
+      return factor * this.size;
+    },
+  },
+};
+</script>
+
+<template>
+  <span>{{ scale(2) }}</span>
+</template>

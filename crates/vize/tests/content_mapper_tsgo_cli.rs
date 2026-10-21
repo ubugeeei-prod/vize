@@ -15,6 +15,8 @@ mod const_enum_import;
 mod dynamic_template_refs;
 #[path = "content_mapper_tsgo_cli/incomplete_tags.rs"]
 mod incomplete_tags;
+#[path = "content_mapper_tsgo_cli/javascript_check_js.rs"]
+mod javascript_check_js;
 #[path = "content_mapper_tsgo_cli/props_binding.rs"]
 mod props_binding;
 #[path = "content_mapper_tsgo_cli/template_expression_syntax.rs"]
@@ -55,7 +57,7 @@ fn install_mapper_manifest(project_root: &Path) {
         "typescript": {
             "contentMapper": {
                 "exec": [env!("CARGO_BIN_EXE_vize"), "content-mapper"],
-                "compilerOptions": ["noUnusedLocals"],
+                "compilerOptions": ["checkJs", "noUnusedLocals"],
                 "dynamicConfig": true,
             },
         },

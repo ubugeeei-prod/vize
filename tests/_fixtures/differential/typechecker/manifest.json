@@ -3835,6 +3835,84 @@
       }
     },
     {
+      "id": "typechecker/content-mapper-javascript-checkjs-10217/plain-javascript-unchecked",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "content-mapper-javascript-checkjs-10217",
+      "case": "plain-javascript-unchecked",
+      "test": "plain_javascript_sfcs_follow_check_js_policy",
+      "regressionCommit": "c9b9b5c368fceeed61c13813a617f7a8b5b8351f",
+      "sourceRevision": "c9b9b5c368fceeed61c13813a617f7a8b5b8351f",
+      "packReference": {
+        "path": "content-mapper-javascript-checkjs-10217/cases.json",
+        "sha256": "040f820bed3d9bb67e86da694bfcb27f642257f84a696f3834537d2b3cc1145f"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "content-mapper-javascript-checkjs-10217/tsconfig.json.txt",
+          "sha256": "bbd6ef6db03131f14efd9b28b0837a476fd07ec079a09ec8f93e15710dbe32f5"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "content-mapper-javascript-checkjs-10217/App.vue.txt",
+          "sha256": "eca67844871526e999fcc052c0bb273661434d75e5928e61fbfcebb02fb4be2a"
+        },
+        {
+          "file": "src/Legacy.vue",
+          "path": "content-mapper-javascript-checkjs-10217/Legacy.vue.txt",
+          "sha256": "d5670cf95a2724a5cb43c5043f0c20ab4333a322768ef0f38c72cc16cfe3d028"
+        },
+        {
+          "file": "src/LegacySetup.vue",
+          "path": "content-mapper-javascript-checkjs-10217/LegacySetup.vue.txt",
+          "sha256": "302980e6aa197b002502c42ef6c80910e7b36bd89e1c86e4b067acdb6dd0daa0"
+        },
+        {
+          "file": "src/shims.d.ts",
+          "path": "content-mapper-javascript-checkjs-10217/shims.d.ts.txt",
+          "sha256": "f653c2f89d07f9d366dd2a417a9154b460962dac5f376ea56fc1c651ffe9b392"
+        },
+        {
+          "file": "src/node_modules/some-widget/package.json",
+          "path": "content-mapper-javascript-checkjs-10217/package.json.txt",
+          "sha256": "d9de0963686eed0517062e7e97bea94494b46c4eb6aa07c2c530e667b58db5bb"
+        },
+        {
+          "file": "src/node_modules/some-widget/index.js",
+          "path": "content-mapper-javascript-checkjs-10217/index.js.txt",
+          "sha256": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881"
+        },
+        {
+          "file": "src/node_modules/some-widget/Widget.vue",
+          "path": "content-mapper-javascript-checkjs-10217/Widget.vue.txt",
+          "sha256": "3bbc3c27c735fe85d84a6a3a655eef9659b9554efb31d8abec200f184e057abb"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/content-mapper-dynamic-template-ref-10198/component-typed-and-member-values",
       "state": "active",
       "targets": [

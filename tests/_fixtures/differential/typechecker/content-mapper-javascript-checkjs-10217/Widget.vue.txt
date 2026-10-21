@@ -1,0 +1,14 @@
+<script>
+export default {
+  props: { size: Number },
+  computed: {
+    double() {
+      return this.size * 2;
+    },
+  },
+};
+</script>
+
+<template>
+  <span>{{ double }}</span>
+</template>

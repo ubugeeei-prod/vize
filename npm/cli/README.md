@@ -245,7 +245,7 @@ Content Mappers are merged on the `typescript-go` main branch but are not in rel
 platform packages yet. Use a `tsgo` built from main while evaluating them, keep `--runExternalCode`
 explicit, and keep `vize check` as the supported typecheck path until a TypeScript 7 release ships
 the protocol. Vize negotiates protocol v1 with UTF-8 mappings, resolves its mapper options
-and its declared `noUnusedLocals` compiler-option dependency per project through the
+and its declared `checkJs` / `noUnusedLocals` compiler-option dependencies per project through the
 `openProject`/`closeProject` lifecycle (invalid options surface as `optionDiagnostics` in the
 tsconfig), maps `<!-- @vue-expect-error -->` and `<!-- @vue-ignore -->` template comments onto
 the protocol's diagnostic directives, and tags every transform response with the `.tsx` virtual

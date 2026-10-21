@@ -60,6 +60,7 @@ export const TYPECHECKER_TESTS = {
     "template_expression_syntax_preserves_complete_authored_diagnostics",
   "content-mapper-nuxt-emit-10195": "content_mapper_preserves_emit_with_nuxt_pattern_injections",
   "content-mapper-const-enum-import": "content_mapper_accepts_imported_const_enum_value_anchors",
+  "content-mapper-javascript-checkjs-10217": "plain_javascript_sfcs_follow_check_js_policy",
   "content-mapper-dynamic-template-ref-10198": "dynamic_template_refs_preserve_batch_acceptance",
   "content-mapper-type-only-import-use":
     "content_mapper_keeps_inferred_type_only_imports_out_of_value_anchors",
@@ -117,6 +118,7 @@ const sourceRevisions = {
   "content-mapper-nuxt-emit-10195": "369f01b50d8fe6e3b0996cc9a90eecf422dbdd3b",
   "content-mapper-const-enum-import": "506529117573a96880435dd6466cfd7cf81fdc92",
   "content-mapper-diagnostics-10187": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
+  "content-mapper-javascript-checkjs-10217": "c9b9b5c368fceeed61c13813a617f7a8b5b8351f",
   "content-mapper-dynamic-template-ref-10198": "b7fb3a9aefd31002b8b2d449695a9e14d657654a",
   "content-mapper-type-only-import-use": "fb89f41ffc518768e3053ccf9fe6b83bf24a1122",
   "valueless-directive-import-3140": "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899",
