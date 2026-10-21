@@ -1,5 +1,3 @@
-use std::path::{Component, Path};
-
 use sha2::{Digest, Sha256};
 use vize_l0::String;
 
@@ -29,8 +27,8 @@ pub fn generate_bundler_scope_id(
 }
 
 fn relative_scope_path(filename: &str, root: &str) -> String {
-    let file_components = normal_components(Path::new(filename));
-    let root_components = normal_components(Path::new(root));
+    let file_components = normal_components(filename);
+    let root_components = normal_components(root);
     let common = file_components
         .iter()
         .zip(&root_components)
@@ -43,22 +41,14 @@ fn relative_scope_path(filename: &str, root: &str) -> String {
     let unique = file_components.get(common..).unwrap_or_default();
     parts.extend(unique.iter().map(String::as_str));
 
-    let start = parts.iter().take_while(|part| **part == "..").count();
-    join_slash(parts.get(start..).unwrap_or_default())
+    join_slash(&parts)
 }
 
-fn normal_components(path: &Path) -> Vec<String> {
-    let mut components = Vec::new();
-    for component in path.components() {
-        match component {
-            Component::Normal(part) => {
-                components.push(String::from(part.to_string_lossy().as_ref()))
-            }
-            Component::ParentDir => components.push(String::from("..")),
-            Component::CurDir | Component::RootDir | Component::Prefix(_) => {}
-        }
-    }
-    components
+fn normal_components(path: &str) -> Vec<String> {
+    path.split(['/', '\\'])
+        .filter(|component| !component.is_empty() && *component != ".")
+        .map(String::from)
+        .collect()
 }
 
 fn normalize_path(path: &str) -> String {

@@ -1,0 +1,5 @@
+<script setup lang="ts">
+defineOptions({ inheritAttrs: false });
+defineProps<{ known?: string }>();
+</script>
+<template><div /></template>

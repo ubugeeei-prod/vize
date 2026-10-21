@@ -162,6 +162,7 @@ export interface BatchCompileResultWithFilesNapi {
 export interface BatchFileInputNapi {
   path: string;
   source: string;
+  scopeId?: string;
 }
 
 export interface BatchFileResultNapi {

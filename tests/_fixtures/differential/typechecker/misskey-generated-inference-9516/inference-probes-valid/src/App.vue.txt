@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import { ref, useTemplateRef } from 'vue';
+import ModalWindow from './ModalWindow.vue';
+import GenericInput from './GenericInput.vue';
+const value = ref('password');
+const passwordInput = useTemplateRef('passwordInput');
+void passwordInput;
+</script>
+<template>
+  <ModalWindow :scroll="false"><template #header>Header</template></ModalWindow>
+  <GenericInput ref="passwordInput" v-model="value" :withPasswordToggle="true"><template #prefix>Lock</template></GenericInput>
+</template>
