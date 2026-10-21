@@ -146,16 +146,18 @@ fn cli_build_info_survives_rematerialization() {
     let shard = config.with_file_name("tsconfig.shard1.json");
     let build_info = project.cli_build_info_path(&config);
     assert_eq!(
-        build_info,
-        project
-            .virtual_root()
-            .join(".vize-buildinfo/tsconfig.tsbuildinfo")
+        build_info.parent(),
+        Some(project.virtual_root().join(".vize-buildinfo").as_path())
     );
+    let build_info_name = build_info.file_name().unwrap().to_string_lossy();
+    assert!(build_info_name.starts_with("tsconfig."));
+    assert!(build_info_name.ends_with(".tsbuildinfo"));
     assert_ne!(project.cli_build_info_path(&shard), build_info);
     fs::create_dir_all(build_info.parent().unwrap()).unwrap();
     fs::write(&build_info, "{}").unwrap();
 
     project.materialize().unwrap();
+    assert_eq!(project.cli_build_info_path(&config), build_info);
     assert_eq!(fs::read_to_string(&build_info).unwrap(), "{}");
 
     let _ = fs::remove_dir_all(&case_dir);
