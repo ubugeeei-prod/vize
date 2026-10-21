@@ -4,7 +4,15 @@ use vize_l1::container::Vue;
 
 use crate::types::{BlockLocation, PadOption, SfcParseOptions};
 
-pub(super) fn try_parse(source: &str, options: &SfcParseOptions) -> Option<BlockLocation> {
+pub(super) struct NativeTemplateProjection<'a> {
+    pub(super) loc: BlockLocation,
+    pub(super) lang: Option<&'a str>,
+}
+
+pub(super) fn try_parse<'a>(
+    source: &'a str,
+    options: &SfcParseOptions,
+) -> Option<NativeTemplateProjection<'a>> {
     if options.pad != PadOption::None
         || options.ignore_empty
         || options.template_parse_options.is_some()
@@ -25,14 +33,17 @@ pub(super) fn try_parse(source: &str, options: &SfcParseOptions) -> Option<Block
     let end_column = content
         .rfind('\n')
         .map_or(start_column + content.len(), |at| content.len() - at);
-    Some(BlockLocation {
-        start,
-        end,
-        tag_start: observed.open_tag().start as usize,
-        tag_end: observed.close_tag().end as usize,
-        start_line,
-        start_column,
-        end_line,
-        end_column,
+    Some(NativeTemplateProjection {
+        loc: BlockLocation {
+            start,
+            end,
+            tag_start: observed.open_tag().start as usize,
+            tag_end: observed.close_tag().end as usize,
+            start_line,
+            start_column,
+            end_line,
+            end_column,
+        },
+        lang: observed.lang(),
     })
 }

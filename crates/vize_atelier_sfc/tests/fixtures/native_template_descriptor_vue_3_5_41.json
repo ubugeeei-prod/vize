@@ -197,7 +197,7 @@
     {
       "id": "outer-language",
       "source": "<template lang=\"html\"><div/></template>",
-      "native": false,
+      "native": true,
       "official": {
         "errors": [],
         "template": {
