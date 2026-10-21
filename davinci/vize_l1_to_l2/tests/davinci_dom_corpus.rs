@@ -19,7 +19,54 @@ use davinci_dom_corpus_support::{
     Report, assert_clean_corpus, assert_empty, compare_sfc_template, compare_sweep,
     old_lane_skip_is_allowed,
 };
+use std::path::{Path, PathBuf};
 use vize_atelier_dom::errors::ErrorCode;
+
+fn promoted_fixture_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../tests/_fixtures/differential/compiler/real-project-dom-reductions")
+}
+
+#[test]
+fn promoted_real_project_dom_fixtures_agree() {
+    let root = promoted_fixture_root();
+    let mut directories: Vec<_> = std::fs::read_dir(&root)
+        .expect("promoted fixture root exists")
+        .filter_map(Result::ok)
+        .filter(|entry| entry.file_type().is_ok_and(|kind| kind.is_dir()))
+        .collect();
+    directories.sort_by_key(std::fs::DirEntry::file_name);
+    let mut report = Report::default();
+    for directory in directories {
+        let fingerprint = directory.file_name();
+        let fingerprint = fingerprint.to_str().expect("UTF-8 fixture fingerprint");
+        assert!(
+            fingerprint.len() == 12 && fingerprint.bytes().all(|byte| byte.is_ascii_hexdigit()),
+            "invalid promoted fixture fingerprint: {fingerprint}"
+        );
+        let path = directory.path();
+        let witness_path = path.join("witness.vue.txt");
+        let provenance_path = path.join("provenance.json");
+        let source = std::fs::read_to_string(&witness_path).expect("promoted witness reads");
+        let provenance: serde_json::Value = serde_json::from_str(
+            &std::fs::read_to_string(&provenance_path).expect("promoted provenance reads"),
+        )
+        .expect("promoted provenance is JSON");
+        assert_eq!(
+            provenance["fingerprint"].as_str(),
+            Some(fingerprint),
+            "promoted provenance fingerprint"
+        );
+        compare_sfc_template(
+            witness_path.to_string_lossy().as_ref(),
+            &source,
+            &mut report,
+        );
+    }
+    if report.files > 0 {
+        assert_clean_corpus(&report);
+    }
+}
 
 const BATTERY: &[(&str, &str)] = &[
     (

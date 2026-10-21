@@ -449,10 +449,44 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+  davinci-dom-divergence-promotion:
+    name: promote canonical DOM divergence fixture
+    if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
+    needs: davinci-dom-divergence-reduction
+    permissions: { actions: read, contents: write, pull-requests: write }
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      PROMOTION_DIR: real-project-davinci-dom-promotion
+    steps:
+      - name: Checkout matrix commit
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false, ref: "${{ github.sha }}" }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
+      - name: Download canonical DOM reduction
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: canonical-corpus-dom-reduction-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
+          path: real-project-davinci-dom-reduction
+      - name: Promote minimized witness to a draft fixture PR
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: >-
+          node tools/support/compat/github/canonical-corpus-divergence-promotion.mjs publish
+          real-project-davinci-dom-reduction "$PROMOTION_DIR"
+      - name: Upload fixture promotion receipt
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: canonical-corpus-dom-promotion-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
+          path: ${{ env.PROMOTION_DIR }}
+          if-no-files-found: error
+          retention-days: 30
+
   davinci-dom-divergence-issue:
     name: file canonical DOM divergence
     if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
-    needs: [davinci-dom-corpus, davinci-dom-divergence-reduction]
+    needs: [davinci-dom-corpus, davinci-dom-divergence-reduction, davinci-dom-divergence-promotion]
     permissions: { contents: read, actions: read, issues: write }
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -472,8 +506,18 @@ jobs:
         with:
           name: canonical-corpus-dom-reduction-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
           path: real-project-davinci-dom-reduction
+      - name: Download canonical DOM fixture promotion
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: canonical-corpus-dom-promotion-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
+          path: real-project-davinci-dom-promotion
       - name: File canonical DOM divergence issue
         env: { GH_TOKEN: "${{ github.token }}" }
-        run: >-
-          node tools/support/compat/github/canonical-corpus-divergence-issue.mjs publish
-          real-project-davinci-dom-corpus real-project-davinci-dom-reduction
+        shell: bash
+        run: |
+          args=(publish real-project-davinci-dom-corpus real-project-davinci-dom-reduction)
+          if [[ -s real-project-davinci-dom-promotion/promotion.json ]]; then
+            args+=(real-project-davinci-dom-promotion)
+          fi
+          node tools/support/compat/github/canonical-corpus-divergence-issue.mjs "${args[@]}"
