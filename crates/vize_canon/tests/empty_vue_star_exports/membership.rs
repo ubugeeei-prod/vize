@@ -22,7 +22,7 @@ fn expected() -> (Value, Value) {
     let bytes = fs::read(path).unwrap();
     assert_eq!(
         support::hash(&bytes),
-        "10dcbcf9ee2bc72fc205bdbcc6e2b487373b81265037e65e008b65c93d54975f"
+        "0c89e28b4ec377230cb8c311a5456856a65466fe583a68d59d0a208b6937296e"
     );
     let manifest: Value = serde_json::from_slice(&bytes).unwrap();
     assert_eq!(manifest["version"], 1);
@@ -36,7 +36,7 @@ fn expected() -> (Value, Value) {
     assert_eq!(parts.len(), 2);
     let blobs = [
         "22eb745688ea02336b71df3e5f85779660ba9ae3",
-        "5527050a3e6642e1f68159343a11a3563e05e862",
+        "bac3344765a01248e3a189485eab644d726bd78d",
     ];
     let mut members = Vec::new();
     for (index, part) in parts.iter().enumerate() {
