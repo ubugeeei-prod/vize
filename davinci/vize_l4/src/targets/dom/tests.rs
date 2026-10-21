@@ -13,7 +13,7 @@ use crate::expr::{
     ResolvedExpressions,
     vue::{Access, AccessStyle, Binding, VueAccess},
 };
-use crate::module::{ModuleParts, RenderPlacement, RenderProperty, assemble, assemble_template};
+use crate::module::{ModuleParts, RenderFunctionName, assemble, assemble_template};
 use crate::runtime::{Runtime, vocabulary};
 use crate::write::{NoLinks, Recorded};
 
@@ -154,10 +154,7 @@ fn native_dom_module_links_follow_real_late_imports_and_named_accessor_rewrites(
     .unwrap();
     let mut parts = ModuleParts::for_runtime(Runtime::VueDom, "3.5.35", "__sfc__").unwrap();
     parts.render = Some(render);
-    parts.placement = RenderPlacement::Function {
-        binding: "render",
-        property: RenderProperty::Render,
-    };
+    parts.placement = RenderFunctionName::Render.placement();
     let document = assemble(parts).unwrap().into_document();
     assert!(document.as_str().starts_with("import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n"));
     assert!(

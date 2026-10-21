@@ -22,7 +22,7 @@ test("compatibility ledger joins every fixture inventory exactly once", () => {
     [...validated.fixtureMap.values()].filter((fixture) =>
       fixture.memberships.includes("ecosystem"),
     ).length,
-    143,
+    148,
   );
   assert.equal(
     [...validated.fixtureMap.values()].filter((fixture) => fixture.memberships.includes("app"))
@@ -36,13 +36,7 @@ test("compatibility ledger joins every fixture inventory exactly once", () => {
           fixture.memberships.includes("app") && !fixture.memberships.includes("ecosystem"),
       )
       .map((fixture) => fixture.fixturePath),
-    [
-      "tests/_fixtures/_git/frontend-phpcon-do-website",
-      "tests/_fixtures/_git/npmx.dev",
-      "tests/_fixtures/_git/nuxt-ui",
-      "tests/_fixtures/_git/openvue",
-      "tests/_fixtures/_git/vuefes-2025",
-    ],
+    [],
   );
 });
 
@@ -50,19 +44,19 @@ test("report keeps present, exercised, and runtime evidence separate", () => {
   const report = createCompatibilityReport(ledger, context);
   assert.deepEqual(report.inventories, {
     gitlinks: 149,
-    ecosystem: 143,
+    ecosystem: 148,
     app: 17,
-    appOnly: 5,
+    appOnly: 0,
   });
   assert.deepEqual(
     Object.fromEntries(
       Object.entries(report.oracles).map(([kind, oracle]) => [kind, oracle.fixtureCount]),
     ),
     {
-      compiler: 143,
-      "formatter-idempotency": 143,
-      linter: 143,
-      typechecker: 143,
+      compiler: 148,
+      "formatter-idempotency": 148,
+      linter: 148,
+      typechecker: 148,
       "production-build": 4,
       "authored-lsp": 55,
       "vue-tsc-parity": 11,

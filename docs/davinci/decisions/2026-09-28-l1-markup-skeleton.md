@@ -101,3 +101,30 @@ prerequisite closes. TODO (#6835):
 move the remaining `Namespace`/`ErrorCode`
 vocabulary out of Relief to remove L1's other direct legacy dependency. The
 compiler product route remains gated by #6880.
+
+## Shared quote vocabulary (#6835, partial)
+
+The published `vize_armature::tokenizer::QuoteType` path now re-exports the
+single L1-owned `vize_l1::markup::QuoteType`. Existing callback implementations
+keep the same four variants, `repr(u8)` values and public Armature import paths,
+while the compatibility adapter and L1 event recorder no longer translate
+between duplicate enums. A compile-time parity law accepts each public path
+where the other is required.
+
+This is vocabulary ownership only. It does not change callback sequences,
+parser routes, error mapping, namespace selection or product output. The
+legacy `ErrorCode` ownership work stays open.
+
+## Shared namespace vocabulary (#6835, partial)
+
+`vize_l1::markup::Namespace` now re-exports the canonical
+`vize_l0::Namespace` used by the Relief AST. L1 tree construction and the
+Armature parser import that namespace through the L1 markup path, so the
+grammar/profile boundary and the legacy AST no longer define or translate
+different namespace enums. Existing `vize_relief::Namespace` values remain the
+same Rust type with the same `Html`, `Svg` and `MathMl` variants, `repr(u8)`
+values and serde representation.
+
+This is namespace vocabulary ownership only. It does not change namespace
+selection, callback sequences, parser routes, AST serialization or product
+output. The legacy `ErrorCode` ownership decision remains open.

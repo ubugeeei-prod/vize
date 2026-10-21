@@ -137,6 +137,114 @@ export function runVisitorFixture(plugin, capability, event) {
   }
 }
 
+/** Adapt one negotiated virtual-TypeScript-only descriptor to the native host boundary. */
+export function createVirtualTsVisitorHost(plugin) {
+  negotiateVisitorPlugin(plugin, {
+    apiVersion: VISITOR_API_VERSION,
+    capabilities: ["virtual-ts"],
+  });
+  return immutable({
+    name: plugin.name,
+    version: plugin.version,
+    fingerprint: plugin.fingerprint,
+    run(eventJson) {
+      if (typeof eventJson !== "string") {
+        fail("invalid-event", "event", "must be serialized JSON");
+      }
+      let event;
+      try {
+        event = JSON.parse(eventJson);
+      } catch {
+        fail("invalid-event", "event", "must be valid JSON");
+      }
+      runVisitorFixture(plugin, "virtual-ts", event);
+      return "";
+    },
+  });
+}
+
+/** Adapt one negotiated devtools-trace-only descriptor to the recorder boundary. */
+export function createDevtoolsTraceVisitorHost(plugin) {
+  negotiateVisitorPlugin(plugin, {
+    apiVersion: VISITOR_API_VERSION,
+    capabilities: ["devtools-trace"],
+  });
+  return immutable({
+    name: plugin.name,
+    version: plugin.version,
+    fingerprint: plugin.fingerprint,
+    run(deliveryJson) {
+      if (typeof deliveryJson !== "string") {
+        fail("invalid-event", "delivery", "must be serialized JSON");
+      }
+      let delivery;
+      try {
+        delivery = JSON.parse(deliveryJson);
+      } catch {
+        fail("invalid-event", "delivery", "must be valid JSON");
+      }
+      record(delivery, "delivery", "invalid-event");
+      if (delivery.schemaVersion !== 1) {
+        fail("invalid-event", "delivery.schemaVersion", "must equal 1");
+      }
+      const sessionId = nonempty(delivery.sessionId, "delivery.sessionId", "invalid-event");
+      record(delivery.event, "delivery.event", "invalid-event");
+      const { event } = delivery;
+      if (!Number.isInteger(event.sequence) || event.sequence < 1) {
+        fail("invalid-event", "delivery.event.sequence", "must be a positive integer");
+      }
+      if (
+        typeof event.timestamp !== "number" ||
+        !Number.isFinite(event.timestamp) ||
+        event.timestamp < 0
+      ) {
+        fail("invalid-event", "delivery.event.timestamp", "must be a non-negative finite number");
+      }
+      const kind = nonempty(event.kind, "delivery.event.kind", "invalid-event");
+      const durationMs = event.durationMs ?? 0;
+      if (typeof durationMs !== "number" || !Number.isFinite(durationMs) || durationMs < 0) {
+        fail("invalid-event", "delivery.event.durationMs", "must be a non-negative finite number");
+      }
+      const { sequence, timestamp } = event;
+      const startNs = timestamp * 1_000_000;
+      const durationNs = durationMs * 1_000_000;
+      if (!Number.isFinite(startNs) || !Number.isFinite(durationNs)) {
+        fail("invalid-event", "delivery.event", "cannot be represented in nanoseconds");
+      }
+      const data = Object.fromEntries(
+        Object.entries(event).filter(
+          ([key]) =>
+            key !== "sequence" && key !== "timestamp" && key !== "kind" && key !== "durationMs",
+        ),
+      );
+      const source =
+        typeof event.source === "string" && event.source.trim() !== ""
+          ? event.source
+          : `vize-devtools://${encodeURIComponent(sessionId)}`;
+      const separator = kind.indexOf(":");
+      runVisitorFixture(plugin, "devtools-trace", {
+        apiVersion: VISITOR_API_VERSION,
+        capability: "devtools-trace",
+        file: source,
+        payload: {
+          events: [
+            {
+              id: `${sessionId}:${sequence}`,
+              parentId: null,
+              name: kind,
+              stage: separator === -1 ? kind : kind.slice(0, separator),
+              startNs,
+              durationNs,
+              data,
+            },
+          ],
+        },
+      });
+      return "";
+    },
+  });
+}
+
 function capabilitiesOf(value, field, requireNonempty) {
   if (!Array.isArray(value) || (requireNonempty && value.length === 0)) {
     fail(

@@ -34,6 +34,7 @@ export const TYPECHECKER_TESTS = {
   "reactive-props-destructure-10008": "reactive_props_destructure_preserves_unused_diagnostics",
   "nuxt-unknown-template-options-10013": "nuxt_unknown_template_options_preserve_explicit_checks",
   "native-inline-event-handler-9835": "native_inline_event_handler_is_contextually_typed",
+  "inferred-project-tsconfig-9718": "inferred_project_tsconfig_preserves_owned_batch_inputs",
   "generic-fallthrough-spread-9956": "generic_fallthrough_spread_preserves_valid_values",
   "art-variant-implicit-component-9854":
     "implicit_art_component_reports_the_same_prop_errors_as_an_explicit_import",
@@ -42,6 +43,7 @@ export const TYPECHECKER_TESTS = {
   "component-v-bind-duplicate-diagnostic-10069":
     "named_prop_before_spread_reports_once_with_or_without_listener",
   "runtime-props-report-10100-10101": "runtime_props_reports_10100_10101_retain_expected_types",
+  "native-pointer-events-original": "native_click_events_preserve_pointer_event_diagnostics",
   "workspace-alias-cache-10063": "workspace_package_alias_cache_preserves_sequential_scopes",
 } as const;
 
@@ -70,11 +72,13 @@ const sourceRevisions = {
   "reactive-props-destructure-10008": "f276e4d59cdaf765fd7d3f14eb3d679f5b685f98",
   "nuxt-unknown-template-options-10013": "fb700551a3a3a69f8976efa6fe31bca43ebc19b4",
   "native-inline-event-handler-9835": "8ac6ce1668e9bede8d73411e63a247dbd6f8eb56",
+  "inferred-project-tsconfig-9718": "f95557dadaab83dc0f7d4a7613bdb7ed4e59d323",
   "generic-fallthrough-spread-9956": "2b1e41a5b09005a97d24d1ff34f34c7507bbfb67",
   "art-variant-implicit-component-9854": "f07065df35d25bc76f355e5f106c80dbefa922b5",
   "misskey-generated-inference-9516": "cf6c83ab16fb7f20f84f0d51112090bbce89c74a",
   "component-v-bind-duplicate-diagnostic-10069": "7174c46d55825c155325e6314305e661d50ec95a",
   "runtime-props-report-10100-10101": "5dfe002a9467d152c8545693df33def3aa5f3bf7",
+  "native-pointer-events-original": "e7d8b1c82a8badec89ec9779838dfa50c1b9b790",
   "workspace-alias-cache-10063": "7174c46d55825c155325e6314305e661d50ec95a",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 

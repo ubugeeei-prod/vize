@@ -78,4 +78,12 @@ fn custom_directives_are_not_matched_by_builtin_prefixes() {
         attribute_priority(":class"),
         attribute_priority("v-bind:class")
     );
+
+    // Modifiers do not hide the L1 static argument from the formatter's
+    // patina-compatible groups.
+    assert_eq!(attribute_priority(":id.prop"), attribute_priority("id"));
+    assert_eq!(
+        attribute_priority("v-bind:ref.camel"),
+        attribute_priority("ref")
+    );
 }

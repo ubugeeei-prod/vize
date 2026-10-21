@@ -26,13 +26,20 @@ a reviewed update to the executable verdict inventory.
 | --------------------------------- | ---------- | ----------------------------------------------------------------------- |
 | `children/dynamic-text`           | equivalent | initial DOM and three text updates retain the authored element          |
 | `props/dynamic-attributes`        | equivalent | attributes and text update while the authored element remains live      |
-| `control-flow/conditional-branch` | equivalent | same-branch updates retain identity; branch changes replace the child   |
+| `control-flow/conditional-branch` | equivalent | falsy, array and nested-VNode conditions match both real JSX references |
 | `props/live-input-value`          | equivalent | the live input value and sibling output update without replacing either |
 
 The JSON corpus and verdict table are checked bidirectionally, so adding or
 removing a case without a verdict fails. The runtime comparison is the source
 of each `equivalent` verdict; generated-code shape is not used as a substitute
 for mounted behavior.
+
+The conditional row is also the value-sensitive counterpart of the Babel
+oracle's equivalent `children/ternary` row. Its single mounted update sequence
+passes `0`, an empty string, `NaN`, `null`, `undefined`, `false`, `true`, an
+array and a nested VNode through both Vize/reference pairs. The comparison
+retains complete DOM, visible text, diagnostics and branch identity separately
+for the VDOM and Vapor runtimes.
 
 Run the focused oracle with:
 

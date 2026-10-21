@@ -9,6 +9,7 @@ use crate::rules::{
 use vize_l0::config::{
     ConfigLintRuleOptions, CustomEventNameCasing, HtmlSelfClosingStyle as ConfigSelfClosingStyle,
     HyphenationStyle as ConfigHyphenationStyle, TemplateComponentNameCasing,
+    VOnStyle as ConfigVOnStyle,
 };
 
 impl Linter {
@@ -76,6 +77,12 @@ impl Linter {
             self = self.with_v_on_event_hyphenation(match value {
                 ConfigHyphenationStyle::Always => VOnEventHyphenationStyle::Always,
                 ConfigHyphenationStyle::Never => VOnEventHyphenationStyle::Never,
+            });
+        }
+        if let Some(value) = options.v_on_style() {
+            self = self.with_v_on_style(match value {
+                ConfigVOnStyle::Shorthand => crate::rules::vue::VOnStyleOption::Shorthand,
+                ConfigVOnStyle::Longform => crate::rules::vue::VOnStyleOption::Longform,
             });
         }
         if let Some(value) = options.attribute_hyphenation() {

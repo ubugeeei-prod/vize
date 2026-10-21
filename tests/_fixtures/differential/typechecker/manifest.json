@@ -1754,6 +1754,65 @@
       ]
     },
     {
+      "id": "typechecker/inferred-project-tsconfig-9718/owned-strict",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "inferred-project-tsconfig-9718",
+      "case": "owned-strict",
+      "test": "inferred_project_tsconfig_preserves_owned_batch_inputs",
+      "regressionCommit": "f95557dadaab83dc0f7d4a7613bdb7ed4e59d323",
+      "sourceRevision": "f95557dadaab83dc0f7d4a7613bdb7ed4e59d323",
+      "packReference": {
+        "path": "inferred-project-tsconfig-9718/cases.json",
+        "sha256": "f67fef2d9c91cd5b94444a7448df7d79b532cad6ded90349bdf14d67d84a474e"
+      },
+      "inputs": [
+        {
+          "file": "src/Owned.vue",
+          "path": "inferred-project-tsconfig-9718/src/Owned.vue.txt",
+          "sha256": "df401f321b9ca4c07dadf48c83e02f3da7d07eb2d5a5a774d4c1ab446c8fb627"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "inferred-project-tsconfig-9718/tsconfig.json.txt",
+          "sha256": "3c8047401c47504341017d802f7940ce777a7e7a361894c04f6d965954715003"
+        }
+      ]
+    },
+    {
+      "id": "typechecker/inferred-project-tsconfig-9718/inferred-defaults",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "inferred-project-tsconfig-9718",
+      "case": "inferred-defaults",
+      "test": "inferred_project_tsconfig_preserves_owned_batch_inputs",
+      "regressionCommit": "f95557dadaab83dc0f7d4a7613bdb7ed4e59d323",
+      "sourceRevision": "f95557dadaab83dc0f7d4a7613bdb7ed4e59d323",
+      "packReference": {
+        "path": "inferred-project-tsconfig-9718/cases.json",
+        "sha256": "f67fef2d9c91cd5b94444a7448df7d79b532cad6ded90349bdf14d67d84a474e"
+      },
+      "inputs": [
+        {
+          "file": "template/code/App.vue",
+          "path": "inferred-project-tsconfig-9718/template/code/App.vue.txt",
+          "sha256": "4ee23799e710983bff854b21b4885a73802ebe66db92f95ac552fc7a0ef6eb7b"
+        }
+      ]
+    },
+    {
       "id": "typechecker/generic-fallthrough-spread-9956/broad-index-valid",
       "state": "active",
       "targets": [
@@ -2039,6 +2098,70 @@
           "file": "src/Parent.vue",
           "path": "runtime-props-report-10100-10101/src/Parent.vue.txt",
           "sha256": "aade42cac2d727457bb3b897a58a831f92a867524e3bcc74462901d529429074"
+        }
+      ]
+    },
+    {
+      "id": "typechecker/native-pointer-events-original/click-pointer-handler",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "native-pointer-events-original",
+      "case": "click-pointer-handler",
+      "test": "native_click_events_preserve_pointer_event_diagnostics",
+      "regressionCommit": "e7d8b1c82a8badec89ec9779838dfa50c1b9b790",
+      "sourceRevision": "e7d8b1c82a8badec89ec9779838dfa50c1b9b790",
+      "packReference": {
+        "path": "native-pointer-events-original/cases.json",
+        "sha256": "9e5a297eb799ddff8fb7e9b08f0009f0d7e174caa503606dc6e4dc0bc3b384f5"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "native-pointer-events-original/click-pointer-handler/tsconfig.json.txt",
+          "sha256": "97fe2cd88a02b6ee5680212cba048feac1cb807d26fd4a5ef3c2dede7874117e"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "native-pointer-events-original/click-pointer-handler/src/App.vue.txt",
+          "sha256": "5d198732686d7ebdf96ad96d0740b14f42ba28e5a2c18185bd5b6c8792e58dad"
+        }
+      ]
+    },
+    {
+      "id": "typechecker/native-pointer-events-original/auxclick-pointer-handler",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "native-pointer-events-original",
+      "case": "auxclick-pointer-handler",
+      "test": "native_click_events_preserve_pointer_event_diagnostics",
+      "regressionCommit": "e7d8b1c82a8badec89ec9779838dfa50c1b9b790",
+      "sourceRevision": "e7d8b1c82a8badec89ec9779838dfa50c1b9b790",
+      "packReference": {
+        "path": "native-pointer-events-original/cases.json",
+        "sha256": "9e5a297eb799ddff8fb7e9b08f0009f0d7e174caa503606dc6e4dc0bc3b384f5"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "native-pointer-events-original/auxclick-pointer-handler/tsconfig.json.txt",
+          "sha256": "97fe2cd88a02b6ee5680212cba048feac1cb807d26fd4a5ef3c2dede7874117e"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "native-pointer-events-original/auxclick-pointer-handler/src/App.vue.txt",
+          "sha256": "f86e1cd968a74e9686dd11cd9a25f06f3c2e77aafcea0f1da975e63cc1ba52a1"
         }
       ]
     }

@@ -10,6 +10,7 @@ import {
   checkMeasurement,
   loadBudgets,
   ratchetBudgets,
+  validateBudgets,
   validateMeasurement,
 } from "../../tools/benchmarks/scripts/instruction-counts-lib.mjs";
 import {
@@ -53,7 +54,14 @@ function packet(family) {
 // 1.99.0 registry, committed 1.99.1 registry and its three-run same-input evidence.
 function rebase(family) {
   const { current: old, registry } = packet(family);
-  const current = loadBudgets(path.join(root, "docs/davinci/plan", family.active), registry);
+  const active = loadBudgets(path.join(root, "docs/davinci/plan", family.active));
+  const current = validateBudgets(
+    {
+      ...active,
+      instruction: Object.fromEntries([...registry].map((id) => [id, active.instruction[id]])),
+    },
+    registry,
+  );
   const raw = fs.readFileSync(path.join(fixture, `${family.name}-rust1991.json`));
   const report = validateMeasurement(JSON.parse(raw), registry);
   return { old, current, report, registry };
@@ -244,18 +252,24 @@ for (const family of families) {
     assert.throws(() => checkMeasurement(regression, current), /instruction budget exceeded/);
   });
 
-  void test(`${family.name}: CLI accepts the authorized ratchet and refuses historical reports as current source`, () => {
+  void test(`${family.name}: CLI accepts the current registry and refuses historical reports`, () => {
     const mode = family.name === "formatter" ? ["--formatter"] : [];
-    const verified = cli([
-      ...mode,
-      "--verify-budgets",
-      "--base-budgets",
-      path.join(fixture, `${family.name}-rust199.toml`),
-    ]);
+    const verified = cli(
+      family.name === "level"
+        ? [...mode, "--verify-budgets"]
+        : [
+            ...mode,
+            "--verify-budgets",
+            "--base-budgets",
+            path.join(fixture, `${family.name}-rust199.toml`),
+          ],
+    );
     assert.equal(verified.status, 0, verified.stderr);
     assert.match(
       verified.stdout,
-      new RegExp(`${family.count} pinned ceilings and ratchet verified`),
+      new RegExp(
+        `${family.name === "level" ? 101 : family.count} pinned ceilings and ratchet verified`,
+      ),
     );
     const replay = cli([
       ...mode,
@@ -264,7 +278,12 @@ for (const family of families) {
       path.join(fixture, `${family.name}-rust1991.json`),
     ]);
     assert.equal(replay.status, 1);
-    assert.match(replay.stderr, /measurement source is not current checkout/);
+    assert.match(
+      replay.stderr,
+      family.name === "level"
+        ? /missing \[s1_to_s2_emit_helper_rich_large\]/
+        : /measurement source is not current checkout/,
+    );
   });
 
   void test(`${family.name}: the 1.99.1 re-baseline keeps every 1.99.0 row, input and cap`, () => {

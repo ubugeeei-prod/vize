@@ -18,7 +18,7 @@ use vize_l2::lang::js::{OrdinaryIssue, SetupIssue};
 use vize_l3::decision::{DecisionBuildError, build_dom_file_decisions};
 use vize_l4::{
     module::{
-        AssemblyError, ModuleParts, RenderPlacement, RenderProperty, assemble,
+        AssemblyError, ModuleParts, RenderFunctionName, assemble,
         ordinary::OrdinaryEmitError,
         setup::{COMPONENT_BINDING, SetupEmitError},
     },
@@ -278,10 +278,7 @@ fn emit<L: LinkSink>(
         setup::emit(&admitted, &mut parts)?;
     }
     parts.scope_id = scope;
-    parts.placement = RenderPlacement::Function {
-        binding: "render",
-        property: RenderProperty::Render,
-    };
+    parts.placement = RenderFunctionName::Render.placement();
     let document = assemble(parts)
         .map_err(NativeSfcCompileError::Assembly)?
         .into_document();

@@ -14,6 +14,7 @@ import type {
   NoMutatingPropsOption,
   PatinaRuleOptions,
   SfcElementOrderOption,
+  VOnStyle,
 } from "./model.js";
 
 export function getRuleOptions(
@@ -57,6 +58,11 @@ export function getRuleOptions(
     case "vue/v-on-event-hyphenation":
       if (isHyphenationStyle(firstOption)) {
         return { vOnEventHyphenation: firstOption };
+      }
+      break;
+    case "vue/v-on-style":
+      if (isVOnStyle(firstOption)) {
+        return { ruleOptions: { "vue/v-on-style": firstOption } };
       }
       break;
     case "vue/attribute-hyphenation":
@@ -148,4 +154,8 @@ function isHtmlSelfClosingOption(value: unknown): value is HtmlSelfClosingOption
 
 function isHyphenationStyle(value: unknown): value is HyphenationStyle {
   return value === "always" || value === "never";
+}
+
+function isVOnStyle(value: unknown): value is VOnStyle {
+  return value === "shorthand" || value === "longform";
 }

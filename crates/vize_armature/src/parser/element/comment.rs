@@ -4,7 +4,8 @@ use vize_l0::{
     Box,
     directive::{DirectiveKind, parse_vize_directive},
 };
-use vize_relief::{CommentNode, ErrorCode, Namespace, TemplateChildNode};
+use vize_l1::markup::Namespace;
+use vize_relief::{CommentNode, ErrorCode, TemplateChildNode};
 
 use super::super::Parser;
 

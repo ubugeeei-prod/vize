@@ -295,11 +295,11 @@ void test("full-only extraction preserves all seventeen complete original job ob
     },
     run: 'node tests/differential/typechecker-workspace.ts verify "$SOURCE_SHA" .artifacts/rust-full-workspace "$GITHUB_RUN_ID" "$PRODUCER_ATTEMPT"',
   });
-  // Git source 3d93303: exact complete 17 original job objects, in authored order.
-  // Only the explicitly asserted observation additions and Nuxt caller invert.
+  // #7083 extends the authored allocation gate with its helper-rich witness.
+  // The complete 17 job objects otherwise stay in authored order.
   assert.equal(Object.keys(original).length, 17);
   assert.equal(
     createHash("sha256").update(JSON.stringify(original)).digest("hex"),
-    "4bf5e456fd55af86066c8587c7fb04e665ac9cf7c7441912ff7b384582659d41",
+    "4de63c3d229c90269a69631d840c4b31cdc27290eedb5a11fc9775755c91cd1e",
   );
 });

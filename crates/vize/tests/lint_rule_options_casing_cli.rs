@@ -205,6 +205,63 @@ fn lint_rule_options_configure_html_self_closing() {
 }
 
 #[test]
+fn lint_rule_options_configure_v_on_style() {
+    let project_root = temp_project_dir();
+    write_project_file(
+        &project_root,
+        "src/Events.vue",
+        r#"<template>
+  <button @click="save" v-on:keyup="cancel" v-on="listeners">Save</button>
+</template>
+"#,
+    );
+    write_project_file(
+        &project_root,
+        "vite.config.mjs",
+        &vite_config::source(
+            r#"{
+  "linter": {
+    "preset": "incremental",
+    "rules": {
+      "vue/v-on-style": "error"
+    },
+    "ruleOptions": {
+      "vue/v-on-style": "longform"
+    }
+  }
+}"#,
+        ),
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args([
+            "lint",
+            "--config",
+            "vite.config.mjs",
+            "--format",
+            "json",
+            "src/Events.vue",
+        ])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(1), "{}", output_details(&output));
+    assert_eq!(output.stderr, b"", "{}", output_details(&output));
+
+    let stdout = std::str::from_utf8(&output.stdout).unwrap();
+    let report: serde_json::Value = serde_json::from_str(stdout).unwrap();
+    let messages = report[0]["messages"].as_array().unwrap();
+    assert_eq!(messages.len(), 1, "{stdout}");
+    assert_eq!(messages[0]["ruleId"], "vue/v-on-style");
+    assert_eq!(
+        messages[0]["message"],
+        "[vize:vue/v-on-style] Prefer `v-on:` over shorthand `@`"
+    );
+
+    let _ = fs::remove_dir_all(project_root);
+}
+
+#[test]
 fn lint_rule_options_configure_misskey_vue_rules() {
     let project_root = temp_project_dir();
     write_project_file(

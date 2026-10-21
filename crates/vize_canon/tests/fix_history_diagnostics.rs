@@ -201,6 +201,17 @@ fn template_suppression_preserves_complete_original_diagnostics() {
 }
 
 #[test]
+fn native_click_events_preserve_pointer_event_diagnostics() {
+    check_pack(
+        "native-pointer-events-original",
+        "native_click_events_preserve_pointer_event_diagnostics",
+        "e7d8b1c82a8badec89ec9779838dfa50c1b9b790",
+        Some(936),
+        &["click-pointer-handler", "auxclick-pointer-handler"],
+    );
+}
+
+#[test]
 fn bounded_cache_maintenance_preserves_project_diagnostics() {
     check_pack(
         "cache-maintenance-9860",
@@ -241,6 +252,17 @@ fn reactive_props_destructure_preserves_unused_diagnostics() {
         "f276e4d59cdaf765fd7d3f14eb3d679f5b685f98",
         Some(10008),
         &["unused-binding", "used-rest-binding"],
+    );
+}
+
+#[test]
+fn inferred_project_tsconfig_preserves_owned_batch_inputs() {
+    check_pack(
+        "inferred-project-tsconfig-9718",
+        "inferred_project_tsconfig_preserves_owned_batch_inputs",
+        "f95557dadaab83dc0f7d4a7613bdb7ed4e59d323",
+        Some(9718),
+        &["owned-strict", "inferred-defaults"],
     );
 }
 
@@ -308,13 +330,15 @@ fn check_pack(
             | "v-for-component-source-original"
             | "declared-prop-names-original"
             | "template-suppression-original"
+            | "native-pointer-events-original"
             | "cache-maintenance-9860"
             | "workspace-alias-cache-10063"
             | "nuxt-unknown-template-options-10013"
             | "reactive-props-destructure-10008"
             | "generic-fallthrough-spread-9956"
             | "misskey-generated-inference-9516"
-            | "component-v-bind-duplicate-diagnostic-10069" => regression,
+            | "component-v-bind-duplicate-diagnostic-10069"
+            | "inferred-project-tsconfig-9718" => regression,
             _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
         }
     );

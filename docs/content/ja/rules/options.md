@@ -79,6 +79,7 @@ export default defineConfig({
 | `vue/sfc-element-order` | `{ order?: Array<string \| string[]> }` | 既定は `[["script", "template"], "style"]` です。入れ子の配列は、その位置に配列内のどのブロックが現れてもよいことを表します。 |
 | `vue/html-self-closing` | `{ html?: { void?: Style; normal?: Style; component?: Style }; svg?: Style; math?: Style }`。`Style` は `"always"`、`"never"`、`"any"` のいずれか | 既定は `html.void: "always"`、`html.normal: "any"`、`html.component: "always"`、`svg: "always"`、`math: "always"` です。 |
 | `vue/v-on-event-hyphenation` | `"always" \| "never"` | コンポーネントの静的なイベントリスナー名を、ハイフン区切りにするかを指定します。 |
+| `vue/v-on-style` | `"shorthand" \| "longform"` | 既定は `"shorthand"` です。イベントディレクティブを `@click` と `v-on:click` のどちらで書くかを指定します。`v-on="listeners"` のようなオブジェクト形式は変更しません。 |
 | `vue/attribute-hyphenation` | `"always" \| "never"` | テンプレートのコンポーネントに渡すプロパティの属性名を、ハイフン区切りにするかを指定します。 |
 | `vue/valid-v-slot` | `{ allowModifiers?: boolean }` | 既定は `false`。`true` では、名前付きスロットの修飾子を許可します。引数なしの修飾子や、そのスロット自身のプロパティに依存する動的な名前は報告します。 |
 | `musea/prefer-design-tokens` | `{ tokens?: Array<{ path: string; value: string; tier?: string }> }` | トークンのデータを指定し、ルールを有効にするか、空でないトークンのリストで暗黙に選択した場合だけ報告します。`tier` の既定は `primitive` です。 |
@@ -88,7 +89,7 @@ export default defineConfig({
 
 - [型ルールのオプション](./options-type.md)：真偽値の条件と null を許す範囲。
 - [スクリプトルールのオプション](./options-script.md)：使用を禁止するグローバルとメンバー、カスタムイベント名の形式、props の分割代入。
-- [Vue ルールのオプション](./options-vue.md)：コンポーネント名の形式、props を変更できる範囲、SFC ブロックの順序、自己終了タグ、イベント名と属性名の形式、スロットの修飾子。
+- [Vue ルールのオプション](./options-vue.md)：コンポーネント名の形式、props を変更できる範囲、SFC ブロックの順序、自己終了タグ、イベントディレクティブ・イベント名・属性名の形式、スロットの修飾子。
 - [Musea ルールのオプション](./options-musea.md)：デザイントークンの一覧。
 
 ## `html/no-empty-palpable-content`

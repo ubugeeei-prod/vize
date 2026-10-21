@@ -35,6 +35,7 @@ const EXPLICIT_STAGE_WINDOWS = new Set([
   "s1_to_s2_lower_vfor_three_aliases",
   "s1_to_s2_emit_von_two_per_bucket",
   "s1_to_s2_emit_p2_11_dom_surface",
+  "s1_to_s2_emit_helper_rich_large",
   "s1_to_s2_pass_template_complexity",
 ]);
 
@@ -272,6 +273,13 @@ test("P2-11 L2 DOM emit probe gates exact allocations", () => {
   assert.equal(budgets.bench[id]?.wall_p50_ns, 0);
   assert.equal(budgets.bench[id]?.wall_tolerance, 0.1);
   assert.equal(budgets.bench[id]?.allocs, 60);
+});
+
+test("helper-rich L2 emit witness gates exact allocations", () => {
+  const id = "s1_to_s2_emit_helper_rich_large";
+  assert.equal(budgets.bench[id]?.wall_p50_ns, 0);
+  assert.equal(budgets.bench[id]?.wall_tolerance, 0.1);
+  assert.equal(budgets.bench[id]?.allocs, 656);
 });
 
 test("toml-lite parses inline tables and rejects malformed ones", () => {

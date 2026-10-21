@@ -12,8 +12,7 @@ use vize_l1_to_l2::native_file::{
 use vize_l3::decision::ssr::{NativeSsrBuildError, build_native_scoped_ssr_file_decisions};
 use vize_l4::{
     module::{
-        AssemblyError, ModuleParts, RenderPlacement, RenderProperty, ScopeId, assemble,
-        setup::COMPONENT_BINDING,
+        AssemblyError, ModuleParts, RenderFunctionName, ScopeId, assemble, setup::COMPONENT_BINDING,
     },
     runtime::Runtime,
     targets::ssr::{SsrError, emit_scoped_template},
@@ -180,10 +179,7 @@ fn emit<L: LinkSink>(
     .map_err(Error::Assembly)?;
     parts.render = Some(emit_scoped_template::<L>(&receipt, scope).map_err(Error::Ssr)?);
     parts.scope_id = Some(scope);
-    parts.placement = RenderPlacement::Function {
-        binding: "ssrRender",
-        property: RenderProperty::SsrRender,
-    };
+    parts.placement = RenderFunctionName::SsrRender.placement();
     let document = assemble(parts).map_err(Error::Assembly)?.into_document();
     let source = observation.original().descriptor().source();
     let source_map = options

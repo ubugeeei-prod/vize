@@ -51,8 +51,8 @@ This module only creates immutable descriptors and author fixtures. It does not
 register callbacks in the native compiler, linter or language server, so importing
 it adds no work to those paths. A production host must explicitly negotiate the
 descriptor and owns cancellation, deadlines, isolation and event construction.
-Virtual TypeScript and devtools trace runtime delivery remain unimplemented until
-those host boundaries have their own lifecycle and performance evidence.
+Virtual TypeScript and devtools trace observers use separate opt-in host
+entrypoints; importing this module never registers either callback globally.
 
 ## Lint rules and autofixes
 
@@ -271,3 +271,80 @@ synchronously in the calling Node process and have no execution deadline.
 Freezing batches and auditing output do not isolate those callbacks. The measured
 proxy handle remains for spike compatibility. `@vizejs/extension-sdk` is the
 separate versioned WIT guest interface.
+
+## Virtual TypeScript visitors
+
+`defineVisitorPlugin` descriptors with only the `virtual-ts` capability can be
+negotiated for the native type-check host. The ordinary `typeCheck` entrypoint
+remains plugin-free; callers opt in through the separate visitor entrypoint.
+
+```js
+import { typeCheckWithVirtualTsVisitors } from "@vizejs/native";
+import {
+  VISITOR_API_VERSION,
+  createVirtualTsVisitorHost,
+  defineVisitorPlugin,
+} from "@vizejs/plugin-sdk/visitor";
+
+const observer = defineVisitorPlugin({
+  apiVersion: VISITOR_API_VERSION,
+  name: "virtual-ts-observer",
+  version: "1",
+  capabilities: ["virtual-ts"],
+  cacheInputs: [],
+  visitors: {
+    "virtual-ts"({ payload }) {
+      console.log(payload.virtualFile, payload.code, payload.mappings);
+    },
+  },
+});
+
+typeCheckWithVirtualTsVisitors(source, [createVirtualTsVisitorHost(observer)], {
+  filename: "src/App.vue",
+});
+```
+
+The callback receives immutable generated code and source/generated UTF-8 byte
+ranges after the real type-check projection is built. Returning a value,
+requesting another capability, or forging an incomplete host identity refuses
+the invocation.
+
+## Devtools trace visitors
+
+`devtools-trace` descriptors attach explicitly to a request-local
+`@vizejs/devtools` recorder. The recorder serializes each committed trace event
+through the negotiated adapter; disabled recorders do not invoke configured
+hosts, and ordinary recorders without `visitorHosts` do not inspect plugin
+descriptors.
+
+```js
+import { createDevtoolsTraceRecorder } from "@vizejs/devtools";
+import {
+  VISITOR_API_VERSION,
+  createDevtoolsTraceVisitorHost,
+  defineVisitorPlugin,
+} from "@vizejs/plugin-sdk/visitor";
+
+const observer = defineVisitorPlugin({
+  apiVersion: VISITOR_API_VERSION,
+  name: "trace-observer",
+  version: "1",
+  capabilities: ["devtools-trace"],
+  cacheInputs: [],
+  visitors: {
+    "devtools-trace"({ file, payload }) {
+      console.log(file, payload.events);
+    },
+  },
+});
+
+const trace = createDevtoolsTraceRecorder({
+  sessionId: "request-1",
+  visitorHosts: [createDevtoolsTraceVisitorHost(observer)],
+});
+```
+
+Every delivered event has a deterministic session/sequence ID, a stage derived
+from its trace kind, millisecond timestamps normalized to nanoseconds, and the
+remaining recorder fields in immutable `data`. A visitor exception or non-void
+result refuses the record before it enters the snapshot.

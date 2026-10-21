@@ -89,7 +89,7 @@ function referenceReport() {
 }
 
 void test("formatter differential manifest preserves captured baselines and versioned regression inputs", () => {
-  assert.equal(loaded.cases.length, 19);
+  assert.equal(loaded.cases.length, 20);
   for (const fixture of loaded.cases) {
     assert.equal(
       fixture.expectations.legacy.state,
@@ -100,6 +100,7 @@ void test("formatter differential manifest preserves captured baselines and vers
           "formatter/sfc/typed-arrow-last-argument",
           "formatter/sfc/directive-prefix-print-width",
           "formatter/sfc/directive-expression-indent-width",
+          "formatter/sfc/l1-directive-classification",
         ].includes(fixture.id)
         ? "pending"
         : "captured",

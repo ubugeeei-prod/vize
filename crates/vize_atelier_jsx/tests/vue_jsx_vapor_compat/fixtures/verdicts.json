@@ -12,7 +12,7 @@
     },
     "control-flow/conditional-branch": {
       "verdict": "equivalent",
-      "basis": "normalized rendered DOM and branch identity across retained and replaced branches"
+      "basis": "both Vapor and Babel references match falsy, array, nested-VNode and branch-identity updates"
     },
     "props/live-input-value": {
       "verdict": "equivalent",
