@@ -29,6 +29,10 @@
     "directives/v-model-text": {
       "verdict": "equivalent",
       "basis": "real input events update the model and direct state patches update the live input with identical DOM, diagnostics, event receipts, and identity"
+    },
+    "components/scoped-default-slot": {
+      "verdict": "equivalent",
+      "basis": "resolved component props and scoped default-slot closures update independently with identical mounted DOM, diagnostics, and identity"
     }
   }
 }
