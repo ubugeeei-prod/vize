@@ -159,7 +159,6 @@ impl VirtualProject {
             "canon.project.package_deps",
             materialize_package_node_modules(&package_links)
         );
-        self.write_package_link_receipt(&desired_package_links)?;
 
         profile!(
             "canon.project.write_package_boundary",
@@ -272,6 +271,9 @@ impl VirtualProject {
                 self.write_tsconfig_file(&path, None, false)
             }
         })?;
+        // Commit link custody only after every materialized artifact succeeds.
+        // An interrupted cold build must fail closed on its next run.
+        self.write_package_link_receipt(&desired_package_links)?;
         Ok(desired_package_links)
     }
 

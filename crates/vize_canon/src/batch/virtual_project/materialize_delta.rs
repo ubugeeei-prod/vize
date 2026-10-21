@@ -184,7 +184,6 @@ impl VirtualProject {
             materialize_package_links(&patch.desired)?;
             self.commit_incremental_package_link_patch(patch);
         }
-        self.write_package_link_receipt(&self.materialized_package_links)?;
 
         let mut delta = MaterializedFileDelta {
             topology_changed: package_links_changed,
@@ -203,6 +202,9 @@ impl VirtualProject {
         delta.changed.sort();
         delta.created.sort();
         delta.deleted.sort();
+        // Commit link custody only after the complete incremental snapshot can
+        // be observed. Any failure above leaves the prior receipt intact.
+        self.write_package_link_receipt(&self.materialized_package_links)?;
         self.retired_package_shadow_paths.clear();
         Ok(IncrementalMaterialization {
             delta,
