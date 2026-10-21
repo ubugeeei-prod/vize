@@ -3,6 +3,8 @@ import { generateScopeId } from "./utils/index.ts";
 import type { PluginVueCompileOptions } from "./plugin/plugin-vue-options.ts";
 
 export interface CompileFileOptions extends PluginVueCompileOptions {
+  /** Vite project root used to derive checkout-independent scope identities. */
+  root?: string;
   sourceMap: boolean;
   ssr: boolean;
   vapor: boolean;
@@ -24,6 +26,8 @@ export interface CompileFileOptions extends PluginVueCompileOptions {
 }
 
 export interface CompileBatchOptions extends PluginVueCompileOptions {
+  /** Vite project root used to derive checkout-independent scope identities. */
+  root?: string;
   sourceMap: boolean;
   ssr: boolean;
   vapor: boolean;
@@ -47,6 +51,7 @@ export interface CompileBatchOptions extends PluginVueCompileOptions {
 export function buildCompileFileOptions(
   filePath: string,
   options: CompileFileOptions,
+  scopeId = generateScopeId(filePath, options.root, options.isProd ?? false),
 ): SfcCompileOptionsNapi {
   return {
     filename: filePath,
@@ -62,7 +67,7 @@ export function buildCompileFileOptions(
     experimentalSelfComponent: options.experimentalSelfComponent ?? false,
     experimentalStrictSlotChildren: options.experimentalStrictSlotChildren ?? false,
     experimentalServerScript: options.experimentalServerScript ?? false,
-    scopeId: `data-v-${generateScopeId(filePath)}`,
+    scopeId: `data-v-${scopeId}`,
     styleTrim: options.styleTrim,
     ...(options.templateCacheHandlers === undefined
       ? {}

@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { classifyVitePluginRequest } from "@vizejs/native";
 import type { TransformResult } from "vite";
@@ -125,6 +126,7 @@ function loadCompiledSfcModule(
     extractCss,
     customElement,
     filePath: realPath,
+    root: state.root,
   };
   if (compiled.css && !hasDelegated && embedsInlineCss(compiled, outputOptions)) {
     compiled = {
@@ -205,12 +207,27 @@ export function loadHook(
 
   const styleRequest = classifyVitePluginRequest(styleId);
   if (styleRequest.isVueStyleQuery) {
+    const isRootRelative =
+      !!styleRequest.querySuffix &&
+      new URLSearchParams(styleRequest.querySuffix.slice(1)).has("vize-root-relative");
     const sourceRequest = classifyVitePluginRequest(styleRequest.path);
-    const realPath =
+    let realPath =
       sourceRequest.vizeVirtualPath ??
       sourceRequest.normalizedFsId ??
       sourceRequest.normalizedVuePath ??
       styleRequest.path;
+    if (realPath.startsWith("/") && (isRootRelative || !fs.existsSync(realPath))) {
+      const projectPath = path.resolve(state.root, realPath.slice(1));
+      const projectCache = getEnvironmentCache(state, !!loadOptions?.ssr);
+      if (
+        fs.existsSync(projectPath) ||
+        projectCache.has(projectPath) ||
+        state.cache.has(projectPath) ||
+        state.ssrCache.has(projectPath)
+      ) {
+        realPath = projectPath;
+      }
+    }
     const lang = styleRequest.styleLang ?? null;
     const scoped = styleRequest.styleScoped ?? null;
     const fallbackCompiled = getCompiledStyleSource(state, realPath, !!loadOptions?.ssr);

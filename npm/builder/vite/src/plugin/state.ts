@@ -87,6 +87,7 @@ export function getEnvironmentCache(
 }
 
 export type CompileOptionsForRequest = {
+  root?: string;
   sourceMap: boolean;
   ssr: boolean;
   vapor: boolean;
@@ -116,7 +117,8 @@ export function getCompileOptionsForRequest(
   state: Pick<
     VizePluginState,
     "isProduction" | "mergedOptions" | "viteBuildSourcemap" | "fileCompilerOptions"
-  >,
+  > &
+    Partial<Pick<VizePluginState, "root">>,
   ssr: boolean,
   file?: string,
 ): CompileOptionsForRequest {
@@ -125,6 +127,7 @@ export function getCompileOptionsForRequest(
       ? state.mergedOptions
       : (state.fileCompilerOptions?.(file) ?? state.mergedOptions);
   const options: CompileOptionsForRequest = {
+    ...(state.root ? { root: state.root } : {}),
     sourceMap: mergedOptions?.sourceMap ?? (!state.isProduction || !!state.viteBuildSourcemap),
     ssr,
     // Vapor runtime is client-oriented today; use VDOM for SSR and Vapor on the client.

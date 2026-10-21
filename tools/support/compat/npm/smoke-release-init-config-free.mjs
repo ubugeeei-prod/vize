@@ -1,10 +1,11 @@
 /**
- * Current #8371 initializer capability over the unchanged #3956 shape archive.
- * Only generated plans/files change. Every authored input, manager cell,
- * dependency argv and complete clean/broken/repaired diagnostic oracle stays
- * owned by the historical shape modules.
+ * Current #8371 initializer capability over the unchanged #3956 shape archive,
+ * plus new shapes authored after dedicated configs stopped being generated.
+ * For the archived shapes, only generated plans/files change; their authored
+ * inputs and complete diagnostic oracles remain owned by the historical modules.
  */
 import { PROJECT_SHAPES } from "./smoke-release-init-shapes.mjs";
+import { NUXT_VUE_TS_SHAPE } from "./smoke-release-init-nuxt-shape.mjs";
 
 function sharedDetection(detect) {
   return (manager) =>
@@ -51,6 +52,9 @@ function configFreeShape(shape) {
   };
 }
 
-export const CONFIG_FREE_PROJECT_SHAPES = Object.fromEntries(
-  Object.entries(PROJECT_SHAPES).map(([id, shape]) => [id, configFreeShape(shape)]),
-);
+export const CONFIG_FREE_PROJECT_SHAPES = {
+  ...Object.fromEntries(
+    Object.entries(PROJECT_SHAPES).map(([id, shape]) => [id, configFreeShape(shape)]),
+  ),
+  [NUXT_VUE_TS_SHAPE.id]: NUXT_VUE_TS_SHAPE,
+};

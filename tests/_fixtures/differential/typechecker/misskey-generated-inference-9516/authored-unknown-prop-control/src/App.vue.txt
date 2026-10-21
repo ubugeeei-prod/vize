@@ -1,0 +1,4 @@
+<script setup lang="ts">
+import Strict from './Strict.vue';
+</script>
+<template><Strict known="ok" definitelyNotAProp="wrong" /></template>
