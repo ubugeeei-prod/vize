@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import { performance } from "node:perf_hooks";
@@ -19,6 +20,13 @@ import {
 // 180 s limit left that no room, so the reference mode timed out on every PR
 // that also rebuilt the type checker. The job timeout still bounds a real hang.
 const modeDeadlineMs = 600_000;
+// The fixed pre-optimization reference predates automatic vue-router globals.
+// Freeze its complete known policy delta so every other packet remains an exact
+// behavioral comparison with the current batched implementation.
+const referenceRouterPolicyDelta = {
+  packets: 34,
+  sha256: "161206d473b644ab345ca780bb0390b64295e78013eaaaf71f48aed1879666da",
+};
 
 export function qualifyN8nHost(engine, version, output, environment, reference) {
   const inventory = verifyCorpus();
@@ -41,6 +49,9 @@ export function qualifyN8nHost(engine, version, output, environment, reference) 
       fs.copyFileSync(path.join(inventory.fixture, file), target, fs.constants.COPYFILE_EXCL);
       assert.equal(sha256(fs.readFileSync(target)), expected);
     }
+    const dependencyMirrors = [
+      mirrorPackageResolution(inventory.fixture, original, inventory.files, "vue-router"),
+    ];
     const reports = {};
     const modes = ["stock", "reference", "baseline", "shared", "effective"];
     for (const mode of modes) {
@@ -150,9 +161,21 @@ export function qualifyN8nHost(engine, version, output, environment, reference) 
         }
       }
     }
+    let observedReferencePolicyDelta;
     for (const mode of ["reference", "shared"]) {
+      const { comparable, policy } =
+        mode === "reference"
+          ? splitReferenceRouterPolicy(reports[mode].diagnostics, original)
+          : { comparable: reports[mode].diagnostics, policy: [] };
+      if (mode === "reference") {
+        observedReferencePolicyDelta = {
+          packets: policy.length,
+          sha256: sha256(JSON.stringify(policy)),
+        };
+        assert.deepEqual(observedReferencePolicyDelta, referenceRouterPolicyDelta);
+      }
       assert.deepEqual(
-        reports[mode].diagnostics,
+        comparable,
         reports.baseline.diagnostics,
         `${version}/${mode}: whole ordered host vectors`,
       );
@@ -161,10 +184,16 @@ export function qualifyN8nHost(engine, version, output, environment, reference) 
       const { start_time: candidateTime, ...candidate } = reports[mode];
       assert.equal(typeof baselineTime, "number");
       assert.equal(typeof candidateTime, "number");
-      assert.deepEqual(candidate, baseline);
+      assert.deepEqual({ ...candidate, diagnostics: comparable }, baseline);
+      const statusFor = (diagnostics) =>
+        diagnostics.some(({ severity }) => severity === "error") ? 1 : 0;
       assert.equal(
         capture.find((row) => row.mode === mode).status,
+        statusFor(reports[mode].diagnostics),
+      );
+      assert.equal(
         capture.find((row) => row.mode === "baseline").status,
+        statusFor(reports.baseline.diagnostics),
       );
     }
     const nativeVectors = fs
@@ -211,6 +240,8 @@ export function qualifyN8nHost(engine, version, output, environment, reference) 
       files: inventory.files.length,
       scriptless: 19,
       disabledFiles: inventory.disabledFiles,
+      dependencyMirrors,
+      referenceRouterPolicyDelta: observedReferencePolicyDelta,
       modes: capture.map(({ mode, elapsedMs, status }) => ({ mode, elapsedMs, status })),
       vectorSha256: sha256(JSON.stringify(reports.baseline.diagnostics)),
       limits: [
@@ -230,6 +261,68 @@ export function qualifyN8nHost(engine, version, output, environment, reference) 
     save();
     fs.rmSync(original, { recursive: true, force: true });
   }
+}
+
+export function splitReferenceRouterPolicy(diagnostics, original) {
+  const comparable = [];
+  const policy = [];
+  for (const packet of diagnostics) {
+    if (packet.code === "vize(vue/require-component-registration)" && packet.labels?.length === 1) {
+      const { offset, length } = packet.labels[0].span;
+      const filename = path.resolve(original, packet.filename);
+      assert.ok(filename.startsWith(original + path.sep));
+      const component = fs
+        .readFileSync(filename)
+        .subarray(offset, offset + length)
+        .toString();
+      if (["RouterLink", "RouterView"].includes(component)) {
+        policy.push(packet);
+        continue;
+      }
+    }
+    comparable.push(packet);
+  }
+  return { comparable, policy };
+}
+
+export function mirrorPackageResolution(source, target, files, packageName) {
+  const resolveFrom = (root, file) => {
+    try {
+      return createRequire(path.resolve(root, file)).resolve(packageName);
+    } catch {
+      return undefined;
+    }
+  };
+  const sourceEntry = resolveFrom(source, "__vize_package_resolution__.cjs");
+  let packageVersion;
+  if (sourceEntry) {
+    let packageRoot = path.dirname(sourceEntry);
+    for (;;) {
+      const manifestPath = path.join(packageRoot, "package.json");
+      if (fs.existsSync(manifestPath)) {
+        const packageManifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+        if (packageManifest.name === packageName) {
+          packageVersion = packageManifest.version;
+          break;
+        }
+      }
+      const parent = path.dirname(packageRoot);
+      assert.notEqual(parent, packageRoot, `unable to locate ${packageName} package root`);
+      packageRoot = parent;
+    }
+    const targetPackage = path.join(target, "node_modules", ...packageName.split("/"));
+    fs.mkdirSync(path.dirname(targetPackage), { recursive: true });
+    fs.symlinkSync(packageRoot, targetPackage, "dir");
+  }
+
+  let resolvableFiles = 0;
+  for (const { file } of files) {
+    const sourceResolvable = resolveFrom(source, file) !== undefined;
+    const targetResolvable = resolveFrom(target, file) !== undefined;
+    assert.equal(targetResolvable, sourceResolvable, `${file}: ${packageName} resolution parity`);
+    if (sourceResolvable) resolvableFiles++;
+  }
+  return { package: packageName, version: packageVersion ?? null, resolvableFiles };
 }
 
 export function verifyNativeCalls(custody, expectedPhases) {

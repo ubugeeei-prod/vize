@@ -108,13 +108,17 @@ fn slot_payload_type(
             ctx.template_binding_access,
         )
         .unwrap_or_else(|| data.name.clone());
-        append!(
-            *ts,
-            "{}const {name_binding} = {{ name: ({name}) }} as const;\n",
-            ctx.indent
+        ts.push_str(
+            dynamic_slot_name_binding(ctx.indent, name_binding.as_str(), name.as_str()).as_str(),
         );
         cstr!("__VizeSlotPayload<typeof {binding}, typeof {name_binding}.name>")
     }
+}
+
+fn dynamic_slot_name_binding(indent: &str, binding: &str, name: &str) -> String {
+    let isolated_name = crate::virtual_ts::expressions::isolate_incomplete_expression(name);
+    let name = isolated_name.as_str();
+    cstr!("{indent}const {binding} = {{ name: ({name}) }} as const;\n")
 }
 
 /// Generate a `v-slot` scope's closure: the host binding, the slot function,
@@ -331,5 +335,18 @@ fn map_slot_props_pattern(
                 ..(template_offset + src_start) as usize + prop_name.len(),
             sub_spans: Vec::new(),
         });
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::dynamic_slot_name_binding;
+
+    #[test]
+    fn incomplete_dynamic_slot_name_keeps_payload_lookup_parseable() {
+        assert_eq!(
+            dynamic_slot_name_binding("  ", "__slot_name", "names.").as_str(),
+            "  const __slot_name = { name: (names. x) } as const;\n"
+        );
     }
 }

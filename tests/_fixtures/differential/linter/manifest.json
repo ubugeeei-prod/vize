@@ -54,7 +54,7 @@
   ],
   "oracles": {
     "path": "tests/_fixtures/differential/linter/oracle-index.json",
-    "sha256": "f1279965f20b418fe998475f9c8710797b748c87a25a3a2321d1a48a786b9da1"
+    "sha256": "9a2dc43784e1546f490a1f6251f1263d064c8adeb6d727dca010d562b234d9b4"
   },
   "cases": [
     {
@@ -85,6 +85,38 @@
             "path": "vize.json.txt",
             "role": "issue-authored-config",
             "sha256": "f1bd1d90ff9d35967079c3da66c9286e8e246e6995409493969eed0fb8a9fc90"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/require-scoped-style-module-10165",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "require-scoped-style-module-10165",
+        "files": [
+          {
+            "path": "vite.config.mjs.txt",
+            "role": "issue-authored-config",
+            "sha256": "51245f1145ce89806e451a0a211248f8cb43932be1f28226deb6a2e3eb954196"
+          },
+          {
+            "path": "Plain.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "25feb848627a274cff184bdfa2272259e6abaf9598545a2ff8cea956cbd456e7"
+          },
+          {
+            "path": "WithModule.vue.txt",
+            "role": "issue-authored-control",
+            "sha256": "a1bd1b5030acb74ed22a39bbc31b95ccb5d7999a50d5214476958d28c862c5d7"
+          },
+          {
+            "path": "Scoped.vue.txt",
+            "role": "issue-authored-control",
+            "sha256": "374495e96cb34104b682bcda22a15766936c0a0ad65853065975cc2bfd03ad2b"
           }
         ]
       }
@@ -689,6 +721,28 @@
           {
             "path": "MyList.vue.txt",
             "sha256": "6dbc44473a588d921a1edc40a75f260ae38de476b138270c271d2dcf702fba62"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/unsafe-template-bindings-10166-10167",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "unsafe-template-bindings-10166-10167",
+        "files": [
+          {
+            "path": "commented-binding.vue.txt",
+            "role": "issue-authored-reproduction-and-control",
+            "sha256": "734867ca5f7274d0e1307f0fc05ec1e2acea1a0a8fdb46ad8e9c3ee3170e12fa"
+          },
+          {
+            "path": "component-object-spread.vue.txt",
+            "role": "issue-authored-reproduction-and-control",
+            "sha256": "043723593305ae75927a1a11ec0fb89adee5402fe2752c147f05ed1f6561628d"
           }
         ]
       }

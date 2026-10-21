@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -15,6 +16,7 @@ import { passedFixtureTests } from "../differential/typechecker-shards.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const manifest = path.join(root, "tests/_fixtures/differential/typechecker/manifest.json");
+const historyLedger = path.join(root, "docs/davinci/plan/typechecker-fix-history.tsv");
 const loaded = loadTypecheckerManifest(manifest);
 const receipt = Buffer.from("synthetic unit-test receipt, not runtime evidence");
 const binarySha256 = sha256(Buffer.from("synthetic unit-test executable identity"));
@@ -57,10 +59,10 @@ function capture(pack: keyof typeof TYPECHECKER_TESTS): Capture {
 }
 
 test("the shared registry retains all existing production projects and exact input bytes", () => {
-  assert.equal(loaded.cases.length, 62);
+  assert.equal(loaded.cases.length, 63);
   assert.equal(
     loaded.cases.reduce((count, fixture) => count + fixture.inputs.length, 0),
-    211,
+    213,
   );
   assert.deepEqual(
     [...new Set(loaded.cases.map((fixture) => fixture.pack))],
@@ -72,6 +74,34 @@ test("the shared registry retains all existing production projects and exact inp
   );
   for (const pack of Object.keys(TYPECHECKER_TESTS) as Array<keyof typeof TYPECHECKER_TESTS>) {
     validateTypecheckerCapture(loaded, capture(pack), { receipt, binarySha256 });
+  }
+});
+
+test("registered original-history fixtures stay admitted in the requirement ledger", () => {
+  const [header, ...lines] = fs.readFileSync(historyLedger, "utf8").trimEnd().split("\n");
+  assert.equal(
+    header,
+    "commit\tclassification\tfocused_requirement\tdiagnostic_fixture_state\tremaining_scope\tsubject",
+  );
+  assert.equal(lines.length, 271);
+  const rows = new Map(
+    lines.map((line) => {
+      const fields = line.split("\t");
+      assert.equal(fields.length, 6);
+      return [fields[0], fields] as const;
+    }),
+  );
+  assert.equal(rows.size, 271);
+
+  const registered = loaded.cases.filter((fixture) => rows.has(fixture.regressionCommit));
+  assert.equal(new Set(registered.map((fixture) => fixture.regressionCommit)).size, 13);
+  assert.equal(registered.length, 32);
+  for (const fixture of registered) {
+    assert.equal(
+      rows.get(fixture.regressionCommit)?.[3],
+      "batch-start-actions-verified",
+      `${fixture.pack} is registered but absent from the historical admission ledger`,
+    );
   }
 });
 
@@ -188,17 +218,17 @@ test("complete legacy-only observations stay in the denominator with zero native
     capture,
   );
   const report = typecheckerReport(loaded, captures, sourceRevision);
-  assert.equal(report.summary.legacyMatches, 62);
+  assert.equal(report.summary.legacyMatches, 63);
   const acceptance = summarizeNativeAcceptance(loaded, report, {
     sourceRevision,
     buildReceiptSha256: sha256(receipt),
     requiredStages: ["parse", "facts", "emit", "check"],
   });
   assert.deepEqual(acceptance.total, {
-    planned: 62,
+    planned: 63,
     nativeHandled: 0,
     nativeEquivalent: 0,
-    unsupported: 62,
+    unsupported: 63,
     legacyBacked: 0,
     unverified: 0,
   });

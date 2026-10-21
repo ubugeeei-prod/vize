@@ -324,7 +324,10 @@ impl EmitCx<'_> {
             text: RawJs::Borrowed(text),
             offset: None,
         };
-        prefix::prefix_handler(&mut self.scope, &content, None, false)
+        self.scope.set_model_maybe_ref_write(true);
+        let result = prefix::prefix_handler(&mut self.scope, &content, None, false);
+        self.scope.set_model_maybe_ref_write(false);
+        result
             .map(|prefixed| self.record_unref(prefixed))
             .map_err(|_| EmitError::unsupported(Reason::PrefixExpressionRejected))
     }

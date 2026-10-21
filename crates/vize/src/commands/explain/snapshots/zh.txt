@@ -5376,7 +5376,7 @@ vue/require-component-registration · lint 规则
 文档: docs/content/rules/vue.md
 === vue/require-scoped-style
 vue/require-scoped-style · lint 规则
-要求style块使用scoped属性
+要求style块使用scoped或module属性
 
 精度层级: exact
 适用范围: the SFC's top-level blocks, their order and their attributes
@@ -5409,14 +5409,7 @@ vue/require-scoped-style · lint 规则
   </style>
 
 帮助:
-  修复: 向style块添加scoped属性:
-    <style scoped>
-    .my-class { color: red; }
-    </style>
-  好处:
-  - 防止样式泄漏到其他组件
-  - 避免全局命名冲突
-  - 更好的组件封装
+  向style块添加scoped或module属性：<style scoped> 或 <style module>
 === vue/require-toggle-inside-transition
 vue/require-toggle-inside-transition · lint 规则
 要求`<transition>`包裹的元素具有切换条件

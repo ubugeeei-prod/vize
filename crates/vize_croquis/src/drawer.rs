@@ -34,5 +34,6 @@ pub use helpers::{
     extract_inline_callback_params, extract_slot_props, is_builtin_directive, is_component_tag,
     is_keyword, parse_v_for_expression, parse_v_for_scope_expression,
     retain_v_for_binding_parameters, retained_binding_declarations, strip_js_comments,
+    strip_js_comments_with_offsets,
 };
 pub use options::DrawerOptions;

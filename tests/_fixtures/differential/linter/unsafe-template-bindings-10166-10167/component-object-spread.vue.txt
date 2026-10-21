@@ -1,0 +1,19 @@
+<script setup lang="ts">
+const MyCard = {} as {
+  new (): {
+    $props: { title?: string; topConfig?: { distance: number } };
+  };
+};
+const title = "hello";
+const cardProps = { topConfig: { distance: 1 } };
+const all = { title: "hi", topConfig: { distance: 2 } };
+const unsafeProps: any = { title: "unsafe" };
+</script>
+
+<template>
+  <MyCard v-bind="{ title }" />
+  <MyCard v-bind="{ ...cardProps }" />
+  <MyCard v-bind="all" />
+  <MyCard :title="title" />
+  <MyCard v-bind="unsafeProps" />
+</template>

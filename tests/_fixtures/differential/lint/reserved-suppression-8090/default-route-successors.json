@@ -1204,10 +1204,10 @@
         {
           "rule_name": "vue/require-scoped-style",
           "severity": "warning",
-          "message": "Style blocks should use scoped attribute to prevent style leaking",
+          "message": "Style blocks should use `scoped` or `module` attribute to prevent CSS leaking",
           "start": 0,
           "end": 7,
-          "help": "Add the 'scoped' attribute to the style block",
+          "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`",
           "labels": [],
           "fix": null
         },
@@ -1226,10 +1226,10 @@
         {
           "rule_name": "vue/require-scoped-style",
           "severity": "warning",
-          "message": "Style blocks should use scoped attribute to prevent style leaking",
+          "message": "Style blocks should use `scoped` or `module` attribute to prevent CSS leaking",
           "start": 0,
           "end": 7,
-          "help": "Add the 'scoped' attribute to the style block",
+          "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`",
           "labels": [],
           "fix": null
         },
@@ -1264,10 +1264,10 @@
         {
           "rule_name": "vue/require-scoped-style",
           "severity": "warning",
-          "message": "Style blocks should use scoped attribute to prevent style leaking",
+          "message": "Style blocks should use `scoped` or `module` attribute to prevent CSS leaking",
           "start": 0,
           "end": 7,
-          "help": "Add the 'scoped' attribute to the style block",
+          "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`",
           "labels": [],
           "fix": null
         },
@@ -1302,10 +1302,10 @@
         {
           "rule_name": "vue/require-scoped-style",
           "severity": "warning",
-          "message": "Style blocks should use scoped attribute to prevent style leaking",
+          "message": "Style blocks should use `scoped` or `module` attribute to prevent CSS leaking",
           "start": 0,
           "end": 7,
-          "help": "Add the 'scoped' attribute to the style block",
+          "help": "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`",
           "labels": [],
           "fix": null
         },

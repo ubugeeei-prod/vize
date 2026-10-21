@@ -3190,3 +3190,54 @@ const { count } = useThing()
         "setup-maybe-ref v-model write handler must match Vue exactly"
     );
 }
+
+#[test]
+fn test_script_setup_maybe_ref_authored_handlers_write_through_value() {
+    let source = r#"<script setup>
+import Child from './Child.js'
+import { useThing } from './thing.js'
+const { count } = useThing()
+</script>
+<template>
+  <button @click="count = 1">assign</button>
+  <button @click="count += 1">compound</button>
+  <button @click="count++">update</button>
+  <Child :model-value="count" @update:model-value="count = $event" />
+</template>"#;
+
+    let descriptor = parse_sfc(
+        source,
+        SfcParseOptions {
+            filename: "Ops.vue".into(),
+            ..Default::default()
+        },
+    )
+    .expect("parse SFC");
+    let result = compile_sfc(
+        &descriptor,
+        SfcCompileOptions {
+            script: crate::types::ScriptCompileOptions {
+                inline_template: true,
+                ..Default::default()
+            },
+            ..Default::default()
+        },
+    )
+    .expect("compile SFC");
+
+    let handlers = result
+        .code
+        .lines()
+        .filter(|line| line.contains("onClick:") || line.contains("\"onUpdate:modelValue\":"))
+        .collect::<Vec<_>>();
+    assert_eq!(
+        handlers,
+        [
+            "      onClick: _cache[0] || (_cache[0] = $event => (count.value = 1))",
+            "      onClick: _cache[1] || (_cache[1] = $event => (count.value += 1))",
+            "      onClick: _cache[2] || (_cache[2] = $event => (count.value++))",
+            "      \"onUpdate:modelValue\": _cache[3] || (_cache[3] = $event => (count.value = $event))",
+        ],
+        "authored handlers must match Vue 3.5.43 exactly"
+    );
+}

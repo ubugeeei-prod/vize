@@ -1,0 +1,14 @@
+<script setup lang="ts">
+declare const Comp: (props: { item?: string }, context: {
+  slots: { item(props: { total: number }): void };
+}) => {};
+const names = { current: 'item' as const };
+</script>
+
+<template>
+  <Comp :[names.current]="'details'">
+    <template #[names.current]="invoice">
+      {{ invoice.total.toFixed(2) }}
+    </template>
+  </Comp>
+</template>

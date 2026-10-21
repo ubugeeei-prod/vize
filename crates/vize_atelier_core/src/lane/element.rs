@@ -4,7 +4,7 @@ use vize_l0::{Box, String, Vec, capitalize, is_builtin_directive, is_native_tag}
 
 use crate::codegen::{escape_js_string, is_dynamic_component, is_valid_js_identifier};
 use crate::errors::ErrorCode;
-use crate::steps::expression::process_inline_handler;
+use crate::steps::expression::process_model_handler;
 use crate::steps::v_model::{
     generate_model_assignment_handler, model_update_event, supports_plain_element_model_argument,
 };
@@ -435,7 +435,7 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
                 SimpleExpressionNode::new(handler, false, data.dir_loc.clone()),
                 &allocator,
             ));
-            let processed_handler = process_inline_handler(ctx, &raw_handler_expr);
+            let processed_handler = process_model_handler(ctx, &raw_handler_expr);
 
             let event_prop = PropNode::Directive(Box::new_in(
                 DirectiveNode {
@@ -512,7 +512,7 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
                 SimpleExpressionNode::new(handler, false, data.dir_loc.clone()),
                 &allocator,
             ));
-            let processed_handler = process_inline_handler(ctx, &raw_handler_expr);
+            let processed_handler = process_model_handler(ctx, &raw_handler_expr);
             let event_prop = PropNode::Directive(Box::new_in(
                 DirectiveNode {
                     name: "on",

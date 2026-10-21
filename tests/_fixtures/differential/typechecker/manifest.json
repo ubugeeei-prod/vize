@@ -3353,6 +3353,53 @@
           }
         ]
       }
+    },
+    {
+      "id": "typechecker/dynamic-directive-expression-mapping-10182/dynamic-slot-and-prop",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "dynamic-directive-expression-mapping-10182",
+      "case": "dynamic-slot-and-prop",
+      "test": "dynamic_directive_expressions_preserve_typed_slot_payloads",
+      "regressionCommit": "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
+      "sourceRevision": "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
+      "packReference": {
+        "path": "dynamic-directive-expression-mapping-10182/cases.json",
+        "sha256": "40c82be789385cac9a8f0578a9a2dac7747b18b56100dc03c27584fd824915a2"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "dynamic-directive-expression-mapping-10182/tsconfig.json.txt",
+          "sha256": "cf4647e7123e6cfae78263f284ddfa081ffa4a153527745de335ed664207a69d"
+        },
+        {
+          "file": "App.vue",
+          "path": "dynamic-directive-expression-mapping-10182/App.vue.txt",
+          "sha256": "b216a9b764f34acc63a6b60021cf504d59bf6f29c55efc3258005a983294050a"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }

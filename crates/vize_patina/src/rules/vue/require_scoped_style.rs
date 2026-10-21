@@ -1,6 +1,6 @@
 //! vue/require-scoped-style
 //!
-//! Require `scoped` attribute on `<style>` tags.
+//! Require a `scoped` or `module` attribute on `<style>` tags.
 //!
 //! Scoped styles prevent CSS from leaking to other components and
 //! make component styles more maintainable.
@@ -148,9 +148,38 @@ mod tests {
         assert_eq!(result.warning_count, 1);
         assert_eq!(
             result.diagnostics[0].message,
-            "styleブロックはスタイルの漏れを防ぐためにscoped属性を使用する必要があります"
+            "CSSの漏れを防ぐため、styleブロックにはscoped属性またはmodule属性が必要です"
         );
         assert!(result.diagnostics[0].help.is_none());
+    }
+
+    #[test]
+    fn localized_diagnostics_describe_both_accepted_style_attributes() {
+        for (locale, message, help) in [
+            (
+                Locale::En,
+                "Style blocks should use `scoped` or `module` attribute to prevent CSS leaking",
+                "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`",
+            ),
+            (
+                Locale::Ja,
+                "CSSの漏れを防ぐため、styleブロックにはscoped属性またはmodule属性が必要です",
+                "styleブロックにscoped属性またはmodule属性を追加してください: `<style scoped>` または `<style module>`",
+            ),
+            (
+                Locale::Zh,
+                "style块应使用scoped或module属性以防止样式泄漏",
+                "向style块添加scoped或module属性：`<style scoped>` 或 `<style module>`",
+            ),
+        ] {
+            let result = create_linter().with_locale(locale).lint_sfc(
+                "<template><div /></template><style>.x { color: red }</style>",
+                "Card.vue",
+            );
+            assert_eq!(result.warning_count, 1);
+            assert_eq!(result.diagnostics[0].message, message);
+            assert_eq!(result.diagnostics[0].help.as_deref(), Some(help));
+        }
     }
 
     #[test]

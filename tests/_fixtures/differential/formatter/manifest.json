@@ -2289,6 +2289,138 @@
       ]
     },
     {
+      "id": "formatter/sfc/text-hugged-interpolation-width",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-text-hugged-interpolation-width",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "983085ec678598d2959c0ad2a5269e5482b07dd1ae10c596b3ad9314c73ee11e",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": [
+          {
+            "path": "vize.config.json",
+            "sha256": "f1e96d96da29112d781bef55490699d5e2585d94c41a9ce1fddb33a42cd81eab",
+            "role": "project-vue-version-and-formatter-options"
+          }
+        ]
+      },
+      "provenance": {
+        "issues": [
+          10177
+        ],
+        "commits": [
+          {
+            "sha": "c69f916d617c9a5036023194305ba8c3faf58c25",
+            "role": "fix",
+            "paths": [
+              "crates/vize_glyph/src/template/formatter/child_width.rs",
+              "crates/vize_glyph/src/template/formatter/text.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "issue-authored-regression",
+            "issue": 10177,
+            "path": "crates/vize_glyph/src/template/tests_print_width.rs",
+            "symbol": "text_hugged_interpolations_respect_print_width"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/src/template/tests_print_width.rs",
+          "symbol": "text_hugged_interpolations_respect_print_width",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes",
+            "print-width",
+            "idempotence"
+          ],
+          "limitations": [
+            "Source-built CLI and exact-head execution require Actions."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "text-hugged-interpolation"
+            ],
+            "selector": "vize.config.json:vue.version"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built CLI formats the issue-authored printWidth reproduction for three complete passes.",
+          "native": "No verified native formatter adapter at this base; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "pending",
+          "artifacts": [
+            {
+              "path": "sfc-text-hugged-interpolation-width/reference.expected.txt",
+              "sha256": "f2a06b155d1e69c8d67e9398fadfc91aa2496b0d3df917d0e04bba66ceae2bef",
+              "role": "issue-authored-regression-reference",
+              "provenance": {
+                "issue": 10177,
+                "path": "crates/vize_glyph/src/template/tests_print_width.rs",
+                "symbol": "text_hugged_interpolations_respect_print_width",
+                "assertion": "Both text-hugged interpolation forms stay within printWidth and reach a fixed point."
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured-FormatResult.changed; public Rust witness covers this field"
+          ],
+          "referenceState": "issue-10177-authored-reference; exact-source Actions required"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
+    },
+    {
       "id": "formatter/sfc/hugged-child-width-fast-paths",
       "state": "active",
       "targets": [

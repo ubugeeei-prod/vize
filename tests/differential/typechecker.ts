@@ -51,6 +51,8 @@ export const TYPECHECKER_TESTS = {
   "workspace-alias-cache-10063": "workspace_package_alias_cache_preserves_sequential_scopes",
   "component-render-h-props-9855": "imported_sfc_h_calls_check_missing_and_wrong_props",
   "component-listener-alias-scope-10112": "component_listener_aliases_stay_inside_guard_scope",
+  "dynamic-directive-expression-mapping-10182":
+    "dynamic_directive_expressions_preserve_typed_slot_payloads",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
@@ -90,6 +92,7 @@ const sourceRevisions = {
   "workspace-alias-cache-10063": "7174c46d55825c155325e6314305e661d50ec95a",
   "component-render-h-props-9855": "f15ca234a4bdd73bde9caea07e652f3a345eb342",
   "component-listener-alias-scope-10112": "7cefe3a00e6184de1e121d39b0e153f08a428aa6",
+  "dynamic-directive-expression-mapping-10182": "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 
 export type Artifact = { path: string; sha256: string };

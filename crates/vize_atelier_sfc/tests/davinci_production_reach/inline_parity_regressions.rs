@@ -92,6 +92,17 @@ const { value } = useThing()
     );
 }
 
+#[test]
+fn maybe_ref_authored_handler_writes_match_the_pinned_vue_shape() {
+    let _guard = crate::PROFILER_TEST_LOCK.lock().unwrap();
+    assert_inline_parity(
+        "maybe-ref-authored-handlers-10164.vue",
+        include_str!(
+            "../../../../tests/_fixtures/differential/compiler/maybe-ref-authored-handlers-10164/Layout.vue.txt"
+        ),
+    );
+}
+
 fn assert_inline_parity(filename: &str, source: &str) {
     let descriptor = parse_sfc(
         source,

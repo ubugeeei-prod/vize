@@ -10,9 +10,11 @@ pub fn strip_js_comments(expr: &str) -> Cow<'_, str> {
     strip_comments(expr, false).0
 }
 
-/// The same legacy comment transform, with an opt-in authored-byte witness.
-/// `None` is the identity map; synthetic replacement spaces use `u32::MAX`.
-pub(super) fn strip_comments_with_offsets(expr: &str) -> (Cow<'_, str>, Option<Vec<u32>>) {
+/// Strip JS/TS comments and retain the authored byte for every output byte.
+///
+/// `None` means the transform is the identity. Synthetic replacement spaces
+/// use `u32::MAX`; every other entry is an offset into `expr`.
+pub fn strip_js_comments_with_offsets(expr: &str) -> (Cow<'_, str>, Option<Vec<u32>>) {
     strip_comments(expr, true)
 }
 
