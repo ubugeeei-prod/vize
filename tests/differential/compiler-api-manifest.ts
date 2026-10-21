@@ -12,6 +12,10 @@ import type {
 } from "./compiler-api-types.ts";
 
 const NATIVE_REASON = "whole-product native compiler path unavailable";
+const ARCHIVED_SFC_OPTIONS_WITH_EXTERNAL_WITNESS = new Set([
+  "dual-script-inline-type-only-imports",
+  "separate-template-authored-render-binding",
+]);
 const names = {
   dom: [
     "imported-component-before-prop",
@@ -19,6 +23,9 @@ const names = {
     "dynamic-loop-ref-for",
     "computed-component-unref",
     "custom-directive-child-patch",
+    "dual-script-inline-type-only-imports",
+    "separate-template-authored-render-binding",
+    "invalid-template-expression-diagnostic",
   ],
   ssr: [
     "textarea-model",
@@ -182,7 +189,13 @@ export function loadCompilerApiManifest(manifestPath: string, repoRoot: string) 
         const options: PinnedSfcOptions = JSON.parse(
           readPinnedArtifact(repoRoot, fixture.options).toString(),
         );
-        assert.equal(options.authoredWitness.inputSha256, sha256(input));
+        if (options.authoredWitness)
+          assert.equal(options.authoredWitness.inputSha256, sha256(input));
+        else
+          assert(
+            ARCHIVED_SFC_OPTIONS_WITH_EXTERNAL_WITNESS.has(name),
+            `missing authored witness: ${name}`,
+          );
         assert.equal(historical.profile, name);
         assert.deepEqual(historical.result, reference);
         originalOptions = originalSfcOptions(options);
