@@ -6,6 +6,8 @@ on:
     paths:
       - "npm/builder/vite/src/vite-plus.ts"
       - "npm/builder/vite/src/vite-plus/**"
+      - "npm/builder/vite/client.d.ts"
+      - "npm/builder/vite/type-tests/markdown/**"
       - "npm/builder/vite/type-tests/plugin-vue/**"
       - "npm/builder/vite/package.json"
       - "pnpm-lock.yaml"
@@ -15,6 +17,8 @@ on:
     paths:
       - "npm/builder/vite/src/vite-plus.ts"
       - "npm/builder/vite/src/vite-plus/**"
+      - "npm/builder/vite/client.d.ts"
+      - "npm/builder/vite/type-tests/markdown/**"
       - "npm/builder/vite/type-tests/plugin-vue/**"
       - "npm/builder/vite/package.json"
       - "pnpm-lock.yaml"
@@ -42,3 +46,5 @@ jobs:
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/builder/vite...' --ignore-scripts
       - name: Type-check plugin-vue against real Vite 8
         run: vp run --filter './npm/builder/vite' test:types:real-vite
+      - name: Type-check Ox Content Markdown modules
+        run: vp run --filter './npm/builder/vite' test:types:markdown

@@ -22,6 +22,7 @@ export type FixtureData = {
   entry?: string;
   expected: { source: string; sha256: string };
   method: string;
+  request?: { params: Record<string, unknown> };
   options?: { tabSize: number; insertSpaces: boolean };
 };
 export type PlannedLspFixture = {
