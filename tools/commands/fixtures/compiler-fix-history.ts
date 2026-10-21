@@ -350,7 +350,7 @@ export function renderHistory(history: ReturnType<typeof collectHistory>) {
       "The original 609-fix snapshot has no verified source revision.",
       "Changed witness paths and stable patch equivalence are candidates, not coverage or automatic duplicate exclusions.",
       "Fixture references cover only their recorded entrypoint, target, options and public output facets.",
-      "Five SFC fixture scopes have bounded semantic review; every fix subject retains whole-fix target and dialect review pending.",
+      "Eight SFC fixture scopes have bounded semantic review; every fix subject retains whole-fix target and dialect review pending.",
       "Historical or local execution does not certify current Actions or a native route.",
     ],
   };

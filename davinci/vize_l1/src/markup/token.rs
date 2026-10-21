@@ -7,6 +7,8 @@
 
 use super::entity::DecodedEntity;
 
+pub use vize_l0::Namespace;
+
 /// How an attribute value was written.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
@@ -15,16 +17,6 @@ pub enum QuoteType {
     Unquoted = 1,
     Single = 2,
     Double = 3,
-}
-
-/// Markup namespace an element is read in.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
-#[repr(u8)]
-pub enum Namespace {
-    #[default]
-    Html = 0,
-    Svg = 1,
-    MathMl = 2,
 }
 
 /// Lexing mode of the current content, switched by the tree builder.

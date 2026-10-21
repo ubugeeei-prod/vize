@@ -1,0 +1,9 @@
+<script setup lang="ts">
+function handleAuxClick(event: PointerEvent): void {
+  event.preventDefault()
+}
+</script>
+
+<template>
+  <button @auxclick="handleAuxClick">Aux click</button>
+</template>

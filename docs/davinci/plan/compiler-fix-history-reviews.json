@@ -2,7 +2,7 @@
   "schema": "vize.compiler.fix-history-reviews",
   "version": 1,
   "manifest": "tests/_fixtures/differential/compiler/sfc-fix-history.manifest.json",
-  "scope": "Bounded semantic review of five complete public SFC Result fixtures; this is not whole-fix, whole-history, native, target, or dialect acceptance.",
+  "scope": "Bounded semantic review of eight complete public SFC Result fixtures; this is not whole-fix, whole-history, native, target, or dialect acceptance.",
   "reviews": [
     {
       "fixCommit": "ceb0fda9c18ed6e40db71a2c582e9fe10950a43a",
@@ -57,6 +57,39 @@
       ],
       "remainingScope": [
         "Other patch-flag combinations, alternate syntax, Vapor, SSR, and mounted directive lifecycle behavior remain outside this reviewed fixture scope."
+      ]
+    },
+    {
+      "fixCommit": "92adfb6927517974101e6837bed34bf76b55da9b",
+      "caseId": "compiler/sfc/dual-script-inline-type-only-imports",
+      "coveredRequirements": [
+        "A dual-script TypeScript SFC erases type-only imports while retaining the mixed runtime import, empty import, and side-effect import in client-module output.",
+        "The complete public SFC Result preserves generated module bytes, binding metadata, and empty diagnostics."
+      ],
+      "remainingScope": [
+        "Imported-module execution, separate-template output, alternate syntax, Vapor, SSR, and bundler behavior remain outside this reviewed fixture scope."
+      ]
+    },
+    {
+      "fixCommit": "fe724476c7a1fd1bd9bf784699814626994ff9b4",
+      "caseId": "compiler/sfc/separate-template-authored-render-binding",
+      "coveredRequirements": [
+        "Separate-template output keeps the authored render import and binding distinct from the generated _sfc_render function.",
+        "The complete public SFC Result preserves generated module bytes, binding metadata, the authored non-void self-closing warning, and empty errors."
+      ],
+      "remainingScope": [
+        "Inline-template output, custom renderers, alternate syntax, Vapor, SSR, and mounted v-html behavior remain outside this reviewed fixture scope."
+      ]
+    },
+    {
+      "fixCommit": "336622af2aea3f9bce3e7c297e3b4307bd7445ff",
+      "caseId": "compiler/sfc/invalid-template-expression-diagnostic",
+      "coveredRequirements": [
+        "An invalid template expression produces one TEMPLATE_ERROR with the authored SFC range instead of silently emitting broken render code.",
+        "The complete public SFC Result preserves script output, binding metadata, the diagnostic message and location, and empty warnings."
+      ],
+      "remainingScope": [
+        "Multiple invalid expressions, alternate syntax, Vapor, SSR, CLI exit behavior, and bundler diagnostics remain outside this reviewed fixture scope."
       ]
     }
   ]

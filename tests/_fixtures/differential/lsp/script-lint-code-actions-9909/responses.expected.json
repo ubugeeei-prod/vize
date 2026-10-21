@@ -1,0 +1,124 @@
+[
+  {
+    "params": {
+      "range": {
+        "end": { "character": 44, "line": 5 },
+        "start": { "character": 15, "line": 5 }
+      },
+      "context": {
+        "diagnostics": [
+          {
+            "code": "script/prefer-use-template-ref",
+            "codeDescription": {
+              "href": "https://eslint.vuejs.org/rules/script/prefer-use-template-ref.html"
+            },
+            "message": "Template ref 'boxRef' is declared with ref(); use useTemplateRef() instead (Vue 3.5+).\n\nHelp: Replace with: const boxRef = useTemplateRef('boxRef')",
+            "range": {
+              "end": { "character": 44, "line": 5 },
+              "start": { "character": 15, "line": 5 }
+            },
+            "severity": 2,
+            "source": "vize/lint"
+          }
+        ],
+        "only": ["quickfix"]
+      }
+    },
+    "result": [
+      {
+        "diagnostics": [
+          {
+            "code": "script/prefer-use-template-ref",
+            "codeDescription": {
+              "href": "https://eslint.vuejs.org/rules/script/prefer-use-template-ref.html"
+            },
+            "message": "Template ref 'boxRef' is declared with ref(); use useTemplateRef() instead (Vue 3.5+).\n\nHelp: Replace with: const boxRef = useTemplateRef('boxRef')",
+            "range": {
+              "end": { "character": 44, "line": 5 },
+              "start": { "character": 15, "line": 5 }
+            },
+            "severity": 2,
+            "source": "vize/lint"
+          }
+        ],
+        "edit": {
+          "changes": {
+            "${workspace}/App.vue": [
+              {
+                "newText": "// eslint-disable-next-line script/prefer-use-template-ref\n",
+                "range": {
+                  "end": { "character": 0, "line": 5 },
+                  "start": { "character": 0, "line": 5 }
+                }
+              }
+            ]
+          }
+        },
+        "isPreferred": false,
+        "kind": "quickfix",
+        "title": "Suppress with eslint-disable-next-line (script/prefer-use-template-ref)"
+      }
+    ]
+  },
+  {
+    "params": {
+      "range": {
+        "end": { "character": 51, "line": 4 },
+        "start": { "character": 0, "line": 4 }
+      },
+      "context": {
+        "diagnostics": [
+          {
+            "code": "script/define-macros-order",
+            "codeDescription": {
+              "href": "https://eslint.vuejs.org/rules/script/define-macros-order.html"
+            },
+            "message": "`defineProps` should be above `defineEmits`.\n\nHelp: Declare defineProps and then defineEmits first in <script setup>, right after imports and type declarations.",
+            "range": {
+              "end": { "character": 51, "line": 4 },
+              "start": { "character": 0, "line": 4 }
+            },
+            "severity": 2,
+            "source": "vize/lint"
+          }
+        ],
+        "only": ["quickfix"]
+      }
+    },
+    "result": [
+      {
+        "diagnostics": [
+          {
+            "code": "script/define-macros-order",
+            "codeDescription": {
+              "href": "https://eslint.vuejs.org/rules/script/define-macros-order.html"
+            },
+            "message": "`defineProps` should be above `defineEmits`.\n\nHelp: Declare defineProps and then defineEmits first in <script setup>, right after imports and type declarations.",
+            "range": {
+              "end": { "character": 51, "line": 4 },
+              "start": { "character": 0, "line": 4 }
+            },
+            "severity": 2,
+            "source": "vize/lint"
+          }
+        ],
+        "edit": {
+          "changes": {
+            "${workspace}/App.vue": [
+              {
+                "newText": "// eslint-disable-next-line script/define-macros-order\n",
+                "range": {
+                  "end": { "character": 0, "line": 4 },
+                  "start": { "character": 0, "line": 4 }
+                }
+              }
+            ]
+          }
+        },
+        "isPreferred": false,
+        "kind": "quickfix",
+        "title": "Suppress with eslint-disable-next-line (script/define-macros-order)"
+      }
+    ]
+  }
+]

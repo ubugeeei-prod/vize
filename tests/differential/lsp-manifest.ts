@@ -29,14 +29,16 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
     assert.equal(data.id, planned.id);
     assert.match(data.provenance.fixCommit, /^[a-f0-9]{40}$/);
     assert.equal(data.documentVersion, 1);
-    assert.deepEqual(planned.initializationOptions, {
-      editor: true,
-      lint: false,
-      typecheck: data.initializationOptions?.typecheck === true,
-      ...(data.method === "textDocument/codeAction" ? { lint: true } : {}),
-      ...(data.method === "textDocument/onTypeFormatting" ? { formatting: true } : {}),
-      ...(data.method === "textDocument/codeAction" ? { codeActions: true } : {}),
-    });
+    assert.deepEqual(
+      planned.initializationOptions,
+      data.initializationOptions ?? {
+        editor: true,
+        lint: data.method === "textDocument/codeAction",
+        typecheck: data.initializationOptions?.typecheck === true,
+        ...(data.method === "textDocument/onTypeFormatting" ? { formatting: true } : {}),
+        ...(data.method === "textDocument/codeAction" ? { codeActions: true } : {}),
+      },
+    );
     if (data.initializationOptions) {
       assert.deepEqual(planned.initializationOptions, data.initializationOptions);
     }
@@ -105,9 +107,10 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
       readPinnedArtifact(packRoot, data.provenance.witness);
       requests = [{ params: {}, result: expected }];
     } else if (data.method === "textDocument/codeAction") {
-      assert(data.request, "the complete authored code-action request is required");
-      assert(Array.isArray(expected) && expected.length === 2, "fix and suppression required");
-      requests = [{ ...data.request, result: expected }];
+      assert(Array.isArray(expected) && expected.length === 2, "both actions are required");
+      requests = data.request
+        ? [{ ...data.request, result: expected }]
+        : (expected as LspFixture["requests"]);
     } else {
       assert.equal(data.method, "textDocument/onTypeFormatting", "unregistered LSP method");
       assert.deepEqual(data.options, { tabSize: 2, insertSpaces: true });

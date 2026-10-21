@@ -64,7 +64,7 @@ test("TS-24: the wasm32-wasip2 lanes run in scheduled and manual Check", () => {
   assert.doesNotMatch(job, /cargo build[^\n]*-p vize_carton[^\n]*wasm32-wasip2/);
   assert.match(
     workflowJobBody(workflow, "rust-davinci-allocations"),
-    /cargo bench -p vize_l1_to_l2 --bench davinci_storage -- --quick && cargo bench -p vize_patina --bench davinci_markup -- --quick && rust-script tools\/commands\/davinci\/bench-compare\.rs --bench s1_to_s2_lower_vfor_three_aliases --bench s1_to_s2_emit_von_two_per_bucket --bench s1_to_s2_emit_p2_11_dom_surface --bench s1_to_s2_pass_template_complexity --bench patina_jsx_markup_one_root/u,
+    /cargo bench -p vize_l1_to_l2 --bench davinci_storage -- --quick && cargo bench -p vize_patina --bench davinci_markup -- --quick && rust-script tools\/commands\/davinci\/bench-compare\.rs --bench s1_to_s2_lower_vfor_three_aliases --bench s1_to_s2_emit_von_two_per_bucket --bench s1_to_s2_emit_p2_11_dom_surface --bench s1_to_s2_emit_helper_rich_large --bench s1_to_s2_pass_template_complexity --bench patina_jsx_markup_one_root/u,
   );
 });
 
