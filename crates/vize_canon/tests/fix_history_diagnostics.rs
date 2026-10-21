@@ -643,6 +643,7 @@ fn check_pack(
             | "component-render-h-props-9855"
             | "component-listener-alias-scope-10112"
             | "content-mapper-duplicate-attributes-10184"
+            | "content-mapper-musea-art-10186"
             | "content-mapper-nuxt-emit-10195"
             | "dynamic-directive-expression-mapping-10182"
             | "content-mapper-template-expression-syntax"
