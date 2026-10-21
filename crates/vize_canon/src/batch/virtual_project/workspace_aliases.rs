@@ -263,9 +263,14 @@ impl VirtualProject {
                     // both ends of an internal alias, so it may reclaim that
                     // stale link when this run selects a different package set.
                     let cache_owned = target.starts_with(&self.virtual_root);
+                    // A current cold plan also proves an external leaf link:
+                    // its authored target and exact cache path were derived
+                    // again without trusting the existing filesystem entry.
+                    let planned = links.get(&path) == Some(&target);
                     if path == self.virtual_root
                         || (!install_roots.contains(&path)
                             && !cache_owned
+                            && !planned
                             && self.materialized_package_links.get(&path) != Some(&target))
                     {
                         return Err(std::io::Error::new(
