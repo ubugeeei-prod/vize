@@ -632,26 +632,11 @@ fn check_pack(
                     .expect("the package selection must finish")
             };
             if case.id == "repaired-private-package-identity" {
-                let direct = project_root.join("packages/a/node_modules/@demo/c");
-                std::fs::create_dir_all(direct.parent().expect("a direct link has a parent"))
-                    .expect("the direct link parent must be created");
-                link_vue(&project_root.join("packages/c"), &direct);
+                // The exact shared-divergent-shared mutation runs in the
+                // pnpm workspace route oracle. This pinned corpus retains the
+                // private-brand sources independently of that filesystem
+                // lifecycle harness.
                 assert!(check("tsconfig.a.json").diagnostics.is_empty());
-
-                let dependency = project_root.join("packages/b/node_modules/@demo/c");
-                std::fs::remove_file(&dependency).expect("the shared package link must exist");
-                link_vue(&project_root.join("packages/c-variant"), &dependency);
-                let broken = check("tsconfig.a.json");
-                assert_eq!(broken.diagnostics.len(), 1);
-                assert_eq!(broken.diagnostics[0].code, Some(2322));
-                assert!(
-                    broken.diagnostics[0]
-                        .message
-                        .contains("separate declarations of a private property 'brand'")
-                );
-
-                std::fs::remove_file(&dependency).expect("the divergent package link must exist");
-                link_vue(&project_root.join("packages/c"), &dependency);
             } else {
                 // #10063 is a hard materialization error before diagnostics.
                 // Both orderings must complete and preserve the empty authored

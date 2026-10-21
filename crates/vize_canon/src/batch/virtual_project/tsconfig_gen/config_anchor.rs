@@ -47,18 +47,20 @@ impl VirtualProject {
             .collect::<Vec<_>>()
             .join("__")
             .into();
-        let links = self.desired_package_links();
+        let links = self.workspace_alias_links();
         if !links.is_empty() || !self.package_shadow_manifests.is_empty() {
-            let mut links = links.into_iter().collect::<Vec<_>>();
-            links.sort();
+            let mut links = links;
+            links.sort_by(|left, right| {
+                (&left.virtual_dir, &left.real_dir).cmp(&(&right.virtual_dir, &right.real_dir))
+            });
             let mut manifests = self.package_shadow_manifests.iter().collect::<Vec<_>>();
             manifests.sort();
             let mut digest = Sha256::new();
             digest.update(b"vize-cli-build-info-package-topology:v1\0");
-            for (path, target) in links {
+            for link in links {
                 digest.update(b"link\0");
-                update_path_digest(&mut digest, &path);
-                update_path_digest(&mut digest, &target);
+                update_path_digest(&mut digest, &link.virtual_dir);
+                update_path_digest(&mut digest, &link.real_dir);
             }
             for (path, source) in manifests {
                 digest.update(b"manifest\0");
