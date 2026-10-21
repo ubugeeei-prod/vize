@@ -224,8 +224,7 @@ pub(crate) fn render_attribute(attr: &ParsedAttribute) -> String {
 }
 
 pub(crate) fn rendered_attribute_is_multiline(attr: &str, options: &FormatOptions) -> bool {
-    attr.contains('\n')
-        || (options.end_of_line == crate::EndOfLine::Cr && attr.contains('\r'))
+    attr.contains('\n') || (options.end_of_line == crate::EndOfLine::Cr && attr.contains('\r'))
 }
 
 pub(crate) fn should_use_multiline_attrs(
