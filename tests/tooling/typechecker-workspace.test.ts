@@ -325,7 +325,7 @@ void test("workspace producer/consumer bind physical bytes, all registered bodie
   const downloaded = path.join(f.repoRoot, ".artifacts/rust-full-workspace");
   fs.cpSync(f.resultDir, downloaded, { recursive: true });
   const result = aggregateTypecheckerWorkspace({ ...f, resultDir: downloaded });
-  assert.equal(result.report.summary.legacyMatches, 64);
+  assert.equal(result.report.summary.legacyMatches, 65);
   assert.equal(result.acceptance.total.nativeHandled, 0);
   assert.equal(result.acceptance.total.nativeEquivalent, 0);
   assert(
