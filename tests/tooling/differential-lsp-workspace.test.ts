@@ -6,7 +6,7 @@ import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 import { projectViteConfigSource } from "../../crates/vize_carton/src/config/loader/vite-runtime.mjs";
 import { sha256 } from "../differential/harness.mjs";
-import { loadLspManifest } from "../differential/lsp-manifest.ts";
+import { loadLspManifest, lspFixtureInventory } from "../differential/lsp-manifest.ts";
 import { validateLspReport } from "../differential/lsp-report.ts";
 import type { LspFixture } from "../differential/lsp-types.ts";
 import {
@@ -18,6 +18,7 @@ import { referenceReport } from "./support/lsp/differential-reference.ts";
 
 const manifest = new URL("../_fixtures/differential/lsp/manifest.json", import.meta.url);
 const loaded = loadLspManifest(manifest.pathname);
+const inventory = lspFixtureInventory(loaded);
 const configured = loaded.cases.filter((fixture) =>
   fixture.files.some((file) => file.runtimePath === "vize.config.json"),
 );
@@ -37,7 +38,6 @@ function appendDeclared(fixture: LspFixture, runtimePath: string, source: string
 }
 
 test("all pinned LSP cases retain their inputs and only the two configured outline cases gain a carrier", () => {
-  assert.equal(loaded.cases.length, 37);
   assert.deepEqual(
     configured.map((fixture) => fixture.id),
     [
@@ -78,7 +78,7 @@ test("all pinned LSP cases retain their inputs and only the two configured outli
   }
   const report = referenceReport(loaded, build);
   assert.deepEqual(report.argv, ["lsp"]);
-  assert.equal(validateLspReport(loaded, report, build).legacyMatches, loaded.cases.length);
+  assert.equal(validateLspReport(loaded, report, build).legacyMatches, inventory.length);
   assert.equal(report.summary.nativeHandled, 0);
   assert.equal(report.summary.nativeEquivalent, 0);
 });

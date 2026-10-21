@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "id": "lsp/fix-history/folding-nested-elements",
+  "provenance": {
+    "fixCommit": "89771a14f17fb535201f261ca154aa35c6f77d7e",
+    "witnessPath": "crates/vize_maestro/src/server/document_structure/folding/tests.rs",
+    "witnessTest": "nested_elements_fold_independently_in_document_order",
+    "inputOrigin": "exact source bytes from the original fix unit regression",
+    "contractOrigin": "complete authored-order folding response from the original fix"
+  },
+  "input": {
+    "source": "Nested.vue.txt",
+    "runtimePath": "Nested.vue",
+    "sha256": "41ba0238a97c4d8c898b20755da0859bc974a19136653e3d824e8b8e102ed373"
+  },
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "dbe742b28d026431a867fc483e92ad7dc108d704409d2cd09abe44e44f0d76f4"
+  },
+  "method": "textDocument/foldingRange",
+  "documentVersion": 1,
+  "scope": "original nested-element input and complete ordered stdio response"
+}

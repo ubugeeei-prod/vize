@@ -220,7 +220,7 @@ impl Project {
         if lf {
             assert_eq!(
                 observed.historical_query_position,
-                21_425 + witness::public_input_prelude_utf16_delta()
+                21_367 + witness::public_input_prelude_utf16_delta()
             );
             assert_eq!(
                 observed.query_position,

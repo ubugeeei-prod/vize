@@ -1,0 +1,9 @@
+<script setup lang="ts">
+defineProps<{ count: number }>();
+defineEmits<{ change: [value: number] }>();
+defineExpose({ reset: () => {} });
+</script>
+
+<template>
+  <div>{{ count }}</div>
+</template>

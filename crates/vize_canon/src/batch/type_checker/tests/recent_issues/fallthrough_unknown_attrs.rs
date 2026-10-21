@@ -117,14 +117,14 @@ const uiLocked = true
                 String::from("src/Parent.vue"),
                 Some(2345),
                 String::from(
-                    "11:4:error Argument of type '{ disable: boolean; }' is not assignable to parameter of type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { disabled?: unknown; type?: unknown; } & { [x: `data${string}`]: unknown; } & Record<string, unknown>>'.\nProperty 'label' is missing in type '{ disable: boolean; }' but required in type '{ readonly label: string; readonly disabled?: boolean | undefined; }'."
+                    "11:4:error Argument of type '{ disable: boolean; }' is not assignable to parameter of type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { disabled?: unknown; type?: unknown; } & { [x: `data${Capitalize<string>}`]: unknown; [x: `data-${string}`]: unknown; } & Record<string, unknown>>'.\nProperty 'label' is missing in type '{ disable: boolean; }' but required in type '{ readonly label: string; readonly disabled?: boolean | undefined; }'."
                 ),
             ),
             (
                 String::from("src/Parent.vue"),
                 Some(2353),
                 cstr!(
-                    "12:33:error Object literal may only specify known properties, and '\"disable\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & {{ disabled?: unknown; type?: unknown; }} & {{ [x: `data${{string}}`]: unknown; }}>'."
+                    "12:33:error Object literal may only specify known properties, and '\"disable\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & {{ disabled?: unknown; type?: unknown; }} & {{ [x: `data${{Capitalize<string>}}`]: unknown; [x: `data-${{string}}`]: unknown; }}>'."
                 ),
             ),
         ],

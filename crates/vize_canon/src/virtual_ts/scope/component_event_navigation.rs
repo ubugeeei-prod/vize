@@ -304,6 +304,7 @@ fn emit_resolved_events(
         return;
     }
     ts.push_str("{\n");
+    let mut emitted = FxHashSet::default();
     for prop in &usage.props {
         if prop.name_is_dynamic || prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
             continue;
@@ -312,6 +313,9 @@ fn emit_resolved_events(
             continue;
         };
         let name = to_camel_case(prop.name.as_str());
+        if !emitted.insert(name.clone()) {
+            continue;
+        }
         append!(*ts, "{indent}  \"{name}\": {value},\n");
     }
     append!(*ts, "{indent}}});\n");

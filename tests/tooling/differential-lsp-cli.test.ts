@@ -8,7 +8,7 @@ import {
   renderNativeAcceptanceMarkdown,
   summarizeNativeAcceptance,
 } from "../differential/acceptance-rates.mjs";
-import { loadLspManifest, runLspPack } from "../differential/lsp.ts";
+import { loadLspManifest, lspFixtureInventory, runLspPack } from "../differential/lsp.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -30,7 +30,7 @@ void test("source-built LSP registers complete fix-history response sessions wit
   const acceptance = summarizeNativeAcceptance(loaded, report, {
     sourceRevision: revision.stdout.trim(),
   });
-  const count = loaded.cases.length;
+  const count = lspFixtureInventory(loaded).length;
   assert.deepEqual(acceptance.total, {
     planned: count,
     nativeHandled: 0,
