@@ -1,0 +1,14 @@
+{
+  "schema": "vize.content-mapper.diagnostic-parity",
+  "version": 1,
+  "issue": 10187,
+  "typescriptSourceRevision": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
+  "positions": "authored UTF-8, one-based",
+  "diagnostics": [
+    { "line": 10, "column": 11, "code": 2322, "count": 1 },
+    { "line": 11, "column": 15, "code": 2322, "count": 1 },
+    { "line": 12, "column": 4, "code": 2345, "count": 1 }
+  ],
+  "forbiddenPositions": [{ "line": 11, "column": 24, "code": 2322 }],
+  "forbiddenMessageTerms": ["__Vize"]
+}

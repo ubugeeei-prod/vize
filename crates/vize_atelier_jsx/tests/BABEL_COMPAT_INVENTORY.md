@@ -4,6 +4,13 @@ The compatibility surface between Vize's JSX/TSX compiler and
 `@vue/babel-plugin-jsx`, row by row, measured against the **real plugin** rather
 than from memory.
 
+The corpus's `dialectCoverage` claim records `jsx-babel` against the pinned
+plugin oracle. Each row's `lang` supplies its JSX or TSX source label, and the
+recording must contain one actual Babel adapter result for every labelled row.
+This is source-inspected evidence, not native-readiness credit: the semantic
+verdicts below remain review-checked until a runtime product comparator executes
+both outputs.
+
 This is the sibling of [`PARITY_INVENTORY.md`](./PARITY_INVENTORY.md). That file
 tracks which reference cases have an executable test and asserts _Vize-shaped_
 output. This file tracks whether Vize's **semantics** match babel's, and what an

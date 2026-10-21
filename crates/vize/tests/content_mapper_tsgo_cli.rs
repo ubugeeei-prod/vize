@@ -137,6 +137,82 @@ fn assert_success(output: &Output) {
     assert!(output.status.success(), "{}", output_text(output));
 }
 
+#[test]
+fn standard_tsgo_reports_each_component_prop_problem_once() {
+    let Some(tsgo) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {
+        eprintln!("skipping exact Content Mapper conformance: {TSGO_ENV} is not set");
+        return;
+    };
+    assert!(
+        tsgo.is_file(),
+        "{TSGO_ENV} is not a file: {}",
+        tsgo.display()
+    );
+
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/content_mapper_diagnostic_parity");
+    let contract: serde_json::Value = serde_json::from_str(include_str!(
+        "fixtures/content_mapper_diagnostic_parity/expectations.json"
+    ))
+    .unwrap();
+    assert_eq!(contract["issue"], 10187);
+    assert_eq!(
+        contract["typescriptSourceRevision"],
+        "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799"
+    );
+
+    let cases_root = workspace_root().join("target/vize-tests/tests");
+    std::fs::create_dir_all(&cases_root).unwrap();
+    let project = tempfile::Builder::new()
+        .prefix("content-mapper-diagnostic-parity-")
+        .tempdir_in(cases_root)
+        .unwrap();
+    copy_fixture(&fixture, project.path());
+    install_mapper_manifest(project.path());
+    install_vue_package(project.path());
+
+    let output = check_project(&tsgo, project.path(), "tsconfig.json");
+    assert!(!output.status.success(), "fixture unexpectedly passed");
+    let stdout = std::str::from_utf8(&output.stdout).unwrap();
+    let diagnostic_lines = stdout
+        .lines()
+        .filter(|line| line.contains(": error TS"))
+        .collect::<Vec<_>>();
+    let diagnostics = contract["diagnostics"].as_array().unwrap();
+    let expected_count = diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic["count"].as_u64().unwrap() as usize)
+        .sum::<usize>();
+    assert_eq!(
+        diagnostic_lines.len(),
+        expected_count,
+        "{}",
+        output_text(&output)
+    );
+
+    for diagnostic in diagnostics {
+        let line = diagnostic["line"].as_u64().unwrap();
+        let column = diagnostic["column"].as_u64().unwrap();
+        let code = diagnostic["code"].as_u64().unwrap();
+        let count = diagnostic["count"].as_u64().unwrap() as usize;
+        let needle = cstr!("src/App.vue({},{}): error TS{}:", line, column, code);
+        assert_eq!(stdout.matches(needle.as_str()).count(), count, "{stdout}");
+    }
+    for diagnostic in contract["forbiddenPositions"].as_array().unwrap() {
+        let needle = cstr!(
+            "src/App.vue({},{}): error TS{}:",
+            diagnostic["line"].as_u64().unwrap(),
+            diagnostic["column"].as_u64().unwrap(),
+            diagnostic["code"].as_u64().unwrap()
+        );
+        assert!(!stdout.contains(needle.as_str()), "{stdout}");
+    }
+    for term in contract["forbiddenMessageTerms"].as_array().unwrap() {
+        assert!(!stdout.contains(term.as_str().unwrap()), "{stdout}");
+    }
+    assert!(stdout.contains("Property 'count' is missing"), "{stdout}");
+}
+
 fn emitted_vue_declaration(project_root: &Path, name: &str) -> PathBuf {
     [
         project_root.join(cstr!("dist/{name}.d.vue.ts").as_str()),

@@ -85,6 +85,85 @@ const café = ref(<span />)
 }
 
 #[test]
+fn component_input_diagnostics_use_public_display_names() {
+    let source = r#"<script setup lang="ts">
+import Child from './Child.vue'
+const __VizeComponentCheckProps = 1
+</script>
+<template><Child :count="__VizeComponentCheckProps" /></template>
+"#;
+    let result = generate_vue_content_mapper_transform(Path::new("App.vue"), source)
+        .expect("content mapper transform");
+
+    assert_eq!(
+        result
+            .text
+            .matches("const __VizeComponentCheckProps = 1")
+            .count(),
+        1,
+        "authored identifiers must remain byte-identical:\n{}",
+        result.text
+    );
+    assert_eq!(
+        (
+            result
+                .text
+                .matches("type ComponentPropsForTemplate<")
+                .count(),
+            result
+                .text
+                .matches("interface VueTemplatePublicAttrsType")
+                .count(),
+        ),
+        (1, 1),
+        "generated diagnostic types need public display names:\n{}",
+        result.text
+    );
+    assert_eq!(
+        (
+            result
+                .text
+                .matches("type __VizeComponentCheckProps<")
+                .count(),
+            result
+                .text
+                .matches("interface __VizePublicComponentAttrs")
+                .count(),
+        ),
+        (0, 0),
+        "internal helper names must not reach TypeScript diagnostics:\n{}",
+        result.text
+    );
+}
+
+#[test]
+fn authored_reference_packages_keep_internal_spellings() {
+    let source = r#"<script setup lang="ts">
+/// <reference types="__VizeComponentCheckProps" />
+/// <reference types="__VizePublicComponentAttrs" />
+</script>
+<template><div /></template>
+"#;
+    let result = generate_vue_content_mapper_transform(Path::new("App.vue"), source)
+        .expect("content mapper transform");
+
+    let references = result
+        .text
+        .lines()
+        .filter_map(|line| line.strip_prefix("/// <reference types="))
+        .collect::<Vec<_>>();
+    assert_eq!(
+        references,
+        [
+            "\"__VizeComponentCheckProps\" />",
+            "\"__VizePublicComponentAttrs\" />",
+        ],
+        "authored reference packages must remain byte-identical:\n{}",
+        result.text
+    );
+}
+
+#[test]
 fn maps_synthetic_prop_bindings_to_the_authored_declaration() {
     let source = r#"<script setup lang="ts">
 defineProps<{ count: number }>();

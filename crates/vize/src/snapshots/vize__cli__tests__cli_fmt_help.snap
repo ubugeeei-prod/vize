@@ -43,6 +43,14 @@ Options:
           - consistent: Quote every property when one property requires quotes
           - preserve:   Preserve whether each property was authored with quotes
 
+      --trailing-comma <TRAILING_COMMA>
+          Change where trailing commas are printed
+
+          Possible values:
+          - all:  Print trailing commas wherever possible
+          - es5:  Print trailing commas where valid in ES5
+          - none: Do not print trailing commas
+
       --print-width <PRINT_WIDTH>
           Print width (line length) for formatting
 
