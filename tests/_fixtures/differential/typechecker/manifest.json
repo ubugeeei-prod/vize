@@ -2624,6 +2624,58 @@
       }
     },
     {
+      "id": "typechecker/content-mapper-musea-art-10186/bound-component-props",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "content-mapper-musea-art-10186",
+      "case": "bound-component-props",
+      "test": "content_mapper_musea_art_project_preserves_bound_component_diagnostics",
+      "regressionCommit": "40b6bd9c6c1dc49c23f4a1f18eaad579b1b7a159",
+      "sourceRevision": "40b6bd9c6c1dc49c23f4a1f18eaad579b1b7a159",
+      "packReference": {
+        "path": "content-mapper-musea-art-10186/cases.json",
+        "sha256": "3cee82977486a5b472afb211b115b7280c398c08a5352a7dccb7c20effa561aa"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "content-mapper-musea-art-10186/tsconfig.json.txt",
+          "sha256": "97fe2cd88a02b6ee5680212cba048feac1cb807d26fd4a5ef3c2dede7874117e"
+        },
+        {
+          "file": "src/MyCard.vue",
+          "path": "content-mapper-musea-art-10186/src/MyCard.vue.txt",
+          "sha256": "455de116ba8d563f320c6b90d5a655a7c9cef4d8305e00e6705adf289420df35"
+        },
+        {
+          "file": "src/MyCard.art.vue",
+          "path": "content-mapper-musea-art-10186/src/MyCard.art.vue.txt",
+          "sha256": "8244d93074da638cd1c9f7a93845de4e7cf146f4da11b7c170ac7eff39ae3eea"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/misskey-generated-inference-9516/inference-probes-valid",
       "state": "active",
       "targets": [

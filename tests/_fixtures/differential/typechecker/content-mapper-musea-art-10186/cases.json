@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10186,
+  "regressionCommit": "40b6bd9c6c1dc49c23f4a1f18eaad579b1b7a159",
+  "sourceRevision": "40b6bd9c6c1dc49c23f4a1f18eaad579b1b7a159",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "bound-component-props",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/MyCard.vue",
+          "source": "src/MyCard.vue.txt"
+        },
+        {
+          "file": "src/MyCard.art.vue",
+          "source": "src/MyCard.art.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/MyCard.art.vue",
+          "line": 5,
+          "column": 34,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        },
+        {
+          "file": "src/MyCard.art.vue",
+          "line": 6,
+          "column": 28,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ elevated: true; }' is not assignable to parameter of type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { [x: string]: unknown; } & { [x: `data${string}`]: unknown; } & Record<string, unknown>>'.\nProperty 'title' is missing in type '{ elevated: true; }' but required in type '{ readonly title: string; readonly elevated?: boolean | undefined; }'."
+        }
+      ]
+    }
+  ]
+}
