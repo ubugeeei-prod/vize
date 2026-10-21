@@ -155,7 +155,7 @@ void (null! as __VizeTemplateRefs["btn"]);   const buttonEl = useTemplateRef('bt
   void __vize_native_key_50;
 
   // Reference setup bindings (used in template/CSS v-bind)
-  void buttonEl; void inputRef; void ref; void useTemplateRef;
+  void buttonEl; void inputRef; void (null as unknown as keyof typeof ref); void (null as unknown as keyof typeof useTemplateRef);
   })();
 }
 

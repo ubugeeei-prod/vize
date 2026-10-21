@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { State } from "./state";
+
+const state = State.Idle;
+</script>
+
+<template>
+  <p>{{ state }} {{ State.Busy }}</p>
+</template>

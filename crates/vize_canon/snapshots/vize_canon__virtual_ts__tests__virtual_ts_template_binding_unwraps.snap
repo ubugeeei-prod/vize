@@ -159,7 +159,7 @@ function __setup() {
   // @vize-map: expr -> 27:55
 
   // Reference setup bindings (used in template/CSS v-bind)
-  void inputRef; void ref; void useTemplateRef; void users;
+  void inputRef; void (null as unknown as keyof typeof ref); void (null as unknown as keyof typeof useTemplateRef); void users;
   })();
 }
 

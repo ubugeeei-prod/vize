@@ -54,7 +54,7 @@ function __setup() {
 
 
   // Reference setup bindings (used in template/CSS v-bind)
-  void defineComponent;
+  void (null as unknown as keyof typeof defineComponent);
   })();
 
   return { __default__ };

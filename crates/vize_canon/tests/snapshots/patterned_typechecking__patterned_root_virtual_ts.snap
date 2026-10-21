@@ -588,7 +588,7 @@ function __setup() {
   void Child;
 
   // Reference setup bindings (used in template/CSS v-bind)
-  void Child; void result;
+  void (null as unknown as keyof typeof Child); void result;
   })();
 }
 

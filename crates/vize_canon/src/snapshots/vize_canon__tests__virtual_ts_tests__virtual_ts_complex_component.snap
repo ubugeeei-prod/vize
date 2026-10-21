@@ -204,7 +204,7 @@ function __setup() {
   });
 
   // Reference setup bindings (used in template/CSS v-bind)
-  void computed; void count; void doubled; void emit; void increment; void initialCount; void props; void ref; void title; void watch;
+  void (null as unknown as keyof typeof computed); void count; void doubled; void emit; void increment; void initialCount; void props; void (null as unknown as keyof typeof ref); void title; void (null as unknown as keyof typeof watch);
   })();
 
   // Compiler-macro results contribute to the component signature

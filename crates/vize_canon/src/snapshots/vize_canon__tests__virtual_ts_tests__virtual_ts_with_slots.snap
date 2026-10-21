@@ -158,7 +158,7 @@ function __setup() {
   return {} as { "header"?: (props: typeof __vize_slot_payload_13) => any } & { "default"?: (props: typeof __vize_slot_payload_63) => any } & { "footer"?: (props: typeof __vize_slot_payload_81) => any };
 
   // Reference setup bindings (used in template/CSS v-bind)
-  void slots; void useSlots;
+  void slots; void (null as unknown as keyof typeof useSlots);
   })();
 
   return { __vize_template_slots: __vize_template };
