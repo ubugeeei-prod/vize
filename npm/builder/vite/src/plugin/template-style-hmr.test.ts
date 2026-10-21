@@ -16,7 +16,7 @@ import { toVirtualId } from "../virtual.ts";
   const previousCompiled = compileFile(
     vueFile,
     new Map(),
-    { sourceMap: false, ssr: false, vapor: false },
+    { root: "/src", sourceMap: false, ssr: false, vapor: false },
     previousSource,
   );
   const params = new URLSearchParams();
@@ -80,7 +80,7 @@ import { toVirtualId } from "../virtual.ts";
   const previousCompiled = compileFile(
     vueFile,
     new Map(),
-    { sourceMap: false, ssr: false, vapor: false },
+    { root: "/src", sourceMap: false, ssr: false, vapor: false },
     previousSource,
   );
   const componentModule = { url: toVirtualId(vueFile) };
