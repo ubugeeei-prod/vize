@@ -16,7 +16,7 @@ mod attr;
 pub(crate) mod scope;
 mod tag;
 
-use vize_l0::Namespace;
+use crate::markup::Namespace;
 use vize_l0::{Allocator, Box, Vec};
 
 use crate::event::{Event, EventKind};

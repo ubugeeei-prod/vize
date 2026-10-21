@@ -7,7 +7,8 @@
 //! `is_vue_whitespace` rather than the full-Unicode `char::is_whitespace`.
 
 use vize_l0::{Allocator, StringBuilder, Vec, ensure_sufficient_stack};
-use vize_relief::{ElementNode, ElementType, Namespace, PropNode, TemplateChildNode};
+use vize_l1::markup::Namespace;
+use vize_relief::{ElementNode, ElementType, PropNode, TemplateChildNode};
 
 /// Per Vue: only `[ \t\n\f\r]` is whitespace for the condense strategy.
 #[inline]

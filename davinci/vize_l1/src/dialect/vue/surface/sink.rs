@@ -1,13 +1,13 @@
 //! Vue policy is applied at complete authored heads, outside the generic sink.
 
-use vize_l0::{Allocator, Namespace, Vec, is_void_tag};
+use vize_l0::{Allocator, Vec, is_void_tag};
 
 use super::{HeaderPolicy, SurfacePolicy};
 use crate::build::scope::{Frame, Recovery};
 use crate::event::{EventKind, Recorder};
 use crate::markup::entity::DecodedEntity;
 use crate::markup::surface::LintHeaderFact;
-use crate::markup::token::{LexErrorCode, LexMode, QuoteType, Sink};
+use crate::markup::token::{LexErrorCode, LexMode, Namespace, QuoteType, Sink};
 use core::marker::PhantomData;
 
 struct ModeFrame<'a> {
