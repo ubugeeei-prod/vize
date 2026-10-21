@@ -13,7 +13,11 @@ fn content_mapper_merges_duplicate_class_and_style_attribute_probes() {
     let result =
         generate_vue_content_mapper_transform(Path::new("src/App.vue"), source).expect("transform");
 
-    for marker in ["const __vize_emit_props_", "var __vize_ref_"] {
+    for marker in [
+        "const __vize_emit_props_",
+        "const __vize_resolved_events_",
+        "var __vize_ref_",
+    ] {
         let probe = result
             .text
             .split_once(marker)

@@ -16,10 +16,7 @@ use vize_croquis::{Croquis, Scope, ScopeKind, analysis::ComponentUsage};
 
 use crate::virtual_ts::{
     component_reference::resolved_component_binding_reference,
-    expressions::{
-        collect_generated_named_bindings, generated_prop_value, merged_class_binding_value,
-        rewrite_reserved_template_binding,
-    },
+    expressions::{collect_inference_probe_props, rewrite_reserved_template_binding},
     helpers::to_camel_case,
     template_binding_access::TemplateBindingAccess,
     types::VirtualTsOptions,
@@ -166,36 +163,7 @@ fn emit_probe(
         *ts,
         "{indent}var {name} = (undefined as unknown as __VizeRefInstanceFactory<typeof {component}>)({component})({{\n"
     );
-    let class_bindings =
-        collect_generated_named_bindings(usage, ctx.template_binding_access, "class");
-    let merge_class_bindings = class_bindings.len() > 1;
-    let mut emitted_merged_class = false;
-    let style_bindings =
-        collect_generated_named_bindings(usage, ctx.template_binding_access, "style");
-    let merge_style_bindings = style_bindings.len() > 1;
-    let mut emitted_merged_style = false;
-    for prop in &usage.props {
-        if prop.name_is_dynamic || matches!(prop.name.as_str(), "key" | "ref") {
-            continue;
-        }
-        let value = if prop.name.as_str() == "class" && merge_class_bindings {
-            if emitted_merged_class {
-                continue;
-            }
-            emitted_merged_class = true;
-            merged_class_binding_value(&class_bindings, None)
-        } else if prop.name.as_str() == "style" && merge_style_bindings {
-            if emitted_merged_style {
-                continue;
-            }
-            emitted_merged_style = true;
-            merged_class_binding_value(&style_bindings, None)
-        } else {
-            generated_prop_value(prop, ctx.template_binding_access)
-        };
-        let Some(value) = value else {
-            continue;
-        };
+    for (prop, value) in collect_inference_probe_props(usage, ctx.template_binding_access) {
         if super::is_inline_callback_prop(prop) {
             append!(
                 *ts,

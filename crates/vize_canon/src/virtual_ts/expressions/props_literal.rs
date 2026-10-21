@@ -9,7 +9,7 @@
 use super::super::types::{VizeMapping, VizeSubSpan};
 use super::component_props::{
     ComponentPropSource, collect_generated_class_bindings, collect_generated_named_bindings,
-    is_checkable_prop,
+    is_checkable_prop, merged_class_binding_value,
 };
 use super::prop_sources::append_prop_value;
 use super::spread_reserved_props::rewrite_reserved_spread_references;
@@ -18,7 +18,7 @@ use prop_entry::append_prop_entry;
 use vize_carton::{FxHashSet, String, append};
 use vize_croquis::{
     ScopeChain, ScopeId,
-    croquis::{ComponentUsage, SpreadProp},
+    croquis::{ComponentUsage, PassedProp, SpreadProp},
 };
 
 mod prop_entry;
@@ -41,6 +41,46 @@ pub(crate) fn append_inference_props_literal(
         source_context,
         expr_indent,
     );
+}
+
+/// Collect the simple named props used by inference-only probes while folding
+/// Vue's repeatable `class` and `style` bindings into one object entry.
+///
+/// These probes intentionally preserve their legacy shape instead of using the
+/// mapped prop literal: the authored prop checker remains the diagnostic owner.
+pub(crate) fn collect_inference_probe_props<'a>(
+    usage: &'a ComponentUsage,
+    template_binding_access: &TemplateBindingAccess,
+) -> Vec<(&'a PassedProp, String)> {
+    let class_bindings = collect_generated_class_bindings(usage, template_binding_access);
+    let style_bindings = collect_generated_named_bindings(usage, template_binding_access, "style");
+    let mut emitted_class = false;
+    let mut emitted_style = false;
+    let mut props = Vec::new();
+
+    for prop in &usage.props {
+        if prop.name_is_dynamic || matches!(prop.name.as_str(), "key" | "ref") {
+            continue;
+        }
+        let bindings = match prop.name.as_str() {
+            "class" if class_bindings.len() > 1 => Some((&class_bindings, &mut emitted_class)),
+            "style" if style_bindings.len() > 1 => Some((&style_bindings, &mut emitted_style)),
+            _ => None,
+        };
+        let value = if let Some((bindings, emitted)) = bindings {
+            if *emitted {
+                continue;
+            }
+            *emitted = true;
+            merged_class_binding_value(bindings.as_slice(), None)
+        } else {
+            super::prop_sources::generated_prop_value(prop, template_binding_access)
+        };
+        if let Some(value) = value {
+            props.push((prop, value));
+        }
+    }
+    props
 }
 
 /// Append the `{ … }` props literal for `usage`, returning its generated range.

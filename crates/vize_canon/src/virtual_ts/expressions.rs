@@ -28,7 +28,8 @@ mod prop_name_casing_tests;
 mod prop_sources;
 mod props_literal;
 pub(crate) use props_literal::{
-    append_inference_props_literal, append_props_literal, append_spread_value, prop_entry_sub_spans,
+    append_inference_props_literal, append_props_literal, append_spread_value,
+    collect_inference_probe_props, prop_entry_sub_spans,
 };
 mod reserved_props;
 #[cfg(test)]
@@ -45,15 +46,13 @@ mod vif_chain;
 mod tests;
 
 pub(crate) use component_props::{
-    ComponentPropCheckContext, ComponentPropSource, collect_generated_named_bindings,
-    generate_component_prop_checks, merged_class_binding_value,
+    ComponentPropCheckContext, ComponentPropSource, generate_component_prop_checks,
 };
 pub(crate) use generic_props_call::generate_slot_host_binding;
 pub(crate) use incomplete::isolate_incomplete_expression;
 pub(crate) use model_modifiers::ModelModifierBindings;
 pub(crate) use prop_sources::{
-    append_prop_value, generated_prop_span, generated_prop_value, prop_name_source_range,
-    prop_value_source_range,
+    append_prop_value, generated_prop_span, prop_name_source_range, prop_value_source_range,
 };
 pub(crate) use reserved_props::{
     map_rewritten_template_binding, rewrite_reserved_template_binding,
