@@ -1371,7 +1371,6 @@
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
       },
-<<<<<<< HEAD
       "pack": "allow-importing-ts-extensions-9890",
       "case": "declaration-generated-routes",
       "test": "authored_ts_extensions_report_ts5097_by_default",
