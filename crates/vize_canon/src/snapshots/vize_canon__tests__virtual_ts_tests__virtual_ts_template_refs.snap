@@ -136,7 +136,7 @@ function __setup() {
   const inputRef = ref<HTMLInputElement | null>(null)
 void (null! as __VizeTemplateRefs["btn"]);   const buttonEl = useTemplateRef('btn')
   
-  // @vize-map: 15842:15989 -> 0:135
+  // @vize-map: 16198:16345 -> 0:135
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

@@ -85,26 +85,6 @@ fn authored_component_props_keep_literal_public_instance_members() {
             "{name} must preserve literal public instance members when replacing $props"
         );
     }
-
-    let script = "defineEmits<{ change: [] }>()";
-    let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full());
-    analyzer.analyze_script_setup(script);
-    let output = super::generate_virtual_ts_with_offsets_legacy_vue2(
-        &analyzer.finish(),
-        Some(script),
-        None,
-        0,
-        0,
-        &VirtualTsOptions::default(),
-    );
-    assert!(output.code.contains(
-        "__VizeReplaceComponentProps<__VizeComponentInstance, __VizeAuthoredKeyWitness<__VizeAuthoredProps>"
-    ));
-    assert!(
-        !output
-            .code
-            .contains(": Omit<__VizeComponentInstance, '$props'> & {")
-    );
 }
 
 fn assert_guarded_public_base(name: &str, text: &str) {

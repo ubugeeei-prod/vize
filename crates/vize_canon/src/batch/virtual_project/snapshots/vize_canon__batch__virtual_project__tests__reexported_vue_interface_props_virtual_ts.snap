@@ -42,7 +42,7 @@ function __setup() {
 
   const props = defineProps<ParentWidgetProps>();
 
-  // @vize-map: 1230:1295 -> 0:184
+  // @vize-map: 1586:1651 -> 0:184
 
   // ========== Template Scope (inherits from setup) ==========
   // Anchor before the template scope shadows `props`

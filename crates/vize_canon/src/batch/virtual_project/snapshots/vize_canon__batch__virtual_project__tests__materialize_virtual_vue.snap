@@ -33,7 +33,7 @@ function __setup() {
 
   const message = 'Hello'
 
-  // @vize-map: 1081:1113 -> 0:25
+  // @vize-map: 1437:1469 -> 0:25
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

@@ -41,7 +41,7 @@ function __setup() {
 
   const count = ref(0)
 
-  // @vize-map: 1123:1198 -> 0:84
+  // @vize-map: 1479:1554 -> 0:84
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

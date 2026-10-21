@@ -35,7 +35,7 @@ function __setup() {
   // @ts-ignore pending scope support
   declare const label: typeof local;
   
-  // @vize-map: 1081:1187 -> 0:95
+  // @vize-map: 1437:1543 -> 0:95
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

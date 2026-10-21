@@ -37,7 +37,7 @@ function __setup() {
   const local = 1;
   type __vize_ambient_0_type_0 = typeof local;
   
-  // @vize-map: 1269:1341 -> 0:153
+  // @vize-map: 1625:1697 -> 0:153
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

@@ -130,7 +130,7 @@ function __setup() {
   
   const todos = ref([{ id: 1, text: 'Hello' }])
   
-  // @vize-map: 15191:15245 -> 0:111
+  // @vize-map: 15547:15601 -> 0:111
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

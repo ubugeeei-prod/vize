@@ -35,7 +35,7 @@ function __setup() {
   declare function label<T>(value: Local<T>): T;
   declare const alias: typeof label;
   
-  // @vize-map: 1081:1205 -> 0:113
+  // @vize-map: 1437:1561 -> 0:113
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
