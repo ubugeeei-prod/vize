@@ -122,9 +122,26 @@ The fixture must retain exactly four responses before opening the session; an
 empty expectation cannot silently skip every runtime request.
 The helper also requires the entry URI's exact version-1 diagnostics publication.
 All three on-type tests passed against the same pinned historical f59 artifact,
-with zero failures/skips/cancellations. Full-wire/shared-runner registration
-remains pending. This covers only the selected CRLF public response witness;
-it does not establish whole-fix or whole-history coverage.
+with zero failures/skips/cancellations. That dated proof did not include the
+full-wire/shared-runner registration added below. This covers only the selected
+CRLF public response witness; it does not establish whole-fix or whole-history
+coverage.
+
+### Shared raw-wire completion candidate
+
+The CRLF on-type case is now bound by name to the shared stdio manifest law
+rather than relying on its incidental position in the manifest. The law retains
+the exact 211 source bytes and 18 CRLF pairs together with all four authored
+responses: script and style edits, the already-indented empty edit list, and the
+out-of-range null control. It also checks all four request identities through
+the same initialization, versioned readiness barrier, and shutdown lifecycle as
+the source-built differential runner.
+
+This makes the one required-response obligation recorded for historical fix
+`4d04bc3e53acfddf835f2db70e613abe85ce8df4` executable in the shared raw-wire
+corpus. The row remains a completion candidate until fresh exact-head Actions
+execute the source-built sessions and protected delivery reaches main. It grants
+no native acceptance and does not reduce any other history row.
 
 ### Dated CRLF source proof
 
@@ -139,9 +156,9 @@ actual full workflow jobs passed.
 
 That run did not retain the receipt JSON separately, so no binary hash is
 inferred or borrowed from the old f59 artifact. Later transport and merged
-heads require their own Actions proof. Complete wire/state and shared-runner
-registration remain unfinished, and the selected witness gives no native L4
-parity or whole-fix-history credit.
+heads require their own Actions proof. The completion candidate above supersedes
+only the dated registration gap; it still needs fresh protected delivery and
+gives no native L4 parity or whole-fix-history credit.
 
 ## Reuse and remaining work
 
