@@ -20,6 +20,7 @@ pub(super) fn collect_props_from_object<'a>(
     source: &str,
     path: &Path,
     root_runtime_binding: &str,
+    root_type_is_local: bool,
     imports: &FxHashMap<&'a str, RuntimeImport>,
     local_values: &FxHashMap<&'a str, &'a Expression<'a>>,
     visited: &mut RuntimePropVisitSet,
@@ -45,6 +46,7 @@ pub(super) fn collect_props_from_object<'a>(
                 source,
                 path,
                 root_runtime_binding,
+                root_type_is_local,
                 imports,
                 local_values,
                 visited,
@@ -61,6 +63,7 @@ fn collect_props_from_spread_expression<'a>(
     source: &str,
     path: &Path,
     root_runtime_binding: &str,
+    root_type_is_local: bool,
     imports: &FxHashMap<&'a str, RuntimeImport>,
     local_values: &FxHashMap<&'a str, &'a Expression<'a>>,
     visited: &mut RuntimePropVisitSet,
@@ -70,12 +73,18 @@ fn collect_props_from_spread_expression<'a>(
     match expr {
         Expression::Identifier(identifier) => {
             let name = identifier.name.as_str();
+            let spread_type_root = if root_type_is_local {
+                name
+            } else {
+                root_runtime_binding
+            };
             if let Some(expr) = local_values.get(name) {
                 collect_props_from_expression(
                     expr,
                     source,
                     path,
-                    root_runtime_binding,
+                    spread_type_root,
+                    root_type_is_local,
                     imports,
                     local_values,
                     visited,
@@ -89,7 +98,7 @@ fn collect_props_from_spread_expression<'a>(
                     path,
                     import.source.as_str(),
                     import.imported.as_str(),
-                    root_runtime_binding,
+                    spread_type_root,
                     visited,
                     cache,
                 ));
@@ -103,15 +112,17 @@ fn collect_props_from_spread_expression<'a>(
                     path,
                     import.source.as_str(),
                     import.imported.as_str(),
-                    name,
+                    root_runtime_binding,
                     visited,
                     cache,
                 );
-                for prop in &mut imported_props {
-                    prop.prop_type = Some(runtime_prop_return_shape_member_type(
-                        name,
-                        prop.name.as_str(),
-                    ));
+                if root_type_is_local {
+                    for prop in &mut imported_props {
+                        prop.prop_type = Some(runtime_prop_return_shape_member_type(
+                            name,
+                            prop.name.as_str(),
+                        ));
+                    }
                 }
                 props.extend(imported_props);
                 return;
@@ -123,6 +134,7 @@ fn collect_props_from_spread_expression<'a>(
             source,
             path,
             root_runtime_binding,
+            root_type_is_local,
             imports,
             local_values,
             visited,
@@ -134,6 +146,7 @@ fn collect_props_from_spread_expression<'a>(
             source,
             path,
             root_runtime_binding,
+            root_type_is_local,
             imports,
             local_values,
             visited,
@@ -145,6 +158,7 @@ fn collect_props_from_spread_expression<'a>(
             source,
             path,
             root_runtime_binding,
+            root_type_is_local,
             imports,
             local_values,
             visited,
@@ -156,6 +170,7 @@ fn collect_props_from_spread_expression<'a>(
             source,
             path,
             root_runtime_binding,
+            root_type_is_local,
             imports,
             local_values,
             visited,

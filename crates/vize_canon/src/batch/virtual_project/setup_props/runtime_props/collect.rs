@@ -1,6 +1,9 @@
 use std::path::Path;
 
-use oxc_ast::ast::{Argument, ExportDefaultDeclarationKind, Expression};
+use oxc_ast::ast::{
+    Argument, ExportDefaultDeclarationKind, Expression, FunctionBody, ReturnStatement, Statement,
+};
+use oxc_ast_visit::Visit;
 use vize_carton::FxHashMap;
 use vize_croquis::macros::PropDefinition;
 
@@ -28,6 +31,7 @@ pub(super) fn collect_props_from_default_declaration<'a>(
             source,
             path,
             root_runtime_binding,
+            false,
             imports,
             local_values,
             visited,
@@ -43,6 +47,7 @@ pub(super) fn collect_props_from_default_declaration<'a>(
                     source,
                     path,
                     root_runtime_binding,
+                    false,
                     imports,
                     local_values,
                     visited,
@@ -58,6 +63,7 @@ pub(super) fn collect_props_from_default_declaration<'a>(
                     source,
                     path,
                     root_runtime_binding,
+                    false,
                     imports,
                     local_values,
                     visited,
@@ -71,6 +77,7 @@ pub(super) fn collect_props_from_default_declaration<'a>(
             source,
             path,
             root_runtime_binding,
+            false,
             imports,
             local_values,
             visited,
@@ -83,6 +90,7 @@ pub(super) fn collect_props_from_default_declaration<'a>(
                 source,
                 path,
                 root_runtime_binding,
+                false,
                 imports,
                 local_values,
                 visited,
@@ -96,6 +104,7 @@ pub(super) fn collect_props_from_default_declaration<'a>(
                 source,
                 path,
                 root_runtime_binding,
+                false,
                 imports,
                 local_values,
                 visited,
@@ -109,6 +118,7 @@ pub(super) fn collect_props_from_default_declaration<'a>(
                 source,
                 path,
                 root_runtime_binding,
+                false,
                 imports,
                 local_values,
                 visited,
@@ -126,6 +136,7 @@ pub(super) fn collect_props_from_expression<'a>(
     source: &str,
     path: &Path,
     root_runtime_binding: &str,
+    root_type_is_local: bool,
     imports: &FxHashMap<&'a str, RuntimeImport>,
     local_values: &FxHashMap<&'a str, &'a Expression<'a>>,
     visited: &mut RuntimePropVisitSet,
@@ -138,6 +149,7 @@ pub(super) fn collect_props_from_expression<'a>(
             source,
             path,
             root_runtime_binding,
+            root_type_is_local,
             imports,
             local_values,
             visited,
@@ -150,6 +162,53 @@ pub(super) fn collect_props_from_expression<'a>(
             {
                 collect_props_from_argument(
                     first,
+                    source,
+                    path,
+                    root_runtime_binding,
+                    root_type_is_local,
+                    imports,
+                    local_values,
+                    visited,
+                    cache,
+                    props,
+                );
+            }
+        }
+        Expression::ArrowFunctionExpression(arrow) => {
+            if arrow.expression
+                && let Some(Statement::ExpressionStatement(statement)) =
+                    arrow.body.statements.first()
+            {
+                collect_props_from_expression(
+                    &statement.expression,
+                    source,
+                    path,
+                    root_runtime_binding,
+                    false,
+                    imports,
+                    local_values,
+                    visited,
+                    cache,
+                    props,
+                );
+            } else {
+                collect_props_from_factory_body(
+                    &arrow.body,
+                    source,
+                    path,
+                    root_runtime_binding,
+                    imports,
+                    local_values,
+                    visited,
+                    cache,
+                    props,
+                );
+            }
+        }
+        Expression::FunctionExpression(function) => {
+            if let Some(body) = function.body.as_ref() {
+                collect_props_from_factory_body(
+                    body,
                     source,
                     path,
                     root_runtime_binding,
@@ -166,6 +225,7 @@ pub(super) fn collect_props_from_expression<'a>(
             source,
             path,
             root_runtime_binding,
+            root_type_is_local,
             imports,
             local_values,
             visited,
@@ -177,6 +237,7 @@ pub(super) fn collect_props_from_expression<'a>(
             source,
             path,
             root_runtime_binding,
+            root_type_is_local,
             imports,
             local_values,
             visited,
@@ -188,6 +249,7 @@ pub(super) fn collect_props_from_expression<'a>(
             source,
             path,
             root_runtime_binding,
+            root_type_is_local,
             imports,
             local_values,
             visited,
@@ -199,6 +261,7 @@ pub(super) fn collect_props_from_expression<'a>(
             source,
             path,
             root_runtime_binding,
+            root_type_is_local,
             imports,
             local_values,
             visited,
@@ -210,11 +273,71 @@ pub(super) fn collect_props_from_expression<'a>(
 }
 
 #[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
+pub(super) fn collect_props_from_factory_body<'a>(
+    body: &'a FunctionBody<'a>,
+    source: &str,
+    path: &Path,
+    root_runtime_binding: &str,
+    imports: &FxHashMap<&'a str, RuntimeImport>,
+    local_values: &FxHashMap<&'a str, &'a Expression<'a>>,
+    visited: &mut RuntimePropVisitSet,
+    cache: &RuntimePropResolveCache,
+    props: &mut Vec<PropDefinition>,
+) {
+    struct ReturnVisitor<'ctx, 'a> {
+        source: &'ctx str,
+        path: &'ctx Path,
+        root_runtime_binding: &'ctx str,
+        imports: &'ctx FxHashMap<&'a str, RuntimeImport>,
+        local_values: &'ctx FxHashMap<&'a str, &'a Expression<'a>>,
+        visited: &'ctx mut RuntimePropVisitSet,
+        cache: &'ctx RuntimePropResolveCache,
+        props: &'ctx mut Vec<PropDefinition>,
+    }
+
+    impl<'a> Visit<'a> for ReturnVisitor<'_, 'a> {
+        fn visit_return_statement(&mut self, statement: &ReturnStatement<'a>) {
+            if let Some(argument) = statement.argument.as_ref() {
+                collect_props_from_expression(
+                    argument,
+                    self.source,
+                    self.path,
+                    self.root_runtime_binding,
+                    false,
+                    self.imports,
+                    self.local_values,
+                    self.visited,
+                    self.cache,
+                    self.props,
+                );
+            }
+        }
+
+        fn visit_function_body(&mut self, _: &FunctionBody<'a>) {}
+    }
+
+    let mut visitor = ReturnVisitor {
+        source,
+        path,
+        root_runtime_binding,
+        imports,
+        local_values,
+        visited,
+        cache,
+        props,
+    };
+    for statement in &body.statements {
+        visitor.visit_statement(statement);
+    }
+}
+
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 pub(super) fn collect_props_from_argument<'a>(
     arg: &'a Argument<'a>,
     source: &str,
     path: &Path,
     root_runtime_binding: &str,
+    root_type_is_local: bool,
     imports: &FxHashMap<&'a str, RuntimeImport>,
     local_values: &FxHashMap<&'a str, &'a Expression<'a>>,
     visited: &mut RuntimePropVisitSet,
@@ -227,6 +350,7 @@ pub(super) fn collect_props_from_argument<'a>(
             source,
             path,
             root_runtime_binding,
+            root_type_is_local,
             imports,
             local_values,
             visited,
@@ -238,6 +362,7 @@ pub(super) fn collect_props_from_argument<'a>(
             source,
             path,
             root_runtime_binding,
+            root_type_is_local,
             imports,
             local_values,
             visited,
@@ -249,6 +374,7 @@ pub(super) fn collect_props_from_argument<'a>(
             source,
             path,
             root_runtime_binding,
+            root_type_is_local,
             imports,
             local_values,
             visited,
@@ -260,6 +386,7 @@ pub(super) fn collect_props_from_argument<'a>(
             source,
             path,
             root_runtime_binding,
+            root_type_is_local,
             imports,
             local_values,
             visited,
@@ -271,6 +398,7 @@ pub(super) fn collect_props_from_argument<'a>(
             source,
             path,
             root_runtime_binding,
+            root_type_is_local,
             imports,
             local_values,
             visited,

@@ -19,7 +19,7 @@ mod shape;
 
 use collect::{
     collect_props_from_argument, collect_props_from_default_declaration,
-    collect_props_from_expression,
+    collect_props_from_expression, collect_props_from_factory_body,
 };
 
 pub(super) fn resolve_inline_runtime_props(
@@ -54,6 +54,7 @@ pub(super) fn resolve_inline_runtime_props(
                             self.source,
                             self.path,
                             self.root_runtime_binding,
+                            true,
                             self.imports,
                             self.local_values,
                             self.visited,
@@ -232,6 +233,7 @@ fn collect_exported_specifier_props<'a>(
                 source,
                 path,
                 root_runtime_binding,
+                false,
                 imports,
                 local_values,
                 visited,
@@ -283,6 +285,7 @@ fn collect_exported_declaration_props<'a>(
                     source,
                     path,
                     root_runtime_binding,
+                    false,
                     imports,
                     local_values,
                     visited,
@@ -300,25 +303,17 @@ fn collect_exported_declaration_props<'a>(
             let Some(body) = function.body.as_ref() else {
                 return;
             };
-            for statement in &body.statements {
-                let Statement::ReturnStatement(return_statement) = statement else {
-                    continue;
-                };
-                let Some(argument) = return_statement.argument.as_ref() else {
-                    continue;
-                };
-                collect_props_from_expression(
-                    argument,
-                    source,
-                    path,
-                    root_runtime_binding,
-                    imports,
-                    local_values,
-                    visited,
-                    cache,
-                    props,
-                );
-            }
+            collect_props_from_factory_body(
+                body,
+                source,
+                path,
+                root_runtime_binding,
+                imports,
+                local_values,
+                visited,
+                cache,
+                props,
+            );
         }
         _ => {}
     }
