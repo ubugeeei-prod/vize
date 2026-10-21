@@ -181,7 +181,8 @@ impl Builder<'_, '_> {
                 Mode::InBody,
                 "div" | "span" | "br" | "hr" | "img" | "input" | "area" | "embed" | "source"
                 | "track" | "wbr" | "article" | "aside" | "footer" | "header" | "main" | "nav"
-                | "section",
+                | "section" | "address" | "blockquote" | "figure" | "figcaption" | "hgroup"
+                | "search",
             ) => Mode::InBody,
             _ => return Err(Refusal::ExplicitEnvelope),
         };
@@ -268,7 +269,8 @@ impl Builder<'_, '_> {
             (
                 Mode::InBody,
                 "div" | "span" | "article" | "aside" | "footer" | "header" | "main" | "nav"
-                | "section",
+                | "section" | "address" | "blockquote" | "figure" | "figcaption" | "hgroup"
+                | "search",
             ) => Mode::InBody,
             _ => return Err(Refusal::ExplicitEnvelope),
         };
@@ -305,9 +307,36 @@ impl Builder<'_, '_> {
 
 fn name(raw: &str) -> Option<&'static str> {
     [
-        "html", "head", "body", "div", "span", "base", "link", "meta", "br", "hr", "img", "input",
-        "area", "embed", "source", "track", "wbr", "article", "aside", "footer", "header", "main",
-        "nav", "section",
+        "html",
+        "head",
+        "body",
+        "div",
+        "span",
+        "base",
+        "link",
+        "meta",
+        "br",
+        "hr",
+        "img",
+        "input",
+        "area",
+        "embed",
+        "source",
+        "track",
+        "wbr",
+        "article",
+        "aside",
+        "footer",
+        "header",
+        "main",
+        "nav",
+        "section",
+        "address",
+        "blockquote",
+        "figure",
+        "figcaption",
+        "hgroup",
+        "search",
     ]
     .into_iter()
     .find(|name| raw.eq_ignore_ascii_case(name))
