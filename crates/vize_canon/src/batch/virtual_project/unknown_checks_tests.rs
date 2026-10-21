@@ -60,7 +60,7 @@ fn project_source(name: &str, vue_compiler_options: &str) -> vize_carton::String
 
 fn assert_unknown_checks(content: &str, enabled: bool) {
     let component = content.contains("__vize_global_component_");
-    let props = content.contains("__VizeGlobalHtmlAttrs");
+    let props = content.contains("__VizeComponentGlobalHtmlAttrs");
     let directive = content.contains("__vize_unknown_directive_");
     let open_tail = content.contains(
         "type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & Record<string, unknown> : Record<string, unknown>;",
@@ -93,6 +93,17 @@ fn unknown_checks_follow_vue_compiler_options() {
     assert_unknown_checks(
         project_source("strict", "\"strictTemplates\": true").as_str(),
         true,
+    );
+}
+
+#[test]
+fn unknown_props_reuse_the_program_wide_native_attribute_union() {
+    let content = project_source("shared-native-attrs", "\"checkUnknownProps\": true");
+    assert!(content.contains("__VizeComponentGlobalHtmlAttrs"), "{content}");
+    assert!(!content.contains("type __VizeComponentAttrCamel"), "{content}");
+    assert!(
+        !content.contains("type __VizeComponentNativeAttrNames"),
+        "{content}"
     );
 }
 
@@ -154,7 +165,7 @@ mod originals {
                 .lines()
                 .find(|line| line.starts_with("  type __VizeAllowedFallthroughAttrs")),
             Some(
-                "  type __VizeAllowedFallthroughAttrs<C, __K = Exclude<keyof { [K in keyof __VizeFallthroughProps<C> as string extends K ? never : K]: unknown }, keyof __VizePublicComponentAttrs | keyof __VizeGlobalHtmlAttrs>> = [__K] extends [never] ? {} : { [K in __K & PropertyKey]?: unknown };"
+                "  type __VizeAllowedFallthroughAttrs<C, __K = Exclude<keyof { [K in keyof __VizeFallthroughProps<C> as string extends K ? never : K]: unknown }, keyof __VizePublicComponentAttrs | keyof __VizeComponentGlobalHtmlAttrs>> = [__K] extends [never] ? {} : { [K in __K & PropertyKey]?: unknown };"
             )
         );
         let mut off: Value = serde_json::from_str(CONFIG).unwrap();
@@ -189,7 +200,7 @@ mod originals {
                 .lines()
                 .find(|line| line.starts_with("  type __VizeAllowedFallthroughAttrs")),
             Some(
-                "  type __VizeAllowedFallthroughAttrs<C, __K = Exclude<keyof { [K in keyof __VizeFallthroughProps<C> as string extends K ? never : K]: unknown }, keyof __VizePublicComponentAttrs | keyof __VizeGlobalHtmlAttrs>> = [__K] extends [never] ? {} : { [K in __K & PropertyKey]?: unknown };"
+                "  type __VizeAllowedFallthroughAttrs<C, __K = Exclude<keyof { [K in keyof __VizeFallthroughProps<C> as string extends K ? never : K]: unknown }, keyof __VizePublicComponentAttrs | keyof __VizeComponentGlobalHtmlAttrs>> = [__K] extends [never] ? {} : { [K in __K & PropertyKey]?: unknown };"
             )
         );
     }

@@ -55,10 +55,14 @@ fn unknown_props_off_opens_generated_check_tail() {
 
 #[test]
 fn unknown_props_on_keeps_native_fallthrough_tail() {
+    let code = generate_parent_usage(true);
     assert_eq!(
-        check_tail_line(&generate_parent_usage(true)),
-        "  type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeGlobalHtmlAttrs & __VizeAllowedFallthroughAttrs<C> : __VizePublicComponentAttrs & __VizeGlobalHtmlAttrs;",
+        check_tail_line(&code),
+        "  type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeComponentGlobalHtmlAttrs & __VizeAllowedFallthroughAttrs<C> : __VizePublicComponentAttrs & __VizeComponentGlobalHtmlAttrs;",
     );
+    assert!(!code.contains("type __VizeAttrCamel"), "{code}");
+    assert!(!code.contains("type __VizeNativeAttrNames"), "{code}");
+    assert!(!code.contains("type __VizeGlobalHtmlAttrs"), "{code}");
 }
 
 #[test]
