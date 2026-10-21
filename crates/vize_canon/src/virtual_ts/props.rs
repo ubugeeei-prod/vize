@@ -16,7 +16,7 @@ pub(crate) use options_api::append_default_props;
 use options_api::emit_options_api_props_type;
 use setup_scoped::unused_generic_comment;
 pub(crate) use setup_scoped::{PropsTypeEmission, generate_setup_scoped_props_artifact};
-pub(crate) use template_model::{TemplatePropsModel, generate_props_variables};
+pub(crate) use template_model::{TemplatePropsModel, TemplatePropsScope, generate_props_variables};
 pub(crate) use template_names::collect_template_prop_names;
 use vize_carton::{CompactString, FxHashSet, String, append, cstr};
 use vize_croquis::Croquis;

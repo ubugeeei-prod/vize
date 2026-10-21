@@ -7,7 +7,7 @@ use super::generics::generic_fallback_args;
 use super::setup_scope::define_props_type_requires_setup_scope;
 use crate::virtual_ts::macro_type_mappings::MacroTypeMappings;
 use crate::virtual_ts::props::{
-    OptionsApiPropsSource, PropBindingMappings, PropsSource, PropsTypeEmission,
+    OptionsApiPropsSource, PropBindingMappings, PropsSource, PropsTypeEmission, TemplatePropsScope,
     add_generic_defaults, append_default_props, emitted_model_prop_names, extract_generic_names,
     generate_props_type, generate_props_variables, generate_setup_scoped_props_artifact,
 };
@@ -202,8 +202,7 @@ impl SetupPropsPlan {
         check_props: bool,
         semantic_links: &mut Vec<crate::virtual_ts::VizeSemanticLink>,
         prop_default_key_links: &mut Vec<crate::virtual_ts::VizeSemanticLink>,
-        props_shadow_anchor: Option<&std::ops::Range<usize>>,
-        props_object_binding: &str,
+        template_props_scope: TemplatePropsScope<'_>,
     ) -> vize_carton::FxHashSet<String> {
         let summary = source.summary;
         let mut binding_mappings = PropBindingMappings::new(
@@ -219,8 +218,7 @@ impl SetupPropsPlan {
             &mut binding_mappings,
             summary,
             check_props,
-            props_shadow_anchor,
-            props_object_binding,
+            template_props_scope,
         )
     }
 

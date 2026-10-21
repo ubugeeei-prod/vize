@@ -31,7 +31,6 @@ fn is_define_props_destructure_local(
 pub(super) fn emit_macro_template_prop_bindings(
     ts: &mut String,
     binding_mappings: &mut PropBindingMappings<'_>,
-    summary: &Croquis,
     props_object_binding: &str,
     props_type_ref: &str,
     props: &[PropDefinition],
@@ -40,7 +39,7 @@ pub(super) fn emit_macro_template_prop_bindings(
 ) {
     for prop in props {
         if emitted_names.contains(prop.name.as_str())
-            || should_skip_template_prop_binding(summary, prop.name.as_str())
+            || should_skip_template_prop_binding(binding_mappings.summary(), prop.name.as_str())
         {
             continue;
         }

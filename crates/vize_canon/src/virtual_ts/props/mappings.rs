@@ -124,6 +124,10 @@ impl<'a> PropBindingMappings<'a> {
         });
     }
 
+    pub(super) fn summary(&self) -> &Croquis {
+        self.summary
+    }
+
     pub(super) fn link(&mut self, binding: Range<usize>, property: Range<usize>) {
         self.semantic_links.push(VizeSemanticLink {
             source_range: binding,

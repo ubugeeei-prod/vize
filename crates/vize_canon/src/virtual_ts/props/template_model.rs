@@ -176,6 +176,24 @@ fn collect_with_defaults_default_names(
     (names, undefined)
 }
 
+/// Names and authored anchor for the mapper-owned props object in template scope.
+pub(crate) struct TemplatePropsScope<'a> {
+    props_shadow_anchor: Option<&'a std::ops::Range<usize>>,
+    props_object_binding: &'a str,
+}
+
+impl<'a> TemplatePropsScope<'a> {
+    pub(crate) fn new(
+        props_shadow_anchor: Option<&'a std::ops::Range<usize>>,
+        props_object_binding: &'a str,
+    ) -> Self {
+        Self {
+            props_shadow_anchor,
+            props_object_binding,
+        }
+    }
+}
+
 /// Returns the template names declared only as keyed props locals: the
 /// analyzer never bound them, yet each one is now a template local whose
 /// `satisfies keyof` key reports a name the props do not declare.
@@ -184,9 +202,12 @@ pub(crate) fn generate_props_variables(
     binding_mappings: &mut PropBindingMappings<'_>,
     summary: &Croquis,
     check_props: bool,
-    props_shadow_anchor: Option<&std::ops::Range<usize>>,
-    props_object_binding: &str,
+    scope: TemplatePropsScope<'_>,
 ) -> FxHashSet<String> {
+    let TemplatePropsScope {
+        props_shadow_anchor,
+        props_object_binding,
+    } = scope;
     let mut keyed_names = FxHashSet::default();
     let model = TemplatePropsModel::new(summary);
     if !model.declares_props {
@@ -248,7 +269,6 @@ pub(crate) fn generate_props_variables(
             emit_macro_template_prop_bindings(
                 ts,
                 binding_mappings,
-                summary,
                 props_object_binding,
                 template_props_type_ref,
                 props,
@@ -287,7 +307,6 @@ pub(crate) fn generate_props_variables(
         emit_macro_template_prop_bindings(
             ts,
             binding_mappings,
-            summary,
             props_object_binding,
             template_props_type_ref,
             props,
