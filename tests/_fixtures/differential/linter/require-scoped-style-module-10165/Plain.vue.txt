@@ -1,0 +1,7 @@
+<template>
+  <p class="a">x</p>
+</template>
+
+<style>
+.a { color: red; }
+</style>

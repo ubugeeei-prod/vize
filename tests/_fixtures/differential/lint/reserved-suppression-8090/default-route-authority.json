@@ -6,8 +6,8 @@
   "files": [
     {
       "path": "default-route-successors.json",
-      "bytes": 58051,
-      "sha256": "9dd4a3df61e72455c8d39c76ecca09ac3d3f4a6b648e912600595202f5dee7e6"
+      "bytes": 58219,
+      "sha256": "40ab054456d1e002f8f8d1fd231ef0f70b9981f02dd0ccb07ec422ba83b45be8"
     },
     {
       "path": "default-route-public-before.json",

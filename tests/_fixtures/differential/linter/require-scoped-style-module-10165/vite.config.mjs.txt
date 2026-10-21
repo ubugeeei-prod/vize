@@ -1,0 +1,1 @@
+export default { vue: { linter: { preset: "incremental", rules: { "vue/require-scoped-style": "warn" } } } };

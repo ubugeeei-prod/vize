@@ -21,11 +21,11 @@ Observation {
             LintDiagnostic {
                 rule_name: "vue/require-scoped-style",
                 severity: Warning,
-                message: "Style blocks should use scoped attribute to prevent style leaking",
+                message: "Style blocks should use `scoped` or `module` attribute to prevent CSS leaking",
                 start: 181,
                 end: 188,
                 help: Some(
-                    "Add the 'scoped' attribute to the style block",
+                    "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`",
                 ),
                 labels: [],
                 fix: None,
@@ -42,11 +42,11 @@ Observation {
                 LintDiagnostic {
                     rule_name: "vue/require-scoped-style",
                     severity: Warning,
-                    message: "Style blocks should use scoped attribute to prevent style leaking",
+                    message: "Style blocks should use `scoped` or `module` attribute to prevent CSS leaking",
                     start: 181,
                     end: 188,
                     help: Some(
-                        "Add the 'scoped' attribute to the style block",
+                        "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`",
                     ),
                     labels: [],
                     fix: None,

@@ -5240,7 +5240,7 @@ valid:
   </style>
 
 help:
-  Add the 'scoped' attribute to the style block
+  Add scoped or module to the style block: <style scoped> or <style module>
 === vue/require-toggle-inside-transition
 vue/require-toggle-inside-transition · lint rule
 Require a toggle on the element wrapped by `<transition>`

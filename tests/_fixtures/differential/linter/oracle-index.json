@@ -209,7 +209,7 @@
   },
   "linter/current-api/patina-output-policy-9869-9874": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__patina-output-policy-9869-9874.snap",
-    "sha256": "0e45b5d9615894bcff0e6f9a8d7fefc416c422d55c3cf5e1bafe02d53ca1ba90"
+    "sha256": "1c8675b3d139d206183d51e9d6270d4e2aa9328329bfa200f09903d85ce7980a"
   },
   "linter/current-api/require-symbol-provide-range-9882": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__require-symbol-provide-range-9882.snap",
