@@ -1,0 +1,7 @@
+<script setup lang="ts">
+defineEmits<{ change: [value: unknown] }>();
+</script>
+
+<template>
+  <button type="button"><slot /></button>
+</template>
