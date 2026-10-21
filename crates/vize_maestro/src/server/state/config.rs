@@ -501,11 +501,24 @@ impl ServerState {
     pub fn load_format_config(&self, dir: &Path) {
         let loaded = host::load_project_config_with_source(Some(dir));
         if let Some(source_path) = loaded.source_path.as_deref() {
+            let config_dir = loaded
+                .project_root
+                .clone()
+                .or_else(|| source_path.parent().map(Path::to_path_buf))
+                .unwrap_or_else(|| {
+                    std::env::current_dir().unwrap_or_else(|_| Path::new(".").to_path_buf())
+                });
+            let compiler_entries = loaded.document.compiler_entries();
+            let whitespace = CompilerWhitespacePlan::new(
+                loaded.document.compiler_whitespace(),
+                &compiler_entries,
+                &config_dir,
+            );
             *self.format_options.write() = (
                 format_options_from_config(loaded.document.formatter_profile()),
-                false,
+                whitespace.root_preserves_text(),
             );
-            *self.format_whitespace.write() = Default::default();
+            *self.format_whitespace.write() = whitespace;
             tracing::info!("Loaded format config from {}", source_path.display());
         }
     }
