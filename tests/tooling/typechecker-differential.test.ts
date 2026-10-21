@@ -225,10 +225,10 @@ test("complete legacy-only observations stay in the denominator with zero native
     requiredStages: ["parse", "facts", "emit", "check"],
   });
   assert.deepEqual(acceptance.total, {
-    planned: 69,
+    planned: 70,
     nativeHandled: 0,
     nativeEquivalent: 0,
-    unsupported: 69,
+    unsupported: 70,
     legacyBacked: 0,
     unverified: 0,
   });
