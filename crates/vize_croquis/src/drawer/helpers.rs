@@ -21,6 +21,7 @@ pub use identifiers::{
     extract_identifier_refs_retained_only, extract_identifiers_checked, extract_identifiers_oxc,
     extract_identifiers_retained, retained_binding_declarations, retained_expression_refs,
     retained_handler_refs, retained_parameter_refs, strip_js_comments,
+    strip_js_comments_with_offsets,
 };
 pub use keywords::{is_builtin_directive, is_component_tag, is_keyword};
 pub(in crate::drawer) use slots::extract_retained_slot_prop_bindings;

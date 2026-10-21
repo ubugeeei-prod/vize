@@ -24,6 +24,7 @@ pub(super) enum TemplateContext {
     Interpolation,
 }
 
+#[derive(Debug)]
 pub(super) struct TemplateQuery {
     pub kind: TemplateQueryKind,
     pub context: TemplateContext,

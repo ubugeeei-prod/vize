@@ -52,7 +52,7 @@ pub(super) fn bind_checked_expressions(document: &mut TypeAwareDocument, index: 
     let text = document.content.as_str();
     let mut edits = Vec::new();
     let mut allocator = Allocator::default();
-    let slot_outlets = slot_outlet_statements(text);
+    let expression_owners = expression_owner_statements(text);
     for row in document.mapping.rows() {
         if row.meta == INFERRED_BINDING {
             continue;
@@ -76,10 +76,10 @@ pub(super) fn bind_checked_expressions(document: &mut TypeAwareDocument, index: 
                 continue;
             };
             let trimmed = line.trim_start();
-            let slot_outlet = slot_outlets
+            let expression_owner = expression_owners
                 .iter()
-                .take_while(|slot| slot.start <= generated.start)
-                .filter(|slot| generated.end <= slot.end)
+                .take_while(|owner| owner.start <= generated.start)
+                .filter(|owner| generated.end <= owner.end)
                 .last()
                 .copied();
             // A complete first condition keeps its lexical and narrowing scope.
@@ -128,7 +128,7 @@ pub(super) fn bind_checked_expressions(document: &mut TypeAwareDocument, index: 
                     continue;
                 }
             } else if !condition
-                && slot_outlet.is_none()
+                && expression_owner.is_none()
                 && !guard_header(trimmed)
                 && !line.trim_end().ends_with(";  // handler expression")
                 && !line
@@ -157,10 +157,10 @@ pub(super) fn bind_checked_expressions(document: &mut TypeAwareDocument, index: 
             let name = cstr!("__expr_{index}");
             *index += 1;
             if condition || checked || !guard_header(trimmed) {
-                let declaration_start = slot_outlet.map_or(line_start, |slot| slot.start);
-                let indent = slot_outlet.map_or_else(
+                let declaration_start = expression_owner.map_or(line_start, |owner| owner.start);
+                let indent = expression_owner.map_or_else(
                     || line.get(..line.len() - trimmed.len()).unwrap_or_default(),
-                    |slot| slot.indent,
+                    |owner| owner.indent,
                 );
                 let prefix = cstr!("{indent}const {name} = (");
                 let name_start = indent.len() + "const ".len();
@@ -244,20 +244,22 @@ pub(super) fn bind_checked_expressions(document: &mut TypeAwareDocument, index: 
 }
 
 #[derive(Clone, Copy)]
-struct SlotOutletStatement<'a> {
+struct ExpressionOwnerStatement<'a> {
     start: usize,
     end: usize,
     indent: &'a str,
 }
 
-/// Return the statement that owns a mapped slot-outlet payload expression.
+/// Return statements that own mapped payload expressions.
 ///
-/// Canon writes payloads inside a multiline checked object literal. A probe
-/// declaration cannot be inserted beside an object entry, so it is placed
-/// immediately before the enclosing outlet call instead.
-fn slot_outlet_statements(text: &str) -> Vec<SlotOutletStatement<'_>> {
+/// Canon writes slot payloads and argument-less component `v-bind` values
+/// inside multiline checked object literals. A probe declaration cannot be
+/// inserted beside an object entry, so it is placed immediately before the
+/// enclosing check instead.
+fn expression_owner_statements(text: &str) -> Vec<ExpressionOwnerStatement<'_>> {
     const CHECKED_OPEN: &str = "__vizeSlotOutlet((undefined as unknown as ";
     const INFERRED_OPEN: &str = "var __vize_slot_payload_";
+    const COMPONENT_PROPS_OPEN: &str = "(undefined as unknown as __";
     let mut statements = Vec::new();
     for (marker, terminator) in [(CHECKED_OPEN, ");\n"), (INFERRED_OPEN, ";\n")] {
         for (call_start, _) in text.match_indices(marker) {
@@ -276,9 +278,45 @@ fn slot_outlet_statements(text: &str) -> Vec<SlotOutletStatement<'_>> {
                 continue;
             };
             if indent.bytes().all(|byte| byte == b' ' || byte == b'\t') {
-                statements.push(SlotOutletStatement { start, end, indent });
+                statements.push(ExpressionOwnerStatement { start, end, indent });
             }
         }
+    }
+    for (call_start, _) in text.match_indices(COMPONENT_PROPS_OPEN) {
+        let Some(line_end) = text
+            .get(call_start..)
+            .and_then(|rest| rest.find('\n'))
+            .map(|relative| call_start + relative)
+        else {
+            continue;
+        };
+        let Some(header) = text.get(call_start..line_end) else {
+            continue;
+        };
+        if !header.contains("_Check_") || !header.trim_end().ends_with(")(") {
+            continue;
+        }
+        let Some(before) = text.get(..call_start) else {
+            continue;
+        };
+        let start = before.rfind('\n').map_or(0, |at| at + 1);
+        let Some(indent) = text.get(start..call_start) else {
+            continue;
+        };
+        if !indent.bytes().all(|byte| byte == b' ' || byte == b'\t') {
+            continue;
+        }
+        let mut terminator = String::from("\n");
+        terminator.push_str(indent);
+        terminator.push_str("});\n");
+        let Some(relative_end) = text
+            .get(call_start..)
+            .and_then(|rest| rest.find(terminator.as_str()))
+        else {
+            continue;
+        };
+        let end = call_start + relative_end + terminator.len();
+        statements.push(ExpressionOwnerStatement { start, end, indent });
     }
     statements.sort_unstable_by_key(|statement| statement.start);
     statements
