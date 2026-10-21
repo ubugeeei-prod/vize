@@ -18,10 +18,9 @@
   },
   "cases": [
     {
-      "id": "outside-root-include",
+      "id": "owned-strict",
       "inputs": [
         { "file": "src/Owned.vue", "source": "src/Owned.vue.txt" },
-        { "file": "template/code/App.vue", "source": "template/code/App.vue.txt" },
         { "file": "tsconfig.json", "source": "tsconfig.json.txt" }
       ],
       "diagnostics": [
@@ -34,6 +33,13 @@
           "message": "Parameter 'value' implicitly has an 'any' type."
         }
       ]
+    },
+    {
+      "id": "inferred-defaults",
+      "inputs": [
+        { "file": "template/code/App.vue", "source": "template/code/App.vue.txt" }
+      ],
+      "diagnostics": []
     }
   ]
 }

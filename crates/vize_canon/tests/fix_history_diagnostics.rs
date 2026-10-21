@@ -240,7 +240,7 @@ fn inferred_project_tsconfig_preserves_owned_batch_inputs() {
         "inferred_project_tsconfig_preserves_owned_batch_inputs",
         "f95557dadaab83dc0f7d4a7613bdb7ed4e59d323",
         Some(9718),
-        &["outside-root-include"],
+        &["owned-strict", "inferred-defaults"],
     );
 }
 

@@ -1717,7 +1717,7 @@
       ]
     },
     {
-      "id": "typechecker/inferred-project-tsconfig-9718/outside-root-include",
+      "id": "typechecker/inferred-project-tsconfig-9718/owned-strict",
       "state": "active",
       "targets": [
         "batch"
@@ -1727,13 +1727,13 @@
         "native": null
       },
       "pack": "inferred-project-tsconfig-9718",
-      "case": "outside-root-include",
+      "case": "owned-strict",
       "test": "inferred_project_tsconfig_preserves_owned_batch_inputs",
       "regressionCommit": "f95557dadaab83dc0f7d4a7613bdb7ed4e59d323",
       "sourceRevision": "f95557dadaab83dc0f7d4a7613bdb7ed4e59d323",
       "packReference": {
         "path": "inferred-project-tsconfig-9718/cases.json",
-        "sha256": "147b22acb45c497749203b5fd9e767e47b0db7069792445284f006a4ac70acbf"
+        "sha256": "189a5720586b2d84de0c6dc066f1822d685921a824ebd6d550c7123433d0e1ef"
       },
       "inputs": [
         {
@@ -1742,14 +1742,36 @@
           "sha256": "df401f321b9ca4c07dadf48c83e02f3da7d07eb2d5a5a774d4c1ab446c8fb627"
         },
         {
-          "file": "template/code/App.vue",
-          "path": "inferred-project-tsconfig-9718/template/code/App.vue.txt",
-          "sha256": "4ee23799e710983bff854b21b4885a73802ebe66db92f95ac552fc7a0ef6eb7b"
-        },
-        {
           "file": "tsconfig.json",
           "path": "inferred-project-tsconfig-9718/tsconfig.json.txt",
           "sha256": "2c9f1e78a63f68e4d7161b882e398236b2bfd21c06cb4bf0df257e3c823fd4ae"
+        }
+      ]
+    },
+    {
+      "id": "typechecker/inferred-project-tsconfig-9718/inferred-defaults",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "inferred-project-tsconfig-9718",
+      "case": "inferred-defaults",
+      "test": "inferred_project_tsconfig_preserves_owned_batch_inputs",
+      "regressionCommit": "f95557dadaab83dc0f7d4a7613bdb7ed4e59d323",
+      "sourceRevision": "f95557dadaab83dc0f7d4a7613bdb7ed4e59d323",
+      "packReference": {
+        "path": "inferred-project-tsconfig-9718/cases.json",
+        "sha256": "189a5720586b2d84de0c6dc066f1822d685921a824ebd6d550c7123433d0e1ef"
+      },
+      "inputs": [
+        {
+          "file": "template/code/App.vue",
+          "path": "inferred-project-tsconfig-9718/template/code/App.vue.txt",
+          "sha256": "4ee23799e710983bff854b21b4885a73802ebe66db92f95ac552fc7a0ef6eb7b"
         }
       ]
     },
