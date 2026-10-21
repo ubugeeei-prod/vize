@@ -113,4 +113,18 @@ where the other is required.
 
 This is vocabulary ownership only. It does not change callback sequences,
 parser routes, error mapping, namespace selection or product output. The
-remaining `Namespace` and legacy `ErrorCode` ownership work stays open.
+legacy `ErrorCode` ownership work stays open.
+
+## Shared namespace vocabulary (#6835, partial)
+
+`vize_l1::markup::Namespace` now re-exports the canonical
+`vize_l0::Namespace` used by the Relief AST. L1 tree construction and the
+Armature parser import that namespace through the L1 markup path, so the
+grammar/profile boundary and the legacy AST no longer define or translate
+different namespace enums. Existing `vize_relief::Namespace` values remain the
+same Rust type with the same `Html`, `Svg` and `MathMl` variants, `repr(u8)`
+values and serde representation.
+
+This is namespace vocabulary ownership only. It does not change namespace
+selection, callback sequences, parser routes, AST serialization or product
+output. The legacy `ErrorCode` ownership decision remains open.
