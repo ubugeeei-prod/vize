@@ -303,6 +303,11 @@ function projectVitePlusLintOverrides(lint, label) {
     if (!object(override)) return [];
     const linter = projectVitePlusLintConfig(override);
     if (linter.rules === undefined && linter.ruleOptions === undefined) return [];
+    validateVueOption(
+      linter,
+      { $ref: "#/definitions/LinterConfig" },
+      `${label}.overrides[${index}]`,
+    );
     const files = stringArray(override.files, `${label}.overrides[${index}].files`);
     const ignores =
       override.excludeFiles === undefined

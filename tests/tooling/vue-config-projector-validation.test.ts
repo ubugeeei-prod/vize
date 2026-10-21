@@ -322,6 +322,31 @@ test("scoped host lint rejects vize rules whose file ownership cannot be project
     projectViteConfigSource({ vue }),
     /vue\.lint\.overrides\[0\]\.files: must be an array of strings to project vize\/\* rules/u,
   );
+
+  for (const [rule, option, error] of [
+    [
+      "vize/vue/attribute-hyphenation",
+      "sometimes",
+      /vue\.lint\.overrides\[0\]\.ruleOptions\.vue\/attribute-hyphenation: unsupported native option value/u,
+    ],
+    [
+      "vize/vue/not-a-rule",
+      { enabled: true },
+      /vue\.lint\.overrides\[0\]\.ruleOptions: unknown option "vue\/not-a-rule"/u,
+    ],
+  ] as const) {
+    await assert.rejects(
+      projectViteConfigSource({
+        vue: {
+          lint: {
+            ...vue.lint,
+            overrides: [{ files: ["src/**/*.vue"], rules: { [rule]: ["error", option] } }],
+          },
+        },
+      }),
+      error,
+    );
+  }
 });
 
 test("action names reject ambiguous compatibility aliases at the exact scope", async () => {
