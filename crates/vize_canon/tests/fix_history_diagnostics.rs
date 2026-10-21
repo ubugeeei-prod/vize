@@ -529,6 +529,17 @@ fn dynamic_template_ref_unions_preserve_batch_acceptance() {
     );
 }
 
+#[test]
+fn dynamic_template_ref_union_registry_stays_in_scope() {
+    check_pack(
+        "content-mapper-dynamic-template-ref-scope-10251",
+        "dynamic_template_ref_union_registry_stays_in_scope",
+        "8d83800c727eef953852383d46c7324ccdda53b6",
+        Some(10251),
+        &["conditional-target-stays-in-registry-scope"],
+    );
+}
+
 fn check_pack(
     name: &str,
     test: &str,
@@ -590,7 +601,8 @@ fn check_pack(
             | "content-mapper-const-enum-import"
             | "content-mapper-diagnostics-10187"
             | "content-mapper-dynamic-template-ref-10198"
-            | "content-mapper-dynamic-template-ref-union-10251" => regression,
+            | "content-mapper-dynamic-template-ref-union-10251"
+            | "content-mapper-dynamic-template-ref-scope-10251" => regression,
             _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
         }
     );
