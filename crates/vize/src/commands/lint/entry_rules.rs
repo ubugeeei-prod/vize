@@ -17,7 +17,7 @@ mod rule_option_mapping;
 use self::rule_option_mapping::{
     attribute_hyphenation_style, component_casing, event_name_casing, html_self_closing_options,
     no_mutating_props_options, sfc_element_order_options, v_bind_style,
-    v_on_event_hyphenation_style, v_on_style,
+    v_on_event_hyphenation_style, v_on_style, v_slot_style,
 };
 use super::{LintArgs, ResolvedLintPreset};
 #[cfg(test)]
@@ -161,6 +161,9 @@ impl ResolvedLinterRuleGroups {
                 }
                 if let Some(style) = rule_options.v_on_style() {
                     linter = linter.with_v_on_style(v_on_style(style));
+                }
+                if let Some(style) = rule_options.v_slot_style() {
+                    linter = linter.with_v_slot_style(v_slot_style(style));
                 }
                 if let Some(style) = rule_options.v_bind_style() {
                     linter = linter.with_v_bind_style(v_bind_style(style));

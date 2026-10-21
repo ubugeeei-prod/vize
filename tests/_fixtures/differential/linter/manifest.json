@@ -173,6 +173,33 @@
       }
     },
     {
+      "id": "linter/current-api/v-slot-style-options-6097",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "v-slot-style-options-6097",
+        "files": [
+          {
+            "path": "vite.config.mjs.txt",
+            "role": "issue-authored-config",
+            "sha256": "1d4476941daefa39fac2c5bbb5d7512fd0502f08faa58eb7a8e7240ee1859cc7"
+          },
+          {
+            "path": "Shorthand.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "d7aaa8d98e874bdc395714317c76f4ca8804b7f95c431b1a2cdf195762159851"
+          },
+          {
+            "path": "Longform.vue.txt",
+            "role": "issue-authored-control",
+            "sha256": "e0badc3ad6008fec63eb26e5545ea877e0d6692e31220b5551640dc8e3cff285"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/current-api/solution-tsconfig-type-aware-10176",
       "state": "active",
       "targets": ["lint"],

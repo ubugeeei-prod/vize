@@ -29,6 +29,7 @@ export const configurableRules = new Set([
   "vue/v-bind-style",
   "vue/v-on-event-hyphenation",
   "vue/v-on-style",
+  "vue/v-slot-style",
   "vue/valid-v-on",
   "vue/valid-v-slot",
 ]);

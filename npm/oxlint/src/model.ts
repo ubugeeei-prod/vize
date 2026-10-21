@@ -163,6 +163,7 @@ export interface VizeRuleOptions {
   "vue/v-on-event-hyphenation"?: HyphenationStyle;
   "vue/v-bind-style"?: VBindStyle;
   "vue/v-on-style"?: VOnStyle;
+  "vue/v-slot-style"?: VSlotStyle;
   "vue/attribute-hyphenation"?: HyphenationStyle;
   "vue/valid-v-on"?: { modifiers?: string[] };
   "vue/valid-v-slot"?: { allowModifiers?: boolean };
@@ -201,6 +202,15 @@ export interface HtmlSelfClosingOption {
 export type HyphenationStyle = "always" | "never";
 export type VBindStyle = "shorthand" | "longform";
 export type VOnStyle = "shorthand" | "longform";
+export type VSlotUniformStyle = "shorthand" | "longform";
+export type VSlotStyleValue = VSlotUniformStyle | "v-slot";
+export type VSlotStyle =
+  | VSlotUniformStyle
+  | {
+      atComponent?: VSlotStyleValue;
+      default?: VSlotStyleValue;
+      named?: VSlotUniformStyle;
+    };
 
 export type SfcBlockKind = "template" | "script" | "script-setup" | "style" | "custom";
 

@@ -22,6 +22,10 @@ IDs, and their public JSON Schema entries. The smallest high-value next slice is
 `vue/v-slot-style`: it is strongly recommended, fixable, already implements authored ranges and
 safe fixes, and has both uniform and position-specific behavior internally.
 
+The stacked implementation updates that count to 14 configured mapped rules and leaves 44 mapped
+rules without typed options. It exposes both upstream-compatible uniform values and the richer
+position-specific object while rejecting bare `v-slot` for named slots at the config boundary.
+
 ## Provider boundary
 
 The executable differential provider remains pinned to 10.9.2. Moving it to 10.11.1 changes

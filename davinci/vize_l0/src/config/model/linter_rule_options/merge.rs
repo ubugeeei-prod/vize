@@ -47,6 +47,9 @@ impl ConfigLintRuleOptions {
         if let Some(style) = overlay.v_on_style {
             self.v_on_style = Some(style);
         }
+        if let Some(style) = overlay.v_slot_style {
+            self.v_slot_style = Some(style);
+        }
         if let Some(style) = overlay.attribute_hyphenation {
             self.attribute_hyphenation = Some(style);
         }

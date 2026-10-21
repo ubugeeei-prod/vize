@@ -675,6 +675,35 @@
           "type": "string",
           "enum": ["shorthand", "longform"]
         },
+        "vue/v-slot-style": {
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": ["shorthand", "longform"]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "atComponent": {
+                  "default": "v-slot",
+                  "type": "string",
+                  "enum": ["shorthand", "longform", "v-slot"]
+                },
+                "default": {
+                  "default": "shorthand",
+                  "type": "string",
+                  "enum": ["shorthand", "longform", "v-slot"]
+                },
+                "named": {
+                  "default": "shorthand",
+                  "type": "string",
+                  "enum": ["shorthand", "longform"]
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
         "vue/attribute-hyphenation": {
           "type": "string",
           "enum": ["always", "never"]

@@ -1,0 +1,15 @@
+export default {
+  vue: {
+    linter: {
+      preset: "incremental",
+      rules: { "vue/v-slot-style": "warn" },
+      ruleOptions: {
+        "vue/v-slot-style": {
+          atComponent: "longform",
+          default: "v-slot",
+          named: "longform",
+        },
+      },
+    },
+  },
+};
