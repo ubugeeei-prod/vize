@@ -12,6 +12,10 @@ const paths = [
   ["crates/vize_armature/src/legacy.rs", "davinci/vize_l1/src/dialect/vue.rs"],
   ["davinci/vize_l1_to_l2/src/lower/caps.rs", "davinci/vize_l1/src/dialect/template.rs"],
 ] as const;
+const historicalOwnerBytes = [
+  fs.readFileSync(path.join(repoRoot, paths[0][1]), "utf8"),
+  "pub struct LegacyCaps {\n  pub supports_filters: bool,\n}\n",
+] as const;
 
 function fixture(): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), "vize-dialect-move-"));
@@ -30,16 +34,17 @@ function run(root: string, mode: string): ReturnType<typeof spawnSync> {
 test("capability moves retain exact owner bytes and replay idempotently", () => {
   const root = fixture();
   try {
-    for (const [old, current] of paths)
-      write(root, old, fs.readFileSync(path.join(repoRoot, current), "utf8"));
+    for (const [[old], bytes] of paths.map(
+      (entry, index) => [entry, historicalOwnerBytes[index]] as const,
+    ))
+      write(root, old, bytes);
     const result = run(root, "move");
     assert.equal(result.status, 0, String(result.stderr));
-    for (const [old, current] of paths) {
+    for (const [[old, current], bytes] of paths.map(
+      (entry, index) => [entry, historicalOwnerBytes[index]] as const,
+    )) {
       assert.equal(fs.existsSync(path.join(root, old)), false);
-      assert.deepEqual(
-        fs.readFileSync(path.join(root, current)),
-        fs.readFileSync(path.join(repoRoot, current)),
-      );
+      assert.equal(fs.readFileSync(path.join(root, current), "utf8"), bytes);
     }
     assert.equal(run(root, "move").status, 0);
     for (const [old] of paths) write(root, old, "pub use shared::LegacyCaps;\n");

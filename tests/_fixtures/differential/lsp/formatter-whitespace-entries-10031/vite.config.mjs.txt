@@ -1,0 +1,11 @@
+export default {
+  vue: {
+    compiler: { whitespace: "condense" },
+    entries: [
+      {
+        files: ["src/legacy/**"],
+        compiler: { whitespace: "vue2-preserve" },
+      },
+    ],
+  },
+};

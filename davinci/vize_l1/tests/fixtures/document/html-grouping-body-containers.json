@@ -1,0 +1,58 @@
+[
+  {
+    "name": "address folding, ignored slash and original children",
+    "source": "<!DOCTYPE html><html><head></head><body><ADDRESS Data-X='猫&amp;amp;' data-x=lost disabled/><span>α&amp;β</span><!--z--><br/> tail</ADDRESS><div>end</div></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["address", 2, [["data-x", "猫&amp;"], ["disabled", ""]]], ["span", 3, []], ["br", 3, []], ["div", 2, []]],
+    "nodes": [["body", [[1, "address"], [1, "div"]]], ["address", [[1, "span"], [8, "z"], [1, "br"], [3, " tail"]]], ["span", [[3, "α&β"]]], ["br", []], ["div", [[3, "end"]]]],
+    "frames": [["address", "<ADDRESS Data-X='猫&amp;amp;' data-x=lost disabled/>", "</ADDRESS>", true]]
+  },
+  {
+    "name": "blockquote folding, ignored slash and original children",
+    "source": "<!DOCTYPE html><html><head></head><body><BLOCKQUOTE Data-X='猫&amp;amp;' data-x=lost disabled/><span>α&amp;β</span><!--z--><br/> tail</BLOCKQUOTE><div>end</div></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["blockquote", 2, [["data-x", "猫&amp;"], ["disabled", ""]]], ["span", 3, []], ["br", 3, []], ["div", 2, []]],
+    "nodes": [["body", [[1, "blockquote"], [1, "div"]]], ["blockquote", [[1, "span"], [8, "z"], [1, "br"], [3, " tail"]]], ["span", [[3, "α&β"]]], ["br", []], ["div", [[3, "end"]]]],
+    "frames": [["blockquote", "<BLOCKQUOTE Data-X='猫&amp;amp;' data-x=lost disabled/>", "</BLOCKQUOTE>", true]]
+  },
+  {
+    "name": "figure folding, ignored slash and original children",
+    "source": "<!DOCTYPE html><html><head></head><body><FIGURE Data-X='猫&amp;amp;' data-x=lost disabled/><span>α&amp;β</span><!--z--><br/> tail</FIGURE><div>end</div></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["figure", 2, [["data-x", "猫&amp;"], ["disabled", ""]]], ["span", 3, []], ["br", 3, []], ["div", 2, []]],
+    "nodes": [["body", [[1, "figure"], [1, "div"]]], ["figure", [[1, "span"], [8, "z"], [1, "br"], [3, " tail"]]], ["span", [[3, "α&β"]]], ["br", []], ["div", [[3, "end"]]]],
+    "frames": [["figure", "<FIGURE Data-X='猫&amp;amp;' data-x=lost disabled/>", "</FIGURE>", true]]
+  },
+  {
+    "name": "figcaption folding, ignored slash and original children",
+    "source": "<!DOCTYPE html><html><head></head><body><FIGCAPTION Data-X='猫&amp;amp;' data-x=lost disabled/><span>α&amp;β</span><!--z--><br/> tail</FIGCAPTION><div>end</div></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["figcaption", 2, [["data-x", "猫&amp;"], ["disabled", ""]]], ["span", 3, []], ["br", 3, []], ["div", 2, []]],
+    "nodes": [["body", [[1, "figcaption"], [1, "div"]]], ["figcaption", [[1, "span"], [8, "z"], [1, "br"], [3, " tail"]]], ["span", [[3, "α&β"]]], ["br", []], ["div", [[3, "end"]]]],
+    "frames": [["figcaption", "<FIGCAPTION Data-X='猫&amp;amp;' data-x=lost disabled/>", "</FIGCAPTION>", true]]
+  },
+  {
+    "name": "hgroup folding, ignored slash and original children",
+    "source": "<!DOCTYPE html><html><head></head><body><HGROUP Data-X='猫&amp;amp;' data-x=lost disabled/><span>α&amp;β</span><!--z--><br/> tail</HGROUP><div>end</div></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["hgroup", 2, [["data-x", "猫&amp;"], ["disabled", ""]]], ["span", 3, []], ["br", 3, []], ["div", 2, []]],
+    "nodes": [["body", [[1, "hgroup"], [1, "div"]]], ["hgroup", [[1, "span"], [8, "z"], [1, "br"], [3, " tail"]]], ["span", [[3, "α&β"]]], ["br", []], ["div", [[3, "end"]]]],
+    "frames": [["hgroup", "<HGROUP Data-X='猫&amp;amp;' data-x=lost disabled/>", "</HGROUP>", true]]
+  },
+  {
+    "name": "search folding, ignored slash and original children",
+    "source": "<!DOCTYPE html><html><head></head><body><SEARCH Data-X='猫&amp;amp;' data-x=lost disabled/><span>α&amp;β</span><!--z--><br/> tail</SEARCH><div>end</div></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["search", 2, [["data-x", "猫&amp;"], ["disabled", ""]]], ["span", 3, []], ["br", 3, []], ["div", 2, []]],
+    "nodes": [["body", [[1, "search"], [1, "div"]]], ["search", [[1, "span"], [8, "z"], [1, "br"], [3, " tail"]]], ["span", [[3, "α&β"]]], ["br", []], ["div", [[3, "end"]]]],
+    "frames": [["search", "<SEARCH Data-X='猫&amp;amp;' data-x=lost disabled/>", "</SEARCH>", true]]
+  },
+  {
+    "name": "six grouping containers remain body siblings",
+    "source": "<!DOCTYPE html><html><head></head><body>before<address>0<!--address--></address>tail<blockquote>1<!--blockquote--></blockquote>tail<figure>2<!--figure--></figure>tail<figcaption>3<!--figcaption--></figcaption>tail<hgroup>4<!--hgroup--></hgroup>tail<search>5<!--search--></search>tail</body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["address", 2, []], ["blockquote", 2, []], ["figure", 2, []], ["figcaption", 2, []], ["hgroup", 2, []], ["search", 2, []]],
+    "nodes": [["body", [[3, "before"], [1, "address"], [3, "tail"], [1, "blockquote"], [3, "tail"], [1, "figure"], [3, "tail"], [1, "figcaption"], [3, "tail"], [1, "hgroup"], [3, "tail"], [1, "search"], [3, "tail"]]], ["address", [[3, "0"], [8, "address"]]], ["blockquote", [[3, "1"], [8, "blockquote"]]], ["figure", [[3, "2"], [8, "figure"]]], ["figcaption", [[3, "3"], [8, "figcaption"]]], ["hgroup", [[3, "4"], [8, "hgroup"]]], ["search", [[3, "5"], [8, "search"]]]],
+    "frames": [["address", "<address>", "</address>", false], ["blockquote", "<blockquote>", "</blockquote>", false], ["figure", "<figure>", "</figure>", false], ["figcaption", "<figcaption>", "</figcaption>", false], ["hgroup", "<hgroup>", "</hgroup>", false], ["search", "<search>", "</search>", false]]
+  },
+  {
+    "name": "six explicitly nested grouping containers preserve every parent",
+    "source": "<!DOCTYPE html><html><head></head><body><address><blockquote><figure><figcaption><hgroup><search><span>leaf</span></search></hgroup></figcaption></figure></blockquote></address><div>end</div></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["address", 2, []], ["blockquote", 3, []], ["figure", 4, []], ["figcaption", 5, []], ["hgroup", 6, []], ["search", 7, []], ["span", 8, []], ["div", 2, []]],
+    "nodes": [["body", [[1, "address"], [1, "div"]]], ["address", [[1, "blockquote"]]], ["blockquote", [[1, "figure"]]], ["figure", [[1, "figcaption"]]], ["figcaption", [[1, "hgroup"]]], ["hgroup", [[1, "search"]]], ["search", [[1, "span"]]], ["span", [[3, "leaf"]]], ["div", [[3, "end"]]]],
+    "frames": [["address", "<address>", "</address>", false], ["blockquote", "<blockquote>", "</blockquote>", false], ["figure", "<figure>", "</figure>", false], ["figcaption", "<figcaption>", "</figcaption>", false], ["hgroup", "<hgroup>", "</hgroup>", false], ["search", "<search>", "</search>", false]]
+  }
+]

@@ -16,6 +16,7 @@ packages:
   - "examples/jsx-tsx"
   - "docs"
   - "tests"
+  - "tests/tooling/jsx-vapor-oracle"
   - "tools/benchmarks/scripts"
   - "crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755"
 
@@ -99,6 +100,13 @@ catalogs:
     "@babel/core": "7.29.0"
     "@babel/plugin-syntax-typescript": "7.28.6"
     "@vue/babel-plugin-jsx": "2.0.1"
+
+  # Real vue-jsx-vapor compiler/runtime used only by the mounted JSX semantic
+  # differential oracle. Bump deliberately: a version change requires a
+  # reviewed verdict-inventory update.
+  jsx-vapor-oracle:
+    vue: "3.6.0-rc.10"
+    vue-jsx-vapor: "3.2.26"
 
   # Official legacy Vue compiler baselines used by the formatter's
   # dialect-aware SFC semantic-preservation oracle. These aliases must remain

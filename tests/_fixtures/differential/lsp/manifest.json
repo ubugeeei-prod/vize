@@ -866,6 +866,37 @@
       }
     },
     {
+      "id": "lsp/regression/formatter-whitespace-entries-10031",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "case": {
+        "path": "formatter-whitespace-entries-10031/case.json",
+        "sha256": "763bc1e02f27e2ee056056036fe960a60a14434bdeb78dfe839ea4b467828ebf"
+      },
+      "inputs": {
+        "root": "formatter-whitespace-entries-10031",
+        "files": [
+          {
+            "path": "src/legacy/App.vue.txt",
+            "sha256": "f027d11f3080e9212d52f88955765fddc849b34a836271c1eb19a40f54dfc25d"
+          },
+          {
+            "path": "vite.config.mjs.txt",
+            "sha256": "94f7d393ec06c222ef5fee66cf1824c1d8964d5ed8e5d4933322f66021c7adf8"
+          }
+        ]
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false,
+        "formatting": true
+      }
+    },
+    {
       "id": "lsp/regression/type-aware-slot-outlet-9834",
       "state": "active",
       "targets": [

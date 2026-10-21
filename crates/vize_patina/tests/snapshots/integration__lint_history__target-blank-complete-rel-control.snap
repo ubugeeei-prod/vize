@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "target-blank-complete-rel-control",
+    history: "5e8fab0bb41bd2cce48a7ef66a432418408f52cf",
+    source: "<a href=\"https://example.com\" target=\"_blank\" rel=\"noopener noreferrer\">x</a>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-template-target-blank",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

@@ -85,3 +85,83 @@ fn no_config_and_explicit_condense_keep_the_existing_formatter() {
         );
     }
 }
+
+#[test]
+fn vue2_and_entry_whitespace_keep_preserved_compile_output_across_formatting() {
+    let project = tempfile::tempdir().unwrap();
+    let config = vite_config::source(
+        r#"{
+  "compiler": { "whitespace": "vue2-preserve" },
+  "entries": [
+    { "files": ["src/**"], "compiler": { "whitespace": "condense" } },
+    { "files": ["src/legacy/**"], "compiler": { "whitespace": "preserve" } }
+  ]
+}"#,
+    );
+    fs::create_dir_all(project.path().join("src/legacy")).unwrap();
+    fs::write(project.path().join("vite.config.mjs"), config).unwrap();
+    for file in ["Root.vue", "src/Modern.vue", "src/legacy/Legacy.vue"] {
+        fs::write(project.path().join(file), SOURCE).unwrap();
+    }
+
+    let build = |output: &str| {
+        let result = Command::new(env!("CARGO_BIN_EXE_vize"))
+            .current_dir(project.path())
+            .env("RAYON_NUM_THREADS", "1")
+            .args([
+                "build",
+                "--slow-threshold",
+                "600000",
+                "-o",
+                output,
+                "-f",
+                "js",
+                "Root.vue",
+                "src/Modern.vue",
+                "src/legacy/Legacy.vue",
+            ])
+            .output()
+            .unwrap();
+        assert!(result.status.success(), "{result:?}");
+    };
+    build("before");
+
+    let formatted = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(project.path())
+        .args([
+            "fmt",
+            "--write",
+            "Root.vue",
+            "src/Modern.vue",
+            "src/legacy/Legacy.vue",
+        ])
+        .output()
+        .unwrap();
+    assert!(formatted.status.success(), "{formatted:?}");
+    assert_eq!(
+        fs::read_to_string(project.path().join("Root.vue")).unwrap(),
+        SOURCE
+    );
+    assert_eq!(
+        fs::read_to_string(project.path().join("src/legacy/Legacy.vue")).unwrap(),
+        SOURCE
+    );
+    assert_ne!(
+        fs::read_to_string(project.path().join("src/Modern.vue")).unwrap(),
+        SOURCE
+    );
+
+    build("after");
+    for file in ["Root.js", "src/legacy/Legacy.js"] {
+        assert_eq!(
+            fs::read(project.path().join("before").join(file)).unwrap(),
+            fs::read(project.path().join("after").join(file)).unwrap(),
+            "formatting changed the compiled output of {file}"
+        );
+    }
+    assert_ne!(
+        fs::read(project.path().join("before/src/Modern.js")).unwrap(),
+        fs::read(project.path().join("after/src/Modern.js")).unwrap(),
+        "the condense entry must retain the existing formatter path"
+    );
+}
