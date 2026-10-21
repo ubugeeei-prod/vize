@@ -173,7 +173,7 @@ export function main(argv = process.argv.slice(2)) {
       states: [
         "empty semantic cache first use",
         "filesystem-warm fresh CLI without semantic state",
-        "filesystem-warm fresh CLI with disk semantic state (not implemented)",
+        "filesystem-warm fresh CLI with disk semantic state",
         "live persistent session (not measured)",
       ],
       limits:
@@ -181,7 +181,7 @@ export function main(argv = process.argv.slice(2)) {
       contention:
         "early wrappers replay while other original shard checks may still run; every wrapper wall/phase value is instrumentation only",
       instructionCeilingsChanged: false,
-      incrementalCache: false,
+      incrementalCache: true,
       nativeProfile: custody.nativeProfile,
       nativeMemberAuthority:
         "raw native listFilesOnly/config/member bytes; graph closure unclaimed",
