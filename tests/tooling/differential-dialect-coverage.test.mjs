@@ -128,16 +128,16 @@ void test("typechecker coverage records every pinned authored source dialect", (
   const source = load("typechecker");
   const summary = summarizeDialectCoverage(source.cases);
   assert.deepEqual(summary, {
-    plannedCases: 62,
+    plannedCases: 63,
     verifiedCases: 0,
-    provisionalCases: 61,
-    unknownReadinessCases: 62,
+    provisionalCases: 62,
+    unknownReadinessCases: 63,
     verified: {},
     provisional: {
-      "html-template": 60,
-      ts: 61,
+      "html-template": 61,
+      ts: 62,
       tsx: 3,
-      "vue3-sfc": 61,
+      "vue3-sfc": 62,
     },
   });
   assert.deepEqual(

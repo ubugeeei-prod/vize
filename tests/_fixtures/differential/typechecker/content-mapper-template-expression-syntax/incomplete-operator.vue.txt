@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const count = 1;
+</script>
+
+<template>
+  <p :title="count +">{{ count }}</p>
+</template>

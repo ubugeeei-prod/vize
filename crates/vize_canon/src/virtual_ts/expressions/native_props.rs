@@ -219,7 +219,12 @@ pub(super) fn generate_native_prop_statement(
     mappings: &mut Vec<VizeMapping>,
     expr: &TemplateExpression,
     native_prop: &NativePropBinding,
-    (generated_expression, mapped_start, mapped_len): (&str, usize, usize),
+    (generated_expression, mapped_start, mapped_len, map_recovery_terminator): (
+        &str,
+        usize,
+        usize,
+        bool,
+    ),
     template_offset: u32,
     indent: &str,
 ) {
@@ -251,6 +256,8 @@ pub(super) fn generate_native_prop_statement(
     let value_full_end = ts.len();
     let value_gen_end = value_gen_start + mapped_start + mapped_len;
     ts.push_str(");\n");
+    let terminator_start = value_full_end;
+    let terminator_end = terminator_start + 2;
     let gen_stmt_end = if value_gen_end < value_full_end {
         value_gen_end
     } else {
@@ -262,27 +269,38 @@ pub(super) fn generate_native_prop_statement(
         expr.start
     );
 
+    let mut sub_spans = vec![
+        VizeSubSpan {
+            gen_range: check_name_start..check_name_end,
+            src_range: name_src_start..name_src_end,
+        },
+        VizeSubSpan {
+            gen_range: value_gen_start..value_gen_end,
+            src_range: value_src_start..value_src_end,
+        },
+        VizeSubSpan {
+            // TypeScript anchors an assignment mismatch on this synthetic
+            // wrapper. Keep it after the initializer because batch offset
+            // mapping treats a sub-span end as inclusive; the shared
+            // boundary must continue to prefer the authored expression.
+            gen_range: check_anchor_start..check_anchor_end,
+            src_range: name_src_start..name_src_end,
+        },
+    ];
+    if map_recovery_terminator {
+        sub_spans.push(VizeSubSpan {
+            // TypeScript can recover an authored malformed expression at
+            // the generated close-paren or semicolon. Keep that recovery
+            // diagnostic on the closing attribute quote instead of
+            // leaking an unmapped virtual-file location (#10188).
+            gen_range: terminator_start..terminator_end,
+            src_range: value_src_end..value_src_end.saturating_add(1),
+        });
+    }
     mappings.push(VizeMapping {
         gen_range: gen_stmt_start..gen_stmt_end,
         src_range: name_src_start..name_src_end,
-        sub_spans: vec![
-            VizeSubSpan {
-                gen_range: check_name_start..check_name_end,
-                src_range: name_src_start..name_src_end,
-            },
-            VizeSubSpan {
-                gen_range: value_gen_start..value_gen_end,
-                src_range: value_src_start..value_src_end,
-            },
-            VizeSubSpan {
-                // TypeScript anchors an assignment mismatch on this synthetic
-                // wrapper. Keep it after the initializer because batch offset
-                // mapping treats a sub-span end as inclusive; the shared
-                // boundary must continue to prefer the authored expression.
-                gen_range: check_anchor_start..check_anchor_end,
-                src_range: name_src_start..name_src_end,
-            },
-        ],
+        sub_spans,
     });
 }
 

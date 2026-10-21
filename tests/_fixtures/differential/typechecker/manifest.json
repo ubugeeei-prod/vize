@@ -3348,6 +3348,58 @@
           }
         ]
       }
+    },
+    {
+      "id": "typechecker/content-mapper-template-expression-syntax/authored-errors",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "content-mapper-template-expression-syntax",
+      "case": "authored-errors",
+      "test": "template_expression_syntax_preserves_complete_authored_diagnostics",
+      "regressionCommit": "a5ae4d313fa333c8bc7168d5da4acf3dc2bb8ee3",
+      "sourceRevision": "a5ae4d313fa333c8bc7168d5da4acf3dc2bb8ee3",
+      "packReference": {
+        "path": "content-mapper-template-expression-syntax/cases.json",
+        "sha256": "89e9ab778a7db625507d0a8c1a4b27ae7931c281da00a12a1c13d4369cd6f46e"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "content-mapper-template-expression-syntax/tsconfig.json.txt",
+          "sha256": "7c6274704a8448bca44cb4135f01b201824728fb5cfa2a8234dce61fe7d0003f"
+        },
+        {
+          "file": "src/IncompleteOperator.vue",
+          "path": "content-mapper-template-expression-syntax/incomplete-operator.vue.txt",
+          "sha256": "8cc57c55436c16399d829fc7522cbceee37d7d517b8e0e8493614f00d894c08d"
+        },
+        {
+          "file": "src/InvalidCharacter.vue",
+          "path": "content-mapper-template-expression-syntax/invalid-character.vue.txt",
+          "sha256": "2591804487f96619a29ac061af3e8c60184fb639285555272fb212fa0b246102"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }
