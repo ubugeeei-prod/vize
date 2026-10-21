@@ -3,8 +3,8 @@ use std::{error::Error, fs, path::Path};
 use vize_glyph::{FormatOptions, format_sfc};
 
 #[test]
-fn directive_calls_observe_actual_indentation_and_three_public_fixed_points(
-) -> Result<(), Box<dyn Error>> {
+fn directive_calls_observe_actual_indentation_and_three_public_fixed_points()
+-> Result<(), Box<dyn Error>> {
     let corpus: serde_json::Value = serde_json::from_str(include_str!(
         "../../../tests/_fixtures/differential/formatter-regressions/expression-print-width-7876/corpus.json"
     ))?;
