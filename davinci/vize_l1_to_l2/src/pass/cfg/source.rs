@@ -14,14 +14,8 @@ use vize_l0::fact::{FactConsumer, FactManager};
 use super::ComplexityFacts;
 use super::group::{TEMPLATE_FACTS, TemplateComplexityGroup};
 
-/// Default warning threshold on own cyclomatic complexity: a component
-/// warns when its cyclomatic complexity is **strictly above** this value
-/// (the full-corpus p95, `complexity-metrics.md`).
-pub const CYCLOMATIC_WARN_ABOVE: u32 = 11;
-
-/// Default warning threshold on own cognitive complexity, strictly above
-/// (the full-corpus p95, `complexity-metrics.md`).
-pub const COGNITIVE_WARN_ABOVE: u32 = 16;
+#[cfg(test)]
+use super::{COGNITIVE_WARN_ABOVE, CYCLOMATIC_WARN_ABOVE};
 
 /// Consumer `C`'s read of the facts of the template occupying
 /// `source[start..end]`, spans relative to `source`; `None` when the range
@@ -43,14 +37,6 @@ pub fn template_facts<C: FactConsumer>(
     let view = manager.prepare::<C>(template).ok()?;
     let table = view.get::<TemplateComplexityGroup>().ok()?;
     table.get(&()).cloned().map(|facts| facts.shifted(start))
-}
-
-impl ComplexityFacts {
-    /// Whether the own scores exceed the default thresholds.
-    #[must_use]
-    pub const fn exceeds_default_thresholds(&self) -> bool {
-        self.cyclomatic > CYCLOMATIC_WARN_ABOVE || self.cognitive > COGNITIVE_WARN_ABOVE
-    }
 }
 
 #[expect(

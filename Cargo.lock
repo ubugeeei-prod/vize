@@ -4715,6 +4715,7 @@ name = "vize_l2"
 version = "0.474.0"
 dependencies = [
  "oxc_ast",
+ "oxc_ast_visit",
  "oxc_span",
  "vize_l0",
  "vize_l1",
