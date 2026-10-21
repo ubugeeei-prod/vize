@@ -23,6 +23,7 @@ use vize_croquis::{
 
 mod prop_entry;
 pub(crate) use prop_entry::entry_sub_spans as prop_entry_sub_spans;
+pub(crate) const NAMED_PROP_DIAGNOSTIC_MARKER: &str = "@ts-ignore Named prop diagnostics";
 
 /// An inference-only argument uses the same authored ordering and lexical
 /// spread binding authority as the mapped prop checker and slot resolver.

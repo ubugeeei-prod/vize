@@ -489,6 +489,20 @@ fn content_mapper_preserves_emit_with_nuxt_pattern_injections() {
     );
 }
 
+#[test]
+fn content_mapper_diagnostics_keep_single_public_owners() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "content-mapper-diagnostics-10187",
+        "content_mapper_diagnostics_keep_single_public_owners",
+        "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
+        Some(10187),
+        &["duplicate-and-missing-props"],
+    );
+}
+
 fn native_fixture_runtime_disabled() -> bool {
     std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some()
 }
@@ -586,6 +600,7 @@ fn check_pack(
             | "dynamic-directive-expression-mapping-10182"
             | "content-mapper-template-expression-syntax"
             | "content-mapper-const-enum-import"
+            | "content-mapper-diagnostics-10187"
             | "content-mapper-dynamic-template-ref-10198"
             | "content-mapper-dynamic-template-ref-union-10251" => regression,
             _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",

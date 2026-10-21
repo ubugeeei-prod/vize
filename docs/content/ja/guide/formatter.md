@@ -114,6 +114,7 @@ export default defineConfig({}).withVue({
 | `--tab-width`                      | インデント 1 段あたりのスペース数を指定します。                 |
 | `--use-tabs`                       | スペースの代わりにタブでインデントします。                      |
 | `--single-quote`                   | ダブルクォートの代わりにシングルクォートを使います。            |
+| `--trailing-comma`                 | 末尾のカンマを `all`、`es5`、`none` から選びます。               |
 | `--no-semi`                        | 文末のセミコロンを省略します。                                  |
 | `--sort-attributes`                | テンプレートとブロックタグの属性を並べ替えます。                |
 | `--single-attribute-per-line`      | 属性を 1 行に 1 つずつ書きます。                                |
@@ -171,6 +172,10 @@ Node の native `formatSfc` API でも、Prettier 移行用の 5 つの真偽値
 スクリプトの引用符ポリシーも設定、CLI の直接上書き、Node で共有されます。
 `--jsx-single-quote[=false]` は `jsxSingleQuote`、
 `--quote-props <as-needed|consistent|preserve>` は `quoteProps` に対応します。
+
+末尾のカンマのポリシーも同じように共有されます。
+`--trailing-comma <all|es5|none>` は、型付きの Node・設定オプション
+`trailingComma` に対応します。CLI と Node の明示値は、選択したプリセットより優先されます。
 
 ## コンパクトなアプリケーションコード
 

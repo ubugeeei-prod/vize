@@ -557,6 +557,8 @@ export interface FormatOptionsNapi {
   jsxSingleQuote?: boolean;
   /** Change when object properties are quoted. */
   quoteProps?: "as-needed" | "consistent" | "preserve";
+  /** Change where trailing commas are printed. */
+  trailingComma?: "all" | "es5" | "none";
   /** Layout line endings; auto follows the first source terminator. */
   endOfLine?: EndOfLineNapi;
   sortAttributes?: boolean;

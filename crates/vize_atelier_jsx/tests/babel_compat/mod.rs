@@ -73,6 +73,8 @@ impl fmt::Display for Verdict {
 #[derive(Deserialize)]
 pub struct Corpus {
     pub oracle: OraclePin,
+    #[serde(rename = "dialectCoverage")]
+    pub dialect_coverage: DialectCoverage,
     pub cases: Vec<Case>,
 }
 
@@ -82,6 +84,23 @@ pub struct OraclePin {
     pub plugin: std::string::String,
     #[serde(rename = "pluginVersion")]
     pub plugin_version: std::string::String,
+}
+
+/// The case-ledger claim attached to the executable Babel oracle corpus.
+#[derive(Deserialize)]
+pub struct DialectCoverage {
+    pub state: std::string::String,
+    #[serde(rename = "registryRef")]
+    pub registry_ref: Option<std::string::String>,
+    pub evidence: Vec<DialectEvidence>,
+}
+
+/// The pinned oracle selector that establishes the Babel JSX dialect.
+#[derive(Deserialize)]
+pub struct DialectEvidence {
+    pub kind: std::string::String,
+    pub dialects: Vec<std::string::String>,
+    pub selector: std::string::String,
 }
 
 /// One corpus case: a JSX/TSX input plus the babel options it is compiled with.

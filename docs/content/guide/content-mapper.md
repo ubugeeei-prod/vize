@@ -120,12 +120,14 @@ the protocol instead:
 </template>
 ```
 
-- `<!-- @vue-expect-error -->` suppresses TypeScript diagnostics on the next template line and
+- `<!-- @vue-expect-error -->` suppresses TypeScript diagnostics on the next template node and
   reports `vize4: Unused '@vue-expect-error' directive` when nothing was suppressed.
 - `<!-- @vue-ignore -->` suppresses silently.
 
-A directive applies to the rest of its own line when content follows the comment, otherwise to the
-next non-empty line.
+A directive applies to the next template node, whether that node follows the comment on the same
+line or after whitespace. On an element, `@vue-expect-error` and `@vue-ignore` cover the opening
+tag, not its children. Put the comment directly before an interpolation or another child node to
+target that child. `@vue-skip` covers the entire target-node subtree.
 
 Placed directly before an SFC block, a directive covers that block's opening tag, such as a repeated
 `<style module="name">` or a `generic` attribute; `<!-- @vue-skip -->` covers the whole block.

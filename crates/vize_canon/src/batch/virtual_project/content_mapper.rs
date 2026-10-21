@@ -5,7 +5,7 @@ use std::path::Path;
 
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_atelier_sfc::{SfcError, SfcParseOptions, parse_sfc};
-use vize_l0::{ToCompactString, config::VueVersion};
+use vize_l0::{String as CompactString, ToCompactString, config::VueVersion};
 
 use crate::batch::Diagnostic;
 use crate::batch::error::CorsaResult;
@@ -29,7 +29,7 @@ pub use protocol::{
 
 #[path = "content_mapper_directives.rs"]
 mod directives;
-use directives::{sfc_diagnostic_directives, with_generic_echoes};
+use directives::{sfc_diagnostic_directives, with_component_prop_echoes, with_generic_echoes};
 
 #[path = "content_mapper_component_name.rs"]
 mod component_name;
@@ -191,6 +191,8 @@ pub fn generate_vue_content_mapper_transform_with_options(
         },
     )?;
 
+    publicize_generated_diagnostic_helpers(&mut code, &mappings);
+
     if use_tsx {
         prepend_vue_jsx_reference(
             &mut code,
@@ -213,10 +215,11 @@ pub fn generate_vue_content_mapper_transform_with_options(
         diagnostic_directives: (!authored.is_derived())
             .then(|| {
                 let echoes = GenericCopies::find(&code, &mappings, content, &descriptor);
-                with_generic_echoes(
+                let directives = with_generic_echoes(
                     sfc_diagnostic_directives(content, &descriptor, &spans),
                     echoes.as_ref(),
-                )
+                );
+                with_component_prop_echoes(directives, &code, &mappings)
             })
             .flatten(),
         mappings: spans,
@@ -227,6 +230,67 @@ pub fn generate_vue_content_mapper_transform_with_options(
             .collect(),
         text: code,
     })
+}
+
+/// Give generated component-input helpers public display names before the
+/// upstream host parses the virtual module. The replacements are byte-identical
+/// so every projection offset stays stable.
+///
+/// Script `/// <reference types>` values are copied into the generated prefix
+/// without mappings. Treat those complete lines as authored ranges as well, so
+/// a package that happens to use an internal helper name is never rewritten.
+fn publicize_generated_diagnostic_helpers(code: &mut CompactString, mappings: &[VizeMapping]) {
+    let mut ranges = mappings
+        .iter()
+        .map(|mapping| mapping.gen_range.clone())
+        .collect::<Vec<_>>();
+    ranges.extend(reference_type_directive_ranges(code));
+    ranges.sort_unstable_by_key(|range| range.start);
+    let mut authored_ranges: Vec<Range<usize>> = Vec::new();
+    for range in ranges {
+        if let Some(last) = authored_ranges.last_mut()
+            && range.start <= last.end
+        {
+            last.end = last.end.max(range.end);
+        } else {
+            authored_ranges.push(range);
+        }
+    }
+
+    for (internal, display) in [
+        ("__VizeComponentCheckProps", "ComponentPropsForTemplate"),
+        ("__VizePublicComponentAttrs", "VueTemplatePublicAttrsType"),
+    ] {
+        debug_assert_eq!(internal.len(), display.len());
+        let occurrences = code
+            .match_indices(internal)
+            .map(|(start, _)| start)
+            .collect::<Vec<_>>();
+        for start in occurrences {
+            let end = start + internal.len();
+            let candidate = start..end;
+            let next = authored_ranges.partition_point(|range| range.end <= candidate.start);
+            let authored = authored_ranges
+                .get(next)
+                .is_some_and(|range| candidate.start < range.end && range.start < candidate.end);
+            if !authored {
+                code.replace_range(candidate, display);
+            }
+        }
+    }
+}
+
+fn reference_type_directive_ranges(code: &str) -> Vec<Range<usize>> {
+    let mut start = 0;
+    code.split_inclusive('\n')
+        .filter_map(|line| {
+            let range = start..start + line.len();
+            start = range.end;
+            line.trim_start()
+                .starts_with("/// <reference types=")
+                .then_some(range)
+        })
+        .collect()
 }
 
 fn sfc_parse_diagnostic(source: &str, error: &SfcError) -> ContentMapperDiagnostic {
@@ -329,11 +393,7 @@ fn protocol_spans(
             .map_or(generated.len(), |next| next.generated.start);
         let delimiters = synthetic_delimiters(generated, &candidate.generated)
             .filter(|(open, close)| previous_end <= *open && *close < next_start);
-        let target = delimiters
-            .and_then(|(_, close)| {
-                model_value(source, generated, candidate, accepted.get(index + 1), close)
-            })
-            .unwrap_or(&candidate.original);
+        let target = &candidate.original;
         let delimiter = |at: usize| {
             ContentMapperSpan([
                 at,
@@ -356,22 +416,6 @@ fn protocol_spans(
         spans.extend(delimiters.map(|(_, close)| delimiter(close)));
     }
     spans
-}
-
-/// A `v-model` key directly followed by its mapped value: the props-object
-/// mismatch reports on the model expression, the per-prop check on `v-model`.
-fn model_value<'a>(
-    source: &str,
-    generated: &str,
-    key: &SpanCandidate,
-    next: Option<&'a SpanCandidate>,
-    close: usize,
-) -> Option<&'a Range<usize>> {
-    let next = next?;
-    let model = source.get(key.original.clone())?.starts_with("v-model")
-        || source.get(..key.original.start)?.ends_with("v-model:");
-    (model && generated.get(close + 1..next.generated.start) == Some(": "))
-        .then_some(&next.original)
 }
 
 /// The generated quotes around a mapped name, when no authored span owns them.
