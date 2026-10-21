@@ -52,12 +52,18 @@ pub(super) fn generate_vue_virtual_ts(
     codegen_options.check_options =
         super::vue_compiler_comments::apply(source, codegen_options.check_options);
     // All consumers resolve per-SFC metadata after project and top-level options.
-    let options = &super::build::virtual_ts_options_for_descriptor(
+    let mut descriptor_options = super::build::virtual_ts_options_for_descriptor(
         options,
         descriptor,
         codegen_options.check_options.strict_css_modules,
         codegen_options.check_options.resolve_style_imports,
     );
+    if codegen_options.inline_auto_import_stubs {
+        descriptor_options
+            .auto_import_stubs
+            .clone_from(&options.auto_import_stubs);
+    }
+    let options = &descriptor_options;
     let allocator = Allocator::new();
     let mut diagnostics = Vec::new();
 

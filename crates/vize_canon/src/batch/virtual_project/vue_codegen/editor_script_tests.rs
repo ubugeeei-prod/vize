@@ -36,6 +36,7 @@ fn generate(source: &str, editor: bool) -> GeneratedVueFile {
             experimental_patterned_template: false,
             experimental_strict_slot_children: false,
             hoist_shared_preamble: false,
+            inline_auto_import_stubs: false,
             omit_vite_client_reference: false,
             runtime_prop_resolve_cache: None,
         },

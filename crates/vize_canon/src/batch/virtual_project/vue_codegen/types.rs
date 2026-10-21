@@ -42,6 +42,10 @@ pub(in crate::batch::virtual_project) struct VueCodegenOptions<'a> {
     /// Hoist shared helpers to the batch ambient `.d.ts`; socket sessions keep
     /// them inline because they do not materialize that file.
     pub(in crate::batch::virtual_project) hoist_shared_preamble: bool,
+    /// Keep configured auto-import declarations in this generated module.
+    /// Batch projects materialize them once in their shared ambient file;
+    /// standalone content mappers have no such file and must retain them.
+    pub(in crate::batch::virtual_project) inline_auto_import_stubs: bool,
     /// Content-mapper transforms can run outside Vite projects.
     pub(in crate::batch::virtual_project) omit_vite_client_reference: bool,
     /// Batch generation can share imported runtime prop/default resolution
