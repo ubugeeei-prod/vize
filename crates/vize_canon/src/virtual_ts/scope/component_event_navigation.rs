@@ -7,7 +7,7 @@ use vize_croquis::{Croquis, ScopeKind};
 
 use crate::virtual_ts::{
     component_reference::component_binding_reference,
-    expressions::rewrite_reserved_template_binding, types::VizeMapping,
+    expressions::rewrite_reserved_template_binding, helpers::to_camel_case, types::VizeMapping,
 };
 
 use super::component_navigation::{is_ts_identifier, push_ts_single_quoted_literal};
