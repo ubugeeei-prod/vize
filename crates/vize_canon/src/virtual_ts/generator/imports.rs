@@ -251,7 +251,7 @@ fn record_type_query_root(name: &TSTypeQueryExprName<'_>, refs: &mut FxHashSet<C
 /// Extract imported identifier names from an import statement string.
 /// Handles `import { a, b as c } from "..."` and `import D from "..."`.
 /// Returns the local names (e.g., `["a", "c", "D"]`).
-pub(super) fn extract_declared_name(stub: &str) -> Option<&str> {
+pub(crate) fn extract_declared_name(stub: &str) -> Option<&str> {
     for prefix in [
         "declare function ",
         "declare const ",

@@ -5,8 +5,9 @@ use vize_atelier_core::{
 };
 use vize_atelier_sfc::{SfcDescriptor, script::resolve_template_used_identifiers};
 use vize_carton::{Allocator, FxHashSet, String as CompactString};
+use vize_croquis::macros::DEFINE_ART;
 
-use crate::virtual_ts::VirtualTsOptions;
+use crate::virtual_ts::{extract_declared_name, VirtualTsOptions};
 
 const MUSEA_DEFINE_ART_STUB: &str =
     "declare function defineArt(source: string, options?: Record<string, any>): void;";
@@ -25,7 +26,7 @@ pub(super) fn apply_musea_art_globals(path: &Path, options: &mut VirtualTsOption
         && !options
             .auto_import_stubs
             .iter()
-            .any(|stub| stub.contains("defineArt"))
+            .any(|stub| extract_declared_name(stub) == Some(DEFINE_ART))
     {
         options.auto_import_stubs.push(MUSEA_DEFINE_ART_STUB.into());
     }

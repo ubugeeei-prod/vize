@@ -59,7 +59,7 @@ mod types;
 #[cfg(test)]
 mod unknown_props_tests;
 
-pub(crate) use generator::generate_virtual_ts_with_offsets_and_checks;
+pub(crate) use generator::{extract_declared_name, generate_virtual_ts_with_offsets_and_checks};
 pub use generator::setup_helpers::owned_emit_navigation_source_ranges;
 pub use generator::{
     entry::generate_virtual_ts_with_split_offsets, generate_virtual_ts,

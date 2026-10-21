@@ -52,6 +52,7 @@ use self::global_components::{GlobalComponentDiagnostics, GlobalComponentPlan};
 use self::imports::{
     collect_imported_names, emit_reference_path_directives, emit_reference_type_directives,
 };
+pub(crate) use self::imports::extract_declared_name;
 pub use self::legacy_vue2::generate_virtual_ts_with_offsets_legacy_vue2;
 use self::macro_anchors::emit_setup_scope_macro_anchors;
 use self::options_api::{analyze_options_api_script, generate_options_api_variables};

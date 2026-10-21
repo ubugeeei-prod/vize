@@ -1,6 +1,7 @@
 use std::path::Path;
 
-use super::generate_vue_content_mapper_transform;
+use super::{apply_musea_art_globals, generate_vue_content_mapper_transform};
+use crate::virtual_ts::VirtualTsOptions;
 
 const DEFINE_ART_STUB: &str =
     "declare function defineArt(source: string, options?: Record<string, any>): void;";
@@ -47,5 +48,26 @@ defineArt("./MyCard.vue", { title: "MyCard" });
         0,
         "ordinary Vue files must not gain Musea globals:\n{}",
         ordinary.text,
+    );
+}
+
+#[test]
+fn similarly_named_project_stub_does_not_suppress_define_art() {
+    let mut options = VirtualTsOptions::default();
+    options
+        .auto_import_stubs
+        .push("declare const defineArtboard: unknown;".into());
+
+    apply_musea_art_globals(Path::new("MyCard.art.vue"), &mut options);
+    apply_musea_art_globals(Path::new("MyCard.art.vue"), &mut options);
+
+    assert_eq!(
+        options
+            .auto_import_stubs
+            .iter()
+            .filter(|stub| stub.as_str() == DEFINE_ART_STUB)
+            .count(),
+        1,
+        "only an exact defineArt declaration may suppress the Musea global",
     );
 }
