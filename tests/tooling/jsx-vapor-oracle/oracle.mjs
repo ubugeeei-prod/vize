@@ -109,12 +109,42 @@ const linkedRuntime = transformSync(runtimeSource, {
     }),
   ],
 }).code;
-const JsxVapor = compileFunction(`${linkedRuntime}\nreturn { setNodes };`, ["__Vue"], {
-  filename: "vue-jsx-vapor.runtime.mjs",
-})(Vue);
+const JsxVapor = compileFunction(
+  `${linkedRuntime}\nreturn {
+    VaporFor,
+    createComponent,
+    createNodes,
+    createProxyComponent,
+    defineVaporComponent,
+    defineVaporHmrComponent,
+    defineVaporSSRComponent,
+    isBlock,
+    normalizeNode,
+    normalizeVaporSlots,
+    setNodes,
+  };`,
+  ["__Vue"],
+  { filename: "vue-jsx-vapor.runtime.mjs" },
+)(Vue);
 const installed = {
   packageVersion: require("vue-jsx-vapor/package.json").version,
   vueVersion: require("vue/package.json").version,
+};
+
+const componentFixtures = {
+  FixtureCard: Vue.defineComponent({
+    props: {
+      title: { type: String, required: true },
+    },
+    setup(props, { slots }) {
+      return () =>
+        Vue.h("article", { "data-fixture": "card" }, [
+          Vue.h("h2", null, ["Title:", props.title]),
+          "|",
+          Vue.h("div", { class: "slot" }, slots.default?.({ suffix: "slot" })),
+        ]);
+    },
+  }),
 };
 
 function linkedFunction(code, functionName, state) {
@@ -151,9 +181,11 @@ function linkedFunction(code, functionName, state) {
       }),
     ],
   }).code;
-  return compileFunction(`${linked}\nreturn ${functionName};`, ["Vue", "JsxVapor", "state"], {
-    filename: `${functionName}.generated.mjs`,
-  })(Vue, JsxVapor, state);
+  return compileFunction(
+    `${linked}\nreturn ${functionName};`,
+    ["Vue", "JsxVapor", "state", "FixtureCard"],
+    { filename: `${functionName}.generated.mjs` },
+  )(Vue, JsxVapor, state, componentFixtures.FixtureCard);
 }
 
 function observeChildren(parent) {
@@ -224,6 +256,11 @@ async function trace(code, functionName, spec, runtime = "vapor") {
       ? Vue.defineVaporComponent({ setup: () => render({}) })
       : { setup: () => () => render({}, []) };
   const app = runtime === "vapor" ? Vue.createVaporApp(component) : Vue.createApp(component);
+  if (runtime === "vapor" && spec.componentFixtures?.length) app.use(Vue.vaporInteropPlugin);
+  for (const fixture of spec.componentFixtures ?? []) {
+    assert.ok(Object.hasOwn(componentFixtures, fixture), `${spec.id}: known component fixture`);
+    app.component(fixture, componentFixtures[fixture]);
+  }
   const warnings = [];
   app.config.warnHandler = (message) => warnings.push(message);
   app.config.errorHandler = (error) => warnings.push(String(error));
