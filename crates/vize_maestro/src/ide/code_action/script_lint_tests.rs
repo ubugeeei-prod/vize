@@ -138,7 +138,7 @@ fn script_suppression_edits_preserve_crlf_indentation_and_merge_rules() {
         "<script setup>\r\nif (enabled) {\r\n  const value = source;\r\n}\r\n</script>\r\n";
     let block_start = source.find("if (enabled)").unwrap();
     let block_end = source.find("\r\n</script>").unwrap();
-    let block_content = &source[block_start..block_end];
+    let block_content = source.get(block_start..block_end).unwrap();
     let relative_start = block_content.find("const value").unwrap();
 
     let edit = script_suppression_edit(
@@ -165,7 +165,7 @@ fn script_suppression_edits_preserve_crlf_indentation_and_merge_rules() {
     );
     let block_start = with_directive.find("if (enabled)").unwrap();
     let block_end = with_directive.find("\r\n</script>").unwrap();
-    let block_content = &with_directive[block_start..block_end];
+    let block_content = with_directive.get(block_start..block_end).unwrap();
     let relative_start = block_content.find("const value").unwrap();
     let edit = script_suppression_edit(
         &with_directive,
