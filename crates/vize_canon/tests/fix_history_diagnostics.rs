@@ -515,6 +515,17 @@ fn dynamic_template_refs_preserve_batch_acceptance() {
     );
 }
 
+#[test]
+fn dynamic_template_ref_unions_preserve_batch_acceptance() {
+    check_pack(
+        "content-mapper-dynamic-template-ref-union-10251",
+        "dynamic_template_ref_unions_preserve_batch_acceptance",
+        "6817c853ca1740fd1070c0ec462c0d457f339c2c",
+        Some(10251),
+        &["conditional-component-and-native-targets"],
+    );
+}
+
 fn check_pack(
     name: &str,
     test: &str,
