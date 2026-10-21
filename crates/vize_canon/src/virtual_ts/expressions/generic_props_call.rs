@@ -9,7 +9,7 @@ use super::super::helpers::to_safe_identifier_fragment;
 use super::super::scope::{append_chained_vif_guard_close, append_chained_vif_guard_open};
 use super::super::types::VizeMapping;
 use super::component_props::ComponentPropSource;
-use super::props_literal::append_props_literal;
+use super::props_literal::{append_inference_props_literal, append_props_literal};
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use vize_carton::String;
 use vize_carton::append;
@@ -59,12 +59,6 @@ pub(super) fn generate_generic_props_call(
         "{expr_indent}(undefined as unknown as __{component_type_name}_Check_{idx})(",
     );
     let check_spread_values = typed_fallthrough_values && !usage.spread_props.is_empty();
-    if check_spread_values {
-        append!(
-            *ts,
-            "(undefined as unknown as __VizeFallthroughSpreadChecker<__{component_type_name}_Component_{idx}, __{component_type_name}_Props_{idx}>)(",
-        );
-    }
     // TypeScript anchors an *argument* assignability failure — `TS2345` — at the
     // argument expression, which here is the whole object literal and not any
     // one property. Without a mapping over that range the diagnostic has no
@@ -83,10 +77,30 @@ pub(super) fn generate_generic_props_call(
         source_context,
         expr_indent.as_str(),
     );
-    if check_spread_values {
-        ts.push(')');
-    }
     ts.push_str(");\n");
+    let fallthrough_argument_range = check_spread_values.then(|| {
+        append!(
+            *ts,
+            "{expr_indent}const __VizeFallthroughProps_{idx} = ",
+        );
+        append_inference_props_literal(
+            ts,
+            usage,
+            template_binding_access,
+            source_context,
+            expr_indent.as_str(),
+        );
+        ts.push_str(";\n");
+        append!(
+            *ts,
+            "{expr_indent}(undefined as unknown as __VizeFallthroughSpreadChecker<__{component_type_name}_Component_{idx}, __{component_type_name}_Props_{idx}>)(",
+        );
+        let start = ts.len();
+        append!(*ts, "__VizeFallthroughProps_{idx}");
+        let range = start..ts.len();
+        ts.push_str(");\n");
+        range
+    });
     // Anchored on the tag *name*, not on `usage.start`, which is the `<` one
     // byte to its left. `vue-tsc` puts a whole-props failure on the name — the
     // #3450 oracle reads `src/Parent.vue(6,12)` for `<template><Child …`, where
@@ -99,9 +113,16 @@ pub(super) fn generate_generic_props_call(
     ) {
         mappings.push(VizeMapping {
             gen_range: literal_range,
-            src_range,
+            src_range: src_range.clone(),
             sub_spans: Vec::new(),
         });
+        if let Some(gen_range) = fallthrough_argument_range {
+            mappings.push(VizeMapping {
+                gen_range,
+                src_range,
+                sub_spans: Vec::new(),
+            });
+        }
     }
 
     if usage.vif_guard.is_some() {

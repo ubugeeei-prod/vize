@@ -88,13 +88,20 @@ impl<'b> PrefixScope<'b> {
         {
             return None;
         }
-        // The transform writes a tracked direct binding without unwrapping.
-        // Ref-valued and untracked setup bindings retain the runtime `_isRef`
-        // fallback required by the binding metadata contract.
         self.bindings
-            .filter(|table| table.reactive_read(name) != Some(ReactiveRead::Direct))
             .and_then(|table| table.kind(name))
-            .filter(|kind| matches!(kind, BindingKind::SetupLet | BindingKind::SetupMaybeRef))
+            .filter(|kind| match kind {
+                // SFC compilation demotes a reactive const to `let` when a
+                // top-level v-model writes it. The tracker still describes
+                // the original initializer, while codegen must guard the
+                // now-mutable binding according to its final metadata.
+                BindingKind::SetupLet => true,
+                // A tracked direct destructure writes without unwrapping.
+                BindingKind::SetupMaybeRef => self
+                    .bindings
+                    .is_some_and(|table| table.reactive_read(name) != Some(ReactiveRead::Direct)),
+                _ => false,
+            })
     }
 
     /// The transform's `is_ref_binding`: an inline-mode ref is read
@@ -465,7 +472,19 @@ mod tests {
             inline.guarded_setup_write_kind("total"),
             Some(BindingKind::SetupMaybeRef)
         );
-        assert_eq!(inline.guarded_setup_write_kind("state"), None);
+        assert_eq!(
+            inline.guarded_setup_write_kind("state"),
+            Some(BindingKind::SetupLet)
+        );
+        let direct_maybe_ref = BindingTable::new([("state", BindingKind::SetupMaybeRef)], [], true)
+            .with_reactive_reads([("state", ReactiveRead::Direct)]);
+        let mut direct_maybe_ref_scope =
+            PrefixScope::new(Some(&direct_maybe_ref), true, false, true);
+        direct_maybe_ref_scope.enable_vdom_setup_writes();
+        assert_eq!(
+            direct_maybe_ref_scope.guarded_setup_write_kind("state"),
+            None
+        );
         assert_eq!(
             inline.guarded_setup_write_kind("draft"),
             Some(BindingKind::SetupLet)

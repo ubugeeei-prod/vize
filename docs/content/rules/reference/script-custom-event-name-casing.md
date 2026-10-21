@@ -4,7 +4,7 @@ title: "script/custom-event-name-casing"
 
 # `script/custom-event-name-casing`
 
-Enforce camelCase for emitted custom event names
+Enforce configured casing for emitted custom event names
 
 [Bad](#bad) · [Good](#good)
 

@@ -7,30 +7,39 @@
 use vize_l0::Box;
 
 use crate::{
-    DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode, SimpleExpressionNode,
+    AttributeNode, DirectiveNode, ElementNode, ExpressionNode, PropNode, SimpleExpressionNode,
 };
 
 use super::TransformContext;
 
-pub(super) fn bind_runtime_only_attrs<'a>(
-    ctx: &TransformContext<'a>,
-    el: &mut Box<'a, ElementNode<'a>>,
-) {
-    if el.tag_type != ElementType::Element {
-        return;
-    }
-    let form = match el.tag {
-        "input" => Some(true),
-        "textarea" | "select" => Some(false),
-        _ => None,
-    };
-    for index in 0..el.props.len() {
-        let Some(PropNode::Attribute(attr)) = el.props.get(index) else {
-            continue;
+#[derive(Clone, Copy)]
+pub(super) struct RuntimeOnlyContext {
+    form: Option<bool>,
+    checkbox: bool,
+}
+
+impl RuntimeOnlyContext {
+    pub(super) fn new(el: &ElementNode<'_>) -> Self {
+        let form = match el.tag {
+            "input" => Some(true),
+            "textarea" | "select" => Some(false),
+            _ => None,
         };
-        if !runtime_only(el, attr.name, form) {
-            continue;
+        Self {
+            form,
+            checkbox: form == Some(true) && may_be_checkbox(el),
         }
+    }
+
+    #[inline(always)]
+    pub(super) fn matches(self, name: &str) -> bool {
+        runtime_only(name, self.form, self.checkbox)
+    }
+
+    pub(super) fn directive<'a>(
+        ctx: &TransformContext<'a>,
+        attr: &AttributeNode<'a>,
+    ) -> PropNode<'a> {
         let mut dir = DirectiveNode::new(ctx.allocator, "bind", attr.loc.clone());
         let arg = SimpleExpressionNode::new(attr.name, true, attr.name_loc.clone());
         let value = attr.value.as_ref().map_or_else(
@@ -39,9 +48,7 @@ pub(super) fn bind_runtime_only_attrs<'a>(
         );
         dir.arg = Some(ExpressionNode::Simple(Box::new_in(arg, &ctx.allocator)));
         dir.exp = Some(ExpressionNode::Simple(Box::new_in(value, &ctx.allocator)));
-        if let Some(prop) = el.props.get_mut(index) {
-            *prop = PropNode::Directive(Box::new_in(dir, &ctx.allocator));
-        }
+        PropNode::Directive(Box::new_in(dir, &ctx.allocator))
     }
 }
 
@@ -49,15 +56,15 @@ pub(super) fn bind_runtime_only_attrs<'a>(
 /// comparison (wide static elements pay one branch per attribute).
 /// `form` is `Some(true)` on an `<input>`, `Some(false)` on a `<textarea>` or
 /// `<select>`.
-fn runtime_only(el: &ElementNode<'_>, name: &str, form: Option<bool>) -> bool {
+#[inline(always)]
+fn runtime_only(name: &str, form: Option<bool>, checkbox: bool) -> bool {
     match name.as_bytes().first() {
         Some(b'i') => name == "innerHTML",
         Some(b't') => {
-            name == "textContent"
-                || form == Some(true) && name == "true-value" && may_be_checkbox(el)
+            name == "textContent" || form == Some(true) && checkbox && name == "true-value"
         }
         Some(b'v') => form == Some(false) && name == "value",
-        Some(b'f') => form == Some(true) && name == "false-value" && may_be_checkbox(el),
+        Some(b'f') => form == Some(true) && checkbox && name == "false-value",
         _ => false,
     }
 }

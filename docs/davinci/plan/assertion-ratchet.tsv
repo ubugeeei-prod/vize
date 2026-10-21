@@ -263,7 +263,6 @@ crates/vize_canon/src/virtual_ts/strict_template_scope_tests.rs	4
 crates/vize_canon/src/virtual_ts/tests.rs	95
 crates/vize_canon/src/virtual_ts/tests/auto_import_shadowing.rs	12
 crates/vize_canon/src/virtual_ts/tests/component_navigation.rs	7
-crates/vize_canon/src/virtual_ts/tests/component_spread_prop_order.rs	13
 crates/vize_canon/src/virtual_ts/tests/define_props_scope.rs	21
 crates/vize_canon/src/virtual_ts/tests/define_props_scope/imported_props.rs	16
 crates/vize_canon/src/virtual_ts/tests/generic_module_type_exports.rs	12

@@ -75,7 +75,13 @@ impl Buf {
                 && self.used & Helper::CreateText.bit() != 0
                 && create_slots_show_pair(left, right) =>
             {
-                create_slots_before_v_show(left, right)
+                match (
+                    self.first_alias_occurrence(left),
+                    self.first_alias_occurrence(right),
+                ) {
+                    (Some(left_pos), Some(right_pos)) => left_pos.cmp(&right_pos),
+                    _ => create_slots_before_v_show(left, right),
+                }
             }
             _ => Ordering::Equal,
         }
@@ -97,6 +103,18 @@ impl Buf {
             offset += hoist.len();
         }
         helper_call_position(self.code.as_str(), alias).map(|position| offset + position)
+    }
+
+    fn first_alias_occurrence(&self, helper: Helper) -> Option<usize> {
+        let alias = helper.alias();
+        let mut offset = 0;
+        for hoist in self.hoists.iter() {
+            if let Some(position) = hoist.find(alias) {
+                return Some(offset + position);
+            }
+            offset += hoist.len();
+        }
+        self.code.find(alias).map(|position| offset + position)
     }
 
     fn rank_five_key(&self, helper: Helper) -> RankFiveKey {

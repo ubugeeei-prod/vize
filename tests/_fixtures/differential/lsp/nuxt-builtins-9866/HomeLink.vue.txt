@@ -1,0 +1,6 @@
+<template>
+  <ClientOnly>
+    <NuxtLink to="/">home</NuxtLink>
+    <UnknownWidget />
+  </ClientOnly>
+</template>
