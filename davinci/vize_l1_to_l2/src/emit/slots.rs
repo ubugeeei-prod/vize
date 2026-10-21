@@ -118,6 +118,8 @@ pub(super) fn has_dynamic_names(facts: &SlotFacts) -> bool {
 /// Whether a component's slot functions read an active template-scope binding.
 /// Such closures must be replaced when their parent slot is invoked again even
 /// when the component's ordinary props compare equal (#10169).
+#[cold]
+#[inline(never)]
 pub(super) fn references_current_scope(cx: &EmitCx<'_>, children: &Region<'_>) -> bool {
     cx.scope.has_codegen_scope_params() && region_references_scope(&cx.scope, children)
 }
