@@ -6,6 +6,7 @@ use vize_carton::config::VueVersion;
 
 const PUBLIC_BASE_GUARD: &str = "// @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.";
 const PUBLIC_BASE_ALIAS: &str = "type __VizeComponentPublicBase = Omit<import('vue').ComponentPublicInstance, '$props' | '$emit' | '$slots'>;";
+const REPLACE_COMPONENT_PROPS_HELPER: &str = "type __VizeReplaceComponentProps<T, P> = Omit<T, '$props'> & Pick<T, Exclude<__VizeLiteralKeys<T>, '$props'>> & { $props: P };";
 const TEMPLATE_CONTEXT_GUARD: &str = "    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.";
 const TEMPLATE_CONTEXT_ALIAS: &str = "    type __Ctx = import('vue').ComponentPublicInstance;";
 
@@ -69,6 +70,40 @@ fn component_public_base_degrades_when_vue_alias_omits_public_instance() {
         lines[alias_line - 1],
         TEMPLATE_CONTEXT_GUARD,
         "template context must guard the public instance helper"
+    );
+}
+
+#[test]
+fn authored_component_props_keep_literal_public_instance_members() {
+    for (name, text) in [
+        ("embedded", VUE_TYPE_HELPERS),
+        ("hoisted", SHARED_PREAMBLE_DTS),
+        ("declarations", DECLARATION_HELPERS_DTS),
+    ] {
+        assert!(
+            text.contains(REPLACE_COMPONENT_PROPS_HELPER),
+            "{name} must preserve literal public instance members when replacing $props"
+        );
+    }
+
+    let script = "defineEmits<{ change: [] }>()";
+    let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    let output = super::generate_virtual_ts_with_offsets_legacy_vue2(
+        &analyzer.finish(),
+        Some(script),
+        None,
+        0,
+        0,
+        &VirtualTsOptions::default(),
+    );
+    assert!(output.code.contains(
+        "__VizeReplaceComponentProps<__VizeComponentInstance, __VizeAuthoredKeyWitness<__VizeAuthoredProps>"
+    ));
+    assert!(
+        !output
+            .code
+            .contains(": Omit<__VizeComponentInstance, '$props'> & {")
     );
 }
 
