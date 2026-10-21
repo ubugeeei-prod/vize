@@ -95,11 +95,17 @@ export async function verifyJapaneseRuleEditorial(page: Page, route: string) {
     );
   }
   if (route === "/ja/rules/reference/vue-no-preprocessor-lang") {
+    const configurationHeading = page.locator("h2").filter({ hasText: "設定（Vite+）" });
+    assert.equal(
+      await configurationHeading.count(),
+      1,
+      "the supported configuration remains visible",
+    );
     const unsupportedHeading = page
       .locator("h2")
       .filter({ hasText: "現在の SFC lint では診断されません" });
-    assert.equal(await unsupportedHeading.count(), 1, "the support qualification remains visible");
-    assert.equal(await page.locator('[id="設定できる-id-現在の-sfc-検出なし"]').count(), 1);
+    assert.equal(await unsupportedHeading.count(), 0, "the obsolete unsupported note stays absent");
+    assert.equal(await page.locator('[id="設定できる-id-現在の-sfc-検出なし"]').count(), 0);
   }
   return {
     originalSourceSha: fixture.originalSourceSha,

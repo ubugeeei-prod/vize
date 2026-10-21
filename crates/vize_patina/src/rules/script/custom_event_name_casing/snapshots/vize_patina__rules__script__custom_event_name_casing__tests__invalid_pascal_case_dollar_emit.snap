@@ -7,16 +7,16 @@ expression: result.diagnostics
         rule_name: "script/custom-event-name-casing",
         severity: Error,
         message: "Custom event name 'MyEvent' is not camelCase.",
-        start: 11,
-        end: 20,
+        start: 19,
+        end: 28,
         help: Some(
             "Vue 3 recommends camelCase for emitted event names; rename this event to camelCase (e.g. `myEvent`).",
         ),
         labels: [
             Label {
                 message: "expected camelCase",
-                start: 11,
-                end: 20,
+                start: 19,
+                end: 28,
             },
         ],
         fix: None,

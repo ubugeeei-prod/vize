@@ -180,6 +180,10 @@ fn custom_template_languages_and_jsx_profiles_keep_descriptor_refusals() {
             DescriptorIssueCode::UnsupportedLanguage,
         ),
         (
+            "<template lang=md>---\ntitle: original\n---\n```vue\n{{ inert }}\n```</template>",
+            DescriptorIssueCode::UnsupportedLanguage,
+        ),
+        (
             "<script lang=jsx>const x=<p/></script><template><p/></template>",
             DescriptorIssueCode::UnsupportedLanguage,
         ),

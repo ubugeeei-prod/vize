@@ -16,7 +16,7 @@
       "api": "--current-api",
       "cases": {
         "path": "crates/vize_patina/tests/fixtures/lint-history/cases.json",
-        "sha256": "960c01949b70ec418bb3aed04ad040b91b793127a0889fd2b90edfa0892c0786"
+        "sha256": "66004ddf6c207be744b0cf5af4691454a68d430acd796093af90081136e707b7"
       }
     },
     {
@@ -54,43 +54,47 @@
   ],
   "oracles": {
     "path": "tests/_fixtures/differential/linter/oracle-index.json",
-    "sha256": "03f9e0388b9349a1541edbaa8ab0bbc193091f25da74e7f94090df9d589bee19"
+    "sha256": "a32787bc6e0dbf7fdeb95fda0ffc3698cd7fb4e1b0c7b3700a66c77ad7e51c6d"
   },
   "cases": [
     {
-          "id": "linter/current-api/prefer-use-id-context-9837",
-          "state": "active",
-          "targets": ["lint"],
-          "inputs": {
-            "root": "prefer-use-id-context-9837",
-            "files": [
-              {
-                "path": "request-id.ts.txt",
-                "role": "issue-authored-reproduction",
-                "sha256": "b02131cdc6f2aad72cf087058a0fcae88b99c2f9cfa1c2750b45bc7cd37c2084"
-              },
-              {
-                "path": "folder.test.ts.txt",
-                "role": "issue-authored-reproduction",
-                "sha256": "574354304ea31cd00c8dd8913bed9f1530448bb0a021465c3d85c924f13d0f4c"
-              },
-              {
-                "path": "Field.vue.txt",
-                "role": "regression-control",
-                "sha256": "6cf946d094e5911ee9add3cb9c73fa177776e46b2a62faf71a9e18b2ce446472"
-              },
-              {
-                "path": "vize.json.txt",
-                "role": "issue-authored-config",
-                "sha256": "f1bd1d90ff9d35967079c3da66c9286e8e246e6995409493969eed0fb8a9fc90"
-              }
-            ]
+      "id": "linter/current-api/prefer-use-id-context-9837",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "prefer-use-id-context-9837",
+        "files": [
+          {
+            "path": "request-id.ts.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "b02131cdc6f2aad72cf087058a0fcae88b99c2f9cfa1c2750b45bc7cd37c2084"
+          },
+          {
+            "path": "folder.test.ts.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "574354304ea31cd00c8dd8913bed9f1530448bb0a021465c3d85c924f13d0f4c"
+          },
+          {
+            "path": "Field.vue.txt",
+            "role": "regression-control",
+            "sha256": "6cf946d094e5911ee9add3cb9c73fa177776e46b2a62faf71a9e18b2ce446472"
+          },
+          {
+            "path": "vize.json.txt",
+            "role": "issue-authored-config",
+            "sha256": "f1bd1d90ff9d35967079c3da66c9286e8e246e6995409493969eed0fb8a9fc90"
           }
-        },
+        ]
+      }
+    },
     {
       "id": "linter/current-api/incomplete-type-project-10005",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "incomplete-type-project-10005",
         "files": [
@@ -128,6 +132,33 @@
       }
     },
     {
+      "id": "linter/current-api/nuxt-builtins-9866",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "nuxt-builtins-9866",
+        "files": [
+          {
+            "path": "app.vue.txt",
+            "role": "issue-authored-root",
+            "sha256": "63c1fb3634b5ab76dca3c9935629cda7582f157b4638da766f73b8f690864f7e"
+          },
+          {
+            "path": "HomeLink.vue.txt",
+            "role": "issue-authored-component",
+            "sha256": "5362dc0aab5809c4729ee24efd00b452b0eeae794a17a53f965eb5470d2c7b69"
+          },
+          {
+            "path": "nuxt.config.ts.txt",
+            "role": "issue-authored-config",
+            "sha256": "0c0a194972dba8a1d34f6bb042145b632e449a4d972806b4e9afd42bfdae44d6"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/current-api/patina-rule-guards-9870-9871",
       "state": "active",
       "targets": [
@@ -152,100 +183,72 @@
     {
       "id": "linter/current-api/ref-string-untyped",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/current-api/ref-string-typed",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/current-api/ref-call-control",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/current-api/v-for-no-separator",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/current-api/v-for-separator-control",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/current-api/slot-compat-vue2",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/current-api/shorthand-compat-vue2",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/current-api/slot-compat-vue3",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/current-api/shorthand-compat-vue3",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/current-api/next-tick-unspecified",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/current-api/next-tick-disabled",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/current-api/static-class-empty-expression",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/current-api/static-class-utf8-fix-corrected",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/current-api/valid-v-else-autofix-preserves-directive",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "valid-v-else-autofix-9863",
         "files": [
@@ -260,9 +263,7 @@
     {
       "id": "linter/current-api/dynamic-slot-v-for-component-bodies",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "dynamic-slot-v-for-9924",
         "files": [
@@ -297,6 +298,23 @@
       }
     },
     {
+      "id": "linter/current-api/custom-event-name-casing-9879",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "custom-event-name-casing-9879",
+        "files": [
+          {
+            "path": "source.vue",
+            "role": "issue-authored-reproduction",
+            "sha256": "a9711f14967743c5c2833a96e09f532bb5f29fe84fc0f86b4f9292b1fe1b0587"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/current-api/require-symbol-provide-range-9882",
       "state": "active",
       "targets": [
@@ -316,219 +334,157 @@
     {
       "id": "linter/next-tick/valid-arrow-expression-return-script",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/next-tick/valid-arrow-expression-return-sfc",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/next-tick/valid-parenthesized-arrow-expression-return-script",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/next-tick/valid-parenthesized-arrow-expression-return-sfc",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/next-tick/invalid-arrow-block-bare-call-script",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/next-tick/invalid-arrow-block-bare-call-sfc",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/next-tick/invalid-arrow-expression-void-call-script",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/next-tick/invalid-arrow-expression-void-call-sfc",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/next-tick/nested-arrow-restores-statement-context-script",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/next-tick/nested-arrow-restores-statement-context-sfc",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/report/original-line-columns",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/report/unicode-crlf-columns",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/report/source-map-order-and-missing",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/report/no-findings-output-control",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/static-class/short-binding",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/static-class/long-binding",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/static-class/self-closing",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/static-class/adjacent-attribute",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/static-class/outer-single-quote",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/static-class/utf8-crlf-sfc",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/static-class/existing-static-class",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/static-class/dynamic-expression",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/static-class/empty-expression",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/component-name/valid-kebab-case",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/component-name/valid-kebab-case-with-path",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/component-name/valid-kebab-case-with-digits",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/component-name/invalid-mixed-kebab-and-pascal",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/component-name/invalid-leading-hyphen",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/component-name/invalid-trailing-hyphen",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/component-name/invalid-doubled-hyphen",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/component-name/invalid-dotted-name",
       "state": "active",
-      "targets": [
-        "lint"
-      ]
+      "targets": ["lint"]
     },
     {
       "id": "linter/current-api/dotted-slot-name-9865",
@@ -591,6 +547,23 @@
       }
     },
     {
+      "id": "linter/current-api/multiline-v-for-source-9880",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "multiline-v-for-source-9880",
+        "files": [
+          {
+            "path": "source.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "95edcd796c639638b428ca35e4fc7fe7aa94708754ab2652308eca6e902c1875"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/current-api/vue-path-alias-types-9864",
       "state": "active",
       "targets": [
@@ -635,9 +608,7 @@
     {
       "id": "linter/patina/rule-fixes-9872-9873",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "patina-rule-fixes-9872-9873",
         "files": [
@@ -655,6 +626,22 @@
             "path": "PugBox.vue.txt",
             "role": "issue-authored-pug-reproduction",
             "sha256": "49bc1fa6701612529326ad14f213f63ff349433d7292c8640fffccdaab311f8a"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/type-aware-slot-outlet-9834",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "type-aware-slot-outlet-9834",
+        "files": [
+          {
+            "path": "MyList.vue.txt",
+            "sha256": "6dbc44473a588d921a1edc40a75f260ae38de476b138270c271d2dcf702fba62"
           }
         ]
       }

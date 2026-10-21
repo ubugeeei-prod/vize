@@ -1,0 +1,11 @@
+<script setup lang="ts">
+const count = 1
+function select(value: number) {}
+</script>
+
+<template lang="pug">
+button(
+  :title="count"
+  @click="select(count)"
+) {{ count }}
+</template>

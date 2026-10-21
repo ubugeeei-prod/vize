@@ -17,8 +17,8 @@ export function expressionWidthReference(root, fixture) {
   );
   assert.equal(
     sha256(manifest),
-    "f8d75bbbe2a790785e417d1000a6a5960d3f6e2bc2c082ac899724d8744bf615",
-    "whole original sixteen-case manifest changed",
+    "804bbc7c45d938ac644c206d098340f835d9804d8cd4ba0cf9f2a72ce03081dc",
+    "whole formatter manifest changed",
   );
   assert.equal(sha256(fixture.input), INPUT, "whole original deep input changed");
   assert.equal(sha256(fixture.expected), INPUT, "whole original partial reference changed");

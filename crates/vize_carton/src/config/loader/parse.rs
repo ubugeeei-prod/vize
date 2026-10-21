@@ -125,6 +125,29 @@ fn explicit_vite_json(path: &Path) -> Result<ConfigDocument, Box<dyn std::error:
         )
         .into());
     };
+    // Differential fixtures transport the immutable bytes of retired native
+    // JSON under this neutral filename. Modern callers also use the same name
+    // for an explicit Vite-shaped object, so the basename alone cannot select
+    // the legacy decoder. Only legacy top-level native sections opt into it.
+    if path
+        .file_stem()
+        .is_some_and(|stem| stem == "serialized-config")
+        && [
+            "compiler",
+            "typeChecker",
+            "linter",
+            "formatter",
+            "languageServer",
+            "globalTypes",
+            "files",
+            "ignores",
+            "entries",
+        ]
+        .iter()
+        .any(|key| source.contains_key(*key))
+    {
+        return document_from_json(&content, path);
+    }
     if [
         "linter",
         "formatter",

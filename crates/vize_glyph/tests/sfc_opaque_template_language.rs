@@ -57,6 +57,22 @@ fn every_non_html_language_uses_the_opaque_strategy() {
 }
 
 #[test]
+fn markdown_keeps_frontmatter_and_inert_code_payload_byte_identical() {
+    let payload = "\r\n---\r\ntitle: \"{{ frontmatter.title }}\"  \r\n---\r\n\r\n# Hello  {{ title }}\r\n\r\n```vue\r\n<template>\r\n  <MyCard :title=\"title\">{{ mustStayInert }}</MyCard>\r\n</template>\r\n```\r\n";
+    let source = format!(
+        "<template lang=\"md\">{payload}</template>\n<script setup>const title='authored'</script>\n"
+    );
+    let output = assert_fixed_point(&source, &FormatOptions::default());
+    let output_payload = output
+        .split_once("<template lang=\"md\">")
+        .and_then(|(_, tail)| tail.rsplit_once("</template>").map(|(body, _)| body))
+        .expect("formatted Markdown template body");
+
+    assert_eq!(output_payload.as_bytes(), payload.as_bytes());
+    assert!(output.contains("<script setup>\nconst title = \"authored\";\n</script>"));
+}
+
+#[test]
 fn jade_alias_preserves_pug_content() {
     let source = "<template lang=\"jade\">\nmain\n  button(@click=\"save\") Save\n</template>\n";
     let output = assert_fixed_point(source, &FormatOptions::default());

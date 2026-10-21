@@ -4,8 +4,8 @@ use crate::{LintPreset, Severity};
 #[test]
 fn script_rule_severity_override_recounts_sfc_result() {
     let source = r#"<script setup lang="ts">
-const emit = defineEmits(["update:current-step-index"])
-emit("update:current-step-index")
+const emit = defineEmits(["step-changed"])
+emit("step-changed")
 </script>
 "#;
     let result = Linter::with_preset(LintPreset::Ecosystem)

@@ -52,6 +52,7 @@ pub(super) fn bind_checked_expressions(document: &mut TypeAwareDocument, index: 
     let text = document.content.as_str();
     let mut edits = Vec::new();
     let mut allocator = Allocator::default();
+    let slot_outlets = slot_outlet_statements(text);
     for row in document.mapping.rows() {
         if row.meta == INFERRED_BINDING {
             continue;
@@ -75,6 +76,12 @@ pub(super) fn bind_checked_expressions(document: &mut TypeAwareDocument, index: 
                 continue;
             };
             let trimmed = line.trim_start();
+            let slot_outlet = slot_outlets
+                .iter()
+                .take_while(|slot| slot.start <= generated.start)
+                .filter(|slot| generated.end <= slot.end)
+                .last()
+                .copied();
             // A complete first condition keeps its lexical and narrowing scope.
             // An else-if or synthetic enclosing guard needs a different owner;
             // inserting a declaration before either would alter control flow.
@@ -121,6 +128,7 @@ pub(super) fn bind_checked_expressions(document: &mut TypeAwareDocument, index: 
                     continue;
                 }
             } else if !condition
+                && slot_outlet.is_none()
                 && !guard_header(trimmed)
                 && !line.trim_end().ends_with(";  // handler expression")
                 && !line
@@ -149,12 +157,15 @@ pub(super) fn bind_checked_expressions(document: &mut TypeAwareDocument, index: 
             let name = cstr!("__expr_{index}");
             *index += 1;
             if condition || checked || !guard_header(trimmed) {
-                let indent_len = line.len() - trimmed.len();
-                let indent = line.get(..indent_len).unwrap_or_default();
+                let declaration_start = slot_outlet.map_or(line_start, |slot| slot.start);
+                let indent = slot_outlet.map_or_else(
+                    || line.get(..line.len() - trimmed.len()).unwrap_or_default(),
+                    |slot| slot.indent,
+                );
                 let prefix = cstr!("{indent}const {name} = (");
-                let name_start = indent_len + "const ".len();
+                let name_start = indent.len() + "const ".len();
                 edits.push(Edit {
-                    at: line_start,
+                    at: declaration_start,
                     text: cstr!("{prefix}{expression});\n"),
                     authored: authored.clone(),
                     probe: Some(Probe {
@@ -230,6 +241,47 @@ pub(super) fn bind_checked_expressions(document: &mut TypeAwareDocument, index: 
         updated.insert_str(edit.at, &edit.text);
     }
     document.content = updated;
+}
+
+#[derive(Clone, Copy)]
+struct SlotOutletStatement<'a> {
+    start: usize,
+    end: usize,
+    indent: &'a str,
+}
+
+/// Return the statement that owns a mapped slot-outlet payload expression.
+///
+/// Canon writes payloads inside a multiline checked object literal. A probe
+/// declaration cannot be inserted beside an object entry, so it is placed
+/// immediately before the enclosing outlet call instead.
+fn slot_outlet_statements(text: &str) -> Vec<SlotOutletStatement<'_>> {
+    const CHECKED_OPEN: &str = "__vizeSlotOutlet((undefined as unknown as ";
+    const INFERRED_OPEN: &str = "var __vize_slot_payload_";
+    let mut statements = Vec::new();
+    for (marker, terminator) in [(CHECKED_OPEN, ");\n"), (INFERRED_OPEN, ";\n")] {
+        for (call_start, _) in text.match_indices(marker) {
+            let Some(relative_end) = text
+                .get(call_start..)
+                .and_then(|rest| rest.find(terminator))
+            else {
+                continue;
+            };
+            let end = call_start + relative_end + terminator.len();
+            let Some(before) = text.get(..call_start) else {
+                continue;
+            };
+            let start = before.rfind('\n').map_or(0, |at| at + 1);
+            let Some(indent) = text.get(start..call_start) else {
+                continue;
+            };
+            if indent.bytes().all(|byte| byte == b' ' || byte == b'\t') {
+                statements.push(SlotOutletStatement { start, end, indent });
+            }
+        }
+    }
+    statements.sort_unstable_by_key(|statement| statement.start);
+    statements
 }
 
 /// Generated text inserted for one authored expression.

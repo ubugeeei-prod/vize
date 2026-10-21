@@ -84,6 +84,8 @@ impl ServerState {
             .and_then(Path::parent)
             .unwrap_or(directory);
         let inferred = key.is_some_and(|key| key.inferred);
+        let has_explicit_tsconfig = key.is_some_and(|key| key.tsconfig.is_some())
+            || loaded.config.type_checker.tsconfig.is_some();
         let conventional = [
             root.join("tsconfig.json"),
             root.join("jsconfig.json"),
@@ -117,12 +119,11 @@ impl ServerState {
             }
             observations.extend(&vize_canon::ConfigurationObservations::capture(&observed));
         }
-        let selected = (!inferred).then_some(configured);
-        if let Some(selected) = selected.as_ref().filter(|selected| {
-            !selected.is_file()
-                && (key.is_some_and(|key| key.tsconfig.is_some())
-                    || loaded.config.type_checker.tsconfig.is_some())
-        }) {
+        let selected = (!inferred || has_explicit_tsconfig).then_some(configured);
+        if let Some(selected) = selected
+            .as_ref()
+            .filter(|selected| !selected.is_file() && has_explicit_tsconfig)
+        {
             loaded.watch_dependencies.push(selected.clone());
             observations.extend(&vize_canon::ConfigurationObservations::capture(
                 std::slice::from_ref(selected),

@@ -75,6 +75,7 @@ jobs:
         with:
           target: ${{ matrix.settings.target }}
           archive: ${{ matrix.settings.archive }}
+          release-version: ${{ needs.plan.outputs.version }}
           upload-artifacts: "false"
   native:
     name: Cache native - ${{ matrix.settings.target }}
@@ -97,4 +98,5 @@ jobs:
         with:
           target: ${{ matrix.settings.target }}
           cross-compile: ${{ matrix.settings.cross_compile }}
+          release-version: ${{ needs.plan.outputs.version }}
           upload-artifacts: "false"

@@ -87,6 +87,12 @@
       "id": "macro-all",
       "input": "Macro.vue.txt",
       "preset": "all",
+      "definePropsDestructuringSpans": [
+        [
+          31,
+          36
+        ]
+      ],
       "spans": [
         [
           39,

@@ -1,4 +1,7 @@
-use super::{TypeAwareDocument, generated_offset_for_content, generated_offset_for_text};
+use super::{
+    TemplateQueryKind, TypeAwareDocument, generated_offset_for_content, generated_offset_for_text,
+    v_for_source_binding_offset,
+};
 use crate::linter::native_type_aware::expression_bindings;
 use vize_canon::virtual_ts::{ProjectionMapping, VizeMapping, VizeSubSpan};
 use vize_l0::String;
@@ -70,6 +73,69 @@ fn real_shorthand_projection_queries_camelized_expression_values() {
             Some(expected)
         );
     }
+}
+
+#[test]
+fn multiline_v_for_sources_probe_capture_bindings() {
+    let source = r#"<script setup lang="ts">
+const pages: string[][] = [['a', 'b'], ['c']]
+const current = 0
+function pick(index: number): string[] { return pages[index] ?? [] }
+</script>
+<template>
+  <li v-for="item in pages[
+    current
+  ]" :key="item">{{ item }}</li>
+  <li v-for="item in pick(
+    current
+  )" :key="item">{{ item }}</li>
+  <li v-for="item in
+    pick(current)" :key="item">{{ item }}</li>
+  <li v-for="item in pick(current)" :key="item">{{ item }}</li>
+</template>"#;
+    let descriptor = vize_atelier_sfc::parse_sfc(source, Default::default()).unwrap();
+    let template = descriptor.template.as_ref().unwrap();
+    let script = descriptor.script_setup.as_ref().unwrap();
+    let allocator = vize_l0::Allocator::default();
+    let (root, errors) = vize_armature::Parser::new(&allocator, &template.content).parse();
+    assert!(errors.is_empty());
+    let document = super::super::document::project_type_aware(
+        &descriptor,
+        &script.content,
+        Some(&root),
+        script.loc.start as u32,
+        template.loc.start as u32,
+        "MultilineForSources.vue",
+    );
+    let (queries, _) = super::collect_template_query_sets(
+        &document,
+        &root,
+        template.loc.start as u32,
+        true,
+        false,
+    );
+    let captures: Vec<_> = queries
+        .iter()
+        .filter(|query| query.kind == TemplateQueryKind::ForSource)
+        .collect();
+    assert_eq!(
+        captures.len(),
+        4,
+        "every v-for source must probe its inferred capture"
+    );
+}
+
+#[test]
+fn multiline_v_for_capture_lookup_uses_the_nearest_declaration() {
+    let generated = "  const __vize_v_for_source_1 = __vForList(items);\n  for (const [item] of __vize_v_for_source_1) {\n    const __vize_v_for_source_not_a_capture = 'ignore';\n    const __vize_v_for_source_2 = __vForList(pages[\n      current\n    ]);\n";
+    let expression_offset = generated.rfind(']').unwrap() as u32;
+    let binding_offset =
+        v_for_source_binding_offset(generated, expression_offset).expect("capture binding");
+
+    assert_eq!(
+        generated.as_bytes().get(binding_offset as usize).copied(),
+        Some(b'2')
+    );
 }
 
 #[test]

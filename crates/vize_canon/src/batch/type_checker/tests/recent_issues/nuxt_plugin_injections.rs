@@ -65,7 +65,7 @@ type Decorate<T extends Record<string, unknown>> = {
   [K in keyof T as K extends string ? `$${K}` : never]: T[K]
 }
 
-type InjectionType<A extends Plugin> = A extends { default: Plugin<infer T> }
+type InjectionType<A extends { default: Plugin }> = A extends { default: Plugin<infer T> }
   ? Decorate<T>
   : unknown
 

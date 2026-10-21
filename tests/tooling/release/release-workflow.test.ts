@@ -7,6 +7,7 @@ import { test } from "node:test";
 import { parse } from "yaml";
 
 import { cadenceDecision } from "../../../tools/support/release/release/cadence.ts";
+import { incompletePriorReleaseTargets } from "../../../tools/support/release/release/main.ts";
 import { extraReleasePackageJsonPaths } from "../../../tools/support/release/release/preparation.ts";
 import { stampCargoLock } from "../../../tools/support/release/release/stamp.ts";
 import {
@@ -41,6 +42,27 @@ test("the next release bumps the minor above every claimed version", () => {
   assert.ok(!isUnclaimedVersion("0.475.0", ["0.474.0", "v0.475.0"]));
   assert.ok(!isUnclaimedVersion("v0.476.0", ["0.474.0"]));
   assert.ok(!isUnclaimedVersion("0.476.0-rc", ["0.474.0"]));
+});
+
+test("a new release requires the prior tag on npm and every crates.io target", async () => {
+  const complete = await incompletePriorReleaseTargets("0.510.0", ["0.510.0"], async () => ({
+    kind: "published",
+  }));
+  assert.deepEqual(complete, []);
+
+  let calls = 0;
+  const incomplete = await incompletePriorReleaseTargets("0.510.0", [], async (crate) => {
+    calls += 1;
+    if (crate === "vize_oxc_parser") return { kind: "missing" };
+    if (crate === "vize_patina") return { kind: "query-failed", message: "HTTP 429" };
+    return { kind: "published" };
+  });
+  assert.equal(calls, 28);
+  assert.deepEqual(incomplete, [
+    "npm:vize@0.510.0",
+    "crates:vize_oxc_parser@0.510.0",
+    "crates:vize_patina@0.510.0",
+  ]);
 });
 
 test("the stamp rewrites only owned Cargo.lock packages", () => {
@@ -128,6 +150,18 @@ test("npm resume preserves the trusted workflow and restores only the selected r
   assert.match(JSON.stringify(release.steps), /"run-id":"\$\{\{ inputs\.npm_resume_run \}\}"/);
   assert.equal(npm.env?.NPM_PUBLISH_TAG, "${{ needs.version.outputs.publish_tag }}");
   assert.equal(npm.env?.NPM_ALLOW_NEWER_TAG, "${{ needs.version.outputs.allow_newer_tag }}");
+
+  const restore = readRepoFile(".github", "actions", "release-npm-artifacts", "action.yml");
+  assert.match(
+    JSON.stringify(npm.steps),
+    /"release-tag":"\$\{\{ inputs\.npm_resume_run != '' && needs\.version\.outputs\.tag \|\| '' \}\}"/,
+  );
+  assert.match(restore, /git fetch --no-tags --depth=1 origin "refs\/tags\/\$RELEASE_TAG"/);
+  assert.match(
+    restore,
+    /for file in pnpm-workspace\.yaml npm\/native\/package\.json npm\/fresco-native\/package\.json/,
+  );
+  assert.match(restore, /git show "FETCH_HEAD:\$file" > "\$file"/);
 });
 
 test("builds use the untagged candidate; only a fully built release is tagged", () => {
@@ -228,6 +262,15 @@ test("npm exposes every native platform before packages that depend on it", () =
 test("final registry verification checks every package and gates only JSR", () => {
   assert.deepEqual(needs("verify-npm"), ["version", "publish-npm"]);
   assert.deepEqual(needs("publish-jsr"), ["version", "verify-npm"]);
+  assert.match(String((workflow.jobs["verify-npm"] as Job & { if?: string }).if), /always\(\)/);
+  assert.match(
+    String((workflow.jobs["verify-npm"] as Job & { if?: string }).if),
+    /publish-npm\.result == 'success'/,
+  );
+  assert.match(
+    String((workflow.jobs["publish-jsr"] as Job & { if?: string }).if),
+    /verify-npm\.result == 'success'/,
+  );
   assert.ok(!needs("github-release").includes("verify-npm"));
   // JSR runs as its own workflow so its slow server-side processing never
   // holds this run (and with it the cadence) open.
@@ -241,6 +284,10 @@ test("final registry verification checks every package and gates only JSR", () =
 test("post-publish product checks follow npm verification and gate nothing", () => {
   for (const check of ["verify-config", "verify-musea-vrt"]) {
     assert.deepEqual(needs(check), ["version", "verify-npm"]);
+    assert.match(
+      String((workflow.jobs[check] as Job & { if?: string }).if),
+      /verify-npm\.result == 'success'/,
+    );
     for (const name of Object.keys(workflow.jobs)) assert.ok(!needs(name).includes(check), name);
   }
   assert.match(
@@ -348,10 +395,16 @@ test("the automatic cadence releases a green main commit only after user-facing 
   }
 });
 
-test("only release builds drop the -dev version suffix", () => {
+test("release builds embed the exact planned version across trusted target caches", () => {
   assert.equal(workflow.env.VIZE_RELEASE_BUILD, "1");
+  for (const build of ["build-cli", "build-native"]) {
+    const recipe = workflow.jobs[build].steps?.find((step) =>
+      step.uses?.startsWith("./.github/actions/build-release-"),
+    );
+    assert.equal(recipe?.with?.["release-version"], "${{ needs.version.outputs.version }}");
+  }
   assert.match(
     readRepoFile("crates", "vize_carton", "src", "lib.rs"),
-    /option_env!\("VIZE_RELEASE_BUILD"\)[\s\S]*concat!\(env!\("CARGO_PKG_VERSION"\), "-dev"\)/,
+    /option_env!\("VIZE_RELEASE_VERSION"\)[\s\S]*option_env!\("VIZE_RELEASE_BUILD"\)[\s\S]*concat!\(env!\("CARGO_PKG_VERSION"\), "-dev"\)/,
   );
 });
