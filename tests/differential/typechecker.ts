@@ -39,8 +39,7 @@ export const TYPECHECKER_TESTS = {
     "implicit_art_component_reports_the_same_prop_errors_as_an_explicit_import",
   "component-v-bind-duplicate-diagnostic-10069":
     "named_prop_before_spread_reports_once_with_or_without_listener",
-  "runtime-props-report-10100-10101":
-    "runtime_props_reports_10100_10101_retain_expected_types",
+  "runtime-props-report-10100-10101": "runtime_props_reports_10100_10101_retain_expected_types",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
