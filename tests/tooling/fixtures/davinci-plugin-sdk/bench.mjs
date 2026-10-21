@@ -36,6 +36,127 @@ function native() {
 
 const elapsed = (start) => Number(process.hrtime.bigint() - start) / 1000;
 
+const median = (values) => {
+  const sorted = [...values].sort((left, right) => left - right);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 1 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
+};
+
+const timed = (run) => {
+  const start = process.hrtime.bigint();
+  run();
+  return elapsed(start);
+};
+
+/**
+ * Compare the ordinary compile/lint surfaces with their explicitly empty
+ * plugin hosts. Each pair consumes the same immutable corpus, alternates order
+ * per round, and retains complete output parity before measuring. Timings are
+ * microseconds for the whole corpus; callers own the environment-specific
+ * ratio/absolute budget.
+ */
+export function measureDisabledPluginOverhead(
+  files,
+  { warmups = 2, samples = 9, binding = native() } = {},
+) {
+  if (files.length === 0) throw new Error("disabled-plugin measurement requires a corpus");
+  if (!Number.isInteger(warmups) || warmups < 1)
+    throw new Error("disabled-plugin measurement requires at least one warmup");
+  if (!Number.isInteger(samples) || samples < 3 || samples % 2 === 0)
+    throw new Error("disabled-plugin measurement requires an odd sample count of at least three");
+
+  const inputs = files.map(({ file, source }) => {
+    const parsed = binding.parseSfc(source, { filename: file, sourceMap: false });
+    const template = parsed.template;
+    if (template === null)
+      throw new Error(`${file}: disabled-plugin measurement requires a template block`);
+    return { file, source, template: template.content };
+  });
+  const compileDefault = () =>
+    inputs.map(({ file, template }) => binding.compile(template, { filename: file }));
+  const compileDisabled = () => {
+    const outputs = inputs.map(({ file, template }) =>
+      binding.compileWithOutputPlugins(template, [], { filename: file }),
+    );
+    return {
+      results: outputs.map(({ result }) => result),
+      pluginCounts: outputs.map(({ plugins }) => plugins.length),
+    };
+  };
+  const lintDefault = () =>
+    inputs.map(({ file, source }) =>
+      binding.lintPatinaSfc(source, { filename: file, locale: "en", helpLevel: "none" }),
+    );
+  const lintDisabled = () => {
+    const results = lintDefault();
+    const hosts = inputs.map(({ file, source }) =>
+      binding.lintWithPlugins(source, [], { filename: file }),
+    );
+    return {
+      results,
+      hosts: hosts.map(({ diagnostics, plugins, fixes, factProviders }) => ({
+        diagnostics,
+        plugins,
+        fixes,
+        factProviders,
+      })),
+    };
+  };
+
+  const defaultCompileOutput = compileDefault();
+  const disabledCompileOutput = compileDisabled();
+  const defaultLintOutput = lintDefault();
+  const disabledLintOutput = lintDisabled();
+  const parity = {
+    compile:
+      JSON.stringify(disabledCompileOutput.results) === JSON.stringify(defaultCompileOutput) &&
+      disabledCompileOutput.pluginCounts.every((count) => count === 0),
+    lint:
+      JSON.stringify(disabledLintOutput.results) === JSON.stringify(defaultLintOutput) &&
+      disabledLintOutput.hosts.every(
+        ({ diagnostics, plugins, fixes, factProviders }) =>
+          diagnostics.length === 0 &&
+          plugins.length === 0 &&
+          fixes.length === 0 &&
+          factProviders.length === 0,
+      ),
+  };
+
+  const paths = {
+    compile: { default: compileDefault, disabled: compileDisabled },
+    lint: { default: lintDefault, disabled: lintDisabled },
+  };
+  const observations = {};
+  for (const [name, modes] of Object.entries(paths)) {
+    const timings = { default: [], disabled: [] };
+    for (let round = 0; round < warmups + samples; round += 1) {
+      const order = round % 2 === 0 ? ["default", "disabled"] : ["disabled", "default"];
+      for (const mode of order) {
+        const duration = timed(modes[mode]);
+        if (round >= warmups) timings[mode].push(duration);
+      }
+    }
+    const defaultMedianUs = median(timings.default);
+    const disabledMedianUs = median(timings.disabled);
+    observations[name] = {
+      defaultSamplesUs: timings.default,
+      disabledSamplesUs: timings.disabled,
+      defaultMedianUs,
+      disabledMedianUs,
+      disabledToDefaultRatio: disabledMedianUs / defaultMedianUs,
+      overheadUsPerFile: (disabledMedianUs - defaultMedianUs) / inputs.length,
+    };
+  }
+
+  return {
+    files: inputs.length,
+    warmups,
+    samples,
+    parity,
+    observations,
+  };
+}
+
 /** Run every arm of plugin `module` (a file beside this one) over `files`
  * `rounds` times; returns µs per file and the reports per arm. */
 export async function measure(files, rounds = 1, module = "team-conventions.mjs") {
