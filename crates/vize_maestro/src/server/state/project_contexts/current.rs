@@ -31,7 +31,7 @@ impl InitialConfigurationContinuation {
             .into_iter()
             .filter(|(key, _)| key.root == self.key.root)
             .collect::<Vec<_>>();
-        records.sort_by(|(a, _), (b, _)| a.tsconfig.cmp(&b.tsconfig));
+        records.sort_by(|(a, _), (b, _)| (a.inferred, &a.tsconfig).cmp(&(b.inferred, &b.tsconfig)));
         records
     }
 
@@ -166,7 +166,7 @@ impl ServerState {
             .into_iter()
             .filter(|(candidate, _)| candidate.root == key.root)
             .collect::<Vec<_>>();
-        records.sort_by(|(a, _), (b, _)| a.tsconfig.cmp(&b.tsconfig));
+        records.sort_by(|(a, _), (b, _)| (a.inferred, &a.tsconfig).cmp(&(b.inferred, &b.tsconfig)));
         if !records.iter().any(|(candidate, _)| candidate == &key)
             || records
                 .iter()

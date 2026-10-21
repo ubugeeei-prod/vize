@@ -42,7 +42,7 @@ impl ServerState {
         if let Some(context) = context {
             return context.initialize(self);
         }
-        (key.tsconfig.is_none()
+        (key.is_root()
             && self.is_primary_boundary(&key.root)
             && self
                 .project_contexts
@@ -165,7 +165,12 @@ impl ServerState {
             })
             .collect::<Vec<_>>();
         transitions.sort_by(|(a, target_a), (b, target_b)| {
-            (&a.root, &a.tsconfig, target_a).cmp(&(&b.root, &b.tsconfig, target_b))
+            (&a.root, a.inferred, &a.tsconfig, target_a).cmp(&(
+                &b.root,
+                b.inferred,
+                &b.tsconfig,
+                target_b,
+            ))
         });
         transitions.dedup();
         let mut transferred = Vec::new();
@@ -235,7 +240,7 @@ impl ServerState {
                 .and_then(|context| context.initialized_state());
             if let Some(old) = old {
                 old.retire_document_project_membership(&document);
-            } else if previous.tsconfig.is_none() && self.is_primary_boundary(&previous.root) {
+            } else if previous.is_root() && self.is_primary_boundary(&previous.root) {
                 self.retire_document_project_membership(&document);
             }
             if let Some(owner) = self.topology_owner(&key)
@@ -368,14 +373,14 @@ impl ServerState {
         {
             return;
         }
-        if key.tsconfig.is_none() && self.is_primary_boundary(&key.root) {
+        if key.is_root() && self.is_primary_boundary(&key.root) {
             return;
         }
         let retired = self.project_contexts.contexts.lock().remove(key);
         if let Some(retired) = retired {
             retired.retire();
         }
-        if !self.is_primary_boundary(&key.root) || key.tsconfig.is_some() {
+        if !self.is_primary_boundary(&key.root) || !key.is_root() {
             self.project_contexts
                 .configuration_attempts
                 .lock()

@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "id": "lsp/regression/inferred-project-tsconfig-9718",
+  "provenance": {
+    "fixCommit": "f95557dadaab83dc0f7d4a7613bdb7ed4e59d323",
+    "issue": 9718,
+    "witnessPath": "crates/vize_maestro/src/server/state/project_contexts/reference_tests.rs",
+    "witnessTest": "source_outside_a_single_tsconfig_uses_an_inferred_project",
+    "meaning": "a source excluded by the only tsconfig remains a distinct inferred-project input"
+  },
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": [
+    {
+      "source": "template/code/App.vue.txt",
+      "runtimePath": "template/code/App.vue",
+      "sha256": "de238d982cfda3227024dbbeffd9c9e815c7c4a4e3a15b23a23ffa166de08ca5"
+    },
+    {
+      "source": "src/Owned.vue.txt",
+      "runtimePath": "src/Owned.vue",
+      "sha256": "bfc43c6754b2eb18471dab82dc9c14a043c5942e6f87dd86c0795ffb9b8ecdfe"
+    },
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "0014b81552bc7019acaea9d211ff8022e272cbdbd29651e30f84a92489dfae91"
+    }
+  ],
+  "entry": "template/code/App.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "ddd704586adc597601b6bd62324d01c99042a3adc27e6cd754a3dd197ae496c3"
+  },
+  "method": "textDocument/definition",
+  "scope": "an excluded source cannot resolve the root tsconfig path alias through inferred compiler authority"
+}

@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "#owned": ["src/Owned.vue"]
+    }
+  },
+  "include": ["src/**/*.vue"]
+}

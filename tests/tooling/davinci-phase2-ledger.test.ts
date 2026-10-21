@@ -316,10 +316,10 @@ test("corpus project counts come from the executable compatibility inventory", (
     fixture.memberships.includes("ecosystem"),
   ).length;
   assert.equal(validated.fixtureMap.size, 149);
-  assert.equal(ecosystem, 143);
+  assert.equal(ecosystem, 148);
   for (const source of [text.roadmap, text.readme, text.phase, text.records]) {
     assert.match(source, /149 gitlinks/);
-    assert.match(source, /143 ecosystem\s+projects/);
+    assert.match(source, /148 ecosystem\s+projects/);
   }
 });
 test("validator rejects a stale task count or suite range", () => {

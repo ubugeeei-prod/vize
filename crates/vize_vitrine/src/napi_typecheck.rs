@@ -7,6 +7,7 @@
     clippy::disallowed_macros,
     reason = "N-API type-check bindings exchange std `String`s"
 )]
+use napi::Env;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 
@@ -62,6 +63,16 @@ pub struct TypeCheckResultNapi {
     pub analysis_time_ms: Option<f64>,
 }
 
+/// One negotiated observer for generated virtual TypeScript.
+#[napi(object, object_to_js = false)]
+pub struct VirtualTsVisitorPluginNapi {
+    pub name: String,
+    pub version: String,
+    pub fingerprint: String,
+    /// Receives one serialized `VisitorEvent<"virtual-ts">` and must return an empty string.
+    pub run: FunctionRef<String, String>,
+}
+
 /// Apply NAPI options to TypeCheckOptions.
 fn apply_napi_options(opts: &TypeCheckOptionsNapi, check_opts: &mut TypeCheckOptions) {
     check_opts.strict = opts.strict.unwrap_or(false);
@@ -96,6 +107,123 @@ pub fn type_check_napi(
     } else {
         type_check_sfc(&source, &check_opts)
     };
+
+    Ok(TypeCheckResultNapi {
+        diagnostics: result
+            .diagnostics
+            .into_iter()
+            .map(|d| TypeDiagnosticNapi {
+                severity: match d.severity {
+                    TypeSeverity::Error => "error".to_string(),
+                    TypeSeverity::Warning => "warning".to_string(),
+                    TypeSeverity::Info => "info".to_string(),
+                    TypeSeverity::Hint => "hint".to_string(),
+                },
+                message: d.message.into(),
+                start: d.start,
+                end: d.end,
+                code: d.code.map(Into::into),
+                help: d.help.map(Into::into),
+                related: d
+                    .related
+                    .into_iter()
+                    .map(|r| RelatedLocationNapi {
+                        message: r.message.into(),
+                        start: r.start,
+                        end: r.end,
+                        filename: r.filename.map(Into::into),
+                    })
+                    .collect(),
+            })
+            .collect(),
+        virtual_ts: result.virtual_ts.map(Into::into),
+        error_count: result.error_count as u32,
+        warning_count: result.warning_count as u32,
+        analysis_time_ms: result.analysis_time_ms,
+    })
+}
+
+/// Type check one SFC and synchronously publish the generated virtual TypeScript
+/// to explicitly registered visitor plugins.
+///
+/// This is a separate entrypoint so the ordinary `typeCheck` path does not
+/// inspect, allocate for, or invoke JavaScript plugins when none are enabled.
+#[napi(js_name = "typeCheckWithVirtualTsVisitors")]
+pub fn type_check_with_virtual_ts_visitors_napi(
+    env: Env,
+    source: String,
+    plugins: Vec<VirtualTsVisitorPluginNapi>,
+    options: Option<TypeCheckOptionsNapi>,
+) -> Result<TypeCheckResultNapi> {
+    let mut opts = options.unwrap_or_default();
+    let filename = opts
+        .filename
+        .clone()
+        .unwrap_or_else(|| "anonymous.vue".to_owned());
+    opts.include_virtual_ts = Some(true);
+
+    let mut check_opts = TypeCheckOptions::new(filename.as_str());
+    apply_napi_options(&opts, &mut check_opts);
+    let result = if opts.legacy_vue2.unwrap_or(false) {
+        type_check_sfc_with_legacy_vue2(&source, &check_opts)
+    } else {
+        type_check_sfc(&source, &check_opts)
+    };
+
+    if let Some(code) = result.virtual_ts.as_deref() {
+        let mappings = result
+            .virtual_ts_mappings
+            .iter()
+            .map(|mapping| {
+                serde_json::json!({
+                    "source": {
+                        "start": mapping.src_range.start,
+                        "end": mapping.src_range.end,
+                        "encoding": "utf8",
+                    },
+                    "generated": {
+                        "start": mapping.gen_range.start,
+                        "end": mapping.gen_range.end,
+                        "encoding": "utf8",
+                    },
+                })
+            })
+            .collect::<Vec<_>>();
+        let event = serde_json::to_string(&serde_json::json!({
+            "apiVersion": 1,
+            "capability": "virtual-ts",
+            "file": &filename,
+            "payload": {
+                "sourceFile": &filename,
+                "virtualFile": format!("{filename}.ts"),
+                "code": code,
+                "mappings": mappings,
+            },
+        }))
+        .map_err(|error| Error::new(Status::GenericFailure, error.to_string()))?;
+
+        for plugin in &plugins {
+            if plugin.name.trim().is_empty()
+                || plugin.version.trim().is_empty()
+                || plugin.fingerprint.trim().is_empty()
+            {
+                return Err(Error::new(
+                    Status::InvalidArg,
+                    "virtual TypeScript visitor identity must be non-empty".to_owned(),
+                ));
+            }
+            let response = plugin.run.borrow_back(&env)?.call(event.clone())?;
+            if !response.is_empty() {
+                return Err(Error::new(
+                    Status::InvalidArg,
+                    format!(
+                        "virtual TypeScript visitor {:?} returned a value; observers must return undefined",
+                        plugin.name
+                    ),
+                ));
+            }
+        }
+    }
 
     Ok(TypeCheckResultNapi {
         diagnostics: result

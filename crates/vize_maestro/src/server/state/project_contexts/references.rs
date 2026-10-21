@@ -78,11 +78,17 @@ impl ServerState {
             .key
             .read()
             .as_ref()
-            .is_some_and(|key| key.tsconfig.is_some())
+            .is_some_and(|key| !key.is_root())
         {
             return None;
         }
         let source = physical_path(&uri.to_file_path().ok()?);
+        let authored_tsconfig = state
+            .project_contexts
+            .loaded_config
+            .read()
+            .as_ref()
+            .is_some_and(|loaded| loaded.config.type_checker.tsconfig.is_some());
         let root = state
             .project_contexts
             .boundary
@@ -101,7 +107,19 @@ impl ServerState {
         };
         let selected = {
             let mut ownership = self.project_contexts.reference_ownership.lock();
-            if ownership.project_paths(&shell).len() < 2 {
+            let projects = ownership.project_paths(&shell);
+            let owned = projects
+                .iter()
+                .any(|project| ownership.project_owns_source(project, &source, kind));
+            if !owned {
+                // An authored checker path is the project's explicit authority,
+                // even when its TypeScript include set omits this source.
+                if authored_tsconfig {
+                    return None;
+                }
+                return Some(ProjectContextKey::inferred(root));
+            }
+            if projects.len() < 2 {
                 return None;
             }
             ownership.effective_config_for_source(&shell, &source, kind)
@@ -109,6 +127,7 @@ impl ServerState {
         Some(ProjectContextKey {
             root,
             tsconfig: Some(physical_path(&selected)),
+            inferred: false,
         })
     }
 
@@ -120,7 +139,7 @@ impl ServerState {
     ) -> bool {
         self.project_contexts.routes.get(uri).map_or_else(
             || {
-                key.tsconfig.is_none()
+                key.is_root()
                     && self.document_context_root(source).as_deref() == Some(key.root.as_path())
             },
             |route| route.value() == key,

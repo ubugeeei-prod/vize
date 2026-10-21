@@ -1,4 +1,4 @@
-import { spawnSync } from "node:child_process";
+import { spawnSync, type SpawnSyncOptionsWithBufferEncoding } from "node:child_process";
 import { sha256 } from "./harness.mjs";
 
 // Capture both fresh attempts before any classification. A thrown invocation
@@ -8,6 +8,7 @@ export function collectLinterAttempts(
   argv: string[],
   input: Buffer,
   invoke = spawnSync,
+  spawnOptions: Omit<SpawnSyncOptionsWithBufferEncoding, "input" | "timeout" | "maxBuffer"> = {},
 ) {
   const attempts = [];
   for (let pass = 0; pass < 2; pass++) {
@@ -21,6 +22,7 @@ export function collectLinterAttempts(
         input,
         timeout: 30_000,
         maxBuffer: 8 * 1024 * 1024,
+        ...spawnOptions,
       });
       stdout = result.stdout ?? Buffer.alloc(0);
       stderr = result.stderr ?? Buffer.alloc(0);

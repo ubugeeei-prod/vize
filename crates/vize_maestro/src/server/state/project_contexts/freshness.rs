@@ -198,7 +198,7 @@ impl ServerState {
     ) -> bool {
         previous.map_or_else(
             || {
-                key.tsconfig.is_none()
+                key.is_root()
                     && self.is_primary_boundary(&key.root)
                     && self.retains_configuration_authority(next)
             },
@@ -455,7 +455,7 @@ impl ServerState {
             if affected.is_empty() || worker.project_routing_shutting_down() {
                 return Default::default();
             }
-            if affected.iter().any(|key| key.tsconfig.is_none()) {
+            if affected.iter().any(ProjectContextKey::is_root) {
                 affected.extend(
                     worker
                         .project_contexts
@@ -470,7 +470,9 @@ impl ServerState {
                         .map(|(key, _)| key.clone()),
                 );
             }
-            affected.sort_by(|a, b| (&a.root, &a.tsconfig).cmp(&(&b.root, &b.tsconfig)));
+            affected.sort_by(|a, b| {
+                (&a.root, a.inferred, &a.tsconfig).cmp(&(&b.root, b.inferred, &b.tsconfig))
+            });
             affected.dedup();
             let mut scope = super::watched::ConfigEventScope::for_owners(affected);
             scope.confirmations = confirmations;

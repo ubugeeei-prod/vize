@@ -137,6 +137,32 @@ export function runVisitorFixture(plugin, capability, event) {
   }
 }
 
+/** Adapt one negotiated virtual-TypeScript-only descriptor to the native host boundary. */
+export function createVirtualTsVisitorHost(plugin) {
+  negotiateVisitorPlugin(plugin, {
+    apiVersion: VISITOR_API_VERSION,
+    capabilities: ["virtual-ts"],
+  });
+  return immutable({
+    name: plugin.name,
+    version: plugin.version,
+    fingerprint: plugin.fingerprint,
+    run(eventJson) {
+      if (typeof eventJson !== "string") {
+        fail("invalid-event", "event", "must be serialized JSON");
+      }
+      let event;
+      try {
+        event = JSON.parse(eventJson);
+      } catch {
+        fail("invalid-event", "event", "must be valid JSON");
+      }
+      runVisitorFixture(plugin, "virtual-ts", event);
+      return "";
+    },
+  });
+}
+
 function capabilitiesOf(value, field, requireNonempty) {
   if (!Array.isArray(value) || (requireNonempty && value.length === 0)) {
     fail(

@@ -6,7 +6,7 @@
 
 use vize_l0::ErrorCode;
 
-use super::{Callbacks, QuoteType as CompatQuote};
+use super::Callbacks;
 use crate::markup::entity::DecodedEntity;
 use crate::markup::token::{LexErrorCode, LexMode, QuoteType, Sink};
 
@@ -94,12 +94,6 @@ impl<C: Callbacks> Sink for CompatSink<C> {
     }
 
     fn on_attrib_end(&mut self, quote: QuoteType, end: usize) {
-        let quote = match quote {
-            QuoteType::NoValue => CompatQuote::NoValue,
-            QuoteType::Unquoted => CompatQuote::Unquoted,
-            QuoteType::Single => CompatQuote::Single,
-            QuoteType::Double => CompatQuote::Double,
-        };
         self.callbacks.on_attrib_end(quote, end);
     }
 
