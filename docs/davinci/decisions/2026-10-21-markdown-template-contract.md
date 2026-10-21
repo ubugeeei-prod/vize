@@ -14,6 +14,8 @@ Vize turns that data into an SFC and sends the SFC through its normal native DOM
 
 The initial slice applies to `.md` modules after `@ox-content/vite-plugin` has transformed them. It deliberately requires the generated marker and valid JSON exports; unrelated JavaScript and malformed producer output pass through unchanged.
 
+The measured generated-module contract is qualified at the real Vite boundary in DOM, SSR and Vapor modes. The build fixture keeps named `html`, `frontmatter` and `toc` exports, renders frontmatter interpolation, and proves fenced Vue expressions never become component-context reads.
+
 For `<template lang="md">`, the SFC container owns only the surrounding block and records the complete Markdown body as a borrowed source slice. Ox Content owns frontmatter delimiters and values, code-fence classification, and every other byte in that slice. Until an explicit Markdown formatter exists, Glyph copies the body byte-for-byte: it does not trim blank lines, rebase indentation, or normalize line endings. The surrounding SFC tags and layout remain SFC formatter syntax. This custody contract does not by itself compile the Markdown block; the later preprocessor slice must obtain rendered output from Ox Content first.
 
 ## Vue syntax and inert content
@@ -30,7 +32,7 @@ Ox Content's generated module currently has `map: null`. The adapter therefore c
 
 ## Delivery slices
 
-1. Consume real Ox Content generated modules as `.md` Vue components in Vite, preserving named frontmatter and TOC exports. Cover DOM and SSR compilation and keep fenced Vue examples inert.
+1. Consume real Ox Content generated modules as `.md` Vue components in Vite, preserving named frontmatter and TOC exports. Cover DOM, SSR and Vapor compilation and keep fenced Vue examples inert.
 2. Add the structured component/island field upstream and consume it without losing component casing, props, directives or interpolation.
 3. Add composed source maps and use them for HMR, compiler diagnostics, linter diagnostics and type checking.
 4. Preprocess `<template lang="md">` through the same contract, then cover DOM, SSR and Vapor output.
