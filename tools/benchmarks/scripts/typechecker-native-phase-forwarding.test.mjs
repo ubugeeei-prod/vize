@@ -8,6 +8,7 @@ import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { gunzipSync } from "node:zlib";
 import test from "node:test";
+import { assertNoNativeFallback } from "./typechecker-native-phase-runner.mjs";
 
 await test("native forwarding drains stdout/stderr pipes and preserves nonzero status", () => {
   const dir = mkdtempSync(join(os.tmpdir(), "native-phase-forwarding-"));
@@ -16,6 +17,7 @@ await test("native forwarding drains stdout/stderr pipes and preserves nonzero s
     const member = join(dir, "member.ts");
     const config = join(dir, "tsconfig.json");
     const settings = join(dir, "settings.json");
+    const buildInfo = join(dir, ".vize-buildinfo", "tsconfig.tsbuildinfo");
     writeFileSync(member, "export const value: number = 1;\n");
     writeFileSync(config, JSON.stringify({ compilerOptions: { noEmit: true }, files: [member] }));
     writeFileSync(settings, JSON.stringify({ runtime, directory: join(dir, "captured") }));
@@ -44,7 +46,18 @@ if (args.includes("--listFilesOnly")) {
       new URL("./typechecker-native-phase-capture.mjs", import.meta.url),
     );
     const hash = (value) => createHash("sha256").update(value).digest("hex");
-    for (const args of [["--project", config, "--checkers", "1"], ["--version"]]) {
+    const productionArgs = [
+      "--checkers",
+      "1",
+      "--incremental",
+      "--tsBuildInfoFile",
+      buildInfo,
+      "--pretty",
+      "false",
+      "--project",
+      config,
+    ];
+    for (const args of [productionArgs, ["--version"]]) {
       const result = spawnSync(process.execPath, [wrapper, ...args], {
         cwd: dir,
         env: { ...process.env, NATIVE_PHASE_CONFIG: settings },
@@ -53,7 +66,7 @@ if (args.includes("--listFilesOnly")) {
       });
       assert.equal(result.error, undefined, result.error?.message);
       assert.equal(result.signal, null);
-      assert.equal(result.status, 3, "native nonzero status was lost");
+      assert.equal(result.status, 3, result.stderr.toString("utf8"));
       assert.equal(result.stdout.length, Buffer.byteLength(stdout));
       assert.equal(result.stderr.length, Buffer.byteLength(stderr));
       assert.equal(hash(result.stdout), hash(stdout), "stdout bytes were truncated or altered");
@@ -77,6 +90,7 @@ await test("pprof forwarding preserves product bytes and retains validated conta
     const member = join(dir, "member.ts");
     const config = join(dir, "tsconfig.json");
     const settings = join(dir, "settings.json");
+    const buildInfo = join(dir, ".vize-buildinfo", "tsconfig.tsbuildinfo");
     const trace = join(dir, "runtime-invocations.ndjson");
     const captured = join(dir, "captured");
     writeFileSync(member, "export const value: number = 1;\n");
@@ -117,7 +131,17 @@ if (args.includes('--listFilesOnly')) {
     const wrapper = fileURLToPath(
       new URL("./typechecker-native-phase-capture.mjs", import.meta.url),
     );
-    const args = ["--checkers", "1", "--pretty", "false", "--project", config];
+    const args = [
+      "--checkers",
+      "1",
+      "--incremental",
+      "--tsBuildInfoFile",
+      buildInfo,
+      "--pretty",
+      "false",
+      "--project",
+      config,
+    ];
     const run = (argv) =>
       spawnSync(process.execPath, [wrapper, ...argv], {
         cwd: dir,
@@ -128,7 +152,7 @@ if (args.includes('--listFilesOnly')) {
     const result = run(args);
     assert.equal(result.error, undefined, result.error?.message);
     assert.equal(result.signal, null);
-    assert.equal(result.status, 3);
+    assert.equal(result.status, 3, result.stderr.toString("utf8"));
     assert.deepEqual(result.stdout, Buffer.from(stdout));
     assert.deepEqual(result.stderr, Buffer.from(stderr));
     const files = readdirSync(captured).filter((file) => /^\d+\.json$/u.test(file));
@@ -216,7 +240,7 @@ if (args.includes('--listFilesOnly')) {
     for (const wrongArgs of [
       ["--checkers", "2", ...args.slice(2)],
       [...args, "--skipLibCheck"],
-      ["--project", config, "--checkers", "1", "--pretty", "false"],
+      ["--project", config, ...args.slice(0, -2)],
     ]) {
       const refused = run(wrongArgs);
       assert.equal(refused.error, undefined, refused.error?.message);
@@ -228,4 +252,18 @@ if (args.includes('--listFilesOnly')) {
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+});
+
+await test("phase evidence rejects CLI fallback and closed native sessions", () => {
+  for (const stderr of [
+    "warning: corsa: sharded Corsa CLI check failed; degraded to a single CLI program",
+    "Same-config native diagnostic completion failed: process is closed: msgpack stdout",
+    "Failed to start Corsa API session: process is closed: msgpack stdout",
+  ]) {
+    assert.throws(
+      () => assertNoNativeFallback({ signal: null, stderr }, "phase probe"),
+      /native fallback is not evidence/u,
+    );
+  }
+  assert.doesNotThrow(() => assertNoNativeFallback({ signal: null, stderr: "" }, "phase probe"));
 });

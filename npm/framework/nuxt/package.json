@@ -67,8 +67,8 @@
   "devDependencies": {
     "jiti-nuxt2": "npm:jiti@1.21.7",
     "typescript": "catalog:typescript",
-    "vite": "catalog:vite-stack",
-    "vite-plus": "catalog:vite-stack",
+    "vite": "npm:@voidzero-dev/vite-plus-core@1.1.0",
+    "vite-plus": "1.1.0",
     "vue": "catalog:vue-stable",
     "vue-router": "catalog:vue-stable"
   },

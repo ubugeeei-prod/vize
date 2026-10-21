@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "id": "lsp/regression/queued-edit-publication-10098",
+  "provenance": {
+    "fixCommit": "c14568fcbf229ed02f1f59139beceb4a6c0d05db",
+    "witnessPath": "crates/vize_maestro/src/server/diagnostic_publishing/retry_tests/publication_tests.rs",
+    "witnessTest": "queued_old_edits_cannot_adopt_the_latest_version_after_waiting_for_native_scope",
+    "inputOrigin": "exact App.vue and useToast.ts bytes from the issue 8012 publication stream used by the scheduling regression",
+    "contractOrigin": "the dedicated Rust regression validates queued versions 84 through 87 and final publication version 87; this stdio row pins its authored inputs and public LSP response"
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "c043857104a1b9f0b8f16404b2be40d47404c027835ba838be4dcfd5713c2ed5"
+    },
+    {
+      "source": "useToast.ts.txt",
+      "runtimePath": "useToast.ts",
+      "sha256": "7a36f75337837632e610953906ec15beab09bb3034e9478b3d8c65d09b8151da"
+    }
+  ],
+  "entry": "App.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "2278eaf4a959c65f723ec54f7c34559bf5d6c2322ee619d50eb8bb9e6a08afbb"
+  },
+  "method": "textDocument/foldingRange",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "scope": "pins the exact queued-edit publication inputs while the Rust witness owns scheduling and version convergence"
+}

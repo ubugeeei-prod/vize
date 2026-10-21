@@ -7,6 +7,7 @@ import { test } from "node:test";
 import { parse } from "yaml";
 
 import { cadenceDecision } from "../../../tools/support/release/release/cadence.ts";
+import { incompletePriorReleaseTargets } from "../../../tools/support/release/release/main.ts";
 import { extraReleasePackageJsonPaths } from "../../../tools/support/release/release/preparation.ts";
 import { stampCargoLock } from "../../../tools/support/release/release/stamp.ts";
 import {
@@ -41,6 +42,27 @@ test("the next release bumps the minor above every claimed version", () => {
   assert.ok(!isUnclaimedVersion("0.475.0", ["0.474.0", "v0.475.0"]));
   assert.ok(!isUnclaimedVersion("v0.476.0", ["0.474.0"]));
   assert.ok(!isUnclaimedVersion("0.476.0-rc", ["0.474.0"]));
+});
+
+test("a new release requires the prior tag on npm and every crates.io target", async () => {
+  const complete = await incompletePriorReleaseTargets("0.510.0", ["0.510.0"], async () => ({
+    kind: "published",
+  }));
+  assert.deepEqual(complete, []);
+
+  let calls = 0;
+  const incomplete = await incompletePriorReleaseTargets("0.510.0", [], async (crate) => {
+    calls += 1;
+    if (crate === "vize_oxc_parser") return { kind: "missing" };
+    if (crate === "vize_patina") return { kind: "query-failed", message: "HTTP 429" };
+    return { kind: "published" };
+  });
+  assert.equal(calls, 28);
+  assert.deepEqual(incomplete, [
+    "npm:vize@0.510.0",
+    "crates:vize_oxc_parser@0.510.0",
+    "crates:vize_patina@0.510.0",
+  ]);
 });
 
 test("the stamp rewrites only owned Cargo.lock packages", () => {

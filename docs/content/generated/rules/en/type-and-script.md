@@ -10,7 +10,7 @@ Every rule on this page includes its purpose, prerequisites, configuration, and 
 | Rule | Examples | Purpose |
 | --- | --- | --- |
 | [`script/component-options-name-casing`](#script-component-options-name-casing) | [Bad](#script-component-options-name-casing-bad) · [Good](#script-component-options-name-casing-good) | Enforce PascalCase for the component `name` option |
-| [`script/custom-event-name-casing`](#script-custom-event-name-casing) | [Bad](#script-custom-event-name-casing-bad) · [Good](#script-custom-event-name-casing-good) | Enforce camelCase for emitted custom event names |
+| [`script/custom-event-name-casing`](#script-custom-event-name-casing) | [Bad](#script-custom-event-name-casing-bad) · [Good](#script-custom-event-name-casing-good) | Enforce configured casing for emitted custom event names |
 | [`script/define-emits-declaration`](#script-define-emits-declaration) | [Bad](#script-define-emits-declaration-bad) · [Good](#script-define-emits-declaration-good) | Enforce the type-based defineEmits&lt;{}&gt;() form over the runtime/array form |
 | [`script/define-macros-order`](#script-define-macros-order) | [Bad](#script-define-macros-order-bad) · [Good](#script-define-macros-order-good) | Enforce a consistent order of the Vue compiler macros in &lt;script setup&gt; |
 | [`script/define-props-declaration`](#script-define-props-declaration) | [Bad](#script-define-props-declaration-bad) · [Good](#script-define-props-declaration-good) | Enforce type-based defineProps&lt;{ ... }&gt;() over the runtime/object form |
@@ -152,7 +152,7 @@ Good avoids this rule's finding under the configuration above; other rules may s
 
 ### `script/custom-event-name-casing`
 
-Enforce camelCase for emitted custom event names
+Enforce configured casing for emitted custom event names
 
 [Bad](#script-custom-event-name-casing-bad) · [Good](#script-custom-event-name-casing-good)
 

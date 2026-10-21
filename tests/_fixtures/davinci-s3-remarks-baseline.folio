@@ -203,6 +203,7 @@
 "tests/_fixtures/differential/lint/transition-custom-child-6881/sources/slot-child.vue"
 "tests/_fixtures/differential/lint/transition-custom-child-6881/sources/static-key.vue"
 "tests/_fixtures/differential/lint/transition-custom-child-6881/sources/web-component.vue"
+"tests/_fixtures/differential/linter/custom-event-name-casing-9879/source.vue"
 "tests/_fixtures/differential/linter/require-symbol-provide-range-9882/source.vue"
 "tests/_fixtures/differential/linter/vue-alias-types-9864/src/pages/list-view.vue"
 "tests/_fixtures/differential/linter/vue-alias-types-9864/src/pages/page-view.vue"

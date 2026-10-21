@@ -853,6 +853,36 @@
         "typecheck": false,
         "formatting": true
       }
+    },
+    {
+      "id": "lsp/regression/queued-edit-publication-10098",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "case": {
+        "path": "queued-edit-publication-10098/case.json",
+        "sha256": "be901ed1f4365fd0a0961efc36eb59f160ac09e48757576b917f47ddc4539a29"
+      },
+      "inputs": {
+        "root": "queued-edit-publication-10098",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "c043857104a1b9f0b8f16404b2be40d47404c027835ba838be4dcfd5713c2ed5"
+          },
+          {
+            "path": "useToast.ts.txt",
+            "sha256": "7a36f75337837632e610953906ec15beab09bb3034e9478b3d8c65d09b8151da"
+          }
+        ]
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
     }
   ]
 }

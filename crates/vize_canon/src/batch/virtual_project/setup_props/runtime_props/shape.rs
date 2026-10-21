@@ -16,6 +16,10 @@ pub(super) fn is_runtime_props_wrapper(call: &CallExpression<'_>) -> bool {
     }
 }
 
+pub(super) fn call_expression_name<'a>(call: &'a CallExpression<'a>) -> Option<&'a str> {
+    super::super::syntax::call_expression_name(call)
+}
+
 pub(super) fn runtime_prop_is_required(expr: &Expression<'_>) -> bool {
     let Some(object) = runtime_prop_options_object(expr) else {
         return false;

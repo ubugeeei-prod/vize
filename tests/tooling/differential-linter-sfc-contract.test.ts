@@ -38,13 +38,13 @@ function packet(value: any) {
 void test("all current SFC wires have the complete bounded transition and old packs stay exact", () => {
   assert.equal(
     sha256(fs.readFileSync(manifest)),
-    "ff0009e77d68840231a06ffcc4d048396e69e30768c585b57cf8256e06a2793a",
+    "8de2c19c9bcd6d9b15369587c790412aef6f4625c730624a17b9b90d8c3f6830",
   );
   assert.equal(
     sha256(
       fs.readFileSync(path.join(root, "tests/_fixtures/differential/linter/oracle-index.json")),
     ),
-    "8b6997adf1bd848ddb34f02358e6d83a4ac55f6467d89da2e146a877d061b158",
+    "acdb141f572354bca2aff1bd2f535293c2057f0df84567389eef6e855344b9e7",
   );
   const expected: [string, ReturnType<typeof missing> | null][] = [
     ["current-api/ref-string-untyped", null],
