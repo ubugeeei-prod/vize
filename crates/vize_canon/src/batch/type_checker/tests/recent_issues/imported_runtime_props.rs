@@ -483,3 +483,9 @@ const needsSettings = (settings: Settings) => settings.country
         "runtime object factory assertions should retain their return type, got: {snapshot:#?}"
     );
 }
+
+#[test]
+fn runtime_props_reports_10100_10101_retain_expected_types() {
+    imported_runtime_prop_factory_spread_reaches_setup_and_template();
+    runtime_object_factory_assertion_retains_authored_type();
+}

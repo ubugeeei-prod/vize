@@ -1849,7 +1849,7 @@
       },
       "pack": "runtime-props-report-10100-10101",
       "case": "imported-helper-spread",
-      "test": "imported_runtime_prop_factory_spread_reaches_setup_and_template",
+      "test": "runtime_props_reports_10100_10101_retain_expected_types",
       "regressionCommit": "5dfe002a9467d152c8545693df33def3aa5f3bf7",
       "sourceRevision": "5dfe002a9467d152c8545693df33def3aa5f3bf7",
       "packReference": {
@@ -1886,7 +1886,7 @@
       },
       "pack": "runtime-props-report-10100-10101",
       "case": "object-factory-assertion",
-      "test": "runtime_object_factory_assertion_retains_authored_type",
+      "test": "runtime_props_reports_10100_10101_retain_expected_types",
       "regressionCommit": "5dfe002a9467d152c8545693df33def3aa5f3bf7",
       "sourceRevision": "5dfe002a9467d152c8545693df33def3aa5f3bf7",
       "packReference": {
