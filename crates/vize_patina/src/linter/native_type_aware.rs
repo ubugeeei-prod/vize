@@ -181,7 +181,7 @@ pub(super) fn with_corsa_session<T>(
             configs
                 .entry(tsconfig.clone())
                 .or_insert_with(|| {
-                    super::corsa_session::validate_tsconfig(&project_root, &tsconfig).err()
+                    super::corsa_session::validate_tsconfig(&project_root, tsconfig).err()
                 })
                 .clone()
         };
