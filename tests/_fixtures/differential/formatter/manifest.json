@@ -2434,6 +2434,139 @@
       ]
     },
     {
+      "id": "formatter/sfc/l1-directive-classification",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-l1-directive-classification",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "cdbdabcd8e44d223982c2834c197623715f1b2f9d5c7d53652499df92807abc5",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": []
+      },
+      "provenance": {
+        "issues": [
+          6847
+        ],
+        "commits": [
+          {
+            "sha": "5a7a93cbd616629283d16a648636657e597ede14",
+            "role": "fix",
+            "paths": [
+              "crates/vize_glyph/src/template/directives.rs",
+              "crates/vize_glyph/src/template/attributes.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "issue-authored-regression",
+            "issue": 6847,
+            "path": "crates/vize_glyph/tests/template_directive_attributes.rs",
+            "symbol": "custom_directive_prefixes_remain_opaque"
+          },
+          {
+            "kind": "issue-authored-regression",
+            "issue": 6847,
+            "path": "crates/vize_glyph/tests/template_directive_attributes.rs",
+            "symbol": "property_shorthand_value_uses_the_l1_bind_expression_role"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/template_directive_attributes.rs",
+          "symbol": "custom_directive_prefixes_remain_opaque",
+          "executor": "rust-test",
+          "asserts": [
+            "custom-directive-opacity",
+            "builtin-property-shorthand-expression",
+            "full-output-bytes",
+            "idempotence"
+          ],
+          "limitations": [
+            "Source-built formatter execution requires exact-head Actions."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "directive-grammar-classification"
+            ],
+            "selector": "default Vue version with --no-config"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built CLI formats an L1 binding shorthand while preserving a custom directive whose name shares a built-in prefix.",
+          "native": "No verified native formatter adapter at this base; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "pending",
+          "artifacts": [
+            {
+              "path": "sfc-l1-directive-classification/reference.expected.txt",
+              "sha256": "dc7abe7c89c59653f849b7f474bc849d4a2a91a6a6e2363247fde47d3087b98d",
+              "role": "issue-authored-regression-reference",
+              "provenance": {
+                "issue": 6847,
+                "path": "crates/vize_glyph/tests/template_directive_attributes.rs",
+                "symbol": "custom_directive_prefixes_remain_opaque",
+                "assertion": "The property shorthand formats its expression while the custom directive remains opaque."
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured-FormatResult.changed; public Rust witnesses cover this field"
+          ],
+          "referenceState": "issue-6847-L1-directive-classification-reference; exact-source Actions required"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
+    },
+    {
       "id": "formatter/sfc/directive-expression-indent-width",
       "state": "active",
       "targets": [
