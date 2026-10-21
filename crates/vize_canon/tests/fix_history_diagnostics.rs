@@ -88,6 +88,17 @@ fn template_expression_syntax_preserves_complete_authored_diagnostics() {
 }
 
 #[test]
+fn content_mapper_accepts_imported_const_enum_value_anchors() {
+    check_pack(
+        "content-mapper-const-enum-import",
+        "content_mapper_accepts_imported_const_enum_value_anchors",
+        "506529117573a96880435dd6466cfd7cf81fdc92",
+        Some(10192),
+        &["imported-const-enum-value"],
+    );
+}
+
+#[test]
 fn component_event_tuples_preserve_all_argument_diagnostics() {
     check_pack(
         "component-event-tuples",
@@ -482,6 +493,28 @@ fn dynamic_directive_expressions_preserve_typed_slot_payloads() {
     );
 }
 
+#[test]
+fn dynamic_template_refs_preserve_batch_acceptance() {
+    check_pack(
+        "content-mapper-dynamic-template-ref-10198",
+        "dynamic_template_refs_preserve_batch_acceptance",
+        "b7fb3a9aefd31002b8b2d449695a9e14d657654a",
+        Some(10198),
+        &["component-typed-and-member-values"],
+    );
+}
+
+#[test]
+fn dynamic_template_ref_unions_preserve_batch_acceptance() {
+    check_pack(
+        "content-mapper-dynamic-template-ref-union-10251",
+        "dynamic_template_ref_unions_preserve_batch_acceptance",
+        "6817c853ca1740fd1070c0ec462c0d457f339c2c",
+        Some(10251),
+        &["conditional-component-and-native-targets"],
+    );
+}
+
 fn check_pack(
     name: &str,
     test: &str,
@@ -539,7 +572,10 @@ fn check_pack(
             | "component-listener-alias-scope-10112"
             | "content-mapper-duplicate-attributes-10184"
             | "dynamic-directive-expression-mapping-10182"
-            | "content-mapper-template-expression-syntax" => regression,
+            | "content-mapper-template-expression-syntax"
+            | "content-mapper-const-enum-import"
+            | "content-mapper-dynamic-template-ref-10198"
+            | "content-mapper-dynamic-template-ref-union-10251" => regression,
             _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
         }
     );

@@ -297,6 +297,29 @@
           }
         ]
       ]
+    },
+    {
+      "id": "components/scoped-default-slot",
+      "source": "const App = () => <FixtureCard title={state.title}>{({ suffix }) => <strong>{state.label}:{suffix}</strong>}</FixtureCard>;",
+      "componentFixtures": ["FixtureCard"],
+      "initial": { "title": "Alpha", "label": "one" },
+      "steps": [
+        { "patch": { "label": "two" } },
+        { "patch": { "title": "Beta" } },
+        { "patch": { "title": "Gamma", "label": "three" } }
+      ],
+      "expectedText": [
+        "Title:Alpha|one:slot",
+        "Title:Alpha|two:slot",
+        "Title:Beta|two:slot",
+        "Title:Gamma|three:slot"
+      ],
+      "expectedElementIdentities": [
+        [0, 1, 2, 3],
+        [0, 1, 2, 3],
+        [0, 1, 2, 3],
+        [0, 1, 2, 3]
+      ]
     }
   ]
 }

@@ -1,5 +1,5 @@
-use vize_croquis::Croquis;
-use vize_l0::{CompactString, FxHashSet};
+use vize_croquis::{Analyzer, AnalyzerOptions, Croquis};
+use vize_l0::{Allocator, CompactString, FxHashSet};
 use vize_relief::BindingType;
 
 use super::super::super::template_record::TemplateRecord;
@@ -289,5 +289,92 @@ fn conditional_branches_still_register() {
         registry_of(r#"<div v-if="a" ref="only" /><section v-else><p ref="deep" /></section>"#)
             .as_deref(),
         Some(r#" "only": __VizeDomElement<"div">; "deep": __VizeDomElement<"p">; "#)
+    );
+}
+
+#[test]
+fn dynamic_component_refs_use_the_is_target_instead_of_the_builtin_tag() {
+    let script = r#"import { useTemplateRef } from "vue";
+import type { Component } from "vue";
+const { is } = defineProps<{ is: Component }>();
+const inner = useTemplateRef("inner");
+"#;
+    let template = r#"<component :is="is" ref="inner" />"#;
+    let allocator = Allocator::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    let mut type_only = FxHashSet::default();
+    type_only.insert(CompactString::from("Component"));
+
+    let registry = super::template_ref_registry(
+        &summary,
+        &VirtualTsOptions::default(),
+        Some(script),
+        Some(&root),
+        &type_only,
+        (VirtualTsCheckOptions::default(), &TemplateRecord::default()),
+    )
+    .expect("dynamic component ref registry");
+
+    assert_eq!(
+        registry.body.as_str(),
+        r#" "inner": __VizeTemplateComponentRef<typeof is>; "#
+    );
+
+    let script = r#"import { computed, useTemplateRef } from "vue";
+import type { Component } from "vue";
+const current = computed<{ component: Component }>(() => ({ component: {} as Component }));
+const inner = useTemplateRef("inner");
+"#;
+    let template = r#"<component :is="current.component" ref="inner" />"#;
+    let allocator = Allocator::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+    let registry = super::template_ref_registry(
+        &Croquis::default(),
+        &VirtualTsOptions::default(),
+        Some(script),
+        Some(&root),
+        &type_only,
+        (VirtualTsCheckOptions::default(), &TemplateRecord::default()),
+    )
+    .expect("member dynamic component ref registry");
+
+    assert_eq!(
+        registry.body.as_str(),
+        r#" "inner": __VizeTemplateComponentRef<import('vue').UnwrapRef<typeof current>["component"]>; "#
+    );
+}
+
+#[test]
+fn dynamic_component_ref_preserves_component_and_native_union() {
+    let script = r#"import { useTemplateRef } from "vue";
+import Child from "./Child.vue";
+const condition = true;
+const root = useTemplateRef("root");
+"#;
+    let template = r#"<component :is="condition ? Child : 'div'" ref="root" />"#;
+    let allocator = Allocator::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+
+    let registry = super::template_ref_registry(
+        &summary,
+        &VirtualTsOptions::default(),
+        Some(script),
+        Some(&root),
+        &FxHashSet::default(),
+        (VirtualTsCheckOptions::default(), &TemplateRecord::default()),
+    )
+    .expect("conditional dynamic component ref registry");
+
+    assert_eq!(
+        registry.body.as_str(),
+        r#" "root": __VizeTemplateComponentRef<typeof __vize_dynamic_is_0>; "#
     );
 }

@@ -1,0 +1,19 @@
+<script setup lang="ts">
+import { onMounted, useTemplateRef } from "vue";
+import Child from "./Child.vue";
+
+defineProps<{ condition: boolean }>();
+
+const root = useTemplateRef("root");
+
+onMounted(() => {
+  const instance = root.value;
+  if (instance && !(instance instanceof Element)) {
+    instance.$el;
+  }
+});
+</script>
+
+<template>
+  <component :is="condition ? Child : 'div'" ref="root" />
+</template>

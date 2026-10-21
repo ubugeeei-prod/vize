@@ -1,0 +1,4 @@
+export const enum State {
+  Idle = "idle",
+  Busy = "busy",
+}

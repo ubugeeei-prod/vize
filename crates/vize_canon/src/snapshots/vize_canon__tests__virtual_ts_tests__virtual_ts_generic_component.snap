@@ -186,7 +186,7 @@ function __setup<T extends string | number>() {
   }
 
   // Reference setup bindings (used in template/CSS v-bind)
-  void activeItem; void emit; void items; void props; void ref; void selected;
+  void activeItem; void emit; void items; void props; void (null as unknown as keyof typeof ref); void selected;
   })();
 
   // Compiler-macro results contribute to the component signature
