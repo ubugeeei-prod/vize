@@ -67,5 +67,8 @@ fn infers_object_factory_assertion_return_type() {
         .find(|prop| prop.name == "settings")
         .expect("settings runtime prop");
     assert_eq!(settings.prop_type.as_deref(), Some("Settings"));
-    assert_eq!(settings.default_value.as_deref(), Some("undefined"));
+    assert_eq!(
+        settings.default_value.as_deref(),
+        Some("() => ({ country: true, platform: true })")
+    );
 }
