@@ -56,8 +56,7 @@ export const TYPECHECKER_TESTS = {
   "content-mapper-template-expression-syntax":
     "template_expression_syntax_preserves_complete_authored_diagnostics",
   "content-mapper-const-enum-import": "content_mapper_accepts_imported_const_enum_value_anchors",
-  "content-mapper-dynamic-template-ref-10198":
-    "dynamic_template_refs_preserve_batch_acceptance",
+  "content-mapper-dynamic-template-ref-10198": "dynamic_template_refs_preserve_batch_acceptance",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
