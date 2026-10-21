@@ -293,7 +293,7 @@ fn expression_owner_statements(text: &str) -> Vec<ExpressionOwnerStatement<'_>> 
         let Some(header) = text.get(call_start..line_end) else {
             continue;
         };
-        if !header.contains("_Check_") || !header.trim_end().ends_with(")(") {
+        if !header.contains("_Check_") || !header.trim_end().ends_with(")({") {
             continue;
         }
         let Some(before) = text.get(..call_start) else {
