@@ -128,11 +128,11 @@ function baseline() {
     buildReceipt: receipt,
     rows,
     summary: {
-      plannedCases: 59,
-      legacyMatches: 59,
+      plannedCases: 65,
+      legacyMatches: 65,
       legacyFailures: 0,
       baselineDrift: 0,
-      nativeUnsupported: 49,
+      nativeUnsupported: 55,
       nativeFailures: 0,
       nativeHandled: 10,
       nativeEquivalent: 10,
@@ -153,10 +153,10 @@ function changePacket(row: any, mutate: (packet: any) => void) {
 void test("shared acceptance counts only validated whole-product linter observations", () => {
   const acceptance = summarizeLinterAcceptance(loaded, baseline(), receipt);
   assert.deepEqual(acceptance.total, {
-    planned: 59,
+    planned: 65,
     nativeHandled: 10,
     nativeEquivalent: 10,
-    unsupported: 49,
+    unsupported: 55,
     legacyBacked: 0,
     unverified: 0,
   });

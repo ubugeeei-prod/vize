@@ -866,6 +866,37 @@
       }
     },
     {
+      "id": "lsp/regression/formatter-whitespace-entries-10031",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "case": {
+        "path": "formatter-whitespace-entries-10031/case.json",
+        "sha256": "763bc1e02f27e2ee056056036fe960a60a14434bdeb78dfe839ea4b467828ebf"
+      },
+      "inputs": {
+        "root": "formatter-whitespace-entries-10031",
+        "files": [
+          {
+            "path": "src/legacy/App.vue.txt",
+            "sha256": "f027d11f3080e9212d52f88955765fddc849b34a836271c1eb19a40f54dfc25d"
+          },
+          {
+            "path": "vite.config.mjs.txt",
+            "sha256": "94f7d393ec06c222ef5fee66cf1824c1d8964d5ed8e5d4933322f66021c7adf8"
+          }
+        ]
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false,
+        "formatting": true
+      }
+    },
+    {
       "id": "lsp/regression/type-aware-slot-outlet-9834",
       "state": "active",
       "targets": [
@@ -946,6 +977,40 @@
         "lint": true,
         "typecheck": false,
         "codeActions": true
+      }
+    },
+    {
+      "id": "lsp/regression/inferred-project-tsconfig-9718",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "inferred-project-tsconfig-9718",
+        "files": [
+          {
+            "path": "template/code/App.vue.txt",
+            "sha256": "de238d982cfda3227024dbbeffd9c9e815c7c4a4e3a15b23a23ffa166de08ca5"
+          },
+          {
+            "path": "src/Owned.vue.txt",
+            "sha256": "bfc43c6754b2eb18471dab82dc9c14a043c5942e6f87dd86c0795ffb9b8ecdfe"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "0014b81552bc7019acaea9d211ff8022e272cbdbd29651e30f84a92489dfae91"
+          }
+        ]
+      },
+      "case": {
+        "path": "inferred-project-tsconfig-9718/case.json",
+        "sha256": "6302431e94ce2ca8ca171413fc81502c3e3ddce8d1c46e3d9c4e9dcf861502b4"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
       }
     }
   ]

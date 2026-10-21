@@ -130,7 +130,23 @@ pub fn run(args: FmtArgs) {
         })
     };
     let (options, vue_version, sort_imports) = build_format_options(&args, &snapshot);
-    let preserve_text = snapshot.compiler_whitespace == Some("preserve");
+    let config_dir = snapshot
+        .project_root
+        .clone()
+        .or_else(|| {
+            snapshot
+                .loaded
+                .source_path
+                .as_deref()
+                .and_then(std::path::Path::parent)
+                .map(std::path::Path::to_path_buf)
+        })
+        .unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")));
+    let whitespace_plan = config::matcher::CompilerWhitespacePlan::new(
+        snapshot.compiler_whitespace,
+        &snapshot.compiler_entries,
+        &config_dir,
+    );
     let (ignore_set, patterns) = (
         load_fmt_ignore_set(&snapshot),
         entries::resolve_patterns(&args, &snapshot),
@@ -169,6 +185,7 @@ pub fn run(args: FmtArgs) {
         || Allocator::with_capacity(64 * 1024),
         |allocator, path| {
             allocator.reset();
+            let preserve_text = whitespace_plan.preserves_text_for(path);
 
             match process_file(
                 path,

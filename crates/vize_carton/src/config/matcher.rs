@@ -4,6 +4,75 @@ use crate::String;
 use globset::{GlobBuilder, GlobMatcher};
 use std::path::{Component, Path, PathBuf};
 
+use crate::config::CompilerConfigEntry;
+
+/// The compiler whitespace policy that the formatter must preserve for each file.
+///
+/// Entries use the same declaration-order matching as the build command: every
+/// matching entry layers over the root policy and the last whitespace override
+/// wins. Modes with output-sensitive authored text are kept verbatim by Glyph.
+pub struct CompilerWhitespacePlan {
+    root_preserves_text: bool,
+    scopes: Vec<(LintPlanScope, bool)>,
+    cwd: PathBuf,
+}
+
+impl CompilerWhitespacePlan {
+    pub fn new(root: Option<&str>, entries: &[CompilerConfigEntry], config_dir: &Path) -> Self {
+        let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
+        let scopes = entries
+            .iter()
+            .filter_map(|entry| {
+                let whitespace = entry.whitespace.as_deref()?;
+                Some((
+                    LintPlanScope::new(
+                        entry.base_path.as_deref(),
+                        entry.files.as_deref(),
+                        &entry.ignores,
+                        config_dir,
+                        &cwd,
+                    ),
+                    preserves_authored_text(Some(whitespace)),
+                ))
+            })
+            .collect();
+        Self {
+            root_preserves_text: preserves_authored_text(root),
+            scopes,
+            cwd,
+        }
+    }
+
+    pub fn preserves_text_for(&self, path: &Path) -> bool {
+        let path = absolute_path(path, &self.cwd);
+        let mut preserve = self.root_preserves_text;
+        for (scope, scoped_preserve) in &self.scopes {
+            if scope.matches(&path) {
+                preserve = *scoped_preserve;
+            }
+        }
+        preserve
+    }
+
+    pub fn root_preserves_text(&self) -> bool {
+        self.root_preserves_text
+    }
+}
+
+impl Default for CompilerWhitespacePlan {
+    fn default() -> Self {
+        Self::new(None, &[], Path::new("."))
+    }
+}
+
+/// True when formatting authored template text can change compiler output.
+pub fn preserves_authored_text(whitespace: Option<&str>) -> bool {
+    matches!(
+        whitespace,
+        Some("preserve" | "vue2-preserve" | "vue2-line-breaks")
+    )
+}
+
 /// Ordered, escaped ignore sequences for host-projected project settings.
 ///
 /// Patterns with a common base retain their declaration order;
@@ -297,7 +366,8 @@ pub fn normalize_path(path: &Path) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{LintPlanScope, ProjectIgnoreSet};
+    use super::{CompilerWhitespacePlan, LintPlanScope, ProjectIgnoreSet};
+    use crate::config::CompilerConfigEntry;
     use std::path::Path;
 
     fn scope(files: Option<&[&str]>, ignores: &[&str]) -> LintPlanScope {
@@ -420,5 +490,34 @@ mod tests {
                 ("outside/DropItem.vue", true),
             ]
         );
+    }
+
+    #[test]
+    fn compiler_whitespace_plan_matches_build_entry_order_per_file() {
+        let project = tempfile::tempdir().unwrap();
+        let entry = |files: &str, whitespace: &str| CompilerConfigEntry {
+            base_path: None,
+            files: Some(vec![files.into()]),
+            ignores: Vec::new(),
+            template_syntax: None,
+            whitespace: Some(whitespace.into()),
+            vapor: None,
+            custom_elements: Vec::new(),
+        };
+        let plan = CompilerWhitespacePlan::new(
+            Some("preserve"),
+            &[
+                entry("src/**", "condense"),
+                entry("src/legacy/**", "vue2-preserve"),
+                entry("src/line-breaks/**", "vue2-line-breaks"),
+            ],
+            project.path(),
+        );
+
+        assert!(plan.root_preserves_text());
+        assert!(!plan.preserves_text_for(&project.path().join("src/App.vue")));
+        assert!(plan.preserves_text_for(&project.path().join("src/legacy/App.vue")));
+        assert!(plan.preserves_text_for(&project.path().join("src/line-breaks/App.vue")));
+        assert!(plan.preserves_text_for(&project.path().join("outside/App.vue")));
     }
 }

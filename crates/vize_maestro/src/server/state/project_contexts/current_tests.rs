@@ -30,6 +30,7 @@ fn continuation_union_keeps_common_disjoint_absent_and_conflicting_inputs_in_bot
             ProjectContextKey {
                 root: root.clone(),
                 tsconfig: Some(leaf.clone()),
+                inferred: false,
             },
             record,
         )

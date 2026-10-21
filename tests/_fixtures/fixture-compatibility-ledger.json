@@ -205,7 +205,7 @@
     },
     {
       "fixturePath": "tests/_fixtures/_git/frontend-phpcon-do-website",
-      "memberships": ["app"],
+      "memberships": ["ecosystem", "app"],
       "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
@@ -360,7 +360,7 @@
     },
     {
       "fixturePath": "tests/_fixtures/_git/npmx.dev",
-      "memberships": ["app"],
+      "memberships": ["ecosystem", "app"],
       "dialectCoverage": {
         "state": "partial",
         "evidence": [
@@ -380,12 +380,12 @@
     },
     {
       "fixturePath": "tests/_fixtures/_git/nuxt-ui",
-      "memberships": ["app"],
+      "memberships": ["ecosystem", "app"],
       "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/openvue",
-      "memberships": ["app"],
+      "memberships": ["ecosystem", "app"],
       "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
@@ -821,7 +821,7 @@
     },
     {
       "fixturePath": "tests/_fixtures/_git/vuefes-2025",
-      "memberships": ["app"],
+      "memberships": ["ecosystem", "app"],
       "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {

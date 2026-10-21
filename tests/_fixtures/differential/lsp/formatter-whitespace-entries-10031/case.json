@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "id": "lsp/regression/formatter-whitespace-entries-10031",
+  "provenance": {
+    "fixCommit": "8651b462ae8e80247f24ea5ef7ea703937e05f98"
+  },
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false,
+    "formatting": true
+  },
+  "files": [
+    {
+      "source": "src/legacy/App.vue.txt",
+      "runtimePath": "src/legacy/App.vue",
+      "sha256": "f027d11f3080e9212d52f88955765fddc849b34a836271c1eb19a40f54dfc25d"
+    },
+    {
+      "source": "vite.config.mjs.txt",
+      "runtimePath": "vite.config.mjs",
+      "sha256": "94f7d393ec06c222ef5fee66cf1824c1d8964d5ed8e5d4933322f66021c7adf8"
+    }
+  ],
+  "entry": "src/legacy/App.vue",
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "4e1fd2ac3fae1d8d0bd3d7b6231c79085bef7fbe0ce621b60fd2a0b206ab6b9f"
+  },
+  "method": "textDocument/onTypeFormatting",
+  "options": {
+    "tabSize": 2,
+    "insertSpaces": true
+  }
+}

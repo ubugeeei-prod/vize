@@ -105,7 +105,7 @@ impl CompilerConfigurationSnapshot {
     /// the existing checked resolver, then validate every observed input once.
     /// Changes reject admission; this is not a multi-file filesystem transaction.
     pub fn capture(project_root: &Path, tsconfig_path: Option<&Path>) -> CorsaResult<Self> {
-        Self::capture_with_observer(project_root, tsconfig_path, || {})
+        Self::capture_with_observer(project_root, tsconfig_path, false, || {})
     }
 
     /// Retain watch-only dependency observations even when strict capture fails.
@@ -113,20 +113,35 @@ impl CompilerConfigurationSnapshot {
         project_root: &Path,
         tsconfig_path: Option<&Path>,
     ) -> CompilerConfigurationAttempt {
-        Self::capture_attempt_with_observer(project_root, tsconfig_path, || {})
+        Self::capture_attempt_with_observer(project_root, tsconfig_path, false, || {})
+    }
+
+    /// Capture default compiler options for a tsserver-style inferred project.
+    /// Existing conventional configs remain observed for ownership changes but
+    /// do not become compiler authority for the inferred project.
+    pub fn capture_inferred_attempt(project_root: &Path) -> CompilerConfigurationAttempt {
+        Self::capture_attempt_with_observer(project_root, None, true, || {})
     }
 
     fn capture_with_observer(
         project_root: &Path,
         tsconfig_path: Option<&Path>,
+        allow_existing_implicit_configs: bool,
         after_flattened: impl FnOnce(),
     ) -> CorsaResult<Self> {
-        Self::capture_attempt_with_observer(project_root, tsconfig_path, after_flattened).outcome
+        Self::capture_attempt_with_observer(
+            project_root,
+            tsconfig_path,
+            allow_existing_implicit_configs,
+            after_flattened,
+        )
+        .outcome
     }
 
     fn capture_attempt_with_observer(
         project_root: &Path,
         tsconfig_path: Option<&Path>,
+        allow_existing_implicit_configs: bool,
         after_flattened: impl FnOnce(),
     ) -> CompilerConfigurationAttempt {
         let phase = crate::corsa_bridge::preparation_trace::Phase::start(
@@ -151,7 +166,7 @@ impl CompilerConfigurationSnapshot {
         }
         let outcome = (|| {
             let project = VirtualProject::new(&implicit_root)?;
-            if tsconfig_path.is_none() {
+            if tsconfig_path.is_none() && !allow_existing_implicit_configs {
                 for path in &implicit_candidates {
                     inputs.observe(path);
                     if path.is_file() {

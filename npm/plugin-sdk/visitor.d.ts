@@ -168,6 +168,13 @@ export interface NegotiatedVisitorContract<C extends readonly VisitorCapability[
   readonly apiVersion: 1;
   readonly capabilities: C;
 }
+export interface VirtualTsVisitorHostPlugin {
+  readonly name: string;
+  readonly version: string;
+  readonly fingerprint: string;
+  /** Host-only serialized boundary consumed by `typeCheckWithVirtualTsVisitors`. */
+  readonly run: (eventJson: string) => string;
+}
 
 /** Define an immutable descriptor. This does not register a runtime hook. */
 export declare function defineVisitorPlugin<const C extends readonly VisitorCapability[]>(
@@ -183,3 +190,10 @@ export declare function runVisitorFixture<
   C extends readonly VisitorCapability[],
   K extends C[number],
 >(plugin: VisitorPlugin<C>, capability: K, event: VisitorEvent<K>): void;
+/**
+ * Negotiate a virtual-TypeScript-only descriptor and adapt it to the native
+ * type-check visitor boundary. Descriptors with any unsupported capability fail closed.
+ */
+export declare function createVirtualTsVisitorHost(
+  plugin: VisitorPlugin<readonly ["virtual-ts"]>,
+): VirtualTsVisitorHostPlugin;

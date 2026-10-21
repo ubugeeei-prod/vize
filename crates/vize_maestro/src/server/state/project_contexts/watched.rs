@@ -142,7 +142,7 @@ impl ServerState {
         }
         let base_roots = affected
             .iter()
-            .filter(|key| key.tsconfig.is_none())
+            .filter(|key| key.is_root())
             .map(|key| key.root.clone())
             .collect::<Vec<_>>();
         affected.extend(
@@ -169,13 +169,16 @@ impl ServerState {
             );
         }
         for root in new_boundaries {
-            if !affected.iter().any(|key| {
-                key.tsconfig.is_none() && physical_path(&key.root) == physical_path(&root)
-            }) {
+            if !affected
+                .iter()
+                .any(|key| key.is_root() && physical_path(&key.root) == physical_path(&root))
+            {
                 affected.push(root.into());
             }
         }
-        affected.sort_by(|a, b| (&a.root, &a.tsconfig).cmp(&(&b.root, &b.tsconfig)));
+        affected.sort_by(|a, b| {
+            (&a.root, a.inferred, &a.tsconfig).cmp(&(&b.root, b.inferred, &b.tsconfig))
+        });
         affected.dedup();
         ConfigEventScope {
             affected,
@@ -229,7 +232,7 @@ impl ServerState {
                 .map(|context| context.config_dependencies())
                 .unwrap_or_else(|| self.project_contexts.config_dependencies.read().clone());
             dependencies.extend(self.configuration_paths_for_key(&key));
-            let markers = if key.tsconfig.is_none() {
+            let markers = if key.is_root() {
                 scope.marker_paths.as_slice()
             } else {
                 &[]
@@ -368,7 +371,7 @@ impl ServerState {
                         retired.push(previous);
                     }
                     accepted_roots.insert(key.root.clone());
-                    if key.tsconfig.is_none() && self.is_primary_boundary(&key.root) {
+                    if key.is_root() && self.is_primary_boundary(&key.root) {
                         self.project_contexts.retired.store(true, Ordering::Release);
                         accepted_primary = true;
                     }
@@ -382,7 +385,7 @@ impl ServerState {
                         .insert(key.clone());
                     if let Some(previous) = &previous {
                         previous.record_reload_failure();
-                    } else if key.tsconfig.is_none() && self.is_primary_boundary(&key.root) {
+                    } else if key.is_root() && self.is_primary_boundary(&key.root) {
                         self.project_contexts
                             .config_reload_failed
                             .store(true, Ordering::Release);
@@ -420,7 +423,7 @@ impl ServerState {
                             // New package markers may move a buffer out of its
                             // previous boundary. A shared directory alone must
                             // not republish a different referenced owner.
-                            key.tsconfig.is_none()
+                            key.is_root()
                                 && route.as_ref().is_none_or(|route| route.root != key.root)
                                 && physical_path(path).starts_with(physical_path(&key.root))
                         })
@@ -439,7 +442,7 @@ impl ServerState {
                     .routes
                     .get(uri)
                     .is_some_and(|previous| {
-                        previous.tsconfig.is_none()
+                        previous.is_root()
                             && self.is_primary_boundary(&previous.root)
                             && topology_roots.contains(&previous.root)
                             && uri

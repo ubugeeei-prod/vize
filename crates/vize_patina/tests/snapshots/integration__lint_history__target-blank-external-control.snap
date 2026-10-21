@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "target-blank-external-control",
+    history: "2089ab120aa8e582b2297d96a59fccb3e6edff6b",
+    source: "<a href=\"https://example.com\" target=\"_blank\">x</a>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-template-target-blank",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-template-target-blank",
+                severity: Warning,
+                message: "Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
+                start: 30,
+                end: 45,
+                help: Some(
+                    "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-template-target-blank",
+                    severity: Warning,
+                    message: "Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
+                    start: 30,
+                    end: 45,
+                    help: Some(
+                        "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

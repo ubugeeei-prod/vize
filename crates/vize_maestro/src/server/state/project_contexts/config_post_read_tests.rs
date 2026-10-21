@@ -94,6 +94,7 @@ fn shared_vite_baseline_preserves_full_key_compiler_graphs_and_failed_repair() {
     let leaf_key = ProjectContextKey {
         root,
         tsconfig: Some(leaf.clone()),
+        inferred: false,
     };
     let (base_snapshot, _) = ServerState::prepare_configuration_attempt(
         &base_key,
@@ -193,6 +194,7 @@ fn common_repair_baseline_never_overwrites_a_later_canon_consumed_revision() {
     let key = ProjectContextKey {
         root,
         tsconfig: Some(leaf),
+        inferred: false,
     };
     let (next, _) =
         ServerState::prepare_configuration_attempt(&key, &raw, &before, &[], Some(&mut shared));
