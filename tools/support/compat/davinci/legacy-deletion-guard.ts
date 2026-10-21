@@ -6,6 +6,40 @@ const legacyManifest =
 const auditWorkflow = ".github/workflows/level-deletion-readiness.yml";
 const shaPattern = /^[0-9a-f]{40}$/;
 
+interface LegacyRouteWitness {
+  readonly route: string;
+  readonly path: string;
+  readonly marker: string;
+}
+
+const legacyRouteWitnesses: readonly LegacyRouteWitness[] = [
+  {
+    route: "DOM compatibility emitter",
+    path: "crates/vize_atelier_dom/src/compile/inner.rs",
+    marker: "generate_with_sections_and_experimental_options_slot_scope_and_environment(",
+  },
+  {
+    route: "DOM SFC compatibility selection",
+    path: "crates/vize_atelier_dom/src/compile/sfc.rs",
+    marker: "DomCompilePipelineOptions::after_refusal_with_experimental_options(",
+  },
+  {
+    route: "SSR compatibility emitter",
+    path: "crates/vize_atelier_ssr/src/compile.rs",
+    marker: "codegen_ctx.generate(&root)",
+  },
+  {
+    route: "Vapor compatibility transform",
+    path: "crates/vize_atelier_vapor/src/compile/inner.rs",
+    marker: "transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id(",
+  },
+  {
+    route: "Vapor compatibility emitter",
+    path: "crates/vize_atelier_vapor/src/compile/inner.rs",
+    marker: "vapor_lower::transform_to_ir_with_spans(",
+  },
+];
+
 const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
@@ -19,6 +53,24 @@ export function removedLegacyManifests(nameStatus: string): string[] {
     }
   }
   return removed;
+}
+
+export function retiredLegacyRouteWitnesses(
+  baseFiles: Readonly<Record<string, string | undefined>>,
+  candidateFiles: Readonly<Record<string, string | undefined>>,
+): string[] {
+  return legacyRouteWitnesses
+    .filter(({ path, marker }) => baseFiles[path]?.includes(marker) === true)
+    .filter(({ path, marker }) => candidateFiles[path]?.includes(marker) !== true)
+    .map(({ route, path }) => `${route} (${path})`);
+}
+
+export function missingLegacyRouteWitnesses(
+  files: Readonly<Record<string, string | undefined>>,
+): string[] {
+  return legacyRouteWitnesses
+    .filter(({ path, marker }) => files[path]?.includes(marker) !== true)
+    .map(({ route, path }) => `${route} (${path})`);
 }
 
 export function hasExactSuccessfulAudit(response: unknown, sha: string): boolean {
@@ -57,6 +109,23 @@ function successfulAuditAt(repository: string, sha: string): boolean {
   return hasExactSuccessfulAudit(response, sha);
 }
 
+function fileAt(sha: string, path: string): string | undefined {
+  try {
+    return command("git", ["show", `${sha}:${path}`]);
+  } catch {
+    return undefined;
+  }
+}
+
+function filesAt(sha: string): Readonly<Record<string, string | undefined>> {
+  return Object.fromEntries(
+    [...new Set(legacyRouteWitnesses.map(({ path }) => path))].map((path) => [
+      path,
+      fileAt(sha, path),
+    ]),
+  );
+}
+
 export interface GuardInputs {
   readonly baseSha: string | undefined;
   readonly candidateSha: string | undefined;
@@ -87,20 +156,25 @@ export function guardLegacyDeletion({ baseSha, candidateSha, repository }: Guard
     "crates",
   ]);
   const removed = removedLegacyManifests(changes);
-  if (removed.length === 0) {
-    process.stdout.write("legacy deletion guard: no legacy crate manifest removed\n");
+  const retiredRoutes = retiredLegacyRouteWitnesses(filesAt(baseSha), filesAt(candidateSha));
+  if (removed.length === 0 && retiredRoutes.length === 0) {
+    process.stdout.write("legacy deletion guard: no legacy manifest or route witness retired\n");
     return;
   }
+  const guardedChanges = [
+    ...removed.map((path) => `legacy crate manifest ${path}`),
+    ...retiredRoutes.map((route) => `legacy route ${route}`),
+  ];
   for (const sha of new Set([baseSha, candidateSha])) {
     if (!successfulAuditAt(repository, sha)) {
       throw new Error(
-        `Legacy crate removal (${removed.join(", ")}) requires a successful ${auditWorkflow} ` +
+        `Retiring ${guardedChanges.join(", ")} requires a successful ${auditWorkflow} ` +
           `workflow_dispatch audit at exact SHA ${sha}; missing or stale audit blocks deletion`,
       );
     }
   }
   process.stdout.write(
-    `legacy deletion guard: exact base and candidate audits verified for ${removed.join(", ")}\n`,
+    `legacy deletion guard: exact base and candidate audits verified for ${guardedChanges.join(", ")}\n`,
   );
 }
 
