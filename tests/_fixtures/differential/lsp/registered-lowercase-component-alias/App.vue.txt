@@ -1,0 +1,13 @@
+<script>
+import Lottie from "./lottie.vue"
+
+export default {
+  components: {
+    "lottie": Lottie
+  }
+}
+</script>
+
+<template>
+  <lottie />
+</template>

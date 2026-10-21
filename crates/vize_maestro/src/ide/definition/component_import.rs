@@ -7,6 +7,7 @@
 use std::path::{Path, PathBuf};
 
 use tower_lsp::lsp_types::Url;
+use vize_croquis::{Drawer, DrawerOptions};
 
 use super::{IdeContext, helpers};
 
@@ -16,12 +17,21 @@ pub(crate) fn resolve_component_file(
     ctx: &IdeContext<'_>,
     component_name: &str,
 ) -> Option<PathBuf> {
-    let import = find_component_import(ctx, component_name)?;
+    let import = find_component_import(ctx, component_name)
+        .or_else(|| find_registered_component_import(ctx, component_name))?;
     let resolved = helpers::resolve_import_path(ctx.uri, &import.specifier)?;
     if is_vue_path(&resolved) {
         return Some(resolved);
     }
     resolve_exported_component(&resolved, &import.imported_name, 0)
+}
+
+/// Whether an Options API `components` entry registers this authored tag.
+///
+/// A registered name may be a single lowercase word (`'lottie': Lottie`),
+/// which cannot be classified from markup spelling alone.
+pub(crate) fn is_registered_component(ctx: &IdeContext<'_>, component_name: &str) -> bool {
+    registered_component_local_name(ctx, component_name).is_some()
 }
 
 struct ComponentImport {
@@ -36,6 +46,38 @@ fn find_component_import(ctx: &IdeContext<'_>, component_name: &str) -> Option<C
         }
     }
     None
+}
+
+fn find_registered_component_import(
+    ctx: &IdeContext<'_>,
+    component_name: &str,
+) -> Option<ComponentImport> {
+    let local_name = registered_component_local_name(ctx, component_name)?;
+    find_component_import_by_name(ctx, &local_name)
+}
+
+pub(crate) fn registered_component_local_name(
+    ctx: &IdeContext<'_>,
+    component_name: &str,
+) -> Option<String> {
+    let descriptor = ctx.descriptor()?;
+    let mut analyzer = Drawer::with_options(DrawerOptions::full());
+    if let Some(script_setup) = descriptor.script_setup.as_ref() {
+        analyzer.analyze_script_setup(&script_setup.content);
+    } else if let Some(script) = descriptor.script.as_ref() {
+        analyzer.analyze_script_plain(&script.content);
+    }
+    let croquis = analyzer.finish();
+    croquis
+        .component_registrations
+        .iter()
+        .find(|registration| component_names_match(registration.name.as_str(), component_name))
+        .map(|registration| registration.local_name.to_string())
+}
+
+fn component_names_match(left: &str, right: &str) -> bool {
+    left == right
+        || vize_croquis::naming::to_pascal_case(left) == vize_croquis::naming::to_pascal_case(right)
 }
 
 fn find_component_import_by_name(
