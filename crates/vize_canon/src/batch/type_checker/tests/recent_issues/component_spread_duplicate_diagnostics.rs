@@ -52,26 +52,32 @@ function onBlur(): void {}
 
     let actual: Vec<_> = snapshot
         .iter()
-        .map(|(file, code, message)| {
-            (
-                file.as_str().replace('\\', "/"),
-                *code,
-                message.split(':').take(2).collect::<Vec<_>>().join(":"),
-            )
-        })
+        .map(|(file, code, message)| (file.as_str().replace('\\', "/"), *code, message.as_str()))
         .collect();
     let spread_origin: Vec<_> = actual
         .iter()
         .filter(|(_, _, location)| location.starts_with("13:"))
         .collect();
-    assert_eq!(
-        spread_origin.len(),
-        1,
-        "the invalid prop authored inside v-bind must retain one whole-props diagnostic: {snapshot:#?}"
+    assert_eq!(spread_origin.len(), 1, "{snapshot:#?}");
+    let (file, code, message) = spread_origin[0];
+    assert_eq!(file, "src/App.vue");
+    assert_eq!(*code, Some(2322));
+    assert!(
+        message.starts_with("13:4:error ")
+            && message.contains("number")
+            && message.contains("string"),
+        "the invalid type authored inside v-bind must retain its complete whole-props diagnostic: {snapshot:#?}"
     );
     let named_props: Vec<_> = actual
         .into_iter()
         .filter(|(_, _, location)| !location.starts_with("13:"))
+        .map(|(file, code, message)| {
+            (
+                file,
+                code,
+                message.split(':').take(2).collect::<Vec<_>>().join(":"),
+            )
+        })
         .collect();
     assert_eq!(
         named_props,
