@@ -10,6 +10,10 @@
       "verdict": "equivalent",
       "basis": "normalized rendered DOM and element identity across attribute and text updates"
     },
+    "props/spread-updates": {
+      "verdict": "equivalent",
+      "basis": "both Vapor and Babel references match complete spread-object replacement, text updates, diagnostics, and element identity"
+    },
     "props/dynamic-value": {
       "verdict": "equivalent",
       "basis": "both Vapor and Babel references match falsy, array, nested-VNode and element-identity attribute updates"

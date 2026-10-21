@@ -183,6 +183,37 @@
       "expectedElementIdentities": [[0], [0], [0]]
     },
     {
+      "id": "props/spread-updates",
+      "babelCorpusId": "props/spread_only",
+      "source": "const App = () => <main {...state.attrs}>{state.label}</main>;",
+      "initial": {
+        "attrs": { "id": "one", "class": "cold", "data-phase": "initial" },
+        "label": "alpha"
+      },
+      "steps": [
+        {
+          "patch": {
+            "attrs": { "id": "two", "class": "hot", "data-phase": "updated" },
+            "label": "beta"
+          }
+        },
+        {
+          "patch": {
+            "attrs": { "id": "three", "class": "warm", "data-phase": "steady" },
+            "label": "gamma"
+          }
+        },
+        {
+          "patch": {
+            "attrs": { "id": "four", "class": "cold", "data-phase": "restored" },
+            "label": "delta"
+          }
+        }
+      ],
+      "expectedText": ["alpha", "beta", "gamma", "delta"],
+      "expectedElementIdentities": [[0], [0], [0], [0]]
+    },
+    {
       "id": "events/click-closure",
       "source": "const App = () => <button onClick={() => state.count += 1}>count:{state.count}</button>;",
       "initial": { "count": 0 },

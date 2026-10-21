@@ -6,7 +6,7 @@ under the same pinned Vue Vapor runtime. Each row mounts both components in
 Happy DOM, applies the corpus updates, and compares normalized rendered DOM,
 live form state, diagnostics, and element identity.
 
-The current bounded cohort covers sixteen behaviors. It is not a claim that the
+The current bounded cohort covers seventeen behaviors. It is not a claim that the
 full `vue-jsx-vapor` surface is compatible; issue #6884 remains open until the
 corpus covers the complete dialect inventory.
 
@@ -26,6 +26,7 @@ a reviewed update to the executable verdict inventory.
 | ----------------------------------- | ---------- | ------------------------------------------------------------------------ |
 | `children/dynamic-text`             | equivalent | initial DOM and three text updates retain the authored element           |
 | `props/dynamic-attributes`          | equivalent | attributes and text update while the authored element remains live       |
+| `props/spread-updates`              | equivalent | spread attributes update repeatedly on the same live element             |
 | `props/dynamic-value`               | equivalent | falsy, array and nested-VNode attribute values match both JSX references |
 | `props/dynamic-boolean-value`       | equivalent | value-sensitive boolean property updates match both real JSX references  |
 | `props/dynamic-aria-value`          | equivalent | value-sensitive ARIA attribute updates match both real JSX references    |
@@ -45,6 +46,13 @@ The JSON corpus and verdict table are checked bidirectionally, so adding or
 removing a case without a verdict fails. The runtime comparison is the source
 of each `equivalent` verdict; generated-code shape is not used as a substitute
 for mounted behavior.
+
+The spread row is the mounted counterpart of the Babel oracle's equivalent
+`props/spread_only` row. It replaces the complete spread object three times,
+updates every spread value and sibling text, and then restores the initial
+class with a new identity attribute. Both Vize/reference pairs must agree on
+the complete DOM and diagnostics while the authored element retains identity
+through every phase.
 
 The event row dispatches two bubbling, cancelable `click` events through the
 mounted button. Its receipt pins dispatch success, `defaultPrevented`, the
