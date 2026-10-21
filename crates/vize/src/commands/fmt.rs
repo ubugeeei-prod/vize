@@ -56,6 +56,18 @@ pub struct FmtArgs {
     #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
     pub single_quote: Option<bool>,
 
+    /// Use single quotes in JSX attributes
+    #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
+    pub jsx_single_quote: Option<bool>,
+
+    /// Change when object properties are quoted
+    #[arg(long, value_enum)]
+    pub quote_props: Option<FmtQuoteProps>,
+
+    /// Change where trailing commas are printed
+    #[arg(long, value_enum)]
+    pub trailing_comma: Option<FmtTrailingComma>,
+
     /// Print width (line length) for formatting
     #[arg(long)]
     pub print_width: Option<u32>,
@@ -112,6 +124,48 @@ pub enum FmtPreset {
     Compact,
     /// Readable documentation examples with one attribute per line
     Documentation,
+}
+
+/// Object property quote modes selectable from the CLI.
+#[derive(Debug, Clone, Copy, ValueEnum)]
+pub enum FmtQuoteProps {
+    /// Quote only properties that require quotes
+    AsNeeded,
+    /// Quote every property when one property requires quotes
+    Consistent,
+    /// Preserve whether each property was authored with quotes
+    Preserve,
+}
+
+/// Trailing comma modes selectable from the CLI.
+#[derive(Debug, Clone, Copy, ValueEnum)]
+pub enum FmtTrailingComma {
+    /// Print trailing commas wherever possible
+    All,
+    /// Print trailing commas where valid in ES5
+    Es5,
+    /// Do not print trailing commas
+    None,
+}
+
+impl From<FmtQuoteProps> for vize_glyph::QuoteProps {
+    fn from(value: FmtQuoteProps) -> Self {
+        match value {
+            FmtQuoteProps::AsNeeded => Self::AsNeeded,
+            FmtQuoteProps::Consistent => Self::Consistent,
+            FmtQuoteProps::Preserve => Self::Preserve,
+        }
+    }
+}
+
+impl From<FmtTrailingComma> for vize_glyph::TrailingComma {
+    fn from(value: FmtTrailingComma) -> Self {
+        match value {
+            FmtTrailingComma::All => Self::All,
+            FmtTrailingComma::Es5 => Self::Es5,
+            FmtTrailingComma::None => Self::None,
+        }
+    }
 }
 
 impl From<FmtPreset> for vize_glyph::FormatPreset {

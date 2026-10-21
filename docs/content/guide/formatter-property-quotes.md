@@ -32,4 +32,8 @@ quotes its sibling keys as well.
 The `singleQuote` setting still chooses the quote character. `quoteProps`
 controls which keys have quotes; it does not keep the original quote character.
 
-The CLI and editor read the same `vue.formatter` settings from `vite.config.*`. See [Configuration](./configuration.md) for discovery and migration from removed dedicated configuration files.
+The CLI and editor read the same `vue.formatter` settings from `vite.config.*`.
+Use `vize fmt --quote-props preserve` for a direct CLI override. The native Node
+API accepts the same three strings as `formatSfc`'s `quoteProps` option. See
+[Configuration](./configuration.md) for discovery and migration from removed
+dedicated configuration files.

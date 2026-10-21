@@ -156,6 +156,27 @@ fn templates_without_directives_emit_none() {
 }
 
 #[test]
+fn component_prop_assignments_are_ignored_only_when_the_literal_owns_them() {
+    let source = "<script setup lang=\"ts\">import Child from './Child.vue'; const value = 'wrong'</script>\n<template><Child :count=\"value\" /></template>\n";
+    let result = transform(source);
+    let directives = result
+        .diagnostic_directives
+        .expect("component prop echo directive");
+    let check = result
+        .text
+        .find("const __vize_prop_check_0_count")
+        .expect("per-prop check");
+    let literal = result
+        .text
+        .find("\"count\": value")
+        .expect("whole-props entry");
+
+    assert!(covered(&directives.directives, check));
+    assert!(!covered(&directives.directives, literal));
+    assert!(directives.unused_expect_directive_diagnostics.is_empty());
+}
+
+#[test]
 fn longer_words_do_not_match_directive_tokens() {
     let source = "<template>\n  <!-- @vue-ignores nothing here -->\n  <div />\n</template>\n";
     assert!(transform(source).diagnostic_directives.is_none());
@@ -222,16 +243,29 @@ fn unrelated_marker_text_never_creates_owner_directives() {
         let source = vize_l0::cstr!(
             "<script setup lang=\"ts\">import Comp from './Comp.vue'; const value = 1; const noop = () => {{}};</script><template>{template}</template>"
         );
-        assert!(transform(source.as_str()).diagnostic_directives.is_none());
+        let directives = transform(source.as_str())
+            .diagnostic_directives
+            .expect("internal component-prop echo directives");
+        assert!(directives.unused_expect_directive_diagnostics.is_empty());
+        assert!(directives.directives.iter().all(|directive| {
+            let [original, length, _, _, policy, _] = directive.0;
+            policy == DIRECTIVE_POLICY_IGNORE
+                && &source[original..original + length] != "@vue-expect-error"
+        }));
     }
     let source = "<script setup lang=\"ts\">import Comp from './Comp.vue'; const value = 1; const noop = () => {};</script><template><Comp id=\"bad\" @save=\"noop\">{{ value.bad }}</Comp><!-- @vue-expect-error --></template>";
     let result = transform(source);
     let directives = result.diagnostic_directives.unwrap();
-    assert_eq!(directives.directives.len(), 1);
-    assert_eq!(
-        (directives.directives[0].0[2], directives.directives[0].0[3]),
-        (0, 0)
-    );
+    let authored = directives
+        .directives
+        .iter()
+        .filter(|directive| {
+            let [original, length, _, _, _, _] = directive.0;
+            &source[original..original + length] == "@vue-expect-error"
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(authored.len(), 1, "{directives:?}");
+    assert_eq!((authored[0].0[2], authored[0].0[3]), (0, 0));
 }
 
 /// #9746: a comment directly before an SFC block owns that block's opening tag.

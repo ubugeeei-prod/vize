@@ -112,6 +112,7 @@ The same options are available as CLI flags:
 | `--tab-width`                      | Sets the number of spaces per indentation level.              |
 | `--use-tabs`                       | Indents with tabs instead of spaces.                          |
 | `--single-quote`                   | Uses single quotes instead of double quotes.                  |
+| `--trailing-comma`                 | Chooses `all`, `es5` or `none` trailing commas.               |
 | `--no-semi`                        | Omits semicolons at the ends of statements.                   |
 | `--sort-attributes`                | Sorts attributes in the template and on block tags.           |
 | `--single-attribute-per-line`      | Puts each attribute on its own line.                          |
@@ -132,7 +133,7 @@ Every option below can be set under `vue.formatter`. An option you leave out tak
 
 | Option                         | Default          | What it does                                                                                                                       |
 | ------------------------------ | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `preset`                       | none             | Applies a named set of defaults: `"vize"`, `"prettier"`, `"compact"` or `"documentation"`. Options set next to it win.          |
+| `preset`                       | none             | Applies a named set of defaults: `"vize"`, `"prettier"`, `"compact"` or `"documentation"`. Options set next to it win.             |
 | `printWidth`                   | `100`            | Maximum line width.                                                                                                                |
 | `tabWidth`                     | `2`              | Spaces per indentation level.                                                                                                      |
 | `useTabs`                      | `false`          | Indents with tabs.                                                                                                                 |
@@ -165,6 +166,14 @@ The native Node `formatSfc` API accepts the five Prettier migration booleans
 `normalizeCssQuotes`, `normalizeInlineStyles`, `normalizeVForParens`,
 `selfCloseVoidElements` and `reindentPreprocessorStyles` under the same names.
 Explicit values override `preset`, including `false`.
+
+Script quote policies are also shared across config, direct CLI overrides and
+Node: `--jsx-single-quote[=false]` maps to `jsxSingleQuote`, while
+`--quote-props <as-needed|consistent|preserve>` maps to `quoteProps`.
+
+The trailing comma policy is shared in the same way:
+`--trailing-comma <all|es5|none>` maps to the typed Node and config option
+`trailingComma`. Explicit CLI and Node values override a selected preset.
 
 ## Compact application code
 

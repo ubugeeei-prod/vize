@@ -120,3 +120,113 @@ test("config schema and shipped Node types share the Prettier normalizer boolean
   assert.equal(result.error, undefined);
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
 });
+
+test("config schema and shipped Node types share script quote policies", (t) => {
+  const schema = JSON.parse(
+    fs.readFileSync(path.join(root, "npm/cli/schemas/vize.config.schema.json"), "utf8"),
+  );
+  assert.equal(schema.definitions.FormatterConfig.properties.jsxSingleQuote.type, "boolean");
+  assert.deepEqual(schema.definitions.FormatterConfig.properties.quoteProps.enum, [
+    "as-needed",
+    "consistent",
+    "preserve",
+  ]);
+
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "glyph-script-quote-types-"));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  fs.writeFileSync(
+    path.join(directory, "consumer.mts"),
+    [
+      `import { formatSfc, type FormatOptionsNapi } from ${JSON.stringify(path.join(root, "npm/native/index.js"))};`,
+      `import type { FormatterConfig } from ${JSON.stringify(path.join(root, "npm/cli/src/types/generated.js"))};`,
+      'for (const quoteProps of ["as-needed", "consistent", "preserve"] as const) {',
+      "  const config: FormatterConfig = { jsxSingleQuote: true, quoteProps };",
+      "  const native: FormatOptionsNapi = {",
+      "    jsxSingleQuote: config.jsxSingleQuote,",
+      "    quoteProps: config.quoteProps,",
+      "  };",
+      "  formatSfc('', native);",
+      "}",
+      "// @ts-expect-error unknown property quote modes must remain rejected.",
+      "formatSfc('', { quoteProps: 'keep' });",
+      "// @ts-expect-error JSX quote preference remains boolean-only.",
+      "formatSfc('', { jsxSingleQuote: 'yes' });",
+      "",
+    ].join("\n"),
+  );
+  fs.writeFileSync(
+    path.join(directory, "tsconfig.json"),
+    JSON.stringify({
+      compilerOptions: {
+        module: "NodeNext",
+        moduleResolution: "NodeNext",
+        noEmit: true,
+        skipLibCheck: true,
+        strict: true,
+        target: "ES2022",
+        types: [],
+      },
+      files: ["consumer.mts"],
+    }),
+  );
+  const result = spawnSync(
+    process.execPath,
+    [require.resolve("typescript/bin/tsc"), "-p", directory, "--pretty", "false"],
+    { encoding: "utf8", timeout: 30_000 },
+  );
+  assert.equal(result.error, undefined);
+  assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+});
+
+test("config schema and shipped Node types share trailing comma modes", (t) => {
+  const schema = JSON.parse(
+    fs.readFileSync(path.join(root, "npm/cli/schemas/vize.config.schema.json"), "utf8"),
+  );
+  assert.deepEqual(schema.definitions.FormatterConfig.properties.trailingComma.enum, [
+    "all",
+    "none",
+    "es5",
+  ]);
+
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "glyph-trailing-comma-types-"));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  fs.writeFileSync(
+    path.join(directory, "consumer.mts"),
+    [
+      `import { formatSfc, type FormatOptionsNapi } from ${JSON.stringify(path.join(root, "npm/native/index.js"))};`,
+      `import type { FormatterConfig } from ${JSON.stringify(path.join(root, "npm/cli/src/types/generated.js"))};`,
+      'for (const trailingComma of ["all", "es5", "none"] as const) {',
+      "  const config: FormatterConfig = { trailingComma };",
+      "  const native: FormatOptionsNapi = { trailingComma: config.trailingComma };",
+      "  formatSfc('', native);",
+      "}",
+      "// @ts-expect-error unknown trailing comma modes must remain rejected.",
+      "formatSfc('', { trailingComma: 'never' });",
+      "// @ts-expect-error trailing comma modes remain string-only.",
+      "formatSfc('', { trailingComma: false });",
+      "",
+    ].join("\n"),
+  );
+  fs.writeFileSync(
+    path.join(directory, "tsconfig.json"),
+    JSON.stringify({
+      compilerOptions: {
+        module: "NodeNext",
+        moduleResolution: "NodeNext",
+        noEmit: true,
+        skipLibCheck: true,
+        strict: true,
+        target: "ES2022",
+        types: [],
+      },
+      files: ["consumer.mts"],
+    }),
+  );
+  const result = spawnSync(
+    process.execPath,
+    [require.resolve("typescript/bin/tsc"), "-p", directory, "--pretty", "false"],
+    { encoding: "utf8", timeout: 30_000 },
+  );
+  assert.equal(result.error, undefined);
+  assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+});

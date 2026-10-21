@@ -94,7 +94,9 @@ const count = ref('wrong')
 <Child v-model="count" />
 </template>
 "#;
-    // vue-tsc: the per-prop check on `v-model`, the props object on `count`.
+    // Both generated owners report on the directive. The upstream mapper host
+    // does not deduplicate diagnostics, so the transform suppresses the
+    // per-prop echo and keeps this whole-props position as the canonical one.
     let check = "__vize_prop_check_0_modelValue";
     assert_eq!(
         generated_origin(model, check, check.len(), 0),
@@ -103,7 +105,7 @@ const count = ref('wrong')
     let key = "\"modelValue\"";
     assert_eq!(
         generated_origin(model, "\"modelValue\": count", key.len(), 0),
-        authored(model, "<template>", "count", 0)
+        authored(model, "<template>", "v-model", 0)
     );
 
     // An argument model and an ordinary prop keep their own names.
@@ -117,7 +119,27 @@ const title = 1
 "#;
     assert_eq!(
         generated_origin(named, "\"title\": title", "\"title\"".len(), 0),
-        authored(named, "<template>", "title", 1)
+        authored(named, "<template>", "title", 0)
     );
     assert_quoted_diagnostic_origin(named, "\"count\": title", 0, "count");
+}
+
+#[test]
+fn whole_props_argument_starts_on_the_component_tag() {
+    let source = r#"<script setup lang="ts">
+import Child from './Child.vue'
+</script>
+<template><Child label="missing count" /></template>
+"#;
+    let result =
+        generate_vue_content_mapper_transform(Path::new("App.vue"), source).expect("transform");
+    let call = result
+        .text
+        .find("as __Child_Check_0)(")
+        .expect("component checker call");
+    let opening = call + result.text[call..].find('{').expect("props literal");
+    assert_eq!(
+        diagnostic_origin(&result.mappings, opening..opening + 1),
+        authored(source, "<template>", "Child", 0)
+    );
 }

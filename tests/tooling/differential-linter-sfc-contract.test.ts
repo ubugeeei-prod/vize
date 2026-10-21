@@ -44,7 +44,7 @@ function packet(value: any) {
 void test("all current SFC wires have the complete bounded transition and old packs stay exact", () => {
   assert.equal(
     sha256(fs.readFileSync(manifest)),
-    "e5f1069901d1ad75bf3ea1b1e04d637d6070f5bc3d0d03d9ad839c3541a9a778",
+    "ccf35645b51536a562d13fa510169227e1e289c6478722e80c15875d1181a3b6",
   );
   assert.equal(
     sha256(

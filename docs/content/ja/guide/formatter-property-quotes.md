@@ -32,4 +32,7 @@ export default defineConfig({}).withVue({
 引用符の文字自体は、引き続き `singleQuote` で選びます。
 `quoteProps` はどのキーに引用符を付けるかを指定するもので、元の引用符の文字を保つ設定ではありません。
 
-CLI とエディターは `vite.config.*` の `vue.formatter` を共有します。設定の探索方法と、廃止された専用設定ファイルからの移行については、[設定ガイド](./configuration.md)を参照してください。
+CLI とエディターは `vite.config.*` の `vue.formatter` を共有します。
+CLI で直接上書きする場合は `vize fmt --quote-props preserve` を使います。
+Node の native API では、`formatSfc` の `quoteProps` オプションに同じ 3 つの文字列を指定できます。
+設定の探索方法と、廃止された専用設定ファイルからの移行については、[設定ガイド](./configuration.md)を参照してください。

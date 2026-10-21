@@ -133,6 +133,9 @@ Default discovery formats Vue, JavaScript/TypeScript and JSON/JSONC files. YAML 
 | `--check`                          | Report files that would change                       |
 | `-w, --write`                      | Write formatted output                               |
 | `--single-quote`                   | Toggle string quote style                            |
+| `--jsx-single-quote`               | Toggle JSX attribute quote style                     |
+| `--quote-props`                    | Choose object property quote policy                  |
+| `--trailing-comma`                 | Choose `all`, `es5` or `none` trailing commas        |
 | `--print-width`                    | Maximum line width                                   |
 | `--tab-width`                      | Indentation width                                    |
 | `--use-tabs`                       | Toggle tabs vs spaces                                |

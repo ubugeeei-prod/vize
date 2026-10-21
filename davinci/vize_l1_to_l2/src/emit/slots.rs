@@ -11,6 +11,13 @@ mod params;
 
 use alloc::vec::Vec as StdVec;
 
+use oxc_ast::ast as js;
+use oxc_ast_visit::{
+    Visit,
+    walk::{walk_arrow_function_expression, walk_function},
+};
+use oxc_syntax::scope::ScopeFlags;
+use vize_l0::{String, ensure_sufficient_stack};
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{BindingOp, DynamicName, Op, Region};
 use vize_l2::scope::ScopeOrigin;
@@ -24,6 +31,7 @@ use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::js::{RawJs, expr_source};
+use super::prefix::PrefixScope;
 use crate::pass::{SlotCarrier, SlotFacts, SlotName};
 
 /// First `v-slots="expr"` (no argument) on the component, matching
@@ -107,6 +115,216 @@ pub(super) fn has_dynamic_names(facts: &SlotFacts) -> bool {
         .any(|g| matches!(g.name, SlotName::Dynamic { .. }))
 }
 
+/// Whether a component's slot functions read an active template-scope binding.
+/// Such closures must be replaced when their parent slot is invoked again even
+/// when the component's ordinary props compare equal (#10169).
+pub(super) fn references_current_scope(cx: &EmitCx<'_>, children: &Region<'_>) -> bool {
+    cx.scope.has_codegen_scope_params() && region_references_scope(&cx.scope, children)
+}
+
+fn region_references_scope(scope: &PrefixScope<'_>, region: &Region<'_>) -> bool {
+    region.ops.iter().any(|op| {
+        ensure_sufficient_stack(|| match op {
+            Op::Element(element) => {
+                bindings_reference_scope(scope, &element.bindings)
+                    || region_references_scope(scope, &element.children)
+            }
+            Op::Component(component) => {
+                bindings_reference_scope(scope, &component.bindings)
+                    || region_references_scope(scope, &component.children)
+            }
+            Op::Interpolation(interpolation) => {
+                expression_references_scope(scope, interpolation.expression)
+            }
+            Op::If(if_op) => if_op.branches.iter().any(|branch| {
+                branch
+                    .condition
+                    .is_some_and(|condition| expression_references_scope(scope, condition))
+                    || region_references_scope(scope, &branch.region)
+            }),
+            Op::For(for_op) => {
+                expression_references_scope(scope, for_op.binding.source)
+                    || region_references_scope(scope, &for_op.region)
+            }
+            Op::OriginalFor(for_op) => region_references_scope(scope, &for_op.region),
+            Op::Slot(slot) => {
+                dynamic_name_references_scope(scope, &slot.name)
+                    || bindings_reference_scope(scope, &slot.bindings)
+                    || region_references_scope(scope, &slot.fallback)
+            }
+            Op::Text(_) | Op::Comment(_) => false,
+        })
+    })
+}
+
+fn bindings_reference_scope(scope: &PrefixScope<'_>, bindings: &[BindingOp<'_>]) -> bool {
+    bindings.iter().any(|binding| match binding {
+        BindingOp::Bind(bind) => {
+            bind.name
+                .as_ref()
+                .is_some_and(|name| dynamic_name_references_scope(scope, name))
+                || bind
+                    .value
+                    .is_some_and(|value| expression_references_scope(scope, value))
+        }
+        BindingOp::On(on) => {
+            on.name
+                .as_ref()
+                .is_some_and(|name| dynamic_name_references_scope(scope, name))
+                || on
+                    .expression()
+                    .is_some_and(|expression| expression_references_scope(scope, expression))
+        }
+        BindingOp::Model(model) => {
+            expression_references_scope(scope, model.contract.read)
+                || expression_references_scope(scope, model.contract.write)
+                || model
+                    .argument
+                    .as_ref()
+                    .is_some_and(|name| dynamic_name_references_scope(scope, name))
+        }
+        BindingOp::SlotContent(slot) => slot
+            .name
+            .as_ref()
+            .is_some_and(|name| dynamic_name_references_scope(scope, name)),
+        BindingOp::SlotsObject(object) => expression_references_scope(scope, object.value),
+        BindingOp::VueDirective(directive) => {
+            directive
+                .argument
+                .as_ref()
+                .is_some_and(|name| dynamic_name_references_scope(scope, name))
+                || directive
+                    .value
+                    .is_some_and(|value| expression_references_scope(scope, value))
+        }
+        BindingOp::VueCssBind(bind) => expression_references_scope(scope, bind.value),
+        BindingOp::VueSync(sync) => expression_references_scope(scope, sync.value),
+        // Both spellings declare their value rather than read it.
+        BindingOp::VueSlotScope(_) => false,
+        BindingOp::VueMemo(memo) => expression_references_scope(scope, memo.value),
+        BindingOp::VueShow(show) => expression_references_scope(scope, show.value),
+        BindingOp::VueHtml(html) => html
+            .value
+            .is_some_and(|value| expression_references_scope(scope, value)),
+        BindingOp::VueText(text) => text
+            .value
+            .is_some_and(|value| expression_references_scope(scope, value)),
+        BindingOp::VueOnce(_) | BindingOp::VueCloak(_) => false,
+    })
+}
+
+fn dynamic_name_references_scope(scope: &PrefixScope<'_>, name: &DynamicName<'_>) -> bool {
+    match name {
+        DynamicName::Static(_) => false,
+        DynamicName::Dynamic(expression) => expression_references_scope(scope, *expression),
+    }
+}
+
+fn expression_references_scope(scope: &PrefixScope<'_>, expression: ExprRef<'_>) -> bool {
+    let ExprRef::Js(expression) = expression else {
+        // Opaque and foreign expressions cannot prove their binding graph. A
+        // token-bounded hit is the safe answer: extra updates preserve output.
+        return contains_codegen_scope_identifier(scope, expression.source());
+    };
+    let mut visitor = ScopeReferenceVisitor::new(scope);
+    visitor.visit_expression(expression.ast);
+    visitor.found
+}
+
+fn contains_codegen_scope_identifier(scope: &PrefixScope<'_>, content: &str) -> bool {
+    content
+        .split(|character: char| {
+            !character.is_ascii_alphanumeric() && character != '_' && character != '$'
+        })
+        .any(|name| !name.is_empty() && scope.is_codegen_scope_param(name))
+}
+
+struct ScopeReferenceVisitor<'s> {
+    scope: &'s PrefixScope<'s>,
+    locals: StdVec<StdVec<String>>,
+    found: bool,
+}
+
+impl<'s> ScopeReferenceVisitor<'s> {
+    fn new(scope: &'s PrefixScope<'s>) -> Self {
+        Self {
+            scope,
+            locals: StdVec::new(),
+            found: false,
+        }
+    }
+
+    fn is_local(&self, name: &str) -> bool {
+        self.locals
+            .iter()
+            .rev()
+            .any(|frame| frame.iter().any(|bound| bound.as_str() == name))
+    }
+
+    fn bind_pattern(&mut self, pattern: &js::BindingPattern<'_>) {
+        match pattern {
+            js::BindingPattern::BindingIdentifier(ident) => {
+                if let Some(frame) = self.locals.last_mut() {
+                    frame.push(String::from(ident.name.as_str()));
+                }
+            }
+            js::BindingPattern::ObjectPattern(object) => {
+                for property in &object.properties {
+                    self.bind_pattern(&property.value);
+                }
+                if let Some(rest) = &object.rest {
+                    self.bind_pattern(&rest.argument);
+                }
+            }
+            js::BindingPattern::ArrayPattern(array) => {
+                for element in array.elements.iter().flatten() {
+                    self.bind_pattern(element);
+                }
+                if let Some(rest) = &array.rest {
+                    self.bind_pattern(&rest.argument);
+                }
+            }
+            js::BindingPattern::AssignmentPattern(assignment) => {
+                self.bind_pattern(&assignment.left);
+            }
+        }
+    }
+}
+
+impl<'a> Visit<'a> for ScopeReferenceVisitor<'_> {
+    fn visit_identifier_reference(&mut self, ident: &js::IdentifierReference<'a>) {
+        let name = ident.name.as_str();
+        if !self.is_local(name) && self.scope.is_codegen_scope_param(name) {
+            self.found = true;
+        }
+    }
+
+    fn visit_arrow_function_expression(&mut self, arrow: &js::ArrowFunctionExpression<'a>) {
+        self.locals.push(StdVec::new());
+        for param in &arrow.params.items {
+            self.bind_pattern(&param.pattern);
+        }
+        walk_arrow_function_expression(self, arrow);
+        self.locals.pop();
+    }
+
+    fn visit_function(&mut self, function: &js::Function<'a>, flags: ScopeFlags) {
+        self.locals.push(StdVec::new());
+        for param in &function.params.items {
+            self.bind_pattern(&param.pattern);
+        }
+        walk_function(self, function, flags);
+        self.locals.pop();
+    }
+
+    fn visit_variable_declarator(&mut self, declarator: &js::VariableDeclarator<'a>) {
+        if let Some(init) = &declarator.init {
+            self.visit_expression(init);
+        }
+        self.bind_pattern(&declarator.id);
+    }
+}
+
 pub(super) fn admit_default(children: &Region<'_>) -> Result<(), EmitError> {
     walk_admit(children)
 }
@@ -162,6 +380,7 @@ pub(super) fn emit_slots(
     facts: &SlotFacts,
     spread: Option<&RawJs<'_>>,
     component_bindings: &[BindingOp<'_>],
+    captures_scope: bool,
 ) -> Result<(), EmitError> {
     if let Some(group) = facts.groups.iter().find(|group| group.name.text() == "_") {
         if let SlotName::Static {
@@ -216,7 +435,10 @@ pub(super) fn emit_slots(
         let forwarded = super::outlet::has_forwarded_outlet(children);
         if forwarded && cx.slot_param_depth == 0 && !cx.in_v_for {
             cx.buf.push("_: 3 /* FORWARDED */");
-        } else if cx.in_v_for || has_dynamic_names(facts) || (forwarded && cx.slot_param_depth > 0)
+        } else if cx.in_v_for
+            || has_dynamic_names(facts)
+            || captures_scope
+            || (forwarded && cx.slot_param_depth > 0)
         {
             cx.buf.push("_: 2 /* DYNAMIC */");
         } else {

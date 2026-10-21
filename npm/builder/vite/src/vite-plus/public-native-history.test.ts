@@ -195,6 +195,55 @@ const id = 'a'
   });
 });
 
+void test("public formatter exposes independent JSX and property quote policies", () => {
+  const source = `<script setup lang="tsx">
+const value={"name":1,plain:2}
+const view=<div title="world"/>
+</script>
+`;
+  const expected = `<script setup lang="tsx">
+const value = { "name": 1, plain: 2 };
+const view = <div title='world' />;
+</script>
+`;
+  const options = Object.freeze({
+    singleQuote: false,
+    jsxSingleQuote: true,
+    quoteProps: "preserve" as const,
+  }) satisfies FormatOptionsNapi;
+  assert.deepEqual(formatSfc(source, options), { code: expected, changed: true });
+  for (let pass = 2; pass <= 3; pass += 1) {
+    assert.deepEqual(formatSfc(expected, options), { code: expected, changed: false });
+  }
+  assert.deepEqual(options, {
+    singleQuote: false,
+    jsxSingleQuote: true,
+    quoteProps: "preserve",
+  });
+});
+
+void test("public formatter exposes the trailing comma policy", () => {
+  const source = `<script setup lang="ts">
+const value={first:1,second:2,}
+const result=make(
+  value,
+  true,
+)
+</script>
+`;
+  const expected = `<script setup lang="ts">
+const value = { first: 1, second: 2 };
+const result = make(value, true);
+</script>
+`;
+  const options = Object.freeze({ trailingComma: "none" as const }) satisfies FormatOptionsNapi;
+  assert.deepEqual(formatSfc(source, options), { code: expected, changed: true });
+  for (let pass = 2; pass <= 3; pass += 1) {
+    assert.deepEqual(formatSfc(expected, options), { code: expected, changed: false });
+  }
+  assert.deepEqual(options, { trailingComma: "none" });
+});
+
 void test("public formatter rejects unknown presets and wrong JavaScript types", () => {
   for (const preset of ["", "docs", "PRETTIER", 1, true, {}, []]) {
     assert.throws(
@@ -217,4 +266,25 @@ void test("public formatter rejects unknown presets and wrong JavaScript types",
       },
     );
   }
+  assert.throws(
+    () => formatSfc("<template />", { quoteProps: "keep" } as FormatOptionsNapi),
+    (error: unknown) => {
+      assert.ok(error instanceof Error);
+      assert.equal((error as Error & { code: string }).code, "InvalidArg");
+      assert.equal(
+        error.message,
+        "Unknown quoteProps; expected 'as-needed', 'consistent', or 'preserve'",
+      );
+      return true;
+    },
+  );
+  assert.throws(
+    () => formatSfc("<template />", { trailingComma: "never" } as FormatOptionsNapi),
+    (error: unknown) => {
+      assert.ok(error instanceof Error);
+      assert.equal((error as Error & { code: string }).code, "InvalidArg");
+      assert.equal(error.message, "Unknown trailingComma; expected 'all', 'es5', or 'none'");
+      return true;
+    },
+  );
 });

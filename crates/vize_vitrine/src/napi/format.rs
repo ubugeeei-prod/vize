@@ -8,7 +8,8 @@
 use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
 use vize_glyph::{
-    Allocator, FormatOptions, FormatPreset, GlyphFormatter, VueVersion, resolve_sort_imports,
+    Allocator, FormatOptions, FormatPreset, GlyphFormatter, QuoteProps, TrailingComma, VueVersion,
+    resolve_sort_imports,
 };
 
 /// Existing formatter line-ending modes, validated at the Node boundary.
@@ -39,6 +40,14 @@ pub struct FormatOptionsNapi {
     pub use_tabs: Option<bool>,
     pub semi: Option<bool>,
     pub single_quote: Option<bool>,
+    /// Use single quotes in JSX attributes independently of JavaScript strings.
+    pub jsx_single_quote: Option<bool>,
+    /// Change when object properties are quoted.
+    #[napi(ts_type = "'as-needed' | 'consistent' | 'preserve'")]
+    pub quote_props: Option<String>,
+    /// Change where trailing commas are printed.
+    #[napi(ts_type = "'all' | 'es5' | 'none'")]
+    pub trailing_comma: Option<String>,
     /// Layout line endings; auto follows the first source terminator.
     pub end_of_line: Option<EndOfLineNapi>,
     pub sort_attributes: Option<bool>,
@@ -95,6 +104,35 @@ fn apply_options(opts: FormatOptionsNapi) -> Result<FormatOptions> {
     }
     if let Some(value) = opts.single_quote {
         options.single_quote = value;
+    }
+    if let Some(value) = opts.jsx_single_quote {
+        options.jsx_single_quote = value;
+    }
+    if let Some(value) = opts.quote_props.as_deref() {
+        options.quote_props = match value {
+            "as-needed" => QuoteProps::AsNeeded,
+            "consistent" => QuoteProps::Consistent,
+            "preserve" => QuoteProps::Preserve,
+            _ => {
+                return Err(Error::new(
+                    Status::InvalidArg,
+                    "Unknown quoteProps; expected 'as-needed', 'consistent', or 'preserve'",
+                ));
+            }
+        };
+    }
+    if let Some(value) = opts.trailing_comma.as_deref() {
+        options.trailing_comma = match value {
+            "all" => TrailingComma::All,
+            "es5" => TrailingComma::Es5,
+            "none" => TrailingComma::None,
+            _ => {
+                return Err(Error::new(
+                    Status::InvalidArg,
+                    "Unknown trailingComma; expected 'all', 'es5', or 'none'",
+                ));
+            }
+        };
     }
     if let Some(value) = opts.end_of_line {
         options.end_of_line = match value {
@@ -175,6 +213,7 @@ pub fn format_sfc_napi(
 #[cfg(test)]
 mod tests {
     use super::{FormatOptionsNapi, apply_options, format_sfc_napi};
+    use vize_glyph::{QuoteProps, TrailingComma};
 
     #[test]
     fn native_sfc_sorting_uses_the_authored_full_reference() {
@@ -225,5 +264,52 @@ mod tests {
         assert!(!disabled.normalize_v_for_parens);
         assert!(!disabled.self_close_void_elements);
         assert!(!disabled.reindent_preprocessor_styles);
+    }
+
+    #[test]
+    fn native_script_quote_options_are_typed_and_independent() {
+        let options = apply_options(FormatOptionsNapi {
+            single_quote: Some(false),
+            jsx_single_quote: Some(true),
+            quote_props: Some("preserve".into()),
+            ..Default::default()
+        })
+        .expect("native script quote options");
+        assert!(!options.single_quote);
+        assert!(options.jsx_single_quote);
+        assert_eq!(options.quote_props, QuoteProps::Preserve);
+
+        let error = apply_options(FormatOptionsNapi {
+            quote_props: Some("keep".into()),
+            ..Default::default()
+        })
+        .expect_err("unknown quote policy");
+        assert_eq!(error.status, napi::Status::InvalidArg);
+        assert_eq!(
+            error.reason,
+            "Unknown quoteProps; expected 'as-needed', 'consistent', or 'preserve'"
+        );
+    }
+
+    #[test]
+    fn native_trailing_comma_option_is_typed_and_overrides_presets() {
+        let options = apply_options(FormatOptionsNapi {
+            preset: Some("prettier".into()),
+            trailing_comma: Some("none".into()),
+            ..Default::default()
+        })
+        .expect("native trailing comma option");
+        assert_eq!(options.trailing_comma, TrailingComma::None);
+
+        let error = apply_options(FormatOptionsNapi {
+            trailing_comma: Some("never".into()),
+            ..Default::default()
+        })
+        .expect_err("unknown trailing comma policy");
+        assert_eq!(error.status, napi::Status::InvalidArg);
+        assert_eq!(
+            error.reason,
+            "Unknown trailingComma; expected 'all', 'es5', or 'none'"
+        );
     }
 }

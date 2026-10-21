@@ -65,6 +65,7 @@ pub(super) fn emit_call(
     }
     let has_array = array && slots::has_implicit_default(&component.children);
     let has_slots = !array && (facts.is_some() || create || spread.is_some());
+    let captures_scope = has_slots && slots::references_current_scope(cx, &component.children);
     let forwards_slot = super::outlet::has_forwarded_outlet(&component.children);
     let filler_default_props_placeholder =
         !array && !has_slots && slots::filler_default_needs_props_placeholder(&component.children);
@@ -188,6 +189,7 @@ pub(super) fn emit_call(
     }
     if (cx.in_v_for && has_slots)
         || dynamic_names
+        || captures_scope
         || builtin::always_dynamic_slots(component.name)
         || (cx.slot_param_depth > 0 && forwards_slot)
     {
@@ -240,6 +242,7 @@ pub(super) fn emit_call(
             // keeps the builtin's array children multi-line there (P3-17).
             keyed_branch: if_key.is_some() && !for_item,
             transition_slot_root,
+            captures_scope,
         },
     );
     cx.template_if_branch_root = previous_template_if_branch_root;
