@@ -99,6 +99,17 @@ fn content_mapper_accepts_imported_const_enum_value_anchors() {
 }
 
 #[test]
+fn content_mapper_keeps_inferred_type_only_imports_out_of_value_anchors() {
+    check_pack(
+        "content-mapper-type-only-import-use",
+        "content_mapper_keeps_inferred_type_only_imports_out_of_value_anchors",
+        "fb89f41ffc518768e3053ccf9fe6b83bf24a1122",
+        Some(10193),
+        &["inferred-type-only-imports"],
+    );
+}
+
+#[test]
 fn component_event_tuples_preserve_all_argument_diagnostics() {
     check_pack(
         "component-event-tuples",
@@ -627,6 +638,7 @@ fn check_pack(
             | "content-mapper-const-enum-import"
             | "content-mapper-diagnostics-10187"
             | "content-mapper-dynamic-template-ref-10198"
+            | "content-mapper-type-only-import-use"
             | "content-mapper-dynamic-template-ref-union-10251"
             | "content-mapper-dynamic-template-ref-scope-10251"
             | "content-mapper-props-binding-10196" => regression,

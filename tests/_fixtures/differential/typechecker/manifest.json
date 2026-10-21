@@ -3778,6 +3778,68 @@
       }
     },
     {
+      "id": "typechecker/content-mapper-type-only-import-use/inferred-type-only-imports",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "content-mapper-type-only-import-use",
+      "case": "inferred-type-only-imports",
+      "test": "content_mapper_keeps_inferred_type_only_imports_out_of_value_anchors",
+      "regressionCommit": "fb89f41ffc518768e3053ccf9fe6b83bf24a1122",
+      "sourceRevision": "fb89f41ffc518768e3053ccf9fe6b83bf24a1122",
+      "packReference": {
+        "path": "content-mapper-type-only-import-use/cases.json",
+        "sha256": "38f15bbd558a5e2ff0c79e5aa170f8ca570ddee37eb646143a59eb45a4d6f6e6"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "content-mapper-type-only-import-use/tsconfig.json.txt",
+          "sha256": "bf86b70c1f9e97ca2fbd2e4f3fb5d598b67d118fa7089c7568c9aa764e597b8e"
+        },
+        {
+          "file": "src/model.ts",
+          "path": "content-mapper-type-only-import-use/model.ts.txt",
+          "sha256": "f140c276d42c239951b6de7fb38a3ca84376819e07d3e751f493836f7fd1b51d"
+        },
+        {
+          "file": "src/List.vue",
+          "path": "content-mapper-type-only-import-use/List.vue.txt",
+          "sha256": "51e2ab5c7ff7f59740b5c06cbe8d47b5c860d4a6614c926c7b1d3feddb8ba74c"
+        },
+        {
+          "file": "src/Unused.vue",
+          "path": "content-mapper-type-only-import-use/Unused.vue.txt",
+          "sha256": "f7fad5291283a79a4b9bc5b16673e0bc13049e18332ff2fe65bda7e376504432"
+        },
+        {
+          "file": "src/Annotated.vue",
+          "path": "content-mapper-type-only-import-use/Annotated.vue.txt",
+          "sha256": "3cc1abe0cdfe63e0e530934952bc47f459bdbf8f2e02df33567dc780c5b5396f"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/content-mapper-dynamic-template-ref-union-10251/conditional-component-and-native-targets",
       "state": "active",
       "targets": [

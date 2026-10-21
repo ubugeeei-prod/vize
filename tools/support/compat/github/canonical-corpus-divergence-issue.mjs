@@ -111,7 +111,33 @@ function validateReductionReceipt(receipt, context, fingerprint, divergenceCount
   return receipt;
 }
 
-export function createDivergenceIssue(log, ledger, selectedGitlinks, context, reductionReceipt) {
+function validatePromotionReceipt(receipt, context, fingerprint) {
+  if (receipt === undefined) return null;
+  assert.equal(
+    receipt?.schema,
+    "vize.realProjectDivergenceFixturePromotionReceipt",
+    "Foreign fixture promotion receipt",
+  );
+  assert.equal(receipt?.version, 1, "Unknown fixture promotion receipt version");
+  assert.equal(receipt?.sourceCommit, context.sourceCommit, "Promotion receipt commit differs");
+  assert(
+    ["skipped", "existing-fixture", "existing-pr", "created"].includes(receipt?.status),
+    "Invalid fixture promotion status",
+  );
+  if (receipt.status !== "skipped") {
+    assert.equal(receipt.fingerprint, fingerprint, "Promotion receipt fingerprint differs");
+  }
+  return receipt;
+}
+
+export function createDivergenceIssue(
+  log,
+  ledger,
+  selectedGitlinks,
+  context,
+  reductionReceipt,
+  promotionReceipt,
+) {
   const { divergenceCount, samples: rawSamples } = parseCorpusDivergences(log);
   const owners = fixturePaths(ledger);
   const selected = new Set(
@@ -135,6 +161,7 @@ export function createDivergenceIssue(log, ledger, selectedGitlinks, context, re
   });
   const digest = fingerprint(divergenceCount, samples);
   const reduction = validateReductionReceipt(reductionReceipt, context, digest, divergenceCount);
+  const promotion = validatePromotionReceipt(promotionReceipt, context, digest);
   const title = `fix(davinci): triage canonical DOM divergence ${digest}`;
   const fixtures = [...new Set(samples.map((sample) => sample.fixturePath))].sort(
     compareCodepoints,
@@ -156,8 +183,9 @@ export function createDivergenceIssue(log, ledger, selectedGitlinks, context, re
           : []),
       ]
     : [];
-  const nextAction =
-    reduction?.status === "reduced"
+  const nextAction = promotion?.pullRequestUrl
+    ? `Next action: fix the product difference on generated draft ${promotion.pullRequestUrl}; its promoted-fixture parity test is expected to stay red until the fix lands.`
+    : reduction?.status === "reduced"
       ? "Next action: inspect the reduced witness artifact and commit only the minimized in-repo fixture before fixing the product behavior."
       : "Next action: reproduce the exact comparison from the workflow artifact, minimize it with `vize reduce`, and commit only the minimized in-repo fixture before fixing the product behavior.";
   const body = [
@@ -170,6 +198,12 @@ export function createDivergenceIssue(log, ledger, selectedGitlinks, context, re
     `- Evidence artifact: ${code(artifact)}`,
     `- Pinned fixture owner(s): ${fixtures.map(code).join(", ")}`,
     ...reductionLines,
+    ...(promotion
+      ? [
+          `- Fixture promotion: ${code(promotion.status)}`,
+          ...(promotion.pullRequestUrl ? [`- Generated draft: ${promotion.pullRequestUrl}`] : []),
+        ]
+      : []),
     "",
     `Captured comparison sample(s) (${samples.length}/${divergenceCount}):`,
     "",
@@ -281,6 +315,7 @@ function workflowContext(env) {
 export function publishFromArtifact(
   artifactDirectory,
   reductionDirectory,
+  promotionDirectory,
   env = process.env,
   github,
 ) {
@@ -293,6 +328,9 @@ export function publishFromArtifact(
     reductionDirectory
       ? JSON.parse(readFileSync(join(reductionDirectory, "reduction.json"), "utf8"))
       : undefined,
+    promotionDirectory
+      ? JSON.parse(readFileSync(join(promotionDirectory, "promotion.json"), "utf8"))
+      : undefined,
   );
   const receipt = publishDivergenceIssue(plan, context, github ?? githubClient(context.repository));
   writeFileSync(join(artifactDirectory, "divergence-issue.json"), `${JSON.stringify(receipt)}\n`);
@@ -303,8 +341,8 @@ export function publishFromArtifact(
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const [command, artifactDirectory, ...extra] = process.argv.slice(2);
   assert(
-    command === "publish" && artifactDirectory && extra.length <= 1,
-    "Usage: canonical-corpus-divergence-issue.mjs publish ARTIFACT_DIRECTORY [REDUCTION_DIRECTORY]",
+    command === "publish" && artifactDirectory && extra.length <= 2,
+    "Usage: canonical-corpus-divergence-issue.mjs publish ARTIFACT_DIRECTORY [REDUCTION_DIRECTORY] [PROMOTION_DIRECTORY]",
   );
-  publishFromArtifact(artifactDirectory, extra[0]);
+  publishFromArtifact(artifactDirectory, extra[0], extra[1]);
 }

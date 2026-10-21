@@ -1,6 +1,6 @@
 {
   "schema": "vize.compiler.fix-history-index",
-  "version": 2,
+  "version": 3,
   "sourceRevision": "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
   "paths": [
     "crates/vize_atelier_core",
@@ -33,16 +33,22 @@
   "conventionalFixSubjects": 661,
   "nonMergeFixSubjects": 626,
   "fixtureLinkedFixSubjects": 30,
-  "boundedReviewedFixtureScopes": 10,
+  "boundedReviewedFixtureScopes": 11,
   "wholeFixReviewedSubjects": 0,
   "wholeFixReviewPendingSubjects": 626,
   "reviewLedger": {
     "path": "docs/davinci/plan/compiler-fix-history-reviews.json",
-    "sha256": "19c69588e477d3c49340b119037f7a539af02c271c15b76e5100fcec9c1b5f31",
-    "differentialManifest": {
-      "path": "tests/_fixtures/differential/compiler/sfc-fix-history.manifest.json",
-      "sha256": "08a89e3728a74b60be5af9c140d9c2a2fbdaffc5517eff092d22da4599691d0d"
-    }
+    "sha256": "56230e4fc85022b27392fdd07cbe137c440528a090ab33d63e5a373de3dababc",
+    "differentialManifests": [
+      {
+        "path": "tests/_fixtures/differential/compiler/sfc-fix-history.manifest.json",
+        "sha256": "08a89e3728a74b60be5af9c140d9c2a2fbdaffc5517eff092d22da4599691d0d"
+      },
+      {
+        "path": "tests/_fixtures/differential/compiler/ssr-fix-history.manifest.json",
+        "sha256": "99cf353e1caf176a8acd753f668d4d6037bed332cefa408b88b8e79d75748118"
+      }
+    ]
   },
   "nonIndexedFixtureReferences": [
     {
@@ -64,7 +70,7 @@
   ],
   "index": {
     "path": "docs/davinci/plan/compiler-fix-history.tsv",
-    "sha256": "51387eede40efbbaa563cd59698c2951d418c742cfa14cafcf7c361c5f6c6911"
+    "sha256": "227223d3bb9dc74f830815415daea925c5f3cfd756c108e476d7dc105537174d"
   },
   "semanticDenominator": null,
   "nativeAcceptance": 0,
@@ -72,7 +78,7 @@
     "The original 609-fix snapshot has no verified source revision.",
     "Changed witness paths and stable patch equivalence are candidates, not coverage or automatic duplicate exclusions.",
     "Fixture references cover only their recorded entrypoint, target, options and public output facets.",
-    "Ten SFC fixture scopes have bounded semantic review; every fix subject retains whole-fix target and dialect review pending.",
+    "Eleven fixture scopes (ten SFC and one SSR) have bounded semantic review; every fix subject retains whole-fix target and dialect review pending.",
     "Historical or local execution does not certify current Actions or a native route."
   ]
 }

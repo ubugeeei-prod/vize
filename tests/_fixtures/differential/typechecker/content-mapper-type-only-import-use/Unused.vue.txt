@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { Item, makeItem } from "./model";
+
+const item = makeItem("a");
+</script>
+
+<template>
+  <p>{{ item.id }}</p>
+</template>

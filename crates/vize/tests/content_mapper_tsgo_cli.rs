@@ -19,6 +19,8 @@ mod incomplete_tags;
 mod props_binding;
 #[path = "content_mapper_tsgo_cli/template_expression_syntax.rs"]
 mod template_expression_syntax;
+#[path = "content_mapper_tsgo_cli/type_only_import_use.rs"]
+mod type_only_import_use;
 
 fn workspace_root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))

@@ -85,6 +85,7 @@ pub(super) struct SetupBindingAnchors<'a> {
     pub(super) script_content: Option<&'a str>,
     pub(super) usage: &'a IdentifierUsage,
     pub(super) template_usage_names: &'a FxHashSet<String>,
+    pub(super) template_value_usage_names: &'a FxHashSet<String>,
     pub(super) preserve_unused_diagnostics: bool,
 }
 
@@ -99,6 +100,7 @@ impl SetupBindingAnchors<'_> {
                 self.usage,
                 self.preserve_unused_diagnostics
                     .then_some(self.template_usage_names),
+                self.template_value_usage_names,
                 setup_binding_anchor_comment(self.preserve_unused_diagnostics),
             )
         );
@@ -111,6 +113,7 @@ fn emit_setup_binding_anchors(
     script_content: Option<&str>,
     usage: &IdentifierUsage,
     template_referenced_names: Option<&FxHashSet<String>>,
+    template_value_names: &FxHashSet<String>,
     comment: &str,
 ) {
     if !crate::virtual_ts::script_facts::has_typed_bindings(summary) {
@@ -122,6 +125,7 @@ fn emit_setup_binding_anchors(
         script_content,
         usage,
         template_referenced_names,
+        template_value_names,
     );
     let value_import_names = script_content
         .map(|script| collect_value_import_binding_names(summary, script))
@@ -259,6 +263,7 @@ mod tests {
             Some(script),
             &usage,
             None,
+            &Default::default(),
             "Reference setup bindings (used in template/CSS v-bind)",
         );
         assert_eq!(
@@ -312,6 +317,7 @@ const state = ref(State.Idle);"#;
             Some(script),
             &usage,
             None,
+            &Default::default(),
             "Reference setup bindings (used in template/CSS v-bind)",
         );
 

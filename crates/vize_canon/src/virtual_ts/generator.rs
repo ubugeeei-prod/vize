@@ -50,7 +50,8 @@ pub(crate) use self::fallthrough::fallthrough_component_root_starts;
 use self::generics::HoistedGenericAliases;
 use self::global_components::{GlobalComponentDiagnostics, GlobalComponentPlan};
 use self::imports::{
-    collect_imported_names, emit_reference_path_directives, emit_reference_type_directives,
+    collect_imported_names, collect_imported_names_without_script_value_use,
+    emit_reference_path_directives, emit_reference_type_directives,
 };
 pub use self::legacy_vue2::generate_virtual_ts_with_offsets_legacy_vue2;
 use self::macro_anchors::emit_setup_scope_macro_anchors;
@@ -111,7 +112,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let mut semantic_links = Vec::new();
     let mut prop_default_key_links = Vec::new();
     let preserve_unused_diagnostics = generation_options.preserve_unused_diagnostics;
-    let (template_usage_names, has_template_scope) =
+    let (template_usage_names, template_value_usage_names, has_template_scope) =
         template_usage(summary, template_ast, generation_options);
     let inferred_slots = component_public_types::infers_slots(summary, template_ast, check_options);
     let mut setup_imports = SetupImportPlan::new(
@@ -186,6 +187,11 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let module_plan = script_content
         .map(|script| script_module::collect_script_module_plan(script, recover_lone_setup))
         .unwrap_or_default();
+    let imported_names_without_script_value_use = collect_imported_names_without_script_value_use(
+        summary,
+        script_content,
+        &module_plan.identifier_usage,
+    );
     let mut module_spans: Vec<(u32, u32)> = profile!("canon.virtual_ts.collect_module_spans", {
         let module_spans = module_plan.module_spans(summary, &namespace_hoist);
         script_blocks.module_spans(summary, script_content, module_spans)
@@ -216,6 +222,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         script_content,
         usage: &module_plan.identifier_usage,
         template_usage_names: &template_usage_names,
+        template_value_usage_names: &template_value_usage_names,
         preserve_unused_diagnostics,
     };
     let setup_helpers = setup_helpers::SetupHelperPlan::collect(
@@ -636,6 +643,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 summary,
                 options_api,
                 &template_usage_names,
+                &template_value_usage_names,
+                &imported_names_without_script_value_use,
                 script_content,
                 &imported_names,
                 options,
