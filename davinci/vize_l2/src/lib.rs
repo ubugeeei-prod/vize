@@ -33,9 +33,10 @@
 //!   binding-introducing ops, and before/after provenance records that
 //!   survive failure. Neutral types here so every input dialect's lowering
 //!   (Vue today, JSX at P2-16) speaks the same facts.
-//! - [`analysis`] — backend-neutral computations over L2 control and retained
-//!   expressions. Dialect lowering crates may adapt their transitional owners
-//!   to these analyses without retaining the pass body.
+//! - [`analysis`] — backend-neutral computations and canonical fact schemas
+//!   over L2 control and retained expressions. Dialect lowering crates may
+//!   adapt their transitional owners to these analyses without owning the
+//!   product vocabulary.
 //!
 //! The crate is `no_std + alloc` from birth so L2 artifacts print and parse
 //! on any target (wasm32-wasip2 included; P2-14 makes that lane required).
