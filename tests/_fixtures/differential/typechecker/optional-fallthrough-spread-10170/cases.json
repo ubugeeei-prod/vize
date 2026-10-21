@@ -40,7 +40,7 @@
           "column": 4,
           "severity": 1,
           "code": 2345,
-          "message": "Argument of type '{ title?: number | undefined; label: string; }' is not assignable to parameter of type '{ title?: number | undefined; label: string; } & { readonly __vizeInvalidFallthroughSpreadValues: \"title\"; }'.\n  Property '__vizeInvalidFallthroughSpreadValues' is missing in type '{ title?: number | undefined; label: string; }' but required in type '{ readonly __vizeInvalidFallthroughSpreadValues: \"title\"; }'."
+          "message": "Argument of type '{ title?: number; label: string; }' is not assignable to parameter of type '{ title?: number | undefined; label: string; } & { readonly __vizeInvalidFallthroughSpreadValues: \"title\"; }'.\nProperty '__vizeInvalidFallthroughSpreadValues' is missing in type '{ title?: number; label: string; }' but required in type '{ readonly __vizeInvalidFallthroughSpreadValues: \"title\"; }'."
         }
       ]
     }
