@@ -79,17 +79,14 @@ for (const [target, contract] of Object.entries(COMPILER_TARGET_CONTRACTS)) {
     const acceptance = summarizeNativeAcceptance(loaded, report, {
       sourceRevision: report.sourceRevision,
     });
-    assert.deepEqual(
-      acceptance.total,
-      {
-        planned: plannedCases,
-        nativeHandled: 0,
-        nativeEquivalent: 0,
-        unsupported: plannedCases,
-        legacyBacked: 0,
-        unverified: 0,
-      },
-    );
+    assert.deepEqual(acceptance.total, {
+      planned: plannedCases,
+      nativeHandled: 0,
+      nativeEquivalent: 0,
+      unsupported: plannedCases,
+      legacyBacked: 0,
+      unverified: 0,
+    });
     const acceptanceArtifact = path.join(evidenceDir, "acceptance.json");
     const markdown = renderNativeAcceptanceMarkdown([acceptance]);
     fs.writeFileSync(acceptanceArtifact, `${JSON.stringify(acceptance, null, 2)}\n`);

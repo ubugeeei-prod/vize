@@ -3,10 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { sha256 } from "./harness.mjs";
-import {
-  renderNativeAcceptanceMarkdown,
-  summarizeNativeAcceptance,
-} from "./acceptance-rates.mjs";
+import { renderNativeAcceptanceMarkdown, summarizeNativeAcceptance } from "./acceptance-rates.mjs";
 import { passedFixtureTests, typecheckerSourceIdentity } from "./typechecker-shards.ts";
 import {
   TYPECHECKER_TESTS,
