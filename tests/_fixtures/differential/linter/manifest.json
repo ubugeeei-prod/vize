@@ -16,7 +16,7 @@
       "api": "--current-api",
       "cases": {
         "path": "crates/vize_patina/tests/fixtures/lint-history/cases.json",
-        "sha256": "66004ddf6c207be744b0cf5af4691454a68d430acd796093af90081136e707b7"
+        "sha256": "2d1f4168621d4b10ee82b7bff9eaadb4c8a1a008d42143d34d32734ce759501d"
       }
     },
     {
@@ -54,7 +54,7 @@
   ],
   "oracles": {
     "path": "tests/_fixtures/differential/linter/oracle-index.json",
-    "sha256": "a32787bc6e0dbf7fdeb95fda0ffc3698cd7fb4e1b0c7b3700a66c77ad7e51c6d"
+    "sha256": "6b680c47dab48f1ada074ea079c67de91f95317d5c9b28da7d58bf3b5003c3b7"
   },
   "cases": [
     {
@@ -645,6 +645,48 @@
           }
         ]
       }
+    },
+    {
+      "id": "linter/current-api/target-blank-noopener-only",
+      "state": "active",
+      "targets": [
+        "lint"
+      ]
+    },
+    {
+      "id": "linter/current-api/target-blank-noreferrer-only",
+      "state": "active",
+      "targets": [
+        "lint"
+      ]
+    },
+    {
+      "id": "linter/current-api/target-blank-complete-rel-control",
+      "state": "active",
+      "targets": [
+        "lint"
+      ]
+    },
+    {
+      "id": "linter/current-api/target-blank-relative-control",
+      "state": "active",
+      "targets": [
+        "lint"
+      ]
+    },
+    {
+      "id": "linter/current-api/target-blank-external-control",
+      "state": "active",
+      "targets": [
+        "lint"
+      ]
+    },
+    {
+      "id": "linter/current-api/target-blank-bound-href-control",
+      "state": "active",
+      "targets": [
+        "lint"
+      ]
     }
   ]
 }
