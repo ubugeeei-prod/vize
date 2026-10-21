@@ -3452,6 +3452,63 @@
           }
         ]
       }
+    },
+    {
+      "id": "typechecker/content-mapper-nuxt-emit-10195/nuxt-pattern-injection-attribute-listener",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "content-mapper-nuxt-emit-10195",
+      "case": "nuxt-pattern-injection-attribute-listener",
+      "test": "content_mapper_preserves_emit_with_nuxt_pattern_injections",
+      "regressionCommit": "369f01b50d8fe6e3b0996cc9a90eecf422dbdd3b",
+      "sourceRevision": "369f01b50d8fe6e3b0996cc9a90eecf422dbdd3b",
+      "packReference": {
+        "path": "content-mapper-nuxt-emit-10195/cases.json",
+        "sha256": "f2178ffed787a5cd499eb0e3585b1dc376716c7b960e4aebde3fb2b551684246"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "content-mapper-nuxt-emit-10195/tsconfig.json.txt",
+          "sha256": "bed6b6f5f33d8a7d30e8f6c3585d833486637812a78150f3a177ab2009ae5175"
+        },
+        {
+          "file": "src/augment.d.ts",
+          "path": "content-mapper-nuxt-emit-10195/src/augment.d.ts.txt",
+          "sha256": "72824330228b07923b47dea72f5762eebe50bfe8dd9fe09204e85dcf2cd8302d"
+        },
+        {
+          "file": "src/MyItem.vue",
+          "path": "content-mapper-nuxt-emit-10195/src/MyItem.vue.txt",
+          "sha256": "158ba53462766943952897e3a358d974ef10ae2f9b673b8cc48caeb44fa9e4de"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "content-mapper-nuxt-emit-10195/src/App.vue.txt",
+          "sha256": "4b49df4d5622b04548dbc0a1f003c0fb25d98d0469645e544969bfb01c6f6940"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }

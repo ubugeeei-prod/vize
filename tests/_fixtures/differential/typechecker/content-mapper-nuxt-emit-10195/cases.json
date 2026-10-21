@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10195,
+  "regressionCommit": "369f01b50d8fe6e3b0996cc9a90eecf422dbdd3b",
+  "sourceRevision": "369f01b50d8fe6e3b0996cc9a90eecf422dbdd3b",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "nuxt-pattern-injection-attribute-listener",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/augment.d.ts",
+          "source": "src/augment.d.ts.txt"
+        },
+        {
+          "file": "src/MyItem.vue",
+          "source": "src/MyItem.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "src/App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}
