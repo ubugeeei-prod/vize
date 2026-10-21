@@ -112,13 +112,12 @@ pub fn analyze_script_setup_to_summary(content: &str) -> CroquisSummary {
 /// in the inline script compiler. Parsing here once and lending the program
 /// out replaces three identical parses of the same content.
 ///
-/// Returns `None` when the parser panicked; callers fall back to the legacy
-/// per-stage parse paths, which reproduce the historical panicked behavior.
+/// Returns `None` when bounded edit recovery cannot produce a complete
+/// program; callers fall back to the legacy per-stage parse paths.
 pub fn parse_script_setup_program<'a>(
     allocator: &'a oxc_allocator::Allocator,
     content: &'a str,
 ) -> Option<oxc_ast::ast::Program<'a>> {
-    use oxc_parser::Parser;
     use oxc_span::SourceType;
     use vize_carton::profile;
 
@@ -128,9 +127,37 @@ pub fn parse_script_setup_program<'a>(
     let source_type = SourceType::from_path("script.ts").unwrap_or_default();
     let ret = profile!(
         "atelier.sfc.script_setup.oxc_parse",
-        Parser::new(allocator, content, source_type).parse()
+        vize_croquis::script_parser::parse_program_for_analysis(allocator, content, source_type)
     );
     (!ret.panicked).then_some(ret.program)
+}
+
+#[cfg(test)]
+mod parse_once_tests {
+    use super::*;
+
+    #[test]
+    fn incomplete_call_keeps_the_parse_once_program_and_later_bindings() {
+        let source = r#"import { ref } from "vue";
+import MyButton from "./MyButton.vue";
+import type { Item } from "./types";
+
+const items = ref<Item[]>([]);
+const selected = ref<Item | null>(null);
+pick(
+function pick(item: Item): void {
+  selected.value = item;
+}
+"#;
+        let allocator = oxc_allocator::Allocator::default();
+        let program = parse_script_setup_program(&allocator, source).expect("recovered program");
+        assert_eq!(program.source_text, source);
+        assert_eq!(program.body.len(), 7);
+        let summary = analyze_script_setup_program_to_summary(&program, source);
+        for binding in ["ref", "MyButton", "items", "selected", "pick"] {
+            assert!(summary.bindings.bindings.contains_key(binding), "{binding}");
+        }
+    }
 }
 
 /// Analyze an already-parsed script setup program into a croquis Croquis.

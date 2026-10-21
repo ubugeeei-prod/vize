@@ -1,0 +1,21 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import MyButton from "./MyButton.vue";
+import type { Item } from "./types";
+
+const items = ref<Item[]>([]);
+items.value.
+const selected = ref<Item | null>(null);
+
+function pick(item: Item): void {
+  selected.value = item;
+}
+</script>
+
+<template>
+  <ul>
+    <li v-for="item in items" :key="item.id">
+      <MyButton :label="item.label" @click="pick(item)" />
+    </li>
+  </ul>
+</template>

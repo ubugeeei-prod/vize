@@ -564,6 +564,17 @@ fn content_mapper_diagnostics_keep_single_public_owners() {
     );
 }
 
+#[test]
+fn pins_incomplete_setup_import_corpus() {
+    check_pack(
+        "incomplete-script-setup-recovery-10200",
+        "pins_incomplete_setup_import_corpus",
+        "4a555b0aae0a394fbe4cedc08092638975f06a2a",
+        Some(10200),
+        &["relative-imports-before-incomplete-member"],
+    );
+}
+
 fn native_fixture_runtime_disabled() -> bool {
     std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some()
 }
@@ -682,6 +693,7 @@ fn check_pack(
             | "content-mapper-duplicate-attributes-10184"
             | "content-mapper-musea-art-10186"
             | "content-mapper-nuxt-emit-10195"
+            | "incomplete-script-setup-recovery-10200"
             | "dynamic-directive-expression-mapping-10182"
             | "content-mapper-template-expression-syntax"
             | "content-mapper-const-enum-import"

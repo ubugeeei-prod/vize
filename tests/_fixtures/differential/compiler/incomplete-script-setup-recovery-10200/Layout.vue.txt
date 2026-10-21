@@ -1,0 +1,23 @@
+<script setup lang="ts">
+import { ref } from "vue";
+
+interface Item {
+  id: number;
+  label: string;
+}
+
+const items = ref<Item[]>([]);
+const selected = ref<Item | null>(null);
+pick(
+function pick(item: Item): void {
+  selected.value = item;
+}
+</script>
+
+<template>
+  <ul>
+    <li v-for="item in items" :key="item.id" @click="pick(item)">
+      {{ item.label }}
+    </li>
+  </ul>
+</template>

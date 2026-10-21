@@ -17,17 +17,74 @@ pub(super) fn collect_specifier_occurrences(
     source: &str,
     source_type: SourceType,
 ) -> Vec<(String, crate::PackageResolutionMode)> {
-    let allocator = Allocator::default();
-    let result = Parser::new(&allocator, source, source_type).parse();
-    let mut collector = ModuleSpecifierCollector::new();
-    collector.visit_program(&result.program);
     let mut occurrences = Vec::new();
-    for (_, _, path, mode) in collector.specifiers {
+    for (_, _, path, mode) in collect_specifier_spans(source, source_type) {
         if !occurrences.contains(&(path.clone(), mode)) {
             occurrences.push((path, mode));
         }
     }
     occurrences
+}
+
+pub(super) fn collect_specifier_spans(
+    source: &str,
+    source_type: SourceType,
+) -> Vec<(u32, u32, String, crate::PackageResolutionMode)> {
+    let allocator = Allocator::default();
+    let result =
+        vize_croquis::script_parser::parse_program_for_analysis(&allocator, source, source_type);
+    let mut collector = ModuleSpecifierCollector::new();
+    collector.visit_program(&result.program);
+    if result.panicked {
+        // A fatal error after otherwise valid imports can leave OXC's partial
+        // program without its leading statements. Recover only facts from the
+        // longest line boundary before the fatal parser error that parses as a
+        // complete program. Generated Vue documents can append hundreds of
+        // lines after an authored hole, so starting at EOF would spend the
+        // entire bounded search inside the generated suffix.
+        // The original source is still rewritten at these exact spans; no
+        // repaired body or inferred dependency is admitted.
+        // Keep editor latency bounded even for a very large broken buffer.
+        let recovery_end = result
+            .diagnostics
+            .last()
+            .and_then(|diagnostic| {
+                diagnostic
+                    .labels
+                    .iter()
+                    .find(|label| label.primary())
+                    .or_else(|| diagnostic.labels.first())
+            })
+            .map_or(source.len(), |label| label.offset() as usize)
+            .min(source.len());
+        let recovery_source = source.get(..recovery_end).unwrap_or(source);
+        for (line_end, _) in recovery_source.match_indices('\n').rev().take(128) {
+            let Some(prefix) = source.get(..line_end + 1) else {
+                continue;
+            };
+            let parsed = Parser::new(&allocator, prefix, source_type).parse();
+            if parsed.panicked || !parsed.diagnostics.is_empty() {
+                continue;
+            }
+            let mut prefix_collector = ModuleSpecifierCollector::for_declarations();
+            prefix_collector.visit_program(&parsed.program);
+            if prefix_collector.specifiers.is_empty() {
+                continue;
+            }
+            for occurrence in prefix_collector.specifiers {
+                if !collector.specifiers.iter().any(|existing| {
+                    existing.0 == occurrence.0
+                        && existing.1 == occurrence.1
+                        && existing.3 == occurrence.3
+                }) {
+                    collector.specifiers.push(occurrence);
+                }
+            }
+            break;
+        }
+    }
+    collector.specifiers.sort_by_key(|occurrence| occurrence.0);
+    collector.specifiers
 }
 
 pub(super) struct BareStarExport {
@@ -42,6 +99,7 @@ pub(super) struct ModuleSpecifierCollector {
     pub(super) specifiers: Vec<(u32, u32, String, crate::PackageResolutionMode)>,
     pub(super) empty_stars: Vec<BareStarExport>,
     capture_stars: bool,
+    declarations_only: bool,
     statement_depth: usize,
 }
 
@@ -51,7 +109,15 @@ impl ModuleSpecifierCollector {
             specifiers: Vec::new(),
             empty_stars: Vec::new(),
             capture_stars: false,
+            declarations_only: false,
             statement_depth: 0,
+        }
+    }
+
+    fn for_declarations() -> Self {
+        Self {
+            declarations_only: true,
+            ..Self::new()
         }
     }
 
@@ -116,14 +182,18 @@ impl<'a> Visit<'a> for ModuleSpecifierCollector {
     }
 
     fn visit_import_expression(&mut self, expr: &ImportExpression<'a>) {
-        if let Expression::StringLiteral(lit) = &expr.source {
+        if !self.declarations_only
+            && let Expression::StringLiteral(lit) = &expr.source
+        {
             self.push_literal(lit, mode_from_options(expr.options.as_ref()));
         }
         walk::walk_import_expression(self, expr);
     }
 
     fn visit_call_expression(&mut self, expr: &CallExpression<'a>) {
-        if let Some(lit) = expr.common_js_require() {
+        if !self.declarations_only
+            && let Some(lit) = expr.common_js_require()
+        {
             self.push(
                 lit.span.start,
                 lit.span.end,
@@ -135,24 +205,30 @@ impl<'a> Visit<'a> for ModuleSpecifierCollector {
     }
 
     fn visit_ts_import_type(&mut self, import_type: &TSImportType<'a>) {
-        self.push_literal(
-            &import_type.source,
-            import_type
-                .options
-                .as_deref()
-                .and_then(mode_from_options_object)
-                .unwrap_or(crate::PackageResolutionMode::Contextual),
-        );
+        if !self.declarations_only {
+            self.push_literal(
+                &import_type.source,
+                import_type
+                    .options
+                    .as_deref()
+                    .and_then(mode_from_options_object)
+                    .unwrap_or(crate::PackageResolutionMode::Contextual),
+            );
+        }
         walk::walk_ts_import_type(self, import_type);
     }
 
     fn visit_ts_external_module_reference(&mut self, reference: &TSExternalModuleReference<'a>) {
-        self.push_literal(&reference.expression, crate::PackageResolutionMode::Require);
+        if !self.declarations_only {
+            self.push_literal(&reference.expression, crate::PackageResolutionMode::Require);
+        }
         walk::walk_ts_external_module_reference(self, reference);
     }
 
     fn visit_ts_module_declaration_name(&mut self, name: &TSModuleDeclarationName<'a>) {
-        if let TSModuleDeclarationName::StringLiteral(lit) = name {
+        if !self.declarations_only
+            && let TSModuleDeclarationName::StringLiteral(lit) = name
+        {
             self.push_literal(lit, crate::PackageResolutionMode::Contextual);
         }
         walk::walk_ts_module_declaration_name(self, name);

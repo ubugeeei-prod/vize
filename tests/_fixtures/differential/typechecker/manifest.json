@@ -3674,6 +3674,63 @@
       }
     },
     {
+      "id": "typechecker/incomplete-script-setup-recovery-10200/relative-imports-before-incomplete-member",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "incomplete-script-setup-recovery-10200",
+      "case": "relative-imports-before-incomplete-member",
+      "test": "pins_incomplete_setup_import_corpus",
+      "regressionCommit": "4a555b0aae0a394fbe4cedc08092638975f06a2a",
+      "sourceRevision": "4a555b0aae0a394fbe4cedc08092638975f06a2a",
+      "packReference": {
+        "path": "incomplete-script-setup-recovery-10200/cases.json",
+        "sha256": "50185a5c4a33770662edfebf36488d821c63de3fc582743b8f8d1a31cd0bd538"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "incomplete-script-setup-recovery-10200/tsconfig.json.txt",
+          "sha256": "7e95c68c4eabad300509c1a7652ddd5ad72661735ce09fd044edd37eac87a176"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "incomplete-script-setup-recovery-10200/src/App.vue.txt",
+          "sha256": "adc838e4ea3677154a05597fb2753eb41b8e9e697572b8e7bbd74da0de9c4d10"
+        },
+        {
+          "file": "src/MyButton.vue",
+          "path": "incomplete-script-setup-recovery-10200/src/MyButton.vue.txt",
+          "sha256": "e122caee0059d3fccf2f6cb2e090dbcf87201df0326eecdaac422d2414453c2e"
+        },
+        {
+          "file": "src/types.ts",
+          "path": "incomplete-script-setup-recovery-10200/src/types.ts.txt",
+          "sha256": "1b917c5699c3144416cad72b9aa1909c1115fcf7add480705daf0cb079d39bc1"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/content-mapper-template-expression-syntax/authored-errors",
       "state": "active",
       "targets": [

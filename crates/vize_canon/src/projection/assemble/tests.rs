@@ -109,6 +109,26 @@ fn script_diagnostics_keep_their_checker_code() {
 }
 
 #[test]
+fn missing_token_caret_at_an_authored_line_end_is_not_dropped() {
+    let mut diagnostic = finished("count", 1003, "Identifier expected.");
+    diagnostic.start = 15;
+    diagnostic.end = 15;
+    let assembled = assemble(SFC, vec![diagnostic], REPORT_UNUSED);
+    let start = SFC.find("const count = 1").unwrap() + "const count = ".len();
+    assert_eq!(
+        assembled,
+        [AssembledDiagnostic {
+            start,
+            end: start + 1,
+            code: Some(1003),
+            severity: Some(1),
+            message: "Identifier expected.".into(),
+            origin: AssembledOrigin::Checker(1003),
+        }]
+    );
+}
+
+#[test]
 fn unmapped_and_unreportable_diagnostics_are_dropped() {
     let mut unmapped = finished("void", 2345, "Unmapped.");
     unmapped.end = unmapped.start + 1;
