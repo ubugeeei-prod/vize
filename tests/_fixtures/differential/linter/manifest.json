@@ -694,6 +694,28 @@
       }
     },
     {
+      "id": "linter/current-api/unsafe-template-bindings-10166-10167",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "unsafe-template-bindings-10166-10167",
+        "files": [
+          {
+            "path": "commented-binding.vue.txt",
+            "role": "issue-authored-reproduction-and-control",
+            "sha256": "734867ca5f7274d0e1307f0fc05ec1e2acea1a0a8fdb46ad8e9c3ee3170e12fa"
+          },
+          {
+            "path": "component-object-spread.vue.txt",
+            "role": "issue-authored-reproduction-and-control",
+            "sha256": "043723593305ae75927a1a11ec0fb89adee5402fe2752c147f05ed1f6561628d"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/current-api/target-blank-noopener-only",
       "state": "active",
       "targets": [
