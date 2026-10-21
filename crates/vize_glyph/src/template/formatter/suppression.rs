@@ -92,17 +92,15 @@ impl<'s> LineJoiner<'s> {
             if gap.is_empty() {
                 return ChunkJoin::Continue(false);
             }
-            if !gap.iter().any(|byte| matches!(byte, b'\n' | b'\r'))
-                && gap.iter().copied().all(is_whitespace)
-            {
-                return ChunkJoin::Continue(true);
+            if let Some(line_breaks) = whitespace_gap_line_breaks(gap) {
+                if line_breaks == 0 {
+                    return ChunkJoin::Continue(true);
+                }
+                // Collapse authored empty lines to one between markup chunks.
+                // Text and directive expression newlines must never become
+                // template layout.
+                blank_line = self.source.get(start) == Some(&b'<') && line_breaks >= 2;
             }
-            // Collapse authored empty lines to one between markup chunks.
-            // The source gap must contain only whitespace; text and directive
-            // expression newlines must never become template layout.
-            blank_line = self.source.get(start) == Some(&b'<')
-                && has_two_line_breaks(gap)
-                && gap.iter().copied().all(is_whitespace);
         }
         if self.current.is_none() || self.current != previous {
             return if blank_line {
@@ -313,23 +311,37 @@ fn contains_any(haystack: &[u8], needles: &[&[u8]]) -> bool {
         .any(|needle| memchr::memmem::find(haystack, needle).is_some())
 }
 
-/// Whether LF, CRLF or lone-CR input contains a blank line boundary.
-fn has_two_line_breaks(gap: &[u8]) -> bool {
-    let Some(first) = memchr::memchr2(b'\n', b'\r', gap) else {
-        return false;
-    };
-    let next = first
-        + if gap.get(first) == Some(&b'\r') && gap.get(first + 1) == Some(&b'\n') {
-            2
-        } else {
-            1
-        };
-    memchr::memchr2(b'\n', b'\r', gap.get(next..).unwrap_or_default()).is_some()
+/// Count LF, CRLF or lone-CR boundaries in an all-whitespace source gap.
+fn whitespace_gap_line_breaks(gap: &[u8]) -> Option<u8> {
+    let mut line_breaks = 0_u8;
+    let mut index = 0;
+    while let Some(&byte) = gap.get(index) {
+        match byte {
+            b'\r' => {
+                line_breaks = line_breaks.saturating_add(1);
+                index += usize::from(gap.get(index + 1) == Some(&b'\n'));
+            }
+            b'\n' => line_breaks = line_breaks.saturating_add(1),
+            byte if !is_whitespace(byte) => return None,
+            _ => {}
+        }
+        index += 1;
+    }
+    Some(line_breaks)
 }
 
 #[cfg(test)]
 mod tests {
-    use super::locked_line_ranges;
+    use super::{locked_line_ranges, whitespace_gap_line_breaks};
+
+    #[test]
+    fn whitespace_gaps_count_logical_line_breaks_once() {
+        assert_eq!(whitespace_gap_line_breaks(b" \t"), Some(0));
+        assert_eq!(whitespace_gap_line_breaks(b"\n  "), Some(1));
+        assert_eq!(whitespace_gap_line_breaks(b"\r\n  "), Some(1));
+        assert_eq!(whitespace_gap_line_breaks(b"\r  \n"), Some(2));
+        assert_eq!(whitespace_gap_line_breaks(b"\nvalue\n"), None);
+    }
 
     #[test]
     fn ranges_track_pragma_placement() {

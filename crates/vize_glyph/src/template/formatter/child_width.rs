@@ -61,25 +61,12 @@ impl TemplateFormatter<'_> {
         if child.is_empty() {
             return None;
         }
-        let child_scan = scan_child_layout(child_bytes);
         // An authored multiline leading interpolation owns its established
         // layout. Later multiline interpolations in a mixed text run may be
         // normalized to one line, so they still contribute their formatted
         // width to the opening-tag decision.
-        if child_scan.has_line_break && child_scan.interpolation_start.is_none() {
-            return None;
-        }
-        if child_scan.has_line_break
-            && child_scan.interpolation_start == Some(0)
-            && parse_interpolation_range(child_bytes, 0).is_some_and(
-                |(expression_start, expression_end, _)| {
-                    child_bytes
-                        .get(expression_start..expression_end)
-                        .is_some_and(|expression| {
-                            expression.iter().any(|byte| matches!(byte, b'\r' | b'\n'))
-                        })
-                },
-            )
+        if child_bytes.iter().any(|byte| matches!(byte, b'\r' | b'\n'))
+            && authored_multiline_child_owns_layout(child_bytes)
         {
             return None;
         }
@@ -98,7 +85,7 @@ impl TemplateFormatter<'_> {
         }
         // Interpolation formatting is identity for brace-free text. Measure
         // it directly instead of allocating a duplicate child string.
-        if child_scan.first_open_brace.is_none() {
+        if memchr::memchr(b'{', child_bytes).is_none() {
             return Some(1 + child.width() + 3 + tag_name.width());
         }
 
@@ -212,30 +199,15 @@ impl TemplateFormatter<'_> {
     }
 }
 
-struct ChildLayoutScan {
-    first_open_brace: Option<usize>,
-    interpolation_start: Option<usize>,
-    has_line_break: bool,
-}
-
-#[inline(always)]
-fn scan_child_layout(bytes: &[u8]) -> ChildLayoutScan {
-    let mut scan = ChildLayoutScan {
-        first_open_brace: None,
-        interpolation_start: None,
-        has_line_break: false,
-    };
-    for (index, &byte) in bytes.iter().enumerate() {
-        match byte {
-            b'{' => {
-                scan.first_open_brace.get_or_insert(index);
-                if scan.interpolation_start.is_none() && bytes.get(index + 1) == Some(&b'{') {
-                    scan.interpolation_start = Some(index);
-                }
-            }
-            b'\r' | b'\n' => scan.has_line_break = true,
-            _ => {}
-        }
+#[cold]
+#[inline(never)]
+fn authored_multiline_child_owns_layout(bytes: &[u8]) -> bool {
+    if !bytes.windows(2).any(|window| window == b"{{") {
+        return true;
     }
-    scan
+    parse_interpolation_range(bytes, 0).is_some_and(|(expression_start, expression_end, _)| {
+        bytes
+            .get(expression_start..expression_end)
+            .is_some_and(|expression| expression.iter().any(|byte| matches!(byte, b'\r' | b'\n')))
+    })
 }
