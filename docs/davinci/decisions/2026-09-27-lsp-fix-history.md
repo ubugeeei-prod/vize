@@ -156,7 +156,7 @@ the eighteen shared stdio sessions retain their existing scope. Existing Maestro
 Actions must execute the new controls before runtime credit; no local native
 execution or whole-#6883 completion is inferred from their source registration.
 
-## Folding response completion candidate
+## Folding response coverage
 
 Historical fix `89771a14f17fb535201f261ca154aa35c6f77d7e` introduced four
 stdio response regressions and seven direct handler controls. The existing five
@@ -169,7 +169,20 @@ come from the original fix. The unopened session deliberately sends no
 `didOpen`; the shared wire validator rejects an invented readiness diagnostic.
 
 This makes all observable requirements in the pinned row executable through the
-same source-built stdio corpus. It remains a completion candidate until fresh
-exact-head Actions execute all nine sessions and protected delivery reaches
-main. It grants no native acceptance and does not reduce any of the other 254
-history rows.
+same source-built stdio corpus. Exact source head
+`a32b7224a64089470cc90e0c801920ac4a7973aa` passed source Check
+[39614341302](https://github.com/ubugeeei-prod/vize/actions/runs/39614341302).
+The target tooling shard in full Check
+[39614435765](https://github.com/ubugeeei-prod/vize/actions/runs/39614435765),
+[job 119273089798](https://github.com/ubugeeei-prod/vize/actions/runs/39614435765/job/119273089798),
+passed 416 tests with zero failures and one unrelated skip. Its raw-wire report
+registered all 41 source-built legacy sessions, including the nine folding
+sessions, and recorded zero native matches. Other unrelated jobs made that full
+workflow red, so it is not represented as an overall successful Check.
+
+Protected merge-group Check
+[39617906955](https://github.com/ubugeeei-prod/vize/actions/runs/39617906955)
+succeeded, and the candidate became actual main merge
+`eb8f543801aeee2bb7358dab6d2d656333e8dfd2`. The pinned folding row is
+therefore `response-fixture-covered`: one of 255 historical fix rows. This
+grants no native acceptance; the other 254 rows and #6883 remain open.
