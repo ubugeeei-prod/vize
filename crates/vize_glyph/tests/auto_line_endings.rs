@@ -223,6 +223,8 @@ fn cr_output_reaches_a_fixed_point() {
         "<template>\n  <div>\n    {{ a }}\n    {{ b }}\n  </div>\n\n  <p>x</p>\n</template>\n",
         "<template>\n  <div @click=\"{\n    a = 1;\n  }\" />\n</template>\n",
         "<template>\n  <div v-if=\"firstCondition &&\n    secondCondition\" />\n</template>\n",
+        "<template>\n  <div\n    v-if=\"\n      firstCondition &&\n      secondCondition &&\n      thirdCondition\n    \"\n  />\n</template>\n",
+        "<template>\n  <CodeHighlight\n    :code=\"report.official.formattedCode || report.official.error || report.official.code\"\n  />\n</template>\n",
         "<template>\n  <div :style=\"\n    // keep this comment on its own line\n    styles as CSSProperties\n  \" />\n</template>\n",
         "<template>\n  <div :class=\"`first\nsecond`\" />\n</template>\n",
         "<template>\n  <!-- eslint-disable-next-line -->\n  label: <input />\n</template>\n",

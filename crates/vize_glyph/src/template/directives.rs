@@ -113,7 +113,7 @@ pub(super) fn format_directive_value(
             (value, indent, false)
         }
         Some(formatted) => {
-            let indent_multiline_value = formatted.code.contains('\n');
+            let indent_multiline_value = formatted.code.contains(['\r', '\n']);
             (
                 formatted.code,
                 indent_multiline_value,

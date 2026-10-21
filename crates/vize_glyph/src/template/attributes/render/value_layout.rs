@@ -51,7 +51,10 @@ pub(super) fn write_overflowing_value(
     // The existing SFC mask owns all lines after a quote with no same-line
     // value. Emit their final indentation here; its outer writer keeps them raw.
     let mut literal = ValueLines::new(value, Representation::Html);
-    for line in value.split('\n') {
+    for line in value
+        .split('\n')
+        .flat_map(|line| line.strip_suffix('\r').unwrap_or(line).split('\r'))
+    {
         let line = line.trim_end_matches('\r');
         if !literal.line_is_raw() {
             write_indent(output, indent, depth + layout.base_depth + 1);
