@@ -92,8 +92,10 @@ fn compile_sfc_batch_with_results_inner(
     let results: Vec<BatchFileResultNapi> = files
         .into_par_iter()
         .map(|file| {
-            let scope_id =
-                vize_atelier_sfc::generate_bundler_scope_id(&file.path, None, false, None);
+            let scope_id: vize_l0::String = file.scope_id.as_deref().map_or_else(
+                || vize_atelier_sfc::generate_bundler_scope_id(&file.path, None, false, None),
+                Into::into,
+            );
             let filename_cs: vize_l0::CompactString = file.path.as_str().into();
             let descriptor = match sfc_parse(
                 &file.source,

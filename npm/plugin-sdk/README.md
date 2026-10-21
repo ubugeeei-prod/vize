@@ -5,6 +5,55 @@ output hooks. Install `@vizejs/native` **0.474.0 or newer** to execute plugins.
 The optional native peer lets this package install independently for authoring;
 its helpers alone do not compile or lint Vue files. Node 22 or newer is required.
 
+## Typed visitor capability descriptors
+
+`@vizejs/plugin-sdk/visitor` defines the stable versioned descriptor boundary for
+visitor-style plugins. The v1 capability vocabulary covers SFC, template,
+script, style, virtual TypeScript, diagnostics, lint, format and devtools trace
+events. Each declared capability requires a matching synchronous callback, and
+TypeScript narrows the callback payload to that capability.
+
+```ts
+import {
+  VISITOR_API_VERSION,
+  defineVisitorPlugin,
+  negotiateVisitorPlugin,
+} from "@vizejs/plugin-sdk/visitor";
+
+const observer = defineVisitorPlugin({
+  apiVersion: VISITOR_API_VERSION,
+  name: "virtual-ts-observer",
+  version: "1.0.0",
+  capabilities: ["virtual-ts", "diagnostics"] as const,
+  cacheInputs: [],
+  visitors: {
+    "virtual-ts"(event) {
+      console.log(event.payload.virtualFile, event.payload.mappings.length);
+    },
+    diagnostics(event) {
+      console.log(event.payload.diagnostics.length);
+    },
+  },
+});
+
+negotiateVisitorPlugin(observer, {
+  apiVersion: VISITOR_API_VERSION,
+  capabilities: ["virtual-ts", "diagnostics"],
+});
+```
+
+Definitions fail closed on unknown or duplicate capabilities, missing or
+undeclared callbacks, asynchronous functions, reserved cache-input names and API
+version mismatches. `runVisitorFixture` freezes one authored event and enforces
+the synchronous return contract for package tests.
+
+This module only creates immutable descriptors and author fixtures. It does not
+register callbacks in the native compiler, linter or language server, so importing
+it adds no work to those paths. A production host must explicitly negotiate the
+descriptor and owns cancellation, deadlines, isolation and event construction.
+Virtual TypeScript and devtools trace runtime delivery remain unimplemented until
+those host boundaries have their own lifecycle and performance evidence.
+
 ## Lint rules and autofixes
 
 ```js

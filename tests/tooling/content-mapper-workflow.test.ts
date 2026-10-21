@@ -231,17 +231,12 @@ test("manual focused campaigns preserve the full default and upload before gatin
   const input = workflow.on.workflow_dispatch.inputs["event-rename-only"];
   assert.equal(input.type, "boolean");
   assert.equal(input.default, false);
-  assert.deepEqual(workflow.on.workflow_dispatch.inputs["directive-owners-only"], {
-    description: "Compare genuine old/new static directive owners and standard stock LSP gates",
-    type: "boolean",
-    default: false,
-  });
+  assert.equal(workflow.on.workflow_dispatch.inputs["directive-owners-only"], undefined);
   const groups: string[] = [];
-  for (const [job, suffix, rename, owners, official] of [
-    ["exact-tsgo-project", "", false, false, false],
-    ["event-rename", "-event-rename", true, false, false],
-    ["directive-owners", "-directive-owners", false, true, false],
-    ["official-css-options", "-official-css-options", false, false, true],
+  for (const [job, suffix, rename, official] of [
+    ["exact-tsgo-project", "", false, false],
+    ["event-rename", "-event-rename", true, false],
+    ["official-css-options", "-official-css-options", false, true],
   ] as const) {
     const context = {
       github: {
@@ -251,7 +246,6 @@ test("manual focused campaigns preserve the full default and upload before gatin
       },
       inputs: {
         "event-rename-only": rename,
-        "directive-owners-only": owners,
         "official-css-options-only": official,
       },
     };
@@ -274,15 +268,19 @@ test("manual focused campaigns preserve the full default and upload before gatin
       [job],
     );
   }
-  assert.equal(new Set(groups).size, 4, "all four campaigns must run without canceling each other");
+  assert.equal(
+    new Set(groups).size,
+    3,
+    "all three campaigns must run without canceling each other",
+  );
   assert.equal(
     workflow.jobs["exact-tsgo-project"].if,
-    "${{ !inputs.event-rename-only && !inputs.directive-owners-only && !inputs.official-css-options-only && !inputs.published-defaults-only }}",
+    "${{ !inputs.event-rename-only && !inputs.official-css-options-only && !inputs.published-defaults-only }}",
   );
   const focused = workflow.jobs["event-rename"];
   assert.equal(
     focused.if,
-    "github.event_name == 'workflow_dispatch' && inputs.event-rename-only && !inputs.directive-owners-only && !inputs.official-css-options-only && !inputs.published-defaults-only",
+    "github.event_name == 'workflow_dispatch' && inputs.event-rename-only && !inputs.official-css-options-only && !inputs.published-defaults-only",
   );
   const rust = focused.steps.find((step) => step.name === "Setup Rust");
   const pinned = /^channel = "([^"]+)"$/mu.exec(readRepoFile("rust-toolchain.toml"))?.[1];

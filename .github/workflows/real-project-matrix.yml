@@ -206,6 +206,17 @@ jobs:
           exit 1
       - name: Build Vize CLI
         run: cargo build --profile ci -p vize
+      - name: Classify pinned Misskey generated diagnostics
+        if: ${{ !cancelled() && contains(matrix.name, 'misskey') }}
+        env:
+          CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
+          VIZE_TEST_MISSKEY_GENERATED_DIAGNOSTICS_9516: "1"
+          VIZE_TEST_REQUIRE_TSGO: "1"
+          VIZE_TEST_FIX_HISTORY_CAPTURE_DIR: ${{ github.workspace }}/${{ env.FIXTURE_REPORT_DIR }}/misskey-generated-diagnostics-9516
+        run: >-
+          cargo test --locked --profile ci -p vize_canon --lib
+          pinned_misskey_preserves_current_and_tuple_diagnostic_boundaries
+          -- --nocapture --test-threads=1
       - name: Exercise real projects with every core tool
         id: core_tools
         if: ${{ !cancelled() }}

@@ -95,6 +95,7 @@ pub(super) fn emit_component_constructors<'a>(
             slots_is_generic: aliases.slots_is_generic,
             public_type: "__VizeGenericComponent",
             props_type: setup_props_plan.component_props_type_ref(),
+            ref_resolver_type: Some("__VizeGenericRefResolver"),
         });
     }
     ts.push_str("// ========== Default Export ==========\n");
@@ -201,5 +202,6 @@ pub(super) fn emit_component_constructors<'a>(
         slots_is_generic: aliases.slots_is_generic,
         public_type: "__VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions",
         props_type: setup_props_plan.component_props_type_ref(),
+        ref_resolver_type: None,
     })
 }
