@@ -230,11 +230,8 @@ fn format_expression_with_layout(
             } else {
                 trim_expression(inner.text).to_compact_string()
             };
-            let owns_attribute_lines = if options.end_of_line == crate::EndOfLine::Cr {
-                code.contains('\r')
-            } else {
-                code.contains('\n')
-            };
+            let owns_attribute_lines = code.contains('\n')
+                || (options.end_of_line == crate::EndOfLine::Cr && code.contains('\r'));
             return Some(FormattedExpression {
                 code,
                 retained_bare_sequence: inner.retained_bare_sequence,

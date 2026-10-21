@@ -113,11 +113,9 @@ pub(super) fn format_directive_value(
             (value, indent, false)
         }
         Some(formatted) => {
-            let indent_multiline_value = if options.end_of_line == crate::EndOfLine::Cr {
-                formatted.code.contains('\r')
-            } else {
-                formatted.code.contains('\n')
-            };
+            let indent_multiline_value = formatted.code.contains('\n')
+                || (options.end_of_line == crate::EndOfLine::Cr
+                    && formatted.code.contains('\r'));
             (
                 formatted.code,
                 indent_multiline_value,
