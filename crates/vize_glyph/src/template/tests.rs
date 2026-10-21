@@ -573,3 +573,37 @@ fn test_matches_attr_pattern() {
     assert!(matches_attr_pattern("v-for", "v-*"));
     assert!(matches_attr_pattern("anything", "*"));
 }
+
+#[test]
+fn expression_selection_uses_l1_directive_heads() {
+    use super::directives::should_format_expression;
+
+    for name in [
+        ":value",
+        ".value",
+        "@click",
+        "v-bind:value",
+        "v-on:click",
+        "v-if",
+        "v-else-if",
+        "v-for",
+        "v-model.trim",
+        "v-html",
+        "v-text",
+    ] {
+        assert!(should_format_expression(name), "{name}");
+    }
+    for name in [
+        "#default",
+        "v-slot:default",
+        "v-onboarding",
+        "v-binding",
+        "v-iffoo",
+        "v-else-iffy",
+        "v-forge",
+        "v-models",
+        "v-showcase",
+    ] {
+        assert!(!should_format_expression(name), "{name}");
+    }
+}

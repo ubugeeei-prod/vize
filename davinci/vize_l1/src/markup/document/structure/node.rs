@@ -58,6 +58,12 @@ pub(super) fn children<'s, 'o, 'a>(
             | "main"
             | "nav"
             | "section"
+            | "address"
+            | "blockquote"
+            | "figure"
+            | "figcaption"
+            | "hgroup"
+            | "search"
     ) {
         return Err(Refusal::UnsupportedNodeParent(parent.opening));
     }

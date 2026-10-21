@@ -169,12 +169,20 @@ function planLines(verb, { features, created, updated, scripts, command }) {
  * cell performs: the dry run, the run that applies the plan, and the re-run that
  * proves idempotency.
  */
-export function expectedInitOutput(shape, projectRoot, manager, mode) {
+export function expectedInitOutput(shape, projectRoot, manager, mode, options = {}) {
   const dependencies = shape.plannedDependencies.join(" ");
   const installer = shape.id === "vite-plus-vue-ts" ? "vp" : manager.detectedPackageManager;
   const installCommand = `${installer} ${manager.installArgs.join(" ")} ${dependencies}`;
+  const detectionField =
+    options.bootstrapped && shape.bootstrappedDetection !== undefined
+      ? "bootstrappedDetection"
+      : "detection";
+  const reconfiguredDetectionField =
+    options.bootstrapped && shape.bootstrappedReconfiguredDetection !== undefined
+      ? "bootstrappedReconfiguredDetection"
+      : "reconfiguredDetection";
   const applied = {
-    detection: resolveShapeField(shape, "detection", manager),
+    detection: resolveShapeField(shape, detectionField, manager),
     features: shape.features,
     created: shape.createdFiles,
     updated: shape.updatedFiles,
@@ -185,7 +193,7 @@ export function expectedInitOutput(shape, projectRoot, manager, mode) {
     apply: { ...applied, verb: "will", command: null, editors: true },
     rerun: {
       verb: "will",
-      detection: resolveShapeField(shape, "reconfiguredDetection", manager),
+      detection: resolveShapeField(shape, reconfiguredDetectionField, manager),
       features: shape.reconfiguredFeatures,
       created: [],
       updated: [],

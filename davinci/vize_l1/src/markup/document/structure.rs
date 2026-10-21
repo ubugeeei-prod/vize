@@ -51,7 +51,8 @@ pub enum DocumentHtmlRefusal {
 /// with explicit matching ends. Head children are `base`, `link` and `meta`;
 /// body elements are `div`, `span`, `br`, `hr`, `img`, `input`, `area`, `embed`,
 /// `source`, `track`, `wbr`, `article`, `aside`, `footer`, `header`, `main`, `nav`
-/// and `section`. HTML names
+/// `section`, `address`, `blockquote`, `figure`, `figcaption`, `hgroup` and
+/// `search`. HTML names
 /// match without ASCII case, and a slash never closes a nonvoid HTML element.
 /// Static attributes borrow their original callback ranges, with HTML ASCII
 /// name folding, first duplicate retention and once-decoded scalar values.

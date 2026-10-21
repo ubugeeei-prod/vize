@@ -147,6 +147,22 @@ fn adapted_trace_with<P: Profile>(source: &str, raw_interpolation: bool) -> Trac
 }
 
 #[test]
+fn compatibility_quote_type_is_the_l1_vocabulary() {
+    fn through_native(quote: NativeQuote) -> CompatQuote {
+        quote
+    }
+    fn through_compatibility(quote: CompatQuote) -> NativeQuote {
+        quote
+    }
+
+    assert_eq!(through_native(NativeQuote::Double), CompatQuote::Double);
+    assert_eq!(
+        through_compatibility(CompatQuote::NoValue),
+        NativeQuote::NoValue
+    );
+}
+
+#[test]
 fn component_lexer_events_and_recovery_match_moved_tokenizer() {
     for source in [
         "<div a=\"b\">hello {{ x }}</div>",

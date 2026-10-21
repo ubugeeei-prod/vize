@@ -274,7 +274,7 @@ impl ServerState {
             .collect::<Vec<_>>();
         if self.is_primary_boundary(root)
             && affected.contains(&ProjectContextKey::from(root.to_path_buf()))
-            && !keys.iter().any(|(key, _)| key.tsconfig.is_none())
+            && !keys.iter().any(|(key, _)| key.is_root())
         {
             keys.push((
                 root.to_path_buf().into(),
@@ -298,7 +298,7 @@ impl ServerState {
                         dependencies
                             .iter()
                             .any(|dependency| physical_path(dependency) == path)
-                            || (key.tsconfig.is_none()
+                            || (key.is_root()
                                 && super::is_config_marker(&path)
                                 && path.starts_with(physical_path(root))
                                 && !super::watched::excluded_config_path(&path, &roots))
@@ -310,7 +310,7 @@ impl ServerState {
             rejected.dedup();
             if let Some(context) = contexts.get(&key) {
                 context.record_reload_failure();
-            } else if key.tsconfig.is_none() && self.is_primary_boundary(root) {
+            } else if key.is_root() && self.is_primary_boundary(root) {
                 self.project_contexts
                     .config_reload_failed
                     .store(true, super::Ordering::Release);

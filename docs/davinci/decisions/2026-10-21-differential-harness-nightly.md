@@ -9,3 +9,19 @@ The workflow contract pins the nightly cron alongside the existing 22-shard
 selection and every-product execution checks. This prevents the full corpus
 from silently returning to weekly coverage while keeping the workflow off the
 pull-request path.
+
+The nightly selection now covers all 148 ecosystem gitlinks pinned at this
+revision. The registry has 150 project rows because PrimeVue intentionally
+provides three separately scoped projects from one gitlink. The only excluded
+gitlink is `vue-benchmarks`, whose independent benchmark registry does not
+grant ecosystem/App membership or product-oracle credit. The four former
+former App-only inputs (`frontend-phpcon-do-website`, `npmx.dev`, `nuxt-ui`,
+`openvue`, and `vuefes-2025`) use their existing complete check/lint SFC scopes and now run
+through compiler, linter, formatter, typechecker, syntax-highlighter, and LSP
+nightly selection as well.
+
+The registry contract derives this membership from the committed gitlinks, so
+a future ecosystem submodule cannot silently remain outside T2. This closes
+the known corpus-selection omission only. Product-specific legacy/native
+comparators and complete paired T2 differential execution remain open under
+#6891.

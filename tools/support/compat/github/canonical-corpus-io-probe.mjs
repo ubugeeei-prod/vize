@@ -291,9 +291,9 @@ export function diagnosticReceipt(identity, summaries) {
     schema: "vize.canonical-corpus-io-diagnostic",
     version: 1,
     files: identity.files,
-    originalKernelFiles: 44367,
+    originalKernelFiles: 47056,
     originalKernelJellyfinFiles: 5576,
-    gitlinks: 148,
+    gitlinks: 149,
     summaries,
     success: summaries.every((summary) => summary.success),
   };
@@ -316,7 +316,7 @@ export function runCanonicalProbe(cwd, output, env = process.env) {
     ),
   );
   assert.equal(identity.gitlinksSha256, sha256(JSON.stringify(identity.gitlinks)));
-  assert.equal(identity.gitlinks.length, 148);
+  assert.equal(identity.gitlinks.length, 149);
   assert(
     identity.gitlinks.some(
       (row) => row.path === cycleOwner.repository && row.sha === cycleOwner.revision,

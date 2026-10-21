@@ -34,17 +34,39 @@ function move(root: string): void {
 }
 
 function check(root: string): void {
-  for (const [old, current] of moves) {
-    if (!fs.existsSync(path.join(root, current))) {
-      throw new Error(`missing moved capability owner: ${current}`);
-    }
-    const bridge = path.join(root, old);
+  const owner = path.join(root, "davinci/vize_l1/src/dialect/vue.rs");
+  if (
+    !fs.existsSync(owner) ||
+    !fs.readFileSync(owner, "utf8").includes("pub struct LegacyDialectCapabilities")
+  ) {
+    throw new Error("missing shared capability owner: davinci/vize_l1/src/dialect/vue.rs");
+  }
+  for (const bridgePath of [
+    "crates/vize_armature/src/legacy.rs",
+    "davinci/vize_l1_to_l2/src/lower/caps.rs",
+  ]) {
+    const bridge = path.join(root, bridgePath);
     if (!fs.existsSync(bridge) || !fs.readFileSync(bridge, "utf8").includes("pub use")) {
-      throw new Error(`missing capability compatibility bridge: ${old}`);
+      throw new Error(`missing capability compatibility bridge: ${bridgePath}`);
     }
     if (/pub (?:struct|enum) Legacy/u.test(fs.readFileSync(bridge, "utf8"))) {
-      throw new Error(`duplicate capability owner: ${old}`);
+      throw new Error(`duplicate capability owner: ${bridgePath}`);
     }
+  }
+  const retiredProjection = path.join(root, "davinci/vize_l1/src/dialect/template.rs");
+  if (fs.existsSync(retiredProjection)) {
+    throw new Error("duplicate lowering capability projection remains");
+  }
+  const dialectModule = fs.readFileSync(
+    path.join(root, "davinci/vize_l1/src/dialect/mod.rs"),
+    "utf8",
+  );
+  if (!dialectModule.includes("pub type LegacyCaps = LegacyDialectCapabilities;")) {
+    throw new Error("lowering compatibility name is not the shared capability type");
+  }
+  const ownerSource = fs.readFileSync(owner, "utf8");
+  for (const method of ["pub const fn for_version", "pub const fn needs_sugar"]) {
+    if (!ownerSource.includes(method)) throw new Error(`shared capability owner lacks ${method}`);
   }
   if (
     !fs
@@ -57,13 +79,6 @@ function check(root: string): void {
     if (!fs.existsSync(path.join(root, `davinci/vize_l1/src/dialect/${version}.rs`))) {
       throw new Error(`missing per-version module: ${version}`);
     }
-  }
-  const template = fs.readFileSync(
-    path.join(root, "davinci/vize_l1/src/dialect/template.rs"),
-    "utf8",
-  );
-  if (!template.includes("LegacyDialectCapabilities::for_dialect(version)")) {
-    throw new Error("lowering projection does not use the shared capability owner");
   }
 }
 

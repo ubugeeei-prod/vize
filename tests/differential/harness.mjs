@@ -5,6 +5,135 @@ import path from "node:path";
 
 export { sha256 } from "./sha256.ts";
 
+export const canonicalDialects = [
+  "vue0-template",
+  "vue1-template",
+  "vue2-sfc",
+  "vue2.7-sfc",
+  "vue3-sfc",
+  "petite-vue",
+  "pug-template",
+  "jsx-babel",
+  "jsx-vapor",
+  "js",
+  "ts",
+  "jsx",
+  "tsx",
+  "vue-quirks",
+];
+
+const dialectCoverageStates = ["unknown", "partial", "source-inspected", "verified"];
+const provisionalDialectStates = new Set(["partial", "source-inspected"]);
+const dialectLabel = /^[a-z0-9][a-z0-9.-]*$/;
+
+export function normalizeDialectCoverage(value, context) {
+  const coverage = value ?? { state: "unknown", registryRef: null, evidence: [] };
+  assert(
+    coverage && typeof coverage === "object" && !Array.isArray(coverage),
+    `${context}: coverage is required`,
+  );
+  assert.deepEqual(
+    Object.keys(coverage).sort(),
+    ["evidence", "registryRef", "state"],
+    `${context}: coverage schema is closed`,
+  );
+  assert(dialectCoverageStates.includes(coverage.state), `${context}: invalid coverage state`);
+  assert(
+    coverage.registryRef === null || typeof coverage.registryRef === "string",
+    `${context}: registryRef must be a string or null`,
+  );
+  assert(Array.isArray(coverage.evidence), `${context}: evidence must be an array`);
+  for (const [index, evidence] of coverage.evidence.entries()) {
+    const evidenceContext = `${context}.evidence[${index}]`;
+    assert(
+      evidence && typeof evidence === "object" && !Array.isArray(evidence),
+      `${evidenceContext}: evidence is required`,
+    );
+    assert.deepEqual(
+      Object.keys(evidence).sort(),
+      evidence.selector === undefined ? ["dialects", "kind"] : ["dialects", "kind", "selector"],
+      `${evidenceContext}: evidence schema is closed`,
+    );
+    assert.equal(typeof evidence.kind, "string", `${evidenceContext}: kind is required`);
+    assert(
+      Array.isArray(evidence.dialects) && evidence.dialects.length > 0,
+      `${evidenceContext}: dialects are required`,
+    );
+    assert.equal(
+      new Set(evidence.dialects).size,
+      evidence.dialects.length,
+      `${evidenceContext}: duplicate dialect`,
+    );
+    for (const dialect of evidence.dialects) {
+      assert.match(dialect, dialectLabel, `${evidenceContext}: invalid dialect label`);
+      if (coverage.state === "verified") {
+        assert(
+          canonicalDialects.includes(dialect),
+          `${evidenceContext}: verified dialect must be canonical`,
+        );
+      }
+    }
+    if (evidence.selector !== undefined) {
+      assert.equal(
+        typeof evidence.selector,
+        "string",
+        `${evidenceContext}: selector must be a string`,
+      );
+      assert(evidence.selector.length > 0, `${evidenceContext}: selector cannot be empty`);
+    }
+  }
+  if (coverage.state !== "unknown") {
+    assert(coverage.evidence.length > 0, `${context}: non-unknown coverage needs evidence`);
+  }
+  return structuredClone(coverage);
+}
+
+export function classifyDialectCoverage(coverage) {
+  const dialects = [...new Set(coverage.evidence.flatMap((item) => item.dialects))].sort((a, b) =>
+    a.localeCompare(b),
+  );
+  return {
+    state: coverage.state,
+    dialects,
+    readiness: coverage.state === "verified" ? "verified" : "unknown",
+    measurement:
+      coverage.state === "verified"
+        ? "verified"
+        : provisionalDialectStates.has(coverage.state)
+          ? "provisional"
+          : "unknown",
+  };
+}
+
+export function summarizeDialectCoverage(cases) {
+  const summary = {
+    plannedCases: cases.length,
+    verifiedCases: 0,
+    provisionalCases: 0,
+    unknownReadinessCases: 0,
+    verified: {},
+    provisional: {},
+  };
+  for (const fixture of cases) {
+    const coverage = classifyDialectCoverage(fixture.dialectCoverage);
+    if (coverage.readiness === "unknown") summary.unknownReadinessCases += 1;
+    if (coverage.measurement === "verified") summary.verifiedCases += 1;
+    if (coverage.measurement === "provisional") summary.provisionalCases += 1;
+    if (coverage.measurement === "unknown") continue;
+    for (const dialect of coverage.dialects) {
+      const bucket = summary[coverage.measurement];
+      bucket[dialect] = (bucket[dialect] ?? 0) + 1;
+    }
+  }
+  summary.verified = Object.fromEntries(
+    Object.entries(summary.verified).sort(([a], [b]) => a.localeCompare(b)),
+  );
+  summary.provisional = Object.fromEntries(
+    Object.entries(summary.provisional).sort(([a], [b]) => a.localeCompare(b)),
+  );
+  return summary;
+}
+
 export function readPinnedArtifact(root, file) {
   assert.equal(typeof file.path, "string", "artifact path is required");
   assert(!path.isAbsolute(file.path), "artifact path must be relative");
@@ -49,6 +178,10 @@ export function loadProductManifest(manifestPath, product) {
       new Set(fixture.targets).size,
       fixture.targets.length,
       `duplicate target: ${fixture.id}`,
+    );
+    fixture.dialectCoverage = normalizeDialectCoverage(
+      fixture.dialectCoverage,
+      `${fixture.id}.dialectCoverage`,
     );
   }
   return { manifest, cases: manifest.cases, manifestSha256: sha256(raw) };

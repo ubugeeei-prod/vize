@@ -80,6 +80,10 @@ const requestedFixtures = [
   "vue-tui",
   "vue-termui",
   "vuefes-japan-speakers",
+  "frontend-phpcon-do-website",
+  "npmx",
+  "nuxt-ui",
+  "vuefes-2025",
 ] as const;
 const requiredTypecheckProjects = ["voicevox", "elk", "misskey"] as const;
 const newlyAddedSubmodules = new Set([
@@ -269,13 +273,28 @@ test("registered fixtures are pinned submodules with declared licenses", () => {
   }
 });
 
+test("every ecosystem gitlink is registered in the nightly matrix", () => {
+  const registry = readRegistry();
+  const gitlinks = readGitlinks();
+  const benchmarkOnly = "tests/_fixtures/_git/vue-benchmarks";
+  const expectedPaths = [...gitlinks.keys()].filter((fixturePath) => fixturePath !== benchmarkOnly);
+  const registeredPaths = [...new Set(registry.projects.map((project) => project.fixturePath))];
+
+  assert.deepEqual(
+    registeredPaths.sort(),
+    expectedPaths.sort(),
+    "nightly T2 selection must cover every non-benchmark ecosystem gitlink",
+  );
+});
+
 test("missing upstream license metadata stays explicit", () => {
   const registry = readRegistry();
-  const project = registry.projects.find((candidate) => candidate.id === "bym-vue-echarts");
-
-  assert.ok(project);
-  assert.equal(project.license.spdx, "NONE");
-  assert.deepEqual(project.license.files, []);
+  for (const id of ["bym-vue-echarts", "frontend-phpcon-do-website", "vuefes-2025"]) {
+    const project = registry.projects.find((candidate) => candidate.id === id);
+    assert.ok(project, `${id} should stay registered`);
+    assert.equal(project.license.spdx, "NONE");
+    assert.deepEqual(project.license.files, []);
+  }
 });
 
 test("new fixture licenses and read-only policy stay explicit", () => {

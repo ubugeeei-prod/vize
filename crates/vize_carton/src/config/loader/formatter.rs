@@ -2,7 +2,9 @@
 use super::{
     LoadedConfigWithFeatures, LoadedRawConfig, load_raw_config_checked, load_raw_config_with_source,
 };
-use crate::config::{ConfigEntryFiles, ConfigEntryIgnore, FormatterProfile, SortImportsSetting};
+use crate::config::{
+    CompilerConfigEntry, ConfigEntryFiles, ConfigEntryIgnore, FormatterProfile, SortImportsSetting,
+};
 use std::path::{Path, PathBuf};
 
 /// All formatting and source-selection settings from one configuration evaluation.
@@ -14,6 +16,8 @@ pub struct LoadedFormatterSnapshot {
     /// Authored formatter options with the preset applied.
     pub formatter_profile: FormatterProfile,
     pub entries: Vec<ConfigEntryFiles>,
+    /// Declaration-ordered compiler scopes used for per-file whitespace policy.
+    pub compiler_entries: Vec<CompilerConfigEntry>,
     pub ignores: Vec<ConfigEntryIgnore>,
     /// Explicit compiler whitespace mode from the same configuration evaluation.
     pub compiler_whitespace: Option<&'static str>,
@@ -42,6 +46,7 @@ fn snapshot(loaded: LoadedRawConfig) -> LoadedFormatterSnapshot {
     let sort_imports = loaded.config.formatter_sort_imports().cloned();
     let formatter_profile = loaded.config.formatter_profile().clone();
     let ignores = loaded.config.entry_ignores();
+    let compiler_entries = loaded.config.compiler_entries();
     let entries = loaded.config.clone().into_entry_files();
     let (config, features) = loaded.config.into_config_and_features();
     LoadedFormatterSnapshot {
@@ -53,6 +58,7 @@ fn snapshot(loaded: LoadedRawConfig) -> LoadedFormatterSnapshot {
         sort_imports,
         formatter_profile,
         entries,
+        compiler_entries,
         ignores,
         compiler_whitespace,
         project_root,

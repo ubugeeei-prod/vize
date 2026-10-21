@@ -449,6 +449,7 @@ fn workspace_watch_union_preserves_per_root_dependencies_and_failed_observations
         let key = super::ProjectContextKey {
             root: package,
             tsconfig: Some(root.join(vize_l0::cstr!("leaf-{index}.json").as_str())),
+            inferred: false,
         };
         let context = Arc::new(super::registry::ProjectContext::new(key.clone()));
         context.provide_snapshot(

@@ -11,7 +11,7 @@ mod native;
 #[cfg(test)]
 mod tests;
 
-use crate::markup::lex::compat::{Callbacks, QuoteType as CompatQuote};
+use crate::markup::lex::compat::Callbacks;
 use crate::markup::token::QuoteType;
 use vize_l0::ErrorCode;
 use vize_l0::Vec;
@@ -238,13 +238,7 @@ impl Callbacks for Recorder<'_, '_> {
         self.push(EventKind::AttrData, start, end);
     }
 
-    fn on_attrib_end(&mut self, quote: CompatQuote, end: usize) {
-        let quote = match quote {
-            CompatQuote::NoValue => QuoteType::NoValue,
-            CompatQuote::Unquoted => QuoteType::Unquoted,
-            CompatQuote::Single => QuoteType::Single,
-            CompatQuote::Double => QuoteType::Double,
-        };
+    fn on_attrib_end(&mut self, quote: QuoteType, end: usize) {
         self.attr_end(quote, end);
     }
 

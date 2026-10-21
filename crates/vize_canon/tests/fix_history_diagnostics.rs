@@ -207,7 +207,7 @@ fn bounded_cache_maintenance_preserves_project_diagnostics() {
         "bounded_cache_maintenance_preserves_project_diagnostics",
         "4714c0f264dedffaa81377df9545fbfa9514a64e",
         Some(9860),
-        &["bounded-maintenance"],
+        &["bounded-maintenance", "fresh-helper-handoff"],
     );
 }
 
@@ -241,6 +241,17 @@ fn reactive_props_destructure_preserves_unused_diagnostics() {
         "f276e4d59cdaf765fd7d3f14eb3d679f5b685f98",
         Some(10008),
         &["unused-binding", "used-rest-binding"],
+    );
+}
+
+#[test]
+fn inferred_project_tsconfig_preserves_owned_batch_inputs() {
+    check_pack(
+        "inferred-project-tsconfig-9718",
+        "inferred_project_tsconfig_preserves_owned_batch_inputs",
+        "f95557dadaab83dc0f7d4a7613bdb7ed4e59d323",
+        Some(9718),
+        &["owned-strict", "inferred-defaults"],
     );
 }
 
@@ -314,7 +325,8 @@ fn check_pack(
             | "reactive-props-destructure-10008"
             | "generic-fallthrough-spread-9956"
             | "misskey-generated-inference-9516"
-            | "component-v-bind-duplicate-diagnostic-10069" => regression,
+            | "component-v-bind-duplicate-diagnostic-10069"
+            | "inferred-project-tsconfig-9718" => regression,
             _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
         }
     );

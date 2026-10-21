@@ -1,0 +1,22 @@
+{
+  "oraclePackageVersion": "3.2.26",
+  "vueVersion": "3.6.0-rc.10",
+  "cases": {
+    "children/dynamic-text": {
+      "verdict": "equivalent",
+      "basis": "normalized rendered DOM and element identity across three text updates"
+    },
+    "props/dynamic-attributes": {
+      "verdict": "equivalent",
+      "basis": "normalized rendered DOM and element identity across attribute and text updates"
+    },
+    "control-flow/conditional-branch": {
+      "verdict": "equivalent",
+      "basis": "both Vapor and Babel references match falsy, array, nested-VNode and branch-identity updates"
+    },
+    "props/live-input-value": {
+      "verdict": "equivalent",
+      "basis": "live input value, normalized rendered DOM, and element identity across updates"
+    }
+  }
+}

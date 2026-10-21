@@ -237,7 +237,7 @@ await test("foreign, expired, duplicate and non-upload-bound artifacts fail clos
 await test("finalization rejects replaced full bytes, fixture identity and incomplete observer directories", () => {
   const root = mkdtempSync(join(tmpdir(), "canonical-artifacts-"));
   const selected = select();
-  const { gitlinks, files, proof } = canonicalWorkerInventory(44367, 148);
+  const { gitlinks, files, proof } = canonicalWorkerInventory(47056, 149);
   const identity = {
     schema: "vize.canonical-corpus-identity",
     version: 1,

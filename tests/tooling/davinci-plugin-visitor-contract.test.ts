@@ -4,6 +4,7 @@ import {
   VISITOR_API_VERSION,
   VISITOR_CAPABILITIES,
   VisitorPluginValidationError,
+  createVirtualTsVisitorHost,
   defineVisitorPlugin,
   negotiateVisitorPlugin,
   runVisitorFixture,
@@ -203,5 +204,55 @@ test("the fixture harness freezes events and refuses asynchronous or returned re
     () => runVisitorFixture(returned, "format", event),
     "invalid-visitor-result",
     /visitors\.format: must return undefined$/,
+  );
+});
+
+test("the virtual TypeScript host adapter negotiates one capability and validates events", () => {
+  const seen: string[] = [];
+  const plugin = defineVisitorPlugin({
+    apiVersion: VISITOR_API_VERSION,
+    name: "virtual-observer",
+    version: "1",
+    capabilities: ["virtual-ts"] as const,
+    cacheInputs: [],
+    visitors: {
+      "virtual-ts"(event) {
+        seen.push(`${event.file}:${event.payload.virtualFile}`);
+      },
+    },
+  });
+  const host = createVirtualTsVisitorHost(plugin);
+  assert.deepEqual(Object.keys(host).sort(), ["fingerprint", "name", "run", "version"]);
+  assert.equal(
+    host.run(
+      JSON.stringify({
+        apiVersion: VISITOR_API_VERSION,
+        capability: "virtual-ts",
+        file: "src/App.vue",
+        payload: {
+          sourceFile: "src/App.vue",
+          virtualFile: "src/App.vue.ts",
+          code: "export {}",
+          mappings: [],
+        },
+      }),
+    ),
+    "",
+  );
+  assert.deepEqual(seen, ["src/App.vue:src/App.vue.ts"]);
+  expectFailure(() => host.run("not json"), "invalid-event", /event: must be valid JSON$/);
+
+  const mixed = defineVisitorPlugin({
+    apiVersion: VISITOR_API_VERSION,
+    name: "mixed-observer",
+    version: "1",
+    capabilities: ["virtual-ts", "sfc"] as const,
+    cacheInputs: [],
+    visitors: { "virtual-ts"() {}, sfc() {} },
+  });
+  expectFailure(
+    () => createVirtualTsVisitorHost(mixed as any),
+    "unsupported-capability",
+    /host\.capabilities: missing "sfc"$/,
   );
 });

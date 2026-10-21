@@ -5,9 +5,12 @@
 
 use crate::{options::FormatOptions, script};
 use vize_l0::{Allocator, SmallVec, Span, String, ToCompactString, is_simple_identifier};
-use vize_l1::embed::{
-    Embed, EmbedSource, Grammar, Lang, Shape,
-    syntax::{ForKeyword, parse_vue_for_head_once},
+use vize_l1::{
+    embed::{
+        Embed, EmbedSource, Grammar, Lang, Shape,
+        syntax::{ForKeyword, parse_vue_for_head_once},
+    },
+    markup::{ArgSyntax, DirectiveName, DirectivePrefix, DirectiveSyntax, VueDirectives},
 };
 
 use super::literal_lines::{Representation, encode_reference_data};
@@ -18,27 +21,59 @@ pub(crate) use normalize::normalize_attribute_with_vue_version;
 
 /// Determine if an attribute's value should be formatted as a JS expression.
 pub(crate) fn should_format_expression(name: &str) -> bool {
-    match name.as_bytes().first() {
-        Some(b':' | b'@') => true,
-        Some(b'v') => {
-            let Some(directive) = name.strip_prefix("v-") else {
-                return false;
-            };
-            match directive.as_bytes().first() {
-                Some(b'i') => directive.starts_with("if"),
-                Some(b'e') => directive.starts_with("else-if"),
-                Some(b's') => directive.starts_with("show"),
-                Some(b'f') => directive.starts_with("for"),
-                Some(b'm') => directive.starts_with("model"),
-                Some(b'b') => directive.starts_with("bind"),
-                Some(b'o') => directive.starts_with("on"),
-                Some(b'h') => directive == "html",
-                Some(b't') => directive == "text",
-                _ => false,
-            }
-        }
-        _ => false,
+    let head = directive_head(name);
+    should_format_expression_with_head(name, head.as_ref())
+}
+
+pub(crate) fn should_format_expression_with_head(name: &str, head: Option<&DirectiveName>) -> bool {
+    let Some(head) = head else {
+        return false;
+    };
+    match head.prefix {
+        DirectivePrefix::Bind | DirectivePrefix::Prop | DirectivePrefix::On => true,
+        DirectivePrefix::Slot => false,
+        DirectivePrefix::Full => matches!(
+            directive_name(name, head),
+            Some("if" | "else-if" | "show" | "for" | "model" | "bind" | "on" | "html" | "text")
+        ),
     }
+}
+
+/// Use the same allocation-free directive grammar as the L1 Vue parser.
+///
+/// A grammar admission error is not guessed from string prefixes. The legacy
+/// formatter keeps the authored attribute opaque instead of accidentally
+/// treating a custom directive as a built-in expression surface.
+pub(crate) fn directive_head(name: &str) -> Option<DirectiveName> {
+    // `decompose` deliberately owns the grammar decision, but the grammar can
+    // only admit Vue's five sigils. Keep ordinary HTML attributes off that
+    // path: this helper is used by normalization, expression selection, and
+    // sorting, so parsing every `class`/`id`/`data-*` attribute compounds in
+    // formatter hot paths.
+    if !matches!(name.as_bytes().first(), Some(b':' | b'.' | b'@' | b'#'))
+        && !name.starts_with("v-")
+    {
+        return None;
+    }
+    VueDirectives.decompose(name, 0).ok().flatten()
+}
+
+pub(crate) fn directive_name<'a>(name: &'a str, head: &DirectiveName) -> Option<&'a str> {
+    span_text(name, head.name)
+}
+
+pub(crate) fn static_directive_argument<'a>(
+    name: &'a str,
+    head: &DirectiveName,
+) -> Option<&'a str> {
+    match head.arg {
+        Some(ArgSyntax::Static(span)) => span_text(name, span),
+        Some(ArgSyntax::Dynamic(_)) | None => None,
+    }
+}
+
+fn span_text(source: &str, span: vize_l0::Span) -> Option<&str> {
+    source.get(span.start as usize..span.end as usize)
 }
 
 /// Format a directive value expression.
