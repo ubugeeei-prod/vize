@@ -1,0 +1,50 @@
+[
+  {
+    "title": "Fix: Replace multiple spaces with single space",
+    "kind": "quickfix",
+    "edit": {
+      "changes": {
+        "${workspace}/CodeActionUtf16.vue": [
+          {
+            "range": {
+              "start": {
+                "line": 1,
+                "character": 17
+              },
+              "end": {
+                "line": 1,
+                "character": 19
+              }
+            },
+            "newText": " "
+          }
+        ]
+      }
+    },
+    "isPreferred": true
+  },
+  {
+    "title": "Suppress with @vize:forget (vue/no-multi-spaces)",
+    "kind": "quickfix",
+    "edit": {
+      "changes": {
+        "${workspace}/CodeActionUtf16.vue": [
+          {
+            "range": {
+              "start": {
+                "line": 1,
+                "character": 0
+              },
+              "end": {
+                "line": 1,
+                "character": 0
+              }
+            },
+            "newText": "  <!-- @vize:forget vue/no-multi-spaces -->\n"
+          }
+        ]
+      }
+    },
+    "isPreferred": false
+  }
+]
