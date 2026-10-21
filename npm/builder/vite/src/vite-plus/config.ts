@@ -52,29 +52,37 @@ export function normalizeConfig(source: VueConfigObject, integration: VizePlusOp
   assertVueConfigSpelling(source);
   const { compiler: compilerOption, typecheck, lint, fmt, vue: _vue, ...rest } = source;
   const vue = vueConfigOptions(source);
+  const hostLint = vue?.lint;
   const configDirectory = process.cwd();
   const { vue: nativeLint, ...oxlint } = lint ?? {};
   const { vue: nativeFmt, ...oxfmt } = fmt ?? {};
+  const resolvedHostLint = composeHostLint(
+    (lint ? oxlint : undefined) as UserConfig["lint"],
+    hostLint as UserConfig["lint"],
+  );
+  const hostVizeSettings = recordValue(resolvedHostLint?.settings?.vize);
   const lintConfig = nativeLint;
   const compiler = vueCompiler(compilerOption ?? integration.plugin ?? {}, vue);
   const options: VizePlusOptions = {
     ...integration,
     check:
-      vue?.typeChecker?.enabled !== undefined
-        ? vue.typeChecker.enabled
+      (vue?.typeCheck ?? vue?.typeChecker)?.enabled !== undefined
+        ? (vue?.typeCheck ?? vue?.typeChecker)?.enabled
         : typecheck === false
           ? false
           : typeof typecheck === "object"
             ? typecheck.enabled !== false
             : (typecheck ?? integration.check),
     lint:
-      vue?.linter?.enabled !== undefined
-        ? vue.linter.enabled
-        : lintConfig === undefined
-          ? integration.lint
-          : lintConfig !== false,
+      hostLint !== undefined
+        ? false
+        : vue?.linter?.enabled !== undefined
+          ? vue.linter.enabled
+          : lintConfig === undefined
+            ? integration.lint
+            : lintConfig !== false,
     fmt:
-      vue?.formatter !== undefined
+      (vue?.fmt ?? vue?.formatter) !== undefined
         ? true
         : nativeFmt === undefined
           ? integration.fmt
@@ -86,8 +94,22 @@ export function normalizeConfig(source: VueConfigObject, integration: VizePlusOp
     config,
     options,
     lintTypecheck: typeof lintConfig === "object" && lintConfig.typecheck === true,
-    lintLocale: typeof lintConfig === "object" ? lintConfig.locale : undefined,
-    lintHelpLevel: typeof lintConfig === "object" ? lintConfig.helpLevel : undefined,
+    lintLocale:
+      hostVizeSettings?.locale === "en" ||
+      hostVizeSettings?.locale === "ja" ||
+      hostVizeSettings?.locale === "zh"
+        ? hostVizeSettings.locale
+        : typeof lintConfig === "object"
+          ? lintConfig.locale
+          : undefined,
+    lintHelpLevel:
+      hostVizeSettings?.helpLevel === "full" ||
+      hostVizeSettings?.helpLevel === "short" ||
+      hostVizeSettings?.helpLevel === "none"
+        ? hostVizeSettings.helpLevel
+        : typeof lintConfig === "object"
+          ? lintConfig.helpLevel
+          : undefined,
     fmtIgnorePatterns: oxfmt.ignorePatterns,
   };
   const vp: UserConfig = {
@@ -95,10 +117,50 @@ export function normalizeConfig(source: VueConfigObject, integration: VizePlusOp
     // Both Vite and Vite+ accept named plugins, but their hook types may be
     // instantiated from different Vite packages in a consumer's dependency tree.
     plugins: rest.plugins as UserConfig["plugins"],
-    lint: lint ? oxlint : undefined,
+    lint: resolvedHostLint,
     fmt: fmt ? oxfmt : undefined,
   };
   return { vp, metadata, compiler };
+}
+
+/** Compose the plain Vite+ lint policy with the Vue flat-config layer. */
+function composeHostLint(base: UserConfig["lint"], vue: UserConfig["lint"]): UserConfig["lint"] {
+  if (base === undefined) return vue;
+  if (vue === undefined) return base;
+  const overrides = [...(base.overrides ?? []), ...(vue.overrides ?? [])];
+  const baseVize = recordValue(base.settings?.vize);
+  const vueVize = recordValue(vue.settings?.vize);
+  const settings = {
+    ...base.settings,
+    ...vue.settings,
+    vize: {
+      ...baseVize,
+      ...vueVize,
+    },
+  };
+  return {
+    ...base,
+    ...vue,
+    jsPlugins: mergeUnique(base.jsPlugins, vue.jsPlugins),
+    plugins: mergeUnique(base.plugins, vue.plugins),
+    ignorePatterns: mergeUnique(base.ignorePatterns, vue.ignorePatterns),
+    rules: { ...base.rules, ...vue.rules },
+    settings,
+    ...(overrides.length === 0 ? {} : { overrides }),
+  };
+}
+
+function mergeUnique<T>(
+  base: readonly T[] | null | undefined,
+  vue: readonly T[] | null | undefined,
+): T[] {
+  return [...new Set([...(base ?? []), ...(vue ?? [])])];
+}
+
+function recordValue(value: unknown): Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
 }
 
 /** Keep plugin-only fields while native canonical leaves choose their own values. */
@@ -107,10 +169,11 @@ function vueCompiler(
   vue: VueConfigObject["vue"],
 ): VizeCompilerOptions | false {
   if (legacy === false) return false;
-  if (vue?.compiler === undefined && vue?.version === undefined) return legacy;
-  const { compatibility, ...native } = vue.compiler ?? {};
+  const compiler = vue?.compile ?? vue?.compiler;
+  if (compiler === undefined && vue?.version === undefined) return legacy;
+  const { compatibility, ...native } = compiler ?? {};
   const { vueVersion: _nativeVersion, ...nativeCompatibility } = compatibility ?? {};
-  const version = vue.version ?? compatibility?.vueVersion;
+  const version = vue?.version ?? compatibility?.vueVersion;
   const versions: Record<VueVersion, NonNullable<VizeCompilerOptions["vueVersion"]>> = {
     "0.10": 0.1,
     "0.11": 0.11,

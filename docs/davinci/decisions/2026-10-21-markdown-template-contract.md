@@ -32,7 +32,7 @@ Ox Content's generated module currently has `map: null`. The adapter therefore c
 
 ## Delivery slices
 
-1. Consume real Ox Content generated modules as `.md` Vue components in Vite, preserving named frontmatter and TOC exports. Cover DOM, SSR and Vapor compilation and keep fenced Vue examples inert.
+1. Consume real Ox Content generated modules as `.md` Vue components in Vite, preserving named HTML, frontmatter and TOC exports. Cover DOM, SSR and Vapor compilation, keep fenced Vue examples inert, and publish matching TypeScript module declarations for `.md` and `.markdown` imports. Frontmatter values remain `unknown` until a project narrows its own schema.
 2. Add the structured component/island field upstream and consume it without losing component casing, props, directives or interpolation.
 3. Add composed source maps and use them for HMR, compiler diagnostics, linter diagnostics and type checking.
 4. Preprocess `<template lang="md">` through the same contract, then cover DOM, SSR and Vapor output.

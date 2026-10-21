@@ -1,0 +1,5 @@
+{
+  "name": "workspace-alias-cache-repro",
+  "private": true,
+  "type": "module"
+}

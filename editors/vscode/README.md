@@ -80,6 +80,10 @@ change. `vize.config.*` files are retired; move Vue settings to `vite.config.*` 
 
 The native server evaluates Vite configuration with the project's installed Vite. Projects without
 Vite require Node.js 22.15 or newer so imported configuration files can be tracked and refreshed.
+When Vite's bundle loader resolves an imported helper through a symbolic link, Vize watches the
+resolved target that Vite reports. Retargeting only that symbolic link is not reported by Vite's
+public loader API; run **Vize: Restart Server** after changing the link target. Editing the selected
+config or the resolved helper itself continues to reload normally.
 
 For workspaces without a project config, setting only `vize.enable: true` uses the recommended
 diagnostics, editor, and ecosystem profile. The setup commands apply that profile to the workspace
