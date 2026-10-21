@@ -5,7 +5,10 @@
 
 use std::path::Path;
 
-use vize_canon::{BatchTypeChecker, BatchTypeCheckerOptions, BatchTypeCheckerTrait};
+use vize_canon::{
+    BatchTypeChecker, BatchTypeCheckerOptions, BatchTypeCheckerTrait, PackageResolutionMode,
+    PackageRouteBinding, PackageRouteResolver, PackageSourceOptions,
+};
 
 mod support {
     pub(crate) mod fix_history_contract;
@@ -808,6 +811,42 @@ fn check_pack(
         };
         let mut checker =
             BatchTypeChecker::with_options(&project_root, options).expect("the checker must start");
+        if name == "workspace-package-import-alias-10175" {
+            let importer = project_root.join("src/main.ts");
+            let mut resolver = PackageRouteResolver::default();
+            let bindings = ["#app", "@demo/ui"]
+                .into_iter()
+                .map(|specifier| {
+                    let (context, mut context_inputs) = resolver.resolution_context(
+                        &importer,
+                        PackageResolutionMode::Import,
+                        Some("bundler"),
+                        Some("esnext"),
+                        std::iter::empty::<&str>(),
+                    );
+                    let (route, mut invalidation_paths) = resolver
+                        .lookup_with_context(
+                            importer.parent().expect("the importer must have a parent"),
+                            specifier,
+                            PackageSourceOptions::new(false, false),
+                            context.clone(),
+                        )
+                        .into_parts();
+                    invalidation_paths.append(&mut context_inputs);
+                    PackageRouteBinding {
+                        importer_path: importer.clone(),
+                        specifier: specifier.into(),
+                        occurrence_mode: PackageResolutionMode::Import,
+                        context,
+                        route: Some(route.expect("the fixture package route must resolve")),
+                        invalidation_paths,
+                        shared_invalidation_paths: Vec::new(),
+                    }
+                })
+                .collect::<Vec<_>>();
+            checker.set_package_route_resolver(resolver);
+            checker.set_package_routes(bindings);
+        }
         if pack
             .checker_options
             .as_ref()
