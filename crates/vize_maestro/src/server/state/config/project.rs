@@ -103,8 +103,8 @@ impl ServerState {
             .unwrap_or_else(|| {
                 conventional
                     .iter()
-                    .cloned()
                     .find(|path| path.is_file())
+                    .cloned()
                     .unwrap_or_else(|| root.join("tsconfig.json"))
             });
         if inferred
@@ -118,13 +118,11 @@ impl ServerState {
             observations.extend(&vize_canon::ConfigurationObservations::capture(&observed));
         }
         let selected = (!inferred).then_some(configured);
-        if selected
-            .as_ref()
-            .is_some_and(|selected| !selected.is_file())
-            && (key.is_some_and(|key| key.tsconfig.is_some())
-                || loaded.config.type_checker.tsconfig.is_some())
-        {
-            let selected = selected.as_ref().expect("selected project");
+        if let Some(selected) = selected.as_ref().filter(|selected| {
+            !selected.is_file()
+                && (key.is_some_and(|key| key.tsconfig.is_some())
+                    || loaded.config.type_checker.tsconfig.is_some())
+        }) {
             loaded.watch_dependencies.push(selected.clone());
             observations.extend(&vize_canon::ConfigurationObservations::capture(
                 std::slice::from_ref(selected),
@@ -141,7 +139,7 @@ impl ServerState {
             loaded.config.type_checker.tsconfig =
                 Some(selected.to_string_lossy().into_owned().into());
             let attempt =
-                vize_canon::CompilerConfigurationSnapshot::capture_attempt(root, Some(&selected));
+                vize_canon::CompilerConfigurationSnapshot::capture_attempt(root, Some(selected));
             loaded.watch_dependencies.extend(attempt.dependencies);
             observations.extend(&attempt.observations);
             let snapshot = attempt.outcome.map_err(|error| vize_l0::cstr!("{error}"))?;
