@@ -92,6 +92,13 @@ impl<'s> LineJoiner<'s> {
             if gap.is_empty() {
                 return ChunkJoin::Continue(false);
             }
+            if is_single_line_break_gap(gap) {
+                return if self.current.is_none() || self.current != previous {
+                    ChunkJoin::NewLine
+                } else {
+                    ChunkJoin::Continue(true)
+                };
+            }
             if HAS_CR {
                 if let Some(line_breaks) = whitespace_gap_line_breaks(gap) {
                     if line_breaks == 0 {
@@ -322,6 +329,15 @@ fn contains_any(haystack: &[u8], needles: &[&[u8]]) -> bool {
         .any(|needle| memchr::memmem::find(haystack, needle).is_some())
 }
 
+#[inline(always)]
+fn is_single_line_break_gap(gap: &[u8]) -> bool {
+    let tail = match gap {
+        [b'\n', tail @ ..] | [b'\r', b'\n', tail @ ..] | [b'\r', tail @ ..] => tail,
+        _ => return false,
+    };
+    tail.iter().all(|&byte| matches!(byte, b' ' | b'\t'))
+}
+
 /// Count LF, CRLF or lone-CR boundaries in an all-whitespace source gap.
 #[inline(always)]
 fn whitespace_gap_line_breaks(gap: &[u8]) -> Option<u8> {
@@ -344,7 +360,17 @@ fn whitespace_gap_line_breaks(gap: &[u8]) -> Option<u8> {
 
 #[cfg(test)]
 mod tests {
-    use super::{locked_line_ranges, whitespace_gap_line_breaks};
+    use super::{is_single_line_break_gap, locked_line_ranges, whitespace_gap_line_breaks};
+
+    #[test]
+    fn single_line_break_gaps_accept_only_horizontal_tail_whitespace() {
+        for gap in [b"\n  ".as_slice(), b"\r\n\t", b"\r "] {
+            assert!(is_single_line_break_gap(gap));
+        }
+        for gap in [b"\n\n".as_slice(), b" \n", b"\nvalue", b" "] {
+            assert!(!is_single_line_break_gap(gap));
+        }
+    }
 
     #[test]
     fn whitespace_gaps_count_logical_line_breaks_once() {

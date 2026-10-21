@@ -61,8 +61,7 @@ impl TemplateFormatter<'_> {
         if child.is_empty() {
             return None;
         }
-        let (closing_name, _) = parse_closing_tag(input, close)?;
-        if closing_name != tag_name {
+        if source.get(close + 1) != Some(&b'/') {
             return None;
         }
         // An authored multiline leading interpolation owns its established
@@ -74,6 +73,11 @@ impl TemplateFormatter<'_> {
         {
             return None;
         }
+        let (closing_name, _) = parse_closing_tag(input, close)?;
+        if closing_name != tag_name {
+            return None;
+        }
+
         // Sole interpolations are deliberately excluded below. Detect them
         // before formatting so the opening-tag width probe does not parse and
         // print the same JavaScript expression that the text pass owns.
