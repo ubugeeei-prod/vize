@@ -339,3 +339,27 @@ five helpers, so the comparator cost matters even without a shared scan.
 The single-pass idea moves to [#7083](https://github.com/ubugeeei-prod/vize/issues/7083),
 where a representative large-module benchmark must justify it. The final
 revision still requires exact-head and protected-queue instruction evidence.
+
+## Helper-rich alias scan qualification (#7083)
+
+The large-module witness keeps common vnode/text helpers in 180 ordinary
+sections and introduces normalize/modifier aliases only in the final section.
+Its generated body exceeds 65,536 bytes and imports more than eight helpers,
+so it exercises the shared path without changing the ordinary comparator.
+The scanner tracks only rank-two and rank-five aliases used by ordering, stops
+once those calls are found, and retains the per-alias scan for virtual
+neighbours outside that mask.
+
+Paired workflow-dispatch runs used current main `92f77f13514d93edc98ce58b5318fa0264098b1a`
+and identical fixture digest
+`58de8952218e12d99610f9eae29ef5e694562b792b3671c706e98d43d70d45a3`.
+The ordinary control measured 34,128,540 instructions in run `39524709325`;
+the candidate measured 16,072,012 in run `39524712741`, a reduction of
+18,056,528 instructions (52.91%). The new row is pinned to the candidate's
+three identical measurements. The existing 100 ceilings are byte-for-byte
+unchanged and all held against the candidate measurement.
+
+Full Check run `39525534072` independently passed the 101-row instruction
+gate and measured the new emit window at exactly 656 allocations. That count
+is the fixed allocation witness; no existing allocation or instruction ceiling
+is raised.
