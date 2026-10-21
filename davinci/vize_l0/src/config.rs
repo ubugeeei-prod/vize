@@ -22,6 +22,6 @@ pub use model::{
     ResolvedLinterConfigWithConfigRuleOptions, RestrictedGlobal, RestrictedMember,
     SfcElementOrderGroup, SfcElementOrderOptions, SortImportsConfig, SortImportsSetting,
     StrictBooleanExpressionsOptions, TemplateComponentNameCasing, TrailingComma, TypeCheckerConfig,
-    VizeConfig, VueVersion,
+    VOnStyle, VizeConfig, VueVersion,
 };
 pub use normalize::normalize_public_config_value;

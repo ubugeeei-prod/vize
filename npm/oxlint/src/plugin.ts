@@ -196,6 +196,8 @@ function ruleOptionsSchema(ruleName: string): unknown[] {
     case "vue/v-on-event-hyphenation":
     case "vue/attribute-hyphenation":
       return [{ enum: ["always", "never"] }];
+    case "vue/v-on-style":
+      return [{ enum: ["shorthand", "longform"] }];
     case "vue/require-component-registration":
       return [objectSchema({ globals: stringArraySchema() })];
     case "vue/valid-v-on":

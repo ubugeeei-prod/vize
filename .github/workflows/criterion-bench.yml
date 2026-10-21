@@ -21,7 +21,7 @@ on:
         default: false
         type: boolean
       level_memory_only:
-        description: Compare all104 original normal-mode allocation and RSS reports
+        description: Compare all105 normal-mode allocation and RSS reports
         required: false
         default: false
         type: boolean

@@ -13,6 +13,7 @@ import { applyFixes as subpathFixes } from "@vizejs/plugin-sdk/fixes";
 import { createSandboxRunner, SANDBOX_IMAGE } from "@vizejs/plugin-sdk/sandbox";
 import {
   VISITOR_API_VERSION,
+  createDevtoolsTraceVisitorHost,
   createVirtualTsVisitorHost,
   defineVisitorPlugin,
   negotiateVisitorPlugin,
@@ -170,6 +171,20 @@ export const virtualTsVisitor = defineVisitorPlugin({
   },
 });
 export const virtualTsHost = createVirtualTsVisitorHost(virtualTsVisitor);
+
+export const devtoolsTraceVisitor = defineVisitorPlugin({
+  apiVersion: VISITOR_API_VERSION,
+  name: "packed-devtools-trace-visitor",
+  version: "1",
+  capabilities: ["devtools-trace"] as const,
+  cacheInputs: [] as const,
+  visitors: {
+    "devtools-trace"(event) {
+      event.payload.events[0]?.stage satisfies string | undefined;
+    },
+  },
+});
+export const devtoolsTraceHost = createDevtoolsTraceVisitorHost(devtoolsTraceVisitor);
 
 import type {
   RuleContext,

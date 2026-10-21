@@ -5,10 +5,7 @@ use vize_l1::{container::vue::DescriptorOptions, markup::SurfaceParseOptions};
 use vize_l1_to_l2::native_file::{NativeSelectedSfcObservation, lower_selected_sfc_native};
 use vize_l3::decision::{DecisionBuildError, native::build_native_dom_file_decisions};
 use vize_l4::{
-    module::{
-        AssemblyError, ModuleParts, RenderPlacement, RenderProperty, assemble,
-        setup::COMPONENT_BINDING,
-    },
+    module::{AssemblyError, ModuleParts, RenderFunctionName, assemble, setup::COMPONENT_BINDING},
     runtime::Runtime,
     targets::dom::{DomError, emit_template},
     write::{EmitDocument, LinkSink, NoLinks, Recorded},
@@ -134,10 +131,7 @@ fn emit<L: LinkSink>(
         ModuleParts::for_runtime(Runtime::VueDom, options.runtime_version, COMPONENT_BINDING)
             .map_err(NativeSelectedSfcDomError::Assembly)?;
     parts.render = Some(emit_template::<L>(&analysis).map_err(NativeSelectedSfcDomError::Dom)?);
-    parts.placement = RenderPlacement::Function {
-        binding: "render",
-        property: RenderProperty::Render,
-    };
+    parts.placement = RenderFunctionName::Render.placement();
     let document = assemble(parts)
         .map_err(NativeSelectedSfcDomError::Assembly)?
         .into_document();

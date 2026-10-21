@@ -229,6 +229,30 @@ fn assert_no_workspace_protocols(package_dir: &Path, package_json: &Value) -> Re
     Ok(())
 }
 
+fn assert_vize_native_version(package_json: &Value) -> Result<(), String> {
+    let Some("vize") = package_json.get("name").and_then(Value::as_str) else {
+        return Ok(());
+    };
+    let version = package_json
+        .get("version")
+        .and_then(Value::as_str)
+        .ok_or_else(|| "vize package.json is missing version".to_string())?;
+    let Some(native_version) = package_json
+        .get("dependencies")
+        .and_then(Value::as_object)
+        .and_then(|dependencies| dependencies.get("@vizejs/native"))
+        .and_then(Value::as_str)
+    else {
+        return Ok(());
+    };
+    if native_version != version {
+        return Err(format!(
+            "vize@{version} must depend on @vizejs/native@{version}, found {native_version}"
+        ));
+    }
+    Ok(())
+}
+
 fn assert_publish_entrypoints_exist(
     package_dir: &Path,
     package_json: &Value,
@@ -477,6 +501,7 @@ fn assert_installed_package(node_modules: &Path, package: &PackageInfo) -> Resul
         ));
     }
     assert_no_workspace_protocols(&package_dir, &package_json)?;
+    assert_vize_native_version(&package_json)?;
     let is_platform_specific_subpackage =
         package_json.get("os").and_then(Value::as_array).is_some()
             || package_json.get("cpu").and_then(Value::as_array).is_some();

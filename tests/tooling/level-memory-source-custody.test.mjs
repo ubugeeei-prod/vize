@@ -185,7 +185,7 @@ await test("a refused own-source version retains all completed raw reports befor
   assert.equal(processReceipt.signal, null);
 });
 
-await test("source-owned judge handoff waits for all624 and refuses unissued witnesses", (t) => {
+await test("source-owned judge handoff waits for all630 and refuses unissued witnesses", (t) => {
   const f = fixture(t);
   const own = sourceHarnessFixture(t, "1.0.0", f.root);
   const head = sourceHarnessFixture(t, "1.1.0");
@@ -248,7 +248,7 @@ await test("source-owned judge handoff waits for all624 and refuses unissued wit
   delete incomplete.measurements.head[0][Object.keys(incomplete.measurements.head[0])[0]];
   assert.throws(
     () => memory.writeHarnessJudgePair(out, incomplete, witnesses, "head", 1),
-    /104|complete/,
+    /105|complete/,
   );
   assert.throws(
     () =>

@@ -25,7 +25,7 @@ fn whole_project(fixture: &mut Fixture, query: &str, token: reads::Token) -> Tes
         json!([definition.clone()]),
     )?;
     check(
-        fixture.vize.request(
+        fixture.vize.navigation_request(
             "textDocument/definition",
             &uri,
             json!({"position":position}),
@@ -59,7 +59,7 @@ fn whole_project(fixture: &mut Fixture, query: &str, token: reads::Token) -> Tes
         check(
             fixture
                 .vize
-                .request("textDocument/references", &uri, params)?,
+                .navigation_request("textDocument/references", &uri, params)?,
             expected,
         )?;
     }

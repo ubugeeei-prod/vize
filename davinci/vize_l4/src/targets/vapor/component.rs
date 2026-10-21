@@ -1,6 +1,6 @@
 //! Pinned scriptless component assembly from original template custody.
 use super::{VaporError, VaporErrorKind, error, fragments};
-use crate::module::{ModuleParts, RenderPlacement, RenderProperty, ScriptPart, assemble};
+use crate::module::{ModuleParts, RenderFunctionName, ScriptPart, assemble};
 use crate::runtime::Runtime;
 use crate::write::{Emitted, LinkSink, Writer};
 use vize_l0::Span;
@@ -68,9 +68,6 @@ pub fn emit_component<L: LinkSink>(
     module.prelude = Some(prelude);
     module.script = Some(ScriptPart::Body(script));
     module.render = Some(render);
-    module.placement = RenderPlacement::Function {
-        binding: "render",
-        property: RenderProperty::Render,
-    };
+    module.placement = RenderFunctionName::Render.placement();
     assemble(module).map_err(|assembly| error(VaporErrorKind::Assembly(assembly)))
 }

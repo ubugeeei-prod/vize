@@ -8,7 +8,7 @@ use vize_l1_to_l2::native_file::{
 use vize_l3::decision::{DecisionBuildError, native::build_native_selected_setup_dom_decisions};
 use vize_l4::{
     module::{
-        AssemblyError, ModuleParts, RenderPlacement, RenderProperty, ScriptPart, assemble,
+        AssemblyError, ModuleParts, RenderFunctionName, ScriptPart, assemble,
         setup::{COMPONENT_BINDING, SetupEmitError, emit_selected_setup},
     },
     runtime::Runtime,
@@ -147,10 +147,7 @@ fn emit<L: LinkSink>(
         emit_selected_setup_template::<L>(&analysis)
             .map_err(NativeSelectedSetupSfcDomError::Dom)?,
     );
-    parts.placement = RenderPlacement::Function {
-        binding: "render",
-        property: RenderProperty::Render,
-    };
+    parts.placement = RenderFunctionName::Render.placement();
     let document = assemble(parts)
         .map_err(NativeSelectedSetupSfcDomError::Assembly)?
         .into_document();

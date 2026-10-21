@@ -1,6 +1,8 @@
 use vize_l0::Span;
 
-use super::{AssemblyError, ModuleParts, RenderPlacement, RenderProperty, ScriptPart, assemble};
+use super::{
+    AssemblyError, ModuleParts, RenderFunctionName, RenderPlacement, ScriptPart, assemble,
+};
 use crate::runtime::{Helper, HelperModule, Vocabulary};
 use crate::write::{LinkSink, NoLinks, Recorded, SpanLink, Writer};
 
@@ -29,6 +31,29 @@ fn bare<L: LinkSink>() -> ModuleParts<'static, L> {
         placement: RenderPlacement::None,
         component: "_sfc_main",
         scope_id: None,
+    }
+}
+
+#[test]
+fn render_function_vocabulary_keeps_binding_and_component_field_paired() {
+    for (render, binding, field) in [
+        (RenderFunctionName::Render, "render", "render"),
+        (RenderFunctionName::SfcRender, "_sfc_render", "render"),
+        (RenderFunctionName::SsrRender, "ssrRender", "ssrRender"),
+    ] {
+        assert_eq!(render.as_str(), binding);
+        assert_eq!(render.component_field(), field);
+        assert_eq!(
+            render.placement(),
+            RenderPlacement::Function {
+                binding,
+                property: if field == "ssrRender" {
+                    super::RenderProperty::SsrRender
+                } else {
+                    super::RenderProperty::Render
+                },
+            }
+        );
     }
 }
 
@@ -76,10 +101,7 @@ fn normal_module<L: LinkSink>() -> ModuleParts<'static, L> {
         Span::new(11, 16),
         &[2, 0],
     ));
-    parts.placement = RenderPlacement::Function {
-        binding: "_sfc_render",
-        property: RenderProperty::Render,
-    };
+    parts.placement = RenderFunctionName::SfcRender.placement();
     parts
 }
 
@@ -146,10 +168,7 @@ fn server_function_attaches_to_ssr_render_and_uses_its_supplied_vocabulary() {
         Span::new(0, 1),
         &[0],
     ));
-    parts.placement = RenderPlacement::Function {
-        binding: "ssrRender",
-        property: RenderProperty::SsrRender,
-    };
+    parts.placement = RenderFunctionName::SsrRender.placement();
     let emitted = assemble(parts).unwrap();
     assert!(emitted.text.starts_with(
         "import { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n"
@@ -257,10 +276,7 @@ fn inconsistent_render_contracts_are_rejected() {
     );
 
     let mut parts = bare::<NoLinks>();
-    parts.placement = RenderPlacement::Function {
-        binding: "render",
-        property: RenderProperty::Render,
-    };
+    parts.placement = RenderFunctionName::Render.placement();
     assert_eq!(assemble(parts).unwrap_err(), AssemblyError::MissingRender);
 
     let mut parts = bare::<NoLinks>();
@@ -280,10 +296,7 @@ fn inconsistent_render_contracts_are_rejected() {
     );
 
     let mut parts = inline_module::<NoLinks>();
-    parts.placement = RenderPlacement::Function {
-        binding: "render",
-        property: RenderProperty::Render,
-    };
+    parts.placement = RenderFunctionName::Render.placement();
     assert_eq!(
         assemble(parts).unwrap_err(),
         AssemblyError::UnexpectedInlineScript

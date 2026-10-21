@@ -13,8 +13,9 @@ mod table;
 mod tags;
 mod text;
 
+use vize_l1::markup::Namespace;
 use vize_relief::{
-    ElementNode, ElementType, Namespace, SourceLocation,
+    ElementNode, ElementType, SourceLocation,
     errors::{CompilerError, ErrorCode},
 };
 

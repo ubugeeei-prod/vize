@@ -64,7 +64,7 @@ impl<'a, 'p> Callbacks for ParserCallbacks<'a, 'p> {
 
     fn svg_title_children(&self) -> bool {
         self.parser.stack.last().is_some_and(|parent| {
-            parent.element.ns == vize_relief::Namespace::Svg
+            parent.element.ns == vize_l1::markup::Namespace::Svg
                 && !matches!(parent.element.tag, "foreignObject" | "desc" | "title")
         })
     }

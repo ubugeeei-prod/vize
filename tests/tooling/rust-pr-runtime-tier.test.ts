@@ -60,6 +60,10 @@ const canonDeferred = [
     name: "template_suppression_preserves_complete_original_diagnostics",
     pack: "template-suppression-original",
   },
+  {
+    name: "native_click_events_preserve_pointer_event_diagnostics",
+    pack: "native-pointer-events-original",
+  },
 ];
 type Step = { name?: string; run?: string };
 const workflow = parse(readRepoFile(".github", "workflows", "pr-rust-products.yml")) as {

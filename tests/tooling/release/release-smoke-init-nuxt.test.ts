@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { test } from "node:test";
 
-import { canRunFreshProjectShape } from "../../../tools/support/compat/npm/smoke-release-init-fresh.mjs";
+import {
+  canRunFreshProjectShape,
+  writePostBootstrapFiles,
+} from "../../../tools/support/compat/npm/smoke-release-init-fresh.mjs";
 import { PACKAGE_MANAGERS } from "../../../tools/support/compat/npm/smoke-release-init-managers.mjs";
 import { NUXT_VUE_TS_SHAPE } from "../../../tools/support/compat/npm/smoke-release-init-nuxt-shape.mjs";
 import { expectedInitOutput } from "../../../tools/support/compat/npm/smoke-release-init-project.mjs";
@@ -17,7 +23,7 @@ const detection = [
   "  language:        TypeScript (tsconfig.json)",
   "  lint command:    oxlint",
   "  Vue settings:    defaults",
-  "  oxlint config:   none",
+  "  oxlint config:   oxlint.config.mts — present but oxlint does not read this name (#3474)",
 ];
 const editors = [
   "[vize init] editor integrations shipped with Vize:",
@@ -99,6 +105,31 @@ test("the Nuxt consumer owns a complete current project and diagnostic triple", 
       },
     ],
   });
+  assert.deepEqual(shape.detection(manager), [
+    "  framework:       Nuxt (nuxt.config.ts)",
+    "  package manager: npm",
+    "  language:        TypeScript (tsconfig.json)",
+    "  lint command:    oxlint",
+    "  Vue settings:    defaults",
+    "  oxlint config:   none",
+  ]);
+  assert.deepEqual(shape.bootstrappedDetection(manager), detection.slice(1));
+  assert.deepEqual(shape.postBootstrapFiles, {
+    "oxlint.config.mts": "export default {};\n",
+  });
+});
+
+test("the packed Nuxt fixture deterministically owns the unsupported oxlint config", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-nuxt-oxlint-"));
+  try {
+    assert.deepEqual(writePostBootstrapFiles(root, shape), shape.postBootstrapFiles);
+    assert.equal(
+      fs.readFileSync(path.join(root, "oxlint.config.mts"), "utf8"),
+      "export default {};\n",
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });
 
 test("the Nuxt init contract pins the complete dry, apply, and idempotent plans", () => {
@@ -117,7 +148,7 @@ test("the Nuxt init contract pins the complete dry, apply, and idempotent plans"
     "  editor    unchanged  .vscode/extensions.json already recommends ubugeeei.vize",
   ];
   assert.equal(
-    expectedInitOutput(shape, projectRoot, manager, "dry"),
+    expectedInitOutput(shape, projectRoot, manager, "dry", { bootstrapped: true }),
     output([
       ...configured,
       "[vize init] would create .vscode/extensions.json",
@@ -128,7 +159,7 @@ test("the Nuxt init contract pins the complete dry, apply, and idempotent plans"
     ]),
   );
   assert.equal(
-    expectedInitOutput(shape, projectRoot, manager, "apply"),
+    expectedInitOutput(shape, projectRoot, manager, "apply", { bootstrapped: true }),
     output([
       ...configured,
       "[vize init] will create .vscode/extensions.json",
@@ -139,7 +170,7 @@ test("the Nuxt init contract pins the complete dry, apply, and idempotent plans"
     ]),
   );
   assert.equal(
-    expectedInitOutput(shape, projectRoot, manager, "rerun"),
+    expectedInitOutput(shape, projectRoot, manager, "rerun", { bootstrapped: true }),
     output([
       ...unchanged,
       "[vize init] nothing to do; the project is already configured",

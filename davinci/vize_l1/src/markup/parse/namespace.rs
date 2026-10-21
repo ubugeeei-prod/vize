@@ -1,11 +1,11 @@
 //! Generic live namespace recovery; authored heads are recorded uninterpreted.
 
-use vize_l0::{Allocator, Namespace, Vec, is_void_tag};
+use vize_l0::{Allocator, Vec, is_void_tag};
 
 use crate::build::scope::{Frame, Recovery};
 use crate::event::{EventKind, Recorder};
 use crate::markup::entity::DecodedEntity;
-use crate::markup::{LexErrorCode, QuoteType, Sink};
+use crate::markup::{LexErrorCode, Namespace, QuoteType, Sink};
 
 struct OpenFrame<'a> {
     tag: &'a str,

@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 936,
+  "regressionCommit": "e7d8b1c82a8badec89ec9779838dfa50c1b9b790",
+  "sourceRevision": "e7d8b1c82a8badec89ec9779838dfa50c1b9b790",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "click-pointer-handler",
+      "inputs": [
+        { "file": "tsconfig.json", "source": "click-pointer-handler/tsconfig.json.txt" },
+        { "file": "src/App.vue", "source": "click-pointer-handler/src/App.vue.txt" }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "auxclick-pointer-handler",
+      "inputs": [
+        { "file": "tsconfig.json", "source": "auxclick-pointer-handler/tsconfig.json.txt" },
+        { "file": "src/App.vue", "source": "auxclick-pointer-handler/src/App.vue.txt" }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

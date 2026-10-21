@@ -30,17 +30,52 @@
     },
     {
       "id": "control-flow/conditional-branch",
-      "source": "const App = () => <main>{state.show ? <strong>{state.label}</strong> : <em>off</em>}</main>;",
-      "initial": { "show": true, "label": "alpha" },
+      "babelCorpusId": "children/ternary",
+      "valueMatrix": true,
+      "source": "const App = () => <main>{state.condition ? <strong>{state.label}</strong> : <em>off:{state.label}</em>}</main>;",
+      "initial": { "condition": { "$jsxValue": "zero" }, "label": "zero" },
       "steps": [
-        { "patch": { "label": "beta" } },
-        { "patch": { "show": false } },
-        { "patch": { "show": true, "label": "gamma" } }
+        { "patch": { "condition": { "$jsxValue": "empty-string" }, "label": "empty" } },
+        { "patch": { "condition": { "$jsxValue": "nan" }, "label": "nan" } },
+        { "patch": { "condition": { "$jsxValue": "null" }, "label": "null" } },
+        {
+          "patch": {
+            "condition": { "$jsxValue": "undefined" },
+            "label": "undefined"
+          }
+        },
+        { "patch": { "condition": { "$jsxValue": "false" }, "label": "false" } },
+        { "patch": { "condition": { "$jsxValue": "true" }, "label": "true" } },
+        { "patch": { "condition": { "$jsxValue": "array" }, "label": "array" } },
+        {
+          "patch": {
+            "condition": { "$jsxValue": "nested-vnode" },
+            "label": "nested-vnode"
+          }
+        },
+        { "patch": { "condition": { "$jsxValue": "zero" }, "label": "zero-again" } }
       ],
-      "expectedText": ["alpha", "beta", "off", "gamma"],
+      "expectedText": [
+        "off:zero",
+        "off:empty",
+        "off:nan",
+        "off:null",
+        "off:undefined",
+        "off:false",
+        "true",
+        "array",
+        "nested-vnode",
+        "off:zero-again"
+      ],
       "expectedElementIdentities": [
         [0, 1],
         [0, 1],
+        [0, 1],
+        [0, 1],
+        [0, 1],
+        [0, 1],
+        [0, 2],
+        [0, 2],
         [0, 2],
         [0, 3]
       ]

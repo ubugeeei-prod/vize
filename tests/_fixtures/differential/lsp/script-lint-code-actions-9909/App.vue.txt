@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import { ref } from "vue";
+
+const emit = defineEmits<{ close: [] }>();
+const { title } = defineProps<{ title: string }>();
+const boxRef = ref<HTMLElement | null>(null);
+</script>
+
+<template>
+  <div ref="boxRef" @click="emit('close')">{{ title }}</div>
+</template>
