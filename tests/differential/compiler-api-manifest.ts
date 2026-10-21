@@ -243,6 +243,18 @@ export function loadCompilerApiManifest(manifestPath: string, repoRoot: string) 
         originalOptions = originalSfcOptions(options);
         expected = reference;
         entrypoint = options.entrypoint;
+        if (fixture.currentReference) {
+          assert.equal(fixture.currentReference.supersedesSha256, fixture.reference.sha256);
+          assert.match(
+            fixture.currentReference.issue,
+            /^https:\/\/github\.com\/ubugeeei-prod\/vize\/issues\/[1-9]\d*$/u,
+          );
+          const current: JsonObject = JSON.parse(
+            readPinnedArtifact(repoRoot, fixture.currentReference).toString(),
+          );
+          validateCompilerOutput(current, target);
+          expected = current;
+        }
       } else {
         const targetReference = reference as JsonObject & CompilerReference;
         assert.equal(fixture.options.path, fixture.reference.path);

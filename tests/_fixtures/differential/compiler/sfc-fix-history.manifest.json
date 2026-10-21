@@ -410,6 +410,12 @@
         "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/separate-template-authored-render-binding.expected.json",
         "sha256": "3ae9fe5c25c8772fbb479603b15a9269694fef630c1e4278ee3f4d96f552bc92"
       },
+      "currentReference": {
+        "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/separate-template-authored-render-binding.current.expected.json",
+        "sha256": "6c5470866ed41cd45674a8b154abf4b1840b433c6e9e0b4c31181a6b8d807b16",
+        "supersedesSha256": "3ae9fe5c25c8772fbb479603b15a9269694fef630c1e4278ee3f4d96f552bc92",
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/6504"
+      },
       "historicalObservation": {
         "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/separate-template-authored-render-binding.observation.json",
         "sha256": "a319b94d1002c313fd0473612e979ed78991a4159adb8bffb0c2bc167add0974"
