@@ -1,4 +1,4 @@
-use crate::ir::{ComponentKind, CreateComponentIRNode, IRSlot, OperationNode};
+use crate::ir::{ComponentKind, CreateComponentIRNode, IRSlot, OperationNode, PropValueKind};
 use vize_atelier_core::codegen::document::EmitDocument;
 use vize_carton::{FxHashMap, String, ToCompactString, cstr};
 
@@ -154,7 +154,7 @@ pub(super) fn generate_create_component(
     };
 
     let props = generate_component_props_str(ctx, component);
-    let has_slots = !component.slots.is_empty();
+    let has_slots = !component.slots.is_empty() || forwarded_slots_source(component).is_some();
     // Keep each computed slot's function stable when only its name getter
     // re-evaluates. A new function would remount content at an unchanged name.
     declare_slot_caches(ctx, component);
@@ -209,15 +209,8 @@ fn generate_component_call(
     props: &str,
 ) {
     let kind = component.kind;
-    let raw_slots = component
-        .slots
-        .iter()
-        .rev()
-        .find_map(|slot| slot.forwarded_source());
-    let has_authored_slots = component
-        .slots
-        .iter()
-        .any(|slot| slot.forwarded_source().is_none());
+    let raw_slots = forwarded_slots_source(component);
+    let has_authored_slots = !component.slots.is_empty();
     let has_slots = has_authored_slots || raw_slots.is_some();
     ctx.push_indent();
     ctx.push(&cstr!(
@@ -243,9 +236,7 @@ fn generate_component_call(
         let mut static_slots: std::vec::Vec<&IRSlot<'_>> = std::vec::Vec::new();
         let mut dynamic_slots: std::vec::Vec<&IRSlot<'_>> = std::vec::Vec::new();
         for slot in component.slots.iter() {
-            if slot.forwarded_source().is_some() {
-                continue;
-            } else if !slot.dynamic() {
+            if !slot.dynamic() {
                 static_slots.push(slot);
             } else {
                 dynamic_slots.push(slot);
@@ -299,6 +290,18 @@ fn generate_component_call(
             once_flag(component, create_fn)
         ));
     }
+}
+
+fn forwarded_slots_source<'a>(
+    component: &'a CreateComponentIRNode<'a>,
+) -> Option<&'a vize_atelier_core::SimpleExpressionNode<'a>> {
+    component
+        .props
+        .iter()
+        .rev()
+        .find(|prop| prop.value_kind == PropValueKind::ForwardedSlots)
+        .and_then(|prop| prop.values.first())
+        .map(|value| value.as_ref())
 }
 
 /// The trailing `once` argument of a component created under `v-once`.

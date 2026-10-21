@@ -20,7 +20,7 @@ pub(super) fn declare_slot_caches(
     for (index, slot) in component
         .slots
         .iter()
-        .filter(|slot| slot.forwarded_source().is_none() && slot.dynamic())
+        .filter(|slot| slot.dynamic())
         .enumerate()
     {
         if matches!(slot.control, Some(IRSlotControl::For(_))) {

@@ -209,7 +209,16 @@ pub(super) fn transform_component<'a>(
                     && dir.arg.is_none()
                     && let Some(ExpressionNode::Simple(value)) = &dir.exp
                 {
-                    slots.push(IRSlot::forwarded(ctx.allocator, value));
+                    let key = SimpleExpressionNode::new("$slots", true, dir.loc.clone());
+                    let mut values = Vec::new_in(&ctx.allocator);
+                    values.push(Box::new_in(
+                        SimpleExpressionNode::from_node(value),
+                        &ctx.allocator,
+                    ));
+                    props.push(
+                        IRProp::new(Box::new_in(key, &ctx.allocator), values, true)
+                            .with_value_kind(crate::ir::PropValueKind::ForwardedSlots),
+                    );
                 }
             }
             PropNode::Attribute(attr) => {
