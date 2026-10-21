@@ -1,0 +1,129 @@
+{
+  "schema": "vize.product-dependency-allowlist",
+  "version": 1,
+  "baselineRevision": "b7515d2e7ccc8589eb6cd8366a21c515c0656f51",
+  "root": "vize_patina",
+  "entries": [
+    {
+      "from": "vize_canon",
+      "to": "vize_armature",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_patina"],
+      "issue": 6851,
+      "reason": "Remove Patina's inherited Canon-to-Armature path."
+    },
+    {
+      "from": "vize_canon",
+      "to": "vize_atelier_core",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_patina"],
+      "issue": 6851,
+      "reason": "Remove Patina's inherited Canon-to-Atelier Core path."
+    },
+    {
+      "from": "vize_canon",
+      "to": "vize_atelier_jsx",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_patina"],
+      "issue": 6851,
+      "reason": "Remove Patina's inherited Canon-to-Atelier JSX path."
+    },
+    {
+      "from": "vize_canon",
+      "to": "vize_atelier_sfc",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_patina"],
+      "issue": 6851,
+      "reason": "Remove Patina's inherited Canon-to-Atelier SFC path."
+    },
+    {
+      "from": "vize_canon",
+      "to": "vize_croquis",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_patina"],
+      "issue": 6851,
+      "reason": "Remove Patina's inherited Canon-to-Croquis path."
+    },
+    {
+      "from": "vize_canon",
+      "to": "vize_relief",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_patina"],
+      "issue": 6851,
+      "reason": "Remove Patina's inherited Canon-to-Relief path."
+    },
+    {
+      "from": "vize_patina",
+      "to": "vize_armature",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_patina"],
+      "issue": 6851,
+      "reason": "Remove Patina's direct legacy Armature dependency."
+    },
+    {
+      "from": "vize_patina",
+      "to": "vize_atelier_jsx",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_patina"],
+      "issue": 6851,
+      "reason": "Remove Patina's direct legacy Atelier JSX dependency."
+    },
+    {
+      "from": "vize_patina",
+      "to": "vize_atelier_sfc",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_patina"],
+      "issue": 6851,
+      "reason": "Remove Patina's direct legacy Atelier SFC dependency."
+    },
+    {
+      "from": "vize_patina",
+      "to": "vize_croquis",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_patina"],
+      "issue": 6851,
+      "reason": "Remove Patina's direct legacy Croquis dependency."
+    },
+    {
+      "from": "vize_patina",
+      "to": "vize_relief",
+      "rename": null,
+      "target": null,
+      "optional": false,
+      "workspace": true,
+      "roots": ["vize_patina"],
+      "issue": 6851,
+      "reason": "Remove Patina's direct legacy Relief dependency."
+    }
+  ]
+}

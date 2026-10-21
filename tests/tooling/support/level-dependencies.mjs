@@ -18,8 +18,12 @@ export function fixture() {
     "vize_armature",
     "vize_relief",
     "vize_croquis",
+    "vize_atelier_core",
+    "vize_atelier_jsx",
     "vize_atelier_sfc",
+    "vize_canon",
     "vize_glyph",
+    "vize_patina",
     "helper",
   ];
   const packages = names.map((name) => ({

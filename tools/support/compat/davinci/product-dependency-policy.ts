@@ -6,8 +6,6 @@ import {
   validateAllowlist,
 } from "./level-dependency-policy.ts";
 
-export const productPolicyPath = "docs/davinci/plan/product-dependency-allowlists/vize_glyph.json";
-
 export interface ProductAllowlist {
   readonly schema: "vize.product-dependency-allowlist";
   readonly version: 1;
@@ -35,6 +33,47 @@ export const initialGlyphProductAllowlist: ProductAllowlist = {
     },
   ],
 };
+
+export const initialPatinaProductAllowlist: ProductAllowlist = {
+  schema: "vize.product-dependency-allowlist",
+  version: 1,
+  baselineRevision: "b7515d2e7ccc8589eb6cd8366a21c515c0656f51",
+  root: "vize_patina",
+  entries: [
+    ["vize_canon", "vize_armature", "Remove Patina's inherited Canon-to-Armature path."],
+    ["vize_canon", "vize_atelier_core", "Remove Patina's inherited Canon-to-Atelier Core path."],
+    ["vize_canon", "vize_atelier_jsx", "Remove Patina's inherited Canon-to-Atelier JSX path."],
+    ["vize_canon", "vize_atelier_sfc", "Remove Patina's inherited Canon-to-Atelier SFC path."],
+    ["vize_canon", "vize_croquis", "Remove Patina's inherited Canon-to-Croquis path."],
+    ["vize_canon", "vize_relief", "Remove Patina's inherited Canon-to-Relief path."],
+    ["vize_patina", "vize_armature", "Remove Patina's direct legacy Armature dependency."],
+    ["vize_patina", "vize_atelier_jsx", "Remove Patina's direct legacy Atelier JSX dependency."],
+    ["vize_patina", "vize_atelier_sfc", "Remove Patina's direct legacy Atelier SFC dependency."],
+    ["vize_patina", "vize_croquis", "Remove Patina's direct legacy Croquis dependency."],
+    ["vize_patina", "vize_relief", "Remove Patina's direct legacy Relief dependency."],
+  ].map(([from, to, reason]) => ({
+    from,
+    to,
+    rename: null,
+    target: null,
+    optional: false,
+    workspace: true,
+    roots: ["vize_patina"],
+    issue: 6851,
+    reason,
+  })),
+};
+
+export const productPolicies = [
+  {
+    path: "docs/davinci/plan/product-dependency-allowlists/vize_glyph.json",
+    initial: initialGlyphProductAllowlist,
+  },
+  {
+    path: "docs/davinci/plan/product-dependency-allowlists/vize_patina.json",
+    initial: initialPatinaProductAllowlist,
+  },
+] as const;
 
 const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
@@ -89,20 +128,50 @@ export function assertProductAllowlistRatchet(current: unknown, previous: Produc
     );
 }
 
-export function readBaseProductAllowlist(cwd: string, base: string | undefined): ProductAllowlist {
+export function combineProductAllowlists(policies: readonly ProductAllowlist[]): {
+  roots: string[];
+  entries: AllowlistEntry[];
+} {
+  const roots = new Set<string>(),
+    entries = new Map<string, AllowlistEntry>();
+  for (const input of policies) {
+    const policy = validateProductAllowlist(input);
+    requireEvidence(!roots.has(policy.root), "duplicate product dependency root: " + policy.root);
+    roots.add(policy.root);
+    for (const entry of policy.entries) {
+      const id = key(entry),
+        current = entries.get(id);
+      if (current)
+        entries.set(id, { ...current, roots: [...current.roots, policy.root].sort() });
+      else entries.set(id, { ...entry, roots: [policy.root] });
+    }
+  }
+  return { roots: [...roots].sort(), entries: [...entries.values()] };
+}
+
+export function readBaseProductAllowlist(
+  cwd: string,
+  base: string | undefined,
+  policyPath: string,
+  initial: ProductAllowlist,
+): ProductAllowlist {
   requireEvidence(
     base !== undefined && /^[0-9a-f]{40}$/u.test(base),
     "expected full product comparison base SHA",
   );
+  requireEvidence(
+    policyPath === `docs/davinci/plan/product-dependency-allowlists/${initial.root}.json`,
+    "product dependency policy path does not match its root",
+  );
   execFileSync("git", ["cat-file", "-e", base + "^{commit}"], { cwd, stdio: "pipe" });
-  const present = execFileSync("git", ["ls-tree", "--name-only", base, "--", productPolicyPath], {
+  const present = execFileSync("git", ["ls-tree", "--name-only", base, "--", policyPath], {
     cwd,
     encoding: "utf8",
   }).trim();
-  if (!present) return initialGlyphProductAllowlist;
+  if (!present) return initial;
   return validateProductAllowlist(
     JSON.parse(
-      execFileSync("git", ["show", base + ":" + productPolicyPath], { cwd, encoding: "utf8" }),
+      execFileSync("git", ["show", base + ":" + policyPath], { cwd, encoding: "utf8" }),
     ),
   );
 }

@@ -28,6 +28,7 @@ test("docs-only dependency policy changes still run a mandatory metadata gate", 
   for (const policy of [
     "docs/davinci/plan/level-dependency-allowlist.json",
     "docs/davinci/plan/product-dependency-allowlists/vize_glyph.json",
+    "docs/davinci/plan/product-dependency-allowlists/vize_patina.json",
   ])
     assert.deepEqual(planSourceChecks([policy]), {
       rust: true,

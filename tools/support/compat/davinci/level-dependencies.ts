@@ -17,7 +17,8 @@ import {
 } from "./level-dependency-policy.ts";
 import {
   assertProductAllowlistRatchet,
-  productPolicyPath,
+  combineProductAllowlists,
+  productPolicies,
   readBaseProductAllowlist,
   validateProductAllowlist,
 } from "./product-dependency-policy.ts";
@@ -30,8 +31,10 @@ export {
 } from "./level-dependency-policy.ts";
 export {
   assertProductAllowlistRatchet,
+  combineProductAllowlists,
   initialGlyphProductAllowlist,
-  productPolicyPath,
+  initialPatinaProductAllowlist,
+  productPolicies,
   readBaseProductAllowlist,
   validateProductAllowlist,
 } from "./product-dependency-policy.ts";
@@ -345,17 +348,24 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const policy = validateAllowlist(
     JSON.parse(readFileSync(path.join(repoRoot, policyPath), "utf8")),
   );
-  const productPolicy = validateProductAllowlist(
-    JSON.parse(readFileSync(path.join(repoRoot, productPolicyPath), "utf8")),
+  const productAllowlists = productPolicies.map(({ path: policyPath }) =>
+    validateProductAllowlist(JSON.parse(readFileSync(path.join(repoRoot, policyPath), "utf8"))),
   );
   const previous = readBaseAllowlist(repoRoot, args[1]);
-  const previousProduct = readBaseProductAllowlist(repoRoot, args[1]);
   assertAllowlistRatchet(policy, previous);
-  assertProductAllowlistRatchet(productPolicy, previousProduct);
+  for (const [index, current] of productAllowlists.entries()) {
+    const registered = productPolicies[index];
+    requireEvidence(registered, "missing product dependency policy registration");
+    assertProductAllowlistRatchet(
+      current,
+      readBaseProductAllowlist(repoRoot, args[1], registered.path, registered.initial),
+    );
+  }
+  const productAllowlist = combineProductAllowlists(productAllowlists);
   const report = inspectLevelDependencies(
     readMetadata(),
-    validateAllowlist({ ...policy, entries: [...policy.entries, ...productPolicy.entries] }),
-    [productPolicy.root],
+    validateAllowlist({ ...policy, entries: [...policy.entries, ...productAllowlist.entries] }),
+    productAllowlist.roots,
   );
   const sha = execFileSync("git", ["rev-parse", "HEAD"], {
     cwd: repoRoot,
