@@ -10,6 +10,7 @@ mod component_render_h_props;
 mod component_spread_duplicate_diagnostics;
 mod component_vif_guard_ts7006;
 mod content_mapper_duplicate_attributes;
+mod content_mapper_nuxt_emit;
 mod css_module_classes;
 mod css_side_effect_import;
 mod define_model_template_unwrap;
