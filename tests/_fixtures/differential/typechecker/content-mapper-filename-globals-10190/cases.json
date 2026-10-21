@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10190,
+  "regressionCommit": "1d62e7dc797f98e7fc983b9ed05a655d193657b8",
+  "sourceRevision": "1d62e7dc797f98e7fc983b9ed05a655d193657b8",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "error-and-map-globals",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "error.vue",
+          "source": "error.vue.txt"
+        },
+        {
+          "file": "map.vue",
+          "source": "map.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

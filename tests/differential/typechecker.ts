@@ -82,6 +82,7 @@ export const TYPECHECKER_TESTS = {
   "content-mapper-define-slots-typeof-10197":
     "content_mapper_define_slots_resolves_setup_scoped_types",
   "content-mapper-nested-vfor-guard-10216": "content_mapper_nested_vfor_reuses_branch_guards",
+  "content-mapper-filename-globals-10190": "filename_globals_preserve_clean_batch_diagnostics",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
@@ -141,6 +142,7 @@ const sourceRevisions = {
   "content-mapper-props-binding-10196": "232f8f514e0ea55a7aeef08bc883b46e0608d12f",
   "workspace-package-import-alias-10175": "c935e00211b3d6ca271e53658f88156921a639a7",
   "strict-fallthrough-default-7856": "d32790c869ac18c1e0e24e82a8876d796190133a",
+  "content-mapper-filename-globals-10190": "1d62e7dc797f98e7fc983b9ed05a655d193657b8",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 
 export type Artifact = { path: string; sha256: string };

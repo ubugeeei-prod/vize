@@ -146,6 +146,17 @@ fn plain_javascript_sfcs_follow_check_js_policy() {
 }
 
 #[test]
+fn filename_globals_preserve_clean_batch_diagnostics() {
+    check_pack(
+        "content-mapper-filename-globals-10190",
+        "filename_globals_preserve_clean_batch_diagnostics",
+        "1d62e7dc797f98e7fc983b9ed05a655d193657b8",
+        Some(10190),
+        &["error-and-map-globals"],
+    );
+}
+
+#[test]
 fn component_event_tuples_preserve_all_argument_diagnostics() {
     check_pack(
         "component-event-tuples",
@@ -772,7 +783,8 @@ fn check_pack(
             | "strict-fallthrough-default-7856"
             | "content-mapper-multiline-callback-10191"
             | "content-mapper-define-slots-typeof-10197"
-            | "content-mapper-nested-vfor-guard-10216" => regression,
+            | "content-mapper-nested-vfor-guard-10216"
+            | "content-mapper-filename-globals-10190" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
             }

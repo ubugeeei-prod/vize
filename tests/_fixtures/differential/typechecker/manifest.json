@@ -4635,6 +4635,59 @@
         ]
       },
       "diagnostics": []
+    },
+    {
+      "id": "typechecker/content-mapper-filename-globals-10190/error-and-map-globals",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "content-mapper-filename-globals-10190",
+      "case": "error-and-map-globals",
+      "test": "filename_globals_preserve_clean_batch_diagnostics",
+      "regressionCommit": "1d62e7dc797f98e7fc983b9ed05a655d193657b8",
+      "sourceRevision": "1d62e7dc797f98e7fc983b9ed05a655d193657b8",
+      "packReference": {
+        "path": "content-mapper-filename-globals-10190/cases.json",
+        "sha256": "6e0f2c2f812f8c3fe6626ce7c847096ba2e27393b8cc1fa2d07d5d895639e0ab"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "content-mapper-filename-globals-10190/tsconfig.json.txt",
+          "sha256": "396228adf4ff55e8b3f1a2abd5ec1ed1dfffc09975e09787fa40cfe489536c03"
+        },
+        {
+          "file": "error.vue",
+          "path": "content-mapper-filename-globals-10190/error.vue.txt",
+          "sha256": "e95c12d040929a99596ae2e12e988a378d31fbdcb1e8a6b45c54c59477a4b443"
+        },
+        {
+          "file": "map.vue",
+          "path": "content-mapper-filename-globals-10190/map.vue.txt",
+          "sha256": "faba8d05f877ec82f80e0478f1f87b2dfd9aa5c59ef44397caa2b27f005c8548"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
     }
   ]
 }
