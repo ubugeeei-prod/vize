@@ -77,6 +77,23 @@ pub(super) fn resolve_project_root(
     cwd.to_path_buf()
 }
 
+pub(super) fn resolve_project_root_with_boundary(
+    explicit_tsconfig: Option<&Path>,
+    cwd: &Path,
+    files: &[PathBuf],
+    boundary: Option<&Path>,
+) -> PathBuf {
+    let Some(boundary) = boundary.filter(|_| explicit_tsconfig.is_none()) else {
+        return resolve_project_root(explicit_tsconfig, cwd, files);
+    };
+    files
+        .iter()
+        .find_map(|file| find_nearest_tsconfig_path_within(file, boundary))
+        .and_then(|config| config.parent().map(Path::to_path_buf))
+        .or_else(|| common_file_parent(files))
+        .unwrap_or_else(|| boundary.to_path_buf())
+}
+
 pub(super) fn resolve_tsconfig_path(
     explicit_tsconfig: Option<&Path>,
     cwd: &Path,
@@ -97,6 +114,67 @@ pub(super) fn resolve_tsconfig_path(
             .iter()
             .find_map(|file| find_nearest_tsconfig_path(file))
     })
+}
+
+pub(super) fn resolve_tsconfig_path_with_boundary(
+    explicit_tsconfig: Option<&Path>,
+    cwd: &Path,
+    project_root: &Path,
+    files: &[PathBuf],
+    boundary: Option<&Path>,
+) -> Option<PathBuf> {
+    let Some(boundary) = boundary.filter(|_| explicit_tsconfig.is_none()) else {
+        return resolve_tsconfig_path(explicit_tsconfig, cwd, project_root, files);
+    };
+    files
+        .iter()
+        .find_map(|file| find_nearest_tsconfig_path_within(file, boundary))
+}
+
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
+pub(super) fn external_input_tsconfig_boundary(
+    patterns: &[std::string::String],
+    cwd: &Path,
+) -> Option<PathBuf> {
+    let canonicalize = vize_carton::path::canonicalize_non_verbatim;
+    let cwd = canonicalize(cwd);
+    let mut boundary = cwd.clone();
+    let mut found_external = false;
+    for pattern in patterns {
+        let path = Path::new(pattern);
+        if !path.is_absolute() {
+            continue;
+        }
+        let input_root = if path.exists() {
+            path.to_path_buf()
+        } else {
+            super::collect::base_dir_from_pattern(pattern)
+        };
+        if !input_root.exists() {
+            continue;
+        }
+        let path = canonicalize(&input_root);
+        if path.starts_with(&cwd) {
+            continue;
+        }
+        found_external = true;
+        if !retain_common_ancestor(&mut boundary, &path) {
+            // Different Windows volume prefixes have no shared ancestor. Keep
+            // the cwd as a non-matching ceiling so implicit source discovery
+            // stays disabled for that input.
+            return Some(cwd);
+        }
+    }
+    found_external.then_some(boundary)
+}
+
+fn retain_common_ancestor(boundary: &mut PathBuf, path: &Path) -> bool {
+    while !path.starts_with(&*boundary) {
+        if !boundary.pop() || boundary.as_os_str().is_empty() {
+            return false;
+        }
+    }
+    true
 }
 
 pub(super) fn explicit_input_root(project_root: &Path, cwd: &Path) -> PathBuf {
@@ -181,7 +259,8 @@ fn validate_explicit_inputs_in_root(root: &Path, files: &[PathBuf]) -> Result<()
 mod config;
 
 pub(super) use config::{
-    find_nearest_tsconfig_dir, find_nearest_tsconfig_path, project_config_path,
+    find_nearest_tsconfig_dir, find_nearest_tsconfig_path, find_nearest_tsconfig_path_within,
+    project_config_path,
 };
 
 fn resolve_project_root_from_files(files: &[PathBuf]) -> Option<PathBuf> {
@@ -268,7 +347,10 @@ pub(super) fn validate_corsa_server_count(servers: Option<usize>) -> Result<(), 
 #[expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
 #[cfg(test)]
 mod tests {
-    use super::resolve_project_root;
+    use super::{
+        external_input_tsconfig_boundary, resolve_project_root, resolve_project_root_with_boundary,
+        resolve_tsconfig_path_with_boundary,
+    };
     use std::path::{Path, PathBuf};
 
     fn unique_case_dir(name: &str) -> PathBuf {
@@ -333,6 +415,102 @@ mod tests {
         );
 
         assert_eq!(resolved, workspace.join("packages"));
+        let _ = std::fs::remove_dir_all(&workspace);
+    }
+
+    #[test]
+    fn external_absolute_input_only_discovers_configs_inside_its_shared_boundary() {
+        let workspace = unique_case_dir("external-input-config-boundary");
+        let _ = std::fs::remove_dir_all(&workspace);
+        let fixture = workspace.join("fixture");
+        let cwd = fixture.join("cwd");
+        let source_root = fixture.join("source");
+        let source = source_root.join("src/main.ts");
+        std::fs::create_dir_all(&cwd).unwrap();
+        std::fs::create_dir_all(source.parent().unwrap()).unwrap();
+        std::fs::write(&source, "export const value = 1;\n").unwrap();
+        let ancestor_config = workspace.join("tsconfig.json");
+        std::fs::write(&ancestor_config, "{}").unwrap();
+
+        let patterns = vec![source.display().to_string()];
+        let boundary = external_input_tsconfig_boundary(&patterns, &cwd).unwrap();
+        assert_eq!(boundary, fixture);
+        let project_root = resolve_project_root_with_boundary(
+            None,
+            &cwd,
+            std::slice::from_ref(&source),
+            Some(&boundary),
+        );
+        assert_eq!(project_root, source.parent().unwrap());
+        assert_eq!(
+            resolve_tsconfig_path_with_boundary(
+                None,
+                &cwd,
+                &project_root,
+                std::slice::from_ref(&source),
+                Some(&boundary),
+            ),
+            None
+        );
+
+        let local_config = source_root.join("tsconfig.json");
+        std::fs::write(&local_config, "{}").unwrap();
+        let project_root = resolve_project_root_with_boundary(
+            None,
+            &cwd,
+            std::slice::from_ref(&source),
+            Some(&boundary),
+        );
+        assert_eq!(project_root, source_root);
+        assert_eq!(
+            resolve_tsconfig_path_with_boundary(
+                None,
+                &cwd,
+                &project_root,
+                std::slice::from_ref(&source),
+                Some(&boundary),
+            ),
+            Some(local_config)
+        );
+        assert_eq!(
+            resolve_tsconfig_path_with_boundary(
+                Some(&ancestor_config),
+                &cwd,
+                &project_root,
+                std::slice::from_ref(&source),
+                Some(&boundary),
+            ),
+            Some(ancestor_config)
+        );
+        let _ = std::fs::remove_dir_all(&workspace);
+    }
+
+    #[test]
+    fn unrelated_path_prefixes_refuse_an_unbounded_common_ancestor() {
+        let mut boundary = PathBuf::from("volume-a/work");
+        assert!(!super::retain_common_ancestor(
+            &mut boundary,
+            Path::new("volume-b/source.ts")
+        ));
+        assert!(boundary.as_os_str().is_empty());
+    }
+
+    #[test]
+    fn absolute_glob_uses_its_existing_static_prefix_for_the_boundary() {
+        let workspace = unique_case_dir("external-input-glob-boundary");
+        let _ = std::fs::remove_dir_all(&workspace);
+        let fixture = workspace.join("fixture");
+        let cwd = fixture.join("cwd");
+        let source = fixture.join("source/src");
+        std::fs::create_dir_all(&cwd).unwrap();
+        std::fs::create_dir_all(&source).unwrap();
+        let pattern = format!("{}/**/*.ts", source.display());
+        assert!(!Path::new(&pattern).exists());
+
+        assert_eq!(
+            external_input_tsconfig_boundary(&[pattern], &cwd),
+            Some(fixture)
+        );
         let _ = std::fs::remove_dir_all(&workspace);
     }
 }

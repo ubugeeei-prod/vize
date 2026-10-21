@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "id": "lsp/regression/pug-multiline-attributes-8908",
+  "provenance": {
+    "fixCommit": "2c4b8275af5548cf9e29ec377cc4afc4211f56f9",
+    "witnessPath": "crates/vize_maestro/src/ide/pug.rs",
+    "witnessTest": "reads_multiline_attribute_lists; template_component_prop_completion_resolves_multiline_pug_props; pug_multiline_directive_values_resolve_like_html_attributes; script_binding_references_reach_pug_attribute_values",
+    "inputOrigin": "minimal authored Pug reproduction from issue 8908",
+    "contractOrigin": "focused Maestro regressions validate completion, definition, hover, references, and rename; this differential row pins the authored SFC bytes"
+  },
+  "input": {
+    "source": "App.vue.txt",
+    "runtimePath": "App.vue",
+    "sha256": "f2f3ddb31e7144b88bebefda086a4f545c7010007c3c679089fe28973c7adc50"
+  },
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "1497f547e5a36040a02f36fc254dd1f2bf6b721b9faa0a779c8d74f0547c924e"
+  },
+  "method": "textDocument/foldingRange",
+  "documentVersion": 1,
+  "scope": "exact multiline Pug input custody plus focused editor witnesses; no native adapter or broader Pug acceptance credit"
+}

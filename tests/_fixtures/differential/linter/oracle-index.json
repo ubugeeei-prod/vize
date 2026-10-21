@@ -179,6 +179,10 @@
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__valid-v-else-autofix-preserves-directive.snap",
     "sha256": "606d5afb73fe7512be388241ace3e5f8a9de84fc6f6c2215ebeb3ac8942154a0"
   },
+  "linter/current-api/custom-event-name-casing-9879": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__custom-event-name-casing-9879.snap",
+    "sha256": "a3dbd88c02eb707f66b95f942f2457323f0f279a36b0f923d580d6a0769ec099"
+  },
   "linter/current-api/dynamic-slot-v-for-component-bodies": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__dynamic-slot-v-for-component-bodies.snap",
     "sha256": "6de424f4c524b76fc7063c1a73621a2883123e9b54b2a9400eddaf0bf1e8ddce"
@@ -211,9 +215,17 @@
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__require-symbol-provide-range-9882.snap",
     "sha256": "b0eadd0dede28eb463f4e8064924b1297ed0030a0694dc09abbde968ca911980"
   },
+  "linter/current-api/multiline-v-for-source-9880": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__multiline-v-for-source-9880.snap",
+    "sha256": "1cc33dd3650dccf744d0eb3ed982e92c9c37d3b2b70107b876f0770622926680"
+  },
   "linter/current-api/vue-path-alias-types-9864": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__vue-path-alias-types-9864.snap",
     "sha256": "52e4ec70e7a4e05c3ea6fbc8b4800057c60d8f3620756c6e7e96cedafc7973c1"
+  },
+  "linter/current-api/nuxt-builtins-9866": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__nuxt-builtins-9866.snap",
+    "sha256": "b0553cc80634ecf13f05d4fdf65f4b2b164ca1766dcec01070feb22dbec9a5a5"
   },
   "linter/current-api/prefer-use-id-context-9837": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__prefer-use-id-context-9837.snap",

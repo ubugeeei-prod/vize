@@ -82,6 +82,33 @@ fn vue2_preserve_keeps_removed_comment_and_named_slot_boundaries() {
     );
 }
 
+#[test]
+fn vue2_preserve_matches_vue2_comment_and_named_slot_edges() {
+    let between = compiler_code_for(
+        "<template><p>\n  <b>a</b>\n  <!-- c -->\n  <i>b</i>\n</p></template>",
+        false,
+        false,
+    );
+    assert_eq!(text_vnode_arguments(&between), [""]);
+
+    let trailing = compiler_code_for(
+        "<template><div>\n  <b>x</b>\n  <!-- c -->\n</div></template>",
+        false,
+        false,
+    );
+    assert_eq!(text_vnode_arguments(&trailing), [] as [&str; 0]);
+
+    let named_slot = compiler_code_for(
+        "<template><MyCard>\n  {{ a }}\n  <template #footer>f</template>\n</MyCard></template>",
+        false,
+        false,
+    );
+    assert_eq!(
+        interpolated_runs(&named_slot),
+        [r#""\n  " + _toDisplayString(_ctx.a) + "\n  ""#.to_owned()]
+    );
+}
+
 fn vue2_interpolated_runs() -> Vec<String> {
     VUE27_RENDER
         .split("_vm._v(")
@@ -128,6 +155,28 @@ fn interpolated_runs(code: &str) -> Vec<String> {
         from = end;
     }
     runs
+}
+
+fn text_vnode_arguments(code: &str) -> Vec<&str> {
+    const CALL: &str = "_createTextVNode(";
+    let mut arguments = Vec::new();
+    let mut from = 0;
+    while let Some(start) = code
+        .get(from..)
+        .and_then(|rest| rest.find(CALL))
+        .map(|offset| from + offset + CALL.len())
+    {
+        let Some(end) = code
+            .get(start..)
+            .and_then(closing_paren)
+            .map(|offset| start + offset)
+        else {
+            break;
+        };
+        arguments.push(code.get(start..end).unwrap_or_default());
+        from = end + 1;
+    }
+    arguments
 }
 
 fn closing_paren(text: &str) -> Option<usize> {

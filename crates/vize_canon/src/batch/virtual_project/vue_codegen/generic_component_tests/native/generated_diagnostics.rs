@@ -236,28 +236,7 @@ fn generated_tuple_and_property_references_keep_raw_and_authored_diagnostics_dis
                 "{packet}"
             );
             assert_eq!(public.diagnostics.len(), expected_rows.len(), "{public:#?}");
-            let generated_import_findings = usize::from(case == "inferred-data-attribute");
-            assert_eq!(
-                mapped.len(),
-                expected_rows.len() + generated_import_findings,
-                "{packet}"
-            );
-            if case == "inferred-data-attribute" {
-                assert_eq!(
-                    mapped,
-                    [(
-                        String::from("App.vue"),
-                        1,
-                        18,
-                        Some(5097),
-                        Some(1),
-                        String::from(
-                            "An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled."
-                        )
-                    )],
-                    "{packet}"
-                );
-            }
+            assert_eq!(mapped.len(), expected_rows.len(), "{packet}");
             if let Some((code, message)) = expected {
                 let (needle, relative, length) = if code == 2493 {
                     ("empty[0]", "empty[".len(), 1)

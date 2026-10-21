@@ -1,0 +1,21 @@
+<template>
+  <section>
+    <p>
+      <b>a</b>
+      <!-- one -->
+      <!-- two -->
+      <i>b</i>
+    </p>
+    <div>
+      <b>x</b>
+      <!-- trailing -->
+    </div>
+    <MyCard>
+      {{ a }}
+      <template #footer>f</template>
+    </MyCard>
+  </section>
+</template>
+<script setup>
+const a = "a";
+</script>

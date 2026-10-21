@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { parse } from "yaml";
+import { parse, parseAllDocuments } from "yaml";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const npmDir = path.join(root, "npm");
@@ -148,6 +148,38 @@ test("vize package leaves Vue type versions to the consuming project", () => {
   });
   assert.doesNotMatch(cliEntry, /VIZE_VUE_PACKAGE\s*\?\?=/);
   assert.doesNotMatch(cliEntry, /require\.resolve\("vue\/package\.json"\)/);
+});
+
+test("setup-await oracle locks the renderer to the same Vue runtime", () => {
+  type Lockfile = {
+    importers: Record<
+      string,
+      {
+        devDependencies?: Record<string, { specifier: string; version: string }>;
+      }
+    >;
+    snapshots: Record<string, { dependencies?: Record<string, string> }>;
+  };
+
+  const lockfile = parseAllDocuments(readRepoFile("pnpm-lock.yaml"))
+    .map((document) => document.toJS() as Lockfile)
+    .find((document) => document.importers?.tests != null);
+  assert.ok(lockfile, "workspace lockfile document");
+  const oracle = lockfile.importers.tests?.devDependencies?.["vue-setup-await-oracle"];
+  assert.ok(oracle, "vue-setup-await-oracle importer");
+  assert.equal(oracle.specifier, "npm:vue@3.5.38");
+
+  const version = oracle.version.match(/^vue@3\.5\.38\((typescript@[^()]+)\)$/u);
+  assert.ok(version, "Vue 3.5.38 snapshot with its TypeScript peer");
+
+  const vuePeer = `3.5.38(${version[1]})`;
+  const rendererPeer = `3.5.38(vue@${vuePeer})`;
+  const rendererSnapshot = `@vue/server-renderer@${rendererPeer}`;
+  assert.equal(
+    lockfile.snapshots[oracle.version]?.dependencies?.["@vue/server-renderer"],
+    rendererPeer,
+  );
+  assert.equal(lockfile.snapshots[rendererSnapshot]?.dependencies?.vue, vuePeer);
 });
 
 test("musea Nuxt tests the same vue-router major that it declares as a peer", () => {

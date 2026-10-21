@@ -131,14 +131,14 @@ fn incremental_equals_clean_on_every_committed_project_fixture() {
     assert_report(
         &report,
         [73, 438, 2197, 285, 2708, 5800],
-        [[2124, 219, 146], [2647, 2378, 1913], [168, 1657, 1262]],
+        [[2124, 219, 146], [2647, 2378, 1913], [169, 1662, 1264]],
     );
     // Keep the previous plane's complete accounting; the added fixtures must
     // contribute their own measured states without replacing any old work.
     assert_report(
         &run_plane_where(|name| !dev_ssr_style_fixture(name)),
         [71, 426, 2137, 277, 2634, 5646],
-        [[2066, 213, 142], [2577, 2314, 1861], [164, 1612, 1226]],
+        [[2066, 213, 142], [2577, 2314, 1861], [165, 1617, 1228]],
     );
     assert_report(
         &run_plane_where(|name| !critical_css_fixture(name) && !dev_ssr_style_fixture(name)),
@@ -148,7 +148,7 @@ fn incremental_equals_clean_on_every_committed_project_fixture() {
     assert_report(
         &run_plane_where(critical_css_fixture),
         [3, 18, 87, 15, 108, 182],
-        [[84, 9, 6], [69, 88, 73], [6, 66, 51]],
+        [[84, 9, 6], [69, 88, 73], [7, 71, 53]],
     );
     assert_report(
         &run_plane_where(dev_ssr_style_fixture),

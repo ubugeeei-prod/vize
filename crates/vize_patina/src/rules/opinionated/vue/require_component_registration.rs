@@ -66,6 +66,25 @@ static META: RuleMeta = RuleMeta {
 /// `vue-router` resolves from the linted file.
 pub const VUE_ROUTER_COMPONENTS: &[&str] = &["RouterLink", "RouterView"];
 
+/// Components Nuxt registers globally even when component directory scanning
+/// is disabled. Callers add them only when `nuxt` resolves from the linted
+/// file, keeping plain Vue projects strict.
+pub const NUXT_BUILTIN_COMPONENTS: &[&str] = &[
+    "Nuxt",
+    "NuxtChild",
+    "NuxtPage",
+    "NuxtLayout",
+    "NuxtLink",
+    "NuxtLoadingIndicator",
+    "NuxtErrorBoundary",
+    "NuxtWelcome",
+    "NuxtIsland",
+    "NuxtRouteAnnouncer",
+    "ClientOnly",
+    "DevOnly",
+    "NoSsr",
+];
+
 /// Require component registration rule
 #[derive(Default)]
 pub struct RequireComponentRegistration {

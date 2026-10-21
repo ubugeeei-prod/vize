@@ -15,6 +15,7 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
     check_unknown_props: bool,
     check_unknown_fallthrough_props: bool,
     strict_component_attrs: bool,
+    typed_fallthrough_values: bool,
 ) {
     ts.push_str("  type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;\n");
     // Inline parameter shapes keep `TS2345` messages close to `vue-tsc` while
@@ -148,6 +149,21 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
     ts.push_str(
         "  type __VizePropValue<P, K extends PropertyKey, F = unknown, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? F : __V;\n",
     );
+    if typed_fallthrough_values
+        && usages
+            .iter()
+            .any(|(_, usage)| !usage.spread_props.is_empty())
+    {
+        ts.push_str(
+            "  type __VizeInvalidFallthroughSpreadKeys<P, F, A> = { [K in keyof A]: K extends keyof P | keyof __VizeKebabProps<P> ? never : K extends keyof F ? __VizeIsAny<A[K]> extends true ? never : A[K] extends F[K] ? never : K extends \"id\" ? A[K] extends string | number ? never : K : K : never }[keyof A];\n",
+        );
+        ts.push_str(
+            "  type __VizeFallthroughSpreadGuard<C, P, A, __K = __VizeInvalidFallthroughSpreadKeys<P, __VizeFallthroughProps<C>, A>> = [__K] extends [never] ? unknown : { readonly __vizeInvalidFallthroughSpreadValues: __K };\n",
+        );
+        ts.push_str(
+            "  type __VizeFallthroughSpreadChecker<C, P> = <A>(props: A & __VizeFallthroughSpreadGuard<C, P, NoInfer<A>>) => A;\n",
+        );
+    }
     // Emitted only when a usage actually binds an inline callback, because
     // nothing else references these aliases and an unreferenced one is
     // `TS6196`. That reaches

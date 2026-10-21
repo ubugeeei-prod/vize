@@ -65,7 +65,7 @@ fn broken_tsconfig_fails_once_without_unsafe_type_rule_flood_and_recovers() {
     write(
         project.path(),
         "lint.json",
-        r#"{"linter":{"preset":"incremental","typeAware":true,"rules":{"type/no-unsafe-template-binding":"warn"}}}"#,
+        r#"{"vue":{"linter":{"preset":"incremental","typeAware":true,"rules":{"type/no-unsafe-template-binding":"warn"}}}}"#,
     );
     write(
         project.path(),
@@ -87,7 +87,7 @@ import { rows } from "#lib/data";
     }
 
     let broken = lint(project.path(), &runtime);
-    assert_eq!(broken.status.code(), Some(1));
+    assert_eq!(broken.status.code(), Some(1), "stderr: {:?}", broken.stderr);
     assert_eq!(broken.stderr, b"");
     let broken_json: Value = serde_json::from_slice(&broken.stdout).unwrap();
     let reports = broken_json.as_array().unwrap();

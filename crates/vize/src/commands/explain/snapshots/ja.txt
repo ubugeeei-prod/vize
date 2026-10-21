@@ -1773,7 +1773,7 @@ script/component-options-name-casing · lint ルール
   }
 === script/custom-event-name-casing
 script/custom-event-name-casing · lint ルール
-発行するカスタムイベント名に camelCase を強制する
+発行するカスタムイベント名を設定した形式に統一する
 
 精度: complete
 対象: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)

@@ -3,6 +3,7 @@
 
 #![expect(clippy::panic, reason = "tests assert by panicking")]
 #![expect(
+    clippy::disallowed_macros,
     clippy::disallowed_methods,
     clippy::disallowed_types,
     reason = "test fixtures and insta snapshots use std strings and format"
@@ -11,6 +12,7 @@
 use crate::support;
 
 use support::with_transformed;
+use vize_l0::Allocator;
 use vize_l1_to_l2::emit_dom;
 
 fn assembled(source: &str) -> String {
@@ -20,6 +22,21 @@ fn assembled(source: &str) -> String {
             .assembled()
             .to_string()
     })
+}
+
+fn legacy(source: &str) -> String {
+    let allocator = Allocator::new();
+    let (_, errors, output) = vize_atelier_dom::compile_template_legacy_with_options(
+        &allocator,
+        source,
+        vize_atelier_dom::DomCompilerOptions::default(),
+    );
+    let blocking: Vec<_> = errors
+        .iter()
+        .filter(|error| !error.is_compatibility_notice())
+        .collect();
+    assert!(blocking.is_empty(), "{source:?}: {blocking:?}");
+    format!("{}\n{}", output.preamble, output.code)
 }
 
 fn pin(visual: &str) -> String {
@@ -58,20 +75,13 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
-fn teleport_interpolation_keeps_the_text_flag() {
-    assert_eq!(
-        assembled(r##"<Teleport to="#app">hello {{ msg }}</Teleport>"##),
-        pin("\
-const { toDisplayString: _toDisplayString, openBlock: _openBlock, createBlock: _createBlock, createTextVNode: _createTextVNode, Teleport: _Teleport } = Vue
-
-const _hoisted_1 = { to: \"#app\" }
-
-function render(_ctx, _cache, $props, $setup, $data, $options) {
-  return (_openBlock(), _createBlock(_Teleport, _hoisted_1, [
-    _createTextVNode(\"hello \" + _toDisplayString(msg), 1 /* TEXT */)
-  ], 1 /* TEXT */))
-}")
-    );
+fn teleport_text_children_keep_the_legacy_array_boundaries() {
+    for source in [
+        r##"<Teleport to="#app">{{ msg }}</Teleport>"##,
+        r##"<Teleport to="#app">hello {{ msg }}</Teleport>"##,
+    ] {
+        assert_eq!(assembled(source), legacy(source), "{source}");
+    }
 }
 
 #[test]

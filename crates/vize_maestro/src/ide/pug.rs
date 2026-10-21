@@ -13,30 +13,41 @@ pub(crate) fn tag_name_span_at_offset(
     offset: usize,
 ) -> Option<(usize, usize, usize, usize)> {
     let cursor = offset.min(content.len());
-    if !is_in_pug_template_region(content, cursor) {
-        return None;
+    let (body_start, body_end) = pug_template_body_bounds(content, cursor)?;
+    let current_line_start = content
+        .get(..cursor)?
+        .rfind('\n')
+        .map_or(body_start, |index| (index + 1).max(body_start));
+    let mut line_start = body_start;
+
+    while line_start <= current_line_start && line_start < body_end {
+        let Some((_, line_end, tag_start, name_end)) = tag_name_span_on_line(content, line_start)
+        else {
+            line_start = next_line_start(content, line_start, body_end)?;
+            continue;
+        };
+        let open = read_tag_suffix_end(content, name_end, line_end);
+        if content.as_bytes().get(open) == Some(&b'(') {
+            if let Some(attribute_end) = find_attribute_end(content, open, body_end) {
+                if line_start == current_line_start || (open < cursor && cursor <= attribute_end) {
+                    return Some((
+                        line_start,
+                        attribute_end.saturating_add(1),
+                        tag_start,
+                        name_end,
+                    ));
+                }
+                line_start = next_line_start(content, attribute_end, body_end)?;
+                continue;
+            }
+        } else if line_start == current_line_start {
+            return Some((line_start, line_end, tag_start, name_end));
+        }
+
+        line_start = next_line_start(content, line_end, body_end)?;
     }
 
-    let (before, after) = content.split_at_checked(cursor)?;
-    let line_start = before.rfind('\n').map_or(0, |index| index + 1);
-    let line_end = after
-        .find('\n')
-        .map_or(content.len(), |index| cursor + index);
-    let bytes = content.as_bytes();
-    let mut name_start = line_start;
-
-    while name_start < line_end && matches!(bytes.get(name_start), Some(b' ' | b'\t')) {
-        name_start += 1;
-    }
-    if matches!(
-        bytes.get(name_start),
-        None | Some(b'.' | b'#' | b'/' | b'|' | b':' | b'-' | b'+')
-    ) {
-        return None;
-    }
-
-    let name_end = read_tag_name_end(content, name_start, line_end);
-    (name_start != name_end).then_some((name_start, line_end, name_start, name_end))
+    None
 }
 
 pub(crate) fn opening_tag_context_at_offset(
@@ -78,7 +89,7 @@ pub(crate) fn opening_tag_context_at_offset(
 }
 
 /// Start of the Vue expression (`:prop`, `@event`, `#slot`, `v-*`) whose quoted
-/// value in a single-line Pug attribute list (`button(@click="inc")`) holds the cursor.
+/// value in a Pug attribute list (`button(@click="inc")`) holds the cursor.
 pub(crate) fn directive_value_start_at_offset(content: &str, offset: usize) -> Option<usize> {
     let cursor = offset.min(content.len());
     let (_, line_end, _, name_end) = tag_name_span_at_offset(content, cursor)?;
@@ -89,17 +100,22 @@ pub(crate) fn directive_value_start_at_offset(content: &str, offset: usize) -> O
         return None;
     }
     let mut quote = None;
+    let mut escaped = false;
     let mut name_start = open + 1;
     let mut value_start = None;
     let mut pos = open + 1;
     while pos < cursor {
         let ch = content.get(pos..)?.chars().next()?;
         if let Some(open_quote) = quote {
-            if ch == open_quote {
+            if escaped {
+                escaped = false;
+            } else if ch == '\\' {
+                escaped = true;
+            } else if ch == open_quote {
                 quote = None;
                 value_start = None;
             }
-        } else if ch == '"' || ch == '\'' {
+        } else if matches!(ch, '"' | '\'' | '`') {
             quote = Some(ch);
             value_start = Some(pos + 1);
         } else if ch.is_ascii_whitespace() || ch == ',' {
@@ -133,18 +149,23 @@ fn read_tag_suffix_end(content: &str, mut pos: usize, line_end: usize) -> usize 
     pos
 }
 
-fn find_attribute_end(content: &str, open: usize, line_end: usize) -> Option<usize> {
+fn find_attribute_end(content: &str, open: usize, search_end: usize) -> Option<usize> {
     let mut quote = None;
+    let mut escaped = false;
     let mut depth = 0usize;
     let mut pos = open;
 
-    while pos < line_end {
+    while pos < search_end {
         let ch = content.get(pos..)?.chars().next()?;
         if let Some(open_quote) = quote {
-            if ch == open_quote {
+            if escaped {
+                escaped = false;
+            } else if ch == '\\' {
+                escaped = true;
+            } else if ch == open_quote {
                 quote = None;
             }
-        } else if ch == '"' || ch == '\'' {
+        } else if matches!(ch, '"' | '\'' | '`') {
             quote = Some(ch);
         } else if ch == '(' {
             depth += 1;
@@ -162,6 +183,7 @@ fn find_attribute_end(content: &str, open: usize, line_end: usize) -> Option<usi
 
 fn is_inside_attribute_value(content: &str, attribute_start: usize, cursor: usize) -> bool {
     let mut quote = None;
+    let mut escaped = false;
     let mut pos = attribute_start;
 
     while pos < cursor {
@@ -169,10 +191,14 @@ fn is_inside_attribute_value(content: &str, attribute_start: usize, cursor: usiz
             break;
         };
         if let Some(open_quote) = quote {
-            if ch == open_quote {
+            if escaped {
+                escaped = false;
+            } else if ch == '\\' {
+                escaped = true;
+            } else if ch == open_quote {
                 quote = None;
             }
-        } else if ch == '"' || ch == '\'' {
+        } else if matches!(ch, '"' | '\'' | '`') {
             quote = Some(ch);
         }
         pos += ch.len_utf8();
@@ -188,6 +214,7 @@ fn current_attribute_token(
 ) -> (usize, String) {
     let mut token_start = cursor;
     let mut quote = None;
+    let mut escaped = false;
     let mut pos = attribute_start;
 
     while pos < cursor {
@@ -195,10 +222,14 @@ fn current_attribute_token(
             break;
         };
         if let Some(open_quote) = quote {
-            if ch == open_quote {
+            if escaped {
+                escaped = false;
+            } else if ch == '\\' {
+                escaped = true;
+            } else if ch == open_quote {
                 quote = None;
             }
-        } else if ch == '"' || ch == '\'' {
+        } else if matches!(ch, '"' | '\'' | '`') {
             quote = Some(ch);
         } else if ch.is_ascii_whitespace() || ch == ',' || ch == '(' {
             token_start = pos + ch.len_utf8();
@@ -216,31 +247,61 @@ fn current_attribute_token(
     )
 }
 
-fn is_in_pug_template_region(content: &str, cursor: usize) -> bool {
-    let Some(before) = content.get(..cursor.min(content.len())) else {
-        return false;
-    };
-    let Some(template_start) = before.rfind("<template") else {
-        return false;
-    };
-    let Some(template) = content.get(template_start..) else {
-        return false;
-    };
+fn tag_name_span_on_line(content: &str, line_start: usize) -> Option<(usize, usize, usize, usize)> {
+    let line_end = content
+        .get(line_start..)?
+        .find('\n')
+        .map_or(content.len(), |index| line_start + index);
+    let bytes = content.as_bytes();
+    let mut name_start = line_start;
+
+    while name_start < line_end && matches!(bytes.get(name_start), Some(b' ' | b'\t')) {
+        name_start += 1;
+    }
+    if matches!(
+        bytes.get(name_start),
+        None | Some(b'.' | b'#' | b'/' | b'|' | b':' | b'-' | b'+')
+    ) {
+        return None;
+    }
+
+    let name_end = read_tag_name_end(content, name_start, line_end);
+    (name_start != name_end).then_some((line_start, line_end, name_start, name_end))
+}
+
+fn next_line_start(content: &str, offset: usize, body_end: usize) -> Option<usize> {
+    content
+        .get(offset..body_end)?
+        .find('\n')
+        .map(|index| offset + index + 1)
+}
+
+fn pug_template_body_bounds(content: &str, cursor: usize) -> Option<(usize, usize)> {
+    let before = content.get(..cursor.min(content.len()))?;
+    let template_start = before.rfind("<template")?;
+    let template = content.get(template_start..)?;
     if before
         .get(template_start..)
         .is_some_and(|open| open.contains("</template"))
     {
-        return false;
+        return None;
     }
 
-    let Some(tag_end) = template.find('>') else {
-        return false;
-    };
+    let tag_end = template.find('>')?;
     if cursor <= template_start + tag_end {
-        return false;
+        return None;
     }
 
-    template_start_tag_lang_is_pug(template.get(..=tag_end).unwrap_or_default())
+    if !template_start_tag_lang_is_pug(template.get(..=tag_end).unwrap_or_default()) {
+        return None;
+    }
+
+    let body_start = template_start + tag_end + 1;
+    let body_end = content
+        .get(body_start..)?
+        .find("</template")
+        .map_or(content.len(), |index| body_start + index);
+    (cursor <= body_end).then_some((body_start, body_end))
 }
 
 fn template_start_tag_lang_is_pug(start_tag: &str) -> bool {
@@ -370,6 +431,61 @@ mod tests {
         let context = opening_tag_context_at_offset(source, offset).expect("Pug tag context");
 
         assert!(context.inside_attribute_value);
+    }
+
+    #[test]
+    fn reads_multiline_attribute_lists() {
+        for language in ["pug", "jade"] {
+            let language_attr = ["lang=\"", language, "\""].concat();
+            let source = r#"<template lang="pug">
+  pane.w-flex(
+    type="plain"
+    :size="format(\"close)\", nested(pane.size))"
+    @click=`inc(")")`
+  ) text
+</template>
+"#
+            .replace("lang=\"pug\"", &language_attr);
+            let token_offset = source.find(":size").unwrap() + ":si".len();
+            let context = opening_tag_context_at_offset(&source, token_offset)
+                .expect("multiline Pug tag context");
+            assert_eq!(context.tag_name, "pane", "{language}");
+            assert_eq!(context.current_token, ":si", "{language}");
+            assert!(!context.inside_attribute_value, "{language}");
+
+            for (needle, expected) in [
+                (
+                    "pane.size",
+                    Some(r#"format(\"close)\", nested(pane.size))"#),
+                ),
+                ("inc(\")\")", Some("inc(\")\")")),
+                ("plain", None),
+            ] {
+                let offset = source.find(needle).unwrap() + 1;
+                let start = directive_value_start_at_offset(&source, offset);
+                assert_eq!(
+                    start.map(|start| &source[start..start + expected.map_or(0, str::len)]),
+                    expected,
+                    "{language}/{needle}"
+                );
+            }
+
+            let value_offset = source.find("pane.size").unwrap() + 2;
+            let value_context = opening_tag_context_at_offset(&source, value_offset)
+                .expect("multiline Pug attribute value context");
+            assert!(value_context.inside_attribute_value, "{language}");
+            assert_eq!(
+                tag_name_span_at_offset(&source, value_offset)
+                    .map(|(_, _, start, end)| &source[start..end]),
+                Some("pane"),
+                "{language}"
+            );
+            let text_offset = source.find(") text").unwrap() + ") ".len() + 1;
+            assert!(
+                opening_tag_context_at_offset(&source, text_offset).is_none(),
+                "{language}"
+            );
+        }
     }
 
     #[test]

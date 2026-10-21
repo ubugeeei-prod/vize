@@ -44,3 +44,16 @@ fn vue_router_registers_router_components_only_when_installed() {
     let untitled = Url::parse("untitled:App.vue").unwrap();
     assert!(!package_is_installed(&untitled, "vue-router"));
 }
+
+#[test]
+fn nuxt_availability_tracks_the_document_package() {
+    let root = tempfile::tempdir().unwrap();
+    let file = root.path().join("src/App.vue");
+    fs::create_dir_all(file.parent().unwrap()).unwrap();
+    let uri = Url::from_file_path(&file).unwrap();
+    assert!(!package_is_installed(&uri, "nuxt"));
+    let package = root.path().join("node_modules/nuxt");
+    fs::create_dir_all(&package).unwrap();
+    fs::write(package.join("package.json"), r#"{"name":"nuxt"}"#).unwrap();
+    assert!(package_is_installed(&uri, "nuxt"));
+}

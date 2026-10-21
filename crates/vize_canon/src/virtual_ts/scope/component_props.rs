@@ -66,6 +66,7 @@ pub(super) fn generate_component_props(
         ctx.check_unknown_props,
         ctx.check_unknown_fallthrough_props,
         ctx.strict_component_attrs,
+        ctx.typed_fallthrough_values,
     );
     append_component_slot_check_helpers(ts, ctx.experimental_strict_slot_children);
 
@@ -188,6 +189,7 @@ pub(super) fn generate_component_props(
             preserve_event_navigation: ctx.preserve_event_navigation,
             check_unknown_events: ctx.check_unknown_events,
             strict_v_model: ctx.strict_v_model,
+            typed_fallthrough_values: ctx.typed_fallthrough_values,
             experimental_strict_slot_children: ctx.experimental_strict_slot_children,
             explicit_generics: ctx.explicit_generics,
         };
@@ -379,7 +381,8 @@ fn generate_root_usage_checks(
             ctx.source_context(),
             "  ",
         )
-        .strict_v_model(ctx.strict_v_model);
+        .strict_v_model(ctx.strict_v_model)
+        .typed_fallthrough_values(ctx.typed_fallthrough_values);
         generate_component_prop_checks(&mut check_context, usage, idx, component_ref.as_str())
     });
     profile!("canon.virtual_ts.component_slot_checks", {

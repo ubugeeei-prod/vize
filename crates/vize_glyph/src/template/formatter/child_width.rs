@@ -69,6 +69,21 @@ impl TemplateFormatter<'_> {
             return None;
         }
 
+        let child_bytes = child.as_bytes();
+        // Sole interpolations are deliberately excluded below. Detect them
+        // before formatting so the opening-tag width probe does not parse and
+        // print the same JavaScript expression that the text pass owns.
+        if parse_interpolation_range(child_bytes, 0)
+            .is_some_and(|(_, _, end)| end == child_bytes.len())
+        {
+            return None;
+        }
+        // Interpolation formatting is identity for brace-free text. Measure
+        // it directly instead of allocating a duplicate child string.
+        if memchr::memchr(b'{', child_bytes).is_none() {
+            return Some(1 + child.width() + 3 + tag_name.width());
+        }
+
         let formatted =
             format_interpolations_with_vue_version(child, self.options, self.vue_version);
         // Sole interpolations have a syntax-only break inside `{{ }}` and keep

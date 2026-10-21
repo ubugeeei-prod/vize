@@ -41,11 +41,8 @@ const unusedLocal = 1
             .iter()
             .map(|(_, _, message)| message.as_str())
             .collect::<Vec<_>>(),
-        [
-            "2:16:error 'color' is declared but its value is never read.",
-            "3:7:error 'unusedLocal' is declared but its value is never read.",
-        ],
-        "expected the complete vue-tsc diagnostic set: {snapshot:#?}"
+        ["3:7:error 'unusedLocal' is declared but its value is never read."],
+        "a used rest binding owns the omitted keys; only the unrelated local is unused: {snapshot:#?}"
     );
 
     let _ = std::fs::remove_dir_all(&project_root);

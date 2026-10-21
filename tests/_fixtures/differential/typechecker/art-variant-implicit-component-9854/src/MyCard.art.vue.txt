@@ -1,0 +1,7 @@
+<script setup lang="ts">
+defineArt("./MyCard.vue", { title: "MyCard" });
+</script>
+<art>
+  <variant name="Wrong"><MyCard :title="123" /></variant>
+  <variant name="Missing"><MyCard elevated /></variant>
+</art>

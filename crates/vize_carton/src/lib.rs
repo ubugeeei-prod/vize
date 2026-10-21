@@ -55,21 +55,28 @@ pub mod timing_observer;
 
 /// The Vize version users see (`vize --version`, LSP server info).
 ///
-/// main keeps the last released version in its manifests, so only builds made
-/// by the Release workflow (which sets `VIZE_RELEASE_BUILD`) report it as is;
+/// Release builds receive the exact planned version explicitly so Cargo tracks
+/// it even when trusted target caches were populated by a different release.
+/// Legacy release callers fall back to their stamped Cargo package version;
 /// every other build reports `<version>-dev`.
-pub const VERSION: &str = match option_env!("VIZE_RELEASE_BUILD") {
-    Some(_) => env!("CARGO_PKG_VERSION"),
-    None => concat!(env!("CARGO_PKG_VERSION"), "-dev"),
+pub const VERSION: &str = match option_env!("VIZE_RELEASE_VERSION") {
+    Some(version) => version,
+    None => match option_env!("VIZE_RELEASE_BUILD") {
+        Some(_) => env!("CARGO_PKG_VERSION"),
+        None => concat!(env!("CARGO_PKG_VERSION"), "-dev"),
+    },
 };
 
 #[cfg(test)]
 mod version_tests {
     #[test]
     fn unreleased_builds_identify_as_dev() {
-        match option_env!("VIZE_RELEASE_BUILD") {
-            Some(_) => assert_eq!(super::VERSION, env!("CARGO_PKG_VERSION")),
-            None => assert_eq!(super::VERSION, concat!(env!("CARGO_PKG_VERSION"), "-dev")),
+        match option_env!("VIZE_RELEASE_VERSION") {
+            Some(version) => assert_eq!(super::VERSION, version),
+            None => match option_env!("VIZE_RELEASE_BUILD") {
+                Some(_) => assert_eq!(super::VERSION, env!("CARGO_PKG_VERSION")),
+                None => assert_eq!(super::VERSION, concat!(env!("CARGO_PKG_VERSION"), "-dev")),
+            },
         }
     }
 }

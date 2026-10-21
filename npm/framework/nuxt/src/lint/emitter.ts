@@ -18,7 +18,7 @@ interface OxlintOverride {
 
 interface NuxtOxlintConfig {
   plugins: ["vue"];
-  jsPlugins: [{ name: "vize"; specifier: string }];
+  jsPlugins: Array<string | { name: "vize"; specifier: string }>;
   settings: { vize: { preset: "incremental"; generatedBy?: "@vizejs/nuxt" } };
   ignorePatterns?: string[];
   globals?: Record<string, "readonly" | "writable">;
@@ -100,6 +100,7 @@ export function renderNuxtOxlintConfig(
   items: readonly NuxtLintConfigItem[],
   pluginSpecifier: string,
   globBase?: NuxtOxlintGlobBase,
+  projectJsPlugins: readonly string[] = [],
 ): string {
   if (globBase) {
     const root = path.relative(globBase.configDir, globBase.rootDir);
@@ -134,7 +135,10 @@ export function renderNuxtOxlintConfig(
 
   const config: NuxtOxlintConfig = {
     plugins: ["vue"],
-    jsPlugins: [{ name: "vize", specifier: pluginSpecifier }],
+    jsPlugins: [
+      { name: "vize", specifier: pluginSpecifier },
+      ...projectJsPlugins.map((specifier) => rebaseJsPlugin(specifier, globBase?.configDir)),
+    ],
     settings: {
       vize: { preset: "incremental", ...(globBase?.owner ? { generatedBy: globBase.owner } : {}) },
     },
@@ -145,6 +149,12 @@ export function renderNuxtOxlintConfig(
   if (overrides.length > 0) config.overrides = overrides;
 
   return `${JSON.stringify(config, null, 2)}\n`;
+}
+
+function rebaseJsPlugin(specifier: string, configDir: string | undefined): string {
+  if (!configDir || !path.isAbsolute(specifier)) return specifier;
+  const relative = path.relative(configDir, specifier).split(path.sep).join("/");
+  return relative.startsWith(".") ? relative : `./${relative}`;
 }
 
 function rebaseGlob(glob: string, base: NuxtOxlintGlobBase, ignore: boolean): string {

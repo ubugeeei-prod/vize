@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 9956,
+  "regressionCommit": "2b1e41a5b09005a97d24d1ff34f34c7507bbfb67",
+  "sourceRevision": "2b1e41a5b09005a97d24d1ff34f34c7507bbfb67",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "broad-index-valid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Root.vue",
+          "source": "src/Root.vue.txt"
+        },
+        {
+          "file": "src/Forwarding.vue",
+          "source": "src/Forwarding.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "src/App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

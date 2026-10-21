@@ -36,9 +36,9 @@ fn is_self_component_reference(
         return true;
     }
 
-    let camel = camelize(component);
-    let pascal = capitalize(&camel);
-    pascal == component_name
+    let component_pascal = capitalize(&camelize(component));
+    let own_pascal = capitalize(&camelize(component_name));
+    component_pascal == own_pascal
 }
 
 fn component_resolution_name<'a>(

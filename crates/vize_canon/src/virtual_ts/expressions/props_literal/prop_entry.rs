@@ -1,4 +1,3 @@
-use super::close_named_group;
 use crate::virtual_ts::expressions::component_props::{
     ComponentPropSource, merged_class_binding_value,
 };
@@ -10,7 +9,7 @@ use crate::virtual_ts::expressions::prop_sources::{
 use crate::virtual_ts::helpers::component_prop_key;
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use crate::virtual_ts::types::{VizeMapping, VizeSubSpan};
-use vize_carton::{String, append};
+use vize_carton::{FxHashSet, String, append};
 use vize_croquis::croquis::PassedProp;
 
 #[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
@@ -24,12 +23,14 @@ pub(super) fn append_prop_entry(
     merge_class_bindings: bool,
     class_bindings: &[(&PassedProp, String)],
     emitted_merged_class: &mut bool,
-    wrap_for_following_spread: bool,
-    open_named_group: &mut bool,
+    before_following_spread: bool,
+    authored_named_keys: &mut FxHashSet<String>,
 ) {
     let template_offset = source_context.offset;
     let mut merged_value_ranges = Vec::new();
-    let generated_value = if merge_class_bindings && prop.name.as_str() == "class" {
+    let merge_named_bindings =
+        merge_class_bindings && matches!(prop.name.as_str(), "class" | "style");
+    let generated_value = if merge_named_bindings {
         if *emitted_merged_class {
             return;
         }
@@ -50,7 +51,7 @@ pub(super) fn append_prop_entry(
         generated_value = PropSpan::plain(String::from("undefined as never"));
     }
 
-    let (prop_src_start, prop_src_end) = if merge_class_bindings && prop.name.as_str() == "class" {
+    let (prop_src_start, prop_src_end) = if merge_named_bindings {
         let start = class_bindings
             .iter()
             .map(|(binding, _)| binding.start)
@@ -73,17 +74,21 @@ pub(super) fn append_prop_entry(
     };
     let camel_prop_name = component_prop_key(prop.name.as_str());
 
-    if wrap_for_following_spread {
-        if *open_named_group {
-            ts.push_str(", ");
-        } else {
-            append!(*ts, "{expr_indent}  ...{{ ");
-            *open_named_group = true;
-        }
-    } else {
-        close_named_group(ts, open_named_group);
-        append!(*ts, "{expr_indent}  ");
+    let repeated_named_key = !authored_named_keys.insert(camel_prop_name.clone());
+    if before_following_spread && !repeated_named_key {
+        // Keep named props direct so TypeScript contextually elaborates their
+        // value errors at the property instead of reporting a second TS2345 on
+        // the whole object when a later v-bind spread exists (#10069). The
+        // dedicated per-prop assignment above owns that diagnostic. Ignoring
+        // this generated entry also suppresses TS2783 when the later spread
+        // deliberately overwrites it, while the spread itself remains fully
+        // checked by the surrounding call.
+        append!(
+            *ts,
+            "{expr_indent}  // @ts-ignore Named prop diagnostics are owned by the per-prop check.\n",
+        );
     }
+    append!(*ts, "{expr_indent}  ");
 
     let entry_gen_start = ts.len();
     append!(*ts, "\"{camel_prop_name}\"");
@@ -100,11 +105,9 @@ pub(super) fn append_prop_entry(
     } else {
         value_gen_range.clone()
     };
-    if !wrap_for_following_spread {
-        ts.push_str(",\n");
-    }
+    ts.push_str(",\n");
 
-    let sub_spans = match merge_class_bindings && prop.name.as_str() == "class" {
+    let sub_spans = match merge_named_bindings {
         true => class_bindings
             .iter()
             .zip(&merged_value_ranges)
@@ -132,8 +135,7 @@ pub(super) fn append_prop_entry(
         src_range: prop_src_start..prop_src_end,
         sub_spans,
     });
-    if merge_class_bindings && prop.name.as_str() == "class" && !template_binding_access.is_empty()
-    {
+    if merge_named_bindings && !template_binding_access.is_empty() {
         for ((binding, _), generated) in class_bindings.iter().zip(&merged_value_ranges) {
             if binding.is_dynamic
                 && let Some(value) = binding.value.as_ref()
@@ -154,7 +156,7 @@ pub(super) fn append_prop_entry(
     if !template_binding_access.is_empty()
         && prop.is_dynamic
         && !inline_callback
-        && !(merge_class_bindings && prop.name.as_str() == "class")
+        && !merge_named_bindings
         && let Some(value) = prop.value.as_ref()
         && let Some(source) = prop_value_source_range(source_context, prop)
     {

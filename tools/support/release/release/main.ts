@@ -4,6 +4,8 @@ import { appendFileSync } from "node:fs";
 import { collectStdout, println, run, runMain, writeStderr } from "../command_io.ts";
 import { cliArgs, nonEmptyEnv, readFileToString } from "../command_runtime.ts";
 import { cadenceDecision, readCadenceInput, releaseRunning } from "./cadence.ts";
+import { publishedCrates } from "../publish_crates/main.ts";
+import { queryCrateVersion, type CrateVersionState } from "../publish_crates/registry.ts";
 import { stampVersion } from "./stamp.ts";
 import {
   highestReleaseVersion,
@@ -54,9 +56,43 @@ async function npmVersions(): Promise<string[] | null> {
   }
 }
 
-async function claimedVersions(current: string): Promise<string[] | null> {
-  const [tags, published] = await Promise.all([remoteTagVersions(), npmVersions()]);
-  return tags === null || published === null ? null : [current, ...tags, ...published];
+type CrateVersionQuery = (crateName: string, version: string) => Promise<CrateVersionState>;
+
+/**
+ * Every tagged release must reach both package registries before another
+ * version can be cut. Checking the publisher's canonical crate list keeps the
+ * preflight aligned with the actual release surface.
+ */
+export async function incompletePriorReleaseTargets(
+  version: string,
+  npmPublished: readonly string[],
+  query: CrateVersionQuery = queryCrateVersion,
+): Promise<string[]> {
+  const incomplete = npmPublished.includes(version) ? [] : [`npm:vize@${version}`];
+  for (let index = 0; index < publishedCrates.length; index += 4) {
+    const batch = publishedCrates.slice(index, index + 4);
+    const states = await Promise.all(batch.map((crate) => query(crate, version)));
+    states.forEach((state, offset) => {
+      if (state.kind !== "published") {
+        incomplete.push(`crates:${batch[offset]}@${version}`);
+      }
+    });
+  }
+  return incomplete;
+}
+
+async function priorReleaseIsComplete(
+  tags: readonly string[],
+  npmPublished: readonly string[],
+): Promise<boolean> {
+  const previous = highestReleaseVersion(tags);
+  if (previous === null) return true;
+  const incomplete = await incompletePriorReleaseTargets(previous, npmPublished);
+  if (incomplete.length === 0) return true;
+  writeStderr(
+    `Refusing to cut a new version before v${previous} is complete: ${incomplete.join(", ")}\n`,
+  );
+  return false;
 }
 
 /** The requested version if it is still unclaimed, else the next minor. */
@@ -64,11 +100,13 @@ async function resolveVersion(
   current: string,
   requested: string | undefined,
 ): Promise<string | null> {
-  const claimed = await claimedVersions(current);
-  if (claimed === null) {
+  const [tags, published] = await Promise.all([remoteTagVersions(), npmVersions()]);
+  if (tags === null || published === null) {
     writeStderr("Failed to read release tags or npm versions\n");
     return null;
   }
+  if (!(await priorReleaseIsComplete(tags, published))) return null;
+  const claimed = [current, ...tags, ...published];
   if (requested === undefined) return nextReleaseVersion(claimed);
   if (isUnclaimedVersion(requested, claimed)) return requested;
   writeStderr(`${requested} is not above every existing tag and npm version\n`);

@@ -67,6 +67,7 @@ pub(crate) struct ComponentPropCheckContext<'a, 'b> {
     pub(crate) source_context: ComponentPropSource<'a>,
     pub(crate) indent: &'b str,
     pub(crate) strict_v_model: bool,
+    pub(crate) typed_fallthrough_values: bool,
 }
 
 impl<'a, 'b> ComponentPropCheckContext<'a, 'b> {
@@ -84,6 +85,7 @@ impl<'a, 'b> ComponentPropCheckContext<'a, 'b> {
             source_context,
             indent,
             strict_v_model: false,
+            typed_fallthrough_values: false,
         }
     }
 
@@ -92,16 +94,30 @@ impl<'a, 'b> ComponentPropCheckContext<'a, 'b> {
         self.strict_v_model = enabled;
         self
     }
+
+    /// Also validate values contributed by inherited fallthrough spread keys.
+    pub(crate) fn typed_fallthrough_values(mut self, enabled: bool) -> Self {
+        self.typed_fallthrough_values = enabled;
+        self
+    }
 }
 
 pub(super) fn collect_generated_class_bindings<'a>(
     usage: &'a ComponentUsage,
     template_binding_access: &TemplateBindingAccess,
 ) -> Vec<(&'a PassedProp, String)> {
+    collect_generated_named_bindings(usage, template_binding_access, "class")
+}
+
+pub(super) fn collect_generated_named_bindings<'a>(
+    usage: &'a ComponentUsage,
+    template_binding_access: &TemplateBindingAccess,
+    name: &str,
+) -> Vec<(&'a PassedProp, String)> {
     usage
         .props
         .iter()
-        .filter(|prop| is_checkable_prop(prop) && prop.name.as_str() == "class")
+        .filter(|prop| is_checkable_prop(prop) && prop.name.as_str() == name)
         .filter_map(|prop| {
             generated_prop_value(prop, template_binding_access).map(|value| (prop, value))
         })
@@ -320,5 +336,6 @@ pub(crate) fn generate_component_prop_checks(
         template_binding_access,
         source_context,
         indent,
+        ctx.typed_fallthrough_values,
     );
 }
