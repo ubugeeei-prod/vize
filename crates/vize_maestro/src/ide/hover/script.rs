@@ -11,7 +11,6 @@
 
 use tower_lsp::lsp_types::Hover;
 use vize_croquis::{Drawer, DrawerOptions};
-use vize_l0::cstr;
 use vize_relief::BindingType;
 
 #[cfg(feature = "native")]
@@ -22,6 +21,8 @@ use tower_lsp::lsp_types::{Position, Range};
 
 #[cfg(feature = "native")]
 use vize_canon::CorsaBridge;
+#[cfg(feature = "native")]
+use vize_l0::cstr;
 
 use super::{HoverBuilder, HoverService};
 use crate::ide::{IdeContext, script_identifier};
