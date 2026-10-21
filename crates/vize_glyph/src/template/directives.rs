@@ -40,6 +40,16 @@ pub(crate) fn should_format_expression(name: &str) -> bool {
 /// formatter keeps the authored attribute opaque instead of accidentally
 /// treating a custom directive as a built-in expression surface.
 pub(crate) fn directive_head(name: &str) -> Option<DirectiveName> {
+    // `decompose` deliberately owns the grammar decision, but the grammar can
+    // only admit Vue's five sigils. Keep ordinary HTML attributes off that
+    // path: this helper is used by normalization, expression selection, and
+    // sorting, so parsing every `class`/`id`/`data-*` attribute compounds in
+    // formatter hot paths.
+    if !matches!(name.as_bytes().first(), Some(b':' | b'.' | b'@' | b'#'))
+        && !name.starts_with("v-")
+    {
+        return None;
+    }
     VueDirectives.decompose(name, 0).ok().flatten()
 }
 
