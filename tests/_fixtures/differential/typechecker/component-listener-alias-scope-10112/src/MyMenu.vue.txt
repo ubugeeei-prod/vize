@@ -1,0 +1,13 @@
+<script setup lang="ts">
+defineSlots<{
+  activator(props: { on: Record<string, (event: Event) => void>; attrs: Record<string, unknown> }): unknown;
+  default(): unknown;
+}>();
+</script>
+
+<template>
+  <div>
+    <slot name="activator" :on="{}" :attrs="{}" />
+    <slot />
+  </div>
+</template>

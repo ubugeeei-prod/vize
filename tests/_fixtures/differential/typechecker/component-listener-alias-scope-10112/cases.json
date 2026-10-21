@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10112,
+  "regressionCommit": "7cefe3a00e6184de1e121d39b0e153f08a428aa6",
+  "sourceRevision": "7cefe3a00e6184de1e121d39b0e153f08a428aa6",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "sibling-guarded-listeners",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/MyButton.vue",
+          "source": "src/MyButton.vue.txt"
+        },
+        {
+          "file": "src/MyMenu.vue",
+          "source": "src/MyMenu.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "src/App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}
