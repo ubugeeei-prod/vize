@@ -16,10 +16,7 @@ const ARCHIVED_SFC_OPTIONS_WITH_EXTERNAL_WITNESS = new Set([
   "dual-script-inline-type-only-imports",
   "separate-template-authored-render-binding",
 ]);
-const COMBINED_SFC_CAPTURE_NAMES = new Set([
-  "counter-source-map",
-  "props-default-type-diagnostic",
-]);
+const COMBINED_SFC_CAPTURE_NAMES = new Set(["counter-source-map", "props-default-type-diagnostic"]);
 const names = {
   dom: [
     "imported-component-before-prop",
