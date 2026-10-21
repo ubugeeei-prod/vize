@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "issue": 10198,
+  "sourceRevision": "4d88758e4f1d8ad79d2dd47d01f9ee1102e9c476",
+  "diagnosticContract": {
+    "host": "standard-tsgo-content-mapper",
+    "comparison": "complete stdout and stderr",
+    "expected": "no diagnostics"
+  },
+  "cases": [
+    {
+      "id": "component-typed-and-member-values",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/MySwitch.vue",
+          "source": "MySwitch.vue.txt"
+        },
+        {
+          "file": "src/MemberSwitch.vue",
+          "source": "MemberSwitch.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}
