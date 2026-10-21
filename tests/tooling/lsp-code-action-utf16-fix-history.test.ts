@@ -10,10 +10,7 @@ import type { LspDiagnostic, PublishDiagnosticsParams } from "./support/lsp/prot
 import { LspSession } from "./support/lsp/session.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const fixtureDir = path.join(
-  root,
-  "tests/_fixtures/differential/lsp/code-action-utf16-original",
-);
+const fixtureDir = path.join(root, "tests/_fixtures/differential/lsp/code-action-utf16-original");
 
 type FixtureCase = {
   provenance: { fixCommit: string };
