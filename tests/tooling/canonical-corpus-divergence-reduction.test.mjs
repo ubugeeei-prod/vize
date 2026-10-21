@@ -27,7 +27,7 @@ function log(divergences, samples = []) {
   ].join("\n");
 }
 
-test("clean evidence does not request a reducer", () => {
+await test("clean evidence does not request a reducer", () => {
   assert.deepEqual(createReductionPlan(log(0), ledger, `${fixture}\n`, context), {
     schema: "vize.realProjectDivergenceReductionPlan",
     version: 1,
@@ -38,7 +38,7 @@ test("clean evidence does not request a reducer", () => {
   });
 });
 
-test("the first fixture-owned sample becomes a bounded reduction plan", () => {
+await test("the first fixture-owned sample becomes a bounded reduction plan", () => {
   const plan = createReductionPlan(
     log(1, [
       `${fixture}/src/A.vue: old_len=20 new_len=21 first_diff=4 old_window=old new_window=new`,
@@ -53,7 +53,7 @@ test("the first fixture-owned sample becomes a bounded reduction plan", () => {
   assert.match(plan.fingerprint, /^[a-f0-9]{12}$/);
 });
 
-test("a reducer invocation records only the minimized witness and provenance", () => {
+await test("a reducer invocation records only the minimized witness and provenance", () => {
   const root = mkdtempSync("tests/.canonical-dom-reduction-");
   try {
     const sourcePath = `${root}/source.vue`;

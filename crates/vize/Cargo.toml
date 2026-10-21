@@ -47,7 +47,7 @@ vize_croquis_cf = { workspace = true }
 # `vize reduce` (P3-14): the L1 surface tree is the deletion vocabulary and
 # the L1->L2 pipeline answers the remark / folio / budget oracles.
 vize_l1 = { workspace = true }
-vize_l1_to_l2 = { workspace = true }
+vize_l1_to_l2 = { workspace = true, features = ["legacy-differential"] }
 vize_l2 = { workspace = true }
 vize_l3 = { workspace = true }
 vize_doctor = { workspace = true, features = ["application-analysis"] }

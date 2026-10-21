@@ -130,8 +130,7 @@ fn dom_diverges(source: &str) -> bool {
         &template.content,
         vize_l1_to_l2::LegacyCaps::VUE3,
         &vize_l1_to_l2::DomEmitOptions::DEFAULT,
-    )
-    else {
+    ) else {
         return false;
     };
     let new_output = new_output.emit.assembled();
