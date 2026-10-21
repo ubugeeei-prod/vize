@@ -97,6 +97,27 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn a_nested_slot_that_captures_an_outer_slot_param_is_dynamic() {
+    assert_shipped_parity(
+        r#"<MyList :items="items"><template #default="{ item }"><MyChip :tone="item.tone">{{ item.name }}</MyChip></template></MyList>"#,
+    );
+}
+
+#[test]
+fn an_uncaptured_nested_slot_stays_stable() {
+    assert_shipped_parity(
+        r#"<MyList :items="items"><template #default="{ item }"><MyChip tone="neutral">constant</MyChip></template></MyList>"#,
+    );
+}
+
+#[test]
+fn an_arrow_parameter_shadows_an_outer_slot_param() {
+    assert_shipped_parity(
+        r#"<MyList><template #default="{ item }"><MyChip>{{ [1].map(item => item + 1) }}</MyChip></template></MyList>"#,
+    );
+}
+
+#[test]
 fn whitespace_only_children_emit_no_slot() {
     assert_eq!(assembled("<Foo>  </Foo>"), assembled("<Foo />"));
 }
