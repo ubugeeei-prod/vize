@@ -200,14 +200,19 @@ export function assessFormatterDeletionShard({
       raw.exitCode === 0 ? "ok" : "findings",
       `${registryProject.id}: matrix formatter status drifted`,
     );
-    const expectedFileCount = integer(
-      registryProject.expectedVueFileCount,
-      `${registryProject.id}.expectedVueFileCount`,
-    );
-    if (checked !== expectedFileCount) {
+    const expectedFileCount =
+      registryProject.expectedVueFileCount == null
+        ? null
+        : integer(
+            registryProject.expectedVueFileCount,
+            `${registryProject.id}.expectedVueFileCount`,
+          );
+    if (expectedFileCount === null ? checked === 0 : checked !== expectedFileCount) {
       blockers.push({
         code: "formatter-project-scope",
-        detail: `${registryProject.id}: checked ${checked} file(s), expected ${expectedFileCount}`,
+        detail:
+          `${registryProject.id}: checked ${checked} file(s), expected ` +
+          (expectedFileCount === null ? "a nonzero real corpus" : expectedFileCount),
       });
     }
     checkedFileCount += checked;
@@ -298,12 +303,19 @@ export function validateFormatterDeletionArtifact(value) {
   for (const project of artifact.projects) {
     assert.match(project.id, /^[a-z0-9][a-z0-9-]*$/);
     assert(project.revision === null || commitPattern.test(project.revision));
-    const expectedFileCount = integer(project.expectedFileCount, `${project.id}.expectedFileCount`);
+    assert(
+      project.expectedFileCount === null ||
+        (Number.isSafeInteger(project.expectedFileCount) && project.expectedFileCount >= 0),
+      `${project.id}.expectedFileCount must be null or a non-negative integer`,
+    );
     const checked = validateFormatterCheck(
       project.formatterCheck,
       `${project.id}.formatterCheck`,
     ).checked;
-    if (artifact.status === "ready") assert.equal(checked, expectedFileCount);
+    if (artifact.status === "ready") {
+      if (project.expectedFileCount === null) assert(checked > 0);
+      else assert.equal(checked, project.expectedFileCount);
+    }
     checkedFileCount += checked;
   }
   assert.deepEqual(artifact.totals, {

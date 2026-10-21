@@ -53,7 +53,7 @@ function control(changes = {}) {
     cliVersion: "vize 0.500.0-dev",
   };
   const registryProjects = [
-    { id: "with-vue", revision: "e".repeat(40), expectedVueFileCount: 2 },
+    { id: "with-vue", revision: "e".repeat(40) },
     { id: "without-vue", revision: "f".repeat(40), expectedVueFileCount: 0 },
   ];
   const matrix = {
@@ -68,7 +68,7 @@ function control(changes = {}) {
         {
           tool: "formatter",
           status: "findings",
-          fileCount: project.expectedVueFileCount,
+          fileCount: project.id === "with-vue" ? 2 : 0,
         },
       ],
     })),
@@ -83,8 +83,8 @@ function control(changes = {}) {
         tool: "formatter",
         exitCode: 1,
         formatterCheck: formatterCheck(
-          project.expectedVueFileCount,
-          project.expectedVueFileCount === 0 ? 0 : 1,
+          project.id === "with-vue" ? 2 : 0,
+          project.id === "with-vue" ? 1 : 0,
         ),
       },
     ]),
@@ -114,6 +114,10 @@ void test("formatter verifier binds the source CLI to every selected real projec
   assert.equal(artifact.status, "ready");
   assert.deepEqual(artifact.blockers, []);
   assert.deepEqual(artifact.totals, { projectCount: 2, checkedFileCount: 2 });
+  assert.equal(
+    artifact.projects.find((project) => project.id === "with-vue").expectedFileCount,
+    null,
+  );
   assert.equal(
     artifact.projects.find((project) => project.id === "without-vue").expectedFileCount,
     0,
@@ -187,9 +191,9 @@ void test("formatter verifier rejects reduced shards, forged reports and stale i
   const reduced = control();
   reduced.rawFormatterRuns.set("with-vue", {
     ...reduced.rawFormatterRuns.get("with-vue"),
-    formatterCheck: formatterCheck(1, 1),
+    formatterCheck: formatterCheck(0),
   });
-  reduced.matrix.projects[0].runs[0].fileCount = 1;
+  reduced.matrix.projects[0].runs[0].fileCount = 0;
   const reducedArtifact = assessFormatterDeletionShard(reduced);
   assert.equal(reducedArtifact.status, "blocked");
   assert(reducedArtifact.blockers.some((blocker) => blocker.code === "formatter-project-scope"));
