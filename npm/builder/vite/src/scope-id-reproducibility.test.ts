@@ -40,7 +40,10 @@ async function buildCheckout(root: string): Promise<BuiltAsset[]> {
     plugins: [vize({ configMode: false })],
     build: {
       write: false,
-      minify: false,
+      // Exercise the production artifact shape from the reporter's reproduction.
+      // Unminified Rolldown output intentionally retains absolute source paths in
+      // `//#region` development annotations, which are not shipped by `vite build`.
+      minify: true,
       rollupOptions: {
         input: path.join(root, "entry.js"),
         external: [/^vue(?:\/|$)/],
