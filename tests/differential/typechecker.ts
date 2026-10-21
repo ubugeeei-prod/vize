@@ -53,6 +53,8 @@ export const TYPECHECKER_TESTS = {
     "dynamic_directive_expressions_preserve_typed_slot_payloads",
   "content-mapper-template-expression-syntax":
     "template_expression_syntax_preserves_complete_authored_diagnostics",
+  "content-mapper-const-enum-import":
+    "content_mapper_accepts_imported_const_enum_value_anchors",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
@@ -93,6 +95,7 @@ const sourceRevisions = {
   "component-listener-alias-scope-10112": "7cefe3a00e6184de1e121d39b0e153f08a428aa6",
   "dynamic-directive-expression-mapping-10182": "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
   "content-mapper-template-expression-syntax": "a5ae4d313fa333c8bc7168d5da4acf3dc2bb8ee3",
+  "content-mapper-const-enum-import": "506529117573a96880435dd6466cfd7cf81fdc92",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 
 export type Artifact = { path: string; sha256: string };

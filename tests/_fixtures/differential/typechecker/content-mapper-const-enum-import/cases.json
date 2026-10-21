@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10192,
+  "regressionCommit": "506529117573a96880435dd6466cfd7cf81fdc92",
+  "sourceRevision": "506529117573a96880435dd6466cfd7cf81fdc92",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "imported-const-enum-value",
+      "inputs": [
+        { "file": "tsconfig.json", "source": "tsconfig.json.txt" },
+        { "file": "src/state.ts", "source": "state.ts.txt" },
+        { "file": "src/App.vue", "source": "App.vue.txt" }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

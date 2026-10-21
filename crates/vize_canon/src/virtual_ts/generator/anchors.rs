@@ -1,6 +1,8 @@
 //! Setup binding anchor emission for template-used names.
 
-use super::imports::{IdentifierUsage, collect_setup_binding_anchor_names};
+use super::imports::{
+    IdentifierUsage, collect_setup_binding_anchor_names, collect_value_import_binding_names,
+};
 use std::ops::Range;
 use vize_carton::{FxHashSet, String, append, profile};
 use vize_croquis::{BindingType, Croquis};
@@ -121,6 +123,9 @@ fn emit_setup_binding_anchors(
         usage,
         template_referenced_names,
     );
+    let value_import_names = script_content
+        .map(|script| collect_value_import_binding_names(summary, script))
+        .unwrap_or_default();
     let mut first = true;
     for name in binding_names {
         if is_reserved_anchor_name(&name) {
@@ -131,7 +136,13 @@ fn emit_setup_binding_anchors(
         } else {
             ts.push(' ');
         }
-        append!(*ts, "void {name};");
+        if value_import_names.contains(name.as_str()) {
+            // A direct value read is illegal for imported `const enum`s (TS2475),
+            // while a type query still marks every value import as referenced.
+            append!(*ts, "void (null as unknown as typeof {name});");
+        } else {
+            append!(*ts, "void {name};");
+        }
         first = false;
     }
     if !first {
@@ -279,5 +290,34 @@ mod tests {
         )
         .unwrap();
         assert_eq!(parse_errors(&output.pre_rewrite_code), 0);
+    }
+
+    #[test]
+    fn imported_value_anchors_use_const_enum_safe_type_queries() {
+        let script = r#"import { ref } from 'vue';
+import { State } from './state';
+const state = ref(State.Idle);"#;
+        let allocator = Allocator::default();
+        let parsed = Parser::new(&allocator, script, SourceType::ts()).parse();
+        assert_eq!(parsed.diagnostics.len(), 0);
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        let summary = analyzer.finish();
+        let usage = super::super::imports::collect_identifier_usage(&parsed.program);
+        let mut anchors = String::default();
+        super::emit_setup_binding_anchors(
+            &mut anchors,
+            &summary,
+            Some(script),
+            &usage,
+            None,
+            "Reference setup bindings (used in template/CSS v-bind)",
+        );
+
+        assert_eq!(
+            anchors.as_str(),
+            "\n  // Reference setup bindings (used in template/CSS v-bind)\n  void (null as unknown as typeof State); void (null as unknown as typeof ref); void state;\n"
+        );
+        assert!(!anchors.contains("void State;"));
     }
 }
