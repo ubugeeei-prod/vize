@@ -60,7 +60,7 @@ test("the shared registry retains all existing production projects and exact inp
   assert.equal(loaded.cases.length, 60);
   assert.equal(
     loaded.cases.reduce((count, fixture) => count + fixture.inputs.length, 0),
-    205,
+    216,
   );
   assert.deepEqual(
     [...new Set(loaded.cases.map((fixture) => fixture.pack))],

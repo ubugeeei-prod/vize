@@ -227,9 +227,12 @@ fn workspace_package_alias_cache_preserves_sequential_scopes() {
     check_pack(
         "workspace-alias-cache-10063",
         "workspace_package_alias_cache_preserves_sequential_scopes",
-        "7174c46d55825c155325e6314305e661d50ec95a",
+        "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
         Some(10063),
-        &["second-package-selection"],
+        &[
+            "second-package-selection",
+            "repaired-private-package-identity",
+        ],
     );
 }
 
@@ -423,42 +426,50 @@ fn check_pack(
                 .expect("workspace link parents must be created");
                 link_vue(&project_root.join(source), &destination);
             }
-            let mut first = BatchTypeChecker::with_options(
-                &project_root,
-                BatchTypeCheckerOptions {
-                    tsconfig_path: Some(project_root.join("tsconfig.b.json")),
-                    ..Default::default()
-                },
-            )
-            .expect("the first package selection must start");
-            first
-                .scan_project()
-                .expect("the first package selection must scan");
-            let first = first
-                .check_project()
-                .expect("the first package selection must finish");
-            // #10063 is a hard materialization error before diagnostics. Both
-            // orderings must complete and preserve the empty authored result;
-            // the complete diagnostic contract is compared again below.
-            assert!(first.diagnostics.is_empty());
-            assert!(first.diagnostics.is_empty());
+            let check = |config: &str| {
+                let mut checker = BatchTypeChecker::with_options(
+                    &project_root,
+                    BatchTypeCheckerOptions {
+                        tsconfig_path: Some(project_root.join(config)),
+                        ..Default::default()
+                    },
+                )
+                .expect("the package selection must start");
+                checker
+                    .scan_project()
+                    .expect("the package selection must scan");
+                checker
+                    .check_project()
+                    .expect("the package selection must finish")
+            };
+            if case.id == "repaired-private-package-identity" {
+                let direct = project_root.join("packages/a/node_modules/@demo/c");
+                std::fs::create_dir_all(direct.parent().expect("a direct link has a parent"))
+                    .expect("the direct link parent must be created");
+                link_vue(&project_root.join("packages/c"), &direct);
+                assert!(check("tsconfig.a.json").diagnostics.is_empty());
 
-            let mut second = BatchTypeChecker::with_options(
-                &project_root,
-                BatchTypeCheckerOptions {
-                    tsconfig_path: Some(project_root.join("tsconfig.a.json")),
-                    ..Default::default()
-                },
-            )
-            .expect("the second package selection must start");
-            second
-                .scan_project()
-                .expect("the second package selection must scan");
-            let second = second
-                .check_project()
-                .expect("the second package selection must finish");
-            assert!(second.diagnostics.is_empty());
-            assert!(second.diagnostics.is_empty());
+                let dependency = project_root.join("packages/b/node_modules/@demo/c");
+                std::fs::remove_file(&dependency).expect("the shared package link must exist");
+                link_vue(&project_root.join("packages/c-variant"), &dependency);
+                let broken = check("tsconfig.a.json");
+                assert_eq!(broken.diagnostics.len(), 1);
+                assert_eq!(broken.diagnostics[0].code, Some(2322));
+                assert!(
+                    broken.diagnostics[0]
+                        .message
+                        .contains("separate declarations of a private property 'brand'")
+                );
+
+                std::fs::remove_file(&dependency).expect("the divergent package link must exist");
+                link_vue(&project_root.join("packages/c"), &dependency);
+            } else {
+                // #10063 is a hard materialization error before diagnostics.
+                // Both orderings must complete and preserve the empty authored
+                // result; the complete contract is compared again below.
+                assert!(check("tsconfig.b.json").diagnostics.is_empty());
+                assert!(check("tsconfig.a.json").diagnostics.is_empty());
+            }
         }
         let options = BatchTypeCheckerOptions {
             tsconfig_path: (name == "workspace-alias-cache-10063")

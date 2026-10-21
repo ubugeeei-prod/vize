@@ -1,0 +1,1 @@
+export class Thing { private readonly brand!: void; }
