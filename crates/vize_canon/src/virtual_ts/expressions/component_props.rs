@@ -109,7 +109,7 @@ pub(super) fn collect_generated_class_bindings<'a>(
     collect_generated_named_bindings(usage, template_binding_access, "class")
 }
 
-pub(super) fn collect_generated_named_bindings<'a>(
+pub(crate) fn collect_generated_named_bindings<'a>(
     usage: &'a ComponentUsage,
     template_binding_access: &TemplateBindingAccess,
     name: &str,
@@ -124,7 +124,7 @@ pub(super) fn collect_generated_named_bindings<'a>(
         .collect()
 }
 
-pub(super) fn merged_class_binding_value(
+pub(crate) fn merged_class_binding_value(
     bindings: &[(&PassedProp, String)],
     mut ranges: Option<&mut Vec<std::ops::Range<usize>>>,
 ) -> Option<String> {
