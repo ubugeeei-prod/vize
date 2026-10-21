@@ -124,7 +124,7 @@ fn committed_raw_parent_bridge_migrates_without_touching_the_real_package() {
 }
 
 #[test]
-fn retargeted_committed_parent_declines_without_touching_authored_sources() {
+fn retargeted_committed_parent_declines_internal_cache_target_without_touching_sources() {
     let temp = fixture(true);
     let root = temp.path().canonicalize().unwrap();
     let mut project = load(&root);
@@ -132,7 +132,9 @@ fn retargeted_committed_parent_declines_without_touching_authored_sources() {
     let alias = project.workspace_alias_links().into_iter().next().unwrap();
     let parent = alias.virtual_dir.parent().unwrap().to_path_buf();
     fs::remove_dir_all(&parent).unwrap();
-    let unexpected = root.join("node_modules");
+    // A target under the cache root is still untrusted unless it exactly
+    // matches the persisted receipt from the completed materialization.
+    let unexpected = project.virtual_root().join("uncommitted-package-target");
     std::os::unix::fs::symlink(&unexpected, &parent).unwrap();
     project
         .materialized_package_links
@@ -288,7 +290,9 @@ fn sequential_package_selections_reclaim_cached_internal_aliases() {
 
     let selected_b = load_entry(&root, &root.join("packages/b/src/index.ts"));
     assert_eq!(selected_b.virtual_root(), virtual_root.as_path());
-    for link in selected_b.workspace_alias_links() {
+    let selected_b_links = selected_b.workspace_alias_links();
+    assert!(!selected_b_links.is_empty());
+    for link in selected_b_links {
         assert_eq!(
             link.virtual_dir.canonicalize().unwrap(),
             link.real_dir.canonicalize().unwrap()
@@ -309,7 +313,9 @@ fn sequential_package_selections_reclaim_cached_internal_aliases() {
             .as_path(),
         button.as_path()
     );
-    for link in selected_a_again.workspace_alias_links() {
+    let selected_a_again_links = selected_a_again.workspace_alias_links();
+    assert!(!selected_a_again_links.is_empty());
+    for link in selected_a_again_links {
         assert!(link.virtual_dir.is_symlink());
         assert_eq!(
             link.virtual_dir.canonicalize().unwrap(),

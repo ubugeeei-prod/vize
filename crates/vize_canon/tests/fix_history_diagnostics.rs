@@ -378,7 +378,7 @@ fn check_pack(
             let mut first = BatchTypeChecker::with_options(
                 &project_root,
                 BatchTypeCheckerOptions {
-                    tsconfig_path: Some(project_root.join("tsconfig.a.json")),
+                    tsconfig_path: Some(project_root.join("tsconfig.b.json")),
                     ..Default::default()
                 },
             )
@@ -395,7 +395,7 @@ fn check_pack(
             let mut second = BatchTypeChecker::with_options(
                 &project_root,
                 BatchTypeCheckerOptions {
-                    tsconfig_path: Some(project_root.join("tsconfig.b.json")),
+                    tsconfig_path: Some(project_root.join("tsconfig.a.json")),
                     ..Default::default()
                 },
             )

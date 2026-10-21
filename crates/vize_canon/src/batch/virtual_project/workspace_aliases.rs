@@ -27,6 +27,16 @@ struct PackageLinkReceiptEntry {
     target: PathBuf,
 }
 
+fn is_normalized_descendant(path: &Path, root: &Path) -> bool {
+    path.strip_prefix(root).is_ok_and(|relative| {
+        let mut components = relative.components();
+        components.next().is_some_and(|component| {
+            matches!(component, std::path::Component::Normal(_))
+                && components.all(|component| matches!(component, std::path::Component::Normal(_)))
+        })
+    })
+}
+
 impl VirtualProject {
     fn package_link_receipt_path(&self) -> PathBuf {
         self.virtual_root.join(PACKAGE_LINK_RECEIPT_FILE)
@@ -51,8 +61,7 @@ impl VirtualProject {
         }
         let mut links = FxHashMap::default();
         for entry in receipt.links {
-            if entry.path == self.virtual_root
-                || !entry.path.starts_with(&self.virtual_root)
+            if !is_normalized_descendant(&entry.path, &self.virtual_root)
                 || !entry.target.is_absolute()
                 || links.insert(entry.path, entry.target).is_some()
             {
@@ -336,18 +345,12 @@ impl VirtualProject {
                     // Root-first validation never unlinks through a raw parent.
                     let target = std::fs::read_link(&path)?;
                     let target = vize_carton::path::normalize_windows_verbatim_path(target);
-                    // A cold CLI process has no in-memory receipt for the last
-                    // process's links. The project-keyed cache namespace owns
-                    // both ends of an internal alias, so it may reclaim that
-                    // stale link when this run selects a different package set.
-                    let cache_owned = target.starts_with(&self.virtual_root);
                     // A current cold plan also proves an external leaf link:
                     // its authored target and exact cache path were derived
                     // again without trusting the existing filesystem entry.
                     let planned = links.get(&path) == Some(&target);
                     if path == self.virtual_root
                         || (!install_roots.contains(&path)
-                            && !cache_owned
                             && !planned
                             && committed_links.get(&path) != Some(&target)
                             && self.materialized_package_links.get(&path) != Some(&target))
