@@ -2645,7 +2645,7 @@
           "componentFile": "examples/components/theme/theme-card.vue",
           "tagName": "theme-card",
           "tagAnchor": "        <theme-card type=\"user\" ",
-          "completionItemCount": 37,
+          "completionItemCount": 41,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -2683,7 +2683,11 @@
             { "label": "tabindex", "rank": 33 },
             { "label": "aria-label", "rank": 34 },
             { "label": "ref", "rank": 35 },
-            { "label": "key", "rank": 36 }
+            { "label": "key", "rank": 36 },
+            { "label": "config", "rank": 37 },
+            { "label": "base", "rank": 38 },
+            { "label": "type", "rank": 39 },
+            { "label": "from", "rank": 40 }
           ],
           "dependencyEdit": {
             "anchor": "  props: {\n",
