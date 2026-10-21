@@ -81,6 +81,7 @@ impl TemplateFormatter<'_> {
     }
 
     /// Return the end of an immediately following matching closing tag.
+    #[inline]
     pub(super) fn parse_immediate_empty_closing_tag(
         &self,
         text: &str,

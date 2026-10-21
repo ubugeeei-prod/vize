@@ -64,9 +64,9 @@ impl TemplateFormatter<'_> {
         // layout. Later multiline interpolations in a mixed text run may be
         // normalized to one line, so they still contribute their formatted
         // width to the opening-tag decision.
-        let has_line_break = memchr::memchr2(b'\n', b'\r', child_bytes).is_some();
+        let has_line_break = child_bytes.iter().any(|byte| matches!(byte, b'\r' | b'\n'));
         if has_line_break
-            && (memchr::memmem::find(child_bytes, b"{{").is_none()
+            && (!contains_interpolation(child_bytes)
                 || parse_interpolation_range(child_bytes, 0).is_some_and(
                     |(expression_start, expression_end, _)| {
                         child_bytes
@@ -116,6 +116,7 @@ impl TemplateFormatter<'_> {
         Some(1 + formatted.width() + 3 + tag_name.width())
     }
 
+    #[inline]
     pub(super) fn hugged_inline_suffix_overflows(
         &self,
         output: &[u8],
@@ -205,4 +206,17 @@ impl TemplateFormatter<'_> {
         output.extend_from_slice(self.newline);
         true
     }
+}
+
+#[inline]
+fn contains_interpolation(bytes: &[u8]) -> bool {
+    let mut offset = 0;
+    while let Some(found) = memchr::memchr(b'{', bytes.get(offset..).unwrap_or_default()) {
+        let start = offset + found;
+        if bytes.get(start + 1) == Some(&b'{') {
+            return true;
+        }
+        offset = start + 1;
+    }
+    false
 }
