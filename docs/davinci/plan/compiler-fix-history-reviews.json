@@ -5,7 +5,7 @@
     "tests/_fixtures/differential/compiler/sfc-fix-history.manifest.json",
     "tests/_fixtures/differential/compiler/ssr-fix-history.manifest.json"
   ],
-  "scope": "Bounded semantic review of ten complete public SFC Result fixtures and two complete public SSR Result fixtures; this is not whole-fix, whole-history, native, target, or dialect acceptance.",
+  "scope": "Bounded semantic review of ten complete public SFC Result fixtures and three complete public SSR Result fixtures; this is not whole-fix, whole-history, native, target, or dialect acceptance.",
   "reviews": [
     {
       "fixCommit": "ceb0fda9c18ed6e40db71a2c582e9fe10950a43a",
@@ -137,6 +137,17 @@
       ],
       "remainingScope": [
         "Named and dynamic slots, nested destructuring, alternate options and dialects, SFC SSR integration, hydration behavior, and a native compiler route remain outside this reviewed fixture scope."
+      ]
+    },
+    {
+      "fixCommit": "7c5c7282989291cf92c3e3546a5c56e24eeb92d5",
+      "caseId": "compiler/ssr/component-lone-spread",
+      "coveredRequirements": [
+        "A component whose only authored prop entry is an object v-bind retains that spread in the emitted SSR component prop bag instead of dropping it.",
+        "The complete public SSR Result preserves generated code, helper preamble, nullable map, and ordered diagnostics under the pinned default options."
+      ],
+      "remainingScope": [
+        "Object v-on, mixed or repeated props, control-flow nesting, alternate options and dialects, SFC SSR integration, mounted behavior, and a native compiler route remain outside this reviewed fixture scope."
       ]
     }
   ]

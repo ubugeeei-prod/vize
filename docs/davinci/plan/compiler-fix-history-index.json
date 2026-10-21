@@ -33,12 +33,12 @@
   "conventionalFixSubjects": 661,
   "nonMergeFixSubjects": 626,
   "fixtureLinkedFixSubjects": 30,
-  "boundedReviewedFixtureScopes": 12,
+  "boundedReviewedFixtureScopes": 13,
   "wholeFixReviewedSubjects": 0,
   "wholeFixReviewPendingSubjects": 626,
   "reviewLedger": {
     "path": "docs/davinci/plan/compiler-fix-history-reviews.json",
-    "sha256": "43e187bb2c862bd1585ed5305d06dd884347a66c9fc0e533ecd8982dc127c6fb",
+    "sha256": "eaa190116450db7adaa6711cf24ae84246ea9b3faab53bf3c9ff3256d13db82e",
     "differentialManifests": [
       {
         "path": "tests/_fixtures/differential/compiler/sfc-fix-history.manifest.json",
@@ -70,7 +70,7 @@
   ],
   "index": {
     "path": "docs/davinci/plan/compiler-fix-history.tsv",
-    "sha256": "55151bd91d1b7c8471515e839cbd3ff39ac6f929693b8d27dcebb21a6bfd1d7d"
+    "sha256": "9be5b4ac4dbdaa9706e1987aec2114c415322c6d829b006b5f8df6309340307a"
   },
   "semanticDenominator": null,
   "nativeAcceptance": 0,
@@ -78,7 +78,7 @@
     "The original 609-fix snapshot has no verified source revision.",
     "Changed witness paths and stable patch equivalence are candidates, not coverage or automatic duplicate exclusions.",
     "Fixture references cover only their recorded entrypoint, target, options and public output facets.",
-    "Twelve fixture scopes (ten SFC and two SSR) have bounded semantic review; every fix subject retains whole-fix target and dialect review pending.",
+    "Thirteen fixture scopes (ten SFC and three SSR) have bounded semantic review; every fix subject retains whole-fix target and dialect review pending.",
     "Historical or local execution does not certify current Actions or a native route."
   ]
 }
