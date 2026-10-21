@@ -282,5 +282,13 @@
   "linter/current-api/form-label-visible-input-control": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__form-label-visible-input-control.snap",
     "sha256": "7b6c8604ac7002a34bee623a687b2ce13e4689399421aa2504d0fb65046e6322"
+  },
+  "linter/current-api/attribute-hyphenation-aria-data-camel-props": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__attribute-hyphenation-aria-data-camel-props.snap",
+    "sha256": "74d4a76e8e3a7591cbac0bf1f9edfa1c95769cf00ae6b378bc98d6f74ff3dcc0"
+  },
+  "linter/current-api/attribute-hyphenation-aria-data-native-attributes": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__attribute-hyphenation-aria-data-native-attributes.snap",
+    "sha256": "55edbd51190f85521331fa68606e69d0c32652979b6dcd9ce2a7b20cc0f21303"
   }
 }
