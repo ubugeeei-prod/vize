@@ -27,8 +27,9 @@ fn static_root_props_keep_text_patch_flags() {
             errors.iter().all(|error| error.is_compatibility_notice()),
             "{name}: {errors:?}",
         );
-        assert!(
-            output.code.contains("1 /* TEXT */"),
+        assert_eq!(
+            output.code.matches("1 /* TEXT */").count(),
+            1,
             "{name}: dynamic text requires the TEXT patch flag:\n{}",
             output.code,
         );
