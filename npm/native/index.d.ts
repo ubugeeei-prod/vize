@@ -557,6 +557,10 @@ export interface FormatOptionsNapi {
   jsxSingleQuote?: boolean;
   /** Change when object properties are quoted. */
   quoteProps?: "as-needed" | "consistent" | "preserve";
+  /** Change where trailing commas are printed. */
+  trailingComma?: "all" | "es5" | "none";
+  /** Change parentheses around a sole arrow function parameter. */
+  arrowParens?: "always" | "avoid";
   /** Layout line endings; auto follows the first source terminator. */
   endOfLine?: EndOfLineNapi;
   sortAttributes?: boolean;

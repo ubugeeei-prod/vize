@@ -12,6 +12,8 @@ use crate::virtual_ts::types::{VizeMapping, VizeSubSpan};
 use vize_carton::{FxHashSet, String, append};
 use vize_croquis::croquis::PassedProp;
 
+use super::NAMED_PROP_DIAGNOSTIC_MARKER;
+
 #[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 pub(super) fn append_prop_entry(
     ts: &mut String,
@@ -85,7 +87,7 @@ pub(super) fn append_prop_entry(
         // checked by the surrounding call.
         append!(
             *ts,
-            "{expr_indent}  // @ts-ignore Named prop diagnostics are owned by the per-prop check.\n",
+            "{expr_indent}  // {NAMED_PROP_DIAGNOSTIC_MARKER} are owned by the per-prop check.\n",
         );
     }
     append!(*ts, "{expr_indent}  ");

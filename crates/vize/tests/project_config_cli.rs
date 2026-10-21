@@ -135,6 +135,62 @@ fn formatter_cli_exposes_independent_script_quote_policies() {
 
 #[cfg(feature = "glyph")]
 #[test]
+fn formatter_cli_exposes_trailing_comma_policy() {
+    let project = project();
+    let root = project.path();
+    let source = "<script setup lang=\"ts\">\nconst value={first:1,second:2,}\nconst result=make(\n  value,\n  true,\n)\n</script>\n";
+    let expected = "<script setup lang=\"ts\">\nconst value = { first: 1, second: 2 };\nconst result = make(value, true);\n</script>\n";
+    write(root, "TrailingComma.vue", source);
+    let args = [
+        "fmt",
+        "--write",
+        "TrailingComma.vue",
+        "--no-config",
+        "--trailing-comma",
+        "none",
+    ];
+    assert_success(&run(root, &args));
+    assert_eq!(
+        fs::read_to_string(root.join("TrailingComma.vue")).unwrap(),
+        expected
+    );
+    assert_success(&run(root, &args));
+    assert_eq!(
+        fs::read_to_string(root.join("TrailingComma.vue")).unwrap(),
+        expected
+    );
+}
+
+#[cfg(feature = "glyph")]
+#[test]
+fn formatter_cli_exposes_arrow_parentheses_policy() {
+    let project = project();
+    let root = project.path();
+    let source = "<script setup lang=\"ts\">\nconst mapper=(value)=>value+1\n</script>\n";
+    let expected = "<script setup lang=\"ts\">\nconst mapper = value => value + 1;\n</script>\n";
+    write(root, "ArrowParens.vue", source);
+    let args = [
+        "fmt",
+        "--write",
+        "ArrowParens.vue",
+        "--no-config",
+        "--arrow-parens",
+        "avoid",
+    ];
+    assert_success(&run(root, &args));
+    assert_eq!(
+        fs::read_to_string(root.join("ArrowParens.vue")).unwrap(),
+        expected
+    );
+    assert_success(&run(root, &args));
+    assert_eq!(
+        fs::read_to_string(root.join("ArrowParens.vue")).unwrap(),
+        expected
+    );
+}
+
+#[cfg(feature = "glyph")]
+#[test]
 fn package_boundaries_precedence_and_sibling_settings_reach_the_formatter() {
     let workspace = tempfile::tempdir().unwrap();
     let root = workspace.path();

@@ -8,8 +8,8 @@
 use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
 use vize_glyph::{
-    Allocator, FormatOptions, FormatPreset, GlyphFormatter, QuoteProps, VueVersion,
-    resolve_sort_imports,
+    Allocator, ArrowParens, FormatOptions, FormatPreset, GlyphFormatter, QuoteProps, TrailingComma,
+    VueVersion, resolve_sort_imports,
 };
 
 /// Existing formatter line-ending modes, validated at the Node boundary.
@@ -45,6 +45,12 @@ pub struct FormatOptionsNapi {
     /// Change when object properties are quoted.
     #[napi(ts_type = "'as-needed' | 'consistent' | 'preserve'")]
     pub quote_props: Option<String>,
+    /// Change where trailing commas are printed.
+    #[napi(ts_type = "'all' | 'es5' | 'none'")]
+    pub trailing_comma: Option<String>,
+    /// Change parentheses around a sole arrow function parameter.
+    #[napi(ts_type = "'always' | 'avoid'")]
+    pub arrow_parens: Option<String>,
     /// Layout line endings; auto follows the first source terminator.
     pub end_of_line: Option<EndOfLineNapi>,
     pub sort_attributes: Option<bool>,
@@ -114,6 +120,31 @@ fn apply_options(opts: FormatOptionsNapi) -> Result<FormatOptions> {
                 return Err(Error::new(
                     Status::InvalidArg,
                     "Unknown quoteProps; expected 'as-needed', 'consistent', or 'preserve'",
+                ));
+            }
+        };
+    }
+    if let Some(value) = opts.trailing_comma.as_deref() {
+        options.trailing_comma = match value {
+            "all" => TrailingComma::All,
+            "es5" => TrailingComma::Es5,
+            "none" => TrailingComma::None,
+            _ => {
+                return Err(Error::new(
+                    Status::InvalidArg,
+                    "Unknown trailingComma; expected 'all', 'es5', or 'none'",
+                ));
+            }
+        };
+    }
+    if let Some(value) = opts.arrow_parens.as_deref() {
+        options.arrow_parens = match value {
+            "always" => ArrowParens::Always,
+            "avoid" => ArrowParens::Avoid,
+            _ => {
+                return Err(Error::new(
+                    Status::InvalidArg,
+                    "Unknown arrowParens; expected 'always' or 'avoid'",
                 ));
             }
         };
@@ -197,7 +228,7 @@ pub fn format_sfc_napi(
 #[cfg(test)]
 mod tests {
     use super::{FormatOptionsNapi, apply_options, format_sfc_napi};
-    use vize_glyph::QuoteProps;
+    use vize_glyph::{ArrowParens, QuoteProps, TrailingComma};
 
     #[test]
     fn native_sfc_sorting_uses_the_authored_full_reference() {
@@ -272,6 +303,50 @@ mod tests {
         assert_eq!(
             error.reason,
             "Unknown quoteProps; expected 'as-needed', 'consistent', or 'preserve'"
+        );
+    }
+
+    #[test]
+    fn native_trailing_comma_option_is_typed_and_overrides_presets() {
+        let options = apply_options(FormatOptionsNapi {
+            preset: Some("prettier".into()),
+            trailing_comma: Some("none".into()),
+            ..Default::default()
+        })
+        .expect("native trailing comma option");
+        assert_eq!(options.trailing_comma, TrailingComma::None);
+
+        let error = apply_options(FormatOptionsNapi {
+            trailing_comma: Some("never".into()),
+            ..Default::default()
+        })
+        .expect_err("unknown trailing comma policy");
+        assert_eq!(error.status, napi::Status::InvalidArg);
+        assert_eq!(
+            error.reason,
+            "Unknown trailingComma; expected 'all', 'es5', or 'none'"
+        );
+    }
+
+    #[test]
+    fn native_arrow_parens_option_is_typed_and_overrides_presets() {
+        let options = apply_options(FormatOptionsNapi {
+            preset: Some("vize".into()),
+            arrow_parens: Some("avoid".into()),
+            ..Default::default()
+        })
+        .expect("native arrow parentheses option");
+        assert_eq!(options.arrow_parens, ArrowParens::Avoid);
+
+        let error = apply_options(FormatOptionsNapi {
+            arrow_parens: Some("preserve".into()),
+            ..Default::default()
+        })
+        .expect_err("unknown arrow parentheses policy");
+        assert_eq!(error.status, napi::Status::InvalidArg);
+        assert_eq!(
+            error.reason,
+            "Unknown arrowParens; expected 'always' or 'avoid'"
         );
     }
 }

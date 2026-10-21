@@ -139,3 +139,25 @@ camel-case option names and rejects unknown property-quote modes at the native
 boundary. The pre-existing independent full-output fixtures cover every
 property mode and every JavaScript/JSX quote combination across Vue versions;
 public CLI and Node regressions add second/third-pass fixed-point evidence.
+
+## Trailing comma option parity
+
+The existing `trailingComma` enum now has a direct CLI override and native
+Node projection in addition to Rust, config schema, generated TypeScript,
+Pkl, editor and WASM support. The CLI flag is
+`--trailing-comma <all|es5|none>` and Node `formatSfc` uses the same camel-case
+name and three values. Explicit values are applied after a preset, and unknown
+Node strings fail at the native boundary. Public CLI and Node whole-output
+regressions prove a second/third-pass fixed point; the existing option matrix
+continues to exercise the `es5` and `none` axes over the 300+ Vue corpus.
+
+## Arrow parentheses option parity
+
+The existing `arrowParens` enum now has a direct CLI override and native Node
+projection in addition to Rust, config schema, generated TypeScript, Pkl,
+editor and WASM support. The CLI flag is
+`--arrow-parens <always|avoid>` and Node `formatSfc` uses the same camel-case
+name and two values. Explicit values are applied after a preset, and unknown
+Node strings fail at the native boundary. Public CLI and Node whole-output
+regressions prove a second/third-pass fixed point; the existing option matrix
+continues to exercise the `avoid` axis over the 300+ Vue corpus.

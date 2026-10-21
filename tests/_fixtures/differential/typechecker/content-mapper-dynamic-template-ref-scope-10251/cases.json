@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10251,
+  "regressionCommit": "8d83800c727eef953852383d46c7324ccdda53b6",
+  "sourceRevision": "8d83800c727eef953852383d46c7324ccdda53b6",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "conditional-target-stays-in-registry-scope",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

@@ -12,7 +12,7 @@ test("real-project workflow schedules every balanced fixture shard nightly", () 
   const workflow = readRealProjectMatrixWorkflow();
   const job = workflow.jobs?.["real-project-matrix"];
   assert.ok(job);
-  assert.deepEqual(workflow.permissions, { contents: "read", issues: "read" });
+  assert.deepEqual(workflow.permissions, { contents: "read" });
   assert.equal(workflow.on?.schedule?.[0]?.cron, "37 5 * * *");
   const dispatch = workflow.on?.workflow_dispatch;
   assert.ok(dispatch, "Missing workflow_dispatch trigger");
@@ -109,6 +109,34 @@ test("real-project workflow schedules every balanced fixture shard nightly", () 
   });
   const corpus = readCanonicalCorpusWorkflow().jobs?.["davinci-dom-corpus"];
   assert.ok(corpus);
+  const publisher = workflow.jobs?.["davinci-dom-divergence-issue"];
+  assert.ok(publisher);
+  assert.equal(publisher.name, "file canonical DOM divergence");
+  assert.equal(
+    publisher.if,
+    "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}",
+  );
+  assert.equal(publisher.needs, "davinci-dom-corpus");
+  assert.deepEqual(publisher.permissions, {
+    contents: "read",
+    actions: "read",
+    issues: "write",
+  });
+  assert.equal(publisher["runs-on"], "ubuntu-latest");
+  assert.equal(publisher["timeout-minutes"], 5);
+  const publisherSteps = publisher.steps ?? [];
+  const download = findStep(publisherSteps, "Download canonical DOM evidence");
+  assert.equal(download.uses, "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c");
+  assert.deepEqual(download.with, {
+    name: "canonical-corpus-dom-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}",
+    path: "real-project-davinci-dom-corpus",
+  });
+  const issue = findStep(publisherSteps, "File canonical DOM divergence issue");
+  assert.deepEqual(issue.env, { GH_TOKEN: "${{ github.token }}" });
+  assert.equal(
+    issue.run,
+    "node tools/support/compat/github/canonical-corpus-divergence-issue.mjs publish real-project-davinci-dom-corpus",
+  );
   for (const checkout of [
     findStep(job.steps ?? [], "Checkout matrix commit"),
     findStep(corpus.steps ?? [], "Checkout matrix commit"),

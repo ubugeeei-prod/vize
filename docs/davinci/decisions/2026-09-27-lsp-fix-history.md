@@ -78,6 +78,21 @@ later runs. This dated source proof remains evidence for its exact head; every
 later transport or merged head still requires its own Actions checks. It does
 not establish complete wire/state coverage, native L4 parity or #6883 closure.
 
+### Shared raw-wire completion candidate
+
+The inactive-import case is now bound by name to the shared stdio manifest law
+rather than relying on its incidental position in the manifest. The law retains
+the exact four runtime files and the complete ordered three-link response,
+including ranges, URI targets, and the absence of optional fields. The reference
+observation exercises the same initialization, versioned readiness barrier,
+request id, and shutdown lifecycle as the source-built differential runner.
+
+This makes the one required-response obligation recorded for historical fix
+`447716ebc8a2d52e810d2be1de6a8166a95e4c32` executable in the shared raw-wire
+corpus. The row remains a completion candidate until fresh exact-head Actions
+execute the source-built session and protected delivery reaches main. It grants
+no native acceptance and does not reduce any other history row.
+
 ## CRLF on-type formatting installment
 
 Fix `4d04bc3e53acfddf835f2db70e613abe85ce8df4` made CRLF line endings
