@@ -215,9 +215,6 @@ impl ProjectionMapping {
 
     /// Caret lookup restricted to rows serving `feature`.
     pub fn to_generated_for(&self, authored: usize, feature: ProjectionFeatures) -> Option<usize> {
-        if self.meta.is_empty() {
-            return self.to_generated(authored);
-        }
         // A completion cursor may sit exactly after the final authored byte.
         // Prefer the narrow expression span so recovery text appended to the
         // enclosing row cannot pull that cursor back before a trailing dot.
@@ -235,6 +232,9 @@ impl ProjectionMapping {
                         .saturating_sub(span.src_range.start)
                         .min(span.gen_range.len()),
             );
+        }
+        if self.meta.is_empty() {
+            return self.to_generated(authored);
         }
         let row = self.rows().find(|row| {
             row.span.src_range.contains(&authored) && row.meta.features.contains(feature)
