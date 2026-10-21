@@ -493,6 +493,17 @@ fn content_mapper_isolates_duplicate_class_and_style_attribute_probes() {
 }
 
 #[test]
+fn content_mapper_musea_art_project_preserves_bound_component_diagnostics() {
+    check_pack(
+        "content-mapper-musea-art-10186",
+        "content_mapper_musea_art_project_preserves_bound_component_diagnostics",
+        "d295b324299c549063fab385b7f308c71ac014e0",
+        Some(10186),
+        &["bound-component-props"],
+    );
+}
+
+#[test]
 fn content_mapper_preserves_emit_with_nuxt_pattern_injections() {
     check_pack(
         "content-mapper-nuxt-emit-10195",
