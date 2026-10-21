@@ -236,6 +236,97 @@ const items: ViewItem[] = []
 }
 
 #[test]
+fn nested_v_for_in_else_if_reuses_the_active_cumulative_guard() {
+    let script = r#"import MyCell from './MyCell.vue'
+const mode: 'a' | 'b' | 'c' = 'b'
+const rows = [[1, 2]]
+"#;
+    let template = r#"<p v-if="mode === 'a'">a</p>
+<table v-else-if="mode === 'b'">
+  <tr v-for="(row, i) in rows" :key="i">
+    <td v-for="cell in row" :key="cell"><MyCell :label="String(cell)" /></td>
+  </tr>
+</table>"#;
+
+    let allocator = vize_carton::Allocator::new();
+    let (root, errors) = vize_armature::parse(&allocator, template);
+    assert!(errors.is_empty(), "{errors:?}");
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+    let checks = output
+        .code
+        .split_once("// Component props value checks (template scope)")
+        .expect("component props checks")
+        .1;
+
+    assert_eq!(
+        checks.matches("!(mode === 'a') && (mode === 'b')").count(),
+        1,
+        "the outer loop's branch guard must remain active for its nested loop:\n{checks}"
+    );
+    assert_eq!(
+        checks.matches("// Component props in v-for scope:").count(),
+        2,
+        "both loop environments must still be replayed:\n{checks}"
+    );
+}
+
+#[test]
+fn nested_v_for_in_else_reuses_the_active_cumulative_guard() {
+    let script = r#"import MyCell from './MyCell.vue'
+const mode: 'a' | 'b' = 'b'
+const rows = [[1, 2]]
+"#;
+    let template = r#"<p v-if="mode === 'a'">a</p>
+<table v-else>
+  <tr v-for="(row, i) in rows" :key="i">
+    <td v-for="cell in row" :key="cell"><MyCell :label="String(cell)" /></td>
+  </tr>
+</table>"#;
+
+    let allocator = vize_carton::Allocator::new();
+    let (root, errors) = vize_armature::parse(&allocator, template);
+    assert!(errors.is_empty(), "{errors:?}");
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+    let checks = output
+        .code
+        .split_once("// Component props value checks (template scope)")
+        .expect("component props checks")
+        .1;
+    let loop_scopes = checks
+        .match_indices("// Component props in v-for scope:")
+        .map(|(offset, _)| offset)
+        .collect::<Vec<_>>();
+
+    assert_eq!(
+        loop_scopes.len(),
+        2,
+        "both loop environments must still be replayed:\n{checks}"
+    );
+    assert_eq!(
+        checks[..loop_scopes[0]]
+            .matches("if (!(mode === 'a'))")
+            .count(),
+        1,
+        "the outer loop must retain the v-else branch guard:\n{checks}"
+    );
+    assert_eq!(
+        checks[loop_scopes[0]..loop_scopes[1]]
+            .matches("if (!(mode === 'a'))")
+            .count(),
+        0,
+        "the nested loop must not reopen the active v-else branch guard:\n{checks}"
+    );
+}
+
+#[test]
 fn component_listeners_share_linear_v_else_if_branch_guards() {
     let script = r#"import { reactive } from 'vue'
 import KeyPad from './KeyPad.vue'

@@ -299,6 +299,46 @@ fn standard_tsgo_resolves_setup_value_in_define_slots_type() {
     assert!(output.stdout.is_empty(), "{}", output_text(&output));
 }
 
+#[test]
+fn standard_tsgo_reuses_nested_v_for_branch_guard() {
+    let Some(tsgo) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {
+        eprintln!("skipping exact Content Mapper conformance: {TSGO_ENV} is not set");
+        return;
+    };
+    assert!(
+        tsgo.is_file(),
+        "{TSGO_ENV} is not a file: {}",
+        tsgo.display()
+    );
+
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/content_mapper_nested_vfor_guard");
+    let contract: serde_json::Value = serde_json::from_str(include_str!(
+        "fixtures/content_mapper_nested_vfor_guard/expectations.json"
+    ))
+    .unwrap();
+    assert_eq!(contract["issue"], 10216);
+    assert_eq!(
+        contract["typescriptSourceRevision"],
+        "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799"
+    );
+    assert_eq!(contract["expectedDiagnostics"], json!([]));
+
+    let cases_root = workspace_root().join("target/vize-tests/tests");
+    std::fs::create_dir_all(&cases_root).unwrap();
+    let project = tempfile::Builder::new()
+        .prefix("content-mapper-nested-vfor-guard-")
+        .tempdir_in(cases_root)
+        .unwrap();
+    copy_fixture(&fixture, project.path());
+    install_mapper_manifest(project.path());
+    install_vue_package(project.path());
+
+    let output = check_project(&tsgo, project.path(), "tsconfig.json");
+    assert_success(&output);
+    assert!(output.stdout.is_empty(), "{}", output_text(&output));
+}
+
 fn emitted_vue_declaration(project_root: &Path, name: &str) -> PathBuf {
     [
         project_root.join(cstr!("dist/{name}.d.vue.ts").as_str()),

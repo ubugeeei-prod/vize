@@ -27,12 +27,14 @@ pub(in crate::virtual_ts::scope) fn generate_closure_component_props_recursive(
         }
         ScopeData::VFor(data) => {
             let enclosing_guard = ctx.vfor_enclosing_guards.get(&scope_id).map(String::as_str);
-            let (loop_indent, vfor_inner_indent) = if enclosing_guard.is_some() {
+            let emitted_guard =
+                enclosing_guard.filter(|guard| !v_for_ancestor_owns_guard(ctx, scope, guard));
+            let (loop_indent, vfor_inner_indent) = if emitted_guard.is_some() {
                 (cstr!("{indent}  "), cstr!("{inner_indent}  "))
             } else {
                 (String::from(indent), inner_indent.clone())
             };
-            if let Some(guard) = enclosing_guard {
+            if let Some(guard) = emitted_guard {
                 let isolated = crate::virtual_ts::expressions::isolate_incomplete_expression(guard);
                 let guard = isolated.as_str();
                 append!(*ts, "{indent}if ({guard}) {{\n");
@@ -72,7 +74,7 @@ pub(in crate::virtual_ts::scope) fn generate_closure_component_props_recursive(
             ts.push_str(&loop_indent);
             ts.push_str("}\n");
             append!(*ts, "{loop_indent}}}\n");
-            if enclosing_guard.is_some() {
+            if emitted_guard.is_some() {
                 append!(*ts, "{indent}}}\n");
             }
         }
@@ -81,6 +83,28 @@ pub(in crate::virtual_ts::scope) fn generate_closure_component_props_recursive(
         }
         _ => {}
     }
+}
+
+/// A replayed child loop stays lexically inside every ancestor loop. Reopening
+/// the same cumulative branch guard would compare an already narrowed
+/// discriminant and can produce an unmapped TS2367 in Content Mapper hosts.
+fn v_for_ancestor_owns_guard(ctx: &VForPropsContext<'_, '_>, scope: &Scope, guard: &str) -> bool {
+    let mut parent = scope.parent();
+    while let Some(parent_id) = parent {
+        let Some(parent_scope) = ctx.summary.scopes.get_scope(parent_id) else {
+            return false;
+        };
+        if matches!(parent_scope.kind, ScopeKind::VFor)
+            && ctx
+                .vfor_enclosing_guards
+                .get(&parent_scope.id.as_u32())
+                .is_some_and(|parent_guard| parent_guard == guard)
+        {
+            return true;
+        }
+        parent = parent_scope.parent();
+    }
+    false
 }
 
 pub(in crate::virtual_ts::scope) fn recurse_child_closure_scopes(
