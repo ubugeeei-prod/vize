@@ -17,7 +17,7 @@ const ledger = readCompatibilityLedger();
 
 test("compatibility ledger joins every fixture inventory exactly once", () => {
   const validated = validateCompatibilityLedger(ledger, context);
-  assert.equal(validated.fixtureMap.size, 148);
+  assert.equal(validated.fixtureMap.size, 149);
   assert.equal(
     [...validated.fixtureMap.values()].filter((fixture) =>
       fixture.memberships.includes("ecosystem"),
@@ -27,7 +27,7 @@ test("compatibility ledger joins every fixture inventory exactly once", () => {
   assert.equal(
     [...validated.fixtureMap.values()].filter((fixture) => fixture.memberships.includes("app"))
       .length,
-    16,
+    17,
   );
   assert.deepEqual(
     [...validated.fixtureMap.values()]
@@ -40,6 +40,7 @@ test("compatibility ledger joins every fixture inventory exactly once", () => {
       "tests/_fixtures/_git/frontend-phpcon-do-website",
       "tests/_fixtures/_git/npmx.dev",
       "tests/_fixtures/_git/nuxt-ui",
+      "tests/_fixtures/_git/openvue",
       "tests/_fixtures/_git/vuefes-2025",
     ],
   );
@@ -48,10 +49,10 @@ test("compatibility ledger joins every fixture inventory exactly once", () => {
 test("report keeps present, exercised, and runtime evidence separate", () => {
   const report = createCompatibilityReport(ledger, context);
   assert.deepEqual(report.inventories, {
-    gitlinks: 148,
+    gitlinks: 149,
     ecosystem: 143,
-    app: 16,
-    appOnly: 4,
+    app: 17,
+    appOnly: 5,
   });
   assert.deepEqual(
     Object.fromEntries(

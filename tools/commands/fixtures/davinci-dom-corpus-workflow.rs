@@ -14,7 +14,7 @@ mod common;
 
 use regex::Regex;
 use serde::Serialize;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use std::{
     collections::BTreeMap,
     env, fs,
@@ -27,7 +27,7 @@ use std::{
 
 const ARTIFACT_DIR: &str = "real-project-davinci-dom-corpus";
 const CORPUS_ROOT: &str = "tests/_fixtures/_git";
-const EXPECTED_GITLINKS: usize = 148;
+const EXPECTED_GITLINKS: usize = 149;
 const EXPECTED_DOM_OUTPUT_COMPARISONS: usize = 145;
 const EXPECTED_OLD_ERROR_SKIPS: usize = 16;
 

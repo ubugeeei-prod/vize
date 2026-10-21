@@ -29,7 +29,7 @@ const dynamicPrefixes = new Set([
 // A changed producer requires review, rather than accepting a new dynamic role.
 const producerHashes = {
   "tools/commands/ci/github/app-e2e-plan.rs":
-    "46983c8019bfb809f418eccdab5afeb73b3cea5dcc7c4aa8354d2726bf9c617b",
+    "6c9bc1bf91bba11efbcede503acf15f8a56082d7f7aea4b970394975c0a0198a",
   "tools/support/github/build-vitrine-wasm.ts":
     "1cdcb19eb0e60ad688a965fbdaa2dc7de90f306c910461c25a11f2ad651c61f7",
   "tools/support/tasks/build-vitrine-wasm.ts":

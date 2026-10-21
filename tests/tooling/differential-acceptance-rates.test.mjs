@@ -24,7 +24,16 @@ function withFixture(run) {
       product: "compiler",
       baseRevision: sourceRevision,
       cases: [
-        { id: "compiler/sfc/one", state: "active", targets: ["dom", "ssr"] },
+        {
+          id: "compiler/sfc/one",
+          state: "active",
+          targets: ["dom", "ssr"],
+          dialectCoverage: {
+            state: "source-inspected",
+            registryRef: null,
+            evidence: [{ kind: "source-inspection", dialects: ["vue3-sfc"] }],
+          },
+        },
         { id: "compiler/sfc/two", state: "active", targets: ["dom", "ssr"] },
       ],
     }),
@@ -143,6 +152,20 @@ void test("native-only rate counts every planned target and requires verified pa
       legacyBacked: 1,
       unverified: 1,
     });
+    assert.deepEqual(summary.dialectCoverage, {
+      verified: {},
+      provisional: {
+        "vue3-sfc": {
+          planned: 2,
+          nativeHandled: 1,
+          nativeEquivalent: 1,
+          unsupported: 0,
+          legacyBacked: 1,
+          unverified: 0,
+        },
+      },
+      unknown: summary.total,
+    });
     const unverifiedParity = summarizeNativeAcceptance(loaded, report, {
       ...options,
       verifyComparison: () => false,
@@ -150,6 +173,14 @@ void test("native-only rate counts every planned target and requires verified pa
     assert.equal(unverifiedParity.total.nativeHandled, 1);
     assert.equal(unverifiedParity.total.nativeEquivalent, 0);
     assert.match(renderNativeAcceptanceMarkdown([summary]), /compiler \| dom \| 1\/2 \(50\.0%\)/);
+    assert.match(
+      renderNativeAcceptanceMarkdown([summary]),
+      /compiler \| provisional \| vue3-sfc \| 2 \| 1 \| 1 \| 0 \| 1 \| 0/,
+    );
+    assert.match(
+      renderNativeAcceptanceMarkdown([summary]),
+      /compiler \| readiness \| unknown \| 4 \| 1 \| 1 \| 1 \| 1 \| 1/,
+    );
     assert.match(renderNativeAcceptanceMarkdown([summary]), /Unregistered products.*unmeasured/);
   });
 });

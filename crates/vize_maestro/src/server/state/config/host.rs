@@ -3,7 +3,6 @@
 #[cfg(feature = "native")]
 pub(in crate::server::state) use vize_carton::config::ConfigLoadFailureIdentity;
 pub(in crate::server::state) use vize_carton::config::LoadedLspConfig;
-#[cfg(feature = "native")]
 pub(in crate::server::state) use vize_carton::config::ProjectModel;
 pub(in crate::server::state) use vize_carton::config::load_lsp_config_snapshot;
 #[cfg(feature = "glyph")]

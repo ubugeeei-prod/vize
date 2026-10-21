@@ -29,35 +29,47 @@ fn allocation_free_template_owner_matches_the_general_original_descriptor() {
         "{{ /}}/.test(x) }}",
         "{{ `x${x}` }}",
     ];
-    for first in tokens {
-        for second in tokens {
-            let source = format!(" \r\n<template>{first}{second}</template>\t");
-            let original = observe(&arena, &source, options);
-            let fast = observe_template_only(&source);
-            let expected = original.admitted().ok().filter(|_| {
-                let [block] = original.container().blocks.as_slice() else {
-                    return false;
-                };
-                block.close_tag.is_some_and(|close| {
-                    source
-                        .get(close.end as usize..)
-                        .is_some_and(|tail| tail.trim_ascii().is_empty())
-                })
-            });
-            assert_eq!(fast.is_some(), expected.is_some(), "{source}");
-            if let (Some(fast), Some(expected)) = (fast, expected) {
-                let block = &original.container().blocks[0];
-                assert_eq!(
-                    fast.block().span(),
-                    expected.template().unwrap().block().span()
-                );
-                assert_eq!(fast.open_tag(), block.open_tag);
-                assert_eq!(Some(fast.close_tag()), block.close_tag);
+    for opening in [
+        "<template>",
+        "<template lang=html>",
+        "<template lang='html'>",
+        "<template lang=\"html\">",
+    ] {
+        for first in tokens {
+            for second in tokens {
+                let source = format!(" \r\n{opening}{first}{second}</template>\t");
+                let original = observe(&arena, &source, options);
+                let fast = observe_template_only(&source);
+                let expected = original.admitted().ok().filter(|_| {
+                    let [block] = original.container().blocks.as_slice() else {
+                        return false;
+                    };
+                    block.close_tag.is_some_and(|close| {
+                        source
+                            .get(close.end as usize..)
+                            .is_some_and(|tail| tail.trim_ascii().is_empty())
+                    })
+                });
+                assert_eq!(fast.is_some(), expected.is_some(), "{source}");
+                if let (Some(fast), Some(expected)) = (fast, expected) {
+                    let block = &original.container().blocks[0];
+                    assert_eq!(
+                        fast.block().span(),
+                        expected.template().unwrap().block().span()
+                    );
+                    assert_eq!(fast.open_tag(), block.open_tag);
+                    assert_eq!(Some(fast.close_tag()), block.close_tag);
+                    assert_eq!(fast.lang(), block.attr("lang").and_then(|attr| attr.value));
+                }
             }
         }
     }
     for source in [
-        "<template lang=html>x</template>",
+        "<template lang=pug>x</template>",
+        "<template lang=HTML>x</template>",
+        "<template lang='h&#116;ml'>x</template>",
+        "<template lang=html lang=html>x</template>",
+        "<template src=x>x</template>",
         "<template>x</template><template>y</template>",
         "<script>x</script><template>y</template>",
         "<template>x</template><!-- tail -->",
