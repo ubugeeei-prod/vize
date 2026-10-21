@@ -71,4 +71,21 @@ fn similarly_named_project_stub_does_not_suppress_define_art() {
         1,
         "only an exact defineArt declaration may suppress the Musea global",
     );
+
+    let mut formatted = VirtualTsOptions::default();
+    formatted
+        .auto_import_stubs
+        .push("\tdeclare const defineArt\t: unknown;".into());
+
+    apply_musea_art_globals(Path::new("MyCard.art.vue"), &mut formatted);
+
+    assert_eq!(
+        formatted
+            .auto_import_stubs
+            .iter()
+            .filter(|stub| stub.as_str() == DEFINE_ART_STUB)
+            .count(),
+        0,
+        "formatted exact declarations must suppress the Musea global",
+    );
 }

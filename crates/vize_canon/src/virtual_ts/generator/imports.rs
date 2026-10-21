@@ -252,6 +252,7 @@ fn record_type_query_root(name: &TSTypeQueryExprName<'_>, refs: &mut FxHashSet<C
 /// Handles `import { a, b as c } from "..."` and `import D from "..."`.
 /// Returns the local names (e.g., `["a", "c", "D"]`).
 pub(crate) fn extract_declared_name(stub: &str) -> Option<&str> {
+    let stub = stub.trim_start();
     for prefix in [
         "declare function ",
         "declare const ",
@@ -262,7 +263,9 @@ pub(crate) fn extract_declared_name(stub: &str) -> Option<&str> {
             continue;
         };
         let end = rest
-            .find(['<', '(', ':', '=', ';', ' '])
+            .find(|character: char| {
+                character.is_whitespace() || matches!(character, '<' | '(' | ':' | '=' | ';')
+            })
             .unwrap_or(rest.len());
         let name = rest.get(..end).unwrap_or_default().trim();
         if !name.is_empty() {
