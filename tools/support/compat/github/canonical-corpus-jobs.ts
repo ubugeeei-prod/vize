@@ -12,6 +12,9 @@ type Options = {
 
 type Run = { id: number; head_sha: string; check_suite_id: number };
 
+const visibilityAttempts = 10;
+const visibilityDelayMs = 1_000;
+
 // The run-wide jobs endpoint can fail while Checks and individual Actions jobs
 // remain available. Checks supplies only the inventory; full Actions job records
 // still supply every attempt, step, execution window and runner identity.
@@ -72,16 +75,28 @@ export async function readCanonicalJobs(options: Options, run: Run) {
     });
   return Promise.all(
     workers.map(async ({ check, checkUrl, jobId }) => {
-      const response = await githubApiRequest({
-        ...options,
-        resource: `actions/jobs/${jobId}`,
-      });
-      const job = JSON.parse(response.body);
-      assert.equal(job.id, jobId, "Foreign canonical job ID");
-      assert.equal(job.check_run_url, checkUrl, "Foreign canonical job check");
-      assert.equal(job.run_id, run.id, "Foreign canonical job run");
-      assert.equal(job.head_sha, run.head_sha, "Foreign canonical job head");
-      assert.equal(job.name, check.name, "Foreign canonical job name");
+      const sleep =
+        options.sleep ??
+        ((milliseconds) =>
+          new Promise((resolve) => {
+            setTimeout(resolve, milliseconds);
+          }));
+      let job;
+      for (let attempt = 0; attempt < visibilityAttempts; attempt += 1) {
+        const response = await githubApiRequest({
+          ...options,
+          resource: `actions/jobs/${jobId}`,
+        });
+        job = JSON.parse(response.body);
+        assert.equal(job.id, jobId, "Foreign canonical job ID");
+        assert.equal(job.check_run_url, checkUrl, "Foreign canonical job check");
+        assert.equal(job.run_id, run.id, "Foreign canonical job run");
+        assert.equal(job.head_sha, run.head_sha, "Foreign canonical job head");
+        assert.equal(job.name, check.name, "Foreign canonical job name");
+        if (job.status === "completed") return job;
+        if (attempt + 1 < visibilityAttempts) await sleep(visibilityDelayMs);
+      }
+      assert(job, "Missing canonical job");
       return job;
     }),
   );
