@@ -1,4 +1,5 @@
 use super::*;
+use super::script_lint::script_suppression_edit;
 use crate::{
     ide::{DiagnosticService, position_to_offset},
     server::ServerState,
