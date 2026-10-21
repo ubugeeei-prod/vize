@@ -64,8 +64,14 @@ impl TemplateFormatter<'_> {
         // layout. Later multiline interpolations in a mixed text run may be
         // normalized to one line, so they still contribute their formatted
         // width to the opening-tag decision.
-        let line_break = if self.newline == b"\r" { b'\r' } else { b'\n' };
-        let has_line_break = memchr::memchr(line_break, child_bytes).is_some();
+        let line_break = if memchr::memchr(b'\n', child_bytes).is_some() {
+            Some(b'\n')
+        } else if memchr::memchr(b'\r', child_bytes).is_some() {
+            Some(b'\r')
+        } else {
+            None
+        };
+        let has_line_break = line_break.is_some();
         if has_line_break
             && (memchr::memmem::find(child_bytes, b"{{").is_none()
                 || parse_interpolation_range(child_bytes, 0).is_some_and(
@@ -73,7 +79,9 @@ impl TemplateFormatter<'_> {
                         child_bytes
                             .get(expression_start..expression_end)
                             .is_some_and(|expression| {
-                                memchr::memchr(line_break, expression).is_some()
+                                line_break.is_some_and(|line_break| {
+                                    memchr::memchr(line_break, expression).is_some()
+                                })
                             })
                     },
                 ))
@@ -106,7 +114,11 @@ impl TemplateFormatter<'_> {
         // opening tag itself to supply the semantics-preserving break.
         if parse_interpolation_range(formatted.as_bytes(), 0)
             .is_some_and(|(_, _, end)| end == formatted.len())
-            || memchr::memchr(line_break, formatted.as_bytes()).is_some()
+            || memchr::memchr(
+                if self.newline == b"\r" { b'\r' } else { b'\n' },
+                formatted.as_bytes(),
+            )
+            .is_some()
         {
             return None;
         }

@@ -61,7 +61,7 @@ impl<'a> TemplateFormatter<'a> {
         // Select the CR-aware scanner once per template. The const parameter
         // specializes the ordinary LF path back to one delimiter scan per text
         // run, while leaving raw-region bytes untouched.
-        if self.newline == b"\r" {
+        if self.newline == b"\r" && memchr::memchr(b'\n', input.as_bytes()).is_none() {
             self.format_inner::<true>(input)
         } else {
             self.format_inner::<false>(input)
