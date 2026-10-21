@@ -19,6 +19,8 @@ import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
+import { classifyDialectCoverage, normalizeDialectCoverage } from "../differential/harness.mjs";
+
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const compatDir = join(repoRoot, "crates", "vize_atelier_jsx", "tests", "babel_compat");
 const oracle = await import(join(compatDir, "oracle.mjs"));
@@ -37,6 +39,43 @@ test("corpus pins the plugin version the recording was produced with", () => {
   const recorded = oracle.readRecorded();
   assert.equal(corpus.oracle.plugin, "@vue/babel-plugin-jsx");
   assert.equal(corpus.oracle.pluginVersion, recorded.pluginVersion);
+});
+
+test("executed Babel oracle records the case-level JSX dialect witness", () => {
+  const corpus = oracle.readCorpus();
+  const recorded = oracle.readRecorded();
+  const coverage = normalizeDialectCoverage(corpus.dialectCoverage, "babel JSX corpus");
+  assert.deepEqual(classifyDialectCoverage(coverage), {
+    state: "source-inspected",
+    dialects: ["jsx-babel"],
+    readiness: "unknown",
+    measurement: "provisional",
+  });
+  assert.deepEqual(coverage, {
+    state: "source-inspected",
+    registryRef: null,
+    evidence: [
+      {
+        kind: "babel-plugin-oracle",
+        dialects: ["jsx-babel"],
+        selector: "oracle.plugin=@vue/babel-plugin-jsx@2.0.1; per-case jsx/tsx is selected by lang",
+      },
+    ],
+  });
+  assert.deepEqual(
+    Object.fromEntries(
+      ["jsx", "tsx"].map((lang) => [
+        lang,
+        corpus.cases.filter((entry: { lang: string }) => entry.lang === lang).length,
+      ]),
+    ),
+    { jsx: 98, tsx: 2 },
+  );
+  assert.deepEqual(
+    corpus.cases.map((entry: { id: string }) => entry.id).sort(),
+    Object.keys(recorded.cases).sort(),
+    "every dialect-labelled input needs an actual Babel adapter result",
+  );
 });
 
 test("inventory markdown documents exactly the corpus cases", () => {

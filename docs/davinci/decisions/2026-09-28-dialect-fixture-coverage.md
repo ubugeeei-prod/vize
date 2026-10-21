@@ -29,11 +29,18 @@ presence claim as a per-case zero-fallback pass.
 
 The current compiler, formatter, linter, typechecker and LSP manifests now have
 exact case labels wherever immutable authored source bytes establish a dialect.
-Remaining #6892 work is to pin an actual Babel JSX witness, promote the existing
-grammar-generated Vue 0.x/1.x and quirks inputs into product manifests with
-actual adapter results, and make #6854 aggregate each dialect and unknown
-bucket. Keep these as unfinished until actual case execution and provenance are
-recorded.
+The Babel compatibility corpus now pins `jsx-babel` to the actual
+`@vue/babel-plugin-jsx@2.0.1` oracle. Its 100 authored inputs (98 JSX and two
+TSX) join exactly to 100 recorded Babel adapter results, and the Rust oracle
+executes the same rows through Vize. This remains provisional: the current
+semantic verdicts are review-checked rather than runtime-equivalence results.
+It grants no readiness credit and remains outside #6854's registered product
+denominator until a product comparator admits these rows.
+
+Remaining #6892 work is to promote the existing grammar-generated Vue 0.x/1.x
+and quirks inputs into product manifests with actual adapter results, and make
+#6854 aggregate each dialect and unknown bucket. Keep these as unfinished until
+actual case execution and provenance are recorded.
 
 The first shared case-ledger slice makes coverage a common manifest contract.
 Every planned case in compiler, formatter, linter, typechecker and LSP now

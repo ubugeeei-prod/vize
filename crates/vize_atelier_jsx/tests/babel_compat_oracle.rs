@@ -66,6 +66,37 @@ fn babel_recording_pins_plugin() {
 }
 
 #[test]
+fn babel_dialect_witness_is_pinned_to_the_executed_oracle() {
+    let corpus = load_corpus();
+    assert_eq!(corpus.dialect_coverage.state, "source-inspected");
+    assert_eq!(corpus.dialect_coverage.registry_ref, None);
+    assert_eq!(corpus.dialect_coverage.evidence.len(), 1);
+    let evidence = &corpus.dialect_coverage.evidence[0];
+    assert_eq!(evidence.kind, "babel-plugin-oracle");
+    assert_eq!(evidence.dialects, ["jsx-babel"]);
+    assert_eq!(
+        evidence.selector,
+        "oracle.plugin=@vue/babel-plugin-jsx@2.0.1; per-case jsx/tsx is selected by lang"
+    );
+    assert_eq!(
+        corpus
+            .cases
+            .iter()
+            .filter(|case| case.lang == "jsx")
+            .count(),
+        98
+    );
+    assert_eq!(
+        corpus
+            .cases
+            .iter()
+            .filter(|case| case.lang == "tsx")
+            .count(),
+        2
+    );
+}
+
+#[test]
 fn babel_compat_verdict_totals() {
     // The headline compatibility number, asserted exactly so it cannot drift
     // from `BABEL_COMPAT_INVENTORY.md`'s totals table. Closing a divergence is
