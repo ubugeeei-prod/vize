@@ -93,9 +93,9 @@ export function planScripts(
   for (const name of missing) {
     scripts[name] =
       name === "vize:fmt" && detection.framework === "nuxt"
-        ? "vize fmt --check app"
+        ? "vize fmt --check app app.vue"
         : name === "vize:fmt:fix" && detection.framework === "nuxt"
-          ? "vize fmt --write app"
+          ? "vize fmt --write app app.vue"
           : name === "vize:check" && detection.framework === "nuxt"
             ? "nuxt prepare && vize check"
             : DEFAULT_SCRIPTS[name as keyof typeof DEFAULT_SCRIPTS];

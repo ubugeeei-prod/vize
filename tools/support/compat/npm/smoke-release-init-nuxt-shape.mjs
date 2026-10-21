@@ -104,8 +104,8 @@ export const NUXT_VUE_TS_SHAPE = {
     dev: "nuxt dev",
     build: "nuxt build",
     postinstall: "nuxt prepare",
-    "vize:fmt": "vize fmt --check app",
-    "vize:fmt:fix": "vize fmt --write app",
+    "vize:fmt": "vize fmt --check app app.vue",
+    "vize:fmt:fix": "vize fmt --write app app.vue",
     "vize:check": "nuxt prepare && vize check",
   },
   expectedFiles: {
