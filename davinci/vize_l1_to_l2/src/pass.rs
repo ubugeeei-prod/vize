@@ -15,14 +15,10 @@
 //! davinci_l2_transform*.rs`); the pass bodies themselves need a crate
 //! that may depend on `vize_davinci` + `vize_l2` outright.
 //!
-//! That crate is this one. `vize_l1_to_l2` is `publish = false`, already
-//! depends downward on both stages, and the passes are the continuation
-//! of the dialect lowering — the MLIR conversion-library shape extended
-//! one step: `lower` converts, the passes legalize. What lowering leaves
-//! syntactic (a branch `key` attribute, a deferred binding) a pass here
-//! turns semantic, dialect knowledge included, without the neutral pivot
-//! (`vize_l2`) learning any Vue and without the published legacy
-//! lane gaining an edge on the strangler's new lane.
+//! Dialect legalizers stay here: `vize_l1_to_l2` already depends downward on
+//! both stages, and what lowering leaves syntactic a pass here turns semantic.
+//! Backend-neutral analysis bodies live in `vize_l2`; this crate keeps only
+//! the lowering adapter and fact-producer integration for those analyses.
 //!
 //! # Driving a run
 //!

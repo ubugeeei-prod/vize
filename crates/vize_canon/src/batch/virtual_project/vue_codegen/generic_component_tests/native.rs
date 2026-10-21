@@ -4,6 +4,7 @@
 mod generated_diagnostics;
 mod install;
 mod minimal;
+mod misskey_generated_diagnostics;
 mod packets;
 mod replay;
 mod tree;

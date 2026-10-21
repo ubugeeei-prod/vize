@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 9516,
+  "regressionCommit": "cf6c83ab16fb7f20f84f0d51112090bbce89c74a",
+  "sourceRevision": "cf6c83ab16fb7f20f84f0d51112090bbce89c74a",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "inference-probes-valid",
+      "inputs": [
+        {
+          "file": "evidence/original-custody.json",
+          "source": "original-custody.json"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "inference-probes-valid/tsconfig.json.txt"
+        },
+        {
+          "file": "src/FallthroughRoot.vue",
+          "source": "inference-probes-valid/src/FallthroughRoot.vue.txt"
+        },
+        {
+          "file": "src/ModalWindow.vue",
+          "source": "inference-probes-valid/src/ModalWindow.vue.txt"
+        },
+        {
+          "file": "src/GenericInput.vue",
+          "source": "inference-probes-valid/src/GenericInput.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "inference-probes-valid/src/App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "authored-unknown-prop-control",
+      "inputs": [
+        {
+          "file": "evidence/original-custody.json",
+          "source": "original-custody.json"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "authored-unknown-prop-control/tsconfig.json.txt"
+        },
+        {
+          "file": "src/Strict.vue",
+          "source": "authored-unknown-prop-control/src/Strict.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "authored-unknown-prop-control/src/App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 4,
+          "column": 30,
+          "severity": 1,
+          "code": 2353,
+          "message": "Object literal may only specify known properties, and '\"definitelyNotAProp\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; ... 673 more ...; zoomAndPan?: unknown; } & { ...; }>'."
+        }
+      ]
+    }
+  ]
+}
