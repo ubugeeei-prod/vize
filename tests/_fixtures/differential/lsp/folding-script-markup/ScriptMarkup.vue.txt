@@ -1,0 +1,10 @@
+<script setup lang="ts">
+const ok = 1 < 2
+const n = 2
+</script>
+
+<template>
+  <div>
+    x
+  </div>
+</template>

@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "id": "lsp/fix-history/folding-unclosed-element",
+  "provenance": {
+    "fixCommit": "89771a14f17fb535201f261ca154aa35c6f77d7e",
+    "witnessPath": "crates/vize_maestro/src/server/document_structure/folding/tests.rs",
+    "witnessTest": "an_unclosed_element_folds_nothing_and_does_not_steal_the_outer_close_tag",
+    "inputOrigin": "exact source bytes from the original fix unit regression",
+    "contractOrigin": "complete recovery response from the original fix"
+  },
+  "input": {
+    "source": "Unclosed.vue.txt",
+    "runtimePath": "Unclosed.vue",
+    "sha256": "9eb8bf1f60e0c70f3385cb98a9de82cde3a54c8063141aa67953cf1f5d2c5223"
+  },
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "8d5e7b52f96dd796f82656600da328713ec2f5a3400639465afd79377648e9f4"
+  },
+  "method": "textDocument/foldingRange",
+  "documentVersion": 1,
+  "scope": "original unclosed-element input and complete recovery response"
+}

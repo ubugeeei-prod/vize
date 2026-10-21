@@ -92,6 +92,18 @@ void test("LSP inventory rejects dropped fixtures and requests", () => {
   );
 });
 
+void test("folding history retains the unopened-document null response without invented readiness", () => {
+  const fixture = loaded.cases.find(
+    (candidate) => candidate.id === "lsp/fix-history/folding-unopened",
+  );
+  assert(fixture);
+  assert.equal(fixture.data.openDocument, false);
+  assert.deepEqual(fixture.requests, [{ params: {}, result: null }]);
+  assert.deepEqual(inspectLspObservation(fixture, referenceObservation(fixture)), [
+    { requestId: 2, state: "equal" },
+  ]);
+});
+
 void test("LSP contract rejects stale readiness, duplicate replies and incomplete lifecycle", () => {
   for (const mutate of [
     (observation: WireObservation) =>
