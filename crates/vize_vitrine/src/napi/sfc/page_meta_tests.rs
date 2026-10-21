@@ -29,6 +29,7 @@ fn single_and_parallel_batch_page_meta_require_the_same_explicit_nuxt_option() {
                     vec![BatchFileInputNapi {
                         path: "Page.vue".into(),
                         source: SOURCE.into(),
+                        scope_id: None,
                     }],
                     Some(BatchCompileOptionsNapi {
                         ssr: Some(ssr),

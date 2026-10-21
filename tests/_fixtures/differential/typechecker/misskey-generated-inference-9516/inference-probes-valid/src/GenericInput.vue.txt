@@ -1,0 +1,5 @@
+<script setup lang="ts" generic="T extends string = 'text'">
+defineProps<{ modelValue: string; type?: T }>();
+defineEmits<{ 'update:modelValue': [value: string] }>();
+</script>
+<template><label><slot name="prefix" /><input :value="modelValue" :type="type" /></label></template>

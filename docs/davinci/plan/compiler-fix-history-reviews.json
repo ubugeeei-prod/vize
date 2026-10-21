@@ -1,0 +1,63 @@
+{
+  "schema": "vize.compiler.fix-history-reviews",
+  "version": 1,
+  "manifest": "tests/_fixtures/differential/compiler/sfc-fix-history.manifest.json",
+  "scope": "Bounded semantic review of five complete public SFC Result fixtures; this is not whole-fix, whole-history, native, target, or dialect acceptance.",
+  "reviews": [
+    {
+      "fixCommit": "ceb0fda9c18ed6e40db71a2c582e9fe10950a43a",
+      "caseId": "compiler/sfc/imported-component-before-prop",
+      "coveredRequirements": [
+        "A PascalCase setup import wins over a same-name lowercase prop when a lowercase component tag is compiled through the separate-template SFC route.",
+        "The complete public SFC Result preserves the imported component binding, prop binding, generated module code, and empty diagnostics."
+      ],
+      "remainingScope": [
+        "Inline-template, alternate syntax, Vapor, SSR, and runtime behavior remain outside this reviewed fixture scope."
+      ]
+    },
+    {
+      "fixCommit": "e9586daff99ae43ff1e3621829f63e647181a3f1",
+      "caseId": "compiler/sfc/scoped-css-v-bind",
+      "coveredRequirements": [
+        "Scoped CSS v-bind expressions are rewritten to the same scoped custom-property names emitted by useCssVars.",
+        "The complete public SFC Result preserves generated module bytes, populated CSS bytes, bindings, and empty diagnostics."
+      ],
+      "remainingScope": [
+        "Vite and Rspack virtual style-module integration, alternate style options, and non-SFC targets remain outside this reviewed fixture scope."
+      ]
+    },
+    {
+      "fixCommit": "b01f36701cd90e7e7968457e28440b01570f7957",
+      "caseId": "compiler/sfc/dynamic-loop-ref-for",
+      "coveredRequirements": [
+        "A dynamic ref expression inside v-for emits ref_for: true in separate-template SFC output.",
+        "The complete public SFC Result preserves the authored TypeScript input, filename, generated module bytes, bindings, and empty diagnostics."
+      ],
+      "remainingScope": [
+        "Inline-template, direct DOM entrypoint, alternate syntax, Vapor, SSR, and mounted runtime behavior remain outside this reviewed fixture scope."
+      ]
+    },
+    {
+      "fixCommit": "ff008f61e83372618ae57ee453c1361e814a0f4f",
+      "caseId": "compiler/sfc/computed-component-unref",
+      "coveredRequirements": [
+        "A computed setup component is unwrapped across ordinary, v-if, v-for, v-once, and dotted component-tag code paths.",
+        "The complete public SFC Result preserves generated module bytes, binding metadata, and empty diagnostics."
+      ],
+      "remainingScope": [
+        "Direct DOM entrypoint, separate-template output, alternate syntax, Vapor, SSR, and mounted runtime behavior remain outside this reviewed fixture scope."
+      ]
+    },
+    {
+      "fixCommit": "466fa30950232f6740c2d9abf7b604a23775ed81",
+      "caseId": "compiler/sfc/custom-directive-child-patch",
+      "coveredRequirements": [
+        "A custom directive on an otherwise-static element with children retains the NEED_PATCH flag and its directive payload.",
+        "The complete public SFC Result preserves generated module bytes, binding metadata, and empty diagnostics."
+      ],
+      "remainingScope": [
+        "Other patch-flag combinations, alternate syntax, Vapor, SSR, and mounted directive lifecycle behavior remain outside this reviewed fixture scope."
+      ]
+    }
+  ]
+}

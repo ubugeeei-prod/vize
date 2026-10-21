@@ -31,6 +31,7 @@ import "./plugin/hot-update-environment.test.ts";
 import "./plugin/hmr.test.ts";
 import "./plugin/template-style-hmr.test.ts";
 import "./style-preprocessors.test.ts";
+import "./scope-id-reproducibility.test.ts";
 import "./pug-template.test.ts";
 import "./markdown-runtime.test.ts";
 import "./plugin/index.test.ts";

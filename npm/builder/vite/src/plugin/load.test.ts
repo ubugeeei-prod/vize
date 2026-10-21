@@ -864,6 +864,7 @@ fs.writeFileSync(
 
 const onDemandProdState: VizePluginState = {
   ...hmrState,
+  root: onDemandProdDir,
   cache: new Map(),
   ssrCache: new Map(),
   collectedCss: new Map(),
@@ -885,8 +886,8 @@ assert.doesNotMatch(
 );
 assert.match(
   onDemandProdLoad.code,
-  /import ".*OnDemandProd\.vue\.__vize_style_0\.css\?vue=&type=style&index=0&lang=css&vize-file=[^"\n]+";/,
-  "Production on-demand loads should emit a Vite-visible plain CSS import",
+  /import "\/OnDemandProd\.vue\.__vize_style_0\.css\?vue=&type=style&index=0&lang=css&vize-root-relative=&vize-file=%2FOnDemandProd%2Evue";/,
+  "Production on-demand loads should emit a root-stable Vite-visible plain CSS import",
 );
 assert.equal(
   onDemandProdState.collectedCss.has(onDemandProdPath),
@@ -895,8 +896,50 @@ assert.equal(
 );
 assert.match(
   onDemandProdLoad.code,
-  /import ".*OnDemandProd\.vue\.__vize_style_0\.css\?vue=&type=style&index=0&lang=css&vize-file=[^"\n]+";/,
+  /import "\/OnDemandProd\.vue\.__vize_style_0\.css\?vue=&type=style&index=0&lang=css&vize-root-relative=&vize-file=%2FOnDemandProd%2Evue";/,
   "Production on-demand loads should emit a virtual style import for CSS extraction",
 );
+const onDemandProdStyle = loadHook(
+  onDemandProdState,
+  "/OnDemandProd.vue.__vize_style_0.css?vue=&type=style&index=0&lang=css&vize-root-relative=&vize-file=%2FOnDemandProd%2Evue",
+  { ssr: false },
+);
+assert.deepEqual(onDemandProdStyle, {
+  code: ".prod { color: seagreen; }",
+  map: null,
+});
+
+const collisionRoot = createTempRoot("root-relative-collision");
+const collisionName = path.basename(collisionRoot);
+const projectCollisionPath = path.join(collisionRoot, "tmp", collisionName, "Collision.vue");
+const absoluteCollisionRoot = path.join("/tmp", collisionName);
+const absoluteCollisionPath = path.join(absoluteCollisionRoot, "Collision.vue");
+fs.mkdirSync(path.dirname(projectCollisionPath), { recursive: true });
+fs.mkdirSync(absoluteCollisionRoot, { recursive: true });
+fs.writeFileSync(
+  projectCollisionPath,
+  `<template><div class="project">Project</div></template><style>.project { color: green; }</style>`,
+);
+fs.writeFileSync(
+  absoluteCollisionPath,
+  `<template><div class="decoy">Decoy</div></template><style>.decoy { color: red; }</style>`,
+);
+const collisionState: VizePluginState = {
+  ...onDemandProdState,
+  root: collisionRoot,
+  cache: new Map(),
+  ssrCache: new Map(),
+  collectedCss: new Map(),
+};
+const collisionLoad = loadHook(collisionState, toVirtualId(projectCollisionPath), { ssr: false });
+assert.ok(collisionLoad && typeof collisionLoad === "object");
+const collisionImport = collisionLoad.code.match(/import "([^"\n]+)";/)?.[1];
+assert.ok(collisionImport, "Production collision fixtures should emit a style import");
+assert.match(collisionImport, /vize-root-relative=/);
+assert.deepEqual(loadHook(collisionState, collisionImport, { ssr: false }), {
+  code: ".project { color: green; }",
+  map: null,
+});
+fs.rmSync(absoluteCollisionRoot, { recursive: true });
 
 console.log("vite-plugin-vize load tests passed!");
