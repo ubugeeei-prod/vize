@@ -97,7 +97,22 @@ pub(crate) fn completion_source_offset_to_generated(
     let source_offset = source_offset as usize;
     document
         .source_map
-        .to_generated_for(source_offset, ProjectionFeatures::COMPLETION)
+        .rows()
+        .filter(|row| row.meta.features.contains(ProjectionFeatures::COMPLETION))
+        .flat_map(|row| row.span.sub_spans.iter())
+        .filter(|span| span.src_range.start <= source_offset && source_offset <= span.src_range.end)
+        .min_by_key(|span| (span.src_range.len(), span.gen_range.len()))
+        .map(|span| {
+            span.gen_range.start
+                + source_offset
+                    .saturating_sub(span.src_range.start)
+                    .min(span.gen_range.len())
+        })
+        .or_else(|| {
+            document
+                .source_map
+                .to_generated_for(source_offset, ProjectionFeatures::COMPLETION)
+        })
         .or_else(|| {
             document
                 .source_map
@@ -109,6 +124,43 @@ pub(crate) fn completion_source_offset_to_generated(
                 .min_by_key(|row| row.span.src_range.len())
                 .map(|row| row.span.gen_range.end)
         })
+}
+
+#[cfg(test)]
+mod completion_offset_tests {
+    use super::completion_source_offset_to_generated;
+    use crate::virtual_code::{ProjectionMapping, VirtualDocument, VirtualLanguage, VizeMapping};
+    use vize_canon::virtual_ts::VizeSubSpan;
+
+    #[test]
+    fn incomplete_expression_end_uses_the_exact_inner_span() {
+        let mut mapping = ProjectionMapping::new();
+        mapping.push(VizeMapping {
+            // Generated `[names.` excludes the synthetic recovery suffix.
+            gen_range: 100..107,
+            // Authored `[names.]` includes the closing bracket.
+            src_range: 11..19,
+            sub_spans: vec![VizeSubSpan {
+                gen_range: 101..107,
+                src_range: 12..18,
+            }],
+        });
+        let document = VirtualDocument::with_mappings(
+            Default::default(),
+            Default::default(),
+            VirtualLanguage::Template,
+            mapping,
+        );
+
+        assert_eq!(
+            completion_source_offset_to_generated(&document, 15),
+            Some(104)
+        );
+        assert_eq!(
+            completion_source_offset_to_generated(&document, 18),
+            Some(107)
+        );
+    }
 }
 
 pub(crate) fn request_file_uri(path: &str) -> String {

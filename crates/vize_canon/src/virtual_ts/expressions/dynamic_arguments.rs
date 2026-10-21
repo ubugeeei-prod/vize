@@ -15,6 +15,7 @@ pub(super) fn generate(
 ) {
     let start = (template_offset + expression.start) as usize;
     let end = (template_offset + expression.end) as usize;
+    let bracket_start = start.saturating_sub(1);
     // The computed key's own error (TS2464, a non-key argument type) belongs
     // to the whole directive, as `vue-tsc` anchors it: `:[foo]` reports at
     // the `:`, `v-bind:[foo]` at the `v`. The `[` is the last byte before the
@@ -40,7 +41,10 @@ pub(super) fn generate(
     ts.push_str(": undefined }); // DynamicDirectiveArgument\n");
     mappings.push(VizeMapping {
         gen_range: key_start..key_end,
-        src_range: key_anchor..end + 1,
+        // Keep editor positions byte-aligned with `[expression]`. The
+        // diagnostic-only prefix anchor below may sit before this range, but
+        // must not shift hover and definition requests inside the expression.
+        src_range: bracket_start..end + 1,
         sub_spans: vec![
             // TS2464 belongs to the authored directive, while errors inside
             // the expression retain their exact source positions.
@@ -93,7 +97,9 @@ fn directive_start(source: &str, bracket: usize) -> Option<usize> {
 
 #[cfg(test)]
 mod tests {
-    use super::directive_start;
+    use super::{directive_start, generate};
+    use vize_carton::{CompactString, String};
+    use vize_croquis::{ScopeId, TemplateExpression, TemplateExpressionKind};
 
     #[test]
     fn dynamic_argument_directives_start_at_their_prefix() {
@@ -108,6 +114,49 @@ mod tests {
             ("<div foo=\"1\">", 5, None),
         ] {
             assert_eq!(directive_start(source, bracket), expected, "{source}");
+        }
+    }
+
+    #[test]
+    fn dynamic_argument_editor_mapping_starts_at_the_open_bracket() {
+        for source in [
+            "<template #[names.current]>",
+            "<Comp :[names.current]=\"value\" />",
+        ] {
+            let content = "names.current";
+            let start = source.find(content).unwrap();
+            let expression = TemplateExpression {
+                content: CompactString::new(content),
+                kind: TemplateExpressionKind::DynamicDirectiveArgument,
+                start: start as u32,
+                end: (start + content.len()) as u32,
+                scope_id: ScopeId::ROOT,
+                vif_guard: None,
+            };
+            let mut generated = String::new();
+            let mut mappings = Vec::new();
+
+            generate(
+                &mut generated,
+                &mut mappings,
+                &expression,
+                (content, 0, content.len()),
+                0,
+                "",
+                Some(source),
+            );
+
+            let mapping = &mappings[0];
+            let bracket = start - 1;
+            assert_eq!(mapping.src_range, bracket..start + content.len() + 1);
+            assert_eq!(&generated[mapping.gen_range.clone()], "[names.current]");
+            assert_eq!(mapping.gen_range.len(), mapping.src_range.len());
+            assert_eq!(
+                mapping.sub_spans[0].src_range.start,
+                source
+                    .find(|character| character == '#' || character == ':')
+                    .unwrap()
+            );
         }
     }
 }
