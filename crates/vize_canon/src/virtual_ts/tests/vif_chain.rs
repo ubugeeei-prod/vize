@@ -376,3 +376,45 @@ const onClose = () => undefined
         output.code
     );
 }
+
+#[test]
+fn guarded_sibling_listeners_own_their_lexical_contracts() {
+    let script = r#"import { ref } from 'vue'
+import MyButton from './MyButton.vue'
+import MyMenu from './MyMenu.vue'
+const shown = ref(true)
+const open = () => undefined
+const save = () => undefined
+"#;
+    let template = r#"<div v-if="shown">
+  <MyButton @click="open">open</MyButton>
+  <MyMenu>
+    <template #activator><span>more</span></template>
+    <MyButton @click="save">save</MyButton>
+  </MyMenu>
+</div>"#;
+    let allocator = vize_carton::Allocator::new();
+    let (root, errors) = vize_armature::parse(&allocator, template);
+    assert!(errors.is_empty(), "{errors:?}");
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+    assert_eq!(
+        output
+            .code
+            .matches("_click_prop_args_library =")
+            .count(),
+        2,
+        "each sibling generated guard must declare the stable listener contract it references: {}",
+        output.code
+    );
+    assert_eq!(
+        output.code.matches("_click_prop_arrays =").count(),
+        2,
+        "array-listener aliases must stay inside their generated guard: {}",
+        output.code
+    );
+}

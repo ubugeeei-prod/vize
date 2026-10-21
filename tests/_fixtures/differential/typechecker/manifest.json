@@ -2156,6 +2156,48 @@
           "sha256": "32fa2cf70a75ee2b7d7c5ddecb8df37ef60c8de103217dacf2a2386579cd3ed8"
         }
       ]
+    },
+    {
+      "id": "typechecker/component-listener-alias-scope-10112/sibling-guarded-listeners",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "component-listener-alias-scope-10112",
+      "case": "sibling-guarded-listeners",
+      "test": "component_listener_aliases_stay_inside_guard_scope",
+      "regressionCommit": "7cefe3a00e6184de1e121d39b0e153f08a428aa6",
+      "sourceRevision": "7cefe3a00e6184de1e121d39b0e153f08a428aa6",
+      "packReference": {
+        "path": "component-listener-alias-scope-10112/cases.json",
+        "sha256": "72e2b450939d5f039bbe7b07a3392aa3e12d4afa329442f70b72e0f83527b157"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "component-listener-alias-scope-10112/tsconfig.json.txt",
+          "sha256": "a20bca69e202a52f889c04769080a17040e1469b6105ee17b16fad5e2fbc6089"
+        },
+        {
+          "file": "src/MyButton.vue",
+          "path": "component-listener-alias-scope-10112/src/MyButton.vue.txt",
+          "sha256": "bb01129348c4d48a7857b16f31ab9ce0af1c36932e4d6e9eaaa4031b46b65cd8"
+        },
+        {
+          "file": "src/MyMenu.vue",
+          "path": "component-listener-alias-scope-10112/src/MyMenu.vue.txt",
+          "sha256": "2d7d79e649cf372e65f2187697e04fd455734faba5b6edae1f53b4facb63acd0"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "component-listener-alias-scope-10112/src/App.vue.txt",
+          "sha256": "3c824ed84d35e942880c8af1a888512ff9b8fc817130b3022134e8e74c4ed34e"
+        }
+      ]
     }
   ]
 }

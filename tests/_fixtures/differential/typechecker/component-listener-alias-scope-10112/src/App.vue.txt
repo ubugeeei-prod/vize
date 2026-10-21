@@ -1,0 +1,19 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import MyButton from "./MyButton.vue";
+import MyMenu from "./MyMenu.vue";
+
+const shown = ref(true);
+function open(): void {}
+function save(): void {}
+</script>
+
+<template>
+  <div v-if="shown">
+    <MyButton @click="open">open</MyButton>
+    <MyMenu>
+      <template #activator><span>more</span></template>
+      <MyButton @click="save">save</MyButton>
+    </MyMenu>
+  </div>
+</template>

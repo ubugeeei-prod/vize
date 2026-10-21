@@ -25,6 +25,7 @@ pub(crate) type EventContractKey = (
     bool,
     Option<String>,
     Option<u32>,
+    Option<u32>,
 );
 
 #[derive(Clone, Copy)]
@@ -91,6 +92,8 @@ pub(crate) struct ScopeGenContext<'a, 'template> {
     /// inference. Every listener on one usage reads the same resolved object.
     pub(crate) event_inference_usages: &'a RefCell<FxHashSet<usize>>,
     /// First scope that resolved each stable component/event listener contract.
+    /// Guarded handlers also key by their generated lexical block, because an
+    /// alias declared in one sibling `if` is not visible from the next one.
     pub(crate) event_contracts: &'a RefCell<FxHashMap<EventContractKey, u32>>,
 }
 
