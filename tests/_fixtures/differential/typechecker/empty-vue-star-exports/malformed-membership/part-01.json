@@ -156,13 +156,13 @@
   ],
   [
     "project/A.vue.ts",
-    4621,
-    "eddc2faf6b97a21df641561e9d463adf2f4c3cc5d1d82aff92d54993308296f4"
+    4620,
+    "a53d5569e14f6d89c8d01c7f74423e222d3af60921261038e6f75241bb74b2af"
   ],
   [
     "project/B.vue.ts",
-    4845,
-    "2dcd9d1cf8d7c54fa42764f2d574ead8f29fa930c48df3e9b7662e2871e2d209"
+    4844,
+    "cd9defc8ed21d94450ae3be8186536e13c0db63c7b4ec8702d27e4403a1d087f"
   ],
   [
     "providers/@voidzero-dev+vite-plus-core@0.1.24_@tsdown+css@0.22.14_@types+node@25.9.2_esbuild@0.28_28053986ce44d27c9f2b7b250e1bd5a3/node_modules/@voidzero-dev/vite-plus-core/dist/vite/types/hmrPayload.d.ts",
@@ -196,8 +196,8 @@
   ],
   [
     "project/__vize_helpers.d.ts",
-    29079,
-    "688a8936940e43d48b2477ad2034817e7e536f2d0ec3fbf7e39dd867340f0c99"
+    29435,
+    "250cfa34bb15f19b83a120d5465ee0424adf023230a390aaeda47ab1edaacc4c"
   ],
   [
     "project/__vize_vue_modules.d.ts",
