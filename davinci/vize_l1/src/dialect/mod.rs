@@ -5,12 +5,17 @@
 //! Consolidating petite, quirks, markup/language descriptors and residual
 //! dialect operations remains tracked in #6841.
 
-mod template;
 mod vue;
 pub mod vue0;
 pub mod vue1;
 pub mod vue2;
 pub mod vue3;
 
-pub use template::LegacyCaps;
 pub use vue::{DirectiveArgStyle, LegacyDialectCapabilities, LegacyVueVersion};
+
+/// Backwards-compatible name for the shared Vue template capability set.
+///
+/// L1 parsing and L1→L2 legalization intentionally consume the same value;
+/// keeping this alias avoids a second projection that can drift as dialect
+/// surfaces are added.
+pub type LegacyCaps = LegacyDialectCapabilities;

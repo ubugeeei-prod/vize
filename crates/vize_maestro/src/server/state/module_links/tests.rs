@@ -1,4 +1,4 @@
-use super::{ModuleLinkContextError, ModuleLinkRetirement, Phase, ServerState};
+use super::{ModuleLinkContextError, ModuleLinkRetirement, Phase, ProjectModel, ServerState};
 #[cfg(feature = "native")]
 mod native;
 
@@ -24,13 +24,12 @@ fn module_link_mutation_unwind_retires_before_gate_release() {
     let state = ServerState::new();
     let panic = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
         state.update_module_link_context(None, || {
-            *state.type_checker_config.write() = (
-                vize_l0::config::TypeCheckerConfig {
-                    strict: true,
-                    ..Default::default()
-                },
-                123,
-            );
+            let config = vize_l0::config::TypeCheckerConfig {
+                strict: true,
+                ..Default::default()
+            };
+            *state.type_checker_config.write() =
+                (config.clone(), 123, ProjectModel::new(None, None, &config));
             panic!("original assignment interrupted before commit");
         });
     }));

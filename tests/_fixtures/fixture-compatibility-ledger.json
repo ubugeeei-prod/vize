@@ -384,6 +384,11 @@
       "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
+      "fixturePath": "tests/_fixtures/_git/openvue",
+      "memberships": ["app"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
+    },
+    {
       "fixturePath": "tests/_fixtures/_git/petite-vue",
       "memberships": ["ecosystem"],
       "dialectCoverage": {

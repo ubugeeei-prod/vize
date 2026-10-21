@@ -1,4 +1,5 @@
 use super::*;
+use crate::dialect::LegacyCaps;
 
 #[test]
 fn as_str_round_trips_all_variants_through_config_parsing() {
@@ -89,5 +90,15 @@ fn default_dialect_resolves_to_the_all_off_vue3_set() {
     // check can never confuse a legacy document with a Vue 3 one.
     for version in LegacyVueVersion::ALL {
         assert_ne!(version.capabilities(), LegacyDialectCapabilities::VUE3);
+    }
+}
+
+#[test]
+fn lowering_compatibility_name_is_the_shared_descriptor() {
+    for version in VueVersion::ALL {
+        let parser_caps = LegacyDialectCapabilities::for_dialect(version);
+        let lowering_caps: LegacyCaps = LegacyCaps::for_version(version);
+        assert_eq!(parser_caps, lowering_caps, "{}", version.as_str());
+        assert_eq!(parser_caps.needs_sugar(), version != VueVersion::V3);
     }
 }

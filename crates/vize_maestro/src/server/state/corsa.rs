@@ -89,13 +89,7 @@ impl ServerState {
         let generation = self.corsa_environment_revision.load(Ordering::Acquire);
         // Get workspace root for Corsa configuration.
         let workspace_root = self.get_workspace_root();
-        let (type_checker_config, request_timeout_ms, config_source) =
-            self.native_checker_settings();
-        let project = vize_carton::config::ProjectModel::new(
-            workspace_root.as_deref(),
-            config_source.as_deref(),
-            &type_checker_config,
-        );
+        let (type_checker_config, request_timeout_ms, project) = self.native_checker_settings();
         let tsconfig_path = project.tsconfig().map(PathBuf::from);
 
         let config = CorsaBridgeConfig {

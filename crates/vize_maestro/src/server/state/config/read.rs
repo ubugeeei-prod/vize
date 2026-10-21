@@ -1,5 +1,8 @@
 //! Actual configuration read helpers, with unchanged public visibility.
-use super::super::{LspFeatureConfig, ServerState};
+use super::{
+    super::{LspFeatureConfig, ServerState},
+    host::ProjectModel,
+};
 
 #[cfg(all(test, feature = "native"))]
 mod tests;
@@ -17,33 +20,29 @@ impl ServerState {
 
     pub(super) fn install_type_checker_snapshot(
         &self,
+        root: &std::path::Path,
         config: vize_l0::config::TypeCheckerConfig,
         timeout_ms: u64,
-        source: &std::path::Path,
+        source: Option<&std::path::Path>,
     ) {
+        let project = ProjectModel::new(Some(root), source, &config);
         let mut settings = self.type_checker_config.write();
-        #[cfg(feature = "native")]
-        let mut origin = self.type_checker_config_origin.write();
-        *settings = (config, timeout_ms);
-        #[cfg(feature = "native")]
-        {
-            *origin = Some(source.to_path_buf());
-        }
-        #[cfg(not(feature = "native"))]
-        let _ = source;
+        *settings = (config, timeout_ms, project);
+    }
+
+    pub(in crate::server::state) fn retarget_type_checker_project(&self, root: &std::path::Path) {
+        let mut settings = self.type_checker_config.write();
+        let source = settings.2.config_source().map(std::path::Path::to_path_buf);
+        let config = settings.0.clone();
+        settings.2 = ProjectModel::new(Some(root), source.as_deref(), &config);
     }
 
     #[cfg(feature = "native")]
     pub(in crate::server::state) fn native_checker_settings(
         &self,
-    ) -> (
-        vize_l0::config::TypeCheckerConfig,
-        u64,
-        Option<std::path::PathBuf>,
-    ) {
+    ) -> (vize_l0::config::TypeCheckerConfig, u64, ProjectModel) {
         let settings = self.type_checker_config.read();
-        let origin = self.type_checker_config_origin.read();
-        (settings.0.clone(), settings.1, origin.clone())
+        (settings.0.clone(), settings.1, settings.2.clone())
     }
 
     pub(super) fn apply_linter_features(&self, features: vize_l0::config::ConfigFeatureFlags) {

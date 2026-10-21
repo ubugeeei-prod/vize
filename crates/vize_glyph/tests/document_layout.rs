@@ -1,12 +1,62 @@
 //! Complete document layout laws independent of any parser or semantic IR.
 
-use vize_glyph::native_doc::{Doc, Line, LineEnding, PrintOptions, print};
+use vize_glyph::native_doc::{
+    Doc, Line, LineEnding, PrintOptions, TemplateDocument, TemplateRefusal, print,
+    template_document,
+};
 use vize_l0::{Allocator, Vec};
+use vize_l1::dialect::vue3::surface::ComponentParse;
+
+const DOCUMENT_SOURCE: &str = include_str!("../src/native_doc/document.rs");
+const PRINTER_SOURCE: &str = include_str!("../src/native_doc/printer.rs");
+const TEMPLATE_SOURCE: &str = include_str!("../src/native_doc/template.rs");
 
 fn joined<'a>(allocator: &'a Allocator, parts: impl IntoIterator<Item = Doc<'a>>) -> Doc<'a> {
     let mut docs = Vec::new_in(&allocator);
     docs.extend(parts);
     Doc::concat(docs)
+}
+
+fn imports(source: &str) -> std::vec::Vec<&str> {
+    source
+        .lines()
+        .filter(|line| line.starts_with("use "))
+        .collect()
+}
+
+#[test]
+fn document_ir_printer_and_l1_consumer_stay_separate() {
+    assert_eq!(
+        imports(DOCUMENT_SOURCE),
+        ["use vize_l0::{Allocator, Box, Vec};"],
+        "the arena-backed document IR must stay independent of syntax and layout"
+    );
+    assert_eq!(
+        imports(PRINTER_SOURCE),
+        [
+            "use vize_l0::String;",
+            "use super::document::{Doc, Kind, Line};",
+        ],
+        "the iterative printer must consume only the document vocabulary"
+    );
+    assert_eq!(
+        imports(TEMPLATE_SOURCE),
+        [
+            "use vize_l0::{Allocator, Vec};",
+            "use vize_l1::dialect::vue3::surface::ComponentParse;",
+            "use vize_l1::markup::{Element, SurfaceChild};",
+            "use super::{Doc, Line};",
+        ],
+        "syntax traversal must remain in the retained L1 template consumer"
+    );
+
+    let _public_template_builder: for<'p, 'a> fn(
+        &'p ComponentParse<'a>,
+        &'a Allocator,
+    ) -> Result<
+        TemplateDocument<'p, 'a>,
+        TemplateRefusal,
+    > = template_document;
 }
 
 #[test]

@@ -4,7 +4,11 @@ import fs from "node:fs";
 import os from "node:os";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
-import { loadLinterManifest, validateLinterReport } from "../differential/linter-api.ts";
+import {
+  loadLinterManifest,
+  summarizeLinterAcceptance,
+  validateLinterReport,
+} from "../differential/linter-api.ts";
 import {
   expectedNativeReason,
   nativeArgv,
@@ -145,6 +149,19 @@ function changePacket(row: any, mutate: (packet: any) => void) {
     raw.stdoutSha256 = sha256(bytes);
   }
 }
+
+void test("shared acceptance counts only validated whole-product linter observations", () => {
+  const acceptance = summarizeLinterAcceptance(loaded, baseline(), receipt);
+  assert.deepEqual(acceptance.total, {
+    planned: 59,
+    nativeHandled: 10,
+    nativeEquivalent: 10,
+    unsupported: 49,
+    legacyBacked: 0,
+    unverified: 0,
+  });
+  assert.deepEqual(acceptance.targets.lint, acceptance.total);
+});
 
 void test("whole native linter report rejects forged output, refusal, repeat and source custody", () => {
   const valid = baseline();

@@ -71,7 +71,65 @@ fn original_native_template_descriptors_preserve_complete_legacy_results_and_dis
             ));
         }
     }
-    assert_eq!(native_count, 11);
+    assert_eq!(native_count, 12);
+}
+
+#[test]
+fn canonical_html_language_headers_preserve_borrowed_attributes_without_fallback() {
+    for source in [
+        "<template lang=html><p/></template>",
+        "<template lang='html'><p/></template>",
+        "\r\n<template lang=\"html\">雪🌸</template>\n",
+    ] {
+        let options = SfcParseOptions {
+            filename: "Language雪🌸.vue".into(),
+            ..Default::default()
+        };
+        let calls = Cell::new(0);
+        let actual = with_legacy(source, options.clone(), |source, options| {
+            calls.set(calls.get() + 1);
+            vize_croquis::sfc::parse_sfc(source, options)
+        });
+        let retained = vize_croquis::sfc::parse_sfc(source, options);
+        assert_eq!(calls.get(), 0, "{source}");
+        assert_eq!(
+            serde_json::to_value(&actual).unwrap(),
+            serde_json::to_value(&retained).unwrap(),
+            "{source}"
+        );
+        let descriptor = actual.expect("native descriptor");
+        let template = descriptor.template.expect("native template");
+        assert!(matches!(template.lang, Some(Cow::Borrowed("html"))));
+        assert!(matches!(
+            template.attrs.get("lang"),
+            Some(Cow::Borrowed("html"))
+        ));
+    }
+}
+
+#[test]
+fn unsupported_template_languages_retain_the_complete_fallback() {
+    for source in [
+        "<template lang=pug><p/></template>",
+        "<template lang=HTML><p/></template>",
+        "<template lang='h&#116;ml'><p/></template>",
+    ] {
+        let calls = Cell::new(0);
+        let actual = with_legacy(source, SfcParseOptions::default(), |source, options| {
+            calls.set(calls.get() + 1);
+            vize_croquis::sfc::parse_sfc(source, options)
+        });
+        assert_eq!(calls.get(), 1, "{source}");
+        assert_eq!(
+            serde_json::to_value(actual).unwrap(),
+            serde_json::to_value(vize_croquis::sfc::parse_sfc(
+                source,
+                SfcParseOptions::default()
+            ))
+            .unwrap(),
+            "{source}"
+        );
+    }
 }
 
 #[test]
@@ -163,7 +221,6 @@ fn common_unsupported_envelopes_do_not_acquire_a_native_arena() {
     for source in [
         "<script setup>const value=1;</script><template>{{value}}</template>",
         "<template><p/></template><style scoped>.p{color:red}</style>",
-        "<template lang=html><p/></template>",
     ] {
         vize_l0::pool::clear();
         let calls = Cell::new(0);

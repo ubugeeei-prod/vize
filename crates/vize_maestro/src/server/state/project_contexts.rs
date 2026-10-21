@@ -18,9 +18,7 @@ use vize_l0::{FxHashMap, FxHashSet};
 
 use super::{
     LspFeatureConfig, ServerState,
-    config::host::{
-        LoadedLspConfig, ObservedLspConfig, ProjectModel, load_observed_lsp_config_snapshot,
-    },
+    config::host::{LoadedLspConfig, ObservedLspConfig, load_observed_lsp_config_snapshot},
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
