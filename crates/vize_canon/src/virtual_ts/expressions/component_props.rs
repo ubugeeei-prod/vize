@@ -106,10 +106,18 @@ pub(super) fn collect_generated_class_bindings<'a>(
     usage: &'a ComponentUsage,
     template_binding_access: &TemplateBindingAccess,
 ) -> Vec<(&'a PassedProp, String)> {
+    collect_generated_named_bindings(usage, template_binding_access, "class")
+}
+
+pub(super) fn collect_generated_named_bindings<'a>(
+    usage: &'a ComponentUsage,
+    template_binding_access: &TemplateBindingAccess,
+    name: &str,
+) -> Vec<(&'a PassedProp, String)> {
     usage
         .props
         .iter()
-        .filter(|prop| is_checkable_prop(prop) && prop.name.as_str() == "class")
+        .filter(|prop| is_checkable_prop(prop) && prop.name.as_str() == name)
         .filter_map(|prop| {
             generated_prop_value(prop, template_binding_access).map(|value| (prop, value))
         })

@@ -67,6 +67,37 @@
       }
     },
     {
+      "id": "compiler/sfc/slot-fallback-adjacent-text-10087",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "slot-fallback-adjacent-text-10087",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "11729d67a2cbdad14811822d77e99459d416341d8b0066a499c7241c0024af67",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "slot-fallback-adjacent-text-10087/module.expected.txt",
+        "sha256": "32e2297fa43035ab507b32efd978f6cd4bede8730c8730da460f194a781de882",
+        "source": "davinci/vize_l1_to_l2/tests/emit_outlets.rs:fallback_interp_keeps_the_compound_in_one_text_vnode"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); Croquis descriptor and armature tokenizer remain legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      }
+    },
+    {
       "id": "compiler/sfc/production-v-if-comment-9920",
       "state": "active",
       "targets": ["ssr"],

@@ -42,10 +42,10 @@ fn lint_config_rule_severity_override_applies_to_builtin_script_rules() {
         project_root.path(),
         "src/AfsStepperDialog.vue",
         r#"<script setup lang="ts">
-const emit = defineEmits(["update:current-step-index"])
+const emit = defineEmits(["step-changed"])
 
 const handleStepClick = (stepIndex: number) => {
-  emit("update:current-step-index", stepIndex)
+  emit("step-changed", stepIndex)
 }
 </script>
 "#,
@@ -159,8 +159,8 @@ fn quiet_lint_reduces_warning_totals_and_preserves_max_warnings_exit() {
         ),
     );
     let source = r#"<script setup lang="ts">
-const emit = defineEmits(["update:current-step-index"])
-emit("update:current-step-index", 1)
+const emit = defineEmits(["step-changed"])
+emit("step-changed", 1)
 </script>
 "#;
     write_file(project_root.path(), "src/First.vue", source);
@@ -209,8 +209,8 @@ fn lint_applies_entry_rule_severity_only_to_matching_files() {
         ),
     );
     let source = r#"<script setup lang="ts">
-const emit = defineEmits(["update:current-step-index"])
-emit("update:current-step-index", 1)
+const emit = defineEmits(["step-changed"])
+emit("step-changed", 1)
 </script>
 "#;
     write_file(project_root.path(), "src/components/Card.vue", source);
@@ -241,11 +241,11 @@ emit("update:current-step-index", 1)
               "ruleId": "script/custom-event-name-casing",
               "ruleDocsPath": "docs/content/rules/type-and-script.md",
               "severity": 2,
-              "message": "[vize:script/custom-event-name-casing] Custom event name 'update:current-step-index' is not camelCase.",
+              "message": "[vize:script/custom-event-name-casing] Custom event name 'step-changed' is not camelCase.",
               "line": 3,
               "column": 6,
               "endLine": 3,
-              "endColumn": 33,
+              "endColumn": 20,
               "help": "Vue 3 recommends camelCase for emitted event names; rename this event to camelCase (e.g. myEvent)."
             }],
             "errorCount": 1,
@@ -257,11 +257,11 @@ emit("update:current-step-index", 1)
               "ruleId": "script/custom-event-name-casing",
               "ruleDocsPath": "docs/content/rules/type-and-script.md",
               "severity": 2,
-              "message": "[vize:script/custom-event-name-casing] Custom event name 'update:current-step-index' is not camelCase.",
+              "message": "[vize:script/custom-event-name-casing] Custom event name 'step-changed' is not camelCase.",
               "line": 3,
               "column": 6,
               "endLine": 3,
-              "endColumn": 33,
+              "endColumn": 20,
               "help": "Vue 3 recommends camelCase for emitted event names; rename this event to camelCase (e.g. myEvent)."
             }],
             "errorCount": 1,
@@ -273,11 +273,11 @@ emit("update:current-step-index", 1)
               "ruleId": "script/custom-event-name-casing",
               "ruleDocsPath": "docs/content/rules/type-and-script.md",
               "severity": 1,
-              "message": "[vize:script/custom-event-name-casing] Custom event name 'update:current-step-index' is not camelCase.",
+              "message": "[vize:script/custom-event-name-casing] Custom event name 'step-changed' is not camelCase.",
               "line": 3,
               "column": 6,
               "endLine": 3,
-              "endColumn": 33,
+              "endColumn": 20,
               "help": "Vue 3 recommends camelCase for emitted event names; rename this event to camelCase (e.g. myEvent)."
             }],
             "errorCount": 0,

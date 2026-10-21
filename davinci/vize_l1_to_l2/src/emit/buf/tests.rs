@@ -248,6 +248,18 @@ fn helper_preamble_orders_create_slots_before_v_show_for_textful_directive_slots
     );
 
     let mut buf = Buf::new(false);
+    buf.use_helper(Helper::ResolveDirective);
+    buf.use_helper(Helper::CreateText);
+    buf.use_helper(Helper::CreateSlots);
+    buf.use_helper(Helper::VShow);
+    buf.push("[_vShow, visible]; _createSlots(slots, [])");
+
+    assert_eq!(
+        buf.preamble(&DomEmitOptions::DEFAULT),
+        "const { resolveDirective: _resolveDirective, createTextVNode: _createTextVNode, vShow: _vShow, createSlots: _createSlots } = Vue\n"
+    );
+
+    let mut buf = Buf::new(false);
     buf.use_helper(Helper::VShow);
     buf.use_helper(Helper::CreateSlots);
     buf.push("[_vShow, visible]; _createSlots(slots, [])");

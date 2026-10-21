@@ -1822,7 +1822,7 @@ valid:
   }
 === script/custom-event-name-casing
 script/custom-event-name-casing · lint rule
-Enforce camelCase for emitted custom event names
+Enforce configured casing for emitted custom event names
 
 tier: complete
 domain: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)

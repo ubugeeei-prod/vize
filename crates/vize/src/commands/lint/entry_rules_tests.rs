@@ -372,7 +372,7 @@ fn router_components_are_registered_only_by_a_resolvable_vue_router() {
     let warnings = |index: usize, file: &PathBuf| {
         let available = resolved.vue_router_available[resolved.file_config_indices[index]];
         let mut linter = Linter::with_preset(LintPreset::Opinionated);
-        if let Some(globals) = component_registration_globals(None, available) {
+        if let Some(globals) = component_registration_globals(None, available, false) {
             linter = linter.with_component_registration_globals(globals);
         }
         linter
@@ -391,5 +391,51 @@ fn router_components_are_registered_only_by_a_resolvable_vue_router() {
         warnings(1, &routed),
         0,
         "an installed vue-router registers both"
+    );
+}
+
+#[test]
+fn nuxt_builtins_are_registered_only_by_a_resolvable_nuxt_package() {
+    const NUXT_SFC: &str = "<template><NuxtLayout><NuxtPage /><NuxtLink to=\"/\" /><ClientOnly /><UnknownWidget /></NuxtLayout></template>\n";
+    let project = tempfile::tempdir().unwrap();
+    let plain = project.path().join("packages/plain/App.vue");
+    let nuxt_app = project.path().join("packages/nuxt-app/App.vue");
+    for file in [&plain, &nuxt_app] {
+        fs::create_dir_all(file.parent().unwrap()).unwrap();
+        fs::write(file, NUXT_SFC).unwrap();
+    }
+    let nuxt = project.path().join("packages/nuxt-app/node_modules/nuxt");
+    fs::create_dir_all(&nuxt).unwrap();
+    fs::write(nuxt.join("package.json"), r#"{"name":"nuxt"}"#).unwrap();
+
+    let files = vec![plain.clone(), nuxt_app.clone()];
+    let resolved =
+        LinterRuleResolver::new(LinterConfigPlan::default(), project.path(), project.path())
+            .resolve_files(&files, project.path());
+    let warnings = |index: usize, file: &PathBuf| {
+        let group = resolved.file_config_indices[index];
+        let globals = component_registration_globals(
+            None,
+            resolved.vue_router_available[group],
+            resolved.nuxt_available[group],
+        )
+        .unwrap_or_default();
+        Linter::with_preset(LintPreset::Opinionated)
+            .with_component_registration_globals(globals)
+            .lint_sfc(NUXT_SFC, file.to_string_lossy().as_ref())
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.rule_name == "vue/require-component-registration")
+            .count()
+    };
+    assert_eq!(
+        warnings(0, &plain),
+        5,
+        "plain Vue keeps every unknown tag strict"
+    );
+    assert_eq!(
+        warnings(1, &nuxt_app),
+        1,
+        "Nuxt built-ins are global while a genuinely missing component remains"
     );
 }

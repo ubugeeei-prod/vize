@@ -5,10 +5,15 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { gunzipSync } from "node:zlib";
+import {
+  loadLintSnapshotAlignments,
+  verifyLintSnapshotAlignment,
+} from "../_helpers/lint-snapshot-alignment.ts";
 import { reviewLocalizedRequireScopedStyle } from "./support/lint-output-policy-review.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const review = path.join(root, "tests/_fixtures/_projects/lint-review/2026-10-11");
+const alignments = loadLintSnapshotAlignments(root);
 const compressed = (name: string) =>
   JSON.parse(gunzipSync(fs.readFileSync(path.join(review, name))).toString());
 const sha256 = (bytes: string | Buffer) => createHash("sha256").update(bytes).digest("hex");
@@ -44,13 +49,14 @@ test("reviewed snapshots retain every whole provider packet and all 1977 ordered
     const reviewed = reviewLocalizedRequireScopedStyle(admitted.raw);
     reviewedMessages += reviewed.reviewedMessages;
     const bytes = fs.readFileSync(path.join(root, capture.path));
-    assert.equal(bytes.toString(), reviewed.raw, "reviewed whole packet bytes must stay intact");
+    const alignment = alignments.get(capture.path);
+    assert(alignment);
+    verifyLintSnapshotAlignment(reviewed.raw, bytes.toString(), alignment);
     assert.equal(
       sha256(admitted.raw),
       admitted.sha256,
       "admitted producer evidence remains intact",
     );
-    assert.equal(sha256(bytes), sha256(reviewed.raw));
     assert.equal(sha256(capture.raw), capture.sha256, "original producer evidence remains intact");
     const packets = JSON.parse(capture.raw);
     const source = provenance.find(

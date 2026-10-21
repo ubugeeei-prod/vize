@@ -1,0 +1,4 @@
+export default defineNuxtConfig({
+  components: false,
+  imports: { autoImport: false },
+});

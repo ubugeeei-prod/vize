@@ -1,0 +1,109 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "nuxt-builtins-9866",
+    history: "673c6fa430aba9ca81c87a81e3e63a4a8c844921",
+    source: "<template>\n  <ClientOnly>\n    <NuxtLink to=\"/\">home</NuxtLink>\n    <UnknownWidget />\n  </ClientOnly>\n</template>\n",
+    filename: "HomeLink.vue",
+    entry: "sfc",
+    rule: "vue/require-component-registration",
+    vue_version: Some(
+        "3",
+    ),
+    vapor: None,
+    diagnostics: 3,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "HomeLink.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/require-component-registration",
+                severity: Warning,
+                message: "Component is used but not explicitly imported",
+                start: 14,
+                end: 24,
+                help: Some(
+                    "Import the component in <script setup> or register it in components option",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "vue/require-component-registration",
+                severity: Warning,
+                message: "Component is used but not explicitly imported",
+                start: 31,
+                end: 39,
+                help: Some(
+                    "Import the component in <script setup> or register it in components option",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "vue/require-component-registration",
+                severity: Warning,
+                message: "Component is used but not explicitly imported",
+                start: 68,
+                end: 81,
+                help: Some(
+                    "Import the component in <script setup> or register it in components option",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 3,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "HomeLink.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/require-component-registration",
+                    severity: Warning,
+                    message: "Component is used but not explicitly imported",
+                    start: 14,
+                    end: 24,
+                    help: Some(
+                        "Import the component in <script setup> or register it in components option",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "vue/require-component-registration",
+                    severity: Warning,
+                    message: "Component is used but not explicitly imported",
+                    start: 31,
+                    end: 39,
+                    help: Some(
+                        "Import the component in <script setup> or register it in components option",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "vue/require-component-registration",
+                    severity: Warning,
+                    message: "Component is used but not explicitly imported",
+                    start: 68,
+                    end: 81,
+                    help: Some(
+                        "Import the component in <script setup> or register it in components option",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 3,
+        },
+    ),
+}

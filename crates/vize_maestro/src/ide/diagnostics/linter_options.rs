@@ -154,13 +154,21 @@ pub(super) fn apply_rule_options(
     mut linter: vize_patina::Linter,
     options: &vize_l0::config::ConfigLintRuleOptions,
     vue_router_installed: bool,
+    nuxt_installed: bool,
 ) -> vize_patina::Linter {
     let configured = options.component_registration_globals();
-    if configured.is_some() || vue_router_installed {
+    if configured.is_some() || vue_router_installed || nuxt_installed {
         let mut globals = configured.map(<[String]>::to_vec).unwrap_or_default();
         if vue_router_installed {
             globals.extend(
                 vize_patina::VUE_ROUTER_COMPONENTS
+                    .iter()
+                    .map(|name| String::from(*name)),
+            );
+        }
+        if nuxt_installed {
+            globals.extend(
+                vize_patina::NUXT_BUILTIN_COMPONENTS
                     .iter()
                     .map(|name| String::from(*name)),
             );
@@ -372,7 +380,7 @@ mod valid_v_on_options_tests {
             serde_json::from_str(r#"{"vue/valid-v-on":{"modifiers":["custom"]}}"#).unwrap();
         let mut registry = RuleRegistry::new();
         registry.register(Box::new(ValidVOn));
-        let linter = apply_rule_options(Linter::with_registry(registry), &options, false)
+        let linter = apply_rule_options(Linter::with_registry(registry), &options, false, false)
             .with_locale(Locale::En)
             .with_help_level(HelpLevel::Full);
         let result = linter.lint_template(
@@ -406,7 +414,12 @@ mod valid_v_on_options_tests {
             vize_l0::cstr!("{expected:#?}"),
             "complete LSP-configured modifier diagnostic, including receiver and fix fields"
         );
-        let empty = apply_rule_options(Linter::with_registry(RuleRegistry::new()), &options, false);
+        let empty = apply_rule_options(
+            Linter::with_registry(RuleRegistry::new()),
+            &options,
+            false,
+            false,
+        );
         assert!(!empty.registry().has_rule("vue/valid-v-on"));
     }
 }
@@ -425,6 +438,7 @@ mod define_macros_order_options_tests {
         let linter = apply_rule_options(
             Linter::new().with_enabled_rules(Some(vec!["script/define-macros-order".into()])),
             &options,
+            false,
             false,
         );
         let result = linter.lint_sfc(

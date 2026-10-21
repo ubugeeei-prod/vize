@@ -129,6 +129,18 @@ fn the_self_reference_flag_is_pinned() {
         asset("<div><TreeItem /></div>", Some("treeItem")),
         "const _component_TreeItem = _resolveComponent(\"TreeItem\", true)"
     );
+    for (component, own) in [
+        ("Perms", "perms"),
+        ("Segmented", "segmented"),
+        ("VaConfig", "va-config"),
+        ("Play", "play"),
+    ] {
+        assert_eq!(
+            asset(&format!("<div><{component} /></div>"), Some(own)),
+            format!("const _component_{component} = _resolveComponent(\"{component}\", true)"),
+            "{component}/{own} must normalize the filename self-reference"
+        );
+    }
     assert_eq!(
         asset("<div><Foo /></div>", Some("Other")),
         "const _component_Foo = _resolveComponent(\"Foo\")"
