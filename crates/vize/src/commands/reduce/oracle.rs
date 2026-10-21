@@ -11,6 +11,7 @@
 
 use std::process::{Command, Stdio};
 
+use vize_atelier_dom::{DomCompilerOptions, compile_template_legacy_with_options};
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_curator::repro::Page as ReproPage;
 use vize_l0::dump::{Dump, Mode as DumpMode};
@@ -43,6 +44,8 @@ pub(crate) enum Check {
     Diagnostic(String),
     /// The L2 transform pipeline walked the tree more than this many times.
     WalksOver(u32),
+    /// The canonical default legacy and Davinci DOM lanes emit different code.
+    DomDivergence,
     /// `sh -c "<command> <file>"` exits 0 with the candidate written to
     /// `file` — the sovereign interestingness script.
     Script {
@@ -91,6 +94,48 @@ fn crashes(source: &str) -> bool {
         davinci_ice::compile_source(source, false, false);
     }))
     .is_err()
+}
+
+fn outputs_differ(old: &str, new: &str) -> bool {
+    old != new
+}
+
+/// The same default-lane comparison used by the canonical DOM corpus sweep.
+/// Inputs outside that sweep's ordinary comparable boundary are not
+/// interesting, so a reducer cannot silently turn a divergence into a skip.
+fn dom_diverges(source: &str) -> bool {
+    let Ok(descriptor) = parse_sfc(source, SfcParseOptions::default()) else {
+        return false;
+    };
+    let Some(template) = descriptor.template.as_ref() else {
+        return false;
+    };
+
+    let old_allocator = Allocator::new();
+    let (_, errors, old) = compile_template_legacy_with_options(
+        &old_allocator,
+        &template.content,
+        DomCompilerOptions::default(),
+    );
+    if errors.iter().any(|error| !error.is_recoverable()) {
+        return false;
+    }
+    let mut old_output = old.preamble.clone();
+    old_output.push('\n');
+    old_output.push_str(&old.code);
+
+    let new_allocator = Allocator::new();
+    let Ok(new_output) = vize_l1_to_l2::emit_dom_source_patch_facts_observed_with_options(
+        &new_allocator,
+        &template.content,
+        vize_l1_to_l2::LegacyCaps::VUE3,
+        &vize_l1_to_l2::DomEmitOptions::DEFAULT,
+    )
+    else {
+        return false;
+    };
+    let new_output = new_output.emit.assembled();
+    outputs_differ(old_output.as_str(), new_output.as_str())
 }
 
 fn script_holds(command: &str, file: &std::path::Path, candidate: &str) -> bool {
@@ -153,6 +198,7 @@ pub(crate) fn interesting(checks: &[Check], candidate: &str) -> bool {
                     .any(|message| message.contains(text.as_str()))
             }),
             Check::WalksOver(limit) => s2.as_ref().is_some_and(|s2| s2.walks > *limit),
+            Check::DomDivergence => dom_diverges(candidate),
             Check::Script { command, file } => script_holds(command, file, candidate),
         };
         if !holds {
@@ -160,4 +206,15 @@ pub(crate) fn interesting(checks: &[Check], candidate: &str) -> bool {
         }
     }
     true
+}
+
+#[cfg(test)]
+mod tests {
+    use super::outputs_differ;
+
+    #[test]
+    fn dom_divergence_requires_byte_different_outputs() {
+        assert!(!outputs_differ("same", "same"));
+        assert!(outputs_differ("legacy", "davinci"));
+    }
 }
