@@ -34,6 +34,15 @@ export type PlannedLspFixture = {
   inputs: { root: string; files: { path: string; sha256: string }[] };
   requestCount: number;
   initializationOptions: Record<string, boolean>;
+  dialectCoverage: {
+    state: "source-inspected";
+    registryRef: null;
+    evidence: Array<{
+      kind: "source-inspection";
+      dialects: string[];
+      selector: string;
+    }>;
+  };
 };
 export type LspFixture = PlannedLspFixture & {
   data: FixtureData;

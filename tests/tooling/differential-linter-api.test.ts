@@ -99,6 +99,24 @@ void test("linter registry pins every authored input and complete oracle, includ
   );
 });
 
+void test("linter dialect coverage rejects labels that drift from pinned authored sources", () => {
+  const source = path.dirname(manifestPath);
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-linter-dialect-"));
+  try {
+    fs.cpSync(source, temporary, { recursive: true });
+    const file = path.join(temporary, "manifest.json");
+    const manifest = JSON.parse(fs.readFileSync(file, "utf8"));
+    manifest.cases[0].dialectCoverage.evidence[0].dialects = ["tsx"];
+    fs.writeFileSync(file, JSON.stringify(manifest));
+    assert.throws(
+      () => loadLinterManifest(file, repoRoot),
+      /dialect coverage must match pinned authored sources/,
+    );
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
 void test("linter manifest rejects omitted/duplicate inputs, unregistered API and oracle inventory drift", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-linter-manifest-contract-"));
   const file = path.join(root, "manifest.json");

@@ -104,6 +104,23 @@ void test("folding history retains the unopened-document null response without i
   ]);
 });
 
+void test("LSP dialect coverage rejects labels that drift from pinned authored sources", () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-lsp-dialect-"));
+  try {
+    fs.cpSync(pack, temporary, { recursive: true });
+    const file = path.join(temporary, "manifest.json");
+    const manifest = JSON.parse(fs.readFileSync(file, "utf8"));
+    manifest.cases[0].dialectCoverage.evidence[0].dialects = ["tsx"];
+    fs.writeFileSync(file, JSON.stringify(manifest));
+    assert.throws(
+      () => loadLspManifest(file),
+      /dialect coverage must match pinned authored sources/,
+    );
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
 void test("LSP contract rejects stale readiness, duplicate replies and incomplete lifecycle", () => {
   for (const mutate of [
     (observation: WireObservation) =>
