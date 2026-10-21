@@ -134,7 +134,7 @@ function __setup() {
   // User setup code
   const items = ['a', 'b']
   
-  // @vize-map: 17017:17047 -> 0:59
+  // @vize-map: 16959:16989 -> 0:59
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

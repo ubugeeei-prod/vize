@@ -139,7 +139,7 @@ function __setup<T extends string = 'a'>() {
     if (value !== undefined) emit("update:value", value);
   }
   
-  // @vize-map: 15188:15515 -> 0:292
+  // @vize-map: 15130:15457 -> 0:292
 
 
   // Setup-scoped props type artifact

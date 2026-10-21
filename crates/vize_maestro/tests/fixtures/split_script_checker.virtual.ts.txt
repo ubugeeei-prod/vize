@@ -128,7 +128,7 @@ function __setup() {
   
   const x = 1
   
-  // @vize-map: 15268:15294 -> 0:33
+  // @vize-map: 15210:15236 -> 0:33
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

@@ -463,7 +463,7 @@ function __setup() {
     header(props: { title: string }): unknown;
   }>();
   
-  // @vize-map: 1081:1158 -> 0:66
+  // @vize-map: 1023:1100 -> 0:66
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -576,7 +576,7 @@ function __setup() {
   // User setup code
   
   
-  // @vize-map: 2693:2699 -> 0:32
+  // @vize-map: 2635:2641 -> 0:32
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

@@ -198,7 +198,7 @@ fn complete_event_source_counterfactual_recovers_original_position() {
     let construct =
         "\n  void MySwitch;\n  const { } = undefined as unknown as __MySwitch_Props_0;\n";
     let (counterfactual, position) = historical_counterfactual(current, construct);
-    assert_eq!(position, 20_908);
+    assert_eq!(position, 20_850);
     assert_eq!(counterfactual["source"].as_str(), Some(original));
     let cursor = current.find(construct).unwrap() + "\n  void MySwitch;\n  const { ".len();
     assert_eq!(
@@ -217,7 +217,7 @@ fn complete_event_source_counterfactual_recovers_original_position() {
     assert_eq!(
         current_maps,
         vec![
-            "  // @vize-map: 14458:14560 -> 0:153",
+            "  // @vize-map: 14400:14502 -> 0:153",
             "  // @vize-map: expr -> 226:228",
             "  // @vize-map: component -> 201:214",
         ]

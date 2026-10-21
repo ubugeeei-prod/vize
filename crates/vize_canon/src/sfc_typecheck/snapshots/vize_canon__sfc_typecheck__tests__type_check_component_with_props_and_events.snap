@@ -133,7 +133,7 @@ function __setup() {
   const props = defineProps<Props>()
   const emit = defineEmits<Emits>()
   
-  // @vize-map: 15245:15324 -> 0:212
+  // @vize-map: 15187:15266 -> 0:212
 
   // ========== Template Scope (inherits from setup) ==========
   // Anchor before the template scope shadows `props`

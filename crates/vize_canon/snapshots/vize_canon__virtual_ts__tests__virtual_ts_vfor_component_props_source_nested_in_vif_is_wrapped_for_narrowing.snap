@@ -125,7 +125,7 @@ function __setup() {
   // User setup code
   const elems = { a: [1], b: ["a"] } as const;
   const key = "a" as "a" | "b";
-  // @vize-map: 15158:15237 -> 0:105
+  // @vize-map: 15100:15179 -> 0:105
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

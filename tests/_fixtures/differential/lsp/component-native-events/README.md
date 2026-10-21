@@ -47,7 +47,7 @@ mirrored by Canon's existing dependency links. Full generated App/MySwitch and
 tsconfig bytes, hashes, link target and unchanged authored root inputs are
 captured before the completion request. The unique complete MySwitch typed
 binding pattern supplies its UTF-16 cursor; LF additionally requires the actual
-20908 witness, while CRLF uses its own generated source. No response field
+20850 witness, while CRLF uses its own generated source. No response field
 constructs or relaxes this expectation.
 
 That first source run wrote raw messages to the full-profile directory while
@@ -59,7 +59,7 @@ responses and actual raw artifact custody require fresh exact-source Actions.
 Authentic49de source shard2 passes the six original LF/CRLF tag, literal-report
 and native-hover responses; the corrected pr artifact retains both full raw
 protocol and physical mirror witnesses. Each separately derives UTF-16 query
-20908 while authored tag ranges differ (LF201..214, CRLF212..225). Tooling still
+20850 while authored tag ranges differ (LF201..214, CRLF212..225). Tooling still
 rejects the witness's partial tsconfig include membership. Replace its scalar
 and membership checks with one fixed complete generated-tsconfig object, keeping
 every option and exact include/exclude array. No assertion allowlist changes.

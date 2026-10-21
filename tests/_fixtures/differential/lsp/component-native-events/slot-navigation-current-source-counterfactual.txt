@@ -123,7 +123,7 @@ function __setup() {
     on.value = value;
   }
   
-  // @vize-map: 14458:14560 -> 0:153
+  // @vize-map: 14400:14502 -> 0:153
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
