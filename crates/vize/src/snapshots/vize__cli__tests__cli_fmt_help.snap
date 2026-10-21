@@ -30,6 +30,19 @@ Options:
 
           [possible values: true, false]
 
+      --jsx-single-quote[=<JSX_SINGLE_QUOTE>]
+          Use single quotes in JSX attributes
+
+          [possible values: true, false]
+
+      --quote-props <QUOTE_PROPS>
+          Change when object properties are quoted
+
+          Possible values:
+          - as-needed:  Quote only properties that require quotes
+          - consistent: Quote every property when one property requires quotes
+          - preserve:   Preserve whether each property was authored with quotes
+
       --print-width <PRINT_WIDTH>
           Print width (line length) for formatting
 
