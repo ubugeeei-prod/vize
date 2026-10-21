@@ -47,7 +47,7 @@ pub(super) fn emit_json_output(json_output: JsonOutput) -> Result<(), CompactStr
 #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
 pub(super) fn render_diagnostics(
     diagnostics: &[vize_canon::BatchDiagnostic],
-    include_source_context: bool,
+    include_all_source_context: bool,
 ) -> std::collections::BTreeMap<std::string::String, Vec<std::string::String>> {
     let mut grouped = std::collections::BTreeMap::<
         std::string::String,
@@ -68,6 +68,12 @@ pub(super) fn render_diagnostics(
             .unwrap_or_default();
         let user_facing_message =
             user_facing_type_message(diagnostic.code == Some(2345), &diagnostic.message);
+        // Machine-readable template diagnostics still need the authored expression:
+        // consumers use it to distinguish a failing member from its receiver.
+        // Script and plain TypeScript JSON stay concise, while text output opts every
+        // source type into the same context renderer.
+        let include_source_context = include_all_source_context
+            || diagnostic.block_type == Some(vize_canon::SfcBlockType::Template);
         let message = if include_source_context {
             source_context
                 .render(diagnostic)

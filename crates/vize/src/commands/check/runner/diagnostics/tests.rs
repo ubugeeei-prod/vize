@@ -1,7 +1,62 @@
 use super::{
-    is_shared_helpers_target, save_virtual_ts_for_path, user_facing_type_message,
-    virtual_ts_save_path,
+    is_shared_helpers_target, render_diagnostics, save_virtual_ts_for_path,
+    user_facing_type_message, virtual_ts_save_path,
 };
+
+#[test]
+fn json_vue_diagnostic_retains_authored_event_member_context() {
+    let temp = tempfile::tempdir().unwrap();
+    let file = temp.path().join("App.vue");
+    let source = r#"<button type="button" @click.prevent="$event.key">go</button>"#;
+    std::fs::write(&file, source).unwrap();
+    let diagnostic = vize_canon::BatchDiagnostic {
+        file: file.clone(),
+        line: 0,
+        column: source.find("$event").unwrap() as u32,
+        message: "Property '$event' does not exist on the component instance.".into(),
+        code: Some(2551),
+        severity: 1,
+        block_type: Some(vize_canon::SfcBlockType::Template),
+    };
+
+    let rendered = render_diagnostics(&[diagnostic], false);
+    let message = rendered
+        .get(file.to_string_lossy().as_ref())
+        .and_then(|diagnostics| diagnostics.first())
+        .unwrap();
+
+    assert_eq!(
+        message,
+        r#"error:1:39 [TS2551] Property '$event' does not exist on the component instance. (source: <button type="button" @click.prevent="$event.key">go</button>; binding: @click)"#
+    );
+}
+
+#[test]
+fn json_vue_script_diagnostic_stays_concise() {
+    let temp = tempfile::tempdir().unwrap();
+    let file = temp.path().join("App.vue");
+    std::fs::write(&file, "export const value: string = 1;\n").unwrap();
+    let diagnostic = vize_canon::BatchDiagnostic {
+        file: file.clone(),
+        line: 0,
+        column: 13,
+        message: "Type 'number' is not assignable to type 'string'.".into(),
+        code: Some(2322),
+        severity: 1,
+        block_type: Some(vize_canon::SfcBlockType::ScriptSetup),
+    };
+
+    let rendered = render_diagnostics(&[diagnostic], false);
+    let message = rendered
+        .get(file.to_string_lossy().as_ref())
+        .and_then(|diagnostics| diagnostics.first())
+        .unwrap();
+
+    assert_eq!(
+        message,
+        "error:1:14 [TS2322] Type 'number' is not assignable to type 'string'."
+    );
+}
 
 #[test]
 fn missing_required_prop_hides_setup_props_type() {
