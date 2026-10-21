@@ -113,7 +113,7 @@ where the other is required.
 
 This is vocabulary ownership only. It does not change callback sequences,
 parser routes, error mapping, namespace selection or product output. The
-remaining `Namespace` and legacy `ErrorCode` ownership work stays open.
+legacy `ErrorCode` ownership work stays open.
 
 ## Shared namespace vocabulary (#6835, partial)
 
