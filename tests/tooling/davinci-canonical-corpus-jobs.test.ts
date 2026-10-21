@@ -82,6 +82,67 @@ await test("inventory retains unknown, pending and repeated observer attempts fo
   assert.deepEqual(await readCanonicalJobs({ ...options, ...fixture }, run), jobs);
 });
 
+await test("eventually consistent observer completion is read from the same exact job", async () => {
+  const entry = check(1, 21);
+  const complete = job(entry);
+  const pending = { ...complete, status: "in_progress", conclusion: "", steps: [] };
+  const fixture = provider([entry], [complete]);
+  const read = fixture.fetchImpl;
+  const waits: number[] = [];
+  let jobReads = 0;
+  const fetchImpl: typeof fetch = async (input) => {
+    const url = new URL(input instanceof Request ? input.url : input);
+    if (url.pathname.endsWith("/actions/jobs/21")) {
+      jobReads += 1;
+      return Response.json(jobReads === 1 ? pending : complete);
+    }
+    return read(input);
+  };
+  assert.deepEqual(
+    await readCanonicalJobs(
+      {
+        ...options,
+        fetchImpl,
+        sleep: async (milliseconds) => {
+          waits.push(milliseconds);
+        },
+      },
+      run,
+    ),
+    [complete],
+  );
+  assert.equal(jobReads, 2);
+  assert.deepEqual(waits, [1_000]);
+});
+
+await test("persistent pending observer metadata remains fail-closed after a bounded wait", async () => {
+  const entry = check(1, 21);
+  const pending = { ...job(entry), status: "in_progress", conclusion: "", steps: [] };
+  const fixture = provider([entry], [pending]);
+  const waits: number[] = [];
+  let jobReads = 0;
+  const fetchImpl: typeof fetch = async (input) => {
+    const url = new URL(input instanceof Request ? input.url : input);
+    if (url.pathname.endsWith("/actions/jobs/21")) jobReads += 1;
+    return fixture.fetchImpl(input);
+  };
+  assert.deepEqual(
+    await readCanonicalJobs(
+      {
+        ...options,
+        fetchImpl,
+        sleep: async (milliseconds) => {
+          waits.push(milliseconds);
+        },
+      },
+      run,
+    ),
+    [pending],
+  );
+  assert.equal(jobReads, 10);
+  assert.deepEqual(waits, Array.from({ length: 9 }, () => 1_000));
+});
+
 await test("foreign suites, heads, check URLs and duplicate check IDs are rejected", async () => {
   for (const change of [
     { check_suite: { id: 35 } },
