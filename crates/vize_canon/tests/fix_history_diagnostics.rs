@@ -467,6 +467,17 @@ fn content_mapper_isolates_duplicate_class_and_style_attribute_probes() {
     );
 }
 
+#[test]
+fn content_mapper_preserves_emit_with_nuxt_pattern_injections() {
+    check_pack(
+        "content-mapper-nuxt-emit-10195",
+        "content_mapper_preserves_emit_with_nuxt_pattern_injections",
+        "369f01b50d8fe6e3b0996cc9a90eecf422dbdd3b",
+        Some(10195),
+        &["nuxt-pattern-injection-attribute-listener"],
+    );
+}
+
 fn native_fixture_runtime_disabled() -> bool {
     std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some()
 }
@@ -538,6 +549,7 @@ fn check_pack(
             | "component-render-h-props-9855"
             | "component-listener-alias-scope-10112"
             | "content-mapper-duplicate-attributes-10184"
+            | "content-mapper-nuxt-emit-10195"
             | "dynamic-directive-expression-mapping-10182"
             | "content-mapper-template-expression-syntax" => regression,
             _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
