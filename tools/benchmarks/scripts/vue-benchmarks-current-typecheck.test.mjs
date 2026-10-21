@@ -22,6 +22,7 @@ import {
   assertOutside,
   materializePinnedProvider,
 } from "./vue-benchmarks-current-typecheck-fixture.mjs";
+import { vizeTypecheckConfig } from "./vize-typecheck-config.mjs";
 
 await test("binary streams and failed status are retained before malformed JSON is rejected", () => {
   const root = mkdtempSync(join(tmpdir(), "vize-current-typecheck-raw-"));
@@ -158,6 +159,85 @@ await test("pinned Golar packages are materialized only inside the copied worksp
     assert.throws(
       () => materializePinnedProvider(workspace, provider),
       /copied workspace already has node_modules/u,
+    );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+await test("current 154-case modes retain the strict component attribute adapter", () => {
+  const root = mkdtempSync(join(tmpdir(), "vize-current-typecheck-config-"));
+  try {
+    const modes = [
+      {
+        config: "tsconfig.json",
+        translated: "tsconfig.vize-tsconfig.json",
+        options: {
+          checkUnknownProps: true,
+          fallthroughAttributes: false,
+          strictComponentAttrs: true,
+        },
+        artifactCases: [
+          "attrs-aria-data-unknown",
+          "attrs-unknown-fallthrough",
+          "inherit-attrs-default-unknown",
+          "inherit-attrs-false-unknown",
+          "unknown-prop-strict",
+        ],
+      },
+      {
+        config: "tsconfig.fallthrough.json",
+        translated: "tsconfig.vize-tsconfig.fallthrough.json",
+        options: {
+          checkUnknownProps: true,
+          fallthroughAttributes: true,
+          strictComponentAttrs: true,
+        },
+        artifactCases: [
+          "fallthrough-mono-false-bad",
+          "fallthrough-multi-bad",
+          "fallthrough-multi-false-bad",
+          "fallthrough-vif-both-mono-false-bad",
+          "fallthrough-vif-mono-multi-bad",
+          "fallthrough-vif-static-multi-bad",
+        ],
+      },
+    ];
+    for (const { config, translated, options } of modes) {
+      writeFileSync(
+        join(root, config),
+        `${JSON.stringify({
+          compilerOptions: { strict: true },
+          vueCompilerOptions: {
+            strictTemplates: true,
+            ...(options.fallthroughAttributes ? { fallthroughAttributes: true } : {}),
+          },
+          include: ["cases/**/*.vue"],
+        })}\n`,
+      );
+      const before = readFileSync(join(root, config));
+      assert.equal(vizeTypecheckConfig(root, config), translated);
+      assert.deepEqual(JSON.parse(readFileSync(join(root, translated))), {
+        extends: `./${config}`,
+        vueCompilerOptions: options,
+      });
+      assert.deepEqual(readFileSync(join(root, config)), before);
+    }
+    assert.deepEqual(
+      modes.flatMap(({ artifactCases }) => artifactCases),
+      [
+        "attrs-aria-data-unknown",
+        "attrs-unknown-fallthrough",
+        "inherit-attrs-default-unknown",
+        "inherit-attrs-false-unknown",
+        "unknown-prop-strict",
+        "fallthrough-mono-false-bad",
+        "fallthrough-multi-bad",
+        "fallthrough-multi-false-bad",
+        "fallthrough-vif-both-mono-false-bad",
+        "fallthrough-vif-mono-multi-bad",
+        "fallthrough-vif-static-multi-bad",
+      ],
     );
   } finally {
     rmSync(root, { recursive: true, force: true });
