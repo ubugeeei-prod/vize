@@ -61,6 +61,10 @@ impl TemplateFormatter<'_> {
         if child.is_empty() {
             return None;
         }
+        let (closing_name, _) = parse_closing_tag(input, close)?;
+        if closing_name != tag_name {
+            return None;
+        }
         // An authored multiline leading interpolation owns its established
         // layout. Later multiline interpolations in a mixed text run may be
         // normalized to one line, so they still contribute their formatted
@@ -70,11 +74,6 @@ impl TemplateFormatter<'_> {
         {
             return None;
         }
-        let (closing_name, _) = parse_closing_tag(input, close)?;
-        if closing_name != tag_name {
-            return None;
-        }
-
         // Sole interpolations are deliberately excluded below. Detect them
         // before formatting so the opening-tag width probe does not parse and
         // print the same JavaScript expression that the text pass owns.

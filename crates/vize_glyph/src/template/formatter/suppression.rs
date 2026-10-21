@@ -83,7 +83,7 @@ impl<'s> LineJoiner<'s> {
     /// whitespace. The gap between two chunks is whitespace by construction:
     /// an empty gap stays adjacent, horizontal whitespace becomes one space,
     /// and any authored line break keeps a fresh output line.
-    pub(super) fn open(&mut self, start: usize) -> ChunkJoin {
+    pub(super) fn open<const HAS_CR: bool>(&mut self, start: usize) -> ChunkJoin {
         let previous = self.current;
         self.current = self.locked_index(start);
         let mut blank_line = false;
@@ -92,14 +92,25 @@ impl<'s> LineJoiner<'s> {
             if gap.is_empty() {
                 return ChunkJoin::Continue(false);
             }
-            if let Some(line_breaks) = whitespace_gap_line_breaks(gap) {
-                if line_breaks == 0 {
+            if HAS_CR {
+                if let Some(line_breaks) = whitespace_gap_line_breaks(gap) {
+                    if line_breaks == 0 {
+                        return ChunkJoin::Continue(true);
+                    }
+                    // Collapse authored empty lines to one between markup chunks.
+                    // Text and directive expression newlines must never become
+                    // template layout.
+                    blank_line = self.source.get(start) == Some(&b'<') && line_breaks >= 2;
+                }
+            } else {
+                if !gap.iter().any(|byte| *byte == b'\n')
+                    && gap.iter().copied().all(is_whitespace)
+                {
                     return ChunkJoin::Continue(true);
                 }
-                // Collapse authored empty lines to one between markup chunks.
-                // Text and directive expression newlines must never become
-                // template layout.
-                blank_line = self.source.get(start) == Some(&b'<') && line_breaks >= 2;
+                blank_line = self.source.get(start) == Some(&b'<')
+                    && gap.iter().filter(|&&byte| byte == b'\n').take(2).count() == 2
+                    && gap.iter().copied().all(is_whitespace);
             }
         }
         if self.current.is_none() || self.current != previous {
