@@ -249,7 +249,7 @@
           {
             "kind": "source-inspection",
             "dialects": ["vue3-sfc", "html-template", "js"],
-            "selector": "current-api pinned authored sources"
+            "selector": "linter manifest pinned authored sources"
           }
         ]
       }

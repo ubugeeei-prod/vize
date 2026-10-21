@@ -61,12 +61,12 @@ denominator: native typechecker execution remains unsupported for all 61 cases.
 Existing formatter labels contribute eighteen provisional cases among twenty
 planned cases.
 
-The linter loader now re-derives source-inspected labels for all 78 planned
+The linter loader now re-derives source-inspected labels for all 79 planned
 cases from the five SHA-pinned authored cohorts or the separately pinned input
 files. The LSP loader does the same for all 42 planned cases from each fixture's
 immutable runtime files. The manifests cover Vue 2 and Vue 3 SFCs, HTML and Pug
 templates, JS, TS, JSX and TSX where those bytes exist; generic JSX is not
 promoted to the distinct Babel JSX dialect. Loader checks reject stale labels.
-All 120 cases remain in the unknown readiness denominator because source
+All 121 cases remain in the unknown readiness denominator because source
 inspection is not native acceptance. Rare dialect input-only rows remain
 outside the executed denominator.
