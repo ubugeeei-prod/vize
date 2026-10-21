@@ -273,7 +273,6 @@ l1_to_l2	-	davinci/vize_l1_to_l2/src/lower/text/run/single.rs	0	0	1	1	1	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/lower/vfor.rs	0	0	0	0	0	0	1	1
 l1_to_l2	-	davinci/vize_l1_to_l2/src/lower/vtext.rs	0	0	1	2	0	0	0	0
 l2	analysis	davinci/vize_l2/src/analysis/constant_expression.rs	1	5	2	0	0	0	0	0
-l2	analysis	davinci/vize_l2/src/analysis/static_facts.rs	0	0	0	0	0	0	0	0
 l2	analysis	davinci/vize_l2/src/analysis/template_complexity.rs	1	2	0	0	0	0	0	0
 l2	-	davinci/vize_l2/src/analysis/template_complexity/print.rs	0	0	1	4	0	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/pass/hoist/consts.rs	0	0	2	0	0	0	0	0
