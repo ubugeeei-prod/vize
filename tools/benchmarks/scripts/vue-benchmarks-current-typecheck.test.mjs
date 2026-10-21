@@ -1,5 +1,13 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import {
+  lstatSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  realpathSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -10,7 +18,10 @@ import {
   errorEvidence,
   sha256,
 } from "./vue-benchmarks-current-typecheck-capture.mjs";
-import { assertOutside } from "./vue-benchmarks-current-typecheck-fixture.mjs";
+import {
+  assertOutside,
+  materializePinnedProvider,
+} from "./vue-benchmarks-current-typecheck-fixture.mjs";
 
 await test("binary streams and failed status are retained before malformed JSON is rejected", () => {
   const root = mkdtempSync(join(tmpdir(), "vize-current-typecheck-raw-"));
@@ -110,4 +121,45 @@ await test("output containment guard rejects fixture ancestors and descendants w
   assert.throws(() => assertOutside("/tmp/fixture", "/tmp/fixture"));
   assert.throws(() => assertOutside("/tmp", "/tmp/fixture"));
   assert.doesNotThrow(() => assertOutside("/tmp/fixture-other", "/tmp/fixture"));
+});
+
+await test("pinned Golar packages are materialized only inside the copied workspace", () => {
+  const root = mkdtempSync(join(tmpdir(), "vize-current-typecheck-provider-"));
+  try {
+    const workspace = join(root, "workspace");
+    const provider = join(root, "provider", "node_modules");
+    mkdirSync(workspace);
+    for (const [name, relativePath] of [
+      ["golar", "golar"],
+      ["@golar/vue", "@golar/vue"],
+    ]) {
+      const directory = join(provider, relativePath);
+      mkdirSync(directory, { recursive: true });
+      writeFileSync(
+        join(directory, "package.json"),
+        `${JSON.stringify({ name, version: "0.1.10" })}\n`,
+      );
+    }
+
+    const receipt = materializePinnedProvider(workspace, provider);
+
+    assert.deepEqual(
+      receipt.versions.map(({ name, version }) => [name, version]),
+      [
+        ["golar", "0.1.10"],
+        ["@golar/vue", "0.1.10"],
+      ],
+    );
+    for (const name of ["golar", "@golar"]) {
+      const link = join(workspace, "node_modules", name);
+      assert.equal(lstatSync(link).isSymbolicLink(), true);
+      assert.equal(realpathSync(link), realpathSync(join(provider, name)));
+    }
+    assert.throws(
+      () => materializePinnedProvider(workspace, provider),
+      /copied workspace already has node_modules/u,
+    );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });

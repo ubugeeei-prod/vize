@@ -16,6 +16,8 @@ import {
   archiveInputs,
   FIXTURE_PATH,
   git,
+  inspectPinnedProvider,
+  materializePinnedProvider,
   prepareFixture,
   sourceInventory,
   workspaceInventory,
@@ -118,11 +120,13 @@ export async function main(argv = process.argv.slice(2)) {
   assert.equal(basename(providerRoot), "node_modules", "use a dedicated pinned npm installation");
   const providerInputs = workspaceInventory(providerRoot, true);
   const providerLock = fileEvidence(join(dirname(providerRoot), "package-lock.json"));
+  const providerMaterialization = materializePinnedProvider(workRoot, providerRoot);
   writeJson(join(output, "inputs.json"), {
     authoredInputs,
     providerRoot,
     providerInputs,
     providerLock,
+    providerMaterialization,
   });
   const capture = (id, command, commandArgs) =>
     captureProcess(rawDirectory, id, command, commandArgs, workRoot, {
@@ -271,6 +275,7 @@ export async function main(argv = process.argv.slice(2)) {
     );
   }
   assert.deepEqual(providerInputs, workspaceInventory(providerRoot, true));
+  assert.deepEqual(providerMaterialization, inspectPinnedProvider(workRoot, providerRoot));
   assert.equal(fileEvidence(providerLock.path).sha256, providerLock.sha256);
   const summary = {
     schema: "vize.currentUpstreamTypecheck",

@@ -1,12 +1,14 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import {
+  existsSync,
   mkdirSync,
   readdirSync,
   readFileSync,
   readlinkSync,
   realpathSync,
   statSync,
+  symlinkSync,
   writeFileSync,
 } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
@@ -17,6 +19,7 @@ import { fileEvidence, sha256 } from "./vue-benchmarks-current-typecheck-capture
 export const UPSTREAM_REVISION = "5489aee433cd1054b9d72973457498544da7c467";
 export const FIXTURE_PATH = "tests/_fixtures/_git/vue-benchmarks";
 export const VUE_VERSION = "3.5.43";
+export const GOLAR_VERSION = "0.1.10";
 
 export function git(directory, ...args) {
   return execFileSync("git", args, { cwd: directory, encoding: "utf8" }).trimEnd();
@@ -92,6 +95,47 @@ export function workspaceInventory(root, allowSymlinks = false) {
   return files.sort((left, right) =>
     left.path < right.path ? -1 : left.path > right.path ? 1 : 0,
   );
+}
+
+function providerLinkEvidence(workRoot, providerRoot) {
+  const versions = [
+    ["golar", "golar/package.json"],
+    ["@golar/vue", "@golar/vue/package.json"],
+  ].map(([name, manifest]) => {
+    const absolute = join(providerRoot, ...manifest.split("/"));
+    const parsed = JSON.parse(readFileSync(absolute));
+    assert.equal(parsed.name, name);
+    assert.equal(parsed.version, GOLAR_VERSION);
+    return { name, version: parsed.version, manifest: fileEvidence(absolute) };
+  });
+  const links = ["golar", "@golar"].map((name) => {
+    const link = join(workRoot, "node_modules", name);
+    const source = join(providerRoot, name);
+    assert.equal(realpathSync(link), realpathSync(source));
+    return {
+      path: relative(workRoot, link),
+      target: relative(workRoot, source),
+      resolved: realpathSync(link),
+    };
+  });
+  return { versions, links };
+}
+
+export function materializePinnedProvider(workRoot, providerRoot) {
+  assertOutside(workRoot, providerRoot);
+  const nodeModules = join(workRoot, "node_modules");
+  assert.equal(existsSync(nodeModules), false, "copied workspace already has node_modules");
+  mkdirSync(nodeModules);
+  for (const name of ["golar", "@golar"]) {
+    const source = join(providerRoot, name);
+    assert.ok(statSync(source).isDirectory(), `missing pinned provider package: ${name}`);
+    symlinkSync(source, join(nodeModules, name), "dir");
+  }
+  return providerLinkEvidence(workRoot, providerRoot);
+}
+
+export function inspectPinnedProvider(workRoot, providerRoot) {
+  return providerLinkEvidence(workRoot, providerRoot);
 }
 
 export function archiveInputs(upstream, inventory, destination) {
