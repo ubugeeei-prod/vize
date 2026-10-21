@@ -114,6 +114,7 @@ void test("compiler fixture pins a real full-module reference without native cre
       "compiler/sfc/scoped-keyframes-nesting-9829",
       "compiler/sfc/scoped-checkout-stability-10067",
       "compiler/sfc/jsx-vapor-runtime-slots-6889",
+      "compiler/sfc/root-text-patch-flag-10168",
     ],
   );
   const report = syntheticReport();

@@ -11,6 +11,7 @@ interface Capture {
 
 const capturePath = process.env.VIZE_RUNTIME_PATCH_FLAGS_CAPTURE;
 const required = process.env.VIZE_RUNTIME_PATCH_FLAGS_REQUIRE_CAPTURE === "1";
+process.env.NODE_ENV = "development";
 const environment = await environment7502("development");
 
 async function execute(code: string) {
