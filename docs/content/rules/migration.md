@@ -4,7 +4,7 @@ title: ESLint rule migration map
 
 # ESLint rule migration map
 
-The committed ESLint mapping records 253 rule IDs: 130 mapped, 2 intentional divergences, and 121 unimplemented. A mapped ID identifies a Vize rule; it does not guarantee identical options, findings, fixes, or coverage.
+The committed ESLint mapping records 252 rule IDs: 130 mapped, 2 intentional divergences, and 120 unimplemented. A mapped ID identifies a Vize rule; it does not guarantee identical options, findings, fixes, or coverage.
 
 Enable Vize rules under `vue.linter.rules` in the Vite+ configuration. Keep JS/TS rules handled by Oxlint in `lint.rules`. Do not copy an ESLint option tuple directly: Vize severity and typed `ruleOptions` are separate.
 
@@ -158,7 +158,6 @@ For option conversion, see [Rule Options](./options.md) and [props destructuring
 | `vue/no-restricted-v-on` | — | unimplemented |
 | `vue/no-root-v-if` | [`vue/no-root-v-if`](./reference/vue-no-root-v-if.md) | mapped |
 | `vue/no-setup-props-reactivity-loss` | — | unimplemented |
-| `vue/no-shadow-native-events` | — | unimplemented |
 | `vue/no-shared-component-data` | — | unimplemented |
 | `vue/no-side-effects-in-computed-properties` | [`script/no-side-effects-in-computed-properties`](./reference/script-no-side-effects-in-computed-properties.md) | mapped |
 | `vue/no-spaces-around-equal-signs-in-attribute` | — | unimplemented |

@@ -4,7 +4,7 @@ title: ESLint ルール移行対応表
 
 # ESLint ルール移行対応表
 
-コミットされた対応記録は 253 件で、対応付け 130 件、意図的な差異 2 件、未実装 121 件です。「対応」はルール名の対応を示し、オプション・検出・修正・適用範囲の完全な一致を保証しません。
+コミットされた対応記録は 252 件で、対応付け 130 件、意図的な差異 2 件、未実装 120 件です。「対応」はルール名の対応を示し、オプション・検出・修正・適用範囲の完全な一致を保証しません。
 
 Vite+ の設定では Vize のルールを `vue.linter.rules` に指定します。Oxlint の JS / TS ルールは `lint.rules` に残します。ESLint の配列形式をそのまま移さず、重大度と型付き `ruleOptions` を分けて指定します。
 
@@ -158,7 +158,6 @@ Vite+ の設定では Vize のルールを `vue.linter.rules` に指定します
 | `vue/no-restricted-v-on` | — | 未実装 |
 | `vue/no-root-v-if` | [`vue/no-root-v-if`](./reference/vue-no-root-v-if.md) | 対応付け |
 | `vue/no-setup-props-reactivity-loss` | — | 未実装 |
-| `vue/no-shadow-native-events` | — | 未実装 |
 | `vue/no-shared-component-data` | — | 未実装 |
 | `vue/no-side-effects-in-computed-properties` | [`script/no-side-effects-in-computed-properties`](./reference/script-no-side-effects-in-computed-properties.md) | 対応付け |
 | `vue/no-spaces-around-equal-signs-in-attribute` | — | 未実装 |
