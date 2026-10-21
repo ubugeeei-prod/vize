@@ -14,7 +14,7 @@ use super::corsa_overlays_tests::{open, rewrite, uri};
 #[test]
 fn a_pass_materializes_only_the_documents_that_changed() {
     let state = ServerState::new();
-    let document = format!("<template>\n{}\n</template>", "{{ value }}\n".repeat(512));
+    let document = cstr!("<template>\n{}\n</template>", "{{ value }}\n".repeat(512));
     for index in 0..40 {
         open(&state, &cstr!("C{index}.vue"), &document);
     }
@@ -63,7 +63,7 @@ fn overlay_pass_cost(
     passes: u32,
 ) -> (std::time::Duration, std::time::Duration) {
     let state = ServerState::new();
-    let document = format!(
+    let document = cstr!(
         "<template>\n{}\n</template>",
         "{{ value }}\n".repeat(bytes / 12)
     );
