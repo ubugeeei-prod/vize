@@ -21,7 +21,10 @@ const CHANGED_FIELDS = new Set([
 const PEERS = { typescript: "6.0.3", vite: "8.0.0", "vite-plus": "0.1.0", vue: "3.5.0" };
 
 test("current initializer changes only the declared generated-plan capability", () => {
-  assert.deepEqual(Object.keys(CONFIG_FREE_PROJECT_SHAPES), Object.keys(PROJECT_SHAPES));
+  assert.deepEqual(
+    Object.keys(CONFIG_FREE_PROJECT_SHAPES).filter((id) => id !== "nuxt-vue-ts"),
+    Object.keys(PROJECT_SHAPES),
+  );
   for (const [id, historical] of Object.entries(PROJECT_SHAPES)) {
     const current = CONFIG_FREE_PROJECT_SHAPES[id];
     assert.deepEqual(Object.keys(current), Object.keys(historical), id);
@@ -61,7 +64,7 @@ test("current initializer changes only the declared generated-plan capability", 
 });
 
 test("every original manager cell retains its entire current discovery packet", () => {
-  for (const cell of FRESH_INIT_MATRIX) {
+  for (const cell of FRESH_INIT_MATRIX.filter((candidate) => candidate.shape !== "nuxt-vue-ts")) {
     const current = CONFIG_FREE_PROJECT_SHAPES[cell.shape];
     const manager = PACKAGE_MANAGERS[cell.packageManager];
     assert.deepEqual(
@@ -119,6 +122,7 @@ test("the delivered Yarn cell retains its whole archive and declares three curre
     historical.proposedEighthCell,
     { packageManager: "bun", shape: "vite-vue-js-checkjs" },
     { packageManager: "vp", shape: "vite-vue-js-checkjs" },
+    { packageManager: "npm", shape: "nuxt-vue-ts" },
   ]);
   assert.deepEqual(
     { ...shape.files(current.peers), ...manager.projectFiles },

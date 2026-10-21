@@ -12,7 +12,7 @@ fn preserved_text_keeps_whole_bytes_beside_wrapped_attribute_values() {
         (
             true,
             "<template>\n\t<button v-bind:title=\"alpha + beta + gamma + delta\">  two  spaces  </button>\n</template>\n",
-            "<template>\n\t<button\n\t\t:title=\"\n\t\t\talpha + beta + gamma + delta\n\t\t\"\n\t>  two  spaces  </button>\n</template>\n",
+            "<template>\n\t<button\n\t\t:title=\"\n\t\t\talpha +\n\t\t\tbeta +\n\t\t\tgamma +\n\t\t\tdelta\n\t\t\"\n\t>  two  spaces  </button>\n</template>\n",
         ),
     ] {
         let options = FormatOptions {
