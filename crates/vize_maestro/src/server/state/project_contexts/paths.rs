@@ -104,6 +104,22 @@ mod tests {
     }
 
     #[test]
+    fn package_vite_config_stays_owner_under_workspace_tsconfig() {
+        let fixture = tempfile::tempdir().unwrap();
+        let root = fixture.path();
+        let package = root.join("packages/a");
+        std::fs::create_dir_all(package.join("src")).unwrap();
+        std::fs::write(root.join("tsconfig.json"), "{}").unwrap();
+        std::fs::write(package.join("package.json"), "{}").unwrap();
+        std::fs::write(package.join("vite.config.ts"), "export default {}").unwrap();
+
+        assert_eq!(
+            document_context_root(&package.join("src/App.vue"), &[root.to_path_buf()]),
+            Some(package)
+        );
+    }
+
+    #[test]
     fn config_watch_alias_retires_the_open_authored_uri_owner() {
         use super::super::{Arc, ServerState, Url};
         use tower_lsp::lsp_types::{FileChangeType, FileEvent};

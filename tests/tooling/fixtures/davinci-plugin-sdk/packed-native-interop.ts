@@ -3,6 +3,7 @@ import {
   compileWithOutputPlugins,
   compileWithTransformPlugins,
   lintWithPlugins,
+  typeCheckWithVirtualTsVisitors,
 } from "@vizejs/native";
 import {
   plugin,
@@ -15,6 +16,7 @@ import {
   sandboxTransform,
   sandboxFormatter,
   sandboxOutput,
+  virtualTsHost,
 } from "./packed-authoring.js";
 
 lintWithPlugins("<template><button/></template>", [plugin, sandbox], {
@@ -27,4 +29,7 @@ compileWithTransformPlugins("<button/>", [transform, sandboxTransform], {
 });
 compileWithOutputPlugins("<button/>", [formatter, output, sandboxFormatter, sandboxOutput], {
   mode: "module",
+});
+typeCheckWithVirtualTsVisitors("<template><button /></template>", [virtualTsHost], {
+  filename: "Button.vue",
 });

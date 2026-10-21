@@ -134,8 +134,7 @@ impl ServerState {
                 .read()
                 .clone()
                 .ok_or(ModuleLinkContextError::MissingRoot)?;
-            let (checker, timeout_ms) = self.type_checker_config.read().clone();
-            let project = ProjectModel::new(Some(&root), None, &checker);
+            let (checker, timeout_ms, project) = self.type_checker_config.read().clone();
             Ok(ModuleLinkContext {
                 identity: Arc::clone(&gate.identity),
                 generation: gate.generation,

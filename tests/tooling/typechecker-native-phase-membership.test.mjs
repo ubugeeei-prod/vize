@@ -14,7 +14,7 @@ const stat = fs.lstatSync(file);
 assert(stat.isFile() && (stat.mode & 0o777) === 0o644);
 const bytes = fs.readFileSync(file);
 const sha = (body) => createHash("sha256").update(body).digest("hex");
-assert.equal(sha(bytes), "91ff0c1bb8d9563f6b0eef8ee74c4ec29a6e1f21868a84b98f6e5fc8ff2f2fe5");
+assert.equal(sha(bytes), "c7c12caf0399493ab456974022ee3399626c0b3601a09a4afc340f54b6a1add9");
 const fixture = JSON.parse(bytes);
 assert.equal(fixture.schema, 1);
 assert.equal(fixture.sourceSha, "6be9ffbbca772b49c76dfae80282349d5f662716");

@@ -61,6 +61,16 @@ metadata and regenerating the inventory preserves every generated input byte;
 the corpus checker continues to validate witnesses and hashes without a new
 fixture or expected-output acceptance.
 
+### 2026-10-21 follow-up
+
+The transitional three-boolean projection is removed. `LegacyCaps` is now a
+compatibility alias for `LegacyDialectCapabilities`, and its historical
+`for_version` and `needs_sugar` methods live on the shared descriptor. Parsing
+and legalization therefore carry the same resolved value instead of copying
+three fields into a second type. The Vue 3 legalization fast path remains the
+same three-field predicate, while newly added dialect facts become immediately
+available on both sides of the L1→L2 boundary without a synchronization test.
+
 ## Remaining work under #6841
 
 - Resolve one file descriptor across Vue version, petite, quirks, markup and

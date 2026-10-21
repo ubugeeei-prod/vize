@@ -34,7 +34,7 @@ unchanged original SSR/pug command, provided ordinary canonical snapshot
 custody succeeded. This avoids additional diagnostic warming before the
 original source reader. The diagnostic authenticates
 the current checkout/run/tree, unchanged source collector, whole fixed snapshot
-vector, all 148 gitlinks, Jellyfin pin and complete per-file snapshot digests.
+vector, all 149 gitlinks, Jellyfin pin and complete per-file snapshot digests.
 It runs the exact extracted original Rust collector and tests every fixed input
 under both the absolute corpus root and literal
 `tests/davinci_test_support/../../tests/_fixtures/_git` spelling.

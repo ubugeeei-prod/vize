@@ -68,7 +68,10 @@ fn module_link_context_retains_complete_actual_applied_values_and_separate_load_
         assert_eq!(context.timeout_ms(), 91_000);
         assert_eq!(context.load_origin(), Some(config_path.as_path()));
         assert_eq!(context.project().root(), Some(root.as_path()));
-        assert_eq!(context.project().config_source(), None);
+        assert_eq!(
+            context.project().config_source(),
+            Some(config_path.as_path())
+        );
         assert_eq!(
             context.project().tsconfig(),
             Some(root.join("app/tsconfig.json").as_path())
@@ -199,13 +202,15 @@ fn module_link_capture_waits_for_complete_applied_tuple_origin_and_generation_co
         writer_state.update_module_link_context(
             Some("/actual-config/vite.config.mjs".into()),
             || {
+                let config = TypeCheckerConfig {
+                    strict: true,
+                    tsconfig: Some("tsconfig.boundary.json".into()),
+                    ..Default::default()
+                };
                 *writer_state.type_checker_config.write() = (
-                    TypeCheckerConfig {
-                        strict: true,
-                        tsconfig: Some("tsconfig.boundary.json".into()),
-                        ..Default::default()
-                    },
+                    config.clone(),
                     93_000,
+                    super::ProjectModel::new(Some(Path::new("/actual-before")), None, &config),
                 );
                 applied.send(()).unwrap();
                 release_rx.recv().unwrap();

@@ -1,0 +1,1 @@
+export { MyBadge } from "@demo/c";

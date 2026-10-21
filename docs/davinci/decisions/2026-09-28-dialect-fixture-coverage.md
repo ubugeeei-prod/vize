@@ -33,3 +33,22 @@ add grammar-generated Vue 0.x/1.x and quirks cases with pinned generator inputs
 and reference behavior; then make #6854 aggregate each dialect and unknown
 bucket. Keep these as unfinished until actual case execution and provenance
 are recorded.
+
+The first shared case-ledger slice makes coverage a common manifest contract.
+Every planned case in compiler, formatter, linter, typechecker and LSP now
+loads with an explicit coverage row; an omitted row normalizes to `unknown`
+without changing the immutable manifest digest. Native-acceptance measurement
+reports verified and provisional dialect rows separately while retaining every
+nonverified case in the unknown readiness denominator. Verified labels are
+restricted to the canonical #6854 vocabulary.
+
+The twelve compiler SSR cases have bounded `source-inspected` evidence for the
+default Vue 3 SFC and HTML-template selection; the one typed-script case also
+records `ts`. Their input bytes were already pinned by SHA-256, and the compiler
+loader now binds these labels to its `--no-config` Vue 3 adapter. This is
+provisional measurement only: all twelve remain unknown for deletion readiness
+because whole-product native compiler execution is still unsupported. Existing
+formatter labels contribute sixteen more provisional cases. The 59 linter, 27
+LSP and 47 typechecker cases stay explicit unknowns pending product-specific
+source and execution evidence. Rare dialect input-only rows remain outside the
+executed denominator.

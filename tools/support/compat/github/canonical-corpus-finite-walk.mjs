@@ -154,7 +154,7 @@ export function qualifyProbeVectors(artifact, identity, expected, parseNativeVec
   const originalVector = readFileSync(join(artifact, "original-kernel-vector.nul"));
   const originalPaths = parseNativeVector(originalVector);
   assert.equal(digest(originalVector), identity.nativeWalk.originalVectorSha256);
-  assert.equal(originalPaths.length, 44367);
+  assert.equal(originalPaths.length, 47056);
   assert.equal(originalPaths.filter((path) => path.startsWith("jellyfin-vue/")).length, 5576);
   assert.equal(identity.filesSha256, digest(JSON.stringify(expected)));
   assert.equal(paths.length, identity.files);

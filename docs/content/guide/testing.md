@@ -101,3 +101,7 @@ workflow Vize should check, and the result you expect.
 
 With permission and a suitable license, the project can become an end-to-end or visual regression
 test. Running it again after changes helps catch the same problem before it reaches other users.
+
+Vize runs both `check` and `lint` against the pinned source of [PrimeVue](https://github.com/primefaces/primevue)
+and [OpenVue](https://github.com/openvi-foundation/openvue). OpenVue is pinned to its MIT-licensed
+`1.0.0` release so every run uses the same component, icon, form, showcase, and Volt sources.

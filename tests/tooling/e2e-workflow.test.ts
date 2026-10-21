@@ -290,7 +290,7 @@ test("shared row action validates the plan and never parallelizes fixture proces
   );
 });
 
-test("Testbox still hydrates the exact 16-fixture App inventory", () => {
+test("Testbox still hydrates the exact 17-fixture App inventory", () => {
   const action = readRepoFile(".github", "actions", "hydrate-app-fixtures", "action.yml");
   const fixtures = [
     "ant-design-vue",
@@ -303,6 +303,7 @@ test("Testbox still hydrates the exact 16-fixture App inventory", () => {
     "naive-ui",
     "npmx.dev",
     "nuxt-ui",
+    "openvue",
     "primevue",
     "reka-ui",
     "voicevox",

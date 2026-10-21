@@ -18,11 +18,11 @@ use std::sync::Arc;
 
 #[cfg(feature = "native")]
 use tower_lsp::lsp_types::{Position, Range};
+#[cfg(feature = "native")]
+use vize_l0::cstr;
 
 #[cfg(feature = "native")]
 use vize_canon::CorsaBridge;
-#[cfg(feature = "native")]
-use vize_l0::cstr;
 
 use super::{HoverBuilder, HoverService};
 use crate::ide::{IdeContext, script_identifier};

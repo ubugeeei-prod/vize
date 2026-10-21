@@ -51,6 +51,25 @@ void test("legacy/native collection retains complete returned failures and the l
   ]);
 });
 
+void test("observer collection retains the authored working directory", () => {
+  const calls: any[] = [];
+  const invoke: any = (...args: any[]) => {
+    calls.push(args);
+    return { stdout: Buffer.from("whole output\n"), stderr: empty, status: 0, signal: null };
+  };
+  collectLinterAttempts("/original/observer", ["--current-api"], input, invoke, {
+    cwd: "/repo/crates/vize_patina",
+  });
+  assert.equal(calls.length, 2);
+  for (const call of calls)
+    assert.deepEqual(call[2], {
+      input,
+      timeout: 30_000,
+      maxBuffer: 8 * 1024 * 1024,
+      cwd: "/repo/crates/vize_patina",
+    });
+});
+
 void test("a thrown-first native invocation keeps the second whole stream and cannot grant credit", () => {
   const calls: any[] = [];
   const later = Buffer.from("later whole stream\n");

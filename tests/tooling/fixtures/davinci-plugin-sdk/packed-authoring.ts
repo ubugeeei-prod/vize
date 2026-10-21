@@ -11,6 +11,14 @@ import {
 } from "@vizejs/plugin-sdk";
 import { applyFixes as subpathFixes } from "@vizejs/plugin-sdk/fixes";
 import { createSandboxRunner, SANDBOX_IMAGE } from "@vizejs/plugin-sdk/sandbox";
+import {
+  VISITOR_API_VERSION,
+  createVirtualTsVisitorHost,
+  defineVisitorPlugin,
+  negotiateVisitorPlugin,
+  runVisitorFixture,
+  type VisitorEvent,
+} from "@vizejs/plugin-sdk/visitor";
 
 export const plugin = definePlugin({
   name: "packed-types",
@@ -108,6 +116,60 @@ export const sandboxOutput = createSandboxRunner({
   callback: "(batch) => []",
 });
 SANDBOX_IMAGE satisfies string;
+
+export const visitor = defineVisitorPlugin({
+  apiVersion: VISITOR_API_VERSION,
+  name: "packed-visitor",
+  version: "1",
+  capabilities: ["sfc", "virtual-ts", "devtools-trace"] as const,
+  cacheInputs: [] as const,
+  visitors: {
+    sfc(event) {
+      event.payload
+        .blocks satisfies readonly import("@vizejs/plugin-sdk/visitor").VisitorSfcBlock[];
+    },
+    "virtual-ts"(event) {
+      event.payload.mappings[0]?.generated.encoding satisfies "utf8" | undefined;
+      // @ts-expect-error virtual TypeScript events expose no lint diagnostics
+      void event.payload.diagnostics;
+    },
+    "devtools-trace"(event) {
+      event.payload.events[0]?.durationNs satisfies number | undefined;
+    },
+  },
+});
+negotiateVisitorPlugin(visitor, {
+  apiVersion: VISITOR_API_VERSION,
+  capabilities: ["sfc", "virtual-ts", "devtools-trace"],
+});
+const virtualEvent: VisitorEvent<"virtual-ts"> = {
+  apiVersion: VISITOR_API_VERSION,
+  capability: "virtual-ts",
+  file: "Button.vue",
+  payload: {
+    sourceFile: "Button.vue",
+    virtualFile: "Button.vue.ts",
+    code: "export {}",
+    mappings: [],
+  },
+};
+runVisitorFixture(visitor, "virtual-ts", virtualEvent);
+// @ts-expect-error fixture capability must be declared by this plugin
+runVisitorFixture(visitor, "style", {} as VisitorEvent<"style">);
+
+export const virtualTsVisitor = defineVisitorPlugin({
+  apiVersion: VISITOR_API_VERSION,
+  name: "packed-virtual-ts-visitor",
+  version: "1",
+  capabilities: ["virtual-ts"] as const,
+  cacheInputs: [] as const,
+  visitors: {
+    "virtual-ts"(event) {
+      event.payload.code satisfies string;
+    },
+  },
+});
+export const virtualTsHost = createVirtualTsVisitorHost(virtualTsVisitor);
 
 import type {
   RuleContext,

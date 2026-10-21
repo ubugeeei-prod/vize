@@ -60,7 +60,7 @@
 //!   cleaner to L2 than to the legacy lane; counted (`builtins_subtrees`).
 //! - **The const rule** admits locals the expression binds and is still
 //!   weaker than the shipped classifier on free names and `this`
-//!   ([`consts::constant_for_hoist`]'s module docs).
+//!   ([`vize_l2::analysis::constant_expression`]).
 //!
 //! # Facts and accounting
 //!
@@ -73,7 +73,7 @@
 //! and ends at the same accounting assertion. Every fact leaves a
 //! provenance record (`pass.hoist-static.fact`).
 
-use vize_l0::pass::{Fusability, NoRemarks, PassDesc, PassKind, Preserved, RemarkSink};
+use vize_l0::pass::{NoRemarks, RemarkSink};
 use vize_l0::side_table::SideTable;
 use vize_l2::op::Namespace;
 
@@ -84,75 +84,9 @@ mod consts;
 mod lattice;
 mod remarks;
 
-pub use consts::constant_for_hoist;
-pub(crate) use consts::self_bound_js_constant;
 pub use remarks::{STATIC_PROPS, STATIC_SUBTREE};
-
-/// The pass name in pipeline strings and folio pages.
-pub const NAME: &str = "hoist-static";
-
-/// The pass description — classification reasoning in the module docs;
-/// the series' first `Optional` and first `Fusable`.
-pub const DESC: PassDesc = PassDesc::new(
-    NAME,
-    PassKind::Optional,
-    Fusability::Fusable,
-    // Pure analysis: the tree, spans, scopes and every other fact are
-    // left exactly as found.
-    Preserved::ALL,
-);
-
-/// The per-node constant level — the old `static_type.rs` ladder
-/// (`StaticType`), re-expressed as a published fact.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum StaticLevel {
-    /// Dynamic surface or dynamic descendants; never hoistable whole.
-    NotStatic,
-    /// Static but for interpolation children — root prop-hoisting still
-    /// applies, whole-hoisting never does.
-    HasDynamicText,
-    /// The whole subtree is static: whole-hoistable where position
-    /// allows.
-    FullyStatic,
-}
-
-/// One owner's static-analysis facts: the lattice value plus the three
-/// subtree predicates the shipped decision procedure reads
-/// (`has_static_props`, `has_only_static_nested_children`,
-/// `has_only_native_element_descendants` — the position/option gates
-/// stay with the reader).
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct StaticFacts {
-    /// The constant level ([`StaticLevel`]).
-    pub level: StaticLevel,
-    /// `has_static_props`: a non-empty, fully hoistable props surface
-    /// (never true for outlets).
-    pub props_hoistable: bool,
-    /// `has_only_static_nested_children`: non-empty children, all in
-    /// the static-nested class (interpolations count as static here —
-    /// the shipped rule).
-    pub nested_static: bool,
-    /// `has_only_native_element_descendants`: every descendant is a
-    /// native element or text-family node (the `inline` root arm's
-    /// gate).
-    pub native_descendants: bool,
-    /// The owner stands in a foreign markup namespace — its own for a
-    /// `ui.element`, the *inherited context* for a `ui.component`
-    /// (which deliberately carries no namespace of its own): the
-    /// shipped `ns != Html` props-hoist arm's input, first seen live on
-    /// a `<TransitionGroup>` inside `<svg>` (directus `arrows.vue`,
-    /// caught by the differential lane's first corpus run).
-    pub foreign: bool,
-}
-
-/// Facts cross compile boundaries with their artifact (P1-11).
-const _: () = {
-    const fn assert_owned<T: 'static>() {}
-    assert_owned::<StaticFacts>();
-};
-
-/// Five bytes on every width: one tag byte plus four bools.
-const _: () = assert!(core::mem::size_of::<StaticFacts>() == 5);
+pub use vize_l2::analysis::constant_expression::is_self_bound_constant as constant_for_hoist;
+pub use vize_l2::analysis::static_facts::{DESC, NAME, StaticFacts, StaticLevel};
 
 /// Run the pass over `lowered`.
 ///

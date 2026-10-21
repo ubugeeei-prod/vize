@@ -7,7 +7,11 @@ import { test } from "node:test";
 import { parse } from "yaml";
 
 import { cadenceDecision } from "../../../tools/support/release/release/cadence.ts";
-import { incompletePriorReleaseTargets } from "../../../tools/support/release/release/main.ts";
+import {
+  cadenceRegistryDecision,
+  incompletePriorReleaseTargets,
+  priorReleaseCompleteness,
+} from "../../../tools/support/release/release/main.ts";
 import { extraReleasePackageJsonPaths } from "../../../tools/support/release/release/preparation.ts";
 import { stampCargoLock } from "../../../tools/support/release/release/stamp.ts";
 import {
@@ -63,6 +67,34 @@ test("a new release requires the prior tag on npm and every crates.io target", a
     "crates:vize_oxc_parser@0.510.0",
     "crates:vize_patina@0.510.0",
   ]);
+});
+
+test("cadence stops redispatching while the prior release is incomplete", async () => {
+  const incomplete = await priorReleaseCompleteness(
+    ["v0.509.0", "v0.510.0"],
+    ["0.510.0"],
+    async (crate) =>
+      crate === "vize_patina"
+        ? { kind: "query-failed", message: "HTTP 429" }
+        : { kind: "published" },
+  );
+  assert.deepEqual(cadenceRegistryDecision(incomplete), {
+    release: false,
+    reason: "v0.510.0 is incomplete in public registries",
+  });
+  assert.deepEqual(cadenceRegistryDecision(null), {
+    release: false,
+    reason: "release registry preflight unavailable",
+  });
+
+  assert.equal(
+    cadenceRegistryDecision(
+      await priorReleaseCompleteness(["v0.510.0"], ["0.510.0"], async () => ({
+        kind: "published",
+      })),
+    ),
+    null,
+  );
 });
 
 test("the stamp rewrites only owned Cargo.lock packages", () => {

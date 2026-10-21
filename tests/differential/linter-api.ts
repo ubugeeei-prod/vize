@@ -1,9 +1,15 @@
 import assert from "node:assert/strict";
 import path from "node:path";
+import { summarizeNativeAcceptance } from "./acceptance-rates.mjs";
 import { compareBytes } from "./compare.mjs";
 import { loadProductManifest, readPinnedArtifact, sha256 } from "./harness.mjs";
 import { validateProductObserverReceipt, type ObserverSpec } from "./observer-build.ts";
-import { decodeNativeOutcome, runNative, validateNativeContract } from "./linter-native.ts";
+import {
+  decodeNativeOutcome,
+  runNative,
+  validateNativeContract,
+  validateNativeRow,
+} from "./linter-native.ts";
 import { summary, validateLinterReport } from "./linter-api-report.ts";
 import { collectLinterAttempts } from "./linter-process.ts";
 export { validateLinterReport } from "./linter-api-report.ts";
@@ -101,6 +107,11 @@ export function runLinterApiPack({
   validateProductObserverReceipt(receipt, { spec: LINTER_OBSERVER, repoRoot, binaryPath });
   validateNativeContract(receipt);
   const loaded = loadLinterManifest(manifestPath, repoRoot);
+  // The authored history wires and their snapshots are crate-root relative.
+  // Run the standalone observer from the same directory as Cargo tests so
+  // project-aware filenames resolve the fixture tsconfig instead of the
+  // caller's checkout root.
+  const spawnOptions = { cwd: path.join(repoRoot, "crates/vize_patina") };
   const rows = loaded.cases.map((fixture: any) => {
     const row: any = {
       id: fixture.id,
@@ -115,15 +126,19 @@ export function runLinterApiPack({
       native: null,
       comparison: { state: "not-compared" },
     };
-    row.legacy.attempts = collectLinterAttempts(binaryPath, fixture.argv, fixture.input).map(
-      (attempt) => ({
-        ...attempt,
-        referenceComparison: compareBytes(
-          fixture.expected,
-          Buffer.from(attempt.stdoutBase64, "base64"),
-        ),
-      }),
-    );
+    row.legacy.attempts = collectLinterAttempts(
+      binaryPath,
+      fixture.argv,
+      fixture.input,
+      undefined,
+      spawnOptions,
+    ).map((attempt) => ({
+      ...attempt,
+      referenceComparison: compareBytes(
+        fixture.expected,
+        Buffer.from(attempt.stdoutBase64, "base64"),
+      ),
+    }));
     try {
       let previous: Buffer | undefined;
       for (const attempt of row.legacy.attempts) {
@@ -143,7 +158,7 @@ export function runLinterApiPack({
       row.legacy.verdict = "failed";
       row.legacy.error = String(error);
     }
-    row.native = runNative(binaryPath, fixture, receipt);
+    row.native = runNative(binaryPath, fixture, receipt, undefined, spawnOptions);
     if (row.legacy.state === "completed" && row.native.state === "completed") {
       const original = Buffer.from(row.legacy.attempts[0].stdoutBase64, "base64");
       const native = decodeNativeOutcome(
@@ -166,4 +181,31 @@ export function runLinterApiPack({
   };
   validateLinterReport(loaded, report, receipt);
   return report;
+}
+
+export function summarizeLinterAcceptance(
+  loaded: ReturnType<typeof loadLinterManifest>,
+  report: any,
+  receipt: any,
+) {
+  validateLinterReport(loaded, report, receipt);
+  const fixtures = new Map(loaded.cases.map((fixture: any) => [fixture.id, fixture]));
+  return summarizeNativeAcceptance(loaded, report, {
+    sourceRevision: receipt.source.sourceRevision,
+    buildReceiptSha256: sha256(Buffer.from(JSON.stringify(receipt))),
+    requiredStages: ["parse", "lint", "output"],
+    verifyObservation: (observation: any, row: any, target: string) => {
+      assert.equal(target, "lint");
+      const fixture = fixtures.get(row.id);
+      assert(fixture, `missing linter fixture: ${row.id}`);
+      validateNativeRow(fixture, row.native, receipt);
+      assert.deepEqual(observation, row.native.observation);
+      return true;
+    },
+    verifyComparison: (row: any, target: string) =>
+      target === "lint" &&
+      row.comparison.state === "equal" &&
+      row.native.verdict === "matched-reference" &&
+      row.legacy.verdict === "matched-reference",
+  });
 }

@@ -5,6 +5,7 @@
   "devDependencies": {
     "@types/node": "26.1.2",
     "@vitejs/plugin-vue": "6.0.9",
+    "oxlint-plugin-vize": "0.474.0",
     "typescript": "5.9.3",
     "vite": "8.2.2",
     "vite-plus": "0.2.7",

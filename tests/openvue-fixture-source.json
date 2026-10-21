@@ -1,0 +1,21 @@
+{
+  "schema": "vize.realWorldFixtureSource",
+  "version": 1,
+  "id": "openvue",
+  "repository": "https://github.com/openvi-foundation/openvue",
+  "release": "1.0.0",
+  "revision": "116be30dbadb1b03a26ce080aa1aae2ba70e8972",
+  "discussion": "https://github.com/ubugeeei-prod/vize/discussions/8552",
+  "license": {
+    "spdx": "MIT",
+    "path": "LICENSE.md",
+    "gitBlob": "4c4480ef4e5e7ad1a8810a23059d1537211772a2"
+  },
+  "verifiedVueFiles": {
+    "packages/primevue/src/**/*.vue": 281,
+    "packages/icons/src/**/*.vue": 48,
+    "packages/forms/src/**/*.vue": 4,
+    "apps/showcase/**/*.vue": 1712,
+    "apps/volt/**/*.vue": 628
+  }
+}

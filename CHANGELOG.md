@@ -8,6 +8,9 @@ See [`docs/release/support-policy.md`](./docs/release/support-policy.md) for the
 
 ### Changed
 
+- Make `vize_armature::tokenizer::QuoteType` the public compatibility re-export
+  of the L1-owned `vize_l1::markup::QuoteType`, preserving its variants and
+  numeric representation (#6835).
 - Restore `davinci-differential` as a deprecated alias of `legacy-differential` and `davinci-dom-differential` as a deprecated alias of `legacy-dom-differential` (#7179).
 - `vize_l1::parse` and the native component surface now close omitted end tags like the shipped parser: `li`, `dt`/`dd`, `option`/`optgroup`, a `p` before a block, and a table row or row group before its sibling (#6835). Compiler output is unchanged.
 

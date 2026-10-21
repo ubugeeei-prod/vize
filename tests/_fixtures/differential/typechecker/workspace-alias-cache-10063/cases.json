@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10063,
+  "regressionCommit": "7174c46d55825c155325e6314305e661d50ec95a",
+  "sourceRevision": "7174c46d55825c155325e6314305e661d50ec95a",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "second-package-selection",
+      "inputs": [
+        {
+          "file": "package.json",
+          "source": "package.json.txt"
+        },
+        {
+          "file": "pnpm-workspace.yaml",
+          "source": "pnpm-workspace.yaml.txt"
+        },
+        {
+          "file": "tsconfig.a.json",
+          "source": "tsconfig.a.json.txt"
+        },
+        {
+          "file": "tsconfig.b.json",
+          "source": "tsconfig.b.json.txt"
+        },
+        {
+          "file": "packages/a/package.json",
+          "source": "packages/a/package.json.txt"
+        },
+        {
+          "file": "packages/a/src/index.ts",
+          "source": "packages/a/src/index.ts.txt"
+        },
+        {
+          "file": "packages/b/package.json",
+          "source": "packages/b/package.json.txt"
+        },
+        {
+          "file": "packages/b/src/index.ts",
+          "source": "packages/b/src/index.ts.txt"
+        },
+        {
+          "file": "packages/c/package.json",
+          "source": "packages/c/package.json.txt"
+        },
+        {
+          "file": "packages/c/src/index.ts",
+          "source": "packages/c/src/index.ts.txt"
+        },
+        {
+          "file": "packages/c/src/MyBadge.vue",
+          "source": "packages/c/src/MyBadge.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "@vize/jsx-vapor-oracle",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@babel/core": "catalog:babel-jsx-oracle",
+    "happy-dom": "catalog:testing",
+    "vue": "catalog:jsx-vapor-oracle",
+    "vue-jsx-vapor": "catalog:jsx-vapor-oracle"
+  }
+}

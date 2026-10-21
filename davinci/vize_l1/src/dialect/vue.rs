@@ -219,6 +219,23 @@ impl LegacyDialectCapabilities {
             Some(version) => version.capabilities(),
         }
     }
+
+    /// Compatibility spelling used by L1→L2 callers.
+    ///
+    /// This resolves the same shared descriptor as [`Self::for_dialect`]; it
+    /// exists so the historical [`LegacyCaps`](super::LegacyCaps) API does not
+    /// require a separate projection type.
+    #[must_use]
+    pub const fn for_version(version: VueVersion) -> Self {
+        Self::for_dialect(version)
+    }
+
+    /// Whether the L1→L2 legalizing pass has any legacy template sugar to
+    /// rewrite. Vue 3 keeps the fast path and never walks the tree for sugar.
+    #[must_use]
+    pub const fn needs_sugar(self) -> bool {
+        self.supports_filters || self.scoped_slot_attrs || self.v2_event_sugar
+    }
 }
 
 impl Default for LegacyDialectCapabilities {

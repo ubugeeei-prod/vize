@@ -3,6 +3,13 @@ import assert from "node:assert/strict";
 import * as sdk from "@vizejs/plugin-sdk";
 import { applyFixes } from "@vizejs/plugin-sdk/fixes";
 import { createSandboxRunner, SANDBOX_IMAGE } from "@vizejs/plugin-sdk/sandbox";
+import {
+  VISITOR_API_VERSION,
+  createVirtualTsVisitorHost,
+  defineVisitorPlugin,
+  negotiateVisitorPlugin,
+  runVisitorFixture,
+} from "@vizejs/plugin-sdk/visitor";
 
 const expected = [
   "BATCH_SCHEMA",
@@ -126,5 +133,42 @@ const sandbox = createSandboxRunner({
 assert.equal(typeof sandbox.run, "function");
 assert.match(sandbox.fingerprint, /^[a-f0-9]{64}$/);
 assert.match(SANDBOX_IMAGE, /^node:.*@sha256:[a-f0-9]{64}$/);
+const visitorEvents = [];
+const visitor = defineVisitorPlugin({
+  apiVersion: VISITOR_API_VERSION,
+  name: "packed-visitor",
+  version: "1",
+  capabilities: ["virtual-ts"],
+  cacheInputs: [],
+  visitors: {
+    "virtual-ts"(event) {
+      visitorEvents.push(event.payload.virtualFile);
+    },
+  },
+});
+assert.deepEqual(negotiateVisitorPlugin(visitor, visitor), {
+  apiVersion: VISITOR_API_VERSION,
+  capabilities: ["virtual-ts"],
+});
+runVisitorFixture(visitor, "virtual-ts", {
+  apiVersion: VISITOR_API_VERSION,
+  capability: "virtual-ts",
+  file: "Button.vue",
+  payload: { sourceFile: "Button.vue", virtualFile: "Button.vue.ts", code: "", mappings: [] },
+});
+assert.deepEqual(visitorEvents, ["Button.vue.ts"]);
+const virtualTsHost = createVirtualTsVisitorHost(visitor);
+assert.equal(typeof virtualTsHost.run, "function");
+assert.equal(
+  virtualTsHost.run(
+    JSON.stringify({
+      apiVersion: VISITOR_API_VERSION,
+      capability: "virtual-ts",
+      file: "Button.vue",
+      payload: { sourceFile: "Button.vue", virtualFile: "Button.vue.ts", code: "", mappings: [] },
+    }),
+  ),
+  "",
+);
 assert.ok(import.meta.resolve("@vizejs/plugin-sdk").includes("/node_modules/@vizejs/plugin-sdk/"));
-console.log("packed SDK runtime exports: 8 root, fixes and sandbox verified");
+console.log("packed SDK runtime exports: 8 root, fixes, sandbox and visitor verified");

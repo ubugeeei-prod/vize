@@ -14,7 +14,7 @@ mod common;
 
 use regex::Regex;
 use serde::Serialize;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use std::{
     collections::BTreeMap,
     env, fs,
@@ -27,8 +27,8 @@ use std::{
 
 const ARTIFACT_DIR: &str = "real-project-davinci-dom-corpus";
 const CORPUS_ROOT: &str = "tests/_fixtures/_git";
-const EXPECTED_GITLINKS: usize = 148;
-const EXPECTED_DOM_OUTPUT_COMPARISONS: usize = 145;
+const EXPECTED_GITLINKS: usize = 149;
+const EXPECTED_DOM_OUTPUT_COMPARISONS: usize = 150;
 const EXPECTED_OLD_ERROR_SKIPS: usize = 16;
 
 fn main() -> ExitCode {
@@ -284,9 +284,9 @@ fn validate_corpus_evidence(artifact: &str) -> Validation {
         Path::new(artifact).join("dom-corpus.log"),
     ));
     let mut failures = Vec::new();
-    if EXPECTED_DOM_OUTPUT_COMPARISONS != 145 {
+    if EXPECTED_DOM_OUTPUT_COMPARISONS != 150 {
         failures.push(format!(
-            "manifest DOM-output comparisons {EXPECTED_DOM_OUTPUT_COMPARISONS} != 145"
+            "manifest DOM-output comparisons {EXPECTED_DOM_OUTPUT_COMPARISONS} != 150"
         ));
     }
     if selected.len() != EXPECTED_GITLINKS {

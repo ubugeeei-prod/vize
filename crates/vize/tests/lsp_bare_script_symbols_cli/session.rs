@@ -87,12 +87,36 @@ impl Session {
         );
     }
 
-    pub(super) fn request(
+    pub(super) fn request(&mut self, method: &str, uri: &str, params: Value) -> TestResult<Value> {
+        let (id, response) = self.request_response(method, uri, params)?;
+        response_result(id, response)
+    }
+
+    /// Read-only navigation can race a newer names snapshot after an editor
+    /// lifecycle transition. LSP asks clients to retry `ContentModified`;
+    /// preserve that refusal in the protocol evidence and retry exactly once.
+    pub(super) fn navigation_request(
+        &mut self,
+        method: &str,
+        uri: &str,
+        params: Value,
+    ) -> TestResult<Value> {
+        for attempt in 0..=1 {
+            let (id, response) = self.request_response(method, uri, params.clone())?;
+            if should_retry_navigation(self.native, attempt, &response) {
+                continue;
+            }
+            return response_result(id, response);
+        }
+        unreachable!("the second navigation response is always terminal")
+    }
+
+    fn request_response(
         &mut self,
         method: &str,
         uri: &str,
         mut params: Value,
-    ) -> TestResult<Value> {
+    ) -> TestResult<(i64, Value)> {
         params
             .as_object_mut()
             .ok_or("request parameters must be an object")?
@@ -106,12 +130,7 @@ impl Session {
             "whole {} response: {response}",
             if self.native { "stock native" } else { "Vize" }
         );
-        let result = response
-            .get("result")
-            .ok_or_else(|| format!("missing result: {response:#}"))?
-            .clone();
-        check(response, json!({"jsonrpc":"2.0","id":id,"result":result}))?;
-        Ok(result)
+        Ok((id, response))
     }
 
     pub(super) fn publication(
@@ -165,5 +184,48 @@ impl Session {
             })
         );
         Ok(())
+    }
+}
+
+fn response_result(id: i64, response: Value) -> TestResult<Value> {
+    let result = response
+        .get("result")
+        .ok_or_else(|| format!("missing result: {response:#}"))?
+        .clone();
+    check(response, json!({"jsonrpc":"2.0","id":id,"result":result}))?;
+    Ok(result)
+}
+
+fn should_retry_navigation(native: bool, attempt: u8, response: &Value) -> bool {
+    !native
+        && attempt == 0
+        && response.pointer("/error/code").and_then(Value::as_i64) == Some(-32801)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::should_retry_navigation;
+    use serde_json::json;
+
+    #[test]
+    fn only_the_first_vize_content_modified_navigation_is_retryable() {
+        let modified = json!({
+            "jsonrpc":"2.0","id":2,"error":{"code":-32801,"message":"Content modified"}
+        });
+        assert!(should_retry_navigation(false, 0, &modified));
+        assert!(!should_retry_navigation(false, 1, &modified));
+        assert!(!should_retry_navigation(true, 0, &modified));
+        assert!(!should_retry_navigation(
+            false,
+            0,
+            &json!({
+                "jsonrpc":"2.0","id":2,"error":{"code":-32800,"message":"Request cancelled"}
+            })
+        ));
+        assert!(!should_retry_navigation(
+            false,
+            0,
+            &json!({"jsonrpc":"2.0","id":2,"result":null})
+        ));
     }
 }

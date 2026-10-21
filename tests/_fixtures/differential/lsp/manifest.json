@@ -620,6 +620,48 @@
       }
     },
     {
+      "id": "lsp/regression/workspace-tsconfig-inheritance-9842",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "workspace-tsconfig-inheritance-9842",
+        "files": [
+          {
+            "path": "package.json.txt",
+            "sha256": "1ddc4c32d005f30baed4d7b7523da67de2047a8b5ad9201e51f54589bdd08dd3"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "6e602dcdb32f5eac7261a47f022c51d3964ef349bd46a2f10411d5582f802253"
+          },
+          {
+            "path": "globals.d.ts.txt",
+            "sha256": "d3cdea17934734c50f729c77b375216d1c4735eccf13692992113599ab663a0c"
+          },
+          {
+            "path": "package-ui.json.txt",
+            "sha256": "daeb5e493a5d857808a57f2848112573d0c4a47cc92762543ba597475aa95f15"
+          },
+          {
+            "path": "MyFooter.vue.txt",
+            "sha256": "73779e4741bc4769b47ad9dce5c5667d072f9bd6b1945befc284671486ab43db"
+          }
+        ]
+      },
+      "case": {
+        "path": "workspace-tsconfig-inheritance-9842/case.json",
+        "sha256": "1fd2daace94f8410358f3bd9dd83da0826320bcbb3fa528ffcf8d9a82d9c77f2"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": true
+      }
+    },
+    {
       "id": "lsp/regression/nested-vite-project-9856",
       "state": "active",
       "targets": [
@@ -824,6 +866,37 @@
       }
     },
     {
+      "id": "lsp/regression/formatter-whitespace-entries-10031",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "case": {
+        "path": "formatter-whitespace-entries-10031/case.json",
+        "sha256": "763bc1e02f27e2ee056056036fe960a60a14434bdeb78dfe839ea4b467828ebf"
+      },
+      "inputs": {
+        "root": "formatter-whitespace-entries-10031",
+        "files": [
+          {
+            "path": "src/legacy/App.vue.txt",
+            "sha256": "f027d11f3080e9212d52f88955765fddc849b34a836271c1eb19a40f54dfc25d"
+          },
+          {
+            "path": "vite.config.mjs.txt",
+            "sha256": "94f7d393ec06c222ef5fee66cf1824c1d8964d5ed8e5d4933322f66021c7adf8"
+          }
+        ]
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false,
+        "formatting": true
+      }
+    },
+    {
       "id": "lsp/regression/type-aware-slot-outlet-9834",
       "state": "active",
       "targets": [
@@ -871,6 +944,67 @@
             "sha256": "7a36f75337837632e610953906ec15beab09bb3034e9478b3d8c65d09b8151da"
           }
         ]
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
+      "id": "lsp/fix-history/code-action-utf16-original",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "code-action-utf16-original",
+        "files": [
+          {
+            "path": "CodeActionUtf16.vue.txt",
+            "sha256": "4e334c5f8bdef19e5e77408a7aff23ef11f57362c5171401f6a5f5932c3fc1fd"
+          }
+        ]
+      },
+      "case": {
+        "path": "code-action-utf16-original/case.json",
+        "sha256": "98b29c513ea1c28416f0f9a2cc81d5fa61345b82ccb3f5438cf7b39114f995d9"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": true,
+        "typecheck": false,
+        "codeActions": true
+      }
+    },
+    {
+      "id": "lsp/regression/inferred-project-tsconfig-9718",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "inferred-project-tsconfig-9718",
+        "files": [
+          {
+            "path": "template/code/App.vue.txt",
+            "sha256": "de238d982cfda3227024dbbeffd9c9e815c7c4a4e3a15b23a23ffa166de08ca5"
+          },
+          {
+            "path": "src/Owned.vue.txt",
+            "sha256": "bfc43c6754b2eb18471dab82dc9c14a043c5942e6f87dd86c0795ffb9b8ecdfe"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "0014b81552bc7019acaea9d211ff8022e272cbdbd29651e30f84a92489dfae91"
+          }
+        ]
+      },
+      "case": {
+        "path": "inferred-project-tsconfig-9718/case.json",
+        "sha256": "6302431e94ce2ca8ca171413fc81502c3e3ddce8d1c46e3d9c4e9dcf861502b4"
       },
       "requestCount": 1,
       "initializationOptions": {
