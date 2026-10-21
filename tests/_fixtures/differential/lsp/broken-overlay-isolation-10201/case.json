@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "id": "lsp/regression/broken-overlay-isolation-10201",
+  "provenance": {
+    "fixCommit": "074f3abcff44ca26359f84101d1a11a85e9c7fd7",
+    "witnessPath": "tests/tooling/lsp-imported-sfc-parse-recovery.test.ts",
+    "witnessTest": "an imported SFC block parse error keeps importer diagnostics clean and the Corsa session warm",
+    "inputOrigin": "exact issue 10201 malformed dependency plus healthy open documents",
+    "contractOrigin": "the dedicated stdio regression validates diagnostics, hover, continued edits, recovery, and Corsa session stability; this differential row pins the authored inputs"
+  },
+  "files": [
+    {
+      "source": "Entry.vue.txt",
+      "runtimePath": "Entry.vue",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "Parent.vue.txt",
+      "runtimePath": "src/Parent.vue",
+      "sha256": "fdfd4dd073af9e3dd1a289bc2cc74c58f016c76747f5f59b838d5ac1695fb59e"
+    },
+    {
+      "source": "Other.vue.txt",
+      "runtimePath": "src/Other.vue",
+      "sha256": "fb6c0afffd43f9d0758a6fb40dbae38a1db01d34657234132e7082df93c2dc75"
+    },
+    {
+      "source": "Child.broken.vue.txt",
+      "runtimePath": "src/Child.vue",
+      "sha256": "dfded8ea3ce80c059b8cd5f7de190592fdcc66b8ad4bb68caf4ee80f09f2a996"
+    }
+  ],
+  "entry": "Entry.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "38e0b9de817f645c4bec37c0d4a3e58baecccb040f5718dc069a72c7385a0bed"
+  },
+  "method": "textDocument/foldingRange",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "scope": "pins the malformed overlay and independent healthy buffers whose diagnostics and hover must remain available"
+}
