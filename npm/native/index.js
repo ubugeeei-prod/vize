@@ -96,5 +96,6 @@ module.exports.toViteBrowserImportPrefix = nativeBinding.toViteBrowserImportPref
 module.exports.transformViteCssVarsForPipeline = nativeBinding.transformViteCssVarsForPipeline;
 module.exports.typeCheck = nativeBinding.typeCheck;
 module.exports.typeCheckBatch = nativeBinding.typeCheckBatch;
+module.exports.typeCheckWithVirtualTsVisitors = nativeBinding.typeCheckWithVirtualTsVisitors;
 module.exports.validateDesignTokenReference = nativeBinding.validateDesignTokenReference;
 module.exports.wrapSfcScopedPreprocessorStyle = nativeBinding.wrapSfcScopedPreprocessorStyle;

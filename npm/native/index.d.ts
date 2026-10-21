@@ -1424,6 +1424,25 @@ export declare function typeCheckBatch(
   options?: TypeCheckOptionsNapi | undefined | null,
 ): BatchTypeCheckResultNapi;
 
+/**
+ * Type check one SFC and publish its generated virtual TypeScript to explicitly
+ * registered visitor plugins. The ordinary `typeCheck` path remains plugin-free.
+ */
+export declare function typeCheckWithVirtualTsVisitors(
+  source: string,
+  plugins: Array<VirtualTsVisitorPluginNapi>,
+  options?: TypeCheckOptionsNapi | undefined | null,
+): TypeCheckResultNapi;
+
+/** One negotiated observer for generated virtual TypeScript. */
+export interface VirtualTsVisitorPluginNapi {
+  name: string;
+  version: string;
+  fingerprint: string;
+  /** Receives one serialized `VisitorEvent<"virtual-ts">` and returns an empty string. */
+  run: (eventJson: string) => string;
+}
+
 /** Type check capabilities result */
 export interface TypeCheckCapabilitiesNapi {
   mode: string;
