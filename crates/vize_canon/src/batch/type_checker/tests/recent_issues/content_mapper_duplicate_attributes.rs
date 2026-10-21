@@ -1,12 +1,12 @@
-//! Content Mapper inference probes must preserve Vue's merged `class` and
-//! `style` semantics instead of emitting duplicate object keys (#10184).
+//! Content Mapper inference probes must isolate repeatable `class` and `style`
+//! attributes instead of emitting duplicate object keys (#10184).
 
 use std::path::Path;
 
 use crate::batch::generate_vue_content_mapper_transform;
 
 #[test]
-fn content_mapper_merges_duplicate_class_and_style_attribute_probes() {
+fn content_mapper_isolates_duplicate_class_and_style_attribute_probes() {
     let source = include_str!(
         "../../../../../../../tests/_fixtures/differential/typechecker/content-mapper-duplicate-attributes-10184/src/App.vue.txt"
     );
