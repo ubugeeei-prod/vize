@@ -277,16 +277,14 @@ fn collect_element(
                         is_svg: matches!(element.ns, Namespace::Svg),
                     }),
                     ElementType::Component => RegisteredRefKind::Component {
-                        reference: dynamic_component_reference(summary, element).unwrap_or_else(
-                            || {
-                                component_binding_reference(
-                                    summary,
-                                    options,
-                                    syntactic_type_only_imported_names,
-                                    element.tag,
-                                )
-                            },
-                        ),
+                        reference: dynamic_component_reference(element).unwrap_or_else(|| {
+                            component_binding_reference(
+                                summary,
+                                options,
+                                syntactic_type_only_imported_names,
+                                element.tag,
+                            )
+                        }),
                         start: element.loc.span.start,
                     },
                     _ => continue,
@@ -311,28 +309,36 @@ fn collect_element(
     }
 }
 
-fn dynamic_component_reference(summary: &Croquis, element: &ElementNode<'_>) -> Option<String> {
-    if element.tag != "component"
-        || !element.props.iter().any(|prop| {
-            matches!(
-                prop,
-                PropNode::Directive(directive)
-                    if directive.name == "bind"
-                        && matches!(
-                            directive.arg.as_ref(),
-                            Some(vize_relief::ExpressionNode::Simple(arg))
-                                if arg.is_static && arg.content == "is"
-                        )
-                        && directive.exp.is_some()
-            )
-        })
-    {
+fn dynamic_component_reference(element: &ElementNode<'_>) -> Option<String> {
+    if element.tag != "component" {
         return None;
     }
-    vize_croquis::facts::component_usage_list(summary)
-        .iter()
-        .find(|usage| usage.start == element.loc.span.start)
-        .map(|usage| usage.name.clone())
+    let expression = element.props.iter().find_map(|prop| {
+        let PropNode::Directive(directive) = prop else {
+            return None;
+        };
+        if directive.name != "bind"
+            || !matches!(
+                directive.arg.as_ref(),
+                Some(vize_relief::ExpressionNode::Simple(arg))
+                    if arg.is_static && arg.content == "is"
+            )
+        {
+            return None;
+        }
+        directive.exp.as_ref()
+    })?;
+    let vize_relief::ExpressionNode::Simple(expression) = expression else {
+        return None;
+    };
+    let js = expression.js_ast?.as_expression()?;
+    (js.raw == expression.content
+        && matches!(
+            js.ast,
+            oxc_ast::ast::Expression::Identifier(_)
+                | oxc_ast::ast::Expression::StaticMemberExpression(_)
+        ))
+    .then(|| String::from(expression.content.trim()))
 }
 
 fn component_ref_kind_for_element_tag(

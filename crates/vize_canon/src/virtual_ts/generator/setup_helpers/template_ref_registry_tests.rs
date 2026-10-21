@@ -323,4 +323,27 @@ const inner = useTemplateRef("inner");
         registry.body.as_str(),
         r#" "inner": __VizeTemplateComponentRef<typeof is>; "#
     );
+
+    let script = r#"import { computed, useTemplateRef } from "vue";
+import type { Component } from "vue";
+const current = computed<{ component: Component }>(() => ({ component: {} as Component }));
+const inner = useTemplateRef("inner");
+"#;
+    let template = r#"<component :is="current.component" ref="inner" />"#;
+    let allocator = vize_l0::Allocator::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+    let registry = super::template_ref_registry(
+        &Croquis::default(),
+        &VirtualTsOptions::default(),
+        Some(script),
+        Some(&root),
+        &type_only,
+        (VirtualTsCheckOptions::default(), &TemplateRecord::default()),
+    )
+    .expect("member dynamic component ref registry");
+
+    assert_eq!(
+        registry.body.as_str(),
+        r#" "inner": __VizeTemplateComponentRef<typeof current.component>; "#
+    );
 }
