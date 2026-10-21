@@ -180,7 +180,7 @@ function __setup() {
   }
 
   // Reference setup bindings (used in template/CSS v-bind)
-  void data; void message; void ref; void status;
+  void data; void message; void (null as unknown as keyof typeof ref); void status;
   })();
 }
 

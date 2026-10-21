@@ -88,6 +88,17 @@ fn template_expression_syntax_preserves_complete_authored_diagnostics() {
 }
 
 #[test]
+fn content_mapper_accepts_imported_const_enum_value_anchors() {
+    check_pack(
+        "content-mapper-const-enum-import",
+        "content_mapper_accepts_imported_const_enum_value_anchors",
+        "506529117573a96880435dd6466cfd7cf81fdc92",
+        Some(10192),
+        &["imported-const-enum-value"],
+    );
+}
+
+#[test]
 fn component_event_tuples_preserve_all_argument_diagnostics() {
     check_pack(
         "component-event-tuples",
@@ -542,7 +553,8 @@ fn check_pack(
             | "component-listener-alias-scope-10112"
             | "content-mapper-duplicate-attributes-10184"
             | "dynamic-directive-expression-mapping-10182"
-            | "content-mapper-template-expression-syntax" => regression,
+            | "content-mapper-template-expression-syntax"
+            | "content-mapper-const-enum-import" => regression,
             _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
         }
     );

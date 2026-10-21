@@ -85,22 +85,23 @@ jobs:
           run-install: false
       - name: Install JavaScript dependencies
         run: vp install --frozen-lockfile --prefer-offline
+      - name: Build exact upstream tsgo
+        working-directory: typescript-content-mapper/tsc
+        run: |
+          go build -tags=noembed -trimpath -o "$RUNNER_TEMP/tsgo" ./cmd/tsc
+          cp internal/bundled/libs/*.d.ts "$RUNNER_TEMP/"
+      - name: Run authored syntax and setup binding conformance
+        env:
+          VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
+        run: |
+          cargo test -p vize --test integration -- content_mapper_tsgo_cli::template_expression_syntax:: --nocapture
+          cargo test -p vize --test integration -- content_mapper_tsgo_cli::const_enum_import:: --nocapture
       - name: Run TS-40 current-projection baselines
         run: |
           cargo test -p vize --test integration -- davinci_ts40_projection_cli:: --nocapture
           cargo test -p vize_maestro --test davinci_ts40_projection -- --nocapture
           cargo test -p vize_maestro --features legacy --test davinci_ts40_projection -- --nocapture
           node --test tests/tooling/davinci-ts40-projection.test.ts
-      - name: Build exact upstream tsgo
-        working-directory: typescript-content-mapper/tsc
-        run: |
-          go build -tags=noembed -trimpath -o "$RUNNER_TEMP/tsgo" ./cmd/tsc
-          cp internal/bundled/libs/*.d.ts "$RUNNER_TEMP/"
-      - name: Run authored template syntax conformance
-        env:
-          VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
-        run: |
-          cargo test -p vize --test integration -- content_mapper_tsgo_cli::template_expression_syntax:: --nocapture
       - name: Build packed Content Mapper runtime
         run: |
           vp run --filter './npm/native' build:ci

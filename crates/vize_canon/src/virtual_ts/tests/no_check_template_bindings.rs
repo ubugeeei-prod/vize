@@ -109,7 +109,11 @@ function confirmDialog() {}
     assert!(!output.code.contains("__vize_prop_check"));
     assert!(!output.code.contains("@save handler"));
     assert!(!output.code.contains("void missingItems;"));
-    assert!(output.code.contains("void Child;"));
+    assert!(
+        output
+            .code
+            .contains("void (null as unknown as keyof typeof Child);")
+    );
     assert!(output.code.contains("void confirmDialog;"));
     assert!(output.code.contains("void isLoading;"));
 }

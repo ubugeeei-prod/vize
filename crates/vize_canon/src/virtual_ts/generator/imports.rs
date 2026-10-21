@@ -165,7 +165,10 @@ pub(super) fn collect_setup_binding_anchor_names(
     binding_names
 }
 
-fn collect_value_import_binding_names(summary: &Croquis, script: &str) -> FxHashSet<CompactString> {
+pub(super) fn collect_value_import_binding_names(
+    summary: &Croquis,
+    script: &str,
+) -> FxHashSet<CompactString> {
     summary
         .import_statements
         .iter()
