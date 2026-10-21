@@ -4,8 +4,8 @@
 //! with the parser by implementing the `Callbacks` trait.
 
 use crate::tokenizer::{Callbacks, QuoteType};
+use vize_l0::ErrorCode;
 use vize_l1::markup::entity::DecodedEntity;
-use vize_relief::errors::ErrorCode;
 
 use super::Parser;
 

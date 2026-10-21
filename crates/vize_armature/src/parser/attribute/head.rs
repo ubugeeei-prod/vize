@@ -1,11 +1,9 @@
 //! Completed authored attribute heads, including opaque v-pre spellings.
 
 use super::super::{CurrentDirective, Parser};
+use vize_l0::ErrorCode;
 use vize_l1::markup::directive::frozen_attribute_name;
-use vize_relief::{
-    DirectiveNode, ElementNode, PropNode, SourceLocation,
-    errors::{CompilerError, ErrorCode},
-};
+use vize_relief::{DirectiveNode, ElementNode, PropNode, SourceLocation, errors::CompilerError};
 
 impl<'a> Parser<'a> {
     pub(in crate::parser) fn report_head_custody_error(
@@ -207,8 +205,8 @@ mod tests {
 
     use crate::parser::Parser;
     use crate::tokenizer::QuoteType;
-    use vize_l0::{Allocator, cstr};
-    use vize_relief::{PropNode, TemplateChildNode, errors::ErrorCode};
+    use vize_l0::{Allocator, ErrorCode, cstr};
+    use vize_relief::{PropNode, TemplateChildNode};
 
     #[test]
     fn completed_heads_join_only_their_original_source_and_semantic_prefix() {

@@ -8,10 +8,10 @@ use super::{
     parse, parse_document, parse_document_with_options, parse_with_options,
     parse_with_options_and_template_syntax,
 };
-use vize_l0::{Allocator, String, ToCompactString};
+use vize_l0::{Allocator, ErrorCode, String, ToCompactString};
 use vize_relief::{
     ElementType, ExpressionNode, Namespace, PropNode, TemplateChildNode,
-    errors::{CompilerError, ErrorCode},
+    errors::CompilerError,
     options::{ParserOptions, TemplateSyntaxMode, WhitespaceStrategy},
 };
 

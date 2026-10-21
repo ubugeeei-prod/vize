@@ -3,11 +3,10 @@
 //! Handles attribute names, directive names/arguments/modifiers,
 //! attribute data (values), and finalization of attribute and directive nodes.
 
-use vize_l0::{Box, String, Vec, appends};
+use vize_l0::{Box, ErrorCode, String, Vec, appends};
 use vize_relief::{
     AttributeNode, ConstantType, DirectiveNode, ExpressionNode, PropNode, SimpleExpressionNode,
-    TextNode,
-    errors::{CompilerError, ErrorCode},
+    TextNode, errors::CompilerError,
 };
 
 use crate::tokenizer::QuoteType;

@@ -1,9 +1,9 @@
 //! Literal names preserve the opening ordinal and complete authored spans.
 
 use super::{Parser, parse, parse_with_options_and_template_syntax};
-use vize_l0::Allocator;
+use vize_l0::{Allocator, ErrorCode};
 use vize_relief::options::{CustomElementMatcher, ParserOptions, TemplateSyntaxMode};
-use vize_relief::{ElementType, PropNode, TemplateChildNode, errors::ErrorCode};
+use vize_relief::{ElementType, PropNode, TemplateChildNode};
 
 #[test]
 fn complete_names_and_spans_follow_the_v_pre_boundary() {

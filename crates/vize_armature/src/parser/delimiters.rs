@@ -1,13 +1,10 @@
 //! Interpolation delimiter validation and tokenizer setup.
 
 use super::{Parser, callbacks::ParserCallbacks};
-use vize_l0::Vec;
+use vize_l0::{ErrorCode, Vec};
 use vize_l1::markup::lex::compat::adapter::CompatSink;
 use vize_l1::markup::{Component, Delimiters, Document, LexOptions, Lexer};
-use vize_relief::{
-    RootNode,
-    errors::{CompilerError, ErrorCode},
-};
+use vize_relief::{RootNode, errors::CompilerError};
 
 impl<'a> Parser<'a> {
     pub(super) fn tokenize_template(&mut self) -> bool {
@@ -73,8 +70,8 @@ impl<'a> Parser<'a> {
 #[cfg(test)]
 mod tests {
     use super::super::parse_with_options;
-    use vize_l0::Allocator;
-    use vize_relief::{ErrorCode, options::ParserOptions};
+    use vize_l0::{Allocator, ErrorCode};
+    use vize_relief::options::ParserOptions;
 
     #[test]
     fn empty_interpolation_delimiters_are_rejected_without_partial_output() {

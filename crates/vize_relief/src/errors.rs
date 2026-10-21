@@ -48,6 +48,7 @@ impl CompilerError {
     }
 }
 
+/// Compatibility re-export of the compiler-wide code vocabulary owned by L0.
 pub use vize_l0::compiler_error::ErrorCode;
 
 /// Result type for compiler operations
