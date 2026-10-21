@@ -206,6 +206,7 @@ s1_to_s2_pass_template_complexity = { wall_p50_ns = 0, allocs = 3, rss_peak_byte
 # measured window is emit-only over late DOM surfaces, so exact allocs guard
 # the output path before the production-lane switch.
 s1_to_s2_emit_p2_11_dom_surface = { wall_p50_ns = 0, allocs = 60, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+s1_to_s2_emit_helper_rich_large = { wall_p50_ns = 0, allocs = 1, rss_peak_bytes = 0, wall_tolerance = 0.10 }
 
 # Patina markup probes: the per-rule `visit_with` window over one diagnostic-free
 # root, as JSX and (P4-7a) as a Vue template via L2; parse/lowering are setup.
