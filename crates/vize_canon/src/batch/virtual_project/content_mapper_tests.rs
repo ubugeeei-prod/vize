@@ -27,38 +27,6 @@ mod scoped_event_navigation;
 mod slot_outlet_navigation;
 
 #[test]
-fn musea_art_file_declares_define_art_and_types_its_implicit_component() {
-    let source = r#"<script setup lang="ts">
-defineArt("./MyCard.vue", { title: "MyCard" });
-</script>
-<art>
-  <variant name="Default"><MyCard title="hello" /></variant>
-</art>
-"#;
-    let art = generate_vue_content_mapper_transform(Path::new("MyCard.art.vue"), source)
-        .expect("art transform");
-    let ordinary = generate_vue_content_mapper_transform(Path::new("MyCard.vue"), source)
-        .expect("ordinary SFC transform");
-
-    assert!(
-        art.text.contains("declare function defineArt("),
-        "the mapper must provide Musea's file-kind global:\n{}",
-        art.text,
-    );
-    assert!(
-        art.text
-            .contains(r#"declare const MyCard: typeof import("./MyCard.vue").default;"#),
-        "the art subject must retain the component's real prop type:\n{}",
-        art.text,
-    );
-    assert!(
-        !ordinary.text.contains("declare function defineArt("),
-        "ordinary Vue files must not gain Musea globals:\n{}",
-        ordinary.text,
-    );
-}
-
-#[test]
 fn emits_stable_semantic_links_for_ref_unwraps() {
     let source = r#"<script setup lang="ts">
 import { ref } from 'vue'
@@ -502,3 +470,6 @@ const emoji = "😀"
         );
     }
 }
+
+#[path = "content_mapper_art_tests.rs"]
+mod musea_art;
