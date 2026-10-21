@@ -45,6 +45,16 @@ pub struct FormatOptionsNapi {
     pub single_attribute_per_line: Option<bool>,
     pub max_attributes_per_line: Option<u32>,
     pub normalize_directive_shorthands: Option<bool>,
+    /// Re-quote CSS, SCSS and Less strings with the singleQuote preference.
+    pub normalize_css_quotes: Option<bool>,
+    /// Normalize one-line static style attributes.
+    pub normalize_inline_styles: Option<bool>,
+    /// Parenthesize v-for aliases when more than one alias is present.
+    pub normalize_v_for_parens: Option<bool>,
+    /// Close HTML void elements with `/>`.
+    pub self_close_void_elements: Option<bool>,
+    /// Re-indent SCSS and Less blocks by nesting depth.
+    pub reindent_preprocessor_styles: Option<bool>,
 }
 
 /// Format result for NAPI.
@@ -106,6 +116,21 @@ fn apply_options(opts: FormatOptionsNapi) -> Result<FormatOptions> {
     if let Some(value) = opts.normalize_directive_shorthands {
         options.normalize_directive_shorthands = value;
     }
+    if let Some(value) = opts.normalize_css_quotes {
+        options.normalize_css_quotes = value;
+    }
+    if let Some(value) = opts.normalize_inline_styles {
+        options.normalize_inline_styles = value;
+    }
+    if let Some(value) = opts.normalize_v_for_parens {
+        options.normalize_v_for_parens = value;
+    }
+    if let Some(value) = opts.self_close_void_elements {
+        options.self_close_void_elements = value;
+    }
+    if let Some(value) = opts.reindent_preprocessor_styles {
+        options.reindent_preprocessor_styles = value;
+    }
 
     Ok(options)
 }
@@ -149,7 +174,7 @@ pub fn format_sfc_napi(
 
 #[cfg(test)]
 mod tests {
-    use super::{FormatOptionsNapi, format_sfc_napi};
+    use super::{FormatOptionsNapi, apply_options, format_sfc_napi};
 
     #[test]
     fn native_sfc_sorting_uses_the_authored_full_reference() {
@@ -166,5 +191,39 @@ mod tests {
         .expect("native formatting");
         assert_eq!(output.code, expected);
         assert!(output.changed);
+    }
+
+    #[test]
+    fn native_normalization_options_override_presets_in_both_directions() {
+        let enabled = apply_options(FormatOptionsNapi {
+            normalize_css_quotes: Some(true),
+            normalize_inline_styles: Some(true),
+            normalize_v_for_parens: Some(true),
+            self_close_void_elements: Some(true),
+            reindent_preprocessor_styles: Some(true),
+            ..Default::default()
+        })
+        .expect("native options");
+        assert!(enabled.normalize_css_quotes);
+        assert!(enabled.normalize_inline_styles);
+        assert!(enabled.normalize_v_for_parens);
+        assert!(enabled.self_close_void_elements);
+        assert!(enabled.reindent_preprocessor_styles);
+
+        let disabled = apply_options(FormatOptionsNapi {
+            preset: Some("prettier".into()),
+            normalize_css_quotes: Some(false),
+            normalize_inline_styles: Some(false),
+            normalize_v_for_parens: Some(false),
+            self_close_void_elements: Some(false),
+            reindent_preprocessor_styles: Some(false),
+            ..Default::default()
+        })
+        .expect("native preset override");
+        assert!(!disabled.normalize_css_quotes);
+        assert!(!disabled.normalize_inline_styles);
+        assert!(!disabled.normalize_v_for_parens);
+        assert!(!disabled.self_close_void_elements);
+        assert!(!disabled.reindent_preprocessor_styles);
     }
 }

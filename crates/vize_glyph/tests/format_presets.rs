@@ -335,13 +335,17 @@ fn default_options_serialize_as_the_published_reference() {
 #[test]
 fn config_profiles_resolve_presets_under_authored_options() {
     let document: vize_l0::config::ConfigDocument = serde_json::from_str(
-        r#"{"formatter":{"preset":"prettier","printWidth":120,"selfCloseVoidElements":false}}"#,
+        r#"{"formatter":{"preset":"prettier","printWidth":120,"normalizeCssQuotes":false,"normalizeInlineStyles":false,"normalizeVForParens":false,"selfCloseVoidElements":false,"reindentPreprocessorStyles":false}}"#,
     )
     .expect("config");
     let options = FormatOptions::from_profile(document.formatter_profile()).expect("options");
     let mut expected = FormatOptions::prettier_compat();
     expected.print_width = 120;
+    expected.normalize_css_quotes = false;
+    expected.normalize_inline_styles = false;
+    expected.normalize_v_for_parens = false;
     expected.self_close_void_elements = false;
+    expected.reindent_preprocessor_styles = false;
     assert_eq!(
         serde_json::to_value(options).expect("serialize"),
         serde_json::to_value(expected).expect("serialize")

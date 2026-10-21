@@ -110,6 +110,56 @@ void test("public Prettier preset reuses CSS, inline-style and void-element poli
   }
 });
 
+void test("public formatter exposes each Prettier normalizer as an explicit Node option", () => {
+  const controls = [
+    [
+      "<style>\n@import 'a.css';\n.a {\n  content: 'it\\'s';\n  font-family: 'A \"B\"';\n}\n</style>\n",
+      '<style>\n@import "a.css";\n.a {\n  content: "it\'s";\n  font-family: \'A "B"\';\n}\n</style>\n',
+    ],
+    [
+      '<template>\n  <div style="color:red;top:0;" :style="{ a: 1 }">a</div>\n</template>\n',
+      '<template>\n  <div style="color: red; top: 0" :style="{ a: 1 }">a</div>\n</template>\n',
+    ],
+    [
+      '<template>\n  <ul>\n    <li v-for="item, i in items" :key="i"><img :src="item"><br></li>\n    <li v-for="{ a, b } of pairs" :key="a">{{ b }}</li>\n    <Input v-for="x in xs" :key="x"></Input>\n  </ul>\n</template>\n',
+      '<template>\n  <ul>\n    <li v-for="(item, i) in items" :key="i"><img :src="item" /><br /></li>\n    <li v-for="{ a, b } of pairs" :key="a">{{ b }}</li>\n    <Input v-for="x in xs" :key="x"></Input>\n  </ul>\n</template>\n',
+    ],
+    [
+      '<style lang="scss">\n.a {\n\tcolor: red;\n\n\n\t&:hover {\n\t\tcolor: blue;\n\t}\n}\n</style>\n',
+      '<style lang="scss">\n.a {\n  color: red;\n\n  &:hover {\n    color: blue;\n  }\n}\n</style>\n',
+    ],
+  ] as const;
+  const enabled = Object.freeze({
+    normalizeCssQuotes: true,
+    normalizeInlineStyles: true,
+    normalizeVForParens: true,
+    selfCloseVoidElements: true,
+    reindentPreprocessorStyles: true,
+  }) satisfies FormatOptionsNapi;
+  const disabled = Object.freeze({
+    preset: "prettier" as const,
+    normalizeCssQuotes: false,
+    normalizeInlineStyles: false,
+    normalizeVForParens: false,
+    selfCloseVoidElements: false,
+    reindentPreprocessorStyles: false,
+  }) satisfies FormatOptionsNapi;
+  for (const [source, expected] of controls) {
+    assert.deepEqual(formatSfc(source, enabled), { code: expected, changed: true });
+    for (let pass = 2; pass <= 3; pass += 1) {
+      assert.deepEqual(formatSfc(expected, enabled), { code: expected, changed: false });
+    }
+    assert.deepEqual(formatSfc(source, disabled), { code: source, changed: false });
+  }
+  assert.deepEqual(enabled, {
+    normalizeCssQuotes: true,
+    normalizeInlineStyles: true,
+    normalizeVForParens: true,
+    selfCloseVoidElements: true,
+    reindentPreprocessorStyles: true,
+  });
+});
+
 void test("explicit native formatter values override presets including false", () => {
   const source = `<template>
   <div v-bind:id="id" class="a">{{ id }}</div>

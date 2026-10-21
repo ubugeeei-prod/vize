@@ -326,3 +326,41 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }"
     );
 }
+
+#[test]
+fn wide_event_keys_merge_only_repeated_keys() {
+    let source = r#"<div
+        @event-00="h00" @event-01="h01" @event-02="h02" @event-03="h03"
+        @event-04="h04" @event-05="h05" @event-06="h06" @event-07="h07"
+        @event-08="h08" @event-09="h09" @event-10="h10" @event-11="h11"
+        @event-12="h12" @event-13="h13" @event-14="h14" @event-15="h15"
+        @event-07="again"
+    ></div>"#;
+
+    assert_eq!(
+        assembled(source),
+        "\
+const { openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", {
+    onEvent00: h00,
+    onEvent01: h01,
+    onEvent02: h02,
+    onEvent03: h03,
+    onEvent04: h04,
+    onEvent05: h05,
+    onEvent06: h06,
+    onEvent07: [h07, again],
+    onEvent08: h08,
+    onEvent09: h09,
+    onEvent10: h10,
+    onEvent11: h11,
+    onEvent12: h12,
+    onEvent13: h13,
+    onEvent14: h14,
+    onEvent15: h15
+  }, null, 40 /* PROPS, NEED_HYDRATION */, [\"onEvent00\", \"onEvent01\", \"onEvent02\", \"onEvent03\", \"onEvent04\", \"onEvent05\", \"onEvent06\", \"onEvent07\", \"onEvent08\", \"onEvent09\", \"onEvent10\", \"onEvent11\", \"onEvent12\", \"onEvent13\", \"onEvent14\", \"onEvent15\"]))
+}"
+    );
+}

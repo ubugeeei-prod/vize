@@ -161,6 +161,11 @@ Every option below can be set under `vue.formatter`. An option you leave out tak
 | `reindentPreprocessorStyles`   | `false`          | Re-indents SCSS and Less blocks by nesting depth and tidies their blank lines.                                                     |
 | `sortImports`                  | off              | Sorts imports in scripts. See [Sort imports](./formatter-import-sorting.md).                                                       |
 
+The native Node `formatSfc` API accepts the five Prettier migration booleans
+`normalizeCssQuotes`, `normalizeInlineStyles`, `normalizeVForParens`,
+`selfCloseVoidElements` and `reindentPreprocessorStyles` under the same names.
+Explicit values override `preset`, including `false`.
+
 ## Compact application code
 
 Use the `compact` preset when application templates should stay dense without reordering authored blocks or attributes:

@@ -419,7 +419,7 @@ function validateRatchets(
   }
   const authoredLsp = oracles.get("authored-lsp") ?? new Set<string>();
   const vueTscParity = oracles.get("vue-tsc-parity") ?? new Set<string>();
-  equal(authoredLsp.size, 55, "authored LSP oracle count drifted");
+  equal(authoredLsp.size, 56, "authored LSP oracle count drifted");
   equal(vueTscParity.size, 11, "vue-tsc parity count drifted");
   deepEqual(
     [...authoredLsp].sort(compareCodepoints),
