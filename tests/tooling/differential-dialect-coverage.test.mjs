@@ -54,9 +54,12 @@ void test("every product manifest contributes to the case-level dialect denomina
     0,
   );
   assert.equal(
-    Object.values(summaries).reduce((count, summary) => count + summary.unknownReadinessCases, 0),
+    Object.values(summaries).reduce(
+      (count, summary) => count + summary.unknownReadinessCases + summary.verifiedCases,
+      0,
+    ),
     plannedCases,
-    "source inspection must not reduce the zero-fallback readiness denominator",
+    "every case must remain visible in either the verified or unknown readiness denominator",
   );
   for (const product of products) {
     assert.equal(
@@ -71,6 +74,23 @@ void test("every product manifest contributes to the case-level dialect denomina
       assert.deepEqual(summaries[product][measurement], dialects, `${product} ${measurement}`);
     }
   }
+});
+
+void test("compiler promotes the quirks inventory through actual adapter coordinates", () => {
+  assert.deepEqual(summarizeDialectCoverage(load("compiler").cases), {
+    plannedCases: 19,
+    verifiedCases: 2,
+    provisionalCases: 15,
+    unknownReadinessCases: 17,
+    verified: {
+      "vue-quirks": 2,
+    },
+    provisional: {
+      "html-template": 15,
+      ts: 3,
+      "vue3-sfc": 15,
+    },
+  });
 });
 
 void test("coverage schema rejects malformed and noncanonical verified claims", () => {
@@ -167,16 +187,16 @@ void test("typechecker coverage records every pinned authored source dialect", (
   const source = load("typechecker");
   const summary = summarizeDialectCoverage(source.cases);
   assert.deepEqual(summary, {
-    plannedCases: 70,
+    plannedCases: 71,
     verifiedCases: 0,
-    provisionalCases: 69,
-    unknownReadinessCases: 70,
+    provisionalCases: 70,
+    unknownReadinessCases: 71,
     verified: {},
     provisional: {
-      "html-template": 67,
-      ts: 69,
+      "html-template": 68,
+      ts: 70,
       tsx: 3,
-      "vue3-sfc": 68,
+      "vue3-sfc": 69,
     },
   });
   assert.deepEqual(

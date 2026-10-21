@@ -109,6 +109,29 @@ test("real-project workflow schedules every balanced fixture shard nightly", () 
   });
   const corpus = readCanonicalCorpusWorkflow().jobs?.["davinci-dom-corpus"];
   assert.ok(corpus);
+  const reducer = workflow.jobs?.["davinci-dom-divergence-reduction"];
+  assert.ok(reducer);
+  assert.equal(reducer.name, "reduce canonical DOM divergence");
+  assert.equal(reducer.needs, "davinci-dom-corpus");
+  assert.deepEqual(reducer.permissions, { contents: "read", actions: "read" });
+  assert.equal(reducer["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
+  const reducerSteps = reducer.steps ?? [];
+  const planReduction = findStep(reducerSteps, "Plan one bounded reduction");
+  assert.equal(planReduction.id, "reduction");
+  assert.match(planReduction.run ?? "", /canonical-corpus-divergence-reduction\.mjs plan/);
+  const hydrateReduction = findStep(reducerSteps, "Hydrate the selected pinned fixture");
+  assert.equal(hydrateReduction.if, "${{ steps.reduction.outputs.required == 'true' }}");
+  assert.equal(hydrateReduction.run, 'git submodule update --init --depth 1 -- "$FIXTURE_PATH"');
+  assert.match(
+    findStep(reducerSteps, "Reduce the first divergence witness").run ?? "",
+    /canonical-corpus-divergence-reduction\.mjs run/,
+  );
+  const reductionUpload = findStep(reducerSteps, "Upload reduced witness and provenance");
+  assert.equal(reductionUpload.if, "${{ always() }}");
+  assert.equal(
+    reductionUpload.with?.name,
+    "canonical-corpus-dom-reduction-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}",
+  );
   const publisher = workflow.jobs?.["davinci-dom-divergence-issue"];
   assert.ok(publisher);
   assert.equal(publisher.name, "file canonical DOM divergence");
@@ -116,7 +139,7 @@ test("real-project workflow schedules every balanced fixture shard nightly", () 
     publisher.if,
     "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}",
   );
-  assert.equal(publisher.needs, "davinci-dom-corpus");
+  assert.deepEqual(publisher.needs, ["davinci-dom-corpus", "davinci-dom-divergence-reduction"]);
   assert.deepEqual(publisher.permissions, {
     contents: "read",
     actions: "read",
@@ -135,7 +158,7 @@ test("real-project workflow schedules every balanced fixture shard nightly", () 
   assert.deepEqual(issue.env, { GH_TOKEN: "${{ github.token }}" });
   assert.equal(
     issue.run,
-    "node tools/support/compat/github/canonical-corpus-divergence-issue.mjs publish real-project-davinci-dom-corpus",
+    "node tools/support/compat/github/canonical-corpus-divergence-issue.mjs publish real-project-davinci-dom-corpus real-project-davinci-dom-reduction",
   );
   for (const checkout of [
     findStep(job.steps ?? [], "Checkout matrix commit"),

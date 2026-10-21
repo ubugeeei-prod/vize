@@ -176,6 +176,24 @@ fn collect_with_defaults_default_names(
     (names, undefined)
 }
 
+/// Names and authored anchor for the mapper-owned props object in template scope.
+pub(crate) struct TemplatePropsScope<'a> {
+    props_shadow_anchor: Option<&'a std::ops::Range<usize>>,
+    props_object_binding: &'a str,
+}
+
+impl<'a> TemplatePropsScope<'a> {
+    pub(crate) fn new(
+        props_shadow_anchor: Option<&'a std::ops::Range<usize>>,
+        props_object_binding: &'a str,
+    ) -> Self {
+        Self {
+            props_shadow_anchor,
+            props_object_binding,
+        }
+    }
+}
+
 /// Returns the template names declared only as keyed props locals: the
 /// analyzer never bound them, yet each one is now a template local whose
 /// `satisfies keyof` key reports a name the props do not declare.
@@ -184,8 +202,12 @@ pub(crate) fn generate_props_variables(
     binding_mappings: &mut PropBindingMappings<'_>,
     summary: &Croquis,
     check_props: bool,
-    props_shadow_anchor: Option<&std::ops::Range<usize>>,
+    scope: TemplatePropsScope<'_>,
 ) -> FxHashSet<String> {
+    let TemplatePropsScope {
+        props_shadow_anchor,
+        props_object_binding,
+    } = scope;
     let mut keyed_names = FxHashSet::default();
     let model = TemplatePropsModel::new(summary);
     if !model.declares_props {
@@ -208,13 +230,20 @@ pub(crate) fn generate_props_variables(
     let props_start = ts.len() + "  const ".len();
     append!(
         *ts,
-        "  const props: {template_props_type_ref} = {{}} as {template_props_type_ref};\n"
+        "  const {props_object_binding}: {template_props_type_ref} = {{}} as {template_props_type_ref};\n"
     );
-    if let Some(anchor) = props_shadow_anchor {
-        binding_mappings
-            .link_setup_shadow(anchor.clone(), props_start..props_start + "props".len());
+    if props_object_binding == "props"
+        && let Some(anchor) = props_shadow_anchor
+    {
+        binding_mappings.link_setup_shadow(
+            anchor.clone(),
+            props_start..props_start + props_object_binding.len(),
+        );
     }
-    ts.push_str("  void props; // Mark as used to avoid TS6133\n");
+    append!(
+        *ts,
+        "  void {props_object_binding}; // Mark as used to avoid TS6133\n"
+    );
 
     let mut emitted_names = FxHashSet::default();
     if let Some(type_args) = define_props_type_args {
@@ -229,6 +258,7 @@ pub(crate) fn generate_props_variables(
             }
             binding_mappings.emit(
                 ts,
+                props_object_binding,
                 template_props_type_ref,
                 prop.name.as_str(),
                 defaulted_prop_names.contains(&prop.name),
@@ -239,7 +269,7 @@ pub(crate) fn generate_props_variables(
             emit_macro_template_prop_bindings(
                 ts,
                 binding_mappings,
-                summary,
+                props_object_binding,
                 template_props_type_ref,
                 props,
                 defaulted_prop_names,
@@ -252,7 +282,10 @@ pub(crate) fn generate_props_variables(
             if check_props && !names.is_empty() {
                 // Keep literal public-instance members (including user plugin
                 // augmentations), but never let an index signature hide typos.
-                ts.push_str("  const __vize_keyed_template_context = props as typeof props & { [K in keyof __Ctx as string extends K ? never : number extends K ? never : symbol extends K ? never : K]: __Ctx[K] };\n  void __vize_keyed_template_context;\n");
+                append!(
+                    *ts,
+                    "  const __vize_keyed_template_context = {props_object_binding} as typeof {props_object_binding} & {{ [K in keyof __Ctx as string extends K ? never : number extends K ? never : symbol extends K ? never : K]: __Ctx[K] }};\n  void __vize_keyed_template_context;\n"
+                );
             }
             for name in names {
                 if check_props {
@@ -264,7 +297,7 @@ pub(crate) fn generate_props_variables(
                         defaulted_prop_names.contains(&name),
                     );
                 } else {
-                    emit_unchecked_template_prop_binding(ts, name.as_str());
+                    emit_unchecked_template_prop_binding(ts, props_object_binding, name.as_str());
                 }
                 keyed_names.insert(name);
             }
@@ -274,7 +307,7 @@ pub(crate) fn generate_props_variables(
         emit_macro_template_prop_bindings(
             ts,
             binding_mappings,
-            summary,
+            props_object_binding,
             template_props_type_ref,
             props,
             defaulted_prop_names,
@@ -289,6 +322,7 @@ pub(crate) fn generate_props_variables(
         }
         binding_mappings.emit(
             ts,
+            props_object_binding,
             template_props_type_ref,
             model.name.as_str(),
             model.default_value.is_some(),
@@ -327,11 +361,15 @@ fn emit_keyed_template_prop_binding(
     );
 }
 
-fn emit_unchecked_template_prop_binding(ts: &mut String, prop_name: &str) {
+fn emit_unchecked_template_prop_binding(
+    ts: &mut String,
+    props_object_binding: &str,
+    prop_name: &str,
+) {
     let binding_name = to_safe_identifier(prop_name);
     append!(
         *ts,
-        "  const {binding_name} = (props as Record<string, unknown>)[\"{prop_name}\"];\n"
+        "  const {binding_name} = ({props_object_binding} as Record<string, unknown>)[\"{prop_name}\"];\n"
     );
     append!(*ts, "  void {binding_name};\n");
 }

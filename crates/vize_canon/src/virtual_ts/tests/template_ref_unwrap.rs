@@ -34,6 +34,10 @@ fn generate_template_code(
     .into()
 }
 
+fn exact_line_count(source: &str, expected: &str) -> usize {
+    source.lines().filter(|line| *line == expected).count()
+}
+
 #[test]
 fn explicit_ref_literal_types_survive_template_unwrap() {
     let script = r#"import { ref } from 'vue'
@@ -43,23 +47,75 @@ const direction = ref<'rtl'>('rtl')
     let hoisted_code = generate_template_code(script, template, true);
     let embedded_code = generate_template_code(script, template, false);
 
-    assert!(
-        SHARED_PREAMBLE_DTS.contains("T extends string ? string extends T ? string : T"),
-        "the shared template-ref helper must preserve explicit string literals:\n{}",
-        SHARED_PREAMBLE_DTS
+    const WIDEN_HELPER: &str = "type __VizeWidenTemplateRef<T> = __VizeIsAny<T> extends true ? T : __VizeIsUnion<T> extends true ? T : T extends string ? string extends T ? string : T : T extends number ? number extends T ? number : T : T extends boolean ? boolean extends T ? boolean : T : T;";
+    assert_eq!(
+        exact_line_count(SHARED_PREAMBLE_DTS, WIDEN_HELPER),
+        1,
+        "the shared template-ref helper must preserve the exact widening oracle:\n{}",
+        SHARED_PREAMBLE_DTS,
     );
-    assert!(
-        embedded_code.contains("T extends string ? string extends T ? string : T"),
-        "the embedded template-ref helper must preserve explicit string literals:\n{embedded_code}"
+    assert_eq!(
+        exact_line_count(&embedded_code, &format!("    {WIDEN_HELPER}")),
+        1,
+        "the embedded template-ref helper must preserve the exact widening oracle:\n{embedded_code}",
     );
     for code in [hoisted_code, embedded_code] {
-        assert!(
-            code.contains("type __R_direction = typeof direction;"),
-            "template expressions should capture the setup ref type:\n{code}"
+        assert_eq!(
+            exact_line_count(&code, "  type __R_direction = typeof direction;"),
+            1,
+            "template expressions should capture the exact setup ref type:\n{code}",
         );
-        assert!(
-            code.contains("var direction: __U<__R_direction> = undefined as any;"),
-            "template expressions should shadow the ref through the unwrap helper:\n{code}"
+        assert_eq!(
+            exact_line_count(
+                &code,
+                "    var direction: __U<__R_direction> = undefined as any;",
+            ),
+            1,
+            "template expressions should emit the exact unwrapped ref shadow:\n{code}",
         );
     }
+}
+
+#[test]
+fn authored_props_binding_does_not_collide_with_template_props_object() {
+    let script = r#"defineProps<{ label?: string }>()
+const { props, size } = useField()
+"#;
+    let code = generate_template_code(
+        script,
+        r#"<div>{{ props.title }} {{ size }} {{ label }}</div>"#,
+        true,
+    );
+
+    assert_eq!(
+        exact_line_count(&code, "  type __R_props = typeof props;"),
+        1,
+        "the authored maybe-ref binding must retain its exact template capture:\n{code}",
+    );
+    assert_eq!(
+        exact_line_count(&code, "    var props: __UN<__R_props> = undefined as any;",),
+        1,
+        "the authored binding must remain the exact template-visible `props`:\n{code}",
+    );
+    assert_eq!(
+        exact_line_count(
+            &code,
+            "  const __vize_props: __DefineProps<Props> = {} as __DefineProps<Props>;",
+        ),
+        1,
+        "declared props must use the exact collision-free internal object:\n{code}",
+    );
+    assert_eq!(
+        exact_line_count(&code, r#"  const label = __vize_props["label"];"#),
+        1,
+        "declared prop locals must resolve through the internal object:\n{code}",
+    );
+    assert_eq!(
+        exact_line_count(
+            &code,
+            "  const props: __DefineProps<Props> = {} as __DefineProps<Props>;",
+        ),
+        0,
+        "the generated object must not redeclare the authored binding:\n{code}",
+    );
 }
