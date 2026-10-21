@@ -191,6 +191,40 @@ fn formatter_cli_exposes_arrow_parentheses_policy() {
 
 #[cfg(feature = "glyph")]
 #[test]
+fn formatter_cli_exposes_bracket_layout_policies() {
+    let project = project();
+    let root = project.path();
+    let source = "<template>\n  <Widget :long-property-name=\"state.currentValue\" other=\"x\" />\n</template>\n<script setup lang=\"ts\">\nconst state={currentValue:1}\n</script>\n";
+    let expected = "<template>\n  <Widget\n    :long-property-name=\"\n      state.currentValue\n    \"\n    other=\"x\" />\n</template>\n<script setup lang=\"ts\">\nconst state = {currentValue: 1};\n</script>\n";
+    write(root, "BracketLayout.vue", source);
+    let args = [
+        "fmt",
+        "--write",
+        "BracketLayout.vue",
+        "--no-config",
+        "--preset",
+        "vize",
+        "--print-width",
+        "40",
+        "--sort-attributes=false",
+        "--single-attribute-per-line",
+        "--bracket-spacing=false",
+        "--bracket-same-line",
+    ];
+    assert_success(&run(root, &args));
+    assert_eq!(
+        fs::read_to_string(root.join("BracketLayout.vue")).unwrap(),
+        expected
+    );
+    assert_success(&run(root, &args));
+    assert_eq!(
+        fs::read_to_string(root.join("BracketLayout.vue")).unwrap(),
+        expected
+    );
+}
+
+#[cfg(feature = "glyph")]
+#[test]
 fn package_boundaries_precedence_and_sibling_settings_reach_the_formatter() {
     let workspace = tempfile::tempdir().unwrap();
     let root = workspace.path();

@@ -51,6 +51,10 @@ pub struct FormatOptionsNapi {
     /// Change parentheses around a sole arrow function parameter.
     #[napi(ts_type = "'always' | 'avoid'")]
     pub arrow_parens: Option<String>,
+    /// Print spaces inside object literal braces.
+    pub bracket_spacing: Option<bool>,
+    /// Put the closing bracket of a multi-line tag on its last attribute line.
+    pub bracket_same_line: Option<bool>,
     /// Layout line endings; auto follows the first source terminator.
     pub end_of_line: Option<EndOfLineNapi>,
     pub sort_attributes: Option<bool>,
@@ -148,6 +152,12 @@ fn apply_options(opts: FormatOptionsNapi) -> Result<FormatOptions> {
                 ));
             }
         };
+    }
+    if let Some(value) = opts.bracket_spacing {
+        options.bracket_spacing = value;
+    }
+    if let Some(value) = opts.bracket_same_line {
+        options.bracket_same_line = value;
     }
     if let Some(value) = opts.end_of_line {
         options.end_of_line = match value {
@@ -348,5 +358,18 @@ mod tests {
             error.reason,
             "Unknown arrowParens; expected 'always' or 'avoid'"
         );
+    }
+
+    #[test]
+    fn native_bracket_layout_options_override_presets() {
+        let options = apply_options(FormatOptionsNapi {
+            preset: Some("compact".into()),
+            bracket_spacing: Some(false),
+            bracket_same_line: Some(false),
+            ..Default::default()
+        })
+        .expect("native bracket layout options");
+        assert!(!options.bracket_spacing);
+        assert!(!options.bracket_same_line);
     }
 }

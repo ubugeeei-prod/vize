@@ -72,6 +72,14 @@ pub struct FmtArgs {
     #[arg(long, value_enum)]
     pub arrow_parens: Option<FmtArrowParens>,
 
+    /// Print spaces inside object literal braces
+    #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
+    pub bracket_spacing: Option<bool>,
+
+    /// Put the closing bracket of a multi-line tag on its last attribute line
+    #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
+    pub bracket_same_line: Option<bool>,
+
     /// Print width (line length) for formatting
     #[arg(long)]
     pub print_width: Option<u32>,

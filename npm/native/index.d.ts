@@ -561,6 +561,10 @@ export interface FormatOptionsNapi {
   trailingComma?: "all" | "es5" | "none";
   /** Change parentheses around a sole arrow function parameter. */
   arrowParens?: "always" | "avoid";
+  /** Print spaces inside object literal braces. */
+  bracketSpacing?: boolean;
+  /** Put the closing bracket of a multi-line tag on its last attribute line. */
+  bracketSameLine?: boolean;
   /** Layout line endings; auto follows the first source terminator. */
   endOfLine?: EndOfLineNapi;
   sortAttributes?: boolean;

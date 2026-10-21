@@ -84,6 +84,8 @@ pub fn run(args: ReadyArgs) {
             quote_props: None,
             trailing_comma: None,
             arrow_parens: None,
+            bracket_spacing: None,
+            bracket_same_line: None,
             print_width: None,
             tab_width: None,
             use_tabs: None,

@@ -161,3 +161,15 @@ name and two values. Explicit values are applied after a preset, and unknown
 Node strings fail at the native boundary. Public CLI and Node whole-output
 regressions prove a second/third-pass fixed point; the existing option matrix
 continues to exercise the `avoid` axis over the 300+ Vue corpus.
+
+## Bracket layout option parity
+
+The existing `bracketSpacing` and `bracketSameLine` booleans now have direct
+CLI overrides and native Node projections in addition to Rust, config schema,
+generated TypeScript, Pkl, editor and WASM support. CLI flags are
+`--bracket-spacing[=false]` and `--bracket-same-line[=false]`; Node `formatSfc`
+uses the same camel-case option names. Explicit true or false values are
+applied after a preset. Public CLI and Node whole-output regressions prove a
+second/third-pass fixed point; the existing option matrix continues to
+exercise `bracketSpacing: false` and `bracketSameLine: true` over the 300+ Vue
+corpus.
