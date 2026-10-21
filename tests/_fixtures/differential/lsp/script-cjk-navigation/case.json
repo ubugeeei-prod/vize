@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "id": "lsp/fix-history/script-cjk-navigation",
+  "provenance": {
+    "fixCommit": "370caeafee07cec57e78a7b0c75569b299ccd160",
+    "title": "fix(lsp): navigate Unicode script identifiers (#7060)"
+  },
+  "input": {
+    "source": "App.vue.txt",
+    "runtimePath": "App.vue",
+    "sha256": "b350085776c44d2dac86a0860eb704662de754d4bbfe9d8237c312cd53bd31b6"
+  },
+  "expected": {
+    "source": "response.expected.json"
+  },
+  "documentVersion": 1,
+  "languageId": "vue",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "method": "textDocument/definition",
+  "request": {
+    "position": {
+      "line": 2,
+      "character": 11
+    }
+  }
+}
