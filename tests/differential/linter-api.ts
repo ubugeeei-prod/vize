@@ -1,9 +1,15 @@
 import assert from "node:assert/strict";
 import path from "node:path";
+import { summarizeNativeAcceptance } from "./acceptance-rates.mjs";
 import { compareBytes } from "./compare.mjs";
 import { loadProductManifest, readPinnedArtifact, sha256 } from "./harness.mjs";
 import { validateProductObserverReceipt, type ObserverSpec } from "./observer-build.ts";
-import { decodeNativeOutcome, runNative, validateNativeContract } from "./linter-native.ts";
+import {
+  decodeNativeOutcome,
+  runNative,
+  validateNativeContract,
+  validateNativeRow,
+} from "./linter-native.ts";
 import { summary, validateLinterReport } from "./linter-api-report.ts";
 import { collectLinterAttempts } from "./linter-process.ts";
 export { validateLinterReport } from "./linter-api-report.ts";
@@ -166,4 +172,31 @@ export function runLinterApiPack({
   };
   validateLinterReport(loaded, report, receipt);
   return report;
+}
+
+export function summarizeLinterAcceptance(
+  loaded: ReturnType<typeof loadLinterManifest>,
+  report: any,
+  receipt: any,
+) {
+  validateLinterReport(loaded, report, receipt);
+  const fixtures = new Map(loaded.cases.map((fixture: any) => [fixture.id, fixture]));
+  return summarizeNativeAcceptance(loaded, report, {
+    sourceRevision: receipt.source.sourceRevision,
+    buildReceiptSha256: sha256(Buffer.from(JSON.stringify(receipt))),
+    requiredStages: ["parse", "lint", "output"],
+    verifyObservation: (observation: any, row: any, target: string) => {
+      assert.equal(target, "lint");
+      const fixture = fixtures.get(row.id);
+      assert(fixture, `missing linter fixture: ${row.id}`);
+      validateNativeRow(fixture, row.native, receipt);
+      assert.deepEqual(observation, row.native.observation);
+      return true;
+    },
+    verifyComparison: (row: any, target: string) =>
+      target === "lint" &&
+      row.comparison.state === "equal" &&
+      row.native.verdict === "matched-reference" &&
+      row.legacy.verdict === "matched-reference",
+  });
 }

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { classifyNativeRow, validateResultEnvelope } from "./harness.mjs";
+import { classifyDialectCoverage, classifyNativeRow, validateResultEnvelope } from "./harness.mjs";
 
 function emptyCounts() {
   return {
@@ -12,6 +12,25 @@ function emptyCounts() {
   };
 }
 
+function addCounts(counts, state, equivalent) {
+  counts.planned += 1;
+  if (state === "native-handled") {
+    counts.nativeHandled += 1;
+    if (equivalent) counts.nativeEquivalent += 1;
+  } else if (state === "unsupported") {
+    counts.unsupported += 1;
+  } else if (state === "legacy-backed") {
+    counts.legacyBacked += 1;
+  } else {
+    counts.unverified += 1;
+  }
+}
+
+function dialectBucket(buckets, dialect) {
+  if (!buckets[dialect]) buckets[dialect] = emptyCounts();
+  return buckets[dialect];
+}
+
 // Product adapters validate their runtime observations, receipts and comparisons.
 // This report only credits the exact, pinned case/target coordinates they expose.
 export function summarizeNativeAcceptance(loaded, report, options) {
@@ -19,7 +38,13 @@ export function summarizeNativeAcceptance(loaded, report, options) {
   validateResultEnvelope(loaded, report, options.sourceRevision);
   const targets = new Map();
   const plannedTargets = new Map(loaded.cases.map((fixture) => [fixture.id, fixture.targets]));
+  const plannedCases = new Map(loaded.cases.map((fixture) => [fixture.id, fixture]));
   const total = emptyCounts();
+  const dialectCoverage = {
+    verified: {},
+    provisional: {},
+    unknown: emptyCounts(),
+  };
   for (const row of report.rows) {
     const choices = plannedTargets.get(row.id);
     const target = row.target ?? choices[0];
@@ -42,18 +67,19 @@ export function summarizeNativeAcceptance(loaded, report, options) {
       state === "native-handled" &&
       row.comparison.state === "equal" &&
       options.verifyComparison?.(row, target) === true;
-    for (const bucket of [counts, total]) {
-      bucket.planned += 1;
-      if (state === "native-handled") {
-        bucket.nativeHandled += 1;
-        if (equivalent) bucket.nativeEquivalent += 1;
-      } else if (state === "unsupported") {
-        bucket.unsupported += 1;
-      } else if (state === "legacy-backed") {
-        bucket.legacyBacked += 1;
-      } else {
-        // A failed, skipped, missing or unverified execution stays in the denominator.
-        bucket.unverified += 1;
+    for (const bucket of [counts, total]) addCounts(bucket, state, equivalent);
+    const fixtureCoverage = classifyDialectCoverage(plannedCases.get(row.id).dialectCoverage);
+    if (fixtureCoverage.readiness === "unknown") {
+      // A provisional label remains in the unknown readiness denominator.
+      addCounts(dialectCoverage.unknown, state, equivalent);
+    }
+    if (fixtureCoverage.measurement !== "unknown") {
+      for (const dialect of fixtureCoverage.dialects) {
+        addCounts(
+          dialectBucket(dialectCoverage[fixtureCoverage.measurement], dialect),
+          state,
+          equivalent,
+        );
       }
     }
   }
@@ -67,6 +93,15 @@ export function summarizeNativeAcceptance(loaded, report, options) {
     plannedCases: loaded.cases.length,
     total,
     targets: Object.fromEntries([...targets].sort(([a], [b]) => a.localeCompare(b))),
+    dialectCoverage: {
+      verified: Object.fromEntries(
+        Object.entries(dialectCoverage.verified).sort(([a], [b]) => a.localeCompare(b)),
+      ),
+      provisional: Object.fromEntries(
+        Object.entries(dialectCoverage.provisional).sort(([a], [b]) => a.localeCompare(b)),
+      ),
+      unknown: dialectCoverage.unknown,
+    },
   };
 }
 
@@ -87,7 +122,25 @@ export function renderNativeAcceptanceMarkdown(summaries) {
   }
   lines.push(
     "",
-    "Denominator: every planned case/target coordinate in each registered manifest. Equivalent requires a product comparator. Unregistered products and unlisted dialects are unmeasured.",
+    "Product | Dialect evidence | Dialect | Planned rows | Native-only | Equivalent | Unsupported | Legacy-backed | Unverified",
+    "--- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---:",
+  );
+  for (const summary of summaries) {
+    for (const evidence of ["verified", "provisional"]) {
+      for (const [dialect, counts] of Object.entries(summary.dialectCoverage[evidence])) {
+        lines.push(
+          `${summary.product} | ${evidence} | ${dialect} | ${counts.planned} | ${counts.nativeHandled} | ${counts.nativeEquivalent} | ${counts.unsupported} | ${counts.legacyBacked} | ${counts.unverified}`,
+        );
+      }
+    }
+    const unknown = summary.dialectCoverage.unknown;
+    lines.push(
+      `${summary.product} | readiness | unknown | ${unknown.planned} | ${unknown.nativeHandled} | ${unknown.nativeEquivalent} | ${unknown.unsupported} | ${unknown.legacyBacked} | ${unknown.unverified}`,
+    );
+  }
+  lines.push(
+    "",
+    "Denominator: every planned case/target coordinate in each registered manifest. Provisional labels remain in the unknown readiness row until verified execution evidence exists. Equivalent requires a product comparator. Unregistered products and unlisted dialects are unmeasured.",
     "",
   );
   return lines.join("\n");

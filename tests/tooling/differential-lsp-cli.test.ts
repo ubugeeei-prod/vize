@@ -27,15 +27,16 @@ void test("source-built LSP registers complete fix-history response sessions wit
   const acceptance = summarizeNativeAcceptance(loaded, report, {
     sourceRevision: revision.stdout.trim(),
   });
+  const plannedCases = loaded.manifest.cases.length;
   assert.deepEqual(acceptance.total, {
-    planned: 32,
+    planned: plannedCases,
     nativeHandled: 0,
     nativeEquivalent: 0,
-    unsupported: 32,
+    unsupported: plannedCases,
     legacyBacked: 0,
     unverified: 0,
   });
-  assert.equal(report.summary.legacyMatches, 32, JSON.stringify(report.rows, null, 2));
+  assert.equal(report.summary.legacyMatches, plannedCases, JSON.stringify(report.rows, null, 2));
   assert.equal(report.summary.legacyFailures, 0);
   assert.equal(report.summary.baselineDrift, 0);
 });

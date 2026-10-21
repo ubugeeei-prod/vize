@@ -1,7 +1,7 @@
 //! A referenced TS project owns its editor state even beside sibling configs.
 use super::{
-    Arc, ObservedLspConfig, Path, ProjectContextKey, ProjectModel, ServerState, Url,
-    paths::physical_path, registry,
+    Arc, ObservedLspConfig, Path, ProjectContextKey, ServerState, Url, paths::physical_path,
+    registry,
 };
 use vize_canon::batch::TsconfigSourceKind;
 
@@ -89,8 +89,7 @@ impl ServerState {
             .read()
             .clone()
             .or_else(|| state.get_workspace_root())?;
-        let (config, _, origin) = state.native_checker_settings();
-        let project = ProjectModel::new(Some(&root), origin.as_deref(), &config);
+        let (_, _, project) = state.native_checker_settings();
         let shell = project.tsconfig().map(physical_path).or_else(|| {
             [root.join("tsconfig.json"), root.join("jsconfig.json")]
                 .into_iter()

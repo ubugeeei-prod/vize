@@ -37,3 +37,19 @@ and invalidation behind one project model without changing existing product
 output. Keep the model request/folder scoped; do not add per-node queries,
 per-node refcounting, or whole-workspace resident state. Actions must verify
 the CLI and LSP matrix before any claim of parity or issue closure.
+
+## Effective tsconfig ownership slice
+
+The applied LSP checker snapshot now owns the `ProjectModel` created during
+configuration admission. Corsa startup, the batch checker, referenced-project
+routing, and module-link capture clone that same immutable model instead of
+reconstructing a tsconfig path from separately stored checker settings and
+config origin. The checker settings, request timeout, and project identity are
+published under one lock, so a concurrent reload cannot combine values from
+different configuration generations.
+
+This removes the LSP's duplicate effective-tsconfig ownership without changing
+CLI selection or adding workspace-resident compiler state. #6874 remains open:
+CLI and editor configuration loading, workspace-folder selection, and their
+full invalidation lifecycle still have separate entry points. Exact-head
+Actions remain the acceptance gate for this slice.
