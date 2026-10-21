@@ -219,7 +219,7 @@ void test("approved product targets match the published acceptance adapters", ()
     }
     assert.deepEqual(
       checkedInPolicy.targets[product],
-      [...targets].sort(),
+      [...targets].sort((left, right) => left.localeCompare(right)),
       `${product} target policy drifted from its published adapter`,
     );
   }
