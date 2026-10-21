@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10196,
+  "regressionCommit": "232f8f514e0ea55a7aeef08bc883b46e0608d12f",
+  "sourceRevision": "232f8f514e0ea55a7aeef08bc883b46e0608d12f",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "authored-props-binding-with-unassigned-define-props",
+      "inputs": [
+        { "file": "tsconfig.json", "source": "tsconfig.json.txt" },
+        { "file": "src/use-field.ts", "source": "use-field.ts.txt" },
+        { "file": "src/MyField.vue", "source": "MyField.vue.txt" }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

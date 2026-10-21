@@ -58,6 +58,40 @@ await test("canonical differences become one normalized fixture-owned issue", ()
   assert.deepEqual(plan.labels, ["priority:p0", "area:ci", "area:testing", "area:davinci"]);
 });
 
+await test("a matching automatic reduction receipt is linked without copying source", () => {
+  const evidence = log(1, [
+    `${fixtureA}/src/A.vue: old_len=20 new_len=21 first_diff=4 old_window=old new_window=new`,
+  ]);
+  const first = createDivergenceIssue(evidence, ledger, selected, context);
+  const receipt = {
+    schema: "vize.realProjectDivergenceReductionReceipt",
+    version: 1,
+    status: "reduced",
+    divergenceCount: 1,
+    fingerprint: first.fingerprint,
+    sourcePath: `${fixtureA}/src/A.vue`,
+    sourceBytes: 200,
+    reducedFile: "canonical-dom-divergence.reduced.vue",
+    reducedBytes: 40,
+    reducedSha256: "b".repeat(64),
+    sourceCommit: context.sourceCommit,
+    runUrl: context.runUrl,
+  };
+  const plan = createDivergenceIssue(evidence, ledger, selected, context, receipt);
+  assert.match(plan.body, /Automatic reduction: `reduced`/);
+  assert.match(plan.body, /canonical-corpus-dom-reduction-1234-2-/);
+  assert.match(plan.body, /200 -> 40 bytes/);
+  assert.doesNotMatch(plan.body, /<template>/);
+  assert.throws(
+    () =>
+      createDivergenceIssue(evidence, ledger, selected, context, {
+        ...receipt,
+        fingerprint: "bad",
+      }),
+    /fingerprint differs/,
+  );
+});
+
 await test("divergence evidence fails closed when samples or fixture custody differ", () => {
   assert.throws(
     () =>

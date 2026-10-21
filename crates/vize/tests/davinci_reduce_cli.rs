@@ -221,12 +221,12 @@ fn each_vue_oracle_reduces_to_its_exact_witness() {
 
 #[test]
 fn refusals_are_exact() {
-    let cases: [(&[&str], i32, &str); 4] = [
+    let cases: [(&[&str], i32, &str); 5] = [
         (
             &[],
             2,
             "reduce: a .vue input needs at least one check (--crash, --remark, --folio-contains, \
-             --diagnostic, --walks-over, --script)\n",
+             --diagnostic, --walks-over, --dom-divergence, --script)\n",
         ),
         (
             &["--remark", "hoist-static missed static-props"],
@@ -240,6 +240,11 @@ fn refusals_are_exact() {
         ),
         (
             &["--crash"],
+            1,
+            "reduce: the input does not satisfy the oracle; nothing to preserve\n",
+        ),
+        (
+            &["--dom-divergence"],
             1,
             "reduce: the input does not satisfy the oracle; nothing to preserve\n",
         ),

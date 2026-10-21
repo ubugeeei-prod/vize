@@ -3780,6 +3780,58 @@
           }
         ]
       }
+    },
+    {
+      "id": "typechecker/content-mapper-props-binding-10196/authored-props-binding-with-unassigned-define-props",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "content-mapper-props-binding-10196",
+      "case": "authored-props-binding-with-unassigned-define-props",
+      "test": "authored_props_binding_preserves_batch_acceptance",
+      "regressionCommit": "232f8f514e0ea55a7aeef08bc883b46e0608d12f",
+      "sourceRevision": "232f8f514e0ea55a7aeef08bc883b46e0608d12f",
+      "packReference": {
+        "path": "content-mapper-props-binding-10196/cases.json",
+        "sha256": "5a1888ce33199b9e69d3c2b4a9293d35a4f1ef7d112d95bdcd04236480e258fb"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "content-mapper-props-binding-10196/tsconfig.json.txt",
+          "sha256": "bed6b6f5f33d8a7d30e8f6c3585d833486637812a78150f3a177ab2009ae5175"
+        },
+        {
+          "file": "src/use-field.ts",
+          "path": "content-mapper-props-binding-10196/use-field.ts.txt",
+          "sha256": "3161df7a62aefa81f250ec4553a8b14c610139e6c14754936f73476a4c3d442a"
+        },
+        {
+          "file": "src/MyField.vue",
+          "path": "content-mapper-props-binding-10196/MyField.vue.txt",
+          "sha256": "92c301ca39bcd8be4ead820133073918721398c09da7f6278036293c75397f8a"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }

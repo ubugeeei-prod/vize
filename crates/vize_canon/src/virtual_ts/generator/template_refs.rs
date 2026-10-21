@@ -67,7 +67,11 @@ pub(super) fn collect_and_emit_scope_preamble(
         generation_options,
     );
     let captures = unwraps.emit_type_captures(ts);
-    unwraps.props_shadow_anchor = emit_props_shadow_anchor(ts, summary, template_referenced_names);
+    unwraps.props_shadow_anchor = if unwraps.props_object_binding() == "props" {
+        emit_props_shadow_anchor(ts, summary, template_referenced_names)
+    } else {
+        None
+    };
     // Semicolon prevents ASI issues when user script doesn't end with `;`
     // (e.g., `console.log(x)\n(function...)` would be parsed as a call)
     ts.push_str(if capture_template {
@@ -182,6 +186,25 @@ impl TemplateRefUnwraps {
 
     pub(super) fn props_shadow_anchor(&self) -> Option<&Range<usize>> {
         self.props_shadow_anchor.as_ref()
+    }
+
+    /// The mapper's resolved props object normally owns `props` in the
+    /// template closure. An authored maybe-ref with that name already emits a
+    /// template-local shadow, so the generated object must move aside while
+    /// template expressions keep resolving to the authored binding.
+    pub(super) fn props_object_binding(&self) -> &'static str {
+        let shadows_props = self
+            .setup_bindings
+            .iter()
+            .chain(&self.options_api_setup_bindings)
+            .chain(&self.auto_import_bindings)
+            .chain(&self.deferred_bindings)
+            .any(|name| name.as_str() == "props");
+        if shadows_props {
+            "__vize_props"
+        } else {
+            "props"
+        }
     }
 
     pub(super) fn setup_spread_bindings(&self) -> &[String] {

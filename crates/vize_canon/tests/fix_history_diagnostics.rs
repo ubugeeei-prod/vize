@@ -551,6 +551,17 @@ fn dynamic_template_ref_union_registry_stays_in_scope() {
     );
 }
 
+#[test]
+fn authored_props_binding_preserves_batch_acceptance() {
+    check_pack(
+        "content-mapper-props-binding-10196",
+        "authored_props_binding_preserves_batch_acceptance",
+        "232f8f514e0ea55a7aeef08bc883b46e0608d12f",
+        Some(10196),
+        &["authored-props-binding-with-unassigned-define-props"],
+    );
+}
+
 fn check_pack(
     name: &str,
     test: &str,
@@ -614,7 +625,8 @@ fn check_pack(
             | "content-mapper-dynamic-template-ref-10198"
             | "content-mapper-type-only-import-use"
             | "content-mapper-dynamic-template-ref-union-10251"
-            | "content-mapper-dynamic-template-ref-scope-10251" => regression,
+            | "content-mapper-dynamic-template-ref-scope-10251"
+            | "content-mapper-props-binding-10196" => regression,
             _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
         }
     );

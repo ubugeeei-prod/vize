@@ -64,6 +64,10 @@ pub struct ReduceArgs {
     #[arg(long, value_name = "N")]
     pub walks_over: Option<u32>,
 
+    /// Keep inputs whose legacy and Davinci DOM outputs differ
+    #[arg(long)]
+    pub dom_divergence: bool,
+
     /// Keep inputs for which `sh -c "<CMD> <file>"` exits 0
     #[arg(long, value_name = "CMD")]
     pub script: Option<std::string::String>,
@@ -114,6 +118,9 @@ fn flag_checks(args: &ReduceArgs, scratch: &Path) -> Result<Vec<Check>, String> 
     }
     if let Some(limit) = args.walks_over {
         checks.push(Check::WalksOver(limit));
+    }
+    if args.dom_divergence {
+        checks.push(Check::DomDivergence);
     }
     if let Some(command) = &args.script {
         checks.push(Check::Script {
@@ -173,7 +180,7 @@ pub fn run(args: ReduceArgs) {
             fail(
                 2,
                 "a .vue input needs at least one check (--crash, --remark, --folio-contains, \
-                 --diagnostic, --walks-over, --script)",
+                 --diagnostic, --walks-over, --dom-divergence, --script)",
             );
         }
         (String::from(text.as_str()), None)
