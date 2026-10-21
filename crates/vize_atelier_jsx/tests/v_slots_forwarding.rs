@@ -237,11 +237,31 @@ fn vapor_authored_slots_precede_the_forwarded_collision_source() {
     );
     assert!(out.diagnostics.is_empty(), "{:?}", out.diagnostics);
     let code = out.components[0].code.as_str();
-    assert!(code.contains("\"default\":"), "{code}");
-    assert!(code.contains("\"named\":"), "{code}");
-    assert!(code.contains("$: [\n      getSlots()\n    ]"), "{code}");
-    assert_eq!(code.matches("getSlots()").count(), 1, "{code}");
-    assert!(!code.contains("resolveDirective(\"slots\")"), "{code}");
+    assert_eq!(
+        code,
+        r#"import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, template as _template } from 'vue';
+const t0 = _template("<i>N</i>")
+const t1 = _template("<div>A</div>")
+
+export function render(_ctx) {
+  const _component_B = _resolveComponent("B")
+  const n3 = _createComponentWithFallback(_component_B, null, {
+    "named": () => {
+      const n0 = t0()
+      return n0
+    },
+    "default": () => {
+      const n2 = t1()
+      return n2
+    },
+    $: [
+      getSlots()
+    ]
+  }, true)
+  return n3
+}
+"#
+    );
 }
 
 #[test]
