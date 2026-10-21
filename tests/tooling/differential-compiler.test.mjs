@@ -112,15 +112,16 @@ void test("compiler fixture pins a real full-module reference without native cre
       "compiler/sfc/scoped-where-nesting-9830",
       "compiler/sfc/scoped-keyframes-nesting-9829",
       "compiler/sfc/scoped-checkout-stability-10067",
+      "compiler/sfc/jsx-vapor-runtime-slots-6889",
     ],
   );
   const report = syntheticReport();
   assert.deepEqual(validateCompilerReport(loaded, report, build), report.summary);
   assert.deepEqual(summarizeNativeAcceptance(loaded, report, { sourceRevision }).total, {
-    planned: 13,
+    planned: 14,
     nativeHandled: 0,
     nativeEquivalent: 0,
-    unsupported: 13,
+    unsupported: 14,
     legacyBacked: 0,
     unverified: 0,
   });
@@ -150,7 +151,8 @@ void test("compiler comparison checks every code byte and rejects forged native 
   tampered.rows[0].legacy.observation.codeSha256 = "f".repeat(64);
   assert.throws(() => validateCompilerReport(loaded, tampered, build), /forged/);
 
-  const cssFixture = loaded.cases.at(-1);
+  const cssFixture = loaded.cases.find((current) => current.expectedCss !== null);
+  assert(cssFixture);
   const cssOutput = Buffer.from(
     JSON.stringify({
       filename: "Layout.vue",

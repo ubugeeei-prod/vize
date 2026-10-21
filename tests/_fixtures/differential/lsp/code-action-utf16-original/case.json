@@ -41,7 +41,7 @@
   },
   "expected": {
     "source": "response.expected.json",
-    "sha256": "1c0be473aa18dbd49b480b24c9375b40982400fcc64110cbad221149a68cc2ec"
+    "sha256": "6bdbc749bffaab95aad63b97553b99c115239210734d9c3c4d9bd8340890ef7a"
   },
   "scope": "original input and complete current stdio response with an empty diagnostic context; original published diagnostic context and broader fix remain pending"
 }

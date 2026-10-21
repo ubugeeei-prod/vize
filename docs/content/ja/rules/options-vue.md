@@ -295,6 +295,44 @@ export default defineConfig({
 </template>
 ```
 
+<span id="vue-v-on-style"></span>
+
+## `vue/v-on-style`：イベントディレクティブの表記
+
+イベントディレクティブをどちらの形式で記述するかを指定します。既定の `shorthand` は
+`@click` を要求し、`longform` は `v-on:click` を要求します。どちらの設定でも修正時に
+引数と修飾子を保持します。`v-on="listeners"` のように対応する省略記法がないオブジェクト形式は
+変更しません。
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "rules": {
+        "vue/v-on-style": "warn"
+      },
+      "ruleOptions": {
+        "vue/v-on-style": "longform"
+      }
+    }
+  }
+});
+```
+
+上の設定で報告される例：
+
+```vue
+<button @click.stop="save">保存</button>
+```
+
+設定に沿った例：
+
+```vue
+<button v-on:click.stop="save" v-on="listeners">保存</button>
+```
+
 <span id="vue-attribute-hyphenation"></span>
 
 ## `vue/attribute-hyphenation`：コンポーネントに渡す属性名

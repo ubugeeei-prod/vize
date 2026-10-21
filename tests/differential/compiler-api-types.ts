@@ -29,7 +29,7 @@ export type PinnedSfcOptions = {
     scriptOutput: JsonValue;
     experimental: JsonValue;
   };
-  authoredWitness: { inputSha256: string };
+  authoredWitness?: { inputSha256: string };
   entrypoint: string;
 };
 

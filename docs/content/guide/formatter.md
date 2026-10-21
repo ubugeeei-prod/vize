@@ -132,7 +132,7 @@ Every option below can be set under `vue.formatter`. An option you leave out tak
 
 | Option                         | Default          | What it does                                                                                                                       |
 | ------------------------------ | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `preset`                       | none             | Applies a named set of defaults: `"vize"` or `"prettier"`. Options set next to it win.                                             |
+| `preset`                       | none             | Applies a named set of defaults: `"vize"`, `"prettier"` or `"compact"`. Options set next to it win.                              |
 | `printWidth`                   | `100`            | Maximum line width.                                                                                                                |
 | `tabWidth`                     | `2`              | Spaces per indentation level.                                                                                                      |
 | `useTabs`                      | `false`          | Indents with tabs.                                                                                                                 |
@@ -161,6 +161,20 @@ Every option below can be set under `vue.formatter`. An option you leave out tak
 | `reindentPreprocessorStyles`   | `false`          | Re-indents SCSS and Less blocks by nesting depth and tidies their blank lines.                                                     |
 | `sortImports`                  | off              | Sorts imports in scripts. See [Sort imports](./formatter-import-sorting.md).                                                       |
 
+## Compact application code
+
+Use the `compact` preset when application templates should stay dense without reordering authored blocks or attributes:
+
+```ts
+export default defineConfig({}).withVue({
+  formatter: {
+    preset: "compact",
+  },
+});
+```
+
+It sets `printWidth: 120` and `bracketSameLine: true`, preserves authored attribute and SFC block order, and still shortens directive names such as `v-bind:id` to `:id`. It is only a named assignment of existing options, so options written next to it still win. The equivalent CLI option is `vize fmt --preset compact`.
+
 ## Coming from Prettier
 
 Vize is close to Prettier and Oxfmt, but a few defaults differ on purpose. To format Vue files the way Prettier does, set the `prettier` preset:
@@ -187,7 +201,7 @@ The preset keeps attributes and blocks in the written order (`sortAttributes: fa
 
 On the command line, `vize fmt --preset prettier` applies the same preset. Options resolve in this order: the preset in the config file, the other options in the config file, `--preset`, then the other flags.
 
-The Node API accepts the same two presets, `vize` and `prettier`:
+The Node API accepts the same three presets, `vize`, `prettier` and `compact`:
 
 ```ts
 import { formatSfc } from "@vizejs/native";

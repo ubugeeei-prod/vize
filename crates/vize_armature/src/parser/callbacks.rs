@@ -4,8 +4,8 @@
 //! with the parser by implementing the `Callbacks` trait.
 
 use crate::tokenizer::{Callbacks, QuoteType};
+use vize_l0::ErrorCode;
 use vize_l1::markup::entity::DecodedEntity;
-use vize_relief::errors::ErrorCode;
 
 use super::Parser;
 
@@ -64,7 +64,7 @@ impl<'a, 'p> Callbacks for ParserCallbacks<'a, 'p> {
 
     fn svg_title_children(&self) -> bool {
         self.parser.stack.last().is_some_and(|parent| {
-            parent.element.ns == vize_relief::Namespace::Svg
+            parent.element.ns == vize_l1::markup::Namespace::Svg
                 && !matches!(parent.element.tag, "foreignObject" | "desc" | "title")
         })
     }

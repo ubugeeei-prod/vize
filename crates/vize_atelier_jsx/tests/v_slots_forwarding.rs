@@ -3,7 +3,7 @@
 //! `v-slots={{ … }}` expands into synthetic `<template v-slot:name>` children
 //! (#3418, `v_slots.rs`). `v-slots={slots}` cannot: the value only exists at
 //! runtime, so there are no entries to expand. It lowers to a relief `slots`
-//! directive that `vize_atelier_core`'s slot codegen emits as a spread.
+//! directive that VDOM emits as a spread and Vapor passes as a raw slot source.
 //!
 //! Both babel shapes are asserted on the **complete** generated render function,
 //! against the recorded `@vue/babel-plugin-jsx` 2.0.1 output in the corpus rows
@@ -45,6 +45,28 @@ use vize_atelier_jsx::{
     compile_to_vdom,
 };
 use vize_l0::Allocator;
+
+const VAPOR_RUNTIME_CASES: [(&str, &str); 7] = [
+    ("bare", "const A = () => <B v-slots={slots}/>;"),
+    (
+        "mixed",
+        "const A = () => <B v-slots={getSlots()}><div>A</div><template v-slot:named><i>N</i></template></B>;",
+    ),
+    ("member", "const A = () => <B v-slots={owner.slots}/>;"),
+    (
+        "conditional",
+        "const A = () => <B v-slots={choose ? left : right}/>;",
+    ),
+    (
+        "nested",
+        "const A = () => <Outer><B v-slots={slots}/></Outer>;",
+    ),
+    (
+        "dynamic-component",
+        "const A = () => <view.Component v-slots={slots}/>;",
+    ),
+    ("alias", "const A = () => <B vSlots={slots}/>;"),
+];
 
 fn render_code(source: &str) -> String {
     let bump = Allocator::new();
@@ -183,9 +205,7 @@ fn v_slots_never_becomes_a_resolved_directive() {
 }
 
 #[test]
-fn vapor_output_reports_the_gap_instead_of_dropping_the_slots() {
-    // Vapor builds its slots from the component's children and has no spread, so
-    // it must not silently render a component with no slots.
+fn vapor_output_forwards_the_runtime_slots_object() {
     let bump = Allocator::new();
     let out = compile_to_vapor(
         &bump,
@@ -193,19 +213,88 @@ fn vapor_output_reports_the_gap_instead_of_dropping_the_slots() {
         JsxLang::Jsx,
         VaporCompileOptions::default(),
     );
+    assert!(out.diagnostics.is_empty(), "{:?}", out.diagnostics);
+    assert_eq!(out.components.len(), 1);
     assert_eq!(
-        out.diagnostics
-            .iter()
-            .map(|d| d.message.as_str().to_string())
-            .collect::<Vec<_>>(),
-        vec![
-            "v-slots forwards a slots object the compiler cannot see inside, which Vapor \
-             output cannot express: Vapor slots are built from the component's children. \
-             Write the slots inline, e.g. v-slots={{ default: () => <div/> }}, or compile \
-             this component to VDOM."
-                .to_string()
-        ]
+        out.components[0].code,
+        "import { resolveComponent as _resolveComponent, createComponentWithFallback as \
+         _createComponentWithFallback } from 'vue';\n\n\
+         export function render(_ctx) {\n  \
+         const _component_B = _resolveComponent(\"B\")\n  \
+         const n0 = _createComponentWithFallback(_component_B, null, slots, true)\n  \
+         return n0\n}\n"
     );
+}
+
+#[test]
+fn vapor_authored_slots_precede_the_forwarded_collision_source() {
+    let bump = Allocator::new();
+    let out = compile_to_vapor(
+        &bump,
+        "const A = () => <B v-slots={getSlots()}><div>A</div><template v-slot:named><i>N</i></template></B>;",
+        JsxLang::Jsx,
+        VaporCompileOptions::default(),
+    );
+    assert!(out.diagnostics.is_empty(), "{:?}", out.diagnostics);
+    let code = out.components[0].code.as_str();
+    assert_eq!(
+        code,
+        r#"import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, template as _template } from 'vue';
+const t0 = _template("<i>N</i>")
+const t1 = _template("<div>A</div>")
+
+export function render(_ctx) {
+  const _component_B = _resolveComponent("B")
+  const n3 = _createComponentWithFallback(_component_B, null, {
+    "named": () => {
+      const n0 = t0()
+      return n0
+    },
+    "default": () => {
+      const n2 = t1()
+      return n2
+    },
+    $: [
+      getSlots()
+    ]
+  }, true)
+  return n3
+}
+"#
+    );
+}
+
+#[test]
+fn vapor_runtime_slots_capture_all_complete_modules() {
+    let packets = VAPOR_RUNTIME_CASES
+        .into_iter()
+        .map(|(id, source)| {
+            let allocator = Allocator::new();
+            let output = compile_to_vapor(
+                &allocator,
+                source,
+                JsxLang::Jsx,
+                VaporCompileOptions::default(),
+            );
+            assert!(
+                output.diagnostics.is_empty(),
+                "{id}: {:?}",
+                output.diagnostics
+            );
+            assert_eq!(output.components.len(), 1, "{id}");
+            let component = output.components.first().expect("one Vapor component");
+            assert_eq!(component.mode, JsxOutputMode::Vapor, "{id}");
+            serde_json::json!({ "id": id, "source": source, "code": component.code.as_str() })
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(packets.len(), VAPOR_RUNTIME_CASES.len());
+    if let Some(path) = std::env::var_os("VIZE_JSX_VAPOR_SLOTS_CAPTURE") {
+        std::fs::write(
+            path,
+            serde_json::to_vec_pretty(&packets).expect("whole client Vapor module packets"),
+        )
+        .expect("retain fresh JSX client Vapor modules");
+    }
 }
 
 #[test]
@@ -297,8 +386,7 @@ fn camel_slots_forwarding_keeps_whole_modules_and_backend_diagnostics() {
                 ..Default::default()
             },
         ] {
-            let errors = usize::from(!config.ssr && config.default_mode == JsxOutputMode::Vapor);
-            assert_camel_alias(source, &config, errors);
+            assert_camel_alias(source, &config, 0);
         }
     }
 }

@@ -13,10 +13,9 @@ mod table;
 mod tags;
 mod text;
 
-use vize_relief::{
-    ElementNode, ElementType, Namespace, SourceLocation,
-    errors::{CompilerError, ErrorCode},
-};
+use vize_l0::ErrorCode;
+use vize_l1::markup::Namespace;
+use vize_relief::{ElementNode, ElementType, SourceLocation, errors::CompilerError};
 
 use super::{ImplicitlyClosedTag, Parser};
 

@@ -4,7 +4,7 @@ use super::{
     ConfigLintRuleOptions, DefineMacrosOrderOptions, HtmlSelfClosingHtmlOptions,
     HtmlSelfClosingOptions, HtmlSelfClosingStyle, HyphenationStyle, LintRuleOptions,
     MuseaDesignToken, NoMutatingPropsOptions, RestrictedGlobal, RestrictedMember,
-    SfcElementOrderGroup, SfcElementOrderOptions,
+    SfcElementOrderGroup, SfcElementOrderOptions, VOnStyle,
 };
 
 #[test]
@@ -320,6 +320,21 @@ fn invalid_vue_rule_options_are_rejected() {
         "vue/no-mutating-props": { "shallow": true }
     }"#;
     assert!(serde_json::from_str::<ConfigLintRuleOptions>(unknown_field).is_err());
+}
+
+#[test]
+fn v_on_style_options_validate_and_merge() {
+    let mut options: ConfigLintRuleOptions =
+        serde_json::from_str(r#"{"vue/v-on-style":"longform"}"#).unwrap();
+    assert_eq!(options.v_on_style(), Some(VOnStyle::Longform));
+
+    let overlay: ConfigLintRuleOptions =
+        serde_json::from_str(r#"{"vue/v-on-style":"shorthand"}"#).unwrap();
+    options.merge_from(&overlay);
+    assert_eq!(options.v_on_style(), Some(VOnStyle::Shorthand));
+    assert!(
+        serde_json::from_str::<ConfigLintRuleOptions>(r#"{"vue/v-on-style":"sometimes"}"#).is_err()
+    );
 }
 
 #[test]

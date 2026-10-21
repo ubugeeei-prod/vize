@@ -580,7 +580,7 @@
       },
       "case": {
         "path": "template-slot-completion-9907/case.json",
-        "sha256": "3aa3d35f43e98f327342be0124c987338d9e4a198645011aaaec09345c75e57f"
+        "sha256": "d45332093279a3725effb7cdcd4d6ce1cd9235d36f01083530b64b5496911802"
       },
       "requestCount": 1,
       "initializationOptions": {
@@ -969,7 +969,7 @@
       },
       "case": {
         "path": "code-action-utf16-original/case.json",
-        "sha256": "98b29c513ea1c28416f0f9a2cc81d5fa61345b82ccb3f5438cf7b39114f995d9"
+        "sha256": "1d9a4a2de6b5d7cd5de41c51e780f87d4877f7d872ba0518185d0a591f8790a4"
       },
       "requestCount": 1,
       "initializationOptions": {
@@ -1007,6 +1007,63 @@
         "sha256": "6302431e94ce2ca8ca171413fc81502c3e3ddce8d1c46e3d9c4e9dcf861502b4"
       },
       "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
+      "id": "lsp/regression/script-lint-code-actions-9909",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "script-lint-code-actions-9909",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "41b44eede41d5dc643a98fca85c19261a326db77509159efe31b9b592bf589c0"
+          },
+          {
+            "path": "vite.config.mjs.txt",
+            "sha256": "55162119963a60558044eb0c2850bc80444983c750b2ed69157f7955172f6b4e"
+          }
+        ]
+      },
+      "case": {
+        "path": "script-lint-code-actions-9909/case.json",
+        "sha256": "866f57f57a591533888c218c7367f86ed41a10dec14ed6938105624f5de23165"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": true,
+        "codeActions": true,
+        "typecheck": false
+      }
+    },
+    {
+      "id": "lsp/fix-history/rename-utf16-original",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "rename-utf16-original",
+        "files": [
+          {
+            "path": "RenameUtf16.vue.txt",
+            "sha256": "837a44f09b727ec594ae7f7b54f9137c630ff109269b60ff775f3989d3229fa2"
+          }
+        ]
+      },
+      "case": {
+        "path": "rename-utf16-original/case.json",
+        "sha256": "79e878ffe046b9056885a442528b5450bd0e42a44374a09791b4baa5a98b2fdf"
+      },
+      "requestCount": 2,
       "initializationOptions": {
         "editor": true,
         "lint": false,

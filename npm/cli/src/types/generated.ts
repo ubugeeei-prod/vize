@@ -300,6 +300,7 @@ export interface LintRuleOptions {
     math?: "always" | "never" | "any";
   };
   "vue/v-on-event-hyphenation"?: "always" | "never";
+  "vue/v-on-style"?: "shorthand" | "longform";
   "vue/attribute-hyphenation"?: "always" | "never";
   "vue/valid-v-on"?: {
     modifiers?: string[];
@@ -426,7 +427,7 @@ export interface FormatterConfig {
   /**
    * Named set of formatter defaults; options set alongside it win
    */
-  preset?: "vize" | "prettier";
+  preset?: "vize" | "prettier" | "compact";
   /**
    * Oxfmt-compatible import sorting; false disables it
    */

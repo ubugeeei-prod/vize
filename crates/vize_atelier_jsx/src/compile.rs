@@ -16,7 +16,6 @@ use vize_l0::{Allocator, String};
 
 use crate::compat::{JsxCompatMode, unsupported_with_vapor};
 use crate::diagnostics::JsxDiagnostic;
-use crate::forwarded_slots::{SlotsForwardingBackend, reject_forwarded_slots};
 use crate::lower::BabelLoweringOptions;
 use crate::spread_children::reject_spread_children;
 use crate::ssr::compile_lowered_root_to_ssr;
@@ -200,11 +199,6 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
             let mode = resolve_mode(lowered_root.mode, config.default_mode);
             if mode == JsxOutputMode::Vapor {
                 reject_spread_children(allocator, &mut lowered_root.root, &mut diagnostics);
-                reject_forwarded_slots(
-                    &lowered_root.root,
-                    SlotsForwardingBackend::Vapor,
-                    &mut diagnostics,
-                );
             }
             // Compat mode is a vdom-only contract: `@vue/babel-plugin-jsx` has
             // no Vapor output shape to be compatible with. Diagnose rather than

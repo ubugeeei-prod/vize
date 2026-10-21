@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const emoji = "😀"; const message = ref(emoji)
+</script>
+
+<template>
+  <p>{{ message }}</p>
+</template>

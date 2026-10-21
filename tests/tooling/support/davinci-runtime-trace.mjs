@@ -3,9 +3,9 @@ import { pathToFileURL } from "node:url";
 
 const importPattern = /import\s*\{([^}]+)\}\s*from\s*["']vue["'];?/gu;
 
-export async function evaluateCompiledRender(code, runtime) {
+export async function evaluateCompiledRender(code, runtime, context = {}) {
   const { body, bindings } = stripVueImports(code);
-  return evaluateRender(body, runtime, bindings, {});
+  return evaluateRender(body, runtime, bindings, context);
 }
 
 export async function traceCompiledBackend({ backend, code, context = {} }) {

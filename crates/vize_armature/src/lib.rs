@@ -28,9 +28,12 @@ pub mod legacy;
 pub use parser::*;
 pub use tokenizer::*;
 
-// Re-export from vize_relief for convenience
+// Keep the compiler-wide code vocabulary anchored below the legacy AST crate.
+pub use vize_l0::ErrorCode;
+
+// Re-export from vize_relief for convenience.
 pub use vize_relief::*;
 pub use vize_relief::{
-    AllocBox, AllocVec, Allocator, CloneIn, CompilerError, CompilerResult, ErrorCode, ParseMode,
+    AllocBox, AllocVec, Allocator, CloneIn, CompilerError, CompilerResult, ParseMode,
     ParserOptions, TextMode, WhitespaceStrategy,
 };

@@ -1,0 +1,9 @@
+import { ssrRenderSlot as _ssrRenderSlot } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _ssrRenderSlot(_ctx.$slots, "default", {}, null, _push, _parent)
+}
+
+const _sfc_main = {}
+_sfc_main.ssrRender = ssrRender
+export default _sfc_main

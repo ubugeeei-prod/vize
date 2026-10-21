@@ -126,6 +126,8 @@ docs/content/generated/rules/zh-CN/vue.md	@click.once
 docs/content/generated/rules/zh-CN/vue.md	@submit.prevent
 docs/content/generated/rules/zh-CN/vue.md	@keyup.page-down
 docs/content/generated/rules/zh-CN/vue.md	@keyup.あ
+docs/content/ja/rules/options-vue.md	@click.stop
+docs/content/ja/rules/options-vue.md	v-on:click.stop
 docs/content/ja/rules/project/vize-croquis-cf-event-modifier.md	@save.stop
 docs/content/ja/rules/reference/a11y-no-static-element-interactions.md	@keydown.enter
 docs/content/ja/rules/reference/a11y-no-static-element-interactions.md	@keydown.enter
@@ -147,6 +149,8 @@ docs/content/ja/rules/reference/vue-valid-v-on.md	@click.once
 docs/content/ja/rules/reference/vue-valid-v-on.md	@submit.prevent
 docs/content/ja/rules/reference/vue-valid-v-on.md	@keyup.page-down
 docs/content/ja/rules/reference/vue-valid-v-on.md	@keyup.あ
+docs/content/rules/options-vue.md	@click.stop
+docs/content/rules/options-vue.md	v-on:click.stop
 docs/content/rules/project/vize-croquis-cf-event-modifier.md	@save.stop
 docs/content/rules/reference/a11y-no-static-element-interactions.md	@keydown.enter
 docs/content/rules/reference/a11y-no-static-element-interactions.md	@keydown.enter

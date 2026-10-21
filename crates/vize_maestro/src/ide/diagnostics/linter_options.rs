@@ -209,6 +209,9 @@ pub(super) fn apply_rule_options(
     if let Some(style) = options.v_on_event_hyphenation() {
         linter = linter.with_v_on_event_hyphenation(v_on_event_hyphenation_style(style));
     }
+    if let Some(style) = options.v_on_style() {
+        linter = linter.with_v_on_style(v_on_style(style));
+    }
     if let Some(style) = options.attribute_hyphenation() {
         linter = linter.with_attribute_hyphenation(attribute_hyphenation_style(style));
     }
@@ -332,6 +335,13 @@ fn v_on_event_hyphenation_style(
         vize_l0::config::HyphenationStyle::Never => {
             vize_patina::rules::VOnEventHyphenationStyle::Never
         }
+    }
+}
+
+fn v_on_style(style: vize_l0::config::VOnStyle) -> vize_patina::rules::vue::VOnStyleOption {
+    match style {
+        vize_l0::config::VOnStyle::Shorthand => vize_patina::rules::vue::VOnStyleOption::Shorthand,
+        vize_l0::config::VOnStyle::Longform => vize_patina::rules::vue::VOnStyleOption::Longform,
     }
 }
 

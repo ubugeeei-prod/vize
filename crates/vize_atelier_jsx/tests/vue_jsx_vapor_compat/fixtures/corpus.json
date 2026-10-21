@@ -29,18 +29,133 @@
       "expectedElementIdentities": [[0], [0], [0]]
     },
     {
-      "id": "control-flow/conditional-branch",
-      "source": "const App = () => <main>{state.show ? <strong>{state.label}</strong> : <em>off</em>}</main>;",
-      "initial": { "show": true, "label": "alpha" },
+      "id": "children/logical-and",
+      "babelCorpusId": "children/logical_and",
+      "valueMatrix": true,
+      "source": "const App = () => <main>{state.value && <strong>{state.label}</strong>}</main>;",
+      "initial": {
+        "value": { "$jsxValue": "zero" },
+        "label": "zero"
+      },
       "steps": [
-        { "patch": { "label": "beta" } },
-        { "patch": { "show": false } },
-        { "patch": { "show": true, "label": "gamma" } }
+        {
+          "patch": {
+            "value": { "$jsxValue": "empty-string" },
+            "label": "empty"
+          }
+        },
+        {
+          "patch": {
+            "value": { "$jsxValue": "nan" },
+            "label": "nan"
+          }
+        },
+        {
+          "patch": {
+            "value": { "$jsxValue": "null" },
+            "label": "null"
+          }
+        },
+        {
+          "patch": {
+            "value": { "$jsxValue": "undefined" },
+            "label": "undefined"
+          }
+        },
+        {
+          "patch": {
+            "value": { "$jsxValue": "false" },
+            "label": "false"
+          }
+        },
+        {
+          "patch": {
+            "value": { "$jsxValue": "true" },
+            "label": "true"
+          }
+        },
+        {
+          "patch": {
+            "value": { "$jsxValue": "array" },
+            "label": "array"
+          }
+        },
+        {
+          "patch": {
+            "value": { "$jsxValue": "nested-vnode" },
+            "label": "nested-vnode"
+          }
+        },
+        {
+          "patch": {
+            "value": { "$jsxValue": "zero" },
+            "label": "zero-again"
+          }
+        }
       ],
-      "expectedText": ["alpha", "beta", "off", "gamma"],
+      "expectedText": ["0", "", "NaN", "", "", "", "true", "array", "nested-vnode", "0"],
+      "expectedElementIdentities": [[0], [0], [0], [0], [0], [0], [0, 1], [0, 1], [0, 1], [0]],
+      "expectedReferenceElementIdentities": [
+        [0],
+        [0],
+        [0],
+        [0],
+        [0],
+        [0],
+        [0, 1],
+        [0, 2],
+        [0, 3],
+        [0]
+      ]
+    },
+    {
+      "id": "control-flow/conditional-branch",
+      "babelCorpusId": "children/ternary",
+      "valueMatrix": true,
+      "source": "const App = () => <main>{state.condition ? <strong>{state.label}</strong> : <em>off:{state.label}</em>}</main>;",
+      "initial": { "condition": { "$jsxValue": "zero" }, "label": "zero" },
+      "steps": [
+        { "patch": { "condition": { "$jsxValue": "empty-string" }, "label": "empty" } },
+        { "patch": { "condition": { "$jsxValue": "nan" }, "label": "nan" } },
+        { "patch": { "condition": { "$jsxValue": "null" }, "label": "null" } },
+        {
+          "patch": {
+            "condition": { "$jsxValue": "undefined" },
+            "label": "undefined"
+          }
+        },
+        { "patch": { "condition": { "$jsxValue": "false" }, "label": "false" } },
+        { "patch": { "condition": { "$jsxValue": "true" }, "label": "true" } },
+        { "patch": { "condition": { "$jsxValue": "array" }, "label": "array" } },
+        {
+          "patch": {
+            "condition": { "$jsxValue": "nested-vnode" },
+            "label": "nested-vnode"
+          }
+        },
+        { "patch": { "condition": { "$jsxValue": "zero" }, "label": "zero-again" } }
+      ],
+      "expectedText": [
+        "off:zero",
+        "off:empty",
+        "off:nan",
+        "off:null",
+        "off:undefined",
+        "off:false",
+        "true",
+        "array",
+        "nested-vnode",
+        "off:zero-again"
+      ],
       "expectedElementIdentities": [
         [0, 1],
         [0, 1],
+        [0, 1],
+        [0, 1],
+        [0, 1],
+        [0, 1],
+        [0, 2],
+        [0, 2],
         [0, 2],
         [0, 3]
       ]

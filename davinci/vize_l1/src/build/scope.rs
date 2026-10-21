@@ -5,7 +5,9 @@
 //! L1 keeps authored order, so the rules that insert or move nodes (implicit
 //! `tbody`/`tr`, foster parenting) stay in L1->L2 lowering.
 
-use vize_l0::{Allocator, Namespace, Vec, is_html_tag, is_math_ml_tag, is_svg_tag};
+use vize_l0::{Allocator, Vec, is_html_tag, is_math_ml_tag, is_svg_tag};
+
+use crate::markup::Namespace;
 
 /// A caller's open-element frame; recovery never owns or copies its payload.
 pub(crate) trait Frame<'a> {

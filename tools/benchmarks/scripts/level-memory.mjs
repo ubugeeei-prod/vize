@@ -59,8 +59,8 @@ const manifest = {
     target: "x86_64-unknown-linux-gnu",
     rust: MEASUREMENT_RUST,
     suites: 13,
-    population: 104,
-    planes: { level: 100, formatter: 4 },
+    population: 105,
+    planes: { level: 101, formatter: 4 },
     repetitions: 3,
     arguments: NORMAL_ARGUMENTS,
     allocator: "existing-counting-mimalloc-normal-mode-reserve128m-purgeoff",
@@ -71,7 +71,7 @@ const manifest = {
     instruction_preinit_bytes: 0,
     rss: "existing-process-baseline-growth;report-only-in-bench-compare",
     wall: "existing-budget-dependent-gate;quick-samples-not-a-speedup-claim",
-    allocation_admission: "original100-level-plane-only;original4-formatter-report-only-no-caps",
+    allocation_admission: "complete101-level-plane-only;original4-formatter-report-only-no-caps",
   },
   authority: {},
   paired_metrics: [],
@@ -173,11 +173,11 @@ try {
         whole.set(id, row);
       }
     }
-    reconcile(new Set(whole.keys()), registry, `${side} original104 identity population`);
+    reconcile(new Set(whole.keys()), registry, `${side} complete105 identity population`);
     writeJson(path.join(out, side, "whole-identities.json"), Object.fromEntries(whole));
   }
   // Adjacent base/head repetitions share the same probe paths, argv0 and env.
-  // Collect all624 complete normal reports before any budget verdict.
+  // Collect all630 complete normal reports before any budget verdict.
   for (let repetition = 1; repetition <= 3; repetition += 1) {
     for (const side of ["base", "head"]) {
       const root = roots[side];
@@ -299,10 +299,10 @@ try {
   writeJson(path.join(out, "measurement.json"), manifest);
   assert.ok(
     manifest.qualified,
-    "original absolute comparison failed; all624 observations and six verdicts retained",
+    "absolute comparison failed; all630 observations and six verdicts retained",
   );
   console.log(
-    "level-memory: all104 original reports paired; original100 level gates passed; four formatter metrics are uncapped observations",
+    "level-memory: all105 reports paired; complete101 level gates passed; four formatter metrics are uncapped observations",
   );
 } catch (error) {
   manifest.failure = { name: error.name, message: error.message };

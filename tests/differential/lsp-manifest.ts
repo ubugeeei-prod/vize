@@ -29,14 +29,17 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
     assert.equal(data.id, planned.id);
     assert.match(data.provenance.fixCommit, /^[a-f0-9]{40}$/);
     assert.equal(data.documentVersion, 1);
-    assert.deepEqual(planned.initializationOptions, {
-      editor: true,
-      lint: false,
-      typecheck: data.initializationOptions?.typecheck === true,
-      ...(data.method === "textDocument/codeAction" ? { lint: true } : {}),
-      ...(data.method === "textDocument/onTypeFormatting" ? { formatting: true } : {}),
-      ...(data.method === "textDocument/codeAction" ? { codeActions: true } : {}),
-    });
+    assert.deepEqual(
+      planned.initializationOptions,
+      data.initializationOptions ?? {
+        editor: true,
+        lint: data.method === "textDocument/codeAction",
+        // This fallback runs only when the fixture omits initialization options.
+        typecheck: false,
+        ...(data.method === "textDocument/onTypeFormatting" ? { formatting: true } : {}),
+        ...(data.method === "textDocument/codeAction" ? { codeActions: true } : {}),
+      },
+    );
     if (data.initializationOptions) {
       assert.deepEqual(planned.initializationOptions, data.initializationOptions);
     }
@@ -105,9 +108,40 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
       readPinnedArtifact(packRoot, data.provenance.witness);
       requests = [{ params: {}, result: expected }];
     } else if (data.method === "textDocument/codeAction") {
-      assert(data.request, "the complete authored code-action request is required");
-      assert(Array.isArray(expected) && expected.length === 2, "fix and suppression required");
-      requests = [{ ...data.request, result: expected }];
+      if (data.request) {
+        assert(Array.isArray(expected) && expected.length >= 2, "fix and suppression required");
+        const actions = expected as Array<{ isPreferred?: unknown; title?: unknown }>;
+        assert(
+          actions.some((action) => action.isPreferred === true),
+          "preferred fix required",
+        );
+        assert(
+          actions.some(
+            (action) =>
+              action.isPreferred === false &&
+              typeof action.title === "string" &&
+              action.title.startsWith("Suppress with @vize:forget"),
+          ),
+          "suppression required",
+        );
+        requests = [{ ...data.request, result: expected }];
+      } else {
+        assert(Array.isArray(expected) && expected.length === 2, "both actions are required");
+        requests = expected as LspFixture["requests"];
+      }
+    } else if (data.method === "textDocument/rename") {
+      assert(
+        Array.isArray(expected) && expected.length === 2,
+        "prepare-rename and rename responses are required",
+      );
+      const [prepare, rename] = expected as Array<{
+        method: string;
+        params: Record<string, unknown>;
+        result: unknown;
+      }>;
+      assert.equal(prepare.method, "textDocument/prepareRename");
+      assert.equal(rename.method, "textDocument/rename");
+      requests = [prepare, rename];
     } else {
       assert.equal(data.method, "textDocument/onTypeFormatting", "unregistered LSP method");
       assert.deepEqual(data.options, { tabSize: 2, insertSpaces: true });

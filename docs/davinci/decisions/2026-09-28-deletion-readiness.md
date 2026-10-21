@@ -46,6 +46,9 @@ trusted Real Project Matrix bundle producer to actual per-run result artifacts,
 review the policy values and require a successful exact-candidate readiness
 run for the deletion change. The guard now closes the recorded compiler
 route-swap gap by keeping custody of the DOM, SSR and Vapor compatibility
-emitters. Native-only lint, formatter, typechecker and LSP adapters and their
-complete evidence remain unfinished, so #6854 stays open. This gate does not
-certify legacy deletion.
+emitters and of both production `vize build` compiler entry points. A route
+swap in either the ordinary build path or its statistics path therefore needs
+successful readiness audits at the exact base and candidate SHAs. Native-only
+lint, formatter, typechecker and LSP adapters and their complete evidence
+remain unfinished, so #6854 stays open. This gate does not certify legacy
+deletion.

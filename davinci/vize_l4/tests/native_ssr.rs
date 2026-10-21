@@ -5,7 +5,7 @@ use vize_l2::file::{Declaration, TemplatePolicy, TemplateScope};
 use vize_l2::lang::js::FileProducer;
 use vize_l3::decision::ssr::{SsrUnsupported, build_ssr_file_decisions};
 use vize_l3::decision::{build_decisions, policy::TargetPolicy};
-use vize_l4::module::{ModuleParts, RenderPlacement, RenderProperty, assemble, assemble_template};
+use vize_l4::module::{ModuleParts, RenderFunctionName, assemble, assemble_template};
 use vize_l4::runtime::{Runtime, vocabulary};
 use vize_l4::targets::ssr::{SsrErrorKind, emit, emit_file};
 use vize_l4::write::{NoLinks, Recorded};
@@ -102,10 +102,7 @@ fn native_complete_modules_match_pinned_ssr_function_bytes_and_original_maps() {
         let mut parts =
             ModuleParts::for_runtime(Runtime::VueServerRenderer, "3.5.35", "__sfc__").unwrap();
         parts.render = Some(emit_file::<Recorded>(&analysis).unwrap());
-        parts.placement = RenderPlacement::Function {
-            binding: "ssrRender",
-            property: RenderProperty::SsrRender,
-        };
+        parts.placement = RenderFunctionName::SsrRender.placement();
         let sfc = assemble(parts).unwrap().into_document();
         let sfc_map: serde_json::Value =
             serde_json::from_str(&sfc.source_map("NativeSsr.vue", source)).unwrap();
@@ -170,10 +167,7 @@ fn sfc_module_assembly_preserves_ssr_attachment_and_whole_source_links() {
     let mut parts =
         ModuleParts::for_runtime(Runtime::VueServerRenderer, "3.5.35", "__sfc__").unwrap();
     parts.render = Some(emit_file::<Recorded>(&analysis).unwrap());
-    parts.placement = RenderPlacement::Function {
-        binding: "ssrRender",
-        property: RenderProperty::SsrRender,
-    };
+    parts.placement = RenderFunctionName::SsrRender.placement();
     let document = assemble(parts).unwrap().into_document();
     assert_eq!(
         document.as_str(),

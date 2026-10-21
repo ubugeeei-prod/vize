@@ -23,6 +23,7 @@ mod props_destructuring;
 mod restrictions;
 mod sfc_element_order;
 mod strict_boolean;
+mod v_on_style;
 mod valid_v_on;
 mod valid_v_slot;
 
@@ -43,6 +44,7 @@ pub use restrictions::{
 };
 pub use sfc_element_order::{SfcElementOrderGroup, SfcElementOrderOptions};
 pub use strict_boolean::StrictBooleanExpressionsOptions;
+pub use v_on_style::VOnStyle;
 
 /// Per-rule configuration keyed by rule name.
 ///
@@ -161,6 +163,9 @@ pub struct ConfigLintRuleOptions {
     /// Options for `vue/v-on-event-hyphenation`.
     #[serde(rename = "vue/v-on-event-hyphenation")]
     v_on_event_hyphenation: Option<HyphenationStyle>,
+    /// Options for `vue/v-on-style`.
+    #[serde(rename = "vue/v-on-style")]
+    v_on_style: Option<VOnStyle>,
     /// Options for `vue/attribute-hyphenation`.
     #[serde(rename = "vue/attribute-hyphenation")]
     attribute_hyphenation: Option<HyphenationStyle>,
@@ -208,6 +213,7 @@ impl ConfigLintRuleOptions {
             && self.sfc_element_order.is_none()
             && self.html_self_closing.is_none()
             && self.v_on_event_hyphenation.is_none()
+            && self.v_on_style.is_none()
             && self.attribute_hyphenation.is_none()
             && self.valid_v_on.is_none()
             && self.valid_v_slot.is_none()
@@ -299,6 +305,12 @@ impl ConfigLintRuleOptions {
     #[inline]
     pub fn v_on_event_hyphenation(&self) -> Option<HyphenationStyle> {
         self.v_on_event_hyphenation
+    }
+
+    /// Configured spelling for `vue/v-on-style`.
+    #[inline]
+    pub fn v_on_style(&self) -> Option<VOnStyle> {
+        self.v_on_style
     }
 
     /// Configured style for `vue/attribute-hyphenation`.

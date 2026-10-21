@@ -44,8 +44,8 @@ use self::helpers::{
     trim_trailing_newlines, vapor_requested,
 };
 use self::output_module::{
-    RenderFunctionName, append_component_render_export, append_css_modules_assignment,
-    finalize_output_mode, rewrite_client_render_for_sfc_main,
+    append_component_render_export, append_css_modules_assignment, finalize_output_mode,
+    rewrite_client_render_for_sfc_main,
 };
 use self::styles::compile_styles;
 
@@ -53,6 +53,7 @@ mod public;
 pub use public::*;
 use vize_carton::{String, ToCompactString, profile};
 use vize_l0::dump::capture::StageCapture;
+use vize_l4::module::RenderFunctionName;
 
 #[expect(clippy::too_many_arguments, reason = "optional stage capture")]
 fn compile_sfc_inner(

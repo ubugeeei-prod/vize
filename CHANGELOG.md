@@ -8,6 +8,12 @@ See [`docs/release/support-policy.md`](./docs/release/support-policy.md) for the
 
 ### Changed
 
+- Make `vize_l0::ErrorCode` the explicit compiler-wide error vocabulary used
+  by Armature while preserving the existing Armature and Relief public paths,
+  discriminants, messages and stable code names (#6835).
+- Make `vize_l1::markup::Namespace` the shared markup namespace vocabulary used
+  by L1 tree construction and Armature parsing while preserving the existing
+  Relief AST type, variants and numeric representation (#6835).
 - Make `vize_armature::tokenizer::QuoteType` the public compatibility re-export
   of the L1-owned `vize_l1::markup::QuoteType`, preserving its variants and
   numeric representation (#6835).

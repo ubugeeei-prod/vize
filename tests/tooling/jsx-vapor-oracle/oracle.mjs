@@ -6,6 +6,7 @@ import process from "node:process";
 import { compileFunction } from "node:vm";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { transformSync } from "@babel/core";
+import babelJsx from "@vue/babel-plugin-jsx";
 import { Window } from "happy-dom";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -22,6 +23,24 @@ const recordedCorpus = JSON.parse(readFileSync(join(fixtureDir, "corpus.json"), 
 const verdicts = JSON.parse(readFileSync(join(fixtureDir, "verdicts.json"), "utf8"));
 const inventory = readFileSync(
   join(repoRoot, "crates", "vize_atelier_jsx", "tests", "VUE_JSX_VAPOR_COMPAT_INVENTORY.md"),
+  "utf8",
+);
+const babelCorpus = JSON.parse(
+  readFileSync(
+    join(
+      repoRoot,
+      "crates",
+      "vize_atelier_jsx",
+      "tests",
+      "babel_compat",
+      "fixtures",
+      "corpus.json",
+    ),
+    "utf8",
+  ),
+);
+const babelVerdicts = readFileSync(
+  join(repoRoot, "crates", "vize_atelier_jsx", "tests", "babel_compat", "verdicts.rs"),
   "utf8",
 );
 
@@ -162,11 +181,49 @@ function observeChildren(parent) {
   return children;
 }
 
-async function trace(code, functionName, spec) {
-  const state = Vue.reactive(structuredClone(spec.initial));
+function materialize(value) {
+  if (Array.isArray(value)) return value.map(materialize);
+  if (!value || typeof value !== "object") return value;
+  if (Object.hasOwn(value, "$jsxValue")) {
+    assert.deepEqual(Object.keys(value), ["$jsxValue"]);
+    switch (value.$jsxValue) {
+      case "zero":
+        return 0;
+      case "empty-string":
+        return "";
+      case "nan":
+        return Number.NaN;
+      case "null":
+        return null;
+      case "undefined":
+        return undefined;
+      case "false":
+        return false;
+      case "true":
+        return true;
+      case "array":
+        return [0, "", Number.NaN, null, undefined, false];
+      case "nested-vnode":
+        return Vue.h("i", { "data-kind": "nested" }, [
+          Vue.h("b", null, "inner"),
+          Vue.h("u", null, "leaf"),
+        ]);
+      default:
+        assert.fail(`unknown JSX value descriptor: ${value.$jsxValue}`);
+    }
+  }
+  return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, materialize(item)]));
+}
+
+async function trace(code, functionName, spec, runtime = "vapor") {
+  const initial = materialize(structuredClone(spec.initial));
+  const state = spec.valueMatrix ? Vue.shallowReactive(initial) : Vue.reactive(initial);
   const render = linkedFunction(code, functionName, state);
-  const component = Vue.defineVaporComponent({ setup: () => render({}) });
-  const app = Vue.createVaporApp(component);
+  const component =
+    runtime === "vapor"
+      ? Vue.defineVaporComponent({ setup: () => render({}) })
+      : { setup: () => () => render({}, []) };
+  const app = runtime === "vapor" ? Vue.createVaporApp(component) : Vue.createApp(component);
   const warnings = [];
   app.config.warnHandler = (message) => warnings.push(message);
   app.config.errorHandler = (error) => warnings.push(String(error));
@@ -195,7 +252,7 @@ async function trace(code, functionName, spec) {
     const phases = [snapshot()];
     for (const step of spec.steps) {
       assert.deepEqual(Object.keys(step), ["patch"], `${spec.id}: update shape`);
-      Object.assign(state, structuredClone(step.patch));
+      Object.assign(state, materialize(structuredClone(step.patch)));
       await Vue.nextTick();
       phases.push(snapshot());
     }
@@ -209,9 +266,20 @@ async function trace(code, functionName, spec) {
   }
 }
 
-function referenceCode(spec) {
+function vaporReferenceCode(spec) {
   const result = transformVueJsxVapor(spec.source, `/semantic-oracle/${spec.id}.jsx?vapor=true`);
   assert.equal(typeof result.code, "string", `${spec.id}: oracle output`);
+  return result.code;
+}
+
+function babelReferenceCode(spec) {
+  const result = transformSync(spec.source, {
+    configFile: false,
+    babelrc: false,
+    filename: `/semantic-oracle/${spec.id}.jsx`,
+    plugins: [babelJsx],
+  });
+  assert.equal(typeof result?.code, "string", `${spec.id}: Babel oracle output`);
   return result.code;
 }
 
@@ -225,8 +293,24 @@ function assertInventory(corpus) {
   const ids = corpus.cases.map(({ id }) => id).sort();
   assert.deepEqual(Object.keys(verdicts.cases).sort(), ids);
   for (const id of ids) {
-    assert.equal(verdicts.cases[id].verdict, "equivalent", id);
+    assert.ok(["equivalent", "divergent"].includes(verdicts.cases[id].verdict), id);
     assert.equal(typeof verdicts.cases[id].basis, "string", id);
+  }
+  const babelIds = new Set(babelCorpus.cases.map(({ id }) => id));
+  for (const spec of corpus.cases.filter(({ babelCorpusId }) => babelCorpusId)) {
+    assert.ok(babelIds.has(spec.babelCorpusId), `${spec.id}: registered Babel corpus row`);
+    assert.ok(
+      babelVerdicts.includes(`("${spec.babelCorpusId}", Same)`),
+      `${spec.id}: equivalent Babel verdict`,
+    );
+  }
+  for (const spec of corpus.cases) {
+    const divergent = verdicts.cases[spec.id].verdict === "divergent";
+    assert.equal(
+      "expectedReferenceElementIdentities" in spec,
+      divergent,
+      `${spec.id}: divergent rows pin reference identity`,
+    );
   }
   const documented = [
     ...inventory.matchAll(/^\| `([^`]+)`\s+\| (?:equivalent|divergent|deferred)\s+\|/gmu),
@@ -236,7 +320,7 @@ function assertInventory(corpus) {
   assert.deepEqual(documented, ids);
 }
 
-function assertBehavior(spec, phases) {
+function assertBehavior(spec, phases, expectedElementIdentities = spec.expectedElementIdentities) {
   assert.equal(phases.length, spec.steps.length + 1, `${spec.id}: initial render plus updates`);
   assert.deepEqual(
     phases.map(({ text }) => text),
@@ -245,9 +329,13 @@ function assertBehavior(spec, phases) {
   );
   assert.deepEqual(
     phases.map(({ elementIdentities }) => elementIdentities),
-    spec.expectedElementIdentities,
+    expectedElementIdentities,
     `${spec.id}: element update identity trace`,
   );
+}
+
+function semanticTrace(phases) {
+  return phases.map(({ dom, text, warnings }) => ({ dom, text, warnings }));
 }
 
 assertInventory(recordedCorpus);
@@ -255,7 +343,12 @@ assertInventory(recordedCorpus);
 if (process.argv.includes("--reference")) {
   const reference = {};
   for (const spec of recordedCorpus.cases) {
-    reference[spec.id] = await trace(referenceCode(spec), "App", spec);
+    reference[spec.id] = {
+      vapor: await trace(vaporReferenceCode(spec), "App", spec),
+    };
+    if (spec.babelCorpusId) {
+      reference[spec.id].babel = await trace(babelReferenceCode(spec), "App", spec, "vdom");
+    }
   }
   console.log(JSON.stringify(reference, null, 2));
 } else {
@@ -268,14 +361,38 @@ if (process.argv.includes("--reference")) {
     recordedCorpus.cases.map(({ id, source }) => ({ id, source })),
   );
 
-  const receipt = { cases: recordedCorpus.cases.length, equivalent: 0, failures: 0 };
+  const receipt = {
+    cases: recordedCorpus.cases.length,
+    equivalent: 0,
+    divergent: 0,
+    babelCases: recordedCorpus.cases.filter(({ babelCorpusId }) => babelCorpusId).length,
+    babelEquivalent: 0,
+    failures: 0,
+  };
   for (const [index, spec] of recordedCorpus.cases.entries()) {
     const compiled = input.compiled[index];
-    const reference = await trace(referenceCode(spec), "App", spec);
+    const reference = await trace(vaporReferenceCode(spec), "App", spec);
     const actual = await trace(compiled.code, compiled.functionName, spec);
-    assert.deepEqual(actual, reference, spec.id);
-    assertBehavior(spec, actual);
-    receipt.equivalent += 1;
+    if (verdicts.cases[spec.id].verdict === "equivalent") {
+      assert.deepEqual(actual, reference, spec.id);
+      assertBehavior(spec, actual);
+      receipt.equivalent += 1;
+    } else {
+      assert.deepEqual(semanticTrace(actual), semanticTrace(reference), `${spec.id}: semantics`);
+      assert.notDeepEqual(actual, reference, `${spec.id}: recorded divergence remains observable`);
+      assertBehavior(spec, actual);
+      assertBehavior(spec, reference, spec.expectedReferenceElementIdentities);
+      receipt.divergent += 1;
+    }
+    if (spec.babelCorpusId) {
+      assert.deepEqual(Object.keys(compiled.vdom), ["code", "functionName"]);
+      const babel = await trace(babelReferenceCode(spec), "App", spec, "vdom");
+      const vdom = await trace(compiled.vdom.code, compiled.vdom.functionName, spec, "vdom");
+      assert.deepEqual(vdom, babel, `${spec.id}: VDOM/Babel`);
+      assert.deepEqual(vdom, actual, `${spec.id}: VDOM/Vapor`);
+      assertBehavior(spec, vdom);
+      receipt.babelEquivalent += 1;
+    }
   }
   await window.happyDOM.close();
   console.log(JSON.stringify(receipt));

@@ -26,13 +26,25 @@ a reviewed update to the executable verdict inventory.
 | --------------------------------- | ---------- | ----------------------------------------------------------------------- |
 | `children/dynamic-text`           | equivalent | initial DOM and three text updates retain the authored element          |
 | `props/dynamic-attributes`        | equivalent | attributes and text update while the authored element remains live      |
-| `control-flow/conditional-branch` | equivalent | same-branch updates retain identity; branch changes replace the child   |
+| `children/logical-and`            | divergent  | only vue-jsx-vapor replaces the branch across truthy value changes      |
+| `control-flow/conditional-branch` | equivalent | falsy, array and nested-VNode conditions match both real JSX references |
 | `props/live-input-value`          | equivalent | the live input value and sibling output update without replacing either |
 
 The JSON corpus and verdict table are checked bidirectionally, so adding or
 removing a case without a verdict fails. The runtime comparison is the source
 of each `equivalent` verdict; generated-code shape is not used as a substitute
 for mounted behavior.
+
+The logical-and and conditional rows are the value-sensitive counterparts of
+the Babel oracle's equivalent `children/logical_and` and `children/ternary`
+rows. Their mounted update sequences pass `0`, an empty string, `NaN`, `null`,
+`undefined`, `false`, `true`, an array and a nested VNode through both
+Vize/reference pairs. The comparison retains complete DOM, visible text,
+diagnostics and branch identity separately for the VDOM and Vapor runtimes.
+The logical-and references agree on DOM and text but differ in identity: Babel
+retains the truthy branch, while `vue-jsx-vapor` replaces it when the truthy
+condition value changes. The executable verdict pins that identity difference
+while still requiring identical DOM, text and diagnostics across all phases.
 
 Run the focused oracle with:
 

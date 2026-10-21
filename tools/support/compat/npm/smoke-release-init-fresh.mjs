@@ -61,6 +61,13 @@ export function canRunFreshProjectShape(context, shape) {
   return shape.requires.every((name) => context.packed.has(name));
 }
 
+/** Materialize release-only inputs after the package manager has bootstrapped the project. */
+export function writePostBootstrapFiles(projectRoot, shape) {
+  const files = shape.postBootstrapFiles ?? {};
+  writeFiles(projectRoot, files);
+  return files;
+}
+
 /**
  * Installs exactly the dependency plan `init` printed.
  *
@@ -118,19 +125,29 @@ function runFreshProjectCell(context, cell) {
     cell.projectDirectory ?? `${shape.id}-${manager.id}`,
   );
   const authored = { ...shape.files(context.peers), ...manager.projectFiles };
-  const tracked = [...Object.keys(authored), ...shape.createdFiles, ...shape.updatedFiles];
+  const postBootstrapFiles = shape.postBootstrapFiles ?? {};
+  const tracked = [
+    ...Object.keys(authored),
+    ...Object.keys(postBootstrapFiles),
+    ...shape.createdFiles,
+    ...shape.updatedFiles,
+  ];
 
   fs.mkdirSync(projectRootPath, { recursive: true });
   const projectRoot = fs.realpathSync.native(projectRootPath);
   writeFiles(projectRoot, authored);
   assertFreshProject(projectRoot, context, shape.initialAbsentFiles);
   runManager(manager, manager.bootstrapArgs, { cwd: projectRoot });
+  // Dependency bootstrap is allowed to create generated project inputs. Pin
+  // release-only inputs after it so registry-side lifecycle changes cannot
+  // silently remove the CLI behavior this cell is meant to exercise.
+  writePostBootstrapFiles(projectRoot, shape);
   assert.ok(fs.existsSync(path.join(projectRoot, manager.lockfile)), `no ${manager.lockfile}`);
 
   const beforeInit = snapshotFiles(projectRoot, tracked);
   assert.equal(
     runInit(context, projectRoot, [...shape.initFlags, "--dry-run"]),
-    expectedInitOutput(shape, projectRoot, manager, "dry"),
+    expectedInitOutput(shape, projectRoot, manager, "dry", { bootstrapped: true }),
   );
   assert.deepEqual(
     snapshotFiles(projectRoot, tracked),
@@ -140,7 +157,7 @@ function runFreshProjectCell(context, cell) {
 
   assert.equal(
     runInit(context, projectRoot, [...shape.initFlags, "--no-install"]),
-    expectedInitOutput(shape, projectRoot, manager, "apply"),
+    expectedInitOutput(shape, projectRoot, manager, "apply", { bootstrapped: true }),
   );
   for (const [name, source] of Object.entries(shape.expectedFiles)) {
     assert.equal(fs.readFileSync(path.join(projectRoot, name), "utf8"), source, `${name} mismatch`);
@@ -173,7 +190,7 @@ function runFreshProjectCell(context, cell) {
   const afterInit = snapshotFiles(projectRoot, tracked);
   assert.equal(
     runInit(context, projectRoot, [...shape.initFlags, "--no-install"]),
-    expectedInitOutput(shape, projectRoot, manager, "rerun"),
+    expectedInitOutput(shape, projectRoot, manager, "rerun", { bootstrapped: true }),
   );
   assert.deepEqual(
     snapshotFiles(projectRoot, tracked),

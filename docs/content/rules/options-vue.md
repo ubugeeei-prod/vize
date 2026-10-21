@@ -274,6 +274,42 @@ Good:
 </template>
 ```
 
+## `vue/v-on-style`
+
+Use this option to choose the authored event-directive spelling. The default `shorthand` style
+requires `@click`; `longform` requires `v-on:click`. Both modes preserve arguments and modifiers
+when applying a fix. Object syntax such as `v-on="listeners"` has no interchangeable shorthand and
+is therefore left unchanged.
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "rules": {
+        "vue/v-on-style": "warn"
+      },
+      "ruleOptions": {
+        "vue/v-on-style": "longform"
+      }
+    }
+  }
+});
+```
+
+Bad with the config above:
+
+```vue
+<button @click.stop="save">Save</button>
+```
+
+Good:
+
+```vue
+<button v-on:click.stop="save" v-on="listeners">Save</button>
+```
+
 ## `vue/attribute-hyphenation`
 
 Use this option for static prop names on custom components. `always` reports camelCase-authored

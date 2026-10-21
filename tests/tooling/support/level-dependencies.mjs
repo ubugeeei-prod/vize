@@ -18,6 +18,8 @@ export function fixture() {
     "vize_armature",
     "vize_relief",
     "vize_croquis",
+    "vize_atelier_sfc",
+    "vize_glyph",
     "helper",
   ];
   const packages = names.map((name) => ({
@@ -71,5 +73,5 @@ export function rejectsPath(change, expected) {
   change(value);
   const report = value.report();
   assert.ok(report.unlisted.some(expected), JSON.stringify(report.unlisted));
-  assert.throws(() => assertDependencyReport(report), /new level-to-legacy/u);
+  assert.throws(() => assertDependencyReport(report), /new protected-root-to-legacy/u);
 }

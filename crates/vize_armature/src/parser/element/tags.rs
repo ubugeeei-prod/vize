@@ -1,10 +1,10 @@
 //! Open/close tag processing and the open-element stack lifecycle.
 
-use vize_l0::{Box, Vec};
+use vize_l0::{Box, ErrorCode, Vec};
+use vize_l1::markup::Namespace;
 use vize_relief::{
-    AttributeNode, ElementNode, ExpressionNode, Namespace, PropNode, TemplateChildNode, TextNode,
-    errors::{CompilerError, ErrorCode},
-    options::TemplateSyntaxMode,
+    AttributeNode, ElementNode, ExpressionNode, PropNode, TemplateChildNode, TextNode,
+    errors::CompilerError, options::TemplateSyntaxMode,
 };
 
 use super::super::{CurrentElement, Parser, ParserStackEntry, StackInsertion};

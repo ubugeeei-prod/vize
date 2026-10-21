@@ -36,7 +36,7 @@ pub(super) fn identity(
             json!([definition.clone()]),
         )?;
         check(
-            fixture.vize.request(
+            fixture.vize.navigation_request(
                 "textDocument/definition",
                 &uri,
                 json!({"position":position}),
@@ -63,7 +63,7 @@ pub(super) fn identity(
             check(
                 fixture
                     .vize
-                    .request("textDocument/references", &uri, params)?,
+                    .navigation_request("textDocument/references", &uri, params)?,
                 if enabled { expected } else { Value::Null },
             )?;
         }

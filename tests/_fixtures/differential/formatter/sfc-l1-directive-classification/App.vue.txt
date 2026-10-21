@@ -1,0 +1,1 @@
+<template><input .value="a+b" v-onboarding="a+b" /></template>

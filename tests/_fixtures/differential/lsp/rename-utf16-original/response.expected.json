@@ -1,0 +1,63 @@
+[
+  {
+    "method": "textDocument/prepareRename",
+    "params": {
+      "position": {
+        "line": 5,
+        "character": 15
+      }
+    },
+    "result": {
+      "start": {
+        "line": 5,
+        "character": 8
+      },
+      "end": {
+        "line": 5,
+        "character": 15
+      }
+    }
+  },
+  {
+    "method": "textDocument/rename",
+    "params": {
+      "position": {
+        "line": 5,
+        "character": 15
+      },
+      "newName": "renamedMessage"
+    },
+    "result": {
+      "changes": {
+        "${workspace}/RenameUtf16.vue": [
+          {
+            "range": {
+              "start": {
+                "line": 1,
+                "character": 26
+              },
+              "end": {
+                "line": 1,
+                "character": 33
+              }
+            },
+            "newText": "renamedMessage"
+          },
+          {
+            "range": {
+              "start": {
+                "line": 5,
+                "character": 8
+              },
+              "end": {
+                "line": 5,
+                "character": 15
+              }
+            },
+            "newText": "renamedMessage"
+          }
+        ]
+      }
+    }
+  }
+]

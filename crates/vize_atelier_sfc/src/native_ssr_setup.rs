@@ -8,7 +8,7 @@ use vize_l1_to_l2::native_file::{
 use vize_l3::decision::ssr::{NativeSsrBuildError, build_native_selected_setup_ssr_decisions};
 use vize_l4::{
     module::{
-        AssemblyError, ModuleParts, RenderPlacement, RenderProperty, ScriptPart, assemble,
+        AssemblyError, ModuleParts, RenderFunctionName, ScriptPart, assemble,
         setup::{COMPONENT_BINDING, SetupEmitError, emit_selected_setup},
     },
     runtime::Runtime,
@@ -112,10 +112,7 @@ fn emit<L: LinkSink>(
         emit_selected_setup::<L>(analysis.setup()).map_err(NativeSetupSsrSfcCompileError::Setup)?,
     ));
     parts.render = Some(render);
-    parts.placement = RenderPlacement::Function {
-        binding: "ssrRender",
-        property: RenderProperty::SsrRender,
-    };
+    parts.placement = RenderFunctionName::SsrRender.placement();
     let document = assemble(parts)
         .map_err(NativeSetupSsrSfcCompileError::Assembly)?
         .into_document();

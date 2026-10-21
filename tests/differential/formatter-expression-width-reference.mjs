@@ -1,4 +1,4 @@
-// One closed current CLI reference; original sixteen-case manifest stays exact.
+// One closed current CLI reference; the registered formatter manifest stays exact.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -17,7 +17,7 @@ export function expressionWidthReference(root, fixture) {
   );
   assert.equal(
     sha256(manifest),
-    "99f38ba757b551f339d0e63e0ed63fb8487694bbc915779077ab54ac4a105f51",
+    "00c308c8e13bb8f001547e7e4170b5c6598fc829164dead1144afdf90afaab06",
     "whole formatter manifest changed",
   );
   assert.equal(sha256(fixture.input), INPUT, "whole original deep input changed");

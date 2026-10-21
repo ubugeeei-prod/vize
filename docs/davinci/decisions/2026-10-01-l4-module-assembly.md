@@ -36,6 +36,21 @@ Recording and non-recording assembly produce identical bytes. Recorded hoist,
 script and template links are rebased onto their final positions, including the
 late import preamble, and the finished document can emit one Source Map v3.
 
+The 2026-10-21 neutral follow-up moves the closed render-function vocabulary
+(`render`, `_sfc_render`, and `ssrRender`, paired with their component fields)
+from legacy SFC assembly into L4. Existing L4 producers and the legacy assembler
+select the same typed pairs; no target admission, emitter route, output byte or
+source-map policy changes. The normal dependency remains one-way from the SFC
+shell to L4, and the mandatory level-dependency gate continues to reject a
+reverse legacy edge.
+
+The next neutral follow-up moves the four-section `OutputModule` vocabulary and
+its final flattening operation into L4. The legacy SFC shell remains its only
+consumer and still emits `imports + hoists + '\n' + functions + '\n' + exports`;
+the function section still starts at `imports.len() + hoists.len() + 1` bytes.
+This changes ownership only: target providers, admission and product routing do
+not change, and byte/source-section parity remains mandatory.
+
 ## Verification
 
 Nine module laws cover script-only and empty components, complete fragment link

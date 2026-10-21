@@ -205,6 +205,20 @@ pub(super) fn transform_component<'a>(
                     }
                 } else if dir.name == "model" {
                     transform_component_v_model(ctx, dir, &mut props);
+                } else if dir.name == "slots"
+                    && dir.arg.is_none()
+                    && let Some(ExpressionNode::Simple(value)) = &dir.exp
+                {
+                    let key = SimpleExpressionNode::new("$slots", true, dir.loc.clone());
+                    let mut values = Vec::new_in(&ctx.allocator);
+                    values.push(Box::new_in(
+                        SimpleExpressionNode::from_node(value),
+                        &ctx.allocator,
+                    ));
+                    props.push(
+                        IRProp::new(Box::new_in(key, &ctx.allocator), values, true)
+                            .with_value_kind(crate::ir::PropValueKind::ForwardedSlots),
+                    );
                 }
             }
             PropNode::Attribute(attr) => {
@@ -339,6 +353,7 @@ pub(super) fn transform_component<'a>(
                     | "for"
                     | "text"
                     | "html"
+                    | "slots"
             )
         {
             super::super::directive::transform_directive(ctx, dir, element_id, el, block);

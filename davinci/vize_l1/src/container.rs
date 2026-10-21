@@ -33,6 +33,25 @@ pub struct Container<'a> {
     pub errors: Vec<'a, ContainerError>,
 }
 
+impl<'a> Container<'a> {
+    /// Visit the complete authored file as alternating interstitial bytes and
+    /// top-level blocks. Empty interstitial segments are retained, so the
+    /// iterator always yields `blocks.len() * 2 + 1` segments without
+    /// allocating.
+    ///
+    /// Concatenating each segment's [`ContainerSegment::span`] against
+    /// [`Self::source`] reproduces the original file byte-for-byte. This is a
+    /// structural view only; it does not grant descriptor or product-route
+    /// admission.
+    pub fn segments(&self) -> ContainerSegments<'_, 'a> {
+        ContainerSegments {
+            blocks: &self.blocks,
+            source_end: u32::try_from(self.source.len()).unwrap_or(u32::MAX),
+            index: 0,
+        }
+    }
+}
+
 /// One top-level block.
 #[derive(Debug)]
 pub struct Block<'a> {
@@ -52,7 +71,91 @@ impl<'a> Block<'a> {
     pub fn attr(&self, name: &str) -> Option<&BlockAttr<'a>> {
         self.attrs.iter().find(|attr| attr.name == name)
     }
+
+    /// The complete authored block, from the opening `<` through the closing
+    /// `>`. A missing close tag extends through the captured content.
+    pub const fn authored_span(&self) -> Span {
+        Span::new(
+            self.open_tag.start,
+            match self.close_tag {
+                Some(close) => close.end,
+                None => self.content.end,
+            },
+        )
+    }
 }
+
+/// One ordered piece of a lossless container capture.
+#[derive(Debug)]
+pub enum ContainerSegment<'container, 'source> {
+    /// Bytes outside top-level blocks, including comments and whitespace.
+    Interstitial(Span),
+    /// One original top-level block.
+    Block(&'container Block<'source>),
+}
+
+impl ContainerSegment<'_, '_> {
+    /// The segment's file-absolute authored span.
+    pub const fn span(&self) -> Span {
+        match self {
+            Self::Interstitial(span) => *span,
+            Self::Block(block) => block.authored_span(),
+        }
+    }
+}
+
+/// Allocation-free iterator returned by [`Container::segments`].
+#[derive(Debug)]
+pub struct ContainerSegments<'container, 'source> {
+    blocks: &'container [Block<'source>],
+    source_end: u32,
+    index: usize,
+}
+
+impl<'container, 'source> Iterator for ContainerSegments<'container, 'source> {
+    type Item = ContainerSegment<'container, 'source>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let len = self.blocks.len().checked_mul(2)?.checked_add(1)?;
+        if self.index >= len {
+            return None;
+        }
+        let index = self.index;
+        self.index += 1;
+        if index % 2 == 1 {
+            return self.blocks.get(index / 2).map(ContainerSegment::Block);
+        }
+
+        let gap = index / 2;
+        let start = gap
+            .checked_sub(1)
+            .and_then(|previous| self.blocks.get(previous))
+            .map_or(0, |block| block.authored_span().end);
+        let end = self
+            .blocks
+            .get(gap)
+            .map_or(self.source_end, |block| block.open_tag.start);
+        Some(ContainerSegment::Interstitial(Span::new(start, end)))
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let remaining = self.len();
+        (remaining, Some(remaining))
+    }
+}
+
+impl ExactSizeIterator for ContainerSegments<'_, '_> {
+    fn len(&self) -> usize {
+        self.blocks
+            .len()
+            .checked_mul(2)
+            .and_then(|len| len.checked_add(1))
+            .unwrap_or(usize::MAX)
+            .saturating_sub(self.index)
+    }
+}
+
+impl core::iter::FusedIterator for ContainerSegments<'_, '_> {}
 
 /// An attribute on a block's open tag. Values are raw (quotes excluded,
 /// entities undecoded).

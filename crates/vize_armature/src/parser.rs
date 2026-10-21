@@ -63,12 +63,14 @@ mod first_newline_tests;
 #[cfg(test)]
 mod tests;
 
-use vize_l0::{Allocator, String, Vec, interner::Interner};
+use vize_l0::{Allocator, ErrorCode, String, Vec, interner::Interner};
 use vize_relief::{
-    ElementNode, Namespace, PropNode, RootNode, SourceLocation, TemplateChildNode,
-    errors::{CompilerError, ErrorCode},
+    ElementNode, PropNode, RootNode, SourceLocation, TemplateChildNode,
+    errors::CompilerError,
     options::{CustomElementMatcher, ParserOptions, TemplateSyntaxMode, WhitespaceStrategy},
 };
+
+use vize_l1::markup::Namespace;
 
 use element::{note_html_tree_element_close, note_html_tree_element_open};
 pub(in crate::parser) use pending_text::{PendingText, TextSlot};

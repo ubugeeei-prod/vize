@@ -125,32 +125,51 @@ pub enum FormatterPreset {
     Vize,
     /// Prettier's Vue layout.
     Prettier,
+    /// Dense application layout with source-order fidelity.
+    Compact,
 }
 
 impl FormatterPreset {
     /// The options this preset assigns, keyed as in config files.
     pub fn options(self) -> serde_json::Value {
-        let vize = self == Self::Vize;
-        let entries = [
-            (
-                "printWidth",
-                serde_json::Value::from(if vize { 100 } else { 80 }),
-            ),
-            ("sortAttributes", vize.into()),
-            ("sortBlocks", vize.into()),
-            ("normalizeDirectiveShorthands", vize.into()),
-            ("normalizeCssQuotes", (!vize).into()),
-            ("normalizeInlineStyles", (!vize).into()),
-            ("normalizeVForParens", (!vize).into()),
-            ("selfCloseVoidElements", (!vize).into()),
-            ("reindentPreprocessorStyles", (!vize).into()),
-        ];
-        serde_json::Value::Object(
-            entries
-                .into_iter()
-                .map(|(key, value)| (key.into(), value))
-                .collect(),
-        )
+        match self {
+            Self::Vize => serde_json::json!({
+                "printWidth": 100,
+                "bracketSameLine": false,
+                "sortAttributes": true,
+                "sortBlocks": true,
+                "normalizeDirectiveShorthands": true,
+                "normalizeCssQuotes": false,
+                "normalizeInlineStyles": false,
+                "normalizeVForParens": false,
+                "selfCloseVoidElements": false,
+                "reindentPreprocessorStyles": false,
+            }),
+            Self::Prettier => serde_json::json!({
+                "printWidth": 80,
+                "bracketSameLine": false,
+                "sortAttributes": false,
+                "sortBlocks": false,
+                "normalizeDirectiveShorthands": false,
+                "normalizeCssQuotes": true,
+                "normalizeInlineStyles": true,
+                "normalizeVForParens": true,
+                "selfCloseVoidElements": true,
+                "reindentPreprocessorStyles": true,
+            }),
+            Self::Compact => serde_json::json!({
+                "printWidth": 120,
+                "bracketSameLine": true,
+                "sortAttributes": false,
+                "sortBlocks": false,
+                "normalizeDirectiveShorthands": true,
+                "normalizeCssQuotes": false,
+                "normalizeInlineStyles": false,
+                "normalizeVForParens": false,
+                "selfCloseVoidElements": false,
+                "reindentPreprocessorStyles": false,
+            }),
+        }
     }
 }
 

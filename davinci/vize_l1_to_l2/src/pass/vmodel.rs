@@ -79,6 +79,7 @@ use vize_l0::diag::Diagnostic;
 use vize_l0::pass::{Fusability, PassDesc, PassKind, Preserved};
 use vize_l0::side_table::SideTable;
 use vize_l0::{String, ensure_sufficient_stack};
+pub use vize_l2::analysis::model_facts::{ModelFacts, ModelFault};
 use vize_l2::op::{BindingOp, Op};
 use vize_l2::provenance::ProvenanceRecord;
 
@@ -107,41 +108,6 @@ pub const DESC: PassDesc = PassDesc::new(
     // The pass touches nothing: diagnostics and facts beside the tree.
     Preserved::ALL,
 );
-
-/// Why one `ui.model` is unrealizable where it stands.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ModelFault {
-    /// The model value is an iteration or slot-scope binding
-    /// (`VModelOnScope`).
-    OnScope,
-    /// A plain element's model carries an argument
-    /// (`VModelArgOnElement`).
-    ArgOnElement,
-}
-
-/// Per-`ui.model` validation facts, keyed by the binding op's page-order
-/// id; entries exist only for faulted models (sparse-table discipline).
-/// The legacy lane removes these models from its tree — realization and
-/// the differential projection read this fact as that removal.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct ModelFacts {
-    /// The first failing check, in the legacy lane's check order.
-    pub fault: ModelFault,
-}
-
-/// Facts cross compile boundaries with their artifact (P1-11).
-const _: () = {
-    const fn assert_owned<T: 'static>() {}
-    assert_owned::<ModelFault>();
-    assert_owned::<ModelFacts>();
-};
-
-/// 64-bit footprints, guarded like every fact-size assert.
-#[cfg(target_pointer_width = "64")]
-const _: () = {
-    assert!(core::mem::size_of::<ModelFault>() == 1);
-    assert!(core::mem::size_of::<ModelFacts>() == 1);
-};
 
 /// Run the pass over `lowered`.
 ///

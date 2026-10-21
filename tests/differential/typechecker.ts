@@ -43,8 +43,9 @@ export const TYPECHECKER_TESTS = {
   "component-v-bind-duplicate-diagnostic-10069":
     "named_prop_before_spread_reports_once_with_or_without_listener",
   "runtime-props-report-10100-10101": "runtime_props_reports_10100_10101_retain_expected_types",
-  "component-render-h-props-9855": "imported_sfc_h_calls_check_missing_and_wrong_props",
+  "native-pointer-events-original": "native_click_events_preserve_pointer_event_diagnostics",
   "workspace-alias-cache-10063": "workspace_package_alias_cache_preserves_sequential_scopes",
+  "component-render-h-props-9855": "imported_sfc_h_calls_check_missing_and_wrong_props",
   "component-listener-alias-scope-10112": "component_listener_aliases_stay_inside_guard_scope",
 } as const;
 
@@ -79,8 +80,9 @@ const sourceRevisions = {
   "misskey-generated-inference-9516": "cf6c83ab16fb7f20f84f0d51112090bbce89c74a",
   "component-v-bind-duplicate-diagnostic-10069": "7174c46d55825c155325e6314305e661d50ec95a",
   "runtime-props-report-10100-10101": "5dfe002a9467d152c8545693df33def3aa5f3bf7",
-  "component-render-h-props-9855": "f15ca234a4bdd73bde9caea07e652f3a345eb342",
+  "native-pointer-events-original": "e7d8b1c82a8badec89ec9779838dfa50c1b9b790",
   "workspace-alias-cache-10063": "7174c46d55825c155325e6314305e661d50ec95a",
+  "component-render-h-props-9855": "f15ca234a4bdd73bde9caea07e652f3a345eb342",
   "component-listener-alias-scope-10112": "7cefe3a00e6184de1e121d39b0e153f08a428aa6",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 
@@ -92,6 +94,15 @@ export type Diagnostic = {
   severity: number;
   code: number | null;
   message: string;
+};
+type DialectCoverage = {
+  state: "unknown" | "source-inspected";
+  registryRef: null;
+  evidence: Array<{
+    kind: "source-inspection";
+    dialects: string[];
+    selector: string;
+  }>;
 };
 export type TypecheckerCase = {
   id: string;
@@ -107,6 +118,7 @@ export type TypecheckerCase = {
   projectOptions?: { vuePackage: "absent" };
   packReference: Artifact;
   inputs: Array<Artifact & { file: string }>;
+  dialectCoverage: DialectCoverage;
   diagnostics: Diagnostic[];
 };
 type Pack = {
@@ -221,6 +233,45 @@ const contract = {
 };
 const matchedContract = "batch-start-diagnostics-v1";
 const unbaselinedFields = ["diagnostics[].blockType", "exitCode", "success"];
+const dialectOrder = ["vue3-sfc", "html-template", "js", "ts", "jsx", "tsx"];
+
+function typecheckerDialectCoverage(
+  root: string,
+  inputs: TypecheckerCase["inputs"],
+): DialectCoverage {
+  const dialects = new Set<string>();
+  for (const input of inputs) {
+    const source = readPinnedArtifact(root, input).toString("utf8");
+    const file = input.file.toLowerCase();
+    if (file.endsWith(".vue")) {
+      dialects.add("vue3-sfc");
+      if (/<template(?:\s|>)/i.test(source)) dialects.add("html-template");
+      for (const match of source.matchAll(/<script\b([^>]*)>/gi)) {
+        const attributes = match[1];
+        if (/\blang\s*=\s*["']tsx["']/i.test(attributes)) dialects.add("tsx");
+        else if (/\blang\s*=\s*["']ts["']/i.test(attributes)) dialects.add("ts");
+        else if (/\blang\s*=\s*["']jsx["']/i.test(attributes)) dialects.add("jsx");
+        else dialects.add("js");
+      }
+    } else if (file.endsWith(".tsx")) dialects.add("tsx");
+    else if (file.endsWith(".jsx")) dialects.add("jsx");
+    else if (file.endsWith(".d.ts") || file.endsWith(".ts")) dialects.add("ts");
+    else if (file.endsWith(".js")) dialects.add("js");
+  }
+  const ordered = dialectOrder.filter((dialect) => dialects.has(dialect));
+  if (ordered.length === 0) return { state: "unknown", registryRef: null, evidence: [] };
+  return {
+    state: "source-inspected",
+    registryRef: null,
+    evidence: [
+      {
+        kind: "source-inspection",
+        dialects: ordered,
+        selector: "batch-typechecker-fixture-v1 pinned authored sources",
+      },
+    ],
+  };
+}
 
 // Each pack remains an independently authored oracle. Registration adds source
 // identities and shared accounting; it never recaptures the expected values.
@@ -265,7 +316,11 @@ export function loadTypecheckerManifest(manifestPath: string) {
       fixture.inputs.map((input) => [input.file, input.path]),
       original.inputs.map((input) => [input.file, `${fixture.pack}/${input.source}`]),
     );
-    for (const input of fixture.inputs) readPinnedArtifact(root, input);
+    assert.deepEqual(
+      fixture.dialectCoverage,
+      typecheckerDialectCoverage(root, fixture.inputs),
+      "dialect coverage must match the pinned authored sources",
+    );
     packs.set(fixture.pack, pack);
     return { ...fixture, diagnostics: original.diagnostics };
   });

@@ -15,6 +15,9 @@ pub enum PropValueKind {
     /// `v-text` on a component: its `textContent` prop renders the value as
     /// interpolated text.
     DisplayString,
+    /// An opaque runtime slots object carried outside the authored slot IR.
+    /// Codegen consumes this marker instead of emitting it as a component prop.
+    ForwardedSlots,
 }
 
 /// IR prop

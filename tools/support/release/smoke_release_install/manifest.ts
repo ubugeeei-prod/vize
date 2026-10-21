@@ -101,6 +101,14 @@ export function assertNoWorkspaceProtocols(directory: string, manifest: Manifest
       `${path.join(directory, "package.json")} is not publishable: ${unresolved.join(", ")}`,
     );
 }
+export function assertVizeNativeVersion(manifest: Manifest) {
+  if (manifest.name !== "vize") return;
+  const nativeVersion = object(manifest.dependencies)?.["@vizejs/native"];
+  if (nativeVersion !== undefined && nativeVersion !== manifest.version)
+    throw new Error(
+      `vize@${manifest.version} must depend on @vizejs/native@${manifest.version}, found ${typeof nativeVersion === "string" ? nativeVersion : "<non-string>"}`,
+    );
+}
 function collectStrings(value: unknown, out: string[]) {
   if (typeof value === "string") out.push(value);
   else if (Array.isArray(value)) for (const item of value) collectStrings(item, out);
@@ -161,6 +169,7 @@ export function assertInstalledPackage(nodeModules: string, info: PackageInfo) {
       `installed package mismatch for ${info.name}: ${manifest.name}@${manifest.version}`,
     );
   assertNoWorkspaceProtocols(directory, manifest);
+  assertVizeNativeVersion(manifest);
   if (!isPlatformSpecific(manifest)) assertPublishEntrypointsExist(directory, manifest);
   if (process.platform !== "win32") {
     const bins =

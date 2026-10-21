@@ -10,9 +10,13 @@
       "verdict": "equivalent",
       "basis": "normalized rendered DOM and element identity across attribute and text updates"
     },
+    "children/logical-and": {
+      "verdict": "divergent",
+      "basis": "DOM, text and diagnostics match; Vize and Babel retain the truthy branch while vue-jsx-vapor replaces it across truthy value changes"
+    },
     "control-flow/conditional-branch": {
       "verdict": "equivalent",
-      "basis": "normalized rendered DOM and branch identity across retained and replaced branches"
+      "basis": "both Vapor and Babel references match falsy, array, nested-VNode and branch-identity updates"
     },
     "props/live-input-value": {
       "verdict": "equivalent",

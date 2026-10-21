@@ -141,7 +141,7 @@ Default discovery formats Vue, JavaScript/TypeScript and JSON/JSONC files. YAML 
 | `--single-attribute-per-line`      | Put one attribute per line                           |
 | `--max-attributes-per-line`        | Wrap after a given attribute count                   |
 | `--normalize-directive-shorthands` | Normalize `v-bind:` / `v-on:` / `v-slot:` shorthands |
-| `--preset`                         | Use Prettier's Vue layout with `prettier` |
+| `--preset`                         | Apply `vize`, `prettier` or `compact` formatter defaults       |
 | `--profile`                        | Print timing profile                                 |
 
 ## Lint

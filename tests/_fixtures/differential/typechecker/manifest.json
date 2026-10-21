@@ -40,7 +40,22 @@
           "path": "event-handler-narrowing/component-sibling-valid/src/child.vue.txt",
           "sha256": "35c0150a8c6f8b17a833d2692ed85d8609090be7790bb1c06d4bba5133556b1b"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/event-handler-narrowing/native-sibling-valid",
@@ -71,7 +86,22 @@
           "path": "event-handler-narrowing/native-sibling-valid/src/App.vue.txt",
           "sha256": "8b781fe49d9650f617cf0fc8de20abf051bf37ee2d2373824407e3cf79ef4b28"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/event-handler-narrowing/handler-assignment-invalid",
@@ -107,7 +137,22 @@
           "path": "event-handler-narrowing/handler-assignment-invalid/src/child.vue.txt",
           "sha256": "35c0150a8c6f8b17a833d2692ed85d8609090be7790bb1c06d4bba5133556b1b"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/template-definite-assignment/vue3-complete-project",
@@ -228,7 +273,22 @@
           "path": "template-definite-assignment/vue3-complete-project/src/OptionsApiConditional.vue.txt",
           "sha256": "a383be99eb33ed60d258b14dbbc8debf25e2364f66476c29ab611352830abc3d"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/template-definite-assignment/tsx-deferred-template",
@@ -264,7 +324,23 @@
           "path": "template-definite-assignment/tsx-deferred-template/src/TsxConditional.vue.txt",
           "sha256": "f38b889be8b479e04b697a733258e314f42155950a17109c4e6822acffc9dd9f"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts",
+              "tsx"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/required-props-edges/complete-attribute-boundaries",
@@ -325,7 +401,22 @@
           "path": "required-props-edges/complete-attribute-boundaries/src/Parent.vue.txt",
           "sha256": "a936fe3c9d9a9f6e1677410ccf59edf79da5f6cb3327e90e63a065152e09f22c"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/unicode-reserved-props/literal-values-valid",
@@ -356,7 +447,22 @@
           "path": "unicode-reserved-props/literal-values-valid/src/App.vue.txt",
           "sha256": "e71ed56b20a64fdc45fdbddc037628fd94f21302a31b9c534971074f792e68fb"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/unicode-reserved-props/literal-values-invalid",
@@ -387,7 +493,22 @@
           "path": "unicode-reserved-props/literal-values-invalid/src/App.vue.txt",
           "sha256": "351bfcff804d82527db95ad8e42b78261af415da205f55b46b2e481c8065d9e8"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/reserved-expression-shapes/valid-expression-shapes",
@@ -418,7 +539,22 @@
           "path": "reserved-expression-shapes/valid.vue.txt",
           "sha256": "136ac050c5a5290272468091d01b2a47bee8249b1d520594c22f76752863b0ae"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/reserved-expression-shapes/invalid-expression-shapes",
@@ -449,7 +585,22 @@
           "path": "reserved-expression-shapes/invalid.vue.txt",
           "sha256": "afb7a91298fad609e1c8a6fa1c5011ccc06585b5e59cbcfd9d1215a5c523cecf"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/component-event-tuples/unresolved-valid",
@@ -485,7 +636,22 @@
           "path": "component-event-tuples/unresolved-valid/src/UnknownChild.vue.txt",
           "sha256": "59d7206ae365ffd4f28700cb1cb0e1478239f01a7ff4c7db0bc40e56442726b0"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/component-event-tuples/resolved-valid",
@@ -521,7 +687,22 @@
           "path": "component-event-tuples/resolved-valid/src/KnownChild.vue.txt",
           "sha256": "166b1b56221060aecb0d45765baf63c58eeb5b227ddd78d1d17d80d3505704d1"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/component-event-tuples/inline-tuple-valid",
@@ -557,7 +738,22 @@
           "path": "component-event-tuples/inline-tuple-valid/src/Test.vue.txt",
           "sha256": "8030916c09e332cb30c2dd377f4530a1c34a6b1f7ce90c35a317fe44cdcf0588"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/component-event-tuples/resolved-first-invalid",
@@ -593,7 +789,22 @@
           "path": "component-event-tuples/resolved-first-invalid/src/KnownChild.vue.txt",
           "sha256": "166b1b56221060aecb0d45765baf63c58eeb5b227ddd78d1d17d80d3505704d1"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/component-event-tuples/native-extra-required-invalid",
@@ -624,7 +835,22 @@
           "path": "component-event-tuples/native-extra-required-invalid/src/App.vue.txt",
           "sha256": "3a1268133f68f62000d5a55bfcd819e47e5cd6b3eb38503523545b3660145f5f"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/component-event-tuples/resolved-second-invalid",
@@ -660,7 +886,22 @@
           "path": "component-event-tuples/resolved-second-invalid/src/KnownChild.vue.txt",
           "sha256": "166b1b56221060aecb0d45765baf63c58eeb5b227ddd78d1d17d80d3505704d1"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/component-event-tuples/inline-second-invalid",
@@ -696,7 +937,22 @@
           "path": "component-event-tuples/inline-second-invalid/src/Test.vue.txt",
           "sha256": "8030916c09e332cb30c2dd377f4530a1c34a6b1f7ce90c35a317fe44cdcf0588"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/typed-import-meta/project-import-meta-types",
@@ -733,7 +989,22 @@
           "path": "typed-import-meta/tsconfig.json.txt",
           "sha256": "e36b280dce185f4be85cbff1838c0ee06d8d7a46b38b3e63df995c0decd7b13b"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/slot-outlet-key/declared-and-inferred-key-payload",
@@ -775,7 +1046,22 @@
           "path": "slot-outlet-key/tsconfig.json.txt",
           "sha256": "e36b280dce185f4be85cbff1838c0ee06d8d7a46b38b3e63df995c0decd7b13b"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/options-api-any-instance/typed-props-control",
@@ -815,7 +1101,22 @@
           "path": "options-api-any-instance/tsconfig.json.txt",
           "sha256": "e36b280dce185f4be85cbff1838c0ee06d8d7a46b38b3e63df995c0decd7b13b"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/options-api-any-instance/loose-and-concrete-mixins",
@@ -860,7 +1161,22 @@
           "path": "options-api-any-instance/tsconfig.json.txt",
           "sha256": "e36b280dce185f4be85cbff1838c0ee06d8d7a46b38b3e63df995c0decd7b13b"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/authored-unused-symbols/original-locals",
@@ -895,7 +1211,22 @@
           "path": "authored-unused-symbols/original-tsconfig.json.txt",
           "sha256": "8d7d2a7250100da29ed298c16d6a9f32ce2cb77b11fd5cb90b08c0180cd68b31"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/authored-unused-symbols/inherited-locals",
@@ -935,7 +1266,22 @@
           "path": "authored-unused-symbols/base.json.txt",
           "sha256": "06f015bffb08f3c8c0ef76cddb81a886beafe1b73da2d0674ab9f9c772f6ab8d"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/authored-unused-symbols/disabled-locals",
@@ -975,7 +1321,22 @@
           "path": "authored-unused-symbols/base.json.txt",
           "sha256": "06f015bffb08f3c8c0ef76cddb81a886beafe1b73da2d0674ab9f9c772f6ab8d"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/authored-unused-symbols/parameters-only",
@@ -1015,7 +1376,22 @@
           "path": "authored-unused-symbols/helper.ts.txt",
           "sha256": "8c9da8c30357f2768081854c49192f0078ba011a4f198f437a5f5a9388ffcf27"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/authored-unused-symbols/default-locals",
@@ -1050,7 +1426,22 @@
           "path": "authored-unused-symbols/default-locals.json.txt",
           "sha256": "dc8dfa3a4e8b0710d4e5ac116b720ac314405742805e7ed31e7fd406724549a9"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/authored-unused-symbols/parameters-disabled",
@@ -1095,7 +1486,22 @@
           "path": "authored-unused-symbols/helper.ts.txt",
           "sha256": "8c9da8c30357f2768081854c49192f0078ba011a4f198f437a5f5a9388ffcf27"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/split-script-original/complete-original-split-script",
@@ -1127,7 +1533,21 @@
           "path": "split-script-original/original-project/tsconfig.json.txt",
           "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/v-for-source-original/complete-original-html-callback",
@@ -1159,7 +1579,22 @@
           "path": "v-for-source-original/original-project/tsconfig.json.txt",
           "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/declared-prop-names-original/complete-original-declared-prop-names",
@@ -1206,7 +1641,22 @@
           "path": "declared-prop-names-original/original-project/tsconfig.json.txt",
           "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/v-for-component-source-original/complete-original-component-callback",
@@ -1243,7 +1693,22 @@
           "path": "v-for-component-source-original/original-project/tsconfig.json.txt",
           "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/template-suppression-original/complete-original-template-suppression",
@@ -1275,7 +1740,22 @@
           "path": "template-suppression-original/original-project/tsconfig.json.txt",
           "sha256": "e36b280dce185f4be85cbff1838c0ee06d8d7a46b38b3e63df995c0decd7b13b"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/allow-importing-ts-extensions-9890/default-policy",
@@ -1317,7 +1797,22 @@
           "path": "allow-importing-ts-extensions-9890/tsconfig-default.json.txt",
           "sha256": "4690f8384ac2d5ee17b908e3f44773d23836d6542f4bb459b018f3899dc52336"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/allow-importing-ts-extensions-9890/explicit-opt-in",
@@ -1359,7 +1854,22 @@
           "path": "allow-importing-ts-extensions-9890/tsconfig-opt-in.json.txt",
           "sha256": "332311d6d44cd6d6451b103e4986088dc3efd03af1e9a66b61c3e53d46528d8b"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/allow-importing-ts-extensions-9890/declaration-generated-routes",
@@ -1396,7 +1906,22 @@
           "path": "allow-importing-ts-extensions-9890/declaration-generated/tsconfig.json.txt",
           "sha256": "7f2fe21e72e2bd8eda6a9af8b9152f2413ef26813a0e7131af98ccd7c9afad86"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/allow-importing-ts-extensions-9890/generated-external-script-route",
@@ -1433,7 +1958,23 @@
           "path": "allow-importing-ts-extensions-9890/generated-external-script/tsconfig.json.txt",
           "sha256": "cb80c8f26ccfff81c52c59285ccd75b0972d7f2a364101590f11431037d3d5b2"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts",
+              "tsx"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/nuxt-plugin-injection-types/authored-dependency-identity",
@@ -1460,7 +2001,12 @@
           "path": "nuxt-plugin-injection-types/project.json",
           "sha256": "2ad499a9665600b7ce468b7568641491f1262c3010dc40d5d4c53b2b5b775412"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "unknown",
+        "registryRef": null,
+        "evidence": []
+      }
     },
     {
       "id": "typechecker/listener-attribute-parity-9852/class-style-and-spread-listeners",
@@ -1507,7 +2053,22 @@
           "path": "listener-attribute-parity-9852/src/Spread.vue.txt",
           "sha256": "c726f210eaba328ff6e53ff8ca53ab0d78de169931ed586462bb42b8bfac16df"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/dynamic-component-union-listener-10026/native-element-union",
@@ -1539,7 +2100,22 @@
           "path": "dynamic-component-union-listener-10026/App.vue.txt",
           "sha256": "318006797785b6647010bbb8c07269a9d6aac7d0a72ee9fc8de60a02962a10f5"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/cache-maintenance-9860/bounded-maintenance",
@@ -1571,7 +2147,22 @@
           "path": "cache-maintenance-9860/tsconfig.json.txt",
           "sha256": "07b958ce0048f7153f9528b747fd417a0ea82774b9a44506f9b88de92e11108f"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/cache-maintenance-9860/fresh-helper-handoff",
@@ -1608,7 +2199,23 @@
           "path": "cache-maintenance-9860/fresh-helper-handoff/tsconfig.json.txt",
           "sha256": "138f29287823648d401546efef26fe7d2ec8428f5ba773b9e4a97b793556526f"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts",
+              "tsx"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/reactive-props-destructure-10008/unused-binding",
@@ -1640,7 +2247,22 @@
           "path": "reactive-props-destructure-10008/tsconfig.json.txt",
           "sha256": "b3a5494b753d8fb49e84a253fe76eb893ca9bc931297491547d27df53d2c83b6"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/reactive-props-destructure-10008/used-rest-binding",
@@ -1672,7 +2294,22 @@
           "path": "reactive-props-destructure-10008/tsconfig.json.txt",
           "sha256": "b3a5494b753d8fb49e84a253fe76eb893ca9bc931297491547d27df53d2c83b6"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/nuxt-unknown-template-options-10013/generated-paths-explicit-unknown-checks",
@@ -1719,7 +2356,22 @@
           "path": "nuxt-unknown-template-options-10013/nuxt-generated/types/imports.d.ts.txt",
           "sha256": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/native-inline-event-handler-9835/native-mousedown-arrow",
@@ -1751,7 +2403,22 @@
           "path": "native-inline-event-handler-9835/tsconfig.json.txt",
           "sha256": "97fe2cd88a02b6ee5680212cba048feac1cb807d26fd4a5ef3c2dede7874117e"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/inferred-project-tsconfig-9718/owned-strict",
@@ -1783,7 +2450,22 @@
           "path": "inferred-project-tsconfig-9718/tsconfig.json.txt",
           "sha256": "3c8047401c47504341017d802f7940ce777a7e7a361894c04f6d965954715003"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/inferred-project-tsconfig-9718/inferred-defaults",
@@ -1810,7 +2492,22 @@
           "path": "inferred-project-tsconfig-9718/template/code/App.vue.txt",
           "sha256": "4ee23799e710983bff854b21b4885a73802ebe66db92f95ac552fc7a0ef6eb7b"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/generic-fallthrough-spread-9956/broad-index-valid",
@@ -1852,7 +2549,22 @@
           "path": "generic-fallthrough-spread-9956/src/App.vue.txt",
           "sha256": "b8bf3408b1f2f13b905e7a4ab3288cf08192cc269c9de8e0f5fd2e60199402fb"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/art-variant-implicit-component-9854/implicit-and-explicit-props",
@@ -1894,7 +2606,22 @@
           "path": "art-variant-implicit-component-9854/src/MyCardExplicit.art.vue.txt",
           "sha256": "224008e13f14210912b95eadfed63f36f18ffc1ee8108261f418d0f11bc9600a"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/misskey-generated-inference-9516/inference-probes-valid",
@@ -1946,7 +2673,22 @@
           "path": "misskey-generated-inference-9516/inference-probes-valid/src/App.vue.txt",
           "sha256": "0295efb2fc46392adacacaefd622e23dfc56b19abe299f775856fcea68b350cc"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/component-v-bind-duplicate-diagnostic-10069/wrong-prop-with-spread-and-listener",
@@ -1983,7 +2725,22 @@
           "path": "component-v-bind-duplicate-diagnostic-10069/src/App.vue.txt",
           "sha256": "ee913a6465fcc965617f45c7f3897143cdd177a74a07b4abc4fd2ab30c78060b"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/misskey-generated-inference-9516/authored-unknown-prop-control",
@@ -2025,7 +2782,22 @@
           "path": "misskey-generated-inference-9516/authored-unknown-prop-control/src/App.vue.txt",
           "sha256": "51c2e8a568c7af36948a100d0645d5f05d150a348aec204a6249087833dcdfc1"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/runtime-props-report-10100-10101/imported-helper-spread",
@@ -2062,7 +2834,22 @@
           "path": "runtime-props-report-10100-10101/src/Chart.vue.txt",
           "sha256": "6ac128b115b4d761fea9372bd1eeb7f98db3a169cede2f0d695ee55b8cace85b"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/runtime-props-report-10100-10101/object-factory-assertion",
@@ -2099,10 +2886,25 @@
           "path": "runtime-props-report-10100-10101/src/Parent.vue.txt",
           "sha256": "aade42cac2d727457bb3b897a58a831f92a867524e3bcc74462901d529429074"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
-      "id": "typechecker/component-render-h-props-9855/missing-and-wrong-props",
+      "id": "typechecker/native-pointer-events-original/click-pointer-handler",
       "state": "active",
       "targets": [
         "batch"
@@ -2111,34 +2913,90 @@
         "legacy": "batch-typechecker-fixture-v1",
         "native": null
       },
-      "pack": "component-render-h-props-9855",
-      "case": "missing-and-wrong-props",
-      "test": "imported_sfc_h_calls_check_missing_and_wrong_props",
-      "regressionCommit": "f15ca234a4bdd73bde9caea07e652f3a345eb342",
-      "sourceRevision": "f15ca234a4bdd73bde9caea07e652f3a345eb342",
+      "pack": "native-pointer-events-original",
+      "case": "click-pointer-handler",
+      "test": "native_click_events_preserve_pointer_event_diagnostics",
+      "regressionCommit": "e7d8b1c82a8badec89ec9779838dfa50c1b9b790",
+      "sourceRevision": "e7d8b1c82a8badec89ec9779838dfa50c1b9b790",
       "packReference": {
-        "path": "component-render-h-props-9855/cases.json",
-        "sha256": "7af47e597b3a59aefd63a5667f30cc31285192ad46424b6ee5d1e375e73af5f9"
+        "path": "native-pointer-events-original/cases.json",
+        "sha256": "9e5a297eb799ddff8fb7e9b08f0009f0d7e174caa503606dc6e4dc0bc3b384f5"
       },
       "inputs": [
         {
           "file": "tsconfig.json",
-          "path": "component-render-h-props-9855/tsconfig.json.txt",
-          "sha256": "e36b280dce185f4be85cbff1838c0ee06d8d7a46b38b3e63df995c0decd7b13b"
+          "path": "native-pointer-events-original/click-pointer-handler/tsconfig.json.txt",
+          "sha256": "97fe2cd88a02b6ee5680212cba048feac1cb807d26fd4a5ef3c2dede7874117e"
         },
         {
-          "file": "src/Counter.vue",
-          "path": "component-render-h-props-9855/src/Counter.vue.txt",
-          "sha256": "cb225908eac39ef24e7945f539d892df9ca8744b4069779ee4330f590830bf0e"
-        },
-        {
-          "file": "src/render.ts",
-          "path": "component-render-h-props-9855/src/render.ts.txt",
-          "sha256": "18fd5f567d31dc70658810cf5cbfb53f148925a35fd9ab6433863e03305be10f"
+          "file": "src/App.vue",
+          "path": "native-pointer-events-original/click-pointer-handler/src/App.vue.txt",
+          "sha256": "5d198732686d7ebdf96ad96d0740b14f42ba28e5a2c18185bd5b6c8792e58dad"
         }
-      ]
-    }
-,
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/native-pointer-events-original/auxclick-pointer-handler",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "native-pointer-events-original",
+      "case": "auxclick-pointer-handler",
+      "test": "native_click_events_preserve_pointer_event_diagnostics",
+      "regressionCommit": "e7d8b1c82a8badec89ec9779838dfa50c1b9b790",
+      "sourceRevision": "e7d8b1c82a8badec89ec9779838dfa50c1b9b790",
+      "packReference": {
+        "path": "native-pointer-events-original/cases.json",
+        "sha256": "9e5a297eb799ddff8fb7e9b08f0009f0d7e174caa503606dc6e4dc0bc3b384f5"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "native-pointer-events-original/auxclick-pointer-handler/tsconfig.json.txt",
+          "sha256": "97fe2cd88a02b6ee5680212cba048feac1cb807d26fd4a5ef3c2dede7874117e"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "native-pointer-events-original/auxclick-pointer-handler/src/App.vue.txt",
+          "sha256": "f86e1cd968a74e9686dd11cd9a25f06f3c2e77aafcea0f1da975e63cc1ba52a1"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
     {
       "id": "typechecker/workspace-alias-cache-10063/second-package-selection",
       "state": "active",
@@ -2214,7 +3072,74 @@
           "path": "workspace-alias-cache-10063/packages/c/src/MyBadge.vue.txt",
           "sha256": "32fa2cf70a75ee2b7d7c5ddecb8df37ef60c8de103217dacf2a2386579cd3ed8"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/component-render-h-props-9855/missing-and-wrong-props",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "component-render-h-props-9855",
+      "case": "missing-and-wrong-props",
+      "test": "imported_sfc_h_calls_check_missing_and_wrong_props",
+      "regressionCommit": "f15ca234a4bdd73bde9caea07e652f3a345eb342",
+      "sourceRevision": "f15ca234a4bdd73bde9caea07e652f3a345eb342",
+      "packReference": {
+        "path": "component-render-h-props-9855/cases.json",
+        "sha256": "7af47e597b3a59aefd63a5667f30cc31285192ad46424b6ee5d1e375e73af5f9"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "component-render-h-props-9855/tsconfig.json.txt",
+          "sha256": "e36b280dce185f4be85cbff1838c0ee06d8d7a46b38b3e63df995c0decd7b13b"
+        },
+        {
+          "file": "src/Counter.vue",
+          "path": "component-render-h-props-9855/src/Counter.vue.txt",
+          "sha256": "cb225908eac39ef24e7945f539d892df9ca8744b4069779ee4330f590830bf0e"
+        },
+        {
+          "file": "src/render.ts",
+          "path": "component-render-h-props-9855/src/render.ts.txt",
+          "sha256": "18fd5f567d31dc70658810cf5cbfb53f148925a35fd9ab6433863e03305be10f"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     },
     {
       "id": "typechecker/component-listener-alias-scope-10112/sibling-guarded-listeners",
@@ -2256,7 +3181,22 @@
           "path": "component-listener-alias-scope-10112/src/App.vue.txt",
           "sha256": "3c824ed84d35e942880c8af1a888512ff9b8fc817130b3022134e8e74c4ed34e"
         }
-      ]
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }

@@ -123,3 +123,27 @@ void test("missing case coverage becomes explicit unknown without changing manif
     fs.rmSync(temporary, { recursive: true, force: true });
   }
 });
+
+void test("typechecker coverage records every pinned authored source dialect", () => {
+  const source = load("typechecker");
+  const summary = summarizeDialectCoverage(source.cases);
+  assert.deepEqual(summary, {
+    plannedCases: 59,
+    verifiedCases: 0,
+    provisionalCases: 58,
+    unknownReadinessCases: 59,
+    verified: {},
+    provisional: {
+      "html-template": 57,
+      ts: 58,
+      tsx: 3,
+      "vue3-sfc": 58,
+    },
+  });
+  assert.deepEqual(
+    source.cases
+      .filter((fixture) => fixture.dialectCoverage.state === "unknown")
+      .map((fixture) => fixture.id),
+    ["typechecker/nuxt-plugin-injection-types/authored-dependency-identity"],
+  );
+});

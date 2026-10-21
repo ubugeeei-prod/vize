@@ -1,12 +1,10 @@
-//! Which backends can forward an opaque slots object (#3467).
+//! Unsupported fallback paths for an opaque slots object (#3467).
 //!
 //! `v-slots={slots}` lowers to a relief `slots` directive that
-//! `vize_atelier_core`'s slot codegen emits as a spread, so the VDOM backend
-//! forwards it exactly as `@vue/babel-plugin-jsx` does. Vapor and SSR build
-//! their slots from `<template v-slot>` children and have no representation for
-//! an object that only exists at runtime: they would drop the directive and
-//! render the component with no slots, no error and no warning — the failure
-//! shape #3418 exists to remove. So they say so instead.
+//! `vize_atelier_core`'s slot codegen emits as a spread, so VDOM forwards it
+//! exactly as `@vue/babel-plugin-jsx` does. Vapor passes the object through its
+//! public raw-slots argument. SSR's legacy fallback cannot represent it and
+//! must retain the diagnostic rather than silently drop the directive.
 
 use vize_relief::{ElementNode, PropNode, RootNode, SourceLocation, TemplateChildNode};
 
@@ -15,7 +13,6 @@ use crate::diagnostics::JsxDiagnostic;
 /// The backend a component is being compiled to, for [`reject_forwarded_slots`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum SlotsForwardingBackend {
-    Vapor,
     Ssr,
 }
 
@@ -23,12 +20,6 @@ impl SlotsForwardingBackend {
     /// The message this backend reports, naming itself and the way out.
     const fn message(self) -> &'static str {
         match self {
-            Self::Vapor => {
-                "v-slots forwards a slots object the compiler cannot see inside, which Vapor \
-                 output cannot express: Vapor slots are built from the component's children. \
-                 Write the slots inline, e.g. v-slots={{ default: () => <div/> }}, or compile \
-                 this component to VDOM."
-            }
             Self::Ssr => {
                 "v-slots forwards a slots object the compiler cannot see inside, which SSR \
                  output cannot express: the server renderer inlines each slot's content. \

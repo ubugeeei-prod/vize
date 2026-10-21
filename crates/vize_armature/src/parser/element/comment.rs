@@ -1,10 +1,11 @@
 //! Comment and CDATA processing.
 
 use vize_l0::{
-    Box,
+    Box, ErrorCode,
     directive::{DirectiveKind, parse_vize_directive},
 };
-use vize_relief::{CommentNode, ErrorCode, Namespace, TemplateChildNode};
+use vize_l1::markup::Namespace;
+use vize_relief::{CommentNode, TemplateChildNode};
 
 use super::super::Parser;
 

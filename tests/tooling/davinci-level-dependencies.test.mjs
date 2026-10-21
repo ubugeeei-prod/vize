@@ -4,14 +4,18 @@ import path from "node:path";
 import { test } from "node:test";
 import {
   assertAllowlistRatchet,
+  assertProductAllowlistRatchet,
   assertDependencyReport,
+  initialGlyphProductAllowlist,
   initialEntries,
   inspectLevelDependencies,
   policyPath,
+  productPolicyPath,
   readBaseAllowlist,
   readMetadata,
   repoRoot,
   validateAllowlist,
+  validateProductAllowlist,
 } from "../../tools/support/compat/davinci/level-dependencies.ts";
 
 import { fixture, rejectsPath } from "./support/level-dependencies.mjs";
@@ -115,7 +119,69 @@ void test("a newly introduced level root cannot inherit a known legacy exception
       ["vize_l4", "vize_relief"],
     ],
   );
-  assert.throws(() => assertDependencyReport(report), /new level-to-legacy/u);
+  assert.throws(() => assertDependencyReport(report), /new protected-root-to-legacy/u);
+});
+
+void test("Glyph is a protected product root with one exact shrinking migration permission", () => {
+  const value = fixture(),
+    product = structuredClone(initialGlyphProductAllowlist);
+  value.add("vize_glyph", "vize_atelier_sfc");
+  const combined = validateAllowlist({
+    ...value.policy,
+    entries: [...value.policy.entries, ...product.entries],
+  });
+  const report = inspectLevelDependencies(value.metadata, combined, [product.root]);
+  assertDependencyReport(report);
+  assert.deepEqual(report.protectedProducts, ["vize_glyph"]);
+  assert.ok(
+    report.witnesses.some(
+      ({ root, edge, path: route }) =>
+        root === "vize_glyph" &&
+        edge.from === "vize_glyph" &&
+        edge.to === "vize_atelier_sfc" &&
+        route.join("/") === "vize_glyph/vize_atelier_sfc",
+    ),
+  );
+
+  value.add("vize_glyph", "helper");
+  value.add("helper", "vize_croquis");
+  const expanded = inspectLevelDependencies(value.metadata, combined, [product.root]);
+  assert.ok(
+    expanded.unlisted.some(
+      ({ root, edge, path: route }) =>
+        root === "vize_glyph" &&
+        edge.from === "helper" &&
+        edge.to === "vize_croquis" &&
+        route.join("/") === "vize_glyph/helper/vize_croquis",
+    ),
+  );
+  assert.throws(() => assertDependencyReport(expanded), /new protected-root-to-legacy/u);
+});
+
+void test("the Glyph product policy fixes its root and only permits debt removal", () => {
+  const current = structuredClone(initialGlyphProductAllowlist);
+  assertProductAllowlistRatchet(current, initialGlyphProductAllowlist);
+  current.entries = [];
+  assertProductAllowlistRatchet(current, initialGlyphProductAllowlist);
+
+  for (const change of [
+    (policy) => {
+      policy.root = "vize_patina";
+    },
+    (policy) => {
+      policy.baselineRevision = "0".repeat(40);
+    },
+    (policy) => {
+      policy.entries.push({ ...policy.entries[0], to: "vize_relief" });
+    },
+    (policy) => {
+      policy.entries[0].roots = ["vize_patina"];
+    },
+  ]) {
+    const changed = structuredClone(initialGlyphProductAllowlist);
+    change(changed);
+    assert.throws(() => assertProductAllowlistRatchet(changed, initialGlyphProductAllowlist));
+  }
 });
 
 void test("a non-level helper cannot launder a new legacy entry", () => {
@@ -287,8 +353,17 @@ void test("the real workspace metadata has no new or stale legacy permissions", 
   const policy = validateAllowlist(
     JSON.parse(readFileSync(path.join(repoRoot, policyPath), "utf8")),
   );
+  const product = validateProductAllowlist(
+    JSON.parse(readFileSync(path.join(repoRoot, productPolicyPath), "utf8")),
+  );
   assertAllowlistRatchet(policy, { entries: initialEntries });
-  const report = inspectLevelDependencies(readMetadata(), policy);
+  assertProductAllowlistRatchet(product, initialGlyphProductAllowlist);
+  const report = inspectLevelDependencies(
+    readMetadata(),
+    validateAllowlist({ ...policy, entries: [...policy.entries, ...product.entries] }),
+    [product.root],
+  );
   assertDependencyReport(report);
   assert.ok(report.roots.length > 0);
+  assert.deepEqual(report.protectedProducts, ["vize_glyph"]);
 });

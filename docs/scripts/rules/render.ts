@@ -27,6 +27,7 @@ export const configurableRules = new Set([
   "vue/require-component-registration",
   "vue/sfc-element-order",
   "vue/v-on-event-hyphenation",
+  "vue/v-on-style",
   "vue/valid-v-on",
   "vue/valid-v-slot",
 ]);

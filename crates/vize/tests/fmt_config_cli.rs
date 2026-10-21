@@ -421,3 +421,29 @@ fn fmt_applies_a_config_preset_under_explicit_options() {
         "<template>\n  <img :src=\"src\" alt=\"\" class=\"a\" />\n</template>\n"
     );
 }
+
+#[test]
+fn fmt_applies_the_compact_config_preset_end_to_end() {
+    let project = tempfile::tempdir().unwrap();
+    write_project_file(
+        project.path(),
+        "vite.config.mjs",
+        &vite_config::source(r#"{ "formatter": { "preset": "compact" } }"#),
+    );
+    write_project_file(
+        project.path(),
+        "App.vue",
+        "<template>\n  <div v-bind:id=\"id\" role=\"status\" aria-live=\"polite\">{{ id }}</div>\n</template>\n\n<script lang=\"ts\" setup>\nconst id = \"saved\";\n</script>\n",
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(project.path())
+        .args(["fmt", "--write", "App.vue"])
+        .output()
+        .unwrap();
+    assert!(output.status.success(), "{}", output_details(&output));
+    assert_eq!(
+        fs::read_to_string(project.path().join("App.vue")).unwrap(),
+        "<template>\n  <div :id=\"id\" role=\"status\" aria-live=\"polite\">{{ id }}</div>\n</template>\n\n<script lang=\"ts\" setup>\nconst id = \"saved\";\n</script>\n"
+    );
+}

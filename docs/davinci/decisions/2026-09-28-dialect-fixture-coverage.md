@@ -47,8 +47,17 @@ default Vue 3 SFC and HTML-template selection; the one typed-script case also
 records `ts`. Their input bytes were already pinned by SHA-256, and the compiler
 loader now binds these labels to its `--no-config` Vue 3 adapter. This is
 provisional measurement only: all twelve remain unknown for deletion readiness
-because whole-product native compiler execution is still unsupported. Existing
-formatter labels contribute sixteen more provisional cases. The 59 linter, 27
-LSP and 47 typechecker cases stay explicit unknowns pending product-specific
-source and execution evidence. Rare dialect input-only rows remain outside the
+because whole-product native compiler execution is still unsupported.
+
+The typechecker registry also derives bounded `source-inspected` labels from
+each immutable authored input after its SHA-256 check. Fifty-six of 57 cases
+contain Vue 3 SFC and TypeScript witnesses, 55 include HTML templates, and three
+include TSX. The remaining Nuxt dependency-identity case contains only its
+pinned project graph, so it stays unknown instead of inferring a dialect from a
+product name. The loader re-derives the labels from the pinned bytes and rejects
+manifest drift. These provisional labels do not change the zero-fallback
+denominator: native typechecker execution remains unsupported for all 57 cases.
+Existing formatter labels contribute sixteen more provisional cases. The 59
+linter and 27 LSP cases stay explicit unknowns pending product-specific source
+and execution evidence. Rare dialect input-only rows remain outside the
 executed denominator.

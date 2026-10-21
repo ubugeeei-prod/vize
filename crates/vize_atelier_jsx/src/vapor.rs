@@ -19,7 +19,6 @@ use vize_croquis::Croquis;
 use vize_l0::{Allocator, String};
 
 use crate::diagnostics::JsxDiagnostic;
-use crate::forwarded_slots::{SlotsForwardingBackend, reject_forwarded_slots};
 use crate::scoped::{ScopedStyle, build_scoped_style};
 use crate::spread_children::reject_spread_children;
 use crate::{ComponentSetupSpan, JsxLang, JsxOutputMode, LoweredRoot, lower_source};
@@ -85,15 +84,6 @@ pub fn compile_to_vapor(
     let mut components = Vec::with_capacity(lowered.roots.len());
     for mut lowered_root in lowered.roots {
         reject_spread_children(allocator, &mut lowered_root.root, &mut diagnostics);
-        // Vapor slots are built from the component's children, so a forwarded
-        // slots object has nowhere to go; report it rather than drop it (#3467).
-        if !options.ssr {
-            reject_forwarded_slots(
-                &lowered_root.root,
-                SlotsForwardingBackend::Vapor,
-                &mut diagnostics,
-            );
-        }
         components.push(compile_root_to_vapor(
             allocator,
             lowered_root,
