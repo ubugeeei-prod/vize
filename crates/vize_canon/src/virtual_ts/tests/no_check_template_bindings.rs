@@ -1,6 +1,6 @@
 use crate::virtual_ts::{
-    generate_virtual_ts_with_offsets_and_checks, VirtualTsCheckOptions, VirtualTsGenerationOptions,
-    VirtualTsOptions,
+    VirtualTsCheckOptions, VirtualTsGenerationOptions, VirtualTsOptions,
+    generate_virtual_ts_with_offsets_and_checks,
 };
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
@@ -44,9 +44,11 @@ const isLoading = ref(false)
     assert!(output.code.contains("const scriptOnly: string = 1"));
     assert!(output.code.contains("__setup();"));
     assert!(!output.code.contains("Template Scope"));
-    assert!(!output
-        .code
-        .contains("type __Ctx = import('vue').ComponentPublicInstance;"));
+    assert!(
+        !output
+            .code
+            .contains("type __Ctx = import('vue').ComponentPublicInstance;")
+    );
     assert!(!output.code.contains("type __R_isLoading"));
     assert!(!output.code.contains("var isLoading:"));
     assert!(!output.code.contains("void isLoading;"));
@@ -97,17 +99,21 @@ function confirmDialog() {}
     assert!(output.code.contains("const scriptOnly: string = 1"));
     assert!(output.code.contains("__setup();"));
     assert!(!output.code.contains("Template Scope"));
-    assert!(!output
-        .code
-        .contains("type __Ctx = import('vue').ComponentPublicInstance;"));
+    assert!(
+        !output
+            .code
+            .contains("type __Ctx = import('vue').ComponentPublicInstance;")
+    );
     assert!(!output.code.contains("type __R_isLoading"));
     assert!(!output.code.contains("var isLoading:"));
     assert!(!output.code.contains("__vize_prop_check"));
     assert!(!output.code.contains("@save handler"));
     assert!(!output.code.contains("void missingItems;"));
-    assert!(output
-        .code
-        .contains("void (null as unknown as keyof typeof Child);"));
+    assert!(
+        output
+            .code
+            .contains("void (null as unknown as keyof typeof Child);")
+    );
     assert!(output.code.contains("void confirmDialog;"));
     assert!(output.code.contains("void isLoading;"));
 }

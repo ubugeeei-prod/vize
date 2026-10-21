@@ -1,10 +1,10 @@
 //! Setup binding anchor emission for template-used names.
 
 use super::imports::{
-    collect_setup_binding_anchor_names, collect_value_import_binding_names, IdentifierUsage,
+    IdentifierUsage, collect_setup_binding_anchor_names, collect_value_import_binding_names,
 };
 use std::ops::Range;
-use vize_carton::{append, profile, FxHashSet, String};
+use vize_carton::{FxHashSet, String, append, profile};
 use vize_croquis::{BindingType, Croquis};
 
 /// Header comment for the anchor list; the wording differs when unused-local
@@ -204,11 +204,11 @@ mod tests {
     use oxc_allocator::Allocator;
     use oxc_parser::Parser;
     use oxc_span::SourceType;
-    use vize_atelier_sfc::{parse_sfc, SfcParseOptions};
+    use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
     use vize_carton::String;
     use vize_croquis::{Analyzer, AnalyzerOptions};
 
-    use crate::batch::{generate_vue_document_virtual_ts, ImportRewriter};
+    use crate::batch::{ImportRewriter, generate_vue_document_virtual_ts};
     use crate::virtual_ts::VirtualTsOptions;
 
     const CORPUS: &str = concat!(
