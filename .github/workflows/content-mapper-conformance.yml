@@ -312,6 +312,7 @@ jobs:
             tests/_fixtures/content-mapper/escaton-component-props.json \
             tests/_fixtures/content-mapper/escaton-nested-flow-9433.json \
             tests/_fixtures/content-mapper/escaton-public-props-9498.json \
+            tests/_fixtures/content-mapper/duplicate-class-style-10184.json \
             .github/workflows/content-mapper-conformance.yml \
             > "$RUNNER_TEMP/official-css-source/inputs.sha256"
       - name: Setup pinned Node and Vite Plus
@@ -368,6 +369,7 @@ jobs:
           --fixture tests/_fixtures/content-mapper/escaton-component-props.json
           --fixture tests/_fixtures/content-mapper/escaton-nested-flow-9433.json
           --fixture tests/_fixtures/content-mapper/escaton-public-props-9498.json
+          --fixture tests/_fixtures/content-mapper/duplicate-class-style-10184.json
       - name: Run exact published reporter fixtures
         if: inputs.published-defaults-only
         env:
