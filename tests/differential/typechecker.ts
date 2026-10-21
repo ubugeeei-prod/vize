@@ -102,8 +102,7 @@ const sourceRevisions = {
   "content-mapper-template-expression-syntax": "a5ae4d313fa333c8bc7168d5da4acf3dc2bb8ee3",
   "content-mapper-const-enum-import": "506529117573a96880435dd6466cfd7cf81fdc92",
   "content-mapper-dynamic-template-ref-10198": "b7fb3a9aefd31002b8b2d449695a9e14d657654a",
-  "content-mapper-dynamic-template-ref-union-10251":
-    "6817c853ca1740fd1070c0ec462c0d457f339c2c",
+  "content-mapper-dynamic-template-ref-union-10251": "6817c853ca1740fd1070c0ec462c0d457f339c2c",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 
 export type Artifact = { path: string; sha256: string };
