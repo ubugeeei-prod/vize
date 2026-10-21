@@ -1,0 +1,1 @@
+{"name":"__vize_pnpm_fixture_provider","types":"./index.d.ts"}

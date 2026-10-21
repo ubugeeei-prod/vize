@@ -1,0 +1,5 @@
+import { Thing } from "@demo/c";
+import { makeThing } from "@demo/b";
+const thing: Thing = makeThing();
+void thing;
+export * from "@demo/b";
