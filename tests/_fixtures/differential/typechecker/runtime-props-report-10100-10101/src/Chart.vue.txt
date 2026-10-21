@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import { sharedProps } from './sharedProps'
+
+const props = defineProps({
+  ...sharedProps(),
+  title: { type: String, default: '' },
+})
+</script>
+
+<template>
+  <p v-if="accumulated">{{ title }} (accumulated: {{ props.accumulated }})</p>
+</template>

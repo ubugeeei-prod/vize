@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { type SpawnSyncReturns } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -14,11 +15,57 @@ import {
   TRANSPORT_MEMBER,
   command,
   digest,
+  rustcIdentity,
   runtimeIdentity,
   sourceCliProducerOutputs,
   sharedOracleAuthority,
   verifySourceCliConsumerUse,
 } from "../../tools/support/compat/github/source-cli-identity.ts";
+
+function commandResult(stdout: string, error?: NodeJS.ErrnoException): SpawnSyncReturns<string> {
+  return {
+    pid: 1,
+    output: [null, stdout, ""],
+    stdout,
+    stderr: "",
+    status: error === undefined ? 0 : null,
+    signal: error === undefined ? null : "SIGTERM",
+    error,
+  };
+}
+
+void test("rustc identity retries one transient timeout with a bounded larger budget", () => {
+  const timeouts: number[] = [];
+  const output = rustcIdentity("/fixture", (_executable, _args, options) => {
+    timeouts.push(options.timeout);
+    if (timeouts.length === 1) {
+      return commandResult(
+        "",
+        Object.assign(new Error("spawnSync rustc ETIMEDOUT"), { code: "ETIMEDOUT" }),
+      );
+    }
+    return commandResult("rustc 1.90.0\n");
+  });
+
+  assert.equal(output, "rustc 1.90.0");
+  assert.deepEqual(timeouts, [30_000, 60_000]);
+});
+
+void test("rustc identity stops after the finite timeout recovery budget", () => {
+  const timeouts: number[] = [];
+  assert.throws(
+    () =>
+      rustcIdentity("/fixture", (_executable, _args, options) => {
+        timeouts.push(options.timeout);
+        return commandResult(
+          "",
+          Object.assign(new Error("spawnSync rustc ETIMEDOUT"), { code: "ETIMEDOUT" }),
+        );
+      }),
+    /ETIMEDOUT/,
+  );
+  assert.deepEqual(timeouts, [30_000, 60_000]);
+});
 
 // Real Git/tar and complete inert member bytes prove transport, never a Rust build.
 function fixture() {
