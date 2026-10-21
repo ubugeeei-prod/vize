@@ -1,6 +1,7 @@
 use vize_l0::ErrorCode;
 
 use crate::markup::entity::DecodedEntity;
+pub use crate::markup::token::QuoteType;
 
 use super::char_codes::{
     CARRIAGE_RETURN, FORM_FEED, GT, LOWER_A, LOWER_Z, NEWLINE, SLASH, SPACE, TAB, UPPER_A, UPPER_Z,
@@ -59,16 +60,6 @@ pub enum State {
     InRCDATA,
 
     InEntity,
-}
-
-/// Quote type for attribute values
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[repr(u8)]
-pub enum QuoteType {
-    NoValue = 0,
-    Unquoted = 1,
-    Single = 2,
-    Double = 3,
 }
 
 /// Tokenizer callbacks
