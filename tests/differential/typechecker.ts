@@ -49,7 +49,8 @@ export const TYPECHECKER_TESTS = {
   "workspace-alias-cache-10063": "workspace_package_alias_cache_preserves_sequential_scopes",
   "component-render-h-props-9855": "imported_sfc_h_calls_check_missing_and_wrong_props",
   "component-listener-alias-scope-10112": "component_listener_aliases_stay_inside_guard_scope",
-  "content-mapper-duplicate-attributes-10184": "content_mapper_isolates_duplicate_class_and_style_attribute_probes",
+  "content-mapper-duplicate-attributes-10184":
+    "content_mapper_isolates_duplicate_class_and_style_attribute_probes",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
