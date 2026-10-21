@@ -45,6 +45,8 @@ production observation/comparison verifier. It binds the source-built CLI
 receipt to every Real Project Matrix shard, requires all 150 registered
 projects' formatter checks, and requires the non-empty projects' check/write
 agreement, idempotence, parse preservation and lint agreement artifacts.
+Property-artifact project identity is derived from those checks, while explicit
+zero-input projects remain in the shard artifact and the 150-project denominator.
 Differences, waivers, unusable baselines, missing files and partial shard
 identity remain blockers. The other four products still have no verifier, and
 no `davinci-deletion-evidence` producer exists. The manual gate therefore exits
