@@ -1,23 +1,8 @@
-import { classifyNativeRow, validateResultEnvelope } from "./harness.mjs";
+import { canonicalDialects, classifyNativeRow, validateResultEnvelope } from "./harness.mjs";
 
 export const deletionProducts = ["compiler", "linter", "formatter", "typechecker", "lsp"];
 export const deletionTiers = ["T1", "T2"];
-export const deletionDialects = [
-  "vue0-template",
-  "vue1-template",
-  "vue2-sfc",
-  "vue2.7-sfc",
-  "vue3-sfc",
-  "petite-vue",
-  "pug-template",
-  "jsx-babel",
-  "jsx-vapor",
-  "js",
-  "ts",
-  "jsx",
-  "tsx",
-  "vue-quirks",
-];
+export const deletionDialects = canonicalDialects;
 
 const shaPattern = /^[a-f0-9]{40}$/;
 const dayPattern = /^\d{4}-\d{2}-\d{2}$/;

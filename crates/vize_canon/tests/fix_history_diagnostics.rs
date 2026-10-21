@@ -207,7 +207,7 @@ fn bounded_cache_maintenance_preserves_project_diagnostics() {
         "bounded_cache_maintenance_preserves_project_diagnostics",
         "4714c0f264dedffaa81377df9545fbfa9514a64e",
         Some(9860),
-        &["bounded-maintenance"],
+        &["bounded-maintenance", "fresh-helper-handoff"],
     );
 }
 

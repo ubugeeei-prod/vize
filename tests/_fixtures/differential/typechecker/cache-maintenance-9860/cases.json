@@ -30,6 +30,24 @@
         }
       ],
       "diagnostics": []
+    },
+    {
+      "id": "fresh-helper-handoff",
+      "inputs": [
+        {
+          "file": "src/AfButton.vue",
+          "source": "fresh-helper-handoff/src/AfButton.vue.txt"
+        },
+        {
+          "file": "src/AfButton.stories.tsx",
+          "source": "fresh-helper-handoff/src/AfButton.stories.tsx.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "fresh-helper-handoff/tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": []
     }
   ]
 }
