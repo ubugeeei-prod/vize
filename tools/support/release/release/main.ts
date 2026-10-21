@@ -58,6 +58,11 @@ async function npmVersions(): Promise<string[] | null> {
 
 type CrateVersionQuery = (crateName: string, version: string) => Promise<CrateVersionState>;
 
+export interface PriorReleaseCompleteness {
+  version: string | null;
+  incomplete: string[];
+}
+
 /**
  * Every tagged release must reach both package registries before another
  * version can be cut. Checking the publisher's canonical crate list keeps the
@@ -81,16 +86,40 @@ export async function incompletePriorReleaseTargets(
   return incomplete;
 }
 
+/** Public-registry state for the newest release tag. */
+export async function priorReleaseCompleteness(
+  tags: readonly string[],
+  npmPublished: readonly string[],
+  query: CrateVersionQuery = queryCrateVersion,
+): Promise<PriorReleaseCompleteness> {
+  const version = highestReleaseVersion(tags);
+  return {
+    version,
+    incomplete:
+      version === null ? [] : await incompletePriorReleaseTargets(version, npmPublished, query),
+  };
+}
+
+/** A cadence skip when the registry preflight cannot prove the prior release complete. */
+export function cadenceRegistryDecision(completeness: PriorReleaseCompleteness | null) {
+  if (completeness === null) {
+    return { release: false, reason: "release registry preflight unavailable" };
+  }
+  if (completeness.incomplete.length === 0) return null;
+  return {
+    release: false,
+    reason: `v${completeness.version} is incomplete in public registries`,
+  };
+}
+
 async function priorReleaseIsComplete(
   tags: readonly string[],
   npmPublished: readonly string[],
 ): Promise<boolean> {
-  const previous = highestReleaseVersion(tags);
-  if (previous === null) return true;
-  const incomplete = await incompletePriorReleaseTargets(previous, npmPublished);
+  const { version, incomplete } = await priorReleaseCompleteness(tags, npmPublished);
   if (incomplete.length === 0) return true;
   writeStderr(
-    `Refusing to cut a new version before v${previous} is complete: ${incomplete.join(", ")}\n`,
+    `Refusing to cut a new version before v${version} is complete: ${incomplete.join(", ")}\n`,
   );
   return false;
 }
@@ -156,10 +185,28 @@ async function cut(current: string, requested: string | undefined): Promise<numb
   return 0;
 }
 
+function finishCadence(
+  decision: { release: boolean; reason: string },
+  greenSha: string | null,
+): number {
+  println(`${decision.release ? "Releasing" : "Skipping"} ${greenSha ?? "-"}: ${decision.reason}`);
+  const output = nonEmptyEnv("GITHUB_OUTPUT");
+  if (output !== undefined) {
+    appendFileSync(output, `release=${decision.release}\nsha=${greenSha ?? ""}\n`);
+  }
+  return 0;
+}
+
 /** Writes release=true|false and the green main sha for a scheduled run. */
 async function cadence(): Promise<number> {
-  const tags = await remoteTagVersions();
-  if (tags === null) return fail("Failed to read release tags\n");
+  const [tags, npmPublished] = await Promise.all([remoteTagVersions(), npmVersions()]);
+  if (tags === null || npmPublished === null) {
+    return finishCadence(cadenceRegistryDecision(null)!, null);
+  }
+  const registryDecision = cadenceRegistryDecision(
+    await priorReleaseCompleteness(tags, npmPublished),
+  );
+  if (registryDecision !== null) return finishCadence(registryDecision, null);
   const highest = highestReleaseVersion(tags);
   const input = await readCadenceInput(highest === null ? null : `v${highest}`);
   const attempted =
@@ -168,14 +215,7 @@ async function cadence(): Promise<number> {
       await collectStdout("git", ["ls-remote", "origin", candidateRef(input.greenSha)])
     ).stdout.trim() !== "";
   const decision = cadenceDecision({ ...input, attempted, running: await releaseRunning() });
-  println(
-    `${decision.release ? "Releasing" : "Skipping"} ${input.greenSha ?? "-"}: ${decision.reason}`,
-  );
-  const output = nonEmptyEnv("GITHUB_OUTPUT");
-  if (output !== undefined) {
-    appendFileSync(output, `release=${decision.release}\nsha=${input.greenSha ?? ""}\n`);
-  }
-  return 0;
+  return finishCadence(decision, input.greenSha);
 }
 
 export async function release(args: readonly string[]): Promise<number> {

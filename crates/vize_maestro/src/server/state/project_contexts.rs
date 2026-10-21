@@ -426,51 +426,46 @@ impl ServerState {
 
 fn document_root(path: &Path, workspace: &Path) -> PathBuf {
     let mut directory = path.parent().unwrap_or(workspace);
-    let mut vite_root = None;
-    while directory != workspace && directory.starts_with(workspace) {
-        if directory.join("tsconfig.json").is_file()
-            || directory.join("jsconfig.json").is_file()
-            || std::fs::read_dir(directory).is_ok_and(|entries| {
-                entries
-                    .flatten()
-                    .any(|entry| is_typescript_config_marker(&entry.path()))
-            })
-        {
+    let mut package_root = None;
+    let mut vite_root: Option<PathBuf> = None;
+    while directory.starts_with(workspace) {
+        let mut has_package = false;
+        let mut has_vite = false;
+        let mut has_project_config = false;
+        if let Ok(entries) = std::fs::read_dir(directory) {
+            for entry in entries.flatten() {
+                let path = entry.path();
+                has_package |=
+                    path.file_name().and_then(|name| name.to_str()) == Some("package.json");
+                has_vite |= is_vite_config_marker(&path);
+                has_project_config |= is_typescript_config_marker(&path);
+            }
+        }
+        if has_project_config {
+            if package_root.is_some()
+                && let Some(vite_root) = vite_root.as_ref()
+            {
+                return vite_root.clone();
+            }
             return directory.to_path_buf();
         }
-        if vite_root.is_none()
-            && std::fs::read_dir(directory).is_ok_and(|entries| {
-                entries
-                    .flatten()
-                    .any(|entry| is_vite_config_marker(&entry.path()))
-            })
-        {
+        if vite_root.is_none() && package_root.is_none() && has_vite {
             vite_root = Some(directory.to_path_buf());
         }
-        if directory.join("package.json").is_file() {
-            return vite_root.unwrap_or_else(|| directory.to_path_buf());
+        if package_root.is_none() && has_package {
+            package_root = Some(directory.to_path_buf());
+        }
+        if directory == workspace {
+            break;
         }
         let Some(parent) = directory.parent() else {
             break;
         };
         directory = parent;
     }
-    // A Vite app nested inside an existing TypeScript project is not a
-    // separate editor project. Its sources keep the ancestor tsconfig paths
-    // and Vize policy. Package-only workspaces still allow nested Vite apps to
-    // establish their own project context.
-    if workspace.join("tsconfig.json").is_file()
-        || workspace.join("jsconfig.json").is_file()
-        || std::fs::read_dir(workspace).is_ok_and(|entries| {
-            entries
-                .flatten()
-                .any(|entry| is_typescript_config_marker(&entry.path()))
-        })
-    {
-        workspace.to_path_buf()
-    } else {
-        vite_root.unwrap_or_else(|| workspace.to_path_buf())
-    }
+    vite_root
+        .or(package_root)
+        .unwrap_or_else(|| workspace.to_path_buf())
 }
 
 fn is_vite_config_marker(path: &Path) -> bool {
