@@ -862,7 +862,14 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             check_options,
         ),
     );
-    component_export::emit_component_default_export(&mut ts, generation_options.component_name);
+    let component_name_is_setup_binding = generation_options
+        .component_name
+        .is_some_and(|name| super::script_facts::contains_binding(summary, name));
+    component_export::emit_component_default_export(
+        &mut ts,
+        generation_options.component_name,
+        component_name_is_setup_binding,
+    );
     binding_output::publish(
         ts,
         mappings,

@@ -431,6 +431,36 @@ fn standard_tsgo_keeps_musea_art_in_the_pinned_project_contract() {
 }
 
 #[test]
+fn standard_tsgo_keeps_filename_component_exports_out_of_setup_globals() {
+    let Some(tsgo) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {
+        eprintln!("skipping exact Content Mapper conformance: {TSGO_ENV} is not set");
+        return;
+    };
+    assert!(
+        tsgo.is_file(),
+        "{TSGO_ENV} is not a file: {}",
+        tsgo.display()
+    );
+
+    let fixture =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/content_mapper_project");
+    let cases_root = workspace_root().join("target/vize-tests/tests");
+    std::fs::create_dir_all(&cases_root).unwrap();
+    let project = tempfile::Builder::new()
+        .prefix("content-mapper-filename-globals-")
+        .tempdir_in(cases_root)
+        .unwrap();
+    copy_fixture(&fixture, project.path());
+    install_mapper_manifest(project.path());
+    install_vue_package(project.path());
+
+    let output = check_project(&tsgo, project.path(), "tsconfig.filename-globals.json");
+    assert_eq!(output.status.code(), Some(0), "{}", output_text(&output));
+    assert_eq!(output.stdout, b"", "{}", output_text(&output));
+    assert_eq!(output.stderr, b"", "{}", output_text(&output));
+}
+
+#[test]
 fn standard_tsgo_checks_vue_project_and_emits_consumable_declarations() {
     let Some(tsgo) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {
         eprintln!("skipping exact Content Mapper conformance: {TSGO_ENV} is not set");

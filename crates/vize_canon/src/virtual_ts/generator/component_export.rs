@@ -261,15 +261,28 @@ pub(super) fn emit_default_export_declaration(
     ts.push_str(";\n");
 }
 
-pub(super) fn emit_component_default_export(ts: &mut String, component_name: Option<&str>) {
+pub(super) fn emit_component_default_export(
+    ts: &mut String,
+    component_name: Option<&str>,
+    component_name_is_setup_binding: bool,
+) {
     let Some(component_name) = component_name else {
         ts.push_str("export default __vize_component__;\n");
         return;
     };
     let mut export_name = String::from(component_name);
-    if module_scope_contains_identifier(ts, export_name.as_str()) {
+    // The public name is declared at module scope after `__setup`, but lexical
+    // resolution still exposes it inside that function. Only keep the filename
+    // spelling when setup owns the same binding; otherwise `error.vue` would
+    // turn an authored `new Error(message)` into a component constructor call.
+    if module_scope_contains_identifier(ts, export_name.as_str())
+        || (!component_name_is_setup_binding
+            && setup_scope_contains_identifier(ts, export_name.as_str()))
+    {
         export_name.push_str("VueComponent");
-        while module_scope_contains_identifier(ts, export_name.as_str()) {
+        while module_scope_contains_identifier(ts, export_name.as_str())
+            || setup_scope_contains_identifier(ts, export_name.as_str())
+        {
             export_name.push('_');
         }
     }
@@ -277,6 +290,14 @@ pub(super) fn emit_component_default_export(ts: &mut String, component_name: Opt
         *ts,
         "declare const {export_name}: typeof __vize_component__;\nexport default {export_name};\n",
     );
+}
+
+fn setup_scope_contains_identifier(ts: &str, name: &str) -> bool {
+    const SETUP: &str = "// ========== Setup Scope ==========";
+    const AFTER_SETUP: &str = "// Invoke setup to verify types";
+    ts.split_once(SETUP)
+        .and_then(|(_, setup)| setup.split_once(AFTER_SETUP))
+        .is_some_and(|(setup, _)| contains_identifier(setup, name))
 }
 
 fn module_scope_contains_identifier(ts: &str, name: &str) -> bool {
