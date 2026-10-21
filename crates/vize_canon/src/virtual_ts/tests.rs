@@ -24,6 +24,7 @@ mod slot_outlet_spread;
 mod template_ref_unwrap;
 mod unused_refs;
 mod vif_chain;
+mod vif_chain_listener_contract_scope;
 fn template_context(options: &VirtualTsOptions, dialect: VueVersion) -> vize_carton::String {
     generate_template_context(options, dialect, false, false, (None, None, None))
 }
