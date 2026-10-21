@@ -39,6 +39,16 @@ pub(super) fn format_directive_value(
     vue_version: crate::VueVersion,
     attribute_depth: usize,
 ) -> (String, bool, bool) {
+    // Embedded JavaScript formatters consume LF-delimited lines. A prior SFC
+    // pass may have emitted the same attribute with lone CR terminators; feed
+    // the parser the equivalent LF spelling so its wrap decision is stable.
+    let normalized;
+    let value = if value.contains('\r') && !value.contains('\n') {
+        normalized = value.replace('\r', "\n");
+        normalized.as_str()
+    } else {
+        value
+    };
     let trimmed = value.trim();
     if trimmed.is_empty() {
         return (value.to_compact_string(), false, false);

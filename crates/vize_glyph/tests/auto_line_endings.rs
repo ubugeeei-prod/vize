@@ -222,6 +222,7 @@ fn cr_output_reaches_a_fixed_point() {
         "<script setup lang=\"ts\">\nconst a = {\n  b: [c],\n  \"d\": [e],\n}\n</script>\n",
         "<template>\n  <div>\n    {{ a }}\n    {{ b }}\n  </div>\n\n  <p>x</p>\n</template>\n",
         "<template>\n  <div @click=\"{\n    a = 1;\n  }\" />\n</template>\n",
+        "<template>\n  <div v-if=\"firstCondition &&\n    secondCondition\" />\n</template>\n",
         "<template>\n  <div :style=\"\n    // keep this comment on its own line\n    styles as CSSProperties\n  \" />\n</template>\n",
         "<template>\n  <div :class=\"`first\nsecond`\" />\n</template>\n",
         "<template>\n  <!-- eslint-disable-next-line -->\n  label: <input />\n</template>\n",
