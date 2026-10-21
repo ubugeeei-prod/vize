@@ -154,28 +154,7 @@ impl TemplateFormatter<'_> {
             return false;
         };
         let bytes = formatted.as_bytes();
-        let Some((expr_start, expr_end, close)) = parse_interpolation_range(bytes, first_open)
-        else {
-            return false;
-        };
-        if memchr::memmem::find(bytes.get(close..).unwrap_or_default(), b"{{").is_some() {
-            // Mixed interpolation runs have an established formatter layout
-            // and may need several independent width decisions. Keep this
-            // narrow path to the single interpolation reported in #10177.
-            return false;
-        }
         let hugged_name = joiner.hugged_closing_name(start, end);
-        if join.is_continuation()
-            && (first_open != 0 || close != bytes.len())
-            && (hugged_name.is_some() || joiner.previous_chunk_is_interpolation(start))
-        {
-            // A mixed text/interpolation chunk that continues an existing
-            // interpolation or is hugged directly by its parent has a larger
-            // established layout. Rewrapping it in isolation would make a
-            // formatted second pass differ from the first. Continuations after
-            // an ordinary closing tag can still wrap at the mustache boundary.
-            return false;
-        }
         let line_start = memchr::memrchr2(b'\r', b'\n', output).map_or(0, |pos| pos + 1);
         let line = output.get(line_start..).unwrap_or_default();
         let suffix_width = hugged_name.map_or(0, |name| name.len() + 3)
@@ -199,6 +178,29 @@ impl TemplateFormatter<'_> {
         };
         let line = core::str::from_utf8(line).unwrap_or_default();
         if width(line) + width(formatted) + suffix_width <= self.options.print_width as usize {
+            return false;
+        }
+        // Only overflowing lines need the structural range scan. Keeping it
+        // after both width fast paths avoids paying for it on ordinary text.
+        let Some((expr_start, expr_end, close)) = parse_interpolation_range(bytes, first_open)
+        else {
+            return false;
+        };
+        if memchr::memmem::find(bytes.get(close..).unwrap_or_default(), b"{{").is_some() {
+            // Mixed interpolation runs have an established formatter layout
+            // and may need several independent width decisions. Keep this
+            // narrow path to the single interpolation reported in #10177.
+            return false;
+        }
+        if join.is_continuation()
+            && (first_open != 0 || close != bytes.len())
+            && (hugged_name.is_some() || joiner.previous_chunk_is_interpolation())
+        {
+            // A mixed text/interpolation chunk that continues an existing
+            // interpolation or is hugged directly by its parent has a larger
+            // established layout. Rewrapping it in isolation would make a
+            // formatted second pass differ from the first. Continuations after
+            // an ordinary closing tag can still wrap at the mustache boundary.
             return false;
         }
         // Break only inside mustache syntax, never between runtime text and an
