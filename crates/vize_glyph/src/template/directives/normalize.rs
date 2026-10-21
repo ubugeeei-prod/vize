@@ -18,7 +18,7 @@ pub(crate) fn normalize_attribute_with_vue_version(
 ) -> (String, Option<String>, u8, bool, bool) {
     // Normalize directive shorthands (only if enabled)
     let head = directive_head(name);
-    let normalized_name: String = head
+    let normalized_shorthand: Option<String> = head
         .as_ref()
         .filter(|head| {
             options.normalize_directive_shorthands && head.prefix == DirectivePrefix::Full
@@ -28,12 +28,13 @@ pub(crate) fn normalize_attribute_with_vue_version(
             "on" => name.strip_prefix("v-on:").map(|rest| cstr!("@{rest}")),
             "slot" => name.strip_prefix("v-slot:").map(|rest| cstr!("#{rest}")),
             _ => None,
-        })
-        .unwrap_or_else(|| name.to_compact_string());
-    let normalized_head = if normalized_name == name {
-        head
-    } else {
-        directive_head(&normalized_name)
+        });
+    let (normalized_name, normalized_head) = match normalized_shorthand {
+        Some(normalized_name) => {
+            let normalized_head = directive_head(&normalized_name);
+            (normalized_name, normalized_head)
+        }
+        None => (name.to_compact_string(), head),
     };
 
     // Format JS expressions in directive values
