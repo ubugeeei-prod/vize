@@ -44,6 +44,13 @@ source-map policy changes. The normal dependency remains one-way from the SFC
 shell to L4, and the mandatory level-dependency gate continues to reject a
 reverse legacy edge.
 
+The next neutral follow-up moves the four-section `OutputModule` vocabulary and
+its final flattening operation into L4. The legacy SFC shell remains its only
+consumer and still emits `imports + hoists + '\n' + functions + '\n' + exports`;
+the function section still starts at `imports.len() + hoists.len() + 1` bytes.
+This changes ownership only: target providers, admission and product routing do
+not change, and byte/source-section parity remains mandatory.
+
 ## Verification
 
 Nine module laws cover script-only and empty components, complete fragment link
