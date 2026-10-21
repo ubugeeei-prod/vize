@@ -9,7 +9,7 @@
 use super::super::types::{VizeMapping, VizeSubSpan};
 use super::component_props::{
     ComponentPropSource, collect_generated_class_bindings, collect_generated_named_bindings,
-    is_checkable_prop,
+    is_checkable_prop, merged_class_binding_value,
 };
 use super::prop_sources::append_prop_value;
 use super::spread_reserved_props::rewrite_reserved_spread_references;
