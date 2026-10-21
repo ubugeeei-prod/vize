@@ -666,6 +666,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     &mut semantic_links,
                     &mut prop_default_key_links,
                     template_ref_unwraps.props_shadow_anchor(),
+                    template_ref_unwraps.props_object_binding(),
                 )
             });
             if options_api {

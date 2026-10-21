@@ -60,6 +60,7 @@ impl<'a> PropBindingMappings<'a> {
     pub(super) fn emit(
         &mut self,
         ts: &mut String,
+        props_object_binding: &str,
         props_type_ref: &str,
         name: &str,
         has_default: bool,
@@ -69,13 +70,17 @@ impl<'a> PropBindingMappings<'a> {
         if has_default {
             append!(
                 *ts,
-                "  const {binding} = props[\"{name}\"] as Exclude<{props_type_ref}[\"{name}\"], undefined>;\n"
+                "  const {binding} = {props_object_binding}[\"{name}\"] as Exclude<{props_type_ref}[\"{name}\"], undefined>;\n"
             );
         } else {
-            append!(*ts, "  const {binding} = props[\"{name}\"];\n");
+            append!(
+                *ts,
+                "  const {binding} = {props_object_binding}[\"{name}\"];\n"
+            );
         }
         append!(*ts, "  void {binding};\n");
-        let property_start = start + binding.len() + " = props[\"".len();
+        let property_start =
+            start + binding.len() + " = ".len() + props_object_binding.len() + "[\"".len();
         self.link(
             start..start + binding.len(),
             property_start..property_start + name.len(),

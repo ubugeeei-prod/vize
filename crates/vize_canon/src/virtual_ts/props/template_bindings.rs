@@ -32,6 +32,7 @@ pub(super) fn emit_macro_template_prop_bindings(
     ts: &mut String,
     binding_mappings: &mut PropBindingMappings<'_>,
     summary: &Croquis,
+    props_object_binding: &str,
     props_type_ref: &str,
     props: &[PropDefinition],
     defaulted_prop_names: &FxHashSet<String>,
@@ -45,6 +46,7 @@ pub(super) fn emit_macro_template_prop_bindings(
         }
         binding_mappings.emit(
             ts,
+            props_object_binding,
             props_type_ref,
             prop.name.as_str(),
             defaulted_prop_names.contains(&prop.name),
