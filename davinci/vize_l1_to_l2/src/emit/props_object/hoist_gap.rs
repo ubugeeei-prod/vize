@@ -26,13 +26,13 @@ use oxc_ast_visit::Visit;
 use oxc_ast_visit::walk::{walk_arrow_function_expression, walk_function};
 use oxc_syntax::scope::ScopeFlags;
 use vize_l0::String;
+use vize_l2::analysis::constant_expression::is_self_bound_constant;
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{Attribute, BindingOp, DynamicName};
 
 use super::super::EmitError;
 use super::super::error::UnsupportedReason as Reason;
 use super::super::prefix::globals::is_global_allowed;
-use crate::pass::hoist::constant_for_hoist;
 
 /// Refuse a props surface the shipped classifier hoists and L2's does not.
 pub(in crate::emit) fn check(
@@ -70,7 +70,7 @@ pub(in crate::emit) fn check(
         // Globals-only values are already spelled the shipped way by the
         // emitter's own legacy-global rules; the unmirrored class is a value
         // reading a local it binds itself (an arrow or function parameter).
-        if gap.is_none() && reads_local && !constant_for_hoist(value) {
+        if gap.is_none() && reads_local && !is_self_bound_constant(value) {
             gap = Some(bind.span);
         }
     }

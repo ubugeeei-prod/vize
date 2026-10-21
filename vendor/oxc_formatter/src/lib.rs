@@ -193,11 +193,11 @@ pub fn format_program<'a>(
     )
 }
 
-/// Format the call argument of a single parsed unary-expression statement.
+/// Format the argument of a single parsed unary-expression statement.
 ///
 /// The program must come from [`parse_for_format`]. The retained parent chain
 /// provides the enclosing spans and ancestors used by comment formatting.
-pub fn format_unary_call_argument<'a>(
+pub fn format_unary_argument<'a>(
     allocator: &'a Allocator,
     program: &'a Program<'a>,
     options: JsFormatOptions,
@@ -208,9 +208,6 @@ pub fn format_unary_call_argument<'a>(
     let Expression::UnaryExpression(unary) = &statement.expression else {
         return None;
     };
-    if !matches!(unary.argument, Expression::CallExpression(_)) {
-        return None;
-    }
     let program_node = allocator.alloc(AstNode::new(program, AstNodes::Dummy(), allocator));
     let statement_node = allocator.alloc(AstNode::new(
         statement.as_ref(),

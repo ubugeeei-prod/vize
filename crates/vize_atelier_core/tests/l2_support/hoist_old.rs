@@ -17,7 +17,7 @@ use vize_atelier_core::{
     ElementNode, ElementType, ExpressionNode, PropNode, SimpleExpressionNode, TemplateChildNode,
 };
 use vize_l0::{Allocator, Span, camelize, is_native_tag};
-use vize_l1_to_l2::pass::hoist::constant_for_hoist;
+use vize_l2::analysis::constant_expression::is_self_bound_constant;
 use vize_l2::expr::ExprRef;
 
 use super::surface_old_help::is_excluded_builtin;
@@ -114,7 +114,7 @@ pub fn scan_template(children: &[TemplateChildNode<'_>], scan: &mut TemplateScan
 /// same authored text — the shipped one directly (the exported
 /// oracle), the L2 one through the same admission rule the lowering
 /// uses (`ExprRef::parse_js_in`) and the pass's own
-/// [`constant_for_hoist`].
+/// [`is_self_bound_constant`].
 fn const_rule_diverges(prop: &PropNode<'_>) -> bool {
     let PropNode::Directive(dir) = prop else {
         return false;
@@ -177,7 +177,7 @@ fn l2_constant(content: &str) -> bool {
         content,
         Span::new(0, u32::try_from(content.len()).unwrap_or(u32::MAX)),
     );
-    constant_for_hoist(&expr)
+    is_self_bound_constant(&expr)
 }
 
 /// The legacy tree's shape projection — the pairing contract: owner
