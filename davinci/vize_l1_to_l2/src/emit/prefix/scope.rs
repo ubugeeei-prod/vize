@@ -407,7 +407,7 @@ mod tests {
     #[test]
     fn default_codegen_scope_membership_reads_retained_patterns() {
         let mut scope = PrefixScope::new(None, false, false, false);
-        scope.push_pattern("{ item, meta: { index } }");
+        scope.push_pattern("{ item, meta: { index } }: ListItem<Item>");
         assert!(scope.has_codegen_scope_params());
         assert!(scope.is_codegen_scope_param("item"));
         assert!(scope.is_codegen_scope_param("index"));

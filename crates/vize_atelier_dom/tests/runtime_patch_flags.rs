@@ -1,6 +1,8 @@
 //! Runtime-sensitive patch-flag regressions reported in #10168.
 
 use vize_atelier_core::options::CodegenMode;
+#[cfg(feature = "legacy-differential")]
+use vize_atelier_dom::compile_template_legacy_with_options;
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};
 use vize_l0::{Allocator, cstr};
 
@@ -97,4 +99,23 @@ fn scoped_slot_detection_keeps_uncaptured_and_shadowed_slots_stable() {
             output.code,
         );
     }
+}
+
+#[test]
+#[cfg(feature = "legacy-differential")]
+fn legacy_scoped_slot_detection_reads_typescript_expressions() {
+    let source = r#"<MyList><template #default="{ item }"><MyChip>{{ (item as Item).name }}</MyChip></template></MyList>"#;
+    let allocator = Allocator::new();
+    let (_, errors, output) =
+        compile_template_legacy_with_options(&allocator, source, DomCompilerOptions::default());
+    assert!(
+        errors.iter().all(|error| error.is_compatibility_notice()),
+        "{errors:?}",
+    );
+    assert_eq!(
+        output.code.matches("DYNAMIC_SLOTS").count(),
+        1,
+        "a TypeScript assertion still closes over the scoped slot parameter:\n{}",
+        output.code,
+    );
 }

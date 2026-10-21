@@ -199,7 +199,7 @@ impl<'ctx> ScopeReferenceDetector<'ctx> {
         if let Ok(expression) = Parser::new(
             &self.allocator,
             &wrapped,
-            SourceType::default().with_module(true),
+            SourceType::ts().with_module(true),
         )
         .parse_expression()
         {
@@ -211,7 +211,7 @@ impl<'ctx> ScopeReferenceDetector<'ctx> {
         let result = Parser::new(
             &self.allocator,
             &normalized,
-            SourceType::default().with_module(true),
+            SourceType::ts().with_module(true),
         )
         .parse();
         if !result.diagnostics.is_empty() {

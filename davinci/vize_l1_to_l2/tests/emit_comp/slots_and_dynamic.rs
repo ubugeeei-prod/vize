@@ -111,6 +111,20 @@ fn a_named_nested_slot_that_captures_an_outer_slot_param_is_dynamic() {
 }
 
 #[test]
+fn a_typescript_slot_pattern_still_tracks_its_outer_binding() {
+    let source = r#"<MyList><template #default="{ item }: ListItem<Item>"><MyChip>{{ item.name }}</MyChip></template></MyList>"#;
+    assert_shipped_parity(source);
+    assert_eq!(assembled(source).matches("DYNAMIC_SLOTS").count(), 1);
+}
+
+#[test]
+fn a_typescript_expression_still_captures_an_outer_slot_param() {
+    let source = r#"<MyList><template #default="{ item }"><MyChip>{{ (item as Item).name }}</MyChip></template></MyList>"#;
+    assert_shipped_parity(source);
+    assert_eq!(assembled(source).matches("DYNAMIC_SLOTS").count(), 1);
+}
+
+#[test]
 fn an_uncaptured_nested_slot_stays_stable() {
     assert_shipped_parity(
         r#"<MyList :items="items"><template #default="{ item }"><MyChip tone="neutral">constant</MyChip></template></MyList>"#,
