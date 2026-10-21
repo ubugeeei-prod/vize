@@ -62,6 +62,8 @@ export const TYPECHECKER_TESTS = {
     "content_mapper_keeps_inferred_type_only_imports_out_of_value_anchors",
   "content-mapper-dynamic-template-ref-union-10251":
     "dynamic_template_ref_unions_preserve_batch_acceptance",
+  "content-mapper-dynamic-template-ref-scope-10251":
+    "dynamic_template_ref_union_registry_stays_in_scope",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
@@ -108,6 +110,7 @@ const sourceRevisions = {
   "content-mapper-dynamic-template-ref-10198": "b7fb3a9aefd31002b8b2d449695a9e14d657654a",
   "content-mapper-type-only-import-use": "fb89f41ffc518768e3053ccf9fe6b83bf24a1122",
   "content-mapper-dynamic-template-ref-union-10251": "6817c853ca1740fd1070c0ec462c0d457f339c2c",
+  "content-mapper-dynamic-template-ref-scope-10251": "8d83800c727eef953852383d46c7324ccdda53b6",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 
 export type Artifact = { path: string; sha256: string };

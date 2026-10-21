@@ -1096,6 +1096,7 @@
         "fixturePaths": [
           "tests/_fixtures/_git/ant-design-vue",
           "tests/_fixtures/_git/vitepress",
+          "tests/_fixtures/_git/vue2-elm",
           "tests/_fixtures/_git/element",
           "tests/_fixtures/_git/element-plus",
           "tests/_fixtures/_git/element-plus-x",

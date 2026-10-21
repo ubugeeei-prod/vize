@@ -8,6 +8,17 @@
     "regenerate": "node crates/vize_atelier_jsx/tests/babel_compat/oracle.mjs --write",
     "verify": "node crates/vize_atelier_jsx/tests/babel_compat/oracle.mjs --check"
   },
+  "dialectCoverage": {
+    "state": "source-inspected",
+    "registryRef": null,
+    "evidence": [
+      {
+        "kind": "babel-plugin-oracle",
+        "dialects": ["jsx-babel"],
+        "selector": "oracle.plugin=@vue/babel-plugin-jsx@2.0.1; per-case jsx/tsx is selected by lang"
+      }
+    ]
+  },
   "cases": [
     {
       "id": "options/transform_on_off",
