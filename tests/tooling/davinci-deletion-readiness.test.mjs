@@ -251,10 +251,11 @@ void test("current repository state is explicitly blocked without native product
       const output = error.stderr.toString();
       assert.match(output, /stability-policy/);
       assert.match(output, /product-verifier/);
+      assert.equal((output.match(/product-verifier/g) ?? []).length, 4);
       assert.match(output, /candidate-evidence/);
       assert.doesNotMatch(output, /target-policy/);
       assert.doesNotMatch(output, /span at least null days/);
-      assert.match(output, /deletion readiness failed: 10 blocker\(s\)/);
+      assert.match(output, /deletion readiness failed: 9 blocker\(s\)/);
       return true;
     },
   );
