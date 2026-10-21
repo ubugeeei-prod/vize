@@ -326,3 +326,20 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }"
     );
 }
+
+#[test]
+fn wide_event_keys_merge_only_repeated_keys() {
+    let source = r#"<div
+        @event-00="h00" @event-01="h01" @event-02="h02" @event-03="h03"
+        @event-04="h04" @event-05="h05" @event-06="h06" @event-07="h07"
+        @event-08="h08" @event-09="h09" @event-10="h10" @event-11="h11"
+        @event-12="h12" @event-13="h13" @event-14="h14" @event-15="h15"
+        @event-07="again"
+    ></div>"#;
+    let output = assembled(source);
+
+    assert!(output.contains("onEvent07: [h07, again]"), "{output}");
+    assert!(output.contains("onEvent06: h06"), "{output}");
+    assert!(output.contains("onEvent08: h08"), "{output}");
+    assert_eq!(output.matches("onEvent07:").count(), 1, "{output}");
+}
