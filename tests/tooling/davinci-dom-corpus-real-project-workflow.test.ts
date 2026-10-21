@@ -32,6 +32,7 @@ test("real-project workflow carries a full-canonical L2 DOM corpus job", () => {
   const workerSteps = worker.steps ?? [];
 
   assert.equal(job.name, "s2 dom corpus");
+  assert.deepEqual(worker.permissions, { contents: "read", issues: "write" });
   assert.equal(job["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
   assert.equal(job["timeout-minutes"], 120);
   assert.equal(
@@ -79,6 +80,17 @@ test("real-project workflow carries a full-canonical L2 DOM corpus job", () => {
   assert.match(helperSource, /"legacy-differential"/);
   assert.match(helperSource, /"davinci_dom_corpus"/);
   assert.match(helperSource, /dom-corpus\.log/);
+
+  const issue = findStep(workerSteps, "File canonical DOM divergence issue");
+  assert.equal(
+    issue.if,
+    "${{ always() && matrix.observer == 'dom' && steps.corpus_snapshot.outcome == 'success' }}",
+  );
+  assert.deepEqual(issue.env, { GH_TOKEN: "${{ github.token }}" });
+  assert.equal(
+    issue.run,
+    "node tools/support/compat/github/canonical-corpus-divergence-issue.mjs publish real-project-davinci-dom-corpus",
+  );
 
   const finalize = findStep(steps, "Finalize L2 DOM corpus evidence");
   assert.equal(finalize.if, "${{ always() }}");

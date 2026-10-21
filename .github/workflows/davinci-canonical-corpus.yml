@@ -14,6 +14,7 @@ env:
 jobs:
   canonical-observers:
     name: canonical observer (${{ matrix.observer }})
+    permissions: { contents: read, issues: write }
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 120
     strategy:
@@ -100,6 +101,11 @@ jobs:
         id: production_reach
         if: ${{ matrix.observer == 'reach' }}
         run: node tools/support/compat/github/canonical-corpus-shards.ts run reach reach.log
+      - name: File canonical DOM divergence issue
+        if: ${{ always() && matrix.observer == 'dom' && steps.corpus_snapshot.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node tools/support/compat/github/canonical-corpus-divergence-issue.mjs publish real-project-davinci-dom-corpus
       - name: Require complete source IO diagnostic success
         if: ${{ always() && matrix.observer == 'ssr-pug' && steps.corpus_io.outcome != 'success' }}
         run: echo 'Complete source IO diagnostic failed; retained raw evidence grants no gate waiver.' >&2; exit 1
