@@ -93,7 +93,7 @@ const { props, size } = useField()
         "the authored maybe-ref binding must retain its exact template capture:\n{code}",
     );
     assert_eq!(
-        exact_line_count(&code, "    var props: __U<__R_props> = undefined as any;",),
+        exact_line_count(&code, "    var props: __UN<__R_props> = undefined as any;",),
         1,
         "the authored binding must remain the exact template-visible `props`:\n{code}",
     );
