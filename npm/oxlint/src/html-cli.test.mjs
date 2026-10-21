@@ -215,7 +215,9 @@ for (const fixture of fixtures)
           message: finding.message,
           start: finding.start,
           end: finding.end,
-          ...(finding.help == null ? {} : { help: finding.help }),
+          ...(finding.help == null || fixture.settings?.vize?.helpLevel === "none"
+            ? {}
+            : { help: finding.help }),
           labels: finding.labels,
           ...(finding.fix == null ? {} : { fix: finding.fix }),
         }));
