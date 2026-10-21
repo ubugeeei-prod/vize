@@ -15,7 +15,7 @@ fn content_mapper_isolates_duplicate_class_and_style_attribute_probes() {
 
     for marker in [
         "const __vize_emit_props_",
-        "const __vize_resolved_events_",
+        "const __vize_events_resolved_",
         "var __vize_ref_",
     ] {
         let mut count = 0;
