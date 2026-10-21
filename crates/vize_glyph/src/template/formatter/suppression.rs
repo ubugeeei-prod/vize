@@ -101,7 +101,7 @@ impl<'s> LineJoiner<'s> {
             // The source gap must contain only whitespace; text and directive
             // expression newlines must never become template layout.
             blank_line = self.source.get(start) == Some(&b'<')
-                && line_breaks(gap) >= 2
+                && has_two_line_breaks(gap)
                 && gap.iter().copied().all(is_whitespace);
         }
         if self.current.is_none() || self.current != previous {
@@ -313,14 +313,18 @@ fn contains_any(haystack: &[u8], needles: &[&[u8]]) -> bool {
         .any(|needle| memchr::memmem::find(haystack, needle).is_some())
 }
 
-/// LF, CRLF and a lone CR each end one line.
-fn line_breaks(gap: &[u8]) -> usize {
-    gap.iter()
-        .enumerate()
-        .filter(|&(index, &byte)| {
-            byte == b'\n' || (byte == b'\r' && gap.get(index + 1) != Some(&b'\n'))
-        })
-        .count()
+/// Whether LF, CRLF or lone-CR input contains a blank line boundary.
+fn has_two_line_breaks(gap: &[u8]) -> bool {
+    let Some(first) = memchr::memchr2(b'\n', b'\r', gap) else {
+        return false;
+    };
+    let next = first
+        + if gap.get(first) == Some(&b'\r') && gap.get(first + 1) == Some(&b'\n') {
+            2
+        } else {
+            1
+        };
+    memchr::memchr2(b'\n', b'\r', gap.get(next..).unwrap_or_default()).is_some()
 }
 
 #[cfg(test)]

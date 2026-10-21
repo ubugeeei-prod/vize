@@ -60,6 +60,10 @@ impl<'a> TemplateFormatter<'a> {
     pub(crate) fn format(&self, input: &str) -> Result<String, FormatError> {
         let source = input.as_bytes();
         let len = source.len();
+        // Keep the ordinary LF path on one SIMD delimiter scan per text run.
+        // A source-wide probe is cheaper than rescanning every remaining tail
+        // for CR, while still accepting authored lone-CR input.
+        let has_cr = memchr::memchr(b'\r', source).is_some();
         let mut output = Vec::with_capacity(len + len / 4);
         let mut pos = 0;
         let mut depth: usize = 0;
@@ -255,10 +259,13 @@ impl<'a> TemplateFormatter<'a> {
             while pos < len {
                 // A CR ends the line too: `endOfLine: "cr"` output has no LF.
                 let tail = sub_slice(source, pos..);
-                let Some(offset) = earliest_offset(
-                    memchr3(b'\n', b'<', b'{', tail),
-                    memchr::memchr(b'\r', tail),
-                ) else {
+                let primary = memchr3(b'\n', b'<', b'{', tail);
+                let offset = if has_cr {
+                    earliest_offset(primary, memchr::memchr(b'\r', tail))
+                } else {
+                    primary
+                };
+                let Some(offset) = offset else {
                     pos = len;
                     break;
                 };
