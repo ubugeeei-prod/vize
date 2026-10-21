@@ -6,7 +6,7 @@ under the same pinned Vue Vapor runtime. Each row mounts both components in
 Happy DOM, applies the corpus updates, and compares normalized rendered DOM,
 live form state, diagnostics, and element identity.
 
-The current bounded cohort covers six behaviors. It is not a claim that the
+The current bounded cohort covers seven behaviors. It is not a claim that the
 full `vue-jsx-vapor` surface is compatible; issue #6884 remains open until the
 corpus covers the complete dialect inventory.
 
@@ -30,6 +30,7 @@ a reviewed update to the executable verdict inventory.
 | `children/logical-and`            | divergent  | only vue-jsx-vapor replaces the branch across truthy value changes      |
 | `control-flow/conditional-branch` | equivalent | falsy, array and nested-VNode conditions match both real JSX references |
 | `props/live-input-value`          | equivalent | the live input value and sibling output update without replacing either |
+| `directives/v-model-text`         | equivalent | input events and direct state patches preserve the live model binding   |
 
 The JSON corpus and verdict table are checked bidirectionally, so adding or
 removing a case without a verdict fails. The runtime comparison is the source
@@ -40,6 +41,11 @@ The event row dispatches two bubbling, cancelable `click` events through the
 mounted button. Its receipt pins dispatch success, `defaultPrevented`, the
 closure's rendered counter side effect, diagnostics, and element identity for
 every phase before checking complete unmount.
+
+The model row assigns a real input value before dispatching each bubbling,
+cancelable `input` event, pins the complete dispatch and live-input receipt,
+and interleaves a direct state patch. Both directions must update the mounted
+input and sibling output without replacing any authored element.
 
 The logical-and and conditional rows are the value-sensitive counterparts of
 the Babel oracle's equivalent `children/logical_and` and `children/ternary`

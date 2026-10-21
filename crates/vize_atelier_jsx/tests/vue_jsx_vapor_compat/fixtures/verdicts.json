@@ -25,6 +25,10 @@
     "props/live-input-value": {
       "verdict": "equivalent",
       "basis": "live input value, normalized rendered DOM, and element identity across updates"
+    },
+    "directives/v-model-text": {
+      "verdict": "equivalent",
+      "basis": "real input events update the model and direct state patches update the live input with identical DOM, diagnostics, event receipts, and identity"
     }
   }
 }

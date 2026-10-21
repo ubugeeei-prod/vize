@@ -207,6 +207,76 @@
         [0, 1, 2],
         [0, 1, 2]
       ]
+    },
+    {
+      "id": "directives/v-model-text",
+      "source": "const App = () => <label>Model<input v-model={state.value}/><output>{state.value}</output></label>;",
+      "initial": { "value": "alpha" },
+      "steps": [
+        {
+          "event": {
+            "selector": "input",
+            "type": "input",
+            "assign": { "value": "beta" }
+          }
+        },
+        { "patch": { "value": "gamma" } },
+        {
+          "event": {
+            "selector": "input",
+            "type": "input",
+            "assign": { "value": "delta" }
+          }
+        }
+      ],
+      "expectedText": ["Modelalpha", "Modelbeta", "Modelgamma", "Modeldelta"],
+      "expectedElementIdentities": [
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2]
+      ],
+      "expectedEvents": [
+        [],
+        [
+          {
+            "selector": "input",
+            "type": "input",
+            "defaultPrevented": false,
+            "dispatchResult": true,
+            "assigned": { "value": "beta" },
+            "input": { "value": "beta", "checked": false }
+          }
+        ],
+        [
+          {
+            "selector": "input",
+            "type": "input",
+            "defaultPrevented": false,
+            "dispatchResult": true,
+            "assigned": { "value": "beta" },
+            "input": { "value": "beta", "checked": false }
+          }
+        ],
+        [
+          {
+            "selector": "input",
+            "type": "input",
+            "defaultPrevented": false,
+            "dispatchResult": true,
+            "assigned": { "value": "beta" },
+            "input": { "value": "beta", "checked": false }
+          },
+          {
+            "selector": "input",
+            "type": "input",
+            "defaultPrevented": false,
+            "dispatchResult": true,
+            "assigned": { "value": "delta" },
+            "input": { "value": "delta", "checked": false }
+          }
+        ]
+      ]
     }
   ]
 }
