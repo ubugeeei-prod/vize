@@ -7,13 +7,15 @@ import { fileURLToPath } from "node:url";
 import { scanConsumerMigrationSurfaces } from "../../../tools/support/compat/davinci/lib/consumer-migration-scan.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
+type StageAliasRow = readonly [relPath: string, mode: "source" | "test", sites: number];
+
 const internalTestRows = [
   ["crates/vize_atelier_core/src/codegen/tests.rs", "test", 19],
   ["crates/vize_atelier_core/src/codegen/tests/source_map_identity.rs", "test", 1],
   ["crates/vize_atelier_core/src/lane/tests.rs", "test", 1],
   ["crates/vize_atelier_core/src/lane/structural/tests.rs", "test", 1],
   ["crates/vize_atelier_core/src/retained/tests.rs", "test", 1],
-];
+] satisfies readonly StageAliasRow[];
 
 function compiler() {
   const scan = scanConsumerMigrationSurfaces();
