@@ -152,7 +152,15 @@ impl TemplateFormatter<'_> {
         let Some(first_open) = memchr::memmem::find(formatted.as_bytes(), b"{{") else {
             return false;
         };
-        if parse_interpolation_range(formatted.as_bytes(), first_open).is_none() {
+        let bytes = formatted.as_bytes();
+        let Some((expr_start, expr_end, close)) = parse_interpolation_range(bytes, first_open)
+        else {
+            return false;
+        };
+        if memchr::memmem::find(bytes.get(close..).unwrap_or_default(), b"{{").is_some() {
+            // Mixed interpolation runs have an established formatter layout
+            // and may need several independent width decisions. Keep this
+            // narrow path to the single interpolation reported in #10177.
             return false;
         }
         let hugged_name = joiner.hugged_closing_name(start, end);
@@ -183,35 +191,24 @@ impl TemplateFormatter<'_> {
         }
         // Break only inside mustache syntax, never between runtime text and an
         // interpolation. This preserves text such as `<{{ value }}>` byte for
-        // byte while giving every interpolation on the overflowing line a
-        // stable layout. A child touching both parent tags uses the established
+        // byte while giving the interpolation on the overflowing line a stable
+        // layout. A child touching both parent tags uses the established
         // parent depth; an authored child line keeps its own depth.
         let layout_depth = if hugged_name.is_some() {
             depth.saturating_sub(1)
         } else {
             depth
         };
-        let bytes = formatted.as_bytes();
-        let mut cursor = 0;
-        while let Some(offset) =
-            memchr::memmem::find(bytes.get(cursor..).unwrap_or_default(), b"{{")
-        {
-            let open = cursor + offset;
-            let Some((expr_start, expr_end, close)) = parse_interpolation_range(bytes, open) else {
-                break;
-            };
-            output.extend_from_slice(bytes.get(cursor..open + 2).unwrap_or_default());
-            output.extend_from_slice(self.newline);
-            let expression = formatted.get(expr_start..expr_end).unwrap_or_default();
-            output.extend_from_slice(
-                self.render_interpolation_expr_lines(expression, layout_depth)
-                    .as_bytes(),
-            );
-            self.write_indent(output, layout_depth);
-            output.extend_from_slice(b"}}");
-            cursor = close;
-        }
-        output.extend_from_slice(bytes.get(cursor..).unwrap_or_default());
+        output.extend_from_slice(bytes.get(..first_open + 2).unwrap_or_default());
+        output.extend_from_slice(self.newline);
+        let expression = formatted.get(expr_start..expr_end).unwrap_or_default();
+        output.extend_from_slice(
+            self.render_interpolation_expr_lines(expression, layout_depth)
+                .as_bytes(),
+        );
+        self.write_indent(output, layout_depth);
+        output.extend_from_slice(b"}}");
+        output.extend_from_slice(bytes.get(close..).unwrap_or_default());
         output.extend_from_slice(self.newline);
         true
     }
