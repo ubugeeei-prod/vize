@@ -61,7 +61,7 @@ impl<'a> TemplateFormatter<'a> {
         // Select the CR-aware scanner once per template. The const parameter
         // specializes the ordinary LF path back to one delimiter scan per text
         // run, while leaving raw-region bytes untouched.
-        if input.contains('\r') {
+        if self.newline == b"\r" {
             self.format_inner::<true>(input)
         } else {
             self.format_inner::<false>(input)
@@ -99,9 +99,11 @@ impl<'a> TemplateFormatter<'a> {
                 && byte_at(source, pos + 1) == b'{'
                 && let Some((expr_start, expr_end, end_pos)) =
                     parse_interpolation_range(source, pos)
-                && sub_slice(source, pos..end_pos)
-                    .iter()
-                    .any(|byte| matches!(byte, b'\n' | b'\r'))
+                && if HAS_CR {
+                    memchr::memchr2(b'\n', b'\r', sub_slice(source, pos..end_pos)).is_some()
+                } else {
+                    memchr::memchr(b'\n', sub_slice(source, pos..end_pos)).is_some()
+                }
             {
                 self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
                 let expr = input.get(expr_start..expr_end).unwrap_or_default();
@@ -278,7 +280,8 @@ impl<'a> TemplateFormatter<'a> {
                 pos += offset;
 
                 match byte_at(source, pos) {
-                    b'\n' | b'\r' | b'<' => break,
+                    b'\n' | b'<' => break,
+                    b'\r' if HAS_CR => break,
                     b'{' if pos + 1 < len && byte_at(source, pos + 1) == b'{' => {
                         if let Some((_, _, end_pos)) = parse_interpolation_range(source, pos) {
                             pos = end_pos;
@@ -304,7 +307,9 @@ impl<'a> TemplateFormatter<'a> {
             }
 
             // Handle newline
-            if pos < len && matches!(byte_at(source, pos), b'\n' | b'\r') {
+            if pos < len
+                && (byte_at(source, pos) == b'\n' || (HAS_CR && byte_at(source, pos) == b'\r'))
+            {
                 self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
                 pos += 1;
             }

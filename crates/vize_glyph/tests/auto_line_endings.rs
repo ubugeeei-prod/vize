@@ -230,6 +230,7 @@ fn cr_output_reaches_a_fixed_point() {
         "<template>\n  <!-- eslint-disable-next-line -->\n  label: <input />\n</template>\n",
         "<template lang=\"pug\">\ndiv\n  p {{ a }}\n</template>\n",
         "<style>\n.a { color: red; }\n\n/* next rule */\n.b { color: blue; }\n</style>\n",
+        "<style>\n.sidebar-button {\n  display: block;\n}\n\n/* @media screen and (max-width: 1044px) {\n  .sidebar-button {\n    display: block;\n  }\n} */\n</style>\n",
     ] {
         let first = format_sfc(source, &options).unwrap().code;
         let lf = format_sfc(source, &FormatOptions::default()).unwrap().code;

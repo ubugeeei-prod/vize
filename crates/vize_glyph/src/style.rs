@@ -128,7 +128,7 @@ fn format_with_preserved_top_level_comments(
                         output.push_str(newline);
                     }
                 }
-                output.push_str(segment.content);
+                push_with_line_ending(&mut output, segment.content, newline);
                 emitted_any = true;
                 separator_lines = 1;
             }
@@ -136,6 +136,19 @@ fn format_with_preserved_top_level_comments(
     }
 
     Ok(output)
+}
+
+fn push_with_line_ending(output: &mut String, content: &str, newline: &str) {
+    let mut lines = content
+        .split('\n')
+        .flat_map(|line| line.strip_suffix('\r').unwrap_or(line).split('\r'))
+        .peekable();
+    while let Some(line) = lines.next() {
+        output.push_str(line);
+        if lines.peek().is_some() {
+            output.push_str(newline);
+        }
+    }
 }
 
 #[cfg(test)]

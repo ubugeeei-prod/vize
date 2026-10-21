@@ -43,7 +43,7 @@ pub(super) fn format_directive_value(
     // pass may have emitted the same attribute with lone CR terminators; feed
     // the parser the equivalent LF spelling so its wrap decision is stable.
     let normalized;
-    let value = if value.contains('\r') && !value.contains('\n') {
+    let value = if options.end_of_line == crate::EndOfLine::Cr && value.contains('\r') {
         normalized = value.replace('\r', "\n");
         normalized.as_str()
     } else {
@@ -59,7 +59,7 @@ pub(super) fn format_directive_value(
     // Keep the authored tokens and quote placement, but rederive same-line
     // continuations before the attribute and SFC printers add their depth.
     // Values starting on the following line remain verbatim (#6694).
-    if value.contains(['\n', '\r']) && trimmed.starts_with("//") {
+    if value.contains('\n') && trimmed.starts_with("//") {
         let (value, indent) = reanchor_continuation_lines(value, options, Representation::Html);
         return (value, indent, false);
     }
@@ -113,7 +113,11 @@ pub(super) fn format_directive_value(
             (value, indent, false)
         }
         Some(formatted) => {
-            let indent_multiline_value = formatted.code.contains(['\r', '\n']);
+            let indent_multiline_value = if options.end_of_line == crate::EndOfLine::Cr {
+                formatted.code.contains('\r')
+            } else {
+                formatted.code.contains('\n')
+            };
             (
                 formatted.code,
                 indent_multiline_value,
@@ -150,7 +154,7 @@ pub(super) fn reanchor_continuation_lines(
 ) -> (String, bool) {
     // A lone CR ends a line like LF; the lines are rebuilt with LF below.
     let normalized;
-    let value = if value.contains('\r') && !value.contains('\n') {
+    let value = if options.end_of_line == crate::EndOfLine::Cr && value.contains('\r') {
         normalized = value.replace('\r', "\n");
         normalized.as_str()
     } else {

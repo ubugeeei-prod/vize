@@ -24,7 +24,7 @@ pub(crate) fn write_rendered_attributes(
     debug_assert_eq!(attrs.len(), rendered.len());
     let mut line_count = 0;
     for (attr, rendered) in attrs.iter().zip(rendered) {
-        let attr_is_multiline = rendered_attribute_is_multiline(rendered);
+        let attr_is_multiline = rendered_attribute_is_multiline(rendered, layout.options);
         if line_count == 0 || attr_is_multiline {
             output.extend_from_slice(newline);
             write_indent(output, indent, depth);
@@ -60,10 +60,16 @@ pub(super) fn write_rendered_attribute(
     continuation_depth: usize,
     indent_continuation: bool,
 ) {
-    // LF, CRLF and a lone CR each end a line.
-    let mut lines = attr
-        .split('\n')
-        .flat_map(|line| line.strip_suffix('\r').unwrap_or(line).split('\r'));
+    // Keep the ordinary LF/CRLF path on the original single-delimiter
+    // iterator. Lone-CR output is rare and normalized once before emission.
+    let normalized;
+    let attr = if newline == b"\r" && attr.contains('\r') {
+        normalized = attr.replace('\r', "\n");
+        normalized.as_str()
+    } else {
+        attr
+    };
+    let mut lines = attr.split('\n');
     let mut literal = ValueLines::for_attribute(attr);
     if let Some(first) = lines.next() {
         output.extend_from_slice(first.trim_end_matches('\r').as_bytes());
