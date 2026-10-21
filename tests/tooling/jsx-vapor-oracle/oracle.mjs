@@ -109,6 +109,8 @@ const linkedRuntime = transformSync(runtimeSource, {
     }),
   ],
 }).code;
+// Component and slot cohorts import helpers beyond `setNodes`, so expose the
+// pinned runtime's complete public surface to the linked generated modules.
 const JsxVapor = compileFunction(
   `${linkedRuntime}\nreturn {
     VaporFor,
