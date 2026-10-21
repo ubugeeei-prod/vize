@@ -2636,7 +2636,7 @@
           "symbol": "isHome",
           "usageAnchor": "v-if=\"isHome\"",
           "declarationAnchor": "      isHome() {",
-          "hoverContains": ["const isHome: boolean"],
+          "hoverContains": ["const isHome: any"],
           "renameTo": "__vizeRenamedIsHome",
           "sharesComponentImporter": true
         },
