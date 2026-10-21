@@ -61,11 +61,10 @@ function onBlur(): void {}
     assert_eq!(spread_origin.len(), 1, "{snapshot:#?}");
     let (file, code, message) = spread_origin[0];
     assert_eq!(file, "src/App.vue");
-    assert_eq!(*code, Some(2322));
-    assert!(
-        message.starts_with("13:4:error ")
-            && message.contains("number")
-            && message.contains("string"),
+    assert_eq!(*code, Some(2345));
+    assert_eq!(
+        *message,
+        "13:4:error Argument of type '{ type: number; }' is not assignable to parameter of type '__VizeComponentCheckProps<__MyInput_CheckProps_0, __VizePublicComponentAttrs & { [x: string]: unknown; } & { [x: `data${string}`]: unknown; } & Record<string, unknown>>'.\nType '{ type: number; }' is not assignable to type '{ readonly type?: string | undefined; readonly label?: string | undefined; readonly onBlur?: ((event: FocusEvent) => any) | undefined; }'.\nTypes of property 'type' are incompatible.\nType 'number' is not assignable to type 'string'.",
         "the invalid type authored inside v-bind must retain its complete whole-props diagnostic: {snapshot:#?}"
     );
     let named_props: Vec<_> = actual
