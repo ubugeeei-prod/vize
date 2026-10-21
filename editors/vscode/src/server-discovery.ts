@@ -7,6 +7,7 @@ import { workspace, type ExtensionContext } from "vscode";
 import { parseVizeVersion, serverMatchesExtension } from "./extension-core.js";
 import { downloadFile } from "./release-download.js";
 import { extractReleaseArchive } from "./release-archive.js";
+import { pruneDownloadedServerVersions } from "./server-cache.js";
 import { trustedServerPath, workspaceDevServerPaths } from "./server-trust.js";
 import type {
   ExtensionRuntimeState,
@@ -252,6 +253,7 @@ export function createServerDiscovery(
     const cachedCandidate = await inspectCachedReleaseServer(serverPath, expectedVersion);
     if (generation !== state.configurationSyncGeneration) return undefined;
     if (cachedCandidate) {
+      pruneStaleReleaseServers(context, expectedVersion);
       return cachedCandidate;
     }
 
@@ -286,6 +288,7 @@ export function createServerDiscovery(
         source: "release",
       });
       if (candidate.version === expectedVersion) {
+        pruneStaleReleaseServers(context, expectedVersion);
         return candidate;
       }
 
@@ -297,6 +300,28 @@ export function createServerDiscovery(
     }
 
     return undefined;
+  }
+
+  function pruneStaleReleaseServers(context: ExtensionContext, currentVersion: string): void {
+    const serversDir = path.join(context.globalStorageUri.fsPath, "servers");
+    void pruneDownloadedServerVersions(serversDir, currentVersion)
+      .then(({ removed, failed }) => {
+        if (removed.length > 0) {
+          state.outputChannel.appendLine(
+            `Removed downloaded Vize server caches: ${removed.join(", ")}`,
+          );
+        }
+        for (const failure of failed) {
+          state.outputChannel.appendLine(
+            `Failed to remove downloaded Vize server cache ${failure.version}: ${failure.error}`,
+          );
+        }
+      })
+      .catch((error: unknown) => {
+        state.outputChannel.appendLine(
+          `Failed to inspect downloaded Vize server caches: ${String(error)}`,
+        );
+      });
   }
 
   async function inspectCachedReleaseServer(

@@ -55,6 +55,7 @@ function createResolution(pauseAt, cachedCandidate) {
     cachedCandidate,
     downloadFile: (url) => operation(url.endsWith(".sha256") ? "checksum" : "archive"),
     extractReleaseArchive: () => operation("extract"),
+    pruneDownloadedServerVersions: () => operation("prune", { removed: [], failed: [] }),
   });
   const hooks = `
     getReleaseServerTarget = () => ({ targetName: "native", archiveName: "native.tar.gz" });
@@ -91,10 +92,11 @@ await test("current release resolution retains the full download, checksum and e
     "verify",
     "extract",
     "inspect",
+    "prune",
   ]);
   const cached = createResolution(undefined, { path: "/cached/vize", version: "1.2.3" });
   assert.deepEqual(await cached.control.resolve(), { path: "/cached/vize", version: "1.2.3" });
-  assert.deepEqual(cached.operations, ["cached"]);
+  assert.deepEqual(cached.operations, ["cached", "prune"]);
 });
 
 for (const stage of ["cached", "mkdir", "archive", "checksum", "verify", "extract"]) {
