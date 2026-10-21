@@ -291,7 +291,7 @@ export function diagnosticReceipt(identity, summaries) {
     schema: "vize.canonical-corpus-io-diagnostic",
     version: 1,
     files: identity.files,
-    originalKernelFiles: 44367,
+    originalKernelFiles: 47056,
     originalKernelJellyfinFiles: 5576,
     gitlinks: 149,
     summaries,
