@@ -5,6 +5,10 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { gunzipSync } from "node:zlib";
+import {
+  loadLintSnapshotAlignments,
+  verifyLintSnapshotAlignment,
+} from "../_helpers/lint-snapshot-alignment.ts";
 import { reviewLocalizedRequireScopedStyle } from "./support/lint-output-policy-review.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
@@ -12,6 +16,7 @@ const review = path.join(
   root,
   "tests/_fixtures/_projects/lint-review/2026-10-11-executable-configs",
 );
+const alignments = loadLintSnapshotAlignments(root);
 const compressed = (name: string) =>
   JSON.parse(gunzipSync(fs.readFileSync(path.join(review, name))).toString());
 const compare = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
@@ -189,7 +194,13 @@ test("complete corrected captures retract exactly three positive client-guard wa
     assert.equal(hash(capture.baselineRaw), capture.baselineSha256);
     const reviewed = reviewLocalizedRequireScopedStyle(capture.raw);
     reviewedMessages += reviewed.reviewedMessages;
-    assert.equal(fs.readFileSync(path.join(root, capture.path), "utf8"), reviewed.raw);
+    const alignment = alignments.get(capture.path);
+    assert(alignment);
+    verifyLintSnapshotAlignment(
+      reviewed.raw,
+      fs.readFileSync(path.join(root, capture.path), "utf8"),
+      alignment,
+    );
     const actual = JSON.parse(capture.raw),
       previous = JSON.parse(capture.baselineRaw);
     assert.deepEqual(

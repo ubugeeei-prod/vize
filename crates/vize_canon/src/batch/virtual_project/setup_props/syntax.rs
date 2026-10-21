@@ -69,6 +69,16 @@ pub(super) fn runtime_prop_shape_member_type(runtime_binding: &str, name: &str) 
     )
 }
 
+pub(super) fn runtime_prop_return_shape_member_type(
+    runtime_factory: &str,
+    name: &str,
+) -> CompactString {
+    cstr!(
+        "__RuntimePropShape<ReturnType<typeof {runtime_factory}>>[{}]",
+        ts_string_literal(name).as_str()
+    )
+}
+
 fn ts_string_literal(value: &str) -> String {
     let mut literal = String::from("\"");
     for ch in value.chars() {

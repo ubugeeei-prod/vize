@@ -168,6 +168,18 @@
     "fixes": 1
   },
   {
+    "id": "custom-event-name-casing-9879",
+    "history": "04541e20047f0cc3bf30bb219e127d59fe8ad44b",
+    "source": "const emit = defineEmits([\"update:modelValue\"])\nemit(\"update:modelValue\", value)",
+    "filename": "History.ts",
+    "entry": "script",
+    "rule": "script/custom-event-name-casing",
+    "vue_version": null,
+    "vapor": null,
+    "diagnostics": 0,
+    "fixes": 0
+  },
+  {
     "id": "dynamic-slot-v-for-component-bodies",
     "history": "71c157ded6632df04b61c96f44c25b11097b928c",
     "source": "<script setup lang=\"ts\">\nimport { useSlots } from \"vue\";\n\nimport MyList from \"./my-list.vue\";\nimport MyItem from \"./my-item.vue\";\n\nconst slots = useSlots();\nconst names = Object.keys(slots);\n</script>\n\n<template>\n  <MyList>\n    <template v-for=\"name in names\" #[name]=\"scope\">\n      <slot :name=\"name\" v-bind=\"scope\" />\n    </template>\n  </MyList>\n\n  <MyList>\n    <template v-for=\"name in names\" #[name]=\"scope\">\n      <component :is=\"slots[name]\" v-bind=\"scope\" />\n    </template>\n  </MyList>\n\n  <MyList>\n    <template v-for=\"name in names\" #[name]>\n      <MyItem :label=\"name\" />\n    </template>\n  </MyList>\n</template>\n",
@@ -297,6 +309,18 @@
     "vue_version": null,
     "vapor": null,
     "diagnostics": 0,
+    "fixes": 0
+  },
+  {
+    "id": "nuxt-builtins-9866",
+    "history": "673c6fa430aba9ca81c87a81e3e63a4a8c844921",
+    "source": "<template>\n  <ClientOnly>\n    <NuxtLink to=\"/\">home</NuxtLink>\n    <UnknownWidget />\n  </ClientOnly>\n</template>\n",
+    "filename": "HomeLink.vue",
+    "entry": "sfc",
+    "rule": "vue/require-component-registration",
+    "vue_version": "3",
+    "vapor": null,
+    "diagnostics": 3,
     "fixes": 0
   }
 ]

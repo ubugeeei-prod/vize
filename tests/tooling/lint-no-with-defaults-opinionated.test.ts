@@ -13,6 +13,7 @@ interface CorpusCase {
   input: string;
   preset?: string;
   maxWarnings?: number;
+  definePropsDestructuringSpans?: [number, number][];
   spans: [number, number][];
 }
 
@@ -39,26 +40,46 @@ function location(bytes: Buffer, offset: number) {
 }
 
 function expected(filename: string, bytes: Buffer, entry: CorpusCase) {
+  const definePropsDestructuringMessages = (entry.definePropsDestructuringSpans ?? []).map(
+    ([start, end]) => {
+      const from = location(bytes, start);
+      const to = location(bytes, end);
+      return {
+        ruleId: "script/define-props-destructuring",
+        ruleDocsPath: "docs/content/rules/type-and-script.md",
+        severity: 1,
+        message:
+          "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        line: from.line,
+        column: from.column,
+        endLine: to.line,
+        endColumn: to.column,
+        help: "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity.",
+      };
+    },
+  );
+  const noWithDefaultsMessages = entry.spans.map(([start, end]) => {
+    const from = location(bytes, start);
+    const to = location(bytes, end);
+    return {
+      ruleId: rule,
+      ruleDocsPath: "docs/content/rules/type-and-script.md",
+      severity: 1,
+      message: `[vize:${rule}] Prefer destructuring defaults over withDefaults (Vue 3.5+)`,
+      line: from.line,
+      column: from.column,
+      endLine: to.line,
+      endColumn: to.column,
+      help: "Use destructuring with defaults: const { count = 0, name = 'default' } = defineProps<Props>()",
+    };
+  });
+  const messages = [...definePropsDestructuringMessages, ...noWithDefaultsMessages];
   return [
     {
       file: filename,
-      messages: entry.spans.map(([start, end]) => {
-        const from = location(bytes, start);
-        const to = location(bytes, end);
-        return {
-          ruleId: rule,
-          ruleDocsPath: "docs/content/rules/type-and-script.md",
-          severity: 1,
-          message: `[vize:${rule}] Prefer destructuring defaults over withDefaults (Vue 3.5+)`,
-          line: from.line,
-          column: from.column,
-          endLine: to.line,
-          endColumn: to.column,
-          help: "Use destructuring with defaults: const { count = 0, name = 'default' } = defineProps<Props>()",
-        };
-      }),
+      messages,
       errorCount: 0,
-      warningCount: entry.spans.length,
+      warningCount: messages.length,
     },
   ];
 }
@@ -119,7 +140,7 @@ await test("opinionated activates the existing withDefaults warning through the 
       if (entry.maxWarnings !== undefined) args.push("--max-warnings", String(entry.maxWarnings));
       args.push(pin.filename);
       const overWarningLimit =
-        entry.maxWarnings !== undefined && entry.spans.length > entry.maxWarnings;
+        entry.maxWarnings !== undefined && oracle[0]!.warningCount > entry.maxWarnings;
       for (let repeat = 0; repeat < 2; repeat++) {
         const process = spawnSync(binary, args, {
           cwd: directory,

@@ -50,30 +50,34 @@ defineArt("./MyCard.vue", { title: "MyCard" });
         return;
     };
 
-    let wrong_type = "Type 'number' is not assignable to type 'string'.";
+    let wrong_type = "error Type 'number' is not assignable to type 'string'.";
     let missing_title = concat!(
-        "Argument of type '{ elevated: true; }' is not assignable to parameter of type ",
+        "error Argument of type '{ elevated: true; }' is not assignable to parameter of type ",
         "'__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { [x: string]: unknown; } & ",
         "{ [x: `data${string}`]: unknown; } & Record<string, unknown>>'.\n",
         "Property 'title' is missing in type '{ elevated: true; }' but required in type ",
         "'{ readonly title: string; readonly elevated?: boolean | undefined; }'.",
     );
     let expected: Vec<(vize_carton::String, Option<u32>, vize_carton::String)> = vec![
-        ("src/MyCard.art.vue".into(), Some(2322), wrong_type.into()),
+        (
+            "src/MyCard.art.vue".into(),
+            Some(2322),
+            format!("5:34:{wrong_type}").into(),
+        ),
         (
             "src/MyCard.art.vue".into(),
             Some(2345),
-            missing_title.into(),
+            format!("6:28:{missing_title}").into(),
         ),
         (
             "src/MyCardExplicit.art.vue".into(),
             Some(2322),
-            wrong_type.into(),
+            format!("6:34:{wrong_type}").into(),
         ),
         (
             "src/MyCardExplicit.art.vue".into(),
             Some(2345),
-            missing_title.into(),
+            format!("7:28:{missing_title}").into(),
         ),
     ];
     assert_eq!(snapshot, expected);

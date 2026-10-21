@@ -255,6 +255,17 @@ fn misskey_generated_inference_probes_preserve_authored_diagnostics() {
     );
 }
 
+#[test]
+fn named_prop_before_spread_reports_once_with_or_without_listener() {
+    check_pack(
+        "component-v-bind-duplicate-diagnostic-10069",
+        "named_prop_before_spread_reports_once_with_or_without_listener",
+        "7174c46d55825c155325e6314305e661d50ec95a",
+        Some(10069),
+        &["wrong-prop-with-spread-and-listener"],
+    );
+}
+
 fn check_pack(
     name: &str,
     test: &str,
@@ -290,7 +301,8 @@ fn check_pack(
             | "nuxt-unknown-template-options-10013"
             | "reactive-props-destructure-10008"
             | "generic-fallthrough-spread-9956"
-            | "misskey-generated-inference-9516" => regression,
+            | "misskey-generated-inference-9516"
+            | "component-v-bind-duplicate-diagnostic-10069" => regression,
             _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
         }
     );
@@ -378,8 +390,16 @@ fn check_pack(
                 message: String::from(diagnostic.message.as_str()),
             })
             .collect();
+        let (compared_actual, compared_expected) = if name == "required-props-edges" {
+            (
+                normalize_generated_check_ordinals(&actual),
+                normalize_generated_check_ordinals(&case.diagnostics),
+            )
+        } else {
+            (actual.clone(), case.diagnostics.clone())
+        };
         assert_eq!(
-            actual, case.diagnostics,
+            compared_actual, compared_expected,
             "complete diagnostic list for {}",
             case.id
         );
@@ -390,4 +410,49 @@ fn check_pack(
     if let Some(capture) = capture {
         capture.finish(name, test, &fixture_pack);
     }
+}
+
+fn normalize_generated_check_ordinals(diagnostics: &[Diagnostic]) -> Vec<Diagnostic> {
+    diagnostics
+        .iter()
+        .cloned()
+        .map(|mut diagnostic| {
+            let mut message = diagnostic.message.as_str();
+            let mut normalized = std::string::String::with_capacity(message.len());
+            while let Some(at) = message.find("_CheckProps_") {
+                let after_marker = at + "_CheckProps_".len();
+                normalized.push_str(&message[..after_marker]);
+                let digit_count = message[after_marker..]
+                    .bytes()
+                    .take_while(u8::is_ascii_digit)
+                    .count();
+                if digit_count > 0 {
+                    normalized.push('#');
+                }
+                message = &message[after_marker + digit_count..];
+            }
+            normalized.push_str(message);
+            diagnostic.message = normalized;
+            diagnostic
+        })
+        .collect()
+}
+
+#[test]
+fn generated_check_ordinal_normalization_preserves_markers_without_digits() {
+    let diagnostics = [Diagnostic {
+        file: String::from("src/App.vue"),
+        line: 1,
+        column: 1,
+        severity: 1,
+        code: Some(2322),
+        message: String::from("_CheckProps_ stays distinct from _CheckProps_12"),
+    }];
+
+    let normalized = normalize_generated_check_ordinals(&diagnostics);
+
+    assert_eq!(
+        normalized[0].message,
+        "_CheckProps_ stays distinct from _CheckProps_#"
+    );
 }

@@ -1853,6 +1853,43 @@
       ]
     },
     {
+      "id": "typechecker/component-v-bind-duplicate-diagnostic-10069/wrong-prop-with-spread-and-listener",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "component-v-bind-duplicate-diagnostic-10069",
+      "case": "wrong-prop-with-spread-and-listener",
+      "test": "named_prop_before_spread_reports_once_with_or_without_listener",
+      "regressionCommit": "7174c46d55825c155325e6314305e661d50ec95a",
+      "sourceRevision": "7174c46d55825c155325e6314305e661d50ec95a",
+      "packReference": {
+        "path": "component-v-bind-duplicate-diagnostic-10069/cases.json",
+        "sha256": "243e65c11dcaaf4346dcd59ae1c502f9ef8403df402de820cc75be35192ada36"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "component-v-bind-duplicate-diagnostic-10069/tsconfig.json.txt",
+          "sha256": "20607bc6729ba818893549d0567ca341f57cdf1eb56e34e176d2b2205e7002e4"
+        },
+        {
+          "file": "src/MyInput.vue",
+          "path": "component-v-bind-duplicate-diagnostic-10069/src/MyInput.vue.txt",
+          "sha256": "ce6d34aaa1941b7740ce98dfb88d0b84b8f3e4cd327bd9170db47b8a64248dc9"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "component-v-bind-duplicate-diagnostic-10069/src/App.vue.txt",
+          "sha256": "ee913a6465fcc965617f45c7f3897143cdd177a74a07b4abc4fd2ab30c78060b"
+        }
+      ]
+    },
+    {
       "id": "typechecker/misskey-generated-inference-9516/authored-unknown-prop-control",
       "state": "active",
       "targets": [
@@ -1891,6 +1928,80 @@
           "file": "src/App.vue",
           "path": "misskey-generated-inference-9516/authored-unknown-prop-control/src/App.vue.txt",
           "sha256": "51c2e8a568c7af36948a100d0645d5f05d150a348aec204a6249087833dcdfc1"
+        }
+      ]
+    },
+    {
+      "id": "typechecker/runtime-props-report-10100-10101/imported-helper-spread",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "runtime-props-report-10100-10101",
+      "case": "imported-helper-spread",
+      "test": "runtime_props_reports_10100_10101_retain_expected_types",
+      "regressionCommit": "5dfe002a9467d152c8545693df33def3aa5f3bf7",
+      "sourceRevision": "5dfe002a9467d152c8545693df33def3aa5f3bf7",
+      "packReference": {
+        "path": "runtime-props-report-10100-10101/cases.json",
+        "sha256": "48e84f3ab487d6755154e6098f4f9aa0715286eda4a8e3a2d3530c5ffdc379ce"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "runtime-props-report-10100-10101/tsconfig.json.txt",
+          "sha256": "932a9f28903a3a94c41fdc64a92274ddd0a69ad65bc471fc73876a7a3690a1b8"
+        },
+        {
+          "file": "src/sharedProps.ts",
+          "path": "runtime-props-report-10100-10101/src/sharedProps.ts.txt",
+          "sha256": "84ae05a2a6f30262492d4dcc1c360a0a53f88a5c77d077f90f8d8933b63c4ae7"
+        },
+        {
+          "file": "src/Chart.vue",
+          "path": "runtime-props-report-10100-10101/src/Chart.vue.txt",
+          "sha256": "6ac128b115b4d761fea9372bd1eeb7f98db3a169cede2f0d695ee55b8cace85b"
+        }
+      ]
+    },
+    {
+      "id": "typechecker/runtime-props-report-10100-10101/object-factory-assertion",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "runtime-props-report-10100-10101",
+      "case": "object-factory-assertion",
+      "test": "runtime_props_reports_10100_10101_retain_expected_types",
+      "regressionCommit": "5dfe002a9467d152c8545693df33def3aa5f3bf7",
+      "sourceRevision": "5dfe002a9467d152c8545693df33def3aa5f3bf7",
+      "packReference": {
+        "path": "runtime-props-report-10100-10101/cases.json",
+        "sha256": "48e84f3ab487d6755154e6098f4f9aa0715286eda4a8e3a2d3530c5ffdc379ce"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "runtime-props-report-10100-10101/tsconfig.json.txt",
+          "sha256": "932a9f28903a3a94c41fdc64a92274ddd0a69ad65bc471fc73876a7a3690a1b8"
+        },
+        {
+          "file": "src/types.ts",
+          "path": "runtime-props-report-10100-10101/src/types.ts.txt",
+          "sha256": "c8e611045dbc4cd1fd77e2b7e3a5efcc954dd1ee3ec07ab11b4ce90b6a86c1cb"
+        },
+        {
+          "file": "src/Parent.vue",
+          "path": "runtime-props-report-10100-10101/src/Parent.vue.txt",
+          "sha256": "aade42cac2d727457bb3b897a58a831f92a867524e3bcc74462901d529429074"
         }
       ]
     }

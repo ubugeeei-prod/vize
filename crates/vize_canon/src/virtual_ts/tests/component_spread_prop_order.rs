@@ -7,6 +7,32 @@
 use super::generate_virtual_ts;
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
+const FALLTHROUGH_PROBE_MARKER: &str = "const __VizeFallthroughProps_";
+
+fn partition_spread_probes(code: &str) -> (vize_carton::String, vize_carton::String) {
+    let mut primary = vize_carton::String::default();
+    let mut secondary = vize_carton::String::default();
+    let mut cursor = 0;
+    while let Some(relative_marker) = code[cursor..].find(FALLTHROUGH_PROBE_MARKER) {
+        let marker = cursor + relative_marker;
+        primary.push_str(&code[cursor..marker]);
+        let literal_start = marker
+            + code[marker..]
+                .find(" = ")
+                .expect("fallthrough probe assignment")
+            + 3;
+        let literal_end = literal_start
+            + code[literal_start..]
+                .find(";\n")
+                .expect("fallthrough probe terminator");
+        secondary.push_str(&code[literal_start..literal_end]);
+        secondary.push('\n');
+        cursor = literal_end + 2;
+    }
+    primary.push_str(&code[cursor..]);
+    (primary, secondary)
+}
+
 fn generated_props_literal(template: &str) -> vize_carton::String {
     let script = r#"import Child from "./Child.vue"
 const bag = { count: 1 }
@@ -24,35 +50,84 @@ const bag = { count: 1 }
 #[test]
 fn a_spread_after_a_named_prop_is_emitted_after_it() {
     let code = generated_props_literal(r#"<Child :count="2" v-bind="bag" />"#);
+    let (primary, secondary) = partition_spread_probes(&code);
 
-    let named = code
-        .find("...{ \"count\": 2 }")
-        .expect("named prefix emitted as a singleton spread");
-    let spread = code.find("...bag").expect("spread emitted");
+    let named = primary
+        .find("\"count\": 2")
+        .expect("named prefix emitted as a direct property");
+    let ignore = primary
+        .find("// @ts-ignore Named prop diagnostics are owned by the per-prop check.")
+        .expect("the mapped per-prop check owns the named prop diagnostic");
+    let spread = primary.find("...bag").expect("spread emitted");
     assert!(
         named < spread,
         "the spread is authored last, so it must win the key: {code}"
+    );
+    assert_eq!(
+        primary.matches("...{ \"count\": 2 }").count(),
+        0,
+        "a named prop must stay direct so its diagnostic remains property-local: {code}"
+    );
+    assert!(
+        ignore < named,
+        "the suppression must precede its entry: {code}"
+    );
+    assert_eq!(secondary.matches("\"count\": 2").count(), 1, "{code}");
+    assert_eq!(secondary.matches("...bag").count(), 1, "{code}");
+}
+
+#[test]
+fn a_bare_static_prop_before_a_spread_suppresses_the_overwrite_diagnostic() {
+    let code = generated_props_literal(r#"<Child disabled v-bind="bag" />"#);
+    let (primary, secondary) = partition_spread_probes(&code);
+
+    let ignore = primary
+        .find("// @ts-ignore Named prop diagnostics are owned by the per-prop check.")
+        .expect("the mapped per-prop check owns the bare prop diagnostic");
+    let named = primary
+        .find("\"disabled\": true")
+        .expect("bare static prop emitted as true");
+    let spread = primary.find("...bag").expect("spread emitted");
+    assert!(ignore < named && named < spread, "{code}");
+    assert_eq!(
+        primary
+            .matches("// @ts-ignore Named prop diagnostics")
+            .count(),
+        1,
+        "the mapped child literal must suppress TypeScript's synthetic overwrite warning: {code}"
+    );
+    assert_eq!(secondary.matches("\"disabled\": true").count(), 1, "{code}");
+    assert_eq!(
+        secondary
+            .matches("// @ts-ignore Named prop diagnostics")
+            .count(),
+        1,
+        "the unmapped fallthrough literal must preserve the authored shape: {code}"
     );
 }
 
 #[test]
 fn a_spread_before_a_named_prop_is_emitted_before_it() {
     let code = generated_props_literal(r#"<Child v-bind="bag" :count="2" />"#);
+    let (primary, secondary) = partition_spread_probes(&code);
 
-    let spread = code.find("...bag").expect("spread emitted");
-    let named = code.find("\"count\": 2").expect("named prop emitted");
+    let spread = primary.find("...bag").expect("spread emitted");
+    let named = primary.find("\"count\": 2").expect("named prop emitted");
     assert!(
         spread < named,
         "the named prop is authored last, so it must win the key: {code}"
     );
-    assert!(
-        !code.contains("...{ \"count\": 2 }"),
+    assert_eq!(
+        primary.matches("...{ \"count\": 2 }").count(),
+        0,
         "a trailing named prop must remain direct: {code}"
     );
+    assert_eq!(secondary.matches("...bag").count(), 1, "{code}");
+    assert_eq!(secondary.matches("\"count\": 2").count(), 1, "{code}");
 }
 
 #[test]
-fn each_named_segment_before_a_later_spread_uses_a_singleton_spread() {
+fn each_named_segment_before_a_later_spread_stays_direct() {
     let script = r#"import Child from "./Child.vue"
 const first = { count: 1 }
 const second = { label: 'ok' }
@@ -66,20 +141,42 @@ const second = { label: 'ok' }
     analyzer.analyze_template(&root);
     let summary = analyzer.finish();
     let code = generate_virtual_ts(&summary, Some(script), Some(&root), 0).code;
+    let (primary, secondary) = partition_spread_probes(&code);
 
-    assert!(code.contains("...{ \"count\": 2 }"), "{code}");
-    assert!(code.contains("...{ \"label\": \"middle\" }"), "{code}");
-    assert!(code.contains("\"tone\": \"info\""), "{code}");
-    assert!(!code.contains("...{ \"tone\": \"info\" }"), "{code}");
-    let count = code.rfind("...{ \"count\": 2 }").unwrap();
-    let first = code.rfind("...first").unwrap();
-    let label = code.rfind("...{ \"label\": \"middle\" }").unwrap();
-    let second = code.rfind("...second").unwrap();
-    let tone = code.rfind("\"tone\": \"info\"").unwrap();
+    assert_eq!(primary.matches("...{ \"count\": 2 }").count(), 0, "{code}");
+    assert_eq!(
+        primary.matches("...{ \"label\": \"middle\" }").count(),
+        0,
+        "{code}"
+    );
+    assert_eq!(primary.matches("\"count\": 2").count(), 1, "{code}");
+    assert_eq!(
+        primary.matches("\"label\": \"middle\"").count(),
+        1,
+        "{code}"
+    );
+    assert_eq!(primary.matches("\"tone\": \"info\"").count(), 1, "{code}");
+    assert_eq!(
+        primary.matches("...{ \"tone\": \"info\" }").count(),
+        0,
+        "{code}"
+    );
+    let count = primary.find("\"count\": 2").unwrap();
+    let first = primary.find("...first").unwrap();
+    let label = primary.find("\"label\": \"middle\"").unwrap();
+    let second = primary.find("...second").unwrap();
+    let tone = primary.find("\"tone\": \"info\"").unwrap();
     assert!(
         count < first && first < label && label < second && second < tone,
         "{code}"
     );
+    assert_eq!(secondary.matches("\"count\": 2").count(), 1, "{code}");
+    assert_eq!(
+        secondary.matches("\"label\": \"middle\"").count(),
+        1,
+        "{code}"
+    );
+    assert_eq!(secondary.matches("\"tone\": \"info\"").count(), 1, "{code}");
 }
 
 #[test]
@@ -96,29 +193,81 @@ const key = 'data-id'
     let summary = analyzer.finish();
     let code = generate_virtual_ts(&summary, Some(script), Some(&root), 0).code;
 
-    assert!(!code.contains("...{ \"count\""), "{code}");
+    assert_eq!(code.matches("...{ \"count\"").count(), 0, "{code}");
     assert_eq!(code.matches("\"count\":").count(), 2, "{code}");
 }
 
 #[test]
-fn duplicate_named_props_before_a_spread_share_one_singleton() {
+fn duplicate_named_props_before_a_spread_stay_visible_to_typescript() {
     let code = generated_props_literal(r#"<Child :count="1" :count="2" v-bind="bag" />"#);
+    let (primary, secondary) = partition_spread_probes(&code);
 
-    // One singleton for the whole run keeps the authored duplicate inside a
-    // single object literal, so TypeScript still reports it (TS1117). One
-    // singleton per prop would split them apart and lose the diagnostic.
-    assert!(
-        code.contains("...{ \"count\": 1, \"count\": 2 }"),
-        "duplicates before a spread must stay in one literal: {code}"
+    // Both direct entries stay in the one outer object literal so TypeScript
+    // still reports the authored duplicate (TS1117).
+    assert_eq!(
+        primary.matches("\"count\":").count(),
+        2,
+        "both duplicate entries must remain visible in the mapped literal: {code}"
+    );
+    assert_eq!(primary.matches("...{ \"count\"").count(), 0, "{code}");
+    assert_eq!(
+        primary
+            .matches("// @ts-ignore Named prop diagnostics")
+            .count(),
+        1,
+        "only the first mapped entry can be ignored; the duplicate must stay visible to TypeScript: {code}"
+    );
+    assert_eq!(secondary.matches("\"count\":").count(), 2, "{code}");
+    let named = primary.find("\"count\": 1").expect("named run emitted");
+    let spread = primary.find("...bag").expect("spread emitted");
+    assert!(named < spread, "the spread is authored last: {code}");
+}
+
+#[test]
+fn duplicate_named_props_across_spreads_stay_visible_to_typescript() {
+    let code =
+        generated_props_literal(r#"<Child :count="1" v-bind="bag" :count="2" v-bind="bag" />"#);
+
+    let (primary, secondary) = partition_spread_probes(&code);
+    assert_eq!(primary.matches("\"count\":").count(), 2, "{code}");
+    assert_eq!(secondary.matches("\"count\":").count(), 2, "{code}");
+    assert_eq!(
+        primary
+            .matches("// @ts-ignore Named prop diagnostics")
+            .count(),
+        1,
+        "only the first mapped key may hide a synthetic overwrite warning; the later duplicate across a spread must stay visible to TypeScript: {code}"
     );
     assert_eq!(
-        code.matches("...{ \"count\"").count(),
+        secondary
+            .matches("// @ts-ignore Named prop diagnostics")
+            .count(),
         1,
-        "the run must not be split into one singleton per prop: {code}"
+        "the unmapped probe must preserve the same authored order: {code}"
     );
-    let named = code.find("...{ \"count\": 1").expect("named run emitted");
-    let spread = code.find("...bag").expect("spread emitted");
-    assert!(named < spread, "the spread is authored last: {code}");
+}
+
+#[test]
+fn duplicate_bare_props_before_a_spread_keep_the_duplicate_diagnostic() {
+    let code = generated_props_literal(r#"<Child disabled disabled v-bind="bag" />"#);
+    let (primary, secondary) = partition_spread_probes(&code);
+
+    assert_eq!(primary.matches("\"disabled\": true").count(), 2, "{code}");
+    assert_eq!(secondary.matches("\"disabled\": true").count(), 2, "{code}");
+    assert_eq!(
+        primary
+            .matches("// @ts-ignore Named prop diagnostics")
+            .count(),
+        1,
+        "only the first mapped bare prop may hide the synthetic overwrite warning; the duplicate must remain visible to TypeScript: {code}"
+    );
+    assert_eq!(
+        secondary
+            .matches("// @ts-ignore Named prop diagnostics")
+            .count(),
+        1,
+        "the unmapped probe must preserve the duplicate shape: {code}"
+    );
 }
 
 #[test]
@@ -126,8 +275,9 @@ fn component_event_directives_do_not_enter_the_props_literal() {
     let code =
         generated_props_literal(r#"<Child @keydown="first" @keydown.esc.prevent="second" />"#);
 
-    assert!(
-        !code.contains("\"onKeydown\": undefined as any"),
+    assert_eq!(
+        code.matches("\"onKeydown\": undefined as any").count(),
+        0,
         "event directives are checked by the component-event path; duplicating them in the props literal reports legal modifier pairs as TS1117: {code}"
     );
 }
@@ -137,13 +287,31 @@ fn component_events_do_not_mask_spread_listener_props() {
     let code =
         generated_props_literal(r#"<Child @keydown="first" v-bind="bag" @click="second" />"#);
 
-    assert!(
-        code.contains("...bag"),
-        "spread prop must remain checked: {code}"
+    let (inference, canonical) = code
+        .split_once("// Component props value checks (template scope)")
+        .expect("component props section emitted");
+    let (primary, secondary) = partition_spread_probes(canonical);
+    assert_eq!(
+        inference.matches("...bag").count(),
+        1,
+        "the inference path must retain the spread: {code}"
     );
-    assert!(
-        !code.contains("\"onKeydown\": undefined as any")
-            && !code.contains("\"onClick\": undefined as any"),
+    assert_eq!(
+        primary.matches("...bag").count(),
+        1,
+        "the mapped child check must retain the spread: {code}"
+    );
+    assert_eq!(
+        secondary.matches("...bag").count(),
+        1,
+        "the unmapped fallthrough probe must retain the spread: {code}"
+    );
+    assert_eq!(
+        (
+            code.matches("\"onKeydown\": undefined as any").count(),
+            code.matches("\"onClick\": undefined as any").count(),
+        ),
+        (0, 0),
         "event directive placeholders would mask same-named listener props from spreads: {code}"
     );
 }
@@ -162,11 +330,19 @@ const value = { missing: 'bad' }
     analyzer.analyze_template(&root);
     let summary = analyzer.finish();
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+    let (primary, secondary) = partition_spread_probes(&output.code);
 
-    let generated_missing = output
-        .code
-        .rfind("missing")
+    let generated_value = "\"count\": value.missing";
+    let generated_missing = primary
+        .find(generated_value)
+        .map(|start| start + generated_value.find("missing").unwrap())
         .expect("named value emitted inside singleton spread");
+    assert_eq!(
+        secondary.matches(generated_value).count(),
+        1,
+        "{code}",
+        code = output.code
+    );
     let authored_missing = template.find("missing").unwrap();
     let span = output
         .mapping
@@ -205,18 +381,24 @@ const bag = { count: 1 }
     analyzer.analyze_template(&root);
     let summary = analyzer.finish();
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+    let (primary, secondary) = partition_spread_probes(&output.code);
 
     let generated = "{ as: props[\"as\"], count: bag.missing }";
-    let generated_start = output.code.rfind(generated).unwrap_or_else(|| {
+    let generated_start = primary.find(generated).unwrap_or_else(|| {
         panic!(
             "reserved spread reference was not rewritten:\n{}",
             output.code
         )
     });
     assert_eq!(
-        output.code.matches(generated).count(),
+        primary.matches(generated).count(),
         1,
-        "a component spread must be checked only by the mapped props call",
+        "the mapped child check must retain the authored literal",
+    );
+    assert_eq!(
+        secondary.matches(generated).count(),
+        1,
+        "the unmapped fallthrough probe must retain the authored literal",
     );
     let source_missing = template.find("missing").expect("authored member present");
     let generated_missing = generated_start + generated.find("missing").unwrap();
@@ -237,6 +419,24 @@ const bag = { count: 1 }
     assert_eq!(
         generated_missing - span.gen_range.start,
         source_missing - span.src_range.start,
+    );
+    let marker = output
+        .code
+        .find(FALLTHROUGH_PROBE_MARKER)
+        .expect("fallthrough probe marker");
+    let unmapped_missing = marker
+        + output.code[marker..].find(generated).unwrap()
+        + generated.find("missing").unwrap();
+    let mapped_secondary_sub_spans = output
+        .mapping
+        .spans()
+        .iter()
+        .flat_map(|mapping| &mapping.sub_spans)
+        .filter(|span| span.gen_range.contains(&unmapped_missing))
+        .count();
+    assert_eq!(
+        mapped_secondary_sub_spans, 0,
+        "the secondary fallthrough literal must stay unmapped to avoid duplicate diagnostics",
     );
 }
 
@@ -260,16 +460,27 @@ const items = ["local"]
     analyzer.analyze_template(&root);
     let summary = analyzer.finish();
     let code = generate_virtual_ts(&summary, Some(script), Some(&root), 0).code;
+    let (primary, secondary) = partition_spread_probes(&code);
 
     assert_eq!(
-        code.matches(r#"...{ as: props["as"] },"#).count(),
+        primary.matches(r#"...{ as: props["as"] },"#).count(),
         1,
-        "only the root usage should fall back to the outer prop:\n{code}"
+        "only the mapped root usage should fall back to the outer prop:\n{code}"
     );
     assert_eq!(
-        code.matches("...{ as },").count(),
+        primary.matches("...{ as },").count(),
         2,
-        "same-element and lexical-parent v-for locals must stay local:\n{code}"
+        "mapped same-element and lexical-parent v-for locals must stay local:\n{code}"
+    );
+    assert_eq!(
+        secondary.matches(r#"...{ as: props["as"] },"#).count(),
+        1,
+        "the secondary root usage must use the same binding:\n{code}"
+    );
+    assert_eq!(
+        secondary.matches("...{ as },").count(),
+        2,
+        "secondary v-for locals must use the same lexical bindings:\n{code}"
     );
 }
 
@@ -291,13 +502,26 @@ defineProps<{ as: number }>()
     analyzer.analyze_template(&root);
     let summary = analyzer.finish();
     let code = generate_virtual_ts(&summary, Some(script), Some(&root), 0).code;
+    let (primary, secondary) = partition_spread_probes(&code);
 
-    assert!(
-        code.contains("...{ as },"),
-        "v-slot local must stay a local reference:\n{code}"
+    assert_eq!(
+        primary.matches("...{ as },").count(),
+        1,
+        "the mapped v-slot binding must stay local:\n{code}"
     );
-    assert!(
-        !code.contains(r#"...{ as: props["as"] },"#),
-        "the outer prop must not replace a visible v-slot local:\n{code}"
+    assert_eq!(
+        secondary.matches("...{ as },").count(),
+        1,
+        "the unmapped v-slot binding must stay local:\n{code}"
+    );
+    assert_eq!(
+        primary.matches(r#"...{ as: props["as"] },"#).count(),
+        0,
+        "the outer prop must not replace a mapped v-slot local:\n{code}"
+    );
+    assert_eq!(
+        secondary.matches(r#"...{ as: props["as"] },"#).count(),
+        0,
+        "the outer prop must not replace an unmapped v-slot local:\n{code}"
     );
 }
