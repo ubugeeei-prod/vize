@@ -126,7 +126,7 @@ export function createPackedInstallReceipt(
   for (const name of packageNames) packageRoots.set(name, directPackageRoot(projectRoot, name));
 
   const vizeRoot = packageRoots.get("vize");
-  assert.equal(typeof vizeRoot, "string", "packed install receipt requires vize");
+  assert.ok(vizeRoot, "packed install receipt requires vize");
   const vizeRequire = createRequire(path.join(vizeRoot, "package.json"));
   const nativeRoot = resolvedPackageRoot(vizeRequire, "@vizejs/native");
   packageRoots.set("@vizejs/native", nativeRoot);
