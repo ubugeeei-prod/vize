@@ -827,7 +827,6 @@ fn assert_installed_mapper_contract(install_dir: &Path) -> Result<(), String> {
             "dynamicConfig": true,
             "exec": ["node", "./bin/vize", "content-mapper"],
             "compilerOptions": ["noUnusedLocals"],
-            "dynamicConfig": true,
         }))
     {
         return Err(format!(
