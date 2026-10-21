@@ -4,8 +4,62 @@ use super::{
     ConfigLintRuleOptions, DefineMacrosOrderOptions, HtmlSelfClosingHtmlOptions,
     HtmlSelfClosingOptions, HtmlSelfClosingStyle, HyphenationStyle, LintRuleOptions,
     MuseaDesignToken, NoMutatingPropsOptions, RestrictedGlobal, RestrictedMember,
-    SfcElementOrderGroup, SfcElementOrderOptions, VBindStyle, VOnStyle,
+    SfcElementOrderGroup, SfcElementOrderOptions, VBindStyle, VOnStyle, VSlotNamedStyle,
+    VSlotStyle, VSlotStyleOptions, VSlotStyleValue, VSlotUniformStyle,
 };
+
+#[test]
+fn v_slot_style_accepts_uniform_and_position_specific_options() {
+    let uniform: ConfigLintRuleOptions =
+        serde_json::from_str(r#"{"vue/v-slot-style":"longform"}"#).unwrap();
+    assert_eq!(
+        uniform.v_slot_style(),
+        Some(VSlotStyle::Uniform(VSlotUniformStyle::Longform))
+    );
+
+    let mut options: ConfigLintRuleOptions = serde_json::from_str(
+        r#"{"vue/v-slot-style":{"atComponent":"shorthand","default":"v-slot","named":"longform"}}"#,
+    )
+    .unwrap();
+    assert_eq!(
+        options.v_slot_style(),
+        Some(VSlotStyle::ByPosition(VSlotStyleOptions {
+            at_component: VSlotStyleValue::Shorthand,
+            default_slot: VSlotStyleValue::VSlot,
+            named: VSlotNamedStyle::Longform,
+        }))
+    );
+
+    let defaults: ConfigLintRuleOptions =
+        serde_json::from_str(r#"{"vue/v-slot-style":{"named":"longform"}}"#).unwrap();
+    assert_eq!(
+        defaults.v_slot_style(),
+        Some(VSlotStyle::ByPosition(VSlotStyleOptions {
+            at_component: VSlotStyleValue::VSlot,
+            default_slot: VSlotStyleValue::Shorthand,
+            named: VSlotNamedStyle::Longform,
+        }))
+    );
+
+    let overlay: ConfigLintRuleOptions =
+        serde_json::from_str(r#"{"vue/v-slot-style":"shorthand"}"#).unwrap();
+    options.merge_from(&overlay);
+    assert_eq!(
+        options.v_slot_style(),
+        Some(VSlotStyle::Uniform(VSlotUniformStyle::Shorthand))
+    );
+
+    for invalid in [
+        r#"{"vue/v-slot-style":"v-slot"}"#,
+        r#"{"vue/v-slot-style":{"named":"v-slot"}}"#,
+        r#"{"vue/v-slot-style":{"unknown":"longform"}}"#,
+    ] {
+        assert!(
+            serde_json::from_str::<ConfigLintRuleOptions>(invalid).is_err(),
+            "accepted invalid option: {invalid}"
+        );
+    }
+}
 
 #[test]
 fn define_macros_order_options_validate_and_merge() {

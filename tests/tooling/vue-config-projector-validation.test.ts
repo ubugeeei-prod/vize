@@ -91,14 +91,18 @@ test("the complete canonical validation graph derives from the authoritative nat
     }
   };
   scan(fields);
-  const omitAnnotations = (value) =>
+  const omitAnnotations = (value, parentKey) =>
     Array.isArray(value)
-      ? value.map(omitAnnotations)
+      ? value.map((child) => omitAnnotations(child, parentKey))
       : value && typeof value === "object"
         ? Object.fromEntries(
             Object.entries(value)
-              .filter(([key]) => !["description", "default", "title", "$schema"].includes(key))
-              .map(([key, child]) => [key, omitAnnotations(child)]),
+              .filter(
+                ([key]) =>
+                  parentKey === "properties" ||
+                  !["description", "default", "title", "$schema"].includes(key),
+              )
+              .map(([key, child]) => [key, omitAnnotations(child, key)]),
           )
         : value;
   assert.deepEqual(
@@ -109,6 +113,26 @@ test("the complete canonical validation graph derives from the authoritative nat
       additionalProperties: false,
       definitions,
     }),
+  );
+});
+
+test("canonical validation preserves native option properties named default", () => {
+  const vue = {
+    linter: {
+      ruleOptions: {
+        "vue/v-slot-style": {
+          atComponent: "longform",
+          default: "v-slot",
+          named: "longform",
+        },
+      },
+    },
+  };
+  assert.equal(
+    vueConfigOptions({
+      vue,
+    }),
+    vue,
   );
 });
 

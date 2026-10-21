@@ -228,6 +228,28 @@ it("projects v-on style into the typed CLI-compatible option map", () => {
   assert.equal(getRuleOptions("vue/v-on-style", ["sometimes"]), undefined);
 });
 
+it("projects v-slot style into the typed CLI-compatible option map", () => {
+  assert.deepEqual(getRuleOptions("vue/v-slot-style", ["longform"]), {
+    ruleOptions: { "vue/v-slot-style": "longform" },
+  });
+  assert.deepEqual(
+    getRuleOptions("vue/v-slot-style", [
+      { atComponent: "v-slot", default: "shorthand", named: "longform" },
+    ]),
+    {
+      ruleOptions: {
+        "vue/v-slot-style": {
+          atComponent: "v-slot",
+          default: "shorthand",
+          named: "longform",
+        },
+      },
+    },
+  );
+  assert.equal(getRuleOptions("vue/v-slot-style", ["v-slot"]), undefined);
+  assert.equal(getRuleOptions("vue/v-slot-style", [{ named: "v-slot" }]), undefined);
+});
+
 it("projects v-bind style into the typed CLI-compatible option map", () => {
   assert.deepEqual(getRuleOptions("vue/v-bind-style", ["longform"]), {
     ruleOptions: { "vue/v-bind-style": "longform" },

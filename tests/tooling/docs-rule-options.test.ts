@@ -22,6 +22,7 @@ const configurableRuleOptions = [
   "vue/require-component-registration",
   "vue/sfc-element-order",
   "vue/v-on-event-hyphenation",
+  "vue/v-slot-style",
 ];
 
 test("rule option docs enumerate every typed lint rule option", () => {
@@ -173,6 +174,7 @@ test("strict boolean rows render within the complete option and type-aware table
     "vue/v-on-event-hyphenation",
     "vue/v-bind-style",
     "vue/v-on-style",
+    "vue/v-slot-style",
     "vue/attribute-hyphenation",
     "vue/valid-v-slot",
     "musea/prefer-design-tokens",

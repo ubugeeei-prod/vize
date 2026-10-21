@@ -69,13 +69,17 @@ function collectDefinitions(value: unknown): void {
   Object.values(value).forEach(collectDefinitions);
 }
 collectDefinitions(properties);
-function withoutAnnotations(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(withoutAnnotations);
+function withoutAnnotations(value: unknown, parentKey?: string): unknown {
+  if (Array.isArray(value)) return value.map((item) => withoutAnnotations(item, parentKey));
   if (value === null || typeof value !== "object") return value;
   return Object.fromEntries(
     Object.entries(value)
-      .filter(([key]) => !["description", "default", "title", "$schema"].includes(key))
-      .map(([key, item]) => [key, withoutAnnotations(item)]),
+      .filter(
+        ([key]) =>
+          parentKey === "properties" ||
+          !["description", "default", "title", "$schema"].includes(key),
+      )
+      .map(([key, item]) => [key, withoutAnnotations(item, key)]),
   );
 }
 const graph = JSON.stringify(

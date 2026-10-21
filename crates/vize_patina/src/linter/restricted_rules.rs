@@ -18,7 +18,7 @@ use crate::rules::script::{DefineMacrosOrder, NoRestrictedMembers, RestrictedGlo
 use crate::rules::vue::{
     AttributeHyphenation, HyphenationStyle, NoMutatingProps, NoMutatingPropsOptions,
     SfcElementOrder, SfcElementOrderOptions, VBindStyle, VBindStyleOption, VOnStyle,
-    VOnStyleOption,
+    VOnStyleOption, VSlotStyle,
 };
 use vize_l0::String;
 
@@ -229,6 +229,15 @@ impl Linter {
     #[inline]
     pub fn with_v_on_style(mut self, style: VOnStyleOption) -> Self {
         self.registry.replace(Box::new(VOnStyle { style }));
+        self
+    }
+
+    /// Configure `vue/v-slot-style` without enabling an unselected rule.
+    #[inline]
+    pub fn with_v_slot_style(mut self, style: VSlotStyle) -> Self {
+        if self.registry.has_rule("vue/v-slot-style") {
+            self.registry.replace(Box::new(style));
+        }
         self
     }
 

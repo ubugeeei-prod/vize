@@ -262,6 +262,79 @@ fn lint_rule_options_configure_v_on_style() {
 }
 
 #[test]
+fn lint_rule_options_configure_v_slot_style_by_position() {
+    let project_root = temp_project_dir();
+    write_project_file(
+        &project_root,
+        "src/Slots.vue",
+        r#"<template>
+  <MyPanel #default="slot">{{ slot.item }}</MyPanel>
+  <MyPanel><template #header>Header</template></MyPanel>
+</template>
+"#,
+    );
+    write_project_file(
+        &project_root,
+        "vite.config.mjs",
+        &vite_config::source(
+            r#"{
+  "linter": {
+    "preset": "incremental",
+    "rules": {
+      "vue/v-slot-style": "error"
+    },
+    "ruleOptions": {
+      "vue/v-slot-style": {
+        "atComponent": "longform",
+        "default": "v-slot",
+        "named": "longform"
+      }
+    }
+  }
+}"#,
+        ),
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args([
+            "lint",
+            "--config",
+            "vite.config.mjs",
+            "--format",
+            "json",
+            "src/Slots.vue",
+        ])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(1), "{}", output_details(&output));
+    assert_eq!(output.stderr, b"", "{}", output_details(&output));
+
+    let stdout = std::str::from_utf8(&output.stdout).unwrap();
+    let report: serde_json::Value = serde_json::from_str(stdout).unwrap();
+    let messages = report[0]["messages"].as_array().unwrap();
+    assert_eq!(messages.len(), 2, "{stdout}");
+    assert!(
+        messages
+            .iter()
+            .all(|message| message["ruleId"] == "vue/v-slot-style")
+    );
+    assert_eq!(
+        messages
+            .iter()
+            .map(|message| message["message"].as_str().unwrap())
+            .collect::<Vec<_>>(),
+        [
+            "[vize:vue/v-slot-style] Expected 'v-slot:default' instead of '#default'",
+            "[vize:vue/v-slot-style] Expected 'v-slot:header' instead of '#header'",
+        ],
+        "{stdout}"
+    );
+
+    let _ = fs::remove_dir_all(project_root);
+}
+
+#[test]
 fn lint_rule_options_configure_v_bind_style() {
     let project_root = temp_project_dir();
     write_project_file(

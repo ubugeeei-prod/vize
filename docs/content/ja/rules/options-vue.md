@@ -371,6 +371,49 @@ export default defineConfig({
 <button v-on:click.stop="save" v-on="listeners">保存</button>
 ```
 
+<span id="vue-v-slot-style"></span>
+
+## `vue/v-slot-style`：スロットディレクティブの表記
+
+`"shorthand"` または `"longform"` で全スロットの表記を統一できます。オブジェクト形式では、
+コンポーネント上の既定スロット、`<template>` 上の既定スロット、名前付きスロットを別々に指定します。
+既定値は `{ atComponent: "v-slot", default: "shorthand", named: "shorthand" }` です。
+裸の `"v-slot"` は `atComponent` と `default` で使えますが、スロット名が失われるため `named` では
+受け付けません。安全に修正できる場合は引数と値を保持します。
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "rules": {
+        "vue/v-slot-style": "warn"
+      },
+      "ruleOptions": {
+        "vue/v-slot-style": {
+          "atComponent": "longform",
+          "default": "v-slot",
+          "named": "longform"
+        }
+      }
+    }
+  }
+});
+```
+
+上の設定で報告される例：
+
+```vue
+<MyPanel #default="slot"><template #header>見出し</template>{{ slot.item }}</MyPanel>
+```
+
+設定に沿った例：
+
+```vue
+<MyPanel v-slot:default="slot"><template v-slot:header>見出し</template>{{ slot.item }}</MyPanel>
+```
+
 <span id="vue-attribute-hyphenation"></span>
 
 ## `vue/attribute-hyphenation`：コンポーネントに渡す属性名
