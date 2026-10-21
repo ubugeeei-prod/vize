@@ -34,6 +34,9 @@ const producer = parse(readRepoFile(".github", "workflows", "full-source-cli.yml
   jobs: Record<string, Job>;
   on: { workflow_call: { outputs: Record<string, { value: string }> } };
 };
+const benchmarkQualification = parse(
+  readRepoFile(".github", "workflows", "vue-benchmarks-current-qualification.yml"),
+) as { jobs: Record<string, Job> };
 const restoreAction = parse(
   readRepoFile(".github", "actions", "restore-source-cli", "action.yml"),
 ) as Action;
@@ -165,6 +168,16 @@ void test("one original CLI/oracle build supplies each digest-strict consumer wi
     consumer.env?.VIZE_SOURCE_CLI_RECEIPT_SHA256,
     "${{ needs.full-source-cli.outputs.receipt-sha256 }}",
   );
+});
+
+void test("Vue benchmark qualification restores the producer runtime identity before its CLI", () => {
+  const steps = benchmarkQualification.jobs["current-qualification"].steps ?? [];
+  const rust = steps.findIndex((step) => step.uses?.startsWith("dtolnay/rust-toolchain@"));
+  const wild = steps.findIndex((step) => step.uses?.startsWith("wild-linker/action@"));
+  const restore = steps.findIndex((step) => step.uses === "./.github/actions/restore-source-cli");
+  assert.ok(rust >= 0 && rust < wild && wild < restore);
+  assert.deepEqual(steps[rust].with, { toolchain: "stable" });
+  assert.deepEqual(steps[wild].with, { "wild-version": "0.9.0" });
 });
 
 void test("the full tooling report fails when its producer, plan or workers do not succeed", () => {

@@ -31,8 +31,9 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
     assert.equal(data.documentVersion, 1);
     assert.deepEqual(planned.initializationOptions, {
       editor: true,
-      lint: data.method === "textDocument/codeAction",
-      typecheck: false,
+      lint: false,
+      typecheck: data.initializationOptions?.typecheck === true,
+      ...(data.method === "textDocument/codeAction" ? { lint: true } : {}),
       ...(data.method === "textDocument/onTypeFormatting" ? { formatting: true } : {}),
       ...(data.method === "textDocument/codeAction" ? { codeActions: true } : {}),
     });

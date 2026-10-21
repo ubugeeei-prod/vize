@@ -1,0 +1,4 @@
+<script setup lang="ts">
+defineProps<{ scroll?: boolean }>();
+</script>
+<template><section><slot /></section></template>
