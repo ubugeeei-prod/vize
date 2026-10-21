@@ -465,6 +465,29 @@
         [0, 1, 2, 3],
         [0, 1, 2, 3]
       ]
+    },
+    {
+      "id": "components/named-slot-updates",
+      "source": "const App = () => <FixtureCard title={state.title} v-slots={{ header: ({ suffix }) => <strong>{state.label}:{suffix}</strong> }} />;",
+      "componentFixtures": ["FixtureCard"],
+      "initial": { "title": "Alpha", "label": "one" },
+      "steps": [
+        { "patch": { "label": "two" } },
+        { "patch": { "title": "Beta" } },
+        { "patch": { "title": "Gamma", "label": "three" } }
+      ],
+      "expectedText": [
+        "one:header|Title:Alpha|",
+        "two:header|Title:Alpha|",
+        "two:header|Title:Beta|",
+        "three:header|Title:Gamma|"
+      ],
+      "expectedElementIdentities": [
+        [0, 1, 2, 3, 4],
+        [0, 1, 2, 3, 4],
+        [0, 1, 2, 3, 4],
+        [0, 1, 2, 3, 4]
+      ]
     }
   ]
 }

@@ -139,12 +139,17 @@ const componentFixtures = {
       title: { type: String, required: true },
     },
     setup(props, { slots }) {
-      return () =>
-        Vue.h("article", { "data-fixture": "card" }, [
+      return () => {
+        const header = slots.header
+          ? [Vue.h("header", { class: "header" }, slots.header({ suffix: "header" })), "|"]
+          : [];
+        return Vue.h("article", { "data-fixture": "card" }, [
+          ...header,
           Vue.h("h2", null, ["Title:", props.title]),
           "|",
           Vue.h("div", { class: "slot" }, slots.default?.({ suffix: "slot" })),
         ]);
+      };
     },
   }),
 };
