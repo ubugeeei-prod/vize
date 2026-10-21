@@ -141,12 +141,12 @@ impl TemplateFormatter<'_> {
         &self,
         output: &mut Vec<u8>,
         formatted: &str,
-        start: usize,
-        end: usize,
+        source_range: (usize, usize),
         depth: usize,
         joiner: &LineJoiner<'_>,
         join: ChunkJoin,
     ) -> bool {
+        let (start, end) = source_range;
         if joiner.locks_current_line() {
             return false;
         }

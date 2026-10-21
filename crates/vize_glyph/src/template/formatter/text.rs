@@ -69,9 +69,14 @@ impl TemplateFormatter<'_> {
         }
         let join = joiner.open(start);
         self.open_chunk(output, depth, join);
-        if self
-            .write_wrapped_text_interpolation(output, &formatted, start, end, depth, joiner, join)
-        {
+        if self.write_wrapped_text_interpolation(
+            output,
+            &formatted,
+            (start, end),
+            depth,
+            joiner,
+            join,
+        ) {
             joiner.finish(end);
             return;
         }
