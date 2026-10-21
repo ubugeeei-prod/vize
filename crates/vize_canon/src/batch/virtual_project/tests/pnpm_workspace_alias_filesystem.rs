@@ -91,6 +91,54 @@ fn editor_union_rejects_raw_parent_link_before_rewriting_real_pnpm_install() {
 }
 
 #[test]
+fn package_import_and_workspace_dependency_share_terminal_alias_targets() {
+    let temp = fixture(true);
+    let root = temp.path().canonicalize().unwrap();
+    fs::create_dir_all(root.join("src")).unwrap();
+    fs::create_dir_all(root.join("types")).unwrap();
+    fs::write(
+        root.join("package.json"),
+        r##"{"name":"repro","private":true,"type":"module","imports":{"#app":"./types/app.d.ts"},"dependencies":{"@x/a":"workspace:*"}}"##,
+    )
+    .unwrap();
+    fs::write(
+        root.join("types/app.d.ts"),
+        "export declare const appName: string;\n",
+    )
+    .unwrap();
+    let entry = root.join("src/main.ts");
+    fs::write(
+        &entry,
+        "import { appName } from '#app';\nimport * as workspace from '@x/a';\nexport { appName, workspace };\n",
+    )
+    .unwrap();
+
+    let project = load_entry(&root, &entry);
+    assert!(project.find_by_original(&root.join("types/app.d.ts")).is_some());
+    assert!(
+        project
+            .find_by_original(&root.join("packages/c/src/Btn.vue"))
+            .is_some()
+    );
+    let links = project.workspace_alias_links();
+    assert!(!links.is_empty());
+    for link in &links {
+        assert!(
+            !links.iter().any(|other| {
+                other.virtual_dir != link.virtual_dir
+                    && link.real_dir.starts_with(&other.virtual_dir)
+            }),
+            "workspace alias target must not traverse another package link: {:?}",
+            link.virtual_dir
+        );
+        assert_eq!(
+            link.virtual_dir.canonicalize().unwrap(),
+            link.real_dir.canonicalize().unwrap()
+        );
+    }
+}
+
+#[test]
 fn committed_raw_parent_bridge_migrates_without_touching_the_real_package() {
     let temp = fixture(true);
     let root = temp.path().canonicalize().unwrap();
