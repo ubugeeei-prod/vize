@@ -110,9 +110,10 @@ void test("malformed history retains all original named-law settings and complet
   );
 });
 
-void test("relative explicit serialization preserves every historical parse error beyond its discovered-path identity", () => {
+void test("relative explicit serialization preserves history and qualifies current parse coordinates", () => {
   const loaded = loadSortingConfigManifest(root, manifestPath);
   let changedPaths = 0;
+  let currentCoordinates = 0;
   for (const fixture of loaded.cases) {
     const original = fixture.steps[0];
     const current = fixture.execution.steps[0];
@@ -125,7 +126,16 @@ void test("relative explicit serialization preserves every historical parse erro
       "UserCard.vue",
     ]);
     const originalStderr = original.stderr.toString();
-    const expected = originalStderr.replace(
+    const currentStderr = original.currentStderr.toString();
+    if (currentStderr !== originalStderr) {
+      currentCoordinates++;
+      assert.equal(
+        currentStderr,
+        originalStderr.replace(/column (\d+)\n$/, (_, column) => `column ${Number(column) + 1}\n`),
+        fixture.id,
+      );
+    }
+    const expected = currentStderr.replace(
       "failed to parse {{workspace}}/vize.config.json:",
       "failed to parse serialized-config.json:",
     );
@@ -142,8 +152,9 @@ void test("relative explicit serialization preserves every historical parse erro
   assert.equal(
     changedPaths,
     4,
-    "the four complete serde errors change only the declared path context",
+    "the four complete serde errors change their declared path context",
   );
+  assert.equal(currentCoordinates, 3, "the preset decoder advances three EOF coordinates");
 });
 
 void test("malformed admission rejects lost complete errors, bypasses and file protection", () => {

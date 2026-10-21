@@ -52,6 +52,12 @@
             "path": "tests/_fixtures/differential/formatter-history/import-sorting-malformed-config/groups-wrong-type-stderr.txt",
             "sha256": "a2603b41c824aa4c7b60492352cc0a123c22aa41a9a4c794c8ab8ce98280f628"
           },
+          "currentStderr": {
+            "path": "tests/_fixtures/differential/formatter-history/import-sorting-malformed-config/groups-wrong-type-current-stderr.txt",
+            "sha256": "5bbdde5eb05dce1bc9aa21a8514c0edf9a582561cb25395b5d3f4ad4a6cf3b12",
+            "issue": 9784,
+            "justification": "formatter profile decoding retains the same fail-closed error at the complete 43-byte value boundary"
+          },
           "files": {
             "UserCard.vue": {
               "path": "tests/_fixtures/differential/formatter-history/import-sorting-config/UserCard.vue.txt",
@@ -126,6 +132,12 @@
             "path": "tests/_fixtures/differential/formatter-history/import-sorting-malformed-config/unknown-newline-key-stderr.txt",
             "sha256": "44ea3c517ccfe0b663df7976197586f332bfa8062289df1f884aaf39b0cf107b"
           },
+          "currentStderr": {
+            "path": "tests/_fixtures/differential/formatter-history/import-sorting-malformed-config/unknown-newline-key-current-stderr.txt",
+            "sha256": "5a6eda7d890ff09dc7e2d7321bb180d435a5a1b471e5742c573aa53db9282456",
+            "issue": 9784,
+            "justification": "formatter profile decoding retains the same fail-closed error at the complete 54-byte value boundary"
+          },
           "files": {
             "UserCard.vue": {
               "path": "tests/_fixtures/differential/formatter-history/import-sorting-config/UserCard.vue.txt",
@@ -199,6 +211,12 @@
           "stderr": {
             "path": "tests/_fixtures/differential/formatter-history/import-sorting-malformed-config/unknown-custom-key-stderr.txt",
             "sha256": "7b15cbf0c0e3e38815cb98a56eb4fd385adae412cbfc5ccf5bf0221df56e7e9a"
+          },
+          "currentStderr": {
+            "path": "tests/_fixtures/differential/formatter-history/import-sorting-malformed-config/unknown-custom-key-current-stderr.txt",
+            "sha256": "ffcea848d7d98dc88fab983103ce00da98fcd48840f00e4ad3ce83b6c78ad470",
+            "issue": 9784,
+            "justification": "formatter profile decoding retains the same fail-closed error at the complete 92-byte value boundary"
           },
           "files": {
             "UserCard.vue": {
