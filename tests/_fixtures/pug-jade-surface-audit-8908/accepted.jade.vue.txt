@@ -1,0 +1,18 @@
+<script setup lang="ts">
+import AuditCard from "./AuditCard.vue";
+
+const heading = "Pug audit";
+const items = [{ id: 1, label: "one" }];
+function select(id: number) {
+  return id;
+}
+</script>
+
+<template lang="jade">
+section.card(v-if="items.length")
+  AuditCard(:title="heading" @select="select")
+    template(#default="{ label }")
+      strong {{ label }}
+  ul
+    li(v-for="item in items" :key="item.id") {{ item.label }}
+</template>

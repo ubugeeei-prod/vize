@@ -1,0 +1,167 @@
+{
+  "version": 1,
+  "issue": 8908,
+  "auditedRevision": "459d2c8180be26a24f88d5f4ee84c3b4d357b386",
+  "dialects": ["pug", "jade"],
+  "fixtures": [
+    {
+      "path": "tests/_fixtures/pug-jade-surface-audit-8908/accepted.pug.vue.txt",
+      "dialect": "pug",
+      "role": "accepted-inline-declarative",
+      "sha256": "6caac46ced36f679e1d4bb22b37a20ca413a85e05d8468bb7998d941e3eb09bd"
+    },
+    {
+      "path": "tests/_fixtures/pug-jade-surface-audit-8908/accepted.jade.vue.txt",
+      "dialect": "jade",
+      "role": "accepted-inline-declarative",
+      "sha256": "8e07bc66f6697d714ca984e60064821cc05038400e4a986acc39c2100c871edc"
+    },
+    {
+      "path": "tests/_fixtures/pug-jade-surface-audit-8908/refused-executable.pug.vue.txt",
+      "dialect": "pug",
+      "role": "known-executable-gap",
+      "sha256": "8932a103f0e6b91ff159dc4571660a4796b2e4767e0fd1d010eed98138505381"
+    }
+  ],
+  "surfaces": [
+    {
+      "id": "compiler",
+      "label": "Compiler",
+      "dialectState": { "pug": "partial", "jade": "partial" },
+      "current": "Accepted inline declarative templates compile like their rendered HTML twins in DOM, SSR, and Vapor; Jade is a case-insensitive alias.",
+      "remaining": "Executable or structural Pug constructs remain refused, including mixins, includes, conditionals, each, filters, and code interpolation; authored-Pug source-map parity is not established.",
+      "witnesses": [
+        {
+          "path": "crates/vize_atelier_sfc/tests/pug_compile_oracle.rs",
+          "anchor": "fn pug_compiles_exactly_like_its_pug_rendered_html_in_every_lane()",
+          "dialects": ["pug"]
+        },
+        {
+          "path": "crates/vize_atelier_sfc/tests/pug_compile_oracle.rs",
+          "anchor": "fn jade_alias_compiles_exactly_like_pug_in_every_lane()",
+          "dialects": ["jade"]
+        },
+        {
+          "path": "crates/vize_atelier_sfc/tests/pug_compile_oracle.rs",
+          "anchor": "fn refused_pug_fails_the_compile_with_its_first_diagnostic()",
+          "dialects": ["pug", "jade"]
+        }
+      ]
+    },
+    {
+      "id": "vite",
+      "label": "Vite / bundlers",
+      "dialectState": { "pug": "partial", "jade": "partial" },
+      "current": "Real Vite client and SSR, Rollup, webpack, and Rspack builds render the accepted Pug and Jade twins like HTML.",
+      "remaining": "The integrations inherit compiler refusals for executable Pug, and no HMR-specific Pug/Jade oracle is registered.",
+      "witnesses": [
+        {
+          "path": "npm/builder/vite/src/pug-template.test.ts",
+          "anchor": "assert.equal(await render(twins.jade, ssr), html);",
+          "dialects": ["pug", "jade"]
+        },
+        {
+          "path": "npm/builder/unplugin/src/pug-template.test.ts",
+          "anchor": "t.assert.equal(await render(\"jade\", twins.jade), html);",
+          "dialects": ["pug", "jade"]
+        },
+        {
+          "path": "npm/builder/rspack/src/pug-template.test.ts",
+          "anchor": "t.assert.equal(await render(\"jade\", twins.jade), html);",
+          "dialects": ["pug", "jade"]
+        }
+      ]
+    },
+    {
+      "id": "typecheck",
+      "label": "Type checker",
+      "dialectState": { "pug": "partial", "jade": "partial" },
+      "current": "Accepted inline attribute, directive, and interpolation expressions are projected and diagnostics map back to authored Pug; Jade uses the same derived mapping.",
+      "remaining": "External template src and refused Pug stay unprojected; Jade mapping has unit coverage but no matching CLI parity row.",
+      "witnesses": [
+        {
+          "path": "crates/vize/tests/check_pug_template_cli.rs",
+          "anchor": "fn pug_attribute_expressions_report_like_html_at_authored_positions()",
+          "dialects": ["pug"]
+        },
+        {
+          "path": "crates/vize_canon/src/authored_sfc.rs",
+          "anchor": "fn jade_alias_uses_the_same_authored_mapping_as_pug()",
+          "dialects": ["pug", "jade"]
+        }
+      ]
+    },
+    {
+      "id": "lint",
+      "label": "Linter",
+      "dialectState": { "pug": "partial", "jade": "partial" },
+      "current": "Accepted inline templates lint through the derived view with diagnostics on authored bytes; Jade matches Pug.",
+      "remaining": "Fixes inside the derived template are withheld, refused syntax cannot enter the template lane, and vue-eslint-parser provides no inside-Pug parity baseline.",
+      "witnesses": [
+        {
+          "path": "crates/vize_patina/tests/pug_template_lint.rs",
+          "anchor": "fn pug_diagnostics_match_the_html_twin_and_land_on_pug()",
+          "dialects": ["pug"]
+        },
+        {
+          "path": "crates/vize_patina/tests/pug_template_lint.rs",
+          "anchor": "fn jade_alias_reports_the_same_authored_diagnostics_as_pug()",
+          "dialects": ["jade"]
+        },
+        {
+          "path": "tests/tooling/lint-divergence-pug-surface.test.ts",
+          "anchor": "the TypeScript runner keeps pug template findings out of the scored surface",
+          "dialects": ["pug"]
+        }
+      ]
+    },
+    {
+      "id": "format",
+      "label": "Formatter",
+      "dialectState": { "pug": "preservation", "jade": "preservation" },
+      "current": "Pug and Jade use an idempotent opaque-template strategy: outer indentation is normalized while relative program indentation and content stay verbatim.",
+      "remaining": "There is no language-aware Pug printer; formatting intentionally does not rewrite Pug syntax.",
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/sfc_opaque_template_language.rs",
+          "anchor": "fn pug_keeps_relative_program_indentation_and_verbatim_content()",
+          "dialects": ["pug"]
+        },
+        {
+          "path": "crates/vize_glyph/tests/sfc_opaque_template_language.rs",
+          "anchor": "fn jade_alias_preserves_pug_content()",
+          "dialects": ["jade"]
+        }
+      ]
+    },
+    {
+      "id": "lsp",
+      "label": "LSP",
+      "dialectState": { "pug": "partial", "jade": "partial" },
+      "current": "Inline tag and attribute completion, hover, definition, references, and rename are covered for accepted Pug; Jade shares the syntax route and has direct navigation, hover, references, and rename coverage.",
+      "remaining": "Jade prop completion lacks its own end-to-end assertion, and external or refused Pug templates are not covered as a complete editor surface.",
+      "witnesses": [
+        {
+          "path": "crates/vize_maestro/src/ide/completion/component_pug_props_tests.rs",
+          "anchor": "fn template_component_prop_completion_resolves_multiline_pug_props()",
+          "dialects": ["pug"]
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/definition/tests/pug_template.rs",
+          "anchor": "fn pug_directive_values_resolve_like_html_attributes()",
+          "dialects": ["pug", "jade"]
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/definition/tests/pug_template.rs",
+          "anchor": "fn script_binding_references_reach_pug_attribute_values()",
+          "dialects": ["pug", "jade"]
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/definition/tests/pug_template.rs",
+          "anchor": "fn pug_attribute_names_resolve_component_and_native_contracts()",
+          "dialects": ["pug", "jade"]
+        }
+      ]
+    }
+  ]
+}

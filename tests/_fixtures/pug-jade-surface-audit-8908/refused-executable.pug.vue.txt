@@ -1,0 +1,10 @@
+<script setup lang="ts">
+const heading = "Executable Pug";
+</script>
+
+<template lang="pug">
+mixin card(title)
+  article.card
+    h2= title
++card(heading)
+</template>
