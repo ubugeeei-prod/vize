@@ -182,6 +182,18 @@ impl Default for FormatOptions {
 pub use vize_l0::config::FormatterPreset as FormatPreset;
 
 impl FormatOptions {
+    /// Construct a complete option set from a named formatter preset.
+    ///
+    /// This is the typed entry point for direct `vize_glyph` callers. Use
+    /// [`Self::apply_preset`] when a preset should overlay an existing set of
+    /// options instead.
+    #[must_use]
+    pub fn from_preset(preset: FormatPreset) -> Self {
+        let mut options = Self::default();
+        options.apply_preset(preset);
+        options
+    }
+
     /// Resolve a config file's formatter options; keys the config does not
     /// set keep their defaults.
     pub fn from_profile(
@@ -299,9 +311,7 @@ impl FormatOptions {
     /// Create options with Prettier defaults
     #[inline]
     pub fn prettier_compat() -> Self {
-        let mut options = Self::default();
-        options.apply_preset(FormatPreset::Prettier);
-        options
+        Self::from_preset(FormatPreset::Prettier)
     }
 
     /// Convert to `oxc_formatter::JsFormatOptions`
