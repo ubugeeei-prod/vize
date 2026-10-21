@@ -126,6 +126,16 @@ export function measureDisabledPluginOverhead(
     compile: { default: compileDefault, disabled: compileDisabled },
     lint: { default: lintDefault, disabled: lintDisabled },
   };
+  /**
+   * @type {Record<string, {
+   *   defaultSamplesUs: number[],
+   *   disabledSamplesUs: number[],
+   *   defaultMedianUs: number,
+   *   disabledMedianUs: number,
+   *   disabledToDefaultRatio: number,
+   *   overheadUsPerFile: number,
+   * }>}
+   */
   const observations = {};
   for (const [name, modes] of Object.entries(paths)) {
     const timings = { default: [], disabled: [] };
