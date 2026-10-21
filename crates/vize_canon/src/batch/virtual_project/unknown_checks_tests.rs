@@ -99,8 +99,14 @@ fn unknown_checks_follow_vue_compiler_options() {
 #[test]
 fn unknown_props_reuse_the_program_wide_native_attribute_union() {
     let content = project_source("shared-native-attrs", "\"checkUnknownProps\": true");
-    assert!(content.contains("__VizeComponentGlobalHtmlAttrs"), "{content}");
-    assert!(!content.contains("type __VizeComponentAttrCamel"), "{content}");
+    assert!(
+        content.contains("__VizeComponentGlobalHtmlAttrs"),
+        "{content}"
+    );
+    assert!(
+        !content.contains("type __VizeComponentAttrCamel"),
+        "{content}"
+    );
     assert!(
         !content.contains("type __VizeComponentNativeAttrNames"),
         "{content}"
