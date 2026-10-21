@@ -74,6 +74,24 @@ void test("LSP manifest binds original complete contracts and every original req
   }
 });
 
+void test("LSP inventory rejects dropped fixtures and requests", () => {
+  assert.throws(
+    () => lspFixtureInventory({ ...loaded, cases: loaded.cases.slice(1) }),
+    /complete manifest inventory/,
+  );
+  assert.throws(
+    () =>
+      lspFixtureInventory({
+        ...loaded,
+        cases: [
+          { ...loaded.cases[0], requests: loaded.cases[0].requests.slice(1) },
+          ...loaded.cases.slice(1),
+        ],
+      }),
+    /complete manifest inventory/,
+  );
+});
+
 void test("LSP contract rejects stale readiness, duplicate replies and incomplete lifecycle", () => {
   for (const mutate of [
     (observation: WireObservation) =>
