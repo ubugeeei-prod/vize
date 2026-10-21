@@ -19,10 +19,10 @@
     "sha256": "1af917a51b47a40368b11c9a3e1af8a0a95fe165123299bc861b01767e3cabed"
   },
   "claims": {
-    "sourceReviewOnly": true,
+    "sourceReviewOnly": false,
     "productionRuntimeExecuted": false,
-    "actionsVerifiedThisAudit": false,
-    "wholeFixesClosed": 0,
+    "actionsVerifiedThisAudit": true,
+    "wholeFixesClosed": 1,
     "nativeAcceptanceCredit": 0,
     "internalRowsExcluded": 0,
     "coverageFromFeatureNames": 0,
@@ -30,12 +30,13 @@
     "coverageFromProjectionSnapshots": 0
   },
   "limitations": [
-    "Categories describe Maestro scoped changes, not whole-commit denominator exclusions; all 255 SHAs remain.",
+    "Categories describe Maestro scoped changes, not whole-commit denominator exclusions; all 255 SHAs remain in the denominator and one is response-fixture-covered.",
     "Requirements are source-derived obligations, not a claim that every cross-product provider obligation is exhaustively reconciled.",
     "Candidate test functions intersect changed hunks; unchanged neighboring functions can occur. Deleted test signatures are recovered from the parent blob.",
     "Current retention uses exact function/test names in repository production/test roots; another file with the same name is a candidate, not proved semantic equivalence. Missing-at-pin may be renamed and still requires reconciliation.",
     "Snapshot path retention does not prove content equivalence, passing execution, or a complete LSP response. Generated TS40 projections are explicitly not response fixtures.",
-    "Only four source-inspected selected response examples are established here; none proves an entire historical fix, JSON-RPC state trace, shared runner registration, or native provider parity.",
+    "Four source-inspected response examples remain selected-response-prepared. One folding row is response-fixture-covered by all nine original inputs and states in the shared source-built stdio runner; this does not prove native provider parity.",
+    "The exact folding source and merge-group Actions prove legacy response execution only. productionRuntimeExecuted and nativeAcceptanceCredit remain false or zero because no native provider was observed.",
     "The narrower fix-title selection does not replace reconciliation of all 447 nonmerge Maestro-touch commits and relevant shared provider history."
   ]
 }

@@ -40,7 +40,8 @@ its line unchanged. The pass runs before CSS layout, because the layout treats
 `url('…')` and `url("…")` differently and running it afterwards was not
 idempotent. The `prettier` preset sets it. Like the other new options, it is a
 `FormatOptions` field that the WASM binding and the config file accept; the
-Node binding does not take it yet.
+Node binding accepts it together with the other four migration normalizers
+below. Explicit Node values are applied after a preset, including `false`.
 
 ## Inline style attributes
 
@@ -117,3 +118,12 @@ normalization switches off. The fixed fixture under
 and its second-pass fixed point. The public config, CLI and Node paths use the
 same shared preset assignment, and every preset now runs over the 300+ file
 option-matrix corpus idempotence gate.
+
+## Node normalization options
+
+The native Node `formatSfc` options expose `normalizeCssQuotes`,
+`normalizeInlineStyles`, `normalizeVForParens`, `selfCloseVoidElements` and
+`reindentPreprocessorStyles` directly. They use the same booleans as config,
+the CLI's resolved profile and WASM. An explicit Node value is applied after
+the selected preset, so every Prettier migration normalizer can be enabled
+without the preset or disabled with `false` while retaining the rest of it.
