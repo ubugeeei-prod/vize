@@ -38,6 +38,28 @@
         }
       ],
       "diagnostics": []
+    },
+    {
+      "id": "reopened-guard-block",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "reopened-guard-block/src/App.vue.txt"
+        },
+        {
+          "file": "src/Toggle.vue",
+          "source": "reopened-guard-block/src/Toggle.vue.txt"
+        },
+        {
+          "file": "src/Radio.vue",
+          "source": "reopened-guard-block/src/Radio.vue.txt"
+        }
+      ],
+      "diagnostics": []
     }
   ]
 }

@@ -114,7 +114,9 @@ pub(super) fn generate_component_event_types(
         needs_typed_handler_assignment && has_script_component_binding,
         enclosing_vif_guard.map(String::from),
         scope.parent().map(|parent| parent.as_u32()),
-        enclosing_vif_guard.map(|_| scope_id),
+        // Aliases of the first usage are declared inside its guarded block;
+        // a later block with the same guard cannot see them.
+        super::open_chained_vif_guard_block(),
     );
     let (contract_scope_id, first_contract) = {
         let mut contracts = event_contracts.borrow_mut();

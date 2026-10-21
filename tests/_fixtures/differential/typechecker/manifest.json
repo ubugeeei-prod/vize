@@ -3477,7 +3477,7 @@
       "sourceRevision": "7cefe3a00e6184de1e121d39b0e153f08a428aa6",
       "packReference": {
         "path": "component-listener-alias-scope-10112/cases.json",
-        "sha256": "72e2b450939d5f039bbe7b07a3392aa3e12d4afa329442f70b72e0f83527b157"
+        "sha256": "f30a507d47ea6451d1e175f1c8fdc25b940f8e4235566e72c4e4a83d246c7255"
       },
       "inputs": [
         {
@@ -3499,6 +3499,63 @@
           "file": "src/App.vue",
           "path": "component-listener-alias-scope-10112/src/App.vue.txt",
           "sha256": "3c824ed84d35e942880c8af1a888512ff9b8fc817130b3022134e8e74c4ed34e"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/component-listener-alias-scope-10112/reopened-guard-block",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "component-listener-alias-scope-10112",
+      "case": "reopened-guard-block",
+      "test": "component_listener_aliases_stay_inside_guard_scope",
+      "regressionCommit": "7cefe3a00e6184de1e121d39b0e153f08a428aa6",
+      "sourceRevision": "7cefe3a00e6184de1e121d39b0e153f08a428aa6",
+      "packReference": {
+        "path": "component-listener-alias-scope-10112/cases.json",
+        "sha256": "f30a507d47ea6451d1e175f1c8fdc25b940f8e4235566e72c4e4a83d246c7255"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "component-listener-alias-scope-10112/tsconfig.json.txt",
+          "sha256": "a20bca69e202a52f889c04769080a17040e1469b6105ee17b16fad5e2fbc6089"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "component-listener-alias-scope-10112/reopened-guard-block/src/App.vue.txt",
+          "sha256": "e2ed681f1ed2c5d788ba53af8249c5fa9e41d504a78f58ff4bc3327c2962fa21"
+        },
+        {
+          "file": "src/Toggle.vue",
+          "path": "component-listener-alias-scope-10112/reopened-guard-block/src/Toggle.vue.txt",
+          "sha256": "7509600113733746f595f13f07b326ad8d05413f83a5444bba9ffb79a957ac84"
+        },
+        {
+          "file": "src/Radio.vue",
+          "path": "component-listener-alias-scope-10112/reopened-guard-block/src/Radio.vue.txt",
+          "sha256": "3de0d5d1196fcb321c4a3d58496c915aee3abe9234af4b544721fe6aed53e0c8"
         }
       ],
       "dialectCoverage": {
