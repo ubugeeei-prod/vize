@@ -111,6 +111,19 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
       requests = data.request
         ? [{ ...data.request, result: expected }]
         : (expected as LspFixture["requests"]);
+    } else if (data.method === "textDocument/rename") {
+      assert(
+        Array.isArray(expected) && expected.length === 2,
+        "prepare-rename and rename responses are required",
+      );
+      const [prepare, rename] = expected as Array<{
+        method: string;
+        params: Record<string, unknown>;
+        result: unknown;
+      }>;
+      assert.equal(prepare.method, "textDocument/prepareRename");
+      assert.equal(rename.method, "textDocument/rename");
+      requests = [prepare, rename];
     } else {
       assert.equal(data.method, "textDocument/onTypeFormatting", "unregistered LSP method");
       assert.deepEqual(data.options, { tabSize: 2, insertSpaces: true });

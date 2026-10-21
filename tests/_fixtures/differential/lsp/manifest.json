@@ -1043,6 +1043,32 @@
         "codeActions": true,
         "typecheck": false
       }
+    },
+    {
+      "id": "lsp/fix-history/rename-utf16-original",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "rename-utf16-original",
+        "files": [
+          {
+            "path": "RenameUtf16.vue.txt",
+            "sha256": "837a44f09b727ec594ae7f7b54f9137c630ff109269b60ff775f3989d3229fa2"
+          }
+        ]
+      },
+      "case": {
+        "path": "rename-utf16-original/case.json",
+        "sha256": "79e878ffe046b9056885a442528b5450bd0e42a44374a09791b4baa5a98b2fdf"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
     }
   ]
 }

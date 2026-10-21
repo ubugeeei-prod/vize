@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "id": "lsp/fix-history/rename-utf16-original",
+  "provenance": {
+    "fixCommit": "f0f26721b61c7b84687bb103781a5c488912c2a9",
+    "witnessPath": "tests/tooling/lsp-smoke.test.ts",
+    "witnessTest": "vize lsp rename fallback returns UTF-16 edit ranges",
+    "inputOrigin": "exact source bytes from the original fix test",
+    "contractOrigin": "source-derived request and complete current rename response"
+  },
+  "input": {
+    "source": "RenameUtf16.vue.txt",
+    "runtimePath": "RenameUtf16.vue",
+    "sha256": "837a44f09b727ec594ae7f7b54f9137c630ff109269b60ff775f3989d3229fa2"
+  },
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "entry": "RenameUtf16.vue",
+  "documentVersion": 1,
+  "method": "textDocument/rename",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "69aead14898c45812f70f16e32eec9ed9f1c2eecf434d5c283c60a2d78b2de6b"
+  },
+  "scope": "original input and complete ordered current stdio prepare-rename and rename responses; broader state and whole-fix reconciliation remain pending"
+}
