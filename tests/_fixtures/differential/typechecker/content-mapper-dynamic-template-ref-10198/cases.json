@@ -1,11 +1,20 @@
 {
   "version": 1,
-  "issue": 10198,
-  "sourceRevision": "4d88758e4f1d8ad79d2dd47d01f9ee1102e9c476",
+  "issue": 6879,
+  "historicalIssue": 10198,
+  "regressionCommit": "b7fb3a9aefd31002b8b2d449695a9e14d657654a",
+  "sourceRevision": "b7fb3a9aefd31002b8b2d449695a9e14d657654a",
   "diagnosticContract": {
-    "host": "standard-tsgo-content-mapper",
-    "comparison": "complete stdout and stderr",
-    "expected": "no diagnostics"
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
   },
   "cases": [
     {

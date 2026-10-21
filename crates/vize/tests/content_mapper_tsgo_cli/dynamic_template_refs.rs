@@ -17,7 +17,7 @@ const CASES: &str = include_str!(concat!(
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct Fixture {
-    issue: u32,
+    historical_issue: u32,
     cases: Vec<Case>,
 }
 
@@ -48,7 +48,7 @@ fn standard_tsgo_accepts_refs_on_component_typed_dynamic_targets() {
     assert!(tsgo.is_file(), "{TSGO_ENV} is not a file");
 
     let fixture: Fixture = serde_json::from_str(CASES).unwrap();
-    assert_eq!(fixture.issue, 10198);
+    assert_eq!(fixture.historical_issue, 10198);
     assert_eq!(fixture.cases.len(), 1, "retain both reported target shapes");
     for case in fixture.cases {
         assert!(
