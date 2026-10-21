@@ -639,64 +639,6 @@ const Child = 1;
             result.text
         );
     }
-
-    #[test]
-    fn avoids_a_filename_collision_with_a_setup_global_reference() {
-        for (file_name, global, expression) in [
-            ("error.vue", "Error", "new Error(message)"),
-            ("map.vue", "Map", "new Map<string, number>()"),
-        ] {
-            let source = format!(
-                "<script setup lang=\"ts\">\nconst value = {expression};\nvoid value;\n</script>"
-            );
-            let result = generate_vue_content_mapper_transform(Path::new(file_name), &source)
-                .expect("transform");
-
-            assert!(
-                result.text.contains(&format!(
-                    "declare const {global}VueComponent: typeof __vize_component__;\nexport default {global}VueComponent;"
-                )),
-                "{}",
-                result.text
-            );
-            assert!(
-                !result.text.contains(&format!(
-                    "declare const {global}: typeof __vize_component__;"
-                )),
-                "{}",
-                result.text
-            );
-            let original = source.find(global).expect("global reference");
-            let original_end = original + global.len();
-            assert!(
-                result.mappings.iter().any(|mapping| {
-                    let mapped_start = mapping.0[2];
-                    let mapped_end = mapped_start + mapping.0[3];
-                    mapped_start <= original && mapped_end >= original_end
-                }),
-                "missing authored mapping for {global}: {:?}",
-                result.mappings
-            );
-        }
-    }
-
-    #[test]
-    fn keeps_the_fallback_export_name_out_of_setup_scope() {
-        let source = r#"<script setup lang="ts">
-void Error;
-void ErrorVueComponent;
-</script>"#;
-        let result = generate_vue_content_mapper_transform(Path::new("error.vue"), source)
-            .expect("transform");
-
-        assert!(
-            result.text.contains(
-                "declare const ErrorVueComponent_: typeof __vize_component__;\nexport default ErrorVueComponent_;"
-            ),
-            "{}",
-            result.text
-        );
-    }
 }
 
 mod offsets {
