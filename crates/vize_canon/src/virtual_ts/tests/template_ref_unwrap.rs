@@ -63,3 +63,33 @@ const direction = ref<'rtl'>('rtl')
         );
     }
 }
+
+#[test]
+fn authored_props_binding_does_not_collide_with_template_props_object() {
+    let script = r#"defineProps<{ label?: string }>()
+const { props, size } = useField()
+"#;
+    let code = generate_template_code(
+        script,
+        r#"<div>{{ props.title }} {{ size }} {{ label }}</div>"#,
+        true,
+    );
+
+    assert!(
+        code.contains("type __R_props = typeof props;"),
+        "the authored maybe-ref binding must retain its template capture:\n{code}"
+    );
+    assert!(
+        code.contains("var props: __U<__R_props> = undefined as any;"),
+        "the authored binding must remain the template-visible `props`:\n{code}"
+    );
+    assert!(
+        code.contains("const __vize_props:")
+            && code.contains(r#"const label = __vize_props["label"];"#),
+        "declared props must use a collision-free internal object:\n{code}"
+    );
+    assert!(
+        !code.contains("const props: __DefineProps"),
+        "the generated object must not redeclare the authored binding:\n{code}"
+    );
+}
