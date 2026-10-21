@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import MyInput from "./MyInput.vue";
+
+const valid: { title?: string } = {};
+const invalid: { title?: number } = {};
+</script>
+
+<template>
+  <MyInput label="name" v-bind="valid" />
+  <MyInput label="name" v-bind="invalid" />
+</template>

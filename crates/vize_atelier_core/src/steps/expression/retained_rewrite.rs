@@ -34,11 +34,12 @@ pub(super) fn rewrite_retained(
     js: &JsExpression<'_>,
     ctx: &TransformContext<'_>,
     as_params: bool,
+    guard_maybe_ref_write: bool,
 ) -> RewriteResult {
     debug_assert!(!as_params);
     let _ = as_params;
 
-    let mut collector = IdentifierCollector::new_unwrapped(ctx, js.raw);
+    let mut collector = IdentifierCollector::new_unwrapped(ctx, js.raw, guard_maybe_ref_write);
     oxc_ast_visit::Visit::visit_expression(&mut collector, js.ast);
 
     let has_identifiers = collector.has_identifiers;
@@ -56,7 +57,7 @@ pub(super) fn rewrite_retained(
     };
 
     #[cfg(any(test, feature = "legacy-differential"))]
-    assert_rewrite_agrees(js, ctx, &result);
+    assert_rewrite_agrees(js, ctx, &result, guard_maybe_ref_write);
 
     result
 }
@@ -78,6 +79,7 @@ fn assert_rewrite_agrees(
     js: &JsExpression<'_>,
     ctx: &TransformContext<'_>,
     retained: &RewriteResult,
+    guard_maybe_ref_write: bool,
 ) {
     use oxc_parser::Parser;
     use oxc_span::SourceType;
@@ -104,7 +106,7 @@ fn assert_rewrite_agrees(
     // The retired string rewriter, verbatim: stable descending sort, then
     // end-to-start `insert_str` with the grow-aware bounds check and the
     // wrapper `-1` span adjustment.
-    let mut collector = IdentifierCollector::new(ctx, &wrapped);
+    let mut collector = IdentifierCollector::new(ctx, &wrapped, guard_maybe_ref_write);
     oxc_ast_visit::Visit::visit_expression(&mut collector, &legacy);
     let legacy_used_unref = collector.used_unref;
     let legacy_used_is_ref = collector.used_is_ref;

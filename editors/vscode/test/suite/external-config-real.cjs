@@ -236,7 +236,23 @@ exports.run = async function run() {
   const textBase = JSON.parse(numericBase);
   textBase.compilerOptions.paths["@policy"] = ["./types/string.ts"];
   await change(base, () => fs.writeFileSync(base, JSON.stringify(textBase)), expected(true, true));
-  await change(base, () => fs.rmSync(base), expected(true, true), true);
+  const config = path.join(a, "tsconfig.json");
+  const missingExtends = JSON.parse(fs.readFileSync(config, "utf8")).extends[0];
+  await change(base, () => fs.rmSync(base), [
+    diagnosticAt(
+      probe,
+      '"@policy"',
+      2307,
+      "Cannot find module '@policy' or its corresponding type declarations.",
+    ),
+    ...expected(false, true),
+    diagnosticAt(
+      probe,
+      "",
+      "configuration-error",
+      `Configuration error: cannot resolve tsconfig extends ${JSON.stringify(missingExtends)} from ${config}`,
+    ),
+  ]);
   await change(base, () => fs.writeFileSync(base, numericBase), expected(false, true));
   await change(
     inherited,
@@ -285,6 +301,22 @@ function diagnostic(document, binding, message) {
   const end = document.positionAt(offset + binding.length);
   return {
     code: 2322,
+    message,
+    range: [start.line, start.character, end.line, end.character],
+    relatedInformation: undefined,
+    severity: vscode.DiagnosticSeverity.Error,
+    source: "vize/types",
+    tags: undefined,
+  };
+}
+
+function diagnosticAt(document, needle, code, message) {
+  const offset = needle === "" ? 0 : document.getText().indexOf(needle);
+  assert.notEqual(offset, -1, `fixture must contain ${JSON.stringify(needle)}`);
+  const start = document.positionAt(offset);
+  const end = document.positionAt(offset + needle.length);
+  return {
+    code,
     message,
     range: [start.line, start.character, end.line, end.character],
     relatedInformation: undefined,

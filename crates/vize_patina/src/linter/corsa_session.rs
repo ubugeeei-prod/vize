@@ -9,7 +9,9 @@ mod probe;
 mod session;
 mod vue_dependencies;
 
-pub(in crate::linter) use paths::{nearest_tsconfig, resolve_project_root, validate_tsconfig};
+pub(in crate::linter) use paths::{
+    effective_tsconfig_for_source, resolve_project_root, validate_tsconfig,
+};
 
 #[cfg(test)]
 mod tests;
@@ -43,6 +45,7 @@ pub(in crate::linter) fn escape_specifier(value: &str, quote: u8) -> String {
 pub(crate) struct CorsaTypeAwareSession {
     session: ProjectSession,
     project_root: PathBuf,
+    tsconfig_path: Option<PathBuf>,
     session_root: PathBuf,
     virtual_file_path: PathBuf,
     virtual_file_wire: String,

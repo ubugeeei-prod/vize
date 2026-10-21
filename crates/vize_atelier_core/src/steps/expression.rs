@@ -29,6 +29,7 @@ pub(crate) use normalize::normalize_expression;
 
 pub use function_shape::is_typescript_function_expression;
 pub use inline_handler::process_inline_handler;
+pub(crate) use inline_handler::process_model_handler;
 pub use nesting::{
     MAX_EXPRESSION_NESTING_DEPTH, expression_exceeds_max_depth, expression_has_balanced_delimiters,
     expression_is_safe_to_parse, expression_nesting_depth,
@@ -231,7 +232,7 @@ fn process_expression_shape<'a>(
         // rewrite_expression handles both TS stripping and prefixing; the
         // retained AST rides along when it still describes these bytes (P1-7).
         let retained = crate::retained::retained_whole_expression(&normalized);
-        let result = rewrite_expression(content, ctx, as_params, retained.as_ref());
+        let result = rewrite_expression(content, ctx, as_params, retained.as_ref(), false);
         if result.used_unref {
             ctx.helper(crate::RuntimeHelper::Unref);
         }

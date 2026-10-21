@@ -180,3 +180,114 @@ fn a_nested_callee_uses_the_authored_initializer_and_the_full_expression_is_infe
             .starts_with("  const __expr_0 = (() => emit('retry'));\n")
     );
 }
+
+#[test]
+fn comment_stripped_bindings_keep_exact_callee_probes() {
+    let source = r#"<script setup lang="ts">
+function check(all: number[], current: number[]): true | string { return true }
+const selected: number[] = [1]
+</script>
+<template>
+  <MyInput :rules="[
+    // checked against the other rows
+    check(selected, [2])
+  ]" />
+  <MyInput :rules="[/* checked */ check(selected, [2])]" />
+  <MyInput :rules="[
+    /* checked against the other rows */
+    check(selected, [2])
+  ]" />
+</template>"#;
+    let descriptor = vize_atelier_sfc::parse_sfc(source, Default::default()).unwrap();
+    let template = descriptor.template.as_ref().unwrap();
+    let script = descriptor.script_setup.as_ref().unwrap();
+    let allocator = vize_l0::Allocator::default();
+    let (root, errors) = vize_armature::Parser::new(&allocator, &template.content).parse();
+    assert!(errors.is_empty(), "{errors:?}");
+    let document = super::super::document::project_type_aware(
+        &descriptor,
+        &script.content,
+        Some(&root),
+        script.loc.start as u32,
+        template.loc.start as u32,
+        "CommentedBinding.vue",
+    );
+    let (queries, _) = super::collect_template_query_sets(
+        &document,
+        &root,
+        template.loc.start as u32,
+        true,
+        false,
+    );
+    let callees: Vec<_> = queries
+        .iter()
+        .filter(|query| query.kind == TemplateQueryKind::CallCallee)
+        .collect();
+    assert_eq!(callees.len(), 3, "{queries:#?}");
+    for callee in callees {
+        assert_eq!(
+            source.get(callee.source_start as usize..callee.source_end as usize),
+            Some("check")
+        );
+        let end = callee.generated_offset as usize + 1;
+        assert_eq!(
+            document.content.get(end - "check".len()..end),
+            Some("check")
+        );
+    }
+}
+
+#[test]
+fn component_object_spreads_probe_owned_inferred_bindings() {
+    let source = r#"<script setup lang="ts">
+const title = "hello"
+const cardProps = { topConfig: { distance: 1 } }
+</script>
+<template>
+  <MyCard v-bind="{ title }" />
+  <MyCard v-bind="{ ...cardProps }" />
+</template>"#;
+    let descriptor = vize_atelier_sfc::parse_sfc(source, Default::default()).unwrap();
+    let template = descriptor.template.as_ref().unwrap();
+    let script = descriptor.script_setup.as_ref().unwrap();
+    let allocator = vize_l0::Allocator::default();
+    let (root, errors) = vize_armature::Parser::new(&allocator, &template.content).parse();
+    assert!(errors.is_empty(), "{errors:?}");
+    let document = super::super::document::project_type_aware(
+        &descriptor,
+        &script.content,
+        Some(&root),
+        script.loc.start as u32,
+        template.loc.start as u32,
+        "ComponentSpread.vue",
+    );
+    let (queries, _) = super::collect_template_query_sets(
+        &document,
+        &root,
+        template.loc.start as u32,
+        true,
+        false,
+    );
+    let expressions: Vec<_> = queries
+        .iter()
+        .filter(|query| query.kind == TemplateQueryKind::Expression)
+        .collect();
+    assert_eq!(expressions.len(), 2, "{queries:#?}");
+    for (expression, expected) in expressions.iter().zip([
+        "const __expr_0 = ({ title });",
+        "const __expr_1 = ({ ...cardProps });",
+    ]) {
+        let offset = expression.generated_offset as usize;
+        let line_start = document.content[..offset]
+            .rfind('\n')
+            .map_or(0, |at| at + 1);
+        let line_end = document.content[offset..]
+            .find('\n')
+            .map_or(document.content.len(), |at| offset + at);
+        assert_eq!(
+            document.content[line_start..line_end].trim_start(),
+            expected,
+            "whole-object v-bind must probe its exact inferred binding"
+        );
+    }
+}

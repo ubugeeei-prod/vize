@@ -179,7 +179,10 @@ impl<'b> TransformExpressions<'b> {
             text: RawJs::Borrowed(&handler),
             offset: None,
         };
-        prefix::prefix_inline_handler(&mut self.scope, &content, None)
+        self.scope.set_model_maybe_ref_write(true);
+        let result = prefix::prefix_inline_handler(&mut self.scope, &content, None);
+        self.scope.set_model_maybe_ref_write(false);
+        result
             .map(|prefixed| TransformedExpr {
                 text: prefixed.text,
                 used_unref: prefixed.used_unref,

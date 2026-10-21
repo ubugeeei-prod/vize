@@ -132,6 +132,53 @@
       }
     },
     {
+      "id": "linter/current-api/solution-tsconfig-type-aware-10176",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "solution-tsconfig-type-aware-10176",
+        "files": [
+          {
+            "path": "package.json",
+            "role": "issue-authored-package",
+            "sha256": "d8f2264834bb7435502a93a1dcafb2df55a1d37f2f043143ca6a52970b977669"
+          },
+          {
+            "path": "tsconfig.json",
+            "role": "issue-authored-solution-config",
+            "sha256": "b6d51d37a8d51b993bd758b7043fa9233eea24d34a4041198ff73c063d9ed66c"
+          },
+          {
+            "path": "tsconfig.app.json",
+            "role": "issue-authored-referenced-config",
+            "sha256": "c5f1ee3f0beb7feaf258b03b724dbafb4070802f895fd6e1d964105461f8112f"
+          },
+          {
+            "path": "lint.json",
+            "role": "issue-authored-lint-config",
+            "sha256": "d2ae1baf4b12fbc63f80e1709127f01af4dfb7336f804dc2abe4bacc20ccb461"
+          },
+          {
+            "path": "env.d.ts.txt",
+            "role": "issue-authored-ambient-declaration",
+            "sha256": "d3cdea17934734c50f729c77b375216d1c4735eccf13692992113599ab663a0c"
+          },
+          {
+            "path": "labels.ts.txt",
+            "role": "issue-authored-aliased-module",
+            "sha256": "f6a395f43f3e90654aed1bc0bd90ce64ebee9dd1f39a152272910a3bf0499329"
+          },
+          {
+            "path": "App.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "0cd29e83db70c96d3692dcdd5259db4be608b25fc70cfdec5d920b09023741f4"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/current-api/nuxt-builtins-9866",
       "state": "active",
       "targets": [
@@ -642,6 +689,28 @@
           {
             "path": "MyList.vue.txt",
             "sha256": "6dbc44473a588d921a1edc40a75f260ae38de476b138270c271d2dcf702fba62"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/unsafe-template-bindings-10166-10167",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "unsafe-template-bindings-10166-10167",
+        "files": [
+          {
+            "path": "commented-binding.vue.txt",
+            "role": "issue-authored-reproduction-and-control",
+            "sha256": "734867ca5f7274d0e1307f0fc05ec1e2acea1a0a8fdb46ad8e9c3ee3170e12fa"
+          },
+          {
+            "path": "component-object-spread.vue.txt",
+            "role": "issue-authored-reproduction-and-control",
+            "sha256": "043723593305ae75927a1a11ec0fb89adee5402fe2752c147f05ed1f6561628d"
           }
         ]
       }

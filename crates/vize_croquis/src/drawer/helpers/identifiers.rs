@@ -76,7 +76,7 @@ pub fn retained_handler_refs(
     ast::walk::retained::handler_refs(body)
 }
 
-pub use comments::strip_js_comments;
+pub use comments::{strip_js_comments, strip_js_comments_with_offsets};
 
 /// The historical name-only walk, authorized only for an unchanged original
 /// analysis view. Demand-only semantic reuse must not reparse or populate the
@@ -285,7 +285,7 @@ pub(in crate::drawer) fn extract_identifier_refs_retained(
     expr: &str,
     retained: Option<&JsExpression<'_>>,
 ) -> (Vec<CompactString>, Option<Vec<IdentifierRef>>, bool) {
-    let (stripped, mapping) = comments::strip_comments_with_offsets(expr);
+    let (stripped, mapping) = strip_js_comments_with_offsets(expr);
     let (references, complete, runtime_only) = match retained {
         Some(js) if mapping.is_none() && js.raw == expr => {
             ast::retained_runtime_references(js.ast, true)

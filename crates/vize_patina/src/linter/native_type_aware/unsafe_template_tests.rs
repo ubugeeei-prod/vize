@@ -311,3 +311,73 @@ const unsafeValue: any = "unsafe";
         )]
     );
 }
+
+#[test]
+fn binding_comments_do_not_shift_callee_types() {
+    if !runtime_available() {
+        return;
+    }
+    let linter = Linter::new().with_rule(Box::new(NoUnsafeTemplateBinding::new()));
+    let source = r#"<script setup lang="ts">
+const MyInput = {} as { new(): { $props: { rules?: (true | string)[] } } };
+const selected: number[] = [1];
+function check(all: number[], current: number[]): true | string {
+  return all.length > 0 || current.length > 0 || "empty";
+}
+const unsafeCheck: any = check;
+</script>
+<template>
+  <MyInput :rules="[
+    // checked against the other rows
+    check(selected, [2])
+  ]" />
+  <MyInput :rules="[/* checked */ check(selected, [2])]" />
+  <MyInput :rules="[
+    /* checked against the other rows */
+    check(selected, [2])
+  ]" />
+  <MyInput :rules="[/* unsafe control */ unsafeCheck(selected, [2])]" />
+</template>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "CommentedBinding.vue");
+    let warnings: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING)
+        .collect();
+    assert_eq!(warnings.len(), 1, "{warnings:#?}");
+    let unsafe_start = source.rfind("unsafeCheck").unwrap() as u32;
+    assert_eq!(warnings[0].start, unsafe_start);
+    assert_eq!(warnings[0].end, unsafe_start + "unsafeCheck".len() as u32);
+}
+
+#[test]
+fn component_object_spreads_use_their_inferred_types() {
+    if !runtime_available() {
+        return;
+    }
+    let linter = Linter::new().with_rule(Box::new(NoUnsafeTemplateBinding::new()));
+    let source = r#"<script setup lang="ts">
+const MyCard = {} as { new(): { $props: { title?: string; topConfig?: { distance: number } } } };
+const title = "hello";
+const cardProps = { topConfig: { distance: 1 } };
+const all = { title: "hi", topConfig: { distance: 2 } };
+const unsafeProps: any = { title: "unsafe" };
+</script>
+<template>
+  <MyCard v-bind="{ title }" />
+  <MyCard v-bind="{ ...cardProps }" />
+  <MyCard v-bind="all" />
+  <MyCard :title="title" />
+  <MyCard v-bind="unsafeProps" />
+</template>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "ComponentObjectSpread.vue");
+    let warnings: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING)
+        .collect();
+    assert_eq!(warnings.len(), 1, "{warnings:#?}");
+    let unsafe_start = source.rfind("unsafeProps").unwrap() as u32;
+    assert_eq!(warnings[0].start, unsafe_start);
+    assert_eq!(warnings[0].end, unsafe_start + "unsafeProps".len() as u32);
+}

@@ -177,6 +177,7 @@ runs:
         VIZE_SERVER_PATH: ${{ github.workspace }}/target/ci/vize
         VIZE_TEST_VSCODE_VERSION: "1.107.1"
         VIZE_LSP_TRACE_NATIVE_SCOPE: "1"
+        VIZE_REAL_HOST_ARTIFACT_DIR: ${{ github.workspace }}/editors/vscode/.vscode-test/host-smoke-real/failure
       run: xvfb-run -a vp run --workspace-root test:vscode-extension:host-real
 
     - name: Retain the real host failure before fixture cleanup
