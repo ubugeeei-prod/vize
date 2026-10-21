@@ -991,8 +991,8 @@ pub fn load(
     );
     let measurement = json(&measurement_file)?;
     require!(
-        measurement["observations_complete"] == true && level_ids.len() == 100,
-        "complete624 and original100 required"
+        measurement["observations_complete"] == true && level_ids.len() == 101,
+        "complete630 and complete101 required"
     );
     for side in ["base", "head"] {
         let revision = text(&measurement["source"], side)?;
@@ -1091,7 +1091,7 @@ pub fn load(
             let reports = super::load_reports(&run.join("reports"), "memory").map_err(|e| e.0)?;
             require!(
                 reports.keys().cloned().collect::<BTreeSet<_>>() == ids,
-                "incomplete raw104 reports"
+                "incomplete raw105 reports"
             );
             for (id, row) in object {
                 fields(
@@ -1157,7 +1157,7 @@ pub fn load(
                 super::load_reports(&run.join("level-reports"), "memory-level").map_err(|e| e.0)?;
             require!(
                 level.keys().cloned().collect::<BTreeSet<_>>() == *level_ids,
-                "wrong complete100 judge plane"
+                "wrong complete101 judge plane"
             );
             for id in level_ids {
                 require!(

@@ -41,6 +41,7 @@ const P2_11_DOM_SURFACE: &str = r#"
   </component>
 </div>
 "#;
+const HELPER_RICH_LARGE: &str = include_str!("fixtures/helper-rich-large.vue");
 
 /// The P4-9a demo component (`tests/fixtures/complexity/dashboard.vue`):
 /// every rule but `unknown`, three nesting levels, fourteen rows.
@@ -95,6 +96,39 @@ fn davinci_storage(criterion: &mut Criterion) {
             let facts = vize_l1_to_l2::pass::run_transform(&mut lowered, &mut NoObserver);
             window.measure(|| {
                 let emitted = emit_dom(&lowered, &facts).expect("fixture must emit");
+                (emitted.preamble.len(), emitted.code.len())
+            })
+        },
+    );
+
+    let helper_rich_allocator = Allocator::new();
+    let (helper_rich_tree, helper_rich_errors) = parse(&helper_rich_allocator, HELPER_RICH_LARGE);
+    let mut helper_rich_lowered = lower(
+        &helper_rich_allocator,
+        &helper_rich_tree,
+        &helper_rich_errors,
+    );
+    let helper_rich_facts =
+        vize_l1_to_l2::pass::run_transform(&mut helper_rich_lowered, &mut NoObserver);
+    let helper_rich_probe =
+        emit_dom(&helper_rich_lowered, &helper_rich_facts).expect("fixture must emit");
+    assert!(
+        helper_rich_probe.preamble.matches(": _").count() > 8,
+        "fixture must exercise the shared helper scan"
+    );
+    assert!(
+        helper_rich_probe.code.len() > 65_536,
+        "fixture must remain a large generated module"
+    );
+    let helper_rich_id = cstr!("s1_to_s2_emit_helper_rich_large");
+    bench_stage_with_metrics(
+        criterion,
+        &helper_rich_id,
+        "fixture:davinci/vize_l1_to_l2/benches/fixtures/helper-rich-large.vue",
+        |window| {
+            window.measure(|| {
+                let emitted =
+                    emit_dom(&helper_rich_lowered, &helper_rich_facts).expect("fixture must emit");
                 (emitted.preamble.len(), emitted.code.len())
             })
         },

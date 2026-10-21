@@ -1,6 +1,6 @@
 use vize_l0::Span;
 
-use super::{AssemblyError, ModuleParts, RenderPlacement, RenderProperty, ScriptPart, assemble};
+use super::{AssemblyError, ModuleParts, RenderFunctionName, ScriptPart, assemble};
 use crate::runtime::Runtime;
 use crate::write::{LinkSink, NoLinks, Recorded, Writer};
 
@@ -25,10 +25,7 @@ fn ssr<L: LinkSink>() -> ModuleParts<'static, L> {
     );
     parts.script = Some(ScriptPart::Body(script));
     parts.render = Some(render);
-    parts.placement = RenderPlacement::Function {
-        binding: "ssrRender",
-        property: RenderProperty::SsrRender,
-    };
+    parts.placement = RenderFunctionName::SsrRender.placement();
     parts
 }
 
@@ -86,10 +83,7 @@ fn real_dom_and_vapor_tables_are_consumed_by_the_same_module_assembler() {
         render.use_helper(parts.vocabulary.helper(helper).unwrap());
         render.push(body);
         parts.render = Some(render);
-        parts.placement = RenderPlacement::Function {
-            binding: "render",
-            property: RenderProperty::Render,
-        };
+        parts.placement = RenderFunctionName::Render.placement();
         let emitted = assemble(parts).unwrap();
         let import = vize_l0::cstr!("import {{ {helper} as _{helper} }} from \"vue\"\n");
         assert!(emitted.text.starts_with(import.as_str()));

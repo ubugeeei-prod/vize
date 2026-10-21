@@ -9,7 +9,7 @@ use vize_l2::{
 };
 use vize_l3::decision::{build_dom_file_decisions, dom::DomUnsupported};
 use vize_l4::{
-    module::{ModuleParts, RenderPlacement, RenderProperty, assemble, assemble_template},
+    module::{ModuleParts, RenderFunctionName, assemble, assemble_template},
     runtime::{Runtime, vocabulary},
     targets::dom::{DomErrorKind, emit_file},
     write::{EmitDocument, NoLinks, Recorded},
@@ -98,10 +98,7 @@ fn complete_static_class_modules_match_official_bytes_and_original_links() {
         let document = recorded.into_document();
         let mut parts = ModuleParts::for_runtime(Runtime::VueDom, "3.5.35", "__sfc__").unwrap();
         parts.render = Some(emit_file::<Recorded>(&analysis).unwrap());
-        parts.placement = RenderPlacement::Function {
-            binding: "render",
-            property: RenderProperty::Render,
-        };
+        parts.placement = RenderFunctionName::Render.placement();
         let component = assemble(parts).unwrap().into_document();
         for document in [&document, &component] {
             assert!(!document.links().is_empty());

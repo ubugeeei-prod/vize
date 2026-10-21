@@ -3,7 +3,7 @@
 use super::{Observed, check, equal};
 use vize_l0::{Allocator, Span};
 use vize_l4::module::{
-    ModuleParts, RenderPlacement, RenderProperty, ScriptPart, assemble,
+    ModuleParts, RenderFunctionName, RenderPlacement, ScriptPart, assemble,
     ordinary::emit_ordinary_empty, setup::COMPONENT_BINDING,
 };
 use vize_l4::runtime::Vocabulary;
@@ -110,10 +110,7 @@ fn genuine_ts_script_attaches_a_prepared_render_without_linking_synthesized_modu
             emit_ordinary_empty::<Recorded>(&view).map_err(|_| "script")?,
         )),
         render: Some(render),
-        placement: RenderPlacement::Function {
-            binding: "_sfc_render",
-            property: RenderProperty::Render,
-        },
+        placement: RenderFunctionName::SfcRender.placement(),
         component: COMPONENT_BINDING,
         scope_id: None,
     })
@@ -127,10 +124,7 @@ fn genuine_ts_script_attaches_a_prepared_render_without_linking_synthesized_modu
             emit_ordinary_empty::<NoLinks>(&view).map_err(|_| "script")?,
         )),
         render: Some(render),
-        placement: RenderPlacement::Function {
-            binding: "_sfc_render",
-            property: RenderProperty::Render,
-        },
+        placement: RenderFunctionName::SfcRender.placement(),
         component: COMPONENT_BINDING,
         scope_id: None,
     })
@@ -193,10 +187,7 @@ fn absent_leading_gap_mints_no_empty_link_and_leaves_generated_binding_and_defau
             render
         });
         let placement = if prepared_render {
-            RenderPlacement::Function {
-                binding: "_sfc_render",
-                property: RenderProperty::Render,
-            }
+            RenderFunctionName::SfcRender.placement()
         } else {
             RenderPlacement::None
         };

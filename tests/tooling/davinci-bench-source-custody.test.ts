@@ -296,7 +296,7 @@ await test("source-owned version admission leaves platform peak equality and con
   }
   f.writeReport("head", 1, id, { alloc_bytes_peak: peak });
   f.save();
-  // The original100 source registry currently has no recorded wall baselines.
+  // The complete101 source registry currently has no recorded wall baselines.
   // A large wall observation remains report-only under that unchanged authority;
   // the original default comparator fixtures independently exercise wall failures.
   assert.ok(Object.values(f.budgets.bench).every((budget: any) => budget.wall_p50_ns === 0));

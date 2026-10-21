@@ -97,6 +97,17 @@ export type SerializedDevtoolsEvent = DevtoolsEvent & {
   readonly timestamp: number;
 };
 
+/**
+ * Capability-negotiated observer boundary for opt-in JavaScript visitors.
+ * The recorder owns serialization so the default path never imports a plugin SDK.
+ */
+export interface DevtoolsTraceVisitorHost {
+  readonly name: string;
+  readonly version: string;
+  readonly fingerprint: string;
+  readonly run: (deliveryJson: string) => string;
+}
+
 export interface DevtoolsRenderNode {
   readonly componentId: string;
   readonly componentName: string;
@@ -169,6 +180,8 @@ export interface DevtoolsRecorderOptions {
   readonly now?: () => number;
   readonly sessionId?: string;
   readonly snapshot?: DevtoolsSnapshot;
+  /** Explicit opt-in visitor hosts. Omit this field to keep the recorder plugin-free. */
+  readonly visitorHosts?: readonly DevtoolsTraceVisitorHost[];
 }
 
 export interface DevtoolsRecorder {

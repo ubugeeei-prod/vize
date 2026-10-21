@@ -4,31 +4,7 @@ use crate::module_map::Runs;
 use crate::types::{CssModuleMapping, SfcCompileOptions, SfcError, css_modules_object_literal};
 use vize_atelier_core::CodegenOptions;
 use vize_carton::{String, ToCompactString, cstr};
-
-/// The render function a generated SFC component should expose.
-#[derive(Debug, Clone, Copy, Eq, PartialEq)]
-pub(crate) enum RenderFunctionName {
-    Render,
-    SfcRender,
-    SsrRender,
-}
-
-impl RenderFunctionName {
-    pub(crate) fn as_str(self) -> &'static str {
-        match self {
-            Self::Render => "render",
-            Self::SfcRender => "_sfc_render",
-            Self::SsrRender => "ssrRender",
-        }
-    }
-
-    fn component_field(self) -> &'static str {
-        match self {
-            Self::Render | Self::SfcRender => "render",
-            Self::SsrRender => "ssrRender",
-        }
-    }
-}
+use vize_l4::module::RenderFunctionName;
 
 /// Structural output module used before SFC code is flattened into a string.
 ///
@@ -251,4 +227,31 @@ pub(crate) fn append_component_render_export(
     code.push_str("export default ");
     code.push_str(target);
     code.push('\n');
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{RenderFunctionName, String, append_component_render_export};
+
+    #[test]
+    fn shared_render_vocabulary_preserves_all_legacy_module_bytes() {
+        for (render, expected) in [
+            (
+                RenderFunctionName::Render,
+                "component.render = render\nexport default component\n",
+            ),
+            (
+                RenderFunctionName::SfcRender,
+                "component.render = _sfc_render\nexport default component\n",
+            ),
+            (
+                RenderFunctionName::SsrRender,
+                "component.ssrRender = ssrRender\nexport default component\n",
+            ),
+        ] {
+            let mut code = String::default();
+            append_component_render_export(&mut code, "component", render, &[]);
+            assert_eq!(code.as_str(), expected);
+        }
+    }
 }
