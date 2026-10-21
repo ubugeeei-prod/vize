@@ -37,6 +37,11 @@ pub(super) struct ResolvedLinterRuleGroups {
     nuxt_available: Vec<bool>,
 }
 
+pub(super) struct TypeAwareProjectPaths {
+    pub(super) corsa: Option<PathBuf>,
+    pub(super) tsconfig: Option<PathBuf>,
+}
+
 impl ResolvedLinterRuleGroups {
     pub(super) fn build_linters(
         &self,
@@ -44,8 +49,7 @@ impl ResolvedLinterRuleGroups {
         help_level: HelpLevel,
         args: &LintArgs,
         features: LinterFeatureFlags,
-        configured_corsa_path: Option<PathBuf>,
-        configured_type_aware_tsconfig: Option<PathBuf>,
+        type_aware_project: TypeAwareProjectPaths,
         custom_elements: &vize_relief::options::CustomElementMatcher,
     ) -> Vec<Linter> {
         let availability = self
@@ -173,8 +177,8 @@ impl ResolvedLinterRuleGroups {
                 #[cfg(not(target_arch = "wasm32"))]
                 {
                     linter = linter
-                        .with_corsa_path(configured_corsa_path.clone())
-                        .with_type_aware_tsconfig(configured_type_aware_tsconfig.clone());
+                        .with_corsa_path(type_aware_project.corsa.clone())
+                        .with_type_aware_tsconfig(type_aware_project.tsconfig.clone());
                 }
                 #[cfg(not(target_arch = "wasm32"))]
                 if args.strict_reactivity {
