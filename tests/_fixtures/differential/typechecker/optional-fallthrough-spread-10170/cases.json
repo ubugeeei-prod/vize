@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10170,
+  "regressionCommit": "8300867552287abb14f4fbb7471c705aea72bbdf",
+  "sourceRevision": "8300867552287abb14f4fbb7471c705aea72bbdf",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "optional-valid-invalid-control",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/MyInput.vue",
+          "source": "src/MyInput.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "src/App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 10,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ title?: number | undefined; label: string; }' is not assignable to parameter of type '{ title?: number | undefined; label: string; } & { readonly __vizeInvalidFallthroughSpreadValues: \"title\"; }'.\n  Property '__vizeInvalidFallthroughSpreadValues' is missing in type '{ title?: number | undefined; label: string; }' but required in type '{ readonly __vizeInvalidFallthroughSpreadValues: \"title\"; }'."
+        }
+      ]
+    }
+  ]
+}

@@ -278,6 +278,17 @@ fn generic_fallthrough_spread_preserves_valid_values() {
 }
 
 #[test]
+fn optional_fallthrough_spread_preserves_valid_values_and_rejects_invalid_values() {
+    check_pack(
+        "optional-fallthrough-spread-10170",
+        "optional_fallthrough_spread_preserves_valid_values_and_rejects_invalid_values",
+        "8300867552287abb14f4fbb7471c705aea72bbdf",
+        Some(10170),
+        &["optional-valid-invalid-control"],
+    );
+}
+
+#[test]
 fn misskey_generated_inference_probes_preserve_authored_diagnostics() {
     check_pack(
         "misskey-generated-inference-9516",
@@ -336,6 +347,7 @@ fn check_pack(
             | "nuxt-unknown-template-options-10013"
             | "reactive-props-destructure-10008"
             | "generic-fallthrough-spread-9956"
+            | "optional-fallthrough-spread-10170"
             | "misskey-generated-inference-9516"
             | "component-v-bind-duplicate-diagnostic-10069"
             | "inferred-project-tsconfig-9718" => regression,

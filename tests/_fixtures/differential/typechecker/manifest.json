@@ -2567,6 +2567,58 @@
       }
     },
     {
+      "id": "typechecker/optional-fallthrough-spread-10170/optional-valid-invalid-control",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "optional-fallthrough-spread-10170",
+      "case": "optional-valid-invalid-control",
+      "test": "optional_fallthrough_spread_preserves_valid_values_and_rejects_invalid_values",
+      "regressionCommit": "8300867552287abb14f4fbb7471c705aea72bbdf",
+      "sourceRevision": "8300867552287abb14f4fbb7471c705aea72bbdf",
+      "packReference": {
+        "path": "optional-fallthrough-spread-10170/cases.json",
+        "sha256": "73f9267ca73314f1efb43c59fb222533c76f85758cbc4747f4aabbb139634b60"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "optional-fallthrough-spread-10170/tsconfig.json.txt",
+          "sha256": "1d79872a71dfb4571c49b5c60aded1729ac0b15d2d6d5de26db9d2b76ef14961"
+        },
+        {
+          "file": "src/MyInput.vue",
+          "path": "optional-fallthrough-spread-10170/src/MyInput.vue.txt",
+          "sha256": "1ab809928240c6706513e59ecaa339c107e22793633b52e7f6314a6c2841f384"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "optional-fallthrough-spread-10170/src/App.vue.txt",
+          "sha256": "ab48c10bd5cfbb0b0898919e8c9666b404ce1cc6802442c4933be2fbe352d72f"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/art-variant-implicit-component-9854/implicit-and-explicit-props",
       "state": "active",
       "targets": [
