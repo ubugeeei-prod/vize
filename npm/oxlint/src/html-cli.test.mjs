@@ -159,7 +159,11 @@ for (const fixture of fixtures)
     try {
       const stock = run(engine),
         wrapper = run(path.join(packageDir, "dist/cli.mjs"));
-      assert.equal(wrapper.status, fixture.status ?? 0, wrapper.stdout + wrapper.stderr);
+      assert.equal(
+        wrapper.status,
+        fixture.skipped ? stock.status : (fixture.status ?? 0),
+        wrapper.stdout + wrapper.stderr,
+      );
       const nativeCalls = wrapper.events.filter((event) => event.kind === "html-call");
       const hostPhases = wrapper.events.filter((event) => event.kind === "host-child");
       const originalOutput = Buffer.from(hostPhases[0]?.stdoutBytes ?? []).toString("utf8");
