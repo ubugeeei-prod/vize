@@ -7,7 +7,7 @@ const SLOT_RESOLVER_HELPERS: &str = r#"type __VizeSlotHostSlots<C> = C extends {
 declare function __vizeConstructorSlots<P, S>(component: new (props: P, ...args: any[]) => { $slots: S }): (props: P) => S;
 declare function __vizeFunctionalSlots<P, C, R>(component: (props: P, context: C, ...args: any[]) => R): (props: P) => "__ctx" extends keyof R ? NonNullable<R["__ctx"]> extends { slots: infer S } ? S : any : NonNullable<C> extends { slots: infer S } ? S : any;
 type __VizeNativeSlotsFactory<C> = C extends new (...args: any[]) => any ? typeof __vizeConstructorSlots : C extends (...args: any[]) => any ? typeof __vizeFunctionalSlots : (component: C) => (props: any) => __VizeSlotHostSlots<C>;
-type __VizeSlotsFactory<C> = __VizeIsAny<C> extends true ? (component: C) => (props: any) => any : C extends { __vizeResolveSlots?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : __VizeNativeSlotsFactory<C> : __VizeNativeSlotsFactory<C>;
+type __VizeSlotsFactory<C> = __VizeIsAny<C> extends true ? (component: C) => (props: any) => any : C extends { __vizeResolveSlots?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : __VizeNativeSlotsFactory<C> : C extends { readonly __vizeComponentMarker: true } ? (component: C) => (props: any) => __VizeSlotHostSlots<C> : __VizeNativeSlotsFactory<C>;
 "#;
 
 /// Only names admitted by the authored key contribute payloads. A literal union
