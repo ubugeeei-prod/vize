@@ -3314,12 +3314,12 @@
       },
       "pack": "content-mapper-duplicate-attributes-10184",
       "case": "listener-and-template-ref-class-style",
-      "test": "content_mapper_merges_duplicate_class_and_style_attribute_probes",
-      "regressionCommit": "6fa83a47ba21733ca990fbcc810f42ef5fca1123",
-      "sourceRevision": "6fa83a47ba21733ca990fbcc810f42ef5fca1123",
+      "test": "content_mapper_isolates_duplicate_class_and_style_attribute_probes",
+      "regressionCommit": "0038b601e41dccb6f037aa68c3fc0207ea635e3b",
+      "sourceRevision": "0038b601e41dccb6f037aa68c3fc0207ea635e3b",
       "packReference": {
         "path": "content-mapper-duplicate-attributes-10184/cases.json",
-        "sha256": "869e0481dafb8b88860a9c85ee2d5ee9f4c23dcac4d67f7dd72e8fbd0277c13f"
+        "sha256": "44d2fd4544d512c59a3f3326ccfc256bc63603d4fb3f71dfbea789efac91d86b"
       },
       "inputs": [
         {

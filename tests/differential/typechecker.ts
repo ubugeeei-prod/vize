@@ -49,7 +49,7 @@ export const TYPECHECKER_TESTS = {
   "workspace-alias-cache-10063": "workspace_package_alias_cache_preserves_sequential_scopes",
   "component-render-h-props-9855": "imported_sfc_h_calls_check_missing_and_wrong_props",
   "component-listener-alias-scope-10112": "component_listener_aliases_stay_inside_guard_scope",
-  "content-mapper-duplicate-attributes-10184": "content_mapper_merges_duplicate_class_and_style_attribute_probes",
+  "content-mapper-duplicate-attributes-10184": "content_mapper_isolates_duplicate_class_and_style_attribute_probes",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
@@ -88,7 +88,7 @@ const sourceRevisions = {
   "workspace-alias-cache-10063": "7174c46d55825c155325e6314305e661d50ec95a",
   "component-render-h-props-9855": "f15ca234a4bdd73bde9caea07e652f3a345eb342",
   "component-listener-alias-scope-10112": "7cefe3a00e6184de1e121d39b0e153f08a428aa6",
-  "content-mapper-duplicate-attributes-10184": "6fa83a47ba21733ca990fbcc810f42ef5fca1123",
+  "content-mapper-duplicate-attributes-10184": "0038b601e41dccb6f037aa68c3fc0207ea635e3b",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 
 export type Artifact = { path: string; sha256: string };
