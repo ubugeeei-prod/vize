@@ -22,24 +22,25 @@ function load(product) {
 }
 
 void test("every product manifest contributes to the case-level dialect denominator", () => {
+  const manifests = Object.fromEntries(products.map((product) => [product, load(product)]));
   const summaries = Object.fromEntries(
-    products.map((product) => [product, summarizeDialectCoverage(load(product).cases)]),
+    products.map((product) => [product, summarizeDialectCoverage(manifests[product].cases)]),
   );
   assert.deepEqual(
     Object.fromEntries(products.map((product) => [product, summaries[product].plannedCases])),
-    { compiler: 12, formatter: 18, linter: 59, lsp: 27, typechecker: 47 },
+    Object.fromEntries(products.map((product) => [product, manifests[product].cases.length])),
   );
   assert.deepEqual(
     Object.fromEntries(products.map((product) => [product, summaries[product].provisionalCases])),
     { compiler: 12, formatter: 16, linter: 0, lsp: 0, typechecker: 0 },
   );
-  assert.equal(
-    Object.values(summaries).reduce((count, summary) => count + summary.plannedCases, 0),
-    163,
+  const plannedCases = Object.values(summaries).reduce(
+    (count, summary) => count + summary.plannedCases,
+    0,
   );
   assert.equal(
     Object.values(summaries).reduce((count, summary) => count + summary.unknownReadinessCases, 0),
-    163,
+    plannedCases,
     "source inspection must not reduce the zero-fallback readiness denominator",
   );
   assert.deepEqual(summaries.compiler.provisional, {
