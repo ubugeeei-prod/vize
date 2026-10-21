@@ -86,6 +86,10 @@ it using the same warmed Cargo directory. It requires an actual 16-cell old RED,
 outputs, 16 whole mapper transforms per operand, and four editor sessions with
 44 complete reports per operand. Extra unmapped diagnostic aggregates fail.
 
+Retired 2026-10-19 (#8840): the comparison was pinned to one old producer and
+could no longer pass on main, so the mode and its `owner-*.mjs` drivers were
+removed.
+
 The mapper comparison retains every span's authored coordinates, generated
 payload, kind and feature bits, both semantic-link endpoint payloads and every
 generated line multiplicity. Candidate Canon controls additionally execute the
