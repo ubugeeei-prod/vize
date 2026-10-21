@@ -1267,6 +1267,44 @@
         "lint": false,
         "typecheck": false
       }
+    },
+    {
+      "id": "lsp/regression/content-mapper-nuxt-emit-10195",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "content-mapper-nuxt-emit-10195",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "4b49df4d5622b04548dbc0a1f003c0fb25d98d0469645e544969bfb01c6f6940"
+          },
+          {
+            "path": "MyItem.vue.txt",
+            "sha256": "158ba53462766943952897e3a358d974ef10ae2f9b673b8cc48caeb44fa9e4de"
+          },
+          {
+            "path": "augment.d.ts.txt",
+            "sha256": "72824330228b07923b47dea72f5762eebe50bfe8dd9fe09204e85dcf2cd8302d"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "f95ed8e882385f5eba92c77e56ef6bb349a066685fed6511c7b0777f66372c63"
+          }
+        ]
+      },
+      "case": {
+        "path": "content-mapper-nuxt-emit-10195/case.json",
+        "sha256": "6e6f37a0cb93121db41388a1c2b7d94a98d88c4f8ea69c05975cfe3c56349027"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
     }
   ]
 }

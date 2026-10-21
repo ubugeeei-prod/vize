@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import MyItem from "./MyItem.vue";
+
+function onClick(event: MouseEvent) {
+  return event.button;
+}
+</script>
+
+<template>
+  <MyItem role="button" @click="onClick">item</MyItem>
+</template>
