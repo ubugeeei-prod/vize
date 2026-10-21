@@ -75,6 +75,8 @@ export const TYPECHECKER_TESTS = {
   "workspace-package-import-alias-10175":
     "workspace_package_import_aliases_preserve_clean_diagnostics",
   "strict-fallthrough-default-7856": "strict_component_attrs_infer_default_fallthrough_surfaces",
+  "content-mapper-multiline-callback-10191":
+    "content_mapper_multiline_callbacks_keep_contextual_parameters",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
@@ -120,6 +122,7 @@ const sourceRevisions = {
   "content-mapper-template-expression-syntax": "a5ae4d313fa333c8bc7168d5da4acf3dc2bb8ee3",
   "content-mapper-nuxt-emit-10195": "369f01b50d8fe6e3b0996cc9a90eecf422dbdd3b",
   "content-mapper-const-enum-import": "506529117573a96880435dd6466cfd7cf81fdc92",
+  "content-mapper-multiline-callback-10191": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
   "content-mapper-diagnostics-10187": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
   "content-mapper-javascript-checkjs-10217": "c9b9b5c368fceeed61c13813a617f7a8b5b8351f",
   "content-mapper-dynamic-template-ref-10198": "b7fb3a9aefd31002b8b2d449695a9e14d657654a",

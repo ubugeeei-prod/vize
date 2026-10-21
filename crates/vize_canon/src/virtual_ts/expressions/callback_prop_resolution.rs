@@ -125,7 +125,16 @@ fn append_props_object(
         }
         let name = super::super::helpers::to_camel_case(prop.name.as_str());
         append!(*ts, "{expr_indent}  \"{name}\": ");
-        append_prop_value(ts, value.as_str());
+        // This copy is intentionally unmapped, so authored leading whitespace
+        // carries no location information. Keep the callback's first token on
+        // the property line: the `@ts-ignore` immediately above then owns a
+        // multiline callback whose parameters begin after an authored newline.
+        let value = if inline_callback {
+            value.trim_start()
+        } else {
+            value.as_str()
+        };
+        append_prop_value(ts, value);
         ts.push_str(",\n");
     }
     for spread in spreads {

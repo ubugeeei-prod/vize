@@ -98,6 +98,7 @@ jobs:
           cargo test -p vize --test integration -- content_mapper_tsgo_cli::const_enum_import:: --nocapture
           cargo test -p vize --test integration -- content_mapper_tsgo_cli::type_only_import_use:: --nocapture
           cargo test -p vize --test integration -- content_mapper_tsgo_cli::standard_tsgo_reports_each_component_prop_problem_once --nocapture
+          cargo test -p vize --test integration -- content_mapper_tsgo_cli::standard_tsgo_contextually_types_multiline_callback_prop --nocapture
       - name: Run TS-40 current-projection baselines
         run: |
           cargo test -p vize --test integration -- davinci_ts40_projection_cli:: --nocapture

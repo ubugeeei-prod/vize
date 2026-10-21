@@ -84,3 +84,34 @@ fn callback_resolution_keeps_inference_and_branch_selection_separate() {
         "the mapped per-prop owner must remain the sole diagnostic owner"
     );
 }
+
+#[test]
+fn multiline_callback_starts_on_the_ignored_property_line() {
+    let script = "import Guard from './Guard.vue'\n";
+    let template = r#"<Guard
+  :check="
+    (params) =>
+      !!params.id
+  "
+/>"#;
+
+    let allocator = vize_l0::Allocator::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+    assert_eq!(
+        output
+            .code
+            .matches(
+                "// @ts-ignore Inference-only callback prop; mapped prop owner checks diagnostics.\n    \"check\": (params) =>"
+            )
+            .count(),
+        1,
+        "the ignored line must contain the callback parameter token:\n{}",
+        output.code
+    );
+}
