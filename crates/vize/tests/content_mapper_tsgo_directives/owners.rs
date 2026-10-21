@@ -201,7 +201,10 @@ fn calibration_expected(id: &str, handler: &str) -> vize_l0::String {
         output.push_str("directives/Owner.vue(10,3): error TS2322: Type '(value: string) => void' is not assignable to type '(value: number) => any'.\n  Types of parameters 'value' and 'value' are incompatible.\n    Type 'number' is not assignable to type 'string'.\n");
     }
     if id == "bad" {
-        output.push_str(cstr!("directives/Owner.vue(9,2): {BAD_ID}directives/Owner.vue(9,2): {BAD_ID}").as_str());
+        output.push_str(
+            cstr!("directives/Owner.vue(9,2): {BAD_ID}directives/Owner.vue(9,2): {BAD_ID}")
+                .as_str(),
+        );
     }
     output
 }
