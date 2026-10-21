@@ -360,6 +360,7 @@ test("official TypeScript acceptance keeps the reported host and complete instal
     "tests/_fixtures/content-mapper/escaton-component-props.json",
     "tests/_fixtures/content-mapper/escaton-nested-flow-9433.json",
     "tests/_fixtures/content-mapper/duplicate-class-style-10184.json",
+    "tests/_fixtures/content-mapper/nuxt-pattern-emit-10195.json",
   ]) {
     assert.ok(run.run!.includes(`--fixture ${file}`));
     assert.ok(admission.includes(file));
