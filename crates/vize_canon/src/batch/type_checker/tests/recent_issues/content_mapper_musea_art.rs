@@ -47,13 +47,13 @@ fn content_mapper_musea_art_project_preserves_bound_component_diagnostics() {
             (
                 "src/MyCard.art.vue".into(),
                 Some(2322),
-                "Type 'number' is not assignable to type 'string'.".into(),
+                "5:34:error Type 'number' is not assignable to type 'string'.".into(),
             ),
             (
                 "src/MyCard.art.vue".into(),
                 Some(2345),
                 concat!(
-                    "Argument of type '{ elevated: true; }' is not assignable to parameter of type ",
+                    "6:28:error Argument of type '{ elevated: true; }' is not assignable to parameter of type ",
                     "'__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { [x: string]: unknown; } & ",
                     "{ [x: `data${string}`]: unknown; } & Record<string, unknown>>'.\n",
                     "Property 'title' is missing in type '{ elevated: true; }' but required in type ",
