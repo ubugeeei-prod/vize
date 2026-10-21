@@ -2744,7 +2744,7 @@
       "sourceRevision": "cf6c83ab16fb7f20f84f0d51112090bbce89c74a",
       "packReference": {
         "path": "misskey-generated-inference-9516/cases.json",
-        "sha256": "bc89fd1544f5b3896efcde46e0bb51c26162a4830f5c1cf0cbfef2b32d5c62b1"
+        "sha256": "a6c8ceb8169e865f2aeef5e47cc35df9480e025a1e6e7c683a27bd7845279142"
       },
       "inputs": [
         {
@@ -2863,7 +2863,7 @@
       "sourceRevision": "cf6c83ab16fb7f20f84f0d51112090bbce89c74a",
       "packReference": {
         "path": "misskey-generated-inference-9516/cases.json",
-        "sha256": "bc89fd1544f5b3896efcde46e0bb51c26162a4830f5c1cf0cbfef2b32d5c62b1"
+        "sha256": "a6c8ceb8169e865f2aeef5e47cc35df9480e025a1e6e7c683a27bd7845279142"
       },
       "inputs": [
         {
