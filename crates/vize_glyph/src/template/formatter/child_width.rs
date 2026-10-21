@@ -164,14 +164,18 @@ impl TemplateFormatter<'_> {
             // narrow path to the single interpolation reported in #10177.
             return false;
         }
-        if join.is_continuation() && (first_open != 0 || close != bytes.len()) {
+        let hugged_name = joiner.hugged_closing_name(start, end);
+        if join.is_continuation()
+            && (first_open != 0 || close != bytes.len())
+            && (hugged_name.is_some() || joiner.previous_chunk_is_interpolation(start))
+        {
             // A mixed text/interpolation chunk that continues an existing
-            // output line is part of a larger established layout. Rewrapping
-            // it in isolation would make a formatted second pass differ from
-            // the first (for example, a text suffix after an interpolation).
+            // interpolation or is hugged directly by its parent has a larger
+            // established layout. Rewrapping it in isolation would make a
+            // formatted second pass differ from the first. Continuations after
+            // an ordinary closing tag can still wrap at the mustache boundary.
             return false;
         }
-        let hugged_name = joiner.hugged_closing_name(start, end);
         let line_start = memchr::memrchr2(b'\r', b'\n', output).map_or(0, |pos| pos + 1);
         let line = output.get(line_start..).unwrap_or_default();
         let suffix_width = hugged_name.map_or(0, |name| name.len() + 3)

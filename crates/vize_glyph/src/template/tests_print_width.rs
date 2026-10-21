@@ -266,4 +266,21 @@ fn text_hugged_interpolations_respect_print_width() {
         formatted,
         "the wrapped layout must be stable"
     );
+
+    let continued = r#"<div>
+  <b>x</b> Name: {{ kind === "primary" ? "my-primary-widget-element-name" : "my-secondary-widget-name-long" }}
+</div>"#;
+    let continued_expected = r#"<div>
+  <b>x</b> Name: {{
+    kind === "primary" ? "my-primary-widget-element-name" : "my-secondary-widget-name-long"
+  }}
+</div>"#;
+    let continued_formatted = format_template_content(continued, &options).unwrap();
+    assert_eq!(continued_formatted.as_str(), continued_expected);
+    assert!(continued_formatted.lines().all(|line| line.len() <= 100));
+    assert_eq!(
+        format_template_content(&continued_formatted, &options).unwrap(),
+        continued_formatted,
+        "continued mixed text layout must be stable"
+    );
 }
