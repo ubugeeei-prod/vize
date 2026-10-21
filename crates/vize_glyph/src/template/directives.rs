@@ -24,14 +24,18 @@ pub(crate) fn should_format_expression(name: &str) -> bool {
             let Some(directive) = name.strip_prefix("v-") else {
                 return false;
             };
-            directive.starts_with("if")
-                || directive.starts_with("else-if")
-                || directive.starts_with("show")
-                || directive.starts_with("for")
-                || directive.starts_with("model")
-                || directive.starts_with("bind")
-                || directive.starts_with("on")
-                || matches!(directive, "html" | "text")
+            match directive.as_bytes().first() {
+                Some(b'i') => directive.starts_with("if"),
+                Some(b'e') => directive.starts_with("else-if"),
+                Some(b's') => directive.starts_with("show"),
+                Some(b'f') => directive.starts_with("for"),
+                Some(b'm') => directive.starts_with("model"),
+                Some(b'b') => directive.starts_with("bind"),
+                Some(b'o') => directive.starts_with("on"),
+                Some(b'h') => directive == "html",
+                Some(b't') => directive == "text",
+                _ => false,
+            }
         }
         _ => false,
     }

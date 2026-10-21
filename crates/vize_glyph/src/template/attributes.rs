@@ -141,6 +141,15 @@ pub(crate) fn attribute_priority(name: &str) -> u8 {
         name.strip_prefix(directive)
             .is_some_and(|rest| rest.is_empty() || rest.starts_with([':', '.']))
     }
+    // Only these initials can enter a non-default priority group. Reject the
+    // common `class`, `data-*`, and other plain names before walking
+    // the directive and named-attribute table.
+    if !matches!(
+        name.as_bytes().first(),
+        Some(b'i' | b'r' | b'k' | b's' | b'v' | b':' | b'@' | b'#' | b'.')
+    ) {
+        return 8;
+    }
     if matches!(name, "is" | ":is" | "v-bind:is") {
         return 0;
     }
