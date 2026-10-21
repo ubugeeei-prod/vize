@@ -131,6 +131,82 @@ fn commented_reference_manifests_advertise_the_union_without_loading_projects() 
 }
 
 #[test]
+fn package_without_a_local_config_inherits_the_workspace_tsconfig() {
+    let fixture = crate::test_support::tempdir().unwrap();
+    let root = fixture.path();
+    let package = root.join("packages/ui");
+    std::fs::create_dir_all(package.join("src")).unwrap();
+    std::fs::write(root.join("package.json"), r#"{"private":true}"#).unwrap();
+    std::fs::write(package.join("package.json"), r#"{"name":"@acme/ui"}"#).unwrap();
+    std::fs::write(
+        root.join("tsconfig.json"),
+        r#"{"include":["packages/**/*.vue","types/**/*.d.ts"]}"#,
+    )
+    .unwrap();
+    std::fs::create_dir_all(root.join("types")).unwrap();
+    std::fs::write(
+        root.join("types/globals.d.ts"),
+        "declare const __APP_VERSION__: string;",
+    )
+    .unwrap();
+    let source = package.join("src/MyFooter.vue");
+    std::fs::write(
+        &source,
+        "<script setup lang=\"ts\">const version = __APP_VERSION__;</script>",
+    )
+    .unwrap();
+
+    let state = Arc::new(ServerState::new());
+    state.set_workspace_root(root.to_path_buf());
+    state.set_workspace_folders(vec![root.to_path_buf()]);
+    state.load_workspace_config(root);
+    let uri = Url::from_file_path(source).unwrap();
+    let owner = state
+        .document_project_state(&uri)
+        .unwrap_or_else(|| state.clone());
+
+    assert!(Arc::ptr_eq(&owner, &state));
+    assert_eq!(
+        owner.get_type_checker_config().tsconfig.as_deref(),
+        root.join("tsconfig.json").to_str()
+    );
+}
+
+#[test]
+fn package_without_a_local_config_uses_the_owning_workspace_reference() {
+    let fixture = crate::test_support::tempdir().unwrap();
+    let root = fixture.path();
+    let package = root.join("packages/ui");
+    std::fs::create_dir_all(package.join("src")).unwrap();
+    std::fs::write(root.join("package.json"), r#"{"private":true}"#).unwrap();
+    std::fs::write(package.join("package.json"), r#"{"name":"@acme/ui"}"#).unwrap();
+    std::fs::write(
+        root.join("tsconfig.json"),
+        r#"{"files":[],"references":[{"path":"./tsconfig.app.json"}]}"#,
+    )
+    .unwrap();
+    std::fs::write(
+        root.join("tsconfig.app.json"),
+        r#"{"include":["packages/**/*.vue","types/**/*.d.ts"]}"#,
+    )
+    .unwrap();
+    let source = package.join("src/MyFooter.vue");
+    std::fs::write(&source, "<template><footer /></template>").unwrap();
+
+    let state = Arc::new(ServerState::new());
+    state.set_workspace_root(root.to_path_buf());
+    state.set_workspace_folders(vec![root.to_path_buf()]);
+    state.load_workspace_config(root);
+    let uri = Url::from_file_path(source).unwrap();
+    let owner = state.document_project_state(&uri).unwrap();
+
+    assert_eq!(
+        owner.get_type_checker_config().tsconfig.as_deref(),
+        root.join("tsconfig.app.json").to_str()
+    );
+}
+
+#[test]
 fn tsconfig_files_inside_source_folders_select_the_nearest_owner() {
     let (fixture, state, a, _b) = fixture();
     let source = fixture.path().join("packages/a/src");

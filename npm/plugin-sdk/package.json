@@ -24,7 +24,9 @@
     "README.md",
     "sandbox.js",
     "sandbox-worker.js",
-    "sandbox.d.ts"
+    "sandbox.d.ts",
+    "visitor.js",
+    "visitor.d.ts"
   ],
   "type": "module",
   "sideEffects": false,
@@ -41,6 +43,10 @@
     "./sandbox": {
       "types": "./sandbox.d.ts",
       "default": "./sandbox.js"
+    },
+    "./visitor": {
+      "types": "./visitor.d.ts",
+      "default": "./visitor.js"
     }
   },
   "publishConfig": {

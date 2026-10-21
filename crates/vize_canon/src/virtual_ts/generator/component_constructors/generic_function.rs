@@ -59,4 +59,11 @@ pub(super) fn emit(
         *ts,
         "type __VizeGenericComponent = {authored_parameters}(props: __VizeGenericContext{arguments}['props'], ctx?: Pick<__VizeGenericContext{arguments}, 'attrs' | 'emit' | 'slots'>, expose?: __VizeGenericContext{arguments}['expose']) => import('vue').VNode & {{ __ctx?: __VizeGenericContext{arguments} }};\n"
     );
+    // Template-ref probing repeats the authored props only to instantiate this
+    // return context. Its mapped component check already owns prop diagnostics,
+    // so accept extra attributes here just as the ordinary open checker does.
+    append!(
+        *ts,
+        "type __VizeGenericRefResolver = {authored_parameters}(props: __VizeGenericContext{arguments}['props'] & Record<string, unknown>, ctx?: Pick<__VizeGenericContext{arguments}, 'attrs' | 'emit' | 'slots'>, expose?: __VizeGenericContext{arguments}['expose']) => import('vue').VNode & {{ __ctx?: __VizeGenericContext{arguments} }};\n"
+    );
 }

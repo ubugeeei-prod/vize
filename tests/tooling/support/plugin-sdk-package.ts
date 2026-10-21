@@ -96,6 +96,8 @@ export function verifyStandalonePluginSdk(
       "sandbox-worker.js",
       "stages.js",
       "stages.d.ts",
+      "visitor.js",
+      "visitor.d.ts",
       "identity.js",
     ]) {
       assert.ok(fs.existsSync(path.join(installed, entry)), `tarball lacks ${entry}`);

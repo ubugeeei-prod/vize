@@ -54,6 +54,10 @@ function openCacheForRun(
     compileOptions: {
       options: buildCompileBatchOptions(batchOptions),
       scopes: state.compilerScopeIdentity,
+      // Bump when the emitted module identity changes independently of the
+      // compiler options. Otherwise a warm checkout could restore absolute-path
+      // scope IDs written by an older plugin for byte-identical source.
+      scopeId: "project-relative-source-v1",
     },
     onDiagnostic: (message, error) =>
       error === undefined ? state.logger.warn(message) : state.logger.warn(message, error),

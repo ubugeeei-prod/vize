@@ -224,6 +224,9 @@ pub struct BatchCompileResultNapi {
 pub struct BatchFileInputNapi {
     pub path: String,
     pub source: String,
+    /// Optional bundler-owned identity. Supplying it keeps batch and on-demand
+    /// compilation on the same project-relative scope-id algorithm.
+    pub scope_id: Option<String>,
 }
 
 #[napi(object)]
