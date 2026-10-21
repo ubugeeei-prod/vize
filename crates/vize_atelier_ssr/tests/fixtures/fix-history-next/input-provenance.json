@@ -34,7 +34,7 @@
     {
       "id": "named-scoped-slot",
       "fixCommit": "49c9bcc2d19e1a1abfc2bcd0a372e16339a41ff6",
-      "sourcePath": "crates/vize_atelier_ssr/src/lib.rs",
+      "sourcePath": "crates/vize_atelier_ssr/src/component_tests.rs",
       "symbol": "test_ssr_named_scoped_slot_keeps_props_in_vnode_fallback",
       "inputSha256": "41a5a6cf03ef53ede45b456ce769fc25af68cdd9ac099dd091a16e5a89e7c635",
       "originalWitness": "positive header binding, negative context leak and code snapshot; empty diagnostics",

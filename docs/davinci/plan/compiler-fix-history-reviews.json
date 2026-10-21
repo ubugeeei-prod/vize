@@ -5,7 +5,7 @@
     "tests/_fixtures/differential/compiler/sfc-fix-history.manifest.json",
     "tests/_fixtures/differential/compiler/ssr-fix-history.manifest.json"
   ],
-  "scope": "Bounded semantic review of ten complete public SFC Result fixtures and three complete public SSR Result fixtures; this is not whole-fix, whole-history, native, target, or dialect acceptance.",
+  "scope": "Bounded semantic review of ten complete public SFC Result fixtures and four complete public SSR Result fixtures; this is not whole-fix, whole-history, native, target, or dialect acceptance.",
   "reviews": [
     {
       "fixCommit": "ceb0fda9c18ed6e40db71a2c582e9fe10950a43a",
@@ -137,6 +137,17 @@
       ],
       "remainingScope": [
         "Named and dynamic slots, nested destructuring, alternate options and dialects, SFC SSR integration, hydration behavior, and a native compiler route remain outside this reviewed fixture scope."
+      ]
+    },
+    {
+      "fixCommit": "49c9bcc2d19e1a1abfc2bcd0a372e16339a41ff6",
+      "caseId": "compiler/ssr/named-scoped-slot",
+      "coveredRequirements": [
+        "Named scoped-slot entries retain their destructured props in both the SSR string branch and the vnode fallback branch instead of resolving the slot-local name through the component instance.",
+        "The complete public SSR Result preserves generated code, helper preamble, nullable map, and ordered diagnostics under the pinned default options."
+      ],
+      "remainingScope": [
+        "Dynamic and conditional slots, other destructuring shapes, alternate options and dialects, SFC SSR integration, hydration behavior, and a native compiler route remain outside this reviewed fixture scope."
       ]
     },
     {

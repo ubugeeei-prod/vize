@@ -191,7 +191,7 @@
           }
         ],
         "witness": {
-          "path": "crates/vize_atelier_ssr/src/lib.rs",
+          "path": "crates/vize_atelier_ssr/src/component_tests.rs",
           "symbol": "test_ssr_named_scoped_slot_keeps_props_in_vnode_fallback"
         }
       },
