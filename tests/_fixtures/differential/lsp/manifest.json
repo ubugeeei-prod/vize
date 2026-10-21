@@ -580,7 +580,7 @@
       },
       "case": {
         "path": "template-slot-completion-9907/case.json",
-        "sha256": "3aa3d35f43e98f327342be0124c987338d9e4a198645011aaaec09345c75e57f"
+        "sha256": "d45332093279a3725effb7cdcd4d6ce1cd9235d36f01083530b64b5496911802"
       },
       "requestCount": 1,
       "initializationOptions": {
@@ -969,7 +969,7 @@
       },
       "case": {
         "path": "code-action-utf16-original/case.json",
-        "sha256": "98b29c513ea1c28416f0f9a2cc81d5fa61345b82ccb3f5438cf7b39114f995d9"
+        "sha256": "1d9a4a2de6b5d7cd5de41c51e780f87d4877f7d872ba0518185d0a591f8790a4"
       },
       "requestCount": 1,
       "initializationOptions": {

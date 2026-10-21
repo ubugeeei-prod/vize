@@ -107,10 +107,27 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
       readPinnedArtifact(packRoot, data.provenance.witness);
       requests = [{ params: {}, result: expected }];
     } else if (data.method === "textDocument/codeAction") {
-      assert(Array.isArray(expected) && expected.length === 2, "both actions are required");
-      requests = data.request
-        ? [{ ...data.request, result: expected }]
-        : (expected as LspFixture["requests"]);
+      if (data.request) {
+        assert(Array.isArray(expected) && expected.length >= 2, "fix and suppression required");
+        const actions = expected as Array<{ isPreferred?: unknown; title?: unknown }>;
+        assert(
+          actions.some((action) => action.isPreferred === true),
+          "preferred fix required",
+        );
+        assert(
+          actions.some(
+            (action) =>
+              action.isPreferred === false &&
+              typeof action.title === "string" &&
+              action.title.startsWith("Suppress with @vize:forget"),
+          ),
+          "suppression required",
+        );
+        requests = [{ ...data.request, result: expected }];
+      } else {
+        assert(Array.isArray(expected) && expected.length === 2, "both actions are required");
+        requests = expected as LspFixture["requests"];
+      }
     } else if (data.method === "textDocument/rename") {
       assert(
         Array.isArray(expected) && expected.length === 2,
