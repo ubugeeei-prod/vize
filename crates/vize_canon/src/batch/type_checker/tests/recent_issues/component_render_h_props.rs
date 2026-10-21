@@ -38,16 +38,7 @@ export const valid = h(Counter, { count: 3 });
         return;
     };
 
-    let render_errors: Vec<_> = snapshot
-        .iter()
-        .filter(|(file, code, _)| file == "src/render.ts" && *code == Some(2769))
-        .collect();
-    assert_eq!(
-        render_errors.len(),
-        2,
-        "missing and wrong props must each report TS2769 while the valid call remains accepted: {snapshot:#?}"
-    );
-    let positions: Vec<_> = render_errors
+    let diagnostics: Vec<_> = snapshot
         .iter()
         .map(|(file, code, message)| {
             (
@@ -58,11 +49,11 @@ export const valid = h(Counter, { count: 3 });
         })
         .collect();
     assert_eq!(
-        positions,
+        diagnostics,
         vec![
             ("src/render.ts", Some(2769), "4:24".to_string()),
             ("src/render.ts", Some(2769), "5:22".to_string()),
         ],
-        "the two diagnostics must map to the authored h() calls: {snapshot:#?}"
+        "only the missing and wrong h() calls may report diagnostics: {snapshot:#?}"
     );
 }
