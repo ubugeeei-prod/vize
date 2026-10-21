@@ -17,7 +17,7 @@ const detection = [
   "  language:        TypeScript (tsconfig.json)",
   "  lint command:    oxlint",
   "  Vue settings:    defaults",
-  "  oxlint config:   none",
+  "  oxlint config:   oxlint.config.mts — present but oxlint does not read this name (#3474)",
 ];
 const editors = [
   "[vize init] editor integrations shipped with Vize:",
@@ -99,6 +99,15 @@ test("the Nuxt consumer owns a complete current project and diagnostic triple", 
       },
     ],
   });
+  assert.deepEqual(shape.detection(manager), [
+    "  framework:       Nuxt (nuxt.config.ts)",
+    "  package manager: npm",
+    "  language:        TypeScript (tsconfig.json)",
+    "  lint command:    oxlint",
+    "  Vue settings:    defaults",
+    "  oxlint config:   none",
+  ]);
+  assert.deepEqual(shape.bootstrappedDetection(manager), detection.slice(1));
 });
 
 test("the Nuxt init contract pins the complete dry, apply, and idempotent plans", () => {
@@ -117,7 +126,7 @@ test("the Nuxt init contract pins the complete dry, apply, and idempotent plans"
     "  editor    unchanged  .vscode/extensions.json already recommends ubugeeei.vize",
   ];
   assert.equal(
-    expectedInitOutput(shape, projectRoot, manager, "dry"),
+    expectedInitOutput(shape, projectRoot, manager, "dry", { bootstrapped: true }),
     output([
       ...configured,
       "[vize init] would create .vscode/extensions.json",
@@ -128,7 +137,7 @@ test("the Nuxt init contract pins the complete dry, apply, and idempotent plans"
     ]),
   );
   assert.equal(
-    expectedInitOutput(shape, projectRoot, manager, "apply"),
+    expectedInitOutput(shape, projectRoot, manager, "apply", { bootstrapped: true }),
     output([
       ...configured,
       "[vize init] will create .vscode/extensions.json",
@@ -139,7 +148,7 @@ test("the Nuxt init contract pins the complete dry, apply, and idempotent plans"
     ]),
   );
   assert.equal(
-    expectedInitOutput(shape, projectRoot, manager, "rerun"),
+    expectedInitOutput(shape, projectRoot, manager, "rerun", { bootstrapped: true }),
     output([
       ...unchanged,
       "[vize init] nothing to do; the project is already configured",
