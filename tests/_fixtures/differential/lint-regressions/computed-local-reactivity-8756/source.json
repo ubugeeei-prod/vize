@@ -25,8 +25,8 @@
       "sha256": "a74e83cd33e432a4f3d8f7f801cd3fcd61efecebd4724b15964ba9d1855dddf1"
     },
     "controls.json": {
-      "bytes": 29000,
-      "sha256": "aca6620ca0e4c752cb5da190f6b41a62890ce88417fc0750daa50a52c7e4e5c3"
+      "bytes": 28740,
+      "sha256": "029b92612d8a0ade3794eac42abc9cd9ebd0c023a560cae6d90475479a0e0143"
     }
   },
   "historicalVersion": "0.443.0",

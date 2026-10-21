@@ -8,12 +8,12 @@ use crate::virtual_ts::{
 };
 
 use crate::virtual_ts::expressions::{
-    ComponentPropSource, append_props_literal, generated_prop_span, map_rewritten_template_binding,
-    prop_entry_sub_spans, prop_value_source_range,
+    ComponentPropSource, append_props_literal, append_spread_value, generated_prop_span,
+    map_rewritten_template_binding, prop_entry_sub_spans, prop_value_source_range,
 };
 use crate::virtual_ts::types::VizeMapping;
 
-pub(super) struct EmitInferenceContext<'a> {
+pub(super) struct EmitInferenceContext<'a, 'template> {
     pub(super) summary: &'a Croquis,
     pub(super) component_name: &'a str,
     pub(super) data: &'a EventHandlerScopeData,
@@ -23,6 +23,7 @@ pub(super) struct EmitInferenceContext<'a> {
     pub(super) safe_event_name: &'a str,
     pub(super) prop_key: &'a str,
     pub(super) template_binding_access: &'a TemplateBindingAccess,
+    pub(super) template_ast: Option<&'a vize_relief::RootNode<'template>>,
     pub(super) source_context: ComponentPropSource<'a>,
     pub(super) enclosing_vif_guard: Option<&'a str>,
     pub(super) event_inference_usages: &'a std::cell::RefCell<FxHashSet<usize>>,
@@ -32,7 +33,7 @@ pub(super) struct EmitInferenceContext<'a> {
 pub(super) fn generate_inferred_emit_args(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
-    ctx: &EmitInferenceContext<'_>,
+    ctx: &EmitInferenceContext<'_, '_>,
 ) -> Option<String> {
     let (usage_idx, usage) =
         find_component_usage_for_event(ctx.summary, ctx.component_name, ctx.data, ctx.scope)?;
@@ -57,6 +58,9 @@ pub(super) fn generate_inferred_emit_args(
         ctx.safe_event_name
     );
     let first_listener = ctx.event_inference_usages.borrow_mut().insert(usage_idx);
+    let dynamic_component =
+        crate::virtual_ts::scope::is_owned_dynamic_component_alias(ctx.template_ast, &usage)
+            || crate::virtual_ts::scope::is_owned_named_dynamic_component(ctx.template_ast, &usage);
     let guard = usage
         .vif_guard
         .as_ref()
@@ -76,6 +80,55 @@ pub(super) fn generate_inferred_emit_args(
         });
     let guarded_call_indent = guard.as_ref().map(|_| cstr!("{}  ", ctx.indent));
     let call_indent = guarded_call_indent.as_deref().unwrap_or(ctx.indent);
+    if first_listener
+        && guard.is_none()
+        && !dynamic_component
+        && let Some(spread) = usage.spread_props.first()
+    {
+        let probe_type = cstr!(
+            "__{}_{}_spread_instantiation_probe",
+            ctx.component_type_name,
+            usage_idx
+        );
+        append!(
+            *ts,
+            "{}type {probe_type}<P, A, K extends keyof P & keyof A = keyof P & keyof A> = {{ [Q in K]: A[Q] extends P[Q] ? true : false }}[K];\n",
+            ctx.indent
+        );
+        append!(
+            *ts,
+            "{}(undefined as unknown as <A>(value: A) => {probe_type}<typeof {} extends abstract new (...args: any[]) => infer I ? I extends {{ $props: infer P }} ? P : {{}} : typeof {} extends (props: infer P, ...args: any[]) => any ? P : {{}}, A>)(\n",
+            ctx.indent,
+            ctx.component_ref,
+            ctx.component_ref,
+        );
+        append!(
+            *ts,
+            "{}  // @ts-ignore Probe leaf errors are owned by the canonical component-props call.\n{}  ",
+            ctx.indent,
+            ctx.indent,
+        );
+        let (probe_argument_range, _) = append_spread_value(
+            ts,
+            spread.expression.as_str(),
+            None,
+            ctx.template_binding_access,
+            &ctx.summary.scopes,
+            usage.scope_id,
+        );
+        append!(*ts, "\n{});\n", ctx.indent);
+        if let Some(src_range) = crate::virtual_ts::component_tag::source_range(
+            ctx.source_context.template,
+            ctx.source_context.offset,
+            &usage,
+        ) {
+            mappings.push(VizeMapping {
+                gen_range: probe_argument_range,
+                src_range,
+                sub_spans: Vec::new(),
+            });
+        }
+    }
     if first_listener {
         append!(
             *ts,
@@ -98,10 +151,10 @@ pub(super) fn generate_inferred_emit_args(
             ctx.component_ref,
         );
     } else if first_listener {
-        if !usage.spread_props.is_empty() {
+        if dynamic_component || !usage.spread_props.is_empty() {
             append!(
                 *ts,
-                "{}// @ts-ignore Inference-only props; the canonical component-props call owns diagnostics.\n",
+                "{}// @ts-ignore Inference-only dynamic target/props; the canonical component-props call owns diagnostics.\n",
                 ctx.indent
             );
         }

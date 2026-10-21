@@ -68,8 +68,7 @@
         "line": 11,
         "column": 15,
         "endLine": 11,
-        "endColumn": 29,
-        "help": "Use ref with watch() and cleanup for async operations; abort or ignore stale work before assigning the result."
+        "endColumn": 29
       }
     ]
   },
@@ -86,8 +85,7 @@
         "line": 11,
         "column": 15,
         "endLine": 11,
-        "endColumn": 29,
-        "help": "Use ref with watch() and cleanup for async operations; abort or ignore stale work before assigning the result."
+        "endColumn": 29
       }
     ]
   },

@@ -26,7 +26,7 @@ test("combined Vue examples exclude standalone configuration bookmarks and retai
     for (const section of ["bad", "good"])
       assert.equal(combined.split(`<span id="${slug}-${section}"></span>`).length, 2);
   }
-  assert.equal(standaloneAliases, 3, "all three original standalone bookmarks stay authored");
+  assert.equal(standaloneAliases, 1, "the remaining unsupported bookmark stays authored");
   const category = readFileSync(resolve(root, "docs/content/generated/rules/ja/vue.md"), "utf8");
   assert(
     !category.includes(alias),

@@ -67,7 +67,7 @@ void test("component filename history retains the eight original input and optio
 
 void test("linter registry pins every authored input and complete oracle, including real fixes and reports", () => {
   const loaded = loadLinterManifest(manifestPath, repoRoot);
-  assert.equal(loaded.cases.length, 52);
+  assert.equal(loaded.cases.length, 58);
   const cohorts: Record<string, number> = {};
   for (const fixture of loaded.cases) {
     const cohort = fixture.id.split("/")[1];
@@ -79,7 +79,7 @@ void test("linter registry pins every authored input and complete oracle, includ
     );
   }
   assert.deepEqual(cohorts, {
-    "current-api": 21,
+    "current-api": 27,
     "next-tick": 10,
     report: 4,
     "static-class": 9,
@@ -105,7 +105,7 @@ void test("linter manifest rejects omitted/duplicate inputs, unregistered API an
   const baseline = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
   try {
     for (const mutate of [
-      (manifest: any) => manifest.cases.pop(),
+      (manifest: any) => manifest.cases.shift(),
       (manifest: any) => manifest.cases.push(manifest.cases[0]),
       (manifest: any) => {
         manifest.cohorts[0].api = "--private-parser";
@@ -214,12 +214,12 @@ void test("linter result contract rejects omitted rows, incomplete retries and i
     buildReceipt: receipt,
     rows,
     summary: {
-      plannedCases: 52,
-      legacyMatches: 52,
+      plannedCases: 58,
+      legacyMatches: 58,
       legacyFailures: 0,
       baselineDrift: 0,
       nativeUnsupported: 0,
-      nativeFailures: 52,
+      nativeFailures: 58,
       nativeHandled: 0,
       nativeEquivalent: 0,
       pairedComparisons: 0,

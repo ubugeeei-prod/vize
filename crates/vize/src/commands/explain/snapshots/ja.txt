@@ -1773,7 +1773,7 @@ script/component-options-name-casing · lint ルール
   }
 === script/custom-event-name-casing
 script/custom-event-name-casing · lint ルール
-発行するカスタムイベント名に camelCase を強制する
+発行するカスタムイベント名を設定した形式に統一する
 
 精度: complete
 対象: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
@@ -4414,7 +4414,7 @@ CSS プリプロセッサーを非推奨とし、モダンな CSS を推奨す�
 対象: the SFC's top-level blocks, their order and their attributes
 重大度: 警告
 カテゴリー: recommended
-自動修正: あり
+自動修正: なし
 ドキュメント: docs/content/rules/vue.md
 === vue/no-reserved-component-names
 vue/no-reserved-component-names · lint ルール
@@ -4525,7 +4525,7 @@ template ブロックでの lang 属性を非推奨とする
 対象: the SFC's top-level blocks, their order and their attributes
 重大度: 警告
 カテゴリー: recommended
-自動修正: あり
+自動修正: なし
 ドキュメント: docs/content/rules/vue.md
 === vue/no-template-shadow
 vue/no-template-shadow · lint ルール

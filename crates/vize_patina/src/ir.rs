@@ -39,10 +39,14 @@ pub enum L1InputDialect {
 impl L1InputDialect {
     /// Dialect of an SFC template block from its `lang` attribute.
     ///
-    /// `pug` selects the pug surface. Every other lang, including absent,
-    /// is the Vue template surface the derived HTML also lowers through.
+    /// `pug` and its legacy `jade` alias select the pug surface. Every other
+    /// lang, including absent, is the Vue template surface the derived HTML
+    /// also lowers through.
     pub fn from_template_lang(lang: Option<&str>) -> Self {
-        if lang.is_some_and(|lang| lang.trim().eq_ignore_ascii_case("pug")) {
+        if lang.is_some_and(|lang| {
+            let lang = lang.trim();
+            lang.eq_ignore_ascii_case("pug") || lang.eq_ignore_ascii_case("jade")
+        }) {
             Self::Pug
         } else {
             Self::VueTemplate

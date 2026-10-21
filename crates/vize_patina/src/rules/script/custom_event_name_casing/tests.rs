@@ -112,22 +112,32 @@ emit('myEvent')
 }
 
 #[test]
+fn test_configured_kebab_case_allows_v_model_update_event() {
+    let source = r#"
+const emit = defineEmits(['update:modelValue'])
+emit('update:modelValue')
+"#;
+    let result = create_kebab_linter().lint(source, 0);
+    assert_eq!(result.error_count, 0);
+}
+
+#[test]
 fn test_invalid_pascal_case_dollar_emit() {
-    let result = create_linter().lint("this.$emit('MyEvent')", 0);
+    let result = lint_sfc("<script>this.$emit('MyEvent')</script>");
     assert_eq!(result.error_count, 1);
     insta::assert_debug_snapshot!(result.diagnostics);
 }
 
 #[test]
 fn test_invalid_kebab_case_dollar_emit() {
-    let result = create_linter().lint("this.$emit('my-event')", 0);
+    let result = lint_sfc("<script>this.$emit('my-event')</script>");
     assert_eq!(result.error_count, 1);
 }
 
 #[test]
 fn test_invalid_context_emit_kebab() {
     // A setup-context member call (`ctx.emit('...')`) is checked too.
-    let result = create_linter().lint("ctx.emit('my-event')", 0);
+    let result = lint_sfc("<script>ctx.emit('my-event')</script>");
     assert_eq!(result.error_count, 1);
 }
 
@@ -173,7 +183,7 @@ myEmit('my-event')
 
 #[test]
 fn test_options_api_this_emit_in_method() {
-    let source = r#"
+    let source = r#"<script>
 export default {
   methods: {
 submit() {
@@ -181,8 +191,8 @@ submit() {
 }
   }
 }
-"#;
-    let result = create_linter().lint(source, 0);
+</script>"#;
+    let result = lint_sfc(source);
     assert_eq!(result.error_count, 1);
 }
 
@@ -206,9 +216,24 @@ emit('OtherEvent')
 
 #[test]
 fn test_offset_applied() {
-    let result = create_linter().lint("this.$emit('my-event')", 30);
+    let result = create_linter().lint(
+        "const emit = defineEmits(['my-event']); emit('my-event')",
+        30,
+    );
     assert_eq!(result.error_count, 1);
-    assert_eq!(result.diagnostics[0].start, 30 + 11);
+    assert_eq!(result.diagnostics[0].start, 30 + 45);
+}
+
+#[test]
+fn test_plain_module_member_emit_is_not_checked() {
+    let source = r#"
+type Wrapper = { vm: { $emit: (event: string) => void } };
+export function simulate(wrapper: Wrapper): void {
+  wrapper.vm.$emit('clear-click');
+}
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 0);
 }
 
 #[test]

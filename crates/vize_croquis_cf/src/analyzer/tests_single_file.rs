@@ -306,6 +306,45 @@ const width = window.innerWidth
 }
 
 #[test]
+fn test_template_browser_api_reports_only_unshadowed_free_globals() {
+    let mut analyzer =
+        CrossFileAnalyzer::new(CrossFileOptions::minimal().with_server_client_boundary(true));
+    let script = r#"
+import { ref } from "vue";
+
+const props = defineProps<{ place: { location: string } }>();
+const prompt = ref("");
+"#;
+    let template = r#"
+  <p>{{ props.place.location }}</p>
+  <input v-model="prompt" aria-label="Prompt" />
+  <p>{{ location.href }}</p>
+"#;
+    let allocator = vize_carton::Allocator::new();
+    let (root, errors) = vize_armature::parse(&allocator, template);
+    assert!(
+        errors.is_empty(),
+        "template should parse cleanly: {errors:?}"
+    );
+    let mut single = vize_croquis::Analyzer::with_options(AnalyzerOptions::full());
+    single.analyze_script_setup(script);
+    single.analyze_template(&root);
+    analyzer.add_file_with_analysis(Path::new("MyAddress.vue"), script, single.finish());
+
+    let result = analyzer.analyze();
+    let apis: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter_map(|diagnostic| match &diagnostic.kind {
+            CrossFileDiagnosticKind::BrowserApiInSsr { api, .. } => Some(api.as_str()),
+            _ => None,
+        })
+        .collect();
+
+    assert_eq!(apis, vec!["location"]);
+}
+
+#[test]
 fn test_lifecycle_hook_with_cleanup_is_allowed() {
     let mut analyzer = CrossFileAnalyzer::new(CrossFileOptions::minimal().with_setup_context(true));
 

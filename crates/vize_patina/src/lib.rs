@@ -138,7 +138,7 @@ pub use output::{OutputFormat, format_results, format_summary, rule_docs_path};
 pub use preset::LintPreset;
 pub use rule::{Rule, RuleCategory, RuleMeta, RuleRegistry};
 pub use rules::musea::builtin_musea_rules;
-pub use rules::opinionated::vue::VUE_ROUTER_COMPONENTS;
+pub use rules::opinionated::vue::{NUXT_BUILTIN_COMPONENTS, VUE_ROUTER_COMPONENTS};
 pub use style::{ParsedStyleSheet, StyleDocument, StyleSyntax};
 pub use telegraph::{
     Emitter, FormatEmitter, JsonEmitter, LintTransmission, LspDiagnostic, LspEmitter, Telegraph,

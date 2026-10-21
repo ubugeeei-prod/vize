@@ -33,11 +33,17 @@ fn explicit_absolute_input_reports_imported_sources_outside_cwd() {
     };
     let case_root = unique_case_dir("absolute-input-outside-cwd");
     let _ = std::fs::remove_dir_all(&case_root);
-    let cwd = case_root.join("cwd");
-    let source_root = case_root.join("source");
+    let fixture_root = case_root.join("fixture");
+    let cwd = fixture_root.join("cwd");
+    let source_root = fixture_root.join("source");
     let source_file = source_root.join("src/entry.ts");
     std::fs::create_dir_all(&cwd).unwrap();
     std::fs::create_dir_all(source_file.parent().unwrap()).unwrap();
+    std::fs::write(
+        case_root.join("tsconfig.json"),
+        r#"{"compilerOptions":{"module":"NodeNext","moduleResolution":"NodeNext"}}"#,
+    )
+    .unwrap();
     std::fs::write(
         source_root.join("shared.ts"),
         "export const message = 'hello'\n",

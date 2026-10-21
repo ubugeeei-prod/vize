@@ -24,9 +24,9 @@
 //! and cannot satisfy a *required* `ariaLabel` prop at all.
 
 use crate::context::LintContext;
-use crate::diagnostic::Severity;
+use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_l0::{String, ToCompactString, is_native_tag};
+use vize_l0::{String, ToCompactString, camelize, hyphenate, is_native_tag};
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
 
 static META: RuleMeta = RuleMeta {
@@ -229,12 +229,15 @@ impl Rule for AttributeHyphenation {
 
         for prop in &element.props {
             let (name, loc) = match prop {
-                PropNode::Attribute(attr) => (attr.name, &attr.loc),
+                PropNode::Attribute(attr) => (attr.name, &attr.name_loc),
                 PropNode::Directive(dir) => {
-                    let Some(arg) = Self::static_directive_arg(dir) else {
+                    let Some(ExpressionNode::Simple(arg)) = dir.arg.as_ref() else {
                         continue;
                     };
-                    (arg, &dir.loc)
+                    if !matches!(dir.name, "bind" | "model") || !arg.is_static {
+                        continue;
+                    }
+                    (arg.content, &arg.loc)
                 }
             };
 
@@ -251,25 +254,48 @@ impl Rule for AttributeHyphenation {
             match self.style {
                 HyphenationStyle::Always => {
                     if Self::requires_hyphenation(name) {
-                        ctx.warn_with_help(
-                            ctx.t("vue/attribute-hyphenation.message"),
-                            loc,
-                            ctx.t("vue/attribute-hyphenation.help"),
+                        report(
+                            ctx,
+                            "vue/attribute-hyphenation.message",
+                            "vue/attribute-hyphenation.help",
+                            loc.span.start,
+                            loc.span.end,
+                            hyphenate(name),
                         );
                     }
                 }
                 HyphenationStyle::Never => {
                     if Self::forbids_hyphenation(name) {
-                        ctx.warn_with_help(
-                            ctx.t("vue/attribute-hyphenation.message_never"),
-                            loc,
-                            ctx.t("vue/attribute-hyphenation.help_never"),
+                        report(
+                            ctx,
+                            "vue/attribute-hyphenation.message_never",
+                            "vue/attribute-hyphenation.help_never",
+                            loc.span.start,
+                            loc.span.end,
+                            camelize(name),
                         );
                     }
                 }
             }
         }
     }
+}
+
+fn report(
+    ctx: &mut LintContext<'_>,
+    message: &str,
+    help: &str,
+    start: u32,
+    end: u32,
+    replacement: impl Into<String>,
+) {
+    let message = ctx.t(message).into_owned();
+    let help = ctx.t(help).into_owned();
+    ctx.report(
+        LintDiagnostic::warn(META.name, message, start, end)
+            .with_help(help.clone())
+            .with_fix(Fix::new(help, TextEdit::replace(start, end, replacement))),
+    );
 }
 
 #[cfg(test)]
@@ -296,6 +322,21 @@ mod tests {
         Linter::with_registry(registry)
             .lint_template(template, "test.vue")
             .warning_count
+    }
+
+    fn fixed(linter: &Linter, source: &str) -> String {
+        let result = linter.lint_template(source, "test.vue");
+        let mut fixed = source.to_owned();
+        let mut edits: Vec<_> = result
+            .diagnostics
+            .iter()
+            .flat_map(|diagnostic| diagnostic.fix.as_ref().unwrap().edits.iter())
+            .collect();
+        edits.sort_by_key(|edit| std::cmp::Reverse(edit.start));
+        for edit in edits {
+            fixed.replace_range(edit.start as usize..edit.end as usize, &edit.new_text);
+        }
+        fixed
     }
 
     #[test]
@@ -420,5 +461,28 @@ mod tests {
             warning_count(r#"<MyComponent dataset="x" ariadne="y" :databaseName="n" />"#),
             1,
         );
+    }
+
+    #[test]
+    fn fixes_authored_static_and_bound_attribute_names() {
+        let linter = create_linter();
+        let source = r#"<UserBadge displayName="a" :activeKey="key" v-model:pageSize="size" />"#;
+        let fixed = fixed(&linter, source);
+        assert_eq!(
+            fixed,
+            r#"<UserBadge display-name="a" :active-key="key" v-model:page-size="size" />"#
+        );
+        assert_eq!(linter.lint_template(&fixed, "test.vue").warning_count, 0);
+    }
+
+    #[test]
+    fn never_fixes_authored_attribute_names_to_camel_case() {
+        let mut registry = RuleRegistry::new();
+        registry.register(Box::new(AttributeHyphenation::new(HyphenationStyle::Never)));
+        let linter = Linter::with_registry(registry);
+        let source = r#"<UserBadge display-name="a" :active-key="key" />"#;
+        let fixed = fixed(&linter, source);
+        assert_eq!(fixed, r#"<UserBadge displayName="a" :activeKey="key" />"#);
+        assert_eq!(linter.lint_template(&fixed, "test.vue").warning_count, 0);
     }
 }

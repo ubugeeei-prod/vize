@@ -11,6 +11,7 @@ import {
 } from "./client-manifest";
 import { patchNuxtHostVuePluginForCompilerExcludes } from "./host-vue-bridge";
 import { patchNuxtKeyedFunctionsPlugin, type ViteTransformResult } from "./keyed-functions-bridge";
+import { patchNuxtVueTypeGatedTransform } from "./vue-transform-bridge";
 import "./schema";
 import { getDetectedNuxtMajor, hasNuxtViteCompilerSupport } from "./builder";
 import * as bridgeFastPath from "./bridge-fast-path";
@@ -356,6 +357,7 @@ async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuild
           } else if (bridgeOptions.stableInjectedKeys && name === "nuxt:compiler:keyed-functions") {
             patchNuxtKeyedFunctionsPlugin(p);
           }
+          patchNuxtVueTypeGatedTransform(p);
           if (isViteBuild && nuxt.options.experimental?.viteEnvironmentApi === true) {
             patchNuxtClientManifestCloseBundlePlugin(p, nuxt);
           }

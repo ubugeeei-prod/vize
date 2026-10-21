@@ -122,11 +122,11 @@ fn invalid_props_modes_fail_closed_before_linting_the_original_inputs() {
     for (options, expected) in [
         (
             serde_json::json!({ "destructure": "sometimes" }),
-            "unknown variant `sometimes`, expected one of `only-when-assigned`, `always`, `never` at line 6 column 34",
+            "unknown variant `sometimes`, expected one of `only-when-assigned`, `always`, `never`",
         ),
         (
             serde_json::json!({ "other": true }),
-            "unknown field `other`, expected `destructure` at line 6 column 15",
+            "unknown field `other`, expected `destructure`",
         ),
     ] {
         let root = tempfile::tempdir().unwrap();
@@ -134,7 +134,8 @@ fn invalid_props_modes_fail_closed_before_linting_the_original_inputs() {
             &fs::read(fixtures().join("original-vize.config.json.txt")).unwrap(),
         )
         .unwrap();
-        config["linter"]["ruleOptions"] =
+        let mut config = serde_json::json!({ "vue": config });
+        config["vue"]["linter"]["ruleOptions"] =
             serde_json::json!({ "script/define-props-destructuring": options });
         let config = serde_json::to_vec_pretty(&config).unwrap();
         fs::write(root.path().join("config.json"), &config).unwrap();

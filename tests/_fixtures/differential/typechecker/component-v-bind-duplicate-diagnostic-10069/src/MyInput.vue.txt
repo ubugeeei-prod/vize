@@ -1,0 +1,8 @@
+<script setup lang="ts">
+defineProps<{ type?: string; label?: string }>();
+defineEmits<{ blur: [event: FocusEvent] }>();
+</script>
+
+<template>
+  <input :type :aria-label="label" @blur="$emit('blur', $event)" />
+</template>

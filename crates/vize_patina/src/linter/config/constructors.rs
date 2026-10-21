@@ -39,6 +39,10 @@ impl Linter {
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: Mutex::new(None),
             #[cfg(not(target_arch = "wasm32"))]
+            type_aware_project_configs: Mutex::new(FxHashMap::default()),
+            #[cfg(not(target_arch = "wasm32"))]
+            reported_type_aware_project_configs: Mutex::new(FxHashSet::default()),
+            #[cfg(not(target_arch = "wasm32"))]
             corsa_path: None,
         }
     }
@@ -71,6 +75,10 @@ impl Linter {
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: Mutex::new(None),
             #[cfg(not(target_arch = "wasm32"))]
+            type_aware_project_configs: Mutex::new(FxHashMap::default()),
+            #[cfg(not(target_arch = "wasm32"))]
+            reported_type_aware_project_configs: Mutex::new(FxHashSet::default()),
+            #[cfg(not(target_arch = "wasm32"))]
             corsa_path: None,
         }
     }
@@ -102,6 +110,10 @@ impl Linter {
             strict_boolean_options: vize_l0::config::StrictBooleanExpressionsOptions::default(),
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: Mutex::new(None),
+            #[cfg(not(target_arch = "wasm32"))]
+            type_aware_project_configs: Mutex::new(FxHashMap::default()),
+            #[cfg(not(target_arch = "wasm32"))]
+            reported_type_aware_project_configs: Mutex::new(FxHashSet::default()),
             #[cfg(not(target_arch = "wasm32"))]
             corsa_path: None,
         }
@@ -147,6 +159,10 @@ impl Linter {
             strict_boolean_options: vize_l0::config::StrictBooleanExpressionsOptions::default(),
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: Mutex::new(None),
+            #[cfg(not(target_arch = "wasm32"))]
+            type_aware_project_configs: Mutex::new(FxHashMap::default()),
+            #[cfg(not(target_arch = "wasm32"))]
+            reported_type_aware_project_configs: Mutex::new(FxHashSet::default()),
             #[cfg(not(target_arch = "wasm32"))]
             corsa_path: None,
         }

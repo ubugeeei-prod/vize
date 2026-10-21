@@ -168,7 +168,7 @@ fn project_snapshot_resolves_vite_root_paths_from_one_evaluation() {
 
     std::fs::write(
         project.path().join("serialized-config.json"),
-        "{\"projectRoot\":42,\"__vizeProjectRoot\":42}",
+        "{\"vue\":{},\"projectRoot\":42,\"__vizeProjectRoot\":42}",
     )
     .unwrap();
     let dedicated = super::try_load_project_config_with_source(Some(
@@ -183,7 +183,7 @@ fn project_snapshot_resolves_vite_root_paths_from_one_evaluation() {
 
     std::fs::write(
         project.path().join("serialized-config.json"),
-        r#"{"__vizeProjectRoot":"untrusted","ignores":["src/Ignored.vue"]}"#,
+        r#"{"vue":{"ignores":["src/Ignored.vue"]},"__vizeProjectRoot":"untrusted"}"#,
     )
     .unwrap();
     let dedicated = super::try_load_project_config_with_source(Some(
@@ -269,7 +269,7 @@ fn editor_snapshot_preserves_explicit_serialized_relative_tsconfig_values() {
     let project = tempfile::tempdir().unwrap();
     std::fs::write(
         project.path().join("serialized-config.json"),
-        r#"{"typeChecker":{"tsconfig":"tsconfig.app.json","jsxTypecheck":false}}"#,
+        r#"{"vue":{"typeChecker":{"tsconfig":"tsconfig.app.json","jsxTypecheck":false}}}"#,
     )
     .unwrap();
     let loaded = load_lsp_config_snapshot(Some(&project.path().join("serialized-config.json")));

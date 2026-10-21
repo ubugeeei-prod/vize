@@ -29,8 +29,8 @@ impl BuildCapture {
         descriptor: &SfcDescriptor<'_>,
     ) -> Self {
         let template = descriptor.template.as_ref();
-        // Only Pug is preprocessed; every inline template is then passed to
-        // the Vue template parser, including unconverted Jade content.
+        // Pug and its legacy Jade spelling are preprocessed; every inline
+        // template is then passed to the Vue template parser.
         let authored_lower = template
             .and_then(|template| template.lang.as_deref())
             .unwrap_or("vue-template")

@@ -102,6 +102,54 @@ export async function resolveViteConfigSource(exported, env) {
   return resolveSource(exported, env);
 }
 
+/** Resolve an explicitly selected CLI config as Vite config independent of its basename. */
+export async function resolveExplicitViteConfigExport(exported, env, configDir) {
+  env ??= { mode: "development", command: "serve" };
+  if (env.command !== "build" && env.command !== "serve") {
+    env = { ...env, command: "serve" };
+  }
+  const source = await resolveViteConfigSource(exported, env);
+  return projectExplicitViteConfigSource(source, env, configDir);
+}
+
+/** Preserve an archived native export only when its shape proves that role. */
+export async function resolveExplicitSerializedConfigExport(exported, env, configDir) {
+  env ??= { mode: "development", command: "serve" };
+  if (env.command !== "build" && env.command !== "serve") {
+    env = { ...env, command: "serve" };
+  }
+  const source = await resolveViteConfigSource(exported, env);
+  if (
+    [
+      "compiler",
+      "typeChecker",
+      "linter",
+      "formatter",
+      "languageServer",
+      "globalTypes",
+      "files",
+      "ignores",
+      "entries",
+    ].some((key) => Object.hasOwn(source, key))
+  ) {
+    return source;
+  }
+  return projectExplicitViteConfigSource(source, env, configDir);
+}
+
+function projectExplicitViteConfigSource(source, env, configDir) {
+  if (
+    ["linter", "formatter", "languageServer", "globalTypes", "files", "ignores", "entries"].some(
+      (key) => Object.hasOwn(source, key),
+    )
+  ) {
+    throw new Error(
+      "vize.config.* is no longer supported; move Vue settings to vue: in vite.config.* and TypeScript settings to tsconfig.json",
+    );
+  }
+  return projectViteConfigSource(source, env, configDir);
+}
+
 /** Project already evaluated settings; the owning adapter evaluates its Vite export once. */
 export async function projectViteConfigSource(source, env, configDir) {
   if (!object(source)) throw new TypeError("Vite config source must be an object");

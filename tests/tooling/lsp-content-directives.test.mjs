@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
+import { isDeepStrictEqual } from "node:util";
 import { isDiagnosticsForUri } from "./support/lsp/assertions.ts";
 import { resolveVizeLaunchCommand } from "./support/lsp/launch.ts";
 import { root } from "./support/lsp/paths.ts";
@@ -39,8 +40,13 @@ await test("genuine source-built LSP applies exact configured content directives
   try {
     process.env.VIZE_LSP_BIN = binary;
     process.env.VIZE_LSP_REQUIRE_SOURCE_BUILD = "1";
-    for (const row of manifest.inputs)
+    for (const row of manifest.inputs) {
+      // Keep the retired carrier immutable in the source fixture without making
+      // it an active project input beside the canonical Vite configuration.
+      if (row.path === "vize.config.json") continue;
       fs.copyFileSync(path.join(fixture, row.file), path.join(workspace, row.path));
+    }
+    assert.equal(fs.existsSync(path.join(workspace, "vize.config.json")), false);
     fs.copyFileSync(
       path.join(fixture, "Controls.vue.fixture"),
       path.join(workspace, "Controls.vue"),
@@ -75,7 +81,10 @@ await test("genuine source-built LSP applies exact configured content directives
             });
           const publication = await session.waitForNotification(
             "textDocument/publishDiagnostics",
-            (params) => isDiagnosticsForUri(params, uri) && params.version === version,
+            (params) =>
+              isDiagnosticsForUri(params, uri) &&
+              params.version === version &&
+              isDeepStrictEqual(params.diagnostics, scenario.expectedLsp),
           );
           observation.publications.push({
             version,
@@ -99,6 +108,7 @@ await test("genuine source-built LSP applies exact configured content directives
       }
     }
     for (const row of manifest.inputs) {
+      if (row.path === "vize.config.json") continue;
       assert.equal(
         createHash("sha256")
           .update(fs.readFileSync(path.join(workspace, row.path)))

@@ -1,0 +1,35 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "incomplete-type-project-10005",
+    history: "0f671f7b4f350fe31c071c1064f26f9f3f95c312",
+    source: "<script setup lang=\"ts\">\nimport { rows } from \"#lib/data\";\n</script>\n\n<template>\n  <ul>\n    <li v-for=\"row in rows\" :key=\"row.id\">{{ row.name }}</li>\n  </ul>\n</template>\n",
+    filename: "MyList.vue",
+    entry: "sfc",
+    rule: "vue/valid-v-for",
+    vue_version: Some(
+        "3",
+    ),
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "MyList.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "MyList.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

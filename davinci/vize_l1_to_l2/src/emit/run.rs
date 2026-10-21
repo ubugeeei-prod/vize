@@ -220,9 +220,13 @@ pub(super) fn emit_dom_observed<'f>(
     }
     let (is_ref_visit, unref_before_is_ref) = cx.used_is_ref.get();
     if is_ref_visit != u32::MAX {
-        // Each real prefix result registers Unref before IsRef. Preserve the
-        // first result's tie; a later read must not reorder an earlier write.
-        if unref_visit < is_ref_visit || (unref_visit == is_ref_visit && unref_before_is_ref) {
+        // A model registers its authored read's Unref before generating the
+        // write handler's IsRef at the same element visit. For other tied
+        // bindings, preserve the order observed while emitting the element.
+        let eager_unref_tied = authored_eager_unref == is_ref_visit;
+        if unref_visit < is_ref_visit
+            || (unref_visit == is_ref_visit && (unref_before_is_ref || eager_unref_tied))
+        {
             cx.buf
                 .prefer_at_visit_after(Helper::IsRef, is_ref_visit, Helper::Unref);
         } else {

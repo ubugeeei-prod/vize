@@ -203,7 +203,12 @@
 "tests/_fixtures/differential/lint/transition-custom-child-6881/sources/slot-child.vue"
 "tests/_fixtures/differential/lint/transition-custom-child-6881/sources/static-key.vue"
 "tests/_fixtures/differential/lint/transition-custom-child-6881/sources/web-component.vue"
+"tests/_fixtures/differential/linter/custom-event-name-casing-9879/source.vue"
 "tests/_fixtures/differential/linter/require-symbol-provide-range-9882/source.vue"
+"tests/_fixtures/differential/linter/vue-alias-types-9864/src/pages/list-view.vue"
+"tests/_fixtures/differential/linter/vue-alias-types-9864/src/pages/page-view.vue"
+"tests/_fixtures/differential/linter/vue-alias-types-9864/src/ui/item-list.vue"
+"tests/_fixtures/differential/linter/vue-alias-types-9864/src/ui/side-panel.vue"
 "tests/_fixtures/differential/lsp/binding-occurrences-original/Field.vue"
 "tests/_fixtures/differential/nuxt/explicit-page-meta/App.vue"
 "tests/_fixtures/differential/typechecker/vite-plus-relative-tsconfig/src/Counter.vue"
@@ -617,6 +622,9 @@
 "tests/_fixtures/differential/lint/transition-custom-child-6881/sources/native-math.vue" s3.extract-placements missed hoist @59:67 reason="regressed-emitted-size" emitted-size=8 reactive-edges=0 update-path=0 budget-left=127
 "tests/_fixtures/differential/lint/transition-custom-child-6881/sources/native-svg.vue" s3.extract-placements missed hoist @59:66 reason="regressed-emitted-size" emitted-size=8 reactive-edges=0 update-path=0 budget-left=127
 "tests/_fixtures/differential/lint/transition-custom-child-6881/sources/native-toggle-if.vue" s3.extract-placements missed hoist @59:76 reason="regressed-emitted-size" emitted-size=8 reactive-edges=0 update-path=0 budget-left=127
+"tests/_fixtures/differential/linter/vue-alias-types-9864/src/pages/page-view.vue" s3.extract-placements missed cache @304:326 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
+"tests/_fixtures/differential/linter/vue-alias-types-9864/src/pages/page-view.vue" s3.extract-placements missed cache @366:391 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
+"tests/_fixtures/differential/linter/vue-alias-types-9864/src/ui/side-panel.vue" s3.extract-placements applied hoist @287:319 reason="committed" emitted-size=-13 reactive-edges=0 update-path=-1 budget-left=127
 "tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#1855/main.vue" s3.extract-placements missed cache @127:171 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
 "tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#1855/main.vue" s3.extract-placements missed cache @172:213 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126
 "tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2225/main.vue" s3.extract-placements missed cache @292:377 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127

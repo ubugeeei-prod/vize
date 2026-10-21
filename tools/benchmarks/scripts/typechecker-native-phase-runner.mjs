@@ -35,6 +35,16 @@ const command = (binary, args, cwd, env = process.env) =>
     timeout: 300_000,
     maxBuffer: 256 * 1024 * 1024,
   });
+const NATIVE_FALLBACK =
+  /sharded Corsa CLI check failed|degraded to a single CLI program|Same-config native diagnostic completion failed|Failed to start Corsa API session|process is closed: msgpack stdout/u;
+export function assertNoNativeFallback(result, label) {
+  assert.equal(result.signal, null, `${label}: native process received a signal`);
+  assert.doesNotMatch(
+    result.stderr ?? "",
+    NATIVE_FALLBACK,
+    `${label}: native fallback is not evidence`,
+  );
+}
 function successful(result, label) {
   assert.equal(result.error, undefined, `${label}: ${result.error?.message}`);
   assert.equal(result.status, 0, `${label}: ${result.stderr}`);
@@ -119,6 +129,7 @@ export function createPhaseRunner({ root, directory, binaries, wrapper }) {
       };
       writeJson(join(directory, "raw", `${id}.json`), record);
       assert.equal(result.error, undefined, result.error?.message);
+      assertNoNativeFallback(result, id);
       const normalized = normalizeCliReport(result, corpus.dir, expected);
       record.normalized = normalized;
       record.fingerprint = diagnosticFingerprint(normalized);

@@ -12,11 +12,11 @@
         "ruleId": "script/no-duplicate-attr-inheritance",
         "ruleDocsPath": "docs/content/rules/type-and-script.md",
         "severity": 1,
-        "message": "[vize:script/no-duplicate-attr-inheritance] `v-bind=\"$attrs\"` on the root element applies the fallthrough attributes twice, because `inheritAttrs` defaults to true.",
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
         "line": 30,
-        "column": 5,
+        "column": 13,
         "endLine": 30,
-        "endColumn": 20,
+        "endColumn": 19,
         "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
       }
     ],
@@ -30,11 +30,11 @@
         "ruleId": "script/no-duplicate-attr-inheritance",
         "ruleDocsPath": "docs/content/rules/type-and-script.md",
         "severity": 1,
-        "message": "[vize:script/no-duplicate-attr-inheritance] `v-bind=\"$attrs\"` on the root element applies the fallthrough attributes twice, because `inheritAttrs` defaults to true.",
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
         "line": 14,
-        "column": 30,
+        "column": 38,
         "endLine": 14,
-        "endColumn": 45,
+        "endColumn": 44,
         "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
       }
     ],
@@ -93,28 +93,6 @@
     "file": "app/components/account/AccountHeader.vue",
     "messages": [
       {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <component> is deprecated",
-        "line": 134,
-        "column": 51,
-        "endLine": 134,
-        "endColumn": 66,
-        "help": "Use CSS border instead."
-      },
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <label> is deprecated",
-        "line": 215,
-        "column": 9,
-        "endLine": 215,
-        "endColumn": 24,
-        "help": "Use CSS border instead."
-      },
-      {
         "ruleId": "vue/permitted-contents",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
@@ -145,11 +123,11 @@
         "column": 1,
         "endLine": 273,
         "endColumn": 8,
-        "help": "Add scoped attribute: <style scoped>"
+        "help": "Add the 'scoped' attribute to the style block"
       }
     ],
     "errorCount": 2,
-    "warningCount": 3
+    "warningCount": 1
   },
   {
     "file": "app/components/account/AccountHoverCard.vue",
@@ -231,21 +209,9 @@
   },
   {
     "file": "app/components/account/AccountRelationshipIndicator.vue",
-    "messages": [
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <span> is deprecated",
-        "line": 14,
-        "column": 5,
-        "endLine": 14,
-        "endColumn": 11,
-        "help": "Use CSS border instead."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/account/AccountRolesIndicator.vue",
@@ -314,21 +280,9 @@
   },
   {
     "file": "app/components/command/CommandKey.vue",
-    "messages": [
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 20,
-        "column": 9,
-        "endLine": 20,
-        "endColumn": 24,
-        "help": "Use CSS border instead."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/command/CommandPanel.vue",
@@ -369,17 +323,6 @@
     "file": "app/components/common/CommonAlert.vue",
     "messages": [
       {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 16,
-        "column": 5,
-        "endLine": 16,
-        "endColumn": 20,
-        "help": "Use CSS border instead."
-      },
-      {
         "ruleId": "vue/permitted-contents",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
@@ -392,7 +335,7 @@
       }
     ],
     "errorCount": 1,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/common/CommonBlurhash.vue",
@@ -429,11 +372,11 @@
         "ruleId": "script/no-duplicate-attr-inheritance",
         "ruleDocsPath": "docs/content/rules/type-and-script.md",
         "severity": 1,
-        "message": "[vize:script/no-duplicate-attr-inheritance] `v-bind=\"$attrs\"` on the root element applies the fallthrough attributes twice, because `inheritAttrs` defaults to true.",
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
         "line": 17,
-        "column": 5,
+        "column": 13,
         "endLine": 17,
-        "endColumn": 20,
+        "endColumn": 19,
         "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
       },
       {
@@ -445,7 +388,7 @@
         "column": 1,
         "endLine": 38,
         "endColumn": 8,
-        "help": "Add scoped attribute: <style scoped>"
+        "help": "Add the 'scoped' attribute to the style block"
       }
     ],
     "errorCount": 0,
@@ -461,30 +404,19 @@
     "file": "app/components/common/CommonErrorMessage.vue",
     "messages": [
       {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 14,
-        "column": 5,
-        "endLine": 14,
-        "endColumn": 49,
-        "help": "Use CSS border instead."
-      },
-      {
         "ruleId": "script/no-duplicate-attr-inheritance",
         "ruleDocsPath": "docs/content/rules/type-and-script.md",
         "severity": 1,
-        "message": "[vize:script/no-duplicate-attr-inheritance] `v-bind=\"$attrs\"` on the root element applies the fallthrough attributes twice, because `inheritAttrs` defaults to true.",
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
         "line": 15,
-        "column": 5,
+        "column": 13,
         "endLine": 15,
-        "endColumn": 20,
+        "endColumn": 19,
         "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "app/components/common/CommonInputImage.vue",
@@ -619,7 +551,7 @@
         "column": 1,
         "endLine": 30,
         "endColumn": 8,
-        "help": "Add scoped attribute: <style scoped>"
+        "help": "Add the 'scoped' attribute to the style block"
       }
     ],
     "errorCount": 0,
@@ -627,21 +559,9 @@
   },
   {
     "file": "app/components/common/CommonRouteTabs.vue",
-    "messages": [
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 26,
-        "column": 69,
-        "endLine": 26,
-        "endColumn": 84,
-        "help": "Use CSS border instead."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/common/CommonScrollIntoView.vue",
@@ -656,11 +576,11 @@
         "ruleId": "script/no-duplicate-attr-inheritance",
         "ruleDocsPath": "docs/content/rules/type-and-script.md",
         "severity": 1,
-        "message": "[vize:script/no-duplicate-attr-inheritance] `v-bind=\"$attrs\"` on the root element applies the fallthrough attributes twice, because `inheritAttrs` defaults to true.",
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
         "line": 14,
-        "column": 5,
+        "column": 13,
         "endLine": 14,
-        "endColumn": 20,
+        "endColumn": 19,
         "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
       }
     ],
@@ -687,21 +607,9 @@
   },
   {
     "file": "app/components/common/OfflineChecker.vue",
-    "messages": [
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 9,
-        "column": 5,
-        "endLine": 9,
-        "endColumn": 20,
-        "help": "Use CSS border instead."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/common/dropdown/Dropdown.vue",
@@ -710,11 +618,11 @@
         "ruleId": "script/no-duplicate-attr-inheritance",
         "ruleDocsPath": "docs/content/rules/type-and-script.md",
         "severity": 1,
-        "message": "[vize:script/no-duplicate-attr-inheritance] `v-bind=\"$attrs\"` on the root element applies the fallthrough attributes twice, because `inheritAttrs` defaults to true.",
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
         "line": 25,
-        "column": 14,
+        "column": 22,
         "endLine": 25,
-        "endColumn": 29,
+        "endColumn": 28,
         "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
       }
     ],
@@ -739,11 +647,11 @@
         "ruleId": "script/no-duplicate-attr-inheritance",
         "ruleDocsPath": "docs/content/rules/type-and-script.md",
         "severity": 1,
-        "message": "[vize:script/no-duplicate-attr-inheritance] `v-bind=\"$attrs\"` on the root element applies the fallthrough attributes twice, because `inheritAttrs` defaults to true.",
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
         "line": 53,
-        "column": 5,
+        "column": 13,
         "endLine": 53,
-        "endColumn": 20,
+        "endColumn": 19,
         "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
       }
     ],
@@ -799,11 +707,11 @@
         "ruleId": "script/no-duplicate-attr-inheritance",
         "ruleDocsPath": "docs/content/rules/type-and-script.md",
         "severity": 1,
-        "message": "[vize:script/no-duplicate-attr-inheritance] `v-bind=\"$attrs\"` on the root element applies the fallthrough attributes twice, because `inheritAttrs` defaults to true.",
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
         "line": 30,
-        "column": 23,
+        "column": 31,
         "endLine": 30,
-        "endColumn": 38,
+        "endColumn": 37,
         "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
       }
     ],
@@ -877,17 +785,6 @@
     "file": "app/components/list/ListEntry.vue",
     "messages": [
       {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 113,
-        "column": 15,
-        "endLine": 113,
-        "endColumn": 30,
-        "help": "Use CSS border instead."
-      },
-      {
         "ruleId": "a11y/form-control-has-label",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -900,7 +797,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "app/components/list/Lists.vue",
@@ -934,15 +831,15 @@
         "help": "Why: the HTML standard's content models define which elements may contain which. The browser builds this DOM as written, but the document is non-conforming: assistive technology, validators and future parsers may treat it differently.\nFix: use an element the parent permits (phrasing content such as <span> inside <p>/<span>, <li> inside lists), or restructure so interactive elements are not nested."
       },
       {
-        "ruleId": "html/deprecated-attr",
+        "ruleId": "html/no-duplicate-class",
         "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <code> is deprecated",
+        "message": "[vize:html/no-duplicate-class] Duplicate class name 'lg:px2'",
         "line": 163,
-        "column": 86,
+        "column": 21,
         "endLine": 163,
-        "endColumn": 112,
-        "help": "Use CSS border instead."
+        "endColumn": 69,
+        "help": "Remove the duplicate occurrence so each class name appears only once in the class attribute."
       }
     ],
     "errorCount": 1,
@@ -963,17 +860,6 @@
         "help": "Remove unused prop or use it in your template/script"
       },
       {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 51,
-        "column": 106,
-        "endLine": 51,
-        "endColumn": 121,
-        "help": "Use CSS border instead."
-      },
-      {
         "ruleId": "vue/permitted-contents",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
@@ -986,7 +872,7 @@
       }
     ],
     "errorCount": 1,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "app/components/main/MainTitle.vue",
@@ -1079,17 +965,6 @@
     "file": "app/components/modal/ModalError.vue",
     "messages": [
       {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 17,
-        "column": 7,
-        "endLine": 17,
-        "endColumn": 51,
-        "help": "Use CSS border instead."
-      },
-      {
         "ruleId": "ssr/no-browser-globals-in-ssr",
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
@@ -1102,7 +977,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "app/components/modal/ModalMediaPreview.vue",
@@ -1196,39 +1071,15 @@
   },
   {
     "file": "app/components/nav/NavBottom.vue",
-    "messages": [
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <nav> is deprecated",
-        "line": 62,
-        "column": 10,
-        "endLine": 62,
-        "endColumn": 25,
-        "help": "Use CSS border instead."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/nav/NavBottomMoreMenu.vue",
-    "messages": [
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 159,
-        "column": 16,
-        "endLine": 159,
-        "endColumn": 57,
-        "help": "Use CSS border instead."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/nav/NavFooter.vue",
@@ -1524,43 +1375,9 @@
   },
   {
     "file": "app/components/notification/NotificationPaginator.vue",
-    "messages": [
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 179,
-        "column": 5,
-        "endLine": 179,
-        "endColumn": 29,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 180,
-        "column": 5,
-        "endLine": 180,
-        "endColumn": 39,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <button> is deprecated",
-        "line": 183,
-        "column": 44,
-        "endLine": 183,
-        "endColumn": 59,
-        "help": "Use CSS border instead."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 0
   },
   {
     "file": "app/components/notification/NotificationPreferences.client.vue",
@@ -1586,47 +1403,14 @@
         "endLine": 115,
         "endColumn": 77,
         "help": "Why: ID reference attributes like for, aria-labelledby, aria-describedby, etc. must point to an existing element with that id. A broken reference silently breaks the association.\nFix: Ensure the referenced ID exists in the template:\n  <label for=\"name\">Name:</label>\n  <input id=\"name\" type=\"text\">"
-      },
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 117,
-        "column": 37,
-        "endLine": 117,
-        "endColumn": 52,
-        "help": "Use CSS border instead."
-      },
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <span> is deprecated",
-        "line": 167,
-        "column": 21,
-        "endLine": 167,
-        "endColumn": 40,
-        "help": "Use CSS border instead."
       }
     ],
     "errorCount": 0,
-    "warningCount": 4
+    "warningCount": 2
   },
   {
     "file": "app/components/notification/NotificationSubscribePushNotificationError.vue",
     "messages": [
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 18,
-        "column": 5,
-        "endLine": 18,
-        "endColumn": 49,
-        "help": "Use CSS border instead."
-      },
       {
         "ruleId": "vue/no-template-target-blank",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -1651,7 +1435,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "app/components/publish/PublishAttachment.vue",
@@ -1792,21 +1576,10 @@
         "endLine": 53,
         "endColumn": 8,
         "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
-      },
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <input> is deprecated",
-        "line": 52,
-        "column": 22,
-        "endLine": 52,
-        "endColumn": 37,
-        "help": "Use CSS border instead."
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "app/components/publish/PublishQuoteApprovalPicker.vue",
@@ -1864,28 +1637,6 @@
         "help": "Remove unused prop or use it in your template/script"
       },
       {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 407,
-        "column": 22,
-        "endLine": 407,
-        "endColumn": 37,
-        "help": "Use CSS border instead."
-      },
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 415,
-        "column": 62,
-        "endLine": 415,
-        "endColumn": 91,
-        "help": "Use CSS border instead."
-      },
-      {
         "ruleId": "a11y/form-control-has-label",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -1895,17 +1646,6 @@
         "endLine": 431,
         "endColumn": 16,
         "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
-      },
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <input> is deprecated",
-        "line": 430,
-        "column": 67,
-        "endLine": 430,
-        "endColumn": 82,
-        "help": "Use CSS border instead."
       },
       {
         "ruleId": "html/id-duplication",
@@ -1941,17 +1681,6 @@
         "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
       },
       {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <input> is deprecated",
-        "line": 554,
-        "column": 41,
-        "endLine": 554,
-        "endColumn": 56,
-        "help": "Use CSS border instead."
-      },
-      {
         "ruleId": "vue/permitted-contents",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
@@ -1972,39 +1701,6 @@
         "endLine": 586,
         "endColumn": 21,
         "help": "Why: the HTML standard's content models define which elements may contain which. The browser builds this DOM as written, but the document is non-conforming: assistive technology, validators and future parsers may treat it differently.\nFix: use an element the parent permits (phrasing content such as <span> inside <p>/<span>, <li> inside lists), or restructure so interactive elements are not nested."
-      },
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <blockquote> is deprecated",
-        "line": 590,
-        "column": 45,
-        "endLine": 590,
-        "endColumn": 62,
-        "help": "Use CSS border instead."
-      },
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 597,
-        "column": 58,
-        "endLine": 597,
-        "endColumn": 73,
-        "help": "Use CSS border instead."
-      },
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 604,
-        "column": 99,
-        "endLine": 604,
-        "endColumn": 114,
-        "help": "Use CSS border instead."
       },
       {
         "ruleId": "vue/permitted-contents",
@@ -2239,7 +1935,7 @@
       }
     ],
     "errorCount": 23,
-    "warningCount": 12
+    "warningCount": 5
   },
   {
     "file": "app/components/publish/PublishWidgetFull.client.vue",
@@ -2272,9 +1968,21 @@
   },
   {
     "file": "app/components/publish/PublishWidgetList.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 35,
+        "column": 15,
+        "endLine": 35,
+        "endColumn": 21,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/pwa/PwaBadge.client.vue",
@@ -2329,10 +2037,21 @@
         "endLine": 1,
         "endColumn": 11,
         "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 7,
+        "column": 13,
+        "endLine": 7,
+        "endColumn": 19,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 2
   },
   {
     "file": "app/components/pwa/PwaPrompt.client.vue",
@@ -2378,17 +2097,6 @@
         "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
       },
       {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <textarea> is deprecated",
-        "line": 160,
-        "column": 64,
-        "endLine": 160,
-        "endColumn": 70,
-        "help": "Use CSS border instead."
-      },
-      {
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -2397,11 +2105,11 @@
         "column": 1,
         "endLine": 253,
         "endColumn": 8,
-        "help": "Add scoped attribute: <style scoped>"
+        "help": "Add the 'scoped' attribute to the style block"
       }
     ],
     "errorCount": 1,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "app/components/search/SearchAccountInfo.vue",
@@ -2449,17 +2157,6 @@
     "file": "app/components/search/SearchWidget.vue",
     "messages": [
       {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 67,
-        "column": 18,
-        "endLine": 67,
-        "endColumn": 33,
-        "help": "Use CSS border instead."
-      },
-      {
         "ruleId": "a11y/form-control-has-label",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -2469,57 +2166,22 @@
         "endLine": 87,
         "endColumn": 8,
         "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
-      },
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 94,
-        "column": 27,
-        "endLine": 94,
-        "endColumn": 42,
-        "help": "Use CSS border instead."
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 1
   },
   {
     "file": "app/components/settings/SettingsBottomNav.vue",
-    "messages": [
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <button> is deprecated",
-        "line": 101,
-        "column": 51,
-        "endLine": 101,
-        "endColumn": 74,
-        "help": "Use CSS border instead."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/settings/SettingsColorMode.vue",
-    "messages": [
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <button> is deprecated",
-        "line": 39,
-        "column": 50,
-        "endLine": 39,
-        "endColumn": 73,
-        "help": "Use CSS border instead."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/settings/SettingsFontSize.vue",
@@ -2533,7 +2195,7 @@
         "column": 1,
         "endLine": 57,
         "endColumn": 8,
-        "help": "Add scoped attribute: <style scoped>"
+        "help": "Add the 'scoped' attribute to the style block"
       }
     ],
     "errorCount": 0,
@@ -2753,7 +2415,7 @@
         "column": 1,
         "endLine": 300,
         "endColumn": 23,
-        "help": "Add scoped attribute: <style scoped>"
+        "help": "Add the 'scoped' attribute to the style block"
       }
     ],
     "errorCount": 1,
@@ -2763,17 +2425,6 @@
     "file": "app/components/status/StatusBody.vue",
     "messages": [
       {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 54,
-        "column": 21,
-        "endLine": 54,
-        "endColumn": 36,
-        "help": "Use CSS border instead."
-      },
-      {
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -2782,59 +2433,15 @@
         "column": 1,
         "endLine": 68,
         "endColumn": 8,
-        "help": "Add scoped attribute: <style scoped>"
+        "help": "Add the 'scoped' attribute to the style block"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "app/components/status/StatusCard.vue",
     "messages": [
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 127,
-        "column": 34,
-        "endLine": 127,
-        "endColumn": 49,
-        "help": "Use CSS border instead."
-      },
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 128,
-        "column": 34,
-        "endLine": 128,
-        "endColumn": 49,
-        "help": "Use CSS border instead."
-      },
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 129,
-        "column": 34,
-        "endLine": 129,
-        "endColumn": 49,
-        "help": "Use CSS border instead."
-      },
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 131,
-        "column": 29,
-        "endLine": 131,
-        "endColumn": 44,
-        "help": "Use CSS border instead."
-      },
       {
         "ruleId": "vue/permitted-contents",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -2845,21 +2452,10 @@
         "endLine": 164,
         "endColumn": 19,
         "help": "Why: the HTML standard's content models define which elements may contain which. The browser builds this DOM as written, but the document is non-conforming: assistive technology, validators and future parsers may treat it differently.\nFix: use an element the parent permits (phrasing content such as <span> inside <p>/<span>, <li> inside lists), or restructure so interactive elements are not nested."
-      },
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 183,
-        "column": 24,
-        "endLine": 183,
-        "endColumn": 39,
-        "help": "Use CSS border instead."
       }
     ],
     "errorCount": 1,
-    "warningCount": 5
+    "warningCount": 0
   },
   {
     "file": "app/components/status/StatusCardSkeleton.vue",
@@ -2887,32 +2483,9 @@
   },
   {
     "file": "app/components/status/StatusDetails.vue",
-    "messages": [
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 66,
-        "column": 10,
-        "endLine": 66,
-        "endColumn": 25,
-        "help": "Use CSS border instead."
-      },
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 69,
-        "column": 10,
-        "endLine": 69,
-        "endColumn": 25,
-        "help": "Use CSS border instead."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 0
   },
   {
     "file": "app/components/status/StatusEmbeddedMedia.vue",
@@ -2937,7 +2510,7 @@
         "column": 1,
         "endLine": 100,
         "endColumn": 8,
-        "help": "Add scoped attribute: <style scoped>"
+        "help": "Add the 'scoped' attribute to the style block"
       }
     ],
     "errorCount": 0,
@@ -2979,7 +2552,7 @@
         "column": 1,
         "endLine": 36,
         "endColumn": 23,
-        "help": "Add scoped attribute: <style scoped>"
+        "help": "Add the 'scoped' attribute to the style block"
       }
     ],
     "errorCount": 0,
@@ -3073,7 +2646,7 @@
         "column": 1,
         "endLine": 120,
         "endColumn": 23,
-        "help": "Add scoped attribute: <style scoped>"
+        "help": "Add the 'scoped' attribute to the style block"
       }
     ],
     "errorCount": 0,
@@ -3081,21 +2654,9 @@
   },
   {
     "file": "app/components/status/StatusPreviewCardSkeleton.vue",
-    "messages": [
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 22,
-        "column": 7,
-        "endLine": 22,
-        "endColumn": 20,
-        "help": "Use CSS border instead."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/status/StatusPreviewGitHub.vue",
@@ -3167,120 +2728,9 @@
   },
   {
     "file": "app/components/status/StatusQuote.vue",
-    "messages": [
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 54,
-        "column": 14,
-        "endLine": 54,
-        "endColumn": 26,
-        "help": "Use CSS border instead."
-      },
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 60,
-        "column": 14,
-        "endLine": 60,
-        "endColumn": 26,
-        "help": "Use CSS border instead."
-      },
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 66,
-        "column": 14,
-        "endLine": 66,
-        "endColumn": 26,
-        "help": "Use CSS border instead."
-      },
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 72,
-        "column": 14,
-        "endLine": 72,
-        "endColumn": 26,
-        "help": "Use CSS border instead."
-      },
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 78,
-        "column": 14,
-        "endLine": 78,
-        "endColumn": 26,
-        "help": "Use CSS border instead."
-      },
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 84,
-        "column": 14,
-        "endLine": 84,
-        "endColumn": 26,
-        "help": "Use CSS border instead."
-      },
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 90,
-        "column": 14,
-        "endLine": 90,
-        "endColumn": 26,
-        "help": "Use CSS border instead."
-      },
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 99,
-        "column": 14,
-        "endLine": 99,
-        "endColumn": 26,
-        "help": "Use CSS border instead."
-      },
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 105,
-        "column": 14,
-        "endLine": 105,
-        "endColumn": 26,
-        "help": "Use CSS border instead."
-      },
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 111,
-        "column": 14,
-        "endLine": 111,
-        "endColumn": 26,
-        "help": "Use CSS border instead."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 10
+    "warningCount": 0
   },
   {
     "file": "app/components/status/StatusReactedBy.vue",
@@ -3339,17 +2789,6 @@
     "file": "app/components/status/StatusSpoiler.vue",
     "messages": [
       {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 34,
-        "column": 79,
-        "endLine": 34,
-        "endColumn": 94,
-        "help": "Use CSS border instead."
-      },
-      {
         "ruleId": "vue/permitted-contents",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
@@ -3373,7 +2812,7 @@
       }
     ],
     "errorCount": 2,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/status/StatusTranslation.vue",
@@ -3534,17 +2973,6 @@
     "file": "app/components/timeline/TimelinePaginator.vue",
     "messages": [
       {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <button> is deprecated",
-        "line": 32,
-        "column": 44,
-        "endLine": 32,
-        "endColumn": 59,
-        "help": "Use CSS border instead."
-      },
-      {
         "ruleId": "vue/no-template-target-blank",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -3557,7 +2985,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "app/components/timeline/TimelinePinned.vue",
@@ -3587,17 +3015,6 @@
     "file": "app/components/timeline/TimelineScheduledPostsPaginator.vue",
     "messages": [
       {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <button> is deprecated",
-        "line": 33,
-        "column": 44,
-        "endLine": 33,
-        "endColumn": 59,
-        "help": "Use CSS border instead."
-      },
-      {
         "ruleId": "vue/no-template-target-blank",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -3610,7 +3027,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "app/components/timeline/TimelineSkeleton.vue",
@@ -3631,75 +3048,28 @@
         "endLine": 45,
         "endColumn": 8,
         "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
-      },
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <select> is deprecated",
-        "line": 44,
-        "column": 22,
-        "endLine": 44,
-        "endColumn": 37,
-        "help": "Use CSS border instead."
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "app/components/tiptap/TiptapEmojiList.vue",
-    "messages": [
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 79,
-        "column": 39,
-        "endLine": 79,
-        "endColumn": 62,
-        "help": "Use CSS border instead."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/tiptap/TiptapHashtagList.vue",
-    "messages": [
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 49,
-        "column": 75,
-        "endLine": 49,
-        "endColumn": 98,
-        "help": "Use CSS border instead."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/tiptap/TiptapMentionList.vue",
-    "messages": [
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 49,
-        "column": 75,
-        "endLine": 49,
-        "endColumn": 98,
-        "help": "Use CSS border instead."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/user/UserDropdown.vue",
@@ -3729,17 +3099,6 @@
     "file": "app/components/user/UserSignIn.vue",
     "messages": [
       {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 106,
-        "column": 9,
-        "endLine": 106,
-        "endColumn": 24,
-        "help": "Use CSS border instead."
-      },
-      {
         "ruleId": "a11y/form-control-has-label",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -3749,17 +3108,6 @@
         "endLine": 128,
         "endColumn": 10,
         "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
-      },
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 132,
-        "column": 27,
-        "endLine": 132,
-        "endColumn": 42,
-        "help": "Use CSS border instead."
       },
       {
         "ruleId": "vue/no-template-target-blank",
@@ -3774,7 +3122,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 4
+    "warningCount": 2
   },
   {
     "file": "app/components/user/UserSignInEntry.vue",
@@ -3828,21 +3176,10 @@
         "endLine": 44,
         "endColumn": 13,
         "help": "Why: the HTML standard's content models define which elements may contain which. The browser builds this DOM as written, but the document is non-conforming: assistive technology, validators and future parsers may treat it differently.\nFix: use an element the parent permits (phrasing content such as <span> inside <p>/<span>, <li> inside lists), or restructure so interactive elements are not nested."
-      },
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 47,
-        "column": 10,
-        "endLine": 47,
-        "endColumn": 25,
-        "help": "Use CSS border instead."
       }
     ],
     "errorCount": 2,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "app/error.vue",
@@ -3870,21 +3207,9 @@
   },
   {
     "file": "app/pages/[[server]]/@[account]/[status].vue",
-    "messages": [
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 71,
-        "column": 32,
-        "endLine": 71,
-        "endColumn": 47,
-        "help": "Use CSS border instead."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/pages/[[server]]/@[account]/index.vue",
@@ -3936,21 +3261,9 @@
   },
   {
     "file": "app/pages/[[server]]/collections/[id].vue",
-    "messages": [
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 53,
-        "column": 16,
-        "endLine": 53,
-        "endColumn": 31,
-        "help": "Use CSS border instead."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/pages/[[server]]/collections/index.vue",
@@ -4004,28 +3317,6 @@
     "file": "app/pages/[[server]]/list/[list]/index/accounts.vue",
     "messages": [
       {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <form> is deprecated",
-        "line": 78,
-        "column": 7,
-        "endLine": 78,
-        "endColumn": 22,
-        "help": "Use CSS border instead."
-      },
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 83,
-        "column": 17,
-        "endLine": 83,
-        "endColumn": 32,
-        "help": "Use CSS border instead."
-      },
-      {
         "ruleId": "a11y/form-control-has-label",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -4035,32 +3326,10 @@
         "endLine": 102,
         "endColumn": 10,
         "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
-      },
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 111,
-        "column": 27,
-        "endLine": 111,
-        "endColumn": 42,
-        "help": "Use CSS border instead."
-      },
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 121,
-        "column": 15,
-        "endLine": 121,
-        "endColumn": 30,
-        "help": "Use CSS border instead."
       }
     ],
     "errorCount": 0,
-    "warningCount": 5
+    "warningCount": 1
   },
   {
     "file": "app/pages/[[server]]/list/[list]/index/index.vue",
@@ -4078,28 +3347,6 @@
     "file": "app/pages/[[server]]/lists/index.vue",
     "messages": [
       {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <form> is deprecated",
-        "line": 81,
-        "column": 9,
-        "endLine": 81,
-        "endColumn": 24,
-        "help": "Use CSS border instead."
-      },
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 89,
-        "column": 19,
-        "endLine": 89,
-        "endColumn": 34,
-        "help": "Use CSS border instead."
-      },
-      {
         "ruleId": "a11y/form-control-has-label",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -4112,7 +3359,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 1
   },
   {
     "file": "app/pages/[[server]]/public/index.vue",
@@ -4248,21 +3495,9 @@
   },
   {
     "file": "app/pages/settings.vue",
-    "messages": [
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 20,
-        "column": 12,
-        "endLine": 20,
-        "endColumn": 27,
-        "help": "Use CSS border instead."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/pages/settings/about/index.vue",
@@ -4378,38 +3613,14 @@
   },
   {
     "file": "app/pages/settings/users/index.vue",
-    "messages": [
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 82,
-        "column": 18,
-        "endLine": 82,
-        "endColumn": 33,
-        "help": "Use CSS border instead."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/pages/share-target.vue",
-    "messages": [
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 30,
-        "column": 11,
-        "endLine": 30,
-        "endColumn": 55,
-        "help": "Use CSS border instead."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   }
 ]

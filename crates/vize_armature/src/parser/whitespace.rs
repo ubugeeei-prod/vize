@@ -309,6 +309,21 @@ fn preserve_whitespace_vue2<'a>(
             for _ in start..end {
                 children.remove(start);
             }
+            if let Some(previous_run_start) = text_run_start_before(children, start) {
+                start = previous_run_start;
+            }
+            continue;
+        }
+        if text_run_start_before(children, start).is_some_and(|previous_start| {
+            children
+                .get(previous_start..start)
+                .unwrap_or_default()
+                .iter()
+                .all(is_whitespace_text)
+        }) {
+            for _ in start..end {
+                children.remove(start);
+            }
             continue;
         }
         if let Some(TemplateChildNode::Text(text)) = children.get_mut(start) {
@@ -329,11 +344,17 @@ fn drop_default_slot_tail_before_named_slots(children: &mut Vec<'_, TemplateChil
     let mut suffix_start = children.len();
     let mut has_named_slot = false;
     while let Some(child) = suffix_start.checked_sub(1).and_then(|i| children.get(i)) {
-        if is_whitespace_text(child) {
-            suffix_start -= 1;
-        } else if is_named_slot_template(child) {
+        if is_named_slot_template(child) {
             has_named_slot = true;
             suffix_start -= 1;
+        } else if let Some(run_start) = text_run_start_before(children, suffix_start)
+            && children
+                .get(run_start..suffix_start)
+                .unwrap_or_default()
+                .iter()
+                .all(is_whitespace_text)
+        {
+            suffix_start = run_start;
         } else {
             break;
         }
@@ -368,6 +389,27 @@ fn is_text_run_member(child: &TemplateChildNode<'_>) -> bool {
         child,
         TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_)
     )
+}
+
+/// Start of the contiguous Vue 2 text run immediately before `end`.
+fn text_run_start_before(children: &[TemplateChildNode<'_>], end: usize) -> Option<usize> {
+    let mut start = end.checked_sub(1)?;
+    children
+        .get(start)
+        .filter(|child| is_text_run_member(child))?;
+    while start > 0
+        && children
+            .get(start - 1)
+            .zip(children.get(start))
+            .is_some_and(|(previous, next)| {
+                is_text_run_member(previous)
+                    && is_text_run_member(next)
+                    && text_run_members_are_contiguous(previous, next)
+            })
+    {
+        start -= 1;
+    }
+    Some(start)
 }
 
 /// Consecutive text-like nodes belong to the same Vue 2 text run only when

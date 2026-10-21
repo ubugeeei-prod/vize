@@ -136,7 +136,7 @@ fn pug_view(_source: &str) -> Option<PugBlockView> {
 #[cfg(feature = "native")]
 fn pug_view(source: &str) -> Option<PugBlockView> {
     // Cheap gate: only sources that mention pug or jade pay for the SFC parse.
-    if !source.contains("pug") && !source.contains("jade") {
+    if !mentions_pug_language(source) {
         return None;
     }
     let descriptor = vize_atelier_sfc::parse_sfc(source, Default::default()).ok()?;
@@ -149,6 +149,18 @@ fn pug_view(source: &str) -> Option<PugBlockView> {
         return None;
     }
     PugBlockView::new(source, template.loc.start..template.loc.end).ok()
+}
+
+#[cfg(feature = "native")]
+fn mentions_pug_language(source: &str) -> bool {
+    source
+        .as_bytes()
+        .windows(3)
+        .any(|window| window.eq_ignore_ascii_case(b"pug"))
+        || source
+            .as_bytes()
+            .windows(4)
+            .any(|window| window.eq_ignore_ascii_case(b"jade"))
 }
 
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
@@ -189,6 +201,21 @@ mod tests {
             sfc.to_authored_line_column(line, column),
             vize_l0::line_index::offset_to_line_col(source, authored.start)
         );
+    }
+
+    #[cfg(feature = "native")]
+    #[test]
+    fn jade_alias_uses_the_same_authored_mapping_as_pug() {
+        for language in ["pug", "jade", "JADE"] {
+            let language = ["lang=\"", language, "\""].concat();
+            let source = "<script setup>const count = 1</script>\n<template lang=\"pug\">\np(:title=\"count\") {{ count }}\n</template>\n"
+                .replace("lang=\"pug\"", &language);
+            let sfc = AuthoredSfc::new(&source);
+            let analyzed = sfc.analyzed();
+            let attribute = analyzed.find("\"count\"").unwrap() + 1;
+            let authored = sfc.to_authored(attribute..attribute + 5);
+            assert_eq!(&source[authored], "count", "{language}");
+        }
     }
 
     #[cfg(feature = "native")]

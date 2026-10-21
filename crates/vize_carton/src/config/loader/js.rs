@@ -23,13 +23,21 @@ pub(super) fn parse_js_config_observed(
     complete: &mut bool,
     before_read: &mut BeforeConfigRead<'_>,
     compile_cache: Option<&Path>,
+    explicit_vite_config: bool,
 ) -> Result<ConfigDocument, Box<dyn std::error::Error>> {
     let EvaluatedConfig {
         path: config_path,
         json,
         dependencies,
         policy,
-    } = evaluate_js_config_with_dependencies(path, observed, complete, before_read, compile_cache)?;
+    } = evaluate_js_config_with_dependencies(
+        path,
+        observed,
+        complete,
+        before_read,
+        compile_cache,
+        explicit_vite_config,
+    )?;
 
     // Public Vite settings permit flat entry arrays. Normalize only that shape
     // with the same pure Rust projection used by vize/config; ordinary objects
@@ -67,6 +75,7 @@ fn evaluate_js_config_with_dependencies(
     complete: &mut bool,
     before_read: &mut BeforeConfigRead<'_>,
     compile_cache: Option<&Path>,
+    explicit_vite_config: bool,
 ) -> Result<EvaluatedConfig, Box<dyn std::error::Error>> {
     *complete = false;
     let config_path = if path.is_absolute() {
@@ -113,7 +122,11 @@ try {
 const loaded = await importConfigModuleWithDependencies(
   configPath, undefined, undefined, async (module) => {
     const exported = module.default ?? module;
-    return isViteConfigFile(configPath)
+    return process.env.VIZE_EXPLICIT_NATIVE_CARRIER === "1"
+      ? await resolveExplicitSerializedConfigExport(exported, undefined, dirname(configPath))
+      : process.env.VIZE_EXPLICIT_VITE_CONFIG === "1"
+      ? await resolveExplicitViteConfigExport(exported, undefined, dirname(configPath))
+      : isViteConfigFile(configPath)
       ? await resolveViteConfigExport(exported, undefined, dirname(configPath))
       : typeof exported === "function"
       ? await exported({ mode: "development", command: "serve" })
@@ -149,6 +162,15 @@ evaluated = { config: config ?? {}, dependencies, watchDependencies: attemptedDe
         .current_dir(config_path.parent().unwrap_or_else(|| Path::new(".")));
     if let Some(directory) = compile_cache {
         command.arg(directory);
+    }
+    if explicit_vite_config {
+        command.env("VIZE_EXPLICIT_VITE_CONFIG", "1");
+        if config_path
+            .file_stem()
+            .is_some_and(|stem| stem == "serialized-config")
+        {
+            command.env("VIZE_EXPLICIT_NATIVE_CARRIER", "1");
+        }
     }
     let trace = std::env::var_os("VIZE_TRACE_EDITOR_PREPARATION").is_some_and(|value| value == "1");
     let started = trace.then(std::time::Instant::now);

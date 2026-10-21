@@ -21,6 +21,10 @@ fn kind_maps_onto_l1_input_dialects() {
         L1InputDialect::Pug
     );
     assert_eq!(
+        L1InputDialect::from_template_lang(Some(" JADE ")),
+        L1InputDialect::Pug
+    );
+    assert_eq!(
         L1InputDialect::from_template_lang(Some(" HTML ")),
         L1InputDialect::VueTemplate
     );

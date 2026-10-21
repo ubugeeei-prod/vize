@@ -47,6 +47,20 @@
           "message": "'unusedLocal' is declared but its value is never read."
         }
       ]
+    },
+    {
+      "id": "used-rest-binding",
+      "inputs": [
+        {
+          "file": "src/RestProps.vue",
+          "source": "RestProps.vue.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": []
     }
   ]
 }

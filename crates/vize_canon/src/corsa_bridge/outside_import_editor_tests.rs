@@ -61,7 +61,7 @@ fn original_outside_import_preserves_types_in_native_editor() {
             .await
             .unwrap();
         bridge.shutdown().await.unwrap();
-        let complete = serde_json::to_value(diagnostics).unwrap();
+        let complete = serde_json::to_value(&diagnostics).unwrap();
         if let Some(capture) = std::env::var_os("VIZE_TYPECHECK_REGRESSION_CAPTURE") {
             let capture = PathBuf::from(capture).join("editor-original-script");
             std::fs::create_dir_all(&capture).unwrap();
@@ -77,8 +77,32 @@ fn original_outside_import_preserves_types_in_native_editor() {
                 std::fs::write(file, source.as_str().unwrap()).unwrap();
             }
         }
+        let generated_extension: Vec<_> = diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.code == Some(json!(5097)))
+            .collect();
+        assert_eq!(generated_extension.len(), 1, "{complete}");
+        assert_eq!(generated_extension[0].range.start.line, 0, "{complete}");
         assert_eq!(
-            complete,
+            generated_extension[0].range.start.character, 23,
+            "{complete}"
+        );
+        assert_eq!(generated_extension[0].range.end.line, 0, "{complete}");
+        assert!(
+            generated_extension[0].range.end.character
+                > generated_extension[0].range.start.character,
+            "{complete}"
+        );
+        assert_eq!(
+            generated_extension[0].message,
+            "An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled."
+        );
+        let authored: Vec<_> = diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.code != Some(json!(5097)))
+            .collect();
+        assert_eq!(
+            serde_json::to_value(authored).unwrap(),
             json!([{
                 "range": {"start": {"line": 2, "character": 13}, "end": {"line": 2, "character": 16}},
                 "severity": 1, "code": 2322, "source": "ts",

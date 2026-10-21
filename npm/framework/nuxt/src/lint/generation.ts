@@ -293,6 +293,7 @@ export async function setupNuxtLintConfigGeneration(
         configDir: path.dirname(configFile),
         owner: ownsReservedConfig ? "@vizejs/nuxt" : undefined,
       },
+      projectRules.jsPlugins,
     );
     const changed = ownsReservedConfig
       ? await writeOwnedNuxtConfig(configFile, artifact, writeFileIfChanged)

@@ -738,6 +738,122 @@
       }
     },
     {
+      "id": "lsp/fix-history/nuxt-builtins-9866",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "nuxt-builtins-9866",
+        "files": [
+          {
+            "path": "HomeLink.vue.txt",
+            "sha256": "5362dc0aab5809c4729ee24efd00b452b0eeae794a17a53f965eb5470d2c7b69"
+          }
+        ]
+      },
+      "case": {
+        "path": "nuxt-builtins-9866/case.json",
+        "sha256": "8b8bcba61c8837059150e2b3f7445dfe41b1197a319f4a9d843133e401e17786"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
+      "id": "lsp/regression/imported-sfc-parse-recovery-10027",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "case": {
+        "path": "imported-sfc-parse-recovery-10027/case.json",
+        "sha256": "f85bc8e9bcf3fec56fbb765f817f764db4bfe04e8fc524759a9ed1f3f0f1f281"
+      },
+      "inputs": {
+        "root": "imported-sfc-parse-recovery-10027",
+        "files": [
+          {
+            "path": "Entry.vue.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "path": "Parent.vue.txt",
+            "sha256": "c1d63e80557c43ca5c4ae1a1ef6ab1c273b5ee8c753bb19f59af19b667ae8eee"
+          },
+          {
+            "path": "Child.broken.vue.txt",
+            "sha256": "dfded8ea3ce80c059b8cd5f7de190592fdcc66b8ad4bb68caf4ee80f09f2a996"
+          }
+        ]
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
+      "id": "lsp/regression/pug-multiline-attributes-8908",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "case": {
+        "path": "pug-multiline-attributes-8908/case.json",
+        "sha256": "568e4bb81c181fe86a3087c4e442b8bc96cdc964aaa4c23dccb6d9ada4e37fb3"
+      },
+      "inputs": {
+        "root": "pug-multiline-attributes-8908",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "f2f3ddb31e7144b88bebefda086a4f545c7010007c3c679089fe28973c7adc50"
+          }
+        ]
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
+      "id": "lsp/regression/queued-edit-publication-10098",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "case": {
+        "path": "queued-edit-publication-10098/case.json",
+        "sha256": "be901ed1f4365fd0a0961efc36eb59f160ac09e48757576b917f47ddc4539a29"
+      },
+      "inputs": {
+        "root": "queued-edit-publication-10098",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "c043857104a1b9f0b8f16404b2be40d47404c027835ba838be4dcfd5713c2ed5"
+          },
+          {
+            "path": "useToast.ts.txt",
+            "sha256": "7a36f75337837632e610953906ec15beab09bb3034e9478b3d8c65d09b8151da"
+          }
+        ]
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
       "id": "lsp/regression/script-lint-code-actions-9909",
       "state": "active",
       "targets": [

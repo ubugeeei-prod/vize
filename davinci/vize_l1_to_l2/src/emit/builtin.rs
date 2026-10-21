@@ -149,7 +149,12 @@ pub(super) fn emit_array_children(
     compact: bool,
 ) -> Result<(), EmitError> {
     cx.buf.push("[");
-    outlet::emit_fallback(cx, children, compact)?;
+    outlet::emit_fallback(
+        cx,
+        children,
+        compact,
+        outlet::FallbackTextMode::BuiltinArray,
+    )?;
     cx.buf.push("]");
     Ok(())
 }

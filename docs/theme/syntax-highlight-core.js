@@ -167,6 +167,58 @@ const vizeDocsSyntaxCore = (() => {
     );
   }
 
+  function protectScriptLexemes(source, store) {
+    let result = "";
+    let cursor = 0;
+    let plainStart = 0;
+
+    const hold = (end, className) => {
+      result += source.slice(plainStart, cursor);
+      result += store.hold(wrapToken(className, source.slice(cursor, end)));
+      cursor = end;
+      plainStart = end;
+    };
+
+    while (cursor < source.length) {
+      const character = source[cursor];
+      if (character === '"' || character === "'" || character === "`") {
+        let end = cursor + 1;
+        while (end < source.length) {
+          if (source[end] === "\\") {
+            end = Math.min(end + 2, source.length);
+            continue;
+          }
+          if (source[end] === character) {
+            end += 1;
+            break;
+          }
+          end += 1;
+        }
+        hold(end, "v-code__string");
+        continue;
+      }
+
+      if (character === "/" && source[cursor + 1] === "/") {
+        let end = cursor + 2;
+        while (end < source.length && source[end] !== "\n" && source[end] !== "\r") {
+          end += 1;
+        }
+        hold(end, "v-code__comment");
+        continue;
+      }
+
+      if (character === "/" && source[cursor + 1] === "*") {
+        const close = source.indexOf("*/", cursor + 2);
+        hold(close === -1 ? source.length : close + 2, "v-code__comment");
+        continue;
+      }
+
+      cursor += 1;
+    }
+
+    return result + source.slice(plainStart);
+  }
+
   const languageHighlighters = globalThis.__vizeDocsSyntaxLanguages({
     booleanLiterals,
     functionNames,
@@ -178,21 +230,7 @@ const vizeDocsSyntaxCore = (() => {
   });
 
   function highlightScriptLike(source, store, options = {}) {
-    let result = source;
-
-    result = replaceWithClass(result, /\/\*[\s\S]*?\*\//g, "v-code__comment", store);
-    result = replaceWithClass(
-      result,
-      /`(?:\\[\s\S]|[^`\\])*`|'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"/g,
-      "v-code__string",
-      store,
-    );
-    result = replaceWithCallback(
-      result,
-      /(^|[^:])(\/\/.*$)/gm,
-      (_, prefix, comment) => `${escapeHtml(prefix)}${wrapToken("v-code__comment", comment)}`,
-      store,
-    );
+    let result = protectScriptLexemes(source, store);
     result = replaceWithClass(result, vueApis, "v-code__function", store);
     result = replaceWithClass(result, scriptKeywords, "v-code__keyword", store);
     result = replaceWithClass(result, builtinTypes, "v-code__type", store);

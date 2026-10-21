@@ -1,4 +1,5 @@
-//! `<template lang="pug">` — the Davinci pug dialect (P4-12c) selector.
+//! `<template lang="pug">` (and its legacy `jade` alias) — the Davinci pug
+//! dialect (P4-12c) selector.
 //!
 //! The pug L1 surface is desugared into its derived Vue template
 //! (`vize_l1_to_l2::lower::pug`, byte-identical to the pinned `pug`
@@ -17,11 +18,7 @@ pub(super) fn prepare_pug_template<'d, 's>(
     descriptor: &'d SfcDescriptor<'s>,
 ) -> Result<Cow<'d, SfcDescriptor<'s>>, SfcError> {
     let Some(template) = descriptor.template.as_ref().filter(|template| {
-        template.src.is_none()
-            && template
-                .lang
-                .as_deref()
-                .is_some_and(|lang| lang.eq_ignore_ascii_case("pug"))
+        template.src.is_none() && template.lang.as_deref().is_some_and(is_pug_language)
     }) else {
         return Ok(Cow::Borrowed(descriptor));
     };
@@ -41,6 +38,10 @@ pub(super) fn prepare_pug_template<'d, 's>(
         template.content = Cow::Owned(derived.html.into());
     }
     Ok(Cow::Owned(view))
+}
+
+fn is_pug_language(lang: &str) -> bool {
+    lang.eq_ignore_ascii_case("pug") || lang.eq_ignore_ascii_case("jade")
 }
 
 /// A zero-width block location at `offset` of the SFC source.

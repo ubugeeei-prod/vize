@@ -140,7 +140,7 @@ void test("configured project paths preserve absolute, nested, config-directory,
     );
     oracle.write(
       "config/vize.json",
-      JSON.stringify({ typeChecker: { tsconfig: "../tsconfig.app.json" } }),
+      JSON.stringify({ vue: { typeChecker: { tsconfig: "../tsconfig.app.json" } } }),
     );
     sameWholeReport(
       oracle.direct("config-directory", ["--config", "config/vize.json"]),

@@ -188,3 +188,23 @@ void test("createHighlightedHtml restores strings captured inside line comments"
   assert.match(html, /"quoted"/);
   assert.equal(html.replace(/<[^>]+>/g, ""), source);
 });
+
+void test("createHighlightedHtml keeps comment delimiters inside strings", () => {
+  const source = [
+    'const config = { ignorePatterns: ["dist/**"] };',
+    "const enabled = true;",
+    '// A quoted "/*" stays part of this comment.',
+  ].join("\n");
+  const html = syntax.createHighlightedHtml(source, "typescript");
+
+  assert.match(html, /<span class="v-code__token v-code__string">"dist\/\*\*"<\/span>/);
+  assert.match(
+    html,
+    /v-code__keyword">const<\/span> <span class="v-code__token v-code__variable">enabled<\/span>/,
+  );
+  assert.match(
+    html,
+    /<span class="v-code__token v-code__comment">\/\/ A quoted "\/\*" stays part of this comment\.<\/span>/,
+  );
+  assert.equal(html.replace(/<[^>]+>/g, ""), source);
+});

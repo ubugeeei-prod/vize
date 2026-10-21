@@ -64,7 +64,7 @@ fn configured_lint_rule_changes_the_public_diagnostic_and_can_be_overridden() {
     fs::write(
         &manual,
         serde_json::to_vec(
-            &json!({"linter":{"preset":"essential","rules":{"a11y/alt-text":"off"}}}),
+            &json!({"vue":{"linter":{"preset":"essential","rules":{"a11y/alt-text":"off"}}}}),
         )
         .unwrap(),
     )
@@ -185,7 +185,7 @@ fn package_boundaries_precedence_and_sibling_settings_reach_the_formatter() {
     write(
         &root.join("packages/a"),
         "manual.json",
-        r#"{"formatter":{"singleQuote":true}}"#,
+        r#"{"vue":{"formatter":{"singleQuote":true}}}"#,
     );
     assert_eq!(
         formatted(&a, &["--config", "../manual.json"]).as_str(),

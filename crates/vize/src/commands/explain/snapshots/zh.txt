@@ -1835,7 +1835,7 @@ script/component-options-name-casing · lint 规则
   }
 === script/custom-event-name-casing
 script/custom-event-name-casing · lint 规则
-强制触发的自定义事件名使用 camelCase
+强制触发的自定义事件名使用配置的格式
 
 精度层级: complete
 适用范围: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
@@ -4613,7 +4613,7 @@ vue/no-preprocessor-lang · lint 规则
 适用范围: the SFC's top-level blocks, their order and their attributes
 严重级别: 警告
 类别: recommended
-自动修复: 支持
+自动修复: 不支持
 文档: docs/content/rules/vue.md
 === vue/no-reserved-component-names
 vue/no-reserved-component-names · lint 规则
@@ -4743,7 +4743,7 @@ vue/no-template-lang · lint 规则
 适用范围: the SFC's top-level blocks, their order and their attributes
 严重级别: 警告
 类别: recommended
-自动修复: 支持
+自动修复: 不支持
 文档: docs/content/rules/vue.md
 === vue/no-template-shadow
 vue/no-template-shadow · lint 规则

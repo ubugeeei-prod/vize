@@ -196,6 +196,7 @@ mod lint_fix_cli;
 mod lint_generic_type_reads_cli;
 mod lint_global_components_cli;
 mod lint_html_script_cli;
+mod lint_incomplete_type_project_cli;
 mod lint_legacy_instance_api_cli;
 mod lint_musea_cli;
 mod lint_musea_component_names_cli;

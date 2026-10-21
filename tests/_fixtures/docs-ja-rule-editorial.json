@@ -151,7 +151,7 @@
       "rule": "vue/no-preprocessor-lang",
       "section": "bad",
       "before": "style の lang に SCSS を指定しています。preprocessor を使わない規約の例で、現在の SFC 検査はこのルールを生成しません。",
-      "after": "style の lang に SCSS を指定しています。プリプロセッサーを使わない規約の例で、現在の SFC 検査ではこのルール固有の診断は出ません。"
+      "after": "style の lang に SCSS を指定しているため、プリプロセッサーを禁止するルールが記述されたブロックを報告します。"
     },
     {
       "case": "B01",

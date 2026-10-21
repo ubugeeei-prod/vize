@@ -40,6 +40,7 @@ jobs:
       - name: Release workflow, versioning and publication
         run: >-
           node --test
+          tests/tooling/release/npm-resume.test.ts
           tests/tooling/release/release-workflow.test.ts
           tests/tooling/release/release-notes.test.ts
           tests/tooling/release/release-signing.test.ts

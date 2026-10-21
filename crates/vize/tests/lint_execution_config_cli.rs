@@ -108,10 +108,21 @@ fn invalid_explicit_json_settings_fail_before_fix_and_no_config_can_ignore_them(
     let project = project();
     let root = project.path();
     let before = fs::read(root.join("Warning.vue")).expect("source");
-    for invalid in [r#"{"linter":{"maxWarnings":-1}}"#, "{"] {
+    for (invalid, projected) in [
+        (
+            r#"{"vue":{"linter":{"maxWarnings":-1}}}"#,
+            r#"{"linter":{"maxWarnings":-1}}"#,
+        ),
+        ("{", "{"),
+    ] {
         fs::write(root.join("config.json"), invalid).expect("invalid config");
-        let error = serde_json::from_str::<vize_l0::config::ConfigDocument>(invalid)
-            .expect_err("invalid typed config");
+        let error = if let Ok(document) = serde_json::from_str::<serde_json::Value>(invalid) {
+            serde_json::from_value::<vize_l0::config::ConfigDocument>(document["vue"].clone())
+                .expect_err("invalid projected Vue config")
+        } else {
+            serde_json::from_str::<vize_l0::config::ConfigDocument>(projected)
+                .expect_err("invalid JSON config")
+        };
         for args in [
             vec!["--config", "config.json", "--fix", "Warning.vue"],
             vec!["--config", "config.json", "Warning.vue"],
@@ -204,5 +215,62 @@ export default () => {
     assert_eq!(
         fs::read_to_string(root.join("eval-count.txt")).expect("counter"),
         "1"
+    );
+}
+
+#[test]
+fn explicit_config_basename_does_not_change_vite_shape() {
+    let project = project();
+    let root = project.path();
+    let vue = json!({
+        "linter": {
+            "maxWarnings": 0,
+            "rules": { "a11y/alt-text": "warn" }
+        }
+    });
+    for (name, source) in [
+        (
+            "configs/lint.config.mjs",
+            format!("export default {{ vue: {vue} }};"),
+        ),
+        ("configs/lint.json", json!({ "vue": vue }).to_string()),
+    ] {
+        let path = root.join(name);
+        fs::create_dir_all(path.parent().unwrap()).expect("config directory");
+        fs::write(&path, source).expect("explicit Vite config");
+        let output = lint(root, &["--config", name, "Warning.vue"]);
+        assert_eq!(output.status.code(), Some(1), "{name}");
+        assert_eq!(report(&output)[0]["warningCount"], json!(1), "{name}");
+    }
+
+    const MIGRATION: &str = "vize.config.* is no longer supported; move Vue settings to vue: in vite.config.* and TypeScript settings to tsconfig.json";
+    let json_name = "configs/legacy.json";
+    fs::write(
+        root.join(json_name),
+        json!({ "vue": {}, "linter": { "preset": "incremental" } }).to_string(),
+    )
+    .expect("retired JSON config");
+    let output = lint(root, &["--config", json_name, "Warning.vue"]);
+    assert_eq!(output.status.code(), Some(2));
+    let expected =
+        vize_l0::cstr!("\x1b[31mError:\x1b[0m failed to parse {json_name}: {MIGRATION}\n");
+    assert_eq!(String::from_utf8_lossy(&output.stderr), expected.as_str());
+
+    let js_name = "configs/legacy.config.mjs";
+    fs::write(
+        root.join(js_name),
+        "export default { vue: {}, linter: { preset: 'incremental' } };",
+    )
+    .expect("retired JS config");
+    let output = lint_command(root, &["--config", js_name, "Warning.vue"])
+        .env("NODE_OPTIONS", config_refusal::NODE_OPTIONS)
+        .output()
+        .expect("controlled retired JS config refusal");
+    config_refusal::assert_error(
+        &output,
+        Path::new(js_name),
+        root,
+        &format!("Error: {MIGRATION}"),
+        2,
     );
 }

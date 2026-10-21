@@ -262,9 +262,9 @@ Nuxt と連携できるよう、プラグインは Vite の環境ごとに `defi
 
 ### スタイルプリプロセッサと Pug
 
-`<style lang="scss">`・`sass`・`less`・`stylus` は Vue と同じ順序で処理します。まずプリプロセッサを実行し、その出力に Vize がスコープを付けて `v-bind()` を解決します。`<style module>` のクラス名は、バンドラーの CSS Modules 処理が生成します。`@vitejs/plugin-vue` と同じく、プリプロセッサのパッケージ（`sass` または `sass-embedded`、`less`、`stylus`）をプロジェクトにインストールしてください。`<template lang="pug">` は Vize 自身がコンパイルするため、追加のパッケージは不要です。
+`<style lang="scss">`・`sass`・`less`・`stylus` は Vue と同じ順序で処理します。まずプリプロセッサを実行し、その出力に Vize がスコープを付けて `v-bind()` を解決します。`<style module>` のクラス名は、バンドラーの CSS Modules 処理が生成します。`@vitejs/plugin-vue` と同じく、プリプロセッサのパッケージ（`sass` または `sass-embedded`、`less`、`stylus`）をプロジェクトにインストールしてください。`<template lang="pug">` は Vize 自身がコンパイルするため、追加のパッケージは不要です。従来の `<template lang="jade">` も同じ対象でエイリアスとして利用できます。
 
-| 対象 | scss / sass / less / stylus | pug |
+| 対象 | scss / sass / less / stylus | pug / jade |
 | --- | --- | --- |
 | Vite | Vite が前処理し、その結果に Vize がスコープを付ける | ネイティブ |
 | `@vizejs/unplugin`（webpack・Rollup・Rolldown・esbuild） | webpack はプロジェクトのローダーを使用。Rollup・Rolldown・esbuild はインストール済みのプリプロセッサを実行 | ネイティブ |

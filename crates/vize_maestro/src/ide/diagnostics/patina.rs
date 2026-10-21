@@ -33,6 +33,7 @@ pub(in crate::ide) fn linter_for_uri(
         linter,
         &rule_options,
         linter_options::package_is_installed(uri, "vue-router"),
+        linter_options::package_is_installed(uri, "nuxt"),
     );
 
     #[cfg(not(target_arch = "wasm32"))]

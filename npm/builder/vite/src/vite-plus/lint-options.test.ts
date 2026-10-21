@@ -26,7 +26,7 @@ void test("lint.vue carries execution settings through native config without for
     calls.push(args);
     if (args[0] === "native") {
       const file = args[args.indexOf("--config") + 1];
-      assert.deepEqual(JSON.parse(readFileSync(file, "utf8")).linter, linter);
+      assert.deepEqual(JSON.parse(readFileSync(file, "utf8")).vue.linter, linter);
     }
     return 0;
   });

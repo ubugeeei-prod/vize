@@ -260,3 +260,75 @@ test("publish_npm_package computes the tag and forwards provenance to vp", () =>
     rmSync(tempDir, { recursive: true, force: true });
   }
 });
+
+test("an older missing release publishes under a backfill tag without moving latest", () => {
+  const tempDir = mkdtempSync(path.join(tmpdir(), "release-publish-backfill-"));
+  const packageDir = path.join(tempDir, "pkg");
+  const binDir = path.join(tempDir, "bin");
+  const argsLogPath = path.join(tempDir, "vp-args.log");
+  const statePath = path.join(tempDir, "state.json");
+
+  try {
+    fs.mkdirSync(packageDir, { recursive: true });
+    fs.mkdirSync(binDir, { recursive: true });
+    writeFileSync(
+      path.join(packageDir, "package.json"),
+      `${JSON.stringify({ name: "@vizejs/example", version: "1.2.3" }, null, 2)}\n`,
+    );
+    writeFakeCommand(
+      binDir,
+      "vp",
+      [
+        "const fs = require('node:fs');",
+        "const args = process.argv.slice(2);",
+        "fs.writeFileSync(process.env.VP_ARGS_LOG, args.join('\\n'));",
+        "fs.writeFileSync(process.env.NPM_FAKE_STATE_PATH, JSON.stringify({ published: true }));",
+        "process.exit(0);",
+      ].join("\n"),
+    );
+    writeFakeCommand(
+      binDir,
+      "curl",
+      [
+        fakeNpmArchiveSource,
+        "const fs = require('node:fs');",
+        "const url = new URL(process.argv.at(-1));",
+        "const state = fs.existsSync(process.env.NPM_FAKE_STATE_PATH)",
+        "  ? JSON.parse(fs.readFileSync(process.env.NPM_FAKE_STATE_PATH, 'utf8')) : {};",
+        "if (url.pathname.endsWith('/1.2.3')) {",
+        "  const body = state.published ? { name: '@vizejs/example', version: '1.2.3', dist: fakeDist('@vizejs/example', '1.2.3') } : {};",
+        "  process.stdout.write(JSON.stringify(body) + `VIZE_HTTP_STATUS:${state.published ? '200' : '404'}`);",
+        "  process.exit(0);",
+        "}",
+        "process.stdout.write(JSON.stringify({ name: '@vizejs/example', 'dist-tags': { latest: '1.3.0', 'backfill-1-2-3': '1.2.3' } }) + 'VIZE_HTTP_STATUS:200');",
+      ].join("\n"),
+    );
+
+    const result = runReleaseCommand("publish_npm_package", [packageDir], {
+      env: {
+        PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
+        VP_ARGS_LOG: argsLogPath,
+        NPM_FAKE_STATE_PATH: statePath,
+        NPM_PUBLISH_TAG: "backfill-1-2-3",
+        NPM_ALLOW_NEWER_TAG: "true",
+        GITHUB_RUN_ID: "backfill-test",
+        GITHUB_RUN_ATTEMPT: "1",
+        PUBLISH_RESOLUTION_RETRY_LIMIT: "1",
+        PUBLISH_RESOLUTION_RETRY_DELAY: "1",
+      },
+    });
+    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+    assert.deepEqual(fs.readFileSync(argsLogPath, "utf8").trim().split("\n"), [
+      "pm",
+      "publish",
+      "--access",
+      "public",
+      "--no-git-checks",
+      "--tag",
+      "backfill-1-2-3",
+    ]);
+    assert.match(result.stdout, /dist-tag latest has advanced/);
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+});

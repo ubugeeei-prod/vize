@@ -142,12 +142,26 @@ pub(super) fn collect_setup_binding_anchor_names(
                 })
                 .collect()
         });
+    // Croquis records a reactive-props rest binding on the macro summary,
+    // outside the typed binding table. Anchor it only when the template reads
+    // that local so unused rest bindings still produce TS6133.
+    if let Some(template_referenced_names) = template_referenced_names
+        && let Some(rest_id) = summary
+            .macros
+            .props_destructure()
+            .and_then(|destructure| destructure.rest_id.as_deref())
+        && template_referenced_names.contains(rest_id)
+        && is_identifier_name(rest_id)
+    {
+        binding_names.push(String::from(rest_id));
+    }
     binding_names.retain(|name| {
         !usage.const_enums.contains(name.as_str())
             && (!type_only_imported_names.contains(name.as_str())
                 || template_value_names.contains(name.as_str()))
     });
     binding_names.sort_unstable();
+    binding_names.dedup();
     binding_names
 }
 

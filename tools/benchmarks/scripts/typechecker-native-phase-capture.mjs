@@ -28,17 +28,25 @@ function main() {
     return;
   }
   assert(projectIndex >= 0 && args[projectIndex + 1], "unexpected native invocation/fallback");
-  if (settings.profile === "pprof")
-    assert.deepEqual(
-      args,
-      ["--checkers", "1", "--pretty", "false", "--project", args[projectIndex + 1]],
-      "profile replay requires the exact known production native argv",
-    );
-  assert(
-    !args.some((arg) =>
-      /incremental|tsBuildInfo|extendedDiagnostics|pprofDir|generateTrace/u.test(arg),
-    ),
+  const buildInfoIndex = args.indexOf("--tsBuildInfoFile");
+  assert(buildInfoIndex >= 0 && args[buildInfoIndex + 1], "missing incremental state path");
+  const expectedArgs = [
+    "--checkers",
+    "1",
+    "--incremental",
+    "--tsBuildInfoFile",
+    args[buildInfoIndex + 1],
+    "--pretty",
+    "false",
+    "--project",
+    args[projectIndex + 1],
+  ];
+  assert.deepEqual(
+    args,
+    expectedArgs,
+    "phase capture requires the exact known production native argv",
   );
+  assert(!args.some((arg) => /extendedDiagnostics|pprofDir|generateTrace/u.test(arg)));
   const config = resolve(args[projectIndex + 1]);
   const stem = join(settings.directory, `${process.pid}`);
   mkdirSync(settings.directory, { recursive: true });

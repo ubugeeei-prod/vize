@@ -1,0 +1,7 @@
+<script setup lang="ts">
+defineProps<{ is: 'input' | 'textarea' }>()
+</script>
+
+<template>
+  <component :is="is" value="text" @input="() => {}" />
+</template>

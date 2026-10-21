@@ -98,6 +98,10 @@ function envPositiveInt(name: string, fallback: number): number {
   return value === undefined ? fallback : positiveIntOr(value, fallback);
 }
 
+function envTrue(name: string): boolean {
+  return nonEmptyEnv(name) === "true";
+}
+
 /** Derives the npm dist-tag for a package version. */
 export function npmTag(version: string): string {
   const configured = nonEmptyEnv("NPM_TAG");
@@ -231,6 +235,8 @@ export async function publishNpmPackage(args: readonly string[]): Promise<number
     return 1;
   }
   const info: NpmPackageInfo = { name, version, tag: npmTag(version) };
+  const publishTag = nonEmptyEnv("NPM_PUBLISH_TAG") ?? info.tag;
+  const allowNewerTag = envTrue("NPM_ALLOW_NEWER_TAG");
   const missingEntrypoints = validatePublishEntrypoints(directory, packageJson);
   if (missingEntrypoints.length > 0) {
     writeStderr(
@@ -241,7 +247,15 @@ export async function publishNpmPackage(args: readonly string[]): Promise<number
     }
     return 1;
   }
-  const publishArgs = ["pm", "publish", "--access", "public", "--no-git-checks", "--tag", info.tag];
+  const publishArgs = [
+    "pm",
+    "publish",
+    "--access",
+    "public",
+    "--no-git-checks",
+    "--tag",
+    publishTag,
+  ];
   if (provenance) {
     publishArgs.push("--", "--provenance");
   }
@@ -250,7 +264,9 @@ export async function publishNpmPackage(args: readonly string[]): Promise<number
   if (await npmVersionIsVisible(info.name, info.version, 0)) {
     println(`${info.name}@${info.version} is already published. Skipping publish.`);
     return waitVisible
-      ? waitForRegistryVisibility(info, resolutionRetries, resolutionDelaySeconds)
+      ? waitForRegistryVisibility(info, resolutionRetries, resolutionDelaySeconds, {
+          allowNewerTag: true,
+        })
       : 0;
   }
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -269,20 +285,26 @@ export async function publishNpmPackage(args: readonly string[]): Promise<number
     }
     if (publish.status === 0) {
       return waitVisible
-        ? waitForRegistryVisibility(info, resolutionRetries, resolutionDelaySeconds)
+        ? waitForRegistryVisibility(info, resolutionRetries, resolutionDelaySeconds, {
+            allowNewerTag,
+          })
         : 0;
     }
     if (await npmVersionIsVisible(info.name, info.version, 0 - attempt)) {
       println(
         `${info.name}@${info.version} appears in npm despite a non-zero publish exit. Verifying registry visibility.`,
       );
-      return waitForRegistryVisibility(info, resolutionRetries, resolutionDelaySeconds);
+      return waitForRegistryVisibility(info, resolutionRetries, resolutionDelaySeconds, {
+        allowNewerTag,
+      });
     }
     if (isStagedPublishError(`${stdoutText}\n${stderrText}`)) {
       println(
         `${info.name}@${info.version} is staged in npm but not yet visible. Waiting for registry visibility before retrying.`,
       );
-      return waitForRegistryVisibility(info, resolutionRetries, resolutionDelaySeconds);
+      return waitForRegistryVisibility(info, resolutionRetries, resolutionDelaySeconds, {
+        allowNewerTag,
+      });
     }
     if (attempt < maxAttempts) {
       println(

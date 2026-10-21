@@ -58,15 +58,18 @@ use global_components::{
     template_syntax_mode,
 };
 use input_scope::{exit_if_default_run_leaves_cwd, report_no_inputs};
-use invocation::{resolve_invocation_program, resolve_nuxt_project_root};
+#[cfg(test)]
+use invocation::resolve_nuxt_project_root;
+use invocation::{resolve_invocation_program, resolve_program_nuxt_project_root};
 use nuxt_tsconfig::resolve_checker_tsconfig_path;
 use output::{exit_after_execution_error, finish_executions};
 use program_inputs::{ProgramInputContext, filter_for_program, project_graph_allows_js};
 use programs::{CollectedRoots, ProgramCandidate, split_program_candidates};
 use resolve::{
-    display_path, explicit_input_root, resolve_declaration_emit_options, resolve_from_config_dir,
-    resolve_project_root, resolve_tsconfig_path, validate_corsa_server_count,
-    validate_inputs_in_root,
+    display_path, explicit_input_root, external_input_tsconfig_boundary,
+    resolve_declaration_emit_options, resolve_from_config_dir, resolve_project_root,
+    resolve_project_root_with_boundary, resolve_tsconfig_path, resolve_tsconfig_path_with_boundary,
+    validate_corsa_server_count, validate_inputs_in_root,
 };
 #[cfg(test)]
 use resolve::{find_nearest_tsconfig_dir, resolve_declaration_dir};
@@ -138,9 +141,9 @@ fn prepare_and_execute(
     mut candidate: ProgramCandidate,
     cwd: &Path,
     invocation_project_root: &Path,
-    nuxt_project_root: &Path,
     explicit_input_root: &Path,
     validate_inputs: bool,
+    tsconfig_boundary: Option<&Path>,
     jsx_typecheck: bool,
     settings: &CheckerSettings,
     cache: &mut TsconfigInputCache,
@@ -213,12 +216,21 @@ fn prepare_and_execute(
         import_time += import_start.elapsed();
         package_routes.extend(discovered.package_routes);
     }
-    let project_root =
-        resolve_project_root(candidate.tsconfig_path.as_deref(), cwd, &candidate.files);
-    let discovered_tsconfig_path = candidate
-        .tsconfig_path
-        .clone()
-        .or_else(|| resolve_tsconfig_path(None, cwd, &project_root, &candidate.files));
+    let project_root = resolve_project_root_with_boundary(
+        candidate.tsconfig_path.as_deref(),
+        cwd,
+        &candidate.files,
+        tsconfig_boundary,
+    );
+    let discovered_tsconfig_path = candidate.tsconfig_path.clone().or_else(|| {
+        resolve_tsconfig_path_with_boundary(
+            None,
+            cwd,
+            &project_root,
+            &candidate.files,
+            tsconfig_boundary,
+        )
+    });
     // A nested selected owner may reject every explicit JavaScript input.
     // Validate its authored chain before the file filter can end the run.
     if let Some(path) = discovered_tsconfig_path.as_deref() {
@@ -273,8 +285,12 @@ fn prepare_and_execute(
         package_routes.extend(registered.package_routes);
         explicit_program_declarations = registered.program_declarations;
     }
-    let project_root =
-        resolve_project_root(program_tsconfig_path.as_deref(), cwd, &candidate.files);
+    let project_root = resolve_project_root_with_boundary(
+        program_tsconfig_path.as_deref(),
+        cwd,
+        &candidate.files,
+        tsconfig_boundary,
+    );
     let logical_program_root = logical_program_root.unwrap_or_else(|| project_root.clone());
     resolve::retain_project_files(
         &mut candidate.files,
@@ -289,6 +305,14 @@ fn prepare_and_execute(
         });
     }
 
+    let nuxt_project_root = resolve_program_nuxt_project_root(
+        cwd,
+        &project_root,
+        program_tsconfig_path.as_deref(),
+        &candidate.inputs,
+        canonical_paths,
+    );
+
     sort_package_route_bindings(&mut package_routes);
     let discover_global_component_declarations =
         !args.patterns.is_empty() && program_tsconfig_path.is_none();
@@ -300,7 +324,7 @@ fn prepare_and_execute(
             project_root: &project_root,
             program_root: logical_program_root,
             tsconfig_path: program_tsconfig_path,
-            nuxt_project_root,
+            nuxt_project_root: &nuxt_project_root,
             package_route_resolver: package_route_resolver.clone(),
             discover_global_component_declarations,
             ensure_included_sources: args.patterns.is_empty(),

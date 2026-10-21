@@ -24,10 +24,10 @@ export const vue1Explanations: readonly ExplanationRecord[] = [
   ],
   [
     "vue/no-preprocessor-lang",
-    "The style block selects SCSS with lang. This describes the intended no-preprocessor convention; the current SFC path does not emit this rule.",
-    "The same CSS declarations omit the preprocessor lang. This is the convention repair, not an executable Bad/Good diagnostic difference today.",
-    "style の lang に SCSS を指定しています。プリプロセッサーを使わない規約の例で、現在の SFC 検査ではこのルール固有の診断は出ません。",
-    "同じ CSS からプリプロセッサーの lang を取り除きます。規約の修正例で、現在の SFC 検査で診断の有無に差が出る例ではありません。",
+    "The style block selects SCSS through lang, so the no-preprocessor policy reports the authored block.",
+    "The same declarations use plain CSS without a preprocessor lang.",
+    "style の lang に SCSS を指定しているため、プリプロセッサーを禁止するルールが記述されたブロックを報告します。",
+    "同じ宣言を、プリプロセッサーの lang を指定せずに通常の CSS で記述します。",
   ],
   [
     "vue/no-reserved-component-names",
@@ -73,10 +73,10 @@ export const vue1Explanations: readonly ExplanationRecord[] = [
   ],
   [
     "vue/no-template-lang",
-    "The template selects Pug through lang. This is an intended HTML-only convention; the current SFC path does not diagnose this catalog ID.",
-    "An ordinary HTML template omits lang and uses the paragraph directly. This illustrates the convention without claiming a current SFC finding.",
-    "template の lang に Pug を指定しています。HTML のみを使う規約の例で、現在の SFC 検査ではこの ID の診断は出ません。",
-    "lang を取り除き、通常の HTML の p を直接記述します。規約の例で、現在の SFC 検査で診断が出ることを示すものではありません。",
+    "The template selects Pug through lang, so the HTML-only policy reports the authored block.",
+    "An ordinary HTML template omits lang and uses the paragraph directly.",
+    "template の lang に Pug を指定しているため、HTML のみを許可するルールが記述されたブロックを報告します。",
+    "lang を指定せず、通常の HTML の p を直接記述します。",
   ],
   [
     "vue/no-template-shadow",

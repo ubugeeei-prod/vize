@@ -21,7 +21,7 @@ void test("task configs retain original scopes outside the project directory", a
   await runNative("lint", ["src"], { config, options: {} }, "native", async (_, args) => {
     serialized = args[3];
     assert.notEqual(path.dirname(serialized), root);
-    const loaded = JSON.parse(readFileSync(serialized, "utf8"));
+    const loaded = JSON.parse(readFileSync(serialized, "utf8")).vue;
     assert.equal(loaded.ignores[0], `${root}/gen/**`);
     assert.ok(
       loaded.entries.every((entry: { basePath: string }) => path.isAbsolute(entry.basePath)),

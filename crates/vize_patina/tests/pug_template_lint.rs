@@ -72,6 +72,23 @@ fn pug_diagnostics_match_the_html_twin_and_land_on_pug() {
 }
 
 #[test]
+fn jade_alias_reports_the_same_authored_diagnostics_as_pug() {
+    let pug = [
+        "<template lang=\"pug\">\nul\n  li(v-for=\"item in items\") {{ item }}\n</template>",
+        SCRIPT,
+    ]
+    .concat();
+    let jade = pug.replacen("lang=\"pug\"", "lang=\"JADE\"", 1);
+    let linter = Linter::new();
+    let (from_pug, from_jade) = (
+        linter.lint_sfc(&pug, "Pug.vue"),
+        linter.lint_sfc(&jade, "Jade.vue"),
+    );
+    assert_eq!(signature(&from_jade), signature(&from_pug));
+    assert_eq!(spans(&from_jade, &jade), [("vue/require-v-for-key", "li")]);
+}
+
+#[test]
 fn attribute_order_judges_the_authored_order_not_pugs_class_hoisting() {
     // pug renders `.card(v-if="ok")` as `<div class="card" v-if="ok">`;
     // the author wrote the class shorthand first by pug convention, and the

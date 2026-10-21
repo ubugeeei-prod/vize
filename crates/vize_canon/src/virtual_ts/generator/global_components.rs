@@ -4,7 +4,7 @@ use vize_croquis::{Croquis, ScopeData};
 use crate::virtual_ts::component_reference::{
     component_reference_alias, contains_compact_name, has_type_only_component_candidate,
 };
-use crate::virtual_ts::helpers::to_safe_identifier;
+use crate::virtual_ts::helpers::{push_ts_string_literal, to_safe_identifier};
 use crate::virtual_ts::scope::{ComponentBindingCheck, GlobalComponentCheck};
 use crate::virtual_ts::types::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapping};
 
@@ -208,6 +208,13 @@ impl<'a> GlobalComponentPlan<'a> {
                     *ts,
                     "declare const {component_ref}: typeof __vize_component__;\n"
                 );
+            } else if let Some(source) = art_component_source(summary, name) {
+                let mut source_literal = String::default();
+                push_ts_string_literal(&mut source_literal, source);
+                append!(
+                    *ts,
+                    "declare const {component_ref}: typeof import({source_literal}).default;\n"
+                );
             } else {
                 append_global_component_stub(
                     ts,
@@ -218,6 +225,19 @@ impl<'a> GlobalComponentPlan<'a> {
             }
         }
     }
+}
+
+/// Musea binds the component named by a string-literal `defineArt()` source
+/// into `<variant>` markup. Resolve that binding from the authored module
+/// rather than the ambient component registry, where an unregistered story
+/// subject would otherwise become `any`.
+fn art_component_source<'a>(summary: &'a Croquis, usage_name: &str) -> Option<&'a str> {
+    let art = summary.macros.define_art()?;
+    let source = art.component_source.as_deref()?;
+    let authored_name = art.component_name.as_str();
+    let usage_pascal = capitalize(&camelize(usage_name));
+    let authored_pascal = capitalize(&camelize(authored_name));
+    (usage_name == authored_name || usage_pascal == authored_pascal).then_some(source)
 }
 
 fn append_global_component_stub(

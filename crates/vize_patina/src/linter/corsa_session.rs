@@ -9,6 +9,8 @@ mod probe;
 mod session;
 mod vue_dependencies;
 
+pub(in crate::linter) use paths::{nearest_tsconfig, resolve_project_root, validate_tsconfig};
+
 #[cfg(test)]
 mod tests;
 
@@ -50,6 +52,7 @@ pub(crate) struct CorsaTypeAwareSession {
     import_source_map: vize_canon::ImportSourceMap,
     dependency_paths: vize_l0::FxHashSet<PathBuf>,
     dependency_cache: vize_l0::FxHashMap<PathBuf, vue_dependencies::CachedDocument>,
+    vue_path_aliases: vue_dependencies::PathAliases,
     closed: bool,
 }
 

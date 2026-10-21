@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 9835,
+  "regressionCommit": "8ac6ce1668e9bede8d73411e63a247dbd6f8eb56",
+  "sourceRevision": "8ac6ce1668e9bede8d73411e63a247dbd6f8eb56",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "native-mousedown-arrow",
+      "inputs": [
+        { "file": "src/App.vue", "source": "App.vue.txt" },
+        { "file": "tsconfig.json", "source": "tsconfig.json.txt" }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

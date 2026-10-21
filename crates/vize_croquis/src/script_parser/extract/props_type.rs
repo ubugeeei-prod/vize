@@ -18,6 +18,13 @@ pub(super) fn runtime_prop_type_from_ts_type(
         TSType::TSParenthesizedType(parenthesized) => {
             runtime_prop_type_from_ts_type(&parenthesized.type_annotation, source)
         }
+        // Vue accepts constructors asserted as a factory signature, for
+        // example `Object as () => Settings`, as a PropType-compatible
+        // spelling. The callable is the constructor annotation here; the
+        // authored prop value is its return type rather than `Function`.
+        TSType::TSFunctionType(function) => {
+            type_source(&function.return_type.type_annotation, source)
+        }
         _ => None,
     }
 }
