@@ -6,6 +6,18 @@
 use super::{Arc, CompilerConfigurationSnapshot, VirtualProject};
 use serde_json::json;
 
+fn assert_observed_once(dependencies: &[std::path::PathBuf], expected: &std::path::Path) {
+    assert_eq!(
+        dependencies
+            .iter()
+            .filter(|dependency| dependency.as_path() == expected)
+            .count(),
+        1,
+        "{}",
+        expected.display()
+    );
+}
+
 #[test]
 #[expect(
     clippy::disallowed_types,
@@ -63,13 +75,11 @@ fn admitted_options_keep_package_path_anchors_vue_options_and_live_source_rebuil
     project
         .register_path_with_content(&source, unsaved)
         .unwrap();
+    let registered = project.find_by_original(&source).unwrap().content.clone();
     project.materialize().unwrap();
-    assert!(
-        project
-            .find_by_original(&source)
-            .unwrap()
-            .content
-            .contains("const value: number = 42")
+    assert_eq!(
+        project.find_by_original(&source).unwrap().content,
+        registered
     );
     assert_eq!(std::fs::read_to_string(&source).unwrap(), original);
     let generated: serde_json::Value =
@@ -116,7 +126,7 @@ fn inferred_capture_observes_but_does_not_adopt_an_existing_config() {
 
     assert!(CompilerConfigurationSnapshot::capture(&root, None).is_err());
     let inferred = CompilerConfigurationSnapshot::capture_inferred_attempt(&root);
-    assert!(inferred.dependencies.contains(&config));
+    assert_observed_once(&inferred.dependencies, &config);
     let inferred = inferred.outcome.unwrap();
     let configured = CompilerConfigurationSnapshot::capture(&root, Some(&config)).unwrap();
 
@@ -209,9 +219,9 @@ fn concurrent_base_change_rejects_mixed_options_paths_and_vue_target() {
                 barrier.wait();
             },
         );
-        assert!(
-            vize_carton::cstr!("{}", result.err().unwrap())
-                .contains("configuration changed while it was being read")
+        assert_eq!(
+            vize_carton::cstr!("{}", result.err().unwrap()),
+            "compiler configuration changed while it was being read; retry after the configuration is stable"
         );
         writer.join().unwrap();
     });
@@ -251,16 +261,16 @@ fn package_manifest_retarget_rejects_byte_identical_configs_with_different_path_
             std::fs::write(&manifest, r#"{"tsconfig":"second/base.json"}"#).unwrap();
         },
     );
-    assert!(
-        vize_carton::cstr!("{}", result.err().unwrap())
-            .contains("configuration changed while it was being read")
+    assert_eq!(
+        vize_carton::cstr!("{}", result.err().unwrap()),
+        "compiler configuration changed while it was being read; retry after the configuration is stable"
     );
     let fresh = CompilerConfigurationSnapshot::capture(root.path(), Some(&config)).unwrap();
     assert_eq!(
         fresh.flattened.options["paths"]["@policy/*"],
         json!(["node_modules/policy/second/types/*"])
     );
-    assert!(fresh.dependencies().contains(&manifest));
+    assert_observed_once(fresh.dependencies(), &manifest);
 }
 
 #[test]
@@ -288,16 +298,16 @@ fn package_link_retarget_rejects_identical_config_bytes_at_a_new_real_anchor() {
             std::os::unix::fs::symlink(root.path().join("second"), &link).unwrap();
         },
     );
-    assert!(
-        vize_carton::cstr!("{}", result.err().unwrap())
-            .contains("configuration changed while it was being read")
+    assert_eq!(
+        vize_carton::cstr!("{}", result.err().unwrap()),
+        "compiler configuration changed while it was being read; retry after the configuration is stable"
     );
     let fresh = CompilerConfigurationSnapshot::capture(root.path(), Some(&config)).unwrap();
     assert_eq!(
         fresh.flattened.options["paths"]["@policy/*"],
         json!(["second/types/*"])
     );
-    assert!(fresh.dependencies().contains(&link));
+    assert_observed_once(fresh.dependencies(), &link);
 }
 
 #[test]
@@ -319,9 +329,9 @@ fn higher_priority_extends_candidate_creation_rejects_the_previous_resolution() 
             std::fs::write(&preferred, r#"{"compilerOptions":{"strict":false}}"#).unwrap();
         },
     );
-    assert!(
-        vize_carton::cstr!("{}", result.err().unwrap())
-            .contains("configuration changed while it was being read")
+    assert_eq!(
+        vize_carton::cstr!("{}", result.err().unwrap()),
+        "compiler configuration changed while it was being read; retry after the configuration is stable"
     );
     let fresh = CompilerConfigurationSnapshot::capture(root.path(), Some(&config)).unwrap();
     assert_eq!(fresh.flattened.options["strict"], json!(false));
@@ -349,8 +359,8 @@ fn captured_auto_vue_target_and_solution_shell_do_not_reread_live_configuration(
         Some(vize_carton::config::VueVersion::V2_7)
     );
     assert!(captured.is_solution_shell());
-    assert!(captured.dependencies().contains(&manifest));
-    assert!(captured.dependencies().contains(&referenced));
+    assert_observed_once(captured.dependencies(), &manifest);
+    assert_observed_once(captured.dependencies(), &referenced);
     std::fs::write(&manifest, r#"{"name":"vue","version":"3.5.0"}"#).unwrap();
     std::fs::write(&config, r#"{"vueCompilerOptions":{"target":"auto"}}"#).unwrap();
     std::fs::remove_file(&referenced).unwrap();
@@ -376,14 +386,17 @@ fn admitted_absence_rejects_primary_or_fallback_configuration_creation_during_ca
             CompilerConfigurationSnapshot::capture_with_observer(root.path(), None, false, || {
                 std::fs::write(&candidate, "{}").unwrap();
             });
-        assert!(
-            vize_carton::cstr!("{}", result.err().unwrap())
-                .contains("configuration changed while it was being read")
+        assert_eq!(
+            vize_carton::cstr!("{}", result.err().unwrap()),
+            "compiler configuration changed while it was being read; retry after the configuration is stable"
         );
         let result = CompilerConfigurationSnapshot::capture(root.path(), None);
-        assert!(
-            vize_carton::cstr!("{}", result.err().unwrap())
-                .contains("appeared while admitting configuration absence")
+        assert_eq!(
+            vize_carton::cstr!("{}", result.err().unwrap()),
+            vize_carton::cstr!(
+                "TypeScript configuration {} appeared while admitting configuration absence",
+                candidate.display()
+            )
         );
         std::fs::remove_file(candidate).unwrap();
         assert!(CompilerConfigurationSnapshot::capture(root.path(), None).is_ok());
@@ -418,7 +431,7 @@ fn failed_capture_retains_new_external_extends_candidates_until_repaired() {
         outside.join("new-base.json"),
         outside.join("new-base/tsconfig.json"),
     ] {
-        assert!(dependencies.contains(&candidate), "{}", candidate.display());
+        assert_observed_once(&dependencies, &candidate);
     }
     assert!(dependencies.windows(2).all(|pair| pair[0] < pair[1]));
     let base = outside.join("new-base.json");
@@ -432,13 +445,13 @@ fn failed_capture_retains_new_external_extends_candidates_until_repaired() {
     let repaired = CompilerConfigurationSnapshot::capture_attempt(&root, Some(&config));
     let snapshot = repaired.outcome.unwrap();
     assert_eq!(repaired.dependencies, snapshot.dependencies());
-    assert!(repaired.dependencies.contains(&base));
-    assert!(repaired.dependencies.contains(&ancestor));
+    assert_observed_once(&repaired.dependencies, &base);
+    assert_observed_once(&repaired.dependencies, &ancestor);
     assert_eq!(snapshot.flattened.options["strict"], json!(true));
     assert_eq!(snapshot.vue_options["jsxSlots"], json!(true));
     std::fs::remove_file(&ancestor).unwrap();
     let removed = CompilerConfigurationSnapshot::capture_attempt(&root, Some(&config));
-    assert!(removed.dependencies.contains(&ancestor));
+    assert_observed_once(&removed.dependencies, &ancestor);
     let removed = removed.outcome.unwrap();
     assert_eq!(removed.unresolved_extends()[0].specifier, "./ancestor.json");
     assert_eq!(removed.flattened.options["strict"], json!(true));
@@ -466,17 +479,9 @@ fn failed_package_capture_retains_missing_manifest_and_symlink_ancestor() {
         attempted.outcome.as_ref().unwrap().unresolved_extends()[0].specifier,
         "@fixture/policy"
     );
-    assert!(attempted.dependencies.contains(&linked));
-    assert!(
-        attempted
-            .dependencies
-            .contains(&linked.join("package.json"))
-    );
-    assert!(
-        attempted
-            .dependencies
-            .contains(&linked.join("tsconfig.json"))
-    );
+    assert_observed_once(&attempted.dependencies, &linked);
+    assert_observed_once(&attempted.dependencies, &linked.join("package.json"));
+    assert_observed_once(&attempted.dependencies, &linked.join("tsconfig.json"));
     std::fs::write(outside.join("package.json"), r#"{"tsconfig":"base.json"}"#).unwrap();
     std::fs::write(
         outside.join("base.json"),
@@ -486,9 +491,9 @@ fn failed_package_capture_retains_missing_manifest_and_symlink_ancestor() {
     let repaired = CompilerConfigurationSnapshot::capture_attempt(&root, Some(&config));
     let snapshot = repaired.outcome.unwrap();
     assert_eq!(repaired.dependencies, snapshot.dependencies());
-    assert!(repaired.dependencies.contains(&linked));
-    assert!(repaired.dependencies.contains(&linked.join("package.json")));
-    assert!(repaired.dependencies.contains(&outside.join("base.json")));
+    assert_observed_once(&repaired.dependencies, &linked);
+    assert_observed_once(&repaired.dependencies, &linked.join("package.json"));
+    assert_observed_once(&repaired.dependencies, &outside.join("base.json"));
     assert_eq!(snapshot.flattened.options["strict"], json!(true));
 }
 
