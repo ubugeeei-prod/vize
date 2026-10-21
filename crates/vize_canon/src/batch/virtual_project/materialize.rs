@@ -159,6 +159,7 @@ impl VirtualProject {
             "canon.project.package_deps",
             materialize_package_node_modules(&package_links)
         );
+        self.write_package_link_receipt(&desired_package_links)?;
 
         profile!(
             "canon.project.write_package_boundary",

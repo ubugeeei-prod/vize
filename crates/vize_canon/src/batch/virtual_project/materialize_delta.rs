@@ -184,6 +184,7 @@ impl VirtualProject {
             materialize_package_links(&patch.desired)?;
             self.commit_incremental_package_link_patch(patch);
         }
+        self.write_package_link_receipt(&self.materialized_package_links)?;
 
         let mut delta = MaterializedFileDelta {
             topology_changed: package_links_changed,

@@ -4,6 +4,7 @@ mod install_roots;
 
 use std::path::{Path, PathBuf};
 
+use serde::{Deserialize, Serialize};
 use vize_carton::{FxHashMap, FxHashSet};
 
 use super::VirtualProject;
@@ -11,7 +12,85 @@ use super::package_node_modules::PackageNodeModulesLink;
 use super::package_shadow::PackageShadowTopology;
 use crate::batch::error::CorsaResult;
 
+const PACKAGE_LINK_RECEIPT_VERSION: u32 = 1;
+const PACKAGE_LINK_RECEIPT_FILE: &str = ".vize-buildinfo/package-links.json";
+
+#[derive(Debug, Deserialize, Serialize)]
+struct PackageLinkReceipt {
+    version: u32,
+    links: Vec<PackageLinkReceiptEntry>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct PackageLinkReceiptEntry {
+    path: PathBuf,
+    target: PathBuf,
+}
+
 impl VirtualProject {
+    fn package_link_receipt_path(&self) -> PathBuf {
+        self.virtual_root.join(PACKAGE_LINK_RECEIPT_FILE)
+    }
+
+    fn committed_package_link_receipt(&self) -> FxHashMap<PathBuf, PathBuf> {
+        let path = self.package_link_receipt_path();
+        let Ok(metadata) = std::fs::symlink_metadata(&path) else {
+            return FxHashMap::default();
+        };
+        if !metadata.file_type().is_file() || metadata.file_type().is_symlink() {
+            return FxHashMap::default();
+        }
+        let Ok(content) = std::fs::read(&path) else {
+            return FxHashMap::default();
+        };
+        let Ok(receipt) = serde_json::from_slice::<PackageLinkReceipt>(&content) else {
+            return FxHashMap::default();
+        };
+        if receipt.version != PACKAGE_LINK_RECEIPT_VERSION {
+            return FxHashMap::default();
+        }
+        let mut links = FxHashMap::default();
+        for entry in receipt.links {
+            if entry.path == self.virtual_root
+                || !entry.path.starts_with(&self.virtual_root)
+                || !entry.target.is_absolute()
+                || links.insert(entry.path, entry.target).is_some()
+            {
+                return FxHashMap::default();
+            }
+        }
+        links
+    }
+
+    pub(super) fn write_package_link_receipt(
+        &self,
+        links: &FxHashMap<PathBuf, PathBuf>,
+    ) -> CorsaResult<()> {
+        let mut entries = links
+            .iter()
+            .filter_map(|(path, target)| {
+                let linked = std::fs::read_link(path).ok()?;
+                let linked = vize_carton::path::normalize_windows_verbatim_path(linked);
+                (linked == *target).then(|| PackageLinkReceiptEntry {
+                    path: path.clone(),
+                    target: target.clone(),
+                })
+            })
+            .collect::<Vec<_>>();
+        entries
+            .sort_by(|left, right| (&left.path, &left.target).cmp(&(&right.path, &right.target)));
+        let content = serde_json::to_vec(&PackageLinkReceipt {
+            version: PACKAGE_LINK_RECEIPT_VERSION,
+            links: entries,
+        })?;
+        let path = self.package_link_receipt_path();
+        if let Some(parent) = path.parent() {
+            crate::batch::materialize_fs::ensure_dir(parent)?;
+        }
+        crate::batch::materialize_fs::write_if_changed(&path, &content)?;
+        Ok(())
+    }
+
     pub(super) fn mark_package_shadow_dependents(
         &mut self,
         keys: impl IntoIterator<Item = crate::package_route::PackageRouteKey>,
@@ -190,6 +269,7 @@ impl VirtualProject {
                 .into());
             }
         }
+        let committed_links = self.committed_package_link_receipt();
         let mut checked = self.workspace_owned_parent_dirs(extra_owned_files);
         let install_roots = self.workspace_install_roots()?;
         for root in &install_roots {
@@ -269,6 +349,7 @@ impl VirtualProject {
                         || (!install_roots.contains(&path)
                             && !cache_owned
                             && !planned
+                            && committed_links.get(&path) != Some(&target)
                             && self.materialized_package_links.get(&path) != Some(&target))
                     {
                         return Err(std::io::Error::new(
