@@ -590,6 +590,32 @@
       }
     },
     {
+      "id": "lsp/regression/dynamic-slot-expression-completion-10182",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "dynamic-slot-expression-completion-10182",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "6cccc6efd605c312fef949069a50b3df9118885462ceab5e1989138e306185f0"
+          }
+        ]
+      },
+      "case": {
+        "path": "dynamic-slot-expression-completion-10182/case.json",
+        "sha256": "8ab588365be394c3b8ca0424e37a1383e80264d1e8fa5f51d5087983111d5325"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
       "id": "lsp/regression/optional-prop-definition-9857",
       "state": "active",
       "targets": [
