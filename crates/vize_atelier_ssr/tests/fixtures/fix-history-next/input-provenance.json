@@ -14,7 +14,7 @@
     {
       "id": "slot-fallback-vnode",
       "fixCommit": "dd9f507ccdf045c33596e6f37f403b06a084b1e7",
-      "sourcePath": "crates/vize_atelier_ssr/src/lib.rs",
+      "sourcePath": "crates/vize_atelier_ssr/src/component_tests.rs",
       "symbol": "test_ssr_slot_outlet_fallback_survives_vnode_branch",
       "inputSha256": "465b18b3bfebc61f26fbad82682359ee46881d0f485d8ea474fe3778ef6de0d4",
       "originalWitness": "substring fallback callback and code snapshot; empty diagnostics",

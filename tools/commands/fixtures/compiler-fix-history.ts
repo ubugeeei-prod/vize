@@ -54,6 +54,7 @@ type DifferentialFixture = {
   inputs: { files: PinnedArtifact[] };
   options: PinnedArtifact;
   reference: PinnedArtifact;
+  currentReference?: PinnedArtifact & { supersedesSha256: string; issue: string };
   historicalObservation: PinnedArtifact;
   provenance: {
     commits: { sha: string; role: string }[];
@@ -180,6 +181,14 @@ function reviewedScopes(root: string, links: Map<string, CaseReference[]>) {
       fixture.historicalObservation,
     ])
       assertPinnedArtifact(root, artifact);
+    if (fixture.currentReference) {
+      assert.equal(fixture.currentReference.supersedesSha256, fixture.reference.sha256);
+      assert.match(
+        fixture.currentReference.issue,
+        /^https:\/\/github\.com\/ubugeeei-prod\/vize\/issues\/[1-9]\d*$/u,
+      );
+      assertPinnedArtifact(root, fixture.currentReference);
+    }
     reviews.set(review.fixCommit, review);
   }
 
@@ -384,7 +393,7 @@ export function renderHistory(history: ReturnType<typeof collectHistory>) {
       "The original 609-fix snapshot has no verified source revision.",
       "Changed witness paths and stable patch equivalence are candidates, not coverage or automatic duplicate exclusions.",
       "Fixture references cover only their recorded entrypoint, target, options and public output facets.",
-      "Fourteen fixture scopes (ten SFC and four SSR) have bounded semantic review; every fix subject retains whole-fix target and dialect review pending.",
+      "Fifteen fixture scopes (ten SFC and five SSR) have bounded semantic review; every fix subject retains whole-fix target and dialect review pending.",
       "Historical or local execution does not certify current Actions or a native route.",
     ],
   };

@@ -5,7 +5,7 @@
     "tests/_fixtures/differential/compiler/sfc-fix-history.manifest.json",
     "tests/_fixtures/differential/compiler/ssr-fix-history.manifest.json"
   ],
-  "scope": "Bounded semantic review of ten complete public SFC Result fixtures and four complete public SSR Result fixtures; this is not whole-fix, whole-history, native, target, or dialect acceptance.",
+  "scope": "Bounded semantic review of ten complete public SFC Result fixtures and five complete public SSR Result fixtures; this is not whole-fix, whole-history, native, target, or dialect acceptance.",
   "reviews": [
     {
       "fixCommit": "ceb0fda9c18ed6e40db71a2c582e9fe10950a43a",
@@ -126,6 +126,17 @@
       ],
       "remainingScope": [
         "Other form controls, alternate options and dialects, SFC SSR integration, hydration behavior, and a native compiler route remain outside this reviewed fixture scope."
+      ]
+    },
+    {
+      "fixCommit": "dd9f507ccdf045c33596e6f37f403b06a084b1e7",
+      "caseId": "compiler/ssr/slot-fallback-vnode",
+      "coveredRequirements": [
+        "A slot outlet nested in a component vnode fallback keeps its authored fallback callback and bound props instead of dropping the fallback content.",
+        "The historical complete public SSR Result remains pinned, while the current complete Result supersedes only the conditional comment block-tracking metadata under the same options and preserves generated code, helper preamble, nullable map, and ordered diagnostics."
+      ],
+      "remainingScope": [
+        "Other slot targets and nesting shapes, alternate options and dialects, SFC SSR integration, hydration behavior beyond the separately linked successor, and a native compiler route remain outside this reviewed fixture scope."
       ]
     },
     {
