@@ -53,7 +53,7 @@ pub use linter_rule_options::{
     LintRuleOptions, MuseaDesignToken, MuseaPreferDesignTokensOptions, NoMutatingPropsOptions,
     NoRestrictedGlobalsOptions, NoRestrictedMembersOptions, PropsDestructureMode, RestrictedGlobal,
     RestrictedMember, SfcElementOrderGroup, SfcElementOrderOptions,
-    StrictBooleanExpressionsOptions, TemplateComponentNameCasing,
+    StrictBooleanExpressionsOptions, TemplateComponentNameCasing, VOnStyle,
 };
 pub use type_checker::TypeCheckerConfig;
 pub use vue::{ParseVueVersionError, VueVersion};

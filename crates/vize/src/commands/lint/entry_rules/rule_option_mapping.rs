@@ -81,6 +81,15 @@ pub(super) fn v_on_event_hyphenation_style(
     }
 }
 
+pub(super) fn v_on_style(
+    style: vize_l0::config::VOnStyle,
+) -> vize_patina::rules::vue::VOnStyleOption {
+    match style {
+        vize_l0::config::VOnStyle::Shorthand => vize_patina::rules::vue::VOnStyleOption::Shorthand,
+        vize_l0::config::VOnStyle::Longform => vize_patina::rules::vue::VOnStyleOption::Longform,
+    }
+}
+
 pub(super) fn attribute_hyphenation_style(
     style: vize_l0::config::HyphenationStyle,
 ) -> vize_patina::rules::HyphenationStyle {

@@ -221,6 +221,13 @@ it("projects define-macros-order options into the native batch", () => {
   );
 });
 
+it("projects v-on style into the typed CLI-compatible option map", () => {
+  assert.deepEqual(getRuleOptions("vue/v-on-style", ["longform"]), {
+    ruleOptions: { "vue/v-on-style": "longform" },
+  });
+  assert.equal(getRuleOptions("vue/v-on-style", ["sometimes"]), undefined);
+});
+
 it("collects every CLI-shaped rule option into one native option map", () => {
   const authored = {
     "script/define-props-destructuring": { destructure: "always" },
