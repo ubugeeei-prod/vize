@@ -132,41 +132,45 @@ export default defineConfig({}).withVue({
 
 次のオプションはすべて `vue.formatter` で指定できます。指定しなかったオプションは `preset` の値を使い、`preset` もなければここに示す既定値を使います。
 
-| オプション                     | 既定値           | 説明                                                                                                                             |
-| ------------------------------ | ---------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| オプション                     | 既定値           | 説明                                                                                                                                                |
+| ------------------------------ | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `preset`                       | なし             | 名前の付いた既定値の組を適用します。`"vize"`、`"prettier"`、`"compact"`、`"documentation"` のいずれかです。一緒に指定したオプションが優先されます。 |
-| `printWidth`                   | `100`            | 1 行の最大幅です。                                                                                                               |
-| `tabWidth`                     | `2`              | インデント 1 段あたりのスペース数です。                                                                                          |
-| `useTabs`                      | `false`          | タブでインデントします。                                                                                                         |
-| `semi`                         | `true`           | 文末にセミコロンを付けます。                                                                                                     |
-| `singleQuote`                  | `false`          | スクリプトでシングルクォートを使います。                                                                                         |
-| `jsxSingleQuote`               | `false`          | JSX の属性でシングルクォートを使います。                                                                                         |
-| `trailingComma`                | `"all"`          | 末尾のカンマを付ける場所です。`"all"`、`"es5"`、`"none"` のいずれかです。                                                        |
-| `bracketSpacing`               | `true`           | オブジェクトリテラルの波括弧の内側にスペースを入れます。                                                                         |
-| `bracketSameLine`              | `false`          | 複数行のタグの `>` を最後の行の末尾に置きます。                                                                                  |
-| `arrowParens`                  | `"always"`       | 引数が 1 つのアロー関数を括弧で囲むかどうかです。`"always"` または `"avoid"` です。                                              |
-| `endOfLine`                    | `"lf"`           | 改行コードです。`"lf"`、`"crlf"`、`"cr"`、`"auto"` のいずれかです。[改行コード](./formatter-line-endings.md)を参照してください。 |
-| `quoteProps`                   | `"as-needed"`    | オブジェクトのキーを引用符で囲む条件です。[プロパティの引用符](./formatter-property-quotes.md)を参照してください。               |
-| `singleAttributePerLine`       | `false`          | 属性を 1 行に 1 つずつ書きます。                                                                                                 |
-| `maxAttributesPerLine`         | なし             | タグの属性がこの数を超えると折り返します。                                                                                       |
-| `vueIndentScriptAndStyle`      | `false`          | `<script>` と `<style>` の中身をインデントします。                                                                               |
-| `sortAttributes`               | `true`           | テンプレートとブロックタグの属性を並べ替えます。                                                                                 |
-| `attributeSortOrder`           | `"alphabetical"` | 同じグループ内の属性の順序です。`"alphabetical"` または `"as-written"` です。                                                    |
-| `mergeBindAndNonBindAttrs`     | `false`          | 静的な属性を先にせず、`class` と `:class` をまとめて並べ替えます。                                                               |
-| `attributeGroups`              | なし             | Vue スタイルガイドの順序の代わりに使う属性グループです。たとえば `[["id"], ["v-*"], ["*"]]` です。                               |
-| `normalizeDirectiveShorthands` | `true`           | `v-bind:`、`v-on:`、`v-slot:` を `:`、`@`、`#` に置き換えます。                                                                  |
-| `sortBlocks`                   | `true`           | ブロックを script、script setup、template、style、カスタムブロックの順に並べます。                                               |
-| `normalizeCssQuotes`           | `false`          | CSS、SCSS、Less の文字列の引用符を `singleQuote` の設定に合わせます。                                                            |
-| `normalizeInlineStyles`        | `false`          | 1 行の静的な `style` 属性を `color: red; top: 0` の形で書きます。                                                                |
-| `normalizeVForParens`          | `false`          | `v-for` の別名が複数あるときは `(item, i) in items` のように括弧で囲みます。                                                     |
-| `selfCloseVoidElements`        | `false`          | 空要素を `<img />` のように閉じます。                                                                                            |
-| `reindentPreprocessorStyles`   | `false`          | SCSS と Less のブロックを入れ子の深さでインデントし直し、空行を整えます。                                                        |
-| `sortImports`                  | 無効             | スクリプトの import を並べ替えます。[import の並べ替え](./formatter-import-sorting.md)を参照してください。                       |
+| `printWidth`                   | `100`            | 1 行の最大幅です。                                                                                                                                  |
+| `tabWidth`                     | `2`              | インデント 1 段あたりのスペース数です。                                                                                                             |
+| `useTabs`                      | `false`          | タブでインデントします。                                                                                                                            |
+| `semi`                         | `true`           | 文末にセミコロンを付けます。                                                                                                                        |
+| `singleQuote`                  | `false`          | スクリプトでシングルクォートを使います。                                                                                                            |
+| `jsxSingleQuote`               | `false`          | JSX の属性でシングルクォートを使います。                                                                                                            |
+| `trailingComma`                | `"all"`          | 末尾のカンマを付ける場所です。`"all"`、`"es5"`、`"none"` のいずれかです。                                                                           |
+| `bracketSpacing`               | `true`           | オブジェクトリテラルの波括弧の内側にスペースを入れます。                                                                                            |
+| `bracketSameLine`              | `false`          | 複数行のタグの `>` を最後の行の末尾に置きます。                                                                                                     |
+| `arrowParens`                  | `"always"`       | 引数が 1 つのアロー関数を括弧で囲むかどうかです。`"always"` または `"avoid"` です。                                                                 |
+| `endOfLine`                    | `"lf"`           | 改行コードです。`"lf"`、`"crlf"`、`"cr"`、`"auto"` のいずれかです。[改行コード](./formatter-line-endings.md)を参照してください。                    |
+| `quoteProps`                   | `"as-needed"`    | オブジェクトのキーを引用符で囲む条件です。[プロパティの引用符](./formatter-property-quotes.md)を参照してください。                                  |
+| `singleAttributePerLine`       | `false`          | 属性を 1 行に 1 つずつ書きます。                                                                                                                    |
+| `maxAttributesPerLine`         | なし             | タグの属性がこの数を超えると折り返します。                                                                                                          |
+| `vueIndentScriptAndStyle`      | `false`          | `<script>` と `<style>` の中身をインデントします。                                                                                                  |
+| `sortAttributes`               | `true`           | テンプレートとブロックタグの属性を並べ替えます。                                                                                                    |
+| `attributeSortOrder`           | `"alphabetical"` | 同じグループ内の属性の順序です。`"alphabetical"` または `"as-written"` です。                                                                       |
+| `mergeBindAndNonBindAttrs`     | `false`          | 静的な属性を先にせず、`class` と `:class` をまとめて並べ替えます。                                                                                  |
+| `attributeGroups`              | なし             | Vue スタイルガイドの順序の代わりに使う属性グループです。たとえば `[["id"], ["v-*"], ["*"]]` です。                                                  |
+| `normalizeDirectiveShorthands` | `true`           | `v-bind:`、`v-on:`、`v-slot:` を `:`、`@`、`#` に置き換えます。                                                                                     |
+| `sortBlocks`                   | `true`           | ブロックを script、script setup、template、style、カスタムブロックの順に並べます。                                                                  |
+| `normalizeCssQuotes`           | `false`          | CSS、SCSS、Less の文字列の引用符を `singleQuote` の設定に合わせます。                                                                               |
+| `normalizeInlineStyles`        | `false`          | 1 行の静的な `style` 属性を `color: red; top: 0` の形で書きます。                                                                                   |
+| `normalizeVForParens`          | `false`          | `v-for` の別名が複数あるときは `(item, i) in items` のように括弧で囲みます。                                                                        |
+| `selfCloseVoidElements`        | `false`          | 空要素を `<img />` のように閉じます。                                                                                                               |
+| `reindentPreprocessorStyles`   | `false`          | SCSS と Less のブロックを入れ子の深さでインデントし直し、空行を整えます。                                                                           |
+| `sortImports`                  | 無効             | スクリプトの import を並べ替えます。[import の並べ替え](./formatter-import-sorting.md)を参照してください。                                          |
 
 Node の native `formatSfc` API でも、Prettier 移行用の 5 つの真偽値
 `normalizeCssQuotes`、`normalizeInlineStyles`、`normalizeVForParens`、
 `selfCloseVoidElements`、`reindentPreprocessorStyles` を同じ名前で指定できます。
 明示した値は `false` を含めて `preset` より優先されます。
+
+スクリプトの引用符ポリシーも設定、CLI の直接上書き、Node で共有されます。
+`--jsx-single-quote[=false]` は `jsxSingleQuote`、
+`--quote-props <as-needed|consistent|preserve>` は `quoteProps` に対応します。
 
 ## コンパクトなアプリケーションコード
 

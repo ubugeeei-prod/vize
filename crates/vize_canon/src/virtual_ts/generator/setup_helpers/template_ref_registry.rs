@@ -264,7 +264,8 @@ fn collect_element(
             };
             let name = value.content;
             if !name.is_empty() {
-                let kind = if let Some(reference_type) = dynamic_component_reference(element) {
+                let dynamic_reference = dynamic_component_reference(element, summary);
+                let kind = if let Some(reference_type) = dynamic_reference {
                     RegisteredRefKind::Component {
                         reference_type,
                         start: element.loc.span.start,
@@ -321,7 +322,7 @@ fn collect_element(
     }
 }
 
-fn dynamic_component_reference(element: &ElementNode<'_>) -> Option<String> {
+fn dynamic_component_reference(element: &ElementNode<'_>, summary: &Croquis) -> Option<String> {
     if element.tag != "component" {
         return None;
     }
@@ -340,27 +341,35 @@ fn dynamic_component_reference(element: &ElementNode<'_>) -> Option<String> {
         }
         directive.exp.as_ref()
     })?;
-    let vize_relief::ExpressionNode::Simple(expression) = expression else {
-        return None;
-    };
-    let reference = expression.content.trim();
-    let mut segments = reference.split('.');
-    let first = segments.next()?;
-    if !is_ascii_identifier(first) {
-        return None;
+    if let vize_relief::ExpressionNode::Simple(expression) = expression {
+        let reference = expression.content.trim();
+        let mut segments = reference.split('.');
+        if let Some(first) = segments.next()
+            && is_ascii_identifier(first)
+        {
+            let rest = segments.collect::<Vec<_>>();
+            if rest.iter().all(|segment| is_ascii_identifier(segment)) {
+                if rest.is_empty() {
+                    return Some(vize_carton::cstr!("typeof {first}"));
+                }
+                let mut reference_type =
+                    vize_carton::cstr!("import('vue').UnwrapRef<typeof {first}>");
+                for segment in rest {
+                    append!(reference_type, "[\"{segment}\"]");
+                }
+                return Some(reference_type);
+            }
+        }
     }
-    let rest = segments.collect::<Vec<_>>();
-    if !rest.iter().all(|segment| is_ascii_identifier(segment)) {
-        return None;
-    }
-    if rest.is_empty() {
-        return Some(vize_carton::cstr!("typeof {first}"));
-    }
-    let mut reference_type = vize_carton::cstr!("import('vue').UnwrapRef<typeof {first}>");
-    for segment in rest {
-        append!(reference_type, "[\"{segment}\"]");
-    }
-    Some(reference_type)
+
+    // Complex root-scope targets already have an inference-only alias for
+    // props/listener checking. Reuse it only when Croquis proves ownership;
+    // an authored lookalike must never become a generated type reference.
+    let alias = vize_croquis::drawer::dynamic_component_alias(element.loc.span.start);
+    vize_croquis::facts::component_usage_list(summary)
+        .iter()
+        .any(|usage| usage.start == element.loc.span.start && usage.name.as_str() == alias.as_str())
+        .then(|| vize_carton::cstr!("typeof {alias}"))
 }
 
 fn is_ascii_identifier(segment: &str) -> bool {

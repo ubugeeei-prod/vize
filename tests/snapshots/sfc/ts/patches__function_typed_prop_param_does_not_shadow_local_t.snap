@@ -32,8 +32,8 @@ return (_ctx: any,_cache: any) => {
             _createElementVNode("span", null, _toDisplayString(__props.renderLabel('x', _unref(format))), 1 /* TEXT */)
           ], 10 /* CLASS, PROPS */, ["onClick"])
         ]),
-        _: 1 /* STABLE */
-      })
+        _: 2 /* DYNAMIC */
+      }, 1024 /* DYNAMIC_SLOTS */)
     ]),
     _: 1 /* STABLE */
   }))

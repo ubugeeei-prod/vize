@@ -127,3 +127,15 @@ The native Node `formatSfc` options expose `normalizeCssQuotes`,
 the CLI's resolved profile and WASM. An explicit Node value is applied after
 the selected preset, so every Prettier migration normalizer can be enabled
 without the preset or disabled with `false` while retaining the rest of it.
+
+## Script quote option parity
+
+The existing `jsxSingleQuote` boolean and `quoteProps` enum now have direct CLI
+and native Node projections in addition to Rust, config schema, generated
+TypeScript config, editor and WASM support. CLI flags are
+`--jsx-single-quote[=false]` and
+`--quote-props <as-needed|consistent|preserve>`; Node `formatSfc` uses the
+camel-case option names and rejects unknown property-quote modes at the native
+boundary. The pre-existing independent full-output fixtures cover every
+property mode and every JavaScript/JSX quote combination across Vue versions;
+public CLI and Node regressions add second/third-pass fixed-point evidence.

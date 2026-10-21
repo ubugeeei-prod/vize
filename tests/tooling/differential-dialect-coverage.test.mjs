@@ -112,16 +112,55 @@ void test("coverage schema rejects malformed and noncanonical verified claims", 
 });
 
 void test("missing case coverage becomes explicit unknown without changing manifest bytes", () => {
-  const source = load("lsp");
-  assert(source.cases.every((fixture) => fixture.dialectCoverage.state === "unknown"));
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-dialect-ledger-"));
   try {
     const file = path.join(temporary, "manifest.json");
-    fs.copyFileSync(path.join(root, "tests/_fixtures/differential/lsp/manifest.json"), file);
-    assert.equal(loadProductManifest(file, "lsp").manifestSha256, source.manifestSha256);
+    const manifest = JSON.parse(
+      fs.readFileSync(path.join(root, "tests/_fixtures/differential/lsp/manifest.json"), "utf8"),
+    );
+    delete manifest.cases[0].dialectCoverage;
+    fs.writeFileSync(file, `${JSON.stringify(manifest)}\n`);
+    const before = fs.readFileSync(file);
+    const source = loadProductManifest(file, "lsp");
+    assert.equal(source.cases[0].dialectCoverage.state, "unknown");
+    assert.deepEqual(fs.readFileSync(file), before);
   } finally {
     fs.rmSync(temporary, { recursive: true, force: true });
   }
+});
+
+void test("linter and LSP coverage record every pinned authored source dialect", () => {
+  assert.deepEqual(summarizeDialectCoverage(load("linter").cases), {
+    plannedCases: 79,
+    verifiedCases: 0,
+    provisionalCases: 79,
+    unknownReadinessCases: 79,
+    verified: {},
+    provisional: {
+      "html-template": 45,
+      js: 4,
+      "pug-template": 1,
+      ts: 32,
+      "vue2-sfc": 2,
+      "vue3-sfc": 60,
+    },
+  });
+  assert.deepEqual(summarizeDialectCoverage(load("lsp").cases), {
+    plannedCases: 42,
+    verifiedCases: 0,
+    provisionalCases: 42,
+    unknownReadinessCases: 42,
+    verified: {},
+    provisional: {
+      "html-template": 36,
+      js: 2,
+      jsx: 2,
+      "pug-template": 2,
+      ts: 32,
+      tsx: 2,
+      "vue3-sfc": 41,
+    },
+  });
 });
 
 void test("typechecker coverage records every pinned authored source dialect", () => {

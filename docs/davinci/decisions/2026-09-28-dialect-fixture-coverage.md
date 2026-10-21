@@ -1,6 +1,6 @@
 # Dialect fixture coverage (#6892)
 
-The pinned 146-project compatibility ledger now has a `dialectCoverage` row for
+The pinned 149-project compatibility ledger now has a `dialectCoverage` row for
 every gitlink. `unknown` means no dialect was established by the checked
 evidence. `partial` names dialects observed in that project; it never says
 every source file uses that dialect. A claim cites an exact pinned-registry
@@ -8,7 +8,7 @@ note or a repository test oracle, and validation rejects stale selectors.
 
 The inventory has partial evidence in fifteen projects: eight Vue 2 SFC
 projects, one Vue 2.7 SFC project, one Vue 3 SFC, two petite-vue corpora, two
-Pug corpora and one Vapor JSX corpus. The other 131 remain unknown. The six
+Pug corpora and one Vapor JSX corpus. The other 134 remain unknown. The six
 additional Vue 2/2.7 projects are backed by `package.json` Vue declarations
 at the exact registered revision and Git blob SHA, alongside registered Vue
 source globs. A package declaration proves its version selection, not that
@@ -27,12 +27,13 @@ one project may contain multiple dialects. The #6853 denominator retains
 missing, skipped, errored and unknown cases, and #6854 cannot count a project
 presence claim as a per-case zero-fallback pass.
 
-Remaining #6892 work: add exact case labels for the shared compiler, linter,
-formatter, typechecker and LSP corpus; pin real Babel JSX, TS and TSX witnesses;
-add grammar-generated Vue 0.x/1.x and quirks cases with pinned generator inputs
-and reference behavior; then make #6854 aggregate each dialect and unknown
-bucket. Keep these as unfinished until actual case execution and provenance
-are recorded.
+The current compiler, formatter, linter, typechecker and LSP manifests now have
+exact case labels wherever immutable authored source bytes establish a dialect.
+Remaining #6892 work is to pin an actual Babel JSX witness, promote the existing
+grammar-generated Vue 0.x/1.x and quirks inputs into product manifests with
+actual adapter results, and make #6854 aggregate each dialect and unknown
+bucket. Keep these as unfinished until actual case execution and provenance are
+recorded.
 
 The first shared case-ledger slice makes coverage a common manifest contract.
 Every planned case in compiler, formatter, linter, typechecker and LSP now
@@ -42,7 +43,7 @@ reports verified and provisional dialect rows separately while retaining every
 nonverified case in the unknown readiness denominator. Verified labels are
 restricted to the canonical #6854 vocabulary.
 
-The twelve compiler SSR cases have bounded `source-inspected` evidence for the
+Twelve of fourteen compiler SSR cases have bounded `source-inspected` evidence for the
 default Vue 3 SFC and HTML-template selection; the one typed-script case also
 records `ts`. Their input bytes were already pinned by SHA-256, and the compiler
 loader now binds these labels to its `--no-config` Vue 3 adapter. This is
@@ -50,14 +51,22 @@ provisional measurement only: all twelve remain unknown for deletion readiness
 because whole-product native compiler execution is still unsupported.
 
 The typechecker registry also derives bounded `source-inspected` labels from
-each immutable authored input after its SHA-256 check. Fifty-six of 57 cases
-contain Vue 3 SFC and TypeScript witnesses, 55 include HTML templates, and three
+each immutable authored input after its SHA-256 check. Sixty of 61 cases
+contain Vue 3 SFC and TypeScript witnesses, 59 include HTML templates, and three
 include TSX. The remaining Nuxt dependency-identity case contains only its
 pinned project graph, so it stays unknown instead of inferring a dialect from a
 product name. The loader re-derives the labels from the pinned bytes and rejects
 manifest drift. These provisional labels do not change the zero-fallback
-denominator: native typechecker execution remains unsupported for all 57 cases.
-Existing formatter labels contribute sixteen more provisional cases. The 59
-linter and 27 LSP cases stay explicit unknowns pending product-specific source
-and execution evidence. Rare dialect input-only rows remain outside the
-executed denominator.
+denominator: native typechecker execution remains unsupported for all 61 cases.
+Existing formatter labels contribute eighteen provisional cases among twenty
+planned cases.
+
+The linter loader now re-derives source-inspected labels for all 79 planned
+cases from the five SHA-pinned authored cohorts or the separately pinned input
+files. The LSP loader does the same for all 42 planned cases from each fixture's
+immutable runtime files. The manifests cover Vue 2 and Vue 3 SFCs, HTML and Pug
+templates, JS, TS, JSX and TSX where those bytes exist; generic JSX is not
+promoted to the distinct Babel JSX dialect. Loader checks reject stale labels.
+All 121 cases remain in the unknown readiness denominator because source
+inspection is not native acceptance. Rare dialect input-only rows remain
+outside the executed denominator.

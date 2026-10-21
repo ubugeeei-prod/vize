@@ -106,6 +106,35 @@ fn formatter_applies_vite_settings_and_explicit_cli_switches() {
 
 #[cfg(feature = "glyph")]
 #[test]
+fn formatter_cli_exposes_independent_script_quote_policies() {
+    let project = project();
+    let root = project.path();
+    let source = "<script setup lang=\"tsx\">\nconst value={\"name\":1,plain:2}\nconst view=<div title=\"world\"/>\n</script>\n";
+    let expected = "<script setup lang=\"tsx\">\nconst value = { \"name\": 1, plain: 2 };\nconst view = <div title='world' />;\n</script>\n";
+    write(root, "QuotePolicies.vue", source);
+    let args = [
+        "fmt",
+        "--write",
+        "QuotePolicies.vue",
+        "--no-config",
+        "--jsx-single-quote",
+        "--quote-props",
+        "preserve",
+    ];
+    assert_success(&run(root, &args));
+    assert_eq!(
+        fs::read_to_string(root.join("QuotePolicies.vue")).unwrap(),
+        expected
+    );
+    assert_success(&run(root, &args));
+    assert_eq!(
+        fs::read_to_string(root.join("QuotePolicies.vue")).unwrap(),
+        expected
+    );
+}
+
+#[cfg(feature = "glyph")]
+#[test]
 fn package_boundaries_precedence_and_sibling_settings_reach_the_formatter() {
     let workspace = tempfile::tempdir().unwrap();
     let root = workspace.path();
