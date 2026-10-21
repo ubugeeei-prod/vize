@@ -5,7 +5,7 @@
     reason = "tower-lsp action titles and edits use std String/HashMap"
 )]
 
-use super::{get_line_indent, ranges_overlap, CodeActionService, IdeContext};
+use super::{CodeActionService, IdeContext, get_line_indent, ranges_overlap};
 use tower_lsp::lsp_types::{
     CodeAction, CodeActionKind, CodeActionOrCommand, Diagnostic, Position, Range, TextEdit,
     WorkspaceEdit,
@@ -87,7 +87,7 @@ impl CodeActionService {
             let relative_start = start.saturating_sub(block.loc.start);
             let edit = script_suppression_edit(
                 &ctx.content,
-                block.content,
+                &block.content,
                 block.loc.start,
                 relative_start,
                 lint_diag.rule_name,
@@ -119,7 +119,7 @@ impl CodeActionService {
     }
 }
 
-fn script_suppression_edit(
+pub(super) fn script_suppression_edit(
     source: &str,
     block_content: &str,
     block_start: usize,

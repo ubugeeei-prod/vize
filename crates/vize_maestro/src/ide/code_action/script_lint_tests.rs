@@ -1,6 +1,6 @@
 use super::*;
 use crate::{
-    ide::{position_to_offset, DiagnosticService},
+    ide::{DiagnosticService, position_to_offset},
     server::ServerState,
 };
 use tower_lsp::lsp_types::{CodeActionOrCommand, NumberOrString, Url};

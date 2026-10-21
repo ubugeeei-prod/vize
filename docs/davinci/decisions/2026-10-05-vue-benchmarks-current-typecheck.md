@@ -1,7 +1,8 @@
 # Current upstream typecheck validation
 
 Tracking: [#7856](https://github.com/ubugeeei-prod/vize/issues/7856).
-This prepares source qualification; actual current CLI execution is pending.
+This records source qualification without treating a green expected-failure
+policy as validator parity.
 The [paired issue receipt](https://github.com/ubugeeei-prod/vize/issues/7856#issuecomment-5987128899)
 records the same authority and execution boundaries.
 
@@ -75,6 +76,28 @@ fixture containment. Format/lint and syntax checks pass. They execute no
 Vize/native/reference/provider command and supply no current CLI acceptance.
 
 ## Delivery boundaries
+
+The original manual capture workflow was removed by #9597 after its bounded
+evidence run. `vue-benchmarks-current-qualification.yml` replaces that one-off
+entry point with a weekly and manually dispatchable exact-main observation. It
+reuses the source CLI producer and keeps the fixed 5489 input read-only, runs
+all eleven original lint pairs and all 154 typecheck plants, and uploads every
+raw stream before a final fail-closed aggregate. A failing plant therefore
+leaves both an artifact and a red workflow rather than a green observation.
+
+The upstream adapter repair #83 subsequently merged at `81badeba5b503d0c3d856c4d311091cde230b012`.
+The latest published upstream observation available while adding the recurring
+lane is [run 39325819866](https://github.com/pikax/vue-benchmarks/actions/runs/39325819866),
+published by `e0e40322dcaf282dd3a1dc55f2896b830d24527f` from source
+`33fd9d395c22a020a8b9a90d40abe850ac241023`. It used released Vize/native
+0.481.0. Its complete 702-row confirmation passed the upstream expected-failure
+policy, but that is not all-validator parity: Vize rows still record 33 compiler
+failures, one formatter failure, eight component-metadata failures and two LSP
+failures. The typecheck aggregate and all 21 Vize lint rows pass. Compiler,
+formatter, component-metadata and LSP gaps remain separately actionable; this
+current-source lane does not relabel or hide them and establishes no speed rank.
+
+### Historical one-off delivery record
 
 Use the genuine ordered native Stack: metadata #7860, lint #7910, then
 this typecheck probe. This child is based on actual lint head

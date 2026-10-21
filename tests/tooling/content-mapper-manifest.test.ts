@@ -92,7 +92,6 @@ const publicScope = {
   "published-defaults-only": true,
   "official-css-options-only": false,
   "event-rename-only": false,
-  "directive-owners-only": false,
 };
 function evaluates(expression: string, inputs = publicScope, runId = "7001"): unknown {
   return runInNewContext(
@@ -274,7 +273,6 @@ test("published mapper admission rejects mixed scopes, tags, runtime overrides a
     SOURCE_MODE: "false",
     GITHUB_REF: "refs/heads/reviewed-actor",
     EVENT_RENAME_ONLY: "false",
-    DIRECTIVE_OWNERS_ONLY: "false",
   };
   const execute = (extra = {}) =>
     spawnSync("bash", ["-euo", "pipefail", "-c", script], {
@@ -285,7 +283,6 @@ test("published mapper admission rejects mixed scopes, tags, runtime overrides a
   for (const extra of [
     { SOURCE_MODE: "true" },
     { EVENT_RENAME_ONLY: "true" },
-    { DIRECTIVE_OWNERS_ONLY: "true" },
     { GITHUB_REF: "refs/tags/v0.1.0" },
   ])
     assert.notEqual(execute(extra).status, 0);

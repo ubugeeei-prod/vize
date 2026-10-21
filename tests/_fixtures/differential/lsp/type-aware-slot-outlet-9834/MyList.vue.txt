@@ -1,0 +1,1 @@
+<script setup lang="ts">defineSlots<{ default?(props: { items: string[]; attrs: Record<string, string> }): unknown }>(); const getItems = (): string[] => ["a", "b"];</script><template><slot :items="getItems()" :attrs="{ id: 'x' }" /></template>
