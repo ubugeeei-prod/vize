@@ -1801,6 +1801,58 @@
       ]
     },
     {
+      "id": "typechecker/misskey-generated-inference-9516/inference-probes-valid",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "misskey-generated-inference-9516",
+      "case": "inference-probes-valid",
+      "test": "misskey_generated_inference_probes_preserve_authored_diagnostics",
+      "regressionCommit": "cf6c83ab16fb7f20f84f0d51112090bbce89c74a",
+      "sourceRevision": "cf6c83ab16fb7f20f84f0d51112090bbce89c74a",
+      "packReference": {
+        "path": "misskey-generated-inference-9516/cases.json",
+        "sha256": "a6c8ceb8169e865f2aeef5e47cc35df9480e025a1e6e7c683a27bd7845279142"
+      },
+      "inputs": [
+        {
+          "file": "evidence/original-custody.json",
+          "path": "misskey-generated-inference-9516/original-custody.json",
+          "sha256": "529a11fa12e4a088aa0f56bcb4b02937e43b0b498c7972b6a71da78c75aad46e"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "misskey-generated-inference-9516/inference-probes-valid/tsconfig.json.txt",
+          "sha256": "069f99ca19d6391e1e900a0047a9d96766b4a750f075b2e314ab6e9a31382860"
+        },
+        {
+          "file": "src/FallthroughRoot.vue",
+          "path": "misskey-generated-inference-9516/inference-probes-valid/src/FallthroughRoot.vue.txt",
+          "sha256": "04414ab271afdde949d2f62a11cda33da9a3616884e0c6ae39e266a0def12955"
+        },
+        {
+          "file": "src/ModalWindow.vue",
+          "path": "misskey-generated-inference-9516/inference-probes-valid/src/ModalWindow.vue.txt",
+          "sha256": "2b747389f7ec1005dcaa68c45210a0800769b72d529b389b084b7ac8ba18120c"
+        },
+        {
+          "file": "src/GenericInput.vue",
+          "path": "misskey-generated-inference-9516/inference-probes-valid/src/GenericInput.vue.txt",
+          "sha256": "0f8f3cfa534545c2a842b4b5a70c8725613e133e27d173e79569690599521bed"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "misskey-generated-inference-9516/inference-probes-valid/src/App.vue.txt",
+          "sha256": "0295efb2fc46392adacacaefd622e23dfc56b19abe299f775856fcea68b350cc"
+        }
+      ]
+    },
+    {
       "id": "typechecker/component-v-bind-duplicate-diagnostic-10069/wrong-prop-with-spread-and-listener",
       "state": "active",
       "targets": [
@@ -1834,6 +1886,48 @@
           "file": "src/App.vue",
           "path": "component-v-bind-duplicate-diagnostic-10069/src/App.vue.txt",
           "sha256": "ee913a6465fcc965617f45c7f3897143cdd177a74a07b4abc4fd2ab30c78060b"
+        }
+      ]
+    },
+    {
+      "id": "typechecker/misskey-generated-inference-9516/authored-unknown-prop-control",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "misskey-generated-inference-9516",
+      "case": "authored-unknown-prop-control",
+      "test": "misskey_generated_inference_probes_preserve_authored_diagnostics",
+      "regressionCommit": "cf6c83ab16fb7f20f84f0d51112090bbce89c74a",
+      "sourceRevision": "cf6c83ab16fb7f20f84f0d51112090bbce89c74a",
+      "packReference": {
+        "path": "misskey-generated-inference-9516/cases.json",
+        "sha256": "a6c8ceb8169e865f2aeef5e47cc35df9480e025a1e6e7c683a27bd7845279142"
+      },
+      "inputs": [
+        {
+          "file": "evidence/original-custody.json",
+          "path": "misskey-generated-inference-9516/original-custody.json",
+          "sha256": "529a11fa12e4a088aa0f56bcb4b02937e43b0b498c7972b6a71da78c75aad46e"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "misskey-generated-inference-9516/authored-unknown-prop-control/tsconfig.json.txt",
+          "sha256": "2bd2dbb294ab43a04963e158b6c9dba3f7408c6e0380d36869b18afaf0e420b6"
+        },
+        {
+          "file": "src/Strict.vue",
+          "path": "misskey-generated-inference-9516/authored-unknown-prop-control/src/Strict.vue.txt",
+          "sha256": "b73c97bb97d94eb45b6efc0a635d7b31f2252c0b6276937c59e202ca82286766"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "misskey-generated-inference-9516/authored-unknown-prop-control/src/App.vue.txt",
+          "sha256": "51c2e8a568c7af36948a100d0645d5f05d150a348aec204a6249087833dcdfc1"
         }
       ]
     },

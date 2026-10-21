@@ -11,6 +11,7 @@ pub(super) struct GenericComponentContract<'a> {
     pub(super) slots_is_generic: bool,
     pub(super) public_type: &'static str,
     pub(super) props_type: &'static str,
+    pub(super) ref_resolver_type: Option<&'static str>,
 }
 
 /// The string index signature Vue's own component options carry, emitted ahead
@@ -210,6 +211,7 @@ pub(super) fn emit_default_export_declaration(
         slots_is_generic,
         public_type: public_component_type,
         props_type,
+        ref_resolver_type,
     }) = generic_component_params
     {
         let emit_resolvers =
@@ -222,6 +224,9 @@ pub(super) fn emit_default_export_declaration(
         let emit_props_separator = if emit_resolvers.is_empty() { "" } else { " " };
         let slot_resolver =
             slot_resolver_field(generic_decl, generic_names, slots_is_generic, props_type);
+        let ref_resolver = ref_resolver_type
+            .map(|resolver| vize_carton::cstr!("__vizeResolveRef?: {resolver}; "))
+            .unwrap_or_default();
         let check_props_param = generic_check_props_param(
             generic_names,
             fallthrough_props_ref,
@@ -231,7 +236,7 @@ pub(super) fn emit_default_export_declaration(
         );
         append!(
             *ts,
-            "{{ __vizeCheck: <{generic_decl}>(props: {check_props_param}) => void; __vizeResolveProps?: <{generic_decl}>(props: {check_props_param}) => {props_type}<{generic_names}>; {slot_resolver}{emit_props_static}{event_map_separator}{event_map_static}{emit_props_separator}{emit_resolvers} {component_contract_fields} }} & {authored_component}{public_component_type}",
+            "{{ __vizeCheck: <{generic_decl}>(props: {check_props_param}) => void; __vizeResolveProps?: <{generic_decl}>(props: {check_props_param}) => {props_type}<{generic_names}>; {slot_resolver}{ref_resolver}{emit_props_static}{event_map_separator}{event_map_static}{emit_props_separator}{emit_resolvers} {component_contract_fields} }} & {authored_component}{public_component_type}",
         );
     } else if emits_info.has_emits_for_props {
         let event_map_separator = if event_map_static.is_empty() { "" } else { " " };

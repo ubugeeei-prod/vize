@@ -6,6 +6,7 @@ mod component_event_assignment_scope;
 mod component_options_index_signature;
 mod component_prop_regressions;
 mod component_render_h_props;
+mod component_spread_duplicate_diagnostics;
 mod component_vif_guard_ts7006;
 mod css_module_classes;
 mod css_side_effect_import;
