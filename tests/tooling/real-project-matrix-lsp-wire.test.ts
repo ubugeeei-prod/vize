@@ -18,6 +18,9 @@ const prefix =
 test("passive native LSP capture retains the complete original Matrix workflow", () => {
   const original = parse(originalBytes);
   const current = parse(read("../../.github/workflows/real-project-matrix.yml"));
+  assert.deepEqual(original.on.schedule, [{ cron: "37 5 * * 0" }]);
+  assert.deepEqual(current.on.schedule, [{ cron: "37 5 * * *" }]);
+  current.on.schedule = original.on.schedule;
   // Only the explicit nonempty selector changes scope. Invert its exact additive
   // wiring before comparing every original tool, gate, upload and timeout below.
   assert.deepEqual(current.on.workflow_dispatch.inputs.project, {
