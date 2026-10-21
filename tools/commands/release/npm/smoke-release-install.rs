@@ -824,6 +824,7 @@ fn assert_installed_mapper_contract(install_dir: &Path) -> Result<(), String> {
         .and_then(|value| value.get("contentMapper"));
     if contract
         != Some(&json!({
+            "dynamicConfig": true,
             "exec": ["node", "./bin/vize", "content-mapper"],
             "compilerOptions": ["noUnusedLocals"],
         }))
