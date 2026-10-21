@@ -1,0 +1,16 @@
+<script lang="ts">
+import type { IconProps } from "./Icon.vue";
+// split-script offset padding
+</script>
+
+<script setup lang="ts" generic="T extends IconProps">
+import { h } from "vue";
+import UIcon from "./Icon.vue";
+
+const renderItem = (item: { icon?: string }) =>
+  item.icon ? h(UIcon, { name: item.icon }) : null;
+</script>
+
+<template>
+  <div />
+</template>
