@@ -10,6 +10,7 @@
 - Whole-file SFC formatting
 - Block-level formatting helpers for template, script, and style content
 - Prettier-like options with Vue-specific attribute and block ordering controls
+- An opt-in arena-backed document IR with an iterative layout printer
 
 ## Key Entry Points
 
@@ -19,6 +20,13 @@
 - `format_script`
 - `format_style`
 - `FormatOptions`
+
+The opt-in native document pipeline keeps syntax traversal and layout separate:
+
+- `native_doc::template_document` builds a source-borrowing `Doc` from a retained L1 parse
+- `native_doc::print` lays out that `Doc` according to `PrintOptions`
+
+These APIs do not change the default formatter entry points above.
 
 ## Related Crates
 
