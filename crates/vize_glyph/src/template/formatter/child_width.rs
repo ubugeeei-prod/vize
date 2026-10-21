@@ -61,12 +61,26 @@ impl TemplateFormatter<'_> {
         if child.is_empty() {
             return None;
         }
+        let first_open_brace = memchr::memchr(b'{', child_bytes);
+        let interpolation_start = find_interpolation_start(child_bytes, first_open_brace);
+        let leading_interpolation = parse_interpolation_range(child_bytes, 0);
         // An authored multiline leading interpolation owns its established
         // layout. Later multiline interpolations in a mixed text run may be
         // normalized to one line, so they still contribute their formatted
         // width to the opening-tag decision.
-        if child_bytes.iter().any(|byte| matches!(byte, b'\r' | b'\n'))
-            && authored_multiline_child_owns_layout(child_bytes)
+        if interpolation_start.is_none()
+            && child_bytes.iter().any(|byte| matches!(byte, b'\r' | b'\n'))
+        {
+            return None;
+        }
+        if interpolation_start == Some(0)
+            && leading_interpolation.is_some_and(|(expression_start, expression_end, _)| {
+                child_bytes
+                    .get(expression_start..expression_end)
+                    .is_some_and(|expression| {
+                        expression.iter().any(|byte| matches!(byte, b'\r' | b'\n'))
+                    })
+            })
         {
             return None;
         }
@@ -78,14 +92,12 @@ impl TemplateFormatter<'_> {
         // Sole interpolations are deliberately excluded below. Detect them
         // before formatting so the opening-tag width probe does not parse and
         // print the same JavaScript expression that the text pass owns.
-        if parse_interpolation_range(child_bytes, 0)
-            .is_some_and(|(_, _, end)| end == child_bytes.len())
-        {
+        if leading_interpolation.is_some_and(|(_, _, end)| end == child_bytes.len()) {
             return None;
         }
         // Interpolation formatting is identity for brace-free text. Measure
         // it directly instead of allocating a duplicate child string.
-        if memchr::memchr(b'{', child_bytes).is_none() {
+        if first_open_brace.is_none() {
             return Some(1 + child.width() + 3 + tag_name.width());
         }
 
@@ -199,15 +211,14 @@ impl TemplateFormatter<'_> {
     }
 }
 
-#[cold]
-#[inline(never)]
-fn authored_multiline_child_owns_layout(bytes: &[u8]) -> bool {
-    if !bytes.windows(2).any(|window| window == b"{{") {
-        return true;
+#[inline(always)]
+fn find_interpolation_start(bytes: &[u8], first_open_brace: Option<usize>) -> Option<usize> {
+    let mut start = first_open_brace?;
+    loop {
+        if bytes.get(start + 1) == Some(&b'{') {
+            return Some(start);
+        }
+        let offset = start + 1;
+        start = offset + memchr::memchr(b'{', bytes.get(offset..).unwrap_or_default())?;
     }
-    parse_interpolation_range(bytes, 0).is_some_and(|(expression_start, expression_end, _)| {
-        bytes
-            .get(expression_start..expression_end)
-            .is_some_and(|expression| expression.iter().any(|byte| matches!(byte, b'\r' | b'\n')))
-    })
 }
