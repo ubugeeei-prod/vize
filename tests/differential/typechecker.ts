@@ -142,7 +142,7 @@ const sourceRevisions = {
   "content-mapper-props-binding-10196": "232f8f514e0ea55a7aeef08bc883b46e0608d12f",
   "workspace-package-import-alias-10175": "c935e00211b3d6ca271e53658f88156921a639a7",
   "strict-fallthrough-default-7856": "d32790c869ac18c1e0e24e82a8876d796190133a",
-  "content-mapper-filename-globals-10190": "1d62e7dc797f98e7fc983b9ed05a655d193657b8",
+  "content-mapper-filename-globals-10190": "55f388568ab900f5b0076d8c34280024ba988044",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 
 export type Artifact = { path: string; sha256: string };

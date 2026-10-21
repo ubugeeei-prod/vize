@@ -4649,11 +4649,11 @@
       "pack": "content-mapper-filename-globals-10190",
       "case": "error-and-map-globals",
       "test": "filename_globals_preserve_clean_batch_diagnostics",
-      "regressionCommit": "1d62e7dc797f98e7fc983b9ed05a655d193657b8",
-      "sourceRevision": "1d62e7dc797f98e7fc983b9ed05a655d193657b8",
+      "regressionCommit": "55f388568ab900f5b0076d8c34280024ba988044",
+      "sourceRevision": "55f388568ab900f5b0076d8c34280024ba988044",
       "packReference": {
         "path": "content-mapper-filename-globals-10190/cases.json",
-        "sha256": "6e0f2c2f812f8c3fe6626ce7c847096ba2e27393b8cc1fa2d07d5d895639e0ab"
+        "sha256": "0226f11a425b968c694292fdf78a5a85a76665e1a2016f78ab5fcf66f7b4e76f"
       },
       "inputs": [
         {

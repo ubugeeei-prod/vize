@@ -150,7 +150,7 @@ fn filename_globals_preserve_clean_batch_diagnostics() {
     check_pack(
         "content-mapper-filename-globals-10190",
         "filename_globals_preserve_clean_batch_diagnostics",
-        "1d62e7dc797f98e7fc983b9ed05a655d193657b8",
+        "55f388568ab900f5b0076d8c34280024ba988044",
         Some(10190),
         &["error-and-map-globals"],
     );
