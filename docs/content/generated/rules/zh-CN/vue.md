@@ -5513,7 +5513,7 @@ vp run lint
 预设: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自动修复: 适用于已支持的诊断  
 适用范围: Vue SFC 模板和代码块，包括规则所需的脚本上下文  
-选项: 没有规则专属选项。可以配置严重程度和预设。
+选项: 参见[类型化选项和默认值](/rules/options.md)。
 
 **配置（Vite+）**
 

@@ -667,6 +667,10 @@
           "type": "string",
           "enum": ["always", "never"]
         },
+        "vue/v-bind-style": {
+          "type": "string",
+          "enum": ["shorthand", "longform"]
+        },
         "vue/v-on-style": {
           "type": "string",
           "enum": ["shorthand", "longform"]

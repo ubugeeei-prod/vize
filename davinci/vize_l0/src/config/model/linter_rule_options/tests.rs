@@ -4,7 +4,7 @@ use super::{
     ConfigLintRuleOptions, DefineMacrosOrderOptions, HtmlSelfClosingHtmlOptions,
     HtmlSelfClosingOptions, HtmlSelfClosingStyle, HyphenationStyle, LintRuleOptions,
     MuseaDesignToken, NoMutatingPropsOptions, RestrictedGlobal, RestrictedMember,
-    SfcElementOrderGroup, SfcElementOrderOptions, VOnStyle,
+    SfcElementOrderGroup, SfcElementOrderOptions, VBindStyle, VOnStyle,
 };
 
 #[test]
@@ -334,6 +334,22 @@ fn v_on_style_options_validate_and_merge() {
     assert_eq!(options.v_on_style(), Some(VOnStyle::Shorthand));
     assert!(
         serde_json::from_str::<ConfigLintRuleOptions>(r#"{"vue/v-on-style":"sometimes"}"#).is_err()
+    );
+}
+
+#[test]
+fn v_bind_style_options_validate_and_merge() {
+    let mut options: ConfigLintRuleOptions =
+        serde_json::from_str(r#"{"vue/v-bind-style":"longform"}"#).unwrap();
+    assert_eq!(options.v_bind_style(), Some(VBindStyle::Longform));
+
+    let overlay: ConfigLintRuleOptions =
+        serde_json::from_str(r#"{"vue/v-bind-style":"shorthand"}"#).unwrap();
+    options.merge_from(&overlay);
+    assert_eq!(options.v_bind_style(), Some(VBindStyle::Shorthand));
+    assert!(
+        serde_json::from_str::<ConfigLintRuleOptions>(r#"{"vue/v-bind-style":"sometimes"}"#)
+            .is_err()
     );
 }
 

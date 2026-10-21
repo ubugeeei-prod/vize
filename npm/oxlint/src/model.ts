@@ -161,6 +161,7 @@ export interface VizeRuleOptions {
   "vue/sfc-element-order"?: SfcElementOrderOption;
   "vue/html-self-closing"?: HtmlSelfClosingOption;
   "vue/v-on-event-hyphenation"?: HyphenationStyle;
+  "vue/v-bind-style"?: VBindStyle;
   "vue/v-on-style"?: VOnStyle;
   "vue/attribute-hyphenation"?: HyphenationStyle;
   "vue/valid-v-on"?: { modifiers?: string[] };
@@ -198,6 +199,7 @@ export interface HtmlSelfClosingOption {
   math?: HtmlSelfClosingStyle;
 }
 export type HyphenationStyle = "always" | "never";
+export type VBindStyle = "shorthand" | "longform";
 export type VOnStyle = "shorthand" | "longform";
 
 export type SfcBlockKind = "template" | "script" | "script-setup" | "style" | "custom";

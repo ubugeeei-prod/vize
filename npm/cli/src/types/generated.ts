@@ -300,6 +300,7 @@ export interface LintRuleOptions {
     math?: "always" | "never" | "any";
   };
   "vue/v-on-event-hyphenation"?: "always" | "never";
+  "vue/v-bind-style"?: "shorthand" | "longform";
   "vue/v-on-style"?: "shorthand" | "longform";
   "vue/attribute-hyphenation"?: "always" | "never";
   "vue/valid-v-on"?: {

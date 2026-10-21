@@ -26,6 +26,7 @@ export const configurableRules = new Set([
   "vue/no-mutating-props",
   "vue/require-component-registration",
   "vue/sfc-element-order",
+  "vue/v-bind-style",
   "vue/v-on-event-hyphenation",
   "vue/v-on-style",
   "vue/valid-v-on",
