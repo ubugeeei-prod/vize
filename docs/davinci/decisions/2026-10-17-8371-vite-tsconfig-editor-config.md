@@ -49,6 +49,15 @@ unrelated outer installation. Watch events under the private
 `node_modules/.vize` output directory are excluded before routing or native
 request generations change, including events through symlink aliases.
 
+Vite's public bundle loader reports canonical module targets, but not the
+lexical request routes that reached them. Consequently, editing a reported
+target reloads normally, while retargeting only a symbolic-link import route
+requires restarting the language server. Vize does not scan authored imports,
+poll the project, replace the selected Vite, or evaluate the configuration
+factory twice to guess at that missing provenance. The route remains tracked by
+[#9348](https://github.com/ubugeeei-prod/vize/issues/9348) until the selected
+bundler exposes an authentic resolver/read observation contract.
+
 Scoped entries currently admit only `basePath`, `files`, `ignores` and
 `linter`. Additional scoped native sections and per-file editor scope effects
 remain unfinished. This migration does not claim those features.
