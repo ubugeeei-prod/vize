@@ -33,13 +33,13 @@ function log(divergences, samples = []) {
   ].join("\n");
 }
 
-test("clean canonical evidence creates no issue plan", () => {
+await test("clean canonical evidence creates no issue plan", () => {
   const clean = log(0);
   assert.deepEqual(parseCorpusDivergences(clean), { divergenceCount: 0, samples: [] });
   assert.equal(createDivergenceIssue(clean, ledger, selected, context), null);
 });
 
-test("canonical differences become one normalized fixture-owned issue", () => {
+await test("canonical differences become one normalized fixture-owned issue", () => {
   const evidence = log(2, [
     `/home/runner/work/vize/vize/${fixtureA}/src/A.vue: old_len=10 new_len=11 first_diff=4 old_window=old\\nwindow new_window=new\\nwindow`,
     `${fixtureB}/src/B.vue: old_len=20 new_len=18 first_diff=7 old_window=before new_window=after`,
@@ -58,7 +58,7 @@ test("canonical differences become one normalized fixture-owned issue", () => {
   assert.deepEqual(plan.labels, ["priority:p0", "area:ci", "area:testing", "area:davinci"]);
 });
 
-test("divergence evidence fails closed when samples or fixture custody differ", () => {
+await test("divergence evidence fails closed when samples or fixture custody differ", () => {
   assert.throws(
     () =>
       createDivergenceIssue(
@@ -87,7 +87,7 @@ test("divergence evidence fails closed when samples or fixture custody differ", 
   );
 });
 
-test("publication reuses an exact open title and creates only when absent", () => {
+await test("publication reuses an exact open title and creates only when absent", () => {
   const plan = createDivergenceIssue(
     log(1, [`${fixtureA}/A.vue: old_len=1 new_len=2 first_diff=0 old_window=a new_window=b`]),
     ledger,

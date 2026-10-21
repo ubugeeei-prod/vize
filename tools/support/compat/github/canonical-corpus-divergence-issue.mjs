@@ -9,6 +9,10 @@ const ansiSequence = new RegExp(`${String.fromCharCode(27)}\\[[0-?]*[ -/]*[@-~]`
 const corpusPrefix = "tests/_fixtures/_git/";
 const issueLabels = ["priority:p0", "area:ci", "area:testing", "area:davinci"];
 
+function compareCodepoints(left, right) {
+  return left < right ? -1 : left > right ? 1 : 0;
+}
+
 function stripAnsi(text) {
   return text.replace(ansiSequence, "");
 }
@@ -100,8 +104,8 @@ export function createDivergenceIssue(log, ledger, selectedGitlinks, context) {
   );
   assert.equal(selected.size, owners.length, "Selected canonical fixture inventory is incomplete");
   assert.deepEqual(
-    [...selected].sort(),
-    [...owners].sort(),
+    [...selected].sort(compareCodepoints),
+    [...owners].sort(compareCodepoints),
     "Selected fixtures differ from ledger",
   );
   if (divergenceCount === 0) return null;
@@ -113,7 +117,9 @@ export function createDivergenceIssue(log, ledger, selectedGitlinks, context) {
   });
   const digest = fingerprint(divergenceCount, samples);
   const title = `fix(davinci): triage canonical DOM divergence ${digest}`;
-  const fixtures = [...new Set(samples.map((sample) => sample.fixturePath))].sort();
+  const fixtures = [...new Set(samples.map((sample) => sample.fixturePath))].sort(
+    compareCodepoints,
+  );
   const comparisons = samples.map(
     (sample) =>
       `- ${code(sample.sourcePath)}: old=${sample.oldLength} bytes, Davinci=${sample.newLength} bytes, first difference=${sample.firstDifference}; old window=${code(sample.oldWindow)}; Davinci window=${code(sample.newWindow)}`,
@@ -170,7 +176,7 @@ export function githubClient(repository) {
         "GET",
         "search/issues",
         "-f",
-        `q=repo:${repository} is:issue is:open in:title \"${title}\"`,
+        `q=repo:${repository} is:issue is:open in:title "${title}"`,
         "-f",
         "per_page=100",
       ]);
