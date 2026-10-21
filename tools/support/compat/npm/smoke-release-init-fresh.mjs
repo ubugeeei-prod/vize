@@ -23,6 +23,7 @@ import { renderOutput, run } from "./smoke-process.mjs";
 import { PACKAGE_MANAGERS } from "./smoke-release-init-managers.mjs";
 import { withPoisonedVizePath } from "./smoke-release-path-poison.mjs";
 import { runProjectLspSession, runWorkspacePackageCheck } from "./smoke-release-init-workspace.ts";
+import { recordPackedInstallReceipt } from "./smoke-release-init-receipt.ts";
 import { FRESH_INIT_MATRIX } from "./smoke-release-init-shapes.mjs";
 import { CONFIG_FREE_PROJECT_SHAPES as PROJECT_SHAPES } from "./smoke-release-init-config-free.mjs";
 import {
@@ -174,6 +175,10 @@ function runFreshProjectCell(context, cell) {
 
   installPlannedDependencies(context, projectRoot, manager, shape);
   assertProjectLocalToolchain(context, projectRoot, shape);
+  recordPackedInstallReceipt(projectRoot, shape.plannedDependencies, {
+    projectShape: shape.id,
+    packageManager: manager.id,
+  });
   assert.deepEqual(
     Object.keys(readJson(path.join(projectRoot, "package.json")).devDependencies).sort(byCodeUnit),
     shape.expectedDevDependencies,
