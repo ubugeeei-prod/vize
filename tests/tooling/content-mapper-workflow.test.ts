@@ -360,6 +360,9 @@ test("official TypeScript acceptance keeps the reported host and complete instal
     assert.ok(run.run!.includes(`--fixture ${file}`));
     assert.ok(admission.includes(file));
   }
+  const nuxtPatternFixture = "tests/_fixtures/content-mapper/nuxt-pattern-emit-10195.json";
+  assert.ok(run.run!.includes(`--fixture ${nuxtPatternFixture}`));
+  assert.ok(admission.includes(nuxtPatternFixture));
   assert.ok(admission.includes("tools/support/compat/content-mapper/official-fixtures.ts"));
   assert.equal("continue-on-error" in run, false);
   const upload = job.steps.find((step) => step.uses?.startsWith("actions/upload-artifact@"))!;
