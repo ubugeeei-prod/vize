@@ -957,6 +957,10 @@
       "issue": 3223,
       "status": "unimplemented"
     },
+    "vue/no-shadow-native-events": {
+      "issue": 3223,
+      "status": "unimplemented"
+    },
     "vue/no-side-effects-in-computed-properties": {
       "patinaPresets": [
         "ecosystem",
@@ -1921,11 +1925,11 @@
   "summary": {
     "intentionalDivergence": 2,
     "mapped": 130,
-    "unimplemented": 120
+    "unimplemented": 121
   },
   "upstream": {
     "package": "eslint-plugin-vue",
-    "ruleCount": 252,
-    "version": "10.9.2"
+    "ruleCount": 253,
+    "version": "10.11.1"
   }
 }
