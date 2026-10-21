@@ -76,6 +76,11 @@ pub fn run(mut args: LintArgs) {
         .type_checker
         .runtime_path()
         .map(|path| resolve_lint_config_path(config_dir, path));
+    let configured_type_aware_tsconfig = config
+        .type_checker
+        .tsconfig
+        .as_deref()
+        .map(|path| resolve_lint_config_path(config_dir, path));
     let ignore_set = if project_root.is_some() {
         LintIgnoreSet::for_project(&linter_plan.plan.global_ignores, config_dir)
     } else {
@@ -123,6 +128,7 @@ pub fn run(mut args: LintArgs) {
         &args,
         linter_features,
         configured_corsa_path,
+        configured_type_aware_tsconfig,
         &custom_elements,
     );
     let write_failures = AtomicUsize::new(0);

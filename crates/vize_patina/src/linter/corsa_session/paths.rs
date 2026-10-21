@@ -5,7 +5,9 @@ pub(super) use store::session_tsconfig_contents;
 use store::{
     cleanup_stale_session_roots, push_u64, remove_empty_session_parents, session_store_root,
 };
-pub(in crate::linter) use store::{nearest_tsconfig, resolve_project_root, validate_tsconfig};
+pub(in crate::linter) use store::{
+    effective_tsconfig_for_source, resolve_project_root, validate_tsconfig,
+};
 
 use serde_json::Value;
 use std::{
@@ -100,13 +102,15 @@ mod tests {
     #[cfg(unix)]
     use super::store::is_stale_session_directory;
     use super::{
-        cleanup_stale_session_roots, remove_finished_process_sessions, resolve_corsa_executable,
-        session_store_root, session_tsconfig_contents, virtual_file_path,
+        cleanup_stale_session_roots, effective_tsconfig_for_source,
+        remove_finished_process_sessions, resolve_corsa_executable, session_store_root,
+        session_tsconfig_contents, virtual_file_path,
     };
     use std::{
         path::{Path, PathBuf},
         sync::atomic::{AtomicU64, Ordering},
     };
+    use vize_canon::TsconfigOwnershipCache;
     use vize_l0::cstr;
 
     static NEXT_CASE_ID: AtomicU64 = AtomicU64::new(0);
@@ -283,7 +287,7 @@ mod tests {
 
         let value: serde_json::Value = serde_json::from_str(&session_tsconfig_contents(
             &root,
-            &root.join("src/App.vue").to_string_lossy(),
+            Some(&root.join("tsconfig.json")),
         ))
         .unwrap();
         let canonical = std::fs::canonicalize(&root).unwrap();
@@ -330,7 +334,7 @@ mod tests {
 
         let value: serde_json::Value = serde_json::from_str(&session_tsconfig_contents(
             &root,
-            &root.join("src/App.vue").to_string_lossy(),
+            Some(&root.join("tsconfig.json")),
         ))
         .unwrap();
         let files: Vec<_> = value["files"]
@@ -347,6 +351,59 @@ mod tests {
             "{files:?}"
         );
         assert!(!files.contains(&hidden.as_str()), "{files:?}");
+
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn solution_style_session_uses_the_referenced_project_that_owns_the_source() {
+        let root = case_dir("solution-tsconfig-owner");
+        let _ = std::fs::remove_dir_all(&root);
+        std::fs::create_dir_all(root.join("src")).unwrap();
+        std::fs::write(
+            root.join("tsconfig.json"),
+            r#"{"files":[],"references":[{"path":"./tsconfig.app.json"},{"path":"./tsconfig.node.json"}]}"#,
+        )
+        .unwrap();
+        std::fs::write(
+            root.join("tsconfig.app.json"),
+            r#"{"compilerOptions":{"baseUrl":".","paths":{"@/*":["./src/*"]}},"include":["env.d.ts","src/**/*.ts","src/**/*.vue"]}"#,
+        )
+        .unwrap();
+        std::fs::write(
+            root.join("tsconfig.node.json"),
+            r#"{"compilerOptions":{"types":["node"]},"include":["vite.config.*"]}"#,
+        )
+        .unwrap();
+        std::fs::write(
+            root.join("env.d.ts"),
+            "declare const __APP_VERSION__: string;\n",
+        )
+        .unwrap();
+        std::fs::write(root.join("src/App.vue"), "<template />\n").unwrap();
+
+        let source = root.join("src/App.vue");
+        let mut ownership = TsconfigOwnershipCache::default();
+        let selected =
+            effective_tsconfig_for_source(&source.to_string_lossy(), None, &mut ownership).unwrap();
+        assert_eq!(selected, root.join("tsconfig.app.json"));
+
+        let value: serde_json::Value =
+            serde_json::from_str(&session_tsconfig_contents(&root, Some(&selected))).unwrap();
+        let canonical = std::fs::canonicalize(&root).unwrap();
+        assert_eq!(
+            Path::new(
+                value["compilerOptions"]["paths"]["@/*"][0]
+                    .as_str()
+                    .unwrap()
+            ),
+            canonical.join("src/*")
+        );
+        let files = value["files"].as_array().unwrap();
+        assert!(files.iter().any(|path| {
+            path.as_str()
+                .is_some_and(|path| path.ends_with("/env.d.ts"))
+        }));
 
         let _ = std::fs::remove_dir_all(&root);
     }

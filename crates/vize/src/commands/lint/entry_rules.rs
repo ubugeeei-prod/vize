@@ -45,6 +45,7 @@ impl ResolvedLinterRuleGroups {
         args: &LintArgs,
         features: LinterFeatureFlags,
         configured_corsa_path: Option<PathBuf>,
+        configured_type_aware_tsconfig: Option<PathBuf>,
         custom_elements: &vize_relief::options::CustomElementMatcher,
     ) -> Vec<Linter> {
         let availability = self
@@ -171,7 +172,9 @@ impl ResolvedLinterRuleGroups {
                 }
                 #[cfg(not(target_arch = "wasm32"))]
                 {
-                    linter = linter.with_corsa_path(configured_corsa_path.clone());
+                    linter = linter
+                        .with_corsa_path(configured_corsa_path.clone())
+                        .with_type_aware_tsconfig(configured_type_aware_tsconfig.clone());
                 }
                 #[cfg(not(target_arch = "wasm32"))]
                 if args.strict_reactivity {

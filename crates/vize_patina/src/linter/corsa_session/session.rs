@@ -21,6 +21,7 @@ impl CorsaTypeAwareSession {
     pub(in crate::linter) fn new_with_corsa_path(
         filename: &str,
         corsa_path: Option<&std::path::Path>,
+        tsconfig_path: Option<std::path::PathBuf>,
     ) -> Result<Self, String> {
         let project_root = resolve_project_root(filename);
         let executable = resolve_corsa_executable(&project_root, corsa_path)?;
@@ -39,7 +40,7 @@ impl CorsaTypeAwareSession {
         })?;
 
         let config_path = session_root.join(TSCONFIG_FILE_NAME);
-        let tsconfig_contents = session_tsconfig_contents(&project_root, filename);
+        let tsconfig_contents = session_tsconfig_contents(&project_root, tsconfig_path.as_deref());
         let vue_path_aliases =
             super::vue_dependencies::PathAliases::from_tsconfig(&tsconfig_contents, &project_root);
         profile!(
@@ -102,6 +103,7 @@ impl CorsaTypeAwareSession {
         Ok(Self {
             session,
             project_root,
+            tsconfig_path,
             session_root,
             virtual_file_wire,
             virtual_file_path,
@@ -116,8 +118,13 @@ impl CorsaTypeAwareSession {
         })
     }
 
-    pub(in crate::linter) fn matches_source_file(&self, filename: &str) -> bool {
+    pub(in crate::linter) fn matches_source_file(
+        &self,
+        filename: &str,
+        tsconfig_path: Option<&std::path::Path>,
+    ) -> bool {
         self.project_root == resolve_project_root(filename)
+            && self.tsconfig_path.as_deref() == tsconfig_path
     }
 
     pub(in crate::linter) fn open_virtual_project(

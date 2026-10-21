@@ -15,11 +15,11 @@ fn has_floating_promise(diagnostics: &[crate::diagnostic::LintDiagnostic]) -> bo
 }
 
 pub(super) fn corsa_available() -> bool {
-    let mut session = match super::CorsaTypeAwareSession::new_with_corsa_path("Component.vue", None)
-    {
-        Ok(session) => session,
-        Err(_) => return false,
-    };
+    let mut session =
+        match super::CorsaTypeAwareSession::new_with_corsa_path("Component.vue", None, None) {
+            Ok(session) => session,
+            Err(_) => return false,
+        };
     if session
         .open_virtual_project("const value = 1;\n", "Component.vue")
         .is_err()

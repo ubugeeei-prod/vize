@@ -37,7 +37,7 @@ export function useCount() {\n\
 ";
 
 fn corsa_available() -> bool {
-    let mut session = match CorsaTypeAwareSession::new_with_corsa_path("save.ts", None) {
+    let mut session = match CorsaTypeAwareSession::new_with_corsa_path("save.ts", None, None) {
         Ok(session) => session,
         Err(_) => return false,
     };

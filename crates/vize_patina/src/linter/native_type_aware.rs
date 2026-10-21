@@ -159,7 +159,19 @@ pub(super) fn with_corsa_session<T>(
     f: impl FnOnce(&mut CorsaTypeAwareSession) -> Result<T, String>,
 ) -> Result<T, TypeAwareFailure> {
     let project_root = super::corsa_session::resolve_project_root(filename);
-    if let Some(tsconfig) = super::corsa_session::nearest_tsconfig(filename) {
+    let tsconfig = {
+        let mut ownership = linter.type_aware_project_ownership.lock().map_err(|_| {
+            TypeAwareFailure::Runtime(
+                "Failed to lock type-aware project ownership".to_compact_string(),
+            )
+        })?;
+        super::corsa_session::effective_tsconfig_for_source(
+            filename,
+            linter.type_aware_tsconfig.as_deref(),
+            &mut ownership,
+        )
+    };
+    if let Some(tsconfig) = tsconfig.as_ref() {
         let configuration_error = {
             let mut configs = linter.type_aware_project_configs.lock().map_err(|_| {
                 TypeAwareFailure::Runtime(
@@ -183,7 +195,7 @@ pub(super) fn with_corsa_session<T>(
                             .to_compact_string(),
                     )
                 })?
-                .insert(tsconfig);
+                .insert(tsconfig.clone());
             return Err(TypeAwareFailure::ProjectConfiguration { message, report });
         }
     }
@@ -195,7 +207,7 @@ pub(super) fn with_corsa_session<T>(
 
     let needs_new_session = guard
         .as_ref()
-        .is_none_or(|session| !session.matches_source_file(filename));
+        .is_none_or(|session| !session.matches_source_file(filename, tsconfig.as_deref()));
 
     if needs_new_session {
         if let Some(session) = guard.as_mut() {
@@ -204,7 +216,11 @@ pub(super) fn with_corsa_session<T>(
         *guard = Some(
             profile!(
                 "patina.type_aware.corsa.new_session",
-                CorsaTypeAwareSession::new_with_corsa_path(filename, linter.corsa_path.as_deref())
+                CorsaTypeAwareSession::new_with_corsa_path(
+                    filename,
+                    linter.corsa_path.as_deref(),
+                    tsconfig.clone(),
+                )
             )
             .map_err(TypeAwareFailure::Runtime)?,
         );
