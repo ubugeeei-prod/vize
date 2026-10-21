@@ -55,6 +55,7 @@ export const TYPECHECKER_TESTS = {
     "dynamic_directive_expressions_preserve_typed_slot_payloads",
   "content-mapper-template-expression-syntax":
     "template_expression_syntax_preserves_complete_authored_diagnostics",
+  "content-mapper-nuxt-emit-10195": "content_mapper_preserves_emit_with_nuxt_pattern_injections",
   "content-mapper-const-enum-import": "content_mapper_accepts_imported_const_enum_value_anchors",
 } as const;
 
@@ -97,6 +98,7 @@ const sourceRevisions = {
   "content-mapper-duplicate-attributes-10184": "0038b601e41dccb6f037aa68c3fc0207ea635e3b",
   "dynamic-directive-expression-mapping-10182": "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
   "content-mapper-template-expression-syntax": "a5ae4d313fa333c8bc7168d5da4acf3dc2bb8ee3",
+  "content-mapper-nuxt-emit-10195": "369f01b50d8fe6e3b0996cc9a90eecf422dbdd3b",
   "content-mapper-const-enum-import": "506529117573a96880435dd6466cfd7cf81fdc92",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 
