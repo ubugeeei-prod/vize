@@ -162,7 +162,7 @@ pub fn type_check_with_virtual_ts_visitors_napi(
         .unwrap_or_else(|| "anonymous.vue".to_owned());
     opts.include_virtual_ts = Some(true);
 
-    let mut check_opts = TypeCheckOptions::new(filename.as_str().into());
+    let mut check_opts = TypeCheckOptions::new(filename.as_str());
     apply_napi_options(&opts, &mut check_opts);
     let result = if opts.legacy_vue2.unwrap_or(false) {
         type_check_sfc_with_legacy_vue2(&source, &check_opts)
