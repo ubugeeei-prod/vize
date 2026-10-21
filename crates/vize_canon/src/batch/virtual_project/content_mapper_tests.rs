@@ -327,7 +327,7 @@ export default { data() { return { count: 1 } } }
 }
 
 #[test]
-fn component_listener_and_ref_probes_merge_class_and_style_bindings() {
+fn component_listener_and_ref_probes_isolate_class_and_style_bindings() {
     let source = r#"<script setup lang="ts">
 import { useTemplateRef } from "vue";
 import Child from "./Child.vue";

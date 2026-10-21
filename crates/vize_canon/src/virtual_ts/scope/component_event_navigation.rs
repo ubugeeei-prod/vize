@@ -303,11 +303,10 @@ fn emit_resolved_events(
         return;
     }
     ts.push_str("{\n");
-    for (prop, value) in crate::virtual_ts::expressions::collect_inference_probe_props(
+    for (_, name, value) in crate::virtual_ts::expressions::collect_inference_probe_props(
         usage,
         ctx.template_binding_access,
     ) {
-        let name = to_camel_case(prop.name.as_str());
         append!(*ts, "{indent}  \"{name}\": {value},\n");
     }
     append!(*ts, "{indent}}});\n");
