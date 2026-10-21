@@ -41,12 +41,12 @@ function linkAt(message: JsonRpcMessage, index: number) {
 }
 
 void test("LSP manifest binds original complete contracts and every original request", () => {
-  assert.equal(loaded.cases.length, 37);
+  assert.equal(loaded.cases.length, 41);
   assert.deepEqual(
     loaded.cases.map((fixture) => fixture.requests.length),
     [
-      1, 4, 1, 1, 1, 1, 1, 1, 4, 1, 1, 2, 2, 1, 1, 1, 7, 2, 1, 1, 1, 2, 1, 2, 2, 1, 1, 1, 1, 1, 1,
-      1, 1, 1, 1, 2, 2,
+      1, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 1, 1, 2, 2, 1, 1, 1, 7, 2, 1, 1, 1, 2, 1, 2, 2, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1, 2, 2,
     ],
   );
   assert.equal(loaded.cases[1].files[0].bytes.filter((byte) => byte === 13).length, 18);
@@ -70,6 +70,18 @@ void test("LSP manifest binds original complete contracts and every original req
       fs.rmSync(dir, { recursive: true, force: true });
     }
   }
+});
+
+void test("folding history retains the unopened-document null response without invented readiness", () => {
+  const fixture = loaded.cases.find(
+    (candidate) => candidate.id === "lsp/fix-history/folding-unopened",
+  );
+  assert(fixture);
+  assert.equal(fixture.data.openDocument, false);
+  assert.deepEqual(fixture.requests, [{ params: {}, result: null }]);
+  assert.deepEqual(inspectLspObservation(fixture, referenceObservation(fixture)), [
+    { requestId: 2, state: "equal" },
+  ]);
 });
 
 void test("LSP contract rejects stale readiness, duplicate replies and incomplete lifecycle", () => {
@@ -211,7 +223,7 @@ void test("LSP unavailable executables fail every planned case without trying a 
       sourceRevision: build.sourceRevision,
     });
     assert.equal(report.binary, null);
-    assert.equal(report.summary.legacyFailures, 37);
+    assert.equal(report.summary.legacyFailures, 41);
     assert.equal(report.summary.nativeHandled, 0);
     assert(
       report.rows.every(

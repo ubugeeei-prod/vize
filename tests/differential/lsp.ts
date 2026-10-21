@@ -60,23 +60,25 @@ async function runLspCase(
     });
     assert(hasCapabilities(initialized), "initialization must succeed");
     wire.notify("initialized", {});
-    wire.notify("textDocument/didOpen", {
-      textDocument: {
-        uri: entryUri,
-        languageId: "vue",
-        version: fixture.data.documentVersion,
-        text: fixture.files
-          .find((file) => file.runtimePath === fixture.entry)
-          ?.bytes.toString("utf8"),
-      },
-    });
-    await wire.waitFor(
-      (message) =>
-        message.method === "textDocument/publishDiagnostics" &&
-        message.params?.uri === entryUri &&
-        message.params?.version === fixture.data.documentVersion &&
-        Array.isArray(message.params?.diagnostics),
-    );
+    if (fixture.data.openDocument !== false) {
+      wire.notify("textDocument/didOpen", {
+        textDocument: {
+          uri: entryUri,
+          languageId: "vue",
+          version: fixture.data.documentVersion,
+          text: fixture.files
+            .find((file) => file.runtimePath === fixture.entry)
+            ?.bytes.toString("utf8"),
+        },
+      });
+      await wire.waitFor(
+        (message) =>
+          message.method === "textDocument/publishDiagnostics" &&
+          message.params?.uri === entryUri &&
+          message.params?.version === fixture.data.documentVersion &&
+          Array.isArray(message.params?.diagnostics),
+      );
+    }
     for (const request of fixture.requests) {
       await wire.request(request.method ?? fixture.data.method, {
         textDocument: { uri: entryUri },

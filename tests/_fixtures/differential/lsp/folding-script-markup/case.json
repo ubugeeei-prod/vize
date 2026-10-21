@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "id": "lsp/fix-history/folding-script-markup",
+  "provenance": {
+    "fixCommit": "89771a14f17fb535201f261ca154aa35c6f77d7e",
+    "witnessPath": "crates/vize_maestro/src/server/document_structure/folding/tests.rs",
+    "witnessTest": "a_script_body_that_looks_like_markup_is_never_scanned",
+    "inputOrigin": "exact source bytes from the original fix unit regression",
+    "contractOrigin": "complete block and template-element response from the original fix"
+  },
+  "input": {
+    "source": "ScriptMarkup.vue.txt",
+    "runtimePath": "ScriptMarkup.vue",
+    "sha256": "56ecbb1db4f123a81df572b310124a029c0a957bf27ba64dea9def9a11c29b68"
+  },
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "92b30c08f345be57fce01c9a93e133242647802f00f6c17e4b67befe65e60807"
+  },
+  "method": "textDocument/foldingRange",
+  "documentVersion": 1,
+  "scope": "original script-markup control and complete ordered stdio response"
+}

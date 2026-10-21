@@ -29,6 +29,7 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
     assert.equal(data.id, planned.id);
     assert.match(data.provenance.fixCommit, /^[a-f0-9]{40}$/);
     assert.equal(data.documentVersion, 1);
+    if (Object.hasOwn(data, "openDocument")) assert.equal(data.openDocument, false);
     assert.deepEqual(
       planned.initializationOptions,
       data.initializationOptions ?? {

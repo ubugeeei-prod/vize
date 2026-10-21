@@ -51,7 +51,12 @@ export function inspectLspObservation(
     Array.from({ length: fixture.requests.length + 2 }, (_, index) => index + 1),
     "sequential requests must retain response order and identity",
   );
-  assert.equal(client.length, fixture.requests.length + 5, "complete authored lifecycle required");
+  const opensDocument = fixture.data.openDocument !== false;
+  assert.equal(
+    client.length,
+    fixture.requests.length + (opensDocument ? 5 : 4),
+    "complete authored lifecycle required",
+  );
   const initializeParams = client[0]?.params;
   assert(initializeParams && Number.isSafeInteger(initializeParams.processId));
   assert.deepEqual(client[0], {
@@ -70,20 +75,22 @@ export function inspectLspObservation(
   assert.equal(initialize.jsonrpc, "2.0");
   assert(!Object.hasOwn(initialize, "error") && hasCapabilities(initialize));
   assert.deepEqual(client[1], { jsonrpc: "2.0", method: "initialized", params: {} });
-  assert.deepEqual(client[2], {
-    jsonrpc: "2.0",
-    method: "textDocument/didOpen",
-    params: {
-      textDocument: {
-        uri: entryUri,
-        languageId: "vue",
-        version: fixture.data.documentVersion,
-        text: fixture.files
-          .find((file) => file.runtimePath === fixture.entry)
-          ?.bytes.toString("utf8"),
+  if (opensDocument) {
+    assert.deepEqual(client[2], {
+      jsonrpc: "2.0",
+      method: "textDocument/didOpen",
+      params: {
+        textDocument: {
+          uri: entryUri,
+          languageId: "vue",
+          version: fixture.data.documentVersion,
+          text: fixture.files
+            .find((file) => file.runtimePath === fixture.entry)
+            ?.bytes.toString("utf8"),
+        },
       },
-    },
-  });
+    });
+  }
   const diagnosticsIndex = server.findIndex(
     (message) =>
       message.method === "textDocument/publishDiagnostics" &&
@@ -91,17 +98,24 @@ export function inspectLspObservation(
       message.params?.version === fixture.data.documentVersion &&
       Array.isArray(message.params?.diagnostics),
   );
-  assert(diagnosticsIndex >= 0, "exact entry and version diagnostics are required");
+  if (opensDocument) {
+    assert(diagnosticsIndex >= 0, "exact entry and version diagnostics are required");
+  } else {
+    assert.equal(diagnosticsIndex, -1, "unopened sessions must not invent readiness diagnostics");
+  }
+  const requestOffset = opensDocument ? 3 : 2;
   const comparisons = fixture.requests.map((request, index) => {
     const id = index + 2;
-    assert.deepEqual(client[index + 3], {
+    assert.deepEqual(client[index + requestOffset], {
       jsonrpc: "2.0",
       id,
       method: request.method ?? fixture.data.method,
       params: { textDocument: { uri: entryUri }, ...request.params },
     });
     const response = uniqueResponse(server, id);
-    assert(server.indexOf(response) > diagnosticsIndex, "response must follow readiness");
+    if (opensDocument) {
+      assert(server.indexOf(response) > diagnosticsIndex, "response must follow readiness");
+    }
     const expected = {
       jsonrpc: "2.0",
       id,

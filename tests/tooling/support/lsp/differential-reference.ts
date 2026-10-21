@@ -38,31 +38,31 @@ export function referenceObservation(fixture: LspFixture): WireObservation {
       },
     },
     { jsonrpc: "2.0", method: "initialized", params: {} },
-    {
+  ];
+  const server: JsonRpcMessage[] = [{ jsonrpc: "2.0", id: 1, result: { capabilities: {} } }];
+  if (fixture.data.openDocument !== false) {
+    client.push({
       jsonrpc: "2.0",
       method: "textDocument/didOpen",
       params: {
         textDocument: {
           uri: entryUri,
           languageId: "vue",
-          version: 1,
+          version: fixture.data.documentVersion,
           text: fixture.files.find((file) => file.runtimePath === fixture.entry)?.bytes.toString(),
         },
       },
-    },
-  ];
-  const server: JsonRpcMessage[] = [
-    { jsonrpc: "2.0", id: 1, result: { capabilities: {} } },
-    {
+    });
+    server.push({
       jsonrpc: "2.0",
       method: "textDocument/publishDiagnostics",
       params: {
         uri: entryUri,
-        version: 1,
+        version: fixture.data.documentVersion,
         diagnostics: [],
       },
-    },
-  ];
+    });
+  }
   for (const [index, request] of fixture.requests.entries()) {
     const id = index + 2;
     client.push({

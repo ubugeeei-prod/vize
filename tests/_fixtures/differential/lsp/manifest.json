@@ -200,6 +200,110 @@
       }
     },
     {
+      "id": "lsp/fix-history/folding-nested-elements",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "folding-nested-elements",
+        "files": [
+          {
+            "path": "Nested.vue.txt",
+            "sha256": "41ba0238a97c4d8c898b20755da0859bc974a19136653e3d824e8b8e102ed373"
+          }
+        ]
+      },
+      "case": {
+        "path": "folding-nested-elements/case.json",
+        "sha256": "86c7081ad5da34466b9e9a84915b52a2d648aee95ed6d610a1a15384acf1284a"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
+      "id": "lsp/fix-history/folding-unclosed-element",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "folding-unclosed-element",
+        "files": [
+          {
+            "path": "Unclosed.vue.txt",
+            "sha256": "9eb8bf1f60e0c70f3385cb98a9de82cde3a54c8063141aa67953cf1f5d2c5223"
+          }
+        ]
+      },
+      "case": {
+        "path": "folding-unclosed-element/case.json",
+        "sha256": "94515e8f08857ee4a5b1b3796dd8d2b55da65c8164c03ed7da7c3a4d697d1304"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
+      "id": "lsp/fix-history/folding-script-markup",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "folding-script-markup",
+        "files": [
+          {
+            "path": "ScriptMarkup.vue.txt",
+            "sha256": "56ecbb1db4f123a81df572b310124a029c0a957bf27ba64dea9def9a11c29b68"
+          }
+        ]
+      },
+      "case": {
+        "path": "folding-script-markup/case.json",
+        "sha256": "6beb364a6fae8a0c04abb983a465e8618946746b82cfc92f318ddb6de5dcabf8"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
+      "id": "lsp/fix-history/folding-unopened",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "folding-unopened",
+        "files": [
+          {
+            "path": "FourDivs.vue.txt",
+            "sha256": "a6b9b98ede93ce6a05925dab002db48152949441499a8e362befe2078de3b135"
+          }
+        ]
+      },
+      "case": {
+        "path": "folding-unopened/case.json",
+        "sha256": "857978bb10d1034dc1cde225a210789a8f9f0f6ba71346cf2201bad8f756daab"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
       "id": "lsp/fix-history/highlight-original-rw",
       "state": "active",
       "targets": [
