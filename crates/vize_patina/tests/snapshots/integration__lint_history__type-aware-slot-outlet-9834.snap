@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "type-aware-slot-outlet-9834",
+    history: "12811b08c1adbc7dca3f28ed5f5f5b6439794f03",
+    source: "<script setup lang=\"ts\">\ndefineSlots<{\n  default?(props: { items: string[]; attrs: Record<string, string> }): unknown;\n}>();\n\nconst getItems = (): string[] => [\"a\", \"b\"];\n</script>\n\n<template>\n  <div :class=\"getItems()\" :data-x=\"{ id: 'x' }.id\" />\n  <slot :items=\"getItems()\" :attrs=\"{ id: 'x' }\" />\n</template>\n",
+    filename: "MyList.vue",
+    entry: "sfc",
+    rule: "vue/valid-v-for",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "MyList.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "MyList.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}
