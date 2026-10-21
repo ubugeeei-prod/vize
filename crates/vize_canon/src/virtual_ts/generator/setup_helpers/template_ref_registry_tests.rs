@@ -1,5 +1,5 @@
 use vize_croquis::{Analyzer, AnalyzerOptions, Croquis};
-use vize_l0::{CompactString, FxHashSet};
+use vize_l0::{Allocator, CompactString, FxHashSet};
 use vize_relief::BindingType;
 
 use super::super::super::template_record::TemplateRecord;
@@ -300,7 +300,7 @@ const { is } = defineProps<{ is: Component }>();
 const inner = useTemplateRef("inner");
 "#;
     let template = r#"<component :is="is" ref="inner" />"#;
-    let allocator = vize_l0::Allocator::new();
+    let allocator = Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);
@@ -330,7 +330,7 @@ const current = computed<{ component: Component }>(() => ({ component: {} as Com
 const inner = useTemplateRef("inner");
 "#;
     let template = r#"<component :is="current.component" ref="inner" />"#;
-    let allocator = vize_l0::Allocator::new();
+    let allocator = Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let registry = super::template_ref_registry(
         &Croquis::default(),
