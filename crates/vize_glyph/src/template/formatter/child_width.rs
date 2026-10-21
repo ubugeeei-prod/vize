@@ -47,6 +47,7 @@ impl TemplateFormatter<'_> {
     /// by its matching closing tag. Including this in the opening-tag decision
     /// lets the formatter use whitespace inside the tag as the safe break point
     /// before runtime text would push the completed element past print width.
+    #[inline(always)]
     pub(super) fn hugged_inline_suffix_width(
         &self,
         input: &str,
@@ -64,18 +65,8 @@ impl TemplateFormatter<'_> {
         // layout. Later multiline interpolations in a mixed text run may be
         // normalized to one line, so they still contribute their formatted
         // width to the opening-tag decision.
-        let has_line_break = child_bytes.iter().any(|byte| matches!(byte, b'\r' | b'\n'));
-        if has_line_break
-            && (!contains_interpolation(child_bytes)
-                || parse_interpolation_range(child_bytes, 0).is_some_and(
-                    |(expression_start, expression_end, _)| {
-                        child_bytes
-                            .get(expression_start..expression_end)
-                            .is_some_and(|expression| {
-                                expression.iter().any(|byte| matches!(byte, b'\r' | b'\n'))
-                            })
-                    },
-                ))
+        if child_bytes.iter().any(|byte| matches!(byte, b'\r' | b'\n'))
+            && authored_multiline_child_owns_layout(child_bytes)
         {
             return None;
         }
@@ -116,7 +107,7 @@ impl TemplateFormatter<'_> {
         Some(1 + formatted.width() + 3 + tag_name.width())
     }
 
-    #[inline]
+    #[inline(always)]
     pub(super) fn hugged_inline_suffix_overflows(
         &self,
         output: &[u8],
@@ -208,15 +199,15 @@ impl TemplateFormatter<'_> {
     }
 }
 
-#[inline]
-fn contains_interpolation(bytes: &[u8]) -> bool {
-    let mut offset = 0;
-    while let Some(found) = memchr::memchr(b'{', bytes.get(offset..).unwrap_or_default()) {
-        let start = offset + found;
-        if bytes.get(start + 1) == Some(&b'{') {
-            return true;
-        }
-        offset = start + 1;
+#[cold]
+#[inline(never)]
+fn authored_multiline_child_owns_layout(bytes: &[u8]) -> bool {
+    if !bytes.windows(2).any(|window| window == b"{{") {
+        return true;
     }
-    false
+    parse_interpolation_range(bytes, 0).is_some_and(|(expression_start, expression_end, _)| {
+        bytes
+            .get(expression_start..expression_end)
+            .is_some_and(|expression| expression.iter().any(|byte| matches!(byte, b'\r' | b'\n')))
+    })
 }
