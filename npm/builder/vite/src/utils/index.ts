@@ -1,4 +1,5 @@
 import { generateSfcScopeId } from "@vizejs/native";
+import path from "node:path";
 import type { CompiledModule, StyleBlockInfo } from "../types.ts";
 import { type HmrUpdateType, generateHmrCode } from "../hmr.ts";
 import { assembleComponentOutput } from "./component-output.ts";
@@ -27,8 +28,25 @@ function needsCssPipeline(block: StyleBlockInfo): boolean {
   return block.content.includes("@apply");
 }
 
-function createStyleImportUrl(filePath: string, params: URLSearchParams): string {
-  return createStyleVirtualId(`${filePath}?${params.toString()}`);
+function createStyleImportUrl(
+  filePath: string,
+  params: URLSearchParams,
+  root: string | undefined,
+  isProduction: boolean,
+): string {
+  let styleFilePath = filePath;
+  if (isProduction && root) {
+    const relativePath = path.relative(root, filePath);
+    if (
+      relativePath &&
+      relativePath !== ".." &&
+      !relativePath.startsWith(`..${path.sep}`) &&
+      !path.isAbsolute(relativePath)
+    ) {
+      styleFilePath = `/${relativePath.split(path.sep).join("/")}`;
+    }
+  }
+  return createStyleVirtualId(`${styleFilePath}?${params.toString()}`);
 }
 
 /**
@@ -116,6 +134,8 @@ export interface GenerateOutputOptions {
    * Required for generating virtual style imports for SFC style blocks.
    */
   filePath?: string;
+  /** Project root used to stabilize production style module identities. */
+  root?: string;
   /**
    * `@vitejs/plugin-vue` custom-element mode attaches CSS strings to
    * `_sfc_main.styles` instead of injecting or extracting ordinary component CSS.
@@ -178,7 +198,8 @@ export function generateOutputWithMap(
   compiled: CompiledModule,
   options: GenerateOutputOptions,
 ): { code: string; map: SourceMapV3 | null } {
-  const { customElement, isProduction, isDev, ssr, hmrUpdateType, extractCss, filePath } = options;
+  const { customElement, isProduction, isDev, ssr, hmrUpdateType, extractCss, filePath, root } =
+    options;
 
   const { emitted, hasExportDefault } = assembleComponentOutput(compiled);
 
@@ -208,18 +229,18 @@ export function generateOutputWithMap(
         }
         params.set("inline", "");
         const bindingName = `_style_${block.index}`;
-        const importUrl = createStyleImportUrl(filePath, params);
+        const importUrl = createStyleImportUrl(filePath, params, root, isProduction);
         styleImports.push(`import ${bindingName} from ${JSON.stringify(importUrl)};`);
         customElementStyleBindings.push(bindingName);
       } else if (isCssModule(block)) {
         // CSS Modules: import as a named binding
         const bindingName = typeof block.module === "string" ? block.module : "$style";
         params.set("module", typeof block.module === "string" ? block.module : "");
-        const importUrl = createStyleImportUrl(filePath, params);
+        const importUrl = createStyleImportUrl(filePath, params, root, isProduction);
         cssModuleImports.push(`import ${bindingName} from ${JSON.stringify(importUrl)};`);
       } else {
         // Side-effect import: Vite will inject the CSS
-        const importUrl = createStyleImportUrl(filePath, params);
+        const importUrl = createStyleImportUrl(filePath, params, root, isProduction);
         styleImports.push(`import ${JSON.stringify(importUrl)};`);
       }
     }

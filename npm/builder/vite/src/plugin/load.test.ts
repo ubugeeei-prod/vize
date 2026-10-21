@@ -864,6 +864,7 @@ fs.writeFileSync(
 
 const onDemandProdState: VizePluginState = {
   ...hmrState,
+  root: onDemandProdDir,
   cache: new Map(),
   ssrCache: new Map(),
   collectedCss: new Map(),
@@ -885,8 +886,8 @@ assert.doesNotMatch(
 );
 assert.match(
   onDemandProdLoad.code,
-  /import ".*OnDemandProd\.vue\.__vize_style_0\.css\?vue=&type=style&index=0&lang=css&vize-file=[^"\n]+";/,
-  "Production on-demand loads should emit a Vite-visible plain CSS import",
+  /import "\/OnDemandProd\.vue\.__vize_style_0\.css\?vue=&type=style&index=0&lang=css&vize-file=%2FOnDemandProd%2Evue";/,
+  "Production on-demand loads should emit a root-stable Vite-visible plain CSS import",
 );
 assert.equal(
   onDemandProdState.collectedCss.has(onDemandProdPath),
@@ -895,8 +896,17 @@ assert.equal(
 );
 assert.match(
   onDemandProdLoad.code,
-  /import ".*OnDemandProd\.vue\.__vize_style_0\.css\?vue=&type=style&index=0&lang=css&vize-file=[^"\n]+";/,
+  /import "\/OnDemandProd\.vue\.__vize_style_0\.css\?vue=&type=style&index=0&lang=css&vize-file=%2FOnDemandProd%2Evue";/,
   "Production on-demand loads should emit a virtual style import for CSS extraction",
 );
+const onDemandProdStyle = loadHook(
+  onDemandProdState,
+  "/OnDemandProd.vue.__vize_style_0.css?vue=&type=style&index=0&lang=css&vize-file=%2FOnDemandProd%2Evue",
+  { ssr: false },
+);
+assert.deepEqual(onDemandProdStyle, {
+  code: ".prod { color: seagreen; }",
+  map: null,
+});
 
 console.log("vite-plugin-vize load tests passed!");
