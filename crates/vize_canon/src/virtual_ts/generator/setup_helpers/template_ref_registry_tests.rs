@@ -356,7 +356,7 @@ const condition = true;
 const root = useTemplateRef("root");
 "#;
     let template = r#"<component :is="condition ? Child : 'div'" ref="root" />"#;
-    let allocator = vize_l0::Allocator::new();
+    let allocator = Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);
