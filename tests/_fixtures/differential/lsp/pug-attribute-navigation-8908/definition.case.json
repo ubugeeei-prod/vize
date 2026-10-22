@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "id": "lsp/fix-history/pug-attribute-definition-8908",
+  "provenance": {
+    "fixCommit": "2d421a2b428015d7de1f1c6396fe0e0154a7263b",
+    "issue": 8908,
+    "witnessPath": "crates/vize_maestro/src/ide/definition/tests/pug_template.rs",
+    "witnessTest": "pug_attribute_names_resolve_component_and_native_contracts",
+    "meaning": "a bound Pug component prop navigates from its authored attribute name to the child declaration"
+  },
+  "documentVersion": 1,
+  "languageId": "vue",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "a7a9a51e51043452917f5cf1f85fe7d85dda1d0e3454a2852dae1b0685a68c00"
+    },
+    {
+      "source": "Child.vue.txt",
+      "runtimePath": "Child.vue",
+      "sha256": "5c46ed7c79b79ee33980737a1033e513b98417178635c177402f505e3fb9a0d4"
+    }
+  ],
+  "entry": "App.vue",
+  "expected": {
+    "source": "response.definition.expected.json",
+    "sha256": "d1e0809e7143223dc8363d736bb8d0b2529c77f5d0d1648f495618c86bc22613"
+  },
+  "method": "textDocument/definition",
+  "request": {
+    "position": {
+      "line": 8,
+      "character": 5
+    }
+  },
+  "scope": "complete stdio response for the historical authored Pug component-prop navigation fix"
+}
