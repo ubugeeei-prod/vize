@@ -17,7 +17,12 @@ const TEMPLATE_CONTEXT: [(u32, u32, u32, &str); 3] = [
         " (source: <Child label=\"ok\" :unknown-prop=\"1\" />; binding: 'unknown-prop')",
     ),
     (2339, 9, 6, " (source: <NotImported />)"),
-    (2339, 10, 10, " (source: <div v-not-a-directive />)"),
+    (
+        2339,
+        10,
+        10,
+        " (source: <div v-not-a-directive />; binding: v-not-a-directive)",
+    ),
 ];
 
 #[test]
