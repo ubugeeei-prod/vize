@@ -66,7 +66,10 @@ pub(super) fn collect_specifier_spans(
             if parsed.panicked || !parsed.diagnostics.is_empty() {
                 continue;
             }
-            let mut prefix_collector = ModuleSpecifierCollector::for_declarations();
+            // The prefix parsed cleanly, so it has the same specifiers a
+            // complete program would. Declaration-only collection drops
+            // `import()`, `require()`, import types, and import-equals.
+            let mut prefix_collector = ModuleSpecifierCollector::new();
             prefix_collector.visit_program(&parsed.program);
             if prefix_collector.specifiers.is_empty() {
                 continue;
@@ -99,7 +102,6 @@ pub(super) struct ModuleSpecifierCollector {
     pub(super) specifiers: Vec<(u32, u32, String, crate::PackageResolutionMode)>,
     pub(super) empty_stars: Vec<BareStarExport>,
     capture_stars: bool,
-    declarations_only: bool,
     statement_depth: usize,
 }
 
@@ -109,15 +111,7 @@ impl ModuleSpecifierCollector {
             specifiers: Vec::new(),
             empty_stars: Vec::new(),
             capture_stars: false,
-            declarations_only: false,
             statement_depth: 0,
-        }
-    }
-
-    fn for_declarations() -> Self {
-        Self {
-            declarations_only: true,
-            ..Self::new()
         }
     }
 
@@ -182,18 +176,14 @@ impl<'a> Visit<'a> for ModuleSpecifierCollector {
     }
 
     fn visit_import_expression(&mut self, expr: &ImportExpression<'a>) {
-        if !self.declarations_only
-            && let Expression::StringLiteral(lit) = &expr.source
-        {
+        if let Expression::StringLiteral(lit) = &expr.source {
             self.push_literal(lit, mode_from_options(expr.options.as_ref()));
         }
         walk::walk_import_expression(self, expr);
     }
 
     fn visit_call_expression(&mut self, expr: &CallExpression<'a>) {
-        if !self.declarations_only
-            && let Some(lit) = expr.common_js_require()
-        {
+        if let Some(lit) = expr.common_js_require() {
             self.push(
                 lit.span.start,
                 lit.span.end,
@@ -205,30 +195,24 @@ impl<'a> Visit<'a> for ModuleSpecifierCollector {
     }
 
     fn visit_ts_import_type(&mut self, import_type: &TSImportType<'a>) {
-        if !self.declarations_only {
-            self.push_literal(
-                &import_type.source,
-                import_type
-                    .options
-                    .as_deref()
-                    .and_then(mode_from_options_object)
-                    .unwrap_or(crate::PackageResolutionMode::Contextual),
-            );
-        }
+        self.push_literal(
+            &import_type.source,
+            import_type
+                .options
+                .as_deref()
+                .and_then(mode_from_options_object)
+                .unwrap_or(crate::PackageResolutionMode::Contextual),
+        );
         walk::walk_ts_import_type(self, import_type);
     }
 
     fn visit_ts_external_module_reference(&mut self, reference: &TSExternalModuleReference<'a>) {
-        if !self.declarations_only {
-            self.push_literal(&reference.expression, crate::PackageResolutionMode::Require);
-        }
+        self.push_literal(&reference.expression, crate::PackageResolutionMode::Require);
         walk::walk_ts_external_module_reference(self, reference);
     }
 
     fn visit_ts_module_declaration_name(&mut self, name: &TSModuleDeclarationName<'a>) {
-        if !self.declarations_only
-            && let TSModuleDeclarationName::StringLiteral(lit) = name
-        {
+        if let TSModuleDeclarationName::StringLiteral(lit) = name {
             self.push_literal(lit, crate::PackageResolutionMode::Contextual);
         }
         walk::walk_ts_module_declaration_name(self, name);
