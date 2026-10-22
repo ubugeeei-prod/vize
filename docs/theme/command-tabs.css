@@ -63,3 +63,26 @@
 .vize-command-copy-status:empty {
   display: none;
 }
+/* Ox Content's pre padding wins over the reserved band, so the absolute label
+   sits on the command. On a phone that covers the text. */
+@media (max-width: 768px) {
+  .content .vize-command-panel:not([hidden]) {
+    display: flex;
+    flex-direction: column;
+  }
+  .content .vize-command-panel pre {
+    order: 1;
+    min-width: 0;
+  }
+  .content .vize-command-copy {
+    position: static;
+    order: 2;
+    align-self: flex-end;
+    width: auto;
+    max-width: calc(100% - 1.2rem);
+    margin: 0.45rem 0.6rem 0.55rem;
+  }
+  .content .vize-command-copy-status {
+    order: 3;
+  }
+}
