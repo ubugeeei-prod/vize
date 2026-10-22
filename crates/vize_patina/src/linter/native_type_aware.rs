@@ -1,6 +1,7 @@
 use super::{
     LintResult, Linter,
     corsa_session::{CorsaTypeAwareSession, TypeProbe},
+    corsa_session_pool::CorsaSessionKey,
 };
 use crate::diagnostic::LintDiagnostic;
 use corsa::utils::{
@@ -39,6 +40,8 @@ mod unsafe_template_tests;
 
 #[cfg(test)]
 mod plain_module_tests;
+#[cfg(test)]
+mod session_pool_tests;
 #[cfg(test)]
 mod template_globals_tests;
 #[cfg(test)]
@@ -200,43 +203,32 @@ pub(super) fn with_corsa_session<T>(
         }
     }
 
-    let mut guard =
-        profile!("patina.type_aware.corsa.lock", linter.native_corsa.lock()).map_err(|_| {
-            TypeAwareFailure::Runtime("Failed to lock corsa type session".to_compact_string())
-        })?;
-
-    let needs_new_session = guard
-        .as_ref()
-        .is_none_or(|session| !session.matches_source_file(filename, tsconfig.as_deref()));
-
-    if needs_new_session {
-        if let Some(session) = guard.as_mut() {
-            session.close();
-        }
-        *guard = Some(
-            profile!(
-                "patina.type_aware.corsa.new_session",
-                CorsaTypeAwareSession::new_with_corsa_path(
-                    filename,
-                    linter.corsa_path.as_deref(),
-                    tsconfig.clone(),
+    let key = CorsaSessionKey {
+        project_root,
+        tsconfig: tsconfig.clone(),
+    };
+    let corsa_path = linter.corsa_path.clone();
+    let spawn_tsconfig = tsconfig.clone();
+    linter
+        .native_corsa
+        .with_session(
+            key,
+            || {
+                profile!(
+                    "patina.type_aware.corsa.new_session",
+                    CorsaTypeAwareSession::new_with_corsa_path(
+                        filename,
+                        corsa_path.as_deref(),
+                        spawn_tsconfig,
+                    )
                 )
-            )
-            .map_err(TypeAwareFailure::Runtime)?,
-        );
-    }
-
-    let session = guard.as_mut().ok_or_else(|| {
-        TypeAwareFailure::Runtime("Failed to initialize corsa type session".to_compact_string())
-    })?;
-
-    let result = profile!("patina.type_aware.corsa.session_work", f(session))
-        .map_err(TypeAwareFailure::Runtime);
-    if result.is_err() {
-        session.close();
-        *guard = None;
-    }
-    result
+            },
+            |session| {
+                debug_assert!(session.matches_source_file(filename, tsconfig.as_deref()));
+                profile!("patina.type_aware.corsa.session_work", f(session))
+            },
+        )
+        .map_err(TypeAwareFailure::Runtime)
 }
 
 pub(super) fn push_type_aware_failure(result: &mut LintResult, failure: TypeAwareFailure) {

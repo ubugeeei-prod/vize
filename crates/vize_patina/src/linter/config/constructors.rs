@@ -1,5 +1,7 @@
 //! Existing linter constructors, shared by opt-in configuration.
 #[cfg(not(target_arch = "wasm32"))]
+use super::super::corsa_session_pool::CorsaSessionPool;
+#[cfg(not(target_arch = "wasm32"))]
 use super::Mutex;
 use super::{FxHashMap, FxHashSet, HelpLevel, LintPreset, Linter, Locale, RuleRegistry};
 use crate::preset::{
@@ -37,7 +39,7 @@ impl Linter {
             type_aware_enabled: false,
             strict_boolean_options: vize_l0::config::StrictBooleanExpressionsOptions::default(),
             #[cfg(not(target_arch = "wasm32"))]
-            native_corsa: Mutex::new(None),
+            native_corsa: CorsaSessionPool::default(),
             #[cfg(not(target_arch = "wasm32"))]
             type_aware_project_configs: Mutex::new(FxHashMap::default()),
             #[cfg(not(target_arch = "wasm32"))]
@@ -77,7 +79,7 @@ impl Linter {
             type_aware_enabled: false,
             strict_boolean_options: vize_l0::config::StrictBooleanExpressionsOptions::default(),
             #[cfg(not(target_arch = "wasm32"))]
-            native_corsa: Mutex::new(None),
+            native_corsa: CorsaSessionPool::default(),
             #[cfg(not(target_arch = "wasm32"))]
             type_aware_project_configs: Mutex::new(FxHashMap::default()),
             #[cfg(not(target_arch = "wasm32"))]
@@ -117,7 +119,7 @@ impl Linter {
             type_aware_enabled: false,
             strict_boolean_options: vize_l0::config::StrictBooleanExpressionsOptions::default(),
             #[cfg(not(target_arch = "wasm32"))]
-            native_corsa: Mutex::new(None),
+            native_corsa: CorsaSessionPool::default(),
             #[cfg(not(target_arch = "wasm32"))]
             type_aware_project_configs: Mutex::new(FxHashMap::default()),
             #[cfg(not(target_arch = "wasm32"))]
@@ -170,7 +172,7 @@ impl Linter {
             type_aware_enabled: false,
             strict_boolean_options: vize_l0::config::StrictBooleanExpressionsOptions::default(),
             #[cfg(not(target_arch = "wasm32"))]
-            native_corsa: Mutex::new(None),
+            native_corsa: CorsaSessionPool::default(),
             #[cfg(not(target_arch = "wasm32"))]
             type_aware_project_configs: Mutex::new(FxHashMap::default()),
             #[cfg(not(target_arch = "wasm32"))]

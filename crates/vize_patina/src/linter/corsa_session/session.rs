@@ -14,6 +14,8 @@ use corsa::{
     },
     runtime::block_on,
 };
+use std::hash::{Hash, Hasher};
+
 use vize_carton::corsa_api_mode::uses_async_json_rpc_api;
 use vize_l0::{String, ToCompactString, profile};
 
@@ -114,6 +116,8 @@ impl CorsaTypeAwareSession {
             dependency_paths: vize_l0::FxHashSet::default(),
             dependency_cache: vize_l0::FxHashMap::default(),
             vue_path_aliases,
+            active_filename: None,
+            active_source_hash: 0,
             closed: false,
         })
     }
@@ -132,6 +136,14 @@ impl CorsaTypeAwareSession {
         generated_source: &str,
         filename: &str,
     ) -> Result<(), String> {
+        // The open snapshot already types this generated document.
+        let input_hash = virtual_source_hash(generated_source);
+        if self.active_filename.as_deref() == Some(filename)
+            && self.active_source_hash == input_hash
+        {
+            return Ok(());
+        }
+
         let next_path = virtual_file_path(&self.session_root, &self.project_root, filename);
         let next_existed = next_path.exists();
         let prepared = super::vue_dependencies::prepare(
@@ -205,7 +217,7 @@ impl CorsaTypeAwareSession {
 
         if self.supports_overlay_updates {
             self.overlay_version = self.overlay_version.saturating_add(1);
-            return profile!(
+            profile!(
                 "patina.corsa_session.refresh_overlay",
                 block_on(
                     self.session.refresh_with_overlay_changes(
@@ -230,7 +242,9 @@ impl CorsaTypeAwareSession {
                     "Failed to update patina type snapshot",
                     error.to_compact_string().as_str(),
                 )
-            });
+            })?;
+            self.remember_virtual_input(filename, input_hash);
+            return Ok(());
         }
 
         profile!(
@@ -261,7 +275,13 @@ impl CorsaTypeAwareSession {
                 error.to_compact_string().as_str(),
             )
         })?;
+        self.remember_virtual_input(filename, input_hash);
         Ok(())
+    }
+
+    fn remember_virtual_input(&mut self, filename: &str, input_hash: u64) {
+        self.active_filename = Some(filename.to_compact_string());
+        self.active_source_hash = input_hash;
     }
 
     pub(in crate::linter) fn close(&mut self) {
@@ -298,6 +318,12 @@ impl Drop for SessionRootCleanup {
             remove_session_root(path);
         }
     }
+}
+
+fn virtual_source_hash(source: &str) -> u64 {
+    let mut hasher = std::collections::hash_map::DefaultHasher::new();
+    source.hash(&mut hasher);
+    hasher.finish()
 }
 
 fn api_mode_for_executable(path: &std::path::Path) -> ApiMode {

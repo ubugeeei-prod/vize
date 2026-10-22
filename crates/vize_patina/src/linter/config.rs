@@ -4,7 +4,7 @@
 //! builder-pattern configuration methods.
 
 #[cfg(not(target_arch = "wasm32"))]
-use super::corsa_session::CorsaTypeAwareSession;
+use super::corsa_session_pool::CorsaSessionPool;
 use crate::{
     diagnostic::{HelpLevel, LintDiagnostic, Severity},
     preset::LintPreset,
@@ -97,9 +97,9 @@ pub struct Linter {
     /// Whether native type-aware lint rules may run.
     pub(crate) type_aware_enabled: bool,
     pub(crate) strict_boolean_options: vize_l0::config::StrictBooleanExpressionsOptions,
-    /// Lazily initialized native corsa session for type-aware lint.
+    /// Live native Corsa sessions, one per project root and tsconfig.
     #[cfg(not(target_arch = "wasm32"))]
-    pub(crate) native_corsa: Mutex<Option<CorsaTypeAwareSession>>,
+    pub(crate) native_corsa: CorsaSessionPool,
     /// Authored TypeScript project configurations already admitted for this lint run.
     #[cfg(not(target_arch = "wasm32"))]
     pub(crate) type_aware_project_configs: Mutex<FxHashMap<PathBuf, Option<String>>>,
@@ -267,12 +267,7 @@ impl Linter {
         #[cfg(not(target_arch = "wasm32"))]
         {
             for linter in linters {
-                if let Ok(mut guard) = linter.native_corsa.lock() {
-                    if let Some(session) = guard.as_mut() {
-                        session.close();
-                    }
-                    *guard = None;
-                }
+                linter.native_corsa.close_all();
                 if let Ok(mut configs) = linter.type_aware_project_configs.lock() {
                     configs.clear();
                 }
