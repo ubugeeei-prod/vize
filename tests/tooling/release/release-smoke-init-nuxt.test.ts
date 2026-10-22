@@ -13,6 +13,7 @@ import { PACKAGE_MANAGERS } from "../../../tools/support/compat/npm/smoke-releas
 import { NUXT_VUE_TS_SHAPE } from "../../../tools/support/compat/npm/smoke-release-init-nuxt-shape.mjs";
 import { expectedInitOutput } from "../../../tools/support/compat/npm/smoke-release-init-project.mjs";
 import { FRESH_INIT_MATRIX } from "../../../tools/support/compat/npm/smoke-release-init-shapes.mjs";
+import { readRepoFile } from "../support/github-workflows.ts";
 
 const manager = PACKAGE_MANAGERS.npm;
 const shape = NUXT_VUE_TS_SHAPE;
@@ -119,6 +120,23 @@ test("the Nuxt consumer owns a complete current project and diagnostic triple", 
   assert.deepEqual(shape.postBootstrapFiles, {
     "oxlint.config.mts": "export default {};\n",
   });
+});
+
+test("the Nuxt LSP oracle checks the authored title binding, not hover alone", () => {
+  const source = readRepoFile("tools/support/compat/npm/smoke-release-lsp-session.ts");
+  const viteOnly = source.slice(
+    source.indexOf('if (projectShape === "vite")'),
+    source.indexOf("template completion offers title"),
+  );
+  assert.equal(viteOnly.includes("template completion"), false);
+  assert.equal(
+    (viteOnly.match(/\{/g) ?? []).length,
+    (viteOnly.match(/\}/g) ?? []).length,
+    "template completion must follow the Vite-only component definition",
+  );
+  assert.match(source, /definition of title reaches its script binding/);
+  assert.match(source, /rename of title edits app\.vue/);
+  assert.match(source, /project-local Nuxt vize lsp \(hover, definition, completion, rename\)/);
 });
 
 test("the packed Nuxt fixture deterministically owns the unsupported oxlint config", () => {

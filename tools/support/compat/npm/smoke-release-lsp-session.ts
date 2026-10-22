@@ -5,6 +5,10 @@
  * must be a TypeScript fresh-project shape after `vize init` and the planned
  * install. The server binary is the project's own `node_modules/vize/bin/vize`,
  * so the session proves the installed package, not a checkout build.
+ *
+ * Vite checks hover, the imported component's definition, template completion,
+ * and rename. Nuxt checks the same authored `title` binding: hover, template
+ * completion, definition back to the script binding, and rename.
  */
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
@@ -145,6 +149,36 @@ function mentions(result: unknown, file: string): boolean {
   return uris.some((uri) => samePath(path.resolve(fileURLToPath(uri)), file));
 }
 
+function definesAuthoredIdentifier(
+  result: unknown,
+  file: string,
+  text: string,
+  needle: string,
+  offset: number,
+): boolean {
+  const expected = position(text, needle, offset);
+  const entries = Array.isArray(result) ? result : result == null ? [] : [result];
+  return entries.some((entry) => {
+    if (entry === null || typeof entry !== "object") return false;
+    const record = entry as {
+      uri?: unknown;
+      targetUri?: unknown;
+      range?: { start?: { line?: unknown; character?: unknown } };
+      targetSelectionRange?: { start?: { line?: unknown; character?: unknown } };
+      targetRange?: { start?: { line?: unknown; character?: unknown } };
+    };
+    const uri = record.uri ?? record.targetUri;
+    const start =
+      record.targetSelectionRange?.start ?? record.range?.start ?? record.targetRange?.start;
+    return (
+      typeof uri === "string" &&
+      samePath(path.resolve(fileURLToPath(uri)), file) &&
+      start?.line === expected.line &&
+      start?.character === expected.character
+    );
+  });
+}
+
 // Every feature is checked and every failure reported, so one run shows the
 // whole state of a host.
 const failures: string[] = [];
@@ -164,10 +198,11 @@ async function expectFeature(
   }
 }
 
+const templateBinding = projectShape === "nuxt" ? at("{{ title }}", 3) : at(':msg="title"', 6);
 await expectFeature(
   "hover on title shows its type",
   "textDocument/hover",
-  projectShape === "nuxt" ? at("{{ title }}", 3) : at(':msg="title"', 6),
+  templateBinding,
   (result) =>
     /\btitle\b/.test(JSON.stringify(result) ?? "") && /string/.test(JSON.stringify(result) ?? ""),
 );
@@ -178,24 +213,32 @@ if (projectShape === "vite") {
     at("HelloWorld from", 1),
     (result) => mentions(result, componentPath!),
   );
+}
+await expectFeature(
+  "template completion offers title",
+  "textDocument/completion",
+  templateBinding,
+  (result) => {
+    const items = Array.isArray(result)
+      ? result
+      : ((result as { items?: unknown[] } | null)?.items ?? []);
+    return items.some((item) => (item as { label?: string }).label === "title");
+  },
+);
+if (projectShape === "nuxt") {
   await expectFeature(
-    "template completion offers title",
-    "textDocument/completion",
-    at(':msg="title"', 6),
-    (result) => {
-      const items = Array.isArray(result)
-        ? result
-        : ((result as { items?: unknown[] } | null)?.items ?? []);
-      return items.some((item) => (item as { label?: string }).label === "title");
-    },
-  );
-  await expectFeature(
-    "rename of title edits App.vue",
-    "textDocument/rename",
-    { ...at("const title", 6), newName: "heading" },
-    (result) => mentions(result, appPath),
+    "definition of title reaches its script binding",
+    "textDocument/definition",
+    templateBinding,
+    (result) => definesAuthoredIdentifier(result, appPath, appText, "const title", 6),
   );
 }
+await expectFeature(
+  projectShape === "nuxt" ? "rename of title edits app.vue" : "rename of title edits App.vue",
+  "textDocument/rename",
+  { ...at("const title", 6), newName: "heading" },
+  (result) => mentions(result, appPath),
+);
 writeSessionLog();
 assert.deepEqual(failures, [], `project-local vize lsp failed in ${root}\n${serverEvidence()}`);
 
@@ -203,6 +246,6 @@ await request("shutdown", undefined);
 send({ method: "exit" });
 console.log(
   projectShape === "nuxt"
-    ? "runtime: project-local Nuxt vize lsp (hover)"
+    ? "runtime: project-local Nuxt vize lsp (hover, definition, completion, rename)"
     : "runtime: project-local vize lsp (hover, definition, completion, rename)",
 );
