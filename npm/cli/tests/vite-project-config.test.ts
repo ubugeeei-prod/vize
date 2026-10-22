@@ -88,7 +88,7 @@ test("Vite source cycles fail explicitly and preserve scoped entries and RegExp 
   assert.equal(include.source, "\\.vue$");
 });
 
-test("canonical discovery reads Vite TypeScript settings and a stale dedicated file cannot override it", async () => {
+test("canonical discovery reads Vite TypeScript settings and a leftover dedicated file is a migration error", async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-vite-project-"));
   try {
     fs.writeFileSync(
@@ -99,9 +99,15 @@ test("canonical discovery reads Vite TypeScript settings and a stale dedicated f
     assert.equal(await loadConfig(root, { viteConfig: false }), null);
     fs.writeFileSync(
       path.join(root, "vize.config.json"),
-      JSON.stringify({ formatter: { singleQuote: false } }),
+      JSON.stringify({ linter: { preset: "essential" }, formatter: { singleQuote: false } }),
     );
-    assert.equal((await loadConfig(root))?.formatter.singleQuote, true);
+    await assert.rejects(loadConfig(root), /vize\.config\.\* is no longer supported/);
+    const nested = path.join(root, "src");
+    fs.mkdirSync(nested);
+    await assert.rejects(
+      loadConfig(nested, { mode: "auto" }),
+      /vize\.config\.\* is no longer supported/,
+    );
     assert.equal(
       (await loadConfig(root, { configFile: "vite.config.ts" }))?.formatter.singleQuote,
       true,

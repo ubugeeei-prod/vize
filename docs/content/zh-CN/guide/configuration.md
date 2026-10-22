@@ -104,7 +104,7 @@ Vite 配置中的原生相对路径以选定的 Vite `root` 为基准；相对 `
 
 ## 迁移已移除的配置
 
-`vize.config.*` 和顶层 `vize:` 配置已不再受支持。将原生设置移到 `vite.config.*` 的 `vue:` 中，将 TypeScript 项目选项移到 `tsconfig.json` 中。迁移并检查结果后，再移除专用配置文件。与 Vite 配置并存的旧专用文件会被忽略；只有专用配置的项目会收到迁移错误。`vize init` 和 `vize setup` 会保留原文件并说明迁移方式。
+`vize.config.*` 和顶层 `vize:` 配置已不再受支持。将原生设置移到 `vite.config.*` 的 `vue:` 中，将 TypeScript 项目选项移到 `tsconfig.json` 中。迁移并检查结果后，再移除专用配置文件。与 Vite 配置并存的旧专用文件会报错，和只有专用配置的项目一样收到迁移错误。`vize init` 和 `vize setup` 会保留原文件并说明迁移方式。
 
 不再提供 Vize 专用的 `extends`。要复用设置，请导入普通 JavaScript 对象，并传给 `defineConfig(vpConfig).withVue(vueConfig)`。标准 TypeScript `extends` 和项目 `references` 继续有效。
 

@@ -117,7 +117,7 @@ Les exclusions globales partagées retirent les fichiers de la recherche CLI et 
 
 ## Migrer les anciennes configurations
 
-Les fichiers `vize.config.*` et la section racine `vize:` ne sont plus pris en charge. Déplacez les réglages natifs sous `vue:` dans `vite.config.*`, et les options du projet TypeScript dans `tsconfig.json`. Après vérification, supprimez les fichiers dédiés. Un ancien fichier dédié placé à côté d’une configuration Vite est ignoré ; un projet qui ne contient qu’un fichier dédié reçoit une erreur de migration. `vize init` et `vize setup` préservent les fichiers originaux et expliquent la migration.
+Les fichiers `vize.config.*` et la section racine `vize:` ne sont plus pris en charge. Déplacez les réglages natifs sous `vue:` dans `vite.config.*`, et les options du projet TypeScript dans `tsconfig.json`. Après vérification, supprimez les fichiers dédiés. Un fichier dédié résiduel placé à côté d’une configuration Vite est une erreur, la même erreur de migration qu’un projet qui ne contient qu’un fichier dédié. `vize init` et `vize setup` préservent les fichiers originaux et expliquent la migration.
 
 Il n’existe pas de `extends` propre à Vize. Importez des objets JavaScript ordinaires et transmettez-les à `defineConfig(vpConfig).withVue(vueConfig)` pour partager vos réglages. Les `extends` et `references` TypeScript standards restent valides.
 

@@ -14,9 +14,9 @@ TypeScript project. See [Configuration](./configuration.md) for a minimal setup.
 The CLI and editor discover `vite.config.ts`, `.mts`, `.cts`, `.js`, `.mjs` and
 `.cjs` in the nearest project. `package.json`, `tsconfig.json` and `jsconfig.json`
 form project boundaries. Commands can select a Vite config with `--config`.
-Dedicated `vize.config.*` files are no longer supported. A stale dedicated file
-beside a Vite configuration is ignored; a dedicated-only project receives a
-migration error.
+Dedicated `vize.config.*` files are no longer supported. A leftover dedicated
+file beside a Vite configuration is an error, the same migration error as a
+dedicated-only project.
 
 Vite-owned relative paths use the selected Vite `root`, which resolves from the
 configuration directory. Explicit CLI inputs and `--tsconfig` use the command's

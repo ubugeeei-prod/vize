@@ -104,7 +104,7 @@ As exclusões globais compartilhadas retiram arquivos da busca da CLI e do lint 
 
 ## Migrar configurações removidas
 
-`vize.config.*` e o objeto `vize:` no nível superior não são mais aceitos. Mova as opções nativas para `vue:` em `vite.config.*` e as opções do projeto TypeScript para `tsconfig.json`. Remova os arquivos específicos depois de migrar e verificar o resultado. Um arquivo específico antigo ao lado da configuração Vite é ignorado; um projeto que tenha apenas a configuração específica recebe um erro de migração. `vize init` e `vize setup` preservam os arquivos originais e explicam como migrar.
+`vize.config.*` e o objeto `vize:` no nível superior não são mais aceitos. Mova as opções nativas para `vue:` em `vite.config.*` e as opções do projeto TypeScript para `tsconfig.json`. Remova os arquivos específicos depois de migrar e verificar o resultado. Um arquivo específico antigo ao lado da configuração Vite é um erro, o mesmo erro de migração de um projeto que tenha apenas a configuração específica. `vize init` e `vize setup` preservam os arquivos originais e explicam como migrar.
 
 Não existe mais um `extends` específico do Vize. Importe objetos JavaScript comuns e passe-os para `defineConfig(vpConfig).withVue(vueConfig)` para reutilizar opções. O `extends` padrão do TypeScript e as referências de projeto continuam funcionando.
 

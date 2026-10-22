@@ -140,9 +140,9 @@ project, including nested packages in a workspace. Explicit plugin options and
 editor feature switches retain their documented precedence.
 
 Dedicated `vize.config.*` files and top-level `vize:` settings are retired. Move
-native settings to `vue:` and TypeScript settings to `tsconfig.json`. A stale
-dedicated file beside a Vite configuration is ignored; a dedicated-only project
-receives a migration error. See the [configuration guide](../../../docs/content/guide/configuration.md).
+native settings to `vue:` and TypeScript settings to `tsconfig.json`. A leftover
+dedicated file beside a Vite configuration is an error, the same migration error
+as a dedicated-only project. See the [configuration guide](../../../docs/content/guide/configuration.md).
 
 ### Nuxt
 

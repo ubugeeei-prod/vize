@@ -122,8 +122,8 @@ CLI feature flags and explicit editor feature switches override shared settings.
 `vize.config.*` and top-level `vize:` configuration are no longer supported.
 Move their native settings to `vue:` in `vite.config.*`, and TypeScript project
 options to `tsconfig.json`. Remove dedicated configuration files after migrating
-and checking the result. A stale dedicated file alongside a Vite config is ignored;
-a project with only a dedicated config receives a migration error. `vize init` and
+and checking the result. A leftover dedicated file alongside a Vite config is an
+error, the same migration error as a dedicated-only project. `vize init` and
 `vize setup` preserve the original files and explain the migration.
 
 There is no Vize-specific `extends`. Import ordinary JavaScript objects and pass

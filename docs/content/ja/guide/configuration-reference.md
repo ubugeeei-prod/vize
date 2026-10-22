@@ -18,8 +18,8 @@ npm コマンドと `@vizejs/vite-plugin` は、対象プロジェクトの `vit
 CLI とエディタは、最も近いプロジェクトの `vite.config.ts`、`.mts`、`.cts`、
 `.js`、`.mjs`、`.cjs` を探索します。`package.json`、`tsconfig.json`、`jsconfig.json`
 がプロジェクトの境界です。CLI では `--config` で Vite 設定を明示できます。
-`vize.config.*` は廃止しました。Vite 設定と同じ場所に残った専用ファイルは読みません。
-専用設定しかないプロジェクトでは、移行エラーになります。
+`vize.config.*` は廃止しました。Vite 設定と同じ場所に残った専用ファイルはエラーです。
+専用設定しかないプロジェクトと同じ移行エラーになります。
 
 Vite 内の相対パスは、選択された Vite の `root` を基準にします。相対指定の `root`
 自体は設定ファイルのディレクトリから解決します。CLI に直接渡した入力と `--tsconfig`

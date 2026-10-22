@@ -152,8 +152,8 @@ no Vize-specific config `extends`; import ordinary JavaScript settings and pass
 them to `defineConfig(vpConfig).withVue(vueConfig)` instead.
 
 Dedicated `vize.config.*` files and top-level `vize:` are no longer supported.
-A stale dedicated file beside a Vite config is ignored; a dedicated-only project
-receives a migration error. Override Vite configuration selection with `--config`,
+A leftover dedicated file beside a Vite config is an error, the same migration
+error as a dedicated-only project. Override Vite configuration selection with `--config`,
 select a TypeScript project with `--tsconfig`, or disable shared Vue config with
 `--no-config`. CLI, Vite integration and editor use the same project settings.
 

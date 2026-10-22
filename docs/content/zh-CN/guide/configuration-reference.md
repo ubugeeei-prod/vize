@@ -14,7 +14,7 @@ title: 共享配置参考
 
 CLI 和编辑器发现最近项目中的 `vite.config.ts`、`.mts`、`.cts`、`.js`、`.mjs` 和 `.cjs`。`package.json`、`tsconfig.json` 和 `jsconfig.json` 构成项目边界。命令可以通过 `--config` 选择 Vite 配置。
 
-专用的 `vize.config.*` 文件已不再受支持。与 Vite 配置并存的旧专用文件会被忽略；只有专用配置的项目会收到迁移错误。将旧 TypeScript、JSON 或 Pkl 配置中的原生设置迁入 `vue:`，不要继续创建专用文件。
+专用的 `vize.config.*` 文件已不再受支持。与 Vite 配置并存的旧专用文件会报错，和只有专用配置的项目一样收到迁移错误。将旧 TypeScript、JSON 或 Pkl 配置中的原生设置迁入 `vue:`，不要继续创建专用文件。
 
 Vite 配置中的原生相对路径以选定的 Vite `root` 为基准，`root` 自身从配置文件目录解析。显式 CLI 输入和 `--tsconfig` 以执行命令的目录为基准。直接传给插件的选项和编辑器中显式设置的功能开关优先于共享设置。
 

@@ -127,23 +127,23 @@ test("Vite+ source and module evaluate once with the caller's complete environme
   });
 });
 
-test("Vite selection retains its environment and retired files cannot override it", async () => {
+test("an explicit Vite file keeps its settings and a leftover dedicated file is a migration error", async () => {
   await project(async (root) => {
     fs.writeFileSync(
       path.join(root, "vize.config.ts"),
       `export default ({command,mode})=>{
       if(command!=='lint'||mode!=='production') throw new Error('dedicated environment changed');
-      return {formatter:{printWidth:99}};
+      return {formatter:{printWidth:99},linter:{preset:'essential'}};
     };`,
     );
     const env = { command: "lint", mode: "production" };
-    assert.equal((await loadConfig(root, { env }))?.formatter.singleQuote, true);
+    await assert.rejects(loadConfig(root, { env }), /vize\.config\.\* is no longer supported/);
     assert.equal(
       (await loadConfig(root, { env, configFile: "vite.config.ts" }))?.formatter.singleQuote,
       true,
     );
     fs.writeFileSync(path.join(root, "vize.config.ts"), "throw new Error('dedicated refuses');");
-    assert.equal((await loadConfig(root, { env }))?.formatter.singleQuote, true);
+    await assert.rejects(loadConfig(root, { env }), /vize\.config\.\* is no longer supported/);
     await assert.rejects(
       loadConfig(root, { env, configFile: "vize.config.ts" }),
       /vize\.config\.\* is no longer supported/,

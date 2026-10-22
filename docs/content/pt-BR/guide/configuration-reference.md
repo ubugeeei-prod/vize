@@ -14,7 +14,7 @@ Use `vue:` na configuração Vite existente e `vueCompilerOptions` no projeto Ty
 
 A CLI e o editor descobrem `vite.config.ts`, `.mts`, `.cts`, `.js`, `.mjs` e `.cjs` no projeto mais próximo. `package.json`, `tsconfig.json` e `jsconfig.json` delimitam os projetos. Os comandos podem selecionar uma configuração Vite com `--config`.
 
-Arquivos específicos `vize.config.*` não são mais aceitos. Um arquivo específico antigo ao lado de uma configuração Vite é ignorado; um projeto que tenha apenas a configuração específica recebe um erro de migração. Mova as opções nativas dos antigos formatos TypeScript, JSON ou Pkl para `vue:` em vez de criar outro arquivo específico.
+Arquivos específicos `vize.config.*` não são mais aceitos. Um arquivo específico antigo ao lado de uma configuração Vite é um erro, o mesmo erro de migração de um projeto que tenha apenas a configuração específica. Mova as opções nativas dos antigos formatos TypeScript, JSON ou Pkl para `vue:` em vez de criar outro arquivo específico.
 
 Caminhos nativos relativos na configuração Vite usam o `root` Vite selecionado, que parte do diretório da configuração. Entradas explícitas da CLI e `--tsconfig` usam o diretório de execução. Opções diretas do plugin e recursos explicitamente definidos no editor prevalecem sobre as opções compartilhadas.
 

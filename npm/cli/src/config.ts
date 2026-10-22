@@ -97,6 +97,14 @@ async function loadConfigFromDir(
   env?: ConfigEnv,
   viteConfig = true,
 ): Promise<ResolvedVizeConfig | null> {
+  // Reject before reading Vite. A leftover dedicated file is an error, not an override.
+  if (
+    viteConfig &&
+    fs.existsSync(dir) &&
+    fs.readdirSync(dir).some((name) => RETIRED_CONFIG.test(name))
+  ) {
+    throw new Error(CONFIG_MIGRATION);
+  }
   for (const name of viteConfig ? CONFIG_FILE_NAMES : []) {
     const filePath = path.join(dir, name);
     if (!fs.existsSync(filePath)) {
@@ -107,13 +115,6 @@ async function loadConfigFromDir(
     if (config !== null) {
       return config;
     }
-  }
-  if (
-    viteConfig &&
-    fs.existsSync(dir) &&
-    fs.readdirSync(dir).some((name) => RETIRED_CONFIG.test(name))
-  ) {
-    throw new Error(CONFIG_MIGRATION);
   }
   return null;
 }

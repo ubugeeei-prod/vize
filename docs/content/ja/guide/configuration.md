@@ -129,8 +129,8 @@ CLI のフラグと明示的なエディタの機能スイッチは、共有設�
 `vize.config.*` とトップレベルの `vize:` は廃止しました。
 ネイティブの設定を `vite.config.*` の `vue:` へ、TypeScript プロジェクトの設定を
 `tsconfig.json` へ移してください。移行して動作を確認してから、専用設定ファイルを削除します。
-Vite 設定と同じ場所に残った専用ファイルは読みません。専用設定しかないプロジェクトでは
-移行エラーになります。`vize init` と `vize setup` は元のファイルを保ち、移行先を案内します。
+Vite 設定と同じ場所に残った専用ファイルはエラーです。専用設定しかないプロジェクトと
+同じ移行エラーになります。`vize init` と `vize setup` は元のファイルを保ち、移行先を案内します。
 
 Vize 独自の `extends` はありません。共有する通常の JavaScript オブジェクトを import し、
 `defineConfig(vpConfig).withVue(vueConfig)` に渡してください。
