@@ -109,8 +109,9 @@ fn distinct_alias_modules_shard_on_twelve_cores() {
         .find_by_original(&built.vue_paths[0])
         .unwrap()
         .content;
+    let kept_alias = content.split("@/g000/local").nth(1).is_some();
     assert!(
-        content.contains("@/g000/local"),
+        kept_alias,
         "generated module lost the alias specifier:\n{content}"
     );
     assert_repro_splits(&built);
