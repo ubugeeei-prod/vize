@@ -5,8 +5,7 @@ import { fileURLToPath } from "node:url";
 // Nuxt 2 webpack cannot parse a module URL in this file. A fixture can load
 // dist/index.mjs without installing @vizejs/nuxt into rootDir, so the running
 // dist entry is taken from the stack only after rootDir resolution fails.
-const RUNNING_DIST_ENTRY =
-  /((?:file:\/\/)?[^\s)]+?[/\\]dist[/\\](?:index\.mjs|nuxt2-entry\.cjs))/;
+const RUNNING_DIST_ENTRY = /((?:file:\/\/)?[^\s)]+?[/\\]dist[/\\](?:index\.mjs|nuxt2-entry\.cjs))/;
 
 export function createNuxtModuleResolver(rootDir: string) {
   const moduleDir = resolveInstalledModuleDir(rootDir);
