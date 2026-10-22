@@ -163,7 +163,7 @@ void test("Glyph is a protected product root with one exact shrinking migration 
 void test("Patina is protected across its direct and inherited Canon legacy paths", () => {
   const value = fixture();
   for (const entry of initialGlyphProductAllowlist.entries) value.add(entry.from, entry.to);
-  value.add("vize_patina", "vize_canon", { target: "cfg(not(target_arch = \"wasm32\"))" });
+  value.add("vize_patina", "vize_canon", { target: 'cfg(not(target_arch = "wasm32"))' });
   for (const entry of initialPatinaProductAllowlist.entries) value.add(entry.from, entry.to);
   const products = combineProductAllowlists([
     initialGlyphProductAllowlist,

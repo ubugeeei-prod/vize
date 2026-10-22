@@ -141,8 +141,7 @@ export function combineProductAllowlists(policies: readonly ProductAllowlist[]):
     for (const entry of policy.entries) {
       const id = key(entry),
         current = entries.get(id);
-      if (current)
-        entries.set(id, { ...current, roots: [...current.roots, policy.root].sort() });
+      if (current) entries.set(id, { ...current, roots: [...current.roots, policy.root].sort() });
       else entries.set(id, { ...entry, roots: [policy.root] });
     }
   }
@@ -170,8 +169,6 @@ export function readBaseProductAllowlist(
   }).trim();
   if (!present) return initial;
   return validateProductAllowlist(
-    JSON.parse(
-      execFileSync("git", ["show", base + ":" + policyPath], { cwd, encoding: "utf8" }),
-    ),
+    JSON.parse(execFileSync("git", ["show", base + ":" + policyPath], { cwd, encoding: "utf8" })),
   );
 }
