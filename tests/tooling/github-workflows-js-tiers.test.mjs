@@ -363,7 +363,8 @@ void test("Fresco checks generate declarations and invoke static TypeScript with
       "index.d.ts",
       "tsconfig.types.json",
       "tests/types/consumer.ts",
-      "scripts/verify-consumer-types.mjs",
+      "scripts/package.json",
+      "scripts/verify-consumer-types.ts",
     ]) {
       mkdirSync(dirname(join(packageDir, file)), { recursive: true });
       copyFileSync(join(originalPackage, file), join(packageDir, file));
@@ -414,7 +415,7 @@ if(args[0]==='exec' && args[1]==='napi') {
       "throw new Error('runtime loader must not execute');\n",
     );
     const checkTypes = () =>
-      spawnSync(process.execPath, [join(packageDir, "scripts/verify-consumer-types.mjs")], {
+      spawnSync(process.execPath, [join(packageDir, "scripts/verify-consumer-types.ts")], {
         env: cli.env,
         encoding: "utf8",
       });
