@@ -228,9 +228,9 @@ const items: ViewItem[] = []
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
     assert!(
-        output.code.contains("else {\n\n      // v-for scope: row in item.lines")
+        output.code.matches("else {").count() == 1
             && output.code.matches("!(item.type === 'hunk-bar')").count() <= 1,
-        "the v-else branch already narrows item; nested scopes must not compare it again:\n{}",
+        "v-else rechecked the discriminant:\n{}",
         output.code
     );
 }

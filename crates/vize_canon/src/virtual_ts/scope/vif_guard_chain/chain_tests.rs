@@ -252,6 +252,7 @@ fn a_suspended_body_does_not_steal_the_outer_chain() {
     append!(ts, "    void next;\n");
     append_chained_vif_guard_close(&mut ts, "  ");
     assert_eq!(ts.matches("else if ((b))").count(), 1, "{ts}");
-    assert!(ts.contains("void outer"), "{ts}");
+    let kept_outer = ts.split("void outer").nth(1).is_some();
+    assert!(kept_outer, "{ts}");
     assert_eq!(ts.matches('{').count(), ts.matches('}').count(), "{ts}");
 }

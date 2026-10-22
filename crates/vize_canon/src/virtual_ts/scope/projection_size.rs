@@ -38,23 +38,26 @@ const rows: Row[] = []
 
     let code = project(script, template.as_str());
     let k0 = code.matches("row.kind === 'k0'").count();
+    let k0_in_budget = (1..=8).contains(&k0);
     assert!(
-        (1..=8).contains(&k0),
+        k0_in_budget,
         "branch 0 is repeated {k0} times in {} bytes; a cumulative guard would repeat it once per later branch",
         code.len()
     );
+    let repeated_negations = code
+        .split("!(row.kind === 'k0') && !(row.kind === 'k1') && !(row.kind === 'k2')")
+        .nth(1)
+        .is_some();
     assert!(
-        !code.contains("!(row.kind === 'k0') && !(row.kind === 'k1') && !(row.kind === 'k2')"),
+        !repeated_negations,
         "sibling v-for wrappers still repeat negated branches ({} bytes)",
         code.len()
     );
     for index in 0..BRANCHES {
         let mut needle = String::from("row.kind === 'k");
         append!(needle, "{index}'");
-        assert!(
-            code.contains(needle.as_str()),
-            "dropped the authored check {needle}"
-        );
+        let present = code.split(needle.as_str()).nth(1).is_some();
+        assert!(present, "dropped the authored check {needle}");
     }
     assert_eq!(
         code.matches("// v-for scope: cell in row.cells").count(),
@@ -71,8 +74,9 @@ const rows: Row[] = []
         code.matches("__vize_prop_check_").count() >= BRANCHES,
         "component prop checks must stay inside each branch"
     );
+    let alias_tested_early = code.split("if ((cell").nth(1).is_some();
     assert!(
-        !code.contains("if ((cell"),
+        !alias_tested_early,
         "a v-for alias must not be tested before it is bound"
     );
 }
