@@ -3,9 +3,10 @@
   "version": 2,
   "manifests": [
     "tests/_fixtures/differential/compiler/sfc-fix-history.manifest.json",
-    "tests/_fixtures/differential/compiler/ssr-fix-history.manifest.json"
+    "tests/_fixtures/differential/compiler/ssr-fix-history.manifest.json",
+    "tests/_fixtures/differential/compiler/vapor-fix-history.manifest.json"
   ],
-  "scope": "Bounded semantic review of ten complete public SFC Result fixtures and five complete public SSR Result fixtures; this is not whole-fix, whole-history, native, target, or dialect acceptance.",
+  "scope": "Bounded semantic review of ten complete public SFC Result fixtures, five complete public SSR Result fixtures, and one complete public Vapor Result fixture; this is not whole-fix, whole-history, native, target, or dialect acceptance.",
   "reviews": [
     {
       "fixCommit": "ceb0fda9c18ed6e40db71a2c582e9fe10950a43a",
@@ -170,6 +171,17 @@
       ],
       "remainingScope": [
         "Object v-on, mixed or repeated props, control-flow nesting, alternate options and dialects, SFC SSR integration, mounted behavior, and a native compiler route remain outside this reviewed fixture scope."
+      ]
+    },
+    {
+      "fixCommit": "866be7b96ed336704bd1fd3a2f3dc2ad6e699151",
+      "caseId": "compiler/vapor/once-directive",
+      "coveredRequirements": [
+        "A v-once element with an interpolation lowers without the runtime directive wrapper or a render effect while retaining the text update in its initial render.",
+        "The complete public Vapor Result preserves generated code, static templates, nullable map, and ordered error messages under the pinned default options."
+      ],
+      "remainingScope": [
+        "v-memo, nested and control-flow shapes, alternate options and dialects, SFC integration, mounted caching behavior, and a native compiler route remain outside this reviewed fixture scope."
       ]
     }
   ]

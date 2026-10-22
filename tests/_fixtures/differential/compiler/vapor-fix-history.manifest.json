@@ -38,9 +38,9 @@
           }
         ],
         "witness": {
-          "path": "crates/vize_atelier_vapor/src/lib.rs",
+          "path": "crates/vize_atelier_vapor/src/tests.rs",
           "symbol": "test_compile_v_once_lowers_without_runtime_directives",
-          "fileSha256": "ca5f193fae39f53f58d0f7b32450d298b524cee762e946bbb546f09aa9ef419e"
+          "fileSha256": "4f2e19a0da6d4b47e24e477fc3dc54d34b49e273f340119239a4797f4b34491c"
         }
       },
       "adapters": {

@@ -33,12 +33,12 @@
   "conventionalFixSubjects": 661,
   "nonMergeFixSubjects": 626,
   "fixtureLinkedFixSubjects": 30,
-  "boundedReviewedFixtureScopes": 15,
+  "boundedReviewedFixtureScopes": 16,
   "wholeFixReviewedSubjects": 0,
   "wholeFixReviewPendingSubjects": 626,
   "reviewLedger": {
     "path": "docs/davinci/plan/compiler-fix-history-reviews.json",
-    "sha256": "fd8b931a0b4d014502b364ebde1a088f2fb3efb17113689ce744020854fc4097",
+    "sha256": "668724898eba83cf3b0df65e2d7f45c061a96a1406496eddbfac93c4c90ef006",
     "differentialManifests": [
       {
         "path": "tests/_fixtures/differential/compiler/sfc-fix-history.manifest.json",
@@ -47,6 +47,10 @@
       {
         "path": "tests/_fixtures/differential/compiler/ssr-fix-history.manifest.json",
         "sha256": "572f59be1c6e6246127687e5b1d074def02e80b6c440ca91b686caa58d622388"
+      },
+      {
+        "path": "tests/_fixtures/differential/compiler/vapor-fix-history.manifest.json",
+        "sha256": "f6e780d96b45f5dbdd8965e11f6092ada038764bd1f6d537462057a23eb87b51"
       }
     ]
   },
@@ -56,7 +60,7 @@
       "subject": "fix(vapor): restore destructured v-for keys (#428)",
       "references": [
         {
-          "id": "destructured-key",
+          "id": "compiler/vapor/destructured-key",
           "evidence": "crates/vize_atelier_vapor/tests/fixtures/fix-history/input-provenance.json"
         }
       ],
@@ -70,7 +74,7 @@
   ],
   "index": {
     "path": "docs/davinci/plan/compiler-fix-history.tsv",
-    "sha256": "aee64191f27a3a7508081c966c8a608c05fa718cfca1f86e0804952b0f850c13"
+    "sha256": "d8d5bc9063c79e8677629faaaa1067833f16dea88948fbd0770e1a26d8b4186c"
   },
   "semanticDenominator": null,
   "nativeAcceptance": 0,
@@ -78,7 +82,7 @@
     "The original 609-fix snapshot has no verified source revision.",
     "Changed witness paths and stable patch equivalence are candidates, not coverage or automatic duplicate exclusions.",
     "Fixture references cover only their recorded entrypoint, target, options and public output facets.",
-    "Fifteen fixture scopes (ten SFC and five SSR) have bounded semantic review; every fix subject retains whole-fix target and dialect review pending.",
+    "Sixteen fixture scopes (ten SFC, five SSR and one Vapor) have bounded semantic review; every fix subject retains whole-fix target and dialect review pending.",
     "Historical or local execution does not certify current Actions or a native route."
   ]
 }
