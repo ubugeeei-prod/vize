@@ -105,8 +105,12 @@ fn materialize_writes_dependency_package_json_module() {
     let tokens_shadow = shadow_root.join("src/tokens.ts");
     let json_shadow = shadow_root.join("src/tokens/source/colors.tokens.json");
     let tokens_text = fs::read_to_string(&tokens_shadow).unwrap_or_default();
+    let kept_json_import = tokens_text
+        .split("./tokens/source/colors.tokens.json")
+        .nth(1)
+        .is_some();
     assert!(
-        tokens_text.contains("./tokens/source/colors.tokens.json"),
+        kept_json_import,
         "shadowed dependency should keep the relative JSON import, got {tokens_text:?}"
     );
     assert!(
