@@ -73,8 +73,7 @@ export const TYPECHECKER_TESTS = {
   "content-mapper-props-binding-10196": "authored_props_binding_preserves_batch_acceptance",
   "workspace-package-import-alias-10175":
     "workspace_package_import_aliases_preserve_clean_diagnostics",
-  "strict-fallthrough-default-7856":
-    "strict_component_attrs_infer_default_fallthrough_surfaces",
+  "strict-fallthrough-default-7856": "strict_component_attrs_infer_default_fallthrough_surfaces",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
