@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const borderStyle = { color: "red" };
+</script>
+
+<template>
+  <div class="subject-label" :style="borderStyle" x-small></div>
+</template>

@@ -32,6 +32,8 @@ mod legacy_vue2_vuetify_tests;
 mod macro_type_mappings;
 pub mod mapping;
 mod model_types;
+#[cfg(test)]
+mod native_attr_name_tests;
 mod pattern_diagnostics;
 mod props;
 #[cfg(test)]
@@ -57,8 +59,6 @@ mod template_binding_access;
 mod tests;
 mod type_dependencies;
 mod types;
-#[cfg(test)]
-mod native_attr_name_tests;
 #[cfg(test)]
 mod unknown_props_tests;
 

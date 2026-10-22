@@ -288,7 +288,11 @@ fn native_click_events_preserve_pointer_event_diagnostics() {
         "native_click_events_preserve_pointer_event_diagnostics",
         "e7d8b1c82a8badec89ec9779838dfa50c1b9b790",
         Some(936),
-        &["click-pointer-handler", "auxclick-pointer-handler"],
+        &[
+            "click-pointer-handler",
+            "auxclick-pointer-handler",
+            "vue3-intrinsic-attribute",
+        ],
     );
 }
 
