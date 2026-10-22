@@ -57,7 +57,9 @@ function rejectLegacyConfig(source) {
     const values = Array.isArray(source[key]) ? source[key] : [source[key]];
     if (values.some((value) => object(value) && Object.hasOwn(value, "vize"))) {
       throw new Error(
-        `${key}.vize is no longer supported; use ${key}.vue or the shared vue: settings`,
+        key === "lint"
+          ? "lint.vize is no longer supported; pass { lint: false } as defineConfig's integration options to disable the Vite+ native lint task while keeping CLI lint enabled, and put shared lint settings in vue.linter"
+          : `${key}.vize: configuration is no longer supported; move Vue settings to vue: in vite.config.*`,
       );
     }
   }
