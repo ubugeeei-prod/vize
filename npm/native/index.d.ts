@@ -571,6 +571,8 @@ export interface FormatOptionsNapi {
   singleAttributePerLine?: boolean;
   maxAttributesPerLine?: number;
   normalizeDirectiveShorthands?: boolean;
+  /** Order SFC blocks canonically; false preserves their authored order. */
+  sortBlocks?: boolean;
   /** Re-quote CSS, SCSS and Less strings with the singleQuote preference. */
   normalizeCssQuotes?: boolean;
   /** Normalize one-line static style attributes. */

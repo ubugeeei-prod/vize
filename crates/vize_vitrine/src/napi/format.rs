@@ -61,6 +61,8 @@ pub struct FormatOptionsNapi {
     pub single_attribute_per_line: Option<bool>,
     pub max_attributes_per_line: Option<u32>,
     pub normalize_directive_shorthands: Option<bool>,
+    /// Order SFC blocks canonically; false preserves their authored order.
+    pub sort_blocks: Option<bool>,
     /// Re-quote CSS, SCSS and Less strings with the singleQuote preference.
     pub normalize_css_quotes: Option<bool>,
     /// Normalize one-line static style attributes.
@@ -178,6 +180,9 @@ fn apply_options(opts: FormatOptionsNapi) -> Result<FormatOptions> {
     }
     if let Some(value) = opts.normalize_directive_shorthands {
         options.normalize_directive_shorthands = value;
+    }
+    if let Some(value) = opts.sort_blocks {
+        options.sort_blocks = value;
     }
     if let Some(value) = opts.normalize_css_quotes {
         options.normalize_css_quotes = value;
@@ -371,5 +376,24 @@ mod tests {
         .expect("native bracket layout options");
         assert!(!options.bracket_spacing);
         assert!(!options.bracket_same_line);
+    }
+
+    #[test]
+    fn native_block_order_option_overrides_presets() {
+        let preserve = apply_options(FormatOptionsNapi {
+            preset: Some("vize".into()),
+            sort_blocks: Some(false),
+            ..Default::default()
+        })
+        .expect("native authored block order");
+        assert!(!preserve.sort_blocks);
+
+        let canonical = apply_options(FormatOptionsNapi {
+            preset: Some("compact".into()),
+            sort_blocks: Some(true),
+            ..Default::default()
+        })
+        .expect("native canonical block order");
+        assert!(canonical.sort_blocks);
     }
 }

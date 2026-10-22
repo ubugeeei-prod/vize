@@ -303,6 +303,47 @@ const state = {currentValue: 1};
   });
 });
 
+void test("public formatter exposes block ordering independently of presets", () => {
+  const source = `<template>
+  <div>{{ value }}</div>
+</template>
+
+<script setup lang="ts">
+const value="ready"
+</script>
+`;
+  const authored = `<template>
+  <div>{{ value }}</div>
+</template>
+
+<script setup lang="ts">
+const value = "ready";
+</script>
+`;
+  const canonical = `<script setup lang="ts">
+const value = "ready";
+</script>
+
+<template>
+  <div>{{ value }}</div>
+</template>
+`;
+  const controls = [
+    [{ preset: "vize", sortBlocks: false }, authored],
+    [{ preset: "compact", sortBlocks: true }, canonical],
+  ] satisfies Array<[FormatOptionsNapi, string]>;
+
+  for (const [options, expected] of controls) {
+    Object.freeze(options);
+    assert.deepEqual(formatSfc(source, options), { code: expected, changed: true });
+    for (let pass = 2; pass <= 3; pass += 1) {
+      assert.deepEqual(formatSfc(expected, options), { code: expected, changed: false });
+    }
+  }
+  assert.deepEqual(controls[0]?.[0], { preset: "vize", sortBlocks: false });
+  assert.deepEqual(controls[1]?.[0], { preset: "compact", sortBlocks: true });
+});
+
 void test("public formatter rejects unknown presets and wrong JavaScript types", () => {
   for (const preset of ["", "docs", "PRETTIER", 1, true, {}, []]) {
     assert.throws(
