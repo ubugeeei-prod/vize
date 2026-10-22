@@ -702,7 +702,8 @@ fn check_pack(
             | "content-mapper-type-only-import-use"
             | "content-mapper-dynamic-template-ref-union-10251"
             | "content-mapper-dynamic-template-ref-scope-10251"
-            | "content-mapper-props-binding-10196" => regression,
+            | "content-mapper-props-binding-10196"
+            | "strict-fallthrough-default-7856" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
             }
