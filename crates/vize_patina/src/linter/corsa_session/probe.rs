@@ -65,16 +65,18 @@ async fn probe_types_at_positions(
     options: Vec<TypeProbeOptions>,
 ) -> corsa::Result<Vec<Option<TypeProbe>>> {
     let file = file.into();
-    let symbols = match session
-        .client()
-        .get_symbols_at_positions(
-            session.snapshot().handle.clone(),
-            session.project_handle(),
-            file.clone(),
-            positions.clone(),
-        )
-        .await
-    {
+    let symbols = match profile!(
+        "patina.corsa_session.symbols_at_positions",
+        session
+            .client()
+            .get_symbols_at_positions(
+                session.snapshot().handle.clone(),
+                session.project_handle(),
+                file.clone(),
+                positions.clone(),
+            )
+            .await
+    ) {
         Ok(symbols) => symbols,
         Err(error) if is_snapshot_registry_handle_error(&error) => vec![None; positions.len()],
         Err(error) => return Err(error),
@@ -93,15 +95,17 @@ async fn probe_types_at_positions(
     let symbol_types = if symbol_slots.is_empty() {
         Vec::new()
     } else {
-        match session
-            .get_types_of_symbols(
-                symbol_slots
-                    .iter()
-                    .map(|(_, symbol)| symbol.clone())
-                    .collect(),
-            )
-            .await
-        {
+        match profile!(
+            "patina.corsa_session.types_of_symbols",
+            session
+                .get_types_of_symbols(
+                    symbol_slots
+                        .iter()
+                        .map(|(_, symbol)| symbol.clone())
+                        .collect(),
+                )
+                .await
+        ) {
             Ok(types) => types,
             Err(error) if is_snapshot_registry_handle_error(&error) => {
                 vec![None; symbol_slots.len()]
@@ -220,15 +224,17 @@ async fn probe_type_response(
     }
 
     if options.load_property_types && !properties.is_empty() {
-        let property_types = match session
-            .get_types_of_symbols(
-                properties
-                    .iter()
-                    .map(|property| property.id.clone())
-                    .collect(),
-            )
-            .await
-        {
+        let property_types = match profile!(
+            "patina.corsa_session.types_of_symbols",
+            session
+                .get_types_of_symbols(
+                    properties
+                        .iter()
+                        .map(|property| property.id.clone())
+                        .collect(),
+                )
+                .await
+        ) {
             Ok(property_types) => property_types,
             Err(error) if is_snapshot_registry_handle_error(&error) => {
                 vec![None; properties.len()]
@@ -264,8 +270,10 @@ async fn probe_type_response(
                 probe.call_signatures.push(Vec::new());
             } else {
                 let parameter_count = signature.parameters.len();
-                let parameter_types = match session.get_types_of_symbols(signature.parameters).await
-                {
+                let parameter_types = match profile!(
+                    "patina.corsa_session.types_of_symbols",
+                    session.get_types_of_symbols(signature.parameters).await
+                ) {
                     Ok(parameter_types) => parameter_types,
                     Err(error) if is_snapshot_registry_handle_error(&error) => {
                         vec![None; parameter_count]

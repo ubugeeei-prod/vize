@@ -13,6 +13,8 @@ mod config_rule_options;
 #[cfg(not(target_arch = "wasm32"))]
 mod corsa_session;
 #[cfg(not(target_arch = "wasm32"))]
+mod corsa_session_flight;
+#[cfg(not(target_arch = "wasm32"))]
 mod corsa_session_pool;
 pub(crate) mod css_rules;
 mod engine;

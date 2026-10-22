@@ -102,6 +102,8 @@ impl CorsaTypeAwareSession {
         .unwrap_or(false);
 
         cleanup_guard.disarm();
+        let published =
+            super::virtual_documents::PublishedDocuments::primed(virtual_file_wire.clone());
         Ok(Self {
             session,
             project_root,
@@ -118,6 +120,10 @@ impl CorsaTypeAwareSession {
             vue_path_aliases,
             active_filename: None,
             active_source_hash: 0,
+            opened_source_hashes: vize_l0::FxHashMap::default(),
+            published,
+            #[cfg(test)]
+            last_refresh: super::virtual_documents::RefreshCounts::default(),
             closed: false,
         })
     }
@@ -138,14 +144,13 @@ impl CorsaTypeAwareSession {
     ) -> Result<(), String> {
         // The open snapshot already types this generated document.
         let input_hash = virtual_source_hash(generated_source);
-        if self.active_filename.as_deref() == Some(filename)
-            && self.active_source_hash == input_hash
-        {
+        if self.opened_source_hashes.get(filename).copied() == Some(input_hash) {
+            self.retarget_virtual_file(filename);
+            self.remember_virtual_input(filename, input_hash);
             return Ok(());
         }
 
         let next_path = virtual_file_path(&self.session_root, &self.project_root, filename);
-        let next_existed = next_path.exists();
         let prepared = super::vue_dependencies::prepare(
             generated_source,
             filename,
@@ -160,56 +165,42 @@ impl CorsaTypeAwareSession {
             .extend(prepared.files.iter().map(|(path, _)| path.clone()));
         self.import_source_map = prepared.source_map;
         self.rewritten_source = prepared.code;
-        let generated_source = self.rewritten_source.as_deref().unwrap_or(generated_source);
-        let previous_wire = if next_path == self.virtual_file_path {
-            None
-        } else {
-            if let Some(parent) = next_path.parent() {
-                std::fs::create_dir_all(parent).map_err(|error| {
-                    io_error_message(
-                        "Failed to create patina virtual directory",
-                        &next_path,
-                        &error,
-                    )
-                })?;
-            }
-            std::fs::write(&next_path, generated_source).map_err(|error| {
-                io_error_message(
-                    "Failed to write patina virtual TypeScript",
-                    &next_path,
-                    &error,
-                )
-            })?;
-            let previous_wire =
-                std::mem::replace(&mut self.virtual_file_wire, path_to_wire(&next_path));
-            let previous_path = std::mem::replace(&mut self.virtual_file_path, next_path);
-            if !self.dependency_paths.contains(&previous_path) {
-                let _ = std::fs::remove_file(previous_path);
-            }
-            Some(previous_wire)
-        };
-        if let Some(previous) = &previous_wire {
-            if next_existed {
-                dependency_changes
-                    .changed
-                    .push(self.virtual_file_wire.as_str().into());
-            } else {
-                dependency_changes
-                    .created
-                    .push(self.virtual_file_wire.as_str().into());
-            }
-            if !self
-                .dependency_paths
-                .iter()
-                .any(|path| path_to_wire(path) == *previous)
-            {
-                dependency_changes.deleted.push(previous.as_str().into());
-            }
-        } else if !self.supports_overlay_updates {
+        let generated_source = self
+            .rewritten_source
+            .as_deref()
+            .unwrap_or(generated_source)
+            .to_compact_string();
+        let mut virtual_changes = profile!(
+            "patina.corsa_session.write_virtual_file",
+            super::virtual_documents::sync_stable_virtual_file(
+                &mut self.published,
+                &next_path,
+                generated_source.as_str(),
+                self.supports_overlay_updates,
+                &[],
+            )
+        )?;
+        self.virtual_file_path = next_path;
+        self.virtual_file_wire = path_to_wire(&self.virtual_file_path);
+        dependency_changes
+            .created
+            .append(&mut virtual_changes.created);
+        dependency_changes
+            .changed
+            .append(&mut virtual_changes.changed);
+        dependency_changes
+            .deleted
+            .append(&mut virtual_changes.deleted);
+        if dependency_changes.changed.is_empty()
+            && dependency_changes.created.is_empty()
+            && dependency_changes.deleted.is_empty()
+            && !self.supports_overlay_updates
+        {
             dependency_changes
                 .changed
                 .push(self.virtual_file_wire.as_str().into());
         }
+        self.note_refresh(&dependency_changes);
         let file_changes = (!dependency_changes.changed.is_empty()
             || !dependency_changes.created.is_empty()
             || !dependency_changes.deleted.is_empty())
@@ -219,23 +210,18 @@ impl CorsaTypeAwareSession {
             self.overlay_version = self.overlay_version.saturating_add(1);
             profile!(
                 "patina.corsa_session.refresh_overlay",
-                block_on(
-                    self.session.refresh_with_overlay_changes(
-                        file_changes,
-                        Some(OverlayChanges {
-                            upsert: vec![OverlayUpdate {
-                                document: self.virtual_file_wire.as_str().into(),
-                                text: generated_source.into(),
-                                version: Some(self.overlay_version),
-                                language_id: Some("typescript".into()),
-                            }],
-                            delete: previous_wire
-                                .iter()
-                                .map(|previous| previous.as_str().into())
-                                .collect(),
-                        }),
-                    )
-                )
+                block_on(self.session.refresh_with_overlay_changes(
+                    file_changes,
+                    Some(OverlayChanges {
+                        upsert: vec![OverlayUpdate {
+                            document: self.virtual_file_wire.as_str().into(),
+                            text: generated_source.as_str().into(),
+                            version: Some(self.overlay_version),
+                            language_id: Some("typescript".into()),
+                        }],
+                        delete: Vec::new(),
+                    }),
+                ))
             )
             .map_err(|error| {
                 compact_error(
@@ -248,26 +234,8 @@ impl CorsaTypeAwareSession {
         }
 
         profile!(
-            "patina.corsa_session.write_virtual_file",
-            std::fs::write(&self.virtual_file_path, generated_source)
-        )
-        .map_err(|error| {
-            io_error_message(
-                "Failed to write patina virtual TypeScript",
-                &self.virtual_file_path,
-                &error,
-            )
-        })?;
-
-        profile!(
             "patina.corsa_session.refresh_file",
-            block_on(self.session.refresh(file_changes.or_else(|| {
-                Some(FileChanges::Summary(FileChangeSummary {
-                    changed: vec![self.virtual_file_wire.as_str().into()],
-                    created: Vec::new(),
-                    deleted: Vec::new(),
-                }))
-            })),)
+            block_on(self.session.refresh(file_changes))
         )
         .map_err(|error| {
             compact_error(
@@ -279,7 +247,41 @@ impl CorsaTypeAwareSession {
         Ok(())
     }
 
+    fn retarget_virtual_file(&mut self, filename: &str) {
+        self.virtual_file_path =
+            virtual_file_path(&self.session_root, &self.project_root, filename);
+        self.virtual_file_wire = path_to_wire(&self.virtual_file_path);
+    }
+
+    fn note_refresh(&mut self, summary: &FileChangeSummary) {
+        let counts = super::virtual_documents::RefreshCounts::from_summary(summary);
+        #[cfg(test)]
+        {
+            self.last_refresh = counts;
+        }
+        let profiler = vize_l0::profiler::global_profiler();
+        profiler.record_counter(
+            "patina.corsa_session.refresh.created",
+            counts.created as u64,
+        );
+        profiler.record_counter(
+            "patina.corsa_session.refresh.changed",
+            counts.changed as u64,
+        );
+        profiler.record_counter(
+            "patina.corsa_session.refresh.deleted",
+            counts.deleted as u64,
+        );
+    }
+
+    #[cfg(test)]
+    pub(super) fn refresh_counts(&self) -> super::virtual_documents::RefreshCounts {
+        self.last_refresh
+    }
+
     fn remember_virtual_input(&mut self, filename: &str, input_hash: u64) {
+        self.opened_source_hashes
+            .insert(filename.to_compact_string(), input_hash);
         self.active_filename = Some(filename.to_compact_string());
         self.active_source_hash = input_hash;
     }

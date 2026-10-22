@@ -7,6 +7,7 @@ mod errors;
 mod paths;
 mod probe;
 mod session;
+mod virtual_documents;
 mod vue_dependencies;
 
 pub(in crate::linter) use paths::{
@@ -58,6 +59,10 @@ pub(crate) struct CorsaTypeAwareSession {
     vue_path_aliases: vue_dependencies::PathAliases,
     active_filename: Option<String>,
     active_source_hash: u64,
+    opened_source_hashes: vize_l0::FxHashMap<String, u64>,
+    published: virtual_documents::PublishedDocuments,
+    #[cfg(test)]
+    last_refresh: virtual_documents::RefreshCounts,
     closed: bool,
 }
 

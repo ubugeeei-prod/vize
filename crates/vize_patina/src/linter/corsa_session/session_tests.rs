@@ -114,6 +114,8 @@ fn starts_type_aware_session_from_package_root() {
     session
         .open_virtual_project("const value: number = 1;\n", source.to_str().unwrap())
         .expect("package-root patina session should refresh the virtual file");
+    let deleted_paths = session.refresh_counts().deleted;
+    assert_eq!(deleted_paths, 0);
     session.close();
 
     let _ = std::fs::remove_dir_all(&root);
