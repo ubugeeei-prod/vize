@@ -4,12 +4,43 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+interface PackageManifest {
+  readonly main: string;
+  readonly types: string;
+  readonly files: readonly string[];
+}
+
+const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
+  value !== null && typeof value === "object" && !Array.isArray(value);
+
+const readString = (value: unknown, description: string): string => {
+  if (typeof value !== "string") throw new TypeError(`${description} must be a string`);
+  return value;
+};
+
+const readStringArray = (value: unknown, description: string): readonly string[] => {
+  if (!Array.isArray(value)) throw new TypeError(`${description} must be an array`);
+  return value.map((entry: unknown, index) => readString(entry, `${description}[${index}]`));
+};
+
+const readPackageManifest = (value: unknown): PackageManifest => {
+  if (!isRecord(value)) throw new TypeError("Fresco native package manifest must be an object");
+  return {
+    main: readString(value.main, "Fresco native package manifest main"),
+    types: readString(value.types, "Fresco native package manifest types"),
+    files: readStringArray(value.files, "Fresco native package manifest files"),
+  };
+};
+
 const packageDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const manifest = JSON.parse(fs.readFileSync(path.join(packageDir, "package.json"), "utf8"));
+const manifestSource: unknown = JSON.parse(
+  fs.readFileSync(path.join(packageDir, "package.json"), "utf8"),
+);
+const manifest = readPackageManifest(manifestSource);
 const publishedTypeFiles = [manifest.main, manifest.types];
 
 for (const file of publishedTypeFiles) {
-  if (typeof file !== "string" || !manifest.files.includes(file)) {
+  if (!manifest.files.includes(file)) {
     throw new Error(`Fresco native consumer type entry is not published: ${String(file)}`);
   }
 }

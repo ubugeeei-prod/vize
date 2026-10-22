@@ -62,7 +62,11 @@ test("fresco-native ships one generated declaration and exposes strict contract 
     manifest.scripts?.["check:generated"],
     "node ./scripts/verify-generated-contract.mjs --profile ci",
   );
-  assert.equal(manifest.scripts?.["check:types"], "node ./scripts/verify-consumer-types.mjs");
+  assert.equal(manifest.scripts?.["check:types"], "node ./scripts/verify-consumer-types.ts");
+  assert.deepEqual(JSON.parse(readRepoFile("npm", "fresco-native", "scripts", "package.json")), {
+    private: true,
+    type: "module",
+  });
   assert.equal(manifest.devDependencies?.typescript, "catalog:typescript");
   assert.match(
     readRepoFile("npm", "fresco-native", "tests", "types", "consumer.ts"),
