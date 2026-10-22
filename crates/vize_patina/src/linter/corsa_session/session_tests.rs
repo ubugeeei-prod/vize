@@ -9,6 +9,19 @@ use vize_l0::cstr;
 static NEXT_CASE_ID: AtomicU64 = AtomicU64::new(0);
 
 #[test]
+fn prepared_input_stays_with_the_active_file() {
+    let hash = 7_u64;
+    let same_file = super::reuses_prepared_input(Some("a.vue"), "a.vue", Some(hash), hash);
+    assert!(same_file);
+    let other_file = super::reuses_prepared_input(Some("b.vue"), "a.vue", Some(hash), hash);
+    assert!(!other_file);
+    let other_hash = super::reuses_prepared_input(Some("a.vue"), "a.vue", Some(hash), hash + 1);
+    assert!(!other_hash);
+    let unseen = super::reuses_prepared_input(Some("a.vue"), "a.vue", None, hash);
+    assert!(!unseen);
+}
+
+#[test]
 fn uses_json_rpc_for_node_wrappers() {
     assert_eq!(
         api_mode_for_executable(Path::new("/workspace/node_modules/.bin/tsgo")),

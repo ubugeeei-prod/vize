@@ -143,8 +143,15 @@ impl CorsaTypeAwareSession {
         filename: &str,
     ) -> Result<(), String> {
         // The open snapshot already types this generated document.
+        // import_source_map and rewritten_source belong to active_filename, so a
+        // cached hash for a different file must take the full prepare path.
         let input_hash = virtual_source_hash(generated_source);
-        if self.opened_source_hashes.get(filename).copied() == Some(input_hash) {
+        if reuses_prepared_input(
+            self.active_filename.as_deref(),
+            filename,
+            self.opened_source_hashes.get(filename).copied(),
+            input_hash,
+        ) {
             self.retarget_virtual_file(filename);
             self.remember_virtual_input(filename, input_hash);
             return Ok(());
@@ -320,6 +327,15 @@ impl Drop for SessionRootCleanup {
             remove_session_root(path);
         }
     }
+}
+
+fn reuses_prepared_input(
+    active_filename: Option<&str>,
+    filename: &str,
+    stored_hash: Option<u64>,
+    input_hash: u64,
+) -> bool {
+    active_filename == Some(filename) && stored_hash == Some(input_hash)
 }
 
 fn virtual_source_hash(source: &str) -> u64 {
