@@ -8,8 +8,12 @@ use super::{ShardPlan, declares_program_wide_types, is_ambient_declaration};
 use crate::batch::{VirtualFile, VirtualProject};
 use vize_carton::{FxHashMap, String, cstr};
 
+mod alias_modules;
 mod dependency_visibility;
 mod shared_leaves;
+
+#[cfg(test)]
+mod alias_shards;
 
 /// Partition the project's source files into shard programs along the
 /// connected components of their import graph. Files in different components
@@ -78,8 +82,9 @@ fn partition(project: &VirtualProject, servers: usize, allow_leaves: bool) -> Sh
     // graph is a cost model, not a correctness requirement — ownership
     // filtering already deduplicates diagnostics — but files coupled through
     // shared sources would otherwise be re-checked by every shard whose
-    // program loads them. Relative imports resolve exactly; project path
-    // aliases (`@/…`) and workspace packages symlinked into `node_modules`
+    // program loads them. Relative imports resolve exactly. A `paths` entry
+    // couples importers of one resolved module, not every file that shares
+    // the prefix (#10360). Workspace packages symlinked into `node_modules`
     // couple their importers, while bare npm specifiers are dependency cost
     // every program pays anyway.
     let index_by_virtual: FxHashMap<&Path, usize> = partitioned
@@ -101,7 +106,12 @@ fn partition(project: &VirtualProject, servers: usize, allow_leaves: bool) -> Sh
             shared.push(file.virtual_path.as_path());
         }
     }
-    let alias_prefixes = project.path_alias_prefixes();
+    let alias_map = alias_modules::AliasMap::from_project(project);
+    let index_by_original: FxHashMap<&Path, usize> = partitioned
+        .iter()
+        .enumerate()
+        .map(|(index, file)| (file.original_path.as_path(), index))
+        .collect();
     let mut components = UnionFind::new(partitioned.len());
     let mut coupling_keys: FxHashMap<String, usize> = FxHashMap::default();
     for (index, (file, specifiers)) in partitioned.iter().zip(&imports).enumerate() {
@@ -127,15 +137,23 @@ fn partition(project: &VirtualProject, servers: usize, allow_leaves: bool) -> Sh
                         }
                     }
                 }
-            } else if let Some(alias) = alias_prefixes
-                .iter()
-                .find(|alias| specifier.starts_with(alias.as_str()))
+            } else if !alias_map.is_empty()
+                && let Some(edge) =
+                    alias_map.edge(specifier, project, &index_by_virtual, &index_by_original)
             {
-                let key = cstr!("alias:{alias}");
-                match coupling_keys.get(key.as_str()) {
-                    Some(&first) => components.union(index, first),
-                    None => {
-                        coupling_keys.insert(key, index);
+                match edge {
+                    alias_modules::AliasEdge::File(target_index) => {
+                        if !leaves.contains(&target_index) {
+                            components.union(index, target_index);
+                        }
+                    }
+                    alias_modules::AliasEdge::Module(key) => {
+                        match coupling_keys.get(key.as_str()) {
+                            Some(&first) => components.union(index, first),
+                            None => {
+                                coupling_keys.insert(key, index);
+                            }
+                        }
                     }
                 }
             } else if let Some(package) =

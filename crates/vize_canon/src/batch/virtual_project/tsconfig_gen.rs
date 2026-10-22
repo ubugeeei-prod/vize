@@ -61,34 +61,6 @@ impl VirtualProject {
         self.preserve_unused_diagnostics
     }
 
-    /// Alias prefixes declared in the effective tsconfig `paths` map, with wildcard
-    /// suffixes stripped. Used as a shard-planning cost model; aliases whose every
-    /// target lives under `node_modules` are dependency cost and are skipped.
-    pub(crate) fn path_alias_prefixes(&self) -> Vec<CompactString> {
-        let Ok(compiler_options) =
-            self.load_compiler_options(self.resolved_tsconfig_path().as_deref())
-        else {
-            return Vec::new();
-        };
-        let Some(paths) = compiler_options.get("paths").and_then(Value::as_object) else {
-            return Vec::new();
-        };
-        paths
-            .iter()
-            .filter(|(_, targets)| {
-                !targets.as_array().is_some_and(|targets| {
-                    !targets.is_empty()
-                        && targets.iter().all(|target| {
-                            target
-                                .as_str()
-                                .is_some_and(|target| target.contains("node_modules"))
-                        })
-                })
-            })
-            .map(|(alias, _)| alias.trim_end_matches('*').to_compact_string())
-            .collect()
-    }
-
     pub(super) fn resolve_tsconfig_preserves_unused_diagnostics(&self) -> bool {
         let Some(tsconfig_path) = self.resolved_tsconfig_path() else {
             return false;
