@@ -44,8 +44,13 @@ pub(super) fn generate_scope_node(
                 (String::from(indent), inner_indent.clone())
             };
             if let Some(guard) = enclosing_guard {
-                append_ignored_vif_guard_open(ts, indent, guard, "Narrowing-only guard");
+                super::append_chained_vif_guard_open(ts, indent, guard, "Narrowing-only guard");
             }
+            // Inner checks fold their own chain. Keep this wrapper open so the
+            // next sibling v-for continues it instead of repeating the guard.
+            let suspended = enclosing_guard
+                .is_some()
+                .then(super::vif_guard_chain::SuspendedChain::suspend);
             append_v_for_comment(
                 ts,
                 &loop_indent,
@@ -129,8 +134,9 @@ pub(super) fn generate_scope_node(
             }
 
             append!(*ts, "{loop_indent}}}\n");
+            drop(suspended);
             if enclosing_guard.is_some() {
-                append!(*ts, "{indent}}}\n");
+                super::append_chained_vif_guard_close(ts, indent);
             }
         }
         ScopeData::VSlot(data) => {

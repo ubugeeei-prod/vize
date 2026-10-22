@@ -166,7 +166,9 @@ function __setup() {
     // @vize-map: expr -> 311:318
   }
   // @ts-ignore Narrowing-only guard; authored v-if checks own diagnostics.
-  if (!(status === 'loading') && !(status === 'error')) {
+  if (!(status === 'loading')) {
+  // @ts-ignore Narrowing-only guard; authored v-if checks own diagnostics.
+  if (!(status === 'error')) {
 
     // v-for scope: item in data
     {
@@ -179,6 +181,7 @@ function __setup() {
       // @vize-map: expr -> 395:399
     }
     }
+  }
   }
 
   // Reference setup bindings (used in template/CSS v-bind)

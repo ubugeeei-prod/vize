@@ -220,8 +220,6 @@ function __setup() {
     for (const [value] of __vize_v_for_source_7) {
       void value;
       // @vize-map: prop -> 87:102
-      // @ts-ignore Inference-only guard; authored v-if checks own diagnostics.
-      if ((key === 'b')) {
         const __vize_prop_check_0_value1: __Test_0_prop_value1 = value;
         void __vize_prop_check_0_value1;
         (undefined as unknown as __Test_Check_0)({
@@ -230,7 +228,6 @@ function __setup() {
         type __VizeSlotContract_0 = __VizeStructuralSlots<typeof Test>;
         const __vize_required_slots_0: __VizeRequiredSlots<__VizeSlotContract_0, {}> = {};
         void __vize_required_slots_0;
-      }
     }
     }
   }

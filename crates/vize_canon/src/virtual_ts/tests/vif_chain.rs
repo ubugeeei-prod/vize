@@ -227,9 +227,9 @@ const items: ViewItem[] = []
     let summary = analyzer.finish();
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
-    assert_eq!(
-        output.code.matches("!(item.type === 'hunk-bar')").count(),
-        1,
+    assert!(
+        output.code.contains("else {\n\n      // v-for scope: row in item.lines")
+            && output.code.matches("!(item.type === 'hunk-bar')").count() <= 1,
         "the v-else branch already narrows item; nested scopes must not compare it again:\n{}",
         output.code
     );
@@ -247,7 +247,6 @@ const rows = [[1, 2]]
     <td v-for="cell in row" :key="cell"><MyCell :label="String(cell)" /></td>
   </tr>
 </table>"#;
-
     let allocator = vize_carton::Allocator::new();
     let (root, errors) = vize_armature::parse(&allocator, template);
     assert!(errors.is_empty(), "{errors:?}");
@@ -263,8 +262,9 @@ const rows = [[1, 2]]
         .1;
 
     assert_eq!(
-        checks.matches("!(mode === 'a') && (mode === 'b')").count(),
-        1,
+        checks.matches("if (!(mode === 'a'))").count()
+            + checks.matches("if ((mode === 'b'))").count(),
+        2,
         "the outer loop's branch guard must remain active for its nested loop:\n{checks}"
     );
     assert_eq!(

@@ -35,10 +35,13 @@ pub(in crate::virtual_ts::scope) fn generate_closure_component_props_recursive(
                 (String::from(indent), inner_indent.clone())
             };
             if let Some(guard) = emitted_guard {
-                let isolated = crate::virtual_ts::expressions::isolate_incomplete_expression(guard);
-                let guard = isolated.as_str();
-                append!(*ts, "{indent}if ({guard}) {{\n");
+                super::super::vif_guard_chain::append_bare_chained_vif_guard_open(
+                    ts, indent, guard,
+                );
             }
+            let suspended = emitted_guard
+                .is_some()
+                .then(super::super::vif_guard_chain::SuspendedChain::suspend);
 
             append_v_for_comment(
                 ts,
@@ -68,14 +71,20 @@ pub(in crate::virtual_ts::scope) fn generate_closure_component_props_recursive(
                 append!(*ts, "{vfor_inner_indent}void {index};\n");
             }
 
-            generate_scope_checks(ts, mappings, ctx, scope_id, &vfor_inner_indent);
+            {
+                let prefix =
+                    enclosing_guard.map(super::super::vif_guard_chain::ActiveGuardPrefix::push);
+                generate_scope_checks(ts, mappings, ctx, scope_id, &vfor_inner_indent);
+                drop(prefix);
+            }
             recurse_child_closure_scopes(ts, mappings, ctx, scope_id, &vfor_inner_indent);
 
             ts.push_str(&loop_indent);
             ts.push_str("}\n");
             append!(*ts, "{loop_indent}}}\n");
+            drop(suspended);
             if emitted_guard.is_some() {
-                append!(*ts, "{indent}}}\n");
+                super::super::append_chained_vif_guard_close(ts, indent);
             }
         }
         ScopeData::VSlot(data) => {
