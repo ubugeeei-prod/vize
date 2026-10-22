@@ -8,7 +8,7 @@ const legacyVize = {
   pack: "pack.vize: configuration is no longer supported; move Vue settings to vue: in vite.config.*",
 };
 
-test("retired lint.vize, fmt.vize, and pack.vize match the Vite+ migration text", async () => {
+void test("retired lint.vize, fmt.vize, and pack.vize match the Vite+ migration text", async () => {
   for (const key of ["lint", "fmt", "pack"]) {
     await assert.rejects(resolveViteConfigExport({ [key]: { vize: false } }), {
       name: "Error",
@@ -18,7 +18,7 @@ test("retired lint.vize, fmt.vize, and pack.vize match the Vite+ migration text"
   }
 });
 
-test("lint.vue false still disables the linter", async () => {
+void test("lint.vue false still disables the linter", async () => {
   assert.deepEqual(await resolveViteConfigExport({ lint: { vue: false } }), {
     typeChecker: { jsxTypecheck: true },
     linter: { enabled: false },
