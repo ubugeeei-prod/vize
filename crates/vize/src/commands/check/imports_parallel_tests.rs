@@ -96,7 +96,7 @@ fn frontier_collects_the_same_files_and_overlaps_independent_packages() {
     session.package_lookup_probe = Some(note_package_lookup);
     session.path_lookup_probe = Some(note_path_lookup);
     let discovered = collect_transitive_local_imports_with_session(
-        &[main, other],
+        &[main.clone(), other.clone()],
         base,
         &mut CanonicalPathCache::default(),
         false,
@@ -107,10 +107,8 @@ fn frontier_collects_the_same_files_and_overlaps_independent_packages() {
 
     let leaf = leaf.canonicalize().unwrap();
     let shared_file = shared_file.canonicalize().unwrap();
-    assert_eq!(
-        sorted(discovered.authored),
-        sorted(vec![leaf.clone(), shared_file])
-    );
+    let authored = sorted(discovered.authored);
+    assert_eq!(authored, sorted(vec![leaf.clone(), shared_file]));
     assert_eq!(discovered.registrations, vec![leaf]);
     assert!(discovered.package_routes.is_empty());
     assert_eq!(
@@ -130,4 +128,19 @@ fn frontier_collects_the_same_files_and_overlaps_independent_packages() {
     let metrics = packages.metrics();
     assert_eq!(metrics.cache_misses, 2);
     assert_eq!(metrics.cache_hits, 0);
+
+    let entered = PACKAGE_ENTERED.load(Ordering::SeqCst);
+    let path_lookups = PATH_LOOKUPS.load(Ordering::SeqCst);
+    let again = collect_transitive_local_imports_with_session(
+        &[main, other],
+        base,
+        &mut CanonicalPathCache::default(),
+        false,
+        Some(&aliases),
+        &mut packages,
+        &mut session,
+    );
+    assert_eq!(sorted(again.authored), authored);
+    assert_eq!(PACKAGE_ENTERED.load(Ordering::SeqCst), entered);
+    assert_eq!(PATH_LOOKUPS.load(Ordering::SeqCst), path_lookups);
 }

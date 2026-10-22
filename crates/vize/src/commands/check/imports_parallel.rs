@@ -46,11 +46,18 @@ pub(super) fn prepare_frontier(
     options: ImportFileOptions,
     alias_targets: &mut FxHashMap<String, Option<PathBuf>>,
 ) {
-    let mut paths = Vec::with_capacity(queue.len().saturating_add(1));
-    paths.push(file.to_path_buf());
-    paths.extend(queue.iter().map(|(path, _, _)| path.clone()));
-    prefetch_specifiers(&paths, session);
-    let bare = bare_imports(&paths, session);
+    // A later pop, and the hidden-ambient pass, already cached these files.
+    // Rebuilding bare imports for the whole queue repeats work the session holds.
+    let mut pending = Vec::new();
+    push_unscanned(&mut pending, file, session);
+    for (path, _, _) in queue {
+        push_unscanned(&mut pending, path, session);
+    }
+    if pending.is_empty() {
+        return;
+    }
+    prefetch_specifiers(&pending, session);
+    let bare = bare_imports(&pending, session);
     if let Some(aliases) = aliases {
         resolve_alias_misses(&bare, aliases, options, alias_targets, session);
     }
@@ -61,6 +68,17 @@ pub(super) fn prepare_frontier(
         .collect::<Vec<_>>();
     resolve_context_misses(&package_imports, session, packages, aliases);
     resolve_package_misses(&package_imports, session, packages, options);
+}
+
+fn push_unscanned(pending: &mut Vec<PathBuf>, path: &Path, session: &LocalImportSession) {
+    if session
+        .registration_cache
+        .module_specifiers
+        .contains_key(path)
+    {
+        return;
+    }
+    pending.push(path.to_path_buf());
 }
 
 fn prefetch_specifiers(paths: &[PathBuf], session: &mut LocalImportSession) {
