@@ -309,7 +309,8 @@ test("every shape drives a clean, broken, and repaired check", () => {
       );
       for (const diagnostic of entry.diagnostics) {
         // Full authored position and message, never a code-only assertion.
-        assert.match(diagnostic, /^error:\d+:\d+ \[TS\d+\] .+\.$/u);
+        // Template JSON may append the authored source line after the sentence.
+        assert.match(diagnostic, /^error:\d+:\d+ \[TS\d+\] .+\.(?: \(source: .+\))?$/u);
       }
     }
   }

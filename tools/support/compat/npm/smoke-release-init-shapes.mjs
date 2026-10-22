@@ -192,17 +192,20 @@ const CHECK_TRIPLE = {
   //   src/App.vue(8,7): error TS2322: Type 'string' is not assignable to type 'number'.
   //   src/components/HelloWorld.vue(2,35): error TS2339: Property 'notAMethod'
   //     does not exist on type 'string'.
+  // JSON keeps the authored template line. The script assignment stays concise.
   brokenDiagnostics: [
     {
       file: "src/App.vue",
       diagnostics: [
-        "error:2:16 [TS2322] Type 'number' is not assignable to type 'string'.",
+        "error:2:16 [TS2322] Type 'number' is not assignable to type 'string'. (source: <HelloWorld :msg=\"title\" />; binding: 'msg')",
         "error:8:7 [TS2322] Type 'string' is not assignable to type 'number'.",
       ],
     },
     {
       file: "src/components/HelloWorld.vue",
-      diagnostics: ["error:2:35 [TS2339] Property 'notAMethod' does not exist on type 'string'."],
+      diagnostics: [
+        "error:2:35 [TS2339] Property 'notAMethod' does not exist on type 'string'. (source: <p class=\"greeting\">{{ greeting.notAMethod() }}</p>)",
+      ],
     },
   ],
 };
