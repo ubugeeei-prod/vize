@@ -10,7 +10,7 @@ const packageName = `@typescript/typescript-${process.platform}-${process.arch}`
 const executableName = process.platform === "win32" ? "tsc.exe" : "tsc";
 const platformArch = `${process.platform}-${process.arch}`;
 
-test("createServerOptions env carries CORSA_PATH when lib/tsc exists", async () => {
+void test("createServerOptions env carries CORSA_PATH when lib/tsc exists", async () => {
   const fixture = createFixture();
   const executable = writeRuntime(path.join(fixture.extensionPath, "node_modules", packageName));
   try {
@@ -29,7 +29,7 @@ test("createServerOptions env carries CORSA_PATH when lib/tsc exists", async () 
   }
 });
 
-test("a cached lib/tsc is used before downloading", async () => {
+void test("a cached lib/tsc is used before downloading", async () => {
   const fixture = createFixture();
   const executable = writeRuntime(
     path.join(fixture.storage, "corsa", "7.0.2", platformArch),
@@ -47,7 +47,7 @@ test("a cached lib/tsc is used before downloading", async () => {
   }
 });
 
-test("does not override a pre-set CORSA_PATH", async () => {
+void test("does not override a pre-set CORSA_PATH", async () => {
   const fixture = createFixture();
   writeRuntime(path.join(fixture.extensionPath, "node_modules", packageName));
   try {
@@ -67,7 +67,7 @@ test("does not override a pre-set CORSA_PATH", async () => {
   }
 });
 
-test("names the missing lib/tsc and the required package", async () => {
+void test("names the missing lib/tsc and the required package", async () => {
   const fixture = createFixture();
   const lines: string[] = [];
   const expected = path.join(fixture.storage, "corsa", "7.0.2", platformArch, "lib", executableName);
@@ -123,7 +123,7 @@ function blockedInstall(): Promise<void> {
   throw new Error("download should not run");
 }
 
-test("extracts package/lib/tsc and ignores paths outside the package", () => {
+void test("extracts package/lib/tsc and ignores paths outside the package", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-vscode-corsa-tar-"));
   try {
     const tar = Buffer.concat([
