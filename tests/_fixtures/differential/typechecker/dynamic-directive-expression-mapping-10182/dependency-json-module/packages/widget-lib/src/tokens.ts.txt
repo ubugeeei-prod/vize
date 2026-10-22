@@ -1,0 +1,2 @@
+import colors from "./tokens/source/colors.tokens.json";
+export { colors };

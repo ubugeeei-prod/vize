@@ -1,0 +1,5 @@
+{
+  "name": "widget-lib",
+  "type": "module",
+  "exports": { ".": "./src/index.ts" }
+}

@@ -630,7 +630,7 @@ fn dynamic_directive_expressions_preserve_typed_slot_payloads() {
         "dynamic_directive_expressions_preserve_typed_slot_payloads",
         "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
         None,
-        &["dynamic-slot-and-prop"],
+        &["dynamic-slot-and-prop", "dependency-json-module"],
     );
 }
 

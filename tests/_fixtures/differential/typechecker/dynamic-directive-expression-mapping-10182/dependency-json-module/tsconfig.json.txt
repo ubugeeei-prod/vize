@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "strict": true,
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": { "widget-lib": ["./packages/widget-lib/src/index.ts"] }
+  },
+  "include": ["src/**/*.ts", "packages/**/*.ts", "packages/**/*.json"]
+}

@@ -30,6 +30,36 @@
         }
       ],
       "diagnostics": []
+    },
+    {
+      "id": "dependency-json-module",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "dependency-json-module/tsconfig.json.txt"
+        },
+        {
+          "file": "src/main.ts",
+          "source": "dependency-json-module/src/main.ts.txt"
+        },
+        {
+          "file": "packages/widget-lib/package.json",
+          "source": "dependency-json-module/packages/widget-lib/package.json.txt"
+        },
+        {
+          "file": "packages/widget-lib/src/index.ts",
+          "source": "dependency-json-module/packages/widget-lib/src/index.ts.txt"
+        },
+        {
+          "file": "packages/widget-lib/src/tokens.ts",
+          "source": "dependency-json-module/packages/widget-lib/src/tokens.ts.txt"
+        },
+        {
+          "file": "packages/widget-lib/src/tokens/source/colors.tokens.json",
+          "source": "dependency-json-module/packages/widget-lib/src/tokens/source/colors.tokens.json.txt"
+        }
+      ],
+      "diagnostics": []
     }
   ]
 }

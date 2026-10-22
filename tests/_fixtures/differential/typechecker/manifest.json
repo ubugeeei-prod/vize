@@ -3643,7 +3643,7 @@
       "sourceRevision": "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
       "packReference": {
         "path": "dynamic-directive-expression-mapping-10182/cases.json",
-        "sha256": "40c82be789385cac9a8f0578a9a2dac7747b18b56100dc03c27584fd824915a2"
+        "sha256": "ca1f8f012c70da6538223520b771241496d020e493d041e13c733ba7006efcb3"
       },
       "inputs": [
         {
@@ -3666,6 +3666,71 @@
             "dialects": [
               "vue3-sfc",
               "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/dynamic-directive-expression-mapping-10182/dependency-json-module",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "dynamic-directive-expression-mapping-10182",
+      "case": "dependency-json-module",
+      "test": "dynamic_directive_expressions_preserve_typed_slot_payloads",
+      "regressionCommit": "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
+      "sourceRevision": "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
+      "packReference": {
+        "path": "dynamic-directive-expression-mapping-10182/cases.json",
+        "sha256": "ca1f8f012c70da6538223520b771241496d020e493d041e13c733ba7006efcb3"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "dynamic-directive-expression-mapping-10182/dependency-json-module/tsconfig.json.txt",
+          "sha256": "01008b1e543d368a2bb04e3afd6978e74b2f1ff8dd1828df0d8ceb642938e967"
+        },
+        {
+          "file": "src/main.ts",
+          "path": "dynamic-directive-expression-mapping-10182/dependency-json-module/src/main.ts.txt",
+          "sha256": "8318038bad171fb8c8a78c0f04008983b8d340c28991482a341ff083d5fc757b"
+        },
+        {
+          "file": "packages/widget-lib/package.json",
+          "path": "dynamic-directive-expression-mapping-10182/dependency-json-module/packages/widget-lib/package.json.txt",
+          "sha256": "1f894ad96de2f35f0d20a379f72f8a7b847e9bc1205bb751072d945c40c727a0"
+        },
+        {
+          "file": "packages/widget-lib/src/index.ts",
+          "path": "dynamic-directive-expression-mapping-10182/dependency-json-module/packages/widget-lib/src/index.ts.txt",
+          "sha256": "152bf8daa01728c59602efc17fd09a5ef1ab54390957647312f351a21cd0130e"
+        },
+        {
+          "file": "packages/widget-lib/src/tokens.ts",
+          "path": "dynamic-directive-expression-mapping-10182/dependency-json-module/packages/widget-lib/src/tokens.ts.txt",
+          "sha256": "4d789c654eb5e2909fad8dd7558067dbbe30919cb4c631725cf514a51c45699a"
+        },
+        {
+          "file": "packages/widget-lib/src/tokens/source/colors.tokens.json",
+          "path": "dynamic-directive-expression-mapping-10182/dependency-json-module/packages/widget-lib/src/tokens/source/colors.tokens.json.txt",
+          "sha256": "ad54449aef555b4530a447402f7398b5bdadbfcdb3016c721d31b5b4fa657309"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
               "ts"
             ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
