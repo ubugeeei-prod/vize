@@ -127,6 +127,21 @@ impl PathAliasResolver {
         )
     }
 
+    pub(super) fn package_resolution_context_concurrent(
+        &self,
+        resolver: &vize_canon::PackageRouteResolver,
+        importer: &Path,
+        occurrence_mode: vize_canon::PackageResolutionMode,
+    ) -> (vize_canon::PackageResolutionContext, Vec<PathBuf>) {
+        resolver.resolution_context_concurrent(
+            importer,
+            occurrence_mode,
+            self.module_resolution.as_deref(),
+            self.module.as_deref(),
+            self.custom_conditions.iter().cloned(),
+        )
+    }
+
     fn merge_from(&mut self, parent: Self) {
         if parent.module_resolution.is_some() {
             self.module_resolution = parent.module_resolution;

@@ -44,6 +44,10 @@ impl PackageSearchCache {
         self.manifest_reads
     }
 
+    pub(super) fn add_manifest_reads(&mut self, reads: u64) {
+        self.manifest_reads = self.manifest_reads.saturating_add(reads);
+    }
+
     pub(super) fn len(&self) -> usize {
         self.manifests.len()
     }

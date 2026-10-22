@@ -13,6 +13,8 @@ use super::{
 };
 pub use lookup::PackageRouteLookup;
 
+#[path = "cache_concurrent.rs"]
+mod concurrent;
 #[path = "cache_lookup.rs"]
 mod lookup;
 #[cfg(feature = "native")]
@@ -156,23 +158,14 @@ impl PackageRouteResolver {
             .state
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
-        let mut inputs = Vec::new();
-        let start = importer.parent().unwrap_or(importer);
-        let nearest_scope =
-            super::search::nearest_package_manifest(start, &mut inputs, &mut state.search);
-        let package_is_module = nearest_scope.as_ref().map(|(_, manifest)| {
-            manifest.get("type").and_then(serde_json::Value::as_str) == Some("module")
-        });
-        let mut context = PackageResolutionContext::for_importer(
+        resolution_context_from_search(
             importer,
             occurrence_mode,
             module_resolution,
             module,
             active_conditions,
-            package_is_module,
-        );
-        context.scope_manifest_path = nearest_scope.map(|(root, _)| root.join("package.json"));
-        (context, inputs)
+            &mut state.search,
+        )
     }
 
     pub fn resolve(
@@ -408,6 +401,32 @@ impl PackageRouteResolver {
             state.stamp_snapshots.captures(),
         )
     }
+}
+
+fn resolution_context_from_search(
+    importer: &Path,
+    occurrence_mode: super::PackageResolutionMode,
+    module_resolution: Option<&str>,
+    module: Option<&str>,
+    active_conditions: impl IntoIterator<Item = impl Into<String>>,
+    search: &mut super::search::PackageSearchCache,
+) -> (PackageResolutionContext, Vec<PathBuf>) {
+    let mut inputs = Vec::new();
+    let start = importer.parent().unwrap_or(importer);
+    let nearest_scope = super::search::nearest_package_manifest(start, &mut inputs, search);
+    let package_is_module = nearest_scope.as_ref().map(|(_, manifest)| {
+        manifest.get("type").and_then(serde_json::Value::as_str) == Some("module")
+    });
+    let mut context = PackageResolutionContext::for_importer(
+        importer,
+        occurrence_mode,
+        module_resolution,
+        module,
+        active_conditions,
+        package_is_module,
+    );
+    context.scope_manifest_path = nearest_scope.map(|(root, _)| root.join("package.json"));
+    (context, inputs)
 }
 
 #[cfg(test)]

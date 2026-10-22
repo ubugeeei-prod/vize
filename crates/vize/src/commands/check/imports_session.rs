@@ -8,6 +8,13 @@ pub(in crate::commands::check) struct LocalImportSession {
     pub(super) registration_cache: VirtualRegistrationCache,
     pub(super) resolution_contexts: ResolutionContextCache,
     pub(super) package_lookups: PackageLookupCache,
+    /// Fires once per uncached package lookup. Tests use it to show two
+    /// independent specifiers overlap instead of taking one serial turn.
+    #[cfg(test)]
+    pub(super) package_lookup_probe: Option<fn()>,
+    /// Fires once per uncached `paths` lookup.
+    #[cfg(test)]
+    pub(super) path_lookup_probe: Option<fn()>,
 }
 
 impl LocalImportSession {
