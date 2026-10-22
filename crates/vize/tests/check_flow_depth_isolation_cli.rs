@@ -267,7 +267,7 @@ fn nested_else_preserves_the_original_issue_and_its_positive_and_negative_contro
         "literal-wrong-prop",
         &ISSUE_PAGE.replace("<Only v-else :item=\"item\"", "<Only v-else :item=\"42\""),
         &[
-            "error:11:19 [TS2322] Type 'number' is not assignable to type '{ kind: \"b\"; n: number; }'.",
+            "error:11:19 [TS2322] Type 'number' is not assignable to type '{ kind: \"b\"; n: number; }'. (source: <Only v-else :item=\"42\" />; binding: 'item')",
         ],
     );
 }
