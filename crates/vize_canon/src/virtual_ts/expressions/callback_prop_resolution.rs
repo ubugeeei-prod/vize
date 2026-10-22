@@ -159,46 +159,58 @@ fn callback_parameters_on_first_line(value: &str) -> String {
     let Some(arrow) = arrow_token_offset(value) else {
         return String::from(value);
     };
-    if !value.as_bytes()[..arrow].contains(&b'\n') && !value.as_bytes()[..arrow].contains(&b'\r') {
+    let Some(prefix) = value.get(..arrow) else {
+        return String::from(value);
+    };
+    if !prefix.contains(['\n', '\r']) {
         return String::from(value);
     }
     let mut collapsed = String::with_capacity(value.len());
-    for ch in value[..arrow].chars() {
+    for ch in prefix.chars() {
         collapsed.push(if ch == '\n' || ch == '\r' { ' ' } else { ch });
     }
-    collapsed.push_str(&value[arrow..]);
+    if let Some(rest) = value.get(arrow..) {
+        collapsed.push_str(rest);
+    }
     collapsed
 }
 
 fn arrow_token_offset(value: &str) -> Option<usize> {
     let bytes = value.as_bytes();
-    let mut index = 0;
-    while index + 1 < bytes.len() {
-        match bytes[index] {
-            b'/' if bytes[index + 1] == b'/' => {
-                index += 2;
-                while index < bytes.len() && bytes[index] != b'\n' {
-                    index += 1;
+    let mut index: usize = 0;
+    while bytes.get(index.saturating_add(1)).is_some() {
+        let current = bytes.get(index).copied()?;
+        match current {
+            b'/' if bytes.get(index.saturating_add(1)) == Some(&b'/') => {
+                index = index.saturating_add(2);
+                while bytes.get(index).is_some_and(|byte| *byte != b'\n') {
+                    index = index.saturating_add(1);
                 }
             }
-            b'/' if bytes[index + 1] == b'*' => {
-                index += 2;
-                while index + 1 < bytes.len() && !(bytes[index] == b'*' && bytes[index + 1] == b'/')
+            b'/' if bytes.get(index.saturating_add(1)) == Some(&b'*') => {
+                index = index.saturating_add(2);
+                while bytes.get(index.saturating_add(1)).is_some()
+                    && !(bytes.get(index) == Some(&b'*')
+                        && bytes.get(index.saturating_add(1)) == Some(&b'/'))
                 {
-                    index += 1;
+                    index = index.saturating_add(1);
                 }
-                index = (index + 2).min(bytes.len());
+                index = index.saturating_add(2).min(bytes.len());
             }
             b'\'' | b'"' | b'`' => {
-                let quote = bytes[index];
-                index += 1;
-                while index < bytes.len() && bytes[index] != quote {
-                    index += if bytes[index] == b'\\' { 2 } else { 1 };
+                index = index.saturating_add(1);
+                while bytes.get(index).is_some_and(|byte| *byte != current) {
+                    let skip = if bytes.get(index) == Some(&b'\\') {
+                        2
+                    } else {
+                        1
+                    };
+                    index = index.saturating_add(skip);
                 }
-                index = (index + 1).min(bytes.len());
+                index = index.saturating_add(1).min(bytes.len());
             }
-            b'=' if bytes[index + 1] == b'>' => return Some(index),
-            _ => index += 1,
+            b'=' if bytes.get(index.saturating_add(1)) == Some(&b'>') => return Some(index),
+            _ => index = index.saturating_add(1),
         }
     }
     None
