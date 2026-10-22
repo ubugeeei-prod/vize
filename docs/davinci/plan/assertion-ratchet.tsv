@@ -237,7 +237,6 @@ crates/vize_canon/src/virtual_ts/class_component_props_tests.rs	14
 crates/vize_canon/src/virtual_ts/define_emits_usage_tests.rs	10
 crates/vize_canon/src/virtual_ts/dynamic_component_names_tests.rs	8
 crates/vize_canon/src/virtual_ts/event_handler_tests.rs	7
-crates/vize_canon/src/virtual_ts/expressions/callback_prop_resolution_tests.rs	6
 crates/vize_canon/src/virtual_ts/expressions/component_props_tests.rs	13
 crates/vize_canon/src/virtual_ts/expressions/component_props_tests/define_model_modifiers.rs	4
 crates/vize_canon/src/virtual_ts/expressions/component_props_tests/dynamic_component_props.rs	7
