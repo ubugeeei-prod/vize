@@ -239,7 +239,7 @@ function patchNuxtAutoImportTransformPlugin(
 async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuilderOptions) {
   const lintGeneration = await setupNuxtLintConfigGeneration(options.lint, nuxt);
   await setupNuxtLintChecker(options.checker, nuxt, lintGeneration);
-  const resolver = createNuxtModuleResolver();
+  const resolver = createNuxtModuleResolver(nuxt.options.rootDir);
   const detectedNuxtMajor = options.compatibility?.nuxtVersion ?? getDetectedNuxtMajor(nuxt) ?? 3;
   const vueVersion = options.compatibility?.vueVersion ?? (detectedNuxtMajor === 2 ? 2 : 3);
   const nuxtWithBuilderOptions = nuxt as NuxtWithBuilderOptions;

@@ -5,6 +5,7 @@ import type {
 } from "./compiler-options.ts";
 import type { VizeNuxtCompatibilityOptions, VizeNuxtOptions } from "./options.ts";
 import { buildNuxtCompilerOptions } from "./utils.ts";
+import { assertNuxtVaporVue } from "./vapor-vue.ts";
 
 export function unsupportedNuxtVueCompilerOptions(
   options: Record<string, unknown> | undefined,
@@ -99,15 +100,18 @@ export function resolveNuxtCompilerOptions(
   }
   const hasCompatibilityOptions = Object.keys(compatibilityOptions).length > 0;
   const overrides = typeof compiler === "object" && compiler != null ? compiler : {};
-  return buildNuxtCompilerOptions(rootDir, baseURL, buildAssetsDir, {
-    vueVersion: compatibility.vueVersion,
-    ...(hasCompatibilityOptions ? { compatibility: compatibilityOptions } : {}),
-    mode: compatibility.scriptSetupInStandalone === true ? "function" : undefined,
-    ...(vueCompilerOptions?.whitespace === "condense" ||
-    vueCompilerOptions?.whitespace === "preserve"
-      ? { whitespace: vueCompilerOptions.whitespace }
-      : {}),
-    ...overrides,
-    ...(unsupported.length > 0 ? { compatibility: compatibilityOptions } : {}),
-  });
+  return assertNuxtVaporVue(
+    rootDir,
+    buildNuxtCompilerOptions(rootDir, baseURL, buildAssetsDir, {
+      vueVersion: compatibility.vueVersion,
+      ...(hasCompatibilityOptions ? { compatibility: compatibilityOptions } : {}),
+      mode: compatibility.scriptSetupInStandalone === true ? "function" : undefined,
+      ...(vueCompilerOptions?.whitespace === "condense" ||
+      vueCompilerOptions?.whitespace === "preserve"
+        ? { whitespace: vueCompilerOptions.whitespace }
+        : {}),
+      ...overrides,
+      ...(unsupported.length > 0 ? { compatibility: compatibilityOptions } : {}),
+    }),
+  );
 }
