@@ -185,7 +185,9 @@ fn packed_component_props_and_emits_check_in_a_consumer_template() {
     let diagnostics = diagnostics_for(&parse_json(&broken), "src/App.vue");
     assert_eq!(
         diagnostics,
-        vec!["error:10:31 [TS2322] Type 'string' is not assignable to type 'number'."],
+        vec![
+            "error:10:31 [TS2322] Type 'string' is not assignable to type 'number'. (source: <PackedButton label=\"Save\" :count=\"'one'\" @change=\"onChange\" />; binding: 'count')"
+        ],
         "the diagnostic must land on the authored prop binding:\n{}",
         broken.stdout
     );

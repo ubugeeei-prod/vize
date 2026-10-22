@@ -24,8 +24,8 @@ fn strict_generated_template_context_uses_the_same_declared_emit_vector() {
         case.path(),
         &corsa,
         &[
-            "error:9:39 [TS2345] Argument of type '\"clik\"' is not assignable to parameter of type '\"click\"'.",
-            "error:10:49 [TS2345] Argument of type 'string' is not assignable to parameter of type 'number'.",
+            "error:9:39 [TS2345] Argument of type '\"clik\"' is not assignable to parameter of type '\"click\"'. (source: <button type=\"button\" @click=\"$emit('clik')\">a</button>; binding: @click)",
+            "error:10:49 [TS2345] Argument of type 'string' is not assignable to parameter of type 'number'. (source: <button type=\"button\" @click=\"$emit('change', 'x')\">b</button>; binding: @click)",
         ],
     );
 }
@@ -33,7 +33,7 @@ fn strict_generated_template_context_uses_the_same_declared_emit_vector() {
 const MODEL_ERROR: &str = concat!(
     "No overload matches this call.\n",
     "The last overload gave the following error.\n",
-    "Argument of type 'number' is not assignable to parameter of type 'string'."
+    "Argument of type 'number' is not assignable to parameter of type 'string'. (source: <button @click=\"$emit('update:modelValue', 1)\">bad</button>; binding: @click)"
 );
 const NATIVE_MODEL_ERROR: &str = concat!(
     "No overload matches this call.\n",
@@ -108,7 +108,7 @@ defineModel<string>();
         &[concat!(
             "error:7:46 [TS2769] No overload matches this call.\n",
             "The last overload gave the following error.\n",
-            "Argument of type 'number' is not assignable to parameter of type 'string'."
+            "Argument of type 'number' is not assignable to parameter of type 'string'. (source: <button @click=\"$emit('update:modelValue', 1)\">bad</button>; binding: @click)"
         )],
     );
 }

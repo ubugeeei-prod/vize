@@ -75,7 +75,7 @@ fn deep_spread_instantiation_is_reported_on_the_component_tag() {
     assert_eq!(
         diagnostics,
         [serde_json::json!(
-            "error:9:9 [TS2589] Type instantiation is excessively deep and possibly infinite."
+            "error:9:9 [TS2589] Type instantiation is excessively deep and possibly infinite. (source: <div><CountTo v-bind=\"props\" @started=\"onStarted\" /></div>)"
         )]
     );
 }

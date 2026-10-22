@@ -273,7 +273,7 @@ let text = " hello ";
     assert_eq!(
         diagnostics_for(&broken_parent, "src/BrokenParent.vue"),
         [
-            "error:8:18 [TS2353] Object literal may only specify known properties, and '\"nope\"' does not exist in type 'Partial<Record<\"capitalize\" | \"trim\", true>>'."
+            "error:8:18 [TS2353] Object literal may only specify known properties, and '\"nope\"' does not exist in type 'Partial<Record<\"capitalize\" | \"trim\", true>>'. (source: <Child v-model.nope=\"text\" />; binding: modelValue)"
         ],
         "{broken_parent}"
     );
@@ -306,14 +306,22 @@ fn check_unknown_model_modifiers_keep_authored_ranges_after_repair() {
             ("src/Good.vue", GOOD),
         ],
     );
-    for (target, location) in [
-        ("src/App.vue", "error:9:18"),
-        ("src/NamedApp.vue", "error:10:24"),
+    for (target, location, context) in [
+        (
+            "src/App.vue",
+            "error:9:18",
+            r#" (source: <Field v-model.bogus="text" />; binding: modelValue)"#,
+        ),
+        (
+            "src/NamedApp.vue",
+            "error:10:24",
+            r#" (source: v-model:title.trim.bogus.upper="text"; binding: title)"#,
+        ),
     ] {
         let broken = run_check_json(&project_root, &corsa_path, target).unwrap_err();
         assert_eq!(broken["errorCount"], serde_json::json!(1), "{broken}");
         let expected = cstr!(
-            "{location} [TS2353] Object literal may only specify known properties, and '\"bogus\"' does not exist in type 'Partial<Record<\"trim\" | \"upper\", true>>'."
+            "{location} [TS2353] Object literal may only specify known properties, and '\"bogus\"' does not exist in type 'Partial<Record<\"trim\" | \"upper\", true>>'.{context}"
         );
         assert_eq!(
             diagnostics_for(&broken, target),

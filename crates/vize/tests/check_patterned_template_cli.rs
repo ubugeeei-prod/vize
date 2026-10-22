@@ -85,7 +85,7 @@ fn configured_pattern_check_distinguishes_errors_warnings_and_flag_off() {
     assert_eq!(
         result["files"][0]["diagnostics"],
         serde_json::json!([
-            "error:2:11 `v-match` / `v-when` patterned templates require `experimentals.patternedTemplate`."
+            "error:2:11 `v-match` / `v-when` patterned templates require `experimentals.patternedTemplate`. (source: <template v-match=\"state\"><p v-when=\"'a'\"/><p v-when=\"'a'\"/><p v-when=\"'b'\"/></template>; binding: v-match)"
         ])
     );
 }

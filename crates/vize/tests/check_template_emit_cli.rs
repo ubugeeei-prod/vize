@@ -172,8 +172,8 @@ fn original_unassigned_macro_rejects_complete_event_and_payload_vector() {
         case.path(),
         &corsa,
         &[
-            "error:9:39 [TS2345] Argument of type '\"clik\"' is not assignable to parameter of type '\"click\"'.",
-            "error:10:49 [TS2345] Argument of type 'string' is not assignable to parameter of type 'number'.",
+            "error:9:39 [TS2345] Argument of type '\"clik\"' is not assignable to parameter of type '\"click\"'. (source: <button type=\"button\" @click=\"$emit('clik')\">a</button>; binding: @click)",
+            "error:10:49 [TS2345] Argument of type 'string' is not assignable to parameter of type 'number'. (source: <button type=\"button\" @click=\"$emit('change', 'x')\">b</button>; binding: @click)",
         ],
     );
 }
@@ -226,7 +226,7 @@ defineEmits(['click', 'change']);
         case.path(),
         &corsa,
         &[
-            "error:6:25 [TS2345] Argument of type '\"clik\"' is not assignable to parameter of type '\"change\" | \"click\"'.",
+            "error:6:25 [TS2345] Argument of type '\"clik\"' is not assignable to parameter of type '\"change\" | \"click\"'. (source: <button @click=\"$emit('clik')\">bad</button>; binding: @click)",
         ],
     );
 }

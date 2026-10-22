@@ -260,7 +260,7 @@ fn nested_else_preserves_the_original_issue_and_its_positive_and_negative_contro
         "without-guards",
         &unguarded,
         &[
-            "error:9:10 [TS2322] Type 'Item' is not assignable to type '{ kind: \"b\"; n: number; }'.\nProperty 'n' is missing in type '{ kind: \"a\"; s: string; }' but required in type '{ kind: \"b\"; n: number; }'.",
+            "error:9:10 [TS2322] Type 'Item' is not assignable to type '{ kind: \"b\"; n: number; }'.\nProperty 'n' is missing in type '{ kind: \"a\"; s: string; }' but required in type '{ kind: \"b\"; n: number; }'. (source: <Only :item=\"item\" />; binding: 'item')",
         ],
     );
     assert_issue(

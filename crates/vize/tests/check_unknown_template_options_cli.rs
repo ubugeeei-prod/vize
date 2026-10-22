@@ -9,6 +9,17 @@ use std::{
     process::Command,
 };
 
+const TEMPLATE_CONTEXT: [(u32, u32, u32, &str); 3] = [
+    (
+        2353,
+        8,
+        24,
+        " (source: <Child label=\"ok\" :unknown-prop=\"1\" />; binding: 'unknown-prop')",
+    ),
+    (2339, 9, 6, " (source: <NotImported />)"),
+    (2339, 10, 10, " (source: <div v-not-a-directive />)"),
+];
+
 #[test]
 fn original_unknown_template_options_have_complete_true_false_and_absent_vectors() {
     let Some(corsa) = corsa_requirement::required_or_skip::<PathBuf>(
@@ -19,17 +30,17 @@ fn original_unknown_template_options_have_complete_true_false_and_absent_vectors
     let messages = fixture::messages(&corsa).unwrap();
     let full: Vec<_> = messages
         .iter()
-        .zip([(2353, 8, 24), (2339, 9, 6), (2339, 10, 10)])
-        .map(|(message, (code, line, column))| {
-            vize_l0::cstr!("error:{line}:{column} [TS{code}] {message}")
+        .zip(TEMPLATE_CONTEXT)
+        .map(|(message, (code, line, column, source))| {
+            vize_l0::cstr!("error:{line}:{column} [TS{code}] {message}{source}")
         })
         .collect();
     let strict_messages = fixture::strict_messages(&corsa).unwrap();
     let strict_full: Vec<_> = strict_messages
         .iter()
-        .zip([(2353, 8, 24), (2339, 9, 6), (2339, 10, 10)])
-        .map(|(message, (code, line, column))| {
-            vize_l0::cstr!("error:{line}:{column} [TS{code}] {message}")
+        .zip(TEMPLATE_CONTEXT)
+        .map(|(message, (code, line, column, source))| {
+            vize_l0::cstr!("error:{line}:{column} [TS{code}] {message}{source}")
         })
         .collect();
     let executable = Path::new(env!("CARGO_BIN_EXE_vize"));

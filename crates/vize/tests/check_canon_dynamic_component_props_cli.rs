@@ -229,7 +229,9 @@ const comp = Child;
     // prop must produce exactly this TS2322 diagnostic.
     assert_eq!(
         diagnostics_for(&broken, "src/Broken.vue"),
-        ["error:8:26 [TS2322] Type 'string' is not assignable to type 'number'."],
+        [
+            "error:8:26 [TS2322] Type 'string' is not assignable to type 'number'. (source: <component :is=\"comp\" :count=\"'nope'\" />; binding: 'count')"
+        ],
         "{broken}"
     );
 

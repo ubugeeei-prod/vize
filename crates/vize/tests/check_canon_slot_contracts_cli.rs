@@ -314,7 +314,7 @@ import DefaultSlotChild from "./DefaultSlotChild.vue";
         7,
         27,
         2339,
-        "error:7:27 [TS2339] Property 'missing' does not exist on type '{ msg: string; }'.",
+        "error:7:27 [TS2339] Property 'missing' does not exist on type '{ msg: string; }'. (source: <template #default=\"{ missing }\">{{ missing }}</template>; binding: #default)",
     );
 
     let _ = std::fs::remove_dir_all(&project_root);

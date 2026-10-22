@@ -236,8 +236,8 @@ const props = withDefaults(defineProps<{ onLoad?: () => void }>(), { onLoad: und
         case.path(),
         &corsa,
         &[
-            "error:5:11 [TS2722] Cannot invoke an object which is possibly 'undefined'.",
-            "error:6:11 [TS2722] Cannot invoke an object which is possibly 'undefined'.",
+            "error:5:11 [TS2722] Cannot invoke an object which is possibly 'undefined'. (source: <div>{{ onLoad() }}</div>)",
+            "error:6:11 [TS2722] Cannot invoke an object which is possibly 'undefined'. (source: <div>{{ props.onLoad() }}</div>)",
         ],
     );
 }

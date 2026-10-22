@@ -39,7 +39,7 @@ defineSlots<{ row(props: { item: { id: number; label: string } }): unknown }>();
             let message = concat!(
                 "Argument of type '{ item: { id: string; label: string; }; }' is not assignable to parameter of type '{ item: { id: number; label: string; }; }'.",
                 "\nThe types of 'item.id' are incompatible between these types.",
-                "\nType 'string' is not assignable to type 'number'.",
+                "\nType 'string' is not assignable to type 'number'. (source: <slot name=\"row\" v-bind=\"row\" />)",
             );
             assert_diagnostic(
                 &report.json,
@@ -157,7 +157,7 @@ defineSlots<{ row(props: { item: number; label: string }): unknown }>();
             6,
             4,
             2741,
-            "error:6:4 [TS2741] Property 'item' is missing in type '{ label: string; }' but required in type '{ item: number; label: string; }'.",
+            "error:6:4 [TS2741] Property 'item' is missing in type '{ label: string; }' but required in type '{ item: number; label: string; }'. (source: <slot name=\"row\" v-bind=\"row\" />)",
         ),
         (
             "spread-optional",
@@ -176,7 +176,7 @@ defineSlots<{ row(props: { item: number; label: string }): unknown }>();
                 "error:6:4 [TS2345] Argument of type '{ item?: number; label: string; }' is not assignable to parameter of type '{ item: number; label: string; }'.",
                 "\nTypes of property 'item' are incompatible.",
                 "\nType 'number | undefined' is not assignable to type 'number'.",
-                "\nType 'undefined' is not assignable to type 'number'.",
+                "\nType 'undefined' is not assignable to type 'number'. (source: <slot name=\"row\" v-bind=\"row\" />)",
             ),
         ),
         (
@@ -196,7 +196,7 @@ defineSlots<{ row(props: { item: number; label: string }): unknown }>();
             concat!(
                 "error:7:4 [TS2345] Argument of type '{ label: string; item: string; }' is not assignable to parameter of type '{ item: number; label: string; }'.",
                 "\nTypes of property 'item' are incompatible.",
-                "\nType 'string' is not assignable to type 'number'.",
+                "\nType 'string' is not assignable to type 'number'. (source: <slot name=\"row\" v-bind=\"{ ...row, ...wrong }\" />)",
             ),
         ),
         (
@@ -212,7 +212,7 @@ defineSlots<{ row(props: { item: number; format: (value: number) => string }): u
             6,
             57,
             2339,
-            "error:6:57 [TS2339] Property 'toUpperCase' does not exist on type 'number'.",
+            "error:6:57 [TS2339] Property 'toUpperCase' does not exist on type 'number'. (source: <slot name=\"row\" v-bind=\"row\" :format=\"value => value.toUpperCase()\" />; binding: 'format')",
         ),
         (
             "spread-inline-callback",
@@ -227,7 +227,7 @@ defineSlots<{ row(props: { item: number; format: (value: number) => string }): u
             6,
             69,
             2339,
-            "error:6:69 [TS2339] Property 'toUpperCase' does not exist on type 'number'.",
+            "error:6:69 [TS2339] Property 'toUpperCase' does not exist on type 'number'. (source: <slot name=\"row\" v-bind=\"{ item: row.item, format: value => value.toUpperCase() }\" />; binding: v-bind)",
         ),
     ];
     for (name, source, line, column, code, expected) in cases {

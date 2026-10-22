@@ -88,7 +88,7 @@ fn global_generic_component_infers_its_event_payload_like_vue_tsc() {
         assert_eq!(
             broken,
             [serde_json::json!(
-                "error:10:62 [TS2339] Property 'nope' does not exist on type '{ file: string; info: number; }'."
+                "error:10:62 [TS2339] Property 'nope' does not exist on type '{ file: string; info: number; }'. (source: <MkSuspense :p=\"load\" @resolved=\"(result) => file = result.nope\" />; binding: @resolved)"
             )],
             "{registration} {inputs:?}"
         );

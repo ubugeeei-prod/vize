@@ -15,9 +15,8 @@ mod fixture;
 use serde_json::{Value, json};
 use std::{path::Path, process::Command};
 
-const ATTRIBUTE_ERROR: &str =
-    "error:2:12 [TS2322] Type '42' is not assignable to type 'Booleanish | undefined'.";
-const MODEL_ERROR: &str = "error:6:19 [TS2322] Type 'string' is not assignable to type 'number'.";
+const ATTRIBUTE_ERROR: &str = "error:2:12 [TS2322] Type '42' is not assignable to type 'Booleanish | undefined'. (source: <button :disabled=\"42\">toggle</button>; binding: 'disabled')";
+const MODEL_ERROR: &str = "error:6:19 [TS2322] Type 'string' is not assignable to type 'number'. (source: <button @click=\"count = 'x'\">{{ count }}</button>; binding: @click)";
 
 fn check(
     root: &Path,
