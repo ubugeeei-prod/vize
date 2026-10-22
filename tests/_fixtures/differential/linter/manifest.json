@@ -16,7 +16,7 @@
       "api": "--current-api",
       "cases": {
         "path": "crates/vize_patina/tests/fixtures/lint-history/cases.json",
-        "sha256": "90708c15e8f16d25a57c88d07e2556883d9347a3717b2122287bc5e354dea7d0"
+        "sha256": "f501cb76cbb3b14953795e3f5e6b84a6ee6ab8a3b41287f6ed5dd499c4976f7f"
       }
     },
     {
@@ -54,7 +54,7 @@
   ],
   "oracles": {
     "path": "tests/_fixtures/differential/linter/oracle-index.json",
-    "sha256": "b4e54167696be7572b05918d5e518f22b226c52bad3e819e0ba8f396a7f44a55"
+    "sha256": "08d386d927307baf70e7ef6fd578e5c6c64efa66649a7639d980d157b910560e"
   },
   "cases": [
     {
@@ -1754,6 +1754,38 @@
     },
     {
       "id": "linter/current-api/attribute-hyphenation-aria-data-native-attributes",
+      "state": "active",
+      "targets": ["lint"],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc"],
+            "selector": "current-api pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/combobox-bound-ids-exempt-listbox-9750",
+      "state": "active",
+      "targets": ["lint"],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc"],
+            "selector": "current-api pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/combobox-mismatched-bound-id-reports-9750",
       "state": "active",
       "targets": ["lint"],
       "dialectCoverage": {

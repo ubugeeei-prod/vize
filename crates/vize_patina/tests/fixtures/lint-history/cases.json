@@ -502,5 +502,29 @@
     "vapor": null,
     "diagnostics": 0,
     "fixes": 0
+  },
+  {
+    "id": "combobox-bound-ids-exempt-listbox-9750",
+    "history": "31348d7ce8e97d47a50aeefd62c7989233ef4f1b",
+    "source": "<input aria-activedescendant=\"fruit-0\" :aria-controls=\"listId\" role=\"combobox\" /><ul :id=\"listId\" role=\"listbox\"><li role=\"option\">Apple</li></ul>",
+    "filename": "Combobox.vue",
+    "entry": "template",
+    "rule": "a11y/interactive-supports-focus",
+    "vue_version": null,
+    "vapor": null,
+    "diagnostics": 0,
+    "fixes": 0
+  },
+  {
+    "id": "combobox-mismatched-bound-id-reports-9750",
+    "history": "31348d7ce8e97d47a50aeefd62c7989233ef4f1b",
+    "source": "<input aria-activedescendant=\"fruit-0\" :aria-controls=\"listId\" role=\"combobox\" /><ul :id=\"otherId\" role=\"listbox\"><li role=\"option\">Apple</li></ul>",
+    "filename": "Combobox.vue",
+    "entry": "template",
+    "rule": "a11y/interactive-supports-focus",
+    "vue_version": null,
+    "vapor": null,
+    "diagnostics": 2,
+    "fixes": 0
   }
 ]

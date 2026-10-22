@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "combobox-bound-ids-exempt-listbox-9750",
+    history: "31348d7ce8e97d47a50aeefd62c7989233ef4f1b",
+    source: "<input aria-activedescendant=\"fruit-0\" :aria-controls=\"listId\" role=\"combobox\" /><ul :id=\"listId\" role=\"listbox\"><li role=\"option\">Apple</li></ul>",
+    filename: "Combobox.vue",
+    entry: "template",
+    rule: "a11y/interactive-supports-focus",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Combobox.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Combobox.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

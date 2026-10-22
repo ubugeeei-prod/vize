@@ -290,5 +290,13 @@
   "linter/current-api/attribute-hyphenation-aria-data-native-attributes": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__attribute-hyphenation-aria-data-native-attributes.snap",
     "sha256": "55edbd51190f85521331fa68606e69d0c32652979b6dcd9ce2a7b20cc0f21303"
+  },
+  "linter/current-api/combobox-bound-ids-exempt-listbox-9750": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__combobox-bound-ids-exempt-listbox-9750.snap",
+    "sha256": "ee01854e7354a561fccf7296a760f7b711df82047378bd8f11b5e38a5b241ce3"
+  },
+  "linter/current-api/combobox-mismatched-bound-id-reports-9750": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__combobox-mismatched-bound-id-reports-9750.snap",
+    "sha256": "2c325a9cb6a998d3c8f68d80fdca5d6d8537ee219ea01de286f92aea84b432e5"
   }
 }

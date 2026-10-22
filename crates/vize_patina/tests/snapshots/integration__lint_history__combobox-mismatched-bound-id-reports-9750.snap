@@ -1,0 +1,83 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "combobox-mismatched-bound-id-reports-9750",
+    history: "31348d7ce8e97d47a50aeefd62c7989233ef4f1b",
+    source: "<input aria-activedescendant=\"fruit-0\" :aria-controls=\"listId\" role=\"combobox\" /><ul :id=\"otherId\" role=\"listbox\"><li role=\"option\">Apple</li></ul>",
+    filename: "Combobox.vue",
+    entry: "template",
+    rule: "a11y/interactive-supports-focus",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 2,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Combobox.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "a11y/interactive-supports-focus",
+                severity: Warning,
+                message: "Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+                start: 81,
+                end: 114,
+                help: Some(
+                    "**Why:** Interactive roles imply the element can be activated by keyboard users.\n\n**Fix:**\n```vue\n<div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n</div>\n```\n\n**Better:** Use native interactive elements:\n```vue\n<button @click=\"handle\">Click me</button>\n```",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "a11y/interactive-supports-focus",
+                severity: Warning,
+                message: "Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+                start: 114,
+                end: 132,
+                help: Some(
+                    "**Why:** Interactive roles imply the element can be activated by keyboard users.\n\n**Fix:**\n```vue\n<div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n</div>\n```\n\n**Better:** Use native interactive elements:\n```vue\n<button @click=\"handle\">Click me</button>\n```",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 2,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Combobox.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "a11y/interactive-supports-focus",
+                    severity: Warning,
+                    message: "Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+                    start: 81,
+                    end: 114,
+                    help: Some(
+                        "**Why:** Interactive roles imply the element can be activated by keyboard users.\n\n**Fix:**\n```vue\n<div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n</div>\n```\n\n**Better:** Use native interactive elements:\n```vue\n<button @click=\"handle\">Click me</button>\n```",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "a11y/interactive-supports-focus",
+                    severity: Warning,
+                    message: "Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+                    start: 114,
+                    end: 132,
+                    help: Some(
+                        "**Why:** Interactive roles imply the element can be activated by keyboard users.\n\n**Fix:**\n```vue\n<div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n</div>\n```\n\n**Better:** Use native interactive elements:\n```vue\n<button @click=\"handle\">Click me</button>\n```",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 2,
+        },
+    ),
+}
