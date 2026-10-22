@@ -62,6 +62,26 @@
           "message": "Variable '#' implicitly has an 'any' type."
         }
       ]
+    },
+    {
+      "id": "syntax-error-keeps-sfc-module",
+      "inputs": [
+        { "file": "tsconfig.json", "source": "syntax-error-module-tsconfig.json.txt" },
+        { "file": "vue-shim.d.ts", "source": "syntax-error-module-shim.d.ts.txt" },
+        { "file": "src/Widget.vue", "source": "syntax-error-module-widget.vue.txt" },
+        { "file": "src/use.ts", "source": "syntax-error-module-use.ts.txt" },
+        { "file": "src/broken.ts", "source": "syntax-error-module-broken.ts.txt" }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/broken.ts",
+          "line": 1,
+          "column": 19,
+          "severity": 1,
+          "code": 1110,
+          "message": "Type expected."
+        }
+      ]
     }
   ]
 }

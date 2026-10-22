@@ -3859,7 +3859,7 @@
       "sourceRevision": "a5ae4d313fa333c8bc7168d5da4acf3dc2bb8ee3",
       "packReference": {
         "path": "content-mapper-template-expression-syntax/cases.json",
-        "sha256": "89e9ab778a7db625507d0a8c1a4b27ae7931c281da00a12a1c13d4369cd6f46e"
+        "sha256": "ee92df51b87699769f43181cccab86e201043212e02baf053e97f8d7e9a7280f"
       },
       "inputs": [
         {
@@ -3876,6 +3876,68 @@
           "file": "src/InvalidCharacter.vue",
           "path": "content-mapper-template-expression-syntax/invalid-character.vue.txt",
           "sha256": "2591804487f96619a29ac061af3e8c60184fb639285555272fb212fa0b246102"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/content-mapper-template-expression-syntax/syntax-error-keeps-sfc-module",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "content-mapper-template-expression-syntax",
+      "case": "syntax-error-keeps-sfc-module",
+      "test": "template_expression_syntax_preserves_complete_authored_diagnostics",
+      "regressionCommit": "a5ae4d313fa333c8bc7168d5da4acf3dc2bb8ee3",
+      "sourceRevision": "a5ae4d313fa333c8bc7168d5da4acf3dc2bb8ee3",
+      "packReference": {
+        "path": "content-mapper-template-expression-syntax/cases.json",
+        "sha256": "ee92df51b87699769f43181cccab86e201043212e02baf053e97f8d7e9a7280f"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "content-mapper-template-expression-syntax/syntax-error-module-tsconfig.json.txt",
+          "sha256": "eb7d049eafa8d4190490e9b033d1dd3bbcba4c86cf810553d929059d0b8068f2"
+        },
+        {
+          "file": "vue-shim.d.ts",
+          "path": "content-mapper-template-expression-syntax/syntax-error-module-shim.d.ts.txt",
+          "sha256": "6abb07b3920653f2f721a8fc360baaafffece63246e5ad10a9f97430c456789d"
+        },
+        {
+          "file": "src/Widget.vue",
+          "path": "content-mapper-template-expression-syntax/syntax-error-module-widget.vue.txt",
+          "sha256": "ee0d5a3bdd760c7a863209b6ebb9ea52d330422555dd6e53992fa4ddedd618b5"
+        },
+        {
+          "file": "src/use.ts",
+          "path": "content-mapper-template-expression-syntax/syntax-error-module-use.ts.txt",
+          "sha256": "315e44e5da630172f75e4558ec676a66108af0ad9f7e7cee8ac7993929a2aa2e"
+        },
+        {
+          "file": "src/broken.ts",
+          "path": "content-mapper-template-expression-syntax/syntax-error-module-broken.ts.txt",
+          "sha256": "198bcac429788f8132e1bc42a2e494c3e2221234ae5b245dd92deaa1f4ccce10"
         }
       ],
       "dialectCoverage": {

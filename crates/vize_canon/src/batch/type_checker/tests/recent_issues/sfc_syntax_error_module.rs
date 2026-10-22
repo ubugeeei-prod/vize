@@ -84,7 +84,11 @@ fn issue_10353_syntax_error_keeps_sfc_module_types() {
         .iter()
         .find(|file| file.original_path.ends_with("broken.ts"))
         .expect("broken.ts must be materialized");
-    let kept_item = widget.content.split("export interface Item").nth(1).is_some();
+    let kept_item = widget
+        .content
+        .split("export interface Item")
+        .nth(1)
+        .is_some();
     assert!(
         kept_item,
         "SFC module dropped its interface export:\n{}",
@@ -103,7 +107,11 @@ fn issue_10353_syntax_error_keeps_sfc_module_types() {
         "importer must keep the per-file SFC module:\n{}",
         importer.content
     );
-    let kept_syntax = broken.content.split("export const bad: = 1").nth(1).is_some();
+    let kept_syntax = broken
+        .content
+        .split("export const bad: = 1")
+        .nth(1)
+        .is_some();
     assert!(
         kept_syntax,
         "syntax error was rewritten away:\n{}",

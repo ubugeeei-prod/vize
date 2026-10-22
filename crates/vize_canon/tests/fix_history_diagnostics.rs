@@ -86,7 +86,7 @@ fn template_expression_syntax_preserves_complete_authored_diagnostics() {
         "template_expression_syntax_preserves_complete_authored_diagnostics",
         "a5ae4d313fa333c8bc7168d5da4acf3dc2bb8ee3",
         Some(10188),
-        &["authored-errors"],
+        &["authored-errors", "syntax-error-keeps-sfc-module"],
     );
 }
 

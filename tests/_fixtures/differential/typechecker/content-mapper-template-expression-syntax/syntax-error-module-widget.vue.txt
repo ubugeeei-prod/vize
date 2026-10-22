@@ -1,0 +1,5 @@
+<script setup lang="ts">
+export interface Item { id: number }
+defineProps<{ label: string }>()
+</script>
+<template>{{ label }}</template>

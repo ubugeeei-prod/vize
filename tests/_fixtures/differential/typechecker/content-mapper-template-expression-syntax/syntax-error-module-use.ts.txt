@@ -1,0 +1,3 @@
+import Widget from "./Widget.vue";
+export type { Item } from "./Widget.vue";
+export const n = Widget ? 1 : 0;

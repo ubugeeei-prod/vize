@@ -59,10 +59,10 @@ function capture(pack: keyof typeof TYPECHECKER_TESTS): Capture {
 }
 
 test("the shared registry retains all existing production projects and exact input bytes", () => {
-  assert.equal(loaded.cases.length, 88);
+  assert.equal(loaded.cases.length, 89);
   assert.equal(
     loaded.cases.reduce((count, fixture) => count + fixture.inputs.length, 0),
-    318,
+    323,
   );
   assert.deepEqual(
     [...new Set(loaded.cases.map((fixture) => fixture.pack))],
@@ -218,17 +218,17 @@ test("complete legacy-only observations stay in the denominator with zero native
     capture,
   );
   const report = typecheckerReport(loaded, captures, sourceRevision);
-  assert.equal(report.summary.legacyMatches, 88);
+  assert.equal(report.summary.legacyMatches, 89);
   const acceptance = summarizeNativeAcceptance(loaded, report, {
     sourceRevision,
     buildReceiptSha256: sha256(receipt),
     requiredStages: ["parse", "facts", "emit", "check"],
   });
   assert.deepEqual(acceptance.total, {
-    planned: 88,
+    planned: 89,
     nativeHandled: 0,
     nativeEquivalent: 0,
-    unsupported: 88,
+    unsupported: 89,
     legacyBacked: 0,
     unverified: 0,
   });
