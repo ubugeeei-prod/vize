@@ -50,42 +50,42 @@ fn generate(vue3: bool) -> VirtualTsOutput {
     )
 }
 
+fn has_fragment(code: &str, needle: &str) -> bool {
+    code.split(needle).nth(1).is_some()
+}
+
+fn assert_has(code: &str, needle: &str) {
+    let found = has_fragment(code, needle);
+    assert!(found, "missing `{needle}`:\n{code}");
+}
+
+fn assert_lacks(code: &str, needle: &str) {
+    let found = has_fragment(code, needle);
+    assert!(!found, "unexpected `{needle}`:\n{code}");
+}
+
 fn assert_component_prop_still_checked(code: &str) {
-    assert!(
-        code.contains("const __vize_prop_check_0_not_a_real_prop:"),
-        "component checkUnknownProps must still check the unknown prop:\n{code}"
+    assert_has(code, "const __vize_prop_check_0_not_a_real_prop:");
+    assert_has(
+        code,
+        "__VizePublicComponentAttrs & __VizeComponentGlobalHtmlAttrs & __VizeAllowedFallthroughAttrs<C>",
     );
-    assert!(
-        code.contains("__VizePublicComponentAttrs & __VizeComponentGlobalHtmlAttrs & __VizeAllowedFallthroughAttrs<C>"),
-        "strict component tail must stay closed:\n{code}"
-    );
-    assert!(
-        code.contains(r#"__VizeNativeElementProp<__VizeNativeElement<"div">, "style">"#),
-        "known DOM prop values stay checked:\n{code}"
+    assert_has(
+        code,
+        r#"__VizeNativeElementProp<__VizeNativeElement<"div">, "style">"#,
     );
 }
 
 #[test]
 fn vue3_check_unknown_props_accepts_intrinsic_attributes() {
     let output = generate(true);
-    assert!(
-        !output.code.contains("__vize_native_key_"),
-        "Vue 3 must not assign intrinsic names to never:\n{}",
-        output.code
-    );
+    assert_lacks(&output.code, "__vize_native_key_");
     for name in ["x-small", "height", "no-gutters", "cols"] {
-        assert!(
-            !output.code.contains(&format!("\"{name}\"")),
-            "Vue 3 must not excess-check intrinsic name {name}:\n{}",
-            output.code
-        );
+        assert_lacks(&output.code, &format!("\"{name}\""));
     }
-    assert!(
-        !output
-            .code
-            .contains(r#"Partial<__VizeNativeElement<"th">> = { "width""#),
-        "Vue 3 must not excess-check width on th:\n{}",
-        output.code
+    assert_lacks(
+        &output.code,
+        r#"Partial<__VizeNativeElement<"th">> = { "width""#,
     );
     assert_component_prop_still_checked(&output.code);
 }
@@ -96,19 +96,18 @@ fn omitted_target_excess_checks_intrinsic_names_without_never_assignment() {
     let native_keys: Vec<_> = output
         .code
         .lines()
-        .filter(|line| line.contains("__vize_native_key_"))
+        .filter(|line| has_fragment(line, "__vize_native_key_"))
         .collect();
     assert!(!native_keys.is_empty(), "{}", output.code);
     for line in native_keys {
+        let assigns_never = has_fragment(line, "never =");
         assert!(
-            !line.contains("never ="),
+            !assigns_never,
             "omitted target must not assign the name to never: {line}"
         );
-        assert!(
-            line.contains("Partial<__VizeNativeElement<")
-                || line.contains("void __vize_native_key_"),
-            "{line}"
-        );
+        let typed = has_fragment(line, "Partial<__VizeNativeElement<")
+            || has_fragment(line, "void __vize_native_key_");
+        assert!(typed, "{line}");
     }
     for fragment in [
         r#"Partial<__VizeNativeElement<"div">> = { "x-small": undefined as never }"#,
@@ -117,11 +116,7 @@ fn omitted_target_excess_checks_intrinsic_names_without_never_assignment() {
         r#"Partial<__VizeNativeElement<"div">> = { "no-gutters": undefined as never }"#,
         r#"Partial<__VizeNativeElement<"div">> = { "cols": undefined as never }"#,
     ] {
-        assert!(
-            output.code.contains(fragment),
-            "missing excess-property check `{fragment}`:\n{}",
-            output.code
-        );
+        assert_has(&output.code, fragment);
     }
     let name_start = TEMPLATE.find("x-small").expect("x-small");
     let src_range = name_start..name_start + "x-small".len();
