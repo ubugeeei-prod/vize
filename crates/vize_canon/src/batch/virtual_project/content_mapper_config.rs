@@ -112,7 +112,7 @@ mod tests {
     use crate::batch::error::CorsaError;
     use std::io::ErrorKind;
     use std::path::Path;
-    use vize_carton::config::VueVersion;
+    use vize_l0::config::VueVersion;
 
     fn load(path: &Path) -> ContentMapperProjectConfiguration {
         ContentMapperProjectConfiguration::load(path).unwrap()
