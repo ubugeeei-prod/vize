@@ -125,12 +125,13 @@ fn append_props_object(
         }
         let name = super::super::helpers::to_camel_case(prop.name.as_str());
         append!(*ts, "{expr_indent}  \"{name}\": ");
-        // This copy is intentionally unmapped, so authored leading whitespace
-        // carries no location information. Keep the callback's first token on
-        // the property line: the `@ts-ignore` immediately above then owns a
-        // multiline callback whose parameters begin after an authored newline.
+        // This copy is intentionally unmapped. `@ts-ignore` covers only the
+        // next line, so the parameter tokens have to sit on the property line
+        // even when the author broke them inside the opening parenthesis.
+        let owned;
         let value = if inline_callback {
-            value.trim_start()
+            owned = callback_parameters_on_first_line(value.trim_start());
+            owned.as_str()
         } else {
             value.as_str()
         };
@@ -148,6 +149,59 @@ fn append_props_object(
         );
         ts.push_str(",\n");
     }
+}
+
+/// Collapse line breaks that occur before the callback's own `=>`.
+///
+/// `(\n  params\n) => body` otherwise leaves `params` on a line `@ts-ignore`
+/// does not cover, and the unmapped inference copy reports TS7006.
+fn callback_parameters_on_first_line(value: &str) -> String {
+    let Some(arrow) = arrow_token_offset(value) else {
+        return String::from(value);
+    };
+    if !value.as_bytes()[..arrow].contains(&b'\n') && !value.as_bytes()[..arrow].contains(&b'\r') {
+        return String::from(value);
+    }
+    let mut collapsed = String::with_capacity(value.len());
+    for ch in value[..arrow].chars() {
+        collapsed.push(if ch == '\n' || ch == '\r' { ' ' } else { ch });
+    }
+    collapsed.push_str(&value[arrow..]);
+    collapsed
+}
+
+fn arrow_token_offset(value: &str) -> Option<usize> {
+    let bytes = value.as_bytes();
+    let mut index = 0;
+    while index + 1 < bytes.len() {
+        match bytes[index] {
+            b'/' if bytes[index + 1] == b'/' => {
+                index += 2;
+                while index < bytes.len() && bytes[index] != b'\n' {
+                    index += 1;
+                }
+            }
+            b'/' if bytes[index + 1] == b'*' => {
+                index += 2;
+                while index + 1 < bytes.len() && !(bytes[index] == b'*' && bytes[index + 1] == b'/')
+                {
+                    index += 1;
+                }
+                index = (index + 2).min(bytes.len());
+            }
+            b'\'' | b'"' | b'`' => {
+                let quote = bytes[index];
+                index += 1;
+                while index < bytes.len() && bytes[index] != quote {
+                    index += if bytes[index] == b'\\' { 2 } else { 1 };
+                }
+                index = (index + 1).min(bytes.len());
+            }
+            b'=' if bytes[index + 1] == b'>' => return Some(index),
+            _ => index += 1,
+        }
+    }
+    None
 }
 
 fn append_spread_value(

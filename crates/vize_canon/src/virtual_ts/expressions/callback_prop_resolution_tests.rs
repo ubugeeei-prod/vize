@@ -115,3 +115,28 @@ fn multiline_callback_starts_on_the_ignored_property_line() {
         output.code
     );
 }
+
+#[test]
+fn callback_parameter_after_a_broken_parenthesis_stays_on_the_ignored_line() {
+    let script = "import Guard from './Guard.vue'\n";
+    let template = "<Guard\n  :check=\"(\n  params\n) => !!params.id\"\n/>";
+
+    let allocator = vize_l0::Allocator::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+    let ignored = output
+        .code
+        .lines()
+        .find(|line| line.contains("\"check\":"))
+        .unwrap_or("");
+    assert!(
+        ignored.contains("params"),
+        "the ignored property line must contain the parameter:\n{ignored}\n{}",
+        output.code
+    );
+}
