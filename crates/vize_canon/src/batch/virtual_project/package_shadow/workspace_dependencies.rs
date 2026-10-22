@@ -15,8 +15,8 @@ pub(super) struct WorkspaceShadowPlan {
 
 fn identity(route: &crate::PackageRoute) -> PackageIdentity {
     (
-        vize_carton::path::canonicalize_non_verbatim(&route.package_root),
-        vize_carton::path::canonicalize_non_verbatim(&route.manifest_path),
+        super::super::canonical_paths::canonical_path(&route.package_root),
+        super::super::canonical_paths::canonical_path(&route.manifest_path),
     )
 }
 
@@ -164,7 +164,7 @@ impl VirtualProject {
         if !route.workspace_source {
             return;
         }
-        let root = vize_carton::path::canonicalize_non_verbatim(&route.package_root);
+        let root = super::super::canonical_paths::canonical_path(&route.package_root);
         let Some(sources) = self.package_source_index.get(&root) else {
             return;
         };

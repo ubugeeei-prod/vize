@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 use vize_carton::FxHashSet;
 
 use super::VirtualProject;
+use super::canonical_paths::{CanonicalPathGuard, canonical_path};
 use super::package_node_modules::{
     PackageNodeModulesLink, package_node_modules_links_with_passthrough,
 };
@@ -76,17 +77,14 @@ impl VirtualProject {
         &self,
         expected_files: &FxHashSet<PathBuf>,
     ) -> vize_carton::FxHashMap<PathBuf, PathBuf> {
+        let _canonical_paths = CanonicalPathGuard::enter();
         let links = self.package_links_for_files(expected_files);
         let mut desired = vize_carton::FxHashMap::default();
         for link in links {
             let real_dir = if self.authored_workspace_alias_target(&link.real_dir) {
                 link.real_dir
             } else {
-                std::fs::canonicalize(&link.real_dir)
-                    .map(vize_carton::path::normalize_windows_verbatim_path)
-                    .unwrap_or_else(|_| {
-                        vize_carton::path::canonicalize_non_verbatim(&link.real_dir)
-                    })
+                canonical_path(&link.real_dir)
             };
             desired.entry(link.virtual_dir).or_insert(real_dir);
         }

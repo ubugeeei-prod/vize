@@ -1,6 +1,7 @@
 //! Owned links to existing authored workspace shadows, never fresh type copies.
 
 mod install_roots;
+mod link_overlap;
 
 use std::path::{Path, PathBuf};
 
@@ -299,8 +300,9 @@ impl VirtualProject {
         let committed_links = self.committed_package_link_receipt();
         let mut checked = self.workspace_owned_parent_dirs(extra_owned_files);
         let install_roots = self.workspace_install_roots()?;
+        let link_paths = link_overlap::LinkPathIndex::from_links(links);
         for root in &install_roots {
-            if links.keys().any(|path| root.starts_with(path)) {
+            if link_paths.covers(root) {
                 return Err(std::io::Error::new(
                     std::io::ErrorKind::InvalidData,
                     "Owned workspace installation overlaps a package link",
@@ -317,14 +319,7 @@ impl VirtualProject {
             if !target.starts_with(&self.virtual_root) {
                 continue;
             }
-            if !alias.starts_with(&self.virtual_root)
-                || links.keys().any(|path| {
-                    path != alias
-                        && (alias.starts_with(path)
-                            || path.starts_with(alias)
-                            || target.starts_with(path))
-                })
-            {
+            if !alias.starts_with(&self.virtual_root) || link_paths.alias_overlaps(alias, target) {
                 return Err(std::io::Error::new(
                     std::io::ErrorKind::InvalidData,
                     "Workspace package alias overlaps another package link",
@@ -347,10 +342,11 @@ impl VirtualProject {
                 .then_with(|| left.cmp(right))
         });
         let mut retire = Vec::<PathBuf>::new();
+        let mut retired = FxHashSet::default();
         for path in directories {
             // Descendants of a proved cache link disappear with that link;
             // never inspect their metadata through its external endpoint.
-            if retire.iter().any(|parent| path.starts_with(parent)) {
+            if link_overlap::retired_link_ancestor(&retired, &path) {
                 continue;
             }
             match std::fs::symlink_metadata(&path) {
@@ -379,6 +375,7 @@ impl VirtualProject {
                         )
                         .into());
                     }
+                    retired.insert(path.clone());
                     retire.push(path);
                 }
                 Ok(metadata) if !metadata.is_dir() => {

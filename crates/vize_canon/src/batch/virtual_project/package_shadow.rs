@@ -13,6 +13,7 @@ use crate::package_route::PackageRouteKey;
 
 use super::VirtualProject;
 use super::build::mirrored_virtual_path;
+use super::canonical_paths::{CanonicalPathGuard, canonical_path};
 
 #[derive(Clone, Default)]
 pub(super) struct PackageShadowTopology {
@@ -60,6 +61,7 @@ impl PackageShadowTraversal {
 
 impl VirtualProject {
     pub(super) fn rebuild_package_shadows(&mut self) -> CorsaResult<()> {
+        let _canonical_paths = CanonicalPathGuard::enter();
         if !self.package_shadows_initialized {
             self.package_shadow_files.clear();
             self.package_shadow_manifests.clear();
@@ -295,7 +297,12 @@ impl VirtualProject {
         shadow_root: &Path,
         topology: &mut PackageShadowTopology,
     ) {
-        let normalized_root = vize_carton::path::canonicalize_non_verbatim(&route.package_root);
+        // A source whose probe path is the source itself cannot name a
+        // workspace dependency output. Skip before pairing it with every file.
+        if source.source_path == source.native_probe_path {
+            return;
+        }
+        let normalized_root = canonical_path(&route.package_root);
         let Some(indexed_sources) = self.package_source_index.get(&normalized_root) else {
             return;
         };
@@ -324,7 +331,7 @@ impl VirtualProject {
         shadow_root: &Path,
         topology: &mut PackageShadowTopology,
     ) {
-        let normalized_root = vize_carton::path::canonicalize_non_verbatim(source_root);
+        let normalized_root = canonical_path(source_root);
         let mut source_files = self
             .package_source_index
             .get(&normalized_root)
@@ -371,7 +378,7 @@ impl VirtualProject {
 }
 
 fn private_package_shadow_root(virtual_root: &Path, manifest_path: &Path) -> PathBuf {
-    let manifest_path = vize_carton::path::canonicalize_non_verbatim(manifest_path);
+    let manifest_path = canonical_path(manifest_path);
     let mut digest = Sha256::new();
     digest.update(b"vize-private-package-shadow:v1\0");
     #[cfg(unix)]

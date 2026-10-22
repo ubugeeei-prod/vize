@@ -39,6 +39,7 @@ pub use content_mapper::{
 };
 pub use content_mapper_config::ContentMapperProjectConfiguration;
 mod cache_gc;
+mod canonical_paths;
 mod css_var_usage;
 mod declaration_emit;
 pub(crate) mod dependency_scan;
@@ -129,6 +130,12 @@ mod incomplete_expression_tests;
 #[cfg(test)]
 mod tests;
 
+#[expect(
+    clippy::disallowed_types,
+    reason = "bindings share reachability inputs through Arc"
+)]
+#[cfg(test)]
+mod shadow_prep_scale;
 #[cfg(test)]
 mod unknown_checks_tests;
 

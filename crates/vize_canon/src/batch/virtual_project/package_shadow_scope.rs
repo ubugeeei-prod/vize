@@ -223,8 +223,8 @@ fn is_canon_runtime_entry(package_name: &str) -> bool {
 
 fn shadow_identity(route: &crate::PackageRoute) -> ShadowIdentity {
     (
-        vize_carton::path::canonicalize_non_verbatim(&route.package_root),
-        vize_carton::path::canonicalize_non_verbatim(&route.manifest_path),
+        super::canonical_paths::canonical_path(&route.package_root),
+        super::canonical_paths::canonical_path(&route.manifest_path),
     )
 }
 

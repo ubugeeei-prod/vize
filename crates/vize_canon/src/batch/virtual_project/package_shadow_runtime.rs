@@ -2,13 +2,15 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_carton::{FxHashSet, String as CompactString, cstr};
+use vize_carton::{FxHashMap, FxHashSet, String as CompactString, cstr};
 
 use crate::batch::declaration_path::is_declaration_file;
 use crate::batch::error::CorsaResult;
 
 use super::VirtualProject;
-use super::package_node_modules::{PackageNodeModulesLink, merge_aware_node_modules_links};
+use super::package_node_modules::{
+    MaterializedPrefixIndex, PackageNodeModulesLink, merge_aware_node_modules_links,
+};
 
 impl VirtualProject {
     pub(super) fn package_shadow_content(
@@ -103,39 +105,109 @@ impl VirtualProject {
         &self,
         expected_files: &FxHashSet<PathBuf>,
     ) -> Vec<PackageNodeModulesLink> {
-        let mut links = Vec::new();
+        let mut scan = DependencyLinkScan::new(expected_files, &self.package_shadow_manifests);
         for binding in self.package_routes.values() {
-            let Some(root_route) = binding.route.as_ref() else {
+            let Some(route) = binding.route.as_ref() else {
                 continue;
             };
-            for route in root_route.all_routes() {
-                let real_dir = route.package_root.join("node_modules");
-                if !real_dir.is_dir() {
-                    continue;
-                }
-                let shadow_roots =
-                    self.package_shadow_manifests
-                        .iter()
-                        .filter_map(|(manifest, original)| {
-                            (original == &route.manifest_path)
-                                .then(|| manifest.parent().map(Path::to_path_buf))
-                                .flatten()
-                        });
-                for shadow_root in shadow_roots {
-                    let virtual_dir = shadow_root.join("node_modules");
-                    links.extend(merge_aware_node_modules_links(
-                        &real_dir,
-                        &virtual_dir,
-                        expected_files.iter().map(PathBuf::as_path),
-                    ));
-                }
-            }
+            scan.walk(route);
         }
-        links.sort_by(|left, right| {
+        scan.finish()
+    }
+}
+
+struct DependencyLinkScan<'a> {
+    files: MaterializedPrefixIndex<'a>,
+    shadows_by_manifest: FxHashMap<&'a Path, Vec<&'a Path>>,
+    seen_routes: FxHashSet<(PathBuf, PathBuf)>,
+    seen_links: FxHashSet<(PathBuf, PathBuf)>,
+    node_modules_dirs: FxHashMap<PathBuf, bool>,
+    links: Vec<PackageNodeModulesLink>,
+}
+
+impl<'a> DependencyLinkScan<'a> {
+    fn new(
+        expected_files: &'a FxHashSet<PathBuf>,
+        manifests: &'a FxHashMap<PathBuf, PathBuf>,
+    ) -> Self {
+        let mut shadows_by_manifest: FxHashMap<&Path, Vec<&Path>> = FxHashMap::default();
+        for (manifest, original) in manifests {
+            let Some(shadow_root) = manifest.parent() else {
+                continue;
+            };
+            shadows_by_manifest
+                .entry(original.as_path())
+                .or_default()
+                .push(shadow_root);
+        }
+        Self {
+            files: MaterializedPrefixIndex::from_files(expected_files.iter().map(PathBuf::as_path)),
+            shadows_by_manifest,
+            seen_routes: FxHashSet::default(),
+            seen_links: FxHashSet::default(),
+            node_modules_dirs: FxHashMap::default(),
+            links: Vec::new(),
+        }
+    }
+
+    fn walk(&mut self, route: &crate::PackageRoute) {
+        if !self
+            .seen_routes
+            .insert((route.package_root.clone(), route.manifest_path.clone()))
+        {
+            return;
+        }
+        self.push_route_links(route);
+        for nested in &route.nested_routes {
+            self.walk(nested);
+        }
+    }
+
+    fn push_route_links(&mut self, route: &crate::PackageRoute) {
+        if !self.node_modules_dir(route) {
+            return;
+        }
+        let Some(shadow_roots) = self
+            .shadows_by_manifest
+            .get(route.manifest_path.as_path())
+            .cloned()
+        else {
+            return;
+        };
+        let real_dir = route.package_root.join("node_modules");
+        for shadow_root in shadow_roots {
+            let virtual_dir = shadow_root.join("node_modules");
+            if !self
+                .seen_links
+                .insert((virtual_dir.clone(), real_dir.clone()))
+            {
+                continue;
+            }
+            let members = self.files.descendants(&virtual_dir).to_vec();
+            self.links.extend(merge_aware_node_modules_links(
+                &real_dir,
+                &virtual_dir,
+                members.iter().copied(),
+            ));
+        }
+    }
+
+    fn node_modules_dir(&mut self, route: &crate::PackageRoute) -> bool {
+        if let Some(exists) = self.node_modules_dirs.get(&route.package_root) {
+            return *exists;
+        }
+        let exists = route.package_root.join("node_modules").is_dir();
+        self.node_modules_dirs
+            .insert(route.package_root.clone(), exists);
+        exists
+    }
+
+    fn finish(mut self) -> Vec<PackageNodeModulesLink> {
+        self.links.sort_by(|left, right| {
             (&left.virtual_dir, &left.real_dir).cmp(&(&right.virtual_dir, &right.real_dir))
         });
-        links.dedup();
-        links
+        self.links.dedup();
+        self.links
     }
 }
 
