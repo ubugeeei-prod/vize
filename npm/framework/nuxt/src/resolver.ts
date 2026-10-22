@@ -2,7 +2,7 @@ import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-// import.meta is banned in this file (Nuxt 2 webpack). A fixture can load
+// Nuxt 2 webpack cannot parse a module URL in this file. A fixture can load
 // dist/index.mjs without installing @vizejs/nuxt into rootDir, so the running
 // dist entry is taken from the stack only after rootDir resolution fails.
 const RUNNING_DIST_ENTRY =
