@@ -84,23 +84,28 @@ fn issue_10353_syntax_error_keeps_sfc_module_types() {
         .iter()
         .find(|file| file.original_path.ends_with("broken.ts"))
         .expect("broken.ts must be materialized");
+    let kept_item = widget.content.split("export interface Item").nth(1).is_some();
     assert!(
-        widget.content.contains("export interface Item"),
+        kept_item,
         "SFC module dropped its interface export:\n{}",
         widget.content
     );
+    let shim_double = importer.content.split("\"*.vue\"").nth(1).is_some();
+    let shim_single = importer.content.split("'*.vue'").nth(1).is_some();
     assert!(
-        !importer.content.contains("\"*.vue\"") && !importer.content.contains("'*.vue'"),
+        !shim_double && !shim_single,
         "importer was redirected to the wildcard shim:\n{}",
         importer.content
     );
+    let kept_module = importer.content.split("Widget.vue.ts").nth(1).is_some();
     assert!(
-        importer.content.contains("Widget.vue.ts"),
+        kept_module,
         "importer must keep the per-file SFC module:\n{}",
         importer.content
     );
+    let kept_syntax = broken.content.split("export const bad: = 1").nth(1).is_some();
     assert!(
-        broken.content.contains("export const bad: = 1"),
+        kept_syntax,
         "syntax error was rewritten away:\n{}",
         broken.content
     );
@@ -142,10 +147,11 @@ fn issue_10353_syntax_error_keeps_sfc_module_types() {
             .any(|diagnostic| diagnostic.code == Some(1110)),
         "syntax error must remain\n{detail}"
     );
+    let shim_diagnostic = result.diagnostics.iter().any(|diagnostic| {
+        diagnostic.code == Some(2614) || diagnostic.message.split("*.vue").nth(1).is_some()
+    });
     assert!(
-        result.diagnostics.iter().all(
-            |diagnostic| diagnostic.code != Some(2614) && !diagnostic.message.contains("*.vue")
-        ),
+        !shim_diagnostic,
         "SFC import resolved as the wildcard shim\n{detail}"
     );
     let _ = std::fs::remove_dir_all(&project_root);

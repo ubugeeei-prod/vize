@@ -108,8 +108,12 @@ fn issue_10353_snapshot_skips_mirrored_authored_sources() {
         MaterializedSnapshot::capture(project.virtual_root(), SourceFilePolicy::default()).unwrap();
     snapshot.extend_diagnostic_paths(&project).unwrap();
 
-    assert!(snapshot.uris.contains(&path_to_file_uri(&notes)));
-    assert!(!snapshot.uris.contains(&path_to_file_uri(&source)));
+    let notes_uri = path_to_file_uri(&notes);
+    let source_uri = path_to_file_uri(&source);
+    let kept_notes = snapshot.uris.iter().any(|uri| uri == &notes_uri);
+    let skipped_source = snapshot.uris.iter().all(|uri| uri != &source_uri);
+    assert!(kept_notes);
+    assert!(skipped_source);
 }
 
 #[cfg(unix)]
