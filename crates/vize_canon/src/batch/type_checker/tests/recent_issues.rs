@@ -56,6 +56,7 @@ mod slot_key;
 mod split_script_diagnostic_anchors;
 mod spread_props;
 mod spread_scope_bindings;
+mod sfc_syntax_error_module;
 mod strict_route_instance_global;
 mod template_handler_block_globals;
 mod template_handler_ts7006;

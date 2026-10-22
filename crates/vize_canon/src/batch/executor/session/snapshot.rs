@@ -7,7 +7,7 @@ use vize_carton::{FxHashMap, String, hash::hash_bytes};
 
 use super::{VirtualProject, is_internal_virtual_project_stub, is_under_virtual_node_modules};
 use crate::batch::error::CorsaResult;
-use crate::batch::executor::session::diagnostic_paths::is_authored_diagnostic_input;
+use crate::batch::executor::session::diagnostic_paths::unmirrored_authored_diagnostic_paths;
 use crate::batch::source_policy::SourceFilePolicy;
 use crate::batch::virtual_project::MaterializedFileDelta;
 use crate::file_uri::path_to_file_uri;
@@ -69,10 +69,7 @@ impl MaterializedSnapshot {
     }
 
     pub(super) fn extend_diagnostic_paths(&mut self, project: &VirtualProject) -> CorsaResult<()> {
-        for path in project.diagnostic_paths_sorted() {
-            if !path.is_file() || !is_authored_diagnostic_input(&path) {
-                continue;
-            }
+        for path in unmirrored_authored_diagnostic_paths(project) {
             let content = std::fs::read(&path)?;
             self.revisions.insert(path.clone(), hash_bytes(&content));
             self.uris.push(path_to_file_uri(&path));

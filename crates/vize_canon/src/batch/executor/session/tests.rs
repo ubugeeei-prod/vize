@@ -90,6 +90,28 @@ fn snapshot_tracks_in_place_diagnostic_source_changes() {
     assert_eq!(after.diff(&before).changed, vec![source]);
 }
 
+#[test]
+fn issue_10353_snapshot_skips_mirrored_authored_sources() {
+    use crate::file_uri::path_to_file_uri;
+
+    let temp = tempfile::tempdir().unwrap();
+    let root = temp.path().canonicalize().unwrap();
+    let source = root.join("use.ts");
+    let notes = root.join("notes.ts");
+    std::fs::write(&source, "import Widget from \"./Widget.vue\";\n").unwrap();
+    std::fs::write(&notes, "export const notes = 1\n").unwrap();
+    let mut project = VirtualProject::new(&root).unwrap();
+    std::fs::create_dir_all(project.virtual_root()).unwrap();
+    project.register_path(&source).unwrap();
+    project.set_diagnostic_paths([source.as_path(), notes.as_path()]);
+    let mut snapshot =
+        MaterializedSnapshot::capture(project.virtual_root(), SourceFilePolicy::default()).unwrap();
+    snapshot.extend_diagnostic_paths(&project).unwrap();
+
+    assert!(snapshot.uris.contains(&path_to_file_uri(&notes)));
+    assert!(!snapshot.uris.contains(&path_to_file_uri(&source)));
+}
+
 #[cfg(unix)]
 #[test]
 fn incremental_snapshot_hashes_directory_symlink_retargets_without_reading_the_directory() {
