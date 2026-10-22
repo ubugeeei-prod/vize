@@ -34,6 +34,7 @@ pub fn snapshot_tsconfig_vue_target(
 ) -> CorsaResult<Option<vize_carton::config::VueVersion>> {
     let options = load_vue_compiler_options(Some(tsconfig_path))?;
     vue_target_from_options(project_root, tsconfig_path, &options, None)
+        .map(|(version, _manifest)| version)
 }
 
 /// Flatten the effective `vueCompilerOptions` for a TypeScript project.
@@ -53,9 +54,12 @@ pub(in crate::batch::virtual_project) fn vue_target_from_options(
     tsconfig_path: &Path,
     options: &Map<std::string::String, Value>,
     inputs: Option<&CompilerInputs>,
-) -> CorsaResult<Option<vize_carton::config::VueVersion>> {
+) -> CorsaResult<(
+    Option<vize_carton::config::VueVersion>,
+    Option<std::path::PathBuf>,
+)> {
     let Some(target) = options.get("target") else {
-        return Ok(None);
+        return Ok((None, None));
     };
     if target.as_str() == Some("auto") {
         let directory = tsconfig_path.parent().unwrap_or(project_root);
@@ -79,9 +83,9 @@ pub(in crate::batch::virtual_project) fn vue_target_from_options(
         let minor = parts.next().and_then(|part| part.parse::<u32>().ok());
         use vize_carton::config::VueVersion;
         return match (major, minor) {
-            (Some(2), Some(0..=6)) => Ok(Some(VueVersion::V2)),
-            (Some(2), Some(7)) => Ok(Some(VueVersion::V2_7)),
-            (Some(3), Some(_)) => Ok(Some(VueVersion::V3)),
+            (Some(2), Some(0..=6)) => Ok((Some(VueVersion::V2), Some(manifest_path))),
+            (Some(2), Some(7)) => Ok((Some(VueVersion::V2_7), Some(manifest_path))),
+            (Some(3), Some(_)) => Ok((Some(VueVersion::V3), Some(manifest_path))),
             _ => Err(crate::batch::error::CorsaError::Configuration(
                 vize_carton::cstr!(
                     "unsupported installed Vue version {version:?} in {} for vueCompilerOptions.target \"auto\"",
@@ -102,7 +106,9 @@ pub(in crate::batch::virtual_project) fn vue_target_from_options(
             None
         }
     });
-    version.map(Some).ok_or_else(|| {
+    version
+        .map(|version| (Some(version), None))
+        .ok_or_else(|| {
         crate::batch::error::CorsaError::Configuration(vize_carton::cstr!(
             "unsupported vueCompilerOptions.target {target} in {}; expected a numeric Vue 2.x target up to 2.7, a Vue 3.x target, 99, or \"auto\"",
             tsconfig_path.display()
@@ -296,7 +302,7 @@ impl VirtualProject {
         };
         vue_target_from_options(&self.project_root, path, options, None)
             .ok()
-            .flatten()
+            .and_then(|(version, _manifest)| version)
     }
 
     #[cfg(test)]

@@ -195,6 +195,7 @@ impl CompilerConfigurationSnapshot {
                         &vue_options,
                         Some(&inputs),
                     )
+                    .map(|(version, _manifest)| version)
                 })
                 .map_err(|error| vize_carton::cstr!("{error}"));
             let solution_shell = tsconfig_path.is_some_and(|path| {
