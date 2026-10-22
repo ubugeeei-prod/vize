@@ -185,30 +185,23 @@ fn full_malformed_descriptors_keep_their_setup_role_and_generic_without_recoveri
                 if name == "withScript.vue" {
                     assert_eq!(after.code.matches("const __default__").count(), 1);
                     assert!(!after.code.contains("export default{}"));
-                } else {
-                    assert!(
-                        !packet["before"]["wholeActualImportRewriterSpecifiers"]
-                            .as_array()
-                            .unwrap()
-                            .iter()
-                            .any(|specifier| specifier == "vue")
-                    );
                 }
-                // The genuine missing terminator refuses the whole OXC AST,
-                // even after the authored import is retained at module scope.
+                // The missing terminator still refuses the whole program.
+                // The clean prefix records `import('vue')` from the generated
+                // preamble. The glued authored import is not its own statement.
                 for phase in ["before", "after"] {
                     assert_eq!(
                         packet[phase]["wholeOxcParser"]["panicked"], true,
-                        "{packet}"
+                        "{name} {phase}"
                     );
                     assert_eq!(
                         packet[phase]["wholeOxcParser"]["programBodyLength"], 0,
-                        "{packet}"
+                        "{name} {phase}"
                     );
                     assert_eq!(
                         packet[phase]["wholeActualImportRewriterSpecifiers"],
-                        serde_json::json!([]),
-                        "{packet}"
+                        serde_json::json!(["vue"]),
+                        "{name} {phase}"
                     );
                 }
                 assert_eq!(after.code.matches("import { ref } from 'vue'").count(), 1);
