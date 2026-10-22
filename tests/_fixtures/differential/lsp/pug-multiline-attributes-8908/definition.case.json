@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "id": "lsp/fix-history/pug-multiline-attribute-definition-8908",
+  "provenance": {
+    "fixCommit": "2c4b8275af5548cf9e29ec377cc4afc4211f56f9",
+    "issue": 8908,
+    "witnessPath": "crates/vize_maestro/src/ide/definition/tests/pug_template.rs",
+    "witnessTest": "pug_multiline_directive_values_resolve_like_html_attributes",
+    "meaning": "a binding in a multiline Pug attribute value navigates to its authored script declaration"
+  },
+  "documentVersion": 1,
+  "languageId": "vue",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "input": {
+    "source": "App.vue.txt",
+    "runtimePath": "App.vue",
+    "sha256": "f2f3ddb31e7144b88bebefda086a4f545c7010007c3c679089fe28973c7adc50"
+  },
+  "expected": {
+    "source": "response.definition.expected.json",
+    "sha256": "a97ca2c047a9af1ccb983311fdc4fa97fb5c905f8a5e4bb02ddb944a8f73132e"
+  },
+  "method": "textDocument/definition",
+  "request": {
+    "position": {
+      "line": 7,
+      "character": 12
+    }
+  },
+  "scope": "complete stdio scalar response for the historical multiline Pug attribute-value navigation fix"
+}
