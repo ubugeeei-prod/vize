@@ -100,12 +100,7 @@ fn strict_component_attrs_resolves_single_root_surfaces_without_fallthrough_opt_
         let summary = analyzer.finish();
         let options = VirtualTsOptions::default();
         let type_imports = Default::default();
-        let scope = FallthroughComponentScope::new(
-            &summary,
-            &options,
-            &type_imports,
-            checks,
-        );
+        let scope = FallthroughComponentScope::new(&summary, &options, &type_imports, checks);
 
         assert!(scope.resolve_component_roots);
         assert!(!scope.check_required);

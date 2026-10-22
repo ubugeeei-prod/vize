@@ -59,10 +59,10 @@ function capture(pack: keyof typeof TYPECHECKER_TESTS): Capture {
 }
 
 test("the shared registry retains all existing production projects and exact input bytes", () => {
-  assert.equal(loaded.cases.length, 78);
+  assert.equal(loaded.cases.length, 79);
   assert.equal(
     loaded.cases.reduce((count, fixture) => count + fixture.inputs.length, 0),
-    287,
+    290,
   );
   assert.deepEqual(
     [...new Set(loaded.cases.map((fixture) => fixture.pack))],

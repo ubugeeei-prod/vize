@@ -4325,6 +4325,58 @@
           }
         ]
       }
+    },
+    {
+      "id": "typechecker/strict-fallthrough-default-7856/native-single-root-valid",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "strict-fallthrough-default-7856",
+      "case": "native-single-root-valid",
+      "test": "strict_component_attrs_infer_default_fallthrough_surfaces",
+      "regressionCommit": "d32790c869ac18c1e0e24e82a8876d796190133a",
+      "sourceRevision": "d32790c869ac18c1e0e24e82a8876d796190133a",
+      "packReference": {
+        "path": "strict-fallthrough-default-7856/cases.json",
+        "sha256": "fb082fb10914b7dddbf9abf8bdcd598f2572b41e5b46b17cf8d0f418f44691aa"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "strict-fallthrough-default-7856/tsconfig.json.txt",
+          "sha256": "b2759f583d1cf151abfc53597d940097b0b042048d7d892e1b788c68af3c8961"
+        },
+        {
+          "file": "src/Child.vue",
+          "path": "strict-fallthrough-default-7856/src/Child.vue.txt",
+          "sha256": "b6f69255cad5b5433c5e4075df012f6f0b6075675b85774d79e79b61fdbbede9"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "strict-fallthrough-default-7856/src/App.vue.txt",
+          "sha256": "9c06bdd2610b0a00b1ad0b703851fe4af0343229186a98fd854e298ce160a52d"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }
