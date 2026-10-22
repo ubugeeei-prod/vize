@@ -1,3 +1,4 @@
+/* eslint-disable script/one-component-per-file -- this module defines more than one component */
 import assert from "node:assert/strict";
 
 import { afterEach, test } from "vite-plus/test";

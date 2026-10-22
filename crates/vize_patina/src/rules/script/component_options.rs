@@ -141,9 +141,8 @@ fn expand_components<'a>(
     bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
 ) {
     let mut index = 0;
-    while index < objects.len() {
-        let extras = component_map_values(objects[index], bindings);
-        for extra in extras {
+    while let Some(options) = objects.get(index).copied() {
+        for extra in component_map_values(options, bindings) {
             push_unique(objects, extra);
         }
         index += 1;
@@ -165,10 +164,10 @@ fn component_map_values<'a>(
         let ObjectPropertyKind::ObjectProperty(property) = property else {
             continue;
         };
-        if let Some(object) = object_from_expression(&property.value, bindings) {
-            if object.span.start != map.span.start {
-                found.push(object);
-            }
+        if let Some(object) = object_from_expression(&property.value, bindings)
+            && object.span.start != map.span.start
+        {
+            found.push(object);
         }
     }
     found

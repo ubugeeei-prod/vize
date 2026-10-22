@@ -124,3 +124,40 @@ export default config;
             .all(|diagnostic| diagnostic.rule_name != "script/no-options-api")
     );
 }
+
+#[test]
+fn plain_module_eslint_disable_suppresses_one_component_per_file() {
+    let open = "export const A = defineComponent({});\nexport const B = defineComponent({});\n";
+    let reported = Linter::with_preset(LintPreset::Opinionated).lint_script(open, "probes.ts");
+    assert_eq!(
+        reported
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.rule_name == "script/one-component-per-file")
+            .count(),
+        2,
+        "{:?}",
+        reported.diagnostics
+    );
+
+    let source = "/* eslint-disable script/one-component-per-file */\n\
+export const A = defineComponent({});\n\
+export const B = defineComponent({});\n";
+    let suppressed = Linter::with_preset(LintPreset::Opinionated).lint_script(source, "probes.ts");
+    assert!(
+        suppressed
+            .diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule_name != "script/one-component-per-file"),
+        "{:?}",
+        suppressed.diagnostics
+    );
+    assert_eq!(
+        suppressed
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.severity == crate::diagnostic::Severity::Warning)
+            .count(),
+        suppressed.warning_count
+    );
+}

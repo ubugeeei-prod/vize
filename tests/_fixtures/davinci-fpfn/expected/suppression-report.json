@@ -7,7 +7,7 @@
   },
   "ruleMap": {
     "fixture": "tests/_fixtures/patina-eslint-vue-rule-map.json",
-    "mappedRules": 130,
+    "mappedRules": 139,
     "coreSidecarRules": 0
   },
   "scope": {

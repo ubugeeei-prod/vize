@@ -191,6 +191,15 @@ fn parse_eslint_rule_list(raw: &str) -> Vec<String> {
                 "script/no-use-computed-property-like-method"
             }
             "vue/require-valid-default-prop" => "script/require-valid-default-prop",
+            "vue/no-computed-properties-in-data" => "script/no-computed-properties-in-data",
+            "vue/no-deprecated-delete-set" => "script/no-deprecated-delete-set",
+            "vue/no-deprecated-model-definition" => "script/no-deprecated-model-definition",
+            "vue/no-deprecated-vue-config-keycodes" => "script/no-deprecated-vue-config-keycodes",
+            "vue/no-shared-component-data" => "script/no-deprecated-data-object-declaration",
+            "vue/one-component-per-file" => "script/one-component-per-file",
+            "vue/order-in-components" => "script/order-in-components",
+            "vue/require-render-return" => "script/require-render-return",
+            "vue/require-slots-as-functions" => "script/require-slots-as-functions",
             rule => rule,
         })
         .map(String::from)

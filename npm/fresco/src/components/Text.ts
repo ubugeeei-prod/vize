@@ -1,3 +1,4 @@
+/* eslint-disable script/one-component-per-file -- this module defines more than one component */
 /**
  * Text Component - Text display
  */

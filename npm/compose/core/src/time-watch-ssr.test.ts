@@ -1,3 +1,4 @@
+/* eslint-disable script/one-component-per-file -- this module defines more than one component */
 /**
  * Server-rendering contract for the timing and watch helpers: rendering the
  * same component twice produces identical markup, the markup matches what a

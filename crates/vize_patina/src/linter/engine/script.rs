@@ -1,5 +1,6 @@
 use vize_l0::ToCompactString;
 
+use crate::diagnostic::Severity;
 use crate::linter::config::{LintResult, Linter};
 
 impl Linter {
@@ -25,6 +26,17 @@ impl Linter {
             filename,
             &mut result,
         );
+        crate::context::retain_unless_source_suppressed(source, &mut result.diagnostics);
+        result.error_count = result
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.severity == Severity::Error)
+            .count();
+        result.warning_count = result
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.severity == Severity::Warning)
+            .count();
         result
             .diagnostics
             .sort_unstable_by_key(|diagnostic| (diagnostic.start, diagnostic.end));

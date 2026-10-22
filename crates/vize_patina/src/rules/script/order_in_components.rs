@@ -30,6 +30,7 @@ use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{ObjectPropertyKind, Program};
 use oxc_span::Span;
+use vize_l0::cstr;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/order-in-components",
@@ -93,7 +94,10 @@ struct OrderedKey<'a> {
 fn report_unordered(keys: &[OrderedKey<'_>], offset: usize, result: &mut ScriptLintResult) {
     for (position, key) in keys.iter().enumerate() {
         let mut earlier: Option<&OrderedKey<'_>> = None;
-        for candidate in &keys[..position] {
+        let Some(preceding) = keys.get(..position) else {
+            continue;
+        };
+        for candidate in preceding {
             if candidate.index > key.index
                 && earlier.is_none_or(|current| candidate.index < current.index)
             {
@@ -105,19 +109,20 @@ fn report_unordered(keys: &[OrderedKey<'_>], offset: usize, result: &mut ScriptL
         };
         let start = offset as u32 + key.span.start;
         let end = offset as u32 + key.span.end;
-        let message = format!(
-            "The \"{}\" property should be above the \"{}\" property on line {}.",
-            key.name, earlier.name, earlier.line
+        let name = key.name;
+        let other = earlier.name;
+        let line = earlier.line;
+        let message = cstr!(
+            "The \"{name}\" property should be above the \"{other}\" property on line {line}."
         );
         result.add_diagnostic(LintDiagnostic::warn(META.name, message, start, end));
     }
 }
 
 fn line_of(source: &str, start: u32) -> usize {
-    let end = usize::try_from(start)
-        .unwrap_or(source.len())
-        .min(source.len());
-    source[..end].bytes().filter(|byte| *byte == b'\n').count() + 1
+    let end = usize::try_from(start).unwrap_or(source.len());
+    let prefix = source.get(..end).unwrap_or(source);
+    prefix.bytes().filter(|byte| *byte == b'\n').count() + 1
 }
 
 fn order_index(name: &str) -> Option<u8> {

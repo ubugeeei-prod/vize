@@ -9,7 +9,9 @@ mod reporting;
 mod sfc_directives;
 mod state;
 
-pub(crate) use reporting::{offset_diagnostic, retain_unless_sfc_suppressed};
+pub(crate) use reporting::{
+    offset_diagnostic, retain_unless_sfc_suppressed, retain_unless_source_suppressed,
+};
 pub use state::{DisabledRange, ElementContext, SsrMode};
 
 use crate::diagnostic::{HelpLevel, LintDiagnostic, Severity};

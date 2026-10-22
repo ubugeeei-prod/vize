@@ -1,3 +1,4 @@
+/* eslint-disable script/one-component-per-file -- this module defines more than one component */
 /**
  * Server-rendering contract for the ref helpers and state factories:
  * rendering twice yields identical markup that equals the client's first

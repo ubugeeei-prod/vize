@@ -4,6 +4,7 @@ use crate::diagnostic::{LintDiagnostic, Severity};
 use vize_atelier_sfc::SfcDescriptor;
 use vize_l0::directive::DirectiveSeverity;
 
+use super::eslint_directive::{InlineSuppressionState, parse_eslint_disable_comment};
 use super::{LintContext, SfcDirectiveState};
 
 #[derive(Clone, Copy)]
@@ -196,6 +197,37 @@ pub(crate) fn retain_unless_sfc_suppressed(
         !directives.is_disabled_at(diagnostic.rule_name, line, diagnostic.start)
     });
     diagnostics.len() != before
+}
+
+/// Drop diagnostics covered by an `eslint-*` / `oxlint-*` comment in a plain
+/// script module. SFC blocks use [`retain_unless_sfc_suppressed`]; standalone
+/// `.js` and `.ts` files never enter that scan.
+pub(crate) fn retain_unless_source_suppressed(source: &str, diagnostics: &mut Vec<LintDiagnostic>) {
+    if diagnostics.is_empty()
+        || (!source.contains("eslint-disable")
+            && !source.contains("oxlint-disable")
+            && !source.contains("eslint-enable")
+            && !source.contains("oxlint-enable"))
+    {
+        return;
+    }
+    let mut state = InlineSuppressionState::default();
+    for (index, line) in source.lines().enumerate() {
+        if let Some(directive) = parse_eslint_disable_comment(line) {
+            let line_number = u32::try_from(index).unwrap_or(u32::MAX).saturating_add(1);
+            state.record(directive, line_number);
+        }
+    }
+    diagnostics.retain(|diagnostic| {
+        let line = source_line_number(source, diagnostic.start);
+        !state.is_disabled_at(diagnostic.rule_name, line)
+    });
+}
+
+fn source_line_number(source: &str, start: u32) -> u32 {
+    let end = usize::try_from(start).unwrap_or(source.len());
+    let prefix = source.get(..end).unwrap_or(source);
+    u32::try_from(prefix.bytes().filter(|byte| *byte == b'\n').count()).unwrap_or(u32::MAX) + 1
 }
 
 /// Shift every range carried by a diagnostic into its containing source.

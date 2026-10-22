@@ -652,5 +652,157 @@
         "after": "pub use require_component_registration::{\n    NUXT_BUILTIN_COMPONENTS, RequireComponentRegistration, VUE_ROUTER_COMPONENTS,\n};"
       }
     ]
+  },
+  {
+    "reason": "vue3-recommended script rules for computed data, Vue 3 removals, render return, slots, one component, and option order",
+    "path": "crates/vize_patina/src/linter/script_rules/registry.rs",
+    "before": {
+      "bytes": 4998,
+      "sha256": "1539c0f45077e156a8c3c5fe7e7a3ef93ac64ae31caf39dc95ecde6b4f6cca3b"
+    },
+    "after": {
+      "bytes": 5196,
+      "sha256": "8a1c6f90c889f8174546d363ce30b2318cd3873155ccd921a898b81f8c7981a0"
+    },
+    "hunks": [
+      {
+        "before": "    RULE_NO_ASYNC_IN_COMPUTED, RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION,\n    RULE_NO_DEPRECATED_DESTROYED_LIFECYCLE, RULE_NO_DEPRECATED_DOLLAR_LISTENERS_API,\n    RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API, RULE_NO_DEPRECATED_EVENTS_API,\n",
+        "after": "    RULE_NO_ASYNC_IN_COMPUTED, RULE_NO_COMPUTED_PROPERTIES_IN_DATA,\n    RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION, RULE_NO_DEPRECATED_DESTROYED_LIFECYCLE,\n    RULE_NO_DEPRECATED_DOLLAR_LISTENERS_API, RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API,\n    RULE_NO_DEPRECATED_EVENTS_API, RULE_NO_DEPRECATED_MODEL_DEFINITION,\n"
+      },
+      {
+        "before": "    RULE_PINIA_PREFER_STORE_TO_REFS, RULE_PREFER_COMPUTED, RULE_PREFER_IMPORT_FROM_VUE,\n    RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR, RULE_REQUIRE_PROP_TYPES, RULE_REQUIRE_TYPED_REF,\n    RULE_REQUIRE_VALID_DEFAULT_PROP, RULE_RETURN_IN_COMPUTED_PROPERTY,\n",
+        "after": "    RULE_ONE_COMPONENT_PER_FILE, RULE_ORDER_IN_COMPONENTS, RULE_PINIA_PREFER_STORE_TO_REFS,\n    RULE_PREFER_COMPUTED, RULE_PREFER_IMPORT_FROM_VUE, RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR,\n    RULE_REQUIRE_PROP_TYPES, RULE_REQUIRE_RENDER_RETURN, RULE_REQUIRE_SLOTS_AS_FUNCTIONS,\n    RULE_REQUIRE_TYPED_REF, RULE_REQUIRE_VALID_DEFAULT_PROP, RULE_RETURN_IN_COMPUTED_PROPERTY,\n"
+      }
+    ]
+  },
+  {
+    "reason": "vue3-recommended script rules for computed data, Vue 3 removals, render return, slots, one component, and option order",
+    "path": "crates/vize_patina/src/linter/script_rules/registry/rules.rs",
+    "before": {
+      "bytes": 23005,
+      "sha256": "800ea4322827e40e9dbde63e7dc1c169d173ba73aa0bbfb987de060f0c6a43f9"
+    },
+    "after": {
+      "bytes": 25424,
+      "sha256": "310c9cd02cf968262ff2d6b22cf41d58138f02409fcdc8c66d9db7823522c333"
+    },
+    "hunks": [
+      {
+        "before": "    RULE_NO_BOOLEAN_DEFAULT, RULE_NO_DEEP_DESTRUCTURE_IN_PROPS,\n    RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION, RULE_NO_DEPRECATED_DESTROYED_LIFECYCLE,\n",
+        "after": "    RULE_NO_BOOLEAN_DEFAULT, RULE_NO_COMPUTED_PROPERTIES_IN_DATA,\n    RULE_NO_DEEP_DESTRUCTURE_IN_PROPS, RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION,\n    RULE_NO_DEPRECATED_DELETE_SET, RULE_NO_DEPRECATED_DESTROYED_LIFECYCLE,\n"
+      },
+      {
+        "before": "    RULE_NO_DEPRECATED_EVENTS_API, RULE_NO_DEPRECATED_PROPS_DEFAULT_THIS, RULE_NO_DUPE_KEYS,\n    RULE_NO_DUPLICATE_ATTR_INHERITANCE, RULE_NO_EXPORT_IN_SCRIPT_SETUP, RULE_NO_EXPOSE_AFTER_AWAIT,\n    RULE_NO_GET_CURRENT_INSTANCE, RULE_NO_IMPORT_COMPILER_MACROS, RULE_NO_INTERNAL_IMPORTS,\n    RULE_NO_LIFECYCLE_AFTER_AWAIT, RULE_NO_MULTIPLE_SLOT_ARGS, RULE_NO_NEXT_TICK,\n    RULE_NO_OPTIONS_API, RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO, RULE_NO_REACTIVE_DESTRUCTURE,\n    RULE_NO_REF_AS_OPERAND, RULE_NO_REQUIRED_PROP_WITH_DEFAULT, RULE_NO_RESERVED_IDENTIFIERS,\n    RULE_NO_RESERVED_KEYS, RULE_NO_RESERVED_PROPS, RULE_NO_RESTRICTED_GLOBALS,\n    RULE_NO_RESTRICTED_MEMBERS, RULE_NO_SIDE_EFFECTS_IN_COMPUTED, RULE_NO_TOP_LEVEL_REF_IN_SCRIPT,\n    RULE_NO_UNSTABLE_NESTED_COMPONENTS, RULE_NO_UNUSED_EMIT_DECLARATIONS,\n    RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD, RULE_NO_WATCH_AFTER_AWAIT, RULE_NO_WITH_DEFAULTS,\n    RULE_NUXT_CONFIG_KEYS_ORDER, RULE_NUXT_NO_CONFIG_TEST_KEY,\n    RULE_NUXT_NO_PAGE_META_RUNTIME_VALUES, RULE_NUXT_PREFER_IMPORT_META,\n",
+        "after": "    RULE_NO_DEPRECATED_EVENTS_API, RULE_NO_DEPRECATED_MODEL_DEFINITION,\n    RULE_NO_DEPRECATED_PROPS_DEFAULT_THIS, RULE_NO_DEPRECATED_VUE_CONFIG_KEYCODES,\n    RULE_NO_DUPE_KEYS, RULE_NO_DUPLICATE_ATTR_INHERITANCE, RULE_NO_EXPORT_IN_SCRIPT_SETUP,\n    RULE_NO_EXPOSE_AFTER_AWAIT, RULE_NO_GET_CURRENT_INSTANCE, RULE_NO_IMPORT_COMPILER_MACROS,\n    RULE_NO_INTERNAL_IMPORTS, RULE_NO_LIFECYCLE_AFTER_AWAIT, RULE_NO_MULTIPLE_SLOT_ARGS,\n    RULE_NO_NEXT_TICK, RULE_NO_OPTIONS_API, RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO,\n    RULE_NO_REACTIVE_DESTRUCTURE, RULE_NO_REF_AS_OPERAND, RULE_NO_REQUIRED_PROP_WITH_DEFAULT,\n    RULE_NO_RESERVED_IDENTIFIERS, RULE_NO_RESERVED_KEYS, RULE_NO_RESERVED_PROPS,\n    RULE_NO_RESTRICTED_GLOBALS, RULE_NO_RESTRICTED_MEMBERS, RULE_NO_SIDE_EFFECTS_IN_COMPUTED,\n    RULE_NO_TOP_LEVEL_REF_IN_SCRIPT, RULE_NO_UNSTABLE_NESTED_COMPONENTS,\n    RULE_NO_UNUSED_EMIT_DECLARATIONS, RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD,\n    RULE_NO_WATCH_AFTER_AWAIT, RULE_NO_WITH_DEFAULTS, RULE_NUXT_CONFIG_KEYS_ORDER,\n    RULE_NUXT_NO_CONFIG_TEST_KEY, RULE_NUXT_NO_PAGE_META_RUNTIME_VALUES,\n    RULE_NUXT_PREFER_IMPORT_META, RULE_ONE_COMPONENT_PER_FILE, RULE_ORDER_IN_COMPONENTS,\n"
+      },
+      {
+        "before": "    RULE_REQUIRE_SYMBOL_PROVIDE, RULE_REQUIRE_TYPED_OBJECT_PROP, RULE_REQUIRE_TYPED_REF,\n    RULE_REQUIRE_VALID_DEFAULT_PROP, RULE_RETURN_IN_COMPUTED_PROPERTY,\n    RULE_RETURN_IN_EMITS_VALIDATOR, RULE_VALID_DEFINE_EMITS, RULE_VALID_DEFINE_OPTIONS,\n    RULE_VALID_DEFINE_PROPS, RULE_VALID_NEXT_TICK, RULE_VUE_ROUTER_PREFER_NAMED_PUSH,\n    RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,\n",
+        "after": "    RULE_REQUIRE_RENDER_RETURN, RULE_REQUIRE_SLOTS_AS_FUNCTIONS, RULE_REQUIRE_SYMBOL_PROVIDE,\n    RULE_REQUIRE_TYPED_OBJECT_PROP, RULE_REQUIRE_TYPED_REF, RULE_REQUIRE_VALID_DEFAULT_PROP,\n    RULE_RETURN_IN_COMPUTED_PROPERTY, RULE_RETURN_IN_EMITS_VALIDATOR, RULE_VALID_DEFINE_EMITS,\n    RULE_VALID_DEFINE_OPTIONS, RULE_VALID_DEFINE_PROPS, RULE_VALID_NEXT_TICK,\n    RULE_VUE_ROUTER_PREFER_NAMED_PUSH, RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,\n"
+      },
+      {
+        "before": "    NoBooleanDefault, NoDeepDestructureInProps, NoDeprecatedDataObjectDeclaration,\n    NoDeprecatedDestroyedLifecycle, NoDeprecatedDollarListenersApi,\n    NoDeprecatedDollarScopedSlotsApi, NoDeprecatedEventsApi, NoDeprecatedPropsDefaultThis,\n",
+        "after": "    NoBooleanDefault, NoComputedPropertiesInData, NoDeepDestructureInProps,\n    NoDeprecatedDataObjectDeclaration, NoDeprecatedDeleteSet, NoDeprecatedDestroyedLifecycle,\n    NoDeprecatedDollarListenersApi, NoDeprecatedDollarScopedSlotsApi, NoDeprecatedEventsApi,\n    NoDeprecatedModelDefinition, NoDeprecatedPropsDefaultThis, NoDeprecatedVueConfigKeycodes,\n"
+      },
+      {
+        "before": "    NoWatchAfterAwait, NoWithDefaults, NuxtConfigKeysOrder, PiniaPreferStoreToRefs, PreferComputed,\n    PreferDefineOptions, PreferImportFromVue, PreferImportMeta, PreferRefOverReactive,\n    PreferUseAttrs, PreferUseId, PreferUseSlots, PreferUseTemplateRef, RequireDefaultProp,\n    RequireExplicitEmits, RequireExplicitSlots, RequireFunctionReturnType,\n    RequirePropTypeConstructor, RequirePropTypes, RequireSymbolProvide, RequireTypedObjectProp,\n    RequireTypedRef, RequireValidDefaultProp, ReturnInComputedProperty, ReturnInEmitsValidator,\n    ValidDefineEmits, ValidDefineOptions, ValidDefineProps, ValidNextTick,\n    VueRouterPreferNamedPush, VueTestUtilsNoHtmlSnapshot,\n",
+        "after": "    NoWatchAfterAwait, NoWithDefaults, NuxtConfigKeysOrder, OneComponentPerFile, OrderInComponents,\n    PiniaPreferStoreToRefs, PreferComputed, PreferDefineOptions, PreferImportFromVue,\n    PreferImportMeta, PreferRefOverReactive, PreferUseAttrs, PreferUseId, PreferUseSlots,\n    PreferUseTemplateRef, RequireDefaultProp, RequireExplicitEmits, RequireExplicitSlots,\n    RequireFunctionReturnType, RequirePropTypeConstructor, RequirePropTypes, RequireRenderReturn,\n    RequireSlotsAsFunctions, RequireSymbolProvide, RequireTypedObjectProp, RequireTypedRef,\n    RequireValidDefaultProp, ReturnInComputedProperty, ReturnInEmitsValidator, ValidDefineEmits,\n    ValidDefineOptions, ValidDefineProps, ValidNextTick, VueRouterPreferNamedPush,\n    VueTestUtilsNoHtmlSnapshot,\n"
+      },
+      {
+        "before": "",
+        "after": "    BuiltinScriptRuleEntry { rule_name: RULE_NO_COMPUTED_PROPERTIES_IN_DATA, profile_name: \"patina.script_rule.no_computed_properties_in_data\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &NoComputedPropertiesInData },\n    BuiltinScriptRuleEntry { rule_name: RULE_NO_DEPRECATED_DELETE_SET, profile_name: \"patina.script_rule.no_deprecated_delete_set\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &NoDeprecatedDeleteSet },\n    BuiltinScriptRuleEntry { rule_name: RULE_NO_DEPRECATED_MODEL_DEFINITION, profile_name: \"patina.script_rule.no_deprecated_model_definition\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &NoDeprecatedModelDefinition },\n    BuiltinScriptRuleEntry { rule_name: RULE_NO_DEPRECATED_VUE_CONFIG_KEYCODES, profile_name: \"patina.script_rule.no_deprecated_vue_config_keycodes\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &NoDeprecatedVueConfigKeycodes },\n    BuiltinScriptRuleEntry { rule_name: RULE_REQUIRE_RENDER_RETURN, profile_name: \"patina.script_rule.require_render_return\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &RequireRenderReturn },\n    BuiltinScriptRuleEntry { rule_name: RULE_REQUIRE_SLOTS_AS_FUNCTIONS, profile_name: \"patina.script_rule.require_slots_as_functions\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &RequireSlotsAsFunctions },\n    BuiltinScriptRuleEntry { rule_name: RULE_ONE_COMPONENT_PER_FILE, profile_name: \"patina.script_rule.one_component_per_file\", category: \"Script\", fixable: false, presets: OPINIONATED_AND_NUXT_SCRIPT_PRESETS, rule: &OneComponentPerFile },\n    BuiltinScriptRuleEntry { rule_name: RULE_ORDER_IN_COMPONENTS, profile_name: \"patina.script_rule.order_in_components\", category: \"Script\", fixable: false, presets: OPINIONATED_AND_NUXT_SCRIPT_PRESETS, rule: &OrderInComponents },\n"
+      }
+    ]
+  },
+  {
+    "reason": "vue3-recommended script rules for computed data, Vue 3 removals, render return, slots, one component, and option order",
+    "path": "crates/vize_patina/src/preset/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap",
+    "before": {
+      "bytes": 31986,
+      "sha256": "07725387d747348819e9862b397e929d9e8745493c591691c11492da35fdb4de"
+    },
+    "after": {
+      "bytes": 33723,
+      "sha256": "819cc9f300f8ce8fb012998e6ae74765fad80ada58d862ed128c0845bdf10edd"
+    },
+    "hunks": [
+      {
+        "before": "    \"script/no-lifecycle-after-await\",\n    \"script/no-watch-after-await\",\n    \"script/no-expose-after-await\"\n  ],\n  \"essential\": [\n",
+        "after": "    \"script/no-lifecycle-after-await\",\n    \"script/no-watch-after-await\",\n    \"script/no-expose-after-await\",\n    \"script/no-computed-properties-in-data\",\n    \"script/no-deprecated-delete-set\",\n    \"script/no-deprecated-model-definition\",\n    \"script/no-deprecated-vue-config-keycodes\",\n    \"script/require-render-return\",\n    \"script/require-slots-as-functions\"\n  ],\n  \"essential\": [\n"
+      },
+      {
+        "before": "    \"script/no-lifecycle-after-await\",\n    \"script/no-watch-after-await\",\n    \"script/no-expose-after-await\"\n  ],\n  \"happy_path\": [\n",
+        "after": "    \"script/no-lifecycle-after-await\",\n    \"script/no-watch-after-await\",\n    \"script/no-expose-after-await\",\n    \"script/no-computed-properties-in-data\",\n    \"script/no-deprecated-delete-set\",\n    \"script/no-deprecated-model-definition\",\n    \"script/no-deprecated-vue-config-keycodes\",\n    \"script/require-render-return\",\n    \"script/require-slots-as-functions\"\n  ],\n  \"happy_path\": [\n"
+      },
+      {
+        "before": "    \"script/no-expose-after-await\"\n",
+        "after": "    \"script/no-expose-after-await\",\n    \"script/no-computed-properties-in-data\",\n    \"script/no-deprecated-delete-set\",\n    \"script/no-deprecated-model-definition\",\n    \"script/no-deprecated-vue-config-keycodes\",\n    \"script/require-render-return\",\n    \"script/require-slots-as-functions\"\n"
+      },
+      {
+        "before": "    \"script/require-valid-default-prop\",\n    \"script/require-typed-object-prop\",\n    \"script/custom-event-name-casing\",\n    \"script/no-ref-as-operand\",\n    \"script/require-explicit-slots\",\n    \"script/no-duplicate-attr-inheritance\",\n    \"script/no-multiple-slot-args\",\n    \"script/require-explicit-emits\",\n    \"script/no-unstable-nested-components\",\n    \"script/no-lifecycle-after-await\",\n    \"script/no-watch-after-await\",\n    \"script/no-expose-after-await\",\n    \"css/no-important\",\n    \"css/no-id-selectors\",\n    \"css/prefer-logical-properties\",\n    \"css/require-font-display\",\n    \"css/prefer-nested-selectors\",\n    \"css/no-display-none\",\n    \"css/no-v-bind-performance\",\n    \"css/no-hardcoded-values\",\n    \"css/no-utility-classes\",\n    \"css/prefer-slotted\"\n  ],\n  \"opinionated\": [\n",
+        "after": "    \"script/require-valid-default-prop\",\n    \"script/require-typed-object-prop\",\n    \"script/custom-event-name-casing\",\n    \"script/no-ref-as-operand\",\n    \"script/require-explicit-slots\",\n    \"script/no-duplicate-attr-inheritance\",\n    \"script/no-multiple-slot-args\",\n    \"script/require-explicit-emits\",\n    \"script/no-unstable-nested-components\",\n    \"script/no-lifecycle-after-await\",\n    \"script/no-watch-after-await\",\n    \"script/no-expose-after-await\",\n    \"script/no-computed-properties-in-data\",\n    \"script/no-deprecated-delete-set\",\n    \"script/no-deprecated-model-definition\",\n    \"script/no-deprecated-vue-config-keycodes\",\n    \"script/require-render-return\",\n    \"script/require-slots-as-functions\",\n    \"script/one-component-per-file\",\n    \"script/order-in-components\",\n    \"css/no-important\",\n    \"css/no-id-selectors\",\n    \"css/prefer-logical-properties\",\n    \"css/require-font-display\",\n    \"css/prefer-nested-selectors\",\n    \"css/no-display-none\",\n    \"css/no-v-bind-performance\",\n    \"css/no-hardcoded-values\",\n    \"css/no-utility-classes\",\n    \"css/prefer-slotted\"\n  ],\n  \"opinionated\": [\n"
+      },
+      {
+        "before": "    \"script/no-expose-after-await\",\n    \"css/no-important\",\n",
+        "after": "    \"script/no-expose-after-await\",\n    \"script/no-computed-properties-in-data\",\n    \"script/no-deprecated-delete-set\",\n    \"script/no-deprecated-model-definition\",\n    \"script/no-deprecated-vue-config-keycodes\",\n    \"script/require-render-return\",\n    \"script/require-slots-as-functions\",\n    \"script/one-component-per-file\",\n    \"script/order-in-components\",\n    \"css/no-important\",\n"
+      },
+      {
+        "before": "",
+        "after": "    \"script/no-computed-properties-in-data\",\n    \"script/no-deprecated-delete-set\",\n    \"script/no-deprecated-model-definition\",\n    \"script/no-deprecated-vue-config-keycodes\",\n    \"script/require-render-return\",\n    \"script/require-slots-as-functions\",\n    \"script/one-component-per-file\",\n    \"script/order-in-components\",\n"
+      }
+    ]
+  },
+  {
+    "reason": "vue3-recommended script rules for computed data, Vue 3 removals, render return, slots, one component, and option order",
+    "path": "tests/_fixtures/patina-eslint-vue-rule-map.json",
+    "before": {
+      "bytes": 47660,
+      "sha256": "6beca7bd5c41f92498f93bba28725ba76377640ad9a5a455af1e350cf6b27e11"
+    },
+    "after": {
+      "bytes": 49389,
+      "sha256": "e5af5faaf686b01b3abc20e7a3e1618a8d8f2d600f06f440d832f68b9fdc2b19"
+    },
+    "hunks": [
+      {
+        "before": "      \"issue\": 3223,\n      \"status\": \"unimplemented\"\n",
+        "after": "      \"patinaPresets\": [\n        \"ecosystem\",\n        \"essential\",\n        \"general-recommended\",\n        \"nuxt\",\n        \"opinionated\"\n      ],\n      \"patinaRule\": \"script/no-computed-properties-in-data\",\n      \"patinaSeverity\": \"error\",\n      \"status\": \"mapped\"\n"
+      },
+      {
+        "before": "      \"issue\": 3223,\n      \"status\": \"unimplemented\"\n",
+        "after": "      \"patinaPresets\": [\n        \"ecosystem\",\n        \"essential\",\n        \"general-recommended\",\n        \"nuxt\",\n        \"opinionated\"\n      ],\n      \"patinaRule\": \"script/no-deprecated-delete-set\",\n      \"patinaSeverity\": \"error\",\n      \"status\": \"mapped\"\n"
+      },
+      {
+        "before": "      \"issue\": 3223,\n      \"status\": \"unimplemented\"\n",
+        "after": "      \"patinaPresets\": [\n        \"ecosystem\",\n        \"essential\",\n        \"general-recommended\",\n        \"nuxt\",\n        \"opinionated\"\n      ],\n      \"patinaRule\": \"script/no-deprecated-model-definition\",\n      \"patinaSeverity\": \"error\",\n      \"status\": \"mapped\"\n"
+      },
+      {
+        "before": "      \"issue\": 3223,\n      \"status\": \"unimplemented\"\n",
+        "after": "      \"patinaPresets\": [\n        \"ecosystem\",\n        \"essential\",\n        \"general-recommended\",\n        \"nuxt\",\n        \"opinionated\"\n      ],\n      \"patinaRule\": \"script/no-deprecated-vue-config-keycodes\",\n      \"patinaSeverity\": \"error\",\n      \"status\": \"mapped\"\n"
+      },
+      {
+        "before": "    \"vue/no-shared-component-data\": {\n      \"issue\": 3223,\n      \"status\": \"unimplemented\"\n",
+        "after": "    \"vue/no-shared-component-data\": {\n      \"patinaPresets\": [\n        \"ecosystem\",\n        \"essential\",\n        \"general-recommended\",\n        \"nuxt\",\n        \"opinionated\"\n      ],\n      \"patinaRule\": \"script/no-deprecated-data-object-declaration\",\n      \"patinaSeverity\": \"error\",\n      \"status\": \"mapped\"\n"
+      },
+      {
+        "before": "      \"issue\": 3223,\n      \"status\": \"unimplemented\"\n",
+        "after": "      \"patinaPresets\": [\n        \"nuxt\",\n        \"opinionated\"\n      ],\n      \"patinaRule\": \"script/one-component-per-file\",\n      \"patinaSeverity\": \"warning\",\n      \"status\": \"mapped\"\n"
+      },
+      {
+        "before": "      \"issue\": 3223,\n      \"status\": \"unimplemented\"\n",
+        "after": "      \"patinaPresets\": [\n        \"nuxt\",\n        \"opinionated\"\n      ],\n      \"patinaRule\": \"script/order-in-components\",\n      \"patinaSeverity\": \"warning\",\n      \"status\": \"mapped\"\n"
+      },
+      {
+        "before": "      \"issue\": 3223,\n      \"status\": \"unimplemented\"\n",
+        "after": "      \"patinaPresets\": [\n        \"ecosystem\",\n        \"essential\",\n        \"general-recommended\",\n        \"nuxt\",\n        \"opinionated\"\n      ],\n      \"patinaRule\": \"script/require-render-return\",\n      \"patinaSeverity\": \"error\",\n      \"status\": \"mapped\"\n"
+      },
+      {
+        "before": "      \"issue\": 3223,\n      \"status\": \"unimplemented\"\n",
+        "after": "      \"patinaPresets\": [\n        \"ecosystem\",\n        \"essential\",\n        \"general-recommended\",\n        \"nuxt\",\n        \"opinionated\"\n      ],\n      \"patinaRule\": \"script/require-slots-as-functions\",\n      \"patinaSeverity\": \"error\",\n      \"status\": \"mapped\"\n"
+      },
+      {
+        "before": "    \"mapped\": 130,\n    \"unimplemented\": 120\n",
+        "after": "    \"mapped\": 139,\n    \"unimplemented\": 111\n"
+      }
+    ]
   }
 ]

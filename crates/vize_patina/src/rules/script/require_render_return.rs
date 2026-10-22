@@ -86,10 +86,10 @@ fn render_returns(value: &Expression<'_>) -> Option<bool> {
         Expression::ArrowFunctionExpression(arrow) => {
             Some(body_returns_value(&arrow.body.statements))
         }
-        Expression::FunctionExpression(function) => match function.body.as_ref() {
-            Some(body) => Some(body_returns_value(&body.statements)),
-            None => None,
-        },
+        Expression::FunctionExpression(function) => function
+            .body
+            .as_ref()
+            .map(|body| body_returns_value(&body.statements)),
         _ => None,
     }
 }

@@ -1,3 +1,4 @@
+/* eslint-disable script/one-component-per-file -- this module defines more than one component */
 /**
  * TextInput Component - Text input with builtin cursor management and IME support
  */
