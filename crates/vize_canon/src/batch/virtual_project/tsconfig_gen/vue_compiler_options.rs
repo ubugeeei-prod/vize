@@ -249,13 +249,13 @@ impl VirtualProject {
                     .and_then(Value::as_bool)
             })
             .unwrap_or(false);
-        self.virtual_ts_check_options.fallthrough_attributes = options
+        let fallthrough_attributes = options
             .as_ref()
-            .and_then(|options| {
-                options
-                    .get("fallthroughAttributes")
-                    .and_then(Value::as_bool)
-            })
+            .and_then(|options| options.get("fallthroughAttributes"));
+        self.virtual_ts_check_options
+            .fallthrough_attributes_specified = fallthrough_attributes.is_some();
+        self.virtual_ts_check_options.fallthrough_attributes = fallthrough_attributes
+            .and_then(Value::as_bool)
             .unwrap_or(false);
         self.virtual_ts_check_options
             .check_required_fallthrough_attributes = options

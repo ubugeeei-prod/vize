@@ -91,7 +91,10 @@ pub(super) fn apply(source: &str, mut options: VirtualTsCheckOptions) -> Virtual
             "inferTemplateDollarRefs" => options.infer_template_dollar_refs = value,
             "inferTemplateDollarSlots" => options.infer_template_dollar_slots = value,
             "inferTemplateDollarAttrs" => options.infer_template_dollar_attrs = value,
-            "fallthroughAttributes" => options.fallthrough_attributes = value,
+            "fallthroughAttributes" => {
+                options.fallthrough_attributes = value;
+                options.fallthrough_attributes_specified = true;
+            }
             "checkRequiredFallthroughAttributes" => {
                 options.check_required_fallthrough_attributes = value;
             }

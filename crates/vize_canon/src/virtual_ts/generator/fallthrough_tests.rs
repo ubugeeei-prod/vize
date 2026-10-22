@@ -122,6 +122,27 @@ fn strict_component_attrs_resolves_single_root_surfaces_without_fallthrough_opt_
     assert_eq!(fallthrough_props_type_ref(&scope, Some(&root), false), None);
 }
 
+#[test]
+fn explicit_false_fallthrough_keeps_strict_attrs_off_the_native_root() {
+    let checks = VirtualTsCheckOptions {
+        strict_component_attrs: true,
+        fallthrough_attributes: false,
+        fallthrough_attributes_specified: true,
+        ..Default::default()
+    };
+    let allocator = Allocator::new();
+    let (root, _) = vize_armature::parse(&allocator, "<button />");
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    let options = VirtualTsOptions::default();
+    let type_imports = Default::default();
+    let scope = FallthroughComponentScope::new(&summary, &options, &type_imports, checks);
+
+    assert!(!scope.resolve_component_roots);
+    assert_eq!(fallthrough_props_type_ref(&scope, Some(&root), false), None);
+}
+
 fn raw_branch<'a>(
     allocator: &'a Allocator,
     tag: &'a str,

@@ -38,6 +38,9 @@ pub(crate) struct VirtualTsCheckOptions {
     pub(crate) infer_template_dollar_slots: bool,
     pub(crate) infer_template_dollar_attrs: bool,
     pub(crate) fallthrough_attributes: bool,
+    /// The config named `fallthroughAttributes`, including an explicit `false`.
+    /// Omitted, strict component attrs may still resolve a single root.
+    pub(crate) fallthrough_attributes_specified: bool,
     /// `checkRequiredFallthroughAttributes`: a root's required props that the
     /// component does not bind itself become required props of the component,
     /// and the root usage stops reporting them as missing.
@@ -88,6 +91,7 @@ impl Default for VirtualTsCheckOptions {
             infer_template_dollar_slots: false,
             infer_template_dollar_attrs: false,
             fallthrough_attributes: false,
+            fallthrough_attributes_specified: false,
             check_required_fallthrough_attributes: false,
             #[cfg(feature = "native")]
             resolve_style_class_names: ResolveStyleClassNames::Scoped,
