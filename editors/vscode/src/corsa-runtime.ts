@@ -113,7 +113,9 @@ function existingRuntime(
 ): string | undefined {
   if (!version) return undefined;
   try {
-    const manifest = JSON.parse(fs.readFileSync(path.join(packageRoot, "package.json"), "utf8")) as {
+    const manifest = JSON.parse(
+      fs.readFileSync(path.join(packageRoot, "package.json"), "utf8"),
+    ) as {
       name?: unknown;
       version?: unknown;
     };
@@ -133,7 +135,10 @@ function isFile(file: string): boolean {
   }
 }
 
-async function installRuntime(input: CorsaServerEnvInput, request: CorsaInstallRequest): Promise<void> {
+async function installRuntime(
+  input: CorsaServerEnvInput,
+  request: CorsaInstallRequest,
+): Promise<void> {
   if (input.install) {
     await input.install(request);
     return;
@@ -196,7 +201,8 @@ function fetchJson(url: string): Promise<unknown> {
 
 function fetchBuffer(url: string, redirects = 0): Promise<Buffer> {
   assertNpmUrl(url);
-  if (redirects > 5) return Promise.reject(new Error(`too many redirects while downloading ${url}`));
+  if (redirects > 5)
+    return Promise.reject(new Error(`too many redirects while downloading ${url}`));
   return new Promise((resolve, reject) => {
     let settled = false;
     const fail = (error: Error): void => {
@@ -262,7 +268,7 @@ function assertNpmUrl(url: string): void {
 }
 
 export function extractNpmPackage(tar: Buffer, destination: string): void {
-  for (let offset = 0; offset + 512 <= tar.length; ) {
+  for (let offset = 0; offset + 512 <= tar.length;) {
     const header = tar.subarray(offset, offset + 512);
     if (header.every((byte) => byte === 0)) break;
     const size = parseTarOctal(header, 124, 12);

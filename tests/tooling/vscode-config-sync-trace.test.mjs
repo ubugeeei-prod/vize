@@ -75,6 +75,7 @@ function createSync(refresh, activeClient, refuseLogging = false, startup, polic
     policyConfiguration: policy.configuration,
     startup,
     getInitializationOptions: () => ({ lint: true }),
+    resolveCorsaServerEnv: async () => ({ PATH: "/usr/bin" }),
     createServerOptions: (serverPath) => ({ serverPath }),
     createClientOptions: (initializationOptions) => ({ initializationOptions }),
     Trace: { Off: "off" },
@@ -119,7 +120,12 @@ function createSync(refresh, activeClient, refuseLogging = false, startup, polic
         operations.push(["start", generation]); started.resolve();
       };
     }
-    ({ scheduleClientSync, syncClientToConfiguration, deactivate,
+    ({ scheduleClientSync, syncClientToConfiguration: (extensionContext, reason) =>
+       syncClientToConfiguration({
+         extensionPath: "/test/extension",
+         globalStorageUri: { fsPath: "/test/global-storage" },
+         ...extensionContext,
+       }, reason), deactivate,
        setClient: (value) => { client = value; activeInitializationOptions = getInitializationOptions(
          policyConfiguration, { hasWorkspaceLspConfig: workspaceLspConfig.hasConfig }); },
        setHasConfig: (value) => { workspaceLspConfig.hasConfig = value; },

@@ -4,7 +4,11 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { extractNpmPackage, resolveCorsaServerEnv, serverProcessEnv } from "../src/corsa-runtime.ts";
+import {
+  extractNpmPackage,
+  resolveCorsaServerEnv,
+  serverProcessEnv,
+} from "../src/corsa-runtime.ts";
 
 const packageName = `@typescript/typescript-${process.platform}-${process.arch}`;
 const executableName = process.platform === "win32" ? "tsc.exe" : "tsc";
@@ -31,9 +35,7 @@ void test("createServerOptions env carries CORSA_PATH when lib/tsc exists", asyn
 
 void test("a cached lib/tsc is used before downloading", async () => {
   const fixture = createFixture();
-  const executable = writeRuntime(
-    path.join(fixture.storage, "corsa", "7.0.2", platformArch),
-  );
+  const executable = writeRuntime(path.join(fixture.storage, "corsa", "7.0.2", platformArch));
   try {
     const env = await resolveCorsaServerEnv({
       extensionPath: fixture.extensionPath,
@@ -70,7 +72,14 @@ void test("does not override a pre-set CORSA_PATH", async () => {
 void test("names the missing lib/tsc and the required package", async () => {
   const fixture = createFixture();
   const lines: string[] = [];
-  const expected = path.join(fixture.storage, "corsa", "7.0.2", platformArch, "lib", executableName);
+  const expected = path.join(
+    fixture.storage,
+    "corsa",
+    "7.0.2",
+    platformArch,
+    "lib",
+    executableName,
+  );
   try {
     const env = await resolveCorsaServerEnv({
       extensionPath: fixture.extensionPath,
