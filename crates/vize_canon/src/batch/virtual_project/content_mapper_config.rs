@@ -42,7 +42,8 @@ impl ContentMapperProjectConfiguration {
         let transform_options = if config_file_name.as_os_str().is_empty() {
             ContentMapperTransformOptions::default()
         } else {
-            ContentMapperTransformOptions::default().with_vue_compiler_options(&options)
+            ContentMapperTransformOptions::default()
+                .with_vue_compiler_options(config_file_name, &options)?
         };
         Ok(Self {
             transform_options,
@@ -56,8 +57,9 @@ impl ContentMapperTransformOptions {
     #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
     pub(super) fn with_vue_compiler_options(
         mut self,
+        config_file_name: &Path,
         options: &Map<std::string::String, Value>,
-    ) -> Self {
+    ) -> CorsaResult<Self> {
         let strict_templates = options.get("strictTemplates").and_then(Value::as_bool);
         self.check_unknown_components = options
             .get("checkUnknownComponents")
@@ -76,16 +78,41 @@ impl ContentMapperTransformOptions {
             .get("strictCssModules")
             .and_then(Value::as_bool)
             .unwrap_or(false);
-        self
+        self.vue_compiler_target =
+            super::tsconfig_gen::vue_compiler_options::vue_target_from_options(
+                config_file_name.parent().unwrap_or(Path::new(".")),
+                config_file_name,
+                options,
+                None,
+            )?;
+        Ok(self)
+    }
+
+    pub(super) fn virtual_ts_check_options(self) -> crate::virtual_ts::VirtualTsCheckOptions {
+        let mut checks = crate::virtual_ts::VirtualTsCheckOptions {
+            check_unknown_components: self.check_unknown_components,
+            check_unknown_props: self.check_unknown_props,
+            check_unknown_fallthrough_props: self.check_unknown_fallthrough_props,
+            check_unknown_directives: self.check_unknown_directives,
+            vue_compiler_target: self.vue_compiler_target,
+            ..Default::default()
+        };
+        #[cfg(feature = "native")]
+        {
+            checks.strict_css_modules = self.strict_css_modules;
+        }
+        checks
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use super::super::generate_vue_content_mapper_transform_with_options;
     use super::{ContentMapperProjectConfiguration, ContentMapperTransformOptions};
     use crate::batch::error::CorsaError;
     use std::io::ErrorKind;
     use std::path::Path;
+    use vize_carton::config::VueVersion;
 
     fn load(path: &Path) -> ContentMapperProjectConfiguration {
         ContentMapperProjectConfiguration::load(path).unwrap()
@@ -324,5 +351,66 @@ mod tests {
             )
             .as_str()
         );
+    }
+
+    fn has_fragment(code: &str, needle: &str) -> bool {
+        code.split(needle).nth(1).is_some()
+    }
+
+    const INTRINSIC_SFC: &str =
+        "<script setup lang=\"ts\"></script>\n<template><div x-small></div></template>\n";
+
+    #[test]
+    fn vue3_target_drops_intrinsic_attribute_excess_checks() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("tsconfig.json");
+        std::fs::write(
+            &path,
+            r#"{"vueCompilerOptions":{"target":3,"checkUnknownProps":true}}"#,
+        )
+        .unwrap();
+        let configured = load(&path);
+        assert_eq!(
+            configured.transform_options.vue_compiler_target,
+            Some(VueVersion::V3)
+        );
+        let generated = generate_vue_content_mapper_transform_with_options(
+            Path::new("src/Native.vue"),
+            INTRINSIC_SFC,
+            configured.transform_options,
+        )
+        .unwrap();
+        let excess = has_fragment(&generated.text, "__vize_native_key_");
+        assert!(!excess, "{}", generated.text);
+
+        std::fs::write(
+            &path,
+            r#"{"vueCompilerOptions":{"checkUnknownProps":true}}"#,
+        )
+        .unwrap();
+        let omitted = load(&path);
+        assert_eq!(omitted.transform_options.vue_compiler_target, None);
+        let checked = generate_vue_content_mapper_transform_with_options(
+            Path::new("src/Native.vue"),
+            INTRINSIC_SFC,
+            omitted.transform_options,
+        )
+        .unwrap();
+        let still_checked = has_fragment(&checked.text, "__vize_native_key_");
+        assert!(still_checked, "{}", checked.text);
+    }
+
+    #[test]
+    fn unsupported_vue_compiler_target_is_configuration_error() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("tsconfig.json");
+        std::fs::write(&path, r#"{"vueCompilerOptions":{"target":1}}"#).unwrap();
+        let CorsaError::Configuration(message) =
+            ContentMapperProjectConfiguration::load(&path).unwrap_err()
+        else {
+            panic!("unsupported target must be a configuration error");
+        };
+        let names_target = has_fragment(message.as_str(), "vueCompilerOptions.target");
+        assert!(names_target, "{message}");
     }
 }

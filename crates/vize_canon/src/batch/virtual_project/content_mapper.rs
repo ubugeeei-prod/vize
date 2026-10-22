@@ -9,9 +9,7 @@ use vize_l0::{String as CompactString, ToCompactString, config::VueVersion};
 
 use crate::batch::Diagnostic;
 use crate::batch::error::CorsaResult;
-use crate::virtual_ts::{
-    ProjectionFeatures, ProjectionMeta, VirtualTsCheckOptions, VirtualTsOptions, VizeMapping,
-};
+use crate::virtual_ts::{ProjectionFeatures, ProjectionMeta, VirtualTsOptions, VizeMapping};
 
 #[path = "content_mapper_alias.rs"]
 mod alias;
@@ -72,6 +70,8 @@ pub struct ContentMapperTransformOptions {
     pub(super) check_unknown_fallthrough_props: bool,
     pub(super) check_unknown_directives: bool,
     pub(super) strict_css_modules: bool,
+    /// Resolved `vueCompilerOptions.target`. `None` leaves intrinsic names checked.
+    pub(super) vue_compiler_target: Option<VueVersion>,
 }
 
 impl Default for ContentMapperTransformOptions {
@@ -85,6 +85,7 @@ impl Default for ContentMapperTransformOptions {
             check_unknown_fallthrough_props: false,
             check_unknown_directives: false,
             strict_css_modules: false,
+            vue_compiler_target: None,
         }
     }
 }
@@ -184,14 +185,7 @@ pub fn generate_vue_content_mapper_transform_with_options(
         &descriptor,
         &virtual_ts_options,
         VueCodegenOptions {
-            check_options: VirtualTsCheckOptions {
-                check_unknown_components: transform_options.check_unknown_components,
-                check_unknown_props: transform_options.check_unknown_props,
-                check_unknown_fallthrough_props: transform_options.check_unknown_fallthrough_props,
-                check_unknown_directives: transform_options.check_unknown_directives,
-                strict_css_modules: transform_options.strict_css_modules,
-                ..Default::default()
-            },
+            check_options: transform_options.virtual_ts_check_options(),
             typed_router_root: None,
             preserve_unused_diagnostics: transform_options.preserve_unused_diagnostics,
             options_api: transform_options.options_api(),

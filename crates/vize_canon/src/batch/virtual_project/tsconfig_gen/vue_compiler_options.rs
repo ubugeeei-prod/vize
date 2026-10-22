@@ -48,7 +48,7 @@ pub fn snapshot_tsconfig_vue_compiler_options(
 }
 
 #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
-pub(super) fn vue_target_from_options(
+pub(in crate::batch::virtual_project) fn vue_target_from_options(
     project_root: &Path,
     tsconfig_path: &Path,
     options: &Map<std::string::String, Value>,

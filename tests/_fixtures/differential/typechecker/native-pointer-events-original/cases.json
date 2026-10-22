@@ -58,6 +58,20 @@
         }
       ],
       "diagnostics": []
+    },
+    {
+      "id": "vue3-target-intrinsic-attributes",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "vue3-target-intrinsic-attributes/tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "vue3-target-intrinsic-attributes/src/App.vue.txt"
+        }
+      ],
+      "diagnostics": []
     }
   ]
 }

@@ -1,0 +1,14 @@
+<script setup lang="ts">
+const borderStyle = { color: "red" };
+</script>
+
+<template>
+  <div class="subject-label" :style="borderStyle" x-small></div>
+  <table>
+    <tr height="26px">
+      <th width="56px">edit</th>
+    </tr>
+  </table>
+  <div no-gutters></div>
+  <div cols="12"></div>
+</template>

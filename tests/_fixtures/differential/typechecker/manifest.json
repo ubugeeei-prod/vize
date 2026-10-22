@@ -3076,7 +3076,7 @@
       "sourceRevision": "e7d8b1c82a8badec89ec9779838dfa50c1b9b790",
       "packReference": {
         "path": "native-pointer-events-original/cases.json",
-        "sha256": "0a6785588ce4f24467ed69f1817d7b131cf980b8f656e47eeec08abf0d7f78c1"
+        "sha256": "13740d9e5d1c5a6a2514a95560a810ce8a0401a0b0adf85a7f42224e76a7cfe3"
       },
       "inputs": [
         {
@@ -3123,7 +3123,7 @@
       "sourceRevision": "e7d8b1c82a8badec89ec9779838dfa50c1b9b790",
       "packReference": {
         "path": "native-pointer-events-original/cases.json",
-        "sha256": "0a6785588ce4f24467ed69f1817d7b131cf980b8f656e47eeec08abf0d7f78c1"
+        "sha256": "13740d9e5d1c5a6a2514a95560a810ce8a0401a0b0adf85a7f42224e76a7cfe3"
       },
       "inputs": [
         {
@@ -3170,7 +3170,7 @@
       "sourceRevision": "e7d8b1c82a8badec89ec9779838dfa50c1b9b790",
       "packReference": {
         "path": "native-pointer-events-original/cases.json",
-        "sha256": "0a6785588ce4f24467ed69f1817d7b131cf980b8f656e47eeec08abf0d7f78c1"
+        "sha256": "13740d9e5d1c5a6a2514a95560a810ce8a0401a0b0adf85a7f42224e76a7cfe3"
       },
       "inputs": [
         {
@@ -3182,6 +3182,53 @@
           "file": "src/App.vue",
           "path": "native-pointer-events-original/vue3-intrinsic-attribute/src/App.vue.txt",
           "sha256": "e4056724149ae2746c6c36ec9da9c1de87d124fc56f7127d02948ff1a82ee3c8"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/native-pointer-events-original/vue3-target-intrinsic-attributes",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "native-pointer-events-original",
+      "case": "vue3-target-intrinsic-attributes",
+      "test": "native_click_events_preserve_pointer_event_diagnostics",
+      "regressionCommit": "e7d8b1c82a8badec89ec9779838dfa50c1b9b790",
+      "sourceRevision": "e7d8b1c82a8badec89ec9779838dfa50c1b9b790",
+      "packReference": {
+        "path": "native-pointer-events-original/cases.json",
+        "sha256": "13740d9e5d1c5a6a2514a95560a810ce8a0401a0b0adf85a7f42224e76a7cfe3"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "native-pointer-events-original/vue3-target-intrinsic-attributes/tsconfig.json.txt",
+          "sha256": "4d1ce6ed2361cd9615fb30b8df14a688a185f08cfa7f424bf46cc5bc6aa52639"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "native-pointer-events-original/vue3-target-intrinsic-attributes/src/App.vue.txt",
+          "sha256": "d268ef128921f51fe46f677229bb43d01ecdec8942d4db906fc4aeffc20ad813"
         }
       ],
       "dialectCoverage": {

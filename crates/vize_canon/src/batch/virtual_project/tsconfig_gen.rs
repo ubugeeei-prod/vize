@@ -19,7 +19,7 @@ pub use references::{TsconfigOwnershipCache, TsconfigOwnershipOptions, TsconfigS
 mod jsx_files;
 mod remap;
 mod vue_alias;
-mod vue_compiler_options;
+pub(in crate::batch::virtual_project) mod vue_compiler_options;
 pub(super) use vue_compiler_options::snapshot_vue_compiler_options;
 pub use vue_compiler_options::{
     snapshot_tsconfig_vue_compiler_options, snapshot_tsconfig_vue_target,

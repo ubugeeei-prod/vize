@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "vueCompilerOptions": {
+    "target": 3,
+    "checkUnknownProps": true,
+    "checkUnknownComponents": true
+  },
+  "include": ["src/**/*"]
+}

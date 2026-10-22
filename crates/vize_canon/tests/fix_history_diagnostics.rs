@@ -292,6 +292,7 @@ fn native_click_events_preserve_pointer_event_diagnostics() {
             "click-pointer-handler",
             "auxclick-pointer-handler",
             "vue3-intrinsic-attribute",
+            "vue3-target-intrinsic-attributes",
         ],
     );
 }
