@@ -117,6 +117,49 @@ fn reopening_a_document_at_the_same_version_is_not_served_from_cache() {
     );
 }
 
+#[test]
+fn structurally_broken_sfc_keeps_its_last_projectable_overlay() {
+    let state = ServerState::new();
+    let first = "<template><section>first</section></template>";
+    let second = "<template><section>second</section></template>";
+    let broken = "<template><section><template #</section></template>";
+
+    open(&state, "A.vue", first);
+    assert_eq!(overlays(&state), vec![(path("A.vue"), first.into())]);
+
+    rewrite(&state, "A.vue", broken, 2);
+    assert_eq!(
+        overlays(&state),
+        vec![(path("A.vue"), first.into())],
+        "an unprojectable edit must not poison unrelated Corsa requests"
+    );
+    // The failed revision is cached too: repeated requests neither reparse nor
+    // rematerialize it, and continue to receive the same last-good bytes.
+    assert_eq!(overlays(&state), vec![(path("A.vue"), first.into())]);
+
+    rewrite(&state, "A.vue", second, 3);
+    assert_eq!(overlays(&state), vec![(path("A.vue"), second.into())]);
+}
+
+#[test]
+fn first_opened_broken_sfc_is_left_out_of_other_projects() {
+    let state = ServerState::new();
+    open(
+        &state,
+        "Broken.vue",
+        "<template><section><template #</section></template>",
+    );
+    open(&state, "Healthy.vue", "<template><p>healthy</p></template>");
+
+    assert_eq!(
+        overlays(&state),
+        vec![(
+            path("Healthy.vue"),
+            "<template><p>healthy</p></template>".into()
+        )]
+    );
+}
+
 /// An in-place edit keeps the same `Document`, so the cache has to notice the
 /// rope changed underneath an entry it already holds.
 #[test]

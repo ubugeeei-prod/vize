@@ -4,7 +4,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 
-import { isDiagnosticsForUri } from "./support/lsp/assertions.ts";
+import { isDiagnosticsForUri, offsetToPosition } from "./support/lsp/assertions.ts";
 import { root, testOutputRoot } from "./support/lsp/paths.ts";
 import type { PublishDiagnosticsParams } from "./support/lsp/protocol.ts";
 import { LspSession } from "./support/lsp/session.ts";
@@ -32,15 +32,31 @@ const BROKEN_CHILD = CHILD.replace(
 );
 
 const PARENT = `<script setup lang="ts">
+import { ref } from "vue"
 import Child from "./Child.vue"
 
-const label = "hello"
+const label = ref("hello")
+const count: number = "one"
 </script>
 
 <template>
   <Child :title="label" />
 </template>
 `;
+
+const OTHER = `<script setup lang="ts">
+import { ref } from "vue"
+
+const total = ref(0)
+const name: string = 1
+</script>
+
+<template><p>{{ total }}</p></template>
+`;
+
+function diagnosticCodes(params: PublishDiagnosticsParams): number[] {
+  return params.diagnostics.map((diagnostic) => Number(diagnostic.code)).sort((a, b) => a - b);
+}
 
 test("an imported SFC block parse error keeps importer diagnostics clean and the Corsa session warm", async (t) => {
   const corsaPath = requireTypecheckDependency(
@@ -84,10 +100,13 @@ test("an imported SFC block parse error keeps importer diagnostics clean and the
 
     const childPath = path.join(sourceDir, "Child.vue");
     const parentPath = path.join(sourceDir, "Parent.vue");
+    const otherPath = path.join(sourceDir, "Other.vue");
     const childUri = pathToFileURL(childPath).href;
     const parentUri = pathToFileURL(parentPath).href;
+    const otherUri = pathToFileURL(otherPath).href;
     fs.writeFileSync(childPath, CHILD, "utf8");
     fs.writeFileSync(parentPath, PARENT, "utf8");
+    fs.writeFileSync(otherPath, OTHER, "utf8");
 
     await session.initialize(workspaceDir, { editor: true, lint: false, typecheck: true });
     session.notify("textDocument/didOpen", {
@@ -97,7 +116,11 @@ test("an imported SFC block parse error keeps importer diagnostics clean and the
     session.notify("textDocument/didOpen", {
       textDocument: { uri: parentUri, languageId: "vue", version: 1, text: PARENT },
     });
-    assert.deepEqual((await publication(session, parentUri, 1)).diagnostics, []);
+    assert.deepEqual(diagnosticCodes(await publication(session, parentUri, 1)), [2322]);
+    session.notify("textDocument/didOpen", {
+      textDocument: { uri: otherUri, languageId: "vue", version: 1, text: OTHER },
+    });
+    assert.deepEqual(diagnosticCodes(await publication(session, otherUri, 1)), [2322]);
 
     session.notify("textDocument/didChange", {
       textDocument: { uri: childUri, version: 2 },
@@ -111,21 +134,61 @@ test("an imported SFC block parse error keeps importer diagnostics clean and the
 
     const importerWhileBroken = await publication(session, parentUri, 1);
     assert.deepEqual(
-      importerWhileBroken.diagnostics,
-      [],
-      `the importer must retain its last good type shape\n${session.stderrText}`,
+      diagnosticCodes(importerWhileBroken),
+      [2322],
+      `the importer must retain its last good dependency shape and real errors\n${session.stderrText}`,
     );
     assert.doesNotMatch(
       session.stderrText,
       /respawning and retrying|retired after a backend failure/u,
     );
 
+    const parentHover = await session.request("textDocument/hover", {
+      textDocument: { uri: parentUri },
+      position: offsetToPosition(PARENT, PARENT.indexOf("label =") + 2),
+    });
+    assert.match(JSON.stringify(parentHover), /Ref<string/u);
+    const otherHover = await session.request("textDocument/hover", {
+      textDocument: { uri: otherUri },
+      position: offsetToPosition(OTHER, OTHER.indexOf("total =") + 2),
+    });
+    assert.match(JSON.stringify(otherHover), /Ref<number/u);
+
+    const changedParent = PARENT.replace(
+      'const count: number = "one"',
+      'const count: number = "one"\nconst flag: boolean = 2',
+    );
+    session.notify("textDocument/didChange", {
+      textDocument: { uri: parentUri, version: 2 },
+      contentChanges: [{ text: changedParent }],
+    });
+    assert.deepEqual(diagnosticCodes(await publication(session, parentUri, 2)), [2322, 2322]);
+
+    const changedOther = OTHER.replace(
+      "const name: string = 1",
+      "const name: string = 1\nconst flag: boolean = 2",
+    );
+    session.notify("textDocument/didChange", {
+      textDocument: { uri: otherUri, version: 2 },
+      contentChanges: [{ text: changedOther }],
+    });
+    assert.deepEqual(diagnosticCodes(await publication(session, otherUri, 2)), [2322, 2322]);
+
     session.notify("textDocument/didChange", {
       textDocument: { uri: childUri, version: 3 },
       contentChanges: [{ text: CHILD }],
     });
     assert.deepEqual((await publication(session, childUri, 3)).diagnostics, []);
-    assert.deepEqual((await publication(session, parentUri, 1)).diagnostics, []);
+    session.notify("textDocument/didChange", {
+      textDocument: { uri: parentUri, version: 3 },
+      contentChanges: [{ text: PARENT }],
+    });
+    assert.deepEqual(diagnosticCodes(await publication(session, parentUri, 3)), [2322]);
+    session.notify("textDocument/didChange", {
+      textDocument: { uri: otherUri, version: 3 },
+      contentChanges: [{ text: OTHER }],
+    });
+    assert.deepEqual(diagnosticCodes(await publication(session, otherUri, 3)), [2322]);
     assert.doesNotMatch(
       session.stderrText,
       /respawning and retrying|retired after a backend failure/u,

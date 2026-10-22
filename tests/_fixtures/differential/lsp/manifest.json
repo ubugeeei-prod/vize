@@ -1258,6 +1258,55 @@
       }
     },
     {
+      "id": "lsp/regression/broken-overlay-isolation-10201",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "case": {
+        "path": "broken-overlay-isolation-10201/case.json",
+        "sha256": "30dc112bd507de46c73675b29ec641a4338e9720d13a66b59f4448f46f21f474"
+      },
+      "inputs": {
+        "root": "broken-overlay-isolation-10201",
+        "files": [
+          {
+            "path": "Entry.vue.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "path": "Parent.vue.txt",
+            "sha256": "fdfd4dd073af9e3dd1a289bc2cc74c58f016c76747f5f59b838d5ac1695fb59e"
+          },
+          {
+            "path": "Other.vue.txt",
+            "sha256": "fb6c0afffd43f9d0758a6fb40dbae38a1db01d34657234132e7082df93c2dc75"
+          },
+          {
+            "path": "Child.broken.vue.txt",
+            "sha256": "dfded8ea3ce80c059b8cd5f7de190592fdcc66b8ad4bb68caf4ee80f09f2a996"
+          }
+        ]
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/pug-multiline-attributes-8908",
       "state": "active",
       "targets": ["stdio"],

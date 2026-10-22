@@ -26,10 +26,10 @@ use vize_l0::FxHashMap;
 use super::ServerState;
 use crate::document::DocumentStore;
 
-/// One open document's contribution to the overlay set.
+/// One open document's last projectable contribution to the overlay set.
 struct OverlayEntry {
-    /// Stamp of the document content `text` was materialized from. The cached
-    /// text is reusable exactly while this still matches the live document.
+    /// Last observed document revision. A structurally incomplete revision can
+    /// retain older `text`, but matching this stamp still avoids reparsing it.
     revision: u64,
     /// Pass that last observed this document open, used to evict entries for
     /// documents closed since.
@@ -56,18 +56,24 @@ pub(crate) struct CorsaOverlayCache {
 }
 
 impl CorsaOverlayCache {
-    /// The complete overlay set for the currently open documents.
+    /// The last projectable overlay set for the currently open documents.
     ///
     /// Reuses the cached text of every document whose revision is unchanged and
     /// materializes only the rest, so a pass following a single edit copies one
-    /// document rather than all of them. Documents opened since the last pass
-    /// are added, documents closed since are dropped.
+    /// document rather than all of them. An unprojectable revision retains the
+    /// previous bytes; a newly opened unprojectable document is omitted.
+    /// Documents opened since the last pass are added, documents closed since
+    /// are dropped.
     ///
     /// The returned snapshot is owned: it borrows nothing from the document
     /// store and holds no lock, so callers may keep it across the `.await` of a
     /// bridge call without parking the executor thread the next `didOpen` /
     /// `didChange` / `didClose` needs (#3315, #3377).
-    pub(crate) fn snapshot(&self, documents: &DocumentStore) -> Vec<(PathBuf, Arc<str>)> {
+    pub(crate) fn snapshot(
+        &self,
+        documents: &DocumentStore,
+        projectable: impl Fn(&Url, &str) -> bool,
+    ) -> Vec<(PathBuf, Arc<str>)> {
         let mut state = self.state.write();
         let pass = state.pass.wrapping_add(1);
         state.pass = pass;
@@ -90,7 +96,7 @@ impl CorsaOverlayCache {
             }
 
             let text = match cached {
-                Some(text) => text,
+                Some(text) => Some(text),
                 None => {
                     // Read the text from the same guard that produced
                     // `revision`, so the stamp always describes the bytes
@@ -99,18 +105,32 @@ impl CorsaOverlayCache {
                     // overlay until the next change.
                     let text: Arc<str> = Arc::from(document.value().text());
                     self.materializations.fetch_add(1, Ordering::Relaxed);
-                    state.entries.insert(
-                        document.key().clone(),
-                        OverlayEntry {
-                            revision,
-                            seen: pass,
-                            text: Arc::clone(&text),
-                        },
-                    );
-                    text
+                    if projectable(document.key(), &text) {
+                        state.entries.insert(
+                            document.key().clone(),
+                            OverlayEntry {
+                                revision,
+                                seen: pass,
+                                text: Arc::clone(&text),
+                            },
+                        );
+                        Some(text)
+                    } else if let Some(entry) = state.entries.get_mut(document.key()) {
+                        // Keep the last projectable bytes while this revision
+                        // is structurally incomplete. Corsa can then keep
+                        // serving every other open file against the last good
+                        // dependency shape instead of rejecting the request.
+                        entry.revision = revision;
+                        entry.seen = pass;
+                        Some(Arc::clone(&entry.text))
+                    } else {
+                        None
+                    }
                 }
             };
-            overlays.push((path, text));
+            if let Some(text) = text {
+                overlays.push((path, text));
+            }
         }
 
         state.entries.retain(|_, entry| entry.seen == pass);
@@ -145,11 +165,17 @@ impl CorsaOverlayCache {
 }
 
 impl ServerState {
-    /// The complete Corsa overlay set for the currently open documents.
+    /// The last projectable Corsa overlay set for the currently open documents.
     ///
     /// See [`CorsaOverlayCache::snapshot`].
     pub(crate) fn corsa_overlays(&self) -> Vec<(PathBuf, Arc<str>)> {
-        self.corsa_overlays.snapshot(&self.documents)
+        self.corsa_overlays.snapshot(&self.documents, |uri, text| {
+            !uri.path().ends_with(".vue")
+                || matches!(
+                    self.sfc_parsed(uri, text),
+                    vize_incremental::ParsedSfc::Descriptor(_)
+                )
+        })
     }
 
     /// Drop the cached Corsa overlays.
