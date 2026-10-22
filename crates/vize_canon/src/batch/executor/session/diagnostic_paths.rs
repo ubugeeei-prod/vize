@@ -13,13 +13,14 @@ pub(super) fn extend_diagnostic_path_uris(project: &VirtualProject, uris: &mut V
     uris.dedup();
 }
 
-/// Authored paths that are not already copied into the virtual project.
+/// Authored paths whose virtual copy is not already a session input.
 ///
 /// Reopening a mirrored `.ts` file typechecks its unrewritten `./Widget.vue`
 /// import, which binds `declare module "*.vue"` once a parser error forces
-/// session completion (#10353).
+/// session completion (#10353). A copy under the virtual `node_modules` is
+/// not a session input, so the installed source stays open.
 pub(super) fn unmirrored_authored_diagnostic_paths(project: &VirtualProject) -> Vec<PathBuf> {
-    let mirrored = mirrored_authored_paths(project);
+    let mirrored = mirrored_diagnostic_inputs(project);
     project
         .diagnostic_paths_sorted()
         .into_iter()
@@ -29,13 +30,24 @@ pub(super) fn unmirrored_authored_diagnostic_paths(project: &VirtualProject) -> 
         .collect()
 }
 
-fn mirrored_authored_paths(project: &VirtualProject) -> FxHashSet<PathBuf> {
+fn mirrored_diagnostic_inputs(project: &VirtualProject) -> FxHashSet<PathBuf> {
     let mut mirrored = FxHashSet::default();
-    for path in project.registered_original_paths_sorted() {
-        mirrored.insert(vize_carton::path::canonicalize_non_verbatim(&path));
-        mirrored.insert(path);
+    for file in project.virtual_files_sorted() {
+        if !virtual_copy_is_diagnostic_input(project, &file.virtual_path) {
+            continue;
+        }
+        mirrored.insert(vize_carton::path::canonicalize_non_verbatim(
+            &file.original_path,
+        ));
+        mirrored.insert(file.original_path.clone());
     }
     mirrored
+}
+
+fn virtual_copy_is_diagnostic_input(project: &VirtualProject, path: &Path) -> bool {
+    !super::is_under_virtual_node_modules(project.virtual_root(), path)
+        && !super::is_internal_virtual_project_stub(path)
+        && project.source_file_policy().accepts_diagnostic_input(path)
 }
 
 pub(super) fn is_authored_diagnostic_input(path: &Path) -> bool {
@@ -98,5 +110,26 @@ mod tests {
 
         assert_eq!(uris, vec![path_to_file_uri(&notes)]);
         assert!(project.find_by_original(&source).is_some());
+    }
+
+    #[test]
+    fn mirrored_node_modules_sources_stay_diagnostic_inputs() {
+        let root = tempfile::tempdir().unwrap();
+        let root = root.path().canonicalize().unwrap();
+        let selected = root.join("node_modules/selected/index.ts");
+        let source = root.join("src/use.ts");
+        std::fs::create_dir_all(selected.parent().unwrap()).unwrap();
+        std::fs::create_dir_all(source.parent().unwrap()).unwrap();
+        std::fs::write(&selected, "export const selected: number = 1;\n").unwrap();
+        std::fs::write(&source, "export const value = 1;\n").unwrap();
+        let mut project = VirtualProject::new(&root).unwrap();
+        project.register_path(&selected).unwrap();
+        project.register_path(&source).unwrap();
+        project.set_diagnostic_paths([selected.as_path(), source.as_path()]);
+        let mut uris = Vec::new();
+
+        extend_diagnostic_path_uris(&project, &mut uris);
+
+        assert_eq!(uris, vec![path_to_file_uri(&selected)]);
     }
 }
