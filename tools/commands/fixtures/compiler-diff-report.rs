@@ -241,7 +241,7 @@ Compare every Vue ecosystem fixture project against the official Vue compiler.\n
 \n\
 Options:\n\
   --project <id[,id]>       Limit to one or more registry project ids.\n\
-  --target <dom|ssr>        Limit target; repeat or comma-separate. Defaults to dom,ssr.\n\
+  --target <dom|ssr|vapor>  Limit target; repeat or comma-separate. Defaults to dom,ssr.\n\
   --max-files <n>           Forward a per-project file limit to vize inspector.\n\
   --template-syntax <mode>  Forward template syntax mode. Defaults to quirks.\n\
   --output-dir <dir>        Report directory. Defaults under .vize/artifacts/compiler-diff-report.\n\
@@ -632,7 +632,7 @@ fn empty_summary() -> Value {
 }
 
 fn parse_target(target: String) -> Result<String, String> {
-    if target == "dom" || target == "ssr" {
+    if target == "dom" || target == "ssr" || target == "vapor" {
         Ok(target)
     } else {
         Err(format!("Unsupported target: {target}"))

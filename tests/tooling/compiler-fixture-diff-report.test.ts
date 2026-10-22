@@ -129,6 +129,35 @@ test("compiler fixture diff reporter dry-runs selected registry projects", () =>
   }
 });
 
+test("compiler fixture diff reporter plans a Vapor comparison for a Vue 3 project", () => {
+  const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-compiler-diff-report-"));
+  try {
+    const result = spawnSync(
+      "rust-script",
+      [
+        toolPath,
+        "--dry-run",
+        "--project",
+        "element-plus",
+        "--target",
+        "vapor",
+        "--output-dir",
+        outputDir,
+      ],
+      { cwd: root, encoding: "utf8" },
+    );
+
+    assert.equal(result.status, 0, result.stderr);
+    const summary = JSON.parse(fs.readFileSync(path.join(outputDir, "summary.json"), "utf8"));
+    assert.deepEqual(summary.command.targets, ["vapor"]);
+    assert.equal(summary.projects[0].targets[0].target, "vapor");
+    assert.equal(summary.projects[0].targets[0].status, "planned");
+    assert.match(summary.projects[0].targets[0].command, /--target vapor/);
+  } finally {
+    fs.rmSync(outputDir, { recursive: true, force: true });
+  }
+});
+
 test("compiler fixture diff reporter rejects unknown fixture ids", () => {
   const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-compiler-diff-report-"));
   try {
