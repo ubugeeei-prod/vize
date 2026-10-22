@@ -1,4 +1,5 @@
-//! Strict native attribute names are checked against the installed Vue types.
+//! Native attribute names are excess-checked when `vueCompilerOptions.target`
+//! is omitted. A resolved Vue 3 target leaves those names unchecked.
 
 use crate::virtual_ts::VizeMapping;
 use vize_carton::{String, append, is_native_tag};
@@ -9,9 +10,10 @@ pub(super) fn emit(
     mappings: &mut Vec<VizeMapping>,
     root: &RootNode<'_>,
     offset: u32,
+    vue3_compiler_target: bool,
 ) {
     for child in &root.children {
-        visit(ts, mappings, child, offset);
+        visit(ts, mappings, child, offset, vue3_compiler_target);
     }
 }
 
@@ -20,6 +22,7 @@ fn visit(
     mappings: &mut Vec<VizeMapping>,
     child: &TemplateChildNode<'_>,
     offset: u32,
+    vue3_compiler_target: bool,
 ) {
     let TemplateChildNode::Element(element) = child else {
         return;
@@ -36,7 +39,11 @@ fn visit(
     if fragment && !slot_template {
         emit_fragment_prop_names(ts, mappings, element, offset);
     }
-    if is_native_tag(element.tag) && !fragment {
+    // Vue 3 accepts intrinsic names that `NativeElements` does not list.
+    // An omitted target still excess-checks the name (TS2353 on the key).
+    // Assigning the name to `never` was TS2322 and anchored the binding note
+    // on a neighboring attribute.
+    if is_native_tag(element.tag) && !fragment && !vue3_compiler_target {
         for prop in &element.props {
             let (name, location) = match prop {
                 PropNode::Attribute(attribute) => (attribute.name, &attribute.name_loc),
@@ -61,24 +68,29 @@ fn visit(
             ) else {
                 continue;
             };
-            let start = ts.len();
-            append!(*ts, "  const __vize_native_key_{}", location.span.start);
-            let name_end = ts.len();
             append!(
                 *ts,
-                ": unknown extends __VizeNativeElement<{tag}> ? unknown : {key} extends keyof __VizeNativeElement<{tag}> ? unknown : __VizeComponentAttrCamel<{key}> extends keyof __VizeNativeElement<{tag}> ? unknown : never = {key};\n"
+                "  const __vize_native_key_{}: Partial<__VizeNativeElement<{tag}>> = {{ ",
+                location.span.start
+            );
+            let key_start = ts.len();
+            ts.push_str(key.as_str());
+            let key_end = ts.len();
+            append!(
+                *ts,
+                ": undefined as never }};\n  void __vize_native_key_{};\n",
+                location.span.start
             );
             mappings.push(VizeMapping {
-                gen_range: start + 8..name_end,
+                gen_range: key_start..key_end,
                 src_range: (offset + location.span.start) as usize
                     ..(offset + location.span.end) as usize,
                 sub_spans: Vec::new(),
             });
-            append!(*ts, "  void __vize_native_key_{};\n", location.span.start);
         }
     }
     for child in &element.children {
-        visit(ts, mappings, child, offset);
+        visit(ts, mappings, child, offset, vue3_compiler_target);
     }
 }
 

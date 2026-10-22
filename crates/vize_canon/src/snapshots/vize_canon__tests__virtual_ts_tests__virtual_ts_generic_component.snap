@@ -172,7 +172,7 @@ function __setup<T extends string | number>() {
   const selected = props["selected"];
   void selected;
 
-  const __vize_native_key_47: unknown extends __VizeNativeElement<"div"> ? unknown : "key" extends keyof __VizeNativeElement<"div"> ? unknown : __VizeComponentAttrCamel<"key"> extends keyof __VizeNativeElement<"div"> ? unknown : never = "key";
+  const __vize_native_key_47: Partial<__VizeNativeElement<"div">> = { "key": undefined as never };
   void __vize_native_key_47;
 
   // v-for scope: item in props.items

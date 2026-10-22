@@ -63,7 +63,7 @@ function __setup() {
   const _as = props["as"];
   void _as;
 
-  const __vize_native_key_46: unknown extends __VizeNativeElement<"div"> ? unknown : "style" extends keyof __VizeNativeElement<"div"> ? unknown : __VizeComponentAttrCamel<"style"> extends keyof __VizeNativeElement<"div"> ? unknown : never = "style";
+  const __vize_native_key_46: Partial<__VizeNativeElement<"div">> = { "style": undefined as never };
   void __vize_native_key_46;
   const __vize_native_prop_check_25: __VizeNativeElementProp<__VizeNativeElement<"div">, "data-value"> = ((value as any));
   void __vize_native_prop_check_25; // VBind

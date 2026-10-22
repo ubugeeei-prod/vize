@@ -149,9 +149,9 @@ void (null! as __VizeTemplateRefs["btn"]);   const buttonEl = useTemplateRef('bt
     const $emit = __ctx.$emit;
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
-  const __vize_native_key_20: unknown extends __VizeNativeElement<"input"> ? unknown : "ref" extends keyof __VizeNativeElement<"input"> ? unknown : __VizeComponentAttrCamel<"ref"> extends keyof __VizeNativeElement<"input"> ? unknown : never = "ref";
+  const __vize_native_key_20: Partial<__VizeNativeElement<"input">> = { "ref": undefined as never };
   void __vize_native_key_20;
-  const __vize_native_key_50: unknown extends __VizeNativeElement<"button"> ? unknown : "ref" extends keyof __VizeNativeElement<"button"> ? unknown : __VizeComponentAttrCamel<"ref"> extends keyof __VizeNativeElement<"button"> ? unknown : never = "ref";
+  const __vize_native_key_50: Partial<__VizeNativeElement<"button">> = { "ref": undefined as never };
   void __vize_native_key_50;
 
   // Reference setup bindings (used in template/CSS v-bind)

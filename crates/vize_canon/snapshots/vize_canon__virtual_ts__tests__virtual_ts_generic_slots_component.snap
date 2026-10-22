@@ -168,7 +168,7 @@ function __setup<T extends string = 'a'>() {
   const props: __DefineProps<__VizeSetupProps> = {} as __DefineProps<__VizeSetupProps>;
   void props; // Mark as used to avoid TS6133
 
-  const __vize_native_key_11: unknown extends __VizeNativeElement<"button"> ? unknown : "type" extends keyof __VizeNativeElement<"button"> ? unknown : __VizeComponentAttrCamel<"type"> extends keyof __VizeNativeElement<"button"> ? unknown : never = "type";
+  const __vize_native_key_11: Partial<__VizeNativeElement<"button">> = { "type": undefined as never };
   void __vize_native_key_11;
   function __vizeSlotOutlet<S>(slot: S): S extends () => infer R ? (props: {}) => R : NonNullable<S> { return slot as any; }
   type __VizeSlotOutletFn = (...args: any[]) => any;

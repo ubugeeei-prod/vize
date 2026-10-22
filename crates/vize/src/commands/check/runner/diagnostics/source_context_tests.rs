@@ -51,6 +51,19 @@
     }
 
     #[test]
+    fn binding_context_uses_boolean_attribute_instead_of_a_neighboring_directive() {
+        let line = r#"<div class="subject-label" :style="borderStyle" x-small>"#;
+        assert_eq!(
+            context_at(line, line.find("x-small").unwrap()).as_deref(),
+            Some("x-small")
+        );
+        assert_eq!(
+            context_at(line, line.find(":style").unwrap()).as_deref(),
+            Some("'style'")
+        );
+    }
+
+    #[test]
     fn binding_context_uses_static_prop_at_diagnostic_position_before_event() {
         let line = r#"<Child count="1" @change="onChange" />"#;
         assert_eq!(

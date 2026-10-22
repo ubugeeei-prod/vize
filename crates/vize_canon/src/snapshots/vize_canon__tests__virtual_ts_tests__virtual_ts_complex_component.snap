@@ -187,7 +187,7 @@ function __setup() {
   const title = props["title"];
   void title;
 
-  const __vize_native_key_8: unknown extends __VizeNativeElement<"div"> ? unknown : "class" extends keyof __VizeNativeElement<"div"> ? unknown : __VizeComponentAttrCamel<"class"> extends keyof __VizeNativeElement<"div"> ? unknown : never = "class";
+  const __vize_native_key_8: Partial<__VizeNativeElement<"div">> = { "class": undefined as never };
   void __vize_native_key_8;
   void (props.title); // Interpolation
   // @vize-map: expr -> 582:593

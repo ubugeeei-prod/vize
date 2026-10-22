@@ -47,9 +47,9 @@ function __setup() {
     const $emit = __ctx.$emit;
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
-  const __vize_native_key_18: unknown extends __VizeNativeElement<"svg"> ? unknown : "viewBox" extends keyof __VizeNativeElement<"svg"> ? unknown : __VizeComponentAttrCamel<"viewBox"> extends keyof __VizeNativeElement<"svg"> ? unknown : never = "viewBox";
+  const __vize_native_key_18: Partial<__VizeNativeElement<"svg">> = { "viewBox": undefined as never };
   void __vize_native_key_18;
-  const __vize_native_key_44: unknown extends __VizeNativeElement<"path"> ? unknown : "d" extends keyof __VizeNativeElement<"path"> ? unknown : __VizeComponentAttrCamel<"d"> extends keyof __VizeNativeElement<"path"> ? unknown : never = "d";
+  const __vize_native_key_44: Partial<__VizeNativeElement<"path">> = { "d": undefined as never };
   void __vize_native_key_44;
   void (count); // Interpolation
   // @vize-map: expr -> 144:149

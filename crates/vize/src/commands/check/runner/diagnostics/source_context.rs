@@ -161,14 +161,16 @@ fn attribute_context(line: &str, cursor: usize, token: &str) -> Option<CompactSt
         return None;
     }
     binding_context_from_token(token).or_else(|| {
-        let after_name = line.get(cursor + token.len()..)?;
-        (line.trim_start().starts_with('<')
+        let next = line.as_bytes().get(cursor + token.len()).copied();
+        let static_attribute = line.trim_start().starts_with('<')
             && token
                 .as_bytes()
                 .first()
                 .is_some_and(u8::is_ascii_alphabetic)
-            && after_name.trim_start().starts_with('='))
-        .then(|| CompactString::from(token))
+            && next.is_none_or(|byte| {
+                byte.is_ascii_whitespace() || matches!(byte, b'=' | b'>' | b'/')
+            });
+        static_attribute.then(|| CompactString::from(token))
     })
 }
 

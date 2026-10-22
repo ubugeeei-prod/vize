@@ -156,11 +156,11 @@ function __setup() {
     const $emit = __ctx.$emit;
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
-  const __vize_native_key_49: unknown extends __VizeNativeElement<"input"> ? unknown : "type" extends keyof __VizeNativeElement<"input"> ? unknown : __VizeComponentAttrCamel<"type"> extends keyof __VizeNativeElement<"input"> ? unknown : never = "type";
+  const __vize_native_key_49: Partial<__VizeNativeElement<"input">> = { "type": undefined as never };
   void __vize_native_key_49;
-  const __vize_native_key_132: unknown extends __VizeNativeElement<"option"> ? unknown : "value" extends keyof __VizeNativeElement<"option"> ? unknown : __VizeComponentAttrCamel<"value"> extends keyof __VizeNativeElement<"option"> ? unknown : never = "value";
+  const __vize_native_key_132: Partial<__VizeNativeElement<"option">> = { "value": undefined as never };
   void __vize_native_key_132;
-  const __vize_native_key_180: unknown extends __VizeNativeElement<"option"> ? unknown : "value" extends keyof __VizeNativeElement<"option"> ? unknown : __VizeComponentAttrCamel<"value"> extends keyof __VizeNativeElement<"option"> ? unknown : never = "value";
+  const __vize_native_key_180: Partial<__VizeNativeElement<"option">> = { "value": undefined as never };
   void __vize_native_key_180;
   void (text); // VModel
   // @vize-map: expr -> 182:186

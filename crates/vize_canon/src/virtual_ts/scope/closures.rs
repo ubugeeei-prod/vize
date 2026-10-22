@@ -61,7 +61,13 @@ pub(super) fn emit_scope_closures(
         && !options.legacy_vue2
         && let Some(root) = options.template_ast
     {
-        super::native_prop_names::emit(ts, mappings, root, template_offset);
+        super::native_prop_names::emit(
+            ts,
+            mappings,
+            root,
+            template_offset,
+            check_options.accepts_vue3_intrinsic_attrs(),
+        );
     }
     super::dynamic_component::emit_dynamic_component_aliases(ts, summary, options.template_ast);
     let template_source = options.template_ast.map(|root| root.source);

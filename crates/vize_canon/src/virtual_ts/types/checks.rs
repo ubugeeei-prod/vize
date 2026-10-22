@@ -1,5 +1,7 @@
 //! Execution switches and resolved Vue compiler options.
 
+use vize_carton::config::VueVersion;
+
 /// `resolveStyleClassNames`: which `<style>` blocks contribute class names to
 /// the `__VLS_StyleScopedClasses` type a template may reference. Vue Language
 /// Tools defaults to the scoped blocks; `true` takes every block.
@@ -17,6 +19,10 @@ pub(crate) struct VirtualTsCheckOptions {
     pub(crate) check_template_bindings: bool,
     pub(crate) check_emits: bool,
     pub(crate) check_unknown_props: bool,
+    /// Resolved `vueCompilerOptions.target`. `None` means the option was omitted.
+    /// Vue 3 leaves intrinsic attribute names unchecked; an omitted target still
+    /// excess-checks them instead of assigning the name to `never`.
+    pub(crate) vue_compiler_target: Option<VueVersion>,
     /// Explicit strict Vue options close the otherwise compatible fallthrough tail.
     pub(crate) check_unknown_fallthrough_props: bool,
     /// Opt in to declared/public attrs and explicitly inferred fallthrough only.
@@ -61,6 +67,11 @@ impl VirtualTsCheckOptions {
         self.strict_component_attrs && self.check_unknown_props
     }
 
+    /// Vue 3's compiler target accepts intrinsic names absent from `NativeElements`.
+    pub(crate) fn accepts_vue3_intrinsic_attrs(self) -> bool {
+        self.vue_compiler_target == Some(VueVersion::V3)
+    }
+
     pub(crate) fn any_enabled(self) -> bool {
         self.check_props || self.check_template_bindings || self.check_emits
     }
@@ -77,6 +88,7 @@ impl Default for VirtualTsCheckOptions {
             check_template_bindings: true,
             check_emits: true,
             check_unknown_props: true,
+            vue_compiler_target: None,
             check_unknown_fallthrough_props: false,
             strict_component_attrs: false,
             check_unknown_components: false,

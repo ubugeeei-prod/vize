@@ -156,7 +156,7 @@ function __setup() {
     const $emit = __ctx.$emit;
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
-  const __vize_native_key_190: unknown extends __VizeNativeElement<"p"> ? unknown : "key" extends keyof __VizeNativeElement<"p"> ? unknown : __VizeComponentAttrCamel<"key"> extends keyof __VizeNativeElement<"p"> ? unknown : never = "key";
+  const __vize_native_key_190: Partial<__VizeNativeElement<"p">> = { "key": undefined as never };
   void __vize_native_key_190;
   if (status === 'loading') {
     // @vize-map: expr -> 215:235

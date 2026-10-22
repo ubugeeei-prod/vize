@@ -58,6 +58,8 @@ mod tests;
 mod type_dependencies;
 mod types;
 #[cfg(test)]
+mod native_attr_name_tests;
+#[cfg(test)]
 mod unknown_props_tests;
 
 pub use generator::setup_helpers::owned_emit_navigation_source_ranges;

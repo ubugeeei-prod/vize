@@ -278,6 +278,25 @@ impl VirtualProject {
             .as_ref()
             .and_then(|options| options.get("resolveStyleImports").and_then(Value::as_bool))
             .unwrap_or(false);
+        self.virtual_ts_check_options.vue_compiler_target =
+            self.resolved_vue_compiler_target(path.as_deref(), options.as_ref());
+    }
+
+    #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
+    fn resolved_vue_compiler_target(
+        &self,
+        path: Option<&Path>,
+        options: Option<&Map<std::string::String, Value>>,
+    ) -> Option<vize_carton::config::VueVersion> {
+        if let Some(snapshot) = self.compiler_configuration.as_ref() {
+            return snapshot.vue_target().ok().flatten();
+        }
+        let (Some(path), Some(options)) = (path, options) else {
+            return None;
+        };
+        vue_target_from_options(&self.project_root, path, options, None)
+            .ok()
+            .flatten()
     }
 
     #[cfg(test)]
