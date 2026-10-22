@@ -194,11 +194,11 @@ void test("typechecker coverage records every pinned authored source dialect", (
     unknownReadinessCases: 87,
     verified: {},
     provisional: {
-      "html-template": 83,
+      "html-template": 84,
       js: 1,
       ts: 86,
       tsx: 3,
-      "vue3-sfc": 84,
+      "vue3-sfc": 85,
     },
   });
   assert.deepEqual(
