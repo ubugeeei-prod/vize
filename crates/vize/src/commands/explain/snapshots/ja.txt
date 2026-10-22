@@ -1985,6 +1985,36 @@ Boolean 型の props にデフォルト値を指定することを禁止する
       count: { type: Number, default: 0 }
     }
   }
+=== script/no-computed-properties-in-data
+script/no-computed-properties-in-data · lint ルール
+コンポーネントの data 関数の中で算出プロパティを使うことを禁止する
+
+精度: exact
+対象: Options API component definitions written as object literals
+重大度: エラー
+カテゴリー: script
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+
+不正な例:
+  export default {
+    data() {
+      return { value: this.doubled }
+    },
+    computed: {
+      doubled() { return 1 }
+    }
+  }
+
+正しい例:
+  export default {
+    data() {
+      return { value: 1 }
+    },
+    computed: {
+      doubled() { return this.value * 2 }
+    }
+  }
 === script/no-deep-destructure-in-props
 script/no-deep-destructure-in-props · lint ルール
 definePropsでの深くネストした分割代入を禁止する
@@ -2036,6 +2066,30 @@ script/no-deprecated-data-object-declaration · lint ルール
   export default {
     data() {
       return { count: 0 }
+    }
+  }
+=== script/no-deprecated-delete-set
+script/no-deprecated-delete-set · lint ルール
+Vue 3 で削除された Vue 2 の $set と $delete を禁止する
+
+精度: exact
+対象: the syntax of <script> and <script setup> programs, without type information
+重大度: エラー
+カテゴリー: script
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+
+不正な例:
+  export default {
+    created() {
+      this.$set(this.item, 'ready', true)
+    }
+  }
+
+正しい例:
+  export default {
+    created() {
+      this.item.ready = true
     }
   }
 === script/no-deprecated-destroyed-lifecycle
@@ -2133,6 +2187,30 @@ script/no-deprecated-events-api · lint ルール
     }
   }
   </script>
+=== script/no-deprecated-model-definition
+script/no-deprecated-model-definition · lint ルール
+Vue 3 で削除された Vue 2 の model オプションを禁止する
+
+精度: exact
+対象: Options API component definitions written as object literals
+重大度: エラー
+カテゴリー: script
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+
+不正な例:
+  export default {
+    model: {
+      prop: 'value',
+      event: 'input'
+    }
+  }
+
+正しい例:
+  export default {
+    props: ['modelValue'],
+    emits: ['update:modelValue']
+  }
 === script/no-deprecated-props-default-this
 script/no-deprecated-props-default-this · lint ルール
 props の default・validator 関数の中での `this` を禁止する（Vue 3 で削除）
@@ -2181,6 +2259,22 @@ props の default・validator 関数の中での `this` を禁止する（Vue 3 
       }
     }
   }
+=== script/no-deprecated-vue-config-keycodes
+script/no-deprecated-vue-config-keycodes · lint ルール
+Vue 3 で削除された Vue.config.keyCodes を禁止する
+
+精度: exact
+対象: the syntax of <script> and <script setup> programs, without type information
+重大度: エラー
+カテゴリー: script
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+
+不正な例:
+  Vue.config.keyCodes.enter = 13
+
+正しい例:
+  const enter = 13
 === script/no-dupe-keys
 script/no-dupe-keys · lint ルール
 Options API の props・data・computed・methods・setup・inject の間でのキーの重複を禁止する
@@ -2781,6 +2875,55 @@ withDefaults を非推奨とし、分割代入でのデフォルト値を推奨�
   
   // Or without destructuring if defaults not needed
   const props = defineProps<{ count: number }>()
+=== script/one-component-per-file
+script/one-component-per-file · lint ルール
+1 ファイルに複数のコンポーネント定義を書くことを禁止する
+
+精度: exact
+対象: Options API component definitions written as object literals
+重大度: 警告
+カテゴリー: script
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+
+不正な例:
+  export default {
+    name: 'Parent',
+    components: {
+      Child: { name: 'Child' }
+    }
+  }
+
+正しい例:
+  export default {
+    name: 'Parent'
+  }
+=== script/order-in-components
+script/order-in-components · lint ルール
+コンポーネントオプションのプロパティを既定の順序に揃える
+
+精度: exact
+対象: Options API component definitions written as object literals
+重大度: 警告
+カテゴリー: script
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+
+不正な例:
+  export default {
+    data() {
+      return { count: 0 }
+    },
+    props: ['label']
+  }
+
+正しい例:
+  export default {
+    props: ['label'],
+    data() {
+      return { count: 0 }
+    }
+  }
 === script/prefer-computed
 script/prefer-computed · lint ルール
 派生したリアクティブな状態には computed() を推奨する
@@ -3107,6 +3250,56 @@ script/require-prop-types · lint ルール
     props: {
       status: String,
       other: { type: Number, default: 0 }
+    }
+  }
+=== script/require-render-return
+script/require-render-return · lint ルール
+コンポーネントの render 関数が値を返すことを必須にする
+
+精度: exact
+対象: Options API component definitions written as object literals
+重大度: エラー
+カテゴリー: script
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+
+不正な例:
+  export default {
+    render() {
+      if (this.ready) {
+        this.count
+      }
+    }
+  }
+
+正しい例:
+  export default {
+    render() {
+      return this.count
+    }
+  }
+=== script/require-slots-as-functions
+script/require-slots-as-functions · lint ルール
+$slots のプロパティを関数として呼び出すことを必須にする
+
+精度: exact
+対象: the syntax of <script> and <script setup> programs, without type information
+重大度: エラー
+カテゴリー: script
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+
+不正な例:
+  export default {
+    render() {
+      return this.$slots.default
+    }
+  }
+
+正しい例:
+  export default {
+    render() {
+      return this.$slots.default()
     }
   }
 === script/require-symbol-provide

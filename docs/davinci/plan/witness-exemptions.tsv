@@ -24,12 +24,16 @@ vize_patina	script/component-options-name-casing	1
 vize_patina	script/custom-event-name-casing	1
 vize_patina	script/no-arrow-functions-in-watch	1
 vize_patina	script/no-async-in-computed	1
+vize_patina	script/no-computed-properties-in-data	1
 vize_patina	script/no-deprecated-data-object-declaration	1
+vize_patina	script/no-deprecated-delete-set	1
 vize_patina	script/no-deprecated-destroyed-lifecycle	1
 vize_patina	script/no-deprecated-dollar-listeners-api	1
 vize_patina	script/no-deprecated-dollar-scopedslots-api	1
 vize_patina	script/no-deprecated-events-api	1
+vize_patina	script/no-deprecated-model-definition	1
 vize_patina	script/no-deprecated-props-default-this	1
+vize_patina	script/no-deprecated-vue-config-keycodes	1
 vize_patina	script/no-dupe-keys	1
 vize_patina	script/no-export-in-script-setup	1
 vize_patina	script/no-expose-after-await	1
@@ -53,6 +57,8 @@ vize_patina	script/no-watch-after-await	1
 vize_patina	script/require-default-prop	1
 vize_patina	script/require-prop-type-constructor	1
 vize_patina	script/require-prop-types	1
+vize_patina	script/require-render-return	1
+vize_patina	script/require-slots-as-functions	1
 vize_patina	script/require-valid-default-prop	1
 vize_patina	script/return-in-computed-property	1
 vize_patina	script/return-in-emits-validator	1

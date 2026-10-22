@@ -179,4 +179,44 @@ export const chineseRules5: Record<string, readonly [string, string, string]> = 
     "`watch()` 在 `await loadData()` 之后创建且丢弃了停止句柄，因此侦听器不会随组件一起停止。",
     "侦听器在第一个 `await` 之前创建，因此组件卸载时 Vue 会停止它。",
   ],
+  "script/no-computed-properties-in-data": [
+    "禁止在组件的 data 函数中使用计算属性",
+    "`data()` 返回 `this.doubled`，而 `doubled` 仍是计算属性，读取发生在初始化之前。",
+    "`data()` 返回普通的 `value`，`doubled` 在初始化之后读取 `this.value`。",
+  ],
+  "script/no-deprecated-delete-set": [
+    "禁止使用 Vue 3 中已移除的 Vue 2 $set 和 $delete",
+    "`created()` 调用已移除的 `this.$set` 来添加 `ready`。",
+    "同一字段直接用 `this.item.ready = true` 赋值。",
+  ],
+  "script/no-deprecated-model-definition": [
+    "禁止使用 Vue 3 中已移除的 Vue 2 model 选项",
+    "组件仍用 `prop` 和 `event` 声明 Vue 2 的 `model` 选项。",
+    "组件改为声明 `modelValue` prop 和 `update:modelValue` 事件。",
+  ],
+  "script/no-deprecated-vue-config-keycodes": [
+    "禁止使用 Vue 3 中已移除的 Vue.config.keyCodes",
+    "`Vue.config.keyCodes.enter` 赋值给已移除的按键码别名。",
+    "按键码是普通常量 `const enter = 13`。",
+  ],
+  "script/require-render-return": [
+    "要求组件的 render 函数返回一个值",
+    "`render` 函数在分支里读取 `this.count`，但没有返回值。",
+    "`render` 函数返回 `this.count`。",
+  ],
+  "script/require-slots-as-functions": [
+    "要求将 $slots 的属性作为函数调用",
+    "`render` 返回未调用的 `this.$slots.default`，这是 Vue 2 的 vnode 数组。",
+    "`render` 调用 `this.$slots.default()` 并使用返回的 vnode。",
+  ],
+  "script/one-component-per-file": [
+    "禁止在一个文件中定义多个组件",
+    "文件导出 `Parent`，又在 `components` 里定义了内联的 `Child`。",
+    "文件只定义 `Parent`。",
+  ],
+  "script/order-in-components": [
+    "强制组件选项的属性遵循默认顺序",
+    "`data` 写在 `props` 之前，较后的分组出现在较前的分组上面。",
+    "`props` 在 `data` 之前，符合默认分组顺序。",
+  ],
 };

@@ -29,4 +29,44 @@ export const frenchRules6 = {
     "`watch()` est créé après `await loadData()` et sa fonction d’arrêt est ignorée ; l’observateur n’est donc jamais arrêté avec le composant.",
     "L’observateur est créé avant le premier `await`, donc Vue l’arrête lorsque le composant est démonté.",
   ],
+  "script/no-computed-properties-in-data": [
+    "Interdire l’usage d’une propriété calculée dans la fonction data du composant",
+    "`data()` renvoie `this.doubled` alors que `doubled` est encore une propriété calculée, lue avant son initialisation.",
+    "`data()` renvoie une valeur simple, et `doubled` lit `this.value` après l’initialisation.",
+  ],
+  "script/no-deprecated-delete-set": [
+    "Interdire $set et $delete de Vue 2, retirés dans Vue 3",
+    "`created()` appelle `this.$set`, retiré, pour ajouter `ready`.",
+    "Le même champ est affecté directement avec `this.item.ready = true`.",
+  ],
+  "script/no-deprecated-model-definition": [
+    "Interdire l’option model de Vue 2, retirée dans Vue 3",
+    "Le composant déclare encore l’option Vue 2 `model` avec `prop` et `event`.",
+    "Le composant déclare la prop `modelValue` et l’événement `update:modelValue`.",
+  ],
+  "script/no-deprecated-vue-config-keycodes": [
+    "Interdire Vue.config.keyCodes, retiré dans Vue 3",
+    "`Vue.config.keyCodes.enter` affecte un alias de code de touche retiré.",
+    "Le code de touche est une constante ordinaire, `const enter = 13`.",
+  ],
+  "script/require-render-return": [
+    "Exiger que la fonction render du composant renvoie une valeur",
+    "La fonction `render` lit `this.count` dans une branche et ne renvoie rien.",
+    "La fonction `render` renvoie `this.count`.",
+  ],
+  "script/require-slots-as-functions": [
+    "Exiger que les propriétés de $slots soient appelées comme des fonctions",
+    "`render` renvoie `this.$slots.default` sans l’appeler, ce qui était le tableau de vnodes de Vue 2.",
+    "`render` appelle `this.$slots.default()` et utilise le vnode renvoyé.",
+  ],
+  "script/one-component-per-file": [
+    "Interdire plus d’une définition de composant dans un fichier",
+    "Le fichier exporte `Parent` et définit aussi un composant `Child` dans `components`.",
+    "Le fichier ne définit que `Parent`.",
+  ],
+  "script/order-in-components": [
+    "Imposer l’ordre par défaut des propriétés des options de composant",
+    "`data` est écrit avant `props`, donc un groupe plus tardif précède un groupe plus précoce.",
+    "`props` précède `data`, ce qui suit l’ordre des groupes par défaut.",
+  ],
 } satisfies Record<string, readonly [string, string, string]>;

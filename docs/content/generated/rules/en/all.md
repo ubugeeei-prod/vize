@@ -14,7 +14,7 @@ Severity is the implementation default; override it with `off`, `warn`, or `erro
 
 See the [ESLint migration map](./migration.md) for rule IDs, differences, and unsupported mappings.
 
-## Single-file rules (258)
+## Single-file rules (266)
 
 | Rule | Examples | Severity | Presets | Fixable | Options | Implementation | Description | Category |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -217,13 +217,17 @@ See the [ESLint migration map](./migration.md) for rule IDs, differences, and un
 | [`script/no-arrow-functions-in-watch`](#script-no-arrow-functions-in-watch) | [Bad](#script-no-arrow-functions-in-watch-bad) · [Good](#script-no-arrow-functions-in-watch-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_arrow_functions_in_watch.rs#L59) | Disallow arrow functions as Options API watch handlers | Script |
 | [`script/no-async-in-computed`](#script-no-async-in-computed) | [Bad](#script-no-async-in-computed-bad) · [Good](#script-no-async-in-computed-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_async_in_computed.rs#L46) | Disallow async functions in computed properties | Script |
 | [`script/no-boolean-default`](#script-no-boolean-default) | [Bad](#script-no-boolean-default-bad) · [Good](#script-no-boolean-default-good) | `warning` | `opinionated`, `nuxt` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_boolean_default.rs#L54) | Disallow a default on a Boolean prop | Script |
+| [`script/no-computed-properties-in-data`](#script-no-computed-properties-in-data) | [Bad](#script-no-computed-properties-in-data-bad) · [Good](#script-no-computed-properties-in-data-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_computed_properties_in_data.rs#L44) | Disallow using computed properties inside the component data function | Script |
 | [`script/no-deep-destructure-in-props`](#script-no-deep-destructure-in-props) | [Bad](#script-no-deep-destructure-in-props-bad) · [Good](#script-no-deep-destructure-in-props-good) | `warning` | `opinionated`, `nuxt` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs#L39) | Disallow deeply nested destructuring in defineProps | Script |
-| [`script/no-deprecated-data-object-declaration`](#script-no-deprecated-data-object-declaration) | [Bad](#script-no-deprecated-data-object-declaration-bad) · [Good](#script-no-deprecated-data-object-declaration-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_data_object_declaration.rs#L48) | Disallow an object literal as the component data option (Vue 3 requires a function) | Script |
+| [`script/no-deprecated-data-object-declaration`](#script-no-deprecated-data-object-declaration) | [Bad](#script-no-deprecated-data-object-declaration-bad) · [Good](#script-no-deprecated-data-object-declaration-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_data_object_declaration.rs#L49) | Disallow an object literal as the component data option (Vue 3 requires a function) | Script |
+| [`script/no-deprecated-delete-set`](#script-no-deprecated-delete-set) | [Bad](#script-no-deprecated-delete-set-bad) · [Good](#script-no-deprecated-delete-set-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_delete_set.rs#L41) | Disallow Vue 2 $set and $delete, which were removed in Vue 3 | Script |
 | [`script/no-deprecated-destroyed-lifecycle`](#script-no-deprecated-destroyed-lifecycle) | [Bad](#script-no-deprecated-destroyed-lifecycle-bad) · [Good](#script-no-deprecated-destroyed-lifecycle-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | Yes | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_destroyed_lifecycle.rs#L17) | Disallow deprecated destroyed and beforeDestroy lifecycle hooks | Script |
 | [`script/no-deprecated-dollar-listeners-api`](#script-no-deprecated-dollar-listeners-api) | [Bad](#script-no-deprecated-dollar-listeners-api-bad) · [Good](#script-no-deprecated-dollar-listeners-api-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_listeners_api.rs#L54) | Disallow the $listeners instance property removed in Vue 3 (merged into $attrs) | Script |
 | [`script/no-deprecated-dollar-scopedslots-api`](#script-no-deprecated-dollar-scopedslots-api) | [Bad](#script-no-deprecated-dollar-scopedslots-api-bad) · [Good](#script-no-deprecated-dollar-scopedslots-api-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_scopedslots_api.rs#L45) | Disallow the $scopedSlots instance property removed in Vue 3 (use $slots) | Script |
 | [`script/no-deprecated-events-api`](#script-no-deprecated-events-api) | [Bad](#script-no-deprecated-events-api-bad) · [Good](#script-no-deprecated-events-api-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_events_api.rs#L51) | Disallow the removed Vue 2 events API ($on / $off / $once) | Script |
+| [`script/no-deprecated-model-definition`](#script-no-deprecated-model-definition) | [Bad](#script-no-deprecated-model-definition-bad) · [Good](#script-no-deprecated-model-definition-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_model_definition.rs#L32) | Disallow the Vue 2 model option, which was removed in Vue 3 | Script |
 | [`script/no-deprecated-props-default-this`](#script-no-deprecated-props-default-this) | [Bad](#script-no-deprecated-props-default-this-bad) · [Good](#script-no-deprecated-props-default-this-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_props_default_this.rs#L71) | Disallow `this` inside a prop default/validator function (removed in Vue 3) | Script |
+| [`script/no-deprecated-vue-config-keycodes`](#script-no-deprecated-vue-config-keycodes) | [Bad](#script-no-deprecated-vue-config-keycodes-bad) · [Good](#script-no-deprecated-vue-config-keycodes-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_vue_config_keycodes.rs#L22) | Disallow Vue.config.keyCodes, which was removed in Vue 3 | Script |
 | [`script/no-dupe-keys`](#script-no-dupe-keys) | [Bad](#script-no-dupe-keys-bad) · [Good](#script-no-dupe-keys-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_dupe_keys.rs#L55) | Disallow duplicate keys across Options API props/data/computed/methods/setup/inject | Script |
 | [`script/no-duplicate-attr-inheritance`](#script-no-duplicate-attr-inheritance) | [Bad](#script-no-duplicate-attr-inheritance-bad) · [Good](#script-no-duplicate-attr-inheritance-good) | `warning` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance.rs#L35) | Flag a component that applies its fallthrough attributes twice | Script |
 | [`script/no-export-in-script-setup`](#script-no-export-in-script-setup) | [Bad](#script-no-export-in-script-setup-bad) · [Good](#script-no-export-in-script-setup-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_export_in_script_setup.rs#L49) | Disallow export statements inside &lt;script setup&gt; | Script |
@@ -248,6 +252,8 @@ See the [ESLint migration map](./migration.md) for rule IDs, differences, and un
 | [`script/no-use-computed-property-like-method`](#script-no-use-computed-property-like-method) | [Bad](#script-no-use-computed-property-like-method-bad) · [Good](#script-no-use-computed-property-like-method-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_use_computed_property_like_method.rs#L44) | Disallow calling an Options API computed property like a method | Script |
 | [`script/no-watch-after-await`](#script-no-watch-after-await) | [Bad](#script-no-watch-after-await-bad) · [Good](#script-no-watch-after-await-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_watch_after_await.rs#L44) | Disallow watchers registered after an await in setup() without keeping their stop handle | Script |
 | [`script/no-with-defaults`](#script-no-with-defaults) | [Bad](#script-no-with-defaults-bad) · [Good](#script-no-with-defaults-good) | `warning` | `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_with_defaults.rs#L41) | Discourage withDefaults in favor of destructuring defaults (Vue 3.5+) | Script |
+| [`script/one-component-per-file`](#script-one-component-per-file) | [Bad](#script-one-component-per-file-bad) · [Good](#script-one-component-per-file-good) | `warning` | `opinionated`, `nuxt` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/one_component_per_file.rs#L30) | Disallow more than one component definition in a file | Script |
+| [`script/order-in-components`](#script-order-in-components) | [Bad](#script-order-in-components-bad) · [Good](#script-order-in-components-good) | `warning` | `opinionated`, `nuxt` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/order_in_components.rs#L34) | Enforce the default order of properties in component options | Script |
 | [`script/prefer-computed`](#script-prefer-computed) | [Bad](#script-prefer-computed-bad) · [Good](#script-prefer-computed-good) | `warning` | _none_ | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_computed.rs#L41) | Prefer computed() for derived reactive state | Script |
 | [`script/prefer-define-options`](#script-prefer-define-options) | [Bad](#script-prefer-define-options-bad) · [Good](#script-prefer-define-options-good) | `warning` | `opinionated`, `nuxt` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_define_options.rs#L52) | Prefer defineOptions() over a plain &lt;script&gt; that only sets name/inheritAttrs | Script |
 | [`script/prefer-import-from-vue`](#script-prefer-import-from-vue) | [Bad](#script-prefer-import-from-vue-bad) · [Good](#script-prefer-import-from-vue-good) | `warning` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | Yes | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L36) | Prefer importing from 'vue' instead of internal packages | Script |
@@ -262,6 +268,8 @@ See the [ESLint migration map](./migration.md) for rule IDs, differences, and un
 | [`script/require-function-return-type`](#script-require-function-return-type) | [Bad](#script-require-function-return-type-bad) · [Good](#script-require-function-return-type-good) | `warning` | _none_ | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_function_return_type.rs#L49) | Require return type annotations on functions | Script |
 | [`script/require-prop-type-constructor`](#script-require-prop-type-constructor) | [Bad](#script-require-prop-type-constructor-bad) · [Good](#script-require-prop-type-constructor-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_prop_type_constructor.rs#L65) | Require prop `type` values to be constructors rather than string literals | Script |
 | [`script/require-prop-types`](#script-require-prop-types) | [Bad](#script-require-prop-types-bad) · [Good](#script-require-prop-types-good) | `error` | `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_prop_types.rs#L58) | Require every prop to declare a type | Script |
+| [`script/require-render-return`](#script-require-render-return) | [Bad](#script-require-render-return-bad) · [Good](#script-require-render-return-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_render_return.rs#L35) | Require the component render function to return a value | Script |
+| [`script/require-slots-as-functions`](#script-require-slots-as-functions) | [Bad](#script-require-slots-as-functions-bad) · [Good](#script-require-slots-as-functions-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_slots_as_functions.rs#L44) | Require $slots properties to be called as functions | Script |
 | [`script/require-symbol-provide`](#script-require-symbol-provide) | [Bad](#script-require-symbol-provide-bad) · [Good](#script-require-symbol-provide-good) | `warning` | _none_ | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_symbol_provide.rs#L39) | Recommend using Symbol as injection key for provide/inject | Script |
 | [`script/require-typed-object-prop`](#script-require-typed-object-prop) | [Bad](#script-require-typed-object-prop-bad) · [Good](#script-require-typed-object-prop-good) | `warning` | `opinionated`, `nuxt` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_typed_object_prop.rs#L63) | Require an explicit type on a prop whose runtime type is `Object` or `Array` | Script |
 | [`script/require-typed-ref`](#script-require-typed-ref) | [Bad](#script-require-typed-ref-bad) · [Good](#script-require-typed-ref-good) | `warning` | _none_ | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_typed_ref.rs#L55) | Require an explicit type argument on a ref() initialized with no value, null, or undefined | Script |
@@ -279,7 +287,7 @@ See the [ESLint migration map](./migration.md) for rule IDs, differences, and un
 
 ## Project rules and analyzer contracts (66)
 
-These project entries supplement the 258 single-file catalog entries above. Each example includes its component/project context or an explicit tracked-graph scenario. CLI, experimental library producers, and contracts without a producer have different support boundaries; see the [cross-file overview](./cross-file.md).
+These project entries supplement the 266 single-file catalog entries above. Each example includes its component/project context or an explicit tracked-graph scenario. CLI, experimental library producers, and contracts without a producer have different support boundaries; see the [cross-file overview](./cross-file.md).
 
 | Rule / code | Examples | Current support |
 | --- | --- | --- |
@@ -3138,6 +3146,20 @@ Disallow a default on a Boolean prop
 
 [Group examples](./type-and-script.md#script-no-boolean-default) · [Rule reference](./reference/script-no-boolean-default.md)
 
+### `script/no-computed-properties-in-data`
+
+Disallow using computed properties inside the component data function
+
+<span id="script-no-computed-properties-in-data-bad"></span>
+
+[Bad](./type-and-script.md#script-no-computed-properties-in-data-bad)
+
+<span id="script-no-computed-properties-in-data-good"></span>
+
+[Good](./type-and-script.md#script-no-computed-properties-in-data-good)
+
+[Group examples](./type-and-script.md#script-no-computed-properties-in-data) · [Rule reference](./reference/script-no-computed-properties-in-data.md)
+
 ### `script/no-deep-destructure-in-props`
 
 Disallow deeply nested destructuring in defineProps
@@ -3165,6 +3187,20 @@ Disallow an object literal as the component data option (Vue 3 requires a functi
 [Good](./type-and-script.md#script-no-deprecated-data-object-declaration-good)
 
 [Group examples](./type-and-script.md#script-no-deprecated-data-object-declaration) · [Rule reference](./reference/script-no-deprecated-data-object-declaration.md)
+
+### `script/no-deprecated-delete-set`
+
+Disallow Vue 2 $set and $delete, which were removed in Vue 3
+
+<span id="script-no-deprecated-delete-set-bad"></span>
+
+[Bad](./type-and-script.md#script-no-deprecated-delete-set-bad)
+
+<span id="script-no-deprecated-delete-set-good"></span>
+
+[Good](./type-and-script.md#script-no-deprecated-delete-set-good)
+
+[Group examples](./type-and-script.md#script-no-deprecated-delete-set) · [Rule reference](./reference/script-no-deprecated-delete-set.md)
 
 ### `script/no-deprecated-destroyed-lifecycle`
 
@@ -3222,6 +3258,20 @@ Disallow the removed Vue 2 events API ($on / $off / $once)
 
 [Group examples](./type-and-script.md#script-no-deprecated-events-api) · [Rule reference](./reference/script-no-deprecated-events-api.md)
 
+### `script/no-deprecated-model-definition`
+
+Disallow the Vue 2 model option, which was removed in Vue 3
+
+<span id="script-no-deprecated-model-definition-bad"></span>
+
+[Bad](./type-and-script.md#script-no-deprecated-model-definition-bad)
+
+<span id="script-no-deprecated-model-definition-good"></span>
+
+[Good](./type-and-script.md#script-no-deprecated-model-definition-good)
+
+[Group examples](./type-and-script.md#script-no-deprecated-model-definition) · [Rule reference](./reference/script-no-deprecated-model-definition.md)
+
 ### `script/no-deprecated-props-default-this`
 
 Disallow `this` inside a prop default/validator function (removed in Vue 3)
@@ -3235,6 +3285,20 @@ Disallow `this` inside a prop default/validator function (removed in Vue 3)
 [Good](./type-and-script.md#script-no-deprecated-props-default-this-good)
 
 [Group examples](./type-and-script.md#script-no-deprecated-props-default-this) · [Rule reference](./reference/script-no-deprecated-props-default-this.md)
+
+### `script/no-deprecated-vue-config-keycodes`
+
+Disallow Vue.config.keyCodes, which was removed in Vue 3
+
+<span id="script-no-deprecated-vue-config-keycodes-bad"></span>
+
+[Bad](./type-and-script.md#script-no-deprecated-vue-config-keycodes-bad)
+
+<span id="script-no-deprecated-vue-config-keycodes-good"></span>
+
+[Good](./type-and-script.md#script-no-deprecated-vue-config-keycodes-good)
+
+[Group examples](./type-and-script.md#script-no-deprecated-vue-config-keycodes) · [Rule reference](./reference/script-no-deprecated-vue-config-keycodes.md)
 
 ### `script/no-dupe-keys`
 
@@ -3572,6 +3636,34 @@ Discourage withDefaults in favor of destructuring defaults (Vue 3.5+)
 
 [Group examples](./type-and-script.md#script-no-with-defaults) · [Rule reference](./reference/script-no-with-defaults.md)
 
+### `script/one-component-per-file`
+
+Disallow more than one component definition in a file
+
+<span id="script-one-component-per-file-bad"></span>
+
+[Bad](./type-and-script.md#script-one-component-per-file-bad)
+
+<span id="script-one-component-per-file-good"></span>
+
+[Good](./type-and-script.md#script-one-component-per-file-good)
+
+[Group examples](./type-and-script.md#script-one-component-per-file) · [Rule reference](./reference/script-one-component-per-file.md)
+
+### `script/order-in-components`
+
+Enforce the default order of properties in component options
+
+<span id="script-order-in-components-bad"></span>
+
+[Bad](./type-and-script.md#script-order-in-components-bad)
+
+<span id="script-order-in-components-good"></span>
+
+[Good](./type-and-script.md#script-order-in-components-good)
+
+[Group examples](./type-and-script.md#script-order-in-components) · [Rule reference](./reference/script-order-in-components.md)
+
 ### `script/prefer-computed`
 
 Prefer computed() for derived reactive state
@@ -3767,6 +3859,34 @@ Require every prop to declare a type
 [Good](./type-and-script.md#script-require-prop-types-good)
 
 [Group examples](./type-and-script.md#script-require-prop-types) · [Rule reference](./reference/script-require-prop-types.md)
+
+### `script/require-render-return`
+
+Require the component render function to return a value
+
+<span id="script-require-render-return-bad"></span>
+
+[Bad](./type-and-script.md#script-require-render-return-bad)
+
+<span id="script-require-render-return-good"></span>
+
+[Good](./type-and-script.md#script-require-render-return-good)
+
+[Group examples](./type-and-script.md#script-require-render-return) · [Rule reference](./reference/script-require-render-return.md)
+
+### `script/require-slots-as-functions`
+
+Require $slots properties to be called as functions
+
+<span id="script-require-slots-as-functions-bad"></span>
+
+[Bad](./type-and-script.md#script-require-slots-as-functions-bad)
+
+<span id="script-require-slots-as-functions-good"></span>
+
+[Good](./type-and-script.md#script-require-slots-as-functions-good)
+
+[Group examples](./type-and-script.md#script-require-slots-as-functions) · [Rule reference](./reference/script-require-slots-as-functions.md)
 
 ### `script/require-symbol-provide`
 

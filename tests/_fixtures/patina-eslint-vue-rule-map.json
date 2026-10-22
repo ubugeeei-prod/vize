@@ -363,8 +363,16 @@
       "status": "mapped"
     },
     "vue/no-computed-properties-in-data": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
+      "patinaRule": "script/no-computed-properties-in-data",
+      "patinaSeverity": "error",
+      "status": "mapped"
     },
     "vue/no-console": {
       "issue": 3223,
@@ -391,8 +399,16 @@
       "status": "mapped"
     },
     "vue/no-deprecated-delete-set": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
+      "patinaRule": "script/no-deprecated-delete-set",
+      "patinaSeverity": "error",
+      "status": "mapped"
     },
     "vue/no-deprecated-destroyed-lifecycle": {
       "patinaPresets": [
@@ -491,8 +507,16 @@
       "status": "mapped"
     },
     "vue/no-deprecated-model-definition": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
+      "patinaRule": "script/no-deprecated-model-definition",
+      "patinaSeverity": "error",
+      "status": "mapped"
     },
     "vue/no-deprecated-props-default-this": {
       "patinaPresets": [
@@ -603,8 +627,16 @@
       "status": "mapped"
     },
     "vue/no-deprecated-vue-config-keycodes": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
+      "patinaRule": "script/no-deprecated-vue-config-keycodes",
+      "patinaSeverity": "error",
+      "status": "mapped"
     },
     "vue/no-dupe-keys": {
       "patinaPresets": [
@@ -954,8 +986,16 @@
       "status": "unimplemented"
     },
     "vue/no-shared-component-data": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
+      "patinaRule": "script/no-deprecated-data-object-declaration",
+      "patinaSeverity": "error",
+      "status": "mapped"
     },
     "vue/no-side-effects-in-computed-properties": {
       "patinaPresets": [
@@ -1246,16 +1286,26 @@
       "status": "unimplemented"
     },
     "vue/one-component-per-file": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [
+        "nuxt",
+        "opinionated"
+      ],
+      "patinaRule": "script/one-component-per-file",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/operator-linebreak": {
       "issue": 3223,
       "status": "unimplemented"
     },
     "vue/order-in-components": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [
+        "nuxt",
+        "opinionated"
+      ],
+      "patinaRule": "script/order-in-components",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/padding-line-between-blocks": {
       "issue": 3223,
@@ -1433,12 +1483,28 @@
       "status": "mapped"
     },
     "vue/require-render-return": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
+      "patinaRule": "script/require-render-return",
+      "patinaSeverity": "error",
+      "status": "mapped"
     },
     "vue/require-slots-as-functions": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
+      "patinaRule": "script/require-slots-as-functions",
+      "patinaSeverity": "error",
+      "status": "mapped"
     },
     "vue/require-toggle-inside-transition": {
       "patinaPresets": [
@@ -1920,8 +1986,8 @@
   "schemaVersion": 1,
   "summary": {
     "intentionalDivergence": 2,
-    "mapped": 130,
-    "unimplemented": 120
+    "mapped": 139,
+    "unimplemented": 111
   },
   "upstream": {
     "package": "eslint-plugin-vue",

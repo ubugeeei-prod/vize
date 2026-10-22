@@ -15,8 +15,8 @@ export function projectIndex(root: string, ja: boolean, inline = false) {
     `## ${label("Project rules and analyzer contracts", "プロジェクトのルールと解析器の診断契約")} (${entries.length})`,
     "",
     label(
-      "These project entries supplement the 258 single-file catalog entries above. Each example includes its component/project context or an explicit tracked-graph scenario. CLI, experimental library producers, and contracts without a producer have different support boundaries; see the [cross-file overview](./cross-file.md).",
-      "以下の項目は、上の 258 件の単一ファイルのルールを補足します。それぞれの例には、コンポーネントやプロジェクトの構成、または参照を追跡するグラフの具体的な条件が含まれます。CLI の検査、実験的なライブラリーの生成元、生成元のない診断契約では対応範囲が異なります。[ファイル間検査の概要](./cross-file.md)を確認してください。",
+      "These project entries supplement the 266 single-file catalog entries above. Each example includes its component/project context or an explicit tracked-graph scenario. CLI, experimental library producers, and contracts without a producer have different support boundaries; see the [cross-file overview](./cross-file.md).",
+      "以下の項目は、上の 266 件の単一ファイルのルールを補足します。それぞれの例には、コンポーネントやプロジェクトの構成、または参照を追跡するグラフの具体的な条件が含まれます。CLI の検査、実験的なライブラリーの生成元、生成元のない診断契約では対応範囲が異なります。[ファイル間検査の概要](./cross-file.md)を確認してください。",
     ),
     "",
     `| ${label("Rule / code", "ルール / コード")} | ${label("Examples", "例")} | ${label("Current support", "現在の対応")} |`,

@@ -45,6 +45,14 @@ impl Linter {
                 .insert(String::from("script/no-deprecated-props-default-this"));
             self.disabled_rules
                 .insert(String::from("script/no-deprecated-data-object-declaration"));
+            self.disabled_rules
+                .insert(String::from("script/no-deprecated-delete-set"));
+            self.disabled_rules
+                .insert(String::from("script/no-deprecated-model-definition"));
+            self.disabled_rules
+                .insert(String::from("script/no-deprecated-vue-config-keycodes"));
+            self.disabled_rules
+                .insert(String::from("script/require-slots-as-functions"));
         }
         self
     }

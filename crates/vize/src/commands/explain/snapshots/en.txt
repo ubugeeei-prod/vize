@@ -2034,6 +2034,36 @@ valid:
       count: { type: Number, default: 0 }
     }
   }
+=== script/no-computed-properties-in-data
+script/no-computed-properties-in-data · lint rule
+Disallow using computed properties inside the component data function
+
+tier: exact
+domain: Options API component definitions written as object literals
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  export default {
+    data() {
+      return { value: this.doubled }
+    },
+    computed: {
+      doubled() { return 1 }
+    }
+  }
+
+valid:
+  export default {
+    data() {
+      return { value: 1 }
+    },
+    computed: {
+      doubled() { return this.value * 2 }
+    }
+  }
 === script/no-deep-destructure-in-props
 script/no-deep-destructure-in-props · lint rule
 Disallow deeply nested destructuring in defineProps
@@ -2085,6 +2115,30 @@ valid:
   export default {
     data() {
       return { count: 0 }
+    }
+  }
+=== script/no-deprecated-delete-set
+script/no-deprecated-delete-set · lint rule
+Disallow Vue 2 $set and $delete, which were removed in Vue 3
+
+tier: exact
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  export default {
+    created() {
+      this.$set(this.item, 'ready', true)
+    }
+  }
+
+valid:
+  export default {
+    created() {
+      this.item.ready = true
     }
   }
 === script/no-deprecated-destroyed-lifecycle
@@ -2182,6 +2236,30 @@ valid:
     }
   }
   </script>
+=== script/no-deprecated-model-definition
+script/no-deprecated-model-definition · lint rule
+Disallow the Vue 2 model option, which was removed in Vue 3
+
+tier: exact
+domain: Options API component definitions written as object literals
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  export default {
+    model: {
+      prop: 'value',
+      event: 'input'
+    }
+  }
+
+valid:
+  export default {
+    props: ['modelValue'],
+    emits: ['update:modelValue']
+  }
 === script/no-deprecated-props-default-this
 script/no-deprecated-props-default-this · lint rule
 Disallow `this` inside a prop default/validator function (removed in Vue 3)
@@ -2230,6 +2308,22 @@ valid:
       }
     }
   }
+=== script/no-deprecated-vue-config-keycodes
+script/no-deprecated-vue-config-keycodes · lint rule
+Disallow Vue.config.keyCodes, which was removed in Vue 3
+
+tier: exact
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  Vue.config.keyCodes.enter = 13
+
+valid:
+  const enter = 13
 === script/no-dupe-keys
 script/no-dupe-keys · lint rule
 Disallow duplicate keys across Options API props/data/computed/methods/setup/inject
@@ -2830,6 +2924,55 @@ valid:
   
   // Or without destructuring if defaults not needed
   const props = defineProps<{ count: number }>()
+=== script/one-component-per-file
+script/one-component-per-file · lint rule
+Disallow more than one component definition in a file
+
+tier: exact
+domain: Options API component definitions written as object literals
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  export default {
+    name: 'Parent',
+    components: {
+      Child: { name: 'Child' }
+    }
+  }
+
+valid:
+  export default {
+    name: 'Parent'
+  }
+=== script/order-in-components
+script/order-in-components · lint rule
+Enforce the default order of properties in component options
+
+tier: exact
+domain: Options API component definitions written as object literals
+severity: warning
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  export default {
+    data() {
+      return { count: 0 }
+    },
+    props: ['label']
+  }
+
+valid:
+  export default {
+    props: ['label'],
+    data() {
+      return { count: 0 }
+    }
+  }
 === script/prefer-computed
 script/prefer-computed · lint rule
 Prefer computed() for derived reactive state
@@ -3156,6 +3299,56 @@ valid:
     props: {
       status: String,
       other: { type: Number, default: 0 }
+    }
+  }
+=== script/require-render-return
+script/require-render-return · lint rule
+Require the component render function to return a value
+
+tier: exact
+domain: Options API component definitions written as object literals
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  export default {
+    render() {
+      if (this.ready) {
+        this.count
+      }
+    }
+  }
+
+valid:
+  export default {
+    render() {
+      return this.count
+    }
+  }
+=== script/require-slots-as-functions
+script/require-slots-as-functions · lint rule
+Require $slots properties to be called as functions
+
+tier: exact
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  export default {
+    render() {
+      return this.$slots.default
+    }
+  }
+
+valid:
+  export default {
+    render() {
+      return this.$slots.default()
     }
   }
 === script/require-symbol-provide

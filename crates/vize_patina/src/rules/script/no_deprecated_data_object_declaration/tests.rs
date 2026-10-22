@@ -198,3 +198,18 @@ export default {
     let result = create_linter().lint(source, 0);
     assert_eq!(result.error_count, 1);
 }
+
+#[test]
+fn test_invalid_non_function_data_values() {
+    for source in [
+        "export default { data: [] }",
+        "export default { data: 1 }",
+        "export default { data: sharedState() }",
+        "export default { data: this.state }",
+    ] {
+        let result = create_linter().lint(source, 0);
+        assert_eq!(result.error_count, 1);
+        let message = result.diagnostics[0].message.as_str();
+        assert_eq!(message, "`data` property in component must be a function.");
+    }
+}

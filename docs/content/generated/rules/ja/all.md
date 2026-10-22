@@ -14,7 +14,7 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`vue
 
 [ESLint からのルール移行対応表](./migration.md)で対応名と未実装の範囲を確認できます。
 
-## 単一ファイルのルール (258)
+## 単一ファイルのルール (266)
 
 | ルール | 例 | 重大度 | プリセット | 自動修正 | オプション | 実装 | 目的 | カテゴリ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -217,13 +217,17 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`vue
 | [`script/no-arrow-functions-in-watch`](#script-no-arrow-functions-in-watch) | [悪い例](#script-no-arrow-functions-in-watch-bad) · [良い例](#script-no-arrow-functions-in-watch-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_arrow_functions_in_watch.rs#L59) | Options API の watch ハンドラーにアロー関数を使う箇所を検出します。 | Script |
 | [`script/no-async-in-computed`](#script-no-async-in-computed) | [悪い例](#script-no-async-in-computed-bad) · [良い例](#script-no-async-in-computed-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_async_in_computed.rs#L46) | computed の getter で非同期関数を使う箇所を検出します。 | Script |
 | [`script/no-boolean-default`](#script-no-boolean-default) | [悪い例](#script-no-boolean-default-bad) · [良い例](#script-no-boolean-default-good) | `warning` | `opinionated`, `nuxt` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_boolean_default.rs#L54) | Boolean prop の冗長な default を検出します。 | Script |
+| [`script/no-computed-properties-in-data`](#script-no-computed-properties-in-data) | [悪い例](#script-no-computed-properties-in-data-bad) · [良い例](#script-no-computed-properties-in-data-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_computed_properties_in_data.rs#L44) | 初期化前の data() で算出プロパティを読む箇所を検出します。 | Script |
 | [`script/no-deep-destructure-in-props`](#script-no-deep-destructure-in-props) | [悪い例](#script-no-deep-destructure-in-props-bad) · [良い例](#script-no-deep-destructure-in-props-good) | `warning` | `opinionated`, `nuxt` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs#L39) | defineProps の深い分割代入を検出します。 | Script |
-| [`script/no-deprecated-data-object-declaration`](#script-no-deprecated-data-object-declaration) | [悪い例](#script-no-deprecated-data-object-declaration-bad) · [良い例](#script-no-deprecated-data-object-declaration-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_data_object_declaration.rs#L48) | Vue 3 で関数にすべき data オプションのオブジェクト指定を検出します。 | Script |
+| [`script/no-deprecated-data-object-declaration`](#script-no-deprecated-data-object-declaration) | [悪い例](#script-no-deprecated-data-object-declaration-bad) · [良い例](#script-no-deprecated-data-object-declaration-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_data_object_declaration.rs#L49) | Vue 3 で関数にすべき data オプションのオブジェクト指定を検出します。 | Script |
+| [`script/no-deprecated-delete-set`](#script-no-deprecated-delete-set) | [悪い例](#script-no-deprecated-delete-set-bad) · [良い例](#script-no-deprecated-delete-set-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_delete_set.rs#L41) | Vue 3 で削除された $set / $delete を検出します。 | Script |
 | [`script/no-deprecated-destroyed-lifecycle`](#script-no-deprecated-destroyed-lifecycle) | [悪い例](#script-no-deprecated-destroyed-lifecycle-bad) · [良い例](#script-no-deprecated-destroyed-lifecycle-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | あり | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_destroyed_lifecycle.rs#L17) | Vue 2 の destroyed / beforeDestroy を検出し、Vue 3 のライフサイクルフックに置き換えます。 | Script |
 | [`script/no-deprecated-dollar-listeners-api`](#script-no-deprecated-dollar-listeners-api) | [悪い例](#script-no-deprecated-dollar-listeners-api-bad) · [良い例](#script-no-deprecated-dollar-listeners-api-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_listeners_api.rs#L54) | Vue 3 で $attrs に統合された $listeners を検出します。 | Script |
 | [`script/no-deprecated-dollar-scopedslots-api`](#script-no-deprecated-dollar-scopedslots-api) | [悪い例](#script-no-deprecated-dollar-scopedslots-api-bad) · [良い例](#script-no-deprecated-dollar-scopedslots-api-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_scopedslots_api.rs#L45) | Vue 3 で $slots に統合された $scopedSlots を検出します。 | Script |
 | [`script/no-deprecated-events-api`](#script-no-deprecated-events-api) | [悪い例](#script-no-deprecated-events-api-bad) · [良い例](#script-no-deprecated-events-api-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_events_api.rs#L51) | Vue 3 で削除された $on / $off / $once を検出します。 | Script |
+| [`script/no-deprecated-model-definition`](#script-no-deprecated-model-definition) | [悪い例](#script-no-deprecated-model-definition-bad) · [良い例](#script-no-deprecated-model-definition-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_model_definition.rs#L32) | Vue 3 で削除された model オプションを検出します。 | Script |
 | [`script/no-deprecated-props-default-this`](#script-no-deprecated-props-default-this) | [悪い例](#script-no-deprecated-props-default-this-bad) · [良い例](#script-no-deprecated-props-default-this-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_props_default_this.rs#L71) | prop の default / validator 内で使えなくなった this を検出します。 | Script |
+| [`script/no-deprecated-vue-config-keycodes`](#script-no-deprecated-vue-config-keycodes) | [悪い例](#script-no-deprecated-vue-config-keycodes-bad) · [良い例](#script-no-deprecated-vue-config-keycodes-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_vue_config_keycodes.rs#L22) | 削除された Vue.config.keyCodes を検出します。 | Script |
 | [`script/no-dupe-keys`](#script-no-dupe-keys) | [悪い例](#script-no-dupe-keys-bad) · [良い例](#script-no-dupe-keys-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_dupe_keys.rs#L55) | Options API の props / data / computed などのキー重複を検出します。 | Script |
 | [`script/no-duplicate-attr-inheritance`](#script-no-duplicate-attr-inheritance) | [悪い例](#script-no-duplicate-attr-inheritance-bad) · [良い例](#script-no-duplicate-attr-inheritance-good) | `warning` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance.rs#L35) | fallthrough 属性を同じコンポーネントで二重に適用する箇所を検出します。 | Script |
 | [`script/no-export-in-script-setup`](#script-no-export-in-script-setup) | [悪い例](#script-no-export-in-script-setup-bad) · [良い例](#script-no-export-in-script-setup-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_export_in_script_setup.rs#L49) | script setup 内の export 文を検出します。 | Script |
@@ -248,6 +252,8 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`vue
 | [`script/no-use-computed-property-like-method`](#script-no-use-computed-property-like-method) | [悪い例](#script-no-use-computed-property-like-method-bad) · [良い例](#script-no-use-computed-property-like-method-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_use_computed_property_like_method.rs#L44) | Options API の computed プロパティをメソッドとして呼ぶ箇所を検出します。 | Script |
 | [`script/no-watch-after-await`](#script-no-watch-after-await) | [悪い例](#script-no-watch-after-await-bad) · [良い例](#script-no-watch-after-await-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_watch_after_await.rs#L44) | setup() 内で await の後に停止ハンドルを保持せずにウォッチャーを登録することを禁止します。 | Script |
 | [`script/no-with-defaults`](#script-no-with-defaults) | [悪い例](#script-no-with-defaults-bad) · [良い例](#script-no-with-defaults-good) | `warning` | `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_with_defaults.rs#L41) | Vue 3.5 以降の props 分割代入の既定値を勧めます。 | Script |
+| [`script/one-component-per-file`](#script-one-component-per-file) | [悪い例](#script-one-component-per-file-bad) · [良い例](#script-one-component-per-file-good) | `warning` | `opinionated`, `nuxt` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/one_component_per_file.rs#L30) | 1 ファイルにコンポーネント定義が複数あることを検出します。 | Script |
+| [`script/order-in-components`](#script-order-in-components) | [悪い例](#script-order-in-components-bad) · [良い例](#script-order-in-components-good) | `warning` | `opinionated`, `nuxt` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/order_in_components.rs#L34) | コンポーネントオプションのプロパティ順を既定の並びに揃えます。 | Script |
 | [`script/prefer-computed`](#script-prefer-computed) | [悪い例](#script-prefer-computed-bad) · [良い例](#script-prefer-computed-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_computed.rs#L41) | 他の状態から導ける値を watcher で同期する代わりに computed で表現します。 | Script |
 | [`script/prefer-define-options`](#script-prefer-define-options) | [悪い例](#script-prefer-define-options-bad) · [良い例](#script-prefer-define-options-good) | `warning` | `opinionated`, `nuxt` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_define_options.rs#L52) | name / inheritAttrs だけの通常 script を defineOptions() にまとめます。 | Script |
 | [`script/prefer-import-from-vue`](#script-prefer-import-from-vue) | [悪い例](#script-prefer-import-from-vue-bad) · [良い例](#script-prefer-import-from-vue-good) | `warning` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | あり | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L36) | 内部パッケージではなく vue から import します。 | Script |
@@ -262,6 +268,8 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`vue
 | [`script/require-function-return-type`](#script-require-function-return-type) | [悪い例](#script-require-function-return-type-bad) · [良い例](#script-require-function-return-type-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_function_return_type.rs#L49) | 関数に戻り値の型注釈を指定します。 | Script |
 | [`script/require-prop-type-constructor`](#script-require-prop-type-constructor) | [悪い例](#script-require-prop-type-constructor-bad) · [良い例](#script-require-prop-type-constructor-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_prop_type_constructor.rs#L65) | prop の type に文字列ではなくコンストラクターを指定します。 | Script |
 | [`script/require-prop-types`](#script-require-prop-types) | [悪い例](#script-require-prop-types-bad) · [良い例](#script-require-prop-types-good) | `error` | `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_prop_types.rs#L58) | 各 prop の型を宣言します。 | Script |
+| [`script/require-render-return`](#script-require-render-return) | [悪い例](#script-require-render-return-bad) · [良い例](#script-require-render-return-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_render_return.rs#L35) | render 関数が値を返すことを必須にします。 | Script |
+| [`script/require-slots-as-functions`](#script-require-slots-as-functions) | [悪い例](#script-require-slots-as-functions-bad) · [良い例](#script-require-slots-as-functions-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_slots_as_functions.rs#L44) | Vue 3 の $slots プロパティを関数として呼び出します。 | Script |
 | [`script/require-symbol-provide`](#script-require-symbol-provide) | [悪い例](#script-require-symbol-provide-bad) · [良い例](#script-require-symbol-provide-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_symbol_provide.rs#L39) | provide / inject のキーに衝突しにくい Symbol を使います。 | Script |
 | [`script/require-typed-object-prop`](#script-require-typed-object-prop) | [悪い例](#script-require-typed-object-prop-bad) · [良い例](#script-require-typed-object-prop-good) | `warning` | `opinionated`, `nuxt` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_typed_object_prop.rs#L63) | Object / Array の prop に具体的な型を指定します。 | Script |
 | [`script/require-typed-ref`](#script-require-typed-ref) | [悪い例](#script-require-typed-ref-bad) · [良い例](#script-require-typed-ref-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_typed_ref.rs#L55) | 引数なし、null、undefined で呼び出す ref() に型引数を指定します。 | Script |
@@ -281,7 +289,7 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`vue
 
 ## プロジェクトのルールと解析器の診断契約 (66)
 
-以下の項目は、上の 258 件の単一ファイルのルールを補足します。それぞれの例には、コンポーネントやプロジェクトの構成、または参照を追跡するグラフの具体的な条件が含まれます。CLI の検査、実験的なライブラリーの生成元、生成元のない診断契約では対応範囲が異なります。[ファイル間検査の概要](./cross-file.md)を確認してください。
+以下の項目は、上の 266 件の単一ファイルのルールを補足します。それぞれの例には、コンポーネントやプロジェクトの構成、または参照を追跡するグラフの具体的な条件が含まれます。CLI の検査、実験的なライブラリーの生成元、生成元のない診断契約では対応範囲が異なります。[ファイル間検査の概要](./cross-file.md)を確認してください。
 
 | ルール / コード | 例 | 現在の対応 |
 | --- | --- | --- |
@@ -3140,6 +3148,20 @@ Boolean prop の冗長な default を検出します。
 
 [カテゴリの例](./type-and-script.md#script-no-boolean-default) · [ルール参照](./reference/script-no-boolean-default.md)
 
+### `script/no-computed-properties-in-data`
+
+初期化前の data() で算出プロパティを読む箇所を検出します。
+
+<span id="script-no-computed-properties-in-data-bad"></span>
+
+[悪い](./type-and-script.md#script-no-computed-properties-in-data-bad)
+
+<span id="script-no-computed-properties-in-data-good"></span>
+
+[良い](./type-and-script.md#script-no-computed-properties-in-data-good)
+
+[カテゴリの例](./type-and-script.md#script-no-computed-properties-in-data) · [ルール参照](./reference/script-no-computed-properties-in-data.md)
+
 ### `script/no-deep-destructure-in-props`
 
 defineProps の深い分割代入を検出します。
@@ -3167,6 +3189,20 @@ Vue 3 で関数にすべき data オプションのオブジェクト指定を�
 [良い](./type-and-script.md#script-no-deprecated-data-object-declaration-good)
 
 [カテゴリの例](./type-and-script.md#script-no-deprecated-data-object-declaration) · [ルール参照](./reference/script-no-deprecated-data-object-declaration.md)
+
+### `script/no-deprecated-delete-set`
+
+Vue 3 で削除された $set / $delete を検出します。
+
+<span id="script-no-deprecated-delete-set-bad"></span>
+
+[悪い](./type-and-script.md#script-no-deprecated-delete-set-bad)
+
+<span id="script-no-deprecated-delete-set-good"></span>
+
+[良い](./type-and-script.md#script-no-deprecated-delete-set-good)
+
+[カテゴリの例](./type-and-script.md#script-no-deprecated-delete-set) · [ルール参照](./reference/script-no-deprecated-delete-set.md)
 
 ### `script/no-deprecated-destroyed-lifecycle`
 
@@ -3224,6 +3260,20 @@ Vue 3 で削除された $on / $off / $once を検出します。
 
 [カテゴリの例](./type-and-script.md#script-no-deprecated-events-api) · [ルール参照](./reference/script-no-deprecated-events-api.md)
 
+### `script/no-deprecated-model-definition`
+
+Vue 3 で削除された model オプションを検出します。
+
+<span id="script-no-deprecated-model-definition-bad"></span>
+
+[悪い](./type-and-script.md#script-no-deprecated-model-definition-bad)
+
+<span id="script-no-deprecated-model-definition-good"></span>
+
+[良い](./type-and-script.md#script-no-deprecated-model-definition-good)
+
+[カテゴリの例](./type-and-script.md#script-no-deprecated-model-definition) · [ルール参照](./reference/script-no-deprecated-model-definition.md)
+
 ### `script/no-deprecated-props-default-this`
 
 prop の default / validator 内で使えなくなった this を検出します。
@@ -3237,6 +3287,20 @@ prop の default / validator 内で使えなくなった this を検出します
 [良い](./type-and-script.md#script-no-deprecated-props-default-this-good)
 
 [カテゴリの例](./type-and-script.md#script-no-deprecated-props-default-this) · [ルール参照](./reference/script-no-deprecated-props-default-this.md)
+
+### `script/no-deprecated-vue-config-keycodes`
+
+削除された Vue.config.keyCodes を検出します。
+
+<span id="script-no-deprecated-vue-config-keycodes-bad"></span>
+
+[悪い](./type-and-script.md#script-no-deprecated-vue-config-keycodes-bad)
+
+<span id="script-no-deprecated-vue-config-keycodes-good"></span>
+
+[良い](./type-and-script.md#script-no-deprecated-vue-config-keycodes-good)
+
+[カテゴリの例](./type-and-script.md#script-no-deprecated-vue-config-keycodes) · [ルール参照](./reference/script-no-deprecated-vue-config-keycodes.md)
 
 ### `script/no-dupe-keys`
 
@@ -3574,6 +3638,34 @@ Vue 3.5 以降の props 分割代入の既定値を勧めます。
 
 [カテゴリの例](./type-and-script.md#script-no-with-defaults) · [ルール参照](./reference/script-no-with-defaults.md)
 
+### `script/one-component-per-file`
+
+1 ファイルにコンポーネント定義が複数あることを検出します。
+
+<span id="script-one-component-per-file-bad"></span>
+
+[悪い](./type-and-script.md#script-one-component-per-file-bad)
+
+<span id="script-one-component-per-file-good"></span>
+
+[良い](./type-and-script.md#script-one-component-per-file-good)
+
+[カテゴリの例](./type-and-script.md#script-one-component-per-file) · [ルール参照](./reference/script-one-component-per-file.md)
+
+### `script/order-in-components`
+
+コンポーネントオプションのプロパティ順を既定の並びに揃えます。
+
+<span id="script-order-in-components-bad"></span>
+
+[悪い](./type-and-script.md#script-order-in-components-bad)
+
+<span id="script-order-in-components-good"></span>
+
+[良い](./type-and-script.md#script-order-in-components-good)
+
+[カテゴリの例](./type-and-script.md#script-order-in-components) · [ルール参照](./reference/script-order-in-components.md)
+
 ### `script/prefer-computed`
 
 他の状態から導ける値を watcher で同期する代わりに computed で表現します。
@@ -3769,6 +3861,34 @@ prop の type に文字列ではなくコンストラクターを指定します
 [良い](./type-and-script.md#script-require-prop-types-good)
 
 [カテゴリの例](./type-and-script.md#script-require-prop-types) · [ルール参照](./reference/script-require-prop-types.md)
+
+### `script/require-render-return`
+
+render 関数が値を返すことを必須にします。
+
+<span id="script-require-render-return-bad"></span>
+
+[悪い](./type-and-script.md#script-require-render-return-bad)
+
+<span id="script-require-render-return-good"></span>
+
+[良い](./type-and-script.md#script-require-render-return-good)
+
+[カテゴリの例](./type-and-script.md#script-require-render-return) · [ルール参照](./reference/script-require-render-return.md)
+
+### `script/require-slots-as-functions`
+
+Vue 3 の $slots プロパティを関数として呼び出します。
+
+<span id="script-require-slots-as-functions-bad"></span>
+
+[悪い](./type-and-script.md#script-require-slots-as-functions-bad)
+
+<span id="script-require-slots-as-functions-good"></span>
+
+[良い](./type-and-script.md#script-require-slots-as-functions-good)
+
+[カテゴリの例](./type-and-script.md#script-require-slots-as-functions) · [ルール参照](./reference/script-require-slots-as-functions.md)
 
 ### `script/require-symbol-provide`
 

@@ -119,13 +119,17 @@ A CLI pública expõe a mesma etapa por meio de `vize lint --cross-file`. Os có
 | [`script/no-arrow-functions-in-watch`](#script-no-arrow-functions-in-watch) | [Incorreto](#script-no-arrow-functions-in-watch-bad) · [Correto](#script-no-arrow-functions-in-watch-good) | Proibir funções de seta como manipuladores de watch na Options API |
 | [`script/no-async-in-computed`](#script-no-async-in-computed) | [Incorreto](#script-no-async-in-computed-bad) · [Correto](#script-no-async-in-computed-good) | Proibir funções assíncronas em propriedades computadas |
 | [`script/no-boolean-default`](#script-no-boolean-default) | [Incorreto](#script-no-boolean-default-bad) · [Correto](#script-no-boolean-default-good) | Proibir um valor padrão em uma prop Boolean |
+| [`script/no-computed-properties-in-data`](#script-no-computed-properties-in-data) | [Incorreto](#script-no-computed-properties-in-data-bad) · [Correto](#script-no-computed-properties-in-data-good) | Proibir o uso de propriedades computadas dentro da função data do componente |
 | [`script/no-deep-destructure-in-props`](#script-no-deep-destructure-in-props) | [Incorreto](#script-no-deep-destructure-in-props-bad) · [Correto](#script-no-deep-destructure-in-props-good) | Proibir desestruturação profundamente aninhada em defineProps |
 | [`script/no-deprecated-data-object-declaration`](#script-no-deprecated-data-object-declaration) | [Incorreto](#script-no-deprecated-data-object-declaration-bad) · [Correto](#script-no-deprecated-data-object-declaration-good) | Proibir um literal de objeto como opção data do componente (o Vue 3 exige uma função) |
+| [`script/no-deprecated-delete-set`](#script-no-deprecated-delete-set) | [Incorreto](#script-no-deprecated-delete-set-bad) · [Correto](#script-no-deprecated-delete-set-good) | Proibir $set e $delete do Vue 2, removidos no Vue 3 |
 | [`script/no-deprecated-destroyed-lifecycle`](#script-no-deprecated-destroyed-lifecycle) | [Incorreto](#script-no-deprecated-destroyed-lifecycle-bad) · [Correto](#script-no-deprecated-destroyed-lifecycle-good) | Proibir os hooks de ciclo de vida obsoletos destroyed e beforeDestroy |
 | [`script/no-deprecated-dollar-listeners-api`](#script-no-deprecated-dollar-listeners-api) | [Incorreto](#script-no-deprecated-dollar-listeners-api-bad) · [Correto](#script-no-deprecated-dollar-listeners-api-good) | Proibir a propriedade de instância $listeners removida no Vue 3 (incorporada a $attrs) |
 | [`script/no-deprecated-dollar-scopedslots-api`](#script-no-deprecated-dollar-scopedslots-api) | [Incorreto](#script-no-deprecated-dollar-scopedslots-api-bad) · [Correto](#script-no-deprecated-dollar-scopedslots-api-good) | Proibir a propriedade de instância $scopedSlots removida no Vue 3 (usar $slots) |
 | [`script/no-deprecated-events-api`](#script-no-deprecated-events-api) | [Incorreto](#script-no-deprecated-events-api-bad) · [Correto](#script-no-deprecated-events-api-good) | Proibir a API de eventos do Vue 2 removida ($on / $off / $once) |
+| [`script/no-deprecated-model-definition`](#script-no-deprecated-model-definition) | [Incorreto](#script-no-deprecated-model-definition-bad) · [Correto](#script-no-deprecated-model-definition-good) | Proibir a opção model do Vue 2, removida no Vue 3 |
 | [`script/no-deprecated-props-default-this`](#script-no-deprecated-props-default-this) | [Incorreto](#script-no-deprecated-props-default-this-bad) · [Correto](#script-no-deprecated-props-default-this-good) | Proibir `this` dentro de uma função de valor padrão ou validação de prop (removido no Vue 3) |
+| [`script/no-deprecated-vue-config-keycodes`](#script-no-deprecated-vue-config-keycodes) | [Incorreto](#script-no-deprecated-vue-config-keycodes-bad) · [Correto](#script-no-deprecated-vue-config-keycodes-good) | Proibir Vue.config.keyCodes, removido no Vue 3 |
 | [`script/no-dupe-keys`](#script-no-dupe-keys) | [Incorreto](#script-no-dupe-keys-bad) · [Correto](#script-no-dupe-keys-good) | Proibir chaves duplicadas entre props/data/computed/methods/setup/inject da Options API |
 | [`script/no-duplicate-attr-inheritance`](#script-no-duplicate-attr-inheritance) | [Incorreto](#script-no-duplicate-attr-inheritance-bad) · [Correto](#script-no-duplicate-attr-inheritance-good) | Sinalizar um componente que aplica duas vezes seus atributos repassados |
 | [`script/no-export-in-script-setup`](#script-no-export-in-script-setup) | [Incorreto](#script-no-export-in-script-setup-bad) · [Correto](#script-no-export-in-script-setup-good) | Proibir instruções export dentro de &lt;script setup&gt; |
@@ -153,6 +157,8 @@ A CLI pública expõe a mesma etapa por meio de `vize lint --cross-file`. Os có
 | [`script/no-use-computed-property-like-method`](#script-no-use-computed-property-like-method) | [Incorreto](#script-no-use-computed-property-like-method-bad) · [Correto](#script-no-use-computed-property-like-method-good) | Proibir chamar uma propriedade computada da Options API como um método |
 | [`script/no-watch-after-await`](#script-no-watch-after-await) | [Incorreto](#script-no-watch-after-await-bad) · [Correto](#script-no-watch-after-await-good) | Proibir watchers registrados após um await em setup() sem guardar a função de parada |
 | [`script/no-with-defaults`](#script-no-with-defaults) | [Incorreto](#script-no-with-defaults-bad) · [Correto](#script-no-with-defaults-good) | Desencorajar withDefaults em favor de valores padrão na desestruturação (Vue 3.5+) |
+| [`script/one-component-per-file`](#script-one-component-per-file) | [Incorreto](#script-one-component-per-file-bad) · [Correto](#script-one-component-per-file-good) | Proibir mais de uma definição de componente em um arquivo |
+| [`script/order-in-components`](#script-order-in-components) | [Incorreto](#script-order-in-components-bad) · [Correto](#script-order-in-components-good) | Exigir a ordem padrão das propriedades nas opções do componente |
 | [`script/prefer-computed`](#script-prefer-computed) | [Incorreto](#script-prefer-computed-bad) · [Correto](#script-prefer-computed-good) | Preferir computed() para estado reativo derivado |
 | [`script/prefer-define-options`](#script-prefer-define-options) | [Incorreto](#script-prefer-define-options-bad) · [Correto](#script-prefer-define-options-good) | Preferir defineOptions() a um &lt;script&gt; comum que só define name/inheritAttrs |
 | [`script/prefer-import-from-vue`](#script-prefer-import-from-vue) | [Incorreto](#script-prefer-import-from-vue-bad) · [Correto](#script-prefer-import-from-vue-good) | Preferir importar de 'vue' em vez de pacotes internos |
@@ -167,6 +173,8 @@ A CLI pública expõe a mesma etapa por meio de `vize lint --cross-file`. Os có
 | [`script/require-function-return-type`](#script-require-function-return-type) | [Incorreto](#script-require-function-return-type-bad) · [Correto](#script-require-function-return-type-good) | Exigir anotações de tipo de retorno nas funções |
 | [`script/require-prop-type-constructor`](#script-require-prop-type-constructor) | [Incorreto](#script-require-prop-type-constructor-bad) · [Correto](#script-require-prop-type-constructor-good) | Exigir que os valores de `type` de props sejam construtores em vez de literais de string |
 | [`script/require-prop-types`](#script-require-prop-types) | [Incorreto](#script-require-prop-types-bad) · [Correto](#script-require-prop-types-good) | Exigir que toda prop declare um tipo |
+| [`script/require-render-return`](#script-require-render-return) | [Incorreto](#script-require-render-return-bad) · [Correto](#script-require-render-return-good) | Exigir que a função render do componente devolva um valor |
+| [`script/require-slots-as-functions`](#script-require-slots-as-functions) | [Incorreto](#script-require-slots-as-functions-bad) · [Correto](#script-require-slots-as-functions-good) | Exigir que as propriedades de $slots sejam chamadas como funções |
 | [`script/require-symbol-provide`](#script-require-symbol-provide) | [Incorreto](#script-require-symbol-provide-bad) · [Correto](#script-require-symbol-provide-good) | Recomendar o uso de Symbol como chave de injeção para provide/inject |
 | [`script/require-typed-object-prop`](#script-require-typed-object-prop) | [Incorreto](#script-require-typed-object-prop-bad) · [Correto](#script-require-typed-object-prop-good) | Exigir um tipo explícito em uma prop cujo tipo de tempo de execução seja `Object` ou `Array` |
 | [`script/require-typed-ref`](#script-require-typed-ref) | [Incorreto](#script-require-typed-ref-bad) · [Correto](#script-require-typed-ref-good) | Exigir um argumento de tipo explícito em um ref() inicializado sem valor, com null ou com undefined |
@@ -1551,6 +1559,20 @@ Proibir um valor padrão em uma prop Boolean
 
 [Exemplos do grupo](./type-and-script.md#script-no-boolean-default) · [Referência da regra](/rules/reference/script-no-boolean-default.md)
 
+### `script/no-computed-properties-in-data`
+
+Proibir o uso de propriedades computadas dentro da função data do componente
+
+<span id="script-no-computed-properties-in-data-bad"></span>
+
+[Incorreto](./type-and-script.md#script-no-computed-properties-in-data-bad)
+
+<span id="script-no-computed-properties-in-data-good"></span>
+
+[Correto](./type-and-script.md#script-no-computed-properties-in-data-good)
+
+[Exemplos do grupo](./type-and-script.md#script-no-computed-properties-in-data) · [Referência da regra](/rules/reference/script-no-computed-properties-in-data.md)
+
 ### `script/no-deep-destructure-in-props`
 
 Proibir desestruturação profundamente aninhada em defineProps
@@ -1578,6 +1600,20 @@ Proibir um literal de objeto como opção data do componente (o Vue 3 exige uma 
 [Correto](./type-and-script.md#script-no-deprecated-data-object-declaration-good)
 
 [Exemplos do grupo](./type-and-script.md#script-no-deprecated-data-object-declaration) · [Referência da regra](/rules/reference/script-no-deprecated-data-object-declaration.md)
+
+### `script/no-deprecated-delete-set`
+
+Proibir $set e $delete do Vue 2, removidos no Vue 3
+
+<span id="script-no-deprecated-delete-set-bad"></span>
+
+[Incorreto](./type-and-script.md#script-no-deprecated-delete-set-bad)
+
+<span id="script-no-deprecated-delete-set-good"></span>
+
+[Correto](./type-and-script.md#script-no-deprecated-delete-set-good)
+
+[Exemplos do grupo](./type-and-script.md#script-no-deprecated-delete-set) · [Referência da regra](/rules/reference/script-no-deprecated-delete-set.md)
 
 ### `script/no-deprecated-destroyed-lifecycle`
 
@@ -1635,6 +1671,20 @@ Proibir a API de eventos do Vue 2 removida ($on / $off / $once)
 
 [Exemplos do grupo](./type-and-script.md#script-no-deprecated-events-api) · [Referência da regra](/rules/reference/script-no-deprecated-events-api.md)
 
+### `script/no-deprecated-model-definition`
+
+Proibir a opção model do Vue 2, removida no Vue 3
+
+<span id="script-no-deprecated-model-definition-bad"></span>
+
+[Incorreto](./type-and-script.md#script-no-deprecated-model-definition-bad)
+
+<span id="script-no-deprecated-model-definition-good"></span>
+
+[Correto](./type-and-script.md#script-no-deprecated-model-definition-good)
+
+[Exemplos do grupo](./type-and-script.md#script-no-deprecated-model-definition) · [Referência da regra](/rules/reference/script-no-deprecated-model-definition.md)
+
 ### `script/no-deprecated-props-default-this`
 
 Proibir `this` dentro de uma função de valor padrão ou validação de prop (removido no Vue 3)
@@ -1648,6 +1698,20 @@ Proibir `this` dentro de uma função de valor padrão ou validação de prop (r
 [Correto](./type-and-script.md#script-no-deprecated-props-default-this-good)
 
 [Exemplos do grupo](./type-and-script.md#script-no-deprecated-props-default-this) · [Referência da regra](/rules/reference/script-no-deprecated-props-default-this.md)
+
+### `script/no-deprecated-vue-config-keycodes`
+
+Proibir Vue.config.keyCodes, removido no Vue 3
+
+<span id="script-no-deprecated-vue-config-keycodes-bad"></span>
+
+[Incorreto](./type-and-script.md#script-no-deprecated-vue-config-keycodes-bad)
+
+<span id="script-no-deprecated-vue-config-keycodes-good"></span>
+
+[Correto](./type-and-script.md#script-no-deprecated-vue-config-keycodes-good)
+
+[Exemplos do grupo](./type-and-script.md#script-no-deprecated-vue-config-keycodes) · [Referência da regra](/rules/reference/script-no-deprecated-vue-config-keycodes.md)
 
 ### `script/no-dupe-keys`
 
@@ -2027,6 +2091,34 @@ Desencorajar withDefaults em favor de valores padrão na desestruturação (Vue 
 
 [Exemplos do grupo](./type-and-script.md#script-no-with-defaults) · [Referência da regra](/rules/reference/script-no-with-defaults.md)
 
+### `script/one-component-per-file`
+
+Proibir mais de uma definição de componente em um arquivo
+
+<span id="script-one-component-per-file-bad"></span>
+
+[Incorreto](./type-and-script.md#script-one-component-per-file-bad)
+
+<span id="script-one-component-per-file-good"></span>
+
+[Correto](./type-and-script.md#script-one-component-per-file-good)
+
+[Exemplos do grupo](./type-and-script.md#script-one-component-per-file) · [Referência da regra](/rules/reference/script-one-component-per-file.md)
+
+### `script/order-in-components`
+
+Exigir a ordem padrão das propriedades nas opções do componente
+
+<span id="script-order-in-components-bad"></span>
+
+[Incorreto](./type-and-script.md#script-order-in-components-bad)
+
+<span id="script-order-in-components-good"></span>
+
+[Correto](./type-and-script.md#script-order-in-components-good)
+
+[Exemplos do grupo](./type-and-script.md#script-order-in-components) · [Referência da regra](/rules/reference/script-order-in-components.md)
+
 ### `script/prefer-computed`
 
 Preferir computed() para estado reativo derivado
@@ -2222,6 +2314,34 @@ Exigir que toda prop declare um tipo
 [Correto](./type-and-script.md#script-require-prop-types-good)
 
 [Exemplos do grupo](./type-and-script.md#script-require-prop-types) · [Referência da regra](/rules/reference/script-require-prop-types.md)
+
+### `script/require-render-return`
+
+Exigir que a função render do componente devolva um valor
+
+<span id="script-require-render-return-bad"></span>
+
+[Incorreto](./type-and-script.md#script-require-render-return-bad)
+
+<span id="script-require-render-return-good"></span>
+
+[Correto](./type-and-script.md#script-require-render-return-good)
+
+[Exemplos do grupo](./type-and-script.md#script-require-render-return) · [Referência da regra](/rules/reference/script-require-render-return.md)
+
+### `script/require-slots-as-functions`
+
+Exigir que as propriedades de $slots sejam chamadas como funções
+
+<span id="script-require-slots-as-functions-bad"></span>
+
+[Incorreto](./type-and-script.md#script-require-slots-as-functions-bad)
+
+<span id="script-require-slots-as-functions-good"></span>
+
+[Correto](./type-and-script.md#script-require-slots-as-functions-good)
+
+[Exemplos do grupo](./type-and-script.md#script-require-slots-as-functions) · [Referência da regra](/rules/reference/script-require-slots-as-functions.md)
 
 ### `script/require-symbol-provide`
 

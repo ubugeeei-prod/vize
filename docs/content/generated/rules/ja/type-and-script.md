@@ -18,13 +18,17 @@ title: "型と script のルール"
 | [`script/no-arrow-functions-in-watch`](#script-no-arrow-functions-in-watch) | [悪い](#script-no-arrow-functions-in-watch-bad) · [良い](#script-no-arrow-functions-in-watch-good) | Options API の watch ハンドラーにアロー関数を使う箇所を検出します。 |
 | [`script/no-async-in-computed`](#script-no-async-in-computed) | [悪い](#script-no-async-in-computed-bad) · [良い](#script-no-async-in-computed-good) | computed の getter で非同期関数を使う箇所を検出します。 |
 | [`script/no-boolean-default`](#script-no-boolean-default) | [悪い](#script-no-boolean-default-bad) · [良い](#script-no-boolean-default-good) | Boolean prop の冗長な default を検出します。 |
+| [`script/no-computed-properties-in-data`](#script-no-computed-properties-in-data) | [悪い](#script-no-computed-properties-in-data-bad) · [良い](#script-no-computed-properties-in-data-good) | 初期化前の data() で算出プロパティを読む箇所を検出します。 |
 | [`script/no-deep-destructure-in-props`](#script-no-deep-destructure-in-props) | [悪い](#script-no-deep-destructure-in-props-bad) · [良い](#script-no-deep-destructure-in-props-good) | defineProps の深い分割代入を検出します。 |
 | [`script/no-deprecated-data-object-declaration`](#script-no-deprecated-data-object-declaration) | [悪い](#script-no-deprecated-data-object-declaration-bad) · [良い](#script-no-deprecated-data-object-declaration-good) | Vue 3 で関数にすべき data オプションのオブジェクト指定を検出します。 |
+| [`script/no-deprecated-delete-set`](#script-no-deprecated-delete-set) | [悪い](#script-no-deprecated-delete-set-bad) · [良い](#script-no-deprecated-delete-set-good) | Vue 3 で削除された $set / $delete を検出します。 |
 | [`script/no-deprecated-destroyed-lifecycle`](#script-no-deprecated-destroyed-lifecycle) | [悪い](#script-no-deprecated-destroyed-lifecycle-bad) · [良い](#script-no-deprecated-destroyed-lifecycle-good) | Vue 2 の destroyed / beforeDestroy を検出し、Vue 3 のライフサイクルフックに置き換えます。 |
 | [`script/no-deprecated-dollar-listeners-api`](#script-no-deprecated-dollar-listeners-api) | [悪い](#script-no-deprecated-dollar-listeners-api-bad) · [良い](#script-no-deprecated-dollar-listeners-api-good) | Vue 3 で $attrs に統合された $listeners を検出します。 |
 | [`script/no-deprecated-dollar-scopedslots-api`](#script-no-deprecated-dollar-scopedslots-api) | [悪い](#script-no-deprecated-dollar-scopedslots-api-bad) · [良い](#script-no-deprecated-dollar-scopedslots-api-good) | Vue 3 で $slots に統合された $scopedSlots を検出します。 |
 | [`script/no-deprecated-events-api`](#script-no-deprecated-events-api) | [悪い](#script-no-deprecated-events-api-bad) · [良い](#script-no-deprecated-events-api-good) | Vue 3 で削除された $on / $off / $once を検出します。 |
+| [`script/no-deprecated-model-definition`](#script-no-deprecated-model-definition) | [悪い](#script-no-deprecated-model-definition-bad) · [良い](#script-no-deprecated-model-definition-good) | Vue 3 で削除された model オプションを検出します。 |
 | [`script/no-deprecated-props-default-this`](#script-no-deprecated-props-default-this) | [悪い](#script-no-deprecated-props-default-this-bad) · [良い](#script-no-deprecated-props-default-this-good) | prop の default / validator 内で使えなくなった this を検出します。 |
+| [`script/no-deprecated-vue-config-keycodes`](#script-no-deprecated-vue-config-keycodes) | [悪い](#script-no-deprecated-vue-config-keycodes-bad) · [良い](#script-no-deprecated-vue-config-keycodes-good) | 削除された Vue.config.keyCodes を検出します。 |
 | [`script/no-dupe-keys`](#script-no-dupe-keys) | [悪い](#script-no-dupe-keys-bad) · [良い](#script-no-dupe-keys-good) | Options API の props / data / computed などのキー重複を検出します。 |
 | [`script/no-duplicate-attr-inheritance`](#script-no-duplicate-attr-inheritance) | [悪い](#script-no-duplicate-attr-inheritance-bad) · [良い](#script-no-duplicate-attr-inheritance-good) | fallthrough 属性を同じコンポーネントで二重に適用する箇所を検出します。 |
 | [`script/no-export-in-script-setup`](#script-no-export-in-script-setup) | [悪い](#script-no-export-in-script-setup-bad) · [良い](#script-no-export-in-script-setup-good) | script setup 内の export 文を検出します。 |
@@ -52,6 +56,8 @@ title: "型と script のルール"
 | [`script/no-use-computed-property-like-method`](#script-no-use-computed-property-like-method) | [悪い](#script-no-use-computed-property-like-method-bad) · [良い](#script-no-use-computed-property-like-method-good) | Options API の computed プロパティをメソッドとして呼ぶ箇所を検出します。 |
 | [`script/no-watch-after-await`](#script-no-watch-after-await) | [悪い](#script-no-watch-after-await-bad) · [良い](#script-no-watch-after-await-good) | setup() 内で await の後に停止ハンドルを保持せずにウォッチャーを登録することを禁止します。 |
 | [`script/no-with-defaults`](#script-no-with-defaults) | [悪い](#script-no-with-defaults-bad) · [良い](#script-no-with-defaults-good) | Vue 3.5 以降の props 分割代入の既定値を勧めます。 |
+| [`script/one-component-per-file`](#script-one-component-per-file) | [悪い](#script-one-component-per-file-bad) · [良い](#script-one-component-per-file-good) | 1 ファイルにコンポーネント定義が複数あることを検出します。 |
+| [`script/order-in-components`](#script-order-in-components) | [悪い](#script-order-in-components-bad) · [良い](#script-order-in-components-good) | コンポーネントオプションのプロパティ順を既定の並びに揃えます。 |
 | [`script/prefer-computed`](#script-prefer-computed) | [悪い](#script-prefer-computed-bad) · [良い](#script-prefer-computed-good) | 他の状態から導ける値を watcher で同期する代わりに computed で表現します。 |
 | [`script/prefer-define-options`](#script-prefer-define-options) | [悪い](#script-prefer-define-options-bad) · [良い](#script-prefer-define-options-good) | name / inheritAttrs だけの通常 script を defineOptions() にまとめます。 |
 | [`script/prefer-import-from-vue`](#script-prefer-import-from-vue) | [悪い](#script-prefer-import-from-vue-bad) · [良い](#script-prefer-import-from-vue-good) | 内部パッケージではなく vue から import します。 |
@@ -66,6 +72,8 @@ title: "型と script のルール"
 | [`script/require-function-return-type`](#script-require-function-return-type) | [悪い](#script-require-function-return-type-bad) · [良い](#script-require-function-return-type-good) | 関数に戻り値の型注釈を指定します。 |
 | [`script/require-prop-type-constructor`](#script-require-prop-type-constructor) | [悪い](#script-require-prop-type-constructor-bad) · [良い](#script-require-prop-type-constructor-good) | prop の type に文字列ではなくコンストラクターを指定します。 |
 | [`script/require-prop-types`](#script-require-prop-types) | [悪い](#script-require-prop-types-bad) · [良い](#script-require-prop-types-good) | 各 prop の型を宣言します。 |
+| [`script/require-render-return`](#script-require-render-return) | [悪い](#script-require-render-return-bad) · [良い](#script-require-render-return-good) | render 関数が値を返すことを必須にします。 |
+| [`script/require-slots-as-functions`](#script-require-slots-as-functions) | [悪い](#script-require-slots-as-functions-bad) · [良い](#script-require-slots-as-functions-good) | Vue 3 の $slots プロパティを関数として呼び出します。 |
 | [`script/require-symbol-provide`](#script-require-symbol-provide) | [悪い](#script-require-symbol-provide-bad) · [良い](#script-require-symbol-provide-good) | provide / inject のキーに衝突しにくい Symbol を使います。 |
 | [`script/require-typed-object-prop`](#script-require-typed-object-prop) | [悪い](#script-require-typed-object-prop-bad) · [良い](#script-require-typed-object-prop-good) | Object / Array の prop に具体的な型を指定します。 |
 | [`script/require-typed-ref`](#script-require-typed-ref) | [悪い](#script-require-typed-ref-bad) · [良い](#script-require-typed-ref-good) | 引数なし、null、undefined で呼び出す ref() に型引数を指定します。 |
@@ -700,6 +708,81 @@ export default {
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_boolean_default.rs#L54) · [全ルール](all.md)
 
+### `script/no-computed-properties-in-data`
+
+初期化前の data() で算出プロパティを読む箇所を検出します。
+
+[悪い例](#script-no-computed-properties-in-data-bad) · [良い例](#script-no-computed-properties-in-data-good)
+
+既定の重大度: `error`  
+プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+自動修正: なし。修正内容を確認してください  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
+オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+
+**設定（Vite+）**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/no-computed-properties-in-data": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-no-computed-properties-in-data-bad"></span>
+
+**悪い**
+
+`data()` が算出プロパティ `doubled` を `this.doubled` として返しています。算出プロパティはまだ初期化されていません。
+
+```vue annotate="remove:4,7"
+<script lang="ts">
+export default {
+  data() {
+    return { value: this.doubled }
+  },
+  computed: {
+    doubled() { return 1 }
+  }
+}
+</script>
+```
+
+<span id="script-no-computed-properties-in-data-good"></span>
+
+**良い**
+
+`data()` はただの `value` を返し、`doubled` は初期化後に `this.value` を読みます。
+
+```vue annotate="add:4,7"
+<script lang="ts">
+export default {
+  data() {
+    return { value: 1 }
+  },
+  computed: {
+    doubled() { return this.value * 2 }
+  }
+}
+</script>
+```
+
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
+
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_computed_properties_in_data.rs#L44) · [全ルール](all.md)
+
 ### `script/no-deep-destructure-in-props`
 
 defineProps の深い分割代入を検出します。
@@ -831,7 +914,76 @@ export default {
 
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_data_object_declaration.rs#L48) · [全ルール](all.md)
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_data_object_declaration.rs#L49) · [全ルール](all.md)
+
+### `script/no-deprecated-delete-set`
+
+Vue 3 で削除された $set / $delete を検出します。
+
+[悪い例](#script-no-deprecated-delete-set-bad) · [良い例](#script-no-deprecated-delete-set-good)
+
+既定の重大度: `error`  
+プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+自動修正: なし。修正内容を確認してください  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
+オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+
+**設定（Vite+）**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/no-deprecated-delete-set": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-no-deprecated-delete-set-bad"></span>
+
+**悪い**
+
+`created()` が削除された `this.$set` で `ready` を追加しています。
+
+```vue annotate="remove:4"
+<script lang="ts">
+export default {
+  created() {
+    this.$set(this.item, 'ready', true)
+  }
+}
+</script>
+```
+
+<span id="script-no-deprecated-delete-set-good"></span>
+
+**良い**
+
+同じフィールドを `this.item.ready = true` で直接代入します。
+
+```vue annotate="add:4"
+<script lang="ts">
+export default {
+  created() {
+    this.item.ready = true
+  }
+}
+</script>
+```
+
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
+
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_delete_set.rs#L41) · [全ルール](all.md)
 
 ### `script/no-deprecated-destroyed-lifecycle`
 
@@ -1106,6 +1258,75 @@ export default {
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_events_api.rs#L51) · [全ルール](all.md)
 
+### `script/no-deprecated-model-definition`
+
+Vue 3 で削除された model オプションを検出します。
+
+[悪い例](#script-no-deprecated-model-definition-bad) · [良い例](#script-no-deprecated-model-definition-good)
+
+既定の重大度: `error`  
+プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+自動修正: なし。修正内容を確認してください  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
+オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+
+**設定（Vite+）**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/no-deprecated-model-definition": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-no-deprecated-model-definition-bad"></span>
+
+**悪い**
+
+コンポーネントが Vue 2 の `model` オプションを `prop` と `event` 付きで宣言しています。
+
+```vue annotate="remove:3,4,5,6"
+<script lang="ts">
+export default {
+  model: {
+    prop: 'value',
+    event: 'input'
+  }
+}
+</script>
+```
+
+<span id="script-no-deprecated-model-definition-good"></span>
+
+**良い**
+
+`modelValue` prop と `update:modelValue` イベントを宣言します。
+
+```vue annotate="add:3,4"
+<script lang="ts">
+export default {
+  props: ['modelValue'],
+  emits: ['update:modelValue']
+}
+</script>
+```
+
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
+
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_model_definition.rs#L32) · [全ルール](all.md)
+
 ### `script/no-deprecated-props-default-this`
 
 prop の default / validator 内で使えなくなった this を検出します。
@@ -1198,6 +1419,67 @@ export default {
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_props_default_this.rs#L71) · [全ルール](all.md)
+
+### `script/no-deprecated-vue-config-keycodes`
+
+削除された Vue.config.keyCodes を検出します。
+
+[悪い例](#script-no-deprecated-vue-config-keycodes-bad) · [良い例](#script-no-deprecated-vue-config-keycodes-good)
+
+既定の重大度: `error`  
+プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+自動修正: なし。修正内容を確認してください  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
+オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+
+**設定（Vite+）**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/no-deprecated-vue-config-keycodes": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-no-deprecated-vue-config-keycodes-bad"></span>
+
+**悪い**
+
+削除された `Vue.config.keyCodes.enter` にキーコードを代入しています。
+
+```vue annotate="remove:2"
+<script setup lang="ts">
+Vue.config.keyCodes.enter = 13
+</script>
+```
+
+<span id="script-no-deprecated-vue-config-keycodes-good"></span>
+
+**良い**
+
+キーコードは通常の定数 `const enter = 13` にします。
+
+```vue annotate="add:2"
+<script setup lang="ts">
+const enter = 13
+</script>
+```
+
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
+
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_vue_config_keycodes.rs#L22) · [全ルール](all.md)
 
 ### `script/no-dupe-keys`
 
@@ -3012,6 +3294,145 @@ const { count = 0, name = "Ada" } = defineProps<{ count?: number; name?: string 
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_with_defaults.rs#L41) · [全ルール](all.md)
 
+### `script/one-component-per-file`
+
+1 ファイルにコンポーネント定義が複数あることを検出します。
+
+[悪い例](#script-one-component-per-file-bad) · [良い例](#script-one-component-per-file-good)
+
+既定の重大度: `warning`  
+プリセット: `opinionated`, `nuxt`  
+自動修正: なし。修正内容を確認してください  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
+オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+
+**設定（Vite+）**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/one-component-per-file": "warn"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-one-component-per-file-bad"></span>
+
+**悪い**
+
+ファイルが `Parent` を export し、`components` の中にもう一つの `Child` を定義しています。
+
+```vue annotate="remove:3,4,5,6"
+<script lang="ts">
+export default {
+  name: 'Parent',
+  components: {
+    Child: { name: 'Child' }
+  }
+}
+</script>
+```
+
+<span id="script-one-component-per-file-good"></span>
+
+**良い**
+
+ファイルが定義するのは `Parent` だけです。
+
+```vue annotate="add:3"
+<script lang="ts">
+export default {
+  name: 'Parent'
+}
+</script>
+```
+
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
+
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/one_component_per_file.rs#L30) · [全ルール](all.md)
+
+### `script/order-in-components`
+
+コンポーネントオプションのプロパティ順を既定の並びに揃えます。
+
+[悪い例](#script-order-in-components-bad) · [良い例](#script-order-in-components-good)
+
+既定の重大度: `warning`  
+プリセット: `opinionated`, `nuxt`  
+自動修正: なし。修正内容を確認してください  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
+オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+
+**設定（Vite+）**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/order-in-components": "warn"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-order-in-components-bad"></span>
+
+**悪い**
+
+`data` が `props` より前に書かれており、後ろのグループが前のグループより上にあります。
+
+```vue annotate="remove:5,6"
+<script lang="ts">
+export default {
+  data() {
+    return { count: 0 }
+  },
+  props: ['label']
+}
+</script>
+```
+
+<span id="script-order-in-components-good"></span>
+
+**良い**
+
+`props` が `data` より前にあり、既定のグループ順と一致します。
+
+```vue annotate="add:3,6"
+<script lang="ts">
+export default {
+  props: ['label'],
+  data() {
+    return { count: 0 }
+  }
+}
+</script>
+```
+
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
+
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/order_in_components.rs#L34) · [全ルール](all.md)
+
 ### `script/prefer-computed`
 
 他の状態から導ける値を watcher で同期する代わりに computed で表現します。
@@ -3971,6 +4392,146 @@ export default {
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_prop_types.rs#L58) · [全ルール](all.md)
+
+### `script/require-render-return`
+
+render 関数が値を返すことを必須にします。
+
+[悪い例](#script-require-render-return-bad) · [良い例](#script-require-render-return-good)
+
+既定の重大度: `error`  
+プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+自動修正: なし。修正内容を確認してください  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
+オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+
+**設定（Vite+）**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/require-render-return": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-require-render-return-bad"></span>
+
+**悪い**
+
+`render` 関数が分岐の中で `this.count` を読むだけで、値を返していません。
+
+```vue annotate="remove:4,5,6"
+<script lang="ts">
+export default {
+  render() {
+    if (this.ready) {
+      this.count
+    }
+  }
+}
+</script>
+```
+
+<span id="script-require-render-return-good"></span>
+
+**良い**
+
+`render` 関数は `this.count` を返します。
+
+```vue annotate="add:4"
+<script lang="ts">
+export default {
+  render() {
+    return this.count
+  }
+}
+</script>
+```
+
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
+
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_render_return.rs#L35) · [全ルール](all.md)
+
+### `script/require-slots-as-functions`
+
+Vue 3 の $slots プロパティを関数として呼び出します。
+
+[悪い例](#script-require-slots-as-functions-bad) · [良い例](#script-require-slots-as-functions-good)
+
+既定の重大度: `error`  
+プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+自動修正: なし。修正内容を確認してください  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
+オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+
+**設定（Vite+）**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/require-slots-as-functions": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-require-slots-as-functions-bad"></span>
+
+**悪い**
+
+`render` が `this.$slots.default` を呼び出さずに返しています。これは Vue 2 の vnode 配列です。
+
+```vue annotate="remove:4"
+<script lang="ts">
+export default {
+  render() {
+    return this.$slots.default
+  }
+}
+</script>
+```
+
+<span id="script-require-slots-as-functions-good"></span>
+
+**良い**
+
+`render` は `this.$slots.default()` を呼び出し、その vnode を使います。
+
+```vue annotate="add:4"
+<script lang="ts">
+export default {
+  render() {
+    return this.$slots.default()
+  }
+}
+</script>
+```
+
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
+
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_slots_as_functions.rs#L44) · [全ルール](all.md)
 
 ### `script/require-symbol-provide`
 

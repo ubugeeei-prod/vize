@@ -179,4 +179,44 @@ export const portugueseRules5: Record<string, readonly [string, string, string]>
     "`watch()` é criado depois de `await loadData()` e a função de parada é descartada, então o watcher nunca é parado junto com o componente.",
     "O watcher é criado antes do primeiro `await`, então o Vue o para quando o componente é desmontado.",
   ],
+  "script/no-computed-properties-in-data": [
+    "Proibir o uso de propriedades computadas dentro da função data do componente",
+    "`data()` devolve `this.doubled` enquanto `doubled` ainda é uma propriedade computada, lida antes da inicialização.",
+    "`data()` devolve um valor simples, e `doubled` lê `this.value` depois da inicialização.",
+  ],
+  "script/no-deprecated-delete-set": [
+    "Proibir $set e $delete do Vue 2, removidos no Vue 3",
+    "`created()` chama o `this.$set` removido para adicionar `ready`.",
+    "O mesmo campo é atribuído diretamente com `this.item.ready = true`.",
+  ],
+  "script/no-deprecated-model-definition": [
+    "Proibir a opção model do Vue 2, removida no Vue 3",
+    "O componente ainda declara a opção `model` do Vue 2 com `prop` e `event`.",
+    "O componente declara a prop `modelValue` e o evento `update:modelValue`.",
+  ],
+  "script/no-deprecated-vue-config-keycodes": [
+    "Proibir Vue.config.keyCodes, removido no Vue 3",
+    "`Vue.config.keyCodes.enter` atribui um alias de código de tecla removido.",
+    "O código de tecla é uma constante comum, `const enter = 13`.",
+  ],
+  "script/require-render-return": [
+    "Exigir que a função render do componente devolva um valor",
+    "A função `render` lê `this.count` dentro de um ramo e não devolve valor.",
+    "A função `render` devolve `this.count`.",
+  ],
+  "script/require-slots-as-functions": [
+    "Exigir que as propriedades de $slots sejam chamadas como funções",
+    "`render` devolve `this.$slots.default` sem chamá-lo, que era o array de vnodes do Vue 2.",
+    "`render` chama `this.$slots.default()` e usa o vnode devolvido.",
+  ],
+  "script/one-component-per-file": [
+    "Proibir mais de uma definição de componente em um arquivo",
+    "O arquivo exporta `Parent` e também define um componente `Child` em `components`.",
+    "O arquivo define apenas `Parent`.",
+  ],
+  "script/order-in-components": [
+    "Exigir a ordem padrão das propriedades nas opções do componente",
+    "`data` está escrito antes de `props`, então um grupo posterior aparece acima de um grupo anterior.",
+    "`props` vem antes de `data`, o que segue a ordem padrão dos grupos.",
+  ],
 };

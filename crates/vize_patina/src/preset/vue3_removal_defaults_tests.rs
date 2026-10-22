@@ -10,27 +10,34 @@ const TEMPLATE_RULES: [&str; 4] = [
     "vue/no-deprecated-router-link-tag-prop",
 ];
 
-const SCRIPT_RULES: [&str; 6] = [
+const SCRIPT_RULES: [&str; 10] = [
     "script/no-deprecated-data-object-declaration",
     "script/no-deprecated-destroyed-lifecycle",
     "script/no-deprecated-dollar-listeners-api",
     "script/no-deprecated-dollar-scopedslots-api",
     "script/no-deprecated-events-api",
     "script/no-deprecated-props-default-this",
+    "script/no-deprecated-delete-set",
+    "script/no-deprecated-model-definition",
+    "script/no-deprecated-vue-config-keycodes",
+    "script/require-slots-as-functions",
 ];
 
 const REMOVED: &str = r#"<script>
 export default {
+  model: { prop: 'value', event: 'input' },
   data: { ready: false },
   props: {
     label: { type: String, default() { return this.fallback } },
   },
   beforeDestroy() {
     this.$off('ready')
+    this.$set(this, 'ready', true)
+    Vue.config.keyCodes.enter = 13
   },
   methods: {
     forward() {
-      return [this.$listeners, this.$scopedSlots]
+      return [this.$listeners, this.$scopedSlots, this.$slots.default]
     },
   },
 }

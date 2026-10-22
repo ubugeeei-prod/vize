@@ -90,9 +90,12 @@ export const purposeJa: Readonly<Record<string, string>> = {
     "Options API の watch ハンドラーにアロー関数を使う箇所を検出します。",
   "script/no-async-in-computed": "computed の getter で非同期関数を使う箇所を検出します。",
   "script/no-boolean-default": "Boolean prop の冗長な default を検出します。",
+  "script/no-computed-properties-in-data":
+    "初期化前の data() で算出プロパティを読む箇所を検出します。",
   "script/no-deep-destructure-in-props": "defineProps の深い分割代入を検出します。",
   "script/no-deprecated-data-object-declaration":
     "Vue 3 で関数にすべき data オプションのオブジェクト指定を検出します。",
+  "script/no-deprecated-delete-set": "Vue 3 で削除された $set / $delete を検出します。",
   "script/no-deprecated-destroyed-lifecycle":
     "Vue 2 の destroyed / beforeDestroy を検出し、Vue 3 のライフサイクルフックに置き換えます。",
   "script/no-deprecated-dollar-listeners-api":
@@ -100,8 +103,10 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "script/no-deprecated-dollar-scopedslots-api":
     "Vue 3 で $slots に統合された $scopedSlots を検出します。",
   "script/no-deprecated-events-api": "Vue 3 で削除された $on / $off / $once を検出します。",
+  "script/no-deprecated-model-definition": "Vue 3 で削除された model オプションを検出します。",
   "script/no-deprecated-props-default-this":
     "prop の default / validator 内で使えなくなった this を検出します。",
+  "script/no-deprecated-vue-config-keycodes": "削除された Vue.config.keyCodes を検出します。",
   "script/no-dupe-keys": "Options API の props / data / computed などのキー重複を検出します。",
   "script/no-duplicate-attr-inheritance":
     "fallthrough 属性を同じコンポーネントで二重に適用する箇所を検出します。",
@@ -139,6 +144,8 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "script/no-watch-after-await":
     "setup() 内で await の後に停止ハンドルを保持せずにウォッチャーを登録することを禁止します。",
   "script/no-with-defaults": "Vue 3.5 以降の props 分割代入の既定値を勧めます。",
+  "script/one-component-per-file": "1 ファイルにコンポーネント定義が複数あることを検出します。",
+  "script/order-in-components": "コンポーネントオプションのプロパティ順を既定の並びに揃えます。",
   "script/prefer-computed":
     "他の状態から導ける値を watcher で同期する代わりに computed で表現します。",
   "script/prefer-define-options":
@@ -156,6 +163,8 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "script/require-prop-type-constructor":
     "prop の type に文字列ではなくコンストラクターを指定します。",
   "script/require-prop-types": "各 prop の型を宣言します。",
+  "script/require-render-return": "render 関数が値を返すことを必須にします。",
+  "script/require-slots-as-functions": "Vue 3 の $slots プロパティを関数として呼び出します。",
   "script/require-symbol-provide": "provide / inject のキーに衝突しにくい Symbol を使います。",
   "script/require-typed-object-prop": "Object / Array の prop に具体的な型を指定します。",
   "script/require-typed-ref": "引数なし、null、undefined で呼び出す ref() に型引数を指定します。",

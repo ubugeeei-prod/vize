@@ -163,13 +163,17 @@ assert is not relaxed to count-only or to an optional span.
 - `script/no-arrow-functions-in-watch`
 - `script/no-async-in-computed`
 - `script/no-boolean-default`
+- `script/no-computed-properties-in-data`
 - `script/no-deep-destructure-in-props`
 - `script/no-deprecated-data-object-declaration`
+- `script/no-deprecated-delete-set`
 - `script/no-deprecated-destroyed-lifecycle`
 - `script/no-deprecated-dollar-listeners-api`
 - `script/no-deprecated-dollar-scopedslots-api`
 - `script/no-deprecated-events-api`
+- `script/no-deprecated-model-definition`
 - `script/no-deprecated-props-default-this`
+- `script/no-deprecated-vue-config-keycodes`
 - `script/no-dupe-keys`
 - `script/no-export-in-script-setup`
 - `script/no-expose-after-await`
@@ -189,6 +193,8 @@ assert is not relaxed to count-only or to an optional span.
 - `script/no-top-level-ref-in-script`
 - `script/no-watch-after-await`
 - `script/no-with-defaults`
+- `script/one-component-per-file`
+- `script/order-in-components`
 - `script/prefer-define-options`
 - `script/prefer-import-from-vue`
 - `script/prefer-use-attrs`
@@ -197,6 +203,8 @@ assert is not relaxed to count-only or to an optional span.
 - `script/require-function-return-type`
 - `script/require-prop-type-constructor`
 - `script/require-prop-types`
+- `script/require-render-return`
+- `script/require-slots-as-functions`
 - `script/require-symbol-provide`
 - `script/require-typed-object-prop`
 - `script/require-typed-ref`

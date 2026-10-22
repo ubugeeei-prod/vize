@@ -53,10 +53,22 @@ pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "禁止为 Boolean 类型的 prop 设置默认值",
     ),
     (
+        "script/no-computed-properties-in-data.description",
+        "Disallow using computed properties inside the component data function",
+        "コンポーネントの data 関数の中で算出プロパティを使うことを禁止する",
+        "禁止在组件的 data 函数中使用计算属性",
+    ),
+    (
         "script/no-deprecated-data-object-declaration.description",
         "Disallow an object literal as the component data option (Vue 3 requires a function)",
         "コンポーネントの data オプションにオブジェクトリテラルを使うことを禁止する（Vue 3 では関数が必要）",
         "禁止将对象字面量用作组件的 data 选项（Vue 3 要求使用函数）",
+    ),
+    (
+        "script/no-deprecated-delete-set.description",
+        "Disallow Vue 2 $set and $delete, which were removed in Vue 3",
+        "Vue 3 で削除された Vue 2 の $set と $delete を禁止する",
+        "禁止使用 Vue 3 中已移除的 Vue 2 $set 和 $delete",
     ),
     (
         "script/no-deprecated-destroyed-lifecycle.description",
@@ -83,10 +95,22 @@ pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "禁止使用已移除的 Vue 2 事件 API（$on / $off / $once）",
     ),
     (
+        "script/no-deprecated-model-definition.description",
+        "Disallow the Vue 2 model option, which was removed in Vue 3",
+        "Vue 3 で削除された Vue 2 の model オプションを禁止する",
+        "禁止使用 Vue 3 中已移除的 Vue 2 model 选项",
+    ),
+    (
         "script/no-deprecated-props-default-this.description",
         "Disallow `this` inside a prop default/validator function (removed in Vue 3)",
         "props の default・validator 関数の中での `this` を禁止する（Vue 3 で削除）",
         "禁止在 prop 的 default/validator 函数中使用 `this`（Vue 3 已移除）",
+    ),
+    (
+        "script/no-deprecated-vue-config-keycodes.description",
+        "Disallow Vue.config.keyCodes, which was removed in Vue 3",
+        "Vue 3 で削除された Vue.config.keyCodes を禁止する",
+        "禁止使用 Vue 3 中已移除的 Vue.config.keyCodes",
     ),
     (
         "script/no-dupe-keys.description",

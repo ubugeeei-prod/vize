@@ -121,13 +121,17 @@ title: "全部规则"
 | [`script/no-arrow-functions-in-watch`](#script-no-arrow-functions-in-watch) | [错误示例](#script-no-arrow-functions-in-watch-bad) · [正确示例](#script-no-arrow-functions-in-watch-good) | 禁止将箭头函数用作 Options API watch 处理器 |
 | [`script/no-async-in-computed`](#script-no-async-in-computed) | [错误示例](#script-no-async-in-computed-bad) · [正确示例](#script-no-async-in-computed-good) | 禁止计算属性中的异步函数 |
 | [`script/no-boolean-default`](#script-no-boolean-default) | [错误示例](#script-no-boolean-default-bad) · [正确示例](#script-no-boolean-default-good) | 禁止为 Boolean prop 设置默认值 |
+| [`script/no-computed-properties-in-data`](#script-no-computed-properties-in-data) | [错误示例](#script-no-computed-properties-in-data-bad) · [正确示例](#script-no-computed-properties-in-data-good) | 禁止在组件的 data 函数中使用计算属性 |
 | [`script/no-deep-destructure-in-props`](#script-no-deep-destructure-in-props) | [错误示例](#script-no-deep-destructure-in-props-bad) · [正确示例](#script-no-deep-destructure-in-props-good) | 禁止在 defineProps 中进行深层嵌套解构 |
 | [`script/no-deprecated-data-object-declaration`](#script-no-deprecated-data-object-declaration) | [错误示例](#script-no-deprecated-data-object-declaration-bad) · [正确示例](#script-no-deprecated-data-object-declaration-good) | 禁止将对象字面量作为组件 data 选项（Vue 3 要求函数） |
+| [`script/no-deprecated-delete-set`](#script-no-deprecated-delete-set) | [错误示例](#script-no-deprecated-delete-set-bad) · [正确示例](#script-no-deprecated-delete-set-good) | 禁止使用 Vue 3 中已移除的 Vue 2 $set 和 $delete |
 | [`script/no-deprecated-destroyed-lifecycle`](#script-no-deprecated-destroyed-lifecycle) | [错误示例](#script-no-deprecated-destroyed-lifecycle-bad) · [正确示例](#script-no-deprecated-destroyed-lifecycle-good) | 禁止已弃用的 destroyed 和 beforeDestroy 生命周期钩子 |
 | [`script/no-deprecated-dollar-listeners-api`](#script-no-deprecated-dollar-listeners-api) | [错误示例](#script-no-deprecated-dollar-listeners-api-bad) · [正确示例](#script-no-deprecated-dollar-listeners-api-good) | 禁止 Vue 3 已移除的 $listeners 实例属性（已合并到 $attrs） |
 | [`script/no-deprecated-dollar-scopedslots-api`](#script-no-deprecated-dollar-scopedslots-api) | [错误示例](#script-no-deprecated-dollar-scopedslots-api-bad) · [正确示例](#script-no-deprecated-dollar-scopedslots-api-good) | 禁止 Vue 3 已移除的 $scopedSlots 实例属性（使用 $slots） |
 | [`script/no-deprecated-events-api`](#script-no-deprecated-events-api) | [错误示例](#script-no-deprecated-events-api-bad) · [正确示例](#script-no-deprecated-events-api-good) | 禁止已移除的 Vue 2 事件 API（$on / $off / $once） |
+| [`script/no-deprecated-model-definition`](#script-no-deprecated-model-definition) | [错误示例](#script-no-deprecated-model-definition-bad) · [正确示例](#script-no-deprecated-model-definition-good) | 禁止使用 Vue 3 中已移除的 Vue 2 model 选项 |
 | [`script/no-deprecated-props-default-this`](#script-no-deprecated-props-default-this) | [错误示例](#script-no-deprecated-props-default-this-bad) · [正确示例](#script-no-deprecated-props-default-this-good) | 禁止在 prop 默认值或校验函数中使用 `this`（Vue 3 已移除） |
+| [`script/no-deprecated-vue-config-keycodes`](#script-no-deprecated-vue-config-keycodes) | [错误示例](#script-no-deprecated-vue-config-keycodes-bad) · [正确示例](#script-no-deprecated-vue-config-keycodes-good) | 禁止使用 Vue 3 中已移除的 Vue.config.keyCodes |
 | [`script/no-dupe-keys`](#script-no-dupe-keys) | [错误示例](#script-no-dupe-keys-bad) · [正确示例](#script-no-dupe-keys-good) | 禁止 Options API 的 props/data/computed/methods/setup/inject 之间重复的键 |
 | [`script/no-duplicate-attr-inheritance`](#script-no-duplicate-attr-inheritance) | [错误示例](#script-no-duplicate-attr-inheritance-bad) · [正确示例](#script-no-duplicate-attr-inheritance-good) | 标记重复应用透传属性的组件 |
 | [`script/no-export-in-script-setup`](#script-no-export-in-script-setup) | [错误示例](#script-no-export-in-script-setup-bad) · [正确示例](#script-no-export-in-script-setup-good) | 禁止 &lt;script setup&gt; 内的 export 语句 |
@@ -155,6 +159,8 @@ title: "全部规则"
 | [`script/no-use-computed-property-like-method`](#script-no-use-computed-property-like-method) | [错误示例](#script-no-use-computed-property-like-method-bad) · [正确示例](#script-no-use-computed-property-like-method-good) | 禁止像方法一样调用 Options API 计算属性 |
 | [`script/no-watch-after-await`](#script-no-watch-after-await) | [错误示例](#script-no-watch-after-await-bad) · [正确示例](#script-no-watch-after-await-good) | 禁止在 setup() 中 await 之后注册未保留停止句柄的侦听器 |
 | [`script/no-with-defaults`](#script-no-with-defaults) | [错误示例](#script-no-with-defaults-bad) · [正确示例](#script-no-with-defaults-good) | 不建议使用 withDefaults，优先使用解构默认值（Vue 3.5+） |
+| [`script/one-component-per-file`](#script-one-component-per-file) | [错误示例](#script-one-component-per-file-bad) · [正确示例](#script-one-component-per-file-good) | 禁止在一个文件中定义多个组件 |
+| [`script/order-in-components`](#script-order-in-components) | [错误示例](#script-order-in-components-bad) · [正确示例](#script-order-in-components-good) | 强制组件选项的属性遵循默认顺序 |
 | [`script/prefer-computed`](#script-prefer-computed) | [错误示例](#script-prefer-computed-bad) · [正确示例](#script-prefer-computed-good) | 响应式派生状态优先使用 computed() |
 | [`script/prefer-define-options`](#script-prefer-define-options) | [错误示例](#script-prefer-define-options-bad) · [正确示例](#script-prefer-define-options-good) | 优先使用 defineOptions()，而不是仅设置 name/inheritAttrs 的普通 &lt;script&gt; |
 | [`script/prefer-import-from-vue`](#script-prefer-import-from-vue) | [错误示例](#script-prefer-import-from-vue-bad) · [正确示例](#script-prefer-import-from-vue-good) | 优先从 'vue' 导入，而不是内部包 |
@@ -169,6 +175,8 @@ title: "全部规则"
 | [`script/require-function-return-type`](#script-require-function-return-type) | [错误示例](#script-require-function-return-type-bad) · [正确示例](#script-require-function-return-type-good) | 要求函数具有返回类型注解 |
 | [`script/require-prop-type-constructor`](#script-require-prop-type-constructor) | [错误示例](#script-require-prop-type-constructor-bad) · [正确示例](#script-require-prop-type-constructor-good) | 要求 prop 的 `type` 值是构造器，而不是字符串字面量 |
 | [`script/require-prop-types`](#script-require-prop-types) | [错误示例](#script-require-prop-types-bad) · [正确示例](#script-require-prop-types-good) | 要求每个 prop 声明类型 |
+| [`script/require-render-return`](#script-require-render-return) | [错误示例](#script-require-render-return-bad) · [正确示例](#script-require-render-return-good) | 要求组件的 render 函数返回一个值 |
+| [`script/require-slots-as-functions`](#script-require-slots-as-functions) | [错误示例](#script-require-slots-as-functions-bad) · [正确示例](#script-require-slots-as-functions-good) | 要求将 $slots 的属性作为函数调用 |
 | [`script/require-symbol-provide`](#script-require-symbol-provide) | [错误示例](#script-require-symbol-provide-bad) · [正确示例](#script-require-symbol-provide-good) | 建议使用 Symbol 作为 provide/inject 的注入键 |
 | [`script/require-typed-object-prop`](#script-require-typed-object-prop) | [错误示例](#script-require-typed-object-prop-bad) · [正确示例](#script-require-typed-object-prop-good) | 要求运行时类型为 `Object` 或 `Array` 的 prop 具有显式类型 |
 | [`script/require-typed-ref`](#script-require-typed-ref) | [错误示例](#script-require-typed-ref-bad) · [正确示例](#script-require-typed-ref-good) | 要求无初始值、null 或 undefined 初始化的 ref() 具有显式类型参数 |
@@ -1553,6 +1561,20 @@ Vue Router 编程式导航优先使用具名路由对象
 
 [分组示例](./type-and-script.md#script-no-boolean-default) · [规则参考](/rules/reference/script-no-boolean-default.md)
 
+### `script/no-computed-properties-in-data`
+
+禁止在组件的 data 函数中使用计算属性
+
+<span id="script-no-computed-properties-in-data-bad"></span>
+
+[错误示例](./type-and-script.md#script-no-computed-properties-in-data-bad)
+
+<span id="script-no-computed-properties-in-data-good"></span>
+
+[正确示例](./type-and-script.md#script-no-computed-properties-in-data-good)
+
+[分组示例](./type-and-script.md#script-no-computed-properties-in-data) · [规则参考](/rules/reference/script-no-computed-properties-in-data.md)
+
 ### `script/no-deep-destructure-in-props`
 
 禁止在 defineProps 中进行深层嵌套解构
@@ -1580,6 +1602,20 @@ Vue Router 编程式导航优先使用具名路由对象
 [正确示例](./type-and-script.md#script-no-deprecated-data-object-declaration-good)
 
 [分组示例](./type-and-script.md#script-no-deprecated-data-object-declaration) · [规则参考](/rules/reference/script-no-deprecated-data-object-declaration.md)
+
+### `script/no-deprecated-delete-set`
+
+禁止使用 Vue 3 中已移除的 Vue 2 $set 和 $delete
+
+<span id="script-no-deprecated-delete-set-bad"></span>
+
+[错误示例](./type-and-script.md#script-no-deprecated-delete-set-bad)
+
+<span id="script-no-deprecated-delete-set-good"></span>
+
+[正确示例](./type-and-script.md#script-no-deprecated-delete-set-good)
+
+[分组示例](./type-and-script.md#script-no-deprecated-delete-set) · [规则参考](/rules/reference/script-no-deprecated-delete-set.md)
 
 ### `script/no-deprecated-destroyed-lifecycle`
 
@@ -1637,6 +1673,20 @@ Vue Router 编程式导航优先使用具名路由对象
 
 [分组示例](./type-and-script.md#script-no-deprecated-events-api) · [规则参考](/rules/reference/script-no-deprecated-events-api.md)
 
+### `script/no-deprecated-model-definition`
+
+禁止使用 Vue 3 中已移除的 Vue 2 model 选项
+
+<span id="script-no-deprecated-model-definition-bad"></span>
+
+[错误示例](./type-and-script.md#script-no-deprecated-model-definition-bad)
+
+<span id="script-no-deprecated-model-definition-good"></span>
+
+[正确示例](./type-and-script.md#script-no-deprecated-model-definition-good)
+
+[分组示例](./type-and-script.md#script-no-deprecated-model-definition) · [规则参考](/rules/reference/script-no-deprecated-model-definition.md)
+
 ### `script/no-deprecated-props-default-this`
 
 禁止在 prop 默认值或校验函数中使用 `this`（Vue 3 已移除）
@@ -1650,6 +1700,20 @@ Vue Router 编程式导航优先使用具名路由对象
 [正确示例](./type-and-script.md#script-no-deprecated-props-default-this-good)
 
 [分组示例](./type-and-script.md#script-no-deprecated-props-default-this) · [规则参考](/rules/reference/script-no-deprecated-props-default-this.md)
+
+### `script/no-deprecated-vue-config-keycodes`
+
+禁止使用 Vue 3 中已移除的 Vue.config.keyCodes
+
+<span id="script-no-deprecated-vue-config-keycodes-bad"></span>
+
+[错误示例](./type-and-script.md#script-no-deprecated-vue-config-keycodes-bad)
+
+<span id="script-no-deprecated-vue-config-keycodes-good"></span>
+
+[正确示例](./type-and-script.md#script-no-deprecated-vue-config-keycodes-good)
+
+[分组示例](./type-and-script.md#script-no-deprecated-vue-config-keycodes) · [规则参考](/rules/reference/script-no-deprecated-vue-config-keycodes.md)
 
 ### `script/no-dupe-keys`
 
@@ -2029,6 +2093,34 @@ Vue Router 编程式导航优先使用具名路由对象
 
 [分组示例](./type-and-script.md#script-no-with-defaults) · [规则参考](/rules/reference/script-no-with-defaults.md)
 
+### `script/one-component-per-file`
+
+禁止在一个文件中定义多个组件
+
+<span id="script-one-component-per-file-bad"></span>
+
+[错误示例](./type-and-script.md#script-one-component-per-file-bad)
+
+<span id="script-one-component-per-file-good"></span>
+
+[正确示例](./type-and-script.md#script-one-component-per-file-good)
+
+[分组示例](./type-and-script.md#script-one-component-per-file) · [规则参考](/rules/reference/script-one-component-per-file.md)
+
+### `script/order-in-components`
+
+强制组件选项的属性遵循默认顺序
+
+<span id="script-order-in-components-bad"></span>
+
+[错误示例](./type-and-script.md#script-order-in-components-bad)
+
+<span id="script-order-in-components-good"></span>
+
+[正确示例](./type-and-script.md#script-order-in-components-good)
+
+[分组示例](./type-and-script.md#script-order-in-components) · [规则参考](/rules/reference/script-order-in-components.md)
+
 ### `script/prefer-computed`
 
 响应式派生状态优先使用 computed()
@@ -2224,6 +2316,34 @@ Vue Router 编程式导航优先使用具名路由对象
 [正确示例](./type-and-script.md#script-require-prop-types-good)
 
 [分组示例](./type-and-script.md#script-require-prop-types) · [规则参考](/rules/reference/script-require-prop-types.md)
+
+### `script/require-render-return`
+
+要求组件的 render 函数返回一个值
+
+<span id="script-require-render-return-bad"></span>
+
+[错误示例](./type-and-script.md#script-require-render-return-bad)
+
+<span id="script-require-render-return-good"></span>
+
+[正确示例](./type-and-script.md#script-require-render-return-good)
+
+[分组示例](./type-and-script.md#script-require-render-return) · [规则参考](/rules/reference/script-require-render-return.md)
+
+### `script/require-slots-as-functions`
+
+要求将 $slots 的属性作为函数调用
+
+<span id="script-require-slots-as-functions-bad"></span>
+
+[错误示例](./type-and-script.md#script-require-slots-as-functions-bad)
+
+<span id="script-require-slots-as-functions-good"></span>
+
+[正确示例](./type-and-script.md#script-require-slots-as-functions-good)
+
+[分组示例](./type-and-script.md#script-require-slots-as-functions) · [规则参考](/rules/reference/script-require-slots-as-functions.md)
 
 ### `script/require-symbol-provide`
 

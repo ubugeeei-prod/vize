@@ -65,6 +65,18 @@ pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "不建议使用 withDefaults，推荐使用解构默认值（Vue 3.5+）",
     ),
     (
+        "script/one-component-per-file.description",
+        "Disallow more than one component definition in a file",
+        "1 ファイルに複数のコンポーネント定義を書くことを禁止する",
+        "禁止在一个文件中定义多个组件",
+    ),
+    (
+        "script/order-in-components.description",
+        "Enforce the default order of properties in component options",
+        "コンポーネントオプションのプロパティを既定の順序に揃える",
+        "强制组件选项的属性遵循默认顺序",
+    ),
+    (
         "script/prefer-computed.description",
         "Prefer computed() for derived reactive state",
         "派生したリアクティブな状態には computed() を推奨する",
@@ -147,6 +159,18 @@ pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "Require every prop to declare a type",
         "すべての props に型の宣言を必須にする",
         "要求每个 prop 都声明类型",
+    ),
+    (
+        "script/require-render-return.description",
+        "Require the component render function to return a value",
+        "コンポーネントの render 関数が値を返すことを必須にする",
+        "要求组件的 render 函数返回一个值",
+    ),
+    (
+        "script/require-slots-as-functions.description",
+        "Require $slots properties to be called as functions",
+        "$slots のプロパティを関数として呼び出すことを必須にする",
+        "要求将 $slots 的属性作为函数调用",
     ),
     (
         "script/require-symbol-provide.description",

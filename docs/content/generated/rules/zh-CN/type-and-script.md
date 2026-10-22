@@ -20,13 +20,17 @@ title: "类型与脚本规则"
 | [`script/no-arrow-functions-in-watch`](#script-no-arrow-functions-in-watch) | [错误示例](#script-no-arrow-functions-in-watch-bad) · [正确示例](#script-no-arrow-functions-in-watch-good) | 禁止将箭头函数用作 Options API watch 处理器 |
 | [`script/no-async-in-computed`](#script-no-async-in-computed) | [错误示例](#script-no-async-in-computed-bad) · [正确示例](#script-no-async-in-computed-good) | 禁止计算属性中的异步函数 |
 | [`script/no-boolean-default`](#script-no-boolean-default) | [错误示例](#script-no-boolean-default-bad) · [正确示例](#script-no-boolean-default-good) | 禁止为 Boolean prop 设置默认值 |
+| [`script/no-computed-properties-in-data`](#script-no-computed-properties-in-data) | [错误示例](#script-no-computed-properties-in-data-bad) · [正确示例](#script-no-computed-properties-in-data-good) | 禁止在组件的 data 函数中使用计算属性 |
 | [`script/no-deep-destructure-in-props`](#script-no-deep-destructure-in-props) | [错误示例](#script-no-deep-destructure-in-props-bad) · [正确示例](#script-no-deep-destructure-in-props-good) | 禁止在 defineProps 中进行深层嵌套解构 |
 | [`script/no-deprecated-data-object-declaration`](#script-no-deprecated-data-object-declaration) | [错误示例](#script-no-deprecated-data-object-declaration-bad) · [正确示例](#script-no-deprecated-data-object-declaration-good) | 禁止将对象字面量作为组件 data 选项（Vue 3 要求函数） |
+| [`script/no-deprecated-delete-set`](#script-no-deprecated-delete-set) | [错误示例](#script-no-deprecated-delete-set-bad) · [正确示例](#script-no-deprecated-delete-set-good) | 禁止使用 Vue 3 中已移除的 Vue 2 $set 和 $delete |
 | [`script/no-deprecated-destroyed-lifecycle`](#script-no-deprecated-destroyed-lifecycle) | [错误示例](#script-no-deprecated-destroyed-lifecycle-bad) · [正确示例](#script-no-deprecated-destroyed-lifecycle-good) | 禁止已弃用的 destroyed 和 beforeDestroy 生命周期钩子 |
 | [`script/no-deprecated-dollar-listeners-api`](#script-no-deprecated-dollar-listeners-api) | [错误示例](#script-no-deprecated-dollar-listeners-api-bad) · [正确示例](#script-no-deprecated-dollar-listeners-api-good) | 禁止 Vue 3 已移除的 $listeners 实例属性（已合并到 $attrs） |
 | [`script/no-deprecated-dollar-scopedslots-api`](#script-no-deprecated-dollar-scopedslots-api) | [错误示例](#script-no-deprecated-dollar-scopedslots-api-bad) · [正确示例](#script-no-deprecated-dollar-scopedslots-api-good) | 禁止 Vue 3 已移除的 $scopedSlots 实例属性（使用 $slots） |
 | [`script/no-deprecated-events-api`](#script-no-deprecated-events-api) | [错误示例](#script-no-deprecated-events-api-bad) · [正确示例](#script-no-deprecated-events-api-good) | 禁止已移除的 Vue 2 事件 API（$on / $off / $once） |
+| [`script/no-deprecated-model-definition`](#script-no-deprecated-model-definition) | [错误示例](#script-no-deprecated-model-definition-bad) · [正确示例](#script-no-deprecated-model-definition-good) | 禁止使用 Vue 3 中已移除的 Vue 2 model 选项 |
 | [`script/no-deprecated-props-default-this`](#script-no-deprecated-props-default-this) | [错误示例](#script-no-deprecated-props-default-this-bad) · [正确示例](#script-no-deprecated-props-default-this-good) | 禁止在 prop 默认值或校验函数中使用 `this`（Vue 3 已移除） |
+| [`script/no-deprecated-vue-config-keycodes`](#script-no-deprecated-vue-config-keycodes) | [错误示例](#script-no-deprecated-vue-config-keycodes-bad) · [正确示例](#script-no-deprecated-vue-config-keycodes-good) | 禁止使用 Vue 3 中已移除的 Vue.config.keyCodes |
 | [`script/no-dupe-keys`](#script-no-dupe-keys) | [错误示例](#script-no-dupe-keys-bad) · [正确示例](#script-no-dupe-keys-good) | 禁止 Options API 的 props/data/computed/methods/setup/inject 之间重复的键 |
 | [`script/no-duplicate-attr-inheritance`](#script-no-duplicate-attr-inheritance) | [错误示例](#script-no-duplicate-attr-inheritance-bad) · [正确示例](#script-no-duplicate-attr-inheritance-good) | 标记重复应用透传属性的组件 |
 | [`script/no-export-in-script-setup`](#script-no-export-in-script-setup) | [错误示例](#script-no-export-in-script-setup-bad) · [正确示例](#script-no-export-in-script-setup-good) | 禁止 &lt;script setup&gt; 内的 export 语句 |
@@ -54,6 +58,8 @@ title: "类型与脚本规则"
 | [`script/no-use-computed-property-like-method`](#script-no-use-computed-property-like-method) | [错误示例](#script-no-use-computed-property-like-method-bad) · [正确示例](#script-no-use-computed-property-like-method-good) | 禁止像方法一样调用 Options API 计算属性 |
 | [`script/no-watch-after-await`](#script-no-watch-after-await) | [错误示例](#script-no-watch-after-await-bad) · [正确示例](#script-no-watch-after-await-good) | 禁止在 setup() 中 await 之后注册未保留停止句柄的侦听器 |
 | [`script/no-with-defaults`](#script-no-with-defaults) | [错误示例](#script-no-with-defaults-bad) · [正确示例](#script-no-with-defaults-good) | 不建议使用 withDefaults，优先使用解构默认值（Vue 3.5+） |
+| [`script/one-component-per-file`](#script-one-component-per-file) | [错误示例](#script-one-component-per-file-bad) · [正确示例](#script-one-component-per-file-good) | 禁止在一个文件中定义多个组件 |
+| [`script/order-in-components`](#script-order-in-components) | [错误示例](#script-order-in-components-bad) · [正确示例](#script-order-in-components-good) | 强制组件选项的属性遵循默认顺序 |
 | [`script/prefer-computed`](#script-prefer-computed) | [错误示例](#script-prefer-computed-bad) · [正确示例](#script-prefer-computed-good) | 响应式派生状态优先使用 computed() |
 | [`script/prefer-define-options`](#script-prefer-define-options) | [错误示例](#script-prefer-define-options-bad) · [正确示例](#script-prefer-define-options-good) | 优先使用 defineOptions()，而不是仅设置 name/inheritAttrs 的普通 &lt;script&gt; |
 | [`script/prefer-import-from-vue`](#script-prefer-import-from-vue) | [错误示例](#script-prefer-import-from-vue-bad) · [正确示例](#script-prefer-import-from-vue-good) | 优先从 'vue' 导入，而不是内部包 |
@@ -68,6 +74,8 @@ title: "类型与脚本规则"
 | [`script/require-function-return-type`](#script-require-function-return-type) | [错误示例](#script-require-function-return-type-bad) · [正确示例](#script-require-function-return-type-good) | 要求函数具有返回类型注解 |
 | [`script/require-prop-type-constructor`](#script-require-prop-type-constructor) | [错误示例](#script-require-prop-type-constructor-bad) · [正确示例](#script-require-prop-type-constructor-good) | 要求 prop 的 `type` 值是构造器，而不是字符串字面量 |
 | [`script/require-prop-types`](#script-require-prop-types) | [错误示例](#script-require-prop-types-bad) · [正确示例](#script-require-prop-types-good) | 要求每个 prop 声明类型 |
+| [`script/require-render-return`](#script-require-render-return) | [错误示例](#script-require-render-return-bad) · [正确示例](#script-require-render-return-good) | 要求组件的 render 函数返回一个值 |
+| [`script/require-slots-as-functions`](#script-require-slots-as-functions) | [错误示例](#script-require-slots-as-functions-bad) · [正确示例](#script-require-slots-as-functions-good) | 要求将 $slots 的属性作为函数调用 |
 | [`script/require-symbol-provide`](#script-require-symbol-provide) | [错误示例](#script-require-symbol-provide-bad) · [正确示例](#script-require-symbol-provide-good) | 建议使用 Symbol 作为 provide/inject 的注入键 |
 | [`script/require-typed-object-prop`](#script-require-typed-object-prop) | [错误示例](#script-require-typed-object-prop-bad) · [正确示例](#script-require-typed-object-prop-good) | 要求运行时类型为 `Object` 或 `Array` 的 prop 具有显式类型 |
 | [`script/require-typed-ref`](#script-require-typed-ref) | [错误示例](#script-require-typed-ref-bad) · [正确示例](#script-require-typed-ref-good) | 要求无初始值、null 或 undefined 初始化的 ref() 具有显式类型参数 |
@@ -702,6 +710,81 @@ export default {
 
 [实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_boolean_default.rs#L54) · [全部规则](all.md)
 
+### `script/no-computed-properties-in-data`
+
+禁止在组件的 data 函数中使用计算属性
+
+[错误示例](#script-no-computed-properties-in-data-bad) · [正确示例](#script-no-computed-properties-in-data-good)
+
+默认严重程度: `error`  
+预设: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+自动修复: 无；请检查建议的修改  
+适用范围: Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式  
+选项: 没有规则专属选项。可以配置严重程度和预设。
+
+**配置（Vite+）**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/no-computed-properties-in-data": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-no-computed-properties-in-data-bad"></span>
+
+**错误示例**
+
+`data()` 返回 `this.doubled`，而 `doubled` 仍是计算属性，读取发生在初始化之前。
+
+```vue annotate="remove:4,7"
+<script lang="ts">
+export default {
+  data() {
+    return { value: this.doubled }
+  },
+  computed: {
+    doubled() { return 1 }
+  }
+}
+</script>
+```
+
+<span id="script-no-computed-properties-in-data-good"></span>
+
+**正确示例**
+
+`data()` 返回普通的 `value`，`doubled` 在初始化之后读取 `this.value`。
+
+```vue annotate="add:4,7"
+<script lang="ts">
+export default {
+  data() {
+    return { value: 1 }
+  },
+  computed: {
+    doubled() { return this.value * 2 }
+  }
+}
+</script>
+```
+
+正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
+
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_computed_properties_in_data.rs#L44) · [全部规则](all.md)
+
 ### `script/no-deep-destructure-in-props`
 
 禁止在 defineProps 中进行深层嵌套解构
@@ -833,7 +916,76 @@ export default {
 
 正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
 
-[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_data_object_declaration.rs#L48) · [全部规则](all.md)
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_data_object_declaration.rs#L49) · [全部规则](all.md)
+
+### `script/no-deprecated-delete-set`
+
+禁止使用 Vue 3 中已移除的 Vue 2 $set 和 $delete
+
+[错误示例](#script-no-deprecated-delete-set-bad) · [正确示例](#script-no-deprecated-delete-set-good)
+
+默认严重程度: `error`  
+预设: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+自动修复: 无；请检查建议的修改  
+适用范围: Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式  
+选项: 没有规则专属选项。可以配置严重程度和预设。
+
+**配置（Vite+）**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/no-deprecated-delete-set": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-no-deprecated-delete-set-bad"></span>
+
+**错误示例**
+
+`created()` 调用已移除的 `this.$set` 来添加 `ready`。
+
+```vue annotate="remove:4"
+<script lang="ts">
+export default {
+  created() {
+    this.$set(this.item, 'ready', true)
+  }
+}
+</script>
+```
+
+<span id="script-no-deprecated-delete-set-good"></span>
+
+**正确示例**
+
+同一字段直接用 `this.item.ready = true` 赋值。
+
+```vue annotate="add:4"
+<script lang="ts">
+export default {
+  created() {
+    this.item.ready = true
+  }
+}
+</script>
+```
+
+正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
+
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_delete_set.rs#L41) · [全部规则](all.md)
 
 ### `script/no-deprecated-destroyed-lifecycle`
 
@@ -1108,6 +1260,75 @@ export default {
 
 [实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_events_api.rs#L51) · [全部规则](all.md)
 
+### `script/no-deprecated-model-definition`
+
+禁止使用 Vue 3 中已移除的 Vue 2 model 选项
+
+[错误示例](#script-no-deprecated-model-definition-bad) · [正确示例](#script-no-deprecated-model-definition-good)
+
+默认严重程度: `error`  
+预设: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+自动修复: 无；请检查建议的修改  
+适用范围: Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式  
+选项: 没有规则专属选项。可以配置严重程度和预设。
+
+**配置（Vite+）**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/no-deprecated-model-definition": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-no-deprecated-model-definition-bad"></span>
+
+**错误示例**
+
+组件仍用 `prop` 和 `event` 声明 Vue 2 的 `model` 选项。
+
+```vue annotate="remove:3,4,5,6"
+<script lang="ts">
+export default {
+  model: {
+    prop: 'value',
+    event: 'input'
+  }
+}
+</script>
+```
+
+<span id="script-no-deprecated-model-definition-good"></span>
+
+**正确示例**
+
+组件改为声明 `modelValue` prop 和 `update:modelValue` 事件。
+
+```vue annotate="add:3,4"
+<script lang="ts">
+export default {
+  props: ['modelValue'],
+  emits: ['update:modelValue']
+}
+</script>
+```
+
+正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
+
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_model_definition.rs#L32) · [全部规则](all.md)
+
 ### `script/no-deprecated-props-default-this`
 
 禁止在 prop 默认值或校验函数中使用 `this`（Vue 3 已移除）
@@ -1200,6 +1421,67 @@ export default {
 正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
 
 [实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_props_default_this.rs#L71) · [全部规则](all.md)
+
+### `script/no-deprecated-vue-config-keycodes`
+
+禁止使用 Vue 3 中已移除的 Vue.config.keyCodes
+
+[错误示例](#script-no-deprecated-vue-config-keycodes-bad) · [正确示例](#script-no-deprecated-vue-config-keycodes-good)
+
+默认严重程度: `error`  
+预设: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+自动修复: 无；请检查建议的修改  
+适用范围: Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式  
+选项: 没有规则专属选项。可以配置严重程度和预设。
+
+**配置（Vite+）**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/no-deprecated-vue-config-keycodes": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-no-deprecated-vue-config-keycodes-bad"></span>
+
+**错误示例**
+
+`Vue.config.keyCodes.enter` 赋值给已移除的按键码别名。
+
+```vue annotate="remove:2"
+<script setup lang="ts">
+Vue.config.keyCodes.enter = 13
+</script>
+```
+
+<span id="script-no-deprecated-vue-config-keycodes-good"></span>
+
+**正确示例**
+
+按键码是普通常量 `const enter = 13`。
+
+```vue annotate="add:2"
+<script setup lang="ts">
+const enter = 13
+</script>
+```
+
+正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
+
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_vue_config_keycodes.rs#L22) · [全部规则](all.md)
 
 ### `script/no-dupe-keys`
 
@@ -3014,6 +3296,145 @@ const { count = 0, name = "Ada" } = defineProps<{ count?: number; name?: string 
 
 [实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_with_defaults.rs#L41) · [全部规则](all.md)
 
+### `script/one-component-per-file`
+
+禁止在一个文件中定义多个组件
+
+[错误示例](#script-one-component-per-file-bad) · [正确示例](#script-one-component-per-file-good)
+
+默认严重程度: `warning`  
+预设: `opinionated`, `nuxt`  
+自动修复: 无；请检查建议的修改  
+适用范围: Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式  
+选项: 没有规则专属选项。可以配置严重程度和预设。
+
+**配置（Vite+）**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/one-component-per-file": "warn"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-one-component-per-file-bad"></span>
+
+**错误示例**
+
+文件导出 `Parent`，又在 `components` 里定义了内联的 `Child`。
+
+```vue annotate="remove:3,4,5,6"
+<script lang="ts">
+export default {
+  name: 'Parent',
+  components: {
+    Child: { name: 'Child' }
+  }
+}
+</script>
+```
+
+<span id="script-one-component-per-file-good"></span>
+
+**正确示例**
+
+文件只定义 `Parent`。
+
+```vue annotate="add:3"
+<script lang="ts">
+export default {
+  name: 'Parent'
+}
+</script>
+```
+
+正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
+
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/one_component_per_file.rs#L30) · [全部规则](all.md)
+
+### `script/order-in-components`
+
+强制组件选项的属性遵循默认顺序
+
+[错误示例](#script-order-in-components-bad) · [正确示例](#script-order-in-components-good)
+
+默认严重程度: `warning`  
+预设: `opinionated`, `nuxt`  
+自动修复: 无；请检查建议的修改  
+适用范围: Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式  
+选项: 没有规则专属选项。可以配置严重程度和预设。
+
+**配置（Vite+）**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/order-in-components": "warn"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-order-in-components-bad"></span>
+
+**错误示例**
+
+`data` 写在 `props` 之前，较后的分组出现在较前的分组上面。
+
+```vue annotate="remove:5,6"
+<script lang="ts">
+export default {
+  data() {
+    return { count: 0 }
+  },
+  props: ['label']
+}
+</script>
+```
+
+<span id="script-order-in-components-good"></span>
+
+**正确示例**
+
+`props` 在 `data` 之前，符合默认分组顺序。
+
+```vue annotate="add:3,6"
+<script lang="ts">
+export default {
+  props: ['label'],
+  data() {
+    return { count: 0 }
+  }
+}
+</script>
+```
+
+正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
+
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/order_in_components.rs#L34) · [全部规则](all.md)
+
 ### `script/prefer-computed`
 
 响应式派生状态优先使用 computed()
@@ -3973,6 +4394,146 @@ export default {
 正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
 
 [实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_prop_types.rs#L58) · [全部规则](all.md)
+
+### `script/require-render-return`
+
+要求组件的 render 函数返回一个值
+
+[错误示例](#script-require-render-return-bad) · [正确示例](#script-require-render-return-good)
+
+默认严重程度: `error`  
+预设: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+自动修复: 无；请检查建议的修改  
+适用范围: Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式  
+选项: 没有规则专属选项。可以配置严重程度和预设。
+
+**配置（Vite+）**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/require-render-return": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-require-render-return-bad"></span>
+
+**错误示例**
+
+`render` 函数在分支里读取 `this.count`，但没有返回值。
+
+```vue annotate="remove:4,5,6"
+<script lang="ts">
+export default {
+  render() {
+    if (this.ready) {
+      this.count
+    }
+  }
+}
+</script>
+```
+
+<span id="script-require-render-return-good"></span>
+
+**正确示例**
+
+`render` 函数返回 `this.count`。
+
+```vue annotate="add:4"
+<script lang="ts">
+export default {
+  render() {
+    return this.count
+  }
+}
+</script>
+```
+
+正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
+
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_render_return.rs#L35) · [全部规则](all.md)
+
+### `script/require-slots-as-functions`
+
+要求将 $slots 的属性作为函数调用
+
+[错误示例](#script-require-slots-as-functions-bad) · [正确示例](#script-require-slots-as-functions-good)
+
+默认严重程度: `error`  
+预设: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+自动修复: 无；请检查建议的修改  
+适用范围: Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式  
+选项: 没有规则专属选项。可以配置严重程度和预设。
+
+**配置（Vite+）**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/require-slots-as-functions": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-require-slots-as-functions-bad"></span>
+
+**错误示例**
+
+`render` 返回未调用的 `this.$slots.default`，这是 Vue 2 的 vnode 数组。
+
+```vue annotate="remove:4"
+<script lang="ts">
+export default {
+  render() {
+    return this.$slots.default
+  }
+}
+</script>
+```
+
+<span id="script-require-slots-as-functions-good"></span>
+
+**正确示例**
+
+`render` 调用 `this.$slots.default()` 并使用返回的 vnode。
+
+```vue annotate="add:4"
+<script lang="ts">
+export default {
+  render() {
+    return this.$slots.default()
+  }
+}
+</script>
+```
+
+正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
+
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_slots_as_functions.rs#L44) · [全部规则](all.md)
 
 ### `script/require-symbol-provide`
 

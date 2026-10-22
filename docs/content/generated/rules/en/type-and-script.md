@@ -18,13 +18,17 @@ Every rule on this page includes its purpose, prerequisites, configuration, and 
 | [`script/no-arrow-functions-in-watch`](#script-no-arrow-functions-in-watch) | [Bad](#script-no-arrow-functions-in-watch-bad) · [Good](#script-no-arrow-functions-in-watch-good) | Disallow arrow functions as Options API watch handlers |
 | [`script/no-async-in-computed`](#script-no-async-in-computed) | [Bad](#script-no-async-in-computed-bad) · [Good](#script-no-async-in-computed-good) | Disallow async functions in computed properties |
 | [`script/no-boolean-default`](#script-no-boolean-default) | [Bad](#script-no-boolean-default-bad) · [Good](#script-no-boolean-default-good) | Disallow a default on a Boolean prop |
+| [`script/no-computed-properties-in-data`](#script-no-computed-properties-in-data) | [Bad](#script-no-computed-properties-in-data-bad) · [Good](#script-no-computed-properties-in-data-good) | Disallow using computed properties inside the component data function |
 | [`script/no-deep-destructure-in-props`](#script-no-deep-destructure-in-props) | [Bad](#script-no-deep-destructure-in-props-bad) · [Good](#script-no-deep-destructure-in-props-good) | Disallow deeply nested destructuring in defineProps |
 | [`script/no-deprecated-data-object-declaration`](#script-no-deprecated-data-object-declaration) | [Bad](#script-no-deprecated-data-object-declaration-bad) · [Good](#script-no-deprecated-data-object-declaration-good) | Disallow an object literal as the component data option (Vue 3 requires a function) |
+| [`script/no-deprecated-delete-set`](#script-no-deprecated-delete-set) | [Bad](#script-no-deprecated-delete-set-bad) · [Good](#script-no-deprecated-delete-set-good) | Disallow Vue 2 $set and $delete, which were removed in Vue 3 |
 | [`script/no-deprecated-destroyed-lifecycle`](#script-no-deprecated-destroyed-lifecycle) | [Bad](#script-no-deprecated-destroyed-lifecycle-bad) · [Good](#script-no-deprecated-destroyed-lifecycle-good) | Disallow deprecated destroyed and beforeDestroy lifecycle hooks |
 | [`script/no-deprecated-dollar-listeners-api`](#script-no-deprecated-dollar-listeners-api) | [Bad](#script-no-deprecated-dollar-listeners-api-bad) · [Good](#script-no-deprecated-dollar-listeners-api-good) | Disallow the $listeners instance property removed in Vue 3 (merged into $attrs) |
 | [`script/no-deprecated-dollar-scopedslots-api`](#script-no-deprecated-dollar-scopedslots-api) | [Bad](#script-no-deprecated-dollar-scopedslots-api-bad) · [Good](#script-no-deprecated-dollar-scopedslots-api-good) | Disallow the $scopedSlots instance property removed in Vue 3 (use $slots) |
 | [`script/no-deprecated-events-api`](#script-no-deprecated-events-api) | [Bad](#script-no-deprecated-events-api-bad) · [Good](#script-no-deprecated-events-api-good) | Disallow the removed Vue 2 events API ($on / $off / $once) |
+| [`script/no-deprecated-model-definition`](#script-no-deprecated-model-definition) | [Bad](#script-no-deprecated-model-definition-bad) · [Good](#script-no-deprecated-model-definition-good) | Disallow the Vue 2 model option, which was removed in Vue 3 |
 | [`script/no-deprecated-props-default-this`](#script-no-deprecated-props-default-this) | [Bad](#script-no-deprecated-props-default-this-bad) · [Good](#script-no-deprecated-props-default-this-good) | Disallow `this` inside a prop default/validator function (removed in Vue 3) |
+| [`script/no-deprecated-vue-config-keycodes`](#script-no-deprecated-vue-config-keycodes) | [Bad](#script-no-deprecated-vue-config-keycodes-bad) · [Good](#script-no-deprecated-vue-config-keycodes-good) | Disallow Vue.config.keyCodes, which was removed in Vue 3 |
 | [`script/no-dupe-keys`](#script-no-dupe-keys) | [Bad](#script-no-dupe-keys-bad) · [Good](#script-no-dupe-keys-good) | Disallow duplicate keys across Options API props/data/computed/methods/setup/inject |
 | [`script/no-duplicate-attr-inheritance`](#script-no-duplicate-attr-inheritance) | [Bad](#script-no-duplicate-attr-inheritance-bad) · [Good](#script-no-duplicate-attr-inheritance-good) | Flag a component that applies its fallthrough attributes twice |
 | [`script/no-export-in-script-setup`](#script-no-export-in-script-setup) | [Bad](#script-no-export-in-script-setup-bad) · [Good](#script-no-export-in-script-setup-good) | Disallow export statements inside &lt;script setup&gt; |
@@ -52,6 +56,8 @@ Every rule on this page includes its purpose, prerequisites, configuration, and 
 | [`script/no-use-computed-property-like-method`](#script-no-use-computed-property-like-method) | [Bad](#script-no-use-computed-property-like-method-bad) · [Good](#script-no-use-computed-property-like-method-good) | Disallow calling an Options API computed property like a method |
 | [`script/no-watch-after-await`](#script-no-watch-after-await) | [Bad](#script-no-watch-after-await-bad) · [Good](#script-no-watch-after-await-good) | Disallow watchers registered after an await in setup() without keeping their stop handle |
 | [`script/no-with-defaults`](#script-no-with-defaults) | [Bad](#script-no-with-defaults-bad) · [Good](#script-no-with-defaults-good) | Discourage withDefaults in favor of destructuring defaults (Vue 3.5+) |
+| [`script/one-component-per-file`](#script-one-component-per-file) | [Bad](#script-one-component-per-file-bad) · [Good](#script-one-component-per-file-good) | Disallow more than one component definition in a file |
+| [`script/order-in-components`](#script-order-in-components) | [Bad](#script-order-in-components-bad) · [Good](#script-order-in-components-good) | Enforce the default order of properties in component options |
 | [`script/prefer-computed`](#script-prefer-computed) | [Bad](#script-prefer-computed-bad) · [Good](#script-prefer-computed-good) | Prefer computed() for derived reactive state |
 | [`script/prefer-define-options`](#script-prefer-define-options) | [Bad](#script-prefer-define-options-bad) · [Good](#script-prefer-define-options-good) | Prefer defineOptions() over a plain &lt;script&gt; that only sets name/inheritAttrs |
 | [`script/prefer-import-from-vue`](#script-prefer-import-from-vue) | [Bad](#script-prefer-import-from-vue-bad) · [Good](#script-prefer-import-from-vue-good) | Prefer importing from 'vue' instead of internal packages |
@@ -66,6 +72,8 @@ Every rule on this page includes its purpose, prerequisites, configuration, and 
 | [`script/require-function-return-type`](#script-require-function-return-type) | [Bad](#script-require-function-return-type-bad) · [Good](#script-require-function-return-type-good) | Require return type annotations on functions |
 | [`script/require-prop-type-constructor`](#script-require-prop-type-constructor) | [Bad](#script-require-prop-type-constructor-bad) · [Good](#script-require-prop-type-constructor-good) | Require prop `type` values to be constructors rather than string literals |
 | [`script/require-prop-types`](#script-require-prop-types) | [Bad](#script-require-prop-types-bad) · [Good](#script-require-prop-types-good) | Require every prop to declare a type |
+| [`script/require-render-return`](#script-require-render-return) | [Bad](#script-require-render-return-bad) · [Good](#script-require-render-return-good) | Require the component render function to return a value |
+| [`script/require-slots-as-functions`](#script-require-slots-as-functions) | [Bad](#script-require-slots-as-functions-bad) · [Good](#script-require-slots-as-functions-good) | Require $slots properties to be called as functions |
 | [`script/require-symbol-provide`](#script-require-symbol-provide) | [Bad](#script-require-symbol-provide-bad) · [Good](#script-require-symbol-provide-good) | Recommend using Symbol as injection key for provide/inject |
 | [`script/require-typed-object-prop`](#script-require-typed-object-prop) | [Bad](#script-require-typed-object-prop-bad) · [Good](#script-require-typed-object-prop-good) | Require an explicit type on a prop whose runtime type is `Object` or `Array` |
 | [`script/require-typed-ref`](#script-require-typed-ref) | [Bad](#script-require-typed-ref-bad) · [Good](#script-require-typed-ref-good) | Require an explicit type argument on a ref() initialized with no value, null, or undefined |
@@ -700,6 +708,81 @@ Good avoids this rule's finding under the configuration above; other rules may s
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_boolean_default.rs#L54) · [All rules](all.md)
 
+### `script/no-computed-properties-in-data`
+
+Disallow using computed properties inside the component data function
+
+[Bad](#script-no-computed-properties-in-data-bad) · [Good](#script-no-computed-properties-in-data-good)
+
+Default severity: `error`  
+Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+Automatic fix: None; review the suggested change  
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
+Options: No rule-specific options. Severity and preset selection are configurable.
+
+**Configuration (Vite+)**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/no-computed-properties-in-data": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-no-computed-properties-in-data-bad"></span>
+
+**Bad**
+
+`data()` returns `this.doubled` while `doubled` is still a computed property, so the read happens before that computed value exists.
+
+```vue annotate="remove:4,7"
+<script lang="ts">
+export default {
+  data() {
+    return { value: this.doubled }
+  },
+  computed: {
+    doubled() { return 1 }
+  }
+}
+</script>
+```
+
+<span id="script-no-computed-properties-in-data-good"></span>
+
+**Good**
+
+`data()` returns a plain `value`, and `doubled` reads `this.value` only after initialization.
+
+```vue annotate="add:4,7"
+<script lang="ts">
+export default {
+  data() {
+    return { value: 1 }
+  },
+  computed: {
+    doubled() { return this.value * 2 }
+  }
+}
+</script>
+```
+
+Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
+
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_computed_properties_in_data.rs#L44) · [All rules](all.md)
+
 ### `script/no-deep-destructure-in-props`
 
 Disallow deeply nested destructuring in defineProps
@@ -831,7 +914,76 @@ export default {
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_data_object_declaration.rs#L48) · [All rules](all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_data_object_declaration.rs#L49) · [All rules](all.md)
+
+### `script/no-deprecated-delete-set`
+
+Disallow Vue 2 $set and $delete, which were removed in Vue 3
+
+[Bad](#script-no-deprecated-delete-set-bad) · [Good](#script-no-deprecated-delete-set-good)
+
+Default severity: `error`  
+Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+Automatic fix: None; review the suggested change  
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
+Options: No rule-specific options. Severity and preset selection are configurable.
+
+**Configuration (Vite+)**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/no-deprecated-delete-set": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-no-deprecated-delete-set-bad"></span>
+
+**Bad**
+
+`created()` calls the removed `this.$set` helper to add `ready`.
+
+```vue annotate="remove:4"
+<script lang="ts">
+export default {
+  created() {
+    this.$set(this.item, 'ready', true)
+  }
+}
+</script>
+```
+
+<span id="script-no-deprecated-delete-set-good"></span>
+
+**Good**
+
+The same field is assigned directly with `this.item.ready = true`.
+
+```vue annotate="add:4"
+<script lang="ts">
+export default {
+  created() {
+    this.item.ready = true
+  }
+}
+</script>
+```
+
+Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
+
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_delete_set.rs#L41) · [All rules](all.md)
 
 ### `script/no-deprecated-destroyed-lifecycle`
 
@@ -1106,6 +1258,75 @@ Good avoids this rule's finding under the configuration above; other rules may s
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_events_api.rs#L51) · [All rules](all.md)
 
+### `script/no-deprecated-model-definition`
+
+Disallow the Vue 2 model option, which was removed in Vue 3
+
+[Bad](#script-no-deprecated-model-definition-bad) · [Good](#script-no-deprecated-model-definition-good)
+
+Default severity: `error`  
+Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+Automatic fix: None; review the suggested change  
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
+Options: No rule-specific options. Severity and preset selection are configurable.
+
+**Configuration (Vite+)**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/no-deprecated-model-definition": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-no-deprecated-model-definition-bad"></span>
+
+**Bad**
+
+The component still declares the Vue 2 `model` option with `prop` and `event`.
+
+```vue annotate="remove:3,4,5,6"
+<script lang="ts">
+export default {
+  model: {
+    prop: 'value',
+    event: 'input'
+  }
+}
+</script>
+```
+
+<span id="script-no-deprecated-model-definition-good"></span>
+
+**Good**
+
+The component declares the `modelValue` prop and the `update:modelValue` event instead.
+
+```vue annotate="add:3,4"
+<script lang="ts">
+export default {
+  props: ['modelValue'],
+  emits: ['update:modelValue']
+}
+</script>
+```
+
+Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
+
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_model_definition.rs#L32) · [All rules](all.md)
+
 ### `script/no-deprecated-props-default-this`
 
 Disallow `this` inside a prop default/validator function (removed in Vue 3)
@@ -1198,6 +1419,67 @@ export default {
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_props_default_this.rs#L71) · [All rules](all.md)
+
+### `script/no-deprecated-vue-config-keycodes`
+
+Disallow Vue.config.keyCodes, which was removed in Vue 3
+
+[Bad](#script-no-deprecated-vue-config-keycodes-bad) · [Good](#script-no-deprecated-vue-config-keycodes-good)
+
+Default severity: `error`  
+Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+Automatic fix: None; review the suggested change  
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
+Options: No rule-specific options. Severity and preset selection are configurable.
+
+**Configuration (Vite+)**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/no-deprecated-vue-config-keycodes": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-no-deprecated-vue-config-keycodes-bad"></span>
+
+**Bad**
+
+`Vue.config.keyCodes.enter` assigns a removed key-code alias.
+
+```vue annotate="remove:2"
+<script setup lang="ts">
+Vue.config.keyCodes.enter = 13
+</script>
+```
+
+<span id="script-no-deprecated-vue-config-keycodes-good"></span>
+
+**Good**
+
+The key code is an ordinary constant, `const enter = 13`.
+
+```vue annotate="add:2"
+<script setup lang="ts">
+const enter = 13
+</script>
+```
+
+Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
+
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_vue_config_keycodes.rs#L22) · [All rules](all.md)
 
 ### `script/no-dupe-keys`
 
@@ -3012,6 +3294,145 @@ Good avoids this rule's finding under the configuration above; other rules may s
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_with_defaults.rs#L41) · [All rules](all.md)
 
+### `script/one-component-per-file`
+
+Disallow more than one component definition in a file
+
+[Bad](#script-one-component-per-file-bad) · [Good](#script-one-component-per-file-good)
+
+Default severity: `warning`  
+Presets: `opinionated`, `nuxt`  
+Automatic fix: None; review the suggested change  
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
+Options: No rule-specific options. Severity and preset selection are configurable.
+
+**Configuration (Vite+)**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/one-component-per-file": "warn"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-one-component-per-file-bad"></span>
+
+**Bad**
+
+The file exports `Parent` and also defines an inline `Child` component in `components`.
+
+```vue annotate="remove:3,4,5,6"
+<script lang="ts">
+export default {
+  name: 'Parent',
+  components: {
+    Child: { name: 'Child' }
+  }
+}
+</script>
+```
+
+<span id="script-one-component-per-file-good"></span>
+
+**Good**
+
+The file defines only `Parent`.
+
+```vue annotate="add:3"
+<script lang="ts">
+export default {
+  name: 'Parent'
+}
+</script>
+```
+
+Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
+
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/one_component_per_file.rs#L30) · [All rules](all.md)
+
+### `script/order-in-components`
+
+Enforce the default order of properties in component options
+
+[Bad](#script-order-in-components-bad) · [Good](#script-order-in-components-good)
+
+Default severity: `warning`  
+Presets: `opinionated`, `nuxt`  
+Automatic fix: None; review the suggested change  
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
+Options: No rule-specific options. Severity and preset selection are configurable.
+
+**Configuration (Vite+)**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/order-in-components": "warn"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-order-in-components-bad"></span>
+
+**Bad**
+
+`data` is written before `props`, so a later group appears above an earlier one.
+
+```vue annotate="remove:5,6"
+<script lang="ts">
+export default {
+  data() {
+    return { count: 0 }
+  },
+  props: ['label']
+}
+</script>
+```
+
+<span id="script-order-in-components-good"></span>
+
+**Good**
+
+`props` comes before `data`, which matches the default group order.
+
+```vue annotate="add:3,6"
+<script lang="ts">
+export default {
+  props: ['label'],
+  data() {
+    return { count: 0 }
+  }
+}
+</script>
+```
+
+Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
+
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/order_in_components.rs#L34) · [All rules](all.md)
+
 ### `script/prefer-computed`
 
 Prefer computed() for derived reactive state
@@ -3971,6 +4392,146 @@ export default {
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_prop_types.rs#L58) · [All rules](all.md)
+
+### `script/require-render-return`
+
+Require the component render function to return a value
+
+[Bad](#script-require-render-return-bad) · [Good](#script-require-render-return-good)
+
+Default severity: `error`  
+Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+Automatic fix: None; review the suggested change  
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
+Options: No rule-specific options. Severity and preset selection are configurable.
+
+**Configuration (Vite+)**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/require-render-return": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-require-render-return-bad"></span>
+
+**Bad**
+
+The `render` function reads `this.count` inside a branch and never returns a value.
+
+```vue annotate="remove:4,5,6"
+<script lang="ts">
+export default {
+  render() {
+    if (this.ready) {
+      this.count
+    }
+  }
+}
+</script>
+```
+
+<span id="script-require-render-return-good"></span>
+
+**Good**
+
+The `render` function returns `this.count`.
+
+```vue annotate="add:4"
+<script lang="ts">
+export default {
+  render() {
+    return this.count
+  }
+}
+</script>
+```
+
+Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
+
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_render_return.rs#L35) · [All rules](all.md)
+
+### `script/require-slots-as-functions`
+
+Require $slots properties to be called as functions
+
+[Bad](#script-require-slots-as-functions-bad) · [Good](#script-require-slots-as-functions-good)
+
+Default severity: `error`  
+Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+Automatic fix: None; review the suggested change  
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
+Options: No rule-specific options. Severity and preset selection are configurable.
+
+**Configuration (Vite+)**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/require-slots-as-functions": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-require-slots-as-functions-bad"></span>
+
+**Bad**
+
+`render` returns `this.$slots.default` without calling it, which was the Vue 2 vnode array.
+
+```vue annotate="remove:4"
+<script lang="ts">
+export default {
+  render() {
+    return this.$slots.default
+  }
+}
+</script>
+```
+
+<span id="script-require-slots-as-functions-good"></span>
+
+**Good**
+
+`render` calls `this.$slots.default()` and uses the returned vnode.
+
+```vue annotate="add:4"
+<script lang="ts">
+export default {
+  render() {
+    return this.$slots.default()
+  }
+}
+</script>
+```
+
+Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
+
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_slots_as_functions.rs#L44) · [All rules](all.md)
 
 ### `script/require-symbol-provide`
 

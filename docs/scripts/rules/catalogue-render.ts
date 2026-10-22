@@ -97,8 +97,8 @@ export function catalogueReferences(root: string) {
       references.set(id, { id, en, ja: read("ja/"), project: section === "project" });
     }
   }
-  if (references.size !== 324)
-    throw new Error("Catalogue must retain 258 source rules and 66 project packets");
+  if (references.size !== 332)
+    throw new Error("Catalogue must retain 266 source rules and 66 project packets");
   return references;
 }
 

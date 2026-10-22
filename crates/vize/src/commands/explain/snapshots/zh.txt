@@ -2059,6 +2059,36 @@ script/no-boolean-default · lint 规则
       count: { type: Number, default: 0 }
     }
   }
+=== script/no-computed-properties-in-data
+script/no-computed-properties-in-data · lint 规则
+禁止在组件的 data 函数中使用计算属性
+
+精度层级: exact
+适用范围: Options API component definitions written as object literals
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  export default {
+    data() {
+      return { value: this.doubled }
+    },
+    computed: {
+      doubled() { return 1 }
+    }
+  }
+
+正确示例:
+  export default {
+    data() {
+      return { value: 1 }
+    },
+    computed: {
+      doubled() { return this.value * 2 }
+    }
+  }
 === script/no-deep-destructure-in-props
 script/no-deep-destructure-in-props · lint 规则
 禁止defineProps中的深层嵌套解构
@@ -2117,6 +2147,30 @@ script/no-deprecated-data-object-declaration · lint 规则
   export default {
     data() {
       return { count: 0 }
+    }
+  }
+=== script/no-deprecated-delete-set
+script/no-deprecated-delete-set · lint 规则
+禁止使用 Vue 3 中已移除的 Vue 2 $set 和 $delete
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  export default {
+    created() {
+      this.$set(this.item, 'ready', true)
+    }
+  }
+
+正确示例:
+  export default {
+    created() {
+      this.item.ready = true
     }
   }
 === script/no-deprecated-destroyed-lifecycle
@@ -2214,6 +2268,30 @@ script/no-deprecated-events-api · lint 规则
     }
   }
   </script>
+=== script/no-deprecated-model-definition
+script/no-deprecated-model-definition · lint 规则
+禁止使用 Vue 3 中已移除的 Vue 2 model 选项
+
+精度层级: exact
+适用范围: Options API component definitions written as object literals
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  export default {
+    model: {
+      prop: 'value',
+      event: 'input'
+    }
+  }
+
+正确示例:
+  export default {
+    props: ['modelValue'],
+    emits: ['update:modelValue']
+  }
 === script/no-deprecated-props-default-this
 script/no-deprecated-props-default-this · lint 规则
 禁止在 prop 的 default/validator 函数中使用 `this`（Vue 3 已移除）
@@ -2262,6 +2340,22 @@ script/no-deprecated-props-default-this · lint 规则
       }
     }
   }
+=== script/no-deprecated-vue-config-keycodes
+script/no-deprecated-vue-config-keycodes · lint 规则
+禁止使用 Vue 3 中已移除的 Vue.config.keyCodes
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  Vue.config.keyCodes.enter = 13
+
+正确示例:
+  const enter = 13
 === script/no-dupe-keys
 script/no-dupe-keys · lint 规则
 禁止在选项式 API 的 props/data/computed/methods/setup/inject 之间出现重复的键
@@ -2888,6 +2982,55 @@ script/no-with-defaults · lint 规则
   
   // Or without destructuring if defaults not needed
   const props = defineProps<{ count: number }>()
+=== script/one-component-per-file
+script/one-component-per-file · lint 规则
+禁止在一个文件中定义多个组件
+
+精度层级: exact
+适用范围: Options API component definitions written as object literals
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  export default {
+    name: 'Parent',
+    components: {
+      Child: { name: 'Child' }
+    }
+  }
+
+正确示例:
+  export default {
+    name: 'Parent'
+  }
+=== script/order-in-components
+script/order-in-components · lint 规则
+强制组件选项的属性遵循默认顺序
+
+精度层级: exact
+适用范围: Options API component definitions written as object literals
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  export default {
+    data() {
+      return { count: 0 }
+    },
+    props: ['label']
+  }
+
+正确示例:
+  export default {
+    props: ['label'],
+    data() {
+      return { count: 0 }
+    }
+  }
 === script/prefer-computed
 script/prefer-computed · lint 规则
 派生的响应式状态优先使用 computed()
@@ -3214,6 +3357,56 @@ script/require-prop-types · lint 规则
     props: {
       status: String,
       other: { type: Number, default: 0 }
+    }
+  }
+=== script/require-render-return
+script/require-render-return · lint 规则
+要求组件的 render 函数返回一个值
+
+精度层级: exact
+适用范围: Options API component definitions written as object literals
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  export default {
+    render() {
+      if (this.ready) {
+        this.count
+      }
+    }
+  }
+
+正确示例:
+  export default {
+    render() {
+      return this.count
+    }
+  }
+=== script/require-slots-as-functions
+script/require-slots-as-functions · lint 规则
+要求将 $slots 的属性作为函数调用
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
+
+错误示例:
+  export default {
+    render() {
+      return this.$slots.default
+    }
+  }
+
+正确示例:
+  export default {
+    render() {
+      return this.$slots.default()
     }
   }
 === script/require-symbol-provide

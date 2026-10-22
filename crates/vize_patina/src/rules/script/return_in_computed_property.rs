@@ -179,7 +179,7 @@ fn check_getter(getter: Getter<'_>, offset: usize, result: &mut ScriptLintResult
 }
 
 /// Every reachable normal completion must yield the getter's value.
-fn body_returns_value(statements: &[Statement<'_>]) -> bool {
+pub(super) fn body_returns_value(statements: &[Statement<'_>]) -> bool {
     flow::returns_value(statements)
 }
 

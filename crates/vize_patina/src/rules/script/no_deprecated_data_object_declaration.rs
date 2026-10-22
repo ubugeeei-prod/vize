@@ -9,11 +9,12 @@
 //! share (and mutate) the same reactive object. Declaring `data` as an object
 //! literal is therefore a Vue 2 -> 3 migration hazard.
 //!
-//! This is a port of the object-literal half of
+//! This is a port of
 //! [`vue/no-deprecated-data-object-declaration`](https://eslint.vuejs.org/rules/no-deprecated-data-object-declaration.html)
-//! from eslint-plugin-vue: it flags `data` declared as an `ObjectExpression`
-//! and leaves the function forms (`data() {}`, `data: function () {}`,
-//! `data: () => ({})`) alone.
+//! and the non-identifier half of `vue/no-shared-component-data`. An object
+//! literal keeps the Vue 3 migration message. Any other value that is neither
+//! a function nor an identifier reference must also be a function. `data:
+//! sharedState` stays valid: the referenced value may itself be a function.
 //!
 //! ## Examples
 //!
@@ -42,7 +43,7 @@ use oxc_ast::ast::{
     Argument, BindingPattern, CallExpression, ExportDefaultDeclarationKind, Expression,
     ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement,
 };
-use oxc_span::Span;
+use oxc_span::{GetSpan, Span};
 use vize_l0::FxHashMap;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
@@ -75,35 +76,51 @@ impl ScriptRule for NoDeprecatedDataObjectDeclaration {
         let Some(options) = find_component_options(program) else {
             return;
         };
-        let Some(data) = find_data_object_literal(options) else {
-            return;
-        };
-        report(data, offset, result);
+        match find_invalid_data(options) {
+            Some(InvalidData::Object(data)) => report(data, offset, result),
+            Some(InvalidData::Other(span)) => report_non_function(span, offset, result),
+            None => {}
+        }
     }
 }
 
-/// The object-literal value of the `data` option, if `data` is declared as a
-/// plain object (`data: { ... }`) rather than a function.
-fn find_data_object_literal<'a>(
-    options: &'a ObjectExpression<'a>,
-) -> Option<&'a ObjectExpression<'a>> {
+enum InvalidData<'a> {
+    Object(&'a ObjectExpression<'a>),
+    Other(Span),
+}
+
+/// A `data` value that is neither a function nor an identifier reference.
+fn find_invalid_data<'a>(options: &'a ObjectExpression<'a>) -> Option<InvalidData<'a>> {
     for property in &options.properties {
         let ObjectPropertyKind::ObjectProperty(property) = property else {
             continue;
         };
-        if property.computed {
+        if property.computed || !matches!(property_key_name(&property.key), Some("data")) {
             continue;
         }
-        // A method shorthand (`data() {}`) parses as an ObjectProperty whose
-        // value is a FunctionExpression, so it is naturally excluded by the
-        // `ObjectExpression` match below.
-        if matches!(property_key_name(&property.key), Some("data"))
-            && let Expression::ObjectExpression(object) = &property.value
-        {
-            return Some(object);
-        }
+        return classify_data(&property.value);
     }
     None
+}
+
+fn classify_data<'a>(value: &'a Expression<'a>) -> Option<InvalidData<'a>> {
+    match value.get_inner_expression() {
+        Expression::FunctionExpression(_) | Expression::ArrowFunctionExpression(_) => None,
+        Expression::Identifier(_) => None,
+        Expression::ObjectExpression(object) => Some(InvalidData::Object(object)),
+        other => Some(InvalidData::Other(other.span())),
+    }
+}
+
+fn report_non_function(span: Span, offset: usize, result: &mut ScriptLintResult) {
+    let start = offset as u32 + span.start;
+    let end = offset as u32 + span.end;
+    result.add_diagnostic(LintDiagnostic::error(
+        META.name,
+        "`data` property in component must be a function.",
+        start,
+        end,
+    ));
 }
 
 fn report(data: &ObjectExpression<'_>, offset: usize, result: &mut ScriptLintResult) {

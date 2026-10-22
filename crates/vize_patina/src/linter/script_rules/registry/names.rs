@@ -89,6 +89,17 @@ pub(crate) const RULE_NO_UNSTABLE_NESTED_COMPONENTS: &str = "script/no-unstable-
 pub(crate) const RULE_NO_LIFECYCLE_AFTER_AWAIT: &str = "script/no-lifecycle-after-await";
 pub(crate) const RULE_NO_WATCH_AFTER_AWAIT: &str = "script/no-watch-after-await";
 pub(crate) const RULE_NO_EXPOSE_AFTER_AWAIT: &str = "script/no-expose-after-await";
+pub(crate) const RULE_NO_COMPUTED_PROPERTIES_IN_DATA: &str =
+    "script/no-computed-properties-in-data";
+pub(crate) const RULE_NO_DEPRECATED_DELETE_SET: &str = "script/no-deprecated-delete-set";
+pub(crate) const RULE_NO_DEPRECATED_MODEL_DEFINITION: &str =
+    "script/no-deprecated-model-definition";
+pub(crate) const RULE_NO_DEPRECATED_VUE_CONFIG_KEYCODES: &str =
+    "script/no-deprecated-vue-config-keycodes";
+pub(crate) const RULE_REQUIRE_RENDER_RETURN: &str = "script/require-render-return";
+pub(crate) const RULE_REQUIRE_SLOTS_AS_FUNCTIONS: &str = "script/require-slots-as-functions";
+pub(crate) const RULE_ONE_COMPONENT_PER_FILE: &str = "script/one-component-per-file";
+pub(crate) const RULE_ORDER_IN_COMPONENTS: &str = "script/order-in-components";
 
 pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_OPTIONS_API,
@@ -165,6 +176,14 @@ pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str]
     RULE_NO_LIFECYCLE_AFTER_AWAIT,
     RULE_NO_WATCH_AFTER_AWAIT,
     RULE_NO_EXPOSE_AFTER_AWAIT,
+    RULE_NO_COMPUTED_PROPERTIES_IN_DATA,
+    RULE_NO_DEPRECATED_DELETE_SET,
+    RULE_NO_DEPRECATED_MODEL_DEFINITION,
+    RULE_NO_DEPRECATED_VUE_CONFIG_KEYCODES,
+    RULE_REQUIRE_RENDER_RETURN,
+    RULE_REQUIRE_SLOTS_AS_FUNCTIONS,
+    RULE_ONE_COMPONENT_PER_FILE,
+    RULE_ORDER_IN_COMPONENTS,
 ];
 
 #[cfg(test)]
@@ -240,4 +259,12 @@ pub(in crate::linter::script_rules) const OPT_IN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_LIFECYCLE_AFTER_AWAIT,
     RULE_NO_WATCH_AFTER_AWAIT,
     RULE_NO_EXPOSE_AFTER_AWAIT,
+    RULE_NO_COMPUTED_PROPERTIES_IN_DATA,
+    RULE_NO_DEPRECATED_DELETE_SET,
+    RULE_NO_DEPRECATED_MODEL_DEFINITION,
+    RULE_NO_DEPRECATED_VUE_CONFIG_KEYCODES,
+    RULE_REQUIRE_RENDER_RETURN,
+    RULE_REQUIRE_SLOTS_AS_FUNCTIONS,
+    RULE_ONE_COMPONENT_PER_FILE,
+    RULE_ORDER_IN_COMPONENTS,
 ];
