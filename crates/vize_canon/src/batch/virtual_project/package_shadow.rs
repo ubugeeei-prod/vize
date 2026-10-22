@@ -1,5 +1,7 @@
 //! Importer-scoped package topology inside Canon's virtual project.
 
+#[path = "package_shadow_json.rs"]
+mod json_modules;
 mod workspace_dependencies;
 use workspace_dependencies::WorkspaceShadowPlan;
 
@@ -220,6 +222,11 @@ impl VirtualProject {
                 // physical copy, but do not walk its dependency graph again.
                 self.collect_package_source_shadows(&route.package_root, &primary_root, topology);
                 self.collect_manifest_target_shadows(route, &primary_root, topology);
+                self.collect_package_json_module_shadows(
+                    &route.package_root,
+                    &primary_root,
+                    topology,
+                );
                 return;
             }
             PackageShadowEntry::Entered => {}
@@ -252,6 +259,7 @@ impl VirtualProject {
             );
         }
         self.collect_workspace_dependency_shadows(route, shadow_root, traversal, topology, plan);
+        self.collect_package_json_module_shadows(&route.package_root, shadow_root, topology);
         traversal.exit(route);
     }
 

@@ -132,6 +132,10 @@ mod tests;
 #[cfg(test)]
 mod unknown_checks_tests;
 
+#[cfg(test)]
+#[path = "virtual_project/dependency_json_modules.rs"]
+mod dependency_json_modules;
+
 pub(super) const AUTO_IMPORT_STUBS_FILE: &str = "__vize_auto_imports.d.ts";
 pub(super) const MODULE_AUGMENTATION_STUBS_FILE: &str = "__vize_module_augmentations.d.ts";
 pub(super) const MODULE_AUGMENTATION_STUB_PREFIX: &str = "// @vize-module-augmentation\n";
@@ -260,7 +264,8 @@ pub struct VirtualProject {
     /// Editor-only selector modules. A selector keeps the authored bare
     /// spelling and lets native TypeScript resolve the copied raw manifest.
 
-    /// Shadow package.json -> original package.json. Manifests are copied raw.
+    /// Raw shadow copies, keyed by materialized path. Package manifests and
+    /// relative JSON modules imported by an included package source (#10350).
     package_shadow_manifests: FxHashMap<PathBuf, PathBuf>,
     package_shadow_artifacts: package_shadow_owners::PackageShadowArtifacts,
     retired_package_shadow_paths: FxHashSet<PathBuf>,
