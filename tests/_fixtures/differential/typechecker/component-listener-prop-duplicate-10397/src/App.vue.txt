@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import Child from "./Child.vue";
+function onChange(_value: boolean) {}
+</script>
+<template>
+  <Child :checked="1" />
+  <Child :checked="1" @change="onChange" />
+  <Child :checked="true" @change="onChange" />
+</template>

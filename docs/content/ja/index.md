@@ -23,6 +23,9 @@ features:
   - title: Vite+ から始める
     details: 既存のアプリに Vue コンパイラと検査タスクを追加します。ツールの設定は vite.config.ts で共有し、TypeScript の設定には tsconfig.json を使います。
     link: ja/getting-started.md
+  - title: Content Mapper で型チェックする
+    details: TypeScript 7.1 が Vize の mapper を tsc --runExternalCode で実行します。tsrs でも同じプロジェクトを実行できます。
+    link: ja/guide/content-mapper.md
   - title: 既存ツールから移行する
     details: 何が変わるかを確認し、対応するオプションを移して、変更前後の差分をそのままコピーできます。
     link: ja/guide/migration.md
@@ -49,7 +52,7 @@ features:
 | コンパイラー             | `@vitejs/plugin-vue`         | `vp dev`、`vp build`          | [Vite プラグイン](./guide/vite-plugin.md)   |
 | リンター                 | `eslint-plugin-vue`          | `vize lint`                   | [ルール](./rules/index.md)                  |
 | フォーマッター           | `.vue` 向けの Prettier       | `vize fmt`                    | [フォーマット](./guide/formatter.md)        |
-| 型チェッカー             | `vue-tsc`                    | `vize check`                  | [型チェック](./guide/type-checking.md)      |
+| 型チェッカー             | `vue-tsc`                    | `tsc --runExternalCode`       | [Content Mapper](./guide/content-mapper.md) |
 | 言語サーバー             | Vue - Official               | `vize lsp`                    | [言語サーバー](./guide/language-server.md)  |
 | Vapor コンパイラー       | —                            | `vue.compiler.vapor`          | [Vapor モード](./guide/vapor.md)            |
 | コンポーネントギャラリー | Storybook                    | `vize musea`                  | [Musea](./guide/musea.md)                   |

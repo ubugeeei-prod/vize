@@ -62,7 +62,8 @@ vp install -D vize
 
 The package declares TypeScript 7's native Corsa runtime as an optional dependency, so standard
 installs include the runtime needed by `vize check`. The `--corsa-path` CLI option remains available
-for custom native TypeScript builds.
+for custom native TypeScript builds. For project type checking, prefer TypeScript 7.1's content
+mapper, documented below. tsrs can run that same project.
 
 ## Package Scripts
 
@@ -218,8 +219,8 @@ The TypeScript 7.1
 the TS Server plugin replacement needed by Vue. Vize publishes the package metadata and protocol
 server merged upstream in
 [microsoft/typescript-go#4712](https://github.com/microsoft/typescript-go/pull/4712),
-letting a `tsgo` build with content-mapper support transform `.vue` files directly instead of
-materializing a parallel `.vue.ts` project.
+letting TypeScript 7.1 or newer, and [tsrs](https://github.com/oxc-project/tsrs), transform
+`.vue` files directly instead of materializing a parallel `.vue.ts` project.
 
 ```json
 {
@@ -238,13 +239,18 @@ materializing a parallel `.vue.ts` project.
 ```
 
 ```bash
-tsgo --runExternalCode --noEmit -p tsconfig.json
+tsc --runExternalCode --noEmit -p tsconfig.json
 ```
 
-Content Mappers are merged on the `typescript-go` main branch but are not in released TypeScript 7
-platform packages yet. Use a `tsgo` built from main while evaluating them, keep `--runExternalCode`
-explicit, and keep `vize check` as the supported typecheck path until a TypeScript 7 release ships
-the protocol. Vize negotiates protocol v1 with UTF-8 mappings, resolves its mapper options
+tsrs checks the same project:
+
+```bash
+tsrs --runExternalCode --noEmit -p tsconfig.json
+```
+
+Content mappers ship in TypeScript 7.1, starting with the 7.1 beta (`typescript@beta`). Keep
+`--runExternalCode` explicit. `vize check` remains available for the checker packaged in `vize`;
+new projects should use the content mapper. Vize negotiates protocol v1 with UTF-8 mappings, resolves its mapper options
 and its declared `checkJs` / `noUnusedLocals` compiler-option dependencies per project through the
 `openProject`/`closeProject` lifecycle (invalid options surface as `optionDiagnostics` in the
 tsconfig), maps `<!-- @vue-expect-error -->` and `<!-- @vue-ignore -->` template comments onto

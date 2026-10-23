@@ -171,7 +171,12 @@ fn one_alias_module_stays_a_dominant_component() {
             "<script setup lang=\"ts\">import { n } from '@/shared'; const v = n;</script><template><p>{{ v }}</p></template>".to_owned(),
         ));
     }
-    files.push(("shared.ts".to_owned(), "export const n = 1;\n".to_owned()));
+    // The shared module imports Vue, so it is not a cheap type leaf. Importers
+    // of one runtime module stay on one checker.
+    files.push((
+        "shared.ts".to_owned(),
+        "import { ref } from \"vue\";\nexport const n = ref(1);\n".to_owned(),
+    ));
     files.push((
         "Isolated.vue".to_owned(),
         "<script setup lang=\"ts\">const n = 1</script><template>{{ n }}</template>".to_owned(),
@@ -238,4 +243,49 @@ fn node_modules_alias_does_not_couple_importers() {
         "a node_modules paths target coupled importers (shards={})",
         plan.shards.len()
     );
+}
+
+#[test]
+fn shared_type_leaf_shards_under_jsx_preserve() {
+    let keep = tempfile::tempdir().unwrap();
+    let root = keep.path().canonicalize().unwrap();
+    fs::create_dir_all(root.join("src")).unwrap();
+    let rows = root.join("src/rows.ts");
+    fs::write(
+        &rows,
+        "export interface Row<T> { id: T; name: string; score: number }\n",
+    )
+    .unwrap();
+    // The leaf budget is 1% of generated content. A script comment survives
+    // virtual TS generation; a template comment may not.
+    let pad = "x".repeat(4096);
+    let mut vue_paths = Vec::new();
+    for index in 0..16 {
+        let path = root.join(format!("src/C{index}.vue"));
+        fs::write(
+            &path,
+            format!(
+                "<script setup lang=\"ts\">\nimport {{ ref }} from \"vue\"\nimport type {{ Row }} from \"./rows\"\nconst props = defineProps<{{ title: string; rows: Row[] }}>()\nconst n = ref(props.title.length)\n/* {pad} */\n</script>\n<template><p>{{{{ n }}}}</p></template>\n"
+            ),
+        )
+        .unwrap();
+        vue_paths.push(path);
+    }
+    write_tsconfig(&root, "");
+    let mut files = vue_paths.clone();
+    files.push(rows);
+    let mut project = VirtualProject::new(&root).unwrap();
+    project.register_paths(&files).unwrap();
+    project.materialize().unwrap();
+    let plan = partition_virtual_files(&project, 4);
+    assert!(
+        plan.shards.len() > 1,
+        "a shared type leaf kept every SFC on one checker (shards={})",
+        plan.shards.len()
+    );
+    let first = plan.owners.get(&vue_paths[0]).copied();
+    let split = vue_paths
+        .iter()
+        .any(|path| plan.owners.get(path).copied() != first);
+    assert!(split, "every Vue file landed in the same shard");
 }

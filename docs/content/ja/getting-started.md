@@ -66,10 +66,10 @@ vp run fmt:check
 
 ## 次にやりたいこと
 
+- [Content Mapper で Vue ファイルを型チェックする](./guide/content-mapper.md)。TypeScript 7.1 と tsrs のどちらでも実行できます。コマンドは[型チェック](./guide/type-checking.md)にあります。
 - [ルールやコンパイラーの設定を変更する](./guide/configuration.md)。
 - [既存のツールから移行する](./guide/migration.md)。変更前後の例を確認できます。
 - [lint の指摘を理解する](./rules/all.md)。Vue の問題例と修正例を掲載しています。
-- [Vue ファイルを型チェックする](./guide/type-checking.md)。`vue-tsc` との対応も確認できます。
 - [Vapor モードを試す](./guide/vapor.md)。コンポーネント単位で切り替えられます。
 - [コンポーネントを探す](./guide/ui/index.md)。使い方と API を確認できます。
 - [Musea でコンポーネントをプレビューする](./guide/musea.md)。
@@ -89,6 +89,6 @@ vpx vize check
 vpx vize fmt --check src
 ```
 
-`vize lint`・`vize fmt`・`vize check` を実行できます。対象パッケージのルートから実行し、TypeScript のプロジェクト設定は `tsconfig.json` に残します。ネイティブコマンドも `vite.config.*` のトップレベルの `vue` 設定を共有できます。検索規則と現在の範囲は [CLI の設定](./guide/configuration.md#standalone-cli)を参照してください。
+`vize lint`・`vize fmt`・`vize check` を実行できます。型チェックは TypeScript 7.1 を推奨します。Vize の content mapper を入れ、`tsc --runExternalCode --noEmit` を実行してください。tsrs でも同じプロジェクトを実行できます。対象パッケージのルートから実行し、TypeScript のプロジェクト設定は `tsconfig.json` に残します。ネイティブコマンドも `vite.config.*` のトップレベルの `vue` 設定を共有できます。検索規則と現在の範囲は [CLI の設定](./guide/configuration.md#standalone-cli)を参照してください。
 
 対話形式で導入する場合は、`vpx vize init --dry-run` で変更予定を確認し、`vpx vize init` で機能を選びます。[プロジェクトの初期設定](./guide/init.md)に、プロジェクトの検出方法と、設定を自動編集できない場合の対応をまとめています。init は既存のプロジェクト設定と既定値を使い、専用の Vize 設定ファイルは作成しません。

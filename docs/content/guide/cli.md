@@ -60,7 +60,7 @@ cargo install --path crates/vize --force --locked
 | Need                                                                   | Recommended entry point                          |
 | ---------------------------------------------------------------------- | ------------------------------------------------ |
 | Package scripts for build, format, lint, check, ready, and upgrade     | `vp run vize:*` from the npm package             |
-| Project-backed type checking across `.vue`, `.ts`, `.tsx`, and `.d.ts` | Rust `vize check`                                |
+| Project-backed type checking across `.vue`, `.ts`, `.tsx`, and `.d.ts` | TypeScript 7.1 `tsc --runExternalCode`, or tsrs. See [Type Checking](./type-checking.md) |
 | LSP, IDE setup, `check-server`, and profiling artifacts                | Rust `vize` binary                               |
 | Shared Vite plugin, npm package command, and Rust CLI settings         | [Vite config](./configuration.md#standalone-cli) |
 
@@ -209,7 +209,12 @@ vize check --tsconfig tsconfig.app.json
 vize check --profile src
 ```
 
-`vize check` type-checks Vue SFCs with [TypeScript's native compiler](https://github.com/microsoft/typescript-go)
+The recommended typecheck is TypeScript 7.1 or newer with Vize's content mapper.
+[tsrs](https://github.com/oxc-project/tsrs) can run the same project. The commands are in
+[Type Checking](./type-checking.md).
+
+`vize check` is the packaged checker. It type-checks Vue SFCs with
+[TypeScript's native compiler](https://github.com/microsoft/typescript-go)
 (Project Corsa, the Go port that ships as TypeScript 7). Vize generates virtual TypeScript for each
 SFC, runs project diagnostics natively through [`corsa-bind`](https://github.com/ubugeeei/corsa-bind),
 and maps every result back to the original `.vue` location. Flags and config keys that mention
@@ -243,8 +248,9 @@ Key options:
 | `--declaration-dir` | Output directory for emitted declarations          |
 
 Use `--corsa-path` to pin a local Corsa build. The shared config key is `typeChecker.corsaPath`;
-`typeChecker.tsgoPath` remains only as a compatibility alias. Use `--tsrs-path` with
-`typeChecker.tsrsPath` to evaluate the experimental tsrs backend.
+`typeChecker.tsgoPath` remains only as a compatibility alias. `--tsrs-path` and
+`typeChecker.tsrsPath` select tsrs as the runtime for this packaged checker. To type-check with
+tsrs itself, use the content mapper command in [Type Checking](./type-checking.md).
 
 Project-wide template values and Vue ambient types should be visible through TypeScript project
 configuration. Include generated files such as `auto-imports.d.ts`, `components.d.ts`, or your own

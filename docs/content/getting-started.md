@@ -64,10 +64,10 @@ If a script already exists, Vize preserves it and generates `vize:<name>`; see [
 
 ## Choose your next step
 
+- [Type-check Vue files with the content mapper](./guide/content-mapper.md). TypeScript 7.1 and tsrs both run it. The commands are in [Type Checking](./guide/type-checking.md).
 - [Configure a rule or compiler option](./guide/configuration.md).
 - [Migrate existing tools](./guide/migration.md) with complete before/after examples.
 - [Understand a lint diagnostic](./rules/all.md) with bad and good Vue examples.
-- [Type-check Vue files](./guide/type-checking.md) and compare with `vue-tsc`.
 - [Try Vapor Mode](./guide/vapor.md) one component at a time.
 - [Explore components](./guide/ui/index.md) with recipes and the component reference.
 - [Preview your components](./guide/musea.md) with Musea art files and the gallery.
@@ -87,6 +87,6 @@ vpx vize check
 vpx vize fmt --check src
 ```
 
-It provides `vize lint`, `vize fmt` and `vize check`. Run from the target package root and keep the TypeScript project in `tsconfig.json`. Native commands can share top-level `vue` settings in `vite.config.*`; see [CLI configuration](./guide/configuration.md#standalone-cli) for discovery and its current scope.
+It provides `vize lint`, `vize fmt` and `vize check`. For type checking, prefer TypeScript 7.1: `tsc --runExternalCode --noEmit` with the Vize content mapper. tsrs accepts the same project. Run from the target package root and keep the TypeScript project in `tsconfig.json`. Native commands can share top-level `vue` settings in `vite.config.*`; see [CLI configuration](./guide/configuration.md#standalone-cli) for discovery and its current scope.
 
 Preview interactive setup with `vpx vize init --dry-run`, then run `vpx vize init` to select features. [Project Setup](./guide/init.md) explains detection and editing limits. Init uses project settings and defaults; it does not create a dedicated Vize config.

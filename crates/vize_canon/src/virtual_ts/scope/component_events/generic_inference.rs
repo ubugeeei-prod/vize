@@ -215,6 +215,15 @@ pub(super) fn generate_inferred_emit_args(
                         *ts,
                         "{call_indent}  // @ts-ignore Inference-only callback prop; mapped prop owner checks diagnostics.\n"
                     );
+                } else {
+                    // This literal infers emit arguments. It is also checked
+                    // against the public props input, which widens a required
+                    // prop to `T | undefined`. The canonical prop call owns the
+                    // authored diagnostic (#10397).
+                    append!(
+                        *ts,
+                        "{call_indent}  // @ts-ignore Inference-only prop; the canonical component-props call owns diagnostics.\n"
+                    );
                 }
                 append!(*ts, "{call_indent}  ");
                 let entry_start = ts.len();

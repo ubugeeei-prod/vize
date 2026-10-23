@@ -422,6 +422,17 @@ fn named_prop_before_spread_reports_once_with_or_without_listener() {
 }
 
 #[test]
+fn required_prop_reports_once_with_or_without_listener() {
+    check_pack(
+        "component-listener-prop-duplicate-10397",
+        "required_prop_reports_once_with_or_without_listener",
+        "950b16bce8d2754e07d44f24bcd58d6a59a031e2",
+        Some(10397),
+        &["required-boolean-with-listener"],
+    );
+}
+
+#[test]
 fn content_mapper_global_components_preserve_batch_acceptance() {
     check_pack(
         "content-mapper-global-component-10185",

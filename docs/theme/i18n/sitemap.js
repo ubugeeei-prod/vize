@@ -57,7 +57,13 @@
   //
   // `paths` lists the pages all five locales publish. `pathsByLocale` adds the
   // pages only some locales have; each list must repeat the common paths.
-  const startPaths = ["/", "/getting-started", "/philosophy", "/guide/configuration"];
+  const startPaths = [
+    "/",
+    "/getting-started",
+    "/guide/content-mapper",
+    "/philosophy",
+    "/guide/configuration",
+  ];
   const projectSetupPaths = [
     "/guide/vite-plugin",
     "/integrations/nuxt",
@@ -73,12 +79,10 @@
     "/guide/cross-file-complexity",
     "/guide/oxlint",
     "/guide/comment-annotations",
-    "/guide/content-mapper",
     "/integrations/vscode",
   ];
   const checkSettingsPaths = [
     "/guide/static-analysis",
-    "/guide/type-checking",
     "/guide/language-server",
     "/guide/analysis-diagnostics",
     "/guide/lint-execution",
@@ -86,7 +90,6 @@
     "/guide/cross-file-complexity",
     "/guide/oxlint",
     "/guide/comment-annotations",
-    "/guide/content-mapper",
     "/integrations/vscode",
   ];
   const formatterPaths = [
@@ -153,6 +156,8 @@
         en: [
           "/",
           "/getting-started",
+          "/guide/content-mapper",
+          "/guide/type-checking",
           "/philosophy",
           "/guide/vite-plus",
           "/guide/vite-plus-editor",
@@ -163,6 +168,8 @@
         ja: [
           "/",
           "/getting-started",
+          "/guide/content-mapper",
+          "/guide/type-checking",
           "/philosophy",
           "/guide/vite-plus",
           "/guide/vite-plus-editor",

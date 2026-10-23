@@ -6,9 +6,10 @@ title: TypeScript Content Mapper
 
 # TypeScript Content Mapper
 
-Content Mapper に対応したネイティブ TypeScript ホストで Vue ファイルを扱うためのガイドです。
-日常の型チェックは[静的解析](./static-analysis.md)、エディターの設定は
-[VS Code 連携](../integrations/vscode.md)を参照してください。
+Vue ファイルの型チェックは、この方法を推奨します。TypeScript 7.1 以降を使ってください。
+[tsrs](https://github.com/oxc-project/tsrs) でも同じ `tsconfig` を実行できます。
+エディターの設定は [VS Code 連携](../integrations/vscode.md)、日常の lint とフォーマットは
+[静的解析](./static-analysis.md)を参照してください。
 
 Content Mapper は、TypeScript が直接解析できない種類のファイルを型チェックするための
 プラグイン機構です。[TypeScript 7.1 API ロードマップ](https://github.com/microsoft/typescript-go/issues/4830)
@@ -24,11 +25,12 @@ Vize の Content Mapper は `vize` npm パッケージに同梱されていま�
 名前の変更、補完、診断の位置は、元の SFC に対応づけられます。別の `.vue.ts` プロジェクトを
 生成する必要はありません。
 
-> [!WARNING]
-> この連携には、Content Mapper と `--runExternalCode` に対応した
-> ネイティブ TypeScript ホストが必要です。バージョン番号だけでは対応を判断できません。
-> マッパーの動作確認には、このページで示す検証済みのホストを使ってください。
-> 本番の型チェックでは、引き続きサポート対象の [`vize check`](./cli.md#check) を使えます。
+> [!NOTE]
+> content mapper は外部プログラムを実行します。TypeScript 7.1 以降は
+> `tsc --runExternalCode` で受け付けます。[tsrs](https://github.com/oxc-project/tsrs) も
+> 同じフラグと同じ `contentMappers` の指定を受け付けます。下に示す準拠性検証のリビジョンは、
+> 1 つのホストビルドを確認するためのものです。型チェックの前に非公開のコンパイラーを
+> 入れる必要はありません。
 
 ## セットアップ
 
@@ -54,17 +56,26 @@ vp install -D vize
 }
 ```
 
-外部マッパーの実行には明示的な許可が必要です。次のコマンドは、Vize の準拠性検証で
-`tsgo` という名前にしている Content Mapper 対応バイナリを使います。検証ワークフローは
-現在のネイティブコンパイラーのエントリーポイント `tsc/cmd/tsc` を、このページで示す
-正確なリビジョンからビルドします。
+外部マッパーの実行には明示的な許可が必要です。TypeScript 7.1 以降では次を実行します。
 
 ```bash
-tsgo --runExternalCode --noEmit -p tsconfig.json
+tsc --runExternalCode --noEmit -p tsconfig.json
 ```
+
+tsrs は同じプロジェクトと同じフラグを使います。
+
+```bash
+vp install -D tsrs
+tsrs --runExternalCode --noEmit -p tsconfig.json
+```
+
+Vize の準拠性検証は、このページで示すリビジョンのネイティブコンパイラー
+`tsc/cmd/tsc` をビルドし、そのバイナリを `tsgo` として起動します。これは 1 つのホストの
+確認です。日常のチェックは、上の TypeScript 7.1 または tsrs のコマンドを使います。
 
 VS Code では、信頼されたワークスペースで Content Mapper 対応の TypeScript ホストを使うと、
 Vize 拡張機能が `.vue` の対応を自動登録します。同じマッパーがエディターでも動作します。
+エディターが求めるときは `js/ts.contentMappers.enabled` を有効にしてください。
 
 ## オプション
 
@@ -163,5 +174,6 @@ Vize は現在の Content Mapper の初期化仕様に従います。番号つ�
   [microsoft/typescript-go#4860](https://github.com/microsoft/typescript-go/issues/4860)
   は、第2段階の変更で完了しています。Vize は検証対象のホストでマップの出力と
   パックした利用側からの移動を確認しています。他のホストは、それぞれ動作確認が必要です。
-- 本番の型チェックでは、引き続き `vize check` がサポート対象です。マッパーを使う前に、
-  インストールしたホストとエディターがこの連携に対応していることを確認してください。
+- 推奨のホストは TypeScript 7.1 以降です。tsrs でも同じマッパー設定を実行できます。
+  CI で使う前に、インストールしたコンパイラーとエディターが content mapper に対応していることを
+  確認してください。同梱チェッカーの [`vize check`](./cli.md#check) も引き続き使えます。
