@@ -2863,7 +2863,7 @@
       "sourceRevision": "7174c46d55825c155325e6314305e661d50ec95a",
       "packReference": {
         "path": "component-v-bind-duplicate-diagnostic-10069/cases.json",
-        "sha256": "243e65c11dcaaf4346dcd59ae1c502f9ef8403df402de820cc75be35192ada36"
+        "sha256": "4eb344b38762e6e99ae5cd41b4cde71cce25522aa0b0b77a1de861380016336c"
       },
       "inputs": [
         {
