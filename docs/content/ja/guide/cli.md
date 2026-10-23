@@ -63,7 +63,7 @@ cargo install --path crates/vize --force --locked
 | 用途                                                                               | 推奨エントリーポイント                           |
 | ---------------------------------------------------------------------------------- | ------------------------------------------------ |
 | ビルド・整形・lint・型チェック・準備・アップグレードを実行するパッケージスクリプト | npm パッケージの `vp run vize:*`                 |
-| `.vue`、`.ts`、`.tsx`、`.d.ts` を含むプロジェクト全体の型チェック                  | Rust `vize check`                                |
+| `.vue`、`.ts`、`.tsx`、`.d.ts` を含むプロジェクト全体の型チェック                  | TypeScript 7.1 の `tsc --runExternalCode`、または tsrs。[型チェック](./type-checking.md)を参照 |
 | LSP、IDE セットアップ、`check-server`、プロファイル出力                            | Rust `vize` バイナリ                             |
 | Vite プラグイン、npm パッケージのコマンド、Rust CLI で共有する設定                   | [Vite の設定](./configuration.md#standalone-cli) |
 
@@ -216,7 +216,12 @@ vize check --tsconfig tsconfig.app.json
 vize check --profile src
 ```
 
-`vize check` は [TypeScript のネイティブコンパイラー](https://github.com/microsoft/typescript-go)（TypeScript 7 として出荷される Go 実装、Project Corsa）で Vue SFC を型チェックします。Vize は SFC ごとに仮想 TypeScript を生成し、[`corsa-bind`](https://github.com/ubugeeei/corsa-bind) を通してネイティブにプロジェクトを診断し、結果を元の `.vue` の位置へ対応付けます。フラグや設定キーの「Corsa」は、このネイティブ TypeScript コンパイラーを指します。
+推奨の型チェックは、TypeScript 7.1 以降と Vize の content mapper です。
+`tsc --runExternalCode --noEmit` を実行します。[tsrs](https://github.com/oxc-project/tsrs) は
+同じ `tsconfig` を `tsrs --runExternalCode --noEmit` で実行できます。詳細は
+[型チェック](./type-checking.md)を参照してください。
+
+`vize check` は同梱のチェッカーです。[TypeScript のネイティブコンパイラー](https://github.com/microsoft/typescript-go)（TypeScript 7 として出荷される Go 実装、Project Corsa）で Vue SFC を型チェックします。Vize は SFC ごとに仮想 TypeScript を生成し、[`corsa-bind`](https://github.com/ubugeeei/corsa-bind) を通してネイティブにプロジェクトを診断し、結果を元の `.vue` の位置へ対応付けます。フラグや設定キーの「Corsa」は、このネイティブ TypeScript コンパイラーを指します。
 
 パスを指定しない場合、利用可能な `tsconfig.json` の `files` / `include` / `exclude` を使います。明示的な入力にはファイル・ディレクトリ・glob を指定でき、`.vue`、`.ts`、`.tsx`、`.d.ts` を扱えます。
 
@@ -240,7 +245,7 @@ vize check --profile src
 | `--declaration`     | `.d.ts` を出力する                                           |
 | `--declaration-dir` | 宣言ファイルの出力先                                         |
 
-ローカルでビルドした Corsa や `corsa-bind` を開発・検証に使う場合、`--corsa-path` で実行ファイルを固定してください。共有設定キーは `typeChecker.corsaPath` です。`typeChecker.tsgoPath` は互換性のための別名としてのみ残っています。実験的な tsrs バックエンドを評価する場合は、`typeChecker.tsrsPath` とともに `--tsrs-path` を使います。
+ローカルでビルドした Corsa や `corsa-bind` を開発・検証に使う場合、`--corsa-path` で実行ファイルを固定してください。共有設定キーは `typeChecker.corsaPath` です。`typeChecker.tsgoPath` は互換性のための別名としてのみ残っています。`--tsrs-path` と `typeChecker.tsrsPath` は、この同梱チェッカーの実行時に tsrs を選びます。tsrs 自身で型チェックするときは、Vize の content mapper を書いた `tsconfig` に対して `tsrs --runExternalCode --noEmit` を実行してください。
 
 ```bash
 vize check --tsconfig tsconfig.app.json src

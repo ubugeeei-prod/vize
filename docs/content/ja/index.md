@@ -49,7 +49,7 @@ features:
 | コンパイラー             | `@vitejs/plugin-vue`         | `vp dev`、`vp build`          | [Vite プラグイン](./guide/vite-plugin.md)   |
 | リンター                 | `eslint-plugin-vue`          | `vize lint`                   | [ルール](./rules/index.md)                  |
 | フォーマッター           | `.vue` 向けの Prettier       | `vize fmt`                    | [フォーマット](./guide/formatter.md)        |
-| 型チェッカー             | `vue-tsc`                    | `vize check`                  | [型チェック](./guide/type-checking.md)      |
+| 型チェッカー             | `vue-tsc`                    | `tsc --runExternalCode`       | [型チェック](./guide/type-checking.md)      |
 | 言語サーバー             | Vue - Official               | `vize lsp`                    | [言語サーバー](./guide/language-server.md)  |
 | Vapor コンパイラー       | —                            | `vue.compiler.vapor`          | [Vapor モード](./guide/vapor.md)            |
 | コンポーネントギャラリー | Storybook                    | `vize musea`                  | [Musea](./guide/musea.md)                   |

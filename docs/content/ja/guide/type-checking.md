@@ -1,29 +1,96 @@
 ---
 title: 型チェック
-description: vize check と TypeScript のネイティブコンパイラーで Vue SFC、TypeScript、TSX を型チェックします。
+description: TypeScript 7.1 の content mapper で Vue SFC を型チェックします。同じプロジェクトは tsrs でも実行できます。
 ---
 
 # 型チェック
 
-`vize check` は `.vue`、`.ts`、`.tsx`、`.d.ts` をプロジェクト全体で一度に型チェックします。
-`vue-tsc --noEmit` に相当するコマンドで、同じ TypeScript の診断（同じ `TS####` コード）を、`.vue`
-ファイル内の該当行を指して報告します。
+`.vue` ファイルの型チェックは、TypeScript 7.1 以降と Vize の
+[content mapper](./content-mapper.md) を使います。TypeScript は同じ `TS####`
+の診断を、`.vue` ファイル内の該当行に出します。
+
+[tsrs](https://github.com/oxc-project/tsrs) でも同じプロジェクトをチェックできます。
+tsrs は TypeScript 7.1 の Rust コンパイラーなので、変えるのはコマンドだけで、
+`tsconfig` はそのままです。
 
 > [!NOTE]
 > 型チェックはアルファ版の機能です。CI の手順を置き換える前に、現在の `vue-tsc` と並べて実行し、
 > 自分のプロジェクトで結果を比べてください。[安定性](../stability.md)も参照してください。
 
-## 実行する
+## 推奨: TypeScript 7.1
 
-[Vize のヘルパー](./vite-plus.md)を使う Vite+ プロジェクトでは、生成されたタスクを実行します。
+content mapper は TypeScript 7.1 に入っています。最初のリリースは 7.1 beta です。
+`vize` とコンパイラーを入れ、`tsconfig.json` にマッパーを書きます。
+
+```bash
+vp install -D vize typescript@beta
+```
+
+```json
+{
+  "compilerOptions": {
+    "module": "preserve",
+    "strict": true,
+    "noEmit": true
+  },
+  "contentMappers": [
+    {
+      "package": "vize",
+      "extensions": [".vue"]
+    }
+  ],
+  "include": ["src"]
+}
+```
+
+content mapper は外部プログラムです。TypeScript は明示したときだけ実行します。
+
+```bash
+tsc --runExternalCode --noEmit -p tsconfig.json
+```
+
+これが `vue-tsc --noEmit` の置き換えです。TypeScript 7.1 が安定版になったら、
+`typescript` の 7.1 以降を入れ、コマンドはそのまま使います。マッパーのオプション、
+テンプレートのディレクティブ、エディターの設定は
+[Content Mapper のガイド](./content-mapper.md)を参照してください。
+
+## tsrs
+
+tsrs を入れ、同じフラグを渡します。`contentMappers` の指定は変えません。
+
+```bash
+vp install -D tsrs
+tsrs --runExternalCode --noEmit -p tsconfig.json
+```
+
+評価中は tsrs のバージョンを固定してください。tsrs は TypeScript 7.1 のスナップショットに
+追従しており、新しいスナップショットでは診断が変わることがあります。upstream は
+`--init` と `--showConfig` に対応していません。tsrs 0.18.0 は Windows と Intel macOS 向けの
+パッケージを公開していません。エディターでは `tsrs --lsp` を起動します。
+
+## vue-tsc から移行する
+
+| 現在のコマンド                          | Vize での書き方                                                |
+| --------------------------------------- | -------------------------------------------------------------- |
+| `vue-tsc --noEmit`                      | 上のマッパーを入れて `tsc --runExternalCode --noEmit`          |
+| `vue-tsc -p tsconfig.app.json --noEmit` | `tsc --runExternalCode --noEmit -p tsconfig.app.json`          |
+| 同じプロジェクトを tsrs で              | `tsrs --runExternalCode --noEmit -p tsconfig.app.json`         |
+| Vue - Official 拡張機能の診断           | content mapper を有効にした TypeScript 7.1 ホスト、または [Vize の言語サーバー](./language-server.md) |
+
+## あわせて使える `vize check`
+
+`vize check` は、`vize` に同梱されたチェッカーで `.vue`、`.ts`、`.tsx`、`.d.ts` を
+型チェックします。新しいプロジェクトは、上の TypeScript 7.1 content mapper を使ってください。
+`vize check` は、同梱コマンドで仮想 TypeScript の確認やチェックサーバーを使いたいときに使います。
+
+[Vize のヘルパー](./vite-plus.md)を使う Vite+ プロジェクトでは、生成されたタスクが
+このコマンドを実行します。
 
 ```bash
 vp run typecheck
 ```
 
-Vite+ を使わない場合は、`vize` パッケージをインストールしてコマンドを直接実行します。パッケージには
-各プラットフォーム向けの TypeScript ネイティブコンパイラーが含まれているため、追加のインストールは
-不要です。
+Vite+ を使わない場合は、`vize` をインストールして直接実行します。
 
 ```bash
 vp install -D vize
@@ -37,6 +104,9 @@ vp exec vize check
 vize check src
 vize check --tsconfig tsconfig.app.json
 ```
+
+`vize check --tsrs-path node_modules/.bin/tsrs` は、同梱チェッカーの実行時に tsrs を選びます。
+tsrs の推奨の使い方は、上の `tsrs --runExternalCode` です。こちらが content mapper を直接実行します。
 
 ## 出力の例
 
@@ -54,6 +124,7 @@ const emit = defineEmits<{ change: [value: number] }>();
 ```
 
 `vize check` はテンプレート内の 2 つの誤りを、ソース上の位置とともに報告します。
+TypeScript 7.1 や tsrs でも同じコードが、そのコンパイラーの形式で出ます。
 
 ```text
 src/Counter.vue
@@ -116,17 +187,8 @@ Vize が参照できるのは、TypeScript プロジェクトから見える型�
 > ファイルが `include` の外にあります。`include` に追加するか、`--tsconfig` でそのファイルを含む
 > プロジェクトを指定してください。
 
-## vue-tsc から移行する
-
-| 現在のコマンド                               | Vize での書き方                                   |
-| -------------------------------------------- | ------------------------------------------------- |
-| `vue-tsc --noEmit`                           | `vize check`                                      |
-| `vue-tsc -p tsconfig.app.json --noEmit`      | `vize check --tsconfig tsconfig.app.json`         |
-| `vue-tsc --declaration --emitDeclarationOnly` | `vize check --declaration --declaration-dir dist/types` |
-| Vue - Official 拡張機能の診断                | `typecheck` を有効にした [Vize の言語サーバー](./language-server.md) |
-
-`vue-tsc` は JavaScript 版の TypeScript コンパイラーで動きますが、Vize は TypeScript 7 のネイティブ
-コンパイラー（Go 実装、Project Corsa）で動きます。計測した差は
+`vue-tsc` は JavaScript 版の TypeScript コンパイラーで動きます。TypeScript 7.1 と tsrs は
+ネイティブのコンパイラーで動きます。`vize check` の計測差は
 [型チェッカーのベンチマーク](../architecture/performance.md#ベンチマーク-型検査)を参照してください。
 細かなケースでは診断が異なることがあるため、[移行ガイド](./migration.md)の手順どおり、切り替える前に
 結果を比べてください。
@@ -146,6 +208,9 @@ vize check --show-virtual-ts src/components/Counter.vue
 
 ## 大きなプロジェクトでの速度
 
+ここからの指定は `vize check` 向けです。TypeScript 7.1 や tsrs の実行は、そのコンパイラー自身の
+プロジェクトを使い、これらのフラグは使いません。
+
 `vize check` は import グラフの独立した部分を複数のネイティブ TypeScript プロセスに分けて処理し、
 プロセス数は CPU とファイル数から自動で決めます。メモリが少ない場合や順序を固定したい場合は、
 1 プロセスで実行してください。
@@ -162,44 +227,9 @@ vize check-server --socket /tmp/vize-check.sock
 vize check --socket /tmp/vize-check.sock src
 ```
 
-## 実験的な tsrs バックエンドを試す
-
-Vize は [`tsrs`](https://github.com/oxc-project/tsrs) を、チェック、型情報を使う lint ルール、
-エディター機能のネイティブ TypeScript ランタイムとして利用できます。tsrs が TypeScript 7.1 の
-開発版に追従しており、言語サーバーと Node API が upstream で未完成または不安定とされているため、
-この連携は実験的です。
-
-プロジェクトに tsrs をインストールし、ランチャーを明示的に指定します。
-
-```bash
-vp install -D tsrs
-vize check --tsrs-path node_modules/.bin/tsrs
-```
-
-共有設定では次のように指定できます。
-
-```ts
-export default defineConfig({
-  vue: {
-    typeChecker: {
-      tsrsPath: "node_modules/.bin/tsrs",
-    },
-  },
-});
-```
-
-`TSRS_PATH` と `TSRS_EXECUTABLE` も利用できます。プラットフォーム用バイナリーがあれば、Vize は
-JavaScript ランチャーをそのバイナリーへ解決するため、Vize の単体実行ファイルからチェッカーを
-起動するときに Node.js は不要です。TypeScript の診断結果はコンパイラーのバージョン差で変わるため、
-評価中は tsrs のバージョンを固定してください。
-
-現在、Vize は tsrs のコンパイラーと `--lsp` プロトコルを利用します。upstream の `--init` と
-`--showConfig` はこの連携の対象外で、tsrs 0.18.0 は Windows と Intel macOS 向けのネイティブ
-パッケージを公開していません。CI に採用する前に、CLI とエディターの診断を既定バックエンドと
-比較してください。
-
 ## 関連ページ
 
+- TypeScript 7.1 の設定は [Content Mapper](./content-mapper.md)
 - [CLI リファレンス: `vize check`](./cli.md#check)
 - エディターで型エラーを表示する[言語サーバー](./language-server.md)
 - 同じチェッカーを使う[型情報を使う lint ルール](../rules/type-and-script.md)

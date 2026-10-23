@@ -4,9 +4,10 @@ title: TypeScript Content Mapper
 
 # TypeScript Content Mapper
 
-Use this guide when integrating Vue files with a content-mapper-enabled native TypeScript host.
-For day-to-day project checks, start with [Static Analysis](./static-analysis.md); for editor setup,
-see the [VS Code integration](../integrations/vscode.md).
+This is the recommended way to type-check Vue files. Use TypeScript 7.1 or newer.
+[tsrs](https://github.com/oxc-project/tsrs) can run the same `tsconfig`. For editor setup,
+see the [VS Code integration](../integrations/vscode.md). Day-to-day lint and format stay in
+[Static Analysis](./static-analysis.md).
 
 Content Mappers are TypeScript's plugin surface for checking file types the compiler cannot parse
 itself — the [TypeScript 7.1 API roadmap](https://github.com/microsoft/typescript-go/issues/4830)
@@ -22,11 +23,11 @@ content-mapper support spawns `vize content-mapper` and checks `.vue` files dire
 go-to-definition, rename, completions, and diagnostics all map back to your authored SFC, with no
 parallel `.vue.ts` project to materialize.
 
-> [!WARNING]
-> This integration requires a native TypeScript host that exposes Content Mappers
-> and accepts `--runExternalCode`. A native TypeScript version number alone does not establish
-> that support. Use the exact host revision described below for the qualified mapper route;
-> keep [`vize check`](./cli.md#check) as the supported production typecheck path.
+> [!NOTE]
+> Content mappers run external programs. TypeScript 7.1 and later accept them with
+> `tsc --runExternalCode`. [tsrs](https://github.com/oxc-project/tsrs) accepts the same
+> flag and the same `contentMappers` entry. The conformance revision below qualifies one
+> host build. It is not a requirement to install a private compiler before you type-check.
 
 ## Setup
 
@@ -52,16 +53,26 @@ vp install -D vize
 }
 ```
 
-Running external mapper processes requires explicit opt-in. The following command uses the
-content-mapper-enabled binary named `tsgo` in Vize's conformance workflow. That workflow builds
-the current native compiler entrypoint, `tsc/cmd/tsc`, at the exact revision specified below.
+Running external mapper processes requires explicit opt-in. TypeScript 7.1 and later:
 
 ```bash
-tsgo --runExternalCode --noEmit -p tsconfig.json
+tsc --runExternalCode --noEmit -p tsconfig.json
 ```
+
+tsrs uses the same project and the same flag:
+
+```bash
+vp install -D tsrs
+tsrs --runExternalCode --noEmit -p tsconfig.json
+```
+
+Vize's conformance workflow builds the native compiler entrypoint, `tsc/cmd/tsc`, at the
+revision specified below and invokes that binary as `tsgo`. That run qualifies one host
+revision. Day-to-day checks use the TypeScript 7.1 or tsrs command above.
 
 In VS Code, when a trusted workspace uses a content-mapper-enabled TypeScript host, the Vize
 extension registers `.vue` support automatically. The same mapper then powers the editor.
+Turn on `js/ts.contentMappers.enabled` when the editor asks for it.
 
 ## Options
 
@@ -164,5 +175,6 @@ Diagnostic codes reported under the `vize` source:
   [microsoft/typescript-go#4860](https://github.com/microsoft/typescript-go/issues/4860)
   was completed by the round 2 change above. Vize's exact-host tests cover declaration-map
   emission and packed-consumer navigation; other host revisions require their own qualification.
-- `vize check` remains the supported production typecheck path. Check that your installed host
-  and editor expose this integration before using the mapper route.
+- TypeScript 7.1 or newer is the recommended host. tsrs can run the same mapper config.
+  Confirm that your installed compiler and editor expose content mappers before you rely on
+  them in CI. [`vize check`](./cli.md#check) remains available for the packaged checker.

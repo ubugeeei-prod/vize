@@ -76,6 +76,30 @@ and type-check stay on your current tools until you add them. The claim is Vue 3
 
 Nuxt apps should use `@vizejs/nuxt` instead of wiring the Vite plugin by hand.
 
+### Type checking
+
+Type-check `.vue` files with TypeScript 7.1 or newer and Vize's content mapper.
+[tsrs](https://github.com/oxc-project/tsrs) can run the same `tsconfig`.
+
+```bash
+npm i -D vize typescript@beta
+```
+
+```json
+{
+  "contentMappers": [{ "package": "vize", "extensions": [".vue"] }]
+}
+```
+
+```bash
+npx tsc --runExternalCode --noEmit -p tsconfig.json
+npx tsrs --runExternalCode --noEmit -p tsconfig.json
+```
+
+`typescript@beta` is the 7.1 beta, the first release that includes content mappers.
+After 7.1 is stable, install `typescript` at 7.1 or newer and keep the same command.
+Details are in the [type checking guide](https://vizejs.dev/guide/type-checking).
+
 ### New setup
 
 Create a Vue + Vite or Nuxt app first, then let `vize init` wire the toolchain.

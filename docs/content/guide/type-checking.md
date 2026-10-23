@@ -1,28 +1,95 @@
 ---
 title: Type Checking
-description: Type-check Vue SFCs, TypeScript, and TSX with vize check and TypeScript's native compiler.
+description: Type-check Vue SFCs with TypeScript 7.1 content mappers. tsrs can run the same project.
 ---
 
 # Type Checking
 
-`vize check` type-checks `.vue`, `.ts`, `.tsx`, and `.d.ts` files in one project-wide pass. It is the
-Vize counterpart of `vue-tsc --noEmit`: it reports the same TypeScript diagnostics (with the same
-`TS####` codes), pointing at the line in your `.vue` file.
+Type-check `.vue` files with TypeScript 7.1 or newer and Vize's
+[content mapper](./content-mapper.md). TypeScript reports the same `TS####`
+diagnostics on the line in your `.vue` file.
+
+[tsrs](https://github.com/oxc-project/tsrs) can check that same project. It is a
+Rust compiler for TypeScript 7.1, so you change the command, not the `tsconfig`.
 
 > [!NOTE]
-> Type checking is part of the alpha. Run it next to your current `vue-tsc` command and compare the
-> results on your project before you replace the CI step. See [Stability](../stability.md).
+> Type checking is part of the alpha. Compare the results with your current
+> `vue-tsc` command before you replace the CI step. See [Stability](../stability.md).
 
-## Run it
+## Recommended: TypeScript 7.1
 
-In a Vite+ project that uses the [Vize helper](./vite-plus.md), run the generated task:
+Content mappers ship in TypeScript 7.1, starting with the 7.1 beta. Install
+`vize` and the compiler, then name the mapper in `tsconfig.json`:
+
+```bash
+vp install -D vize typescript@beta
+```
+
+```json
+{
+  "compilerOptions": {
+    "module": "preserve",
+    "strict": true,
+    "noEmit": true
+  },
+  "contentMappers": [
+    {
+      "package": "vize",
+      "extensions": [".vue"]
+    }
+  ],
+  "include": ["src"]
+}
+```
+
+A content mapper is an external program. TypeScript runs it only when you opt in:
+
+```bash
+tsc --runExternalCode --noEmit -p tsconfig.json
+```
+
+That replaces `vue-tsc --noEmit`. After TypeScript 7.1 is stable, install
+`typescript` at 7.1 or newer and keep the same command. Mapper options, template
+directives, and editor setup are in the [Content Mapper guide](./content-mapper.md).
+
+## tsrs
+
+Install tsrs and pass the same flag. The `contentMappers` entry does not change:
+
+```bash
+vp install -D tsrs
+tsrs --runExternalCode --noEmit -p tsconfig.json
+```
+
+Pin the tsrs version while you evaluate it. tsrs follows a TypeScript 7.1
+snapshot, and a newer snapshot can change which diagnostics you see. Upstream
+does not support `--init` or `--showConfig`. tsrs 0.18.0 does not publish
+Windows or Intel macOS packages. For the editor, start `tsrs --lsp`.
+
+## Coming from vue-tsc
+
+| You use today                                 | With Vize                                                          |
+| --------------------------------------------- | ------------------------------------------------------------------ |
+| `vue-tsc --noEmit`                            | `tsc --runExternalCode --noEmit` with the mapper above             |
+| `vue-tsc -p tsconfig.app.json --noEmit`       | `tsc --runExternalCode --noEmit -p tsconfig.app.json`              |
+| the same project on tsrs                      | `tsrs --runExternalCode --noEmit -p tsconfig.app.json`             |
+| Vue - Official extension diagnostics          | a TypeScript 7.1 host with content mappers, or the [Vize language server](./language-server.md) |
+
+## Also available: `vize check`
+
+`vize check` type-checks `.vue`, `.ts`, `.tsx`, and `.d.ts` files with the
+checker packaged in `vize`. New projects should use the TypeScript 7.1 content
+mapper above. Use `vize check` when you want that packaged command, including
+virtual TypeScript inspection and the check server.
+
+In a Vite+ project that uses the [Vize helper](./vite-plus.md), the generated
+task still runs this command:
 
 ```bash
 vp run typecheck
 ```
 
-Without Vite+, install the `vize` package and run the command directly. The package already
-includes TypeScript's native compiler for your platform, so there is nothing else to install.
+Install `vize` and run it directly when you are not on Vite+:
 
 ```bash
 vp install -D vize
@@ -36,6 +103,10 @@ With no arguments, `vize check` reads `files`, `include`, and `exclude` from the
 vize check src
 vize check --tsconfig tsconfig.app.json
 ```
+
+`vize check --tsrs-path node_modules/.bin/tsrs` selects tsrs as the packaged
+checker's runtime. The recommended way to use tsrs is the `tsrs --runExternalCode`
+command above, which runs the content mapper itself.
 
 ## What the output looks like
 
@@ -52,7 +123,8 @@ const emit = defineEmits<{ change: [value: number] }>();
 </template>
 ```
 
-`vize check` reports both template mistakes at their source position:
+`vize check` reports both template mistakes at their source position. A
+TypeScript 7.1 or tsrs run reports the same codes in that compiler's format:
 
 ```text
 src/Counter.vue
@@ -114,19 +186,10 @@ and generated files such as `auto-imports.d.ts` or `components.d.ts`, must be ma
 > If `$t`, `$route`, or an auto-imported component shows up as "does not exist", the declaration
 > file is usually outside `include`. Add it there, or point `--tsconfig` at the project that has it.
 
-## Coming from vue-tsc
-
-| You use today                              | With Vize                                         |
-| ------------------------------------------ | ------------------------------------------------- |
-| `vue-tsc --noEmit`                         | `vize check`                                      |
-| `vue-tsc -p tsconfig.app.json --noEmit`    | `vize check --tsconfig tsconfig.app.json`         |
-| `vue-tsc --declaration --emitDeclarationOnly` | `vize check --declaration --declaration-dir dist/types` |
-| Vue - Official extension diagnostics       | [Vize language server](./language-server.md) with `typecheck` enabled |
-
-The checker runs on TypeScript 7's native compiler (the Go port, also called Project Corsa), while
-`vue-tsc` runs on the JavaScript compiler. The
-[type checker benchmark](../architecture/performance.md#benchmark-type-checker) shows the measured
-difference. Diagnostics can still differ in edge cases, which is why the
+`vue-tsc` runs on the JavaScript compiler. TypeScript 7.1 and tsrs run on a native
+compiler. The
+[type checker benchmark](../architecture/performance.md#benchmark-type-checker) shows measured
+differences for `vize check`. Diagnostics can still differ in edge cases, which is why the
 [migration guide](./migration.md#replace-a-check-command-after-comparing-output) asks you to
 compare before switching.
 
@@ -145,6 +208,9 @@ timings and all virtual files under `node_modules/.vize`. Include the output whe
 
 ## Speed on large projects
 
+These controls apply to `vize check`. A TypeScript 7.1 or tsrs run uses that
+compiler's own project, not these flags.
+
 `vize check` splits independent parts of the import graph across several native TypeScript
 processes and picks the count from your CPU and file count. If memory is tight or you need
 stable ordering, use one process:
@@ -161,46 +227,9 @@ vize check-server --socket /tmp/vize-check.sock
 vize check --socket /tmp/vize-check.sock src
 ```
 
-## Try the experimental tsrs backend
-
-Vize can use [`tsrs`](https://github.com/oxc-project/tsrs) as the native
-TypeScript runtime for checks, type-aware lint rules, and editor features. The
-integration is experimental because tsrs follows a TypeScript 7.1 development
-snapshot and its language server and Node API are still marked incomplete or
-unstable upstream.
-
-Install tsrs in the project and select its launcher explicitly:
-
-```bash
-vp install -D tsrs
-vize check --tsrs-path node_modules/.bin/tsrs
-```
-
-The equivalent shared configuration is:
-
-```ts
-export default defineConfig({
-  vue: {
-    typeChecker: {
-      tsrsPath: "node_modules/.bin/tsrs",
-    },
-  },
-});
-```
-
-`TSRS_PATH` and `TSRS_EXECUTABLE` are also supported. Vize resolves the
-JavaScript launcher to tsrs's platform binary when one is available, so a
-standalone Vize executable does not need Node.js to start the checker. Keep the
-package version pinned while evaluating it: compiler version drift can change
-which TypeScript diagnostics a project receives.
-
-Vize currently exercises tsrs through its compiler and `--lsp` protocols. The
-upstream `--init` and `--showConfig` commands are outside this integration, and
-tsrs 0.18.0 does not publish Windows or Intel macOS native packages. Compare
-CLI and editor diagnostics with the default backend before adopting it in CI.
-
 ## Related
 
+- [Content Mapper](./content-mapper.md) for the TypeScript 7.1 setup
 - [CLI reference: `vize check`](./cli.md#check)
 - [Language server](./language-server.md) for type errors in the editor
 - [Type-aware lint rules](../rules/type-and-script.md), which reuse the same checker
