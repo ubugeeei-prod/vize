@@ -209,9 +209,9 @@ vize check --tsconfig tsconfig.app.json
 vize check --profile src
 ```
 
-The recommended typecheck is TypeScript 7.1 or newer with Vize's content mapper:
-`tsc --runExternalCode --noEmit`. [tsrs](https://github.com/oxc-project/tsrs) runs the same
-`tsconfig` with `tsrs --runExternalCode --noEmit`. See [Type Checking](./type-checking.md).
+The recommended typecheck is TypeScript 7.1 or newer with Vize's content mapper.
+[tsrs](https://github.com/oxc-project/tsrs) can run the same project. The commands are in
+[Type Checking](./type-checking.md).
 
 `vize check` is the packaged checker. It type-checks Vue SFCs with
 [TypeScript's native compiler](https://github.com/microsoft/typescript-go)
@@ -250,8 +250,7 @@ Key options:
 Use `--corsa-path` to pin a local Corsa build. The shared config key is `typeChecker.corsaPath`;
 `typeChecker.tsgoPath` remains only as a compatibility alias. `--tsrs-path` and
 `typeChecker.tsrsPath` select tsrs as the runtime for this packaged checker. To type-check with
-tsrs itself, run `tsrs --runExternalCode --noEmit` against a `tsconfig` that lists the Vize
-content mapper.
+tsrs itself, use the content mapper command in [Type Checking](./type-checking.md).
 
 Project-wide template values and Vue ambient types should be visible through TypeScript project
 configuration. Include generated files such as `auto-imports.d.ts`, `components.d.ts`, or your own
