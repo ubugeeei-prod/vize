@@ -85,8 +85,7 @@ export const TYPECHECKER_TESTS = {
   "content-mapper-filename-globals-10190": "filename_globals_preserve_clean_batch_diagnostics",
   "content-mapper-global-component-10185":
     "content_mapper_global_components_preserve_batch_acceptance",
-  "component-listener-prop-duplicate-10397":
-    "required_prop_reports_once_with_or_without_listener",
+  "component-listener-prop-duplicate-10397": "required_prop_reports_once_with_or_without_listener",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
