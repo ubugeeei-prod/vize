@@ -57,8 +57,8 @@ fn only_actual_configured_route_helper_import_joins_native_programs() {
     for (page, expected_shards) in [
         ("const unrelated = 1; void unrelated;", 2),
         ("const route = useRoute('/known'); void route;", 2),
-        // The existing closed leaf domain declines '<' before this new guard.
-        ("const route = useRoute<'/known'>(); void route;", 0),
+        // A type argument is not a JSX tag, so the shared leaf stays open.
+        ("const route = useRoute<'/known'>(); void route;", 2),
         (
             "const useRoute = () => 1; const route = useRoute(); void route;",
             2,
