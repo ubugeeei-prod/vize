@@ -103,11 +103,12 @@ pub(super) fn permits_sharing(
                 if specifier.contains('\\') || (quote == '`' && specifier.contains("${")) {
                     return false;
                 }
-                // The shared helper imports Vue from the virtual root. Prove
-                // the same backend directory and module mode before sharing
-                // that exemption: nested package/alias contexts can differ.
+                // `vue` is one module for every file mirrored into this project.
+                // A nested SFC (`src/App.vue`) imports it the same way the
+                // root helper does. Files outside the virtual root can resolve
+                // a different copy, so they keep the single-program plan.
                 if specifier == "vue" {
-                    if file.virtual_path.parent() != Some(project.virtual_root())
+                    if !file.virtual_path.starts_with(project.virtual_root())
                         || !file
                             .virtual_path
                             .extension()
@@ -156,8 +157,10 @@ fn permits_compiler_options(project: &VirtualProject) -> bool {
     else {
         return false;
     };
-    ![
-        "jsx",
+    // `jsx: "preserve"` leaves the syntax for a later tool and does not
+    // inject a runtime. Vue projects set it by default; treating it as a
+    // JSX runtime forced every shared type leaf back onto one checker.
+    if [
         "jsxImportSource",
         "jsxFactory",
         "jsxFragmentFactory",
@@ -165,6 +168,13 @@ fn permits_compiler_options(project: &VirtualProject) -> bool {
     ]
     .iter()
     .any(|option| options.contains_key(*option))
+    {
+        return false;
+    }
+    matches!(
+        options.get("jsx").and_then(serde_json::Value::as_str),
+        None | Some("preserve")
+    )
 }
 
 fn within_supported_source_domain(file: &VirtualFile, source: &str) -> bool {
@@ -181,7 +191,9 @@ fn within_supported_source_domain(file: &VirtualFile, source: &str) -> bool {
         .extension()
         .and_then(|extension| extension.to_str())
     {
-        Some("ts" | "js") => return !source.contains('<'),
+        // Same distinction as a Vue script: `Row<T>` is a type argument.
+        // `<div>` in a `.ts` file under `jsx: "preserve"` still declines.
+        Some("ts" | "js") => return !script_body_opens_jsx_tag(source),
         Some("vue") => {}
         _ => return false,
     }
@@ -226,13 +238,35 @@ fn within_supported_source_domain(file: &VirtualFile, source: &str) -> bool {
         let Some((body, _)) = rest.split_once("</script>") else {
             return false;
         };
-        if body.contains('<') {
-            // Also decline JSX recovery in a nominally plain TS/JS block.
-            // Harmless type parameters/comparisons can keep the former plan.
+        // lang is already ts/js, and a JSX factory would have failed
+        // `permits_compiler_options`. Type arguments (`defineProps<{`) are
+        // the common case; they are not a runtime import.
+        if script_body_opens_jsx_tag(body) {
             return false;
         }
     }
     true
+}
+
+/// `<div>` in a TS script can be recovered as JSX. `ref<T>` and `defineProps<{`
+/// cannot: a type argument follows an identifier, a tag does not.
+fn script_body_opens_jsx_tag(body: &str) -> bool {
+    let mut rest = body;
+    while let Some(at) = rest.find('<') {
+        let previous = rest.get(..at).unwrap_or_default();
+        let after_identifier = previous
+            .chars()
+            .rev()
+            .find(|ch| !ch.is_whitespace())
+            .is_some_and(|ch| ch.is_ascii_alphanumeric() || matches!(ch, '_' | '$' | '.'));
+        let next = rest.get(at + 1..).unwrap_or_default().trim_start();
+        let opens_tag = next.starts_with(|ch: char| ch.is_ascii_alphabetic() || ch == '/');
+        if opens_tag && !after_identifier {
+            return true;
+        }
+        rest = rest.get(at + 1..).unwrap_or_default();
+    }
+    false
 }
 
 fn skip_trivia(mut source: &str) -> &str {

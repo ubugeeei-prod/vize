@@ -270,8 +270,14 @@ fn implicit_jsx_settings_and_unreadable_config_restore_the_original_plan() {
     let dir = tempfile::tempdir().unwrap();
     let project = project(dir.path(), "export const value = 1;", &[]);
     let config = project.virtual_root().join("tsconfig.json");
+    fs::write(&config, r#"{"compilerOptions":{"jsx":"preserve"}}"#).unwrap();
+    assert_eq!(
+        partition_virtual_files(&project, 2).shards.len(),
+        2,
+        "jsx preserve does not inject a runtime"
+    );
     for source in [
-        r#"{"compilerOptions":{"jsx":"preserve"}}"#,
+        r#"{"compilerOptions":{"jsx":"react"}}"#,
         r#"{"compilerOptions":{"jsxImportSource":"leaf-types"}}"#,
         r#"{"compilerOptions":{"jsxFactory":"factory"}}"#,
         r#"{"compilerOptions":{"jsxFragmentFactory":"fragment"}}"#,
@@ -332,7 +338,7 @@ fn external_reexports_after_native_trivia_keep_the_original_component_plan() {
 }
 
 #[test]
-fn nested_vue_loads_cannot_reuse_the_root_helpers_package_context() {
+fn nested_vue_import_shares_the_project_vue_module() {
     let dir = tempfile::tempdir().unwrap();
     let mut project = project(dir.path(), "export const value = 1;", &[]);
     let nested = dir.path().join("sub/Comp.vue");
@@ -344,7 +350,7 @@ fn nested_vue_loads_cannot_reuse_the_root_helpers_package_context() {
     .unwrap();
     project.register_path(&nested).unwrap();
     assert!(
-        partition_virtual_files(&project, 2).shards.is_empty(),
-        "a nearest nested Vue package can provide globals absent from the root helper"
+        partition_virtual_files(&project, 2).shards.len() > 1,
+        "a nested SFC imports the same vue module as the rest of this project"
     );
 }
