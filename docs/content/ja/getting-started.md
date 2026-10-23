@@ -46,16 +46,18 @@ export default defineConfig({});
 ```bash
 vp dev
 vp build
-vp run check
-```
-
-`vp run check` は Vue の型チェック・lint・フォーマットと、Oxlint・Oxfmt をまとめて実行します。作業中は個別のタスクも使えます。
-
-```bash
-vp run typecheck
 vp run lint
 vp run fmt:check
 ```
+
+`.vue` の型チェックは [Content Mapper](./guide/content-mapper.md) を使います。TypeScript 7.1 と [tsrs](https://github.com/oxc-project/tsrs) は同じ `tsconfig.json` を使います。tsrs は drop-in です。`contentMappers` はそのままに、実行ファイルだけ変えます。
+
+```bash
+tsc --runExternalCode --noEmit -p tsconfig.json
+tsrs --runExternalCode --noEmit -p tsconfig.json
+```
+
+マッパーの書き方と `vue-tsc` からの置き換えは[型チェック](./guide/type-checking.md)にあります。`vp run check` は同梱チェッカーに lint とフォーマットを足して実行します。`vp run typecheck` はそのチェッカーだけです。
 
 修正を適用するには `vp run check -- --fix` を実行します。
 
@@ -81,14 +83,20 @@ vp run fmt:check
 
 ## Vite+ なしで利用する
 
-[単独 CLI](./guide/cli.md) は、インストールせずにどの Vue プロジェクトでも試せます。
+lint とフォーマットは、[単独 CLI](./guide/cli.md) でインストールせずに試せます。
 
 ```bash
 vpx vize lint src
-vpx vize check
 vpx vize fmt --check src
 ```
 
-`vize lint`・`vize fmt`・`vize check` を実行できます。型チェックは TypeScript 7.1 を推奨します。Vize の content mapper を入れ、`tsc --runExternalCode --noEmit` を実行してください。tsrs でも同じプロジェクトを実行できます。対象パッケージのルートから実行し、TypeScript のプロジェクト設定は `tsconfig.json` に残します。ネイティブコマンドも `vite.config.*` のトップレベルの `vue` 設定を共有できます。検索規則と現在の範囲は [CLI の設定](./guide/configuration.md#standalone-cli)を参照してください。
+型チェックは Vize の content mapper を入れ、TypeScript 7.1 で実行します。tsrs は同じプロジェクトの drop-in です。
+
+```bash
+tsc --runExternalCode --noEmit -p tsconfig.json
+tsrs --runExternalCode --noEmit -p tsconfig.json
+```
+
+`vpx vize check` は同梱チェッカーです。対象パッケージのルートから実行し、TypeScript のプロジェクト設定は `tsconfig.json` に残します。ネイティブコマンドも `vite.config.*` のトップレベルの `vue` 設定を共有できます。検索規則と現在の範囲は [CLI の設定](./guide/configuration.md#standalone-cli)を参照してください。
 
 対話形式で導入する場合は、`vpx vize init --dry-run` で変更予定を確認し、`vpx vize init` で機能を選びます。[プロジェクトの初期設定](./guide/init.md)に、プロジェクトの検出方法と、設定を自動編集できない場合の対応をまとめています。init は既存のプロジェクト設定と既定値を使い、専用の Vize 設定ファイルは作成しません。

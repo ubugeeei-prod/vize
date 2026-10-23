@@ -16,12 +16,11 @@ Vize は開発中です。全オプションや診断の完全な互換性を保
 | 移行元 | 移行先 | 効果 | インストール |
 | --- | --- | --- | --- |
 | `@vitejs/plugin-vue` | Vize コンパイラ | Vite で Vue 3 SFC をコンパイル | `@vizejs/vite-plugin` |
-| `vue-tsc` の script | `vp run typecheck` | ネイティブ Vue 型チェック | 同じ統合パッケージ |
+| `vue-tsc` の script | `tsc --runExternalCode --noEmit` | TypeScript 7.1 の content mapper | `vize` と `typescript@beta` |
 | Vue の lint script | `vp run lint` | Vize の Vue ルールと Oxlint | 同じ統合パッケージ |
 | Vue の format script | `vp run fmt` | Vue は Vize、その他は Oxfmt | 同じ統合パッケージ |
 
-最後の3つは [Vite+ の設定ヘルパー](./vite-plus.md) が生成するカスタムタスクです。
-組み込みの `vp lint`・`vp fmt`・`vp check` とは別に実行します。
+[tsrs](https://github.com/oxc-project/tsrs) は、その型チェックの drop-in です。同じ `tsconfig.json` で `tsrs --runExternalCode --noEmit` を実行します。lint とフォーマットのコマンドは [Vite+ の設定ヘルパー](./vite-plus.md) が生成するカスタムタスクです。組み込みの `vp lint`・`vp fmt`・`vp check` とは別に実行します。`vp run typecheck` は同梱チェッカーのままです。マッパーの設定は[型チェック](./type-checking.md)を参照してください。
 
 ## Vite+ プロジェクト
 
@@ -59,15 +58,17 @@ export default defineConfig({
 その他のオプションは[対応範囲](./vite-plugin.md#drop-in-scope)を確認してから移します。
 Vue 2 互換モードと実験的なバンドラーは、対応範囲が異なります。
 
-本番ビルドと検査を実行し、結果を比較します。
+本番ビルドを実行し、content mapper で型チェックして、lint とフォーマットを比較します。先に `tsconfig.json` へマッパーを追加します。tsrs は同じファイルを実行します。
 
 ```bash
 vp build
-vp run typecheck
+tsc --runExternalCode --noEmit -p tsconfig.json
+tsrs --runExternalCode --noEmit -p tsconfig.json
 vp run lint
 vp run fmt:check
-vp run check
 ```
+
+`vp run typecheck` と `vp run check` は同梱チェッカーを実行します。
 
 既存の `package.json` のスクリプトは保持されます。`check` がある場合は `vp run vize:check` を使います。
 明示的な `run.tasks` も優先されます。CI のコマンドを変える前に[タスク名](./vite-plus.md#tasks)を確認してください。
@@ -100,25 +101,26 @@ lint・フォーマット・型チェックは既存のツールを使い続け�
 
 ## 結果を比較してから検査コマンドを置き換える
 
-設定ヘルパーを使う Vite+ プロジェクトでは、次のようにスクリプトを変更するとネイティブタスクを利用できます。
+`vue-tsc` は content mapper に置き換えます。lint とフォーマットはネイティブタスクに切り替えます。
 変更は1つずつ確認してください。
 
 ```json annotate="remove:1,3,5;add:2,4,6"
   "typecheck": "vue-tsc --noEmit",
-  "typecheck": "vp run vize:typecheck",
+  "typecheck": "tsc --runExternalCode --noEmit",
   "lint": "eslint src",
   "lint": "vp run vize:lint",
   "format": "prettier --write src",
   "format": "vp run fmt"
 ```
 
-既存の `typecheck`・`lint` スクリプトがあると、設定ヘルパーは `vize:typecheck`・`vize:lint` を生成します。
-**実際の置き換えでは、その衝突しない名前を使ってください**。
+既存の `lint` スクリプトがあると、設定ヘルパーは `vize:lint` を生成します。
+**実際の置き換えでは、その衝突しない名前を使ってください。** tsrs は、`tsc` を `tsrs` に
+変えた同じ型チェックスクリプトです。`vp run vize:typecheck` は同梱チェッカーのままです。
 
 ```json
 {
   "scripts": {
-    "typecheck": "vp run vize:typecheck",
+    "typecheck": "tsc --runExternalCode --noEmit",
     "lint": "vp run vize:lint",
     "format": "vp run fmt"
   }
@@ -132,11 +134,11 @@ lint・フォーマット・型チェックは既存のツールを使い続け�
 
 ## Vite+ を使わない場合: コマンドを 1 つずつ置き換える
 
-Vize の各コマンドは単独で動くため、スクリプトを 1 つだけ置き換えて、残りはそのまま使えます。
+スクリプトを 1 つだけ置き換えて、残りはそのまま使えます。
 
 | 現在のコマンド                             | 置き換え先                                 | 先に読むページ                                                   |
 | ------------------------------------------ | ------------------------------------------ | ---------------------------------------------------------------- |
-| `vue-tsc --noEmit`                         | `vize check`                               | [vue-tsc から移行する](./type-checking.md#vue-tsc-から移行する)  |
+| `vue-tsc --noEmit`                         | `tsc --runExternalCode --noEmit`           | [vue-tsc から移行する](./type-checking.md#vue-tsc-から移行する)  |
 | `eslint-plugin-vue` を使う `eslint`        | `vize lint src`                            | [ESLint ルールの対応表](../rules/migration.md)                   |
 | `.vue` ファイルへの `prettier --write`     | `vize fmt --preset prettier --write src`   | [Prettier から移行する](./formatter.md#prettier-から移行する)                            |
 | Vue - Official の診断                      | `vize lsp`                                 | [言語サーバー](./language-server.md)                             |
@@ -144,12 +146,14 @@ Vize の各コマンドは単独で動くため、スクリプトを 1 つだけ
 ```json
 {
   "scripts": {
-    "typecheck": "vize check",
+    "typecheck": "tsc --runExternalCode --noEmit",
     "lint:vue": "vize lint src",
     "format:vue": "vize fmt --preset prettier --write src"
   }
 }
 ```
+
+tsrs は、実行ファイルを `tsrs --runExternalCode --noEmit` に変えた同じ型チェックスクリプトです。先に `contentMappers` を追加してください。`vize check` は同梱チェッカーのままです。
 
 Vize がまだ実装していないルールには ESLint を使い続けるか、[Oxlint プラグイン](./oxlint.md)で Vize の
 ルールを Oxlint の中で実行してください。同じコミットで新旧のコマンドを並べて実行し、結果を比べてから

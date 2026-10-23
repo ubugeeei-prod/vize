@@ -19,7 +19,7 @@ Vize の解析結果は、コンパイラー、リンター、型チェッカー
 | Armature | パーサー: Vue テンプレートと SFC の構造を字句解析・構文解析する | コンパイラー、リンター、フォーマッター |
 | Croquis | 解析器: スコープ、バインディング、マクロ情報、ファイル間のグラフを構築する | コンパイラー、lint、型情報を使う検査 |
 | Patina | リンター: Vue、スクリプト、CSS、アクセシビリティ、SSR、Vapor、Musea、型情報の lint ルールを実行する | `vize lint`、エディターの診断、Oxlint 連携 |
-| Canon | 型チェッカー: 仮想 TypeScript を生成し、診断を元の Vue ファイルに対応付ける | `vize check`、エディターの型チェック |
+| Canon | 型チェッカー: 仮想 TypeScript を生成し、診断を元の Vue ファイルに対応付ける | Content Mapper、`vize check` |
 | Maestro | 言語サーバー: LSP を通じて診断とエディターの機能を提供する | `vize lsp`、VS Code、Zed |
 
 静的解析には lint 以外も含まれます。テンプレートのバインディング、コンパイラーマクロ、コンポーネントのメタデータ、provide/inject の関係、リアクティビティの流れ、仮想 TypeScript、コンポーネントギャラリーの情報も、共通の解析結果を利用します。
@@ -192,9 +192,18 @@ vp run vize:lint:cross-file-tree
 ## 型チェック
 
 > [!TIP]
-> `vize check` を初めて使う場合は、[型チェックのガイド](./type-checking.md)から始めてください。
+> 型チェックは [Content Mapper](./content-mapper.md) を使います。TypeScript 7.1 は `tsc --runExternalCode --noEmit` を実行します。tsrs は同じ `tsconfig` の drop-in で、`tsrs --runExternalCode --noEmit` です。設定と `vue-tsc` からの対応は[型チェック](./type-checking.md)にあります。
 
-`vize check` は Vue SFC の仮想 TypeScript を生成し、Corsa のプロジェクトセッションで診断を取得します。`.vue`、`.ts`、`.tsx`、`.d.ts` を検査し、診断を元のソースファイルに対応付けます。
+```json
+{
+  "scripts": {
+    "typecheck": "tsc --runExternalCode --noEmit",
+    "typecheck:tsrs": "tsrs --runExternalCode --noEmit"
+  }
+}
+```
+
+同梱チェッカーの `vize check` は Vue SFC の仮想 TypeScript を生成し、Corsa のプロジェクトセッションで診断を取得します。`.vue`、`.ts`、`.tsx`、`.d.ts` を検査し、診断を元のソースファイルに対応付けます。
 
 ```json
 {

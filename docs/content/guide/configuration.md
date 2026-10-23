@@ -106,6 +106,8 @@ project inside the selected workspace and reads its Vite and TypeScript settings
 A monorepo package keeps its own `tsconfig.json`, references and Vite configuration.
 Use `--tsconfig` to select another TypeScript project explicitly.
 
+Type-check with the [content mapper](./content-mapper.md): `tsc --runExternalCode --noEmit`, or `tsrs --runExternalCode --noEmit` on the same `tsconfig.json`. The commands below are the packaged CLI.
+
 ```bash
 vp exec vize check
 vp exec vize lint src

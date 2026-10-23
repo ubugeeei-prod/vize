@@ -29,7 +29,8 @@ vp install -D vize
     "vize:build": "vize build src",
     "vize:fmt": "vize fmt --write src",
     "vize:lint": "vize lint --preset happy-path src",
-    "vize:check": "vize check src",
+    "typecheck": "tsc --runExternalCode --noEmit -p tsconfig.json",
+    "typecheck:tsrs": "tsrs --runExternalCode --noEmit -p tsconfig.json",
     "vize:ready": "vize ready src"
   }
 }
@@ -37,11 +38,12 @@ vp install -D vize
 
 ```bash
 vp run vize:lint
-vp run vize:check
+tsc --runExternalCode --noEmit -p tsconfig.json
+tsrs --runExternalCode --noEmit -p tsconfig.json
 vp run vize:ready
 ```
 
-単発のデバッグには `vp exec vize ...` を使い、文書化するワークフローや CI には名前付きスクリプトを使ってください。
+型チェックは content mapper を使います。tsrs は同じ `tsconfig.json` の drop-in です。`vize check` は同梱チェッカーのままです。単発のデバッグには `vp exec vize ...` を使い、文書化するワークフローや CI には名前付きスクリプトを使ってください。
 
 ## Rust バイナリのインストール
 
@@ -209,18 +211,18 @@ vize lint --format markdown src
 
 ## 型チェック
 
+推奨の型チェックは、TypeScript 7.1 以降と Vize の content mapper です。
+[tsrs](https://github.com/oxc-project/tsrs) でも同じプロジェクトを実行できます。コマンドは
+[型チェック](./type-checking.md)を参照してください。
+
+`vize check` は同梱のチェッカーです。[TypeScript のネイティブコンパイラー](https://github.com/microsoft/typescript-go)（TypeScript 7 として出荷される Go 実装、Project Corsa）で Vue SFC を型チェックします。Vize は SFC ごとに仮想 TypeScript を生成し、[`corsa-bind`](https://github.com/ubugeeei/corsa-bind) を通してネイティブにプロジェクトを診断し、結果を元の `.vue` の位置へ対応付けます。フラグや設定キーの「Corsa」は、このネイティブ TypeScript コンパイラーを指します。
+
 ```bash
 vize check
 vize check src
 vize check --tsconfig tsconfig.app.json
 vize check --profile src
 ```
-
-推奨の型チェックは、TypeScript 7.1 以降と Vize の content mapper です。
-[tsrs](https://github.com/oxc-project/tsrs) でも同じプロジェクトを実行できます。コマンドは
-[型チェック](./type-checking.md)を参照してください。
-
-`vize check` は同梱のチェッカーです。[TypeScript のネイティブコンパイラー](https://github.com/microsoft/typescript-go)（TypeScript 7 として出荷される Go 実装、Project Corsa）で Vue SFC を型チェックします。Vize は SFC ごとに仮想 TypeScript を生成し、[`corsa-bind`](https://github.com/ubugeeei/corsa-bind) を通してネイティブにプロジェクトを診断し、結果を元の `.vue` の位置へ対応付けます。フラグや設定キーの「Corsa」は、このネイティブ TypeScript コンパイラーを指します。
 
 パスを指定しない場合、利用可能な `tsconfig.json` の `files` / `include` / `exclude` を使います。明示的な入力にはファイル・ディレクトリ・glob を指定でき、`.vue`、`.ts`、`.tsx`、`.d.ts` を扱えます。
 

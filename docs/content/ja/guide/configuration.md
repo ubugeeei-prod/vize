@@ -113,6 +113,8 @@ export default defineConfig({
 モノレポでも各パッケージの `tsconfig.json`、参照、Vite 設定を保ちます。
 TypeScript プロジェクトを明示的に選ぶ場合は `--tsconfig` を使ってください。
 
+型チェックは [Content Mapper](./content-mapper.md) を使います。`tsc --runExternalCode --noEmit`、または同じ `tsconfig.json` で `tsrs --runExternalCode --noEmit` です。下のコマンドは同梱 CLI です。
+
 ```bash
 vp exec vize check
 vp exec vize lint src

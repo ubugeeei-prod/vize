@@ -23,7 +23,8 @@ vp install -D vize
     "vize:build": "vize build src",
     "vize:fmt": "vize fmt --write src",
     "vize:lint": "vize lint --preset happy-path src",
-    "vize:check": "vize check src",
+    "typecheck": "tsc --runExternalCode --noEmit -p tsconfig.json",
+    "typecheck:tsrs": "tsrs --runExternalCode --noEmit -p tsconfig.json",
     "vize:ready": "vize ready src"
   }
 }
@@ -31,11 +32,12 @@ vp install -D vize
 
 ```bash
 vp run vize:lint
-vp run vize:check
+tsc --runExternalCode --noEmit -p tsconfig.json
+tsrs --runExternalCode --noEmit -p tsconfig.json
 vp run vize:ready
 ```
 
-Use `vp exec vize ...` for one-off debugging; prefer named scripts for documented workflows and CI.
+Type-check with the content mapper. tsrs is a drop-in of the same `tsconfig.json`. `vize check` remains the packaged checker. Use `vp exec vize ...` for one-off debugging; prefer named scripts for documented workflows and CI.
 
 ## Rust Binary Installation
 
@@ -202,13 +204,6 @@ vize lint --format agent src
 
 ## Check
 
-```bash
-vize check
-vize check src
-vize check --tsconfig tsconfig.app.json
-vize check --profile src
-```
-
 The recommended typecheck is TypeScript 7.1 or newer with Vize's content mapper.
 [tsrs](https://github.com/oxc-project/tsrs) can run the same project. The commands are in
 [Type Checking](./type-checking.md).
@@ -220,6 +215,12 @@ SFC, runs project diagnostics natively through [`corsa-bind`](https://github.com
 and maps every result back to the original `.vue` location. Flags and config keys that mention
 "Corsa" refer to that native TypeScript compiler.
 
+```bash
+vize check
+vize check src
+vize check --tsconfig tsconfig.app.json
+vize check --profile src
+```
 
 When no explicit paths are given, `vize check` uses `tsconfig.json` `files` / `include` /
 `exclude` if available. Explicit inputs may be files, directories, or globs and can include `.vue`,

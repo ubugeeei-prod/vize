@@ -28,7 +28,8 @@ Prefer named scripts over one-off commands so local and CI runs share the same e
     "vize:fmt": "vize fmt --check src",
     "vize:fmt:fix": "vize fmt --write src",
     "vize:lint": "vize lint --preset happy-path --max-warnings 0 src",
-    "vize:check": "vize check",
+    "typecheck": "tsc --runExternalCode --noEmit -p tsconfig.json",
+    "typecheck:tsrs": "tsrs --runExternalCode --noEmit -p tsconfig.json",
     "vize:build": "vize build src",
     "vize:ready": "vize ready src"
   }
@@ -92,15 +93,17 @@ surface.
 
 ## Type Check
 
-Run `vize check` from the project root so the active `tsconfig`, Vue version, framework packages,
-and ambient types come from the same dependency graph:
+Add the Vize content mapper to `tsconfig.json`, then run TypeScript 7.1 from the package root.
+tsrs is a drop-in: the `contentMappers` entry stays, and the executable changes. The mapper entry
+and editor setup are in [Type Checking](./type-checking.md).
 
 ```bash
-vize check src
+tsc --runExternalCode --noEmit -p tsconfig.json
+tsrs --runExternalCode --noEmit -p tsconfig.json
 ```
 
-For package-specific monorepo checks, run from the package directory or set `typeChecker.tsconfig`
-in a scoped config entry.
+`vize check` is the packaged checker. Run it from the project root when you want that command.
+For package-specific monorepo checks, run from the package directory.
 
 ## Compile
 

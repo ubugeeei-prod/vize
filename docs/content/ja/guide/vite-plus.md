@@ -103,13 +103,15 @@ TypeScript 標準の `extends`・`references` は引き続き使えます。
 | コマンド | 実行するもの |
 | --- | --- |
 | `vp dev`, `vp build` | Vize で Vue をコンパイル |
-| `vp run check` | 型チェック、lint、フォーマット検査 |
-| `vp run typecheck` | Vue の型チェック |
+| `vp run check` | 同梱チェッカー、lint、フォーマット検査 |
+| `vp run typecheck` | 同梱チェッカーのみ |
 | `vp run lint` | Vize と Oxlint の lint |
 | `vp run lint:fix` | 両方の lint 修正 |
 | `vp run fmt` | Vue は Vize、その他は Oxfmt で書き込み |
 | `vp run fmt:check` | 書き込まずフォーマットを検査 |
 | `vp run editor:setup` | 推奨拡張機能と Vue エディター設定 |
+
+推奨の型チェックは [Content Mapper](./content-mapper.md) です。TypeScript 7.1 は `tsc --runExternalCode --noEmit` を実行します。tsrs は同じ `tsconfig` の drop-in で、`tsrs --runExternalCode --noEmit` です。`vp run typecheck` は同梱チェッカーで、`vp run check` はそれを含みます。
 
 `vp run check -- --fix` は lint 修正とフォーマットを適用します。
 パスは `vp run lint -- src` のように `--` の後ろへ渡せます。

@@ -4,8 +4,9 @@ title: Vite+
 
 # Vite+
 
-Use one `defineConfig` for Vite+, the Vize compiler, native typechecker, native
-linter, formatter, and library declarations. Install `@vizejs/vite-plugin` and
+Use one `defineConfig` for Vite+, the Vize compiler, native
+linter, formatter, and library declarations. Type-check with the content mapper.
+Install `@vizejs/vite-plugin` and
 your preferred compatible `vite-plus` version in the project:
 
 ```bash
@@ -139,9 +140,9 @@ API for new configuration.
 
 | Command | Work |
 | --- | --- |
-| `vp run check` | Native typecheck, native lint, Oxlint, and both formatter checks |
-| `vp run check -- --fix` | Typecheck, fix lint, and write formatting |
-| `vp run typecheck` | Native typecheck only |
+| `vp run check` | Packaged typecheck, native lint, Oxlint, and both formatter checks |
+| `vp run check -- --fix` | Packaged typecheck, fix lint, and write formatting |
+| `vp run typecheck` | Packaged checker only |
 | `vp run lint` | Native lint and Oxlint, plus optional native typecheck |
 | `vp run lint:fix` | Fix through both lint engines |
 | `vp run fmt` | Vize writes Vue formatting; Oxfmt writes other files |
@@ -150,6 +151,8 @@ API for new configuration.
 | `vp run pack` | Vite+ library bundling and configured native declarations |
 | `vp run preview`, `test` | The corresponding installed Vite+ commands |
 | `vp run editor:setup` | Recommend extensions and Vue editor defaults |
+
+The recommended typecheck is the [content mapper](./content-mapper.md). TypeScript 7.1 runs `tsc --runExternalCode --noEmit`. tsrs is a drop-in of the same `tsconfig`: `tsrs --runExternalCode --noEmit`. `vp run typecheck` is the packaged checker, and `vp run check` includes it.
 
 Pass paths after `--` to check, lint, and format tasks. Formatting also accepts
 `--check` or `--write`. Put tool options in the corresponding config section.

@@ -18,7 +18,7 @@ is the recommended workflow for applications.
 | Armature | Parser: tokenizes and parses Vue templates and SFC structure                      | compiler, linter, formatter                    |
 | Croquis  | Analyzer: builds scopes, binding metadata, macro information, and cross-file graphs | compiler, lint, type-aware checks              |
 | Patina   | Linter: runs Vue, script, CSS, a11y, SSR, Vapor, Musea, and type-aware lint rules | `vize lint`, editor diagnostics, Oxlint bridge |
-| Canon    | Type checker: generates virtual TypeScript and maps diagnostics back to Vue files       | `vize check`, editor type checking             |
+| Canon    | Type checker: generates virtual TypeScript and maps diagnostics back to Vue files       | Content mapper, `vize check`                   |
 | Maestro  | Language server: exposes diagnostics and editor features through LSP                       | `vize lsp`, VS Code, Zed                       |
 
 This means static analysis is not only linting. Template bindings, compiler macros, component
@@ -212,9 +212,18 @@ CLI, Oxlint bridge, and editor server.
 ## Type Checking
 
 > [!TIP]
-> New to `vize check`? Start with the [Type Checking guide](./type-checking.md).
+> Type-check with the [content mapper](./content-mapper.md). TypeScript 7.1 runs `tsc --runExternalCode --noEmit`. tsrs is a drop-in of the same `tsconfig`: `tsrs --runExternalCode --noEmit`. The setup and the `vue-tsc` map are in [Type Checking](./type-checking.md).
 
-`vize check` generates virtual TypeScript for Vue SFCs and asks Corsa project sessions for
+```json
+{
+  "scripts": {
+    "typecheck": "tsc --runExternalCode --noEmit",
+    "typecheck:tsrs": "tsrs --runExternalCode --noEmit"
+  }
+}
+```
+
+The packaged checker, `vize check`, generates virtual TypeScript for Vue SFCs and asks Corsa project sessions for
 diagnostics. It checks `.vue`, `.ts`, `.tsx`, and `.d.ts` inputs and maps diagnostics back to the
 original source files.
 

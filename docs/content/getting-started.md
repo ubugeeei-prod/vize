@@ -44,16 +44,18 @@ export default defineConfig({});
 ```bash
 vp dev
 vp build
-vp run check
-```
-
-`vp run check` combines Vue type checking, lint and formatting with Oxlint and Oxfmt. Use focused tasks during development:
-
-```bash
-vp run typecheck
 vp run lint
 vp run fmt:check
 ```
+
+Type-check `.vue` files with the [content mapper](./guide/content-mapper.md). TypeScript 7.1 and [tsrs](https://github.com/oxc-project/tsrs) share one `tsconfig.json`. tsrs is a drop-in: keep `contentMappers` and change the executable.
+
+```bash
+tsc --runExternalCode --noEmit -p tsconfig.json
+tsrs --runExternalCode --noEmit -p tsconfig.json
+```
+
+The mapper entry and the `vue-tsc` replacement table are in [Type Checking](./guide/type-checking.md). `vp run check` runs the packaged checker together with lint and formatting. `vp run typecheck` is that checker alone.
 
 Apply fixes with `vp run check -- --fix`.
 
@@ -79,14 +81,20 @@ If a script already exists, Vize preserves it and generates `vize:<name>`; see [
 
 ## Use Vize without Vite+
 
-Try the [standalone CLI](./guide/cli.md) on any Vue project without installing anything:
+Try lint and format with the [standalone CLI](./guide/cli.md) on any Vue project without installing anything:
 
 ```bash
 vpx vize lint src
-vpx vize check
 vpx vize fmt --check src
 ```
 
-It provides `vize lint`, `vize fmt` and `vize check`. For type checking, prefer TypeScript 7.1: `tsc --runExternalCode --noEmit` with the Vize content mapper. tsrs accepts the same project. Run from the target package root and keep the TypeScript project in `tsconfig.json`. Native commands can share top-level `vue` settings in `vite.config.*`; see [CLI configuration](./guide/configuration.md#standalone-cli) for discovery and its current scope.
+For type checking, add the Vize content mapper and run TypeScript 7.1. tsrs is a drop-in of the same project:
+
+```bash
+tsc --runExternalCode --noEmit -p tsconfig.json
+tsrs --runExternalCode --noEmit -p tsconfig.json
+```
+
+`vpx vize check` is the packaged checker. Run from the target package root and keep the TypeScript project in `tsconfig.json`. Native commands can share top-level `vue` settings in `vite.config.*`; see [CLI configuration](./guide/configuration.md#standalone-cli) for discovery and its current scope.
 
 Preview interactive setup with `vpx vize init --dry-run`, then run `vpx vize init` to select features. [Project Setup](./guide/init.md) explains detection and editing limits. Init uses project settings and defaults; it does not create a dedicated Vize config.

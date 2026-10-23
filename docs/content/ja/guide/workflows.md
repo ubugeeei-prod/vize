@@ -32,7 +32,8 @@ package.json にスクリプトを登録すると、ローカルと CI で同じ
     "vize:fmt": "vize fmt --check src",
     "vize:fmt:fix": "vize fmt --write src",
     "vize:lint": "vize lint --preset happy-path --max-warnings 0 src",
-    "vize:check": "vize check",
+    "typecheck": "tsc --runExternalCode --noEmit -p tsconfig.json",
+    "typecheck:tsrs": "tsrs --runExternalCode --noEmit -p tsconfig.json",
     "vize:build": "vize build src",
     "vize:ready": "vize ready src"
   }
@@ -101,15 +102,17 @@ CI の出力を短くするには `--help-level short`、診断を別のツー�
 
 ## 型チェック
 
-`vize check` はプロジェクトのルートから実行します。これにより、`tsconfig`、Vue、フレームワーク、
-グローバルな型宣言を同じプロジェクトの依存関係から解決します。
+`tsconfig.json` に Vize の content mapper を追加し、パッケージのルートで TypeScript 7.1 を実行します。
+tsrs は drop-in です。`contentMappers` はそのままに、実行ファイルだけ変えます。マッパーの書き方と
+エディター設定は[型チェック](./type-checking.md)を参照してください。
 
 ```bash
-vize check src
+tsc --runExternalCode --noEmit -p tsconfig.json
+tsrs --runExternalCode --noEmit -p tsconfig.json
 ```
 
-モノリポジトリ内の特定のパッケージを検査する場合は、そのディレクトリから実行するか、
-対象の設定エントリに `typeChecker.tsconfig` を指定します。
+`vize check` は同梱チェッカーです。そのコマンドを使うときはプロジェクトのルートから実行します。
+モノリポジトリ内の特定のパッケージを検査する場合は、そのディレクトリから実行します。
 
 ## コンパイル
 
