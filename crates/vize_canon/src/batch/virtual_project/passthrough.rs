@@ -60,6 +60,34 @@ pub(super) fn collect_passthrough_modules(
     files
 }
 
+/// Relative JSON modules imported by a source file. TypeScript resolves JSON
+/// only through an explicit `.json` specifier, so other specifiers are not
+/// probed on disk.
+pub(super) fn collect_relative_json_modules(path: &Path, content: &str) -> Vec<PathBuf> {
+    let Some(dir) = path.parent() else {
+        return Vec::new();
+    };
+
+    let mut files = extract_relative_module_specifiers(content)
+        .into_iter()
+        .filter(|specifier| is_json_specifier(specifier))
+        .map(|specifier| dir.join(specifier.as_str()))
+        .filter(|candidate| candidate.is_file())
+        .map(|candidate| normalize_existing_path(&candidate))
+        .collect::<Vec<_>>();
+    files.sort();
+    files.dedup();
+    files
+}
+
+fn is_json_specifier(specifier: &str) -> bool {
+    specifier
+        .len()
+        .checked_sub(".json".len())
+        .and_then(|start| specifier.get(start..))
+        .is_some_and(|extension| extension.eq_ignore_ascii_case(".json"))
+}
+
 fn authored_collision_alias(
     dir: &Path,
     specifier: &str,
@@ -270,6 +298,38 @@ mod tests {
                     PathBuf::from("tokens/colors.json"),
                 ),
             ]
+        );
+
+        let _ = std::fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn collects_only_explicit_relative_json_modules() {
+        let case_dir = unique_case_dir("json-only");
+        let _ = std::fs::remove_dir_all(&case_dir);
+        std::fs::create_dir_all(&case_dir).unwrap();
+        let root = vize_carton::path::canonicalize_non_verbatim(&case_dir);
+        // `./tokens` and `./theme` name JSON files only without the extension,
+        // which TypeScript does not resolve to JSON.
+        let entry = write(
+            &root,
+            "src/index.ts",
+            "import colors from './tokens/colors.json'\nimport again from './tokens/colors.json'\nimport sizes from '../sizes.JSON'\nimport tokens from './tokens'\nimport theme from './theme'\nimport missing from './missing.json'\nimport pkg from 'pkg/data.json'\n",
+        );
+        write(&root, "src/tokens/colors.json", "{}\n");
+        write(&root, "src/tokens/index.json", "{}\n");
+        write(&root, "src/theme.json", "{}\n");
+        write(&root, "sizes.JSON", "{}\n");
+
+        let files =
+            super::collect_relative_json_modules(&entry, &std::fs::read_to_string(&entry).unwrap());
+
+        assert_eq!(
+            files
+                .iter()
+                .map(|path| path.strip_prefix(&root).unwrap())
+                .collect::<Vec<_>>(),
+            vec![Path::new("sizes.JSON"), Path::new("src/tokens/colors.json")]
         );
 
         let _ = std::fs::remove_dir_all(&case_dir);

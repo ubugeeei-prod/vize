@@ -13,7 +13,7 @@ use std::path::{Path, PathBuf};
 use vize_carton::cstr;
 
 use super::super::VirtualProject;
-use super::super::passthrough::collect_passthrough_modules;
+use super::super::passthrough::collect_relative_json_modules;
 use super::PackageShadowTopology;
 
 impl VirtualProject {
@@ -27,8 +27,19 @@ impl VirtualProject {
         let Some(indexed) = self.package_source_index.get(&normalized_root) else {
             return;
         };
-        let mut indexed = indexed.iter().collect::<Vec<_>>();
-        indexed.sort_by(|left, right| left.0.cmp(right.0));
+        // Most package sources import no JSON; skip the shadow scan for them.
+        let mut json_sources = indexed
+            .iter()
+            .filter_map(|(source, (_, virtual_path))| {
+                let content = self.original_contents.get(virtual_path)?;
+                let json_files = collect_relative_json_modules(source, content);
+                (!json_files.is_empty()).then_some((source, virtual_path, json_files))
+            })
+            .collect::<Vec<_>>();
+        if json_sources.is_empty() {
+            return;
+        }
+        json_sources.sort_by(|left, right| left.0.cmp(right.0));
         let mut shadow_files = topology
             .files
             .iter()
@@ -37,24 +48,7 @@ impl VirtualProject {
             .collect::<Vec<_>>();
         shadow_files.sort();
 
-        for (source, (_, virtual_path)) in indexed {
-            let Some(content) = self.original_contents.get(virtual_path) else {
-                continue;
-            };
-            let mut json_files = collect_passthrough_modules(
-                source,
-                content,
-                &self.project_root,
-                &self.virtual_root,
-            )
-            .into_iter()
-            .map(|(_, original)| original)
-            .filter(|original| is_json_module(original))
-            .collect::<Vec<_>>();
-            if json_files.is_empty() {
-                continue;
-            }
-            json_files.sort();
+        for (source, virtual_path, json_files) in json_sources {
             let Some(authored_name) = source.file_name() else {
                 continue;
             };
@@ -85,12 +79,6 @@ impl VirtualProject {
             }
         }
     }
-}
-
-fn is_json_module(path: &Path) -> bool {
-    path.extension()
-        .and_then(|extension| extension.to_str())
-        .is_some_and(|extension| extension.eq_ignore_ascii_case("json"))
 }
 
 /// `.vue` sources are shadowed as `.vue.ts` / `.vue.tsx` companions. Those
