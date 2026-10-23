@@ -17,7 +17,7 @@ for (const basename of SCRIPT_BASENAMES.filter((name) => name.startsWith("i18n/"
 const navigation = globalThis.__vizeDocsNavigation;
 
 for (const { code } of globalThis.__vizeDocsSitemap.supportedLocales) {
-  void test(`navigation puts Philosophy in Start and Content Mapper in analysis (${code})`, () => {
+  void test(`navigation puts Content Mapper in the open Start section (${code})`, () => {
     const prefix = code === "en" ? "" : `/${code}`;
     const document = createNavigationDocument([
       [`${prefix}/getting-started`, "Getting Started"],
@@ -30,11 +30,11 @@ for (const { code } of globalThis.__vizeDocsSitemap.supportedLocales) {
     assert.deepEqual(sections(document), [
       {
         title: strings.ui.groups.start,
-        labels: [strings.labels["/getting-started"], strings.labels["/philosophy"]],
-      },
-      {
-        title: strings.ui.groups.staticAnalysis,
-        labels: [strings.labels["/guide/content-mapper"]],
+        labels: [
+          strings.labels["/getting-started"],
+          strings.labels["/guide/content-mapper"],
+          strings.labels["/philosophy"],
+        ],
       },
       { title: strings.ui.groups.tooling, labels: [strings.labels["/guide/musea"]] },
     ]);
@@ -42,8 +42,8 @@ for (const { code } of globalThis.__vizeDocsSitemap.supportedLocales) {
       document.querySelectorAll(".nav-link[href]").map((link) => link.getAttribute("href")),
       [
         `${prefix}/getting-started`,
-        `${prefix}/philosophy`,
         `${prefix}/guide/content-mapper`,
+        `${prefix}/philosophy`,
         `${prefix}/guide/musea`,
       ],
     );

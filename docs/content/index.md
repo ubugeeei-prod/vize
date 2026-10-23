@@ -23,6 +23,9 @@ features:
   - title: Start with Vite+
     details: Add the Vue compiler and native check tasks to your existing app, with one vite.config.ts.
     link: getting-started.md
+  - title: Type-check with a content mapper
+    details: TypeScript 7.1 runs Vize's mapper with tsc --runExternalCode. tsrs can run the same project.
+    link: guide/content-mapper.md
   - title: Migrate existing tools
     details: Compare what changes, move supported options, and copy the exact before/after diffs.
     link: guide/migration.md
@@ -49,7 +52,7 @@ Every tool parses a Vue file once and shares the result. Adopt them one at a tim
 | Compiler          | `@vitejs/plugin-vue`         | `vp dev`, `vp build`          | [Vite plugin](./guide/vite-plugin.md)       |
 | Linter            | `eslint-plugin-vue`          | `vize lint`                   | [Rules](./rules/index.md)                   |
 | Formatter         | Prettier for `.vue`          | `vize fmt`                    | [Formatting](./guide/formatter.md)          |
-| Type checker      | `vue-tsc`                    | `tsc --runExternalCode`       | [Type Checking](./guide/type-checking.md)   |
+| Type checker      | `vue-tsc`                    | `tsc --runExternalCode`       | [Content Mapper](./guide/content-mapper.md) |
 | Language server   | Vue - Official               | `vize lsp`                    | [Language Server](./guide/language-server.md) |
 | Vapor compiler    | —                            | `vue.compiler.vapor`          | [Vapor Mode](./guide/vapor.md)              |
 | Component gallery | Storybook                    | `vize musea`                  | [Musea](./guide/musea.md)                   |

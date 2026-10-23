@@ -66,10 +66,10 @@ vp run fmt:check
 
 ## 次にやりたいこと
 
+- [Content Mapper で Vue ファイルを型チェックする](./guide/content-mapper.md)。TypeScript 7.1 と tsrs のどちらでも実行できます。コマンドは[型チェック](./guide/type-checking.md)にあります。
 - [ルールやコンパイラーの設定を変更する](./guide/configuration.md)。
 - [既存のツールから移行する](./guide/migration.md)。変更前後の例を確認できます。
 - [lint の指摘を理解する](./rules/all.md)。Vue の問題例と修正例を掲載しています。
-- [Vue ファイルを型チェックする](./guide/type-checking.md)。TypeScript 7.1 の content mapper を使います。同じプロジェクトは tsrs でも実行できます。
 - [Vapor モードを試す](./guide/vapor.md)。コンポーネント単位で切り替えられます。
 - [コンポーネントを探す](./guide/ui/index.md)。使い方と API を確認できます。
 - [Musea でコンポーネントをプレビューする](./guide/musea.md)。

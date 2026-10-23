@@ -64,10 +64,10 @@ If a script already exists, Vize preserves it and generates `vize:<name>`; see [
 
 ## Choose your next step
 
+- [Type-check Vue files with the content mapper](./guide/content-mapper.md). TypeScript 7.1 and tsrs both run it. The commands are in [Type Checking](./guide/type-checking.md).
 - [Configure a rule or compiler option](./guide/configuration.md).
 - [Migrate existing tools](./guide/migration.md) with complete before/after examples.
 - [Understand a lint diagnostic](./rules/all.md) with bad and good Vue examples.
-- [Type-check Vue files](./guide/type-checking.md) with TypeScript 7.1's content mapper. tsrs can run the same project.
 - [Try Vapor Mode](./guide/vapor.md) one component at a time.
 - [Explore components](./guide/ui/index.md) with recipes and the component reference.
 - [Preview your components](./guide/musea.md) with Musea art files and the gallery.

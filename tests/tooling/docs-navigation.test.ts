@@ -225,11 +225,19 @@ void test("the sidebar groups the pages the site actually publishes", () => {
   ]);
 
   const start = sitemap.navGroups.find((group) => group.key === "start")!;
-  assert.deepEqual(start.paths, ["/", "/getting-started", "/philosophy", "/guide/configuration"]);
+  assert.deepEqual(start.paths, [
+    "/",
+    "/getting-started",
+    "/guide/content-mapper",
+    "/philosophy",
+    "/guide/configuration",
+  ]);
   assert.deepEqual(start.pathsByLocale, {
     en: [
       "/",
       "/getting-started",
+      "/guide/content-mapper",
+      "/guide/type-checking",
       "/philosophy",
       "/guide/vite-plus",
       "/guide/vite-plus-editor",
@@ -240,6 +248,8 @@ void test("the sidebar groups the pages the site actually publishes", () => {
     ja: [
       "/",
       "/getting-started",
+      "/guide/content-mapper",
+      "/guide/type-checking",
       "/philosophy",
       "/guide/vite-plus",
       "/guide/vite-plus-editor",

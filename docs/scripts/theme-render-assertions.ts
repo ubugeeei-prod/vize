@@ -300,9 +300,8 @@ export async function verifyIntroductoryNavigation(page: Page, route: string) {
   const philosophy = `${prefix}/philosophy`;
   const mapper = `${prefix}/guide/content-mapper`;
   assert(groups[0].paths.includes(philosophy), `${locale}: Philosophy belongs in Start`);
+  assert(groups[0].paths.includes(mapper), `${locale}: Content Mapper belongs in Start`);
   assert.equal(groups.filter((group) => group.paths.includes(philosophy)).length, 1);
-  const analysis = groups.find((group) => group.paths.includes(`${prefix}/guide/static-analysis`));
-  assert(analysis?.paths.includes(mapper), `${locale}: Content Mapper belongs in static analysis`);
   assert.equal(groups.filter((group) => group.paths.includes(mapper)).length, 1);
 }
 
