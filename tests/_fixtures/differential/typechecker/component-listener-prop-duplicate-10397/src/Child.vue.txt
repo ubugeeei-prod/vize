@@ -1,0 +1,4 @@
+<script setup lang="ts">
+defineProps<{ checked: boolean }>();
+</script>
+<template><input :checked="checked" /></template>

@@ -4962,6 +4962,59 @@
         ]
       },
       "diagnostics": []
+    },
+    {
+      "id": "typechecker/component-listener-prop-duplicate-10397/required-boolean-with-listener",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "component-listener-prop-duplicate-10397",
+      "case": "required-boolean-with-listener",
+      "test": "required_prop_reports_once_with_or_without_listener",
+      "regressionCommit": "950b16bce8d2754e07d44f24bcd58d6a59a031e2",
+      "sourceRevision": "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
+      "packReference": {
+        "path": "component-listener-prop-duplicate-10397/cases.json",
+        "sha256": "bfbf5c62ed1bae381225af9138a2318fc2d60cea08bd2fc7199d8b649bd17629"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "component-listener-prop-duplicate-10397/tsconfig.json.txt",
+          "sha256": "20607bc6729ba818893549d0567ca341f57cdf1eb56e34e176d2b2205e7002e4"
+        },
+        {
+          "file": "src/Child.vue",
+          "path": "component-listener-prop-duplicate-10397/src/Child.vue.txt",
+          "sha256": "c06aaefcc168971c448e95ac6354ea792a7e5e7227de5f52d7372c9f354821fb"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "component-listener-prop-duplicate-10397/src/App.vue.txt",
+          "sha256": "f74d671621c4509482b2d9dfcf499be3b193b2ff840dd5a254e16a8629a0b2b7"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
     }
   ]
 }

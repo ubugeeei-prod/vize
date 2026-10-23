@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10397,
+  "regressionCommit": "950b16bce8d2754e07d44f24bcd58d6a59a031e2",
+  "sourceRevision": "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "required-boolean-with-listener",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "src/Child.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "src/App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 11,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'boolean'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 7,
+          "column": 11,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'boolean'."
+        }
+      ]
+    }
+  ]
+}
