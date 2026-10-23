@@ -155,6 +155,7 @@ function __setup() {
       : unknown[];
   type __my_widget_0_emit_resolver = __VizeEmitPropsFactory<typeof my_widget>;
   const __vize_emit_props_0 = (undefined as unknown as __my_widget_0_emit_resolver)(my_widget)({
+    // @ts-ignore Inference-only prop; the canonical component-props call owns diagnostics.
     "label": value,
   });
   type __my_widget_7_update_model_value_inferred_emit_args = typeof __vize_emit_props_0 extends { "onUpdate:modelValue"?: (...args: infer __A) => any } ? __A : unknown[];
