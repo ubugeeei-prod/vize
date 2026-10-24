@@ -1,0 +1,1 @@
+{ "compilerOptions": { "target": "ESNext", "module": "ESNext", "moduleResolution": "Bundler", "strict": true, "jsx": "preserve", "skipLibCheck": true, "noUnusedLocals": true, "types": [] }, "vueCompilerOptions": { "target": 3, "checkUnknownProps": true }, "include": ["src"] }

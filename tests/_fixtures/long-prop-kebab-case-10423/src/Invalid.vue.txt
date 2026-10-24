@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import { defineAsyncComponent } from 'vue'
+import Child from './Child.vue'
+const AsyncChild = defineAsyncComponent(() => import('./Child.vue'))
+</script>
+<template>
+  <Child :selected-guidance-juku-test-template-parent-folder-id="'wrong'" @close="() => {}" />
+  <AsyncChild :selected-guidance-juku-test-template-parent-folder-id="'wrong'" @close="() => {}" />
+  <Child :selected-guidance-juku-test-template-parent-folder-id="1" @save="value => value.missing" />
+</template>

@@ -15,6 +15,7 @@ mod generic_constructor_slots;
 mod global_components;
 mod incomplete_tags;
 mod javascript_check_js;
+mod long_prop_kebab_case;
 mod props_binding;
 mod template_expression_syntax;
 mod type_only_import_use;

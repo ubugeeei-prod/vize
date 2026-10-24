@@ -21,6 +21,8 @@ pub(crate) const SETUP_SCOPE_HELPER_NAMES: &[&str] = &[
 /// Shared type-helper text used both by the per-file embedded preamble and by
 /// the hoisted ambient helpers file. Declared as a macro so the exact same
 /// bytes can be spliced into both constants at compile time.
+/// Kebab-case conversion accumulates its output before recursing, allowing
+/// TypeScript to eliminate the recursion for long authored prop/event keys.
 macro_rules! vue_type_aliases_text {
     () => {
         concat!(r#"type __EmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; } : Record<string, any[]>;
@@ -44,7 +46,7 @@ type __WithDefaultsArgs<T> = { [K in keyof T]?: __VizeInferDefault<T, T[K]> };
 type __WithDefaultsResult<T, D, __BKeys extends keyof T = never> = T extends unknown ? Readonly<__VizeMappedOmit<T, keyof D>> & { readonly [K in keyof D as K extends keyof T ? K : never]-?: K extends keyof T ? D[K] extends undefined ? __VizeIfAny<D[K], __VizeNotUndefined<T[K]>, T[K]> : __VizeNotUndefined<T[K]> : never } & { readonly [K in __BKeys]-?: K extends keyof D ? D[K] extends undefined ? boolean | undefined : boolean : boolean } : never;
 type __Ref<T> = import('vue').Ref<T>;
 type __ShallowRef<T> = import('vue').ShallowRef<T>;
-type __VizeKebabCase<S extends string> = S extends `${infer Head}${infer Tail}` ? Head extends Lowercase<Head> ? `${Head}${__VizeKebabCase<Tail>}` : `-${Lowercase<Head>}${__VizeKebabCase<Tail>}` : S;
+type __VizeKebabCase<S extends string, Acc extends string = ""> = S extends `${infer Head}${infer Tail}` ? Head extends Lowercase<Head> ? __VizeKebabCase<Tail, `${Acc}${Head}`> : __VizeKebabCase<Tail, `${Acc}-${Lowercase<Head>}`> : `${Acc}${S}`;
 type __VizeKebabProps<T> = { [K in keyof T & string as __VizeKebabCase<K>]: T[K] };"#, "\n", include_str!("../component_prop_helpers.txt"))
     };
 }

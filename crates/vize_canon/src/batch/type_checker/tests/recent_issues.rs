@@ -34,6 +34,7 @@ mod large_declaration_identity;
 mod lexical_dollar_slots;
 mod listener_attribute_parity;
 mod literal_dynamic_slot_names;
+mod long_prop_kebab_case;
 mod native_inline_event_handler;
 mod native_prop_anchors;
 mod normalization;

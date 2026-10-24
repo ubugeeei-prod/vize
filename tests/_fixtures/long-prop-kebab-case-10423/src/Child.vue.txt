@@ -1,0 +1,5 @@
+<script setup lang="ts">
+defineProps<{ selectedGuidanceJukuTestTemplateParentFolderId: number; selectedGuidanceJukuTestTemplateParentFolderGuidanceJukuTestTemplateParentFolderGuidanceJukuTestTemplateParentFolderGuidanceJukuTestTemplateParentFolderGuidanceJukuTestTemplateParentFolderGuidanceJukuTestTemplateParentFolderId?: number }>()
+defineEmits<{ close: []; save: [value: number] }>()
+</script>
+<template><div /></template>
