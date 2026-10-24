@@ -42,7 +42,8 @@ fn long_prop_names_with_listeners_preserve_complete_authored_diagnostics() {
 }
 
 fn project(mapper: bool) -> tempfile::TempDir {
-    let fixture = workspace_root().join("tests/_fixtures/long-prop-kebab-case-10423");
+    let fixture = workspace_root()
+        .join("tests/_fixtures/differential/typechecker/long-prop-kebab-case-10423");
     let project = tempfile::tempdir().unwrap();
     std::fs::create_dir_all(project.path().join("src")).unwrap();
     for name in ["Child.vue", "App.vue", "Invalid.vue"] {

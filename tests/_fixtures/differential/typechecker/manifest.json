@@ -5120,6 +5120,64 @@
         ]
       },
       "diagnostics": []
+    },
+    {
+      "id": "typechecker/long-prop-kebab-case-10423/static-and-async-with-listeners",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "long-prop-kebab-case-10423",
+      "case": "static-and-async-with-listeners",
+      "test": "long_prop_keys_preserve_static_and_async_listener_diagnostics",
+      "regressionCommit": "d8849fab885cb40b9516889a464549fd29af3f92",
+      "sourceRevision": "d8849fab885cb40b9516889a464549fd29af3f92",
+      "packReference": {
+        "path": "long-prop-kebab-case-10423/cases.json",
+        "sha256": "b8fd2b393de0b0f56ef9e3a790117b7f24b348c9de320869ba36f098e68c7fad"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "long-prop-kebab-case-10423/tsconfig.json.txt",
+          "sha256": "485f9c8ec0181acbd817c768cb9cc6d486fad110e30c8c9921e0181cc5bf86b6"
+        },
+        {
+          "file": "src/Child.vue",
+          "path": "long-prop-kebab-case-10423/src/Child.vue.txt",
+          "sha256": "5cbce7d02d7b8efd3e29c8cd84043269f43feb851d1df27b4115a372c2be0653"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "long-prop-kebab-case-10423/src/App.vue.txt",
+          "sha256": "496e6531d6690e004721aca6ce4aa0ab4271708b7bf788b32f39ceeaf4205d99"
+        },
+        {
+          "file": "src/Invalid.vue",
+          "path": "long-prop-kebab-case-10423/src/Invalid.vue.txt",
+          "sha256": "72385c72ac3f47a67452d596940ab7b0bd967f13e5c77e287ea7ba1f9a539b81"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
     }
   ]
 }

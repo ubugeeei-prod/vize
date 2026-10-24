@@ -7,7 +7,7 @@ macro_rules! fixture {
     ($file:literal) => {
         include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../tests/_fixtures/long-prop-kebab-case-10423/",
+            "/../../tests/_fixtures/differential/typechecker/long-prop-kebab-case-10423/",
             $file,
             ".txt"
         ))

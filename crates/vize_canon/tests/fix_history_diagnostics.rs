@@ -836,7 +836,8 @@ fn check_pack(
             | "content-mapper-nested-vfor-guard-10216"
             | "content-mapper-filename-globals-10190"
             | "native-expect-error-10413"
-            | "generic-constructor-slots-10416" => regression,
+            | "generic-constructor-slots-10416"
+            | "long-prop-kebab-case-10423" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
             }
@@ -1099,5 +1100,16 @@ fn assert_generated_check_ordinal_normalization_preserves_markers_without_digits
     assert_eq!(
         normalized[0].message,
         "_CheckProps_ stays distinct from _CheckProps_#"
+    );
+}
+
+#[test]
+fn long_prop_keys_preserve_static_and_async_listener_diagnostics() {
+    check_pack(
+        "long-prop-kebab-case-10423",
+        "long_prop_keys_preserve_static_and_async_listener_diagnostics",
+        "d8849fab885cb40b9516889a464549fd29af3f92",
+        Some(10423),
+        &["static-and-async-with-listeners"],
     );
 }
