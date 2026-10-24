@@ -178,6 +178,7 @@ const counts = {
   mountOnly: 0,
   hydrated: 0,
   cleanHydrated: 0,
+  commentEntityDivergences: 0,
   fragmentedHydrationWithRetainedMarkers: 0,
 };
 try {
@@ -244,6 +245,18 @@ try {
             "raw hydrated fragment surrounds primary mounted content",
           );
           counts.fragmentedHydrationWithRetainedMarkers++;
+        } else if (input.id === "module-comment") {
+          assert.deepEqual(
+            hydrated.trace.tree,
+            [[8, "import { template as _template } from 'vue'"]],
+            "genuine SSR comment retains the complete authored text",
+          );
+          assert.deepEqual(
+            mounted.trace.tree,
+            [[8, "import { template as _template } from &#39;vue&#39;"]],
+            "stock mount retains the compiler's complete entity spelling",
+          );
+          counts.commentEntityDivergences++;
         } else {
           assert.deepEqual(
             hydrated.trace.tree,

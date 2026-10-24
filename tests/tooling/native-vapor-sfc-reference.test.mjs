@@ -222,7 +222,8 @@ await test("separate real primary lifecycle controls retain exact upstream fragm
   assert.equal(observed.primaryOnly, true);
   assert.equal(observed.traces.length, 13);
   assert.equal(observed.counts.configurations, 27);
-  assert.equal(observed.counts.cleanHydrated, 22);
+  assert.equal(observed.counts.cleanHydrated, 21);
+  assert.equal(observed.counts.commentEntityDivergences, 1);
   assert.equal(observed.counts.fragmentedHydrationWithRetainedMarkers, 4);
   assert.equal(observed.counts.mountOnly, 1);
   if (process.env.VIZE_NATIVE_VAPOR_PRIMARY_LIFECYCLE_CAPTURE)

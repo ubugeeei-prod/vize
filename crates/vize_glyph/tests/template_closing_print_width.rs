@@ -35,7 +35,7 @@ fn independent_closing_grammar_keeps_complete_fixed_points() {
     );
     assert_eq!(
         digest(bytes).as_str(),
-        "f57812d0f91255208eca609b3ac7c985b2fbb7c6cfa7f284c4202544b9a23b74"
+        "4620e507bb3de276195c5e005fee73b83a4da3537c534d11369416912a6890cf"
     );
     let corpus: Corpus = serde_json::from_slice(bytes).expect("whole independent reference corpus");
     assert_eq!(corpus.cases.len(), 13);

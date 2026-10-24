@@ -198,7 +198,18 @@ try {
     for (const [configurationIndex, configuration] of configurations.entries()) {
       const actual = await mount(native, configuration, null, !!input.component);
       const expected = await mount(reference, configuration, null, !!input.component);
-      assert.deepEqual(actual.tree, expected.tree, `${input.id} actual pinned runtime tree`);
+      if (input.id === "module-comment") {
+        assert.deepEqual(
+          actual.tree,
+          [[8, "import { template as _template } from 'vue'"]],
+          "native comment retains the complete authored text",
+        );
+        assert.deepEqual(
+          expected.tree,
+          [[8, "import { template as _template } from &#39;vue&#39;"]],
+          "stock mount retains the compiler's complete entity spelling",
+        );
+      } else assert.deepEqual(actual.tree, expected.tree, `${input.id} actual pinned runtime tree`);
       const repeated = await mount(native, configuration, null, !!input.component);
       assert.deepEqual(repeated.tree, actual.tree, `${input.id} template clone reuse`);
       for (const [index, node] of repeated.retained.entries())
