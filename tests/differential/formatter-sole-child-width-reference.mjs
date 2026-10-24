@@ -7,7 +7,7 @@ import { createHash } from "node:crypto";
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const DIRECTORY = "tests/_fixtures/differential/formatter-regressions/sole-child-width-7876";
 const AUTHORITY = `${DIRECTORY}/current-vue-references.json`;
-const HASH = "a6ed5bac22643b3cf574e8ec0059c2d2d291ab70f8de2379af56fc9e1f106826";
+const HASH = "bf8c553b9fd93908061acbeb8a239a0ee945c7f59209ce25d406d53ef28a3d36";
 const CLI_MANIFEST = "tests/_fixtures/differential/formatter/manifest.json";
 const CLI_HASH = "1c4beb10ea5b444df0a902552f468d7d8f67e70c5d301d9815d930bce6298984";
 const API_MANIFEST = "tests/_fixtures/differential/formatter-history/vue-version-manifest.json";
