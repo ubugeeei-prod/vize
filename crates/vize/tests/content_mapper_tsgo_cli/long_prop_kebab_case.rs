@@ -21,11 +21,14 @@ fn long_prop_names_with_listeners_preserve_complete_authored_diagnostics() {
     let invalid = check_project(&tsgo, project.path(), "tsconfig.json");
     assert_eq!(invalid.status.code(), Some(2), "{}", output_text(&invalid));
     assert!(invalid.stderr.is_empty(), "{}", output_text(&invalid));
-    let lines = std::str::from_utf8(&invalid.stdout)
+    let mut lines = std::str::from_utf8(&invalid.stdout)
         .unwrap()
         .lines()
         .map(|line| line.replace('\\', "/"))
         .collect::<Vec<_>>();
+    // Host revisions group template and script passes differently. Preserve
+    // every complete finding and its multiplicity in a canonical order.
+    lines.sort();
     assert_eq!(
         lines,
         [
@@ -46,6 +49,7 @@ fn project(mapper: bool) -> tempfile::TempDir {
         .join("tests/_fixtures/differential/typechecker/long-prop-kebab-case-10423");
     let project = tempfile::tempdir().unwrap();
     std::fs::create_dir_all(project.path().join("src")).unwrap();
+    std::fs::create_dir_all(project.path().join("node_modules")).unwrap();
     for name in ["Child.vue", "App.vue", "Invalid.vue"] {
         std::fs::copy(
             fixture.join("src").join(cstr!("{name}.txt").as_str()),
