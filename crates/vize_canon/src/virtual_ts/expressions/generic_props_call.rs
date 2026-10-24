@@ -131,14 +131,19 @@ pub(super) fn generate_generic_props_call(
 }
 
 /// Emit the inference-only binding a `v-slot` scope reads its payload type
-/// from: `const <name> = factory(C)(<the authored props>);`.
+/// from. Native constructors are instantiated directly with the authored props;
+/// generated and functional components keep their slot resolver calls.
 ///
 /// The child's slot map is a function of its generic parameters, and the only
 /// construct that instantiates those the way `vue-tsc` does is a *call* with
 /// the authored props — a type-level probe against the construct signature
 /// erases every parameter to its constraint even when the props determine it.
-/// Higher-order inference preserves native functional/constructor generics;
-/// Vize components retain their authored resolver signature directly.
+/// Higher-order inference preserves native functional generics, but an
+/// intersection of generic and non-generic construct signatures fixes its type
+/// parameters too early (#10416). A direct `new C(props, ...args)` preserves
+/// overload selection and inference until the props are available. The selector
+/// returns that instance's slots only for native constructors; Vize components
+/// retain their authored resolver signature directly.
 /// Select one factory signature before inference: overloading the factory
 /// erases generics in library declarations whose parameters reference their
 /// own setup context (for example vue-virtual-scroller).
@@ -170,7 +175,7 @@ pub(crate) fn generate_slot_host_binding(
     }
     append!(
         *ts,
-        "{indent}const {binding_name} = (undefined as unknown as __VizeSlotsFactory<typeof {component_ref}>)({component_ref})(",
+        "{indent}const {binding_name} = (undefined as unknown as __VizeSlotHostSelector<typeof {component_ref}>)(new (undefined as unknown as __VizeSlotConstructor<typeof {component_ref}>)(",
     );
     let isolated_guard = usage
         .vif_guard
@@ -191,6 +196,25 @@ pub(crate) fn generate_slot_host_binding(
     if usage.vif_guard.is_some() {
         ts.push_str(" : (undefined as unknown as never)");
     }
-    ts.push_str(");\n");
+    append!(
+        *ts,
+        ", ...([] as unknown as __VizeSlotConstructorArgs<__VizeSlotConstructor<typeof {component_ref}>>)), (undefined as unknown as __VizeSlotsFactory<typeof {component_ref}>)({component_ref})(",
+    );
+    if let Some(guard) = isolated_guard.as_ref() {
+        let guard = guard.as_str();
+        append!(*ts, "({guard}) ? ");
+    }
+    append_props_literal(
+        ts,
+        &mut discarded,
+        usage,
+        template_binding_access,
+        source_context,
+        indent,
+    );
+    if usage.vif_guard.is_some() {
+        ts.push_str(" : (undefined as unknown as never)");
+    }
+    ts.push_str("));\n");
     append!(*ts, "{indent}void {binding_name};\n");
 }

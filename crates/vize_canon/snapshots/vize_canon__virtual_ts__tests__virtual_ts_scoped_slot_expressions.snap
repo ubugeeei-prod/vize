@@ -101,10 +101,14 @@ declare const __vizeDirectiveBindingRest: { instance: null; oldValue: null; modi
 declare function __vizeDirectiveTail<F extends (...args: any[]) => any>(hook: F): 4 extends Parameters<F>['length'] ? [never, never] : 3 extends Parameters<F>['length'] ? [never] : [];
 
 type __VizeSlotHostSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : C extends { new (): { $slots: infer __S } } ? __S : C extends (props: any, context: infer __Ctx, ...args: any[]) => any ? NonNullable<__Ctx> extends { slots: infer __S } ? __S : any : any;
-declare function __vizeConstructorSlots<P, S>(component: new (props: P, ...args: any[]) => { $slots: S }): (props: P) => S;
 declare function __vizeFunctionalSlots<P, C, R>(component: (props: P, context: C, ...args: any[]) => R): (props: P) => "__ctx" extends keyof R ? NonNullable<R["__ctx"]> extends { slots: infer S } ? S : any : NonNullable<C> extends { slots: infer S } ? S : any;
-type __VizeNativeSlotsFactory<C> = C extends new (...args: any[]) => any ? typeof __vizeConstructorSlots : C extends (...args: any[]) => any ? typeof __vizeFunctionalSlots : (component: C) => (props: any) => __VizeSlotHostSlots<C>;
+type __VizeNativeSlotsFactory<C> = C extends new (...args: any[]) => any ? (component: C) => (props: any) => __VizeSlotHostSlots<C> : C extends (...args: any[]) => any ? typeof __vizeFunctionalSlots : (component: C) => (props: any) => __VizeSlotHostSlots<C>;
 type __VizeSlotsFactory<C> = __VizeIsAny<C> extends true ? (component: C) => (props: any) => any : C extends { __vizeResolveSlots?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : __VizeNativeSlotsFactory<C> : C extends { readonly __vizeComponentMarker: true } ? (component: C) => (props: any) => __VizeSlotHostSlots<C> : __VizeNativeSlotsFactory<C>;
+type __VizeHasSlotResolver<C> = C extends { __vizeResolveSlots?: infer F } ? F extends (...args: any[]) => any ? true : false : false;
+type __VizeDirectSlotConstructor<C> = __VizeIsAny<C> extends true ? never : __VizeHasSlotResolver<C> extends true ? never : C extends { readonly __vizeComponentMarker: true } ? never : C extends new (...args: any[]) => { $slots: any } ? C : never;
+type __VizeSlotConstructor<C> = [__VizeDirectSlotConstructor<C>] extends [never] ? new (props: any, ...args: any[]) => { $slots: never } : __VizeDirectSlotConstructor<C>;
+type __VizeSlotConstructorArgs<C> = C extends new (props: any, ...args: infer A) => any ? { [K in keyof A]: any } : [];
+type __VizeSlotHostSelector<C> = [__VizeDirectSlotConstructor<C>] extends [never] ? <S>(instance: unknown, slots: S) => S : <I extends { $slots: any }>(instance: I, slots: unknown) => I["$slots"];
 // @ts-ignore The unchecked payload of an untyped host: an error type, never reported.
 type __VizeSilentAny = {}["__vizeSilentAny"];
 type __VizeNamedSlotPayload<__S, __N> = { [__K in keyof __S & __N]-?: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }[keyof __S & __N] extends infer __P ? ([__P] extends [never] ? any : __P) : any;
@@ -136,7 +140,7 @@ function __setup() {
   // User setup code
   const items = ['a', 'b']
   
-  // @vize-map: 17315:17345 -> 0:59
+  // @vize-map: 18089:18119 -> 0:59
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -154,9 +158,11 @@ function __setup() {
   // @vize-map: expr -> 16:21
 
   // v-slot scope: #default
-  const __vize_slot_host_7 = (undefined as unknown as __VizeSlotsFactory<typeof MyList>)(MyList)({
+  const __vize_slot_host_7 = (undefined as unknown as __VizeSlotHostSelector<typeof MyList>)(new (undefined as unknown as __VizeSlotConstructor<typeof MyList>)({
     "items": items,
-  });
+  }, ...([] as unknown as __VizeSlotConstructorArgs<__VizeSlotConstructor<typeof MyList>>)), (undefined as unknown as __VizeSlotsFactory<typeof MyList>)(MyList)({
+    "items": items,
+  }));
   void __vize_slot_host_7;
   void function _slot_default_7({ item }: __VizeSlotPayload<typeof __vize_slot_host_7, "default">) {
     void item;
@@ -228,9 +234,11 @@ function __setup() {
   void __vize_required_slots_0;
 
   // Component props in v-slot scope: #default
-  const __vize_slot_props_host_7 = (undefined as unknown as __VizeSlotsFactory<typeof MyList>)(MyList)({
+  const __vize_slot_props_host_7 = (undefined as unknown as __VizeSlotHostSelector<typeof MyList>)(new (undefined as unknown as __VizeSlotConstructor<typeof MyList>)({
     "items": items,
-  });
+  }, ...([] as unknown as __VizeSlotConstructorArgs<__VizeSlotConstructor<typeof MyList>>)), (undefined as unknown as __VizeSlotsFactory<typeof MyList>)(MyList)({
+    "items": items,
+  }));
   void __vize_slot_props_host_7;
   void function _slot_props_default_7({ item }: __VizeSlotPayload<typeof __vize_slot_props_host_7, "default">) {
     void item;
