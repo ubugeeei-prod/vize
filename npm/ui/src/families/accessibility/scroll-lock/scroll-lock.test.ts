@@ -165,6 +165,7 @@ test("auto strategy recognizes touch-capable iPad desktop mode without blocking 
 test("cross-document migration restores the old document before locking the new one", () => {
   const restorePresentation = preserveDocumentPresentation(document);
   const frame = document.createElement("iframe");
+  frame.srcdoc = "<!doctype html><html><body></body></html>";
   document.body.append(frame);
   const frameDocument = frame.contentDocument;
   assert.ok(frameDocument);

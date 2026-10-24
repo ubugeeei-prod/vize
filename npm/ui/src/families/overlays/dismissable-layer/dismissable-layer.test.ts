@@ -272,6 +272,7 @@ test("reactive enablement, modality switches, and root migration recompute synch
   assert.equal(harness.dismisses.length, 2);
 
   const frame = document.createElement("iframe");
+  frame.srcdoc = "<!doctype html><html><body></body></html>";
   document.body.append(frame);
   const frameDocument = frame.contentDocument;
   assert.ok(frameDocument);

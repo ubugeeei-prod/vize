@@ -217,6 +217,7 @@ test("open shadow-root mutations and external unmasking are observed", async () 
 test("cross-document root replacement transfers all attribute ownership", () => {
   const harness = mountInertOutside();
   const frame = document.createElement("iframe");
+  frame.srcdoc = "<!doctype html><html><body></body></html>";
   document.body.append(frame);
   const frameDocument = frame.contentDocument;
   assert.ok(frameDocument);

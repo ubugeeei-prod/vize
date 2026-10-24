@@ -18,6 +18,9 @@ test("normalizes pointer deltas after movement and restores exact selection styl
   const harness = mountMove();
   harness.host.style.setProperty("user-select", "text", "important");
   harness.host.style.setProperty("-webkit-user-select", "contain");
+  const originalUserSelect = harness.host.style.getPropertyValue("user-select");
+  const originalUserSelectPriority = harness.host.style.getPropertyPriority("user-select");
+  const originalWebkitUserSelect = harness.host.style.getPropertyValue("-webkit-user-select");
   harness.host.dispatchEvent(pointer("pointerdown", 10, 20));
   assert.equal(harness.controller.isMoving.value, false);
   assert.equal(harness.host.style.getPropertyValue("user-select"), "none");
@@ -45,9 +48,12 @@ test("normalizes pointer deltas after movement and restores exact selection styl
   assert.equal(harness.controller.isMoving.value, false);
   assert.equal(harness.events.at(-1)?.type, "moveend");
   assert.equal(harness.events.at(-1)?.isCanceled, false);
-  assert.equal(harness.host.style.getPropertyValue("user-select"), "text");
-  assert.equal(harness.host.style.getPropertyPriority("user-select"), "important");
-  assert.equal(harness.host.style.getPropertyValue("-webkit-user-select"), "contain");
+  assert.equal(harness.host.style.getPropertyValue("user-select"), originalUserSelect);
+  assert.equal(harness.host.style.getPropertyPriority("user-select"), originalUserSelectPriority);
+  assert.equal(
+    harness.host.style.getPropertyValue("-webkit-user-select"),
+    originalWebkitUserSelect,
+  );
   harness.unmount();
 });
 

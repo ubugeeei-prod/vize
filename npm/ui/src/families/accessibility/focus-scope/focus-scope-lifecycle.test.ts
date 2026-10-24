@@ -183,6 +183,7 @@ test("same-document root replacement preserves nested portal ownership", () => {
 test("cross-document root replacement transfers containment and restores its invoker", () => {
   const harness = mountFocusScope({ contain: true, restoreFocus: true });
   const frame = document.createElement("iframe");
+  frame.srcdoc = "<!doctype html><html><body></body></html>";
   document.body.append(frame);
   const frameDocument = frame.contentDocument;
   assert.ok(frameDocument);

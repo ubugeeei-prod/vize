@@ -126,6 +126,7 @@ test("reactive roots, branches, enablement, and cross-document migration recompu
   enabled.value = true;
 
   const frame = document.createElement("iframe");
+  frame.srcdoc = "<!doctype html><html><body></body></html>";
   document.body.append(frame);
   const frameDocument = frame.contentDocument;
   assert.ok(frameDocument);
