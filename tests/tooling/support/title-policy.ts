@@ -20,7 +20,11 @@ export type PolicyRun = {
  * with `gh` stubbed out. The stub records the exact argv of every invocation so
  * tests can assert the complete API call list, including "no call at all".
  */
-export function runPolicy(payload: unknown, eventName: string): PolicyRun {
+export function runPolicy(
+  payload: unknown,
+  eventName: string,
+  options: { cwd?: string; force?: boolean } = {},
+): PolicyRun {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-title-policy-"));
   const binDir = path.join(tempDir, "bin");
   const eventPath = path.join(tempDir, "event.json");
@@ -47,8 +51,8 @@ export function runPolicy(payload: unknown, eventName: string): PolicyRun {
   };
   delete env.NODE_TEST_CONTEXT;
 
-  const result = spawnSync("rust-script", [commandPath], {
-    cwd: repoRoot,
+  const result = spawnSync("rust-script", [...(options.force ? ["--force"] : []), commandPath], {
+    cwd: options.cwd ?? repoRoot,
     env,
     encoding: "utf8",
   });

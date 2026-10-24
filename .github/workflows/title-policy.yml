@@ -30,7 +30,11 @@ jobs:
           sparse-checkout: |
             .github/actions/setup-rust-script
             tools/commands/ci/github/issue-pr-title-policy.rs
+            tools/support/Cargo.toml
+            tools/support/lib.rs
             tools/support/common.rs
+            tools/support/editors
+            tests/_fixtures/differential/lsp/template-expression-globals-8015/globals.expected.json
           sparse-checkout-cone-mode: false
 
       - name: Setup Rust
