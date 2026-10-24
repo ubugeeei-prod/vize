@@ -43,7 +43,11 @@ const recentIssueRows = [
     "test",
     1,
   ],
-  ["crates/vize_canon/src/batch/type_checker/tests/recent_issues/component_prop_regressions/generic_emit_guard.rs", "test", 1],
+  [
+    "crates/vize_canon/src/batch/type_checker/tests/recent_issues/component_prop_regressions/generic_emit_guard.rs",
+    "test",
+    1,
+  ],
   [
     "crates/vize_canon/src/batch/type_checker/tests/recent_issues/component_prop_regressions/global_html_fallthrough_attrs.rs",
     "test",

@@ -385,10 +385,7 @@ const states = ${JSON.stringify(path.join(fixture.reportDir, "typecheck-deadline
 });
 
 test("failed cleanup cannot block the supervisor on reaping or stream joins", () => {
-  const source = fs.readFileSync(
-    path.resolve(path.dirname(script), "../../support/typecheck_project_deadline.rs"),
-    "utf8",
-  );
+  const source = fs.readFileSync(path.resolve(path.dirname(script), "project_deadline.rs"), "utf8");
   const start = source.indexOf("let status = match &cleanup {");
   const end = source.indexOf("// Restoration is mandatory", start);
   assert.ok(start >= 0 && end > start);

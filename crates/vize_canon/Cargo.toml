@@ -88,7 +88,11 @@ libc.workspace = true
 junction = "2"
 
 [dev-dependencies]
-davinci_test_support = { workspace = true, features = ["canon-project", "native-process", "reference-path"] }
+davinci_test_support = { workspace = true, features = [
+  "canon-project",
+  "native-process",
+  "reference-path",
+] }
 criterion.workspace = true
 insta.workspace = true
 tempfile.workspace = true

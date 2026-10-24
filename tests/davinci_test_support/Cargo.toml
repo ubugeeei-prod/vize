@@ -10,7 +10,7 @@ publish = false
 
 [features]
 canon-project = ["dep:vize_canon", "dep:tempfile"]
-vue-fixtures = []
+vue-fixtures = ["dep:sha2", "dep:tempfile"]
 formatter = ["dep:sha2"]
 reference-path = ["dep:sha2"]
 native-process = ["dep:vize_carton"]
