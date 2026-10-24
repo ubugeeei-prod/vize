@@ -4,29 +4,21 @@
 //! edition = "2024"
 //!
 //! [dependencies]
+//! vize_tool_support = { path = "../../support" }
 //! serde = { version = "1", features = ["derive"] }
 //! serde_json = "1"
 //! ```
 
 use std::{env, path::PathBuf, process::ExitCode};
 
-#[path = "../../support/common.rs"]
-mod common;
-#[path = "../../support/davinci/fpfn.rs"]
+use vize_tool_support::common;
 mod davinci_fpfn;
-#[path = "../../support/davinci/seed_exact.rs"]
 mod seed_exact;
-#[path = "../../support/davinci/seed_exact_gen.rs"]
 mod seed_exact_gen;
-#[path = "../../support/davinci/seed_exact_snippets.rs"]
 mod seed_exact_snippets;
-#[path = "../../support/davinci/seed_html.rs"]
 mod seed_html;
-#[path = "../../support/davinci/seed_html_run.rs"]
 mod seed_html_run;
-#[path = "../../support/davinci/seed_pilot.rs"]
 mod seed_pilot;
-#[path = "../../support/davinci/seed_print.rs"]
 mod seed_print;
 
 use davinci_fpfn::{assert_seeded_tree, resolve_vize_cli};

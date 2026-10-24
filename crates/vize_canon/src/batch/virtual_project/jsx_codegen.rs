@@ -227,7 +227,6 @@ fn jsx_parse_message(diagnostic: &JsxDiagnostic) -> CompactString {
 }
 
 #[cfg(test)]
-#[path = "jsx_codegen_tests.rs"]
 mod tests;
 
 #[cfg(test)]

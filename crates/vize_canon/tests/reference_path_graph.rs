@@ -3,8 +3,7 @@
 
 use vize_canon::BatchTypeChecker;
 
-#[path = "support/reference_path_project.rs"]
-mod project;
+use davinci_test_support::reference_path_project as project;
 
 #[test]
 fn reported_project_matches_the_pinned_corpus_bytes() {

@@ -1,7 +1,6 @@
 //! Public Doctor projection consumes the same frozen original sources as lint.
 use std::{fs, path::Path, process::Command};
 use vize_doctor::DoctorReport;
-#[path = "support/browser_origin_current_reference.rs"]
 mod current_reference;
 
 #[test]

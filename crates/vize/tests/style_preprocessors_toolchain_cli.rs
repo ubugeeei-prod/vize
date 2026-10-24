@@ -11,10 +11,8 @@
 //! `vize fmt` leaves them byte-identical, `vize lint` reads only plain CSS,
 //! and `vize check` type-checks the component around them.
 
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
-#[path = "support/vite_config.rs"]
-mod vite_config;
+use crate::support::corsa_requirement;
+use crate::support::vite_config;
 
 use std::{fs, path::Path, process::Command};
 

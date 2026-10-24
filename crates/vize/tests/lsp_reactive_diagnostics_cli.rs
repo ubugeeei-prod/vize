@@ -1,12 +1,8 @@
 #![cfg(test)]
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
+use crate::support::lsp_vue_project as support;
 use serde_json::{Value, json};
-
-#[path = "support/lsp_process.rs"]
-mod lsp_process;
-#[path = "support/lsp_vue_project.rs"]
-mod support;
 use support::{Fixture, position};
 
 fn diagnostic(source: &str, needle: &str, token: &str, code: u32, message: &str) -> Value {

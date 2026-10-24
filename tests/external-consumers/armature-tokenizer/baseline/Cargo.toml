@@ -12,3 +12,6 @@ vize_armature = "=0.429.1"
 [features]
 default = ["published"]
 published = []
+
+[lib]
+path = "../src/lib.rs"

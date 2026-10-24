@@ -10,17 +10,11 @@ use super::{
     Doc, ExpressionRefusal, Line, TemplateRefusal, UnsupportedSyntax, expression_document,
 };
 
-#[path = "selected_template/binding.rs"]
 mod binding;
-#[path = "selected_template/builder.rs"]
 mod builder;
-#[path = "selected_template/conditional.rs"]
 mod conditional;
-#[path = "selected_template/input.rs"]
 mod input;
-#[path = "selected_template/observed.rs"]
 mod observed;
-#[path = "selected_template/value.rs"]
 mod value;
 use builder::Builder;
 use input::Borrowed;

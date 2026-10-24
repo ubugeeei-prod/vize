@@ -36,7 +36,7 @@ const migrations: Record<string, readonly (readonly [string, string])[]> = {
       '          corsaPath: "./vize-missing-corsa-for-initial-sync-diagnostics",\n        },\n      }),\n      "utf8",\n    );',
     ],
   ],
-  "crates/vize/tests/lsp_library_rename_refusal_cli/safe_update.rs": [
+  "crates/vize/tests/lsp_component_attribute_authority_cli/library_refusal/safe_update.rs": [
     [
       '"vizeConfig":std::fs::read_to_string(fixture.project.path().join("vite.config.mjs"))',
       '"vizeConfig":std::fs::read_to_string(fixture.project.path().join("vize.config.json"))',

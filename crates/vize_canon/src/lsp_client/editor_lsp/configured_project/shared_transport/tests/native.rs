@@ -5,8 +5,7 @@ use corsa::runtime::block_on;
 use std::{fs, io::Write, path::Path};
 use vize_l0::{FxHashMap, cstr};
 
-#[path = "../../../../../../tests/support/original_diagnosing_process.rs"]
-mod control;
+use davinci_test_support::original_diagnosing_process as control;
 
 fn only_owner(root: &Path, native: &Path) -> control::ProcessLife {
     only_process_owner(root, native, b"--lsp")

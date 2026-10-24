@@ -1,6 +1,7 @@
 #!/usr/bin/env rust-script
 //! ```cargo
 //! [dependencies]
+//! vize_tool_support = { path = "../../support" }
 //! serde = { version = "1", features = ["derive"] }
 //! serde_json = "1"
 //! toml_edit = "0.22"
@@ -9,8 +10,7 @@
 //! edition = "2024"
 //! ```
 
-#[path = "../../support/common.rs"]
-mod common;
+use vize_tool_support::common as common;
 
 use std::{env, path::Path, process::ExitCode};
 use toml_edit::{Array, DocumentMut, Item, Table, Value};

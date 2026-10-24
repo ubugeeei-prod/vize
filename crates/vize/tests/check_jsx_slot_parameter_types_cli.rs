@@ -1,8 +1,6 @@
 #![cfg(test)]
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
-#[path = "support/vite_config.rs"]
-mod vite_config;
+use crate::support::corsa_requirement;
+use crate::support::vite_config;
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -345,5 +343,4 @@ fn nested_raw_and_structural_native_callbacks_keep_whole_packets() {
     }
 }
 
-#[path = "support/jsx_attribute_expressions.rs"]
 mod attribute_expressions;

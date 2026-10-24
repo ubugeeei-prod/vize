@@ -9,7 +9,6 @@ use tower_lsp::lsp_types::{TextEdit, WorkspaceEdit};
 
 use crate::ide::{IdeContext, RenameService};
 
-#[path = "editor_event_partial_diagnostics_tests/fixture.rs"]
 mod fixture;
 use fixture::{APP, Fixture, MISSING_CALL, TOGGLE, UPDATED_APP, UPDATED_TOGGLE};
 

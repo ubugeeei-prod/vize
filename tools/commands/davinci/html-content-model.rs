@@ -4,6 +4,7 @@
 //! edition = "2024"
 //!
 //! [dependencies]
+//! vize_tool_support = { path = "../../support" }
 //! serde = { version = "1", features = ["derive"] }
 //! serde_json = "1"
 //! ```
@@ -25,13 +26,9 @@
 
 use std::{env, fs, path::PathBuf, process::ExitCode};
 
-#[path = "../../support/common.rs"]
-mod common;
-#[path = "../../support/davinci/html_spec.rs"]
+use vize_tool_support::common;
 mod html_spec;
-#[path = "../../support/davinci/html_spec_recipes.rs"]
 mod recipes;
-#[path = "../../support/davinci/html_spec_sets.rs"]
 mod sets;
 
 const TABLE: &str = "crates/vize_patina/src/html_content_model/whatwg.tsv";

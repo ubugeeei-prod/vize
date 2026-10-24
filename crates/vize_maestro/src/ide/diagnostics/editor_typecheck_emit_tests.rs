@@ -9,7 +9,6 @@ use super::editor_typecheck_fixture::{
 };
 use crate::ide::{HoverService, IdeContext};
 
-#[path = "editor_typecheck_emit_tests/native_oracle.rs"]
 mod native_oracle;
 
 const ORIGINAL: &str = include_str!(

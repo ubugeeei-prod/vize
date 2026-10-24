@@ -249,5 +249,4 @@ async fn publish_versioned_dependents(
 }
 
 #[cfg(all(test, feature = "native"))]
-#[path = "workspace_files_tests.rs"]
 mod tests;

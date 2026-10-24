@@ -4,16 +4,15 @@
 //! edition = "2024"
 //!
 //! [dependencies]
+//! vize_tool_support = { path = "../../../support" }
 //! serde = { version = "1", features = ["derive"] }
 //! serde_json = "1"
 //! ```
 
 use std::process::ExitCode;
 
-#[path = "../../../support/common.rs"]
-mod common;
-#[path = "../../../support/editors/lsp_smoke.rs"]
-mod lsp_smoke;
+use vize_tool_support::common;
+use vize_tool_support::editors::lsp_smoke;
 
 fn main() -> ExitCode {
     common::main_result(run())

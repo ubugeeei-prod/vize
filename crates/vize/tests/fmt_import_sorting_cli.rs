@@ -1,7 +1,6 @@
 //! Authored SFC and standalone import blocks use the same configured sort policy.
 #![cfg(test)]
-#[path = "support/vite_config.rs"]
-mod vite_config;
+use crate::support::vite_config;
 
 use std::{fs, process::Command};
 

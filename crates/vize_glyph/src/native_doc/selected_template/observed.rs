@@ -13,9 +13,7 @@ use super::{
     Builder, Doc, NativeTemplateValuePolicy, TemplateRefusal, ValuePolicy, check_selected,
 };
 
-#[path = "observed/binding.rs"]
 mod binding;
-#[path = "observed/failure.rs"]
 mod failure;
 pub use binding::{ObservedNativeTemplateBindingFailureParts, ObservedNativeTemplateBindingParts};
 pub use failure::{

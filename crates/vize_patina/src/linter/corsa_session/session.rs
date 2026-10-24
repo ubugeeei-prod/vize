@@ -337,5 +337,4 @@ fn api_mode_for_executable(path: &std::path::Path) -> ApiMode {
 }
 
 #[cfg(test)]
-#[path = "session_tests.rs"]
 mod tests;

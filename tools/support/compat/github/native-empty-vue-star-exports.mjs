@@ -36,7 +36,7 @@ export function validateArtifact(root, artifact) {
   assert.equal(artifact.profile.opt_level, "3");
   assert.equal(
     realpathSync(artifact.target.src_path),
-    realpathSync(join(root, "crates/vize_canon/tests/empty_vue_star_exports.rs")),
+    realpathSync(join(root, "crates/vize_canon/tests/empty_vue_star_exports/main.rs")),
   );
 }
 export function validateRun(root, capture, artifact, result) {

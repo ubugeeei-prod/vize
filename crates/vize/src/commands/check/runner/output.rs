@@ -14,11 +14,8 @@ use super::{
 };
 use crate::commands::check::path_cache::CanonicalPathCache;
 
-#[path = "output_declarations.rs"]
 mod declarations;
-#[path = "output_json.rs"]
 mod json;
-#[path = "output_profile.rs"]
 mod profile;
 use declarations::emit_declarations;
 use json::emit_json;

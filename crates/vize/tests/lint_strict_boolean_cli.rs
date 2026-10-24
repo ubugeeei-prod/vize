@@ -2,16 +2,11 @@
 #![cfg(test)]
 #![expect(clippy::disallowed_types, reason = "subprocess fixture reports")]
 #![expect(clippy::disallowed_methods, reason = "subprocess fixture strings")]
-#[path = "support/corsa_path.rs"]
-mod corsa_path;
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
-#[path = "lint_strict_boolean_cli/lsp.rs"]
+use crate::support::corsa_path;
+use crate::support::corsa_requirement;
 mod lsp;
-#[path = "support/lsp_process.rs"]
-mod lsp_process;
-#[path = "support/vite_config.rs"]
-mod vite_config;
+use crate::support::lsp_process;
+use crate::support::vite_config;
 use serde_json::{Value, json};
 use std::{fs, path::Path, process::Command};
 

@@ -1,15 +1,10 @@
 #![cfg(test)]
 #![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
-#[path = "check_default_imports_cli/aliased_diagnostics.rs"]
 mod aliased_diagnostics;
-#[path = "check_default_imports_cli/base_url_diagnostics.rs"]
 mod base_url_diagnostics;
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
-#[path = "check_default_imports_cli/workspace_package_diagnostics.rs"]
+use crate::support::corsa_requirement;
 mod workspace_package_diagnostics;
-#[path = "check_default_imports_cli/workspace_package_vue_exports.rs"]
 mod workspace_package_vue_exports;
 
 use std::{path::Path, process::Command};

@@ -170,8 +170,8 @@ test("P3-15 theorems are audited and the lattice differential is wired", () => {
   );
   // The lattice laws left Lean: Kani verifies the shipped evaluator instead.
   const lattice =
-    readRepoFile("tests", "formal", "kani", "l3_lattice.rs") +
-    readRepoFile("tests", "formal", "kani", "l3_lattice_classify.rs");
+    readRepoFile("davinci", "vize_l3", "src", "lattice", "kani.rs") +
+    readRepoFile("davinci", "vize_l3", "src", "lattice", "classify_proofs.rs");
   for (const name of [
     "join_has_its_units_and_is_monotone",
     "the_effect_floor_is_the_join_of_the_rule_table",
@@ -194,7 +194,7 @@ test("P3-15 theorems are audited and the lattice differential is wired", () => {
   );
   assert.match(
     readRepoFile(".github", "workflows", "davinci-kani.yml"),
-    /args: tests\/formal\/kani\/l3_lattice\.rs /u,
+    /args: davinci\/vize_l3\/src\/lattice\/kani\.rs /u,
   );
   const schedule = readRepoFile("tests", "formal", "impeto", "Impeto", "ScheduleLaws.lean");
   for (const name of [

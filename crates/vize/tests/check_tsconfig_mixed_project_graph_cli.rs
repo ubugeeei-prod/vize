@@ -1,13 +1,9 @@
 #![cfg(test)]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
-#[path = "support/corsa_path.rs"]
-mod corsa_path;
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
-#[path = "support/vite_config.rs"]
-mod vite_config;
-#[path = "support/vue_stub.rs"]
-mod vue_stub;
+use crate::support::corsa_path;
+use crate::support::corsa_requirement;
+use crate::support::vite_config;
+use crate::support::vue_stub;
 
 use std::{
     path::{Path, PathBuf},

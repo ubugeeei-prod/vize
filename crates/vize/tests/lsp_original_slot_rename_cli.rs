@@ -5,12 +5,7 @@
 
 use serde_json::json;
 
-#[path = "support/lsp_authored_rename.rs"]
-mod authored;
-#[path = "support/lsp_process.rs"]
-mod lsp_process;
-#[path = "support/lsp_vue_project.rs"]
-mod support;
+use crate::support::lsp_authored_rename as authored;
 use authored::{capture, edit, expected, location, observe, project};
 
 macro_rules! source {

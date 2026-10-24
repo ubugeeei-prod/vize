@@ -8,64 +8,8 @@
     )
 )]
 
-#[cfg(feature = "napi")]
+#[cfg(any(test, feature = "napi"))]
 pub mod napi;
-
-// Keep the pure lint/fix path covered without linking a standalone test binary
-// against Node's N-API symbols.
-#[cfg(test)]
-#[cfg(not(feature = "napi"))]
-#[path = "napi/lint_fix.rs"]
-mod lint_fix_tests;
-
-// Exercise the private original-path producer without linking Node's N-API.
-// With `napi`, its own module discovers these tests exactly once instead.
-#[cfg(all(test, not(feature = "napi")))]
-#[path = "napi/lint/file_collection"]
-mod oxlint_html_profile_tests {
-    pub(crate) mod oxlint_html_profile;
-}
-
-// Execute the private operation through the same real engine without Node's
-// N-API linker symbols. Reuse the existing profile module so its 45 laws run once.
-#[cfg(all(test, not(feature = "napi")))]
-#[path = "napi/lint"]
-#[expect(
-    dead_code,
-    reason = "test-only inclusion retains the unchanged optional FFI DTOs and converters"
-)]
-mod oxlint_html_operation_tests {
-    mod file_collection {
-        pub(crate) use crate::oxlint_html_profile_tests::oxlint_html_profile;
-    }
-    #[expect(
-        clippy::disallowed_types,
-        reason = "the unchanged FFI DTOs use owned JavaScript strings"
-    )]
-    mod lint_options;
-    mod oxlint_html;
-    mod rule_metadata;
-}
-
-// The P4-16 JS plugin host's pure half (document, facts, batch), tested the
-// same way.
-#[cfg(test)]
-#[cfg(not(feature = "napi"))]
-#[path = "napi/plugin_sdk"]
-#[expect(
-    dead_code,
-    reason = "the napi half that reads the rest is not compiled here"
-)]
-mod plugin_sdk_host {
-    mod batch;
-    mod document;
-    mod error;
-    mod facts;
-    mod plugin_cache;
-    mod production;
-    mod providers;
-    mod tests;
-}
 
 #[cfg(feature = "wasm")]
 pub mod wasm;

@@ -266,5 +266,4 @@ fn split_pattern(pattern: &str) -> (String, String, bool) {
 }
 
 #[cfg(test)]
-#[path = "imports_aliases_tests.rs"]
 mod tests;

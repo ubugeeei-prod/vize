@@ -470,5 +470,4 @@ fn check_unknown_props_enabled(options: &Map<std::string::String, Value>) -> boo
 }
 
 #[cfg(test)]
-#[path = "vue_compiler_options_tests.rs"]
 mod tests;

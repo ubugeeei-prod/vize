@@ -4,8 +4,7 @@
     reason = "whole CLI fixtures use std strings"
 )]
 
-#[path = "support/vite_config.rs"]
-mod vite_config;
+use crate::support::vite_config;
 use std::{fs, path::Path, process::Command};
 use vize_atelier_core::parser::with_vue2_preserve_whitespace;
 use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};

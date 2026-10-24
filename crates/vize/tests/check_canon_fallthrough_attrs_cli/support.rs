@@ -2,7 +2,6 @@
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use std::path::{Path, PathBuf};
-#[path = "run.rs"]
 mod run;
 
 use vize_l0::cstr;

@@ -2,8 +2,7 @@
 #![expect(clippy::disallowed_types, reason = "whole JSON fixture packets")]
 #![expect(clippy::disallowed_methods, reason = "whole JSON fixture packets")]
 
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
+use crate::support::corsa_requirement;
 
 use serde_json::{Value, json};
 use std::{

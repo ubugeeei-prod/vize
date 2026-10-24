@@ -15,7 +15,6 @@ mod native_options;
 mod path_rebase;
 pub(super) mod references;
 pub use references::{TsconfigOwnershipCache, TsconfigOwnershipOptions, TsconfigSourceKind};
-#[path = "tsconfig_gen_jsx_files.rs"]
 mod jsx_files;
 mod remap;
 mod vue_alias;

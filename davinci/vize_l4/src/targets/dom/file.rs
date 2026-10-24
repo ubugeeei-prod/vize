@@ -163,5 +163,4 @@ impl AccessProvider for NoReferences {
 }
 
 #[cfg(test)]
-#[path = "file_tests.rs"]
 mod tests;

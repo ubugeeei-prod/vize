@@ -18,13 +18,13 @@ use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 
 #[derive(Clone)]
-pub(super) struct Capture {
+pub(crate) struct Capture {
     root: PathBuf,
     protocol: Arc<Mutex<File>>,
 }
 
 impl Capture {
-    pub(super) fn new(pid: u32, command: &Command) -> Option<Self> {
+    pub(crate) fn new(pid: u32, command: &Command) -> Option<Self> {
         let root = PathBuf::from(std::env::var_os("VIZE_INLAY_HINT_CAPTURE")?)
             .join(format!("process-{pid}"));
         std::fs::create_dir_all(&root).unwrap();
@@ -65,11 +65,11 @@ impl Capture {
         Some(Self { root, protocol })
     }
 
-    pub(super) fn root(&self) -> &Path {
+    pub(crate) fn root(&self) -> &Path {
         &self.root
     }
 
-    pub(super) fn record(&self, direction: &str, message: &Value) {
+    pub(crate) fn record(&self, direction: &str, message: &Value) {
         let mut file = self
             .protocol
             .lock()
@@ -78,7 +78,7 @@ impl Capture {
         file.flush().unwrap();
     }
 
-    pub(super) fn error(&self, direction: &str, error: &std::io::Error) {
+    pub(crate) fn error(&self, direction: &str, error: &std::io::Error) {
         self.record(
             direction,
             &json!({
@@ -87,7 +87,7 @@ impl Capture {
         );
     }
 
-    pub(super) fn terminal(
+    pub(crate) fn terminal(
         &self,
         status: Option<ExitStatus>,
         stderr: &[u8],

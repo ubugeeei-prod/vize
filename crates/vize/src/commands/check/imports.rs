@@ -19,21 +19,15 @@ use super::imports_aliases::PathAliasResolver;
 use super::imports_package_routes::sort_package_route_bindings;
 use super::path_cache::CanonicalPathCache;
 
-#[path = "imports_cache.rs"]
 mod cache;
-#[path = "imports_registration.rs"]
 mod registration;
 use registration::non_relative_import_needs_virtual_registration;
-#[path = "imports_resolution.rs"]
 mod resolution;
 use resolution::{absolutize, is_declaration_file, is_node_modules_path, resolve_relative_import};
 pub(super) use resolution::{resolve_import_base, resolve_import_base_with_inputs};
-#[path = "imports_parallel.rs"]
 mod parallel;
-#[path = "imports_specifiers.rs"]
 mod specifiers;
 use specifiers::{extract_module_specifier_occurrences, is_relative_specifier};
-#[path = "imports_session.rs"]
 mod session;
 pub(super) use session::LocalImportSession;
 
@@ -44,7 +38,6 @@ pub(super) use session::LocalImportSession;
 /// `shims.d.ts` with a top-level `declare module "vue"`) shadow the real module
 /// when registered as program roots, so pulling them in would break `vue`
 /// resolution for every file. TypeScript still loads reachable `.d.ts` on demand.
-#[path = "imports_options.rs"]
 mod options;
 pub(super) use options::{ImportFileOptions, TransitiveLocalImports};
 
@@ -546,5 +539,4 @@ pub(super) fn collect_transitive_local_imports_with_session(
 }
 
 #[cfg(test)]
-#[path = "imports_test_modules.rs"]
 mod test_modules;

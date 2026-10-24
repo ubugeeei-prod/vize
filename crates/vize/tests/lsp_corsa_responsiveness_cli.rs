@@ -1,11 +1,9 @@
 #![cfg(unix)]
 #![expect(clippy::disallowed_types, reason = "complete JSON-RPC process fixture")]
 
-#[path = "support/lsp_process.rs"]
-mod lsp_process;
+use crate::support::lsp_process;
 
-#[path = "support/vite_config.rs"]
-mod vite_config;
+use crate::support::vite_config;
 
 use std::os::unix::fs::PermissionsExt;
 use std::path::Path;

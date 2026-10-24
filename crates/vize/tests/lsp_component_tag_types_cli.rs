@@ -7,9 +7,7 @@
     reason = "whole authored source and protocol fixtures"
 )]
 
-#[path = "support/lsp_process.rs"]
-mod lsp_process;
-#[path = "support/component_tag_project.rs"]
+use crate::support::lsp_process;
 mod project;
 
 use project::Project;

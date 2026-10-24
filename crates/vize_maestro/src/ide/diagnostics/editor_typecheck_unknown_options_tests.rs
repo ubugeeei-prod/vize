@@ -3,9 +3,8 @@ use super::DiagnosticService;
 use super::editor_typecheck_fixture::{
     resolve_test_tsgo_binary, state_for_fixture, write_corsa_config,
 };
+use davinci_test_support::unknown_template_fixture as fixture;
 use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Position, Range, Url};
-#[path = "../../../../vize/tests/support/unknown_template_fixture.rs"]
-mod fixture;
 
 #[test]
 fn original_unknown_options_preserve_complete_editor_vectors() {

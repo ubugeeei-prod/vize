@@ -2,8 +2,7 @@
 #![cfg(feature = "glyph")]
 #![expect(clippy::disallowed_macros, reason = "whole expected CLI streams")]
 #![expect(clippy::disallowed_types, reason = "filesystem and process fixtures")]
-#[path = "support/vite_config.rs"]
-mod vite_config;
+use crate::support::vite_config;
 
 use std::{fs, process::Command};
 

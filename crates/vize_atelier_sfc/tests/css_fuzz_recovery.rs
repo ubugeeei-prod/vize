@@ -1,7 +1,8 @@
 #![cfg(feature = "native")]
 
 mod support;
-use support::{css_engine_successors as successors, css_fuzz_boundary as boundary};
+use davinci_test_support::css_fuzz_boundary as boundary;
+use support::css_engine_successors as successors;
 
 #[test]
 fn fuzz_boundary_distinguishes_recovered_engine_panics_from_escaping_panics() {

@@ -5,7 +5,6 @@ use super::{
 };
 use vize_carton::cstr;
 
-#[path = "tests/caret.rs"]
 mod caret;
 
 #[test]

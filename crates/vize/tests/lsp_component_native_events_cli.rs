@@ -7,11 +7,8 @@
 
 use serde_json::{Value, json};
 
-#[path = "support/lsp_process.rs"]
-mod lsp_process;
-#[path = "support/lsp_vue_project.rs"]
-mod positions;
-#[path = "support/event_completion_project.rs"]
+use crate::support::lsp_process;
+use crate::support::lsp_vue_project as positions;
 mod project;
 use positions::position;
 use project::Project;

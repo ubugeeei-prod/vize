@@ -1,7 +1,6 @@
 #![cfg(test)]
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
-#[path = "support/vite_config.rs"]
-mod vite_config;
+use crate::support::vite_config;
 
 use std::path::Path;
 
@@ -9,8 +8,7 @@ use serde_json::json;
 use vize_carton::corsa_resolver::discover_corsa_in_ancestors;
 use vize_l0::cstr;
 
-#[path = "support/lsp_process.rs"]
-mod lsp_process;
+use crate::support::lsp_process;
 
 use lsp_process::{LspProcess, file_uri};
 

@@ -432,9 +432,7 @@ impl VirtualProject {
 }
 
 #[cfg(all(test, unix))]
-#[path = "tests/editor_union_alias_transition.rs"]
 mod alias_transition_tests;
 
 #[cfg(test)]
-#[path = "tests/editor_configuration_graph.rs"]
 mod editor_configuration_graph_tests;

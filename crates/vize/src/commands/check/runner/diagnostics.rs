@@ -300,5 +300,4 @@ pub(super) fn write_profile_virtual_ts(files: &[&vize_canon::VirtualFile]) {
 }
 
 #[cfg(test)]
-#[path = "diagnostics/tests.rs"]
 mod tests;

@@ -2,7 +2,6 @@ use super::*;
 use crate::analyzer::CrossFileResult;
 use serde_json::{Value, json};
 
-#[path = "dynamic_names/mixed.rs"]
 mod mixed;
 
 const CHILD_SCRIPT: &str = concat!(

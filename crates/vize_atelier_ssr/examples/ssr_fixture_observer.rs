@@ -2,8 +2,7 @@
 
 use serde_json::json;
 
-#[path = "../tests/support/fix_history.rs"]
-mod fixtures;
+use davinci_test_support::ssr_fix_history as fixtures;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cases = fixtures::CASES

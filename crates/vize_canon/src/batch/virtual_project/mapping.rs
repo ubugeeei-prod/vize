@@ -10,7 +10,6 @@ use vize_carton::FxHashSet;
 
 use super::{Diagnostic, OriginalPosition, VirtualFile, VirtualProject};
 
-#[path = "mapping/materialized_sources.rs"]
 mod materialized_sources;
 pub(crate) use materialized_sources::MaterializedSourceMappingKind;
 

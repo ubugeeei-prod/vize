@@ -4,8 +4,7 @@ use super::super::CorsaProjectClient;
 use crate::corsa_session_cache::{CorsaSessionKey, DEFAULT_SESSION_IDLE, SessionMap};
 use std::{path::Path, time::Instant};
 
-#[path = "../../../../tests/support/original_diagnosing_process.rs"]
-mod control;
+use davinci_test_support::original_diagnosing_process as control;
 
 fn diagnose(client: &mut CorsaProjectClient, root: &Path, fixture: &serde_json::Value) {
     let path = root.join("source.ts").canonicalize().unwrap();

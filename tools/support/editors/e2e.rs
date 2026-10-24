@@ -6,8 +6,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-#[path = "../common.rs"]
-mod common;
+use crate::common;
 
 pub fn vscode_extension_path(repo_root: &Path) -> PathBuf {
     repo_root.join("editors/vscode")

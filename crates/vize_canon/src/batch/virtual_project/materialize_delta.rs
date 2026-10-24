@@ -354,5 +354,4 @@ fn revision(path: &Path) -> CorsaResult<u64> {
 }
 
 #[cfg(test)]
-#[path = "materialize_delta/tests.rs"]
 mod tests;

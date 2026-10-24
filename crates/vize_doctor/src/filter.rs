@@ -1,7 +1,6 @@
 //! Deterministic, reporter-neutral finding filters.
 
 mod matcher;
-#[path = "filter_patterns.rs"]
 mod patterns;
 
 use patterns::{expand_top_level_commas, matches_enum, normalize_patterns, sort_dedup};

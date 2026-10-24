@@ -8,10 +8,8 @@ use lsp_types::Uri;
 use serde_json::{Value, json};
 use vize_l0::FxHashSet;
 
-#[path = "content_mapper_tsgo_lsp_event_forms/cases.rs"]
 mod cases;
 use cases::EVENT_CASES;
-#[path = "content_mapper_tsgo_lsp_event_forms/model_props.rs"]
 mod model_props;
 
 use crate::content_mapper_lsp_support;

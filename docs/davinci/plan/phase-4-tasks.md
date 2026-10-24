@@ -274,7 +274,7 @@ TS-38 adds no suppression candidate. See the [P4-3c record](./phase-4-records/p4
 **Steps:**
 
 - [ ] Expressions project through P2-5b's `ExprDialect` capability; `ExprRef::Opaque` follows its pessimal laws and is counted per class
-- [ ] Differential comparator `crates/vize_canon/tests/davinci_projection_differential.rs` behind `davinci-differential`: `vize check` diagnostic sets and authored-anchor resolution compared exactly; generated text is free
+- [ ] Differential comparator `crates/vize_canon/tests/davinci_projection_differential/main.rs` behind `davinci-differential`: `vize check` diagnostic sets and authored-anchor resolution compared exactly; generated text is free
 - [ ] Corpus-runnable entry with its command recorded; plain-suite coverage witness pins the comparison count
 
 **Acceptance:** TS-25 zero divergence over the TS-40 matrix and the `vize check` corpus with scope proof; TS-24 unaffected; TS-1, TS-13.

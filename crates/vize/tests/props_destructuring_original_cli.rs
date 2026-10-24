@@ -7,8 +7,7 @@
     reason = "CLI fixture diagnostics use format"
 )]
 
-#[path = "support/vite_config.rs"]
-mod vite_config;
+use crate::support::vite_config;
 use serde::Deserialize;
 use std::{fs, path::Path, process::Command};
 

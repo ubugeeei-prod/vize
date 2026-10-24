@@ -106,7 +106,7 @@ fn verdict_axis_is_orthogonal_and_consumers_fire_only_on_proven_values() {
 }
 
 /// Every binding summary there is: 4 origins, 256 effect sets, 4 escapes and
-/// 3 verdicts. The Kani harness `tests/formal/kani/l3_lattice.rs` verifies
+/// 3 verdicts. The Kani harness `davinci/vize_l3/src/lattice/kani.rs` verifies
 /// the value axis; these are the laws that also read the verdict axis.
 #[test]
 fn the_verdict_never_changes_the_class_and_only_proven_facts_fire() {

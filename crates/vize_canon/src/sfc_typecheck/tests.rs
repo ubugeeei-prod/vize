@@ -1,6 +1,5 @@
 //! Tests for SFC type checking.
 #![cfg(test)]
-#[path = "tests_heritage_props.rs"]
 mod heritage_props;
 
 mod emit_props;

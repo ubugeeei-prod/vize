@@ -100,14 +100,14 @@ function scopeOf(stdout: string): Record<string, number> {
 
 function snippetRules(): string[] {
   const source = fs.readFileSync(
-    path.join(root, "tools/support/davinci/seed_exact_snippets.rs"),
+    path.join(root, "tools/commands/davinci/seed_exact_snippets.rs"),
     "utf8",
   );
   return [...source.matchAll(/snippet\(\s*"([^"]+)",\s*"([^"]+)"/g)].map((match) => match[2]);
 }
 
 function nestingClassIds(): string[] {
-  const source = fs.readFileSync(path.join(root, "tools/support/davinci/seed_html.rs"), "utf8");
+  const source = fs.readFileSync(path.join(root, "tools/commands/davinci/seed_html.rs"), "utf8");
   const body = source.slice(
     source.indexOf("pub const NESTING:"),
     source.indexOf("pub struct Expected"),

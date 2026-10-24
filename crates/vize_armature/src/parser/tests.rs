@@ -1,7 +1,6 @@
 //! Tests for the Vue template parser.
 #![expect(clippy::disallowed_macros, reason = "fixtures are built with format!")]
 
-#[path = "tests_document_tail.rs"]
 mod document_tail;
 
 use super::{

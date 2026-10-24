@@ -7,20 +7,13 @@
     reason = "whole authored source and stdio JSON fixtures"
 )]
 
-#[path = "lsp_data_aria_attributes_cli/assignments.rs"]
 mod assignments;
-#[path = "lsp_data_aria_attributes_cli/controls.rs"]
 mod controls;
-#[path = "lsp_data_aria_attributes_cli/controls_project.rs"]
 mod controls_project;
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
-#[path = "support/lsp_process.rs"]
-mod lsp_process;
-#[path = "lsp_data_aria_attributes_cli/mirror.rs"]
+use crate::support::corsa_requirement;
+use crate::support::lsp_process;
 mod mirror;
-#[path = "support/lsp_vue_project.rs"]
-mod project;
+use crate::support::lsp_vue_project as project;
 
 use project::{Fixture, position};
 use serde_json::{Value, json};

@@ -36,12 +36,9 @@ use crate::batch::import_rewriter::ModuleSpecifierFactsCache;
 use super::VirtualProject;
 use super::setup_props::RuntimePropResolveCache;
 
-#[path = "dependency_scan/declaration_sources.rs"]
 mod declaration_sources;
 use declaration_sources::source_backed;
-#[path = "dependency_scan/references.rs"]
 mod references;
-#[path = "dependency_scan/resolution.rs"]
 mod resolution;
 #[cfg(test)]
 use resolution::probe_candidates;
@@ -434,9 +431,7 @@ fn canonical_importer(known: &FxHashMap<PathBuf, PathBuf>, importer: &Path) -> P
 }
 
 #[cfg(test)]
-#[path = "dependency_scan_tests.rs"]
 mod tests;
 
 #[cfg(test)]
-#[path = "dependency_scan_tests/shared_type_sources.rs"]
 mod shared_type_sources_tests;

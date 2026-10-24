@@ -6,12 +6,9 @@
 //! JSDoc types in `.js` files must reach Vue scripts in the same program, and
 //! `checkJs` decides whether errors inside the JavaScript files are reported,
 //! exactly as it does for `tsc`.
-#[path = "support/corsa_path.rs"]
-mod corsa_path;
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
-#[path = "support/vue_stub.rs"]
-mod vue_stub;
+use crate::support::corsa_path;
+use crate::support::corsa_requirement;
+use crate::support::vue_stub;
 
 use std::{
     path::{Path, PathBuf},

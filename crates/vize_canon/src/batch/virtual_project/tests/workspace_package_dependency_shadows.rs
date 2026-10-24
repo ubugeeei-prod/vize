@@ -5,7 +5,6 @@ use crate::{PackageResolutionContext, PackageRoute, PackageRouteBinding};
 
 use super::{VirtualProject, unique_case_dir};
 
-#[path = "pnpm_workspace_routes.rs"]
 mod pnpm_workspace_routes;
 
 #[test]

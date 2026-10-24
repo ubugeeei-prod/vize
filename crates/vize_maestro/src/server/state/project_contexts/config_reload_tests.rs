@@ -453,7 +453,6 @@ fn newly_introduced_missing_or_malformed_imports_recover_on_creation_or_change()
     }
 }
 
-#[path = "config_reload_recovery_tests.rs"]
 mod config_reload_recovery_tests;
 
 #[cfg(unix)]

@@ -43,7 +43,7 @@ test("daily source contracts cover the real Rust/docs failures without widening 
   for (const event of ["pull_request", "merge_group"]) {
     for (const path of [
       ...originalFailures,
-      "crates/vize_canon/src/batch/virtual_project/content_mapper_directive_tests.rs",
+      "crates/vize_canon/src/batch/virtual_project/content_mapper/directive_tests.rs",
       "docs/content/guide/content-mapper.md",
       "docs/scripts/i18n/reviewed.ts",
       "docs/davinci/plan/assertion-allowlist.toml",
@@ -73,7 +73,7 @@ test("daily source contracts cover the real Rust/docs failures without widening 
       "tests/tooling/typecheck-divergence.test.ts",
       "tests/tooling/typecheck-baseline-usability.test.ts",
       "tests/tooling/typecheck-baseline-provider.test.ts",
-      "tools/support/typecheck_baseline_usability.rs",
+      "tools/commands/fixtures/baseline_usability.rs",
       ".github/workflows/pr-rust-checks.yml",
       "Cargo.lock",
       "new-runtime/lib.rs",

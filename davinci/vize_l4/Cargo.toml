@@ -27,6 +27,7 @@ serde_json = { workspace = true }
 oxc_syntax = { workspace = true }
 
 [dev-dependencies]
+davinci_test_support = { workspace = true, features = ["native-dom"] }
 oxc_parser = { workspace = true }
 oxc_span = { workspace = true }
 vize_l1 = { workspace = true }

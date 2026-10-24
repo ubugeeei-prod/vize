@@ -295,5 +295,4 @@ fn expect_error_before_default_value(lines: &[&str], start: usize, end: usize) -
 }
 
 #[cfg(test)]
-#[path = "authored_rules_tests.rs"]
 mod tests;

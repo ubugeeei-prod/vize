@@ -125,5 +125,4 @@ fn strip_trailing_commas(content: &str) -> std::string::String {
 }
 
 #[cfg(test)]
-#[path = "jsonc/bom_tests.rs"]
 mod bom_tests;

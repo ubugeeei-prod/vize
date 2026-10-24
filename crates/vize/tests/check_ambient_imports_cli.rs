@@ -2,13 +2,11 @@
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
+use crate::support::corsa_requirement;
 
 use std::{path::Path, process::Command};
 
-#[path = "support/vue_stub.rs"]
-mod vue_stub;
+use crate::support::vue_stub;
 
 fn workspace_root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))

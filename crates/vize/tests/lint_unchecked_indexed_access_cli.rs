@@ -2,15 +2,11 @@
 #![cfg(test)]
 #![expect(clippy::disallowed_types, reason = "whole subprocess fixture vectors")]
 #![expect(clippy::disallowed_methods, reason = "fixture strings")]
-#[path = "support/corsa_path.rs"]
-mod corsa_path;
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
-#[path = "lint_unchecked_indexed_access_cli/support.rs"]
-mod support;
+use crate::support::corsa_path;
+use crate::support::corsa_requirement;
+use crate::support::indexed_access as support;
 
-#[path = "support/vite_config.rs"]
-mod vite_config;
+use crate::support::vite_config;
 use serde_json::{Value, json};
 use std::{fs, path::Path, process::Command};
 use vize_patina::{HelpLevel, Linter, Severity};

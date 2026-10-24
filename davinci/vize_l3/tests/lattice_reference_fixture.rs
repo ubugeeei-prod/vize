@@ -4,7 +4,7 @@
 //! input matrix. `lake exe impetoRef --check-lattice-fixtures` re-enumerates the
 //! same matrix, parses this page without Rust code and recomputes every class
 //! with the independent Lean classifier. The lattice laws themselves are
-//! verified on this evaluator by `tests/formal/kani/l3_lattice.rs`. Regenerate
+//! verified on this evaluator by `davinci/vize_l3/src/lattice/kani.rs`. Regenerate
 //! the page with `VIZE_UPDATE_LATTICE_REFERENCE_FIXTURE=1` only when the rule
 //! spec changes.
 

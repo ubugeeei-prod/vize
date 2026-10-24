@@ -11,11 +11,9 @@ use crate::batch::Diagnostic;
 use crate::batch::error::CorsaResult;
 use crate::virtual_ts::{ProjectionFeatures, ProjectionMeta, VirtualTsOptions, VizeMapping};
 
-#[path = "content_mapper_alias.rs"]
 mod alias;
 use alias::{is_alias_projection, is_synthetic_content_mapper_identifier};
 
-#[path = "content_mapper_protocol.rs"]
 mod protocol;
 use protocol::protocol_semantic_links;
 pub use protocol::{
@@ -25,11 +23,9 @@ pub use protocol::{
     ContentMapperTransform, ContentMapperUnusedExpectDiagnostic,
 };
 
-#[path = "content_mapper_directives.rs"]
 mod directives;
 use directives::{sfc_diagnostic_directives, with_component_prop_echoes, with_generic_echoes};
 
-#[path = "content_mapper_component_name.rs"]
 mod component_name;
 use component_name::content_mapper_component_name;
 
@@ -40,13 +36,9 @@ use super::javascript_sfc::{descriptor_is_unchecked_javascript, prepare_script_b
 use super::vue_codegen::generic_attribute::GenericCopies;
 use super::vue_codegen::{GeneratedVueFile, VueCodegenOptions, generate_vue_virtual_ts};
 
-#[path = "content_mapper_masked_spans.rs"]
 mod masked_spans;
-#[path = "content_mapper_quoted_spans.rs"]
 mod quoted_spans;
-#[path = "content_mapper_span_features.rs"]
 mod span_features;
-#[path = "content_mapper_span_normalize.rs"]
 mod span_normalize;
 
 use span_features::content_mapper_span_features;
@@ -533,18 +525,14 @@ fn ranges_overlap(left: &Range<usize>, right: &Range<usize>) -> bool {
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
 #[expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #[cfg(test)]
-#[path = "content_mapper_tests.rs"]
 mod tests;
 
 #[cfg(test)]
 #[expect(clippy::expect_used, reason = "fixture assertions fail by panicking")]
-#[path = "content_mapper_unused_props_tests.rs"]
 mod unused_props_tests;
 
 #[cfg(test)]
-#[path = "content_mapper_unknown_options_tests.rs"]
 mod unknown_options_tests;
 
 #[cfg(test)]
-#[path = "content_mapper_directive_tests.rs"]
 mod directive_tests;

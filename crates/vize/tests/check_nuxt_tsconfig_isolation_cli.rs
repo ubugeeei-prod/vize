@@ -2,19 +2,13 @@
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
-#[path = "support/nuxt_cli.rs"]
-mod nuxt_cli;
-#[path = "support/nuxt_fifo.rs"]
-mod nuxt_fifo;
-#[path = "support/nuxt_stress.rs"]
-mod nuxt_stress;
-#[path = "support/vite_config.rs"]
-mod vite_config;
+use crate::support::corsa_requirement;
+use crate::support::nuxt_cli;
+use crate::support::nuxt_fifo;
+use crate::support::nuxt_stress;
+use crate::support::vite_config;
 
 #[cfg(unix)]
-#[path = "check_nuxt_tsconfig_isolation_cli/barrier.rs"]
 mod barrier;
 
 #[cfg(unix)]

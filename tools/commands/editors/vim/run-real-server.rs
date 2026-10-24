@@ -4,6 +4,7 @@
 //! edition = "2024"
 //!
 //! [dependencies]
+//! vize_tool_support = { path = "../../../support" }
 //! serde = { version = "1", features = ["derive"] }
 //! serde_json = "1"
 //! ```
@@ -14,10 +15,8 @@ use std::{
     process::{Command, ExitCode, Stdio},
 };
 
-#[path = "../../../support/common.rs"]
-mod common;
-#[path = "../../../support/editors/e2e.rs"]
-mod editor_e2e;
+use vize_tool_support::common;
+use vize_tool_support::editors::e2e as editor_e2e;
 
 fn main() -> ExitCode {
     common::main_result(run())

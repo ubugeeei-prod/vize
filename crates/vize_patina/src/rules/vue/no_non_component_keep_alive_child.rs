@@ -422,5 +422,4 @@ fn expression_arg_is(dir: &vize_relief::DirectiveNode<'_>, name: &str) -> bool {
 }
 
 #[cfg(test)]
-#[path = "no_non_component_keep_alive_child_tests.rs"]
 mod tests;

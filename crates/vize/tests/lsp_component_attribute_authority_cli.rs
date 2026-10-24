@@ -4,27 +4,19 @@
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
 
-#[path = "support/lsp_process.rs"]
-mod lsp_process;
-#[path = "support/vite_config.rs"]
-mod vite_config;
+use crate::support::lsp_process;
+use crate::support::vite_config;
 
 use lsp_process::{LspProcess, file_uri};
 use serde_json::{Value, json};
 use std::path::Path;
 use vize_carton::corsa_resolver::discover_corsa_in_ancestors;
 
-#[path = "lsp_component_attribute_authority_cli/attribute_controls.rs"]
 mod attribute_controls;
-#[path = "lsp_library_rename_refusal_cli/importer_controls.rs"]
 mod library_importer_controls;
-#[path = "lsp_library_rename_refusal_cli/original.rs"]
 mod library_refusal;
-#[path = "lsp_component_attribute_authority_cli/native_probe.rs"]
 mod native_probe;
-#[path = "lsp_component_attribute_authority_cli/original_reads.rs"]
 mod original_reads;
-#[path = "lsp_library_rename_refusal_cli/runtime_distribution.rs"]
 mod runtime_distribution;
 
 const ITEM: &str = include_str!(

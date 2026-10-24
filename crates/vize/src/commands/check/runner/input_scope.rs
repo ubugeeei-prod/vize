@@ -236,5 +236,4 @@ fn is_strict_ancestor(ancestor: &Path, path: &Path) -> bool {
 }
 
 #[cfg(test)]
-#[path = "input_scope_tests.rs"]
 mod tests;

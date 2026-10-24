@@ -4,7 +4,7 @@
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
 
-use super::support::{Fixture, position};
+use super::lsp_vue_project::{Fixture, position};
 use serde_json::{Value, json};
 use std::path::PathBuf;
 

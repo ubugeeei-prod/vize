@@ -1,19 +1,14 @@
 #![cfg(test)]
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
-#[path = "check_declaration_emit_cli/packed_consumer.rs"]
+use crate::support::corsa_requirement;
 mod packed_consumer;
-#[path = "check_declaration_emit_cli/project_reference_packed_consumer.rs"]
 mod project_reference_packed_consumer;
-#[path = "check_declaration_emit_cli/workspace_package_vue_exports.rs"]
 mod workspace_package_vue_exports;
 
 use std::{path::Path, process::Command};
 
 use vize_l0::{String, ToCompactString, cstr};
 
-#[path = "support/vue_stub.rs"]
-mod vue_stub;
+use crate::support::vue_stub;
 
 fn workspace_root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))

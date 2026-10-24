@@ -374,5 +374,4 @@ fn local_import_is_allowed(
 }
 
 #[cfg(test)]
-#[path = "default_imports_tests.rs"]
 mod tests;

@@ -6,11 +6,8 @@ use vize_l1::markup::{Element, SurfaceChild};
 
 use super::{Doc, Line};
 
-#[path = "template/cursor.rs"]
 mod cursor;
-#[path = "template/layout.rs"]
 mod layout;
-#[path = "template/value.rs"]
 mod value;
 pub(super) use cursor::{Cursor, verbatim};
 pub(super) use layout::{attribute_with_name, open_element_with};

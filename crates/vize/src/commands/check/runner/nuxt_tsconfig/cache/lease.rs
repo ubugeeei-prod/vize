@@ -331,5 +331,4 @@ fn cleanup_dead_leases(entry: &Path) -> Result<(), std::io::Error> {
 }
 
 #[cfg(test)]
-#[path = "lease_tests.rs"]
 mod tests;

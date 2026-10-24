@@ -12,8 +12,7 @@
     reason = "test failures include authored phase names"
 )]
 
-#[path = "support/vite_config.rs"]
-mod vite_config;
+use crate::support::vite_config;
 
 use std::{fs, path::Path};
 
@@ -21,8 +20,7 @@ use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use url::Url;
 
-#[path = "support/lsp_process.rs"]
-mod lsp_process;
+use crate::support::lsp_process;
 use lsp_process::LspProcess;
 
 const CORPUS: &str = "../../tests/_fixtures/differential/lsp/open-buffer-alias-definition";

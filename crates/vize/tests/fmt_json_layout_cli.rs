@@ -5,8 +5,7 @@
 )]
 #![expect(clippy::disallowed_types, reason = "CLI fixtures use standard strings")]
 
-#[path = "support/vite_config.rs"]
-mod vite_config;
+use crate::support::vite_config;
 
 use serde::Deserialize;
 use std::{fs, path::Path, process::Command};

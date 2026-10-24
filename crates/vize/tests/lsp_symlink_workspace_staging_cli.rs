@@ -6,10 +6,8 @@ use std::{
     time::{Duration, Instant},
 };
 
-#[path = "support/lsp_symlink_workspace_fixture.rs"]
 mod fixture;
-#[path = "support/lsp_process.rs"]
-mod lsp_process;
+use crate::support::lsp_process;
 use fixture::{Fixture, Layout};
 use lsp_process::{LspProcess, file_uri};
 

@@ -7,8 +7,8 @@ on:
       - ".github/actions/setup-runtime-package-managers/**"
       - "tools/commands/release/npm/smoke-release-install.*"
       - "tools/support/common.rs"
-      - "tools/support/release/npm_publish.rs"
-      - "tools/support/release/npm_smoke_init.rs"
+      - "tools/commands/release/npm/npm_publish.rs"
+      - "tools/commands/release/npm/npm_smoke_init.rs"
       - "tools/support/release/smoke_release_install/**"
       - "tools/support/compat/npm/smoke-*"
       - "tests/tooling/release/release-smoke-*"
@@ -50,7 +50,7 @@ jobs:
           path: |
             ~/.cache/rust-script
             ~/.cargo/registry
-          key: release-smoke-reference-${{ runner.os }}-${{ runner.arch }}-1.99.1-${{ hashFiles('tools/commands/release/npm/smoke-release-install.rs', 'tools/support/common.rs', 'tools/support/release/npm_publish.rs', 'tools/support/release/npm_smoke_init.rs') }}
+          key: release-smoke-reference-${{ runner.os }}-${{ runner.arch }}-1.99.1-${{ hashFiles('tools/commands/release/npm/smoke-release-install.rs', 'tools/support/common.rs', 'tools/commands/release/npm/npm_publish.rs', 'tools/commands/release/npm/npm_smoke_init.rs') }}
       - name: Install source contract dependencies
         shell: bash
         run: vp install --frozen-lockfile --prefer-offline --filter vize-workspace --ignore-scripts

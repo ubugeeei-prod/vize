@@ -204,7 +204,6 @@ pub(super) fn logical_absolute(path: &Path) -> PathBuf {
 }
 
 #[cfg(test)]
-#[path = "routes_budget_tests.rs"]
 mod budget_tests;
 
 #[cfg(test)]

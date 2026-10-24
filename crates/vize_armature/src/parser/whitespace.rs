@@ -519,5 +519,4 @@ enum WhitespaceAction {
 }
 
 #[cfg(test)]
-#[path = "whitespace_tests.rs"]
 mod tests;

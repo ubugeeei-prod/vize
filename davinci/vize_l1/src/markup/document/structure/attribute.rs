@@ -235,5 +235,4 @@ fn read<'s, 'o, 'a>(
 }
 
 #[cfg(test)]
-#[path = "attribute_tests.rs"]
 mod tests;

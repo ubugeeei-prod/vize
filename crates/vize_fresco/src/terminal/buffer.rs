@@ -322,5 +322,4 @@ impl Default for Buffer {
 }
 
 #[cfg(test)]
-#[path = "buffer_tests.rs"]
 mod tests;

@@ -422,7 +422,7 @@ function observe(fixture: Fixture, driver: "rust" | "typescript", temporary: str
 test("native and fresh-init oracle scripts retain every original Rust byte", () => {
   const rust = fs.readFileSync(entry + ".rs", "utf8");
   const initSource = fs.readFileSync(
-    path.join(root, "tools/support/release/npm_smoke_init.rs"),
+    path.join(root, "tools/commands/release/npm/npm_smoke_init.rs"),
     "utf8",
   );
   // Rust preprocesses CRLF into LF before tokenizing string literals:

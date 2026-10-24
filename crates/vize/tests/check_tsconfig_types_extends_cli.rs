@@ -8,8 +8,7 @@
     reason = "whole JSON corpus uses std strings"
 )]
 
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
+use crate::support::corsa_requirement;
 
 use serde_json::{Value, json};
 use std::{

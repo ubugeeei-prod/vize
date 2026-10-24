@@ -15,7 +15,6 @@ use super::vue_document::{
 use crate::batch::ImportRewriter;
 use crate::file_uri::path_to_file_uri;
 
-#[path = "vue_dependencies_walk.rs"]
 mod walk;
 
 mod source;

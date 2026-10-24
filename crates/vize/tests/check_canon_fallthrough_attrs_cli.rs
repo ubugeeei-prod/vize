@@ -1,8 +1,5 @@
-#[path = "check_canon_fallthrough_attrs_cli/cases.rs"]
 mod cases;
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
-#[path = "check_canon_fallthrough_attrs_cli/support.rs"]
+use crate::support::corsa_requirement;
 mod support;
 use support::{
     assert_clean, assert_error_diagnostics, create_case, create_case_with_files,

@@ -1,6 +1,7 @@
 #!/usr/bin/env rust-script
 //! ```cargo
 //! [dependencies]
+//! vize_tool_support = { path = "../../support" }
 //! libc = "0.2"
 //! serde = { version = "1", features = ["derive"] }
 //! serde_json = "1"
@@ -10,8 +11,7 @@
 //! edition = "2024"
 //! ```
 
-#[path = "../../support/common.rs"]
-mod common;
+use vize_tool_support::common as common;
 
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};

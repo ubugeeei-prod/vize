@@ -4,6 +4,7 @@
 //! edition = "2024"
 //!
 //! [dependencies]
+//! vize_tool_support = { path = "../../support" }
 //! serde = { version = "1", features = ["derive"] }
 //! serde_json = "1"
 //! ```
@@ -15,11 +16,8 @@ use std::{
     process::ExitCode,
 };
 
-#[path = "../../support/common.rs"]
-mod common;
-#[path = "../../support/davinci/assertion_lint_ratchet.rs"]
+use vize_tool_support::common;
 mod ratchet;
-#[path = "../../support/davinci/assertion_lint_test_modules.rs"]
 mod test_modules;
 
 #[derive(Clone, Debug)]
@@ -550,6 +548,7 @@ fn collect_targets(root: &Path, default_tree: bool) -> Result<Vec<Target>, Strin
     if default_tree {
         walk_rust_files(&root.join("crates"), &mut files)?;
         walk_rust_files(&root.join("davinci"), &mut files)?;
+        walk_rust_files(&root.join("tests/davinci_test_support/src"), &mut files)?;
     } else {
         walk_rust_files(root, &mut files)?;
     }
@@ -565,6 +564,8 @@ fn collect_targets(root: &Path, default_tree: bool) -> Result<Vec<Target>, Strin
                     whole_file: true,
                     ratcheted: false,
                 });
+            } else if rel.starts_with("tests/davinci_test_support/src/") {
+                targets.push(Target { file, rel, whole_file: true, ratcheted: false });
             } else if is_crate_source(&rel) {
                 let ratcheted = test_only.contains(&file);
                 targets.push(Target {

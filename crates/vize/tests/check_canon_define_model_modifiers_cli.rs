@@ -1,7 +1,6 @@
 #![cfg(test)]
 #![expect(clippy::panic_in_result_fn, reason = "tests assert by panicking")]
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
+use crate::support::corsa_requirement;
 
 use std::{
     path::{Path, PathBuf},

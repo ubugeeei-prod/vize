@@ -110,9 +110,7 @@ fn merge_env(shell_env: zed::EnvVars, custom_env: Option<HashMap<String, String>
 }
 
 #[cfg(test)]
-#[path = "../../../tools/support/editors/zed_unit_tests.rs"]
-mod tests;
+mod unit_tests;
 
 #[cfg(test)]
-#[path = "../../../tools/support/editors/zed_initialization_tests.rs"]
 mod initialization_tests;

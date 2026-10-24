@@ -278,5 +278,4 @@ fn configured_original_primitive_return_ts_tsx_preserve_whole_raw_reports_and_re
     }
 }
 
-#[path = "primitive_returns/refusals.rs"]
 mod refusals;

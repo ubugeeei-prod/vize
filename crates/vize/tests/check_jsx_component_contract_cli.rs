@@ -1,7 +1,5 @@
 #![cfg(test)]
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
-#[path = "support/jsx_check_project.rs"]
+use crate::support::corsa_requirement;
 mod jsx_check_project;
 
 use std::path::{Path, PathBuf};

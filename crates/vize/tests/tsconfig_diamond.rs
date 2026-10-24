@@ -3,10 +3,8 @@
     clippy::disallowed_types,
     reason = "complete corpus and JSON use std strings"
 )]
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
-#[path = "support/vue_stub.rs"]
-mod vue_stub;
+use crate::support::corsa_requirement;
+use crate::support::vue_stub;
 
 use serde_json::{Value, json};
 use std::{path::Path, process::Command};

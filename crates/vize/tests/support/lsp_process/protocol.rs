@@ -5,7 +5,7 @@ use std::io::BufRead;
 
 /// `None` means the stream ended before any byte of a new frame. Once a
 /// header begins, a missing delimiter or body is still a framing error.
-pub(super) fn read_message(reader: &mut impl BufRead) -> std::io::Result<Option<Value>> {
+pub(crate) fn read_message(reader: &mut impl BufRead) -> std::io::Result<Option<Value>> {
     let mut content_length = None;
     let mut header_started = false;
     loop {

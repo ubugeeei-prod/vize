@@ -79,7 +79,7 @@ test("the default limit accepts 500 lines and rejects the 501st line", () => {
   }
 });
 
-test("a new directory holding only a test module is rejected", () => {
+test("ordinary Rust child test modules are accepted", () => {
   const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "vize-source-test-dir-"));
   try {
     runGit(cwd, ["init", "-q"]);
@@ -104,9 +104,8 @@ test("a new directory holding only a test module is rejected", () => {
       writeLines(path.join(cwd, "parser.rs"), 3);
       writeLines(path.join(cwd, "parser", name), 3);
       runGit(cwd, ["add", "-A"]);
-      const rejected = runSourceLengthScript(["--check", "--base-ref", baseRef], cwd);
-      assert.equal(rejected.status, 1, rejected.stdout);
-      assert.match(rejected.stdout, new RegExp(`only hold a test module[^]*parser/${name}`));
+      const accepted = runSourceLengthScript(["--check", "--base-ref", baseRef], cwd);
+      assert.equal(accepted.status, 0, accepted.stdout);
       fs.rmSync(path.join(cwd, "parser"), { recursive: true });
     }
 
@@ -117,6 +116,43 @@ test("a new directory holding only a test module is rejected", () => {
     runGit(cwd, ["add", "-A"]);
     const accepted = runSourceLengthScript(["--check", "--base-ref", baseRef], cwd);
     assert.equal(accepted.status, 0, accepted.stdout);
+  } finally {
+    fs.rmSync(cwd, { recursive: true, force: true });
+  }
+});
+
+test("Rust path overrides fail even behind inactive cfgs while examples remain data", () => {
+  const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "vize-module-layout-"));
+  try {
+    runGit(cwd, ["init", "-q"]);
+    const source = path.join(cwd, "lib.rs");
+    fs.writeFileSync(source, "mod parser;\n");
+    fs.writeFileSync(path.join(cwd, "parser.rs"), "");
+    runGit(cwd, ["add", "-A"]);
+    for (const attribute of [
+      '#[path = "parser.rs"]',
+      '#[cfg(any())]\n#[path = "parser.rs"]',
+      '#[cfg_attr(any(), path = "parser.rs")]',
+      '#[cfg_attr(any(), cfg_attr(any(), path = "parser.rs"))]',
+    ]) {
+      fs.writeFileSync(source, `${attribute}\nmod parser;\n`);
+      const rejected = runSourceLengthScript(["--check"], cwd);
+      assert.equal(rejected.status, 1, `${rejected.stderr}\n${rejected.stdout}`);
+      assert.match(rejected.stdout, /lib\.rs:\d+: path attribute/);
+    }
+    fs.writeFileSync(
+      source,
+      '// #[path = "example.rs"]\nconst EXAMPLE: &str = r##"#[path = "example.rs"]"##;\nmod parser;\n',
+    );
+    const accepted = runSourceLengthScript(["--check"], cwd);
+    assert.equal(accepted.status, 0, `${accepted.stderr}\n${accepted.stdout}`);
+    const commandDir = path.join(cwd, "tools/commands/fixtures");
+    fs.mkdirSync(commandDir, { recursive: true });
+    fs.writeFileSync(path.join(commandDir, "observer.rs"), '#[path = "parser.rs"]\nmod parser;\n');
+    runGit(cwd, ["add", "-A"]);
+    const toolOverride = runSourceLengthScript(["--check"], cwd);
+    assert.equal(toolOverride.status, 1, `${toolOverride.stderr}\n${toolOverride.stdout}`);
+    assert.match(toolOverride.stdout, /tools\/commands\/fixtures\/observer\.rs:1: path attribute/);
   } finally {
     fs.rmSync(cwd, { recursive: true, force: true });
   }

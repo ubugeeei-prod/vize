@@ -341,5 +341,4 @@ impl ServerState {
 }
 
 #[cfg(test)]
-#[path = "current_tests.rs"]
 mod tests;

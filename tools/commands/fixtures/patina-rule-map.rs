@@ -4,6 +4,7 @@
 //! edition = "2024"
 //!
 //! [dependencies]
+//! vize_tool_support = { path = "../../support" }
 //! serde = { version = "1", features = ["derive"] }
 //! serde_json = "1"
 //! ```
@@ -11,8 +12,7 @@
 use serde_json::Value;
 use std::{env, process::ExitCode};
 
-#[path = "../../support/common.rs"]
-mod common;
+use vize_tool_support::common as common;
 
 const RULE_MAP_REL: &str = "tests/_fixtures/patina-eslint-vue-rule-map.json";
 const UPSTREAM_PACKAGE: &str = "eslint-plugin-vue";

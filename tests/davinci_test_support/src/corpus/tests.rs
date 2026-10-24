@@ -152,7 +152,10 @@ fn paths_with_spaces_survive_both_parsers() {
         ""
     );
     let (indexed, states) = parse_pair(&stage, &status);
-    assert!(indexed.clean.contains("tests/_fixtures/_git/my project"));
+    assert_eq!(
+        indexed.clean,
+        [CompactString::from("tests/_fixtures/_git/my project")].into()
+    );
     assert_eq!(
         states.get("tests/_fixtures/_git/my project"),
         Some(&SubmoduleState::Clean)

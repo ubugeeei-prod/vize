@@ -92,9 +92,7 @@ struct ReachabilityBudget {
     max_parses: usize,
 }
 
-#[path = "package_route_reachability_route_graph.rs"]
 mod route_graph;
-#[path = "package_route_reachability_sources.rs"]
 mod sources;
 pub use sources::ReachabilitySources;
 
@@ -474,5 +472,4 @@ fn finish(
 }
 
 #[cfg(test)]
-#[path = "package_route_reachability_tests.rs"]
 mod tests;

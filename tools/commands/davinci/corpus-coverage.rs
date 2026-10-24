@@ -4,16 +4,15 @@
 //! edition = "2024"
 //!
 //! [dependencies]
+//! vize_tool_support = { path = "../../support" }
 //! serde = { version = "1", features = ["derive"] }
 //! serde_json = "1"
 //! ```
 
 use std::{env, process::ExitCode};
 
-#[path = "../../support/artifacts.rs"]
 mod artifact_command;
-#[path = "../../support/common.rs"]
-mod common;
+use vize_tool_support::common;
 
 fn main() -> ExitCode {
     common::main_result(artifact_command::run_single(

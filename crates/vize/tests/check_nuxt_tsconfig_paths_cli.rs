@@ -1,11 +1,7 @@
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
-#[path = "support/nuxt_cli.rs"]
-mod nuxt_cli;
-#[path = "support/nuxt_stress.rs"]
-mod nuxt_stress;
-#[path = "check_nuxt_tsconfig_paths_cli/support.rs"]
+use crate::support::corsa_requirement;
+use crate::support::nuxt_cli;
+use crate::support::nuxt_stress;
 mod support;
 
 use std::process::Command;

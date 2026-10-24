@@ -46,7 +46,6 @@ pub struct CompilerConfigurationAttempt {
 }
 
 #[cfg(test)]
-#[path = "compiler_snapshot_tests.rs"]
 mod tests;
 
 impl CompilerConfigurationSnapshot {

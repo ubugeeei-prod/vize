@@ -1,6 +1,5 @@
 //! Actual File/Program/Vue factories feed the sole-file DOM target.
-#[path = "native_dom_file/support.rs"]
-mod support;
+use davinci_test_support::native_dom_file as support;
 
 use support::{construct, script};
 use vize_l0::Allocator;

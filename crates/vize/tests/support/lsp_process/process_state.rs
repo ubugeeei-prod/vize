@@ -31,7 +31,7 @@ fn exhausted() -> Value {
     json!({"complete":false,"reason":"observation byte budget exhausted"})
 }
 
-pub(super) fn snapshot(pid: u32) -> Value {
+pub(crate) fn snapshot(pid: u32) -> Value {
     if cfg!(target_os = "linux") {
         from_proc(Path::new("/proc"), pid)
     } else {
@@ -43,7 +43,7 @@ fn error(error: io::Error) -> Value {
     json!({"errorKind":format!("{:?}",error.kind()),"error":format!("{error}")})
 }
 
-pub(super) fn read(path: &Path) -> Value {
+pub(crate) fn read(path: &Path) -> Value {
     read_with_budget(path, &mut Budget::new(SNAPSHOT_LIMIT))
 }
 
@@ -71,7 +71,7 @@ fn read_with_budget(path: &Path, budget: &mut Budget) -> Value {
     }
 }
 
-pub(super) fn entries(directory: &Path, limit: usize, observe: impl Fn(&Path) -> Value) -> Value {
+pub(crate) fn entries(directory: &Path, limit: usize, observe: impl Fn(&Path) -> Value) -> Value {
     entries_with_budget(
         directory,
         limit,
@@ -151,12 +151,12 @@ fn link_with_budget(path: &Path, budget: &mut Budget) -> Value {
     }
 }
 
-pub(super) fn from_proc(proc_root: &Path, pid: u32) -> Value {
+pub(crate) fn from_proc(proc_root: &Path, pid: u32) -> Value {
     from_proc_with_limit(proc_root, pid, SNAPSHOT_LIMIT)
 }
 
 // The finite fixture entry point can only lower the production budget.
-pub(super) fn from_proc_with_limit(proc_root: &Path, pid: u32, limit: usize) -> Value {
+pub(crate) fn from_proc_with_limit(proc_root: &Path, pid: u32, limit: usize) -> Value {
     let mut budget = Budget::new(limit);
     let initial = budget.remaining;
     let root = proc_root.join(format!("{pid}"));

@@ -3,8 +3,7 @@
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
 
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
+use crate::support::corsa_requirement;
 
 use serde_json::Value;
 use std::{
@@ -306,5 +305,4 @@ fn absent_macro_retains_the_public_instance_emit_contract() {
     check(case.path(), &corsa, &[]);
 }
 
-#[path = "support/template_emit_controls.rs"]
 mod controls;

@@ -1,7 +1,6 @@
 //! Original four-rule command, complete JSON reports, and retained raw process outcomes.
 
-#[path = "support/vite_config.rs"]
-mod vite_config;
+use crate::support::vite_config;
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{fs, path::Path, process::Command};

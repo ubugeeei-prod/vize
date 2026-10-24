@@ -13,22 +13,17 @@ use super::types::{CorsaBridgeConfig, CorsaBridgeError, LspDefinitionResponse, L
 use super::worker::{BoundedWorker, WorkerError};
 use crate::corsa_client::CorsaProjectClient;
 
-#[path = "bridge/call_hierarchy.rs"]
 mod call_hierarchy;
 mod code_actions;
 mod completion;
 mod component_types;
-#[path = "bridge/declaration.rs"]
 mod declaration;
-#[path = "bridge/documents.rs"]
 mod documents;
-#[path = "bridge/implementation.rs"]
 mod implementation;
 mod initial_diagnostics;
 pub use initial_diagnostics::{
     InitialApiDiagnostics, InitialApiDiagnosticsOutcome, PendingInitialApiDiagnostics,
 };
-#[path = "bridge/inlay_hint.rs"]
 mod inlay_hint;
 mod language_features;
 pub(super) use documents::normalize_document_uri;

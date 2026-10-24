@@ -1,6 +1,5 @@
 //! Importer-scoped package topology inside Canon's virtual project.
 
-#[path = "package_shadow_json.rs"]
 mod json_modules;
 mod workspace_dependencies;
 use workspace_dependencies::WorkspaceShadowPlan;

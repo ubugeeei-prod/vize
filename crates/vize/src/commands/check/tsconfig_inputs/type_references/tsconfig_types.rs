@@ -62,5 +62,4 @@ fn load_tsconfig_type_packages(
 }
 
 #[cfg(test)]
-#[path = "tsconfig_types/extends_tests.rs"]
 mod extends_tests;

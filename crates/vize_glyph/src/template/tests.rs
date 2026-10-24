@@ -1,4 +1,3 @@
-#[path = "tests_print_width.rs"]
 mod print_width;
 
 use super::{directives, format_template_content, formatter, helpers};

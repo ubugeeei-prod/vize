@@ -1,23 +1,15 @@
 //! Public tools consume project settings without a dedicated Vize config (#8371).
 #![cfg(test)]
-#[path = "support/corsa_path.rs"]
-mod corsa_path;
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
+use crate::support::corsa_path;
+use crate::support::corsa_requirement;
 #[cfg(all(feature = "maestro", feature = "glyph"))]
-#[path = "project_config_cli/lsp.rs"]
 mod lsp;
 #[cfg(all(feature = "maestro", feature = "glyph"))]
-#[path = "support/lsp_process.rs"]
-mod lsp_process;
+use crate::support::lsp_process;
 #[cfg(all(feature = "maestro", feature = "glyph"))]
-#[path = "project_config_cli/nested_lsp.rs"]
 mod nested_lsp;
-#[path = "project_config_cli/root.rs"]
 mod root;
-#[path = "project_config_cli/support.rs"]
 mod support;
-#[path = "project_config_cli/typecheck.rs"]
 mod typecheck;
 
 use serde_json::{Value, json};

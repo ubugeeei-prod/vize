@@ -12,7 +12,7 @@ per fixture — `@vue/compiler-ssr` 3.5's output, the aligned vize output, and
 the pinned pre-fix vize output — and requires the aligned HTML to equal
 upstream exactly (attribute order inside a tag normalized) while the pre-fix
 module threw or rendered different HTML
-(`crates/vize_atelier_ssr/tests/vue_ssr_render.rs`, fixtures in
+(`crates/vize_atelier_ssr/tests/vue_ssr_render/main.rs`, fixtures in
 `tests/vue_ssr_render/fixtures.rs`, harness
 `tests/tooling/support/ssr-vue-render-diff.mjs`). The L4 plan lane emits the
 same bytes (`s4/differential_tests/vue_align_fixtures.rs`, four option sets).

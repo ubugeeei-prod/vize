@@ -343,5 +343,4 @@ fn primary_configuration_replacement_refuses_retained_owner_and_drains_its_worke
     );
 }
 
-#[path = "reload_protocol_tests.rs"]
 mod reload_protocol_tests;

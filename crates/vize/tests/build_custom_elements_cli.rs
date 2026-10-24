@@ -1,6 +1,5 @@
 #![cfg(test)]
-#[path = "support/vite_config.rs"]
-mod vite_config;
+use crate::support::vite_config;
 use std::{
     fs,
     path::{Path, PathBuf},

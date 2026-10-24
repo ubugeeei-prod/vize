@@ -1,0 +1,7 @@
+---
+source: crates/vize_croquis_cf/src/diagnostics/tests/markdown.rs
+expression: markdown.as_str()
+---
+**WARNING** `vize:croquis/cf/unmatched-inject`
+
+### test

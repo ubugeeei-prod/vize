@@ -6,10 +6,8 @@
 
 use std::{path::Path, process::Command};
 
-#[path = "support/corsa_path.rs"]
-mod corsa_path;
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
+use crate::support::corsa_path;
+use crate::support::corsa_requirement;
 
 fn write_file(root: &Path, path: &str, content: &str) {
     let file = root.join(path);

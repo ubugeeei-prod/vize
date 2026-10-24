@@ -20,7 +20,7 @@ use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 use std::process::{Command, ExitCode};
 
-/// The P0-13 corpus shard (`tools/support/davinci/fpfn.rs`).
+/// The P0-13 corpus shard (`tools/commands/davinci/davinci_fpfn.rs`).
 const CORPUS_SHARD: [&str; 3] = ["splitpanes", "layoutit-grid", "cssgridgenerator"];
 const SCRIPTS: &str = "tools/commands/davinci/incremental-equivalence/scripts";
 const USAGE: &str = "usage: rust-script tools/commands/davinci/incremental-equivalence.rs (--corpus-shard | --fixtures <dir>)... [--seeded] [--report <path>]";

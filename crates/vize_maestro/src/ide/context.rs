@@ -262,5 +262,4 @@ impl<'a> IdeContext<'a> {
 }
 
 #[cfg(test)]
-#[path = "context_tests.rs"]
 mod tests;

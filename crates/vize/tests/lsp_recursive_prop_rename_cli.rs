@@ -4,15 +4,10 @@
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
 
+use crate::support::lsp_vue_project as support;
 use serde_json::{Value, json};
-
-#[path = "support/lsp_process.rs"]
-mod lsp_process;
-#[path = "support/lsp_vue_project.rs"]
-mod support;
 use support::Fixture;
 
-#[path = "lsp_recursive_prop_rename_cli/edits.rs"]
 mod edits;
 use edits::{apply, location, location_after, text_edit, text_edit_after};
 

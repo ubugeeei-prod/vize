@@ -12,7 +12,7 @@ type StageAliasRow = readonly [relPath: string, mode: "source" | "test", sites: 
 const legacyRows = [
   ["crates/vize_atelier_core/src/steps/legacy.rs", "source", 1],
   ["crates/vize_atelier_core/src/steps/legacy_filters.rs", "source", 1],
-  ["crates/vize_atelier_core/src/steps/legacy_tests.rs", "test", 8],
+  ["crates/vize_atelier_core/src/steps/legacy/tests.rs", "test", 8],
 ] satisfies readonly StageAliasRow[];
 
 function compiler() {

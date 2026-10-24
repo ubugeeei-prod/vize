@@ -13,10 +13,10 @@ use vize_l0::cstr;
 use super::LspProcess;
 
 #[derive(Clone, Default)]
-pub(super) struct Evidence(Arc<OnceLock<Mutex<Vec<Value>>>>);
+pub(crate) struct Evidence(Arc<OnceLock<Mutex<Vec<Value>>>>);
 
 impl Evidence {
-    pub(super) fn record(&self, direction: &str, message: &Value) {
+    pub(crate) fn record(&self, direction: &str, message: &Value) {
         if let Some(evidence) = self.0.get() {
             evidence
                 .lock()

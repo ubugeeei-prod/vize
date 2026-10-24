@@ -6,7 +6,7 @@ declarative rule table in `docs/davinci/plan/phase-3.md` and the P3-2 record,
 never from Rust source: every binding fact demands a lower bound on the class,
 and the naive evaluator must return the least class meeting every demand.
 Kani verifies that contract on the Rust evaluator
-(`tests/formal/kani/l3_lattice.rs`); `LatticeFixture` compares this evaluator
+(`davinci/vize_l3/src/lattice/kani.rs`); `LatticeFixture` compares this evaluator
 with the Rust evaluator's committed fact page.
 -/
 

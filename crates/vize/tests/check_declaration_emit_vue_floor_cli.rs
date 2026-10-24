@@ -16,8 +16,7 @@
 //! happens to have installed.
 #![cfg(test)]
 
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
+use crate::support::corsa_requirement;
 
 use std::{path::Path, process::Command};
 

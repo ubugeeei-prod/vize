@@ -15,7 +15,6 @@ use serde_json::{Value, json};
 use vize_canon::generate_vue_content_mapper_transform_with_options;
 use vize_l0::{String as CompactString, cstr};
 
-#[path = "content_mapper/project.rs"]
 mod project;
 use project::{CloseProjectParams, OpenProjectParams, ProjectRegistry, resolve_open_project};
 
@@ -282,21 +281,16 @@ fn write_frame<W: Write>(writer: &mut W, value: &Value) -> io::Result<()> {
 }
 
 #[cfg(test)]
-#[path = "content_mapper/test_support.rs"]
 mod test_support;
 
 #[cfg(test)]
-#[path = "content_mapper/tests.rs"]
 mod tests;
 
 #[cfg(test)]
-#[path = "content_mapper/project_tests.rs"]
 mod project_tests;
 
 #[cfg(test)]
-#[path = "content_mapper/shared_helper_tests.rs"]
 mod shared_helper_tests;
 
 #[cfg(test)]
-#[path = "content_mapper/frame_tests.rs"]
 mod frame_tests;

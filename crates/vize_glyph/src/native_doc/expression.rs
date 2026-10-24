@@ -9,17 +9,11 @@ use vize_l1::embed::{
 
 use super::Doc;
 
-#[path = "expression/array.rs"]
 mod array;
-#[path = "expression/ast.rs"]
 mod ast;
-#[path = "expression/object.rs"]
 mod object;
-#[path = "expression/origin.rs"]
 mod origin;
-#[path = "expression/sequence.rs"]
 mod sequence;
-#[path = "expression/source.rs"]
 mod source;
 use origin::Origin;
 use source::{Context, Gap};
@@ -76,7 +70,6 @@ impl<'p, 'a> ExpressionDocument<'p, 'a> {
 }
 
 #[cfg(test)]
-#[path = "expression/projection_tests.rs"]
 mod projection_tests;
 
 /// Build directly from the original retained compiler-profile AST, once.

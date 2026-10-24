@@ -240,5 +240,4 @@ impl<'o, 'a> NativeSfc<'o, 'a> {
 }
 
 #[cfg(test)]
-#[path = "query_tests.rs"]
 mod tests;

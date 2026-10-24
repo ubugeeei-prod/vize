@@ -336,5 +336,4 @@ fn strip_trailing_commas(content: &str) -> CompactString {
 }
 
 #[cfg(test)]
-#[path = "tsconfig_paths/bom_tests.rs"]
 mod bom_tests;

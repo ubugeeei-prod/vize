@@ -216,7 +216,6 @@ fn fmt_glob_match_options() -> MatchOptions {
 }
 
 #[cfg(test)]
-#[path = "files/contract_tests.rs"]
 mod tests;
 
 #[cfg(test)]

@@ -6,7 +6,6 @@ use vize_carton::{CompactString, FxHashMap, String, camelize};
 use vize_croquis::macros::MacroKind;
 use vize_croquis::types::TypeDefinitions;
 
-#[path = "helpers_builtin_attr.rs"]
 mod builtin_attr;
 
 pub(super) use builtin_attr::is_builtin_attr;

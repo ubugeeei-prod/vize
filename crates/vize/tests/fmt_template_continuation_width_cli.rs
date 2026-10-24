@@ -4,8 +4,7 @@
     clippy::disallowed_macros,
     reason = "historical JavaScript config carrier"
 )]
-#[path = "support/vite_config.rs"]
-mod vite_config;
+use crate::support::vite_config;
 
 use std::{error::Error, fs, path::Path, process::Command};
 

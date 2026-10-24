@@ -39,18 +39,18 @@ const recentIssueRows = [
     1,
   ],
   [
-    "crates/vize_canon/src/batch/type_checker/tests/recent_issues/fallthrough_unknown_attrs.rs",
+    "crates/vize_canon/src/batch/type_checker/tests/recent_issues/component_prop_regressions/fallthrough_unknown_attrs.rs",
     "test",
     1,
   ],
-  ["crates/vize_canon/src/batch/type_checker/tests/recent_issues/generic_emit_guard.rs", "test", 1],
+  ["crates/vize_canon/src/batch/type_checker/tests/recent_issues/component_prop_regressions/generic_emit_guard.rs", "test", 1],
   [
-    "crates/vize_canon/src/batch/type_checker/tests/recent_issues/global_html_fallthrough_attrs.rs",
+    "crates/vize_canon/src/batch/type_checker/tests/recent_issues/component_prop_regressions/global_html_fallthrough_attrs.rs",
     "test",
     1,
   ],
   [
-    "crates/vize_canon/src/batch/type_checker/tests/recent_issues/literal_union_props.rs",
+    "crates/vize_canon/src/batch/type_checker/tests/recent_issues/component_prop_regressions/literal_union_props.rs",
     "test",
     1,
   ],
@@ -125,7 +125,7 @@ const recentIssueRows = [
     18,
   ],
   [
-    "crates/vize_canon/src/batch/type_checker/tests/recent_issues/wide_props_type_complexity.rs",
+    "crates/vize_canon/src/batch/type_checker/tests/recent_issues/component_prop_regressions/wide_props_type_complexity.rs",
     "test",
     1,
   ],

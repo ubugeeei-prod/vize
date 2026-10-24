@@ -36,6 +36,7 @@ memchr.workspace = true
 unicode-width.workspace = true
 
 [dev-dependencies]
+davinci_test_support = { workspace = true, features = ["formatter"] }
 criterion.workspace = true
 davinci_harness.workspace = true
 insta.workspace = true

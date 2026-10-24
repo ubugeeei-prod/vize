@@ -4,7 +4,6 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use vize_carton::cstr;
 
-#[path = "import_rewriter_tests/modes.rs"]
 mod modes;
 
 fn unique_case_dir(name: &str) -> PathBuf {

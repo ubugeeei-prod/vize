@@ -271,6 +271,5 @@ fn safe_insertion(mapping: &ProjectionMapping, at: usize) -> bool {
 }
 
 #[cfg(test)]
-#[path = "tests.rs"]
 #[expect(clippy::disallowed_macros, reason = "test fixtures use std strings")]
 mod tests;

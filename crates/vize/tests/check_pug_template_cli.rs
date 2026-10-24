@@ -10,8 +10,7 @@
 //! and directive expressions are type-checked and reported at their authored
 //! Pug positions (#8908).
 
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
+use crate::support::corsa_requirement;
 
 use std::{fs, path::Path, process::Command};
 

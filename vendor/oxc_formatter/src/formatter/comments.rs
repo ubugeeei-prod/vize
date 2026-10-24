@@ -729,5 +729,4 @@ impl<'a> Comments<'a> {
 }
 
 #[cfg(test)]
-#[path = "comments_tests.rs"]
 mod tests;

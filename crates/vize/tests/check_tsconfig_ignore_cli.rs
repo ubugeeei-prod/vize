@@ -2,12 +2,9 @@
 #![expect(clippy::disallowed_types, reason = "whole JSON corpus packets")]
 #![expect(clippy::disallowed_methods, reason = "whole JSON corpus packets")]
 
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
+use crate::support::corsa_requirement;
 
-#[path = "check_tsconfig_ignore_cli/literal_package.rs"]
 mod literal_package;
-#[path = "check_tsconfig_ignore_cli/warm_owner.rs"]
 mod warm_owner;
 
 use serde_json::{Value, json};

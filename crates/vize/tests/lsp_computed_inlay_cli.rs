@@ -6,17 +6,12 @@
     reason = "whole native and actual CLI RPC oracles"
 )]
 
-#[path = "support/vite_config.rs"]
-mod vite_config;
+use crate::support::vite_config;
 
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
-#[path = "support/lsp_process.rs"]
-mod lsp_process;
-#[path = "support/inlay_native_oracle.rs"]
+use crate::support::corsa_requirement;
+use crate::support::lsp_process;
 mod oracle;
-#[path = "support/lsp_vue_project.rs"]
-mod support;
+use crate::support::lsp_vue_project as support;
 
 use oracle::{NativeOracle, normalize_locations};
 use serde_json::{Value, json};

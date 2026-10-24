@@ -290,7 +290,6 @@ impl Drop for PendingInvalidation<'_> {
 }
 
 #[cfg(test)]
-#[path = "documents/invalidation_tests.rs"]
 mod invalidation_tests;
 
 pub(crate) fn normalize_document_uri(name: &str) -> String {

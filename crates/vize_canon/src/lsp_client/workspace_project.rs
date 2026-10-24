@@ -216,8 +216,7 @@ mod tests {
 }
 
 #[cfg(all(test, target_os = "linux"))]
-#[path = "../../tests/support/original_diagnosing_process.rs"]
-mod native_process_control;
+use davinci_test_support::original_diagnosing_process as native_process_control;
 
 #[cfg(all(test, target_os = "linux"))]
 mod process_tests {

@@ -4,6 +4,7 @@
 //! edition = "2024"
 //!
 //! [dependencies]
+//! vize_tool_support = { path = "../../support" }
 //! serde = { version = "1", features = ["derive"] }
 //! serde_json = "1"
 //! ```
@@ -14,8 +15,7 @@ use std::{
     process::ExitCode,
 };
 
-#[path = "../../support/common.rs"]
-mod common;
+use vize_tool_support::common as common;
 
 const CAPABILITY_VALUES: &[(&str, &[&str])] = &[
     ("vue-generation", &["0.x", "1.x", "2.x", "2.7", "3.x"]),

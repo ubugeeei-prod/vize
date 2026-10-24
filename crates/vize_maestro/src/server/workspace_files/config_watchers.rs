@@ -395,5 +395,4 @@ fn glob_trim_character(character: char) -> bool {
 }
 
 #[cfg(test)]
-#[path = "config_watchers_tests.rs"]
 mod tests;

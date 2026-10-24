@@ -4,6 +4,7 @@
 //! edition = "2024"
 //!
 //! [dependencies]
+//! vize_tool_support = { path = "../../../support" }
 //! serde = { version = "1", features = ["derive"] }
 //! serde_json = "1"
 //! ```
@@ -14,8 +15,7 @@ use std::{
     process::{Command, ExitCode, Stdio},
 };
 
-#[path = "../../../support/common.rs"]
-mod common;
+use vize_tool_support::common;
 
 const USAGE: &str = "Usage: rust-script tools/commands/editors/vscode/sync-typescript-plugin.rs <stage|inject> [vsix]";
 const PACKAGE_PATH: &str = "node_modules/@vizejs/typescript-vue-plugin";

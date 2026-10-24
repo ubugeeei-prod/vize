@@ -271,7 +271,6 @@ fn source_type(lang: Option<&str>) -> SourceType {
 }
 
 #[cfg(test)]
-#[path = "importers/tests.rs"]
 mod directory_tests;
 
 #[cfg(test)]

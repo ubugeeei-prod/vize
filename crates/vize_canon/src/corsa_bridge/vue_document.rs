@@ -14,7 +14,6 @@ use crate::virtual_ts::VirtualTsOptions;
 pub(in crate::corsa_bridge) mod build;
 pub(super) mod materialized_documents;
 use build::build_vue_virtual_workspace_project;
-#[path = "vue_document/types.rs"]
 mod model;
 mod prepare;
 pub(crate) use model::CorsaVueVirtualProject;
@@ -279,6 +278,5 @@ pub(super) fn generate_vue_document_with_alias(
     )
 }
 
-#[path = "vue_document/generate.rs"]
 mod generate;
 use generate::generate_vue_document_with_options;

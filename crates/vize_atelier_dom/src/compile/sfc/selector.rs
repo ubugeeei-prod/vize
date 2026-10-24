@@ -1,4 +1,3 @@
-#[path = "selector/expressions.rs"]
 mod expressions;
 pub(super) fn source_contains_expression_ampersand(source: &str) -> bool {
     expressions::source_contains_expression_ampersand(source)
@@ -113,7 +112,6 @@ fn source_contains_parser_recovery(source: &str) -> bool {
 }
 
 #[cfg(test)]
-#[path = "selector/tests.rs"]
 mod tests;
 
 fn find_byte(bytes: &[u8], start: usize, needle: u8) -> Option<usize> {

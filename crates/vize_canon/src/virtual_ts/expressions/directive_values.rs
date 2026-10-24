@@ -341,5 +341,4 @@ fn emit_unknown_directive_presence(
 }
 
 #[cfg(test)]
-#[path = "directive_values/naming_tests.rs"]
 mod tests;

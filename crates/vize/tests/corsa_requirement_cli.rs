@@ -1,6 +1,5 @@
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
+use crate::support::corsa_requirement;
 
 #[test]
 fn available_corsa_never_skips() {

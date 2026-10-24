@@ -195,7 +195,6 @@ fn without_duplicate_required_props(
 }
 
 #[cfg(test)]
-#[path = "native/tests.rs"]
 mod tests;
 
 pub(super) fn has_blocking_parser_error(

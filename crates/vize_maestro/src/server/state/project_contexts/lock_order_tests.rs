@@ -272,5 +272,4 @@ fn registered_workspaces_named_after_generated_directories_observe_their_own_con
     }
 }
 
-#[path = "config_reload_admission_tests.rs"]
 mod config_reload_admission_tests;

@@ -2,10 +2,8 @@
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
-#[path = "support/corsa_path.rs"]
-mod corsa_path;
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
+use crate::support::corsa_path;
+use crate::support::corsa_requirement;
 
 use std::{path::Path, process::Command};
 

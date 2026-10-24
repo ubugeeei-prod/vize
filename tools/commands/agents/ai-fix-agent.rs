@@ -1,6 +1,7 @@
 #!/usr/bin/env rust-script
 //! ```cargo
 //! [dependencies]
+//! vize_tool_support = { path = "../../support" }
 //! chrono = { version = "0.4", default-features = false, features = ["clock"] }
 //! regex = "1"
 //! serde = { version = "1", features = ["derive"] }
@@ -10,8 +11,7 @@
 //! edition = "2024"
 //! ```
 
-#[path = "../../support/common.rs"]
-mod common;
+use vize_tool_support::common;
 
 use regex::Regex;
 use serde_json::{Value, json};

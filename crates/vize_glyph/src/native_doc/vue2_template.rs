@@ -10,7 +10,6 @@ use super::template::{Cursor, close_element, verbatim};
 use super::vue2_sfc::{NativeVue2SfcNode, NativeVue2SfcRefusal};
 use super::{Doc, TemplateRefusal, UnsupportedSyntax, Vue2TextDocument, vue2_text_document};
 
-#[path = "vue2_template/header.rs"]
 mod header;
 
 pub(super) fn document<'a>(
@@ -166,5 +165,4 @@ pub(super) fn span(block: SourceBlock<'_>, text: &str) -> Result<Span, NativeVue
 }
 
 #[cfg(test)]
-#[path = "vue2_template/tests.rs"]
 mod tests;

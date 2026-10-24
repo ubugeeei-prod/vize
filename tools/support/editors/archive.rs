@@ -8,8 +8,7 @@ use std::{
     process::{Command, Stdio},
 };
 
-#[path = "../common.rs"]
-mod common;
+use crate::common;
 
 pub fn workspace_version(repo_root: &Path) -> Result<String, String> {
     let cargo = common::read_text(repo_root.join("Cargo.toml"))?;

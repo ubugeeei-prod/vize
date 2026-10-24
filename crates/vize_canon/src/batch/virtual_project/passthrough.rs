@@ -11,7 +11,6 @@ use crate::batch::AUTHORED_VUE_TS_ALIAS_SENTINEL;
 
 use super::{VirtualProject, build::mirrored_virtual_path};
 
-#[path = "passthrough_resolution.rs"]
 mod resolution;
 use resolution::resolve_relative_passthrough_module;
 

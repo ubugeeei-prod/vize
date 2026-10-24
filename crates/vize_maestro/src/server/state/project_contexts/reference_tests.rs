@@ -409,5 +409,4 @@ fn invalid_solution_target_does_not_override_valid_source_projects_or_vite_polic
     assert!(!modern.lsp_features().hover);
 }
 
-#[path = "reference_reload_tests.rs"]
 mod reference_reload_tests;

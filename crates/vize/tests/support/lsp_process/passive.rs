@@ -19,17 +19,16 @@ use sha2::{Digest, Sha256};
 
 const MAX_PERSISTED_BYTES: usize = 4 * 1024 * 1024;
 
-#[path = "process_state.rs"]
-mod process_state;
+use super::process_state;
 
-pub(super) struct Passive {
+pub(crate) struct Passive {
     root: PathBuf,
     identity: Value,
     retain_terminal: bool,
 }
 
 impl Passive {
-    pub(super) fn new(pid: u32, command: &Command) -> Option<Self> {
+    pub(crate) fn new(pid: u32, command: &Command) -> Option<Self> {
         let (root, retain_terminal) = std::env::var_os("VIZE_LSP_PASSIVE_EVIDENCE")
             .map(|root| (root, true))
             .or_else(|| {
@@ -39,7 +38,7 @@ impl Passive {
         Some(Self::with_root(root, pid, command, retain_terminal))
     }
 
-    pub(super) fn with_root(
+    pub(crate) fn with_root(
         root: PathBuf,
         pid: u32,
         command: &Command,
@@ -63,13 +62,13 @@ impl Passive {
         }
     }
 
-    pub(super) fn retains_terminal(&self) -> bool {
+    pub(crate) fn retains_terminal(&self) -> bool {
         self.retain_terminal
     }
 
     /// The original deadline has already failed. Observe before the caller's
     /// unchanged kill/reap, then retain the terminal packet after reader joins.
-    pub(super) fn record_exit_deadline(
+    pub(crate) fn record_exit_deadline(
         &mut self,
         pid: u32,
         timeout: Duration,
@@ -91,11 +90,11 @@ impl Passive {
         report_error(result);
     }
 
-    pub(super) fn persist_reporting_error(&self, terminal_evidence: Value) {
+    pub(crate) fn persist_reporting_error(&self, terminal_evidence: Value) {
         report_error(self.persist(terminal_evidence));
     }
 
-    pub(super) fn persist(&self, terminal_evidence: Value) -> io::Result<()> {
+    pub(crate) fn persist(&self, terminal_evidence: Value) -> io::Result<()> {
         if !self.retain_terminal {
             return Ok(());
         }

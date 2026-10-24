@@ -2,13 +2,104 @@
 //! ```cargo
 //! [package]
 //! edition = "2024"
+//! [dependencies]
+//! proc-macro2 = { version = "1", features = ["span-locations"] }
 //! ```
 
 use std::{
-    collections::{BTreeSet, HashMap},
+    collections::HashMap,
     env, fs,
     process::{Command, ExitCode},
 };
+
+mod source_file_lengths {
+    pub(super) mod module_layout {
+        //! Reject module-path overrides in active Rust source, including disabled cfgs.
+        use proc_macro2::{Delimiter, TokenStream, TokenTree};
+        use std::fs;
+
+        pub(crate) fn check(paths: &[String]) -> Vec<String> {
+            let mut failures = Vec::new();
+            for path in paths.iter().filter(|path| path.ends_with(".rs")) {
+                // Historical input bytes are immutable; they are not compiled modules.
+                if !path.starts_with("tools/commands/")
+                    && path
+                        .split('/')
+                        .any(|part| matches!(part, "fixtures" | "_fixtures" | "__fixtures__"))
+                {
+                    continue;
+                }
+                let source = match fs::read_to_string(path) {
+                    Ok(source) => source,
+                    Err(error) => {
+                        failures.push(format!("{path}: {error}"));
+                        continue;
+                    }
+                };
+                let source = if source.starts_with("#!") && !source.starts_with("#![") {
+                    source.split_once('\n').map_or("", |(_, rest)| rest)
+                } else {
+                    &source
+                };
+                match source.parse::<TokenStream>() {
+                    Ok(tokens) => inspect(tokens, path, &mut failures),
+                    Err(error) => {
+                        failures.push(format!("{path}: cannot inspect Rust tokens: {error}"))
+                    }
+                }
+            }
+            failures
+        }
+
+        fn inspect(tokens: TokenStream, path: &str, failures: &mut Vec<String>) {
+            let tokens = tokens.into_iter().collect::<Vec<_>>();
+            for (index, token) in tokens.iter().enumerate() {
+                if matches!(token, TokenTree::Punct(punct) if punct.as_char() == '#') {
+                    let next = tokens.get(index + 1);
+                    let next = if matches!(next, Some(TokenTree::Punct(punct)) if punct.as_char() == '!')
+                    {
+                        tokens.get(index + 2)
+                    } else {
+                        next
+                    };
+                    if let Some(TokenTree::Group(group)) = next {
+                        if group.delimiter() == Delimiter::Bracket && overrides_path(group.stream())
+                        {
+                            failures.push(format!(
+                                "{path}:{}: path attribute",
+                                token.span().start().line
+                            ));
+                        }
+                    }
+                }
+                if let TokenTree::Group(group) = token {
+                    inspect(group.stream(), path, failures);
+                }
+            }
+        }
+
+        fn overrides_path(tokens: TokenStream) -> bool {
+            let mut tokens = tokens.into_iter();
+            match tokens.next() {
+                Some(TokenTree::Ident(name)) if name == "path" => true,
+                Some(TokenTree::Ident(name)) if name == "cfg_attr" => {
+                    has_path_assignment(tokens.collect())
+                }
+                _ => false,
+            }
+        }
+
+        fn has_path_assignment(tokens: TokenStream) -> bool {
+            let tokens = tokens.into_iter().collect::<Vec<_>>();
+            tokens.windows(2).any(|pair| {
+                matches!(&pair[0], TokenTree::Ident(name) if name == "path")
+                    && matches!(&pair[1], TokenTree::Punct(punct) if punct.as_char() == '=')
+            }) || tokens.into_iter().any(
+                |token| matches!(token, TokenTree::Group(group) if has_path_assignment(group.stream())),
+            )
+        }
+    }
+}
 
 #[derive(Clone)]
 struct SourceFile {
@@ -70,16 +161,19 @@ fn run() -> i32 {
         Ok(paths) => paths,
         Err(()) => return print_error("Failed to read tracked files with git ls-files"),
     };
-    let test_dirs = test_only_dirs(&paths);
+    let module_failures = source_file_lengths::module_layout::check(&paths);
     let files = collect_current_files(paths);
     print_inventory(&files, max_lines, limit);
-    println!(
-        "Directories holding only a test module: {}",
-        test_dirs.len()
-    );
 
     if !check {
         return 0;
+    }
+    if !module_failures.is_empty() {
+        println!("Rust modules must use ordinary module discovery:");
+        for failure in module_failures {
+            println!("- {failure}");
+        }
+        return 1;
     }
     if !git_ref_exists(&base_ref) {
         println!("\nNo comparable base ref found; inventory completed without enforcing growth.");
@@ -88,26 +182,14 @@ fn run() -> i32 {
 
     let base_paths = base_rename_paths(&base_ref);
     let failures = collect_failures(&files, max_lines, &base_ref, &base_paths);
-    let base_test_dirs = base_tracked_paths(&base_ref)
-        .map(|paths| test_only_dirs(&paths))
-        .unwrap_or_default();
-    let new_test_dirs = test_dirs.difference(&base_test_dirs).collect::<Vec<_>>();
     println!("\nCompared with {base_ref}.");
-    if failures.is_empty() && new_test_dirs.is_empty() {
+    if failures.is_empty() {
         println!("No new or grown files exceed {max_lines} lines.");
         return 0;
     }
     if !failures.is_empty() {
         println!("Files requiring action:");
         print_failures(&failures);
-    }
-    if !new_test_dirs.is_empty() {
-        println!(
-            "\nDirectories that only hold a test module (inline it in the parent, or use a sibling `<module>_tests.rs`):"
-        );
-        for path in new_test_dirs {
-            println!("- `{path}`");
-        }
     }
     1
 }
@@ -196,29 +278,6 @@ fn is_excluded_path(path: &str) -> bool {
         || path == "npm/fresco-native/index.d.ts"
 }
 
-/// Test files that are the only tracked entry of their directory, e.g.
-/// `foo/tests.rs` next to `foo.rs` with no other `foo/` content.
-fn test_only_dirs(paths: &[String]) -> BTreeSet<String> {
-    let mut entries = HashMap::<&str, usize>::new();
-    for path in paths {
-        let mut child = path.as_str();
-        while let Some((dir, _)) = child.rsplit_once('/') {
-            *entries.entry(dir).or_default() += 1;
-            child = dir;
-        }
-    }
-    paths
-        .iter()
-        .filter(|path| !is_excluded_path(path))
-        .filter(|path| {
-            path.rsplit_once('/').is_some_and(|(dir, name)| {
-                matches!(name, "tests.rs" | "test.rs") && entries.get(dir) == Some(&1)
-            })
-        })
-        .cloned()
-        .collect()
-}
-
 fn collect_current_files(paths: Vec<String>) -> Vec<SourceFile> {
     let mut files = paths
         .into_iter()
@@ -253,19 +312,6 @@ fn tracked_paths() -> Result<Vec<String>, ()> {
         .lines()
         .map(str::to_string)
         .collect())
-}
-
-fn base_tracked_paths(base_ref: &str) -> Option<Vec<String>> {
-    let output = Command::new("git")
-        .args(["ls-tree", "-r", "--name-only", base_ref])
-        .output()
-        .ok()?;
-    output.status.success().then(|| {
-        String::from_utf8_lossy(&output.stdout)
-            .lines()
-            .map(str::to_string)
-            .collect()
-    })
 }
 
 fn git_ref_exists(ref_name: &str) -> bool {

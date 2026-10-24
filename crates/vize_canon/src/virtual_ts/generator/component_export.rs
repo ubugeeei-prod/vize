@@ -323,5 +323,4 @@ fn contains_identifier(source: &str, name: &str) -> bool {
 }
 
 #[cfg(test)]
-#[path = "component_export_tests.rs"]
 mod tests;

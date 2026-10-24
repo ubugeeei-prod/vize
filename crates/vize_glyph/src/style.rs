@@ -5,7 +5,6 @@
 
 mod authored;
 mod blank_lines;
-#[path = "style_chunk.rs"]
 mod chunk;
 mod color;
 mod comment_scan;

@@ -243,7 +243,6 @@ fn shared_scope_dir(dirs: &[PathBuf], virtual_root: &Path) -> Option<PathBuf> {
 }
 
 #[cfg(test)]
-#[path = "tests/package_shadow_fan_out.rs"]
 mod fan_out_tests;
 
 #[cfg(test)]

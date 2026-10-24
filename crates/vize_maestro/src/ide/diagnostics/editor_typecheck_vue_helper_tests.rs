@@ -6,8 +6,7 @@ use super::editor_typecheck_fixture::{
 };
 use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Position, Range, Url};
 
-#[path = "../../../../vize/tests/support/vue_helper_fixture.rs"]
-mod fixture;
+use davinci_test_support::vue_helper_fixture as fixture;
 
 #[test]
 fn config_scoped_vue_helpers_preserve_whole_original_and_positive_editor_vectors() {

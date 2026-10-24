@@ -1,8 +1,7 @@
 //! Complete CLI configuration contracts for the original unknown-rule report.
 #![cfg(test)]
 
-#[path = "support/vite_config.rs"]
-mod vite_config;
+use crate::support::vite_config;
 use serde_json::{Value, json};
 use std::{error::Error, fs, path::Path, process::Command};
 use vize_l0::cstr;

@@ -15,7 +15,6 @@ use super::IdeContext;
 use crate::ide::corsa_support;
 
 #[cfg(test)]
-#[path = "module_specifier_tests.rs"]
 mod tests;
 
 pub(super) fn definition(ctx: &IdeContext<'_>) -> Option<GotoDefinitionResponse> {

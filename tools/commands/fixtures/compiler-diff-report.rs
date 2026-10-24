@@ -4,6 +4,7 @@
 //! edition = "2024"
 //!
 //! [dependencies]
+//! vize_tool_support = { path = "../../support" }
 //! chrono = "0.4"
 //! serde = { version = "1", features = ["derive"] }
 //! serde_json = "1"
@@ -16,8 +17,7 @@ use std::{
     process::{Command, ExitCode, Stdio},
 };
 
-#[path = "../../support/common.rs"]
-mod common;
+use vize_tool_support::common as common;
 
 const SCHEMA: &str = "vize.fixtureCompilerDiffReport";
 const DEFAULT_TARGETS: &[&str] = &["dom", "ssr"];

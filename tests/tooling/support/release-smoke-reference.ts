@@ -14,8 +14,8 @@ const script = "tools/commands/release/npm/smoke-release-install.rs";
 const closure = [
   script,
   "tools/support/common.rs",
-  "tools/support/release/npm_publish.rs",
-  "tools/support/release/npm_smoke_init.rs",
+  "tools/commands/release/npm/npm_publish.rs",
+  "tools/commands/release/npm/npm_smoke_init.rs",
 ];
 function sha256(file: string) {
   return createHash("sha256").update(fs.readFileSync(file)).digest("hex");

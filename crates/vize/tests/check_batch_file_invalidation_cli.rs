@@ -3,12 +3,9 @@
 //! Repeated `vize check` runs in one project must follow file renames, deletes
 //! and content changes without stale diagnostics or stale program members
 //! (#3984: "file create/edit/rename/delete invalidate the correct graph").
-#[path = "support/corsa_path.rs"]
-mod corsa_path;
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
-#[path = "support/vue_stub.rs"]
-mod vue_stub;
+use crate::support::corsa_path;
+use crate::support::corsa_requirement;
+use crate::support::vue_stub;
 
 use std::{
     path::{Path, PathBuf},

@@ -135,7 +135,6 @@ fn element_binds_attrs_explicitly(element: &ElementNode<'_>, source: &str) -> bo
     })
 }
 
-#[path = "fallthrough/attrs_expr.rs"]
 mod attrs_expr;
 use attrs_expr::{expression_source, expression_spreads_attrs};
 
@@ -342,5 +341,4 @@ fn push_ts_string_literal(output: &mut String, value: &str) {
 }
 
 #[cfg(test)]
-#[path = "fallthrough_tests.rs"]
 mod fallthrough_tests;

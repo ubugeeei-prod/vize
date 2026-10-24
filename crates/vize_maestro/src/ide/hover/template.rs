@@ -14,11 +14,8 @@ use vize_relief::BindingType;
 use super::{HoverBuilder, HoverService};
 use crate::ide::{IdeContext, template_scope};
 
-#[path = "template/template_attribute.rs"]
 mod template_attribute;
-#[path = "template/template_directive.rs"]
 mod template_directive;
-#[path = "template/template_ref.rs"]
 mod template_ref;
 
 impl HoverService {

@@ -6,7 +6,7 @@ name: Level HTML content model
 # in the Check workflow) must agree exactly with Chromium's HTML parser.
 # Charter #36: the checker's walk and verdict rule are sound for every context
 # a truncated chain describes. Kani verifies the shipped kernel in the Davinci
-# Kani workflow (tests/formal/kani/html_content_model.rs).
+# Kani workflow (crates/vize_patina/src/html_content_model/kani.rs).
 
 on:
   push:

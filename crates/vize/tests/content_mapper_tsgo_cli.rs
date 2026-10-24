@@ -9,24 +9,15 @@ const TSGO_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_TSGO";
 const JAVASCRIPT_TSC_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_JAVASCRIPT_TSC";
 const VUE_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_VUE";
 
-#[path = "content_mapper_tsgo_cli/const_enum_import.rs"]
 mod const_enum_import;
-#[path = "content_mapper_tsgo_cli/dynamic_template_refs.rs"]
 mod dynamic_template_refs;
 mod generic_constructor_slots;
-#[path = "content_mapper_tsgo_cli/global_components.rs"]
 mod global_components;
-#[path = "content_mapper_tsgo_cli/incomplete_tags.rs"]
 mod incomplete_tags;
-#[path = "content_mapper_tsgo_cli/javascript_check_js.rs"]
 mod javascript_check_js;
-#[path = "content_mapper_tsgo_cli/props_binding.rs"]
 mod props_binding;
-#[path = "content_mapper_tsgo_cli/template_expression_syntax.rs"]
 mod template_expression_syntax;
-#[path = "content_mapper_tsgo_cli/type_only_import_use.rs"]
 mod type_only_import_use;
-#[path = "content_mapper_tsgo_cli/unknown_options_10218.rs"]
 mod unknown_options_10218;
 
 fn workspace_root() -> &'static Path {
@@ -728,5 +719,4 @@ fn standard_tsgo_accepts_surplus_defaults_without_erasing_declared_default_error
     }
 }
 
-#[path = "content_mapper_tsgo_cli/shared_helpers_performance.rs"]
 mod shared_helpers_performance;

@@ -427,7 +427,6 @@ pub(super) fn rule_docs_url(rule_name: &str) -> Option<Url> {
 }
 
 #[cfg(test)]
-#[path = "pinia_availability_tests.rs"]
 mod pinia_availability_tests;
 
 #[cfg(test)]

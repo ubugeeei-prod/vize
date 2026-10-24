@@ -4,6 +4,7 @@
 //! edition = "2024"
 //!
 //! [dependencies]
+//! vize_tool_support = { path = "../../support" }
 //! libc = "0.2"
 //! pathdiff = "0.2"
 //! regex = "1"
@@ -23,11 +24,8 @@ use std::{
     time::{Duration, Instant},
 };
 
-#[path = "../../support/typecheck_baseline_usability.rs"]
 mod baseline_usability;
-#[path = "../../support/common.rs"]
-mod common;
-#[path = "../../support/typecheck_project_deadline.rs"]
+use vize_tool_support::common as common;
 mod project_deadline;
 use project_deadline::ProjectContext;
 

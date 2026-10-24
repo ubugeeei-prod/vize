@@ -238,7 +238,6 @@ fn trim_alpha(alpha: f32) -> String {
 }
 
 #[cfg(test)]
-#[path = "document_color/hsl_presentation_tests.rs"]
 mod hsl_presentation_tests;
 
 #[cfg(test)]

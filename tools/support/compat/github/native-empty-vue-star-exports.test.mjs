@@ -8,7 +8,7 @@ import { validateArtifact, validateRun } from "./native-empty-vue-star-exports.m
 
 function fixture(run) {
   const root = mkdtempSync(join(os.tmpdir(), "empty-star-receipt-refusal-"));
-  const source = join(root, "crates/vize_canon/tests/empty_vue_star_exports.rs");
+  const source = join(root, "crates/vize_canon/tests/empty_vue_star_exports/main.rs");
   mkdirSync(join(root, "crates/vize_canon/tests"), { recursive: true });
   writeFileSync(source, "// test-only receipt model; never compiled\n");
   const artifact = {

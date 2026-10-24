@@ -3,6 +3,7 @@
 //! [package]
 //! edition = "2024"
 //! [dependencies]
+//! vize_tool_support = { path = "../../support" }
 //! serde = { version = "1", features = ["derive"] }
 //! serde_json = "1"
 //! toml = "0.9"
@@ -12,9 +13,7 @@
 //! Uses the same Linux process-tree sampler as TS-44, and compares absolute RSS
 //! to the existing reference preset without changing its measured methodology.
 
-#[path = "../../support/common.rs"]
-mod common;
-#[path = "../../support/davinci/resource_session.rs"]
+use vize_tool_support::common;
 mod resource_session;
 
 use resource_session::ProcSampler;

@@ -10,17 +10,15 @@ use std::{fs, path::PathBuf, process::Command};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 
-#[path = "support/lsp_process/passive.rs"]
 #[allow(
     dead_code,
     reason = "the original LSP harness uses this shared helper's constructor and error reporter"
 )]
-mod passive;
+use crate::support::lsp_process::passive;
 use passive::Passive;
 
-#[path = "support/lsp_process/process_state.rs"]
 #[allow(dead_code, reason = "the LSP helper owns platform dispatch")]
-mod process_state;
+use crate::support::lsp_process::process_state;
 
 fn expected(terminal: Value) -> Value {
     json!({

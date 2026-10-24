@@ -1,7 +1,5 @@
 //! Server/client, error and Suspense boundary analysis.
-#[path = "boundary_client.rs"]
 mod client;
-#[path = "boundary_graph.rs"]
 mod graph_walk;
 use graph_walk::{find_error_sources, find_protected_components, has_ancestor_with_boundary};
 

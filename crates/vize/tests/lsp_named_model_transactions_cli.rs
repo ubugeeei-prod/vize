@@ -6,13 +6,9 @@
 use serde_json::{Value, json};
 
 // Reuse the existing whole-transaction application law without changing it.
-#[path = "lsp_bound_event_casing_cli/application.rs"]
-mod application;
-#[path = "lsp_named_model_transactions_cli/contracts.rs"]
+use crate::support::rename_application as application;
 mod contracts;
-#[path = "support/lsp_process.rs"]
-mod lsp_process;
-#[path = "lsp_named_model_transactions_cli/session.rs"]
+use crate::support::lsp_process;
 mod session;
 use session::Session;
 

@@ -465,5 +465,4 @@ pub struct OxlintBridge {
 }
 
 #[cfg(test)]
-#[path = "telegraph_tests.rs"]
 mod tests;

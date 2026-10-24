@@ -17,6 +17,7 @@ publish = false
 cargo-fuzz = true
 
 [dependencies]
+davinci_test_support = { path = "../davinci_test_support", features = ["panic-boundary"] }
 libfuzzer-sys = "0.4"
 oxc_allocator = { version = "=0.142.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }
 oxc_parser = { version = "=0.142.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }

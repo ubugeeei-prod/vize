@@ -7,9 +7,7 @@
 #![expect(clippy::disallowed_methods, reason = "test fixture source strings")]
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
 
-#[path = "support/lsp_process.rs"]
-mod lsp_process;
-#[path = "lsp_canceled_hover_cli/project.rs"]
+use crate::support::lsp_process;
 mod project;
 
 use lsp_process::{LspProcess, file_uri};

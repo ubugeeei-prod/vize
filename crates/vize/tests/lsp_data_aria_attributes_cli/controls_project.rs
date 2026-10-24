@@ -1,7 +1,6 @@
 //! Real stdio controls with independent source/revision and disk custody.
 
-#[path = "../support/vite_config.rs"]
-mod vite_config;
+use crate::support::vite_config;
 
 use std::path::{Path, PathBuf};
 

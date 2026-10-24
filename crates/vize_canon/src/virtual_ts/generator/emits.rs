@@ -8,7 +8,6 @@ use crate::virtual_ts::{
     props::{add_generic_defaults, extract_generic_names, strip_const_modifiers},
 };
 
-#[path = "authored_events.rs"]
 mod authored_events;
 use authored_events::emit_authored_event_map;
 

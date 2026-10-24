@@ -4,12 +4,9 @@
 use std::path::Path;
 use std::process::Command;
 
-#[path = "support/corsa_path.rs"]
-mod corsa_path;
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
-#[path = "../../vize_canon/tests/support/reference_path_project.rs"]
-mod project;
+use crate::support::corsa_path;
+use crate::support::corsa_requirement;
+use davinci_test_support::reference_path_project as project;
 
 #[test]
 fn reference_path_modules_keep_complete_cli_diagnostics() {

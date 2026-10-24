@@ -10,7 +10,6 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use vize_carton::{String, corsa_resolver::platform_suffix, cstr};
 mod camel_case_component_props;
 mod compatibility_capture;
-#[path = "tests_symlink.rs"]
 mod symlink;
 
 use symlink::symlink_path;

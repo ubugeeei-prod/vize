@@ -300,5 +300,4 @@ fn push_export(
 }
 
 #[cfg(test)]
-#[path = "plain_exports_tests.rs"]
 mod tests;

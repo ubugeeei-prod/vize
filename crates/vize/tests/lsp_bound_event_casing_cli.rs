@@ -5,11 +5,8 @@
 
 use serde_json::{Value, json};
 
-#[path = "lsp_bound_event_casing_cli/application.rs"]
-mod application;
-#[path = "support/lsp_process.rs"]
-mod lsp_process;
-#[path = "lsp_bound_event_casing_cli/session.rs"]
+use crate::support::lsp_process;
+use crate::support::rename_application as application;
 mod session;
 use session::Session;
 

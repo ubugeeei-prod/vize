@@ -9,8 +9,7 @@ use std::{fs, path::Path};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 
-#[path = "support/lsp_process.rs"]
-mod lsp_process;
+use crate::support::lsp_process;
 use lsp_process::{LspProcess, file_uri};
 
 const CORPUS: &str = "tests/_fixtures/differential/lsp/document-link-module-resolution-original";

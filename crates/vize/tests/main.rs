@@ -315,3 +315,5 @@ fn every_top_level_test_file_is_a_declared_module() {
         "declare these test files in tests/main.rs: {missing:?}"
     );
 }
+
+mod support;

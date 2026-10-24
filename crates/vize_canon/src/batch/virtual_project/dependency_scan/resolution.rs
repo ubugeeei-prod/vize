@@ -210,13 +210,10 @@ fn probe_candidates_with_inputs(base: &Path) -> (Option<PathBuf>, Vec<PathBuf>) 
 }
 
 #[cfg(test)]
-#[path = "alias_tests.rs"]
 mod alias_tests;
 
 #[cfg(test)]
-#[path = "precedence_tests.rs"]
 mod precedence_tests;
 
 #[cfg(test)]
-#[path = "directory_module_tests.rs"]
 mod directory_module_tests;

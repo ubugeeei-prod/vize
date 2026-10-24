@@ -383,5 +383,4 @@ impl<'a> Parser<'a> {
 }
 
 #[cfg(test)]
-#[path = "template_syntax_tests.rs"]
 mod tests;

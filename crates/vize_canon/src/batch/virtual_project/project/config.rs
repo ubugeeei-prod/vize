@@ -257,5 +257,4 @@ impl VirtualProject {
 }
 
 #[cfg(test)]
-#[path = "../tests/reference_helpers.rs"]
 mod reference_helpers;

@@ -3,11 +3,8 @@
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
-#[cfg(feature = "napi")]
 use super::super::lint_fix::lint_source;
 use super::file_collection::oxlint_html_profile as profile;
-#[cfg(all(test, not(feature = "napi")))]
-use crate::lint_fix_tests::lint_source;
 use profile::{Refusal, RefusalKind, Request, Selection};
 use vize_l0::{String, ToCompactString};
 use vize_patina::{LintResult, Linter, Severity};

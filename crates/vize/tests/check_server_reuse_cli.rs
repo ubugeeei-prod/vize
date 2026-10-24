@@ -15,8 +15,7 @@ use serde_json::{Value, json};
 use vize_carton::corsa_resolver::{CorsaResolveRequest, resolve_corsa_executable};
 use vize_l0::cstr;
 
-#[path = "support/vue_stub.rs"]
-mod vue_stub;
+use crate::support::vue_stub;
 
 const SOURCE: &str = "<script setup lang=\"ts\">\nconst count: string = 0;\n</script>\n";
 const EXPECTED: &str = "error:2:7 [TS2322] Type 'number' is not assignable to type 'string'.";

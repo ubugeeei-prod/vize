@@ -1,11 +1,8 @@
 #![cfg(test)]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
-#[path = "support/check_output.rs"]
-mod check_output;
-#[path = "support/corsa_path.rs"]
-mod corsa_path;
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
+use crate::support::check_output;
+use crate::support::corsa_path;
+use crate::support::corsa_requirement;
 
 use check_output::normalize_check_output;
 

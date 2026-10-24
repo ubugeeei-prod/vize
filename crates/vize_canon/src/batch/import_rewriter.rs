@@ -9,46 +9,35 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{FxHashSet, String, ToCompactString, cstr};
 
-#[path = "import_rewriter_authored_vue_ts.rs"]
 mod authored_vue_ts;
 
-#[path = "import_rewriter_policy.rs"]
 mod policy;
 
-#[path = "import_rewriter_collect.rs"]
 mod collect;
 use collect::{ModuleSpecifierCollector, collect_specifier_occurrences, collect_specifier_spans};
 
-#[path = "import_rewriter_facts.rs"]
 mod facts;
 pub(crate) use facts::ModuleSpecifierFactsCache;
 
-#[path = "import_rewriter_empty_vue_stars.rs"]
 mod empty_vue_stars;
 #[cfg(test)]
 pub(in crate::batch) use empty_vue_stars::apply_captured_empty_vue_stars;
 pub(in crate::batch) use empty_vue_stars::{EmptyVueStar, VueStarTarget, apply_captured_vue_stars};
 
-#[path = "import_rewriter_star_capture.rs"]
 mod star_capture;
 
-#[path = "import_rewriter_virtual.rs"]
 mod virtual_rewrite;
 pub(super) use virtual_rewrite::rewrite_relative_vue_specifier;
 
-#[path = "import_rewriter_virtual_alias.rs"]
 mod virtual_alias;
 pub(crate) use virtual_alias::VirtualAliasRewritePolicy;
 
-#[path = "import_rewriter_dts.rs"]
 mod dts_rewrite;
 
-#[path = "import_rewriter_project_mirror.rs"]
 mod project_mirror;
 pub(crate) use dts_rewrite::declaration_module_path;
 pub(in crate::batch) use project_mirror::VirtualProjectRewriteOptions;
 
-#[path = "import_rewriter_source_map.rs"]
 mod source_map;
 pub use source_map::{ImportSourceMap, OffsetAdjustment, RewriteResult};
 
@@ -409,13 +398,10 @@ impl Default for ImportRewriter {
 }
 
 #[cfg(test)]
-#[path = "import_rewriter_dependency_tests.rs"]
 mod dependency_tests;
 
 #[cfg(test)]
-#[path = "import_rewriter_empty_vue_stars_tests.rs"]
 mod empty_vue_stars_tests;
 
 #[cfg(test)]
-#[path = "import_rewriter_empty_vue_star_capture_tests.rs"]
 mod empty_vue_star_capture_tests;

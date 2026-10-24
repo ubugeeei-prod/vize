@@ -13,8 +13,7 @@ use std::path::Path;
 use serde_json::{Value, json};
 use vize_carton::corsa_resolver::discover_corsa_in_ancestors;
 
-#[path = "support/lsp_process.rs"]
-mod lsp_process;
+use crate::support::lsp_process;
 use lsp_process::{LspProcess, file_uri};
 
 const IMPORTER: &str = r#"<script setup lang="ts">

@@ -1014,9 +1014,17 @@ version = "0.474.0"
 dependencies = [
  "regex-lite",
  "serde_json",
+ "sha2",
  "tempfile",
  "thiserror 2.0.21",
+ "vize_atelier_core",
+ "vize_atelier_ssr",
+ "vize_canon",
+ "vize_carton",
  "vize_l0",
+ "vize_l1",
+ "vize_l1_to_l2",
+ "vize_l2",
 ]
 
 [[package]]
@@ -4396,6 +4404,7 @@ dependencies = [
  "corsa_lsp",
  "criterion",
  "dashmap 6.2.1",
+ "davinci_test_support",
  "dirs",
  "futures",
  "glob",
@@ -4585,6 +4594,7 @@ version = "0.474.0"
 dependencies = [
  "criterion",
  "davinci_harness",
+ "davinci_test_support",
  "insta",
  "memchr",
  "oxc_allocator",
@@ -4757,6 +4767,7 @@ dependencies = [
 name = "vize_l4"
 version = "0.474.0"
 dependencies = [
+ "davinci_test_support",
  "oxc_span",
  "oxc_syntax",
  "serde_json",
@@ -4812,6 +4823,7 @@ version = "0.474.0"
 dependencies = [
  "async-trait",
  "dashmap 6.2.1",
+ "davinci_test_support",
  "futures",
  "htmlize",
  "ignore",

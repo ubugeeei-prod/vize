@@ -124,5 +124,4 @@ pub(in super::super) fn effective_config_for_source(
 }
 
 #[cfg(test)]
-#[path = "references/tests.rs"]
 mod tests;

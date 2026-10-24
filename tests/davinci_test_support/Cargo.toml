@@ -8,7 +8,26 @@ repository.workspace = true
 description = "Shared fixtures and strict schema validation for Davinci tests"
 publish = false
 
+[features]
+canon-project = ["dep:vize_canon", "dep:tempfile"]
+vue-fixtures = []
+formatter = ["dep:sha2"]
+reference-path = ["dep:sha2"]
+native-process = ["dep:vize_carton"]
+native-dom = ["dep:vize_l1", "dep:vize_l1_to_l2", "dep:vize_l2"]
+ssr = ["dep:vize_atelier_core", "dep:vize_atelier_ssr"]
+panic-boundary = []
+
 [dependencies]
+vize_canon = { workspace = true, features = ["native"], optional = true }
+tempfile = { workspace = true, optional = true }
+sha2 = { workspace = true, optional = true }
+vize_carton = { workspace = true, optional = true }
+vize_l1 = { workspace = true, optional = true }
+vize_l1_to_l2 = { workspace = true, optional = true }
+vize_l2 = { workspace = true, optional = true }
+vize_atelier_core = { workspace = true, optional = true }
+vize_atelier_ssr = { workspace = true, optional = true }
 regex-lite = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }

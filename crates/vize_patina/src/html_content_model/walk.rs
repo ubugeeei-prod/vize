@@ -1,7 +1,7 @@
 //! The stack-of-open-elements walk every scope and loop scan is built from.
 //!
 //! This kernel depends on nothing but [`Tri`], so the Kani harness in
-//! `tests/formal/kani/html_content_model.rs` verifies this exact source:
+//! `crates/vize_patina/src/html_content_model/kani.rs` verifies this exact source:
 //! the walk is sound for every concrete stack a possibly truncated chain
 //! describes, and a definite verdict on a truncated chain survives any
 //! ancestors the context later reveals.

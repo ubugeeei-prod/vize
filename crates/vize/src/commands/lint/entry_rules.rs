@@ -373,5 +373,4 @@ fn package_is_resolvable_from(
 }
 
 #[cfg(test)]
-#[path = "entry_rules_tests.rs"]
 mod tests;

@@ -1,6 +1,5 @@
 //! Keep an unfinished template expression from making the virtual module unparseable.
 
-#[path = "incomplete_delimiters.rs"]
 mod delimiters;
 use delimiters::delimiter_imbalance;
 

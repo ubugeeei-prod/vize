@@ -1,14 +1,12 @@
 #![cfg(test)]
 #![cfg(feature = "legacy")]
 
-#[path = "support/vite_config.rs"]
-mod vite_config;
+use crate::support::vite_config;
 use std::{path::Path, process::Command};
 
 use vize_l0::cstr;
 
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
+use crate::support::corsa_requirement;
 
 #[test]
 fn check_legacy_vue2_show_virtual_ts_omits_shared_helpers() {

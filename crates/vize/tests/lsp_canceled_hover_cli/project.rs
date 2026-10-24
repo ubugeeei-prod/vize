@@ -1,7 +1,6 @@
 //! Strict real dependency setup for the original held-Hover process fixture.
 
-#[path = "../support/vite_config.rs"]
-mod vite_config;
+use crate::support::vite_config;
 
 use std::os::unix::fs::PermissionsExt;
 use std::path::Path;

@@ -15,7 +15,6 @@ mod incremental;
 mod installed_sources;
 mod metrics;
 mod paths;
-#[path = "type_checker/registered.rs"]
 mod registered;
 mod result;
 pub use declarations::{DeclarationEmitOptions, DeclarationEmitResult, DeclarationOutput};

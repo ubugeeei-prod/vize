@@ -143,7 +143,7 @@ one sanctioned exception. Put `#[expect(clippy::disallowed_macros, reason = "…
 `#[cfg(test)] mod …` item that hosts the snapshot assertions — never at the crate root, never on the
 lint globally, and never on a module that also contains production code — and point the reason
 back to this section.
-When the test module is inline inside an over-budget file, move it to a sibling test file as
+When the test module is inline inside an over-budget file, move it to an ordinary child module as
 described in [Source Layout](#source-layout). `insta` keeps the recorded snapshots in the
 `snapshots/` directory beside the file that holds the assertions, so move that directory with them.
 
@@ -152,19 +152,20 @@ described in [Source Layout](#source-layout). `insta` keeps the recorded snapsho
 - **500 lines per file.** `tools/commands/ci/source-file-lengths.rs --check` (`vp run source:lengths`)
   rejects new files over 500 lines and files that grow past it. Split by responsibility, not by
   size alone: do not scatter a feature across many tiny files a reader has to hop through.
-- **No directory just for tests.** Keep a module's unit tests in its own file as
+- **Ordinary Rust module discovery.** Keep a module's unit tests in its own file as
   `#[cfg(test)] mod tests { … }` at the end. When the module plus its tests would exceed 500 lines,
-  put the tests in a sibling file named `<module>_tests.rs`:
+  put the tests in `<module>/tests.rs` (or `<module>/tests/mod.rs` for several responsibilities):
 
   ```rust
   #[cfg(test)]
-  #[path = "parser_tests.rs"]
   mod tests;
   ```
 
-  This test-only sibling is the one sanctioned `#[path]`; production modules follow Rust's ordinary
-  module discovery. A directory whose only file is `tests.rs` (or `test.rs`) fails the length
-  check. A `tests/` directory that holds several test files is fine.
+  All modules, including tests, tools and vendor changes, use normal discovery. Path attributes
+  and `cfg_attr` path overrides fail `source:lengths`; comments and historical fixture strings
+  remain data. Share helpers through a common module or a dev-support dependency. Put standalone
+  observers beside the implementation they compile. Preserve relative fixture references and move
+  each assertion's snapshots with its source file.
 
 - **Exact assertions in every test file.** `tools/commands/davinci/assertion-lint.rs` scans inline
   `#[cfg(test)]` modules and every file reached through a `cfg(test)` module declaration. Partial

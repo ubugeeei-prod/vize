@@ -1,6 +1,7 @@
 #!/usr/bin/env rust-script
 //! ```cargo
 //! [dependencies]
+//! vize_tool_support = { path = "../../support" }
 //! chrono = "0.4"
 //! glob = "0.3"
 //! libc = "0.2"
@@ -13,11 +14,8 @@
 //! edition = "2024"
 //! ```
 
-#[path = "../../support/common.rs"]
-mod common;
-#[path = "../../support/fixture_inputs.rs"]
+use vize_tool_support::common as common;
 mod fixture_inputs;
-#[path = "../../support/fixture_programs.rs"]
 mod fixture_programs;
 
 use serde::Serialize;

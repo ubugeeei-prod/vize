@@ -1,8 +1,7 @@
 #![cfg(test)]
 #![cfg(feature = "legacy")]
 
-#[path = "support/vite_config.rs"]
-mod vite_config;
+use crate::support::vite_config;
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -10,8 +9,7 @@ use std::{
 
 use vize_l0::cstr;
 
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
+use crate::support::corsa_requirement;
 
 #[test]
 fn legacy_vue2_nested_v_for_member_array_aliases_do_not_fall_back_to_object_keys() {

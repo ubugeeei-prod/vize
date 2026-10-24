@@ -277,5 +277,4 @@ fn deepest_enclosing_folder<'a>(
 }
 
 #[cfg(test)]
-#[path = "workspace_folders/tests.rs"]
 mod tests;

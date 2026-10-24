@@ -296,7 +296,6 @@ fn collect_document_edits<'a>(
 }
 
 #[cfg(test)]
-#[path = "same_name_bindings_tests.rs"]
 mod tests;
 
 #[cfg(test)]

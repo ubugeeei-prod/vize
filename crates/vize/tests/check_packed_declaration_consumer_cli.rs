@@ -3,12 +3,9 @@
 //! Declarations emitted by `vize build --dts` must type-check when consumed
 //! from a separate project that only has the packed files (#3984): no source
 //! workspace links, no access to the library's `.vue` sources.
-#[path = "support/corsa_path.rs"]
-mod corsa_path;
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
-#[path = "support/vue_stub.rs"]
-mod vue_stub;
+use crate::support::corsa_path;
+use crate::support::corsa_requirement;
+use crate::support::vue_stub;
 
 use std::{
     path::{Path, PathBuf},
@@ -17,7 +14,6 @@ use std::{
 
 use vize_l0::cstr;
 
-#[path = "check_packed_declaration_consumer_cli/marker_text.rs"]
 mod marker_text;
 
 const BUTTON_VUE: &str = r#"<script setup lang="ts">

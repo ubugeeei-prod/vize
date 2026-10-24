@@ -13,12 +13,9 @@ use super::{
 };
 pub use lookup::PackageRouteLookup;
 
-#[path = "cache_concurrent.rs"]
 mod concurrent;
-#[path = "cache_lookup.rs"]
 mod lookup;
 #[cfg(feature = "native")]
-#[path = "cache_reachability.rs"]
 mod reachability;
 #[cfg(feature = "native")]
 use reachability::ReachabilityCacheKey;
@@ -438,5 +435,4 @@ fn resolution_context_from_search(
 }
 
 #[cfg(test)]
-#[path = "cache_tests.rs"]
 mod tests;

@@ -13,19 +13,12 @@
 //! checked original source/decode-map custody. Its template integration remains
 //! a separate dependent consumer; existing formatter routes are unchanged.
 
-#[path = "native_doc/directive.rs"]
 mod directive;
-#[path = "native_doc/document.rs"]
 mod document;
-#[path = "native_doc/expression.rs"]
 mod expression;
-#[path = "native_doc/printer.rs"]
 mod printer;
-#[path = "native_doc/selected_template.rs"]
 mod selected_template;
-#[path = "native_doc/sfc.rs"]
 mod sfc;
-#[path = "native_doc/template.rs"]
 mod template;
 
 pub use document::{Doc, Line};
@@ -49,19 +42,15 @@ pub use sfc::{
 };
 pub use template::{TemplateDocument, TemplateRefusal, UnsupportedSyntax, template_document};
 
-#[path = "native_doc/vue2_text.rs"]
 mod vue2_text;
 pub use vue2_text::{Vue2TextDocument, Vue2TextDocumentRefusal, vue2_text_document};
 
-#[path = "native_doc/vue1_text.rs"]
 mod vue1_text;
 pub use vue1_text::{
     Vue1TextDocument, Vue1TextDocumentRefusal, Vue1TextPrintRefusal, vue1_text_document,
 };
 
-#[path = "native_doc/vue2_sfc.rs"]
 mod vue2_sfc;
-#[path = "native_doc/vue2_template.rs"]
 mod vue2_template;
 pub use vue2_sfc::{
     NativeVue2SfcNode, NativeVue2SfcObservation, NativeVue2SfcOptions, NativeVue2SfcRefusal,

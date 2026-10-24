@@ -12,8 +12,7 @@ use std::{
 use serde_json::Value;
 use vize_carton::corsa_resolver::{CorsaResolveRequest, resolve_corsa_executable};
 
-#[path = "support/vue_stub.rs"]
-mod vue_stub;
+use crate::support::vue_stub;
 
 const APP: &str = r#"<script setup lang="ts">
 import Child from './Child.vue'

@@ -1,10 +1,8 @@
 //! Configured cross-file checks and warning limits match their CLI counterparts.
 #![cfg(test)]
 #![expect(clippy::disallowed_types, reason = "subprocess fixture reports")]
-#[path = "support/config_refusal.rs"]
-mod config_refusal;
-#[path = "support/vite_config.rs"]
-mod vite_config;
+use crate::support::config_refusal;
+use crate::support::vite_config;
 use serde_json::{Value, json};
 use std::{
     fs,

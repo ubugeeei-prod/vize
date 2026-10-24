@@ -132,5 +132,4 @@ impl Drop for CorsaEnvironmentChange<'_> {
 }
 
 #[cfg(test)]
-#[path = "corsa_requests/importer_invalidation_tests.rs"]
 mod importer_invalidation_tests;

@@ -9,8 +9,7 @@
 //! unrelated `.ts` file loses contextual typing. Expectations are the
 //! `vue-tsc` result recorded in the fixture README: no diagnostics.
 
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
+use crate::support::corsa_requirement;
 
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};

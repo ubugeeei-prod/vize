@@ -2,12 +2,8 @@
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 //! `textDocument/moniker` names the symbol go-to-definition resolves.
+use crate::support::lsp_vue_project as support;
 use serde_json::json;
-
-#[path = "support/lsp_process.rs"]
-mod lsp_process;
-#[path = "support/lsp_vue_project.rs"]
-mod support;
 use support::Fixture;
 
 const APP: &str = "<script setup lang=\"ts\">

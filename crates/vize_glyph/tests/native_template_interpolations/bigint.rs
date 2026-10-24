@@ -5,9 +5,7 @@ use oxc_ast::ast::{BigIntLiteral, BigintBase, Expression};
 use vize_glyph::native_doc::{LineEnding, PrintOptions};
 use vize_l0::Allocator;
 
-#[path = "bigint/custody.rs"]
 mod custody;
-#[path = "bigint/refusals.rs"]
 mod refusals;
 
 const WIDTHS: [usize; 5] = [0, 1, 7, 80, 200];

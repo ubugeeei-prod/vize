@@ -1,10 +1,6 @@
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+use crate::support::lsp_vue_project as support;
 use serde_json::json;
-
-#[path = "support/lsp_process.rs"]
-mod lsp_process;
-#[path = "support/lsp_vue_project.rs"]
-mod support;
 use support::{Fixture, position};
 
 #[test]

@@ -1,7 +1,6 @@
 //! #7307: serialized temporary configs and ./ config paths preserve lint scopes.
 
-#[path = "support/vite_config.rs"]
-mod vite_config;
+use crate::support::vite_config;
 use std::{fs, process::Command};
 
 #[test]

@@ -286,7 +286,7 @@ The compiler-surface proof against the refreshed artifact passed with
 `vize check` prints the absolute fixture directory on stderr, and some
 projects repeat it inside diagnostic text. A clean tree therefore hashed
 differently on every checkout. The reducer now rewrites each absolute path
-to `<abs>` before the typechecker content hash (`tools/support/davinci/corpus_paths.rs`).
+to `<abs>` before the typechecker content hash (`tools/commands/davinci/davinci_corpus/corpus_paths.rs`).
 Relative paths and diagnostic wording stay in the hash. `file_count` is
 still compared on its own, so a gained or lost file remains a gating drift.
 

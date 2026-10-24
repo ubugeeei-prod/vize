@@ -174,5 +174,4 @@ fn lock_map<V>(inner: &Mutex<PoolInner<V>>) -> Result<MutexGuard<'_, PoolInner<V
 }
 
 #[cfg(test)]
-#[path = "corsa_session_flight_tests.rs"]
 mod tests;

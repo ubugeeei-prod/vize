@@ -340,7 +340,6 @@ fn lint_glob_match_options() -> MatchOptions {
 }
 
 #[cfg(test)]
-#[path = "collect_tests.rs"]
 mod tests;
 
 fn absolute_config_dir(config_dir: &Path) -> PathBuf {

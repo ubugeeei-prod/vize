@@ -47,7 +47,6 @@ mod tests_spolvero;
 mod tests_spolvero_profile;
 
 // Re-export type checking bindings from separate module
-#[path = "wasm_typecheck.rs"]
 mod wasm_typecheck;
 
 // Re-export all WASM bindings

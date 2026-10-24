@@ -4,6 +4,7 @@
 //! edition = "2024"
 //!
 //! [dependencies]
+//! vize_tool_support = { path = "../../support" }
 //! serde = { version = "1", features = ["derive"] }
 //! serde_json = "1"
 //! ```
@@ -11,8 +12,7 @@
 use serde_json::Value;
 use std::{collections::BTreeSet, process::ExitCode};
 
-#[path = "../../support/common.rs"]
-mod common;
+use vize_tool_support::common;
 
 const LINT_RULE_SNAPSHOT_REL: &str = "crates/vize_patina/src/preset/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap";
 const LINT_RULE_TYPES_REL: &str = "npm/cli/src/types/rules.ts";

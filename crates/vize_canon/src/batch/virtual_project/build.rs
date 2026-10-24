@@ -16,7 +16,6 @@ use crate::virtual_ts::VizeMapping;
 
 mod context;
 mod css_modules;
-#[path = "script_build.rs"]
 mod script_build;
 pub(super) use super::paths::source_type_for_path;
 pub(super) use context::{ScriptBuildContext, VirtualBuildContext};

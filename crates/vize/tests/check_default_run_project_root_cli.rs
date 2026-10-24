@@ -14,10 +14,8 @@
 
 use vize_l0::cstr;
 
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
+use crate::support::corsa_requirement;
 
-#[path = "support/default_run_root.rs"]
 mod default_run_root;
 
 use default_run_root::{

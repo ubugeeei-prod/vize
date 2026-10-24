@@ -23,7 +23,6 @@ use std::{
 };
 use toml_edit::{DocumentMut, value};
 
-#[path = "../../../support/release/semver_git_baseline.rs"]
 mod git_baseline;
 
 const RENAMES: &[(&str, &str, &str, &str)] = &[

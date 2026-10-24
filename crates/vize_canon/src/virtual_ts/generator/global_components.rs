@@ -268,5 +268,4 @@ fn append_global_component_stub(
 }
 
 #[cfg(test)]
-#[path = "global_components_tests.rs"]
 mod tests;

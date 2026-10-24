@@ -3,12 +3,9 @@
 //! Repeated `vize check` runs must follow tsconfig and package manifest edits
 //! without stale program members or diagnostics (#3984: "tsconfig/package
 //! changes invalidate the correct graph").
-#[path = "support/corsa_path.rs"]
-mod corsa_path;
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
-#[path = "support/vue_stub.rs"]
-mod vue_stub;
+use crate::support::corsa_path;
+use crate::support::corsa_requirement;
+use crate::support::vue_stub;
 
 use std::{
     path::{Path, PathBuf},

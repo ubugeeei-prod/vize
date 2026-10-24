@@ -20,19 +20,15 @@ use serde_json::Value;
 use vize_carton::path::canonicalize_non_verbatim;
 use vize_l0::{String as CompactString, cstr};
 
-#[path = "lsp_process/capture.rs"]
 mod capture;
 use capture::Capture;
 
-#[path = "lsp_process/evidence.rs"]
 mod evidence;
 use evidence::Evidence;
 
-#[path = "lsp_process/passive.rs"]
-mod passive;
+pub(crate) mod passive;
 use passive::Passive;
 
-#[path = "lsp_process/protocol.rs"]
 mod protocol;
 use protocol::read_message;
 
@@ -312,7 +308,7 @@ impl LspProcess {
         );
     }
 
-    pub(super) fn shutdown(&mut self) {
+    pub(crate) fn shutdown(&mut self) {
         self.stdin.take();
         if let Some(mut child) = self.child.take() {
             let _ = child.kill();
@@ -377,3 +373,5 @@ fn percent_encode_path(path: &str) -> CompactString {
     }
     encoded
 }
+
+pub(crate) mod process_state;

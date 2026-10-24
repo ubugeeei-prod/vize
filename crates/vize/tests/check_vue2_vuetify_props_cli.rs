@@ -1,6 +1,5 @@
 #![cfg(test)]
-#[path = "support/vite_config.rs"]
-mod vite_config;
+use crate::support::vite_config;
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -8,8 +7,7 @@ use std::{
 
 use vize_l0::cstr;
 
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
+use crate::support::corsa_requirement;
 
 #[test]
 fn check_vue2_dialect_allows_vuetify_style_prop_aliases() {

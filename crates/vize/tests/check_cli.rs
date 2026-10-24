@@ -2,20 +2,13 @@
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
-#[path = "support/corsa_path.rs"]
-mod corsa_path;
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
-#[path = "check_cli/empty_inputs.rs"]
+use crate::support::corsa_path;
+use crate::support::corsa_requirement;
 mod empty_inputs;
-#[path = "check_cli/global_component_value_imports.rs"]
 mod global_component_value_imports;
-#[path = "check_cli/spread_instantiation_depth.rs"]
 mod spread_instantiation_depth;
-#[path = "check_cli/stubs.rs"]
 mod stubs;
-#[path = "support/vite_config.rs"]
-mod vite_config;
+use crate::support::vite_config;
 use stubs::{write_test_vite_stub, write_test_vue_runtime_dom_stub, write_test_vue_stub};
 
 use std::{

@@ -12,7 +12,6 @@ mod profile;
 mod rich;
 mod routes;
 mod stdout;
-#[path = "lint_warnings.rs"]
 mod warnings;
 
 #[cfg(test)]

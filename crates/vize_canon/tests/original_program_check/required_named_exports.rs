@@ -304,5 +304,4 @@ fn configured_original_required_named_export_ts_tsx_preserve_whole_raw_reports_a
     }
 }
 
-#[path = "required_named_exports/refusals.rs"]
 mod refusals;

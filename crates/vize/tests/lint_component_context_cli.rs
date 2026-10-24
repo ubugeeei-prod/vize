@@ -6,7 +6,5 @@
     reason = "integration fixtures preserve whole standard JSON and source strings"
 )]
 
-#[path = "component_context/cli.rs"]
 mod cli;
-#[path = "component_context/support.rs"]
 mod support;

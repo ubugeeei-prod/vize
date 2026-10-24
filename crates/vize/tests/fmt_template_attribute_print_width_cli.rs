@@ -1,16 +1,13 @@
 //! Configured public CLI observes complete directive quote-layout bytes (#7876).
 #![cfg(feature = "glyph")]
 
-#[path = "support/vite_config.rs"]
-mod vite_config;
+use crate::support::vite_config;
 
 use std::{error::Error, fs, path::Path, process::Command};
 
-#[path = "../../../tests/support/formatter_continuation_reference.rs"]
-mod current_reference;
+use davinci_test_support::formatter_continuation_reference as current_reference;
 
-#[path = "../../../tests/support/formatter_expression_width_reference.rs"]
-mod expression_reference;
+use davinci_test_support::formatter_expression_width_reference as expression_reference;
 
 fn fmt(root: &Path, args: &[&str]) -> Result<std::process::Output, std::io::Error> {
     Command::new(env!("CARGO_BIN_EXE_vize"))

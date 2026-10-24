@@ -5,8 +5,7 @@
 // Each integration target uses a different subset of this shared fixture.
 #![expect(dead_code, reason = "read via Debug snapshots")]
 
-#[path = "vite_config.rs"]
-mod vite_config;
+use crate::support::vite_config;
 
 use super::lsp_process::{LspProcess, file_uri};
 use serde_json::{Value, json};

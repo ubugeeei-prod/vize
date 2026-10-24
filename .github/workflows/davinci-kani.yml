@@ -7,9 +7,11 @@ on:
       - "davinci/vize_l3/src/lattice/axis.rs"
       - "davinci/vize_l3/src/lattice/class.rs"
       - "davinci/vize_l3/src/lattice/effect.rs"
+      - "davinci/vize_l3/src/lattice/kani.rs"
+      - "davinci/vize_l3/src/lattice/classify_proofs.rs"
       - "crates/vize_patina/src/html_content_model/tri.rs"
       - "crates/vize_patina/src/html_content_model/walk.rs"
-      - "tests/formal/kani/**"
+      - "crates/vize_patina/src/html_content_model/kani.rs"
   workflow_dispatch:
 
 permissions:
@@ -31,7 +33,7 @@ jobs:
         with:
           kani-version: "0.68.0"
           command: kani
-          args: tests/formal/kani/l3_lattice.rs --output-format=terse
+          args: davinci/vize_l3/src/lattice/kani.rs --output-format=terse
 
   html-content-model:
     name: HTML content-model kernel properties
@@ -45,4 +47,4 @@ jobs:
         with:
           kani-version: "0.68.0"
           command: kani
-          args: tests/formal/kani/html_content_model.rs --output-format=terse
+          args: crates/vize_patina/src/html_content_model/kani.rs --output-format=terse

@@ -15,7 +15,6 @@
     reason = "tower-lsp lsp_types take std String/HashMap values, built with to_string/format!"
 )]
 
-#[path = "tsconfig_paths_load.rs"]
 mod load;
 use load::{inherited_paths, referenced_configs};
 

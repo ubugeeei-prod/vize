@@ -1,11 +1,7 @@
 #![cfg(test)]
 //! Authored suppression comments cannot hide a different import or statement.
+use crate::support::lsp_vue_project as support;
 use serde_json::{Value, json};
-
-#[path = "support/lsp_process.rs"]
-mod lsp_process;
-#[path = "support/lsp_vue_project.rs"]
-mod support;
 use support::Fixture;
 
 const APP: &str = r#"<script setup lang="ts">

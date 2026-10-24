@@ -1,11 +1,8 @@
 //! Whole source CLI packets for the authored selected-alias collector corpus.
 #![cfg(test)]
-#[path = "support/corsa_path.rs"]
-mod corsa_path;
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
-#[path = "support/vite_config.rs"]
-mod vite_config;
+use crate::support::corsa_path;
+use crate::support::corsa_requirement;
+use crate::support::vite_config;
 
 use std::{
     path::{Path, PathBuf},

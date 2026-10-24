@@ -3,19 +3,12 @@
 #![expect(clippy::disallowed_methods, reason = "independent stdio fixtures")]
 #![expect(clippy::disallowed_macros, reason = "independent stdio fixtures")]
 
-#[path = "lsp_bare_script_symbols_cli/controls.rs"]
 mod controls;
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
-#[path = "lsp_bare_script_symbols_cli/fixture.rs"]
+use crate::support::corsa_requirement;
 mod fixture;
-#[path = "lsp_bare_script_symbols_cli/incoming.rs"]
 mod incoming;
-#[path = "support/lsp_process.rs"]
-mod lsp_process;
-#[path = "lsp_bare_script_symbols_cli/reads.rs"]
+use crate::support::lsp_process;
 mod reads;
-#[path = "lsp_bare_script_symbols_cli/session.rs"]
 mod session;
 
 use fixture::Fixture;

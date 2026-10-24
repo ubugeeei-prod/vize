@@ -339,5 +339,4 @@ fn is_shadowed_vue_package_specifier(specifier: &str) -> bool {
 mod tests;
 
 #[cfg(test)]
-#[path = "ambient/path_manifest_tests.rs"]
 mod path_manifest_tests;

@@ -1,6 +1,7 @@
 #!/usr/bin/env rust-script
 //! ```cargo
 //! [dependencies]
+//! vize_tool_support = { path = "../../../support" }
 //! dunce = "1"
 //! serde = { version = "1", features = ["derive"] }
 //! serde_json = "1"
@@ -10,11 +11,8 @@
 //! edition = "2024"
 //! ```
 
-#[path = "../../../support/common.rs"]
-mod common;
-#[path = "../../../support/release/npm_publish.rs"]
+use vize_tool_support::common;
 mod npm_publish;
-#[path = "../../../support/release/npm_smoke_init.rs"]
 mod npm_smoke_init;
 
 use serde_json::{Map, Value, json};

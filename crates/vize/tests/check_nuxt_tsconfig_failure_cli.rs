@@ -1,11 +1,8 @@
 #![cfg(test)]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
-#[path = "support/nuxt_cli.rs"]
-mod nuxt_cli;
-#[path = "support/nuxt_fifo.rs"]
-mod nuxt_fifo;
+use crate::support::corsa_requirement;
+use crate::support::nuxt_cli;
+use crate::support::nuxt_fifo;
 
 #[cfg(unix)]
 mod unix {

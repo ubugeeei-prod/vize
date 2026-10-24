@@ -295,5 +295,4 @@ impl<'a> Visit<'a> for ReferencedNames {
 }
 
 #[cfg(test)]
-#[path = "namespace_hoist_tests.rs"]
 mod tests;

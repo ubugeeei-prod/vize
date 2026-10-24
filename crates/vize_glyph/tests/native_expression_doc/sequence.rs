@@ -7,9 +7,7 @@ use vize_l1::embed::Lang;
 
 use super::{format, preservation::assert_preserved as assert_semantics, retained};
 
-#[path = "sequence/custody.rs"]
 mod custody;
-#[path = "sequence/refusals.rs"]
 mod refusals;
 
 fn options(width: usize, line_ending: LineEnding) -> PrintOptions {

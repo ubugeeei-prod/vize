@@ -321,5 +321,4 @@ fn glob_match_options() -> MatchOptions {
 }
 
 #[cfg(test)]
-#[path = "collect_tests.rs"]
 mod tests;

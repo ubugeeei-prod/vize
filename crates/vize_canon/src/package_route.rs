@@ -10,21 +10,13 @@ use std::path::{Component, Path, PathBuf};
 use serde_json::Value;
 use vize_carton::{FxHashMap, cstr};
 
-#[path = "package_route/cache.rs"]
 mod cache;
-#[path = "package_route/candidates.rs"]
 mod candidates;
-#[path = "package_route/graph_inputs.rs"]
 mod graph_inputs;
-#[path = "package_route/model.rs"]
 mod model;
-#[path = "package_route/search.rs"]
 mod search;
-#[path = "package_route/shadow_mapping.rs"]
 mod shadow_mapping;
-#[path = "package_route/source.rs"]
 mod source;
-#[path = "package_route/stamp.rs"]
 pub(crate) mod stamp;
 #[cfg(test)]
 use candidates::collect_targets;
@@ -326,8 +318,6 @@ fn logical_absolute(path: &Path) -> PathBuf {
 }
 
 #[cfg(test)]
-#[path = "package_route_path_cache_tests.rs"]
 mod path_cache_tests;
 #[cfg(test)]
-#[path = "package_route_tests.rs"]
 mod tests;

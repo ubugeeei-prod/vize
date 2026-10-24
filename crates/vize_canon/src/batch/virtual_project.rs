@@ -140,7 +140,6 @@ mod shadow_prep_scale;
 mod unknown_checks_tests;
 
 #[cfg(test)]
-#[path = "virtual_project/dependency_json_modules.rs"]
 mod dependency_json_modules;
 
 pub(super) const AUTO_IMPORT_STUBS_FILE: &str = "__vize_auto_imports.d.ts";
@@ -388,5 +387,4 @@ struct SourceArtifacts {
 }
 
 #[cfg(test)]
-#[path = "virtual_project/preparation_import_facts_test_snapshot.rs"]
 mod preparation_import_facts_test_snapshot;

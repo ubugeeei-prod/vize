@@ -1,9 +1,7 @@
 #![cfg(test)]
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
+use crate::support::corsa_requirement;
 
-#[path = "check_canon_slot_contracts_cli/spreads.rs"]
 mod spreads;
 
 use std::{

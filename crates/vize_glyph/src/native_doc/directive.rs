@@ -111,7 +111,6 @@ pub(super) fn name_document<'a>(
 }
 
 #[cfg(test)]
-#[path = "directive/full_tests.rs"]
 mod full_tests;
 
 #[cfg(test)]

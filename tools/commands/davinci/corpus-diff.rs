@@ -4,6 +4,7 @@
 //! edition = "2024"
 //!
 //! [dependencies]
+//! vize_tool_support = { path = "../../support" }
 //! serde = { version = "1", features = ["derive"] }
 //! serde_json = "1"
 //! sha2 = "0.10"
@@ -18,9 +19,7 @@ use std::{
     time::{Instant, SystemTime, UNIX_EPOCH},
 };
 
-#[path = "../../support/common.rs"]
-mod common;
-#[path = "../../support/davinci/corpus.rs"]
+use vize_tool_support::common;
 mod davinci_corpus;
 
 #[derive(Debug)]

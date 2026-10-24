@@ -1,9 +1,6 @@
 //! Actual stdio LSP requests expose imported, registered, global, and native tags.
 #![cfg(test)]
-#[path = "support/lsp_process.rs"]
-mod lsp_process;
-#[path = "support/lsp_vue_project.rs"]
-mod project;
+use crate::support::lsp_vue_project as project;
 use project::Fixture;
 use serde_json::{Value, json};
 

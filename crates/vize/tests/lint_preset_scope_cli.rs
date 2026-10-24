@@ -8,8 +8,7 @@ use std::{
     process::Command,
 };
 
-#[path = "support/vite_config.rs"]
-mod vite_config;
+use crate::support::vite_config;
 
 fn digest(bytes: &[u8]) -> String {
     Sha256::digest(bytes)

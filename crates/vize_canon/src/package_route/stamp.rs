@@ -370,5 +370,4 @@ pub(super) fn manifest_path(root: &Path) -> PathBuf {
 }
 
 #[cfg(test)]
-#[path = "stamp_tests.rs"]
 mod tests;

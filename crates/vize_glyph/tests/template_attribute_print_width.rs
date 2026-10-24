@@ -5,11 +5,9 @@ use std::{error::Error, fs, path::Path};
 use vize_glyph::{FormatOptions, format_sfc, format_template};
 use vize_l0::String;
 
-#[path = "../../../tests/support/formatter_continuation_reference.rs"]
-mod current_reference;
+use davinci_test_support::formatter_continuation_reference as current_reference;
 
-#[path = "../../../tests/support/formatter_expression_width_reference.rs"]
-mod expression_reference;
+use davinci_test_support::formatter_expression_width_reference as expression_reference;
 
 #[derive(Deserialize)]
 struct Corpus {

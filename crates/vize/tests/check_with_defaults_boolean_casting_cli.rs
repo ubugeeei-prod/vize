@@ -7,8 +7,7 @@
 //! `vue-tsc` diagnostics recorded in the fixture README: an absent `boolean`
 //! prop is `boolean` in the template unless its default is `undefined`.
 
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
+use crate::support::corsa_requirement;
 
 use serde_json::Value;
 use std::{

@@ -12,7 +12,6 @@ mod stages;
 mod tests;
 
 #[cfg(test)]
-#[path = "inspector/tests_semantic.rs"]
 mod tests_semantic;
 
 pub use diff::{

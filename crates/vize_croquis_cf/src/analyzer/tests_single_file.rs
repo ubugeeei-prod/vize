@@ -3,7 +3,6 @@ use crate::diagnostics::CrossFileDiagnosticKind;
 use std::path::Path;
 use vize_croquis::AnalyzerOptions;
 
-#[path = "tests_single_file_nested.rs"]
 mod nested_callbacks;
 
 #[test]

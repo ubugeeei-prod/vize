@@ -8,9 +8,7 @@ use std::path::{Path, PathBuf};
 
 use super::vue_document::{CorsaVueVirtualDocumentOptions, build_vue_virtual_project};
 
-#[path = "vue_document_package_tests/symlink_workspace.rs"]
 mod symlink_workspace;
-#[path = "vue_document_package_tests/union.rs"]
 mod union;
 
 const TSCONFIG: &str = r#"{"compilerOptions":{"strict":true,"moduleResolution":"bundler","allowArbitraryExtensions":true,"customConditions":["editor"]}}"#;

@@ -256,7 +256,6 @@ fn write(path: &Path, content: &str) {
     std::fs::write(path, content).unwrap();
 }
 
-#[path = "stamp_import_facts_lifetime_tests.rs"]
 mod lifetime_tests;
 
 mod mutation_tests {

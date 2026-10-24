@@ -5,9 +5,7 @@
 
 use std::{path::Path, process::Command};
 
-#[path = "support/corsa_path.rs"]
-mod corsa_path;
-#[path = "check_importer_scoped_package_cli/project_references.rs"]
+use crate::support::corsa_path;
 mod project_references;
 
 fn workspace_root() -> &'static Path {

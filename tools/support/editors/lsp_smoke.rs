@@ -8,8 +8,7 @@ use std::{
     process::{Child, ChildStdin, Command, Stdio},
 };
 
-#[path = "./e2e.rs"]
-mod editor_e2e;
+use crate::editors::e2e as editor_e2e;
 
 pub struct LspSession {
     child: Child,

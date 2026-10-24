@@ -8,8 +8,7 @@
 //! fixture README: a prop is non-`undefined` in the template exactly when the
 //! *type* of the defaults argument carries a defined value for it.
 
-#[path = "support/corsa_requirement.rs"]
-mod corsa_requirement;
+use crate::support::corsa_requirement;
 
 use serde_json::Value;
 use std::{

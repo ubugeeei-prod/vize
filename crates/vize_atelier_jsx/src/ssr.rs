@@ -199,5 +199,4 @@ fn legacy_ssr<'a>(
 }
 
 #[cfg(test)]
-#[path = "ssr/l4_differential.rs"]
 mod l4_differential;
