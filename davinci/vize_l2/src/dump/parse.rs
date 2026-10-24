@@ -170,7 +170,7 @@ impl Parser {
         while self.stack.len() > depth {
             self.close_top(line_no)?;
         }
-        match line::parse_item(content, line_no)? {
+        match line::parse_item(content, line_no, self.grammar)? {
             Item::Attr(attribute) => self.push_attr(attribute, line_no),
             Item::Model(model) => {
                 self.guard_binding(line_no)?;

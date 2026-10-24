@@ -4,13 +4,14 @@
 //! Expression positions hold the payload tokens of
 //! [`expr_token`](crate::dump::parse::expr_token) - `js(...)`, `opaque(...)`,
 //! `foreign(...)`. Quoted strings escape `\\`, `\"`, `\n`, `\r`,
-//! `\t`; attribute names with delimiters or whitespace use these quoted
+//! `\t`; current owner and attribute names with delimiters or whitespace use these quoted
 //! tokens. Values embedding other control characters remain outside the
 //! derived-page "documented edges" contract.
 
 use vize_l0::dump::Error as DumpError;
 use vize_l0::{Span, String, cstr};
 
+use crate::dump::codec::Grammar;
 use crate::dump::owned::{
     Attribute, Bind, Branch, Comment, Component, Element, For, ForBinding, If, Interpolation,
     Model, Name, On, Op, OriginalFor, Slot, SlotContent, SlotsObject, Text, VueCloak, VueCssBind,
@@ -100,13 +101,17 @@ pub(super) fn tail_span(rest: &str, line_no: usize) -> Result<Span, DumpError> {
 }
 
 /// Classify and parse one non-blank, dedented ops-section line.
-pub(in crate::dump) fn parse_item(content: &str, line_no: usize) -> Result<Item, DumpError> {
+pub(in crate::dump) fn parse_item(
+    content: &str,
+    line_no: usize,
+    grammar: Grammar,
+) -> Result<Item, DumpError> {
     let (keyword, rest) = split_word(content);
     match keyword {
         "attr" => attr(rest, line_no),
         "branch" => branch(rest, line_no),
-        "ui.element" => element(rest, line_no),
-        "ui.component" => component(rest, line_no),
+        "ui.element" => element(rest, line_no, grammar),
+        "ui.component" => component(rest, line_no, grammar),
         "ui.text" => text(rest, line_no),
         "ui.interpolation" => interpolation(rest, line_no),
         "ui.comment" => comment(rest, line_no),
@@ -169,11 +174,29 @@ fn branch(rest: &str, line_no: usize) -> Result<Item, DumpError> {
     }))
 }
 
-fn element(rest: &str, line_no: usize) -> Result<Item, DumpError> {
-    let (tag, rest) = split_word(rest);
-    if tag.is_empty() {
-        return Err(err(line_no, cstr!("missing tag")));
+fn owner_name<'a>(
+    rest: &'a str,
+    line_no: usize,
+    grammar: Grammar,
+    label: &str,
+) -> Result<(String, &'a str), DumpError> {
+    if matches!(grammar, Grammar::CurrentV2) && rest.starts_with('"') {
+        let (name, tail) = take_quoted(rest, line_no)?;
+        return match tail.strip_prefix(' ') {
+            Some(rest) => Ok((name, rest)),
+            None if tail.is_empty() => Ok((name, tail)),
+            None => Err(err(line_no, cstr!("trailing content `{tail}`"))),
+        };
     }
+    let (name, tail) = split_word(rest);
+    if name.is_empty() {
+        return Err(err(line_no, cstr!("missing {label}")));
+    }
+    Ok((String::from(name), tail))
+}
+
+fn element(rest: &str, line_no: usize, grammar: Grammar) -> Result<Item, DumpError> {
+    let (tag, rest) = owner_name(rest, line_no, grammar, "tag")?;
     let (namespace, rest) = if let Some(after) = rest.strip_prefix("ns=") {
         let (name, tail) = split_word(after);
         let namespace = match name {
@@ -186,7 +209,7 @@ fn element(rest: &str, line_no: usize) -> Result<Item, DumpError> {
         (Namespace::Html, rest)
     };
     Ok(Item::Op(Op::Element(Element {
-        tag: String::from(tag),
+        tag,
         namespace,
         attributes: alloc::vec::Vec::new(),
         bindings: alloc::vec::Vec::new(),
@@ -195,13 +218,10 @@ fn element(rest: &str, line_no: usize) -> Result<Item, DumpError> {
     })))
 }
 
-fn component(rest: &str, line_no: usize) -> Result<Item, DumpError> {
-    let (name, rest) = split_word(rest);
-    if name.is_empty() {
-        return Err(err(line_no, cstr!("missing component name")));
-    }
+fn component(rest: &str, line_no: usize, grammar: Grammar) -> Result<Item, DumpError> {
+    let (name, rest) = owner_name(rest, line_no, grammar, "component name")?;
     Ok(Item::Op(Op::Component(Component {
-        name: String::from(name),
+        name,
         attributes: alloc::vec::Vec::new(),
         bindings: alloc::vec::Vec::new(),
         children: alloc::vec::Vec::new(),

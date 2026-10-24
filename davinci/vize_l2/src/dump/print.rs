@@ -120,6 +120,19 @@ pub(super) fn quoted<W: Write>(w: &mut W, text: &str) -> Result {
     w.write_char('"')
 }
 
+/// Keep ordinary names compact; current pages quote names that would change
+/// line structure or be confused with a quoted token. Historical bytes retain
+/// their original bare-name grammar.
+fn print_owner_name<W: Write>(w: &mut W, name: &str, mode: Style) -> Result {
+    if matches!(mode.grammar, crate::dump::codec::Grammar::CurrentV2)
+        && (name.is_empty() || name.contains('"') || name.chars().any(char::is_whitespace))
+    {
+        quoted(w, name)
+    } else {
+        w.write_str(name)
+    }
+}
+
 /// Write one expression payload: `js("…" @s:e)` / `opaque(reason "…" @s:e)`
 /// / `foreign(dialect "…" @s:e)`; `Display` elides the inner span tail
 /// exactly as it elides line tails.
@@ -174,7 +187,8 @@ fn print_op_guarded<W: Write>(w: &mut W, op: &Op, depth: usize, mode: Style) -> 
     match op {
         Op::Element(element) => {
             indent(w, depth)?;
-            write!(w, "ui.element {}", element.tag)?;
+            w.write_str("ui.element ")?;
+            print_owner_name(w, element.tag.as_str(), mode)?;
             match element.namespace {
                 Namespace::Html => {}
                 Namespace::Svg => w.write_str(" ns=svg")?,
@@ -192,7 +206,8 @@ fn print_op_guarded<W: Write>(w: &mut W, op: &Op, depth: usize, mode: Style) -> 
         }
         Op::Component(component) => {
             indent(w, depth)?;
-            write!(w, "ui.component {}", component.name)?;
+            w.write_str("ui.component ")?;
+            print_owner_name(w, component.name.as_str(), mode)?;
             end_line(w, component.span, mode)?;
             print_owner_body(
                 w,

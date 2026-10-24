@@ -50,3 +50,33 @@ fn recorded_attribute_input_retains_all_lowering_and_roundtrip_laws() {
     assert_eq!(parsed, page);
     assert_eq!(parsed.print_to_string(Mode::Full), printed);
 }
+
+#[test]
+fn recorded_newline_component_name_retains_all_lowering_laws() {
+    let source = include_str!("../../../tests/fuzz/regressions/l1_lowering/issue-10400.input");
+    assert_eq!(source.len(), 187);
+    let mut digest = vize_l0::String::default();
+    for byte in Sha256::digest(source.as_bytes()).iter() {
+        write!(digest, "{byte:02x}").unwrap();
+    }
+    assert_eq!(
+        digest.as_str(),
+        "95aa7f63dc04bc8b3f30cad75337ff3637c48e0092a70c61c8547aa0df14d60b"
+    );
+    for name in [
+        "Foo Bar",
+        "Foo\nBar",
+        "Foo\r\nBar",
+        "Foo\tBar",
+        "\"Quoted\"",
+        "日本🧭",
+        "@11562:11601n",
+        "ns=svg",
+    ] {
+        for quote in ['\"', '\''] {
+            let input = format!("<button is={quote}vue:{name}{quote} />");
+            crate::support::assert_sound(&input, name);
+        }
+    }
+    crate::support::assert_sound(source, "issue-10400");
+}
