@@ -1,0 +1,24 @@
+import { defineComponent, h, type VNode } from 'vue'
+
+const impl = defineComponent({
+  props: { items: { type: Array, required: true } },
+  setup: (props, { slots }) => () => h('div', props.items.map((item) => slots.default?.({ item }))),
+})
+
+export const GenericList = impl as typeof impl & (new <T>(
+  props: { items: T[] },
+  slots: { default: (arg: { item: T }) => VNode[] },
+) => {
+  $props: { items: T[] }
+  $slots: { default?: (arg: { item: T }) => VNode[] }
+})
+
+// Vuetify's second constructor argument contains covariant slot payloads,
+// not slot callbacks. Its erased T must not become another inference input.
+export const GenericIterator = impl as typeof impl & (new <T>(
+  props: { items?: readonly T[] },
+  slots: { default: { items: readonly { raw: T }[] } },
+) => {
+  $props: { items?: readonly T[] }
+  $slots: { default?: (arg: { items: readonly { raw: T }[] }) => VNode[] }
+})

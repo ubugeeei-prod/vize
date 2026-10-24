@@ -87,6 +87,7 @@ export const TYPECHECKER_TESTS = {
     "content_mapper_global_components_preserve_batch_acceptance",
   "component-listener-prop-duplicate-10397": "required_prop_reports_once_with_or_without_listener",
   "native-expect-error-10413": "vue3_native_expectations_preserve_strict_ownership",
+  "generic-constructor-slots-10416": "generic_constructor_intersections_preserve_slot_payloads",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
@@ -150,6 +151,7 @@ const sourceRevisions = {
   "content-mapper-global-component-10185": "10a9eaa743e3fb92b6372daa64c509bce2b204f1",
   "component-listener-prop-duplicate-10397": "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
   "native-expect-error-10413": "b005ad1279cc17a2da628e4d7459a0cb9f65dbe7",
+  "generic-constructor-slots-10416": "036b1a34364c3568b8f19d4dad7479aadcff9860",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 
 export type Artifact = { path: string; sha256: string };

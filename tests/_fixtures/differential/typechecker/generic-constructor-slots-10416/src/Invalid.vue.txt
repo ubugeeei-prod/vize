@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import { GenericList, GenericIterator } from './GenericList'
+const users = [{ id: 1, name: 'Ada' }]
+</script>
+<template>
+  <GenericList :items="users" v-slot="{ item }">{{ item.nope }}</GenericList>
+  <GenericIterator :items="users" v-slot="{ items }">{{ items[0].raw.nope }}</GenericIterator>
+</template>

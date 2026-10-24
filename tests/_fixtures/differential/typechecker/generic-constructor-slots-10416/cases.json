@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10416,
+  "regressionCommit": "036b1a34364c3568b8f19d4dad7479aadcff9860",
+  "sourceRevision": "036b1a34364c3568b8f19d4dad7479aadcff9860",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "props-infer-plain-and-covariant-slots",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/GenericList.ts",
+          "source": "src/GenericList.ts.txt"
+        },
+        {
+          "file": "src/Plain.vue",
+          "source": "src/Plain.vue.txt"
+        },
+        {
+          "file": "src/Invalid.vue",
+          "source": "src/Invalid.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Invalid.vue",
+          "line": 6,
+          "column": 57,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'nope' does not exist on type '{ id: number; name: string; }'."
+        },
+        {
+          "file": "src/Invalid.vue",
+          "line": 7,
+          "column": 70,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'nope' does not exist on type '{ id: number; name: string; }'."
+        }
+      ]
+    }
+  ]
+}

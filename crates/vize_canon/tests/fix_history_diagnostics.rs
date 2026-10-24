@@ -444,6 +444,17 @@ fn vue3_native_expectations_preserve_strict_ownership() {
 }
 
 #[test]
+fn generic_constructor_intersections_preserve_slot_payloads() {
+    check_pack(
+        "generic-constructor-slots-10416",
+        "generic_constructor_intersections_preserve_slot_payloads",
+        "036b1a34364c3568b8f19d4dad7479aadcff9860",
+        Some(10416),
+        &["props-infer-plain-and-covariant-slots"],
+    );
+}
+
+#[test]
 fn content_mapper_global_components_preserve_batch_acceptance() {
     check_pack(
         "content-mapper-global-component-10185",
@@ -824,7 +835,8 @@ fn check_pack(
             | "content-mapper-define-slots-typeof-10197"
             | "content-mapper-nested-vfor-guard-10216"
             | "content-mapper-filename-globals-10190"
-            | "native-expect-error-10413" => regression,
+            | "native-expect-error-10413"
+            | "generic-constructor-slots-10416" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
             }

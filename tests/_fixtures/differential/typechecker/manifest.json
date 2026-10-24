@@ -5062,6 +5062,64 @@
         ]
       },
       "diagnostics": []
+    },
+    {
+      "id": "typechecker/generic-constructor-slots-10416/props-infer-plain-and-covariant-slots",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "generic-constructor-slots-10416",
+      "case": "props-infer-plain-and-covariant-slots",
+      "test": "generic_constructor_intersections_preserve_slot_payloads",
+      "regressionCommit": "036b1a34364c3568b8f19d4dad7479aadcff9860",
+      "sourceRevision": "036b1a34364c3568b8f19d4dad7479aadcff9860",
+      "packReference": {
+        "path": "generic-constructor-slots-10416/cases.json",
+        "sha256": "846034d317a0b499d46fa53c68cfdd896a85a76cec9e5530b5b19e9e77e41fe6"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "generic-constructor-slots-10416/tsconfig.json.txt",
+          "sha256": "a418f49bf70b8a43c7cc4d1dc574760b22f6454e6befe9ce9aac0695d9e45e9c"
+        },
+        {
+          "file": "src/GenericList.ts",
+          "path": "generic-constructor-slots-10416/src/GenericList.ts.txt",
+          "sha256": "48c367052e573532276313ac730774a42f206201ba5c84a138c3a50e5d0a22d5"
+        },
+        {
+          "file": "src/Plain.vue",
+          "path": "generic-constructor-slots-10416/src/Plain.vue.txt",
+          "sha256": "50dbe56e2ced8f0068ebf149052750844772c9617f2506566157ba7cc61e7d54"
+        },
+        {
+          "file": "src/Invalid.vue",
+          "path": "generic-constructor-slots-10416/src/Invalid.vue.txt",
+          "sha256": "2ea2a5718221b8a7b73d1f9d5aa90da85d8ed8d0456e9ec913a0de140895a038"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
     }
   ]
 }

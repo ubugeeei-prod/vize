@@ -1,0 +1,15 @@
+<script setup lang="ts">
+import { GenericList, GenericIterator } from './GenericList'
+const users = [{ id: 1, name: 'Ada' }]
+</script>
+<template>
+  <GenericList :items="users">
+    <template #default="{ item }">{{ item.name }}{{ item.id.toFixed() }}</template>
+  </GenericList>
+  <GenericList :items="users" v-slot="{ item }">{{ item.name.toUpperCase() }}</GenericList>
+  <GenericIterator :items="users">
+    <template #default="{ items }">
+      <div v-for="item in items" :key="item.raw.id">{{ item.raw.name }}</div>
+    </template>
+  </GenericIterator>
+</template>
