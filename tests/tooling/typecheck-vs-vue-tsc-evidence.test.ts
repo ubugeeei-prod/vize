@@ -3,7 +3,6 @@ import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import os from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
-import { parse as parseYaml } from "yaml";
 
 import {
   markdown,
@@ -19,21 +18,16 @@ const vize: Tool = { label: "vize", kind: "vize", bin: "/unused", env: {} };
 const project = { id: "fixture", cwd: "/unused", tsconfig: "tsconfig.json" };
 
 test("Actions retains partial evidence after failure and records the source actually checked out", () => {
-  const workflow = parseYaml(
-    readFileSync(
-      new URL("../../.github/workflows/typecheck-vs-vue-tsc.yml", import.meta.url),
-      "utf8",
-    ),
-  ) as {
-    jobs: { bench: { steps: Array<{ name?: string; uses?: string; if?: string; run?: string }> } };
-  };
-  const steps = workflow.jobs.bench.steps;
-  assert.equal(
-    steps.find((step) => step.uses?.startsWith("actions/upload-artifact@"))?.if,
-    "always()",
+  const workflow = readFileSync(
+    new URL("../../.github/workflows/typecheck-vs-vue-tsc.yml", import.meta.url),
+    "utf8",
   );
+  const upload = workflow
+    .split(/^      - /m)
+    .find((step) => step.startsWith("uses: actions/upload-artifact@"));
+  assert.match(upload ?? "", /^        if: always\(\)$/m);
   assert.match(
-    steps.find((step) => step.name === "Measure")?.run ?? "",
+    workflow.split(/^      - /m).find((step) => step.startsWith("name: Measure\n")) ?? "",
     /--meta "head=\$\(git rev-parse HEAD\)"/,
   );
 });
