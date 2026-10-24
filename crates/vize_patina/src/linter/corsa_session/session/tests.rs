@@ -247,3 +247,80 @@ fn standard_tsgo_project_session_gap_accepts_pnpm_bin_wrappers() {
 
     let _ = std::fs::remove_dir_all(&root);
 }
+
+#[test]
+fn revisiting_rewritten_source_restores_its_probe_coordinates() {
+    let Some(corsa_path) = retained_document_corsa_path() else {
+        return;
+    };
+    let root = case_dir("revisit-rewritten-😀");
+    std::fs::create_dir_all(&root).unwrap();
+    std::fs::write(root.join("package.json"), "{}").unwrap();
+    std::fs::write(root.join("Child.vue"), "<script setup lang=\"ts\">defineProps<{ label: string }>()</script><template><span /></template>").unwrap();
+    let filename = root.join("Parent.vue");
+    let filename = filename.to_str().unwrap();
+    let mut session = CorsaTypeAwareSession::new_with_corsa_path(filename, Some(&corsa_path), None)
+        .expect("start real checker");
+    let source = "import Child from './Child.vue';\nconst pending: Promise<number> = Promise.resolve(42);\npending;\n";
+    let at = source.rfind("pending;").unwrap() as u32;
+    session.open_virtual_project(source, filename).unwrap();
+    assert!(
+        session
+            .active_document()
+            .unwrap()
+            .rewritten_source
+            .is_some(),
+        "fixture must rewrite a real Vue dependency"
+    );
+    let before = session
+        .probe_types_at_offsets(source, &[(at, false, false)])
+        .unwrap();
+    assert_eq!(before.len(), 1);
+    assert!(
+        before
+            .first()
+            .and_then(Option::as_ref)
+            .is_some_and(|probe| probe
+                .type_texts
+                .iter()
+                .any(|text| text == "Promise<number>")),
+        "first query must observe the promise: {before:?}"
+    );
+    let second = root.join("Other.ts");
+    let other = "// unrelated 😀\nconst answer: string = 'other';\nanswer;\n";
+    session
+        .open_virtual_project(other, second.to_str().unwrap())
+        .unwrap();
+    assert!(
+        session
+            .active_document()
+            .unwrap()
+            .rewritten_source
+            .is_none()
+    );
+    session.open_virtual_project(source, filename).unwrap();
+    let revisited = session
+        .probe_types_at_offsets(source, &[(at, false, false)])
+        .unwrap();
+    assert_eq!(
+        revisited, before,
+        "revisiting unchanged A after B must preserve all type facts"
+    );
+    session.close();
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+mod retained_documents;
+
+fn retained_document_corsa_path() -> Option<PathBuf> {
+    let required = std::env::var("VIZE_TEST_REQUIRE_TSGO").as_deref() == Ok("1");
+    if !required && std::env::var("VIZE_TEST_DISABLE_TSGO").as_deref() == Ok("1") {
+        return None;
+    }
+    let path = test_corsa_path();
+    assert!(
+        !required || path.is_some(),
+        "retained-document regressions require the real checker runtime"
+    );
+    path
+}

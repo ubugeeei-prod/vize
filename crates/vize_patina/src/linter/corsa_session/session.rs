@@ -113,14 +113,11 @@ impl CorsaTypeAwareSession {
             virtual_file_path,
             supports_overlay_updates,
             overlay_version: 0,
-            rewritten_source: None,
-            import_source_map: vize_canon::ImportSourceMap::empty(),
             dependency_paths: vize_l0::FxHashSet::default(),
             dependency_cache: vize_l0::FxHashMap::default(),
             vue_path_aliases,
             active_filename: None,
-            active_source_hash: 0,
-            opened_source_hashes: vize_l0::FxHashMap::default(),
+            opened_documents: vize_l0::FxHashMap::default(),
             published,
             #[cfg(test)]
             last_refresh: super::virtual_documents::RefreshCounts::default(),
@@ -144,9 +141,13 @@ impl CorsaTypeAwareSession {
     ) -> Result<(), String> {
         // The open snapshot already types this generated document.
         let input_hash = virtual_source_hash(generated_source);
-        if self.opened_source_hashes.get(filename).copied() == Some(input_hash) {
+        if self
+            .opened_documents
+            .get(filename)
+            .is_some_and(|document| document.input_hash == input_hash)
+        {
             self.retarget_virtual_file(filename);
-            self.remember_virtual_input(filename, input_hash);
+            self.active_filename = Some(filename.to_compact_string());
             return Ok(());
         }
 
@@ -163,19 +164,21 @@ impl CorsaTypeAwareSession {
         let mut dependency_changes = super::vue_dependencies::materialize(&prepared.files, &[])?;
         self.dependency_paths
             .extend(prepared.files.iter().map(|(path, _)| path.clone()));
-        self.import_source_map = prepared.source_map;
-        self.rewritten_source = prepared.code;
-        let generated_source = self
+        let document = super::virtual_documents::OpenedDocument {
+            input_hash,
+            rewritten_source: prepared.code,
+            import_source_map: prepared.source_map,
+        };
+        let generated_source = document
             .rewritten_source
             .as_deref()
-            .unwrap_or(generated_source)
-            .to_compact_string();
+            .unwrap_or(generated_source);
         let mut virtual_changes = profile!(
             "patina.corsa_session.write_virtual_file",
             super::virtual_documents::sync_stable_virtual_file(
                 &mut self.published,
                 &next_path,
-                generated_source.as_str(),
+                generated_source,
                 self.supports_overlay_updates,
                 &[],
             )
@@ -215,7 +218,7 @@ impl CorsaTypeAwareSession {
                     Some(OverlayChanges {
                         upsert: vec![OverlayUpdate {
                             document: self.virtual_file_wire.as_str().into(),
-                            text: generated_source.as_str().into(),
+                            text: generated_source.into(),
                             version: Some(self.overlay_version),
                             language_id: Some("typescript".into()),
                         }],
@@ -229,7 +232,7 @@ impl CorsaTypeAwareSession {
                     error.to_compact_string().as_str(),
                 )
             })?;
-            self.remember_virtual_input(filename, input_hash);
+            self.remember_virtual_input(filename, document);
             return Ok(());
         }
 
@@ -243,7 +246,7 @@ impl CorsaTypeAwareSession {
                 error.to_compact_string().as_str(),
             )
         })?;
-        self.remember_virtual_input(filename, input_hash);
+        self.remember_virtual_input(filename, document);
         Ok(())
     }
 
@@ -279,11 +282,20 @@ impl CorsaTypeAwareSession {
         self.last_refresh
     }
 
-    fn remember_virtual_input(&mut self, filename: &str, input_hash: u64) {
-        self.opened_source_hashes
-            .insert(filename.to_compact_string(), input_hash);
+    fn remember_virtual_input(
+        &mut self,
+        filename: &str,
+        document: super::virtual_documents::OpenedDocument,
+    ) {
+        self.opened_documents
+            .insert(filename.to_compact_string(), document);
         self.active_filename = Some(filename.to_compact_string());
-        self.active_source_hash = input_hash;
+    }
+
+    pub(super) fn active_document(&self) -> Option<&super::virtual_documents::OpenedDocument> {
+        self.active_filename
+            .as_deref()
+            .and_then(|filename| self.opened_documents.get(filename))
     }
 
     pub(in crate::linter) fn close(&mut self) {

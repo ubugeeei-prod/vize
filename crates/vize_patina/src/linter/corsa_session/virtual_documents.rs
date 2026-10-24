@@ -10,6 +10,14 @@ use vize_l0::{FxHashSet, String, ToCompactString};
 
 use super::{errors::io_error_message, paths::path_to_wire};
 
+/// Projection coordinates belong to the same retained document as its input hash.
+/// Insert only after the checker has successfully accepted the document.
+pub(super) struct OpenedDocument {
+    pub(super) input_hash: u64,
+    pub(super) rewritten_source: Option<String>,
+    pub(super) import_source_map: vize_canon::ImportSourceMap,
+}
+
 /// Created, changed, and deleted paths sent on the last refresh.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub(super) struct RefreshCounts {

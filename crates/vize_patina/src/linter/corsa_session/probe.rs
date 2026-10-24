@@ -20,13 +20,19 @@ impl CorsaTypeAwareSession {
         if requests.is_empty() {
             return Ok(Vec::new());
         }
-        let generated_source = self.rewritten_source.as_deref().unwrap_or(generated_source);
+        let document = self.active_document();
+        let generated_source = document
+            .and_then(|document| document.rewritten_source.as_deref())
+            .unwrap_or(generated_source);
         let positions = profile!("patina.corsa_session.byte_to_utf16_batch", {
             requests
                 .iter()
                 .map(|(generated_offset, _, _)| {
-                    let generated_offset =
-                        self.import_source_map.get_virtual_offset(*generated_offset);
+                    let generated_offset = document.map_or(*generated_offset, |document| {
+                        document
+                            .import_source_map
+                            .get_virtual_offset(*generated_offset)
+                    });
                     byte_offset_to_utf16_offset(generated_source, generated_offset)
                 })
                 .collect::<Vec<_>>()
