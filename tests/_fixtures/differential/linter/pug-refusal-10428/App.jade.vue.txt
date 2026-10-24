@@ -1,0 +1,3 @@
+<!-- 日本 🧭 -->
+<template lang="jade">div&attributes({ id: 'x' })
+</template>

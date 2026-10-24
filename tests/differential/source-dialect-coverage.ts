@@ -57,7 +57,11 @@ export function sourceInspectedDialectCoverage(
       if (version === "2.7") dialects.add("vue2.7-sfc");
       else if (version === "2") dialects.add("vue2-sfc");
       else dialects.add("vue3-sfc");
-      if (/<template\b[^>]*\blang\s*=\s*(?:["']pug["']|pug(?:\s|>))/i.test(source)) {
+      if (
+        /<template\b[^>]*\blang\s*=\s*(?:"(?:pug|jade)"|'(?:pug|jade)'|(?:pug|jade)(?:\s|>))/i.test(
+          source,
+        )
+      ) {
         dialects.add("pug-template");
       } else if (/<template(?:\s|>)/i.test(source)) {
         dialects.add("html-template");

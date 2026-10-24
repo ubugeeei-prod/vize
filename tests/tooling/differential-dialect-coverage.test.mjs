@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { sourceInspectedDialectCoverage } from "../differential/source-dialect-coverage.ts";
 import {
   canonicalDialects,
   classifyDialectCoverage,
@@ -152,18 +153,18 @@ void test("missing case coverage becomes explicit unknown without changing manif
 
 void test("linter and LSP coverage record every pinned authored source dialect", () => {
   assert.deepEqual(summarizeDialectCoverage(load("linter").cases), {
-    plannedCases: 87,
+    plannedCases: 88,
     verifiedCases: 0,
-    provisionalCases: 87,
-    unknownReadinessCases: 87,
+    provisionalCases: 88,
+    unknownReadinessCases: 88,
     verified: {},
     provisional: {
       "html-template": 47,
       js: 6,
-      "pug-template": 1,
+      "pug-template": 2,
       ts: 32,
       "vue2-sfc": 2,
-      "vue3-sfc": 68,
+      "vue3-sfc": 69,
     },
   });
   assert.deepEqual(summarizeDialectCoverage(load("lsp").cases), {
@@ -182,6 +183,18 @@ void test("linter and LSP coverage record every pinned authored source dialect",
       "vue3-sfc": 44,
     },
   });
+});
+
+void test("Pug and Jade spellings record the same authored preprocessor dialect", () => {
+  for (const lang of ["pug", "jade", "PuG", "JADE"]) {
+    for (const value of [`"${lang}"`, `'${lang}'`, lang]) {
+      const coverage = sourceInspectedDialectCoverage(
+        [{ filename: "Original.vue.txt", source: `<template lang=${value}>div</template>` }],
+        "preprocessor aliases",
+      );
+      assert.deepEqual(coverage.evidence[0].dialects, ["vue3-sfc", "pug-template"]);
+    }
+  }
 });
 
 void test("typechecker coverage records every pinned authored source dialect", () => {

@@ -265,3 +265,43 @@ fn a_refused_template_keeps_complete_independent_script_and_style_diagnostics() 
         assert_eq!(refused_template.diagnostics.len(), 3);
     }
 }
+
+#[test]
+fn pinned_original_pug_and_jade_refusals_keep_the_complete_public_result() {
+    for (source, start) in [
+        (
+            include_str!(
+                "../../../tests/_fixtures/differential/linter/pug-refusal-10428/App.pug.vue.txt"
+            ),
+            46,
+        ),
+        (
+            include_str!(
+                "../../../tests/_fixtures/differential/linter/pug-refusal-10428/App.jade.vue.txt"
+            ),
+            47,
+        ),
+    ] {
+        let result = Linter::new().lint_sfc(source, "Original.vue");
+        assert_eq!(result.filename.as_str(), "Original.vue");
+        assert_eq!((result.error_count, result.warning_count), (1, 0));
+        assert_eq!(result.diagnostics.len(), 1);
+        let diagnostic = result.diagnostics.first().unwrap();
+        assert_eq!(diagnostic.rule_name, "parser/template");
+        assert_eq!(diagnostic.severity, vize_patina::Severity::Error);
+        assert_eq!(
+            diagnostic.message.as_str(),
+            "pug `&attributes` is not supported in Vue templates: use `v-bind`"
+        );
+        assert_eq!((diagnostic.start, diagnostic.end), (start, start + 24));
+        assert_eq!(
+            source
+                .get(diagnostic.start as usize..diagnostic.end as usize)
+                .unwrap(),
+            "&attributes({ id: 'x' })"
+        );
+        assert!(diagnostic.help.is_none());
+        assert!(diagnostic.labels.is_empty());
+        assert!(diagnostic.fix.is_none());
+    }
+}

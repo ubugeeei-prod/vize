@@ -1,0 +1,3 @@
+<!-- 日本 🧭 -->
+<template lang="pug">div&attributes({ id: 'x' })
+</template>

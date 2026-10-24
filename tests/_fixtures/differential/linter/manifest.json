@@ -1861,6 +1861,42 @@
           }
         ]
       }
+    },
+    {
+      "id": "linter/pug-refusal-10428",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "pug-refusal-10428",
+        "files": [
+          {
+            "path": "App.pug.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "f98ddd6a5c3afe1c398a374b4dba0e449907a5b7c58f66517995cfd0efcf03b1"
+          },
+          {
+            "path": "App.jade.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "ac7d8ee4d288511f80396d7418c7d89f8e512246a43e22cb2b1b5de3be537360"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "pug-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }
