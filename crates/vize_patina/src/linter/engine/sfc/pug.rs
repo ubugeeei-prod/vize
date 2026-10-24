@@ -6,17 +6,18 @@
 //! one template lane exactly as an HTML template would, and every range
 //! maps back onto the authored pug. Autofixes computed on the derived
 //! template have no pug spelling, so a fix that edits the block is dropped
-//! (its diagnostic stays). A template the pug lowering refuses keeps the
-//! pre-dialect behaviour; its compile reports the refusal.
+//! (its diagnostic stays). Refused templates retain the shared lowering's
+//! authored diagnostics and never enter the HTML template lane.
 
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_l1_to_l2::lower::pug::PugBlockView;
 
+use crate::diagnostic::LintDiagnostic;
 use crate::linter::config::{LintResult, Linter};
 
 impl Linter {
     /// Lint `source` through its pug view, or `None` when the SFC has no
-    /// inline pug template (or one the lowering refuses).
+    /// inline pug template.
     pub(crate) fn lint_pug_sfc(&self, source: &str, filename: &str) -> Option<LintResult> {
         // Cheap gate: only sources that mention either spelling pay for the SFC parse.
         if !mentions_pug_language(source) {
@@ -34,7 +35,49 @@ impl Linter {
         if template.src.is_some() || !pug {
             return None;
         }
-        let view = PugBlockView::new(source, template.loc.start..template.loc.end).ok()?;
+        let view = match vize_l0::profile!(
+            "patina.sfc.pug.lower",
+            PugBlockView::new(source, template.loc.start..template.loc.end)
+        ) {
+            Ok(view) => view,
+            Err(refused) => {
+                // No partial tree is evidence for template-dependent rules.
+                // Script, style and SFC rules still inspect their original bytes,
+                // just as they do after a fatal HTML template parse error.
+                let mut result = self.lint_sfc_level(source, filename, Some(&descriptor));
+                super::super::super::script_rules::append_builtin_script_diagnostics(
+                    self,
+                    &descriptor,
+                    &mut result,
+                    None,
+                    None,
+                );
+                super::super::super::css_rules::append_builtin_css_diagnostics(
+                    self,
+                    &descriptor,
+                    &mut result,
+                    None,
+                );
+                for error in refused.diagnostics {
+                    if error.severity() != vize_l0::diag::Severity::Error {
+                        continue;
+                    }
+                    result.diagnostics.push(LintDiagnostic::error(
+                        "parser/template",
+                        error.message.as_str(),
+                        template.loc.start as u32 + error.span.start,
+                        template.loc.start as u32 + error.span.end,
+                    ));
+                    result.error_count += 1;
+                }
+                return Some(self.append_sfc_document_rule_diagnostics(
+                    source,
+                    filename,
+                    result,
+                    Some(&descriptor),
+                ));
+            }
+        };
         let mut result = self.lint_sfc_view(&view.source, filename, true);
         for diagnostic in &mut result.diagnostics {
             (diagnostic.start, diagnostic.end) = view.to_host(diagnostic.start, diagnostic.end);

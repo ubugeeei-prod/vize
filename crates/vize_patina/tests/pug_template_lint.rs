@@ -157,3 +157,111 @@ fn every_matrix_fixture_lints_like_its_pug_rendered_html() {
     }
     assert!(findings > 0, "the matrix exercises lint findings");
 }
+
+#[test]
+fn refused_pug_and_jade_report_the_shared_lowering_errors_at_authored_bytes() {
+    let root =
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../tests/_fixtures/davinci-pug/refused");
+    let mut paths: Vec<_> = std::fs::read_dir(root)
+        .unwrap()
+        .map(|entry| entry.unwrap().path())
+        .filter(|path| path.extension().is_some_and(|ext| ext == "pug"))
+        .collect();
+    paths.sort();
+    assert!(!paths.is_empty());
+    for path in paths {
+        let body = std::fs::read_to_string(&path).unwrap();
+        let lowered = vize_l1_to_l2::lower::pug::derive_template_source(&body);
+        assert!(lowered.has_errors(), "{}", path.display());
+        for lang in ["pug", "jade", "PuG", "JADE"] {
+            let prefix = format!("<!-- 日本 🧭 -->\r\n<template lang=\"{lang}\">");
+            let source = format!("{prefix}{body}</template>\r\n");
+            let result = Linter::new().lint_sfc(&source, "Refused.vue");
+            let actual: Vec<_> = result
+                .diagnostics
+                .iter()
+                .filter(|diagnostic| diagnostic.rule_name == "parser/template")
+                .map(|diagnostic| {
+                    (
+                        diagnostic.message.as_str(),
+                        diagnostic.start,
+                        diagnostic.end,
+                        diagnostic.severity,
+                    )
+                })
+                .collect();
+            let expected: Vec<_> = lowered
+                .diagnostics
+                .iter()
+                .filter(|diagnostic| diagnostic.severity() == vize_l0::diag::Severity::Error)
+                .map(|diagnostic| {
+                    (
+                        diagnostic.message.as_str(),
+                        prefix.len() as u32 + diagnostic.span.start,
+                        prefix.len() as u32 + diagnostic.span.end,
+                        vize_patina::Severity::Error,
+                    )
+                })
+                .collect();
+            assert_eq!(actual, expected, "{} ({lang})", path.display());
+            assert!(result.has_errors(), "{} ({lang})", path.display());
+            assert_eq!(
+                result.error_count,
+                result
+                    .diagnostics
+                    .iter()
+                    .filter(|diagnostic| diagnostic.severity == vize_patina::Severity::Error)
+                    .count()
+            );
+            for diagnostic in &result.diagnostics {
+                assert!(
+                    source
+                        .get(diagnostic.start as usize..diagnostic.end as usize)
+                        .is_some()
+                );
+                assert!(diagnostic.fix.is_none());
+            }
+        }
+    }
+}
+
+#[test]
+fn a_refused_template_keeps_complete_independent_script_and_style_diagnostics() {
+    let complete =
+        |result: &LintResult| -> Vec<serde_json::Value> {
+            result.diagnostics.iter()
+            .filter(|diagnostic| diagnostic.rule_name != "parser/template")
+            .map(|diagnostic| {
+                let labels: Vec<_> = diagnostic.labels.iter().map(|label| serde_json::json!({
+                    "message": label.message, "start": label.start, "end": label.end,
+                })).collect();
+                serde_json::json!({
+                    "rule_name": diagnostic.rule_name, "severity": diagnostic.severity,
+                    "message": diagnostic.message, "start": diagnostic.start, "end": diagnostic.end,
+                    "help": diagnostic.help, "labels": labels, "fix": diagnostic.fix,
+                })
+            }).collect()
+        };
+    let linter =
+        Linter::with_preset(vize_patina::LintPreset::Incremental).with_enabled_rules(Some(vec![
+            "script/prefer-ref-over-reactive".into(),
+            "css/no-important".into(),
+        ]));
+    let refused = "include other.pug";
+    let accepted = format!("div{}", " ".repeat(refused.len() - 3));
+    for lang in ["pug", "jade"] {
+        let source = format!(
+            "<!-- 🧭 -->\r\n<template lang=\"{lang}\">\r\n{refused}\r\n</template>\r\n\
+             <script setup>\r\nimport {{ reactive }} from 'vue';\r\nconst state = reactive({{ count: 0 }});\r\n</script>\r\n\
+             <style>.item {{ color: red !important; }}</style>"
+        );
+        let control = source.replacen(refused, &accepted, 1);
+        let clean_template = linter.lint_sfc(&control, "Independent.vue");
+        let refused_template = linter.lint_sfc(&source, "Independent.vue");
+        assert_eq!(clean_template.diagnostics.len(), 2);
+        assert_eq!(complete(&refused_template), complete(&clean_template));
+        assert_eq!(refused_template.error_count, clean_template.error_count + 1);
+        assert_eq!(refused_template.warning_count, clean_template.warning_count);
+        assert_eq!(refused_template.diagnostics.len(), 3);
+    }
+}
