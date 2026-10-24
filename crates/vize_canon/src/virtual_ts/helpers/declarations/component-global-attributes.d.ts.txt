@@ -1,0 +1,4 @@
+type __VizeComponentAttrCamel<S extends string> = S extends `${infer __H}-${infer __T}` ? `${__H}${Capitalize<__VizeComponentAttrCamel<__T>>}` : S;
+type __VizeComponentNativeAttrNames = { [K in keyof __VizeNativeElements & string]: keyof __VizeNativeElements[K] }[keyof __VizeNativeElements & string] & string;
+type __VizeComponentGlobalHtmlAttrs = __VizeIsAny<__VizeNativeElements> extends true ? {} : { [K in __VizeComponentNativeAttrNames as K | __VizeComponentAttrCamel<K>]?: unknown } & { [K in `data-${string}` | `data${Capitalize<string>}`]?: unknown };
+declare function __vizeComponentGlobalHtmlAttrs(value: __VizeComponentGlobalHtmlAttrs): void;

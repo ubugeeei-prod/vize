@@ -1,0 +1,9 @@
+
+
+// Template-ref widening. Hoisted-only, deliberately absent from the per-file
+// preamble: a module-scope copy is dead code (TS6196) in every component whose
+// template scope emits no __U, and only generated template scopes use it.
+type __VizeIsUnion<T, __U = T> = T extends unknown ? ([__U] extends [T] ? false : true) : false;
+type __VizeWidenTemplateRef<T> = __VizeIsAny<T> extends true ? T : __VizeIsUnion<T> extends true ? T : T extends string ? string extends T ? string : T : T extends number ? number extends T ? number : T : T extends boolean ? boolean extends T ? boolean : T : T;
+
+// Emit-overload helpers (consumed by the per-file __EmitProps alias)

@@ -1,0 +1,13 @@
+
+// Compiler-macro signatures (aliased inside each module's __setup() scope)
+declare function __vize_defineProps<_T = unknown>(): __DefineProps<__LooseRequired<_T>, Extract<__VizeBooleanKey<_T>, keyof __LooseRequired<_T>>>;
+declare function __vize_defineProps<const _T extends readonly string[]>(_props: _T): { [K in _T[number]]?: any };
+declare function __vize_defineProps<const _T extends Record<string, any>>(_props: _T): __RuntimePropShape<_T>;
+declare function __vize_defineEmits<_T = unknown>(): __EmitFn<_T>;
+declare function __vize_defineEmits<const _T extends readonly string[]>(_events: _T): (event: _T[number], ...args: any[]) => void;
+declare function __vize_defineEmits<const _T extends Record<string, any>>(_events: _T): __EmitFn<_T>;
+declare function __vize_defineExpose<_T = unknown>(_exposed?: _T): void;
+declare const __vize_defineModel: typeof import('vue') extends { defineModel: infer __Macro } ? __Macro : never;
+declare function __vize_defineSlots<_T = unknown>(): _T;
+declare function __vize_withDefaults<_T, _BKeys extends keyof _T, _D extends __WithDefaultsArgs<_T>>(_props: __DefineProps<_T, _BKeys>, _defaults: _D): __WithDefaultsResult<_T, _D, _BKeys>;
+declare function __vize_useTemplateRef<_T = any>(_key: string): __ShallowRef<_T | null>;

@@ -1,0 +1,2 @@
+type __VizeKebabCase<S extends string, Acc extends string = ""> = S extends `${infer Head}${infer Tail}` ? Head extends Lowercase<Head> ? __VizeKebabCase<Tail, `${Acc}${Head}`> : __VizeKebabCase<Tail, `${Acc}-${Lowercase<Head>}`> : `${Acc}${S}`;
+type __VizeKebabProps<T> = { [K in keyof T & string as __VizeKebabCase<K>]: T[K] };

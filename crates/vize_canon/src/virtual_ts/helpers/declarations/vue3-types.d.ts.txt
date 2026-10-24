@@ -1,0 +1,11 @@
+type __LooseRequired<T> = { [P in keyof (T & Required<T>)]: T[P] };
+type __VizeBooleanKey<T, K extends keyof T = keyof T> = K extends any ? [Exclude<T[K], undefined>] extends [never] ? never : [Exclude<T[K], undefined>] extends [boolean] ? K : never : never; type __DefineProps<T, __BKeys extends keyof T = __VizeBooleanKey<T>> = Readonly<T> & { readonly [K in __BKeys]-?: boolean };
+type __VizeIfAny<T, Y, N> = 0 extends (1 & T) ? Y : N;
+type __VizeNotUndefined<T> = T extends undefined ? never : T;
+type __VizeMappedOmit<T, K extends keyof any> = { [P in keyof T as P extends K ? never : P]: T[P] };
+type __VizeDefaultNativeType = null | number | string | boolean | symbol | Function;
+type __VizeInferDefault<P, T> = ((props: P) => T & {}) | (T extends __VizeDefaultNativeType ? T : never);
+type __WithDefaultsArgs<T> = { [K in keyof T]?: __VizeInferDefault<T, T[K]> };
+type __WithDefaultsResult<T, D, __BKeys extends keyof T = never> = T extends unknown ? Readonly<__VizeMappedOmit<T, keyof D>> & { readonly [K in keyof D as K extends keyof T ? K : never]-?: K extends keyof T ? D[K] extends undefined ? __VizeIfAny<D[K], __VizeNotUndefined<T[K]>, T[K]> : __VizeNotUndefined<T[K]> : never } & { readonly [K in __BKeys]-?: K extends keyof D ? D[K] extends undefined ? boolean | undefined : boolean : boolean } : never;
+type __Ref<T> = import('vue').Ref<T>;
+type __ShallowRef<T> = import('vue').ShallowRef<T>;

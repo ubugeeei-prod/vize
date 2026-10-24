@@ -1,0 +1,27 @@
+type __VizeNuxt2Context = {
+  app: any;
+  route: any;
+  params: Record<string, string>;
+  query: Record<string, string | string[] | undefined>;
+  store: any;
+  error: (...args: any[]) => any;
+  redirect: (...args: any[]) => any;
+  req?: any;
+  res?: any;
+  env?: Record<string, unknown>;
+  isDev?: boolean;
+  isHMR?: boolean;
+} & Record<string, any>;
+type __VizeNuxt2PageOptions = ThisType<any> & {
+  validate?: (context: __VizeNuxt2Context) => unknown;
+  asyncData?: (context: __VizeNuxt2Context) => any;
+  fetch?: (context: __VizeNuxt2Context) => any;
+  head?: any;
+  layout?: any;
+  layoutTransition?: any;
+  loading?: any;
+  middleware?: any;
+  scrollToTop?: any;
+  transition?: any;
+};
+declare function __vizeDefineComponent<T>(options: T & __VizeNuxt2PageOptions): T;

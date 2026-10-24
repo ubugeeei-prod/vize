@@ -1,0 +1,25 @@
+type __VizeVue2ComponentInstance = {
+  $el: Element;
+  $refs: Record<string, any>;
+  $attrs: Record<string, any>;
+  $listeners: Record<string, any>;
+  $children: any[];
+  $scopedSlots: Record<string, any>;
+  $parent: any;
+  $root: any;
+  $isServer: boolean; $vnode: any; $ssrContext: any;
+  $options: Record<string, any>;
+  $data: Record<string, any>;
+  $mount: (...args: any[]) => any;
+  $on: (...args: any[]) => any;
+  $off: (...args: any[]) => any;
+  $once: (...args: any[]) => any;
+  $set: (...args: any[]) => any;
+  $delete: (...args: any[]) => any;
+  $watch: (...args: any[]) => any;
+  $nextTick: (...args: any[]) => any;
+  $forceUpdate: () => void;
+  $destroy: () => void;
+  $createElement: (...args: any[]) => any;
+  _c: (...args: any[]) => any;
+};
