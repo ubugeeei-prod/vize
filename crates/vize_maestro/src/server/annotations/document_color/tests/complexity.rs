@@ -53,3 +53,29 @@ fn declaration_context_scanning_counts_internal_work_linearly() {
         previous_work = work;
     }
 }
+
+#[test]
+fn indented_declaration_scanning_has_linear_work_at_1k_through_8k() {
+    let mut previous_work = 0;
+    for count in [1_000, 2_000, 4_000, 8_000] {
+        let source = ".card\n  color: blue\n  background: #f00\n".repeat(count);
+        let (found, work, rgb_probes) = super::super::scan::colors_in_mode_with_metrics(
+            &source,
+            (0, source.len()),
+            super::super::scan::CssMode::IndentedDeclarations,
+        );
+        assert_eq!(found.len(), count * 2);
+        assert_eq!(rgb_probes, 0);
+        assert!(
+            work <= source.len() * 2,
+            "scanner work exceeded input bound: {count}: {work}"
+        );
+        if previous_work > 0 {
+            assert!(
+                work <= previous_work * 2 + 32,
+                "superlinear work at {count}: {work}"
+            );
+        }
+        previous_work = work;
+    }
+}

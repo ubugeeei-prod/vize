@@ -388,3 +388,5 @@ fn script_and_template_text_are_never_scanned_for_colours() {
     let source = "<script setup lang=\"ts\">\nconst tag = '#f00'\n</script>\n\n<template>\n  <div>#00ff00</div>\n</template>\n";
     assert_eq!(colors(source), Vec::new());
 }
+
+mod indented;

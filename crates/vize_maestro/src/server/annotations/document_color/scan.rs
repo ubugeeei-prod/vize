@@ -47,7 +47,7 @@ pub(super) enum CssMode {
     Stylesheet,
     DeclarationList,
     Preprocessor,
-    IndentedSass,
+    IndentedDeclarations,
 }
 
 impl CssMode {
@@ -56,11 +56,11 @@ impl CssMode {
     }
 
     fn accepts_variable_names(self) -> bool {
-        matches!(self, Self::Preprocessor | Self::IndentedSass)
+        matches!(self, Self::Preprocessor | Self::IndentedDeclarations)
     }
 
     fn has_line_comments(self) -> bool {
-        matches!(self, Self::Preprocessor | Self::IndentedSass)
+        matches!(self, Self::Preprocessor | Self::IndentedDeclarations)
     }
 }
 
@@ -98,7 +98,9 @@ pub(crate) fn colors_in(content: &str, region: (usize, usize), mode: CssMode) ->
             cursor = skip_string(bytes, cursor, region_end);
             continue;
         }
-        if mode == CssMode::IndentedSass && parenthesis_depth == 0 && matches!(byte, b'\r' | b'\n')
+        if mode == CssMode::IndentedDeclarations
+            && parenthesis_depth == 0
+            && matches!(byte, b'\r' | b'\n')
         {
             tentative_value = None;
             in_value = false;
@@ -292,14 +294,23 @@ pub(super) fn colors_in_with_metrics(
     region: (usize, usize),
     declaration_list: bool,
 ) -> (Vec<ColorLiteral>, usize, usize) {
-    SCAN_STEPS.set(0);
-    RGB_PROBES.set(0);
-    DECLARATION_NAME_WORK.set(0);
     let mode = if declaration_list {
         CssMode::DeclarationList
     } else {
         CssMode::Stylesheet
     };
+    colors_in_mode_with_metrics(content, region, mode)
+}
+
+#[cfg(test)]
+pub(super) fn colors_in_mode_with_metrics(
+    content: &str,
+    region: (usize, usize),
+    mode: CssMode,
+) -> (Vec<ColorLiteral>, usize, usize) {
+    SCAN_STEPS.set(0);
+    RGB_PROBES.set(0);
+    DECLARATION_NAME_WORK.set(0);
     let colors = colors_in(content, region, mode);
     (
         colors,

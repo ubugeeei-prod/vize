@@ -1,0 +1,12 @@
+<template lang="pug">div</template>
+<style lang="stylus">
+.card
+  // 日本 🧭 orange
+  color: red
+  background: #00ff00
+  border-color: rgb(0 0 255)
+  outline-color: blue
+  content: "purple"
+.purple
+  color: transparent
+</style>
