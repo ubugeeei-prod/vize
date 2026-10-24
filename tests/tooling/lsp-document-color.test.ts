@@ -67,6 +67,7 @@ async function withDocument(
     colors: () => Promise<ColorInformation[]>,
     presentations: (color: ColorInformation["color"]) => Promise<ColorPresentation[]>,
   ) => Promise<void>,
+  source = SOURCE,
 ): Promise<void> {
   const testRootDir = path.join(testOutputRoot, "lsp-document-color");
   fs.mkdirSync(testRootDir, { recursive: true });
@@ -78,9 +79,9 @@ async function withDocument(
 
     const filePath = path.join(workspaceDir, "App.vue");
     const uri = pathToFileURL(filePath).href;
-    fs.writeFileSync(filePath, SOURCE, "utf8");
+    fs.writeFileSync(filePath, source, "utf8");
     session.notify("textDocument/didOpen", {
-      textDocument: { uri, languageId: "vue", version: 1, text: SOURCE },
+      textDocument: { uri, languageId: "vue", version: 1, text: source },
     });
     await session.waitForNotification("textDocument/publishDiagnostics", (params) =>
       isDiagnosticsForUri(params, uri),
@@ -154,4 +155,35 @@ test("colorPresentation offers hex, rgb, and hsl notation", async () => {
       { label: "hsl(240 100% 50% / 0.5)" },
     ]);
   });
+});
+
+test("dense colours retain every UTF16 range and value across repeated editor requests", async () => {
+  const prefix = "<template><div /></template>\n<style>/* 日本 🧭 */";
+  const row = ".x{color:#f00;background:rgb(0 255 0);border:blue}";
+  const expected: ColorInformation[] = [];
+  const palette = [
+    ["#f00", { red: 1, green: 0, blue: 0, alpha: 1 }],
+    ["rgb(0 255 0)", { red: 0, green: 1, blue: 0, alpha: 1 }],
+    ["blue", { red: 0, green: 0, blue: 1, alpha: 1 }],
+  ] as const;
+  for (let index = 0; index < 2048; index++) {
+    for (const [literal, color] of palette) {
+      const start =
+        prefix.length - prefix.lastIndexOf("\n") - 1 + index * row.length + row.indexOf(literal);
+      expected.push({
+        range: {
+          start: { line: 1, character: start },
+          end: { line: 1, character: start + literal.length },
+        },
+        color,
+      });
+    }
+  }
+  await withDocument(
+    async (colors) => {
+      assert.deepEqual(await colors(), expected);
+      assert.deepEqual(await colors(), expected);
+    },
+    prefix + row.repeat(2048) + "</style>",
+  );
 });

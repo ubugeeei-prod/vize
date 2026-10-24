@@ -38,6 +38,95 @@ fn percent(alpha: f32) -> u32 {
 }
 
 #[test]
+fn dense_colors_keep_complete_authored_vectors_across_template_and_style_languages() {
+    for ending in ["\n", "\r\n"] {
+        for template_lang in ["html", "pug", "jade"] {
+            for style_lang in ["css", "scss", "less", "stylus", "sass"] {
+                let prefix = format!(
+                    "<script setup>{ending}{}{ending}</script>{ending}",
+                    format!("// 日本 🧭{ending}").repeat(128)
+                );
+                let template = if template_lang == "html" {
+                    "<div style=\"color: #0f0\" />"
+                } else {
+                    "div(style=\"color: #0f0\")"
+                };
+                let style = if style_lang == "sass" {
+                    format!(".x{ending}  color: #f00{ending}").repeat(128)
+                } else {
+                    ".x{color:#f00}".repeat(128)
+                };
+                let source = format!(
+                    "{prefix}<style lang=\"{style_lang}\">/* 日本 🧭 */{ending}{style}</style>{ending}<template lang=\"{template_lang}\">{template}</template>{ending}<style>.tail{{color:#00f}}</style>"
+                );
+                let mut expected = Vec::new();
+                for (literal, color) in [
+                    (
+                        "#f00",
+                        Color {
+                            red: 1.0,
+                            green: 0.0,
+                            blue: 0.0,
+                            alpha: 1.0,
+                        },
+                    ),
+                    (
+                        "#0f0",
+                        Color {
+                            red: 0.0,
+                            green: 1.0,
+                            blue: 0.0,
+                            alpha: 1.0,
+                        },
+                    ),
+                    (
+                        "#00f",
+                        Color {
+                            red: 0.0,
+                            green: 0.0,
+                            blue: 1.0,
+                            alpha: 1.0,
+                        },
+                    ),
+                ] {
+                    for (start, _) in source.match_indices(literal) {
+                        let start_position =
+                            vize_l0::line_index::offset_to_position(&source, start);
+                        let end_position =
+                            vize_l0::line_index::offset_to_position(&source, start + literal.len());
+                        expected.push((
+                            start,
+                            ColorInformation {
+                                range: Range {
+                                    start: Position {
+                                        line: start_position.line,
+                                        character: start_position.character,
+                                    },
+                                    end: Position {
+                                        line: end_position.line,
+                                        character: end_position.character,
+                                    },
+                                },
+                                color,
+                            },
+                        ));
+                    }
+                }
+                expected.sort_unstable_by_key(|(offset, _)| *offset);
+                let expected: Vec<_> = expected.into_iter().map(|(_, color)| color).collect();
+                let descriptor =
+                    vize_incremental::descriptor::parse_descriptor("/Colors.vue", &source).unwrap();
+                assert_eq!(
+                    DocumentColorService::colors(&source, &descriptor),
+                    expected,
+                    "{template_lang}/{style_lang}/{ending:?}"
+                );
+            }
+        }
+    }
+}
+
+#[test]
 fn every_hex_form_is_recognised_with_its_exact_span() {
     let source = "<style>\n.a { color: #f00; background: #ff0000; border-color: #f00c; outline-color: #ff0000cc }\n</style>\n";
     assert_eq!(

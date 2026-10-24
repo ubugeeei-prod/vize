@@ -24,7 +24,7 @@ mod scan;
 
 use tower_lsp::lsp_types::{Color, ColorInformation, ColorPresentation, Position, Range};
 
-use crate::ide::offset_to_position;
+use vize_l0::line_index::PositionCursor;
 
 pub(super) struct DocumentColorService;
 
@@ -35,22 +35,44 @@ impl DocumentColorService {
         descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
     ) -> Vec<ColorInformation> {
         let mut colors = Vec::new();
-        for region in css_regions(content, descriptor) {
-            for literal in scan::colors_in(content, region.range, region.mode) {
-                colors.push(ColorInformation {
-                    range: Range {
-                        start: position_at(content, literal.start),
-                        end: position_at(content, literal.end),
-                    },
-                    color: Color {
-                        red: literal.red,
-                        green: literal.green,
-                        blue: literal.blue,
-                        alpha: literal.alpha,
-                    },
-                });
-            }
+        let mut positions = PositionCursor::new(content);
+        let regions = vize_l0::profile!(
+            "maestro.document_color.regions",
+            css_regions(content, descriptor)
+        );
+        for region in regions {
+            let literals = vize_l0::profile!(
+                "maestro.document_color.scan",
+                scan::colors_in(content, region.range, region.mode)
+            );
+            vize_l0::profile!(
+                "maestro.document_color.positions",
+                for literal in literals {
+                    let start = positions.position(literal.start);
+                    let end = positions.position(literal.end);
+                    colors.push(ColorInformation {
+                        range: Range {
+                            start: Position {
+                                line: start.line,
+                                character: start.character,
+                            },
+                            end: Position {
+                                line: end.line,
+                                character: end.character,
+                            },
+                        },
+                        color: Color {
+                            red: literal.red,
+                            green: literal.green,
+                            blue: literal.blue,
+                            alpha: literal.alpha,
+                        },
+                    });
+                }
+            );
         }
+        vize_l0::profiler::global_profiler()
+            .record_counter("maestro.document_color.colors", colors.len() as u64);
         colors
     }
 
@@ -189,11 +211,6 @@ fn static_style_attributes(content: &str, region: (usize, usize)) -> Vec<(usize,
     }
 
     spans
-}
-
-fn position_at(content: &str, offset: usize) -> Position {
-    let (line, character) = offset_to_position(content, offset);
-    Position { line, character }
 }
 
 fn to_byte(channel: f32) -> u32 {

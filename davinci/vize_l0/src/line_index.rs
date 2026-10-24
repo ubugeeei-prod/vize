@@ -11,9 +11,11 @@
 //! units (the #1223 class of bug). Centralizing it here keeps the conversion
 //! correct in one place. See issue #1389.
 
+mod cursor;
 mod line_breaks;
 mod position;
 mod utf16;
+pub use cursor::PositionCursor;
 pub use line_breaks::LineBreaks;
 pub use position::{Position, Range};
 pub use utf16::{utf16_len, utf16_offset};
