@@ -13,6 +13,7 @@ import {
   retainNativeLog,
 } from "../../tools/support/compat/github/run-lsp-config-diagnostics.ts";
 import { readRepoFile } from "./support/github-workflows.ts";
+import { previousSourcePath } from "../../tools/support/source-layout-relocations.ts";
 
 type Step = {
   name?: string;
@@ -163,7 +164,7 @@ test("startup diagnostics retain the production producer and unchanged scale-one
   assert.equal(custodyNames.length, 144);
   assert.equal(
     createHash("sha256")
-      .update(JSON.stringify(custodyNames.slice(0, 130)))
+      .update(JSON.stringify(custodyNames.slice(0, 130).map(previousSourcePath)))
       .digest("hex"),
     "2b650a1f0e301d4de6c808646d18dbccf116882c49717e5537d91dee8b965598",
   );
@@ -263,11 +264,11 @@ test("startup diagnostics retain the production producer and unchanged scale-one
       "cargo test --locked --profile ci -p vize_canon --features legacy --lib corsa_bridge::vue_dependencies_alias::context::cache::tests::\n" +
       "cargo clippy --locked --profile ci -p vize_canon --features legacy --lib -- -D warnings\n",
   );
-  // The #[path] fixture is nested under materialize, not virtual_project::tests.
+  // The fixture is a child module of materialize.
   // Bind this filter to its real module and both existing test declarations.
   assert.match(
     readRepoFile("crates/vize_canon/src/batch/virtual_project/materialize.rs"),
-    /#\[path = "tests\/editor_union_alias_transition\.rs"\]\nmod alias_transition_tests;/,
+    /#\[cfg\(all\(test, unix\)\)\]\nmod alias_transition_tests;/,
   );
   assert.deepEqual(
     Array.from(

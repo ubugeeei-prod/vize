@@ -5,6 +5,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { gunzipSync } from "node:zlib";
+import { currentSourcePath } from "../../../../../tools/support/source-layout-relocations.ts";
 import { utf16Position } from "../installed-alias-replay/apply.ts";
 import {
   applyLibraryTransaction,
@@ -111,7 +112,7 @@ test("whole artifact, compressed packet and original source tampering refuse bef
     for (const file of Object.keys(manifest.sourceFiles)) {
       const target = path.join(temporary, file);
       fs.mkdirSync(path.dirname(target), { recursive: true });
-      fs.copyFileSync(path.join(repositoryRoot, file), target);
+      fs.copyFileSync(path.join(repositoryRoot, currentSourcePath(file)), target);
     }
     assert.equal(loadFrozenLibraryCases(root).length, 22);
     const files = [

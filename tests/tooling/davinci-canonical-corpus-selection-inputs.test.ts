@@ -15,6 +15,7 @@ import {
   changedLinks,
 } from "../../tools/support/compat/github/canonical-corpus-selection.mjs";
 import { readRepoFile, root } from "./support/github-workflows.ts";
+import { stripRust } from "../../tools/support/compat/davinci/lib/rust-source.ts";
 
 type Step = { uses?: string; run?: string };
 type Job = { uses?: string; steps?: Step[] };
@@ -101,18 +102,64 @@ const unreadConstants = new Set([
 
 function scriptClosure(roots: string[]) {
   const pending = [...roots];
+  const moduleRoots = new Set(roots.filter((path) => path.endsWith(".rs")));
+  const dependencyRoots = new Set<string>();
+  const compileOnly = new Set<string>();
   const scripts = new Set<string>();
   const literals = new Set<string>();
+  type CargoManifest = {
+    lib?: { path?: string };
+    dependencies?: Record<string, { path?: string } | string>;
+    "build-dependencies"?: Record<string, { path?: string } | string>;
+  };
+  const dependencies = (directory: string, manifest: CargoManifest) => {
+    for (const table of [manifest.dependencies, manifest["build-dependencies"]]) {
+      for (const spec of Object.values(table ?? {})) {
+        if (typeof spec === "object" && spec.path) {
+          pending.push(posix.join(directory, spec.path, "Cargo.toml"));
+        }
+      }
+    }
+  };
   while (pending.length) {
     const script = posix.normalize(pending.pop() as string);
     if (scripts.has(script)) continue;
     scripts.add(script);
     const text = readRepoFile(script);
-    for (const literal of literalReads(text))
-      if (!unreadConstants.has(literal)) literals.add(literal);
-    const imports = script.endsWith(".rs")
-      ? [...text.matchAll(/#\[path\s*=\s*"([^"]+)"\]/g)]
-      : [...text.matchAll(importPattern)];
+    if (script.endsWith("/Cargo.toml")) {
+      const manifest = parseToml(text) as unknown as CargoManifest;
+      const library = posix.join(posix.dirname(script), manifest.lib?.path ?? "src/lib.rs");
+      assert(exists(library), `${script} must identify its dependency library`);
+      moduleRoots.add(library);
+      dependencyRoots.add(library);
+      pending.push(library);
+      dependencies(posix.dirname(script), manifest);
+    }
+    if (moduleRoots.has(script)) {
+      const modules = JSON.parse(
+        execFileSync(
+          "rust-script",
+          [join(root, "tools/commands/ci/verify-tool-layout.rs"), "--module-closure", script],
+          { cwd: root, encoding: "utf8" },
+        ),
+      ) as string[];
+      if (dependencyRoots.has(script)) for (const module of modules) compileOnly.add(module);
+      pending.push(...modules);
+      const cargo = /\/\/! ```cargo\n([\s\S]*?)\/\/! ```/.exec(text);
+      if (cargo)
+        dependencies(
+          posix.dirname(script),
+          parseToml(
+            cargo[1]!
+              .split("\n")
+              .map((line) => line.replace(/^\/\/! ?/, ""))
+              .join("\n"),
+          ) as unknown as CargoManifest,
+        );
+    }
+    const reads = compileOnly.has(script) ? compiledRustReads(text) : literalReads(text);
+    for (const literal of reads) if (!unreadConstants.has(literal)) literals.add(literal);
+    const imports = script.endsWith(".rs") ? [] : [...text.matchAll(importPattern)];
     for (const match of imports)
       pending.push(posix.join(posix.dirname(script), match[1] as string));
   }
@@ -122,6 +169,38 @@ function scriptClosure(roots: string[]) {
   }
   return { scripts, literals };
 }
+
+function compiledRustReads(source: string): string[] {
+  const masked = stripRust(source);
+  const reads = new Set<string>();
+  for (const match of masked.matchAll(/\binclude_(?:str|bytes)!\s*\(/g)) {
+    const start = match.index! + match[0].length;
+    let depth = 1,
+      end = start;
+    for (; end < masked.length && depth > 0; end++) {
+      if (masked[end] === "(") depth++;
+      else if (masked[end] === ")") depth--;
+    }
+    assert.equal(depth, 0, "unterminated compiled Rust fixture include");
+    for (const read of literalReads(source.slice(start, end - 1))) reads.add(read);
+  }
+  return [...reads];
+}
+
+test("dependency compilation reads include assets while dormant runtime paths remain constants", () => {
+  assert.deepEqual(
+    compiledRustReads(
+      'const PATH: &str = "tests/_fixtures/davinci-baseline.json"; // include_str!("tests/_fixtures/davinci-baseline.json")',
+    ),
+    [],
+  );
+  assert.deepEqual(
+    compiledRustReads(
+      'const DATA: &[u8] = include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../tests/_fixtures/davinci-baseline.json"));',
+    ),
+    ["tests/_fixtures/davinci-baseline.json"],
+  );
+});
 
 await test("every script, import and literal fixture read of the canonical jobs selects the corpus", () => {
   const scriptPattern = /\b(?:node|rust-script)\s+((?:tools|tests)\/[\w./-]+\.(?:mjs|ts|rs))/g;
@@ -163,7 +242,7 @@ await test("every fixture the observer test binaries read selects the corpus", (
     const directory = posix.dirname(entry);
     const name = posix.basename(entry);
     return [
-      `${entry}.rs`,
+      exists(`${entry}.rs`) ? `${entry}.rs` : `${entry}/main.rs`,
       ...tracked(`${directory}/${name}`),
       ...tracked(`${directory}/${name}_support`),
       ...(name === "davinci_pug_corpus" ? tracked(`${directory}/support`) : []),

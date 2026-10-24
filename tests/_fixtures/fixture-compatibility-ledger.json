@@ -1085,7 +1085,7 @@
         "membership": "ecosystem"
       },
       "evidence": {
-        "file": "tools/support/davinci/corpus.rs",
+        "file": "tools/commands/davinci/davinci_corpus.rs",
         "selector": "\"typechecker\": [\"exitCode\", \"stderr\", \"stdout\", \"typecheckerCoverage\"]"
       }
     },

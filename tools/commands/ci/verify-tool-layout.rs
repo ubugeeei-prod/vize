@@ -4,6 +4,7 @@
 //! edition = "2024"
 //! [dependencies]
 //! syn = { version = "=2.0.117", features = ["full"] }
+//! serde_json = "1"
 //! ```
 
 use std::{
@@ -18,6 +19,10 @@ const LEGACY_COMMAND_MARKER: &str = concat!("legacy", "_command");
 const TOOL_HOST_MARKER: &str = "tool_host";
 
 fn main() -> ExitCode {
+    let args = env::args().skip(1).collect::<Vec<_>>();
+    if args.first().is_some_and(|arg| arg == "--module-closure") {
+        return print_module_closure(&args[1..]);
+    }
     match verify() {
         Ok(count) => {
             println!("rust-script tools: verified {count} Rust Script commands");
@@ -28,6 +33,50 @@ fn main() -> ExitCode {
                 eprintln!("rust-script tools: {error}");
             }
             ExitCode::from(1)
+        }
+    }
+}
+
+fn print_module_closure(paths: &[String]) -> ExitCode {
+    let root = match repo_root() {
+        Ok(root) => root,
+        Err(error) => {
+            eprintln!("{error}");
+            return ExitCode::FAILURE;
+        }
+    };
+    let mut modules = BTreeSet::new();
+    let mut errors = Vec::new();
+    for path in paths {
+        if Path::new(path).is_absolute()
+            || Path::new(path)
+                .components()
+                .any(|part| matches!(part, std::path::Component::ParentDir))
+        {
+            errors.push(format!("expected repository-relative module root: {path}"));
+            continue;
+        }
+        visit_module(&root.join(path), true, &mut modules, &mut errors);
+    }
+    if !errors.is_empty() {
+        for error in errors {
+            eprintln!("{error}");
+        }
+        return ExitCode::FAILURE;
+    }
+    let mut paths = modules
+        .iter()
+        .map(|path| normalize_relative(&root, path))
+        .collect::<Vec<_>>();
+    paths.sort();
+    match serde_json::to_string(&paths) {
+        Ok(json) => {
+            println!("{json}");
+            ExitCode::SUCCESS
+        }
+        Err(error) => {
+            eprintln!("{error}");
+            ExitCode::FAILURE
         }
     }
 }

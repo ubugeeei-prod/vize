@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { sha256 } from "./manifest.mjs";
+import { currentSourcePath } from "../../tools/support/source-layout-relocations.ts";
 import { validateRootCommentSnapshotTransition } from "./formatter-root-comment-reference.ts";
 import { resolvePreservedLayoutSource } from "./formatter-history-layout-artifact.ts";
 import {
@@ -103,7 +104,7 @@ export function retainedFormatterFunction(bytes: Buffer, name: string) {
 }
 
 function sourceBytes(root: string, relative: string) {
-  const resolved = fs.realpathSync(path.resolve(root, relative));
+  const resolved = fs.realpathSync(path.resolve(root, currentSourcePath(relative)));
   const contained = path.relative(fs.realpathSync(root), resolved);
   assert(contained && !contained.startsWith("..") && !path.isAbsolute(contained));
   return fs.readFileSync(resolved);

@@ -4,6 +4,8 @@
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use crate::support::corsa_requirement;
+#[cfg(feature = "legacy")]
+use crate::support::vite_config;
 
 use std::path::{Path, PathBuf};
 use std::process::Command;

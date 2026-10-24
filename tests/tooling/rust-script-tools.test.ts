@@ -57,6 +57,22 @@ test("ordinary tool modules must be reachable and resolve without ambiguity", ()
     fs.mkdirSync(path.join(commands, "nested"));
     fs.writeFileSync(path.join(commands, "nested/type.rs"), "");
     assert.equal(verify(fixture).status, 0);
+    const closure = spawnSync(
+      "rust-script",
+      [
+        path.join(root, "tools/commands/ci/verify-tool-layout.rs"),
+        "--module-closure",
+        "tools/commands/main.rs",
+      ],
+      { cwd: fixture, encoding: "utf8" },
+    );
+    assert.equal(closure.status, 0, closure.stderr);
+    assert.deepEqual(JSON.parse(closure.stdout), [
+      "tools/commands/main.rs",
+      "tools/commands/nested/type.rs",
+      "tools/commands/support.rs",
+      "tools/commands/support/child.rs",
+    ]);
     fs.writeFileSync(path.join(commands, "orphan.rs"), "fn main() {}\n");
     const orphan = verify(fixture);
     assert.equal(orphan.status, 1);

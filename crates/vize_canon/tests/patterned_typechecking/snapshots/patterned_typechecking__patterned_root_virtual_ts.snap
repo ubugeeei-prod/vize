@@ -1,5 +1,5 @@
 ---
-source: crates/vize_canon/tests/patterned_typechecking/main.rs
+source: crates/vize_canon/tests/patterned_typechecking.rs
 expression: code
 ---
 /// <reference lib="es2022" />

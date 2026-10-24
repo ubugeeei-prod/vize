@@ -1,5 +1,5 @@
 ---
-source: crates/vize_atelier_ssr/tests/vue_ssr_render/main.rs
+source: crates/vize_atelier_ssr/tests/vue_ssr_render.rs
 expression: code
 ---
 import { ssrRenderComponent as _ssrRenderComponent, ssrRenderSlot as _ssrRenderSlot } from "@vue/server-renderer"

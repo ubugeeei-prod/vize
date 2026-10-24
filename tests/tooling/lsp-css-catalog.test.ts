@@ -170,7 +170,7 @@ test("complete pinned CSS metadata and colors match compiled Rust and reproduce 
       [
         "--edition=2024",
         "-Dwarnings",
-        "tools/commands/fixtures/css-catalog-custody.rs",
+        "crates/vize_maestro/src/ide/style/css_catalog_custody.rs",
         "-o",
         executable,
       ],

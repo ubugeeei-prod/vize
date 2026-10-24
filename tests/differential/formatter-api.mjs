@@ -16,6 +16,7 @@ import {
 import { sha256 } from "./manifest.mjs";
 import { resolvePreservedFormatterSource } from "./formatter-history-source-artifact.ts";
 import { validateObserverReceipt } from "./formatter-api-build.mjs";
+import { currentSourcePath } from "../../tools/support/source-layout-relocations.ts";
 import {
   assertFormatterError,
   configuredFormatterOptions,
@@ -36,7 +37,7 @@ const APIS = {
 function immutableArtifact(root, artifact) {
   assert.equal(typeof artifact.path, "string");
   assert(!path.isAbsolute(artifact.path));
-  const resolved = fs.realpathSync(path.resolve(root, artifact.path));
+  const resolved = fs.realpathSync(path.resolve(root, currentSourcePath(artifact.path)));
   const relative = path.relative(fs.realpathSync(root), resolved);
   assert(relative && !relative.startsWith("..") && !path.isAbsolute(relative));
   assert.match(artifact.sha256, /^[a-f0-9]{64}$/);

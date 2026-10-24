@@ -1,6 +1,7 @@
 // #7866 qualifies one authored current reference. The original captured bytes
 // and their strict comparison remain observable; they are never rewritten.
 import assert from "node:assert/strict";
+import { currentSourcePath } from "../../tools/support/source-layout-relocations.ts";
 import fs from "node:fs";
 import path from "node:path";
 import { sha256 } from "./manifest.mjs";
@@ -75,13 +76,17 @@ export function validateDeclarationSnapshotAuthority(root: string) {
     authority.source.originalSha256,
     "8e13635eab09e08a32282d372ef5379c22210cc4117fbccf05d164df76233a61",
   );
-  const source = fs.readFileSync(path.join(root, authority.source.path));
+  const source = fs.readFileSync(path.join(root, currentSourcePath(authority.source.path)));
   assert.equal(
     sha256(retainedFormatterFunction(source, authority.function)),
     authority.source.functionSha256,
   );
-  const historical = fs.readFileSync(path.join(root, authority.historicalSnapshot.path));
-  const current = fs.readFileSync(path.join(root, authority.currentSnapshot.path));
+  const historical = fs.readFileSync(
+    path.join(root, currentSourcePath(authority.historicalSnapshot.path)),
+  );
+  const current = fs.readFileSync(
+    path.join(root, currentSourcePath(authority.currentSnapshot.path)),
+  );
   assert.equal(
     sha256(historical),
     authority.historicalSnapshot.sha256,

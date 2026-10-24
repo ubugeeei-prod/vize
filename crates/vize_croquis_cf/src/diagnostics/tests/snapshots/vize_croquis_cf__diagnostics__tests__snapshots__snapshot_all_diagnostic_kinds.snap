@@ -1,5 +1,5 @@
 ---
-source: crates/vize_croquis_cf/src/diagnostics/tests/snapshots.rs
+source: crates/vize_croquis_cf/src/diagnostics/diagnostics_tests/snapshots.rs
 expression: output
 ---
 === All Diagnostic Kinds ===

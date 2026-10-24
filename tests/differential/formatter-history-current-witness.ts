@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { sha256 } from "./manifest.mjs";
+import { currentSourcePath } from "../../tools/support/source-layout-relocations.ts";
 import { validateDeclarationSnapshotAuthority } from "./formatter-declaration-reference.ts";
 import { validateExpressionWidthWitness } from "./formatter-expression-width-witness.ts";
 import {
@@ -130,7 +131,7 @@ export function validateCurrentFormatterWitness(root: string, entry: any, name: 
     validateDeclarationSnapshotAuthority(root);
   }
   if (validatePreservedFormatterWitness(root, entry, name)) return;
-  const bytes = fs.readFileSync(path.join(root, entry.path));
+  const bytes = fs.readFileSync(path.join(root, currentSourcePath(entry.path)));
   const actual = sha256(bytes);
   const owner = Object.hasOwn(OWNERS, entry.path) ? OWNERS[entry.path]! : undefined;
   if (owner) {
