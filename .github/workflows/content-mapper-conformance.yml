@@ -102,6 +102,7 @@ jobs:
           cargo test -p vize --test integration -- content_mapper_tsgo_cli::unknown_options_10218:: --nocapture
           cargo test -p vize --test integration -- content_mapper_tsgo_cli::generic_constructor_slots:: --nocapture
           cargo test -p vize --test integration -- content_mapper_tsgo_cli::long_prop_kebab_case:: --nocapture
+          cargo test -p vize --test integration -- content_mapper_tsgo_cli::pug_refusal:: --nocapture
       - name: Observe original unknown option native oracle twice
         continue-on-error: true
         env:

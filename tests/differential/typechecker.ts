@@ -89,6 +89,7 @@ export const TYPECHECKER_TESTS = {
   "native-expect-error-10413": "vue3_native_expectations_preserve_strict_ownership",
   "generic-constructor-slots-10416": "generic_constructor_intersections_preserve_slot_payloads",
   "long-prop-kebab-case-10423": "long_prop_keys_preserve_static_and_async_listener_diagnostics",
+  "pug-refusal-10430": "pug_and_jade_preprocessing_errors_preserve_authored_diagnostics",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
@@ -154,6 +155,7 @@ const sourceRevisions = {
   "native-expect-error-10413": "b005ad1279cc17a2da628e4d7459a0cb9f65dbe7",
   "generic-constructor-slots-10416": "036b1a34364c3568b8f19d4dad7479aadcff9860",
   "long-prop-kebab-case-10423": "d8849fab885cb40b9516889a464549fd29af3f92",
+  "pug-refusal-10430": "101ab5b229aea9b8819b1d8c5cb5f7b4345e964c",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 
 export type Artifact = { path: string; sha256: string };
@@ -303,7 +305,7 @@ const contract = {
 };
 const matchedContract = "batch-start-diagnostics-v1";
 const unbaselinedFields = ["diagnostics[].blockType", "exitCode", "success"];
-const dialectOrder = ["vue3-sfc", "html-template", "js", "ts", "jsx", "tsx"];
+const dialectOrder = ["vue3-sfc", "pug-template", "html-template", "js", "ts", "jsx", "tsx"];
 
 function typecheckerDialectCoverage(
   root: string,
@@ -315,7 +317,13 @@ function typecheckerDialectCoverage(
     const file = input.file.toLowerCase();
     if (file.endsWith(".vue")) {
       dialects.add("vue3-sfc");
-      if (/<template(?:\s|>)/i.test(source)) dialects.add("html-template");
+      if (
+        /<template\b[^>]*\blang\s*=\s*(?:"(?:pug|jade)"|'(?:pug|jade)'|(?:pug|jade)(?:\s|>))/i.test(
+          source,
+        )
+      ) {
+        dialects.add("pug-template");
+      } else if (/<template(?:\s|>)/i.test(source)) dialects.add("html-template");
       for (const match of source.matchAll(/<script\b([^>]*)>/gi)) {
         const attributes = match[1];
         if (/\blang\s*=\s*["']tsx["']/i.test(attributes)) dialects.add("tsx");

@@ -24,6 +24,10 @@ struct PugBlockView {
 
 #[cfg(not(feature = "native"))]
 impl PugBlockView {
+    fn source(&self) -> &str {
+        &self.source
+    }
+
     fn to_host(&self, start: u32, end: u32) -> (u32, u32) {
         (start, end)
     }
@@ -34,9 +38,12 @@ pub(crate) struct AuthoredSfc<'a> {
     view: Option<SfcView>,
 }
 
+#[cfg(not(feature = "native"))]
+type SfcView = PugBlockView;
+
+#[cfg(feature = "native")]
 enum SfcView {
     Derived(PugBlockView),
-    #[cfg(feature = "native")]
     Refused {
         source: vize_l0::String,
         diagnostics: Vec<vize_l0::diag::Diagnostic>,
@@ -44,6 +51,7 @@ enum SfcView {
     },
 }
 
+#[cfg(feature = "native")]
 impl SfcView {
     fn source(&self) -> &str {
         match self {
@@ -202,7 +210,10 @@ fn pug_view(source: &str) -> Option<SfcView> {
     if template.src.is_some() || !pug {
         return None;
     }
-    match PugBlockView::new(source, template.loc.start..template.loc.end) {
+    match vize_l0::profile!(
+        "canon.sfc.pug.lower",
+        PugBlockView::new(source, template.loc.start..template.loc.end)
+    ) {
         Ok(view) => Some(SfcView::Derived(view)),
         Err(refused) => {
             let mut masked = vize_l0::String::with_capacity(source.len());

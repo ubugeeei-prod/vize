@@ -17,6 +17,7 @@ mod incomplete_tags;
 mod javascript_check_js;
 mod long_prop_kebab_case;
 mod props_binding;
+mod pug_refusal;
 mod template_expression_syntax;
 mod type_only_import_use;
 mod unknown_options_10218;

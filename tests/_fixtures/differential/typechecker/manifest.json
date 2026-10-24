@@ -5178,6 +5178,68 @@
         ]
       },
       "diagnostics": []
+    },
+    {
+      "id": "typechecker/pug-refusal-10430/refused-jade-with-valid-pug-sibling",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "pug-refusal-10430",
+      "case": "refused-jade-with-valid-pug-sibling",
+      "test": "pug_and_jade_preprocessing_errors_preserve_authored_diagnostics",
+      "regressionCommit": "101ab5b229aea9b8819b1d8c5cb5f7b4345e964c",
+      "sourceRevision": "101ab5b229aea9b8819b1d8c5cb5f7b4345e964c",
+      "packReference": {
+        "path": "pug-refusal-10430/cases.json",
+        "sha256": "98fd2f52f59304b8dbeb08796d0d23920b36960c6184d6209f018922f62cb6ef"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "pug-refusal-10430/tsconfig.json.txt",
+          "sha256": "84a3b17ec45db2dd4857db9eb2ee1ce78d7e0960c095c51de9e7dfb9fdf4c5b3"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "pug-refusal-10430/src/App.vue.txt",
+          "sha256": "68e1b6b99c716928527c3a36e7118fb0d146f46c1b53664877f838b0048ac0fe"
+        },
+        {
+          "file": "src/Invalid.vue",
+          "path": "pug-refusal-10430/src/Invalid.vue.txt",
+          "sha256": "4bae77032a7b25e7b108fb484560f05e672b7f1aec22c7dcd4078fbaf7282830"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "pug-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": [
+        {
+          "file": "src/Invalid.vue",
+          "line": 3,
+          "column": 1,
+          "severity": 1,
+          "code": null,
+          "message": "pug `include` is not supported in Vue templates: it links other pug files at build time"
+        }
+      ]
     }
   ]
 }
