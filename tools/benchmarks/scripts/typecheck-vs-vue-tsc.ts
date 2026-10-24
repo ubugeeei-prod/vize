@@ -34,19 +34,39 @@ const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", ".
 const STAGES = ["collect", "imports", "gen", "corsa"] as const;
 type Stage = (typeof STAGES)[number];
 
-interface Tool {
+export interface Tool {
   label: string;
   kind: "vize" | "vue-tsc";
   bin: string;
   env: Record<string, string>;
 }
 
-interface Sample {
+type Phase = "cold" | "warmup" | "warm";
+
+export interface InvocationEvidence {
+  project: string;
+  tool: string;
+  phase: Phase;
+  cwd: string;
+  bin: string;
+  args: string[];
+  status: number | null;
+  signal: string | null;
+  stdout: string;
+  stderr: string;
+  error?: string;
+}
+
+export interface Sample {
+  phase: Phase;
   cold: boolean;
   wall: number;
   cpu: number;
   stages: Partial<Record<Stage, number>>;
   diagnostics: string[];
+  status: number;
+  diagnosticsClassified: boolean;
+  invocation?: number;
 }
 
 function seconds(text: string): number {
@@ -94,7 +114,13 @@ function shellQuote(value: string) {
   return `'${value.replaceAll("'", "'\\''")}'`;
 }
 
-function measure(tool: Tool, project: BenchProject, cold: boolean): Sample {
+export function measure(
+  tool: Tool,
+  project: BenchProject,
+  phase: Phase,
+  retain?: (evidence: InvocationEvidence) => number,
+): Sample {
+  const cold = phase === "cold";
   const args =
     tool.kind === "vize"
       ? ["check", "--no-config", "--tsconfig", project.tsconfig]
@@ -116,9 +142,24 @@ function measure(tool: Tool, project: BenchProject, cold: boolean): Sample {
     timeout: 1_800_000,
   });
   if (home) rmSync(home, { recursive: true, force: true });
+  // Persist before validation too: a failed tool must leave its complete output.
+  const invocation = retain?.({
+    project: project.id,
+    tool: tool.label,
+    phase,
+    cwd: project.cwd,
+    bin: tool.bin,
+    args,
+    status: result.status,
+    signal: result.signal,
+    stdout: result.stdout ?? "",
+    stderr: result.stderr ?? "",
+    error: result.error?.message,
+  });
   const output = stripVTControlCharacters(`${result.stdout}\n${result.stderr}`);
   const timing = /__tcbench ([\d.]+) ([\d.]+) ([\d.]+)/u.exec(output);
-  if (!timing || ![0, 1, 2].includes(result.status ?? -1)) {
+  const status = result.status;
+  if (!timing || status === null || ![0, 1, 2].includes(status)) {
     throw new Error(
       `${tool.label} failed on ${project.id} (${result.status}):\n${output.slice(-4000)}`,
     );
@@ -131,11 +172,15 @@ function measure(tool: Tool, project: BenchProject, cold: boolean): Sample {
     throw new Error(`${tool.label} printed no summary on ${project.id}:\n${output.slice(-4000)}`);
   }
   return {
+    phase,
     cold,
     wall: Number(timing[1]),
     cpu: Number(timing[2]) + Number(timing[3]),
     stages: tool.kind === "vize" ? vizeStages(output) : {},
     diagnostics,
+    status,
+    diagnosticsClassified: status === 0 ? diagnostics.length === 0 : diagnostics.length > 0,
+    invocation,
   };
 }
 
@@ -158,35 +203,60 @@ function multisetDiff(left: string[], right: string[]) {
   return { missing, extra: [...counts.values()].reduce((sum, count) => sum + count, 0) };
 }
 
-interface ProjectResult {
+export interface ProjectResult {
   project: string;
   tools: {
     label: string;
     kind: Tool["kind"];
     warm: { wall: number; minWall: number; cpu: number; stages: Partial<Record<Stage, number>> };
     cold?: { wall: number; cpu: number };
-    samples: Omit<Sample, "diagnostics">[];
+    samples: Sample[];
     errors: number;
     /** Against the vue-tsc row: findings it reports that this row does not, and the reverse. */
     vsVueTsc?: { missing: number; extra: number };
     stable: boolean;
+    comparison?: "coarse-match" | "mismatch" | "unstable" | "unclassified" | "unverified";
   }[];
 }
 
-function summarize(
+export function summarize(
   project: BenchProject,
   tools: Tool[],
   samples: Map<string, Sample[]>,
 ): ProjectResult {
   const baseline = tools.find((tool) => tool.kind === "vue-tsc");
-  const baselineKeys = baseline ? samples.get(baseline.label)?.[0]?.diagnostics : undefined;
+  const baselineRows = baseline ? (samples.get(baseline.label) ?? []) : [];
+  const firstMeasured = (rows: Sample[]) => rows.find((row) => row.phase !== "warmup");
+  const baselineKeys = firstMeasured(baselineRows)?.diagnostics;
+  const stable = (rows: Sample[]) => {
+    const first = rows[0];
+    return (
+      first !== undefined &&
+      rows.every(
+        (row) =>
+          row.status === first.status &&
+          row.diagnostics.join("\n") === first.diagnostics.join("\n"),
+      )
+    );
+  };
   return {
     project: project.id,
     tools: tools.map((tool) => {
       const rows = samples.get(tool.label) ?? [];
-      const warm = rows.filter((row) => !row.cold);
+      const warm = rows.filter((row) => row.phase === "warm");
       const cold = rows.filter((row) => row.cold);
-      const keys = rows[0]?.diagnostics ?? [];
+      const keys = firstMeasured(rows)?.diagnostics ?? [];
+      const difference =
+        baselineKeys && tool !== baseline ? multisetDiff(baselineKeys, keys) : undefined;
+      const comparison = !baselineKeys
+        ? "unverified"
+        : !stable(rows) || !stable(baselineRows)
+          ? "unstable"
+          : ![...rows, ...baselineRows].every((row) => row.diagnosticsClassified)
+            ? "unclassified"
+            : difference && (difference.missing > 0 || difference.extra > 0)
+              ? "mismatch"
+              : "coarse-match";
       return {
         label: tool.label,
         kind: tool.kind,
@@ -204,10 +274,11 @@ function summarize(
         cold: cold.length
           ? { wall: median(cold.map((row) => row.wall)), cpu: median(cold.map((row) => row.cpu)) }
           : undefined,
-        samples: rows.map(({ diagnostics: _, ...row }) => row),
+        samples: rows,
         errors: keys.length,
-        vsVueTsc: baselineKeys && tool !== baseline ? multisetDiff(baselineKeys, keys) : undefined,
-        stable: rows.every((row) => row.diagnostics.join("\n") === keys.join("\n")),
+        vsVueTsc: difference,
+        stable: stable(rows),
+        comparison: tool === baseline ? undefined : comparison,
       };
     }),
   };
@@ -216,14 +287,16 @@ function summarize(
 const fmt = (value: number | undefined) =>
   value === undefined || Number.isNaN(value) ? "–" : `${value.toFixed(2)}s`;
 
-function markdown(results: ProjectResult[], meta: Record<string, string>) {
+export function markdown(results: ProjectResult[], meta: Record<string, string>) {
   const lines = [
     "## vize check vs vue-tsc",
     "",
     ...Object.entries(meta).map(([key, value]) => `- ${key}: ${value}`),
     "",
-    "| project | tool | warm wall (median / min) | cold wall | CPU | collect / imports / gen / corsa | errors | vs vue-tsc (missing / extra) |",
-    "| --- | --- | ---: | ---: | ---: | --- | ---: | ---: |",
+    "Diagnostic comparison uses file, line and code; columns and messages remain in the raw invocation evidence. A coarse match does not establish full diagnostic parity.",
+    "",
+    "| project | tool | warm wall (median / min) | cold wall | CPU | collect / imports / gen / corsa | errors | vs vue-tsc (coarse missing / extra) | comparison |",
+    "| --- | --- | ---: | ---: | ---: | --- | ---: | ---: | --- |",
   ];
   for (const result of results) {
     for (const tool of result.tools) {
@@ -231,7 +304,7 @@ function markdown(results: ProjectResult[], meta: Record<string, string>) {
         tool.kind === "vize" ? STAGES.map((stage) => fmt(tool.warm.stages[stage])).join(" / ") : "";
       const parity = tool.vsVueTsc ? `${tool.vsVueTsc.missing} / ${tool.vsVueTsc.extra}` : "";
       lines.push(
-        `| ${result.project} | ${tool.label} | ${fmt(tool.warm.wall)} / ${fmt(tool.warm.minWall)} | ${fmt(tool.cold?.wall)} | ${fmt(tool.warm.cpu)} | ${stages} | ${tool.errors}${tool.stable ? "" : " (unstable)"} | ${parity} |`,
+        `| ${result.project} | ${tool.label} | ${fmt(tool.warm.wall)} / ${fmt(tool.warm.minWall)} | ${fmt(tool.cold?.wall)} | ${fmt(tool.warm.cpu)} | ${stages} | ${tool.errors}${tool.stable ? "" : " (unstable)"} | ${parity} | ${tool.comparison ?? ""} |`,
       );
     }
   }
@@ -290,19 +363,38 @@ function main() {
   const warmups = Number(values.warmups);
   const coldRuns = Number(values["cold-runs"]);
   const results: ProjectResult[] = [];
+  const invocations: InvocationEvidence[] = [];
+  const meta = Object.fromEntries(
+    [
+      `host=${os.platform()}-${os.arch()}, ${os.availableParallelism()} usable cores`,
+      `runs=${runs} warm after ${warmups} warmup, ${coldRuns} cold`,
+      ...(values.meta ?? []),
+    ].map((entry) => entry.split(/=(.*)/su) as [string, string]),
+  );
+  const writeEvidence = () => {
+    if (values.json)
+      writeFileSync(values.json, `${JSON.stringify({ meta, results, invocations }, null, 2)}\n`);
+  };
+  const retain = (evidence: InvocationEvidence) => {
+    const index = invocations.push(evidence) - 1;
+    writeEvidence();
+    return index;
+  };
   for (const project of projects) {
     const samples = new Map(tools.map((tool) => [tool.label, [] as Sample[]]));
     const rotate = (round: number) =>
       tools.map((_, index) => tools[(index + round) % tools.length]);
     for (let round = 0; round < coldRuns; round++) {
-      for (const tool of rotate(round)) samples.get(tool.label)?.push(measure(tool, project, true));
+      for (const tool of rotate(round))
+        samples.get(tool.label)?.push(measure(tool, project, "cold", retain));
     }
     for (let round = 0; round < warmups; round++) {
-      for (const tool of tools) measure(tool, project, false);
+      for (const tool of tools)
+        samples.get(tool.label)?.push(measure(tool, project, "warmup", retain));
     }
     for (let round = 0; round < runs; round++) {
       for (const tool of rotate(round)) {
-        const sample = measure(tool, project, false);
+        const sample = measure(tool, project, "warm", retain);
         samples.get(tool.label)?.push(sample);
         console.error(
           `${project.id} ${tool.label} ${sample.cold ? "cold" : "warm"} ${sample.wall.toFixed(2)}s`,
@@ -311,17 +403,10 @@ function main() {
     }
     results.push(summarize(project, tools, samples));
   }
-  const meta = Object.fromEntries(
-    [
-      `host=${os.platform()}-${os.arch()}, ${os.availableParallelism()} usable cores`,
-      `runs=${runs} warm after ${warmups} warmup, ${coldRuns} cold`,
-      ...(values.meta ?? []),
-    ].map((entry) => entry.split(/=(.*)/su) as [string, string]),
-  );
   const report = markdown(results, meta);
   process.stdout.write(report);
   if (values.out) writeFileSync(values.out, report);
-  if (values.json) writeFileSync(values.json, `${JSON.stringify({ meta, results }, null, 2)}\n`);
+  writeEvidence();
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) main();

@@ -33,6 +33,7 @@ on:
     paths:
       - .github/workflows/typecheck-vs-vue-tsc.yml
       - tools/benchmarks/scripts/typecheck-vs-vue-tsc*.ts
+      - tests/tooling/typecheck-vs-vue-tsc-evidence.test.ts
   schedule:
     - cron: "23 4 * * 3"
 
@@ -73,6 +74,9 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: "package.json", package-manager-cache: false }
+
+      - name: Validate measurement evidence contracts
+        run: node --test tests/tooling/typecheck-vs-vue-tsc-evidence.test.ts
 
       - name: Build this commit
         run: |
