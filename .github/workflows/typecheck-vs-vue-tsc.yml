@@ -12,6 +12,10 @@ on:
         description: Space-separated project ids (registry typecheckPerformance ids or synthetic-workspace)
         required: true
         default: "synthetic-workspace misskey"
+      synthetic_components:
+        description: Application SFCs in the synthetic workspace (at least 2)
+        required: true
+        default: "200"
       compare_ref:
         description: Optional branch or SHA built as an extra row
         required: false
@@ -52,6 +56,7 @@ env:
   RUNS: ${{ inputs.runs || '3' }}
   COLD_RUNS: ${{ inputs.cold_runs || '1' }}
   CPUS: ${{ inputs.cpus || '8' }}
+  SYNTHETIC_COMPONENTS: ${{ inputs.synthetic_components || '200' }}
 
 jobs:
   bench:
@@ -114,7 +119,7 @@ jobs:
           while read -r name version; do args+=(--meta "$name=$version"); done < "$RUNNER_TEMP/tools/versions.txt"
           taskset -c "0-$((CPUS - 1))" node tools/benchmarks/scripts/typecheck-vs-vue-tsc.ts "${args[@]}" \
             --vue-tsc "$tools/.bin/vue-tsc" --vue "$tools/vue" --typescript "$tools/typescript" \
-            --runs "$RUNS" --warmups 1 --cold-runs "$COLD_RUNS" \
+            --runs "$RUNS" --warmups 1 --cold-runs "$COLD_RUNS" --synthetic-components "$SYNTHETIC_COMPONENTS" \
             --fixtures-dir "$RUNNER_TEMP/projects" \
             --meta "head=$(git rev-parse HEAD)" --meta "event=$GITHUB_SHA" --meta "cpus=$CPUS" \
             --out typecheck-vs-vue-tsc.md --json typecheck-vs-vue-tsc.json

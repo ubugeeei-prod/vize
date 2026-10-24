@@ -1,5 +1,13 @@
 import assert from "node:assert/strict";
-import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  chmodSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import os from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -12,6 +20,8 @@ import {
   type Sample,
   type Tool,
 } from "../../tools/benchmarks/scripts/typecheck-vs-vue-tsc.ts";
+
+import { prepareSyntheticWorkspace } from "../../tools/benchmarks/scripts/typecheck-vs-vue-tsc-projects.ts";
 
 const oracle: Tool = { label: "vue-tsc", kind: "vue-tsc", bin: "/unused", env: {} };
 const vize: Tool = { label: "vize", kind: "vize", bin: "/unused", env: {} };
@@ -187,4 +197,35 @@ test("matching findings are explicitly coarse and a missing oracle stays unverif
     summarize(project, [vize], new Map([[vize.label, [sample(keys)]]])).tools[0]!.comparison,
     "unverified",
   );
+});
+
+test("scaled workspaces retain the planted oracle and reject vacuous or fractional shapes", () => {
+  const root = mkdtempSync(join(os.tmpdir(), "vize-scaled-workspace-"));
+  try {
+    for (const count of [0, 1, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY]) {
+      assert.throws(() => prepareSyntheticWorkspace(root, {}, count), /integer of at least two/);
+    }
+    const vue = join(root, "vue"),
+      typescript = join(root, "typescript");
+    mkdirSync(vue);
+    mkdirSync(typescript);
+    writeFileSync(join(vue, "package.json"), '{"name":"vue","version":"0.0.0"}');
+    writeFileSync(join(typescript, "package.json"), '{"name":"typescript","version":"0.0.0"}');
+    const project = prepareSyntheticWorkspace(root, { vue, typescript }, 3);
+    assert.deepEqual(readdirSync(join(project.cwd, "src/components")).sort(), [
+      "Component0.vue",
+      "Component1.vue",
+      "Component2.vue",
+    ]);
+    assert.match(
+      readFileSync(join(project.cwd, "src/Planted.vue"), "utf8"),
+      /const count: number = "planted"/,
+    );
+    assert.match(
+      readFileSync(join(project.cwd, "src/Planted.vue"), "utf8"),
+      /import Child from "\.\/components\/Component1\.vue"/,
+    );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });

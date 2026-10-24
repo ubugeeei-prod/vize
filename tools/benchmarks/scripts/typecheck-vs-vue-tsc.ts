@@ -344,6 +344,7 @@ function main() {
       runs: { type: "string", default: "5" },
       warmups: { type: "string", default: "1" },
       "cold-runs": { type: "string", default: "0" },
+      "synthetic-components": { type: "string", default: "200" },
       "fixtures-dir": { type: "string", default: join(repoRoot, "target", "typecheck-vs-vue-tsc") },
       vue: { type: "string" },
       typescript: { type: "string" },
@@ -356,7 +357,11 @@ function main() {
   const fixturesDir = resolve(values["fixtures-dir"]);
   const projects = (values.project ?? [SYNTHETIC_ID]).map((id) =>
     id === SYNTHETIC_ID
-      ? prepareSyntheticWorkspace(fixturesDir, { vue: values.vue, typescript: values.typescript })
+      ? prepareSyntheticWorkspace(
+          fixturesDir,
+          { vue: values.vue, typescript: values.typescript },
+          Number(values["synthetic-components"]),
+        )
       : prepareRealProject(repoRoot, id, fixturesDir),
   );
   const runs = Number(values.runs);
@@ -368,6 +373,7 @@ function main() {
     [
       `host=${os.platform()}-${os.arch()}, ${os.availableParallelism()} usable cores`,
       `runs=${runs} warm after ${warmups} warmup, ${coldRuns} cold`,
+      `syntheticComponents=${values["synthetic-components"]}`,
       ...(values.meta ?? []),
     ].map((entry) => entry.split(/=(.*)/su) as [string, string]),
   );

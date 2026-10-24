@@ -20,6 +20,7 @@ use super::imports_package_routes::sort_package_route_bindings;
 use super::path_cache::CanonicalPathCache;
 
 mod cache;
+mod deferred;
 mod registration;
 use registration::non_relative_import_needs_virtual_registration;
 mod resolution;
@@ -484,51 +485,13 @@ pub(super) fn collect_transitive_local_imports_with_session(
             .insert(file, Some(occurrences));
     }
 
-    let reaches_materialized_source = reachability_graph.reaches_materialized_source();
-    for pending in deferred_workspace_routes {
-        let source_paths = pending
-            .route
-            .all_source_paths()
-            .into_iter()
-            .cloned()
-            .collect::<Vec<_>>();
-        let needs_registration = pending.route.requires_workspace_source_shadow()
-            || source_paths
-                .iter()
-                .any(|path| reaches_materialized_source.contains(path));
-        if !needs_registration {
-            continue;
-        }
-        if !pending.package_graph && registered.insert(pending.importer_path.clone()) {
-            registrations.push(pending.importer_path.clone());
-        }
-        let positive_roots = source_paths
-            .iter()
-            .filter(|path| reaches_materialized_source.contains(*path))
-            .cloned()
-            .collect::<Vec<_>>();
-        let package_sources = reachability_graph.reachable_files(positive_roots);
-        let mut route = pending.route;
-        let before = route.dependency_paths.len();
-        route.dependency_paths.extend(
-            package_sources
-                .into_iter()
-                .filter(|path| path.starts_with(&route.package_root)),
-        );
-        if route.dependency_paths.len() != before {
-            route.dependency_paths.sort();
-            route.dependency_paths.dedup();
-        }
-        package_routes.push(PackageRouteBinding {
-            importer_path: pending.importer_path,
-            specifier: pending.specifier,
-            occurrence_mode: pending.occurrence_mode,
-            context: pending.context,
-            route: Some(route),
-            invalidation_paths: pending.invalidation_paths,
-            shared_invalidation_paths: Vec::new(),
-        });
-    }
+    deferred::complete_routes(
+        &reachability_graph,
+        deferred_workspace_routes,
+        &mut registered,
+        &mut registrations,
+        &mut package_routes,
+    );
 
     sort_package_route_bindings(&mut package_routes);
     TransitiveLocalImports {

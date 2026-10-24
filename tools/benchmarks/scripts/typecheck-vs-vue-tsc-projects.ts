@@ -118,9 +118,12 @@ const count: number = "planted";
 export function prepareSyntheticWorkspace(
   fixturesDir: string,
   links: { vue?: string; typescript?: string },
+  components = DEFAULT_SHAPE.appComponents,
 ): BenchProject {
+  if (!Number.isSafeInteger(components) || components < 2)
+    throw new Error("synthetic component count must be an integer of at least two");
   const root = resolve(fixturesDir, SYNTHETIC_ID);
-  const app = generateWorkspace(root, DEFAULT_SHAPE, links);
+  const app = generateWorkspace(root, { ...DEFAULT_SHAPE, appComponents: components }, links);
   writeFileSync(join(app, "src", "Planted.vue"), PLANTED);
   return { id: SYNTHETIC_ID, cwd: app, tsconfig: "tsconfig.json" };
 }
