@@ -1897,6 +1897,57 @@
           }
         ]
       }
+    },
+    {
+      "id": "linter/retained-projection-10440",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "retained-projection-10440",
+        "files": [
+          {
+            "path": "Parent.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "771a9d40813fb5fee120e72a89191e0915c8f5295525080306ed313bd6f4fdde"
+          },
+          {
+            "path": "Repaired.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "366ce5621efb9c157a3229ef836dbad66943d03ce1a9a38447ec61a7865cbd5e"
+          },
+          {
+            "path": "Other.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "67bb0bfde4b97d3efc8314bdf472192bfff12c0cb24588b4b5a8e7fde9c95bdc"
+          },
+          {
+            "path": "Third.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "c3b042468ebcb6052ba31f9ab234f5ffb771b8b3256727b0ed76c4c6c80094e4"
+          },
+          {
+            "path": "Child.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "10743d2cec26a076415670743089e98a20688a7f709011c513d6381754634f67"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "pug-template"
+            ],
+            "selector": "pinned original, repaired and interleaved SFCs; real session tests compare complete diagnostics"
+          }
+        ]
+      }
     }
   ]
 }

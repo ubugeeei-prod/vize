@@ -1,0 +1,2 @@
+<script setup lang="ts">// 別 😀
+import Child from './Child.vue'; async function save(): Promise<void> {} save();</script><template><div /></template>

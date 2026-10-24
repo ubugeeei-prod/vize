@@ -37,13 +37,13 @@ fn revisits_keep_complete_lint_diagnostics_through_edits_and_preprocessors() {
     let root = case_dir("revisit-lint-😀");
     std::fs::create_dir_all(&root).unwrap();
     std::fs::write(root.join("package.json"), "{}").unwrap();
-    std::fs::write(root.join("Child.vue"), "<script setup lang=\"ts\">defineProps<{ label: string }>()</script><template><span /></template>").unwrap();
+    std::fs::write(root.join("Child.vue"), CHILD).unwrap();
     let filename = root.join("Parent.vue");
     let filename = filename.to_str().unwrap();
     let other = root.join("Other.vue");
     let third = root.join("Third.vue");
-    let other_source = "<script setup lang=\"ts\">async function save(): Promise<void> {} save();</script><template><div /></template>";
-    let third_source = "<script setup lang=\"ts\">// 別 😀\nimport Child from './Child.vue'; async function save(): Promise<void> {} save();</script><template><div /></template>";
+    let other_source = OTHER;
+    let third_source = THIRD;
     for (lang, template) in [
         ("html", "<div />"),
         ("pug", "div"),
@@ -58,10 +58,14 @@ fn revisits_keep_complete_lint_diagnostics_through_edits_and_preprocessors() {
                     "type/no-floating-promises".into(),
                     "type/strict-boolean-expressions".into(),
                 ]));
-            let source = format!("<script setup lang=\"ts\">\n// 日本語 😀\nimport Child from './Child.vue';\nasync function save(): Promise<void> {{}}\nsave();\nconst flag: object = {{}};\nif (flag) {{}}\n</script>\n<template lang=\"{lang}\">\n{template}\n</template>\n").replace('\n', newline);
-            let repaired = source
-                .replace("\nsave();", "\nvoid save();")
-                .replace("if (flag)", "if (Boolean(flag))");
+            let template = format!("<template lang=\"{lang}\">\n{template}\n</template>");
+            let adapt = |source: &str| {
+                source
+                    .replace("<template>\n<div />\n</template>", &template)
+                    .replace('\n', newline)
+            };
+            let source = adapt(PARENT);
+            let repaired = adapt(REPAIRED);
             let first = linter.lint_sfc(&source, filename);
             let rules: Vec<_> = first.diagnostics.iter().map(|d| d.rule_name).collect();
             assert_eq!(rules.len(), 2, "{lang} {newline:?}: {first:?}");
@@ -146,3 +150,24 @@ fn failed_refresh_does_not_cache_a_new_projection() {
     session.close();
     std::fs::remove_dir_all(root).unwrap();
 }
+
+const PARENT: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/linter/retained-projection-10440/Parent.vue.txt"
+));
+const REPAIRED: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/linter/retained-projection-10440/Repaired.vue.txt"
+));
+const OTHER: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/linter/retained-projection-10440/Other.vue.txt"
+));
+const THIRD: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/linter/retained-projection-10440/Third.vue.txt"
+));
+const CHILD: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/linter/retained-projection-10440/Child.vue.txt"
+));
