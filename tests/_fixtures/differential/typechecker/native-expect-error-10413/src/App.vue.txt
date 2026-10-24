@@ -1,0 +1,9 @@
+<template>
+  <!-- @vue-expect-error -->
+  <div foo="owned"></div>
+
+  <!-- @vue-expect-error -->
+  <div class="known"></div>
+
+  <div ordinary="permissive"></div>
+</template>

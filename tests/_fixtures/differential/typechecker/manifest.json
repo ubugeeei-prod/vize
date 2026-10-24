@@ -5015,6 +5015,53 @@
         ]
       },
       "diagnostics": []
+    },
+    {
+      "id": "typechecker/native-expect-error-10413/strict-owned-and-ordinary-permissive",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "native-expect-error-10413",
+      "case": "strict-owned-and-ordinary-permissive",
+      "test": "vue3_native_expectations_preserve_strict_ownership",
+      "regressionCommit": "b005ad1279cc17a2da628e4d7459a0cb9f65dbe7",
+      "sourceRevision": "b005ad1279cc17a2da628e4d7459a0cb9f65dbe7",
+      "packReference": {
+        "path": "native-expect-error-10413/cases.json",
+        "sha256": "66936749bd4a0eea81f0ddf019dc1592a1166d913ed51d2d3c323961716dbdf5"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "native-expect-error-10413/tsconfig.json.txt",
+          "sha256": "f9f47bd1b12ebcb71bea8fb598219a146cc80217cbfd5479b19a0aeb2f707933"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "native-expect-error-10413/src/App.vue.txt",
+          "sha256": "2ddec4665dd52024fe855694c0fe1e8af987c3c16b8fb2e83b7cc75836dac6ae"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
     }
   ]
 }

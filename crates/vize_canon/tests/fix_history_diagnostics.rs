@@ -433,6 +433,17 @@ fn required_prop_reports_once_with_or_without_listener() {
 }
 
 #[test]
+fn vue3_native_expectations_preserve_strict_ownership() {
+    check_pack(
+        "native-expect-error-10413",
+        "vue3_native_expectations_preserve_strict_ownership",
+        "b005ad1279cc17a2da628e4d7459a0cb9f65dbe7",
+        Some(10413),
+        &["strict-owned-and-ordinary-permissive"],
+    );
+}
+
+#[test]
 fn content_mapper_global_components_preserve_batch_acceptance() {
     check_pack(
         "content-mapper-global-component-10185",
@@ -812,7 +823,8 @@ fn check_pack(
             | "content-mapper-multiline-callback-10191"
             | "content-mapper-define-slots-typeof-10197"
             | "content-mapper-nested-vfor-guard-10216"
-            | "content-mapper-filename-globals-10190" => regression,
+            | "content-mapper-filename-globals-10190"
+            | "native-expect-error-10413" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
             }

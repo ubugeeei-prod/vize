@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ESNext",
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": []
+  },
+  "vueCompilerOptions": {
+    "target": 3,
+    "strictTemplates": true,
+    "checkUnknownProps": true
+  },
+  "include": ["src/**/*.vue"]
+}

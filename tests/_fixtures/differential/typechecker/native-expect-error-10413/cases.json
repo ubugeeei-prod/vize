@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10413,
+  "regressionCommit": "b005ad1279cc17a2da628e4d7459a0cb9f65dbe7",
+  "sourceRevision": "b005ad1279cc17a2da628e4d7459a0cb9f65dbe7",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "strict-owned-and-ordinary-permissive",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "src/App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 5,
+          "column": 3,
+          "severity": 1,
+          "code": 2578,
+          "message": "Unused '@vue-expect-error' directive."
+        }
+      ]
+    }
+  ]
+}
