@@ -36,7 +36,7 @@ const happyManifest = JSON.parse(
   fs.readFileSync(new URL("../package.json", pathToFileURL(entries.happyDom))),
 );
 assert.equal(happyManifest.name, "happy-dom");
-assert.equal(happyManifest.version, "20.11.2");
+assert.equal(happyManifest.version, "21.0.4");
 export const providerIdentities = Object.fromEntries(
   Object.entries(entries).map(([name, entry]) => [
     name,

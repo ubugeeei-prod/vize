@@ -6,7 +6,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-await test("patched production dependencies retain genuine Nuxt Git RPC and safe Vue SSR", () => {
+await test("production dependency upgrades retain genuine Nuxt Git RPC and safe Vue SSR", () => {
   const fixture = fs.mkdtempSync(path.join(os.tmpdir(), "vize-dependency-security-"));
   const env = { ...process.env, NODE_ENV: "development", NUXT_TELEMETRY_DISABLED: "1" };
   delete env.TEST;

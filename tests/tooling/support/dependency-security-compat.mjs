@@ -11,16 +11,13 @@ assert.ok(fixture);
 const nuxtPackage = path.join(root, "npm/framework/nuxt/package.json");
 const requireNuxt = createRequire(nuxtPackage);
 const runtimeManifest = requireNuxt.resolve("nuxt/package.json");
-assert.equal(JSON.parse(fs.readFileSync(runtimeManifest)).version, "4.5.1");
+assert.equal(JSON.parse(fs.readFileSync(runtimeManifest)).version, "4.6.2");
 const requireRuntime = createRequire(runtimeManifest);
 const { resolveModulePath } = await import(pathToFileURL(requireRuntime.resolve("exsolve")).href);
 const esm = (name, from) => resolveModulePath(name, { from, conditions: ["node", "import"] });
 const nuxtEntry = esm("nuxt", nuxtPackage);
 const kitEntry = esm("@nuxt/kit", nuxtEntry);
 const devtoolsEntry = esm("@nuxt/devtools", nuxtEntry);
-const requireDevtools = createRequire(devtoolsEntry);
-const gitEntry = esm("simple-git", devtoolsEntry);
-const requireGit = createRequire(gitEntry);
 const manifest = (require, name) => {
   let directory = path.dirname(fs.realpathSync(require.resolve(name)));
   while (directory !== path.dirname(directory)) {
@@ -33,10 +30,13 @@ const manifest = (require, name) => {
   }
   throw new Error(`missing actual package manifest: ${name}`);
 };
-assert.equal(manifest(createRequire(nuxtEntry), "@nuxt/kit").version, "4.5.1");
-assert.equal(manifest(requireDevtools, "simple-git").version, "4.0.1");
-assert.equal(manifest(requireGit, "@simple-git/argv-parser").version, "2.0.1");
-assert.equal(manifest(requireGit, "@simple-git/args-pathspec").version, "1.0.4");
+assert.equal(manifest(createRequire(nuxtEntry), "@nuxt/kit").version, "4.6.2");
+const devtoolsManifest = JSON.parse(
+  fs.readFileSync(new URL("../package.json", pathToFileURL(devtoolsEntry))),
+);
+assert.equal(devtoolsManifest.name, "@nuxt/devtools");
+assert.equal(devtoolsManifest.version, "3.4.4");
+assert.equal(devtoolsManifest.dependencies?.["simple-git"], undefined);
 fs.symlinkSync(
   path.join(root, "npm/framework/nuxt/node_modules"),
   path.join(fixture, "node_modules"),
@@ -129,7 +129,6 @@ console.log(
     nuxtEntry,
     kitEntry,
     devtoolsEntry,
-    gitEntry,
     results,
     vueEntry,
     ssrEntry,

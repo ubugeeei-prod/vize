@@ -20618,11 +20618,11 @@ snapshots:
       '@vue/shared': 3.5.35
       vue: 3.5.35(typescript@6.0.3)
 
-  '@vue/server-renderer@3.5.38(vue@3.6.0-beta.10(typescript@6.0.3))':
+  '@vue/server-renderer@3.5.38(vue@3.5.38(typescript@6.0.3))':
     dependencies:
       '@vue/compiler-ssr': 3.5.38
       '@vue/shared': 3.5.38
-      vue: 3.6.0-beta.10(typescript@6.0.3)
+      vue: 3.5.38(typescript@6.0.3)
 
   '@vue/server-renderer@3.5.41':
     dependencies:
@@ -27692,7 +27692,7 @@ snapshots:
       '@vue/compiler-dom': 3.5.38
       '@vue/compiler-sfc': 3.5.38
       '@vue/runtime-dom': 3.5.38
-      '@vue/server-renderer': 3.5.38(vue@3.6.0-beta.10(typescript@6.0.3))
+      '@vue/server-renderer': 3.5.38(vue@3.5.38(typescript@6.0.3))
       '@vue/shared': 3.5.38
     optionalDependencies:
       typescript: 6.0.3
