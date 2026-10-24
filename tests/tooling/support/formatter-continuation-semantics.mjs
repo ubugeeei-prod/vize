@@ -49,7 +49,7 @@ const happyManifest = JSON.parse(
   fs.readFileSync(new URL("../package.json", pathToFileURL(happyEntry))),
 );
 assert.equal(happyManifest.name, "happy-dom");
-assert.equal(happyManifest.version, "20.11.2");
+assert.equal(happyManifest.version, "21.0.4");
 identities.happyDom = {
   entry: happyEntry,
   realEntry: fs.realpathSync(happyEntry),

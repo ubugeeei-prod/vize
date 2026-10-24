@@ -13,7 +13,7 @@ const require = createRequire(import.meta.url);
 const providerManifest = path.join(path.dirname(require.resolve("happy-dom")), "../package.json");
 const provider = JSON.parse(fs.readFileSync(providerManifest, "utf8"));
 assert.equal(provider.name, "happy-dom");
-assert.equal(provider.version, "20.11.2");
+assert.equal(provider.version, "21.0.4");
 
 for (const value of ["", "done"] as const) {
   test(`single select retains complete synchronous SSR state for ${JSON.stringify(value)}`, async () => {
@@ -62,7 +62,7 @@ for (const value of ["", "done"] as const) {
       ],
       form: [["status", value]],
     };
-    // HappyDOM20.11.2's parser uses selected-count minus one as an option index.
+    // Happy DOM 21.0.4's parser uses selected-count minus one as an option index.
     // Its auto-selected first blank + authored third selected option chooses todo.
     // This characterizes that provider, not the HTML-standard selection contract.
     const parsedExpected =

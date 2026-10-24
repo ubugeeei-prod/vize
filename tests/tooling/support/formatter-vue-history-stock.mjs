@@ -8,7 +8,7 @@ const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const packetSnapshot = (packet) => JSON.parse(JSON.stringify(packet));
 const failure = (error) => ({ message: error.message, stack: error.stack });
 export const vueHistoryArtifactSha256 =
-  "bf8c553b9fd93908061acbeb8a239a0ee945c7f59209ce25d406d53ef28a3d36";
+  "a6ed5bac22643b3cf574e8ec0059c2d2d291ab70f8de2379af56fc9e1f106826";
 const parseOptions = { pad: false, deindent: false };
 const compileOptions = { comments: true, outputSourceRange: true, whitespace: "preserve" };
 export async function createVueHistoryStockObserver(repositoryRoot) {

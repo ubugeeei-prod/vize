@@ -14,7 +14,7 @@ export async function environment7502(mode: "development" | "production") {
   const happyDom = ui.resolve("happy-dom");
   assert.equal(
     JSON.parse(readFileSync(new URL("../package.json", pathToFileURL(happyDom)), "utf8")).version,
-    "20.11.2",
+    "21.0.4",
   );
   const { Window } = await import(happyDom);
   const window = new Window();

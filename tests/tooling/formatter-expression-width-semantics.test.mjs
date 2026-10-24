@@ -29,7 +29,7 @@ assert.equal(corpus.cases.length, 16);
 const contractBytes = fs.readFileSync(path.join(fixtureRoot, "stock-contracts.json"));
 assert.equal(
   sha256(contractBytes),
-  "eb1abce7663daaddbecfe4364eae8f164ade1d30bd24f2865becdcdd36b20217",
+  "d4155ca6f762a46db78d6151a2a2846b2a8d3456666d8ef3a3d96c72f034934c",
 );
 const contracts = JSON.parse(contractBytes);
 assert.equal(contracts.schema, "vize.independent-expression-width-semantics");

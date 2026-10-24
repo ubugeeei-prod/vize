@@ -41,10 +41,10 @@
         "entrySha256": "0e7735be4e65399d20d9ea65840a0cd0eef7f935fd1b224e6c45b576be12ac13"
       },
       "happyDom": {
-        "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/happy-dom@20.11.2/node_modules/happy-dom/lib/index.js",
-        "realEntry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/happy-dom@20.11.2/node_modules/happy-dom/lib/index.js",
-        "version": "20.11.2",
-        "entrySha256": "d38c1614c3184c41b04199fe84d0e1406633414ff07f1003e675faae5628475a"
+        "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/happy-dom@21.0.4/node_modules/happy-dom/lib/index.js",
+        "realEntry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/happy-dom@21.0.4/node_modules/happy-dom/lib/index.js",
+        "version": "21.0.4",
+        "entrySha256": "ef24535de425ea58d8650fca46be1ad4ec33dc817524a500c097e5f4df1e0b00"
       }
     }
   },

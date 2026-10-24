@@ -51,9 +51,9 @@ const pins = {
   ],
   happyDom: [
     "happy-dom",
-    "20.11.2",
-    "1969a15a9c418201351abb24ed8f8d3ce4ad0d70ea521b68bee3924f075cce8b",
-    "d38c1614c3184c41b04199fe84d0e1406633414ff07f1003e675faae5628475a",
+    "21.0.4",
+    "516fdf64d51eee945fc0b5e15de4219489ec2ce8d3343f201782fe69044f5242",
+    "ef24535de425ea58d8650fca46be1ad4ec33dc817524a500c097e5f4df1e0b00",
   ],
 };
 

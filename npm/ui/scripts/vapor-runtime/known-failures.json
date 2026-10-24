@@ -2,7 +2,6 @@
   "ssr": {},
   "mount": {
     "alert-dialog": "unclassified: AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:",
-    "container": "unclassified: AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:",
     "date-range-picker-calendar": "vapor-codegen: provide/inject context lost after an earlier render failure",
     "toc": "unclassified: AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:",
     "toc-item": "unclassified: AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:",
