@@ -332,7 +332,10 @@ mod tests {
             "a refused preprocessor must not look clean"
         );
         let diagnostic = transform.diagnostics.first().unwrap();
-        assert!(diagnostic.message_text.contains("include"));
+        assert_eq!(
+            diagnostic.message_text.as_str(),
+            "pug `include` is not supported in Vue templates: it links other pug files at build time"
+        );
         assert_eq!(diagnostic.start, source.find("include").unwrap());
     }
 }

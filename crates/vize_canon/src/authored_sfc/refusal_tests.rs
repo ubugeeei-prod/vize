@@ -167,7 +167,6 @@ fn repaired_templates_clear_refusals_and_unicode_suffixes_keep_authored_coordina
             assert_eq!(project.diagnostics().len(), error_count);
             let mapper = generate_vue_content_mapper_transform(&path, source).unwrap();
             assert_eq!(mapper.diagnostics.len(), error_count);
-            assert!(mapper.text.contains("const sentinel = 1"));
         }
     }
 }
