@@ -209,7 +209,11 @@ test("title policy workflow mutates only issue and PR metadata", () => {
   assert.deepEqual(sparseCheckoutEntries, [
     ".github/actions/setup-rust-script",
     "tools/commands/ci/github/issue-pr-title-policy.rs",
+    "tools/support/Cargo.toml",
+    "tools/support/lib.rs",
     "tools/support/common.rs",
+    "tools/support/editors",
+    "tests/_fixtures/differential/lsp/template-expression-globals-8015/globals.expected.json",
   ]);
   assert.match(job, /uses:\s*dtolnay\/rust-toolchain@[0-9a-f]{40}/);
   assert.match(job, /uses:\s*\.\/\.github\/actions\/setup-rust-script/);
