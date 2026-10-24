@@ -109,26 +109,41 @@ fn repeated_routes_share_traversals_without_merging_conditions_or_package_bounda
     let mut expected = Vec::new();
     for pending in requests() {
         let name = pending.importer_path.file_stem().unwrap().to_str().unwrap();
-        let dependencies: &[&str] = match name {
-            "first" => &[
-                "/pkg/a.ts",
-                "/pkg/b.ts",
-                "/pkg/c.ts",
-                "/pkg/nested/Leaf.vue",
-                "/pkg/retained.ts",
-            ],
-            "duplicate" => &[
-                "/pkg/a.ts",
-                "/pkg/b.ts",
-                "/pkg/c.ts",
-                "/pkg/nested/Leaf.vue",
-            ],
-            "boundary" => &["/pkg/nested/Leaf.vue"],
-            "conditional" => &["/pkg/requires/Other.vue", "/pkg/requires/index.ts"],
-            "forced" => &[],
-            "negative" => continue,
-            _ => unreachable!(),
-        };
+        let expectations: &[(&str, &[&str])] = &[
+            (
+                "first",
+                &[
+                    "/pkg/a.ts",
+                    "/pkg/b.ts",
+                    "/pkg/c.ts",
+                    "/pkg/nested/Leaf.vue",
+                    "/pkg/retained.ts",
+                ],
+            ),
+            (
+                "duplicate",
+                &[
+                    "/pkg/a.ts",
+                    "/pkg/b.ts",
+                    "/pkg/c.ts",
+                    "/pkg/nested/Leaf.vue",
+                ],
+            ),
+            ("boundary", &["/pkg/nested/Leaf.vue"]),
+            (
+                "conditional",
+                &["/pkg/requires/Other.vue", "/pkg/requires/index.ts"],
+            ),
+            ("forced", &[]),
+        ];
+        if name == "negative" {
+            continue;
+        }
+        let dependencies = expectations
+            .iter()
+            .find(|(label, _)| *label == name)
+            .expect("every eligible request has a complete explicit expected closure")
+            .1;
         let mut route = pending.route;
         route.dependency_paths = paths(dependencies);
         expected.push(PackageRouteBinding {
