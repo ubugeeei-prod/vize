@@ -70,9 +70,8 @@ export function assertForgeLock(workspaceValue: unknown, lockValue: unknown): vo
     }
   }
   assert.deepEqual(forgeEdges, ["listhen@" + listhenRef]);
-  assert.equal(listhenParents.length, 2);
-  assert.ok(listhenParents.some((key) => key.startsWith("@nuxt/cli@3.37.0(")));
-  assert.ok(listhenParents.some((key) => key.startsWith("nitropack@2.13.4(")));
+  assert.equal(listhenParents.length, 1);
+  assert.ok(listhenParents[0].startsWith("nitropack@2.13.4("));
   for (const importerValue of Object.values(record(lock.importers))) {
     for (const field of ["dependencies", "devDependencies", "optionalDependencies"]) {
       for (const [name, value] of Object.entries(record(record(importerValue)[field] ?? {}))) {

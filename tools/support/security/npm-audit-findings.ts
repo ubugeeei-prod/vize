@@ -4,32 +4,9 @@ import {
   assertCleanReport,
   assertRemediatedReport,
 } from "./node-forge-proof.ts";
-import { bracesAdvisoryId, record } from "./braces-lock.ts";
+import { record } from "./braces-lock.ts";
 
 const levels = ["info", "low", "moderate", "high", "critical"];
-
-function assertBracesFinding(advisory: Record<string, unknown>): void {
-  assert.equal(advisory.github_advisory_id, bracesAdvisoryId);
-  assert.equal(advisory.module_name, "braces");
-  assert.equal(advisory.severity, "high");
-  assert.equal(advisory.url, "https://github.com/advisories/" + bracesAdvisoryId);
-  assert.equal(advisory.vulnerable_versions, "<=3.0.3");
-  assert.equal(advisory.patched_versions, null);
-  assert.ok(Array.isArray(advisory.findings) && advisory.findings.length > 0);
-  for (const value of advisory.findings) {
-    const finding = record(value);
-    assert.equal(finding.version, "3.0.3");
-    assert.equal(finding.dev, false);
-    assert.equal(finding.bundled, false);
-    assert.equal(typeof finding.optional, "boolean");
-    assert.ok(Array.isArray(finding.paths) && finding.paths.length > 0);
-    for (const trail of finding.paths)
-      assert.ok(
-        typeof trail === "string" && />(?:chokidar|micromatch)>braces$/.test(trail),
-        "new Braces audit consumer",
-      );
-  }
-}
 
 // Account for the whole original producer report before forming the single
 // Forge view consumed by its unchanged validator. The original report remains
@@ -66,15 +43,13 @@ export function assertSourceRemediatedReport(value: unknown, status: number): st
     severe
       .map(({ advisory }) => advisory.github_advisory_id)
       .sort((a, b) => String(a).localeCompare(String(b))),
-    [forgeId, bracesAdvisoryId].sort(),
+    [forgeId],
     "unreviewed moderate-or-higher set",
   );
-  assert.equal(counts.high, 2);
+  assert.equal(counts.high, 1);
   assert.equal(counts.moderate, 0);
   assert.equal(counts.critical, 0);
   const forge = severe.find(({ advisory }) => advisory.github_advisory_id === forgeId)!;
-  const braces = severe.find(({ advisory }) => advisory.github_advisory_id === bracesAdvisoryId)!;
-  assertBracesFinding(braces.advisory);
   const below = Object.fromEntries(
     Object.entries(advisories).filter(
       ([, value]) => levels.indexOf(String(record(value).severity)) < 2,

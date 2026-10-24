@@ -20,10 +20,7 @@ test("the actual frozen installation attests every Node listhen Forge instance",
   assert.ok(verifyInstalledForge(root).instances > 0);
 });
 
-for (const [name, version] of [
-  ["@nuxt/cli", "3.37.0"],
-  ["nitropack", "2.13.4"],
-]) {
+for (const [name, version] of [["nitropack", "2.13.4"]]) {
   test(
     `${name} resolves patched listhen TLS, encrypted keys and PKCS12`,
     { timeout: 30_000 },

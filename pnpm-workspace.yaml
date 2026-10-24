@@ -39,7 +39,6 @@ minimumReleaseAgeExclude:
 
 patchedDependencies:
   "@ox-content/vite-plugin@2.88.0": "patches/@ox-content__vite-plugin@2.88.0.patch"
-  "@nuxt/devtools@3.4.1": "patches/@nuxt__devtools@3.4.1.patch"
   "braces@3.0.3": "patches/braces@3.0.3.patch"
   "node-forge@1.4.0": "patches/node-forge@1.4.0.patch"
 
@@ -54,22 +53,24 @@ overrides:
   "brace-expansion@2": "2.1.2"
   # 5.0.9 is still inside GHSA-qhr7-859c-m2p7 / GHSA-6j4f-fj2g-mc7p / GHSA-q2hr-2g5m-vwhr.
   "brace-expansion@>=5.0.0 <5.0.12": "5.0.12"
+  "body-parser@>=2.0.0 <2.4.0": "2.4.0"
   defu: "6.1.7"
   devalue: "5.9.3"
-  dompurify: "3.4.13"
+  dompurify: "3.4.17"
   esbuild: "0.28.1"
-  fast-uri: "3.1.8"
+  fast-uri: "3.1.9"
   "glob>minimatch": "10.2.5"
   h3: "1.15.11"
+  "happy-dom@>=17.0.0 <=21.0.3": "21.0.4"
   hono: "4.13.11"
-  ip-address: "10.7.1"
+  ip-address: "10.7.4"
   launch-editor: "2.14.2"
   "nanoid@>=3.0.0 <3.3.17": "3.3.17"
   nanotar: "0.3.0"
   nitropack: "2.13.4"
   node-forge: "1.4.0"
   "postcss@>=8.0.0 <8.5.26": "8.5.26"
-  nuxt: "4.5.1"
+  nuxt: "4.6.2"
   qs: "6.16.0"
   "readdir-glob>minimatch": "10.2.5"
   shell-quote: "1.11.0"
@@ -86,11 +87,12 @@ overrides:
   srvx: "0.11.15"
   svgo: "4.1.0"
   tar: "7.5.21"
-  undici: "8.10.2"
+  undici: "8.12.2"
   "vite@>=7.0.0 <7.3.5": "7.3.5"
   "vite@>=8.0.0 <8.1.6": "8.1.6"
   "vite@>=8.2.0 <8.2.4": "8.2.4"
   yaml: "2.9.0"
+  "zod@>=4.0.0 <4.6.6": "4.6.6"
 
 catalogs:
   # Real @vue/babel-plugin-jsx toolchain, used only as the differential oracle
@@ -192,7 +194,7 @@ catalogs:
   # Test runners and browser automation.
   testing:
     "@playwright/test": "1.62.1"
-    happy-dom: "20.11.2"
+    happy-dom: "21.0.4"
     playwright: "1.62.1"
 
   # Lint and formatting toolchain.
