@@ -1,0 +1,11 @@
+<script setup lang="ts">
+// 日本語 😀
+import Child from './Child.vue';
+async function save(): Promise<void> {}
+void save();
+const flag: object = {};
+if (Boolean(flag)) {}
+</script>
+<template lang="pug">
+div
+</template>

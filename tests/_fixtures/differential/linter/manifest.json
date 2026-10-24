@@ -1908,14 +1908,9 @@
         "root": "retained-projection-10440",
         "files": [
           {
-            "path": "Parent.vue.txt",
+            "path": "Child.vue.txt",
             "role": "regression-reproduction",
-            "sha256": "771a9d40813fb5fee120e72a89191e0915c8f5295525080306ed313bd6f4fdde"
-          },
-          {
-            "path": "Repaired.vue.txt",
-            "role": "regression-reproduction",
-            "sha256": "366ce5621efb9c157a3229ef836dbad66943d03ce1a9a38447ec61a7865cbd5e"
+            "sha256": "10743d2cec26a076415670743089e98a20688a7f709011c513d6381754634f67"
           },
           {
             "path": "Other.vue.txt",
@@ -1923,14 +1918,39 @@
             "sha256": "67bb0bfde4b97d3efc8314bdf472192bfff12c0cb24588b4b5a8e7fde9c95bdc"
           },
           {
+            "path": "Parent.jade.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "cb86a1544b55850ec2c58bd707c757332f9a55cc972ec52890ab48406ec29051"
+          },
+          {
+            "path": "Parent.pug.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "f74850d8291888f12d312be74a0a94122cbee1517bc50c01ba15e28f09ebade3"
+          },
+          {
+            "path": "Parent.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "771a9d40813fb5fee120e72a89191e0915c8f5295525080306ed313bd6f4fdde"
+          },
+          {
+            "path": "Repaired.jade.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "8f453a8498195212ee48977adab500d056f1623dfcec311ce54a8acbce42a88e"
+          },
+          {
+            "path": "Repaired.pug.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "211d7a26e8e4e4422496517d48df5504593409fb5c3a314c1e68565b8deeb3b7"
+          },
+          {
+            "path": "Repaired.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "366ce5621efb9c157a3229ef836dbad66943d03ce1a9a38447ec61a7865cbd5e"
+          },
+          {
             "path": "Third.vue.txt",
             "role": "regression-reproduction",
             "sha256": "c3b042468ebcb6052ba31f9ab234f5ffb771b8b3256727b0ed76c4c6c80094e4"
-          },
-          {
-            "path": "Child.vue.txt",
-            "role": "regression-reproduction",
-            "sha256": "10743d2cec26a076415670743089e98a20688a7f709011c513d6381754634f67"
           }
         ]
       },
@@ -1942,9 +1962,11 @@
             "kind": "source-inspection",
             "dialects": [
               "vue3-sfc",
-              "pug-template"
+              "pug-template",
+              "html-template",
+              "ts"
             ],
-            "selector": "pinned original, repaired and interleaved SFCs; real session tests compare complete diagnostics"
+            "selector": "linter manifest pinned authored sources"
           }
         ]
       }

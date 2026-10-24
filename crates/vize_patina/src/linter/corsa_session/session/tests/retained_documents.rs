@@ -44,12 +44,22 @@ fn revisits_keep_complete_lint_diagnostics_through_edits_and_preprocessors() {
     let third = root.join("Third.vue");
     let other_source = OTHER;
     let third_source = THIRD;
-    for (lang, template) in [
-        ("html", "<div />"),
-        ("pug", "div"),
-        ("PUG", "div"),
-        ("jade", "div"),
-        ("JADE", "div"),
+    for (lang, from, parent, repaired) in [
+        ("html", "<template>", PARENT, REPAIRED),
+        ("pug", "<template lang=\"pug\">", PARENT_PUG, REPAIRED_PUG),
+        ("PUG", "<template lang=\"pug\">", PARENT_PUG, REPAIRED_PUG),
+        (
+            "jade",
+            "<template lang=\"jade\">",
+            PARENT_JADE,
+            REPAIRED_JADE,
+        ),
+        (
+            "JADE",
+            "<template lang=\"jade\">",
+            PARENT_JADE,
+            REPAIRED_JADE,
+        ),
     ] {
         for newline in ["\n", "\r\n"] {
             let linter = Linter::with_preset(LintPreset::Opinionated)
@@ -58,14 +68,10 @@ fn revisits_keep_complete_lint_diagnostics_through_edits_and_preprocessors() {
                     "type/no-floating-promises".into(),
                     "type/strict-boolean-expressions".into(),
                 ]));
-            let template = format!("<template lang=\"{lang}\">\n{template}\n</template>");
-            let adapt = |source: &str| {
-                source
-                    .replace("<template>\n<div />\n</template>", &template)
-                    .replace('\n', newline)
-            };
-            let source = adapt(PARENT);
-            let repaired = adapt(REPAIRED);
+            let opening = format!("<template lang=\"{lang}\">");
+            let adapt = |source: &str| source.replace(from, &opening).replace('\n', newline);
+            let source = adapt(parent);
+            let repaired = adapt(repaired);
             let first = linter.lint_sfc(&source, filename);
             let original = expected(filename, vec![floating(&source), boolean(&source)]);
             assert_eq!(complete(&first), original, "{lang} {newline:?}");
@@ -193,3 +199,23 @@ fn boolean(source: &str) -> serde_json::Value {
         "start": start, "end": start + "flag".len(), "help": null, "labels": [], "fix": null,
     })
 }
+
+const PARENT_PUG: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/linter/retained-projection-10440/Parent.pug.vue.txt"
+));
+
+const REPAIRED_PUG: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/linter/retained-projection-10440/Repaired.pug.vue.txt"
+));
+
+const PARENT_JADE: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/linter/retained-projection-10440/Parent.jade.vue.txt"
+));
+
+const REPAIRED_JADE: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/linter/retained-projection-10440/Repaired.jade.vue.txt"
+));
