@@ -1120,7 +1120,7 @@ fn pug_and_jade_preprocessing_errors_preserve_authored_diagnostics() {
     check_pack(
         "pug-refusal-10430",
         "pug_and_jade_preprocessing_errors_preserve_authored_diagnostics",
-        "101ab5b229aea9b8819b1d8c5cb5f7b4345e964c",
+        "cb141dfffe07cce5d49bf6221b5d6b7ad8f5cc8e",
         Some(10430),
         &["refused-jade-with-valid-pug-sibling"],
     );

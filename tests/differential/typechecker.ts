@@ -155,7 +155,7 @@ const sourceRevisions = {
   "native-expect-error-10413": "b005ad1279cc17a2da628e4d7459a0cb9f65dbe7",
   "generic-constructor-slots-10416": "036b1a34364c3568b8f19d4dad7479aadcff9860",
   "long-prop-kebab-case-10423": "d8849fab885cb40b9516889a464549fd29af3f92",
-  "pug-refusal-10430": "101ab5b229aea9b8819b1d8c5cb5f7b4345e964c",
+  "pug-refusal-10430": "cb141dfffe07cce5d49bf6221b5d6b7ad8f5cc8e",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 
 export type Artifact = { path: string; sha256: string };

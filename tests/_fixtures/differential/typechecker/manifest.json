@@ -5192,11 +5192,11 @@
       "pack": "pug-refusal-10430",
       "case": "refused-jade-with-valid-pug-sibling",
       "test": "pug_and_jade_preprocessing_errors_preserve_authored_diagnostics",
-      "regressionCommit": "101ab5b229aea9b8819b1d8c5cb5f7b4345e964c",
-      "sourceRevision": "101ab5b229aea9b8819b1d8c5cb5f7b4345e964c",
+      "regressionCommit": "cb141dfffe07cce5d49bf6221b5d6b7ad8f5cc8e",
+      "sourceRevision": "cb141dfffe07cce5d49bf6221b5d6b7ad8f5cc8e",
       "packReference": {
         "path": "pug-refusal-10430/cases.json",
-        "sha256": "98fd2f52f59304b8dbeb08796d0d23920b36960c6184d6209f018922f62cb6ef"
+        "sha256": "8506e393c59371b3c259ccc383f37118d7afb26fba7e427c923037be11e97b3c"
       },
       "inputs": [
         {
