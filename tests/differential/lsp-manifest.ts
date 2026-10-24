@@ -121,6 +121,9 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
       requests = (expected as { position: unknown; result: unknown }[]).map(
         ({ position, result }) => ({ params: { position }, result }),
       );
+    } else if (data.method === "textDocument/documentColor") {
+      assert(Array.isArray(expected) && expected.length > 0, "complete colour vectors required");
+      requests = [{ params: {}, result: expected }];
     } else if (data.method === "textDocument/documentSymbol") {
       assert.equal(data.hierarchicalDocumentSymbols, true);
       assert(Array.isArray(expected) && expected.length === 2);

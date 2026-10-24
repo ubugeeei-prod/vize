@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "id": "lsp/regression/stylus-colors-10442",
+  "provenance": {
+    "fixCommit": "bec742b05bb6f7f5f238c43bdbd290d271d36302",
+    "witnessPath": "crates/vize_maestro/src/server/annotations/document_color/tests/indented.rs",
+    "witnessTest": "indented_styles_keep_complete_named_colour_vectors_and_authored_coordinates",
+    "inputOrigin": "indented Stylus missing named colours reproduced on the public 0.555.0 server; pinned HTML/Pug/Jade equivalents",
+    "contractOrigin": "authored declaration spans and CSS RGBA constants; Stylus 0.64.0 independently compiles the pinned style to the same five colours"
+  },
+  "files": [
+    {
+      "source": "html.vue.txt",
+      "runtimePath": "src/html.vue",
+      "sha256": "8df49a7d9e96df82bf76719b5127446900523f16c192dbf71dac3399d9c20c0e"
+    },
+    {
+      "source": "pug.vue.txt",
+      "runtimePath": "src/pug.vue",
+      "sha256": "bbf24c49a9b6d95ae3a8d9da7657f92cc4e49c9894c4e35a15efc765abc9e69b"
+    },
+    {
+      "source": "jade.vue.txt",
+      "runtimePath": "src/jade.vue",
+      "sha256": "944edb6a52224f22d6f6f2c0c91a16ac9fb028df0a6fb8eadb02c351f30d000d"
+    }
+  ],
+  "entry": "src/html.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "aed9d067d8e705fa73eb8db2ac8ef5710eb7c01d34ac13cdafce20098f08e568"
+  },
+  "method": "textDocument/documentColor",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "scope": "complete static colon-declaration colour/range vectors; no claim of complete Stylus grammar or native whole-product acceptance"
+}

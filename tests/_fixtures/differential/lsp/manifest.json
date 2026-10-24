@@ -1784,6 +1784,55 @@
           }
         ]
       }
+    },
+    {
+      "id": "lsp/regression/stylus-colors-10442",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "stylus-colors-10442",
+        "files": [
+          {
+            "path": "html.vue.txt",
+            "sha256": "8df49a7d9e96df82bf76719b5127446900523f16c192dbf71dac3399d9c20c0e"
+          },
+          {
+            "path": "pug.vue.txt",
+            "sha256": "bbf24c49a9b6d95ae3a8d9da7657f92cc4e49c9894c4e35a15efc765abc9e69b"
+          },
+          {
+            "path": "jade.vue.txt",
+            "sha256": "944edb6a52224f22d6f6f2c0c91a16ac9fb028df0a6fb8eadb02c351f30d000d"
+          }
+        ]
+      },
+      "case": {
+        "path": "stylus-colors-10442/case.json",
+        "sha256": "b40fc7f3f087bbde804882076ae524bc7b0d94caf858d4f5f3d56712aaca5d1a"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "pug-template",
+              "html-template"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }
