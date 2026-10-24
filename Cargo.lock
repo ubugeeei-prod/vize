@@ -5022,6 +5022,7 @@ dependencies = [
  "vize_atelier_core",
  "vize_atelier_sfc",
  "vize_atelier_vapor",
+ "vize_canon",
  "vize_l0",
 ]
 

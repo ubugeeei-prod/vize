@@ -10,38 +10,16 @@
 
 use std::ops::Range;
 
-#[cfg(feature = "native")]
 use vize_l1_to_l2::lower::pug::PugBlockView;
 
 use crate::sfc_typecheck::SfcTypeCheckResult;
 use crate::virtual_ts::VizeMapping;
-
-/// Without the native levels (WASM), Pug has no derived view.
-#[cfg(not(feature = "native"))]
-struct PugBlockView {
-    source: vize_l0::String,
-}
-
-#[cfg(not(feature = "native"))]
-impl PugBlockView {
-    fn source(&self) -> &str {
-        &self.source
-    }
-
-    fn to_host(&self, start: u32, end: u32) -> (u32, u32) {
-        (start, end)
-    }
-}
 
 pub(crate) struct AuthoredSfc<'a> {
     authored: &'a str,
     view: Option<SfcView>,
 }
 
-#[cfg(not(feature = "native"))]
-type SfcView = PugBlockView;
-
-#[cfg(feature = "native")]
 enum SfcView {
     Derived(PugBlockView),
     Refused {
@@ -51,12 +29,10 @@ enum SfcView {
     },
 }
 
-#[cfg(feature = "native")]
 impl SfcView {
     fn source(&self) -> &str {
         match self {
             Self::Derived(view) => &view.source,
-            #[cfg(feature = "native")]
             Self::Refused { source, .. } => source,
         }
     }
@@ -64,13 +40,11 @@ impl SfcView {
     fn to_host(&self, start: u32, end: u32) -> (u32, u32) {
         match self {
             Self::Derived(view) => view.to_host(start, end),
-            #[cfg(feature = "native")]
             Self::Refused { .. } => (start, end),
         }
     }
 }
 
-#[cfg(feature = "native")]
 pub(crate) struct AuthoredTemplateError<'a> {
     pub(crate) message: &'a str,
     pub(crate) start: u32,
@@ -91,7 +65,6 @@ impl<'a> AuthoredSfc<'a> {
     }
 
     /// Proven lowering errors, borrowed directly from the shared frontend.
-    #[cfg(feature = "native")]
     pub(crate) fn preprocessing_errors(&self) -> impl Iterator<Item = AuthoredTemplateError<'_>> {
         let (diagnostics, offset) = match &self.view {
             Some(SfcView::Refused {
@@ -190,12 +163,6 @@ impl<'a> AuthoredSfc<'a> {
 
 /// The derived view of an inline `<template lang="pug">`, if the SFC has one
 /// the lowering accepts.
-#[cfg(not(feature = "native"))]
-fn pug_view(_source: &str) -> Option<SfcView> {
-    None
-}
-
-#[cfg(feature = "native")]
 fn pug_view(source: &str) -> Option<SfcView> {
     // Cheap gate: only sources that mention pug or jade pay for the SFC parse.
     if !mentions_pug_language(source) {
@@ -235,7 +202,6 @@ fn pug_view(source: &str) -> Option<SfcView> {
     }
 }
 
-#[cfg(feature = "native")]
 fn mentions_pug_language(source: &str) -> bool {
     source
         .as_bytes()

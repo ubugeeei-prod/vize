@@ -22,5 +22,9 @@ serde.workspace = true
 toml.workspace = true
 pklrust.workspace = true
 
+[dev-dependencies]
+# Keep this consumer independent of Canon's native-only test helpers.
+vize_canon.workspace = true
+
 [lints]
 workspace = true

@@ -21,7 +21,6 @@ native = [
   "dep:futures",
   "dep:vize_l1",
   "dep:vize_l2",
-  "dep:vize_l1_to_l2",
   "dep:vize_l4",
 ]
 # Opt-in legacy Vue (v0.10 / v0.11 / v1 / v2) type-checking surface. Not enabled by the
@@ -45,7 +44,8 @@ vize_atelier_sfc.workspace = true
 # L2 template expressions, projected through the L4 document (P4-5b).
 vize_l1 = { workspace = true, optional = true }
 vize_l2 = { workspace = true, optional = true }
-vize_l1_to_l2 = { workspace = true, optional = true }
+# The same Pug/Jade frontend is used by native and portable checking.
+vize_l1_to_l2.workspace = true
 vize_l4 = { workspace = true, optional = true }
 
 # OXC for parsing and AST manipulation (import rewriting)

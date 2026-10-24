@@ -1,0 +1,6 @@
+<script setup lang="ts">
+const value: number = 1;
+</script>
+<template lang="pug">
+p {{ value }}
+</template>

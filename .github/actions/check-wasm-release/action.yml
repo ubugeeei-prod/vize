@@ -16,3 +16,6 @@ runs:
     - name: Check the release WASM crate without the native feature
       shell: bash
       run: node tools/support/tasks/build-vize-wasm-package.ts --check
+    - name: Test Canon through a consumer without native test dependencies
+      shell: bash
+      run: cargo test --locked -p vize_test_runner --test portable_canon

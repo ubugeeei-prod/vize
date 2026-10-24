@@ -1,0 +1,7 @@
+<!-- 日本 🧭 -->
+<template lang="JADE">
+include portable.pug
+</template>
+<script setup lang="ts">
+const sentinel: number = 1;
+</script>
