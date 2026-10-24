@@ -116,11 +116,12 @@ jobs:
             --vue-tsc "$tools/.bin/vue-tsc" --vue "$tools/vue" --typescript "$tools/typescript" \
             --runs "$RUNS" --warmups 1 --cold-runs "$COLD_RUNS" \
             --fixtures-dir "$RUNNER_TEMP/projects" \
-            --meta "head=$GITHUB_SHA" --meta "cpus=$CPUS" \
+            --meta "head=$(git rev-parse HEAD)" --meta "event=$GITHUB_SHA" --meta "cpus=$CPUS" \
             --out typecheck-vs-vue-tsc.md --json typecheck-vs-vue-tsc.json
           cat typecheck-vs-vue-tsc.md >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
         with:
           name: typecheck-vs-vue-tsc
           path: |

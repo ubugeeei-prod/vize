@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
-import { chmodSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
+import { parse as parseYaml } from "yaml";
 
 import {
   markdown,
@@ -16,6 +17,26 @@ import {
 const oracle: Tool = { label: "vue-tsc", kind: "vue-tsc", bin: "/unused", env: {} };
 const vize: Tool = { label: "vize", kind: "vize", bin: "/unused", env: {} };
 const project = { id: "fixture", cwd: "/unused", tsconfig: "tsconfig.json" };
+
+test("Actions retains partial evidence after failure and records the source actually checked out", () => {
+  const workflow = parseYaml(
+    readFileSync(
+      new URL("../../.github/workflows/typecheck-vs-vue-tsc.yml", import.meta.url),
+      "utf8",
+    ),
+  ) as {
+    jobs: { bench: { steps: Array<{ name?: string; uses?: string; if?: string; run?: string }> } };
+  };
+  const steps = workflow.jobs.bench.steps;
+  assert.equal(
+    steps.find((step) => step.uses?.startsWith("actions/upload-artifact@"))?.if,
+    "always()",
+  );
+  assert.match(
+    steps.find((step) => step.name === "Measure")?.run ?? "",
+    /--meta "head=\$\(git rev-parse HEAD\)"/,
+  );
+});
 
 function sample(
   diagnostics: string[],
