@@ -1,8 +1,9 @@
 //! Current owner tokens preserve arbitrary names without changing historical pages.
 
 use vize_l0::dump::{Dump, Mode};
+use vize_l0::key::ArtifactKey;
 use vize_l0::{Span, String};
-use vize_l2::dump::{Component, Element, Op, Page};
+use vize_l2::dump::{Attribute, Component, Element, Op, Page};
 use vize_l2::op::Namespace;
 
 fn pages(name: &str) -> Vec<Page> {
@@ -99,4 +100,34 @@ fn malformed_quoted_names_keep_exact_error_locations() {
             assert_eq!((error.line, error.message.as_str()), (5, message));
         }
     }
+}
+
+#[test]
+fn an_owner_name_cannot_collide_with_a_real_attached_attribute() {
+    let named = pages("Foo @0:99\n  attr injected").remove(0);
+    let attached = Page {
+        ops: vec![Op::Component(Component {
+            name: String::from("Foo"),
+            attributes: vec![Attribute {
+                name: String::from("injected"),
+                value: None,
+                span: Span::new(0, 99),
+            }],
+            bindings: vec![],
+            children: vec![],
+            span: Span::new(0, 99),
+        })],
+    };
+    assert_ne!(named, attached);
+    // Retain the original wire collision as evidence; historical pages have
+    // no artifact-key producer. Current bytes and keys must distinguish it.
+    let historical =
+        |page| vize_l2::dump::historical::v1::Page::from_current(page).print_to_string(Mode::Full);
+    assert_eq!(historical(named.clone()), historical(attached.clone()));
+    assert_ne!(
+        named.print_to_string(Mode::Full),
+        attached.print_to_string(Mode::Full)
+    );
+    assert_ne!(ArtifactKey::of(&named, 0), ArtifactKey::of(&attached, 0));
+    assert_eq!(Page::parse(&named.print_to_string(Mode::Full)), Ok(named));
 }

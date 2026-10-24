@@ -170,8 +170,8 @@ fn text_page(value: &str, span: Span) -> Page {
 }
 
 #[test]
-fn recipe3_preserves_relative_offsets_and_before_base_injectivity() {
-    assert_eq!(<Page as KeyedArtifact>::SCHEMA_VERSION, 3);
+fn recipe4_preserves_relative_offsets_and_before_base_injectivity() {
+    assert_eq!(<Page as KeyedArtifact>::SCHEMA_VERSION, 4);
     assert_eq!(
         ArtifactKey::of(&tree(0), 0),
         ArtifactKey::of(&tree(128), 128)
