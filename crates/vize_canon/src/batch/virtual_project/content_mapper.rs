@@ -255,6 +255,16 @@ pub fn generate_vue_content_mapper_transform_with_options(
         diagnostics: diagnostics
             .iter()
             .map(|diagnostic| generated_diagnostic(content, diagnostic))
+            .chain(authored.preprocessing_errors().map(|error| {
+                let (start, length) =
+                    checked_source_span(content, error.start as usize, error.end as usize);
+                ContentMapperDiagnostic {
+                    message_text: error.message.into(),
+                    start,
+                    length,
+                    code: CONTENT_MAPPER_SFC_PARSE_ERROR_CODE,
+                }
+            }))
             .collect(),
         text: code,
     })

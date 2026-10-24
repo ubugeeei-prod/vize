@@ -101,6 +101,9 @@ pub(crate) fn generate_vue_document_virtual_ts_with_options_and_alias_resolver(
     alias_resolver: Option<crate::batch::import_rewriter_alias::AliasSpecifierResolver<'_>>,
 ) -> CorsaResult<VueDocumentVirtualTs> {
     let authored = crate::authored_sfc::AuthoredSfc::new(content);
+    if let Some(error) = authored.preprocessing_errors().next() {
+        return Err(CorsaError::SfcParse(error.message.into()));
+    }
     let content = authored.analyzed();
     let descriptor = parse_sfc(
         content,

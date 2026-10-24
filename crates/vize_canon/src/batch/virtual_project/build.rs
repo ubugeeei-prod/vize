@@ -192,6 +192,19 @@ pub(super) fn build_vue_registered_file(
         (diagnostic.line, diagnostic.column) =
             authored.to_authored_line_column(diagnostic.line, diagnostic.column);
     }
+    for error in authored.preprocessing_errors() {
+        let (line, column) =
+            vize_l0::line_index::offset_to_line_col(authored_content, error.start as usize);
+        diagnostics.push(Diagnostic {
+            file: path.to_path_buf(),
+            line,
+            column,
+            message: error.message.into(),
+            code: None,
+            severity: 1,
+            block_type: Some(crate::batch::SfcBlockType::Template),
+        });
+    }
     let (rewritten, stars) = profile!(
         "canon.import.rewrite.vue",
         context

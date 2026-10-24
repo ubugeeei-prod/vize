@@ -5,8 +5,8 @@
 //! template (`PugBlockView`, the lane the compiler and linter use), so its
 //! attribute and directive expressions are checked exactly like HTML ones.
 //! Every position Canon reports for the analyzed text goes back through
-//! [`AuthoredSfc::to_authored`]; a template the Pug lowering refuses keeps the
-//! authored text.
+//! [`AuthoredSfc::to_authored`]. A refused template retains its lowering errors
+//! and a blank, byte-preserving body so unrelated script checking can continue.
 
 use std::ops::Range;
 
@@ -31,7 +31,42 @@ impl PugBlockView {
 
 pub(crate) struct AuthoredSfc<'a> {
     authored: &'a str,
-    view: Option<PugBlockView>,
+    view: Option<SfcView>,
+}
+
+enum SfcView {
+    Derived(PugBlockView),
+    #[cfg(feature = "native")]
+    Refused {
+        source: vize_l0::String,
+        diagnostics: Vec<vize_l0::diag::Diagnostic>,
+        body_start: u32,
+    },
+}
+
+impl SfcView {
+    fn source(&self) -> &str {
+        match self {
+            Self::Derived(view) => &view.source,
+            #[cfg(feature = "native")]
+            Self::Refused { source, .. } => source,
+        }
+    }
+
+    fn to_host(&self, start: u32, end: u32) -> (u32, u32) {
+        match self {
+            Self::Derived(view) => view.to_host(start, end),
+            #[cfg(feature = "native")]
+            Self::Refused { .. } => (start, end),
+        }
+    }
+}
+
+#[cfg(feature = "native")]
+pub(crate) struct AuthoredTemplateError<'a> {
+    pub(crate) message: &'a str,
+    pub(crate) start: u32,
+    pub(crate) end: u32,
 }
 
 impl<'a> AuthoredSfc<'a> {
@@ -44,9 +79,28 @@ impl<'a> AuthoredSfc<'a> {
 
     /// The text Canon parses and generates virtual TypeScript from.
     pub(crate) fn analyzed(&self) -> &str {
-        self.view
-            .as_ref()
-            .map_or(self.authored, |view| view.source.as_str())
+        self.view.as_ref().map_or(self.authored, SfcView::source)
+    }
+
+    /// Proven lowering errors, borrowed directly from the shared frontend.
+    #[cfg(feature = "native")]
+    pub(crate) fn preprocessing_errors(&self) -> impl Iterator<Item = AuthoredTemplateError<'_>> {
+        let (diagnostics, offset) = match &self.view {
+            Some(SfcView::Refused {
+                diagnostics,
+                body_start,
+                ..
+            }) => (diagnostics.as_slice(), *body_start),
+            _ => (&[][..], 0),
+        };
+        diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.severity() == vize_l0::diag::Severity::Error)
+            .map(move |diagnostic| AuthoredTemplateError {
+                message: &diagnostic.message,
+                start: offset + diagnostic.span.start,
+                end: offset + diagnostic.span.end,
+            })
     }
 
     /// Whether the analyzed text differs from the authored text.
@@ -117,7 +171,7 @@ impl<'a> AuthoredSfc<'a> {
             return (line, column);
         };
         let Some(offset) =
-            vize_l0::line_index::LineIndex::new(&view.source).line_col_to_offset(line, column)
+            vize_l0::line_index::LineIndex::new(view.source()).line_col_to_offset(line, column)
         else {
             return (line, column);
         };
@@ -129,12 +183,12 @@ impl<'a> AuthoredSfc<'a> {
 /// The derived view of an inline `<template lang="pug">`, if the SFC has one
 /// the lowering accepts.
 #[cfg(not(feature = "native"))]
-fn pug_view(_source: &str) -> Option<PugBlockView> {
+fn pug_view(_source: &str) -> Option<SfcView> {
     None
 }
 
 #[cfg(feature = "native")]
-fn pug_view(source: &str) -> Option<PugBlockView> {
+fn pug_view(source: &str) -> Option<SfcView> {
     // Cheap gate: only sources that mention pug or jade pay for the SFC parse.
     if !mentions_pug_language(source) {
         return None;
@@ -148,7 +202,26 @@ fn pug_view(source: &str) -> Option<PugBlockView> {
     if template.src.is_some() || !pug {
         return None;
     }
-    PugBlockView::new(source, template.loc.start..template.loc.end).ok()
+    match PugBlockView::new(source, template.loc.start..template.loc.end) {
+        Ok(view) => Some(SfcView::Derived(view)),
+        Err(refused) => {
+            let mut masked = vize_l0::String::with_capacity(source.len());
+            masked.push_str(source.get(..template.loc.start)?);
+            for byte in source.get(template.loc.start..template.loc.end)?.bytes() {
+                masked.push(if matches!(byte, b'\r' | b'\n') {
+                    byte as char
+                } else {
+                    ' '
+                });
+            }
+            masked.push_str(source.get(template.loc.end..)?);
+            Some(SfcView::Refused {
+                source: masked,
+                diagnostics: refused.diagnostics,
+                body_start: template.loc.start as u32,
+            })
+        }
+    }
 }
 
 #[cfg(feature = "native")]
@@ -162,6 +235,9 @@ fn mentions_pug_language(source: &str) -> bool {
             .windows(4)
             .any(|window| window.eq_ignore_ascii_case(b"jade"))
 }
+
+#[cfg(all(test, feature = "native"))]
+mod refusal_tests;
 
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
 #[cfg(test)]
@@ -220,8 +296,32 @@ mod tests {
 
     #[cfg(feature = "native")]
     #[test]
-    fn refused_pug_keeps_the_authored_text() {
+    fn refused_pug_keeps_authored_errors_and_masks_only_its_template_body() {
         let source = "<template lang=\"pug\">\nmixin m\n  p x\n+m\n</template>\n";
-        assert_eq!(AuthoredSfc::new(source).analyzed(), source);
+        let sfc = AuthoredSfc::new(source);
+        assert_eq!(
+            sfc.analyzed(),
+            "<template lang=\"pug\">\n       \n     \n  \n</template>\n"
+        );
+        assert_eq!(sfc.analyzed().len(), source.len());
+        assert!(sfc.preprocessing_errors().next().is_some());
+    }
+
+    #[cfg(feature = "native")]
+    #[test]
+    fn pug_refusal_is_a_mapper_diagnostic_instead_of_a_clean_template() {
+        let source = "<template lang=\"pug\">\ninclude other.pug\n</template>\n";
+        let transform = crate::batch::generate_vue_content_mapper_transform(
+            std::path::Path::new("/project/Refused.vue"),
+            source,
+        )
+        .unwrap();
+        assert!(
+            !transform.diagnostics.is_empty(),
+            "a refused preprocessor must not look clean"
+        );
+        let diagnostic = transform.diagnostics.first().unwrap();
+        assert!(diagnostic.message_text.contains("include"));
+        assert_eq!(diagnostic.start, source.find("include").unwrap());
     }
 }

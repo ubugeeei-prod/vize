@@ -41,6 +41,18 @@ fn type_check_sfc_impl(
     let authored = crate::authored_sfc::AuthoredSfc::new(source);
     let mut result = type_check_analyzed(authored.analyzed(), options, options_api, legacy_vue2);
     authored.remap_type_check_result(&mut result);
+    #[cfg(feature = "native")]
+    for error in authored.preprocessing_errors() {
+        result.add_diagnostic(SfcTypeDiagnostic {
+            severity: SfcTypeSeverity::Error,
+            message: error.message.into(),
+            start: error.start,
+            end: error.end,
+            code: Some("pug-template-error".into()),
+            help: None,
+            related: Vec::new(),
+        });
+    }
     result
 }
 
