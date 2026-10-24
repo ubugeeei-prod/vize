@@ -838,7 +838,8 @@ fn check_pack(
             | "native-expect-error-10413"
             | "generic-constructor-slots-10416"
             | "long-prop-kebab-case-10423"
-            | "pug-refusal-10430" => regression,
+            | "pug-refusal-10430"
+            | "portable-pug-10434" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
             }
