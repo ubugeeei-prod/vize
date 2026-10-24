@@ -2,13 +2,17 @@
 //! ```cargo
 //! [package]
 //! edition = "2024"
+//! [dependencies]
+//! syn = { version = "=2.0.117", features = ["full"] }
 //! ```
 
 use std::{
+    collections::BTreeSet,
     env, fs, io,
     path::{Path, PathBuf},
     process::ExitCode,
 };
+use syn::{Item, ext::IdentExt};
 
 const LEGACY_COMMAND_MARKER: &str = concat!("legacy", "_command");
 const TOOL_HOST_MARKER: &str = "tool_host";
@@ -51,8 +55,19 @@ fn verify() -> Result<usize, Vec<String>> {
         errors.push("tool host runner source must not come back".to_string());
     }
 
+    let mut modules = BTreeSet::new();
+    let mut entrypoints = 0;
     for command in &commands {
-        verify_command(&root, command, &mut errors);
+        let path = root.join(command);
+        if fs::read_to_string(&path)
+            .is_ok_and(|source| source.starts_with("#!/usr/bin/env rust-script\n"))
+        {
+            entrypoints += 1;
+            visit_module(&path, true, &mut modules, &mut errors);
+        }
+    }
+    for command in &commands {
+        verify_command(&root, command, &modules, &mut errors);
     }
 
     for script in collect_javascript_tools(&root).map_err(|error| vec![error.to_string()])? {
@@ -60,13 +75,18 @@ fn verify() -> Result<usize, Vec<String>> {
     }
 
     if errors.is_empty() {
-        Ok(commands.len())
+        Ok(entrypoints)
     } else {
         Err(errors)
     }
 }
 
-fn verify_command(root: &Path, command: &str, errors: &mut Vec<String>) {
+fn verify_command(
+    root: &Path,
+    command: &str,
+    modules: &BTreeSet<PathBuf>,
+    errors: &mut Vec<String>,
+) {
     let path = root.join(command);
     let source = match fs::read_to_string(&path) {
         Ok(source) => source,
@@ -75,8 +95,10 @@ fn verify_command(root: &Path, command: &str, errors: &mut Vec<String>) {
             return;
         }
     };
-    if !source.starts_with("#!/usr/bin/env rust-script\n") {
-        errors.push(format!("{command} must start with a rust-script shebang"));
+    if !source.starts_with("#!/usr/bin/env rust-script\n") && !modules.contains(&path) {
+        errors.push(format!(
+            "{command} must start with a rust-script shebang or be a reachable ordinary module"
+        ));
     }
     if source.contains(LEGACY_COMMAND_MARKER) {
         errors.push(format!(
@@ -91,6 +113,82 @@ fn verify_command(root: &Path, command: &str, errors: &mut Vec<String>) {
     }
     if source.contains(&format!("{TOOL_HOST_MARKER}::Runtime::Node")) {
         errors.push(format!("{command} must not mention the Node runtime"));
+    }
+}
+
+fn visit_module(
+    path: &Path,
+    root: bool,
+    modules: &mut BTreeSet<PathBuf>,
+    errors: &mut Vec<String>,
+) {
+    if !modules.insert(path.to_path_buf()) {
+        return;
+    }
+    let source = match fs::read_to_string(path) {
+        Ok(source) => source,
+        Err(error) => {
+            errors.push(format!("cannot read {}: {error}", path.display()));
+            return;
+        }
+    };
+    let parsed = match syn::parse_file(&source) {
+        Ok(parsed) => parsed,
+        Err(error) => {
+            errors.push(format!("cannot parse {}: {error}", path.display()));
+            return;
+        }
+    };
+    let base = if root || path.file_name().is_some_and(|name| name == "mod.rs") {
+        path.parent().unwrap_or(path).to_path_buf()
+    } else {
+        path.with_extension("")
+    };
+    visit_items(&parsed.items, &base, modules, errors);
+}
+
+fn visit_items(
+    items: &[Item],
+    base: &Path,
+    modules: &mut BTreeSet<PathBuf>,
+    errors: &mut Vec<String>,
+) {
+    for item in items {
+        let Item::Mod(module) = item else {
+            continue;
+        };
+        let name = module.ident.unraw().to_string();
+        if module
+            .attrs
+            .iter()
+            .any(|attribute| attribute.path().is_ident("path"))
+        {
+            errors.push(format!(
+                "{}: {name} must use ordinary module discovery",
+                base.display()
+            ));
+            continue;
+        }
+        if let Some((_, items)) = &module.content {
+            visit_items(items, &base.join(&name), modules, errors);
+            continue;
+        }
+        let flat = base.join(format!("{name}.rs"));
+        let directory = base.join(&name).join("mod.rs");
+        match (flat.is_file(), directory.is_file()) {
+            (true, false) => visit_module(&flat, false, modules, errors),
+            (false, true) => visit_module(&directory, false, modules, errors),
+            (true, true) => errors.push(format!(
+                "ambiguous ordinary module: {} and {}",
+                flat.display(),
+                directory.display()
+            )),
+            (false, false) => errors.push(format!(
+                "missing ordinary module: {} or {}",
+                flat.display(),
+                directory.display()
+            )),
+        }
     }
 }
 

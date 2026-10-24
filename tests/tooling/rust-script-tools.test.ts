@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import os from "node:os";
+import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -14,8 +16,10 @@ test("tool command surface is Rust Script first", () => {
   assert.match(source, /collect_javascript_tools/);
   assert.match(source, /must be ported to Rust Script/);
 
-  const commands = collectFiles(path.join(root, "tools", "commands")).filter((file) =>
-    file.endsWith(".rs"),
+  const commands = collectFiles(path.join(root, "tools", "commands")).filter(
+    (file) =>
+      file.endsWith(".rs") &&
+      fs.readFileSync(file, "utf8").startsWith("#!/usr/bin/env rust-script\n"),
   );
   assert.ok(commands.length >= 40, "expected Rust Script command surface");
 
@@ -28,7 +32,66 @@ test("tool command surface is Rust Script first", () => {
     assert.doesNotMatch(text, /tool_host::Runtime::Node/, relative);
     assert.doesNotMatch(relative, /-vize\//, "editor command buckets use neutral names");
   }
+  const result = verify(root);
+  assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`);
+  assert.equal(
+    result.stdout.trim(),
+    `rust-script tools: verified ${commands.length} Rust Script commands`,
+  );
 });
+
+test("ordinary tool modules must be reachable and resolve without ambiguity", () => {
+  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), "vize-tool-modules-"));
+  const commands = path.join(fixture, "tools/commands");
+  try {
+    fs.mkdirSync(commands, { recursive: true });
+    fs.writeFileSync(path.join(fixture, "Cargo.toml"), "[workspace]\n");
+    fs.writeFileSync(path.join(fixture, "pnpm-workspace.yaml"), "packages: []\n");
+    fs.writeFileSync(
+      path.join(commands, "main.rs"),
+      '#!/usr/bin/env rust-script\nmod support;\nmod nested { mod r#type; }\nconst EXAMPLE: &str = "mod absent;";\nfn main() {}\n',
+    );
+    fs.writeFileSync(path.join(commands, "support.rs"), "mod child;\n");
+    fs.mkdirSync(path.join(commands, "support"));
+    fs.writeFileSync(path.join(commands, "support/child.rs"), "");
+    fs.mkdirSync(path.join(commands, "nested"));
+    fs.writeFileSync(path.join(commands, "nested/type.rs"), "");
+    assert.equal(verify(fixture).status, 0);
+    fs.writeFileSync(path.join(commands, "orphan.rs"), "fn main() {}\n");
+    const orphan = verify(fixture);
+    assert.equal(orphan.status, 1);
+    assert.match(
+      orphan.stderr,
+      /orphan\.rs must start with a rust-script shebang or be a reachable ordinary module/,
+    );
+    fs.rmSync(path.join(commands, "orphan.rs"));
+    fs.rmSync(path.join(commands, "support/child.rs"));
+    const missing = verify(fixture);
+    assert.equal(missing.status, 1);
+    assert.match(
+      missing.stderr,
+      /missing ordinary module: .*support\/child\.rs or .*support\/child\/mod\.rs/,
+    );
+    fs.writeFileSync(path.join(commands, "support/child.rs"), "");
+    fs.mkdirSync(path.join(commands, "support/child"));
+    fs.writeFileSync(path.join(commands, "support/child/mod.rs"), "");
+    const ambiguous = verify(fixture);
+    assert.equal(ambiguous.status, 1);
+    assert.match(
+      ambiguous.stderr,
+      /ambiguous ordinary module: .*support\/child\.rs and .*support\/child\/mod\.rs/,
+    );
+  } finally {
+    fs.rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
+function verify(cwd: string) {
+  return spawnSync("rust-script", [path.join(root, "tools/commands/ci/verify-tool-layout.rs")], {
+    cwd,
+    encoding: "utf8",
+  });
+}
 
 test("tool tree does not carry JavaScript command sources", () => {
   const javascriptTools = collectFiles(path.join(root, "tools"))
