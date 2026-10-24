@@ -1,4 +1,6 @@
 file	spelling
+crates/vize/src/commands/check/runner/diagnostics/tests.rs	@click.prevent
+crates/vize/src/commands/check/runner/diagnostics/tests.rs	@click.prevent
 crates/vize/tests/diagnostic_render/cases/markup.rs	v-on:submit.prevent
 crates/vize/tests/diagnostic_render/cases/markup.rs	v-on:keydown.enter
 crates/vize/tests/fmt_lint_agreement_cli.rs	v-on:keyup.space

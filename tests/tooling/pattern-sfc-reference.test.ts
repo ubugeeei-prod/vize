@@ -103,12 +103,14 @@ test("an invalid root header is one error at the directive", async () => {
     const diagnostics = await check(directory);
     assert.deepEqual(
       diagnostics.sort((left, right) => left.file.localeCompare(right.file)),
-      headers.map((_, index) => ({
+      headers.map((header, index) => ({
         file: `src/Header${index}.vue`,
         severity: "error",
         line: 1,
         column: "<template ".length + 1,
-        message: "v-match requires one subject expression without arguments or modifiers.",
+        message:
+          "v-match requires one subject expression without arguments or modifiers. " +
+          `(source: <template ${header}><p v-when="_"/></template>; binding: ${header.split("=")[0]})`,
       })),
     );
   } finally {
