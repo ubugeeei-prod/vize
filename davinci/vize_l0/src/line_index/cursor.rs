@@ -13,6 +13,8 @@ pub struct PositionCursor<'a> {
     requested: usize,
     consumed: usize,
     position: Position,
+    #[cfg(test)]
+    scanned_segment_bytes: usize,
 }
 
 impl<'a> PositionCursor<'a> {
@@ -22,6 +24,8 @@ impl<'a> PositionCursor<'a> {
             requested: 0,
             consumed: 0,
             position: Position::default(),
+            #[cfg(test)]
+            scanned_segment_bytes: 0,
         }
     }
 
@@ -41,6 +45,10 @@ impl<'a> PositionCursor<'a> {
             .find(|at| self.source.is_char_boundary(*at))
             .unwrap_or(self.source.len());
         let text = self.source.get(self.consumed..end).unwrap_or_default();
+        #[cfg(test)]
+        {
+            self.scanned_segment_bytes += text.len();
+        }
         let mut line_start = 0;
         for at in memchr::memchr_iter(b'\n', text.as_bytes()) {
             self.position.line += 1;
@@ -98,6 +106,8 @@ mod tests {
                 let actual: Vec<_> = offsets.clone().map(|at| cursor.position(at)).collect();
                 let expected: Vec<_> = offsets.map(|at| offset_to_position(&source, at)).collect();
                 assert_eq!(actual, expected);
+                cursor.position(source.len());
+                assert_eq!(cursor.scanned_segment_bytes, source.len());
             }
         }
     }
