@@ -1,8 +1,12 @@
 //! Native attribute names are excess-checked when `vueCompilerOptions.target`
-//! is omitted. A resolved Vue 3 target leaves those names unchecked.
+//! is omitted. A resolved Vue 3 target leaves ordinary names unchecked while
+//! preserving strict checks owned by authored expectations.
 
-use crate::virtual_ts::VizeMapping;
-use vize_carton::{String, append, is_native_tag};
+use crate::{
+    template_diagnostic_directives::{DirectivePolicy, TemplateDiagnosticDirectives},
+    virtual_ts::VizeMapping,
+};
+use vize_carton::{FxHashSet, String, append, is_native_tag};
 use vize_relief::{ExpressionNode, PropNode, RootNode, TemplateChildNode};
 
 pub(super) fn emit(
@@ -12,8 +16,31 @@ pub(super) fn emit(
     offset: u32,
     vue3_compiler_target: bool,
 ) {
+    let expected_native_owners =
+        if vue3_compiler_target && root.source.contains("@vue-expect-error") {
+            TemplateDiagnosticDirectives::for_root(root, 0)
+                .directives()
+                .iter()
+                .filter(|directive| directive.policy == DirectivePolicy::Expect)
+                .flat_map(|directive| {
+                    directive
+                        .targets
+                        .iter()
+                        .map(|range| (range.start, range.end))
+                })
+                .collect()
+        } else {
+            FxHashSet::default()
+        };
     for child in &root.children {
-        visit(ts, mappings, child, offset, vue3_compiler_target);
+        visit(
+            ts,
+            mappings,
+            child,
+            offset,
+            vue3_compiler_target,
+            &expected_native_owners,
+        );
     }
 }
 
@@ -23,6 +50,7 @@ fn visit(
     child: &TemplateChildNode<'_>,
     offset: u32,
     vue3_compiler_target: bool,
+    expected_native_owners: &FxHashSet<(usize, usize)>,
 ) {
     let TemplateChildNode::Element(element) = child else {
         return;
@@ -41,9 +69,16 @@ fn visit(
     }
     // Vue 3 accepts intrinsic names that `NativeElements` does not list.
     // An omitted target still excess-checks the name (TS2353 on the key).
+    // An authored expectation asks for vue-tsc's strict name check on only its
+    // owning element: a known name leaves it unused, while an unknown name
+    // consumes it without rejecting permissive Vue 3 attributes elsewhere.
     // Assigning the name to `never` was TS2322 and anchored the binding note
     // on a neighboring attribute.
-    if is_native_tag(element.tag) && !fragment && !vue3_compiler_target {
+    let expected_owner = expected_native_owners.contains(&(
+        element.loc.span.start as usize,
+        element.loc.span.end as usize,
+    ));
+    if is_native_tag(element.tag) && !fragment && (!vue3_compiler_target || expected_owner) {
         for prop in &element.props {
             let (name, location) = match prop {
                 PropNode::Attribute(attribute) => (attribute.name, &attribute.name_loc),
@@ -90,7 +125,14 @@ fn visit(
         }
     }
     for child in &element.children {
-        visit(ts, mappings, child, offset, vue3_compiler_target);
+        visit(
+            ts,
+            mappings,
+            child,
+            offset,
+            vue3_compiler_target,
+            expected_native_owners,
+        );
     }
 }
 

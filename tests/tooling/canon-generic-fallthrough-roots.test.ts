@@ -318,7 +318,8 @@ defineProps<{ bar: number }>();
               column: line.lastIndexOf("value") + 1,
               code: 2345,
               severity: "error",
-              message: "Argument of type 'string' is not assignable to parameter of type 'number'.",
+              message:
+                "Argument of type 'string' is not assignable to parameter of type 'number'. (source: <template><Forwarding :bar=\"1\" @click=\"value => takesNumber(value)\" /></template>)",
             },
           ]);
         }

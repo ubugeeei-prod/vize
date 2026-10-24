@@ -26,9 +26,9 @@ const TEMPLATE: &str = r#"<div class="subject-label" :style="borderStyle" x-smal
 <div cols="12" class="cards"></div>
 <Child not-a-real-prop="x" />"#;
 
-fn generate(vue3: bool) -> VirtualTsOutput {
+fn generate_template(template: &str, vue3: bool) -> VirtualTsOutput {
     let allocator = vize_carton::Allocator::new();
-    let (root, _) = vize_armature::parse(&allocator, TEMPLATE);
+    let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(SCRIPT);
     analyzer.analyze_template(&root);
@@ -48,6 +48,10 @@ fn generate(vue3: bool) -> VirtualTsOutput {
             ..Default::default()
         },
     )
+}
+
+fn generate(vue3: bool) -> VirtualTsOutput {
+    generate_template(TEMPLATE, vue3)
 }
 
 fn has_fragment(code: &str, needle: &str) -> bool {
@@ -88,6 +92,23 @@ fn vue3_check_unknown_props_accepts_intrinsic_attributes() {
         r#"Partial<__VizeNativeElement<"th">> = { "width""#,
     );
     assert_component_prop_still_checked(&output.code);
+}
+
+#[test]
+fn vue3_expectations_strictly_check_only_their_native_owner() {
+    let template = r#"<!-- @vue-expect-error --><div foo="x"></div>
+<div ordinary="x"></div>
+<!-- @vue-expect-error --><div class="ok"></div>"#;
+    let output = generate_template(template, true);
+    assert_has(
+        &output.code,
+        r#"Partial<__VizeNativeElement<"div">> = { "foo": undefined as never }"#,
+    );
+    assert_has(
+        &output.code,
+        r#"Partial<__VizeNativeElement<"div">> = { "class": undefined as never }"#,
+    );
+    assert_lacks(&output.code, "\"ordinary\"");
 }
 
 #[test]
