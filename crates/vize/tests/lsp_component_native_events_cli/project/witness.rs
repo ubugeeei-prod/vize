@@ -19,6 +19,7 @@ pub(crate) struct Witness {
     pub app_path: PathBuf,
     pub query_position: usize,
     pub historical_query_position: usize,
+    pub child_import_utf16_delta: isize,
 }
 
 pub(crate) fn create_marker(root: &Path) {
@@ -115,6 +116,8 @@ pub(crate) fn observe(root: &Path, mut record: impl FnMut(Value)) -> Witness {
     receipt["query"] = json!({ "sourceRange": [source_start, source_end], "construct": construct, "byteCursor": cursor, "utf16Position": query_position });
     let (counterfactual, historical_query_position) = historical_counterfactual(&app, construct);
     receipt["navigationPreludeCounterfactual"] = counterfactual;
+    let (import_relocation, child_import_utf16_delta) = child_import_relocation(&app, &child_path);
+    receipt["childImportRelocation"] = import_relocation;
     record(receipt);
     let parsed: Value = serde_json::from_str(&config).unwrap();
     assert_eq!(
@@ -128,12 +131,80 @@ pub(crate) fn observe(root: &Path, mut record: impl FnMut(Value)) -> Witness {
         app_path,
         query_position,
         historical_query_position,
+        child_import_utf16_delta,
     }
 }
 
 fn file(path: &Path) -> Value {
     let source = std::fs::read_to_string(path).unwrap();
     json!({ "path": path, "source": source, "sha256": super::hash(source.as_bytes()) })
+}
+
+// The reference mirror was captured under /tmp. A host's canonical temp
+// directory can have a different UTF-16 length; authenticate the exact child
+// import before accounting for that independent, source-visible relocation.
+fn child_import_relocation(app: &str, child: &Path) -> (Value, isize) {
+    let before = include_str!(
+        "../../../../../tests/_fixtures/differential/lsp/component-native-events/slot-navigation-current-source-counterfactual.txt"
+    );
+    let line = |source: &str| {
+        source
+            .lines()
+            .filter(|line| line.starts_with("import MySwitch from "))
+            .map(str::to_owned)
+            .collect::<Vec<_>>()
+    };
+    let previous = line(before);
+    let current = line(app);
+    assert_eq!(previous.len(), 1);
+    assert_eq!(current.len(), 1);
+    let previous = previous.first().unwrap();
+    let current = current.first().unwrap();
+    let literal = current
+        .strip_prefix("import MySwitch from ")
+        .unwrap()
+        .strip_suffix(';')
+        .unwrap();
+    let imported: String = serde_json::from_str(literal).unwrap();
+    assert_eq!(
+        imported.replace('\\', "/"),
+        child.to_string_lossy().replace('\\', "/")
+    );
+    let delta = isize::try_from(current.encode_utf16().count()).unwrap()
+        - isize::try_from(previous.encode_utf16().count()).unwrap();
+    (
+        json!({ "beforeLine": previous, "currentLine": current, "utf16Delta": delta }),
+        delta,
+    )
+}
+
+#[test]
+fn child_import_relocation_preserves_utf16_offsets_and_rejects_a_different_owner() {
+    let source = include_str!(
+        "../../../../../tests/_fixtures/differential/lsp/component-native-events/slot-navigation-current-source-counterfactual.txt"
+    );
+    let old = source
+        .lines()
+        .find(|line| line.starts_with("import MySwitch from "))
+        .unwrap();
+    let target = Path::new("/tmp/日本/😀/MySwitch.vue.ts");
+    let current = source.replacen(
+        old,
+        &format!(
+            "import MySwitch from {};",
+            serde_json::to_string(&target.to_str().unwrap()).unwrap()
+        ),
+        1,
+    );
+    let (_, delta) = child_import_relocation(&current, target);
+    assert_eq!(delta, -114);
+    assert!(
+        std::panic::catch_unwind(|| child_import_relocation(
+            &current,
+            Path::new("/tmp/other.vue.ts")
+        ))
+        .is_err()
+    );
 }
 
 /// UTF-16 length of the generated slot-navigation prelude that precedes the query.
