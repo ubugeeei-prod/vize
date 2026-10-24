@@ -67,46 +67,44 @@ fn revisits_keep_complete_lint_diagnostics_through_edits_and_preprocessors() {
             let source = adapt(PARENT);
             let repaired = adapt(REPAIRED);
             let first = linter.lint_sfc(&source, filename);
-            let rules: Vec<_> = first.diagnostics.iter().map(|d| d.rule_name).collect();
-            assert_eq!(rules.len(), 2, "{lang} {newline:?}: {first:?}");
-            assert!(rules.contains(&"type/no-floating-promises"), "{first:?}");
-            assert!(
-                rules.contains(&"type/strict-boolean-expressions"),
-                "{first:?}"
-            );
-            let expected = complete(&first);
+            let original = expected(filename, vec![floating(&source), boolean(&source)]);
+            assert_eq!(complete(&first), original, "{lang} {newline:?}");
             for (interleaved, interleaved_source) in [
                 (&other, other_source),
                 (&third, third_source),
                 (&other, other_source),
             ] {
                 let middle = linter.lint_sfc(interleaved_source, interleaved.to_str().unwrap());
-                assert!(
-                    !middle
-                        .diagnostics
-                        .iter()
-                        .any(|d| d.rule_name == "type/corsa-runtime"),
-                    "{middle:?}"
+                assert_eq!(
+                    complete(&middle),
+                    expected(
+                        interleaved.to_str().unwrap(),
+                        vec![floating(interleaved_source)]
+                    )
                 );
                 assert_eq!(
                     complete(&linter.lint_sfc(&source, filename)),
-                    expected,
+                    original,
                     "{lang} {newline:?}: complete diagnostics changed on revisit"
                 );
             }
             let fixed = linter.lint_sfc(&repaired, filename);
-            assert!(
-                fixed.diagnostics.is_empty(),
-                "{lang} {newline:?}: {fixed:?}"
+            assert_eq!(
+                complete(&fixed),
+                expected(filename, vec![]),
+                "{lang} {newline:?}"
             );
-            linter.lint_sfc(other_source, other.to_str().unwrap());
+            assert_eq!(
+                complete(&linter.lint_sfc(other_source, other.to_str().unwrap())),
+                expected(other.to_str().unwrap(), vec![floating(other_source)])
+            );
             assert_eq!(
                 complete(&linter.lint_sfc(&repaired, filename)),
                 complete(&fixed)
             );
             assert_eq!(
                 complete(&linter.lint_sfc(&source, filename)),
-                expected,
+                original,
                 "restoring authored source must restore its diagnostics"
             );
             Linter::finish_type_aware_lint(std::slice::from_ref(&linter), &[]);
@@ -171,3 +169,27 @@ const CHILD: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../tests/_fixtures/differential/linter/retained-projection-10440/Child.vue.txt"
 ));
+
+fn expected(filename: &str, diagnostics: Vec<serde_json::Value>) -> serde_json::Value {
+    serde_json::json!({"filename": filename, "error_count": 0, "warning_count": diagnostics.len(), "diagnostics": diagnostics})
+}
+
+fn floating(source: &str) -> serde_json::Value {
+    let start = source.rfind("save();").expect("authored floating call");
+    serde_json::json!({
+        "rule_name": "type/no-floating-promises", "severity": "warning",
+        "message": "Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        "start": start, "end": start + "save()".len(),
+        "help": "Add `await`, return the Promise, or prefix it with `void` when the fire-and-forget behavior is intentional.",
+        "labels": [], "fix": null,
+    })
+}
+
+fn boolean(source: &str) -> serde_json::Value {
+    let start = source.find("if (flag)").expect("authored object condition") + "if (".len();
+    serde_json::json!({
+        "rule_name": "type/strict-boolean-expressions", "severity": "warning",
+        "message": "Unexpected object value in conditional. An object is always truthy.",
+        "start": start, "end": start + "flag".len(), "help": null, "labels": [], "fix": null,
+    })
+}
