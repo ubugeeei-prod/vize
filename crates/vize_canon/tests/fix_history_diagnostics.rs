@@ -1125,3 +1125,14 @@ fn pug_and_jade_preprocessing_errors_preserve_authored_diagnostics() {
         &["refused-jade-with-valid-pug-sibling"],
     );
 }
+
+#[test]
+fn portable_pug_refusals_preserve_native_batch_diagnostics() {
+    check_pack(
+        "portable-pug-10434",
+        "portable_pug_refusals_preserve_native_batch_diagnostics",
+        "c2132e45d47aad595aac7e07f5e71a78b8ffd1c8",
+        Some(10434),
+        &["refused-jade-with-valid-pug-sibling"],
+    );
+}

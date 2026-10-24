@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10434,
+  "regressionCommit": "c2132e45d47aad595aac7e07f5e71a78b8ffd1c8",
+  "sourceRevision": "c2132e45d47aad595aac7e07f5e71a78b8ffd1c8",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "refused-jade-with-valid-pug-sibling",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "src/App.vue.txt"
+        },
+        {
+          "file": "src/Invalid.vue",
+          "source": "src/Invalid.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Invalid.vue",
+          "line": 3,
+          "column": 1,
+          "severity": 1,
+          "code": null,
+          "message": "pug `include` is not supported in Vue templates: it links other pug files at build time"
+        }
+      ]
+    }
+  ]
+}

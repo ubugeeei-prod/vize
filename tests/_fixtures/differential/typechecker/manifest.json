@@ -5240,6 +5240,68 @@
           "message": "pug `include` is not supported in Vue templates: it links other pug files at build time"
         }
       ]
+    },
+    {
+      "id": "typechecker/portable-pug-10434/refused-jade-with-valid-pug-sibling",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "portable-pug-10434",
+      "case": "refused-jade-with-valid-pug-sibling",
+      "test": "portable_pug_refusals_preserve_native_batch_diagnostics",
+      "regressionCommit": "c2132e45d47aad595aac7e07f5e71a78b8ffd1c8",
+      "sourceRevision": "c2132e45d47aad595aac7e07f5e71a78b8ffd1c8",
+      "packReference": {
+        "path": "portable-pug-10434/cases.json",
+        "sha256": "32432518b7841e84a778867e9f9025df73cc725c4b46fbaaafcb5f7ae54f771f"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "portable-pug-10434/tsconfig.json.txt",
+          "sha256": "84a3b17ec45db2dd4857db9eb2ee1ce78d7e0960c095c51de9e7dfb9fdf4c5b3"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "portable-pug-10434/src/App.vue.txt",
+          "sha256": "68e1b6b99c716928527c3a36e7118fb0d146f46c1b53664877f838b0048ac0fe"
+        },
+        {
+          "file": "src/Invalid.vue",
+          "path": "portable-pug-10434/src/Invalid.vue.txt",
+          "sha256": "88e3f25e6ddeabbbd827317a441ef3b265f9f4bcbafe81c37f2666f1ad0f7ac2"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "pug-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": [
+        {
+          "file": "src/Invalid.vue",
+          "line": 3,
+          "column": 1,
+          "severity": 1,
+          "code": null,
+          "message": "pug `include` is not supported in Vue templates: it links other pug files at build time"
+        }
+      ]
     }
   ]
 }
