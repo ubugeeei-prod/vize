@@ -22,7 +22,13 @@ pub(super) fn emit_module_preamble(
     }
     ts.push_str("// ========== Module Scope (imports) ==========\n");
     if !options.hoist_shared_preamble {
-        emit_embedded_helpers(ts, summary, legacy_vue2, options.dialect);
+        emit_embedded_helpers(
+            ts,
+            summary,
+            legacy_vue2,
+            options.dialect,
+            options.external_component_attrs_module,
+        );
     }
     emit_slot_payload_helpers(ts, summary, !options.hoist_shared_preamble);
 }
@@ -33,8 +39,16 @@ fn emit_embedded_helpers(
     summary: &Croquis,
     legacy_vue2: bool,
     dialect: VueVersion,
+    external_component_attrs_module: Option<&str>,
 ) {
-    ts.push_str(super::legacy_vue2::vue_type_helpers(legacy_vue2, dialect));
+    if !super::legacy_vue2::needs_legacy_vue2_helpers(legacy_vue2, dialect)
+        && external_component_attrs_module
+            == Some(crate::virtual_ts::helpers::CONTENT_MAPPER_HELPERS_MODULE)
+    {
+        ts.push_str(crate::virtual_ts::helpers::CONTENT_MAPPER_TYPE_HELPERS);
+    } else {
+        ts.push_str(super::legacy_vue2::vue_type_helpers(legacy_vue2, dialect));
+    }
     if summary
         .scopes
         .iter()

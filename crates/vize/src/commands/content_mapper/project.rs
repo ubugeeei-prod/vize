@@ -141,7 +141,10 @@ pub(super) fn resolve_open_project(
                 .transform_options
                 .with_options_api(options_api)
                 .with_preserve_unused_diagnostics(no_unused_locals)
-                .with_check_javascript(check_javascript),
+                .with_check_javascript(check_javascript)
+                .with_external_component_attrs_module(has_content_mapper_helpers(Path::new(
+                    params.config_file_name.as_str(),
+                ))),
         },
         OpenProjectResult {
             config_identity: configuration.config_identity,
@@ -149,4 +152,36 @@ pub(super) fn resolve_open_project(
             option_diagnostics: diagnostics,
         },
     ))
+}
+
+fn has_content_mapper_helpers(config_file_name: &Path) -> bool {
+    let Some(project_directory) = config_file_name.parent() else {
+        return false;
+    };
+    let Some(helper) = project_directory
+        .ancestors()
+        .map(|directory| directory.join("node_modules/vize/content-mapper-helpers.d.ts"))
+        .find(|candidate| candidate.is_file())
+    else {
+        return false;
+    };
+    let Some(helper_directory) = helper.parent() else {
+        return false;
+    };
+    resolve_node_package(project_directory, "vue")
+        .zip(resolve_node_package(helper_directory, "vue"))
+        .is_some_and(|(project_vue, helper_vue)| project_vue == helper_vue)
+}
+
+fn resolve_node_package(from: &Path, package: &str) -> Option<std::path::PathBuf> {
+    from.ancestors().find_map(|directory| {
+        let manifest = directory
+            .join("node_modules")
+            .join(package)
+            .join("package.json");
+        manifest
+            .is_file()
+            .then(|| std::fs::canonicalize(manifest).ok())
+            .flatten()
+    })
 }

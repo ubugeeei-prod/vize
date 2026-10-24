@@ -65,6 +65,7 @@ pub struct ContentMapperTransformOptions {
     options_api: bool,
     preserve_unused_diagnostics: bool,
     check_javascript: bool,
+    external_component_attrs_module: bool,
     pub(super) check_unknown_components: bool,
     pub(super) check_unknown_props: bool,
     pub(super) check_unknown_fallthrough_props: bool,
@@ -80,6 +81,7 @@ impl Default for ContentMapperTransformOptions {
             options_api: true,
             preserve_unused_diagnostics: false,
             check_javascript: false,
+            external_component_attrs_module: false,
             check_unknown_components: false,
             check_unknown_props: true,
             check_unknown_fallthrough_props: false,
@@ -115,6 +117,14 @@ impl ContentMapperTransformOptions {
     #[must_use]
     pub const fn with_check_javascript(mut self, enabled: bool) -> Self {
         self.check_javascript = enabled;
+        self
+    }
+
+    /// Import shared component-attribute aliases from the installed `vize`
+    /// package instead of embedding them in every virtual module.
+    #[must_use]
+    pub const fn with_external_component_attrs_module(mut self, enabled: bool) -> Self {
+        self.external_component_attrs_module = enabled;
         self
     }
 }
@@ -192,6 +202,9 @@ pub fn generate_vue_content_mapper_transform_with_options(
             preserve_authored_component: true,
             preserve_script_on_template_error: true,
             component_name: Some(component_name.as_str()),
+            external_component_attrs_module: transform_options
+                .external_component_attrs_module
+                .then_some(crate::virtual_ts::CONTENT_MAPPER_HELPERS_MODULE),
             preserve_event_navigation: true,
             legacy_vue2: false,
             dialect: VueVersion::default(),

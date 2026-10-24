@@ -86,6 +86,24 @@ macro_rules! vue_type_helpers_text {
     };
 }
 
+macro_rules! content_mapper_type_helpers_text {
+    ($module:expr) => {
+        concat!(
+            vue_type_aliases_text!(),
+            "// @ts-ignore TS2694/TS2307: a `vue` without `NativeElements` must degrade native prop checks to unchecked, never error. See virtual_ts/expressions/native_props.rs.\n",
+            "type __VizeNativeElements = import('vue').NativeElements;\n",
+            "type __VizeNativeElement<Tag extends PropertyKey> = Tag extends keyof __VizeNativeElements ? __VizeNativeElements[Tag] : unknown;\n",
+            "type __VizeNativeElementProp<Element, Prop extends PropertyKey> = Prop extends keyof Element ? Element[Prop] : unknown;\n",
+            "declare function __vizeNativeElementProp<__Tag extends PropertyKey, __Prop extends PropertyKey>(value: __VizeNativeElementProp<__VizeNativeElement<__Tag>, __Prop>): void;\n",
+            "import type { VizeComponentAttrCamel as __VizeComponentAttrCamel, VizeComponentGlobalHtmlAttrs as __VizeComponentGlobalHtmlAttrs } from \"",
+            $module,
+            "\";\n",
+            v_for_list_decls_text!(),
+            directive_helpers_text!(),
+        )
+    };
+}
+
 /// Emit-overload helper text shared between the per-file embedded emission and
 /// the hoisted ambient helpers file.
 macro_rules! emit_overload_helpers_text {
@@ -103,6 +121,9 @@ macro_rules! emit_overload_helpers_text {
 }
 
 pub const VUE_TYPE_HELPERS: &str = vue_type_helpers_text!();
+pub(crate) const CONTENT_MAPPER_HELPERS_MODULE: &str = "vize/content-mapper-helpers";
+pub(crate) const CONTENT_MAPPER_TYPE_HELPERS: &str =
+    content_mapper_type_helpers_text!("vize/content-mapper-helpers");
 pub(crate) const EMIT_OVERLOAD_HELPERS: &str = emit_overload_helpers_text!();
 /// Vue's `EmitsToProps` keys handlers as `on${Capitalize<K>}` (`onScroll-top`);
 /// the camelized key is the spelling templates bind, so both are accepted.

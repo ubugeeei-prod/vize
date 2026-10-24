@@ -669,3 +669,52 @@ const emoji = "😀"
 
 #[path = "content_mapper_art_tests.rs"]
 mod musea_art;
+
+#[test]
+fn component_attribute_unions_are_imported_from_one_package_module() {
+    let source = r#"<script setup lang="ts">
+import Child from "./Child.vue";
+</script>
+<template><Child data-test-id="shared" @save-item="() => {}" /></template>
+"#;
+
+    for file_name in ["First.vue", "Second.vue"] {
+        let result = generate_vue_content_mapper_transform_with_options(
+            Path::new(file_name),
+            source,
+            ContentMapperTransformOptions::default().with_external_component_attrs_module(true),
+        )
+        .expect("content mapper transform");
+        let text = result.text.as_str();
+        assert_eq!(
+            text.matches(
+                "import type { VizeComponentAttrCamel as __VizeComponentAttrCamel, VizeComponentGlobalHtmlAttrs as __VizeComponentGlobalHtmlAttrs } from \"vize/content-mapper-helpers\";"
+            )
+            .count(),
+            1,
+            "{text}"
+        );
+        for duplicated in [
+            "type __VizeComponentAttrCamel<",
+            "type __VizeComponentNativeAttrNames =",
+            "type __VizeComponentGlobalHtmlAttrs =",
+        ] {
+            assert_eq!(
+                text.matches(duplicated).count(),
+                0,
+                "{duplicated} must stay in the shared package module:\n{text}"
+            );
+        }
+    }
+
+    let self_contained = generate_vue_content_mapper_transform(Path::new("Standalone.vue"), source)
+        .expect("self-contained content mapper transform");
+    assert_eq!(
+        self_contained
+            .text
+            .matches("type __VizeComponentNativeAttrNames =")
+            .count(),
+        1,
+        "standalone transforms must not require an installed vize package"
+    );
+}

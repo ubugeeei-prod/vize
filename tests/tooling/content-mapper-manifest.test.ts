@@ -18,6 +18,14 @@ test("vize package exposes an executable TypeScript content mapper", () => {
     fs.readFileSync(path.join(root, "npm/cli/package.json"), "utf-8"),
   ) as {
     bin?: Record<string, string>;
+    exports?: Record<
+      string,
+      {
+        import?: { types?: string };
+        require?: { types?: string };
+        types?: string;
+      }
+    >;
     files?: string[];
     tsContentMapper?: unknown;
     typescript?: {
@@ -42,12 +50,57 @@ test("vize package exposes an executable TypeScript content mapper", () => {
   );
   assert.equal(packageJson.bin?.vize, "bin/vize");
   assert.ok(packageJson.files?.includes("bin"));
+  assert.ok(packageJson.files?.includes("content-mapper-helpers.d.cts"));
+  assert.ok(packageJson.files?.includes("content-mapper-helpers.d.mts"));
+  assert.ok(packageJson.files?.includes("content-mapper-helpers.d.ts"));
+  assert.deepEqual(packageJson.exports?.["./content-mapper-helpers"], {
+    import: { types: "./content-mapper-helpers.d.mts" },
+    require: { types: "./content-mapper-helpers.d.cts" },
+    types: "./content-mapper-helpers.d.ts",
+  });
+  const helperPaths = [
+    "content-mapper-helpers.d.cts",
+    "content-mapper-helpers.d.mts",
+    "content-mapper-helpers.d.ts",
+  ];
+  const helpers = fs.readFileSync(path.join(root, "npm/cli", helperPaths[0]), "utf-8");
+  for (const helperPath of helperPaths.slice(1)) {
+    assert.equal(
+      fs.readFileSync(path.join(root, "npm/cli", helperPath), "utf-8"),
+      helpers,
+      `${helperPath} must stay identical across module formats`,
+    );
+  }
+  assert.match(helpers, /export type VizeComponentAttrCamel</u);
+  assert.match(helpers, /export type VizeComponentGlobalHtmlAttrs/u);
   assert.notEqual(
     fs.statSync(binPath).mode & 0o111,
     0,
     "content mapper entrypoint must be executable",
   );
   assert.match(fs.readFileSync(binPath, "utf-8"), /^#!\/usr\/bin\/env node\n/);
+});
+
+test("content mapper helpers resolve for Node16 ESM and CommonJS consumers", () => {
+  const result = spawnSync(
+    process.execPath,
+    [
+      path.join(root, "npm/cli/node_modules/typescript/bin/tsc"),
+      "--ignoreConfig",
+      "--noEmit",
+      "--strict",
+      "--target",
+      "ES2022",
+      "--module",
+      "Node16",
+      "--moduleResolution",
+      "Node16",
+      "npm/cli/tests/content-mapper-helpers.test-d.ts",
+      "npm/cli/tests/content-mapper-helpers.test-d.cts",
+    ],
+    { cwd: root, encoding: "utf8" },
+  );
+  assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
 });
 
 test("VS Code discovers Vize through the trusted native preview command", () => {

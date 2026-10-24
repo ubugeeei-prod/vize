@@ -11,6 +11,7 @@ pub(crate) mod setup_macros;
 mod vue2_members;
 
 pub(crate) use dom_events::{get_dom_event_type, is_known_dom_event_name};
+pub(crate) use preamble::{CONTENT_MAPPER_HELPERS_MODULE, CONTENT_MAPPER_TYPE_HELPERS};
 pub use preamble::{
     DECLARATION_HELPERS_DTS, SHARED_PREAMBLE_DTS, SHARED_PREAMBLE_FILE_NAME, VUE_TYPE_HELPERS,
 };

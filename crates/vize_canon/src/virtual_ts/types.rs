@@ -243,6 +243,9 @@ pub(crate) struct VirtualTsGenerationOptions<'a> {
     /// TypeScript program. Off by default so standalone single-document
     /// consumers keep self-contained output.
     pub(crate) hoist_shared_preamble: bool,
+    /// Type-only module that owns expensive component-attribute aliases for
+    /// standalone Content Mapper output.
+    pub(crate) external_component_attrs_module: Option<&'a str>,
     /// Override standard library triple-slash references for this generation.
     pub(crate) lib_references: Option<&'a [&'a str]>,
     /// Avoid introducing a `vite/client` type dependency in arbitrary projects.

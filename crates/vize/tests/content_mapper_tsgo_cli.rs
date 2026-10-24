@@ -726,3 +726,6 @@ fn standard_tsgo_accepts_surplus_defaults_without_erasing_declared_default_error
         }
     }
 }
+
+#[path = "content_mapper_tsgo_cli/shared_helpers_performance.rs"]
+mod shared_helpers_performance;

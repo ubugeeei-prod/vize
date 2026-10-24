@@ -28,6 +28,7 @@ fn generate(source: &str, editor: bool) -> GeneratedVueFile {
             preserve_authored_component: false,
             preserve_script_on_template_error: editor,
             component_name: None,
+            external_component_attrs_module: None,
             preserve_event_navigation: true,
             legacy_vue2: false,
             dialect: Default::default(),

@@ -35,6 +35,7 @@ fn options() -> VueCodegenOptions<'static> {
         preserve_authored_component: false,
         preserve_script_on_template_error: true,
         component_name: None,
+        external_component_attrs_module: None,
         preserve_event_navigation: false,
         legacy_vue2: false,
         dialect: Default::default(),

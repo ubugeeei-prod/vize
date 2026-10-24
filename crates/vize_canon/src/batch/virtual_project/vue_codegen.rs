@@ -278,6 +278,7 @@ pub(super) fn generate_vue_virtual_ts(
                     TemplateSyntaxMode::Quirks
                 ),
                 hoist_shared_preamble,
+                external_component_attrs_module: codegen_options.external_component_attrs_module,
                 lib_references: None,
                 omit_vite_client_reference: codegen_options.omit_vite_client_reference,
                 split_script_setup_offsets,

@@ -27,6 +27,9 @@
   },
   "files": [
     "bin",
+    "content-mapper-helpers.d.cts",
+    "content-mapper-helpers.d.mts",
+    "content-mapper-helpers.d.ts",
     "dist",
     "src",
     "schemas",
@@ -45,6 +48,15 @@
       "import": "./dist/config.mjs",
       "default": "./dist/config.mjs",
       "types": "./dist/config.d.mts"
+    },
+    "./content-mapper-helpers": {
+      "import": {
+        "types": "./content-mapper-helpers.d.mts"
+      },
+      "require": {
+        "types": "./content-mapper-helpers.d.cts"
+      },
+      "types": "./content-mapper-helpers.d.ts"
     },
     "./schemas/vize.config.schema.json": "./schemas/vize.config.schema.json",
     "./pkl/vize.pkl": "./pkl/vize.pkl"

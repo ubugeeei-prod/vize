@@ -294,5 +294,9 @@ mod tests;
 mod project_tests;
 
 #[cfg(test)]
+#[path = "content_mapper/shared_helper_tests.rs"]
+mod shared_helper_tests;
+
+#[cfg(test)]
 #[path = "content_mapper/frame_tests.rs"]
 mod frame_tests;
