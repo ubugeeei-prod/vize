@@ -160,6 +160,27 @@ pub fn public_input_prelude_utf16_delta() -> usize {
         .unwrap()
 }
 
+/// Keep the original hosted witness bytes and account for #10423's helper
+/// growth separately from the component input and navigation declarations.
+pub fn kebab_case_prelude_utf16_delta() -> usize {
+    let before = include_str!(
+        "../../../../../tests/_fixtures/differential/lsp/component-native-events/slot-navigation-before-source-counterfactual.txt"
+    ).lines().find(|line| line.starts_with("type __VizeKebabCase<")).unwrap();
+    assert_eq!(
+        super::hash(before.as_bytes()),
+        "252e573afbee269915bdda1cb0725b6cb723b7bba2f8bd1195ec51aca24263b9"
+    );
+    let current = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS
+        .lines()
+        .find(|line| line.starts_with("type __VizeKebabCase<"))
+        .unwrap();
+    current
+        .encode_utf16()
+        .count()
+        .checked_sub(before.encode_utf16().count())
+        .unwrap()
+}
+
 /// UTF-16 length of the navigation helper added ahead of every prop query.
 pub fn component_navigation_helper_utf16_len() -> usize {
     COMPONENT_NAVIGATION_HELPER.encode_utf16().count()

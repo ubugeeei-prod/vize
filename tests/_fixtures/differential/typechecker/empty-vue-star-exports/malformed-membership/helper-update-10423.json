@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "issue": 10423,
+  "sourceRevision": "a08dd3d6fb4a67b488ad733b79fd843e2b3b3c5c",
+  "observedRun": 40113830286,
+  "observedJob": 120930976862,
+  "entry": 82,
+  "before": [
+    "project/__vize_helpers.d.ts",
+    29435,
+    "250cfa34bb15f19b83a120d5465ee0424adf023230a390aaeda47ab1edaacc4c"
+  ],
+  "after": [
+    "project/__vize_helpers.d.ts",
+    29481,
+    "625dc10265f167fdd02dc69c484b9b045abc468a29cde6b47f31f8ab30928615"
+  ],
+  "deltaBytes": 46,
+  "scope": "Declared current generated helper body; the original ordered membership and provenance remain unchanged."
+}

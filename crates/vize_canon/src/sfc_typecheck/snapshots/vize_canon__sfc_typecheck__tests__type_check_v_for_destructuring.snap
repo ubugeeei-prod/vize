@@ -10,73 +10,73 @@ SfcTypeCheckResult {
     virtual_ts_helpers: None,
     virtual_ts_mappings: [
         VizeMapping {
-            gen_range: 13579..13604,
+            gen_range: 13625..13650,
             src_range: 25..50,
             sub_spans: [],
         },
         VizeMapping {
-            gen_range: 13605..13648,
+            gen_range: 13651..13694,
             src_range: 51..94,
             sub_spans: [],
         },
         VizeMapping {
-            gen_range: 15500..15529,
+            gen_range: 15546..15575,
             src_range: 95..124,
             sub_spans: [],
         },
         VizeMapping {
-            gen_range: 16918..16923,
+            gen_range: 16964..16969,
             src_range: 184..187,
             sub_spans: [],
         },
         VizeMapping {
-            gen_range: 17064..17069,
+            gen_range: 17110..17115,
             src_range: 176..181,
             sub_spans: [],
         },
         VizeMapping {
-            gen_range: 17088..17090,
+            gen_range: 17134..17136,
             src_range: 162..164,
             sub_spans: [],
         },
         VizeMapping {
-            gen_range: 17092..17096,
+            gen_range: 17138..17142,
             src_range: 166..170,
             sub_spans: [],
         },
         VizeMapping {
-            gen_range: 17156..17262,
+            gen_range: 17202..17308,
             src_range: 184..187,
             sub_spans: [
                 VizeSubSpan {
-                    gen_range: 17166..17193,
+                    gen_range: 17212..17239,
                     src_range: 184..187,
                 },
                 VizeSubSpan {
-                    gen_range: 17257..17259,
+                    gen_range: 17303..17305,
                     src_range: 189..191,
                 },
                 VizeSubSpan {
-                    gen_range: 17256..17257,
+                    gen_range: 17302..17303,
                     src_range: 184..187,
                 },
             ],
         },
         VizeMapping {
-            gen_range: 17319..17321,
+            gen_range: 17365..17367,
             src_range: 201..203,
             sub_spans: [],
         },
         VizeMapping {
-            gen_range: 17385..17389,
+            gen_range: 17431..17435,
             src_range: 211..215,
             sub_spans: [],
         },
     ],
     virtual_ts_semantic_links: [
         VizeSemanticLink {
-            source_range: 15721..15726,
-            target_range: 16300..16305,
+            source_range: 15767..15772,
+            target_range: 16346..16351,
             kind: VueSetupTemplateRefUnwrap,
         },
     ],

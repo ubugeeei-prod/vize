@@ -222,6 +222,7 @@ impl Project {
                 // code units while retaining the parent navigation helper.
                 21_499
                     + witness::public_input_prelude_utf16_delta()
+                    + witness::kebab_case_prelude_utf16_delta()
                     + witness::component_navigation_helper_utf16_len()
             );
             assert_eq!(

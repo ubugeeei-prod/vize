@@ -24,7 +24,7 @@ fn expected() -> (Value, Value) {
         support::hash(&bytes),
         "04184a5ca582d669a6b02f2c44353b9a2b33f8c100df05fd8ccb1460c7bddd41"
     );
-    let manifest: Value = serde_json::from_slice(&bytes).unwrap();
+    let mut manifest: Value = serde_json::from_slice(&bytes).unwrap();
     assert_eq!(manifest["version"], 1);
     assert_eq!(manifest["case"], "malformed-refusal");
     assert_eq!(manifest["memberCount"], 86);
@@ -64,6 +64,28 @@ fn expected() -> (Value, Value) {
         members.extend(entries);
     }
     assert_eq!(members.len(), 86);
+    // Authenticate the original ordered reference unchanged, then retain the
+    // declared current source-owned helper postimage as separate provenance.
+    let update =
+        fs::read(support::corpus().join("malformed-membership/helper-update-10423.json")).unwrap();
+    assert_eq!(
+        support::hash(&update),
+        "9d5d48ce4173e5caebe70cd502a5f197e6e8fd02e612ae04fd6fac8e3715733c"
+    );
+    let update: Value = serde_json::from_slice(&update).unwrap();
+    assert_eq!(update["version"], 1);
+    assert_eq!(update["issue"], 10423);
+    assert_eq!(update["entry"], 82);
+    assert_eq!(update["deltaBytes"], 46);
+    let helper = members.get_mut(82).unwrap();
+    assert_eq!(*helper, update["before"]);
+    assert_eq!(update["before"][0], update["after"][0]);
+    assert_eq!(
+        update["after"][1].as_u64().unwrap() - update["before"][1].as_u64().unwrap(),
+        46
+    );
+    *helper = update["after"].clone();
+    manifest["provenance"]["currentHelperUpdate"] = update;
     (manifest, json!(members))
 }
 
