@@ -40,6 +40,7 @@ export type {
   A11yOptions,
   A11yResult,
   CaptureConfig,
+  BeforeCaptureContext,
   ComparisonConfig,
   CiConfig,
 } from "./types/index.js";

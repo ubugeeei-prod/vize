@@ -1,4 +1,4 @@
-import type { LaunchOptions } from "playwright";
+import type { LaunchOptions, Page } from "playwright";
 
 /**
  * Viewport configuration.
@@ -47,10 +47,21 @@ export interface VrtOptions {
   workers?: number;
 }
 
-/**
- * Screenshot capture configuration.
- */
+/** Identity of the isolated preview about to be captured. */
+export interface BeforeCaptureContext {
+  readonly artPath: string;
+  readonly variantName: string;
+  readonly viewport: Readonly<ViewportConfig>;
+}
+
+/** Screenshot capture configuration. */
 export interface CaptureConfig {
+  /**
+   * Run authored Playwright interactions/assertions after preview readiness and
+   * waitSelector, before settleTime, hiding, masking and the screenshot.
+   * Rejection fails this capture without writing or updating its baseline.
+   */
+  beforeCapture?: (page: Page, context: BeforeCaptureContext) => void | Promise<void>;
   /** Freeze finite/infinite animations during screenshots. @default "disabled" */
   animations?: "disabled" | "allow";
   /** Emulate prefers-reduced-motion. @default "no-preference" */

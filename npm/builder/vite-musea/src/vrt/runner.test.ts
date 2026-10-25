@@ -8,6 +8,21 @@ import type { ArtFileInfo, ViewportConfig } from "../types/index.ts";
 import { MuseaVrtRunner, normalizeVrtWorkerCount } from "./runner.ts";
 import type { VrtResult } from "./types.ts";
 
+void test("beforeCapture remains optional and invalid runtime callbacks fail explicitly", () => {
+  assert.equal(new MuseaVrtRunner().getCapture().beforeCapture, undefined);
+  const beforeCapture = async () => {};
+  assert.equal(
+    new MuseaVrtRunner({ capture: { beforeCapture } }).getCapture().beforeCapture,
+    beforeCapture,
+  );
+  for (const invalid of [null, false, "not callable", {}]) {
+    assert.throws(
+      () => new MuseaVrtRunner({ capture: { beforeCapture: invalid } } as never),
+      /beforeCapture must be a function/,
+    );
+  }
+});
+
 void test("worker count is normalized to a positive integer", () => {
   assert.equal(normalizeVrtWorkerCount(undefined), 1);
   assert.equal(normalizeVrtWorkerCount(0), 1);

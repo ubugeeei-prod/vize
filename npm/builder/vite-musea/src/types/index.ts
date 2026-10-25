@@ -19,6 +19,7 @@ export type {
   ViewportConfig,
   VrtOptions,
   CaptureConfig,
+  BeforeCaptureContext,
   ComparisonConfig,
   CiConfig,
 } from "./vrt.js";

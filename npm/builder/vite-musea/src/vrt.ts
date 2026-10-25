@@ -15,6 +15,7 @@ export {
 } from "./vrt/runner.js";
 
 export { generateVrtReport, generateVrtJsonReport } from "./vrt/report.js";
+export type { BeforeCaptureContext, CaptureConfig } from "./types/vrt.js";
 
 import { MuseaVrtRunner } from "./vrt/runner.js";
 export default MuseaVrtRunner;

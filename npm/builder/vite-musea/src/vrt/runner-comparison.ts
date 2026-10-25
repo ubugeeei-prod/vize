@@ -76,6 +76,24 @@ export async function captureAndCompare(
     // Wait for content to render
     await page.waitForSelector(capture.waitSelector, { timeout: 10000 });
 
+    if (capture.beforeCapture) {
+      try {
+        await capture.beforeCapture(
+          page,
+          Object.freeze({
+            artPath: art.path,
+            variantName,
+            viewport: Object.freeze({ ...viewport }),
+          }),
+        );
+      } catch (error) {
+        throw new Error(
+          `beforeCapture failed: ${error instanceof Error ? error.message : String(error)}`,
+          { cause: error },
+        );
+      }
+    }
+
     // Additional wait for animations to settle
     await page.waitForTimeout(capture.settleTime);
 
