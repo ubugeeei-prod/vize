@@ -324,7 +324,10 @@ await test(
             path.join(fixture.root, "independent-target.ts"),
             plainTypeScriptOracle(entry.source, entry.file, entry.link),
           );
-          const target = run(`${label}/plain-typescript-7`, checker, plainArgs);
+          const target = run(`${label}/plain-typescript-7`, checker, [
+            "--ignoreConfig",
+            ...plainArgs,
+          ]);
           const targetReference = run(`${label}/plain-typescript-5`, process.execPath, [
             path.join(fixture.root, "node_modules/typescript/bin/tsc"),
             ...plainArgs,
