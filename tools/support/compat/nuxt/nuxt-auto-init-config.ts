@@ -49,7 +49,22 @@ export function verifyNuxtAutoInitConfig(
       fs.writeFileSync(target, bytes, { flag: "wx" });
       original[relative] = hash(bytes);
     }
-    assert.equal(Object.keys(original).length, 9);
+    for (const file of [
+      "package.json",
+      "package-lock.json",
+      "nuxt.config.js",
+      "pages/index.vue",
+      "pages/about.vue",
+      "components/RuntimeCard.vue",
+      "assets/_palette.scss",
+      "assets/runtime.svg",
+      "lib/runtime-label.js",
+    ])
+      assert.equal(
+        Object.hasOwn(original, file),
+        true,
+        `the complete authored application includes ${file}`,
+      );
     const modules = path.join(project, "node_modules");
     fs.mkdirSync(modules);
     for (const name of fs.readdirSync(path.join(fixture, "node_modules"))) {

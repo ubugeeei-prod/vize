@@ -246,9 +246,22 @@ try {
         }
       }
       assert.ok(response, `Nuxt 2 server did not answer ${route}`);
-      assert.equal(response.status, 200, `${route} returned ${response.status}`);
       const html = await response.text();
       fs.writeFileSync(path.join(artifacts, `${route === "/" ? "index" : "about"}.html`), html);
+      fs.writeFileSync(
+        path.join(artifacts, `${route === "/" ? "index" : "about"}-http.json`),
+        JSON.stringify(
+          {
+            route,
+            status: response.status,
+            headers: Object.fromEntries(response.headers),
+            body: html,
+          },
+          null,
+          2,
+        ) + "\n",
+      );
+      assert.equal(response.status, 200, `${route} returned ${response.status}`);
       assert.match(html, new RegExp(`<h1[^>]*>${heading}</h1>`));
     }
     await verifyBrowser(port, "production");
@@ -334,6 +347,11 @@ try {
   console.log("Candidate Nuxt 2 webpack build and SSR routes passed");
 } finally {
   fs.writeFileSync(path.join(artifacts, "timings.json"), JSON.stringify(timings, null, 2) + "\n");
+  if (vite && fs.existsSync(path.join(fixture, ".output/server"))) {
+    fs.cpSync(path.join(fixture, ".output/server"), path.join(artifacts, "nitro-server"), {
+      recursive: true,
+    });
+  }
   await browser?.close();
   for (const server of servers) if (server.exitCode === null) server.kill("SIGTERM");
   for (const item of swapped) {
