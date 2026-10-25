@@ -132,6 +132,7 @@ pub fn run(mut args: LintArgs) {
             tsconfig: configured_type_aware_tsconfig,
         },
         &custom_elements,
+        super::project_ssr::ssr_enabled(config_dir),
     );
     let write_failures = AtomicUsize::new(0);
     let profile_rows = args.profile.then(|| Mutex::new(Vec::new()));

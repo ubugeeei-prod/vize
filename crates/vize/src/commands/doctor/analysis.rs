@@ -47,7 +47,10 @@ pub(super) fn analyze_application(
     sources: &[DoctorSource],
     public_sfc: bool,
 ) -> Result<DoctorReport, DoctorError> {
-    let mut analyzer = CrossFileAnalyzer::with_project_root(doctor_options(), root);
+    let mut analyzer = CrossFileAnalyzer::with_project_root(
+        doctor_options().with_server_client_boundary(super::super::project_ssr::ssr_enabled(root)),
+        root,
+    );
     let mut source_maps = FxHashMap::default();
     let mut public_sfc_findings = Vec::new();
     let mut ordered_sources = sources.iter().collect::<Vec<_>>();

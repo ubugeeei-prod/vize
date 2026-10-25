@@ -52,6 +52,7 @@ impl ResolvedLinterRuleGroups {
         features: LinterFeatureFlags,
         type_aware_project: TypeAwareProjectPaths,
         custom_elements: &vize_relief::options::CustomElementMatcher,
+        ssr_enabled: bool,
     ) -> Vec<Linter> {
         let availability = self
             .pinia_available
@@ -67,7 +68,13 @@ impl ResolvedLinterRuleGroups {
                 let type_aware =
                     args.type_aware || args.strict_reactivity || config.type_aware_lint_enabled();
                 let mut additional_rules = config.enabled_rules();
-                let disabled_rules = resolved_disabled_rules(config, *pinia_available);
+                let mut disabled_rules = resolved_disabled_rules(config, *pinia_available);
+                if !ssr_enabled {
+                    disabled_rules.extend([
+                        "ssr/no-browser-globals-in-ssr".into(),
+                        "ssr/no-hydration-mismatch".into(),
+                    ]);
+                }
                 let restricted_globals = rule_options.restricted_globals();
                 let restricted_members = rule_options.restricted_members();
                 let musea_design_tokens = rule_options.musea_design_tokens();
