@@ -127,6 +127,17 @@ export async function prepareExperimentalRouterProject(outputRoot: string) {
     ],
   );
   run("official-route-generation", process.execPath, ["generate.mjs"]);
+  // These complete executable outputs are scanner observations, not authored
+  // project roots. Keep their bytes without making the default batch scan check
+  // unconfigured bundler/HMR implementation files outside tsconfig.include.
+  const generatedArtifacts = ["routes.generated.ts", "resolver.generated.ts"].map((name) => {
+    const source = path.join(root, name);
+    const bytes = fs.readFileSync(source);
+    const artifact = `${name}.txt`;
+    fs.writeFileSync(path.join(outputRoot, artifact), bytes);
+    fs.rmSync(source);
+    return { path: artifact, bytes: bytes.length, sha256: sha256(bytes) };
+  });
   const generatedDeclaration = fs.readFileSync(path.join(root, "typed-router.d.ts"), "utf8");
   assert.equal(
     generatedDeclaration,
@@ -139,7 +150,7 @@ export async function prepareExperimentalRouterProject(outputRoot: string) {
   );
   fs.writeFileSync(
     path.join(outputRoot, "provider-identity.json"),
-    `${JSON.stringify({ authority, dependencies, generatedDeclarationSha256: sha256(Buffer.from(generatedDeclaration)) }, null, 2)}\n`,
+    `${JSON.stringify({ authority, dependencies, generatedArtifacts, generatedDeclarationSha256: sha256(Buffer.from(generatedDeclaration)) }, null, 2)}\n`,
   );
   return {
     root,

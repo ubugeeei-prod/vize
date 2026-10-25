@@ -33,6 +33,11 @@ fn experimental_entry_does_not_authorize_foreign_or_unpublished_value_bindings()
         "import { definePage } from 'other/experimental'; definePage({});",
         "import type { definePage } from 'vue-router/experimental'; definePage({});",
         "import { type definePage } from 'vue-router/experimental'; definePage({});",
+        "import type definePage from 'vue-router/experimental'; definePage({});",
+        "import type * as definePage from 'vue-router/experimental'; definePage({});",
+        "import type { other as definePage } from 'other'; definePage({});",
+        "import type { useRoute } from 'vue-router'; useRoute(); type Route = typeof useRoute;",
+        "import { type useRoute } from 'vue-router'; useRoute(); type Route = typeof useRoute;",
         "import { definePage as page } from 'vue-router/experimental'; page({});",
         "import { other as definePage } from 'vue-router/experimental'; definePage({});",
         "import * as page from 'vue-router/experimental'; page.definePage({});",
@@ -49,5 +54,16 @@ fn imported_page_macro_does_not_rewrite_shadowed_calls_or_explicit_generics() {
     assert_eq!(
         output.code,
         source.replacen("definePage(", &vize_l0::cstr!("definePage<{FILE}>("), 1)
+    );
+}
+
+#[test]
+fn a_type_alias_does_not_hide_the_auto_imported_value_macro() {
+    let source = "type definePage = object; definePage({});";
+    let (output, imported) = transform(source, false);
+    assert_eq!(imported, false);
+    assert_eq!(
+        output.code,
+        source.replace("definePage(", &vize_l0::cstr!("definePage<{FILE}>("))
     );
 }
