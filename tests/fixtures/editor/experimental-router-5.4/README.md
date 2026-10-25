@@ -19,6 +19,8 @@ The public completion adapter follows pinned VS Code 1.107.1 behavior:
   supplies default word insert/replace ranges.
 - [CompletionItem.to](https://github.com/microsoft/vscode/blob/1.107.1/src/vs/workbench/api/common/extHostTypeConverters.ts#L1129)
   returns insertion text and an explicit whitespace flag.
+- [_inflateSuggestDto](https://github.com/microsoft/vscode/blob/1.107.1/src/vs/workbench/api/browser/mainThreadLanguageFeatures.ts#L521)
+  supplies the completion label when the provider omits insertion text.
 
 Native packets remain unmodified. Closed controls reject shifted public ranges,
 changed insertion text, and changed whitespace behavior. Whole packets and native

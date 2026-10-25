@@ -6,13 +6,13 @@ const { createRequire } = require("node:module");
 const vscode = require("vscode");
 const { describeDiagnostic, describeRange } = require("./real-server-support.cjs");
 const { waitFor } = require("./wait-for.cjs");
+const { captureCompilerDocument } = require("./router-host-compiler-capture.cjs");
 
 const output = process.env.VIZE_TEST_ROUTER_OUTPUT;
 function retain(name, value) {
   fs.writeFileSync(path.join(output, `${name}.json`), `${JSON.stringify(value, null, 2)}\n`);
 }
-function records() {
-  const file = process.env.VIZE_TEST_CONFIG_PROTOCOL_PATH;
+function records(file = process.env.VIZE_TEST_CONFIG_PROTOCOL_PATH) {
   if (!fs.existsSync(file)) return [];
   const source = fs.readFileSync(file, "utf8");
   return source
@@ -34,7 +34,8 @@ const range = (document, offset, length) => ({
 function diagnostics(document, enabled, invalid) {
   const source = document.getText();
   const result = [];
-  if (!enabled)
+  // Art's dedicated diagnostic pipeline has no filename-only Router warnings.
+  if (!enabled && document.languageId !== "art-vue")
     for (const match of source.matchAll(/route\.params\.(page|tags|at|heading)\b/gu)) {
       result.push({
         range: range(document, match.index + "route.params.".length, match[1].length),
@@ -204,6 +205,12 @@ async function capture(document, label) {
         source: bytes.toString("utf8"),
       };
       save();
+    } else if (candidate) {
+      result.generated = captureCompilerDocument(
+        records(path.join(output, "compiler-protocol.jsonl")),
+        result.native.completion,
+      );
+      save();
     }
     result.native.resolved = [];
     for (const item of result.native.completion ?? []) {
@@ -313,13 +320,14 @@ function syntaxLocations(project, document, generated) {
     find(nativeTree);
     assert.equal(candidates.length, 1);
     privatePosition = Buffer.byteLength(generated.source.slice(0, candidates[0]));
-    assert.equal(nativeTree.referencedFiles.length, 1);
-    assert.deepEqual(
-      fs.readFileSync(
-        ts.resolveTripleslashReference(nativeTree.referencedFiles[0].fileName, generated.file),
-      ),
-      fs.readFileSync(declaration),
-    );
+    assert.equal(nativeTree.referencedFiles.length, document.languageId === "art-vue" ? 0 : 1);
+    if (nativeTree.referencedFiles.length)
+      assert.deepEqual(
+        fs.readFileSync(
+          ts.resolveTripleslashReference(nativeTree.referencedFiles[0].fileName, generated.file),
+        ),
+        fs.readFileSync(declaration),
+      );
   }
   return { definition, reference, privatePosition };
 }
@@ -331,6 +339,7 @@ function assertCapture(actual, project, document, enabled, invalid = false) {
     contents: { kind: "markdown", value: "```typescript\n(property) 'page': number\n```" },
     range: range(document, property, 4),
   };
+  assert.deepEqual(actual.native.hover, hover, "complete typed script-property hover");
   const syntax = syntaxLocations(project, document, actual.generated);
   const references = [
     { uri: document.uri.toString(), range: range(document, property, 4) },
@@ -344,17 +353,22 @@ function assertCapture(actual, project, document, enabled, invalid = false) {
     { label: "id", kind: 10, detail: "Vue Router file route param: string", sortText: "0" },
   ];
   let resolved = completion;
-  if (enabled) {
+  if (enabled || document.languageId === "art-vue") {
     assert.ok(actual.generated);
     const relative = path.relative(project.root, document.fileName).split(path.sep).join("/");
-    assert.ok(actual.generated.file.endsWith(`/${relative}.ts`));
+    const art = document.languageId === "art-vue";
+    const expectedFile = art
+      ? `${new URL(document.uri.toString()).pathname}.setup.ts`
+      : actual.generated.file;
+    if (art) assert.equal(actual.generated.file, expectedFile);
+    else assert.ok(actual.generated.file.endsWith(`/${relative}.ts`));
     const virtualRoot = actual.generated.file.slice(0, -relative.length - 4);
     completion = ["at", "heading", "id", "page", "tags"].map((name) => ({
       data: {
         vizeCompletion: {
           item: {
             data: {
-              fileName: `${virtualRoot}/${relative}.ts`,
+              fileName: expectedFile,
               name,
               position: syntax.privatePosition,
             },
@@ -362,7 +376,9 @@ function assertCapture(actual, project, document, enabled, invalid = false) {
             label: name,
             sortText: "11",
           },
-          requestUri: vscode.Uri.file(`${virtualRoot}/${relative}.ts`).toString(),
+          requestUri: vscode.Uri.file(
+            art ? expectedFile : `${virtualRoot}/${relative}.ts`,
+          ).toString(),
           revision: actual.documentRevision,
           uri: document.uri.toString(),
         },
