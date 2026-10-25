@@ -9,6 +9,17 @@ import { root, testOutputRoot } from "./paths.ts";
 import { LspSession } from "./session.ts";
 import type { BoundLspSession, PublishedSessionBinding } from "./session-process.ts";
 
+export function resolveFreshVuePackage() {
+  return [
+    process.env.VIZE_TEST_VUE_PACKAGE,
+    path.join(root, "node_modules/vue"),
+    path.join(root, "tests/node_modules/vue"),
+    path.join(root, "playground/node_modules/vue"),
+    path.join(root, "examples/jsx-tsx/node_modules/vue"),
+    path.join(root, "npm/cli/node_modules/vue"),
+  ].find((candidate) => candidate !== undefined && fs.existsSync(candidate));
+}
+
 export function freshVueSessionBinding(
   binary: string,
   published?: PublishedSessionBinding,
@@ -37,14 +48,7 @@ export async function withFreshVueProject(
   if (runtime === undefined) return;
   const vue = requireTypecheckDependency(
     t,
-    [
-      process.env.VIZE_TEST_VUE_PACKAGE,
-      path.join(root, "node_modules/vue"),
-      path.join(root, "tests/node_modules/vue"),
-      path.join(root, "playground/node_modules/vue"),
-      path.join(root, "examples/jsx-tsx/node_modules/vue"),
-      path.join(root, "npm/cli/node_modules/vue"),
-    ].find((candidate) => candidate !== undefined && fs.existsSync(candidate)),
+    resolveFreshVuePackage(),
     "real Vue package for fresh JSX component diagnostics",
     "real Vue package unavailable",
   );

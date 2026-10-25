@@ -54,17 +54,23 @@ jobs:
       - name: Record the actual source and both provider identities
         run: |
           mkdir -p target/vize-tests/jsx-intrinsic-hover
-          printf 'CORSA_BIN=%s/node_modules/@typescript/typescript-linux-x64/lib/tsc\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
           node --input-type=module <<'JS'
           import assert from 'node:assert/strict';
           import { createHash } from 'node:crypto';
-          import { readFileSync, writeFileSync } from 'node:fs';
+          import { appendFileSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
           import { execFileSync } from 'node:child_process';
+          import { resolveTypecheckRuntime } from './tests/tooling/support/typecheck-dependency.ts';
+          import { resolveFreshVuePackage } from './tests/tooling/support/lsp/fresh-vue-project.ts';
           const hash = bytes => createHash('sha256').update(bytes).digest('hex');
           const build = JSON.parse(readFileSync('target/ci/vize.differential-build.json'));
           assert.equal(build.sourceRevision, process.env.SOURCE_SHA);
-          const runtime = 'node_modules/@typescript/typescript-linux-x64/lib/tsc';
-          const vue = readFileSync('node_modules/vue/package.json');
+          const selectedRuntime = resolveTypecheckRuntime(process.cwd());
+          const selectedVue = resolveFreshVuePackage();
+          assert.ok(selectedRuntime && selectedVue, 'the actual protocol dependencies are required');
+          const runtime = realpathSync(selectedRuntime);
+          const vuePackage = realpathSync(selectedVue);
+          appendFileSync(process.env.GITHUB_ENV, `CORSA_BIN=${runtime}\nVIZE_TEST_VUE_PACKAGE=${vuePackage}\n`);
+          const vue = readFileSync(`${vuePackage}/package.json`);
           const receipt = {
             source: build,
             sourceTree: execFileSync('git', ['rev-parse', 'HEAD^{tree}'], { encoding: 'utf8' }).trim(),
@@ -74,6 +80,7 @@ jobs:
               typescriptRuntime: { sha256: hash(readFileSync(runtime)), version: execFileSync(runtime, ['--version'], { encoding: 'utf8' }).trim() },
               vue: { version: JSON.parse(vue).version, packageJsonSha256: hash(vue) },
             },
+            latencyMeaning: 'First DOM requests follow initial diagnostics; warm groups repeat unchanged full-result queries. Whole-request CI observations, not cold startup or universal budgets.',
             scope: 'Source-qualified bounded intrinsic hover packets and observed CI latency; no native whole-product or publication admission',
           };
           writeFileSync('target/vize-tests/jsx-intrinsic-hover/source.json', JSON.stringify(receipt, null, 2) + '\n');
