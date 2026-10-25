@@ -1942,6 +1942,53 @@
           }
         ]
       }
+    },
+    {
+      "id": "lsp/regression/art-shared-references-10459",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "art-shared-references-10459",
+        "files": [
+          {
+            "path": "Scope.art.vue.txt",
+            "sha256": "9ba194ddf4d076b3f9a0acc9474e8b067e7f15a0eda610d61bbac7e3634daf74"
+          },
+          {
+            "path": "Scope.crlf.art.vue.txt",
+            "sha256": "68dd21b8ce4059509d727af348140693c45b4b7b6166940ec216b107138be5f0"
+          },
+          {
+            "path": "Child.vue.txt",
+            "sha256": "c4e75a2b5d0b350bf89669429d287dc39fd987d7405d4118895a8d69443898c4"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "8f4cc08b465ddf6df35387e36be46136f6b6f7f5f19085ca9d6a3fcc1cda9b31"
+          }
+        ]
+      },
+      "case": {
+        "path": "art-shared-references-10459/case.json",
+        "sha256": "8cb08ea451687f0a75745b9b70f7f3ac3637cfa70d409d4040634a2979a57a27"
+      },
+      "requestCount": 8,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }

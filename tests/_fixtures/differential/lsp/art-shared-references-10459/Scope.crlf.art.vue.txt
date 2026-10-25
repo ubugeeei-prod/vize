@@ -1,0 +1,14 @@
+<script setup lang="ts">
+const shared = 'outer'
+const rows = [shared]
+function echo(shared: string) { return shared }
+</script>
+<art title="Scope" component="./Child.vue">
+<variant name="First" default>
+<p>🧭{{ shared }}</p><i v-for="shared in rows">{{ shared }}</i>
+</variant>
+<variant name="Second">
+<section>🧭{{ shared }}</section><Child v-slot="{ shared }">{{ shared }}</Child>
+</variant>
+<variant name="Third"><footer>{{ shared }}</footer></variant>
+</art>

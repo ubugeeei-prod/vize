@@ -1,0 +1,340 @@
+[
+  {
+    "params": {
+      "position": {
+        "line": 10,
+        "character": 20
+      },
+      "context": {
+        "includeDeclaration": true
+      }
+    },
+    "result": [
+      {
+        "uri": "${workspace}/Scope.art.vue",
+        "range": {
+          "start": {
+            "line": 1,
+            "character": 6
+          },
+          "end": {
+            "line": 1,
+            "character": 12
+          }
+        }
+      },
+      {
+        "uri": "${workspace}/Scope.art.vue",
+        "range": {
+          "start": {
+            "line": 2,
+            "character": 14
+          },
+          "end": {
+            "line": 2,
+            "character": 20
+          }
+        }
+      },
+      {
+        "uri": "${workspace}/Scope.art.vue",
+        "range": {
+          "start": {
+            "line": 7,
+            "character": 8
+          },
+          "end": {
+            "line": 7,
+            "character": 14
+          }
+        }
+      },
+      {
+        "uri": "${workspace}/Scope.art.vue",
+        "range": {
+          "start": {
+            "line": 10,
+            "character": 14
+          },
+          "end": {
+            "line": 10,
+            "character": 20
+          }
+        }
+      },
+      {
+        "uri": "${workspace}/Scope.art.vue",
+        "range": {
+          "start": {
+            "line": 12,
+            "character": 33
+          },
+          "end": {
+            "line": 12,
+            "character": 39
+          }
+        }
+      }
+    ]
+  },
+  {
+    "params": {
+      "position": {
+        "line": 7,
+        "character": 50
+      },
+      "context": {
+        "includeDeclaration": true
+      }
+    },
+    "result": [
+      {
+        "uri": "${workspace}/Scope.art.vue",
+        "range": {
+          "start": {
+            "line": 7,
+            "character": 31
+          },
+          "end": {
+            "line": 7,
+            "character": 37
+          }
+        }
+      },
+      {
+        "uri": "${workspace}/Scope.art.vue",
+        "range": {
+          "start": {
+            "line": 7,
+            "character": 50
+          },
+          "end": {
+            "line": 7,
+            "character": 56
+          }
+        }
+      }
+    ]
+  },
+  {
+    "params": {
+      "position": {
+        "line": 10,
+        "character": 63
+      },
+      "context": {
+        "includeDeclaration": true
+      }
+    },
+    "result": [
+      {
+        "uri": "${workspace}/Scope.art.vue",
+        "range": {
+          "start": {
+            "line": 10,
+            "character": 50
+          },
+          "end": {
+            "line": 10,
+            "character": 56
+          }
+        }
+      },
+      {
+        "uri": "${workspace}/Scope.art.vue",
+        "range": {
+          "start": {
+            "line": 10,
+            "character": 63
+          },
+          "end": {
+            "line": 10,
+            "character": 69
+          }
+        }
+      }
+    ]
+  },
+  {
+    "params": {
+      "position": {
+        "line": 3,
+        "character": 39
+      },
+      "context": {
+        "includeDeclaration": true
+      }
+    },
+    "result": [
+      {
+        "uri": "${workspace}/Scope.art.vue",
+        "range": {
+          "start": {
+            "line": 3,
+            "character": 14
+          },
+          "end": {
+            "line": 3,
+            "character": 20
+          }
+        }
+      },
+      {
+        "uri": "${workspace}/Scope.art.vue",
+        "range": {
+          "start": {
+            "line": 3,
+            "character": 39
+          },
+          "end": {
+            "line": 3,
+            "character": 45
+          }
+        }
+      }
+    ]
+  },
+  {
+    "params": {
+      "position": {
+        "line": 10,
+        "character": 20
+      },
+      "context": {
+        "includeDeclaration": false
+      }
+    },
+    "result": [
+      {
+        "uri": "${workspace}/Scope.art.vue",
+        "range": {
+          "start": {
+            "line": 2,
+            "character": 14
+          },
+          "end": {
+            "line": 2,
+            "character": 20
+          }
+        }
+      },
+      {
+        "uri": "${workspace}/Scope.art.vue",
+        "range": {
+          "start": {
+            "line": 7,
+            "character": 8
+          },
+          "end": {
+            "line": 7,
+            "character": 14
+          }
+        }
+      },
+      {
+        "uri": "${workspace}/Scope.art.vue",
+        "range": {
+          "start": {
+            "line": 10,
+            "character": 14
+          },
+          "end": {
+            "line": 10,
+            "character": 20
+          }
+        }
+      },
+      {
+        "uri": "${workspace}/Scope.art.vue",
+        "range": {
+          "start": {
+            "line": 12,
+            "character": 33
+          },
+          "end": {
+            "line": 12,
+            "character": 39
+          }
+        }
+      }
+    ]
+  },
+  {
+    "params": {
+      "position": {
+        "line": 7,
+        "character": 50
+      },
+      "context": {
+        "includeDeclaration": false
+      }
+    },
+    "result": [
+      {
+        "uri": "${workspace}/Scope.art.vue",
+        "range": {
+          "start": {
+            "line": 7,
+            "character": 50
+          },
+          "end": {
+            "line": 7,
+            "character": 56
+          }
+        }
+      }
+    ]
+  },
+  {
+    "params": {
+      "position": {
+        "line": 10,
+        "character": 63
+      },
+      "context": {
+        "includeDeclaration": false
+      }
+    },
+    "result": [
+      {
+        "uri": "${workspace}/Scope.art.vue",
+        "range": {
+          "start": {
+            "line": 10,
+            "character": 63
+          },
+          "end": {
+            "line": 10,
+            "character": 69
+          }
+        }
+      }
+    ]
+  },
+  {
+    "params": {
+      "position": {
+        "line": 3,
+        "character": 39
+      },
+      "context": {
+        "includeDeclaration": false
+      }
+    },
+    "result": [
+      {
+        "uri": "${workspace}/Scope.art.vue",
+        "range": {
+          "start": {
+            "line": 3,
+            "character": 39
+          },
+          "end": {
+            "line": 3,
+            "character": 45
+          }
+        }
+      }
+    ]
+  }
+]

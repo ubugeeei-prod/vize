@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "id": "lsp/regression/art-shared-references-10459",
+  "provenance": {
+    "fixCommit": "273c79cd02aac30e93db4dd8597bd55e2a4284a5",
+    "witnessPath": "tests/tooling/lsp-art-shared-references.test.ts",
+    "witnessTest": "art references join shared script identity across current variants without merging shadowed names",
+    "inputOrigin": "Minimized derivative of published v0.560.0 missing cross-variant references in #10459",
+    "contractOrigin": "Independently authored full location vectors distinguish shared setup binding, loop alias, slot alias and function parameter; declaration filtering and physical UTF-16 positions are explicit"
+  },
+  "files": [
+    {
+      "source": "Scope.art.vue.txt",
+      "runtimePath": "Scope.art.vue",
+      "sha256": "9ba194ddf4d076b3f9a0acc9474e8b067e7f15a0eda610d61bbac7e3634daf74"
+    },
+    {
+      "source": "Scope.crlf.art.vue.txt",
+      "runtimePath": "Scope.crlf.art.vue",
+      "sha256": "68dd21b8ce4059509d727af348140693c45b4b7b6166940ec216b107138be5f0"
+    },
+    {
+      "source": "Child.vue.txt",
+      "runtimePath": "Child.vue",
+      "sha256": "c4e75a2b5d0b350bf89669429d287dc39fd987d7405d4118895a8d69443898c4"
+    },
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "8f4cc08b465ddf6df35387e36be46136f6b6f7f5f19085ca9d6a3fcc1cda9b31"
+    }
+  ],
+  "entry": "Scope.art.vue",
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "6b400282a4f928d9586dfffc6f55a2f23a6a522dbaa76c9cea234fee15c97627"
+  },
+  "method": "textDocument/references",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "scope": "Complete type-service-backed authored references; source-inspected input custody does not establish native whole-product parity"
+}

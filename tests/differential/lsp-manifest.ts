@@ -113,6 +113,18 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
       );
       const definition = expected as { position: unknown; result: unknown };
       requests = [{ params: { position: definition.position }, result: definition.result }];
+    } else if (data.method === "textDocument/references") {
+      assert(
+        Array.isArray(expected) && expected.length > 0,
+        "complete reference request vectors required",
+      );
+      requests = (expected as LspFixture["requests"]).map((request) => {
+        assert(request.params && "position" in request.params);
+        const context = request.params.context as { includeDeclaration?: unknown } | undefined;
+        assert.equal(typeof context?.includeDeclaration, "boolean");
+        assert(Array.isArray(request.result), "complete authored reference locations required");
+        return request;
+      });
     } else if (data.method === "textDocument/hover") {
       assert(
         Array.isArray(expected) && expected.length === 2,
