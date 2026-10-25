@@ -268,6 +268,47 @@ try {
     ],
     consumer,
   );
+  if (!preflightProvider) {
+    for (const name of ["dist/index.d.cts", "dist/style.d.cts"]) {
+      assert.ok(
+        plugin.files.some((file) => file.path === name),
+        `packed public declaration missing: ${name}`,
+      );
+    }
+    await fs.writeFile(
+      path.join(consumer, "consumer-types.mts"),
+      `
+import transformer, { type VizeParcelOptions } from '@vizejs/parcel-transformer';
+import styles from '@vizejs/parcel-transformer/style';
+const standard: VizeParcelOptions = { compiler: { customElements: ['x-view'] }, transformAssetUrls: false };
+const vapor: VizeParcelOptions = { compiler: { vapor: true, runtimeModuleName: 'vue' } };
+// @ts-expect-error Source-map ownership belongs to Parcel.
+const badMap: VizeParcelOptions = { compiler: { sourceMap: false } };
+// @ts-expect-error This compiler has no custom-runtime Vapor capability.
+const badVapor: VizeParcelOptions = { compiler: { vapor: true, runtimeModuleName: 'custom-runtime' } };
+void [transformer, styles, standard, vapor, badMap, badVapor];
+`,
+    );
+    const packageRequire = createRequire(path.join(repository, "npm/builder/parcel/package.json"));
+    run(
+      process.execPath,
+      [
+        packageRequire.resolve("typescript/bin/tsc"),
+        "--ignoreConfig",
+        "--noEmit",
+        "--strict",
+        "--skipLibCheck",
+        "--target",
+        "ES2022",
+        "--module",
+        "NodeNext",
+        "--moduleResolution",
+        "NodeNext",
+        "consumer-types.mts",
+      ],
+      consumer,
+    );
+  }
   assert.equal(
     sha(await fs.readFile(path.join(consumer, "package-lock.json"))),
     lock,
@@ -676,6 +717,7 @@ try {
     hostElapsedMs: performance.now() - started,
     assertions: [
       "packed-native-image",
+      ...(!preflightProvider ? ["packed-public-types"] : []),
       "real-parcel-production",
       "scoped-css",
       "production-css-vars",
@@ -698,6 +740,7 @@ try {
       "unsupported-css-module-rejected",
       "external-script-rejected",
       "unknown-config-rejected",
+      "unsupported-custom-vapor-runtime-rejected",
     ],
   });
   success = true;

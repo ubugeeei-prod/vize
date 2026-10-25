@@ -12,7 +12,6 @@ const origin = "@vizejs/parcel-transformer";
 export interface VizeParcelOptions {
   compiler?: Pick<
     SfcCompileOptionsNapi,
-    | "vapor"
     | "customElements"
     | "templateSyntax"
     | "experimentalInTagComments"
@@ -20,8 +19,8 @@ export interface VizeParcelOptions {
     | "experimentalSelfComponent"
     | "experimentalStrictSlotChildren"
     | "experimentalServerScript"
-    | "runtimeModuleName"
-  >;
+  > &
+    ({ vapor?: false; runtimeModuleName?: string } | { vapor: true; runtimeModuleName?: "vue" });
   /** Resolve relative template asset URLs through Parcel. Default true. */
   transformAssetUrls?: boolean;
 }
