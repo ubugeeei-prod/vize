@@ -136,7 +136,6 @@ impl AliasContext {
             .find_by_original(source)?
             .virtual_path
             .clone();
-        let spelled = target.to_string_lossy().replace('\\', "/");
         if super::is_declaration(&target) {
             return Some(
                 crate::batch::declaration_module_path(&target)
@@ -144,13 +143,11 @@ impl AliasContext {
                     .replace('\\', "/"),
             );
         }
-        Some(
-            spelled
-                .strip_suffix(".tsx")
-                .or_else(|| spelled.strip_suffix(".ts"))
-                .unwrap_or(&spelled)
-                .to_owned(),
-        )
+        let mut spelled = target.to_string_lossy().replace('\\', "/");
+        let length =
+            crate::batch::import_rewriter_alias::extensionless_typescript_specifier(&spelled).len();
+        spelled.truncate(length);
+        Some(spelled)
     }
 
     pub(in crate::corsa_bridge) fn mirror_virtual_path(&self, source: &Path) -> Option<PathBuf> {

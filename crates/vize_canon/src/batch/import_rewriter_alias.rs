@@ -19,6 +19,15 @@ use super::import_rewriter::{
 pub type AliasSpecifierResolver<'a> =
     &'a dyn Fn(&str, crate::PackageResolutionMode) -> Option<std::string::String>;
 
+/// Borrow the module spelling already used by the editor alias fallback.
+/// Callers retain responsibility for admitting source-extension removal.
+pub(crate) fn extensionless_typescript_specifier(specifier: &str) -> &str {
+    specifier
+        .strip_suffix(".tsx")
+        .or_else(|| specifier.strip_suffix(".ts"))
+        .unwrap_or(specifier)
+}
+
 impl ImportRewriter {
     /// Like [`ImportRewriter::rewrite`], additionally consulting
     /// `alias_resolver` for non-relative specifiers.
@@ -103,5 +112,31 @@ impl ImportRewriter {
                 )
             })
             .or_else(|| source_dir.and_then(|dir| rewrite_relative_vue_specifier(path, dir)))
+    }
+}
+
+#[cfg(test)]
+mod module_spelling_tests {
+    use super::extensionless_typescript_specifier;
+
+    #[test]
+    fn preserves_the_existing_fallback_suffix_semantics_without_allocation() {
+        for (source, expected) in [
+            ("/mirror/index.ts", "/mirror/index"),
+            ("/mirror/index.tsx", "/mirror/index"),
+            (
+                "/mirror/日本語🍣/quoted\"dir.ts",
+                "/mirror/日本語🍣/quoted\"dir",
+            ),
+            ("/mirror/index.d.ts", "/mirror/index.d"),
+            ("/mirror/index.mts", "/mirror/index.mts"),
+            ("/mirror/index.cts", "/mirror/index.cts"),
+            ("/mirror/index.TS", "/mirror/index.TS"),
+            ("/mirror/index.ts/child", "/mirror/index.ts/child"),
+        ] {
+            let actual = extensionless_typescript_specifier(source);
+            assert_eq!(actual, expected);
+            assert_eq!(actual.as_ptr(), source.as_ptr());
+        }
     }
 }

@@ -151,7 +151,16 @@ impl VirtualProject {
                     } else {
                         target.virtual_path.clone()
                     };
-                    Some(path.to_string_lossy().replace('\\', "/"))
+                    let mut spelled = path.to_string_lossy().replace('\\', "/");
+                    if target.original_path.extension().is_some_and(|extension| extension == "ts")
+                        && !crate::batch::declaration_path::is_declaration_file(&target.original_path)
+                        && target.source_map.sfc_map.is_none()
+                        && self.alias_rewrite_policy().admits_extensionless_typescript_alias(specifier)
+                    {
+                        let length = crate::batch::import_rewriter_alias::extensionless_typescript_specifier(&spelled).len();
+                        spelled.truncate(length);
+                    }
+                    Some(spelled)
                 };
                 let source_type = super::build::source_type_for_path(&file.virtual_path)?;
                 let rewritten = match facts.as_deref_mut() {

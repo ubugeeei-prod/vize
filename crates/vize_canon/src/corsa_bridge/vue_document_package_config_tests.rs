@@ -7,6 +7,8 @@ use super::vue_document::{
     build_vue_virtual_project_with_overlays_and_options_and_package_routes,
 };
 
+mod extensionless_ts_alias;
+
 #[test]
 fn editor_uses_nearest_package_tsconfig_beneath_a_monorepo_workspace() {
     for solution in [false, true] {

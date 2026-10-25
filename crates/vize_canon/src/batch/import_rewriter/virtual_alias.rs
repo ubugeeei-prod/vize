@@ -15,6 +15,7 @@ use super::virtual_rewrite::{append_extension, resolve_source_path};
 #[derive(Debug, Default)]
 pub(crate) struct VirtualAliasRewritePolicy {
     patterns: Vec<PathAliasPattern>,
+    bundler_typescript_aliases: bool,
 }
 
 #[derive(Debug)]
@@ -35,7 +36,34 @@ impl VirtualAliasRewritePolicy {
                 (!targets.is_empty()).then(|| PathAliasPattern::new(pattern, targets))
             })
             .collect();
-        Self { patterns }
+        Self {
+            patterns,
+            ..Default::default()
+        }
+    }
+
+    #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
+    pub(crate) fn from_compiler_options(options: &Map<std::string::String, Value>) -> Self {
+        let mut policy = options
+            .get("paths")
+            .and_then(Value::as_object)
+            .map(Self::from_paths)
+            .unwrap_or_default();
+        // Deliberately admit only explicit Bundler authority. Node ESM and
+        // inferred/default resolver modes retain their existing spelling.
+        policy.bundler_typescript_aliases = options
+            .get("moduleResolution")
+            .and_then(Value::as_str)
+            .is_some_and(|mode| mode.eq_ignore_ascii_case("bundler"));
+        policy
+    }
+
+    pub(crate) fn admits_extensionless_typescript_alias(&self, specifier: &str) -> bool {
+        self.bundler_typescript_aliases
+            && !specifier.starts_with('.')
+            && !Path::new(specifier).is_absolute()
+            && Path::new(specifier).extension().is_none()
+            && self.matches(specifier)
     }
 
     pub(crate) fn source_may_contain_rewritable_alias(&self, source: &str) -> bool {
@@ -229,6 +257,39 @@ mod tests {
 
     fn policy(paths: serde_json::Value) -> VirtualAliasRewritePolicy {
         VirtualAliasRewritePolicy::from_paths(paths.as_object().unwrap())
+    }
+
+    #[test]
+    fn typescript_alias_admission_requires_explicit_bundler_and_original_alias_identity() {
+        for mode in [
+            "bundler", "Bundler", "node16", "nodenext", "node10", "classic",
+        ] {
+            let options = json!({"moduleResolution":mode,"paths":{"#lib/*":["src/lib/*"]}});
+            let configured =
+                VirtualAliasRewritePolicy::from_compiler_options(options.as_object().unwrap());
+            assert_eq!(
+                configured.admits_extensionless_typescript_alias("#lib/greet"),
+                mode.eq_ignore_ascii_case("bundler")
+            );
+            for excluded in [
+                "#lib/greet.ts",
+                "#lib/greet.tsx",
+                "./greet",
+                "../greet",
+                "/greet",
+                "#other/greet",
+            ] {
+                assert!(
+                    !configured.admits_extensionless_typescript_alias(excluded),
+                    "{mode}: {excluded}"
+                );
+            }
+        }
+        let implicit = json!({"module":"preserve","paths":{"#lib/*":["src/lib/*"]}});
+        assert!(
+            !VirtualAliasRewritePolicy::from_compiler_options(implicit.as_object().unwrap())
+                .admits_extensionless_typescript_alias("#lib/greet")
+        );
     }
 
     fn rewrite_extensionless(

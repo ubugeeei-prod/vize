@@ -1,5 +1,3 @@
-use serde_json::Value;
-
 use crate::batch::import_rewriter::VirtualAliasRewritePolicy;
 
 use super::VirtualProject;
@@ -19,10 +17,6 @@ impl VirtualProject {
         else {
             return VirtualAliasRewritePolicy::default();
         };
-        compiler_options
-            .get("paths")
-            .and_then(Value::as_object)
-            .map(VirtualAliasRewritePolicy::from_paths)
-            .unwrap_or_default()
+        VirtualAliasRewritePolicy::from_compiler_options(&compiler_options)
     }
 }
