@@ -128,7 +128,8 @@ try {
   json(process.env.VIZE_BABEL_PROFILE_OUTPUT, {
     schema: "vize.babel.source-host-profile.v1",
     scope:
-      "measured complete Babel transform and real native-call boundary; no equivalent-work speedup claim",
+      "instrumented debug source addon and complete Babel transform; no production or equivalent-work speedup claim",
+    nativeBuild: "build:native:test uses native build:debug",
     source,
     host: core.version,
     node: process.version,
