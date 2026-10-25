@@ -34,10 +34,22 @@
     {
       "sha": "4c5b070650e19098adb5f4a7806eb5c9132537e4",
       "tree": "cb7555c5feb0ab855fcf40edcbedb584a1103fb0"
+    },
+    {
+      "sha": "6b3701e275bdd91dfb405f1d04156018ff2f9d11",
+      "tree": "face6e4b53e16dc0c4040fb98d3013618d6162c3"
     }
   ],
   "currentComposedBeforeLedger": {
-    "sha": "4c64b66172675fad3855234447734a1258b390ac",
-    "tree": "ba62a630a88420def3a85a166819547703b1f2a5"
-  }
+    "sha": "c17ef3ccdb37ea194483819f9ac0c52de75f7753",
+    "tree": "8b00a0e6a2eb2094a1c163c3e9e62d2bbaba4695"
+  },
+  "priorCampaigns": [
+    {
+      "source": "42a169ec866e214664f768c417957d0a049cbd84",
+      "run": 40220480900,
+      "artifact": 12608819005,
+      "actual": "cold36 green; actual source Babel7 ESM18/CJS18 green; Babel8 fails removed Scope#uids before native; all raw packets retained"
+    }
+  ]
 }
