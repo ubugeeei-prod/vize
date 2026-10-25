@@ -62,13 +62,15 @@ pub(super) fn write_rendered_attribute(
 ) {
     // Keep the ordinary LF/CRLF path on the original single-delimiter
     // iterator. Lone-CR output is rare and normalized once before emission.
-    let separator = if newline == b"\r" { '\r' } else { '\n' };
-    let mut lines = attr.split(separator);
-    let mut literal = if separator == '\r' {
-        ValueLines::for_cr_attribute(attr)
+    let normalized;
+    let attr = if newline == b"\r" && attr.contains('\r') {
+        normalized = attr.replace('\r', "\n");
+        normalized.as_str()
     } else {
-        ValueLines::for_attribute(attr)
+        attr
     };
+    let mut lines = attr.split('\n');
+    let mut literal = ValueLines::for_attribute(attr);
     if let Some(first) = lines.next() {
         output.extend_from_slice(first.trim_end_matches('\r').as_bytes());
     }

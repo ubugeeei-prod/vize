@@ -44,23 +44,6 @@ impl ValueLines {
         )
     }
 
-    pub(crate) fn for_cr_attribute(attr: &str) -> Self {
-        let value = attr
-            .split_once('=')
-            .and_then(|(_, value)| {
-                let quote = value.chars().next().filter(|c| matches!(c, '"' | '\''))?;
-                let value = value.get(1..)?;
-                Some(value.strip_suffix(quote).unwrap_or(value))
-            })
-            .unwrap_or_default();
-        match parsed_raw_lines_with_separator::<b'\r'>(value, Representation::Html) {
-            Some(raw) => Self::Parsed { raw, next: 1 },
-            None => Self::Lexed(LiteralLineState::from_attribute(
-                attr.split('\r').next().unwrap_or_default(),
-            )),
-        }
-    }
-
     /// Ownership for the lines after the first of a rendered `name="value"`.
     pub(crate) fn for_attribute(attr: &str) -> Self {
         let value = attr
@@ -108,7 +91,7 @@ fn parsed_raw_lines_with_separator<const NEWLINE: u8>(
     value: &str,
     representation: Representation,
 ) -> Option<Vec<bool>> {
-    if !value.as_bytes().contains(&NEWLINE) {
+    if !value.contains(char::from(NEWLINE)) {
         return None;
     }
     let decoded = match representation {
@@ -147,49 +130,6 @@ fn parsed_raw_lines_with_separator<const NEWLINE: u8>(
         }
     }
     Some(raw)
-}
-
-/// Normalize code layout for the embedded printer while keeping separators
-/// owned by string/template spans byte-identical.
-pub(crate) fn normalize_layout_cr(value: &str, representation: Representation) -> vize_l0::String {
-    normalize_layout_separator::<b'\r', b'\n'>(value, representation)
-}
-
-pub(crate) fn normalize_layout_lf_to_cr(
-    value: &str,
-    representation: Representation,
-) -> vize_l0::String {
-    normalize_layout_separator::<b'\n', b'\r'>(value, representation)
-}
-
-fn normalize_layout_separator<const FROM: u8, const TO: u8>(
-    value: &str,
-    representation: Representation,
-) -> vize_l0::String {
-    let mut lines = value.split(char::from(FROM));
-    let first = lines.next().unwrap_or_default();
-    let mut output = vize_l0::String::with_capacity(value.len());
-    output.push_str(first);
-    let mut literal = if FROM == b'\r' {
-        ValueLines::with_cr(value, representation)
-    } else {
-        ValueLines::new(value, representation)
-    };
-    literal.advance_line(first);
-    for line in lines {
-        let raw = literal.line_is_raw();
-        if !raw && FROM == b'\n' && output.ends_with('\r') {
-            output.pop();
-        }
-        output.push(char::from(if raw { FROM } else { TO }));
-        output.push_str(if !raw && FROM == b'\r' {
-            line.strip_prefix('\n').unwrap_or(line)
-        } else {
-            line
-        });
-        literal.advance_line(line);
-    }
-    output
 }
 
 /// Decode attribute character references; a reference that decodes to a line

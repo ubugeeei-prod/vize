@@ -226,6 +226,7 @@ fn cr_output_reaches_a_fixed_point() {
         "<template>\n  <div\n    v-if=\"\n      firstCondition &&\n      secondCondition &&\n      thirdCondition\n    \"\n  />\n</template>\n",
         "<template>\n  <CodeHighlight\n    :code=\"report.official.formattedCode || report.official.error || report.official.code\"\n  />\n</template>\n",
         "<template>\n  <div :style=\"\n    // keep this comment on its own line\n    styles as CSSProperties\n  \" />\n</template>\n",
+        "<template>\n  <div :class=\"`first\nsecond`\" />\n</template>\n",
         "<template>\n  <!-- eslint-disable-next-line -->\n  label: <input />\n</template>\n",
         "<template lang=\"pug\">\ndiv\n  p {{ a }}\n</template>\n",
         "<style>\n.a { color: red; }\n\n/* next rule */\n.b { color: blue; }\n</style>\n",
@@ -239,29 +240,5 @@ fn cr_output_reaches_a_fixed_point() {
             first,
             "{source}"
         );
-    }
-}
-
-#[test]
-fn cr_layout_keeps_authored_template_text_separators() {
-    let options = FormatOptions {
-        end_of_line: EndOfLine::Cr,
-        ..FormatOptions::default()
-    };
-    for raw in ["\n", "\r\n", "\r"] {
-        let source = format!("<template>\n  <div :class=\"`first{raw}second`\" />\n</template>\n");
-        let expected =
-            format!("<template>\r  <div\r    :class=\"`first{raw}second`\"\r  />\r</template>\r");
-        let mut previous = source;
-        for pass in 0..3 {
-            let result = format_sfc(&previous, &options).unwrap();
-            assert_eq!(result.code.as_str(), expected, "raw {raw:?} pass {pass}");
-            assert_eq!(
-                result.changed,
-                previous != expected,
-                "raw {raw:?} pass {pass}"
-            );
-            previous = result.code.to_string();
-        }
     }
 }

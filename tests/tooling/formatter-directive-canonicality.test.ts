@@ -116,7 +116,9 @@ void test("source CLI directive layouts preserve parsed expressions and rendered
 
   for (const raw of ["\n", "\r\n", "\r"]) {
     const literal = `String.raw\`first${raw}  exact \${unread} line${raw}last\``;
+    const printedLiteral = "String.raw`first\r  exact ${unread} line\rlast`";
     const source = `<template>\r  <div :class="{ [${literal}]: visible, active: visible }" />\r</template>\r`;
+    const expected = `<template>\r  <div\r    :class="{\r      [${printedLiteral}]: visible,\r      active: visible\r    }"\r  />\r</template>\r`;
     const file = path.join(directory, "Raw.vue");
     fs.writeFileSync(file, source);
     let canonical: string | undefined;
@@ -142,11 +144,15 @@ void test("source CLI directive layouts preserve parsed expressions and rendered
       assert.ifError(result.error);
       assert.equal(result.status, 0, result.stderr);
       const actual = fs.readFileSync(file, "utf8");
-      assert.ok(actual.includes(literal), "raw literal separators and content survive");
+      assert.equal(actual, expected, "configured CR layout retains literal spaces");
       if (canonical !== undefined) assert.equal(actual, canonical);
       canonical = actual;
     }
     for (const unread of [0, 2]) {
+      const authoredValue = compileFunction(`return (${literal})`, ["unread"])(unread);
+      const printedValue = compileFunction(`return (${printedLiteral})`, ["unread"])(unread);
+      assert.equal(authoredValue, `first\n  exact ${unread} line\nlast`);
+      assert.equal(printedValue, authoredValue, "String.raw normalizes CR, CRLF and LF equally");
       for (const visible of [false, true]) {
         const state = { unread, visible };
         assert.equal(await render(canonical!, state), await render(source, state));

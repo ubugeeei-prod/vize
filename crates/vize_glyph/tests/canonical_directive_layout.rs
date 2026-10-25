@@ -46,7 +46,8 @@ fn directive_layout_uses_ast_and_final_indentation() -> Result<(), Box<dyn std::
 }
 
 #[test]
-fn cr_object_layout_preserves_mixed_literal_separators() -> Result<(), Box<dyn std::error::Error>> {
+fn cr_object_layout_keeps_literal_spaces_with_configured_separators()
+-> Result<(), Box<dyn std::error::Error>> {
     let options = FormatOptions {
         end_of_line: EndOfLine::Cr,
         trailing_comma: TrailingComma::None,
@@ -58,8 +59,9 @@ fn cr_object_layout_preserves_mixed_literal_separators() -> Result<(), Box<dyn s
         let source = format!(
             "<template>\r  <div :class=\"{{ [{literal}]: visible, active: visible }}\" />\r</template>\r"
         );
+        let printed_literal = "String.raw`first\r  exact ${unread} line\rlast`";
         let expected = format!(
-            "<template>\r  <div\r    :class=\"{{\r      [{literal}]: visible,\r      active: visible\r    }}\"\r  />\r</template>\r"
+            "<template>\r  <div\r    :class=\"{{\r      [{printed_literal}]: visible,\r      active: visible\r    }}\"\r  />\r</template>\r"
         );
         let first = format_sfc(&source, &options)?;
         assert_eq!(first.code.as_str(), expected, "raw {raw:?}");
