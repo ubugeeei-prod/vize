@@ -181,9 +181,8 @@ impl<'a> TemplateBindingAccess<'a> {
                     .map(|row| String::from(row.name.as_str())),
             );
             names.extend(
-                summary
-                    .used_components
-                    .iter()
+                vize_croquis::facts::used_component_name_list(summary)
+                    .into_iter()
                     .map(|name| String::from(name.as_str())),
             );
             names.extend(
