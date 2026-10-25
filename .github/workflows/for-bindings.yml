@@ -19,11 +19,12 @@ on:
       - "crates/vize_atelier_vapor/src/generate/context/**"
       - "crates/vize_atelier_vapor/src/generate/operations/for_loop.rs"
       - "crates/vize_atelier_sfc/examples/for_binding_profile.rs"
+      - "tests/tooling/for-key-literal-source.mjs"
       - "tests/tooling/for-binding-source.mjs"
       - "tests/tooling/for-binding-verify.mjs"
       - ".github/workflows/for-bindings.yml"
 
-permissions: { contents: read }
+permissions: { contents: read, actions: read }
 concurrency:
   group: for-bindings-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -66,6 +67,15 @@ jobs:
             ~/.cargo/git
           key: for-bindings-registry-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
       - run: vp install --frozen-lockfile --prefer-offline
+      - name: Load byte-pinned source images for the independent callback-literal probe
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: for-bindings-40231338473-1-f729da5295354df9384b8162cc2769fee7aadec6
+          run-id: 40231338473
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/for-key-literal-providers
+      - name: Observe original callback literals through actual Vue and frozen native images
+        run: node tests/tooling/for-key-literal-source.mjs "$RUNNER_TEMP/for-key-literal-providers" "$RUNNER_TEMP/for-bindings"
       - name: Build immutable before and head producers in separate source targets
         shell: bash
         run: |
