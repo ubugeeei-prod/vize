@@ -365,6 +365,41 @@ try {
       (entry) => entry.code === 2307 && entry.text.includes("App.vue"),
     ),
   );
+  const closedReferencesDirectory = path.join(output, "closed-component-references");
+  fs.mkdirSync(closedReferencesDirectory);
+  const closedReferencesClient = startTsserver(tsserver, consumer, closedReferencesDirectory);
+  try {
+    await closedReferencesClient.send("configure", {
+      extraFileExtensions: [
+        { extension: ".vue", isMixedContent: true, scriptKind: 7 },
+        { extension: ".art", isMixedContent: true, scriptKind: 7 },
+      ],
+    });
+    await closedReferencesClient.send("open", { file: main, fileContent: mainText }, false);
+    const utilFile = path.join(src, "util.ts");
+    await closedReferencesClient.send(
+      "open",
+      { file: utilFile, fileContent: fs.readFileSync(utilFile, "utf8") },
+      false,
+    );
+    const response = await closedReferencesClient.send("references", {
+      file: utilFile,
+      line: 1,
+      offset: 15,
+    });
+    results["closed-component-references"] = response;
+    assert(
+      response.body.refs.some(
+        (entry) =>
+          entry.file === vue &&
+          entry.start.line === 2 &&
+          entry.lineText.includes("import { word }"),
+      ),
+      JSON.stringify(response),
+    );
+  } finally {
+    await closedReferencesClient.stop();
+  }
   const helperPath = path.join(consumer, "node_modules/@vizejs/native/language-projection.js");
   fs.renameSync(helperPath, `${helperPath}.disabled`);
   try {

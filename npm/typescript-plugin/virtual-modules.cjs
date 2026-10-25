@@ -29,6 +29,12 @@ function installVueVirtualModules(ts, info) {
     const raw = closedMixed ? undefined : originalSnapshot;
     const source = raw?.getText(0, raw.getLength()) ?? readFile(fileName);
     if (typeof source !== "string") return undefined;
+    if (closedMixed && originalSnapshot?.getText(0, originalSnapshot.getLength()) !== source) {
+      // Reference/rename protocol responses use ScriptInfo's own line map and
+      // snapshot, rather than LanguageService.toLineColumnOffset. Populate the
+      // authored disk text through its public API; open buffers are untouched.
+      scriptInfo.reloadFromFile?.(fileName);
+    }
     const settings = host.getCompilationSettings?.() || {};
     const configSource =
       typeof settings.configFilePath === "string" ? readFile(settings.configFilePath) : "";
