@@ -9,7 +9,7 @@ import {
   assertExactCssTree,
   assertCleanCssSourceWorkingTree,
   composeReviewedCssTrees,
-  verifyCssHoverSourceCustody,
+  verifyPinnedCssHoverProduct,
 } from "../../editors/vscode/test/css-hover-source-custody.mjs";
 
 const row = (path, oid, mode = "100644") => ({ path, mode, type: "blob", oid });
@@ -87,13 +87,9 @@ await test("dirty and staged approved sources, untracked source and dirty build 
   }
 });
 
-await test("historical anchors and the actual integrated source tree remain qualified", () => {
+await test("historical anchors and the pinned integrated product tree remain qualified", () => {
   const root = fileURLToPath(new URL("../../", import.meta.url));
-  const revision = execFileSync("git", ["rev-parse", "HEAD"], {
-    cwd: root,
-    encoding: "utf8",
-  }).trim();
-  const report = verifyCssHoverSourceCustody(root, revision);
+  const report = verifyPinnedCssHoverProduct(root);
   assert.equal(report.productionChanges.length, 9);
   assert.equal(report.historicalBaselineRevision, "2934b35b18393c188b3da5f8e50595299589fb8c");
   assert.equal(report.historicalCapture.sourceRevision, "0cc8615736db2f2ef6b82177aa2e92a7de9f86dc");
@@ -103,6 +99,8 @@ await test("historical anchors and the actual integrated source tree remain qual
       new URL("../../editors/vscode/test/css-hover-source-custody.json", import.meta.url),
     ),
   );
+  assert.equal(report.sourceRevision, contract.productTreeRevision);
+  assert.equal(report.proofKind, "pinned-product-snapshot");
   assert.deepEqual(
     contract.layers.map((layer) => layer.changes.length),
     [7, 2],

@@ -25,8 +25,8 @@ const reviewedLayers = [
   },
 ];
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
-const sorted = (records) =>
-  [...records].sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
+const compareStrings = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+const sorted = (records) => [...records].sort((a, b) => compareStrings(a.path, b.path));
 const fingerprint = (records) => hash(JSON.stringify(sorted(records)));
 
 export function composeReviewedCssTrees(baseline, layers) {
@@ -60,7 +60,7 @@ export function assertExactCssTree(actual, expected) {
   assert.equal(current.size, actual.length, "duplicate actual tree path");
   assert.equal(reviewed.size, expected.length, "duplicate reviewed tree path");
   const differences = [...new Set([...current.keys(), ...reviewed.keys()])]
-    .sort()
+    .sort(compareStrings)
     .filter((name) => !isDeepStrictEqual(current.get(name), reviewed.get(name)))
     .map((name) => ({
       path: name,
@@ -91,7 +91,7 @@ export function assertCleanCssSourceWorkingTree(repoRoot) {
   );
 }
 
-export function verifyCssHoverSourceCustody(repoRoot, expectedRevision) {
+function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
   const git = (...args) =>
     execFileSync("git", args, { cwd: repoRoot, encoding: "utf8", maxBuffer: 32 * 1024 * 1024 });
   const readTree = (revision, paths) =>
@@ -119,10 +119,16 @@ export function verifyCssHoverSourceCustody(repoRoot, expectedRevision) {
     })),
     reviewedLayers,
   );
-  const revision = git("rev-parse", "HEAD").trim();
-  assert.equal(revision, expectedRevision, "source-custody head must match the requested source");
-  assertCleanCssSourceWorkingTree(repoRoot);
-  git("merge-base", "--is-ancestor", reviewedLayers[0].reviewedRevision, "HEAD");
+  const head = git("rev-parse", "HEAD").trim();
+  const revision = pinnedProduct ? contract.productTreeRevision : head;
+  if (pinnedProduct) {
+    assert.match(revision, /^[a-f0-9]{40}$/);
+    git("merge-base", "--is-ancestor", revision, "HEAD");
+  } else {
+    assert.equal(head, expectedRevision, "source-custody head must match the requested source");
+    assertCleanCssSourceWorkingTree(repoRoot);
+  }
+  git("merge-base", "--is-ancestor", reviewedLayers[0].reviewedRevision, revision);
   const baseline = readTree(historicalBaselineRevision, ["crates"]);
   assert.equal(
     git("rev-parse", `${historicalBaselineRevision}:crates`).trim(),
@@ -136,10 +142,10 @@ export function verifyCssHoverSourceCustody(repoRoot, expectedRevision) {
   // before/after blobs and modes are pinned in the committed contract; do not
   // infer a new base, fetch a floating ref, or skip a missing old revision.
   const expected = composeReviewedCssTrees(baseline, contract.layers);
-  const actual = readTree("HEAD", ["crates"]);
+  const actual = readTree(revision, ["crates"]);
   assertExactCssTree(actual, expected);
   assert.deepEqual(
-    sorted(readTree("HEAD", contract.buildPaths)),
+    sorted(readTree(revision, contract.buildPaths)),
     contract.buildInputs,
     "workspace build inputs changed",
   );
@@ -171,14 +177,26 @@ export function verifyCssHoverSourceCustody(repoRoot, expectedRevision) {
     historicalBaselineRevision,
     historicalCapture: contract.historicalCapture,
     sourceRevision: revision,
+    proofKind: pinnedProduct ? "pinned-product-snapshot" : "current-checkout",
     contractSha256: hash(contractBytes),
     reviewedLayers: contract.layers,
     cratesSha256: fingerprint(actual),
     productionChanges: [
       ...new Set(contract.layers.flatMap((layer) => layer.changes.map((change) => change.path))),
-    ].sort(),
+    ].sort(compareStrings),
     buildInputs: contract.buildInputs,
   };
+}
+
+// Ordinary PR checks may run on GitHub's merge tree containing unrelated main
+// changes. They validate this explicit reviewed product snapshot; actual host
+// acceptance always calls the separate strict current-checkout verifier below.
+export function verifyPinnedCssHoverProduct(repoRoot) {
+  return verifyCssSnapshot(repoRoot, undefined, true);
+}
+
+export function verifyCssHoverSourceCustody(repoRoot, expectedRevision) {
+  return verifyCssSnapshot(repoRoot, expectedRevision, false);
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

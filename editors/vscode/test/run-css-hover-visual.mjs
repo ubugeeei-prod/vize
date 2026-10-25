@@ -53,6 +53,7 @@ validateBuildReceipt(receipt, identity);
 let sourceCustody;
 try {
   sourceCustody = verifyCssHoverSourceCustody(root, identity.sourceRevision);
+  assert.equal(sourceCustody.proofKind, "current-checkout");
   assert.equal(sourceCustody.historicalBaselineRevision, baselineRevision);
   write("source-custody.json", sourceCustody);
 } catch (error) {
