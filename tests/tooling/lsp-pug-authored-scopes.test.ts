@@ -109,6 +109,10 @@ section
                 kind: "markdown",
                 value: `**item**\n\n_${entry.kind} scope binding_\n\n\`\`\`pug\n${entry.tag}\n\`\`\`\n\n${loop ? "Loop value alias declared by the nearest `v-for` and available to this template scope." : "Slot prop binding declared by the nearest scoped slot and available to this template subtree."}\n\n**Behavior**\n- Shadows outer template and script bindings with the same name.\n- ${loop ? "Type-backed sessions should refine this with the iterable item type when the backend answers." : "Type-backed sessions should refine this with the child component slot prop type when the backend answers."}`,
               },
+              range: {
+                start: offsetToPosition(source, entry.usage),
+                end: offsetToPosition(source, entry.usage + 4),
+              },
             });
             const names = [
               "item",
