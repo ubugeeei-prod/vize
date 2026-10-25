@@ -62,6 +62,39 @@ runs:
         set -euo pipefail
         node tools/support/github/vp-install.ts --filter './npm/builder/vite...' --filter './npm/cli...'
         git submodule update --init --depth 1 -- tests/_fixtures/_git/element-plus
+    - name: Preserve the complete raw native alias contract and independent AST laws
+      shell: bash
+      env:
+        VIZE_TEST_REQUIRE_TSGO: "1"
+        VIZE_TYPECHECK_REGRESSION_CAPTURE: ${{ runner.temp }}/native-snapshot-source/raw-alias-10695
+      run: |
+        set -euo pipefail
+        unset VIZE_TEST_DISABLE_TSGO
+        capture="$VIZE_TYPECHECK_REGRESSION_CAPTURE"
+        mkdir -p "$capture"
+        cargo test --locked --profile ci -p vize_canon --lib corsa_bridge::outside_import_editor_tests::alias_packet:: -- --nocapture --color never >"$capture/ast.stdout" 2>"$capture/ast.stderr"
+        cargo test --locked --profile ci -p vize_canon --lib corsa_bridge::vue_document_package_config_tests::native_editor_resolves_package_alias_from_monorepo_root -- --exact --nocapture --color never >"$capture/native.stdout" 2>"$capture/native.stderr"
+        node --input-type=module - "$capture" <<'NODE'
+        import assert from 'node:assert/strict';
+        import { readFileSync, realpathSync, writeFileSync } from 'node:fs';
+        import { createHash } from 'node:crypto';
+        import { execFileSync } from 'node:child_process';
+        import { join } from 'node:path';
+        const capture = process.argv[2];
+        const ast = readFileSync(join(capture, 'ast.stdout'), 'utf8');
+        const native = readFileSync(join(capture, 'native.stdout'), 'utf8');
+        assert.match(ast, /test result: ok\. 4 passed; 0 failed; 0 ignored;/);
+        assert.match(native, /test result: ok\. 1 passed; 0 failed; 0 ignored;/);
+        const directory = join(capture, 'editor-monorepo-alias');
+        const runtime = JSON.parse(readFileSync(join(directory, 'runtime.json')));
+        const executable = realpathSync(runtime.nativeBinary);
+        assert.equal(executable, realpathSync(process.env.CORSA_PATH));
+        const image = createHash('sha256').update(readFileSync(executable)).digest('hex');
+        assert.equal(image, '4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4');
+        const diagnostics = JSON.parse(readFileSync(join(directory, 'diagnostics.json')));
+        assert.equal(diagnostics.length, 6);
+        writeFileSync(join(capture, 'execution.json'), JSON.stringify({source:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),run:process.env.GITHUB_RUN_ID,attempt:process.env.GITHUB_RUN_ATTEMPT,astLaws:4,nativeCases:1,executable,image,wholeDiagnosticCount:6,rawContractOnly:true,generatedExtensionIssueUnfixed:10753},null,2)+'\n');
+        NODE
     - name: Test memberless Vue preparation against its acknowledged same-owner pull
       shell: bash
       env:
@@ -156,39 +189,6 @@ runs:
         unset VIZE_TEST_DISABLE_TSGO
         cargo test --locked --profile ci -p vize_canon --test native_syntax_semantics -- --nocapture --test-threads=1
         cargo test --locked --profile ci -p vize_canon --lib generated_diagnostics:: -- --nocapture --test-threads=1
-    - name: Preserve the complete raw native alias contract and independent AST laws
-      shell: bash
-      env:
-        VIZE_TEST_REQUIRE_TSGO: "1"
-        VIZE_TYPECHECK_REGRESSION_CAPTURE: ${{ runner.temp }}/native-snapshot-source/raw-alias-10695
-      run: |
-        set -euo pipefail
-        unset VIZE_TEST_DISABLE_TSGO
-        capture="$VIZE_TYPECHECK_REGRESSION_CAPTURE"
-        mkdir -p "$capture"
-        cargo test --locked --profile ci -p vize_canon --lib corsa_bridge::outside_import_editor_tests::alias_packet:: -- --nocapture --color never >"$capture/ast.stdout" 2>"$capture/ast.stderr"
-        cargo test --locked --profile ci -p vize_canon --lib corsa_bridge::vue_document_package_config_tests::native_editor_resolves_package_alias_from_monorepo_root -- --exact --nocapture --color never >"$capture/native.stdout" 2>"$capture/native.stderr"
-        node --input-type=module - "$capture" <<'NODE'
-        import assert from 'node:assert/strict';
-        import { readFileSync, realpathSync, writeFileSync } from 'node:fs';
-        import { createHash } from 'node:crypto';
-        import { execFileSync } from 'node:child_process';
-        import { join } from 'node:path';
-        const capture = process.argv[2];
-        const ast = readFileSync(join(capture, 'ast.stdout'), 'utf8');
-        const native = readFileSync(join(capture, 'native.stdout'), 'utf8');
-        assert.match(ast, /test result: ok\. 4 passed; 0 failed; 0 ignored;/);
-        assert.match(native, /test result: ok\. 1 passed; 0 failed; 0 ignored;/);
-        const directory = join(capture, 'editor-monorepo-alias');
-        const runtime = JSON.parse(readFileSync(join(directory, 'runtime.json')));
-        const executable = realpathSync(runtime.nativeBinary);
-        assert.equal(executable, realpathSync(process.env.CORSA_PATH));
-        const image = createHash('sha256').update(readFileSync(executable)).digest('hex');
-        assert.equal(image, '4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4');
-        const diagnostics = JSON.parse(readFileSync(join(directory, 'diagnostics.json')));
-        assert.equal(diagnostics.length, 6);
-        writeFileSync(join(capture, 'execution.json'), JSON.stringify({source:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),run:process.env.GITHUB_RUN_ID,attempt:process.env.GITHUB_RUN_ATTEMPT,astLaws:4,nativeCases:1,executable,image,wholeDiagnosticCount:6,rawContractOnly:true,generatedExtensionIssueUnfixed:10753},null,2)+'\n');
-        NODE
     - name: Preserve actual native inputs and responses
       if: ${{ always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
