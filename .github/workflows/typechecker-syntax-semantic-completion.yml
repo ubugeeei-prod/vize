@@ -26,6 +26,11 @@ on:
         required: false
         default: false
         type: boolean
+      provider_runtime_controls:
+        description: Also require actual product-client DTO and owned close controls for the pinned provider
+        required: false
+        default: false
+        type: boolean
 permissions:
   contents: read
 concurrency:
@@ -202,6 +207,9 @@ jobs:
     env:
       SOURCE_SHA: ${{ inputs.source_ref }}
       PROVIDER_SOURCE: d6c4afddb2c55f4a9dea7b59293a99a8fdea1799
+      CARGO_INCREMENTAL: "0"
+      CARGO_BUILD_JOBS: "12"
+      CARGO_TARGET_DIR: ${{ github.workspace }}/target
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -265,6 +273,47 @@ jobs:
       - name: Capture complete Initialize ACK completion EOF and raw stderr
         working-directory: source
         run: node ../tools/support/github/native-shutdown-handshake.mjs "$RUNNER_TEMP/native-provider-contract" "$RUNNER_TEMP/native-provider-contract/provider.json"
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        if: ${{ inputs.provider_runtime_controls }}
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        if: ${{ inputs.provider_runtime_controls }}
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        if: ${{ inputs.provider_runtime_controls }}
+        with:
+          key: nextest-ci
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Require all owned wire laws and the actual product-client provider lifecycle
+        if: ${{ inputs.provider_runtime_controls }}
+        working-directory: source
+        env:
+          VIZE_TEST_NATIVE_MAPPER_TSGO: ${{ runner.temp }}/tsgo
+          VIZE_NATIVE_PROVIDER_CAPTURE_DIR: ${{ runner.temp }}/native-provider-contract/product-client
+        run: |
+          set -euo pipefail
+          directory="$RUNNER_TEMP/native-provider-contract"
+          rustc -Vv > "$directory/rustc-version.txt"
+          cargo --version > "$directory/cargo-version.txt"
+          cargo test --locked --profile ci -p vize_canon --lib lsp_client::editor_lsp::native_shutdown:: -- --nocapture --test-threads=1 > "$directory/wire-controls.stdout" 2> "$directory/wire-controls.stderr"
+          cargo test --locked --profile ci -p vize_canon --lib lsp_client::editor_lsp::native_shutdown::tests::native_provider::pinned_mapper_sessions_keep_complete_diagnostics_and_clean_owned_shutdown -- --ignored --exact --nocapture --test-threads=1 > "$directory/product-client.stdout" 2> "$directory/product-client.stderr"
+          node --input-type=module - "$directory" <<'JS'
+          import assert from 'node:assert/strict';
+          import {readFileSync} from 'node:fs';
+          import {join} from 'node:path';
+          const directory=process.argv[2];
+          const stdout=readFileSync(join(directory,'product-client.stdout'),'utf8');
+          assert(stdout.includes('test lsp_client::editor_lsp::native_shutdown::tests::native_provider::pinned_mapper_sessions_keep_complete_diagnostics_and_clean_owned_shutdown ... ok'));
+          assert(/^test result: ok\. 1 passed; 0 failed; 0 ignored; /m.test(stdout));
+          for(const phase of ['valid','error','repaired']) {
+            const packet=JSON.parse(readFileSync(join(directory,'product-client',`${phase}.json`),'utf8'));
+            assert.equal(packet.status,0);
+            assert.deepEqual(packet.wholeStderr,[]);
+            assert.equal(packet.result.admitted,true);
+          }
+          JS
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          git diff --exit-code
       - name: Retain physical image and complete contract regardless of outcome
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
