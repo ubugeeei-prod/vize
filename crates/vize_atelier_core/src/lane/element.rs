@@ -19,6 +19,7 @@ use super::{ExitFns, TransformContext};
 mod directive_expressions;
 mod frozen;
 mod vapor_runtime_props;
+mod vapor_static_style;
 mod vue_is;
 use directive_expressions::process_directive_expressions;
 /// Transform element node
@@ -135,6 +136,9 @@ fn is_registered_component(ctx: &TransformContext<'_>, tag: &str) -> bool {
 
 /// Process element properties and directives
 fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, ElementNode<'a>>) {
+    if ctx.options.vapor && !ctx.options.ssr && el.tag_type == ElementType::Element {
+        vapor_static_style::fold(ctx, el);
+    }
     let runtime_only =
         (ctx.options.vapor && !ctx.options.ssr && el.tag_type == ElementType::Element)
             .then(|| vapor_runtime_props::RuntimeOnlyContext::new(el));

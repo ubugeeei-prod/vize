@@ -1,0 +1,90 @@
+name: Vapor literal object styles
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "crates/vize_relief/**"
+      - "crates/vize_atelier_core/**"
+      - "crates/vize_atelier_vapor/**"
+      - "crates/vize_atelier_jsx/**"
+      - ".github/workflows/vapor-literal-object-styles.yml"
+permissions: { contents: read }
+concurrency:
+  group: vapor-literal-object-styles-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  styles:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    env:
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      QUALIFICATION_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      BASE_SHA: "78719553cf550bcffbf1d0fb891fda642f42de3a"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # master
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: test-scripts, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - name: Observe exact source evaluator and complete compiler packets
+        env:
+          VIZE_LITERAL_STYLE_CAPTURE: ${{ runner.temp }}/vapor-literal-styles/head.json
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/vapor-literal-styles"
+          test "$(git rev-parse HEAD)" = "$QUALIFICATION_HEAD_SHA"
+          git diff --exit-code
+          git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/vapor-literal-styles/head-source.txt"
+          cargo test --locked --profile ci -p vize_atelier_jsx --test literal_object_styles --test literal_style_source -- --nocapture --test-threads=1
+      - name: Observe the same inputs against the actual unchanged baseline
+        run: |
+          set -euo pipefail
+          baseline="$RUNNER_TEMP/vapor-literal-style-base"
+          observer=crates/vize_atelier_jsx/tests/literal_style_source.rs
+          git worktree add --detach "$baseline" "$BASE_SHA"
+          cp "$observer" "$baseline/$observer"
+          cmp "$observer" "$baseline/$observer"
+          git -C "$baseline" diff --exit-code -- crates/*/src
+          (cd "$baseline" && CARGO_TARGET_DIR="$RUNNER_TEMP/vapor-literal-style-base-target" VIZE_LITERAL_STYLE_EXPECT_OLD=1 VIZE_LITERAL_STYLE_CAPTURE="$RUNNER_TEMP/vapor-literal-styles/base.json" cargo test --locked --profile ci -p vize_atelier_jsx --test literal_style_source -- --nocapture --test-threads=1)
+          git -C "$baseline" rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/vapor-literal-styles/base-source.txt"
+          sha256sum "$observer" "$baseline/$observer" > "$RUNNER_TEMP/vapor-literal-styles/observer.sha256"
+      - name: Compare every preserved runtime path without output normalization
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          const directory = `${process.env.RUNNER_TEMP}/vapor-literal-styles`;
+          const base = JSON.parse(fs.readFileSync(`${directory}/base.json`));
+          const head = JSON.parse(fs.readFileSync(`${directory}/head.json`));
+          assert.equal(head.length, 144); assert.equal(base.length, head.length);
+          let changed = 0;
+          for (let index=0; index<head.length; index++) {
+            const current=head[index], previous=base[index];
+            for (const key of ['id','family','source','retained','mapped','mode','ssr','standalone','fold']) assert.deepEqual(current[key], previous[key]);
+            if (!current.fold) assert.deepEqual(current.output, previous.output, `preserved whole packet ${index}`);
+            else {
+              assert.notDeepEqual(current.output, previous.output, `real fold must alter the full packet ${index}`);
+              changed++;
+            }
+            if (current.family==='jsx' && (current.mode==='Vdom' || current.ssr)) {
+              assert.equal(current.counters.find(row=>row.name==='relief.inline_style.literal_object_candidates')?.total ?? 0,0);
+            }
+          }
+          fs.writeFileSync(`${directory}/comparison.json`,JSON.stringify({scope:'source-only; complete raw outputs; no browser or published artifact credit',rows:head.length,changed,preserved:head.length-changed},null,2)+'\n');
+          JS
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: vapor-literal-object-styles-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/vapor-literal-styles
+          if-no-files-found: error
+          retention-days: 14

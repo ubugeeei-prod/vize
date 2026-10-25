@@ -96,7 +96,12 @@ impl<'a> Emitter<'a, '_> {
                 template.push_char(' ');
                 template.push_str(scope_id);
             }
+            let mut style_written = false;
             for (name, value, span) in attributes {
+                if !style_written && self.static_style_before(index, span.0) {
+                    self.write_static_style(index, template);
+                    style_written = true;
+                }
                 template.push_char(' ');
                 let name_token = self.token(span, |raw| raw.starts_with(name).then_some(0));
                 self.link(template, name, name_token, name.len());
@@ -106,6 +111,9 @@ impl<'a> Emitter<'a, '_> {
                     self.link(template, &escaped(value), value_token, value.len());
                     template.push_char('"');
                 }
+            }
+            if !style_written {
+                self.write_static_style(index, template);
             }
             template.push_char('>');
             if let Some(id) = id {
