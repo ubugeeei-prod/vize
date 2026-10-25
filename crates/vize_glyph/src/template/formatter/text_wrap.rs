@@ -106,12 +106,15 @@ impl TemplateFormatter<'_> {
         source: &str,
         start: usize,
     ) -> bool {
+        if matches!(
+            source.as_bytes().get(start),
+            None | Some(b'<' | b'\r' | b'\n')
+        ) {
+            return false;
+        }
         let Some(tail) = source.get(start..) else {
             return false;
         };
-        if tail.is_empty() || matches!(tail.as_bytes().first(), Some(b'<' | b'\r' | b'\n')) {
-            return false;
-        }
         self.following_inline_text_overflows::<CANONICAL>(output, tail)
     }
 
