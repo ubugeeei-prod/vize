@@ -7271,6 +7271,67 @@
         ]
       },
       "diagnostics": []
+    },
+    {
+      "id": "typechecker/package-target-deletion-refresh/missing-target",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "package-target-deletion-refresh",
+      "case": "missing-target",
+      "test": "missing_exported_package_target_preserves_ts2307",
+      "regressionCommit": "9dfa45b2bcbbb5ca2ff3548ba16e607f0fc283f0",
+      "sourceRevision": "13fa41356d075047a229f580014b637d3bbeb57f",
+      "packReference": {
+        "path": "package-target-deletion-refresh/cases.json",
+        "sha256": "b339b89affcef1dd2b6b1f1878d33c4ccbe166bd69ac9d37d00eba0c6d955d5c"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "package-target-deletion-refresh/tsconfig.json.txt",
+          "sha256": "564c2e018c6547c05f7751ecc519f6dfbddf6a95074f1e441cc191fd4d7c45f9"
+        },
+        {
+          "file": "src/Host.vue",
+          "path": "package-target-deletion-refresh/Host.vue.txt",
+          "sha256": "2d01188979d639857959887ba4056cce2c1c0a6790e121368c4d30628ff4bf0d"
+        },
+        {
+          "file": "node_modules/@scope/dynamic/package.json",
+          "path": "package-target-deletion-refresh/package.json.txt",
+          "sha256": "570abd17d7d3263ef88c0d2e5fabb7d8a7e3aad78acac19a506ba679499a3af9"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": [
+        {
+          "file": "src/Host.vue",
+          "line": 2,
+          "column": 20,
+          "severity": 1,
+          "code": 2307,
+          "message": "Cannot find module '@scope/dynamic' or its corresponding type declarations."
+        }
+      ]
     }
   ],
   "protocolCases": [
