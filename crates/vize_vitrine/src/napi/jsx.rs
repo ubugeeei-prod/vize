@@ -416,7 +416,7 @@ mod tests {
     #[test]
     fn jsx_compile_result_supports_ssr_output() {
         let result = compile_jsx_impl(
-            "const App = () => <div>{message}</div>;".to_string(),
+            "const App = () => { return <div>{message}</div>; };".to_string(),
             Some(JsxCompileOptionsNapi {
                 ssr: Some(true),
                 source_map: Some(true),
@@ -434,7 +434,7 @@ mod tests {
         assert_eq!(
             decoded.get("sourcesContent"),
             Some(&serde_json::json!([
-                "const App = () => <div>{message}</div>;"
+                "const App = () => { return <div>{message}</div>; };"
             ]))
         );
     }
