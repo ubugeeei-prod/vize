@@ -102,7 +102,7 @@ void test(
         const at = (110 * png.width + 150) * 4;
         assert.deepEqual([...png.data.subarray(at, at + 4)], [0, 0, 255, 255]);
       }
-    observations.push({ phase: "programmatic-interactions", results, contexts: [...contexts] });
+      observations.push({ phase: "programmatic-interactions", results, contexts: [...contexts] });
       const repeat = await runner.runAllTests([art], base);
       assert.ok(repeat.every((result) => result.passed && result.diffPixels === 0));
       observations.push({ phase: "repeat-identical", results: repeat });
