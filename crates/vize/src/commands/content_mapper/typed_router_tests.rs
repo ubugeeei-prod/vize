@@ -22,17 +22,18 @@ fn transform(id: u8, handle: &str, file: &Path, source: &str) -> Value {
 
 fn expected(config: &Path, root: &Path, file: &Path, source: &str) -> Value {
     let compiler = json!({"rootDir":root});
-    let settings = ContentMapperProjectConfiguration::load_with_compiler_options(
-        config,
-        compiler.as_object().unwrap(),
-    )
-    .unwrap();
+    let (settings, typed_router_root) =
+        ContentMapperProjectConfiguration::load_with_compiler_options(
+            config,
+            compiler.as_object().unwrap(),
+        )
+        .unwrap();
     serde_json::to_value(
         generate_vue_content_mapper_transform_with_project_options(
             file,
             source,
             settings.transform_options,
-            settings.typed_router_root(),
+            typed_router_root.as_deref(),
         )
         .unwrap(),
     )
