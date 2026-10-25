@@ -93,7 +93,7 @@ impl TypeResolver {
         }
 
         let colon_pos = trimmed.find(':')?;
-        let name_part = trimmed.get(..colon_pos).unwrap_or_default();
+        let name_part = trimmed.get(..colon_pos).unwrap_or_default().trim_end();
         let type_part = trimmed.get(colon_pos + 1..).unwrap_or_default();
         let optional = name_part.ends_with('?');
         let name = name_part.trim().trim_end_matches('?').trim();
