@@ -29,3 +29,12 @@ parent compact input, child compact input and newly admitted multiline input;
 instrumented source buckets run separately. Preserve the initial native-owner
 receipt as historical evidence. New native admission does not establish a compiler
 throughput or universal speed result.
+
+The two explicit DOM harness records (20.11.2 and 21.0.4) are independently
+executed and retain identical complete transform/DOM/span/refusal packets. The
+test selects the exact record for the actual imported ESM package, rejects
+unknown versions, and keeps JSX/Babel/Vue runtime versions strict. Metadata is
+read beside the actual ESM entry; an ambient CJS package resolution is not
+accepted as the imported implementation's identity. This records the hosted
+runner's observed harness alongside the declared catalog harness without
+relaxing either whole-packet comparison.

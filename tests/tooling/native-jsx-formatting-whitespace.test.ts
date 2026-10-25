@@ -14,7 +14,6 @@ const fixture = new URL(
   import.meta.url,
 );
 const inputPath = new URL("cases.json", fixture);
-const outputPath = new URL("oracle.json", fixture);
 const input = readFileSync(inputPath, "utf8");
 const cases = JSON.parse(input).cases as Array<{
   id: string;
@@ -24,6 +23,20 @@ const cases = JSON.parse(input).cases as Array<{
 }>;
 const rootRequire = createRequire(new URL("../../package.json", import.meta.url));
 const testsRequire = createRequire(import.meta.url);
+// Read metadata beside the exact imported ESM entry, rather than resolving a
+// second package through an ambient CJS or runner-provided dependency graph.
+const domManifest = JSON.parse(
+  readFileSync(new URL("../package.json", import.meta.resolve("happy-dom")), "utf8"),
+);
+assert.equal(domManifest.name, "happy-dom");
+const domVersion: string = domManifest.version;
+const oracleNames = new Map([
+  ["20.11.2", "oracle.json"],
+  ["21.0.4", "oracle-dom-21.0.4.json"],
+]);
+const oracleName = oracleNames.get(domVersion);
+assert.ok(oracleName, `No recorded complete DOM oracle for harness ${domVersion}`);
+const outputPath = new URL(oracleName, fixture);
 const window = new Window();
 for (const name of [
   "window",
@@ -38,9 +51,13 @@ for (const name of [
   (globalThis as Record<string, unknown>)[name] =
     name === "window" ? window : (window as unknown as Record<string, unknown>)[name];
 }
-const Vue = await import(
-  pathToFileURL(testsRequire.resolve("@vue/runtime-dom/dist/runtime-dom.esm-browser.prod.js")).href
+const runtimeEntry = pathToFileURL(
+  testsRequire.resolve("@vue/runtime-dom/dist/runtime-dom.esm-browser.prod.js"),
 );
+const Vue = await import(runtimeEntry.href);
+const runtimeDomVersion = JSON.parse(
+  readFileSync(new URL("../package.json", runtimeEntry), "utf8"),
+).version;
 
 type Dom =
   | { kind: "text"; value: string }
@@ -176,8 +193,8 @@ const actual = {
   versions: {
     jsx: rootRequire("@vue/babel-plugin-jsx/package.json").version,
     babel: rootRequire("@babel/core/package.json").version,
-    runtimeDom: testsRequire("@vue/runtime-dom/package.json").version,
-    dom: testsRequire("happy-dom/package.json").version,
+    runtimeDom: runtimeDomVersion,
+    dom: domVersion,
   },
   cases: cases.map(run),
 };
@@ -186,4 +203,19 @@ if (process.env.VIZE_WRITE_JSX_FORMATTING_ORACLE === "1")
 
 test("native JSX formatting admission preserves the pinned transform and complete mounted DOM oracle", () => {
   assert.deepEqual(actual, JSON.parse(readFileSync(outputPath, "utf8")));
+});
+
+// Both explicitly executed DOM harness versions preserve exactly the same
+// language/runtime result. Unknown versions still require a recorded oracle.
+test("recorded DOM harnesses retain every normative transform and source packet", () => {
+  const records = [...oracleNames.values()].map((name) =>
+    JSON.parse(readFileSync(new URL(name, fixture), "utf8")),
+  );
+  for (const record of records) {
+    assert.deepEqual(record.cases, records[0].cases);
+    assert.equal(record.inputSha256, records[0].inputSha256);
+    assert.equal(record.versions.jsx, records[0].versions.jsx);
+    assert.equal(record.versions.babel, records[0].versions.babel);
+    assert.equal(record.versions.runtimeDom, records[0].versions.runtimeDom);
+  }
 });
