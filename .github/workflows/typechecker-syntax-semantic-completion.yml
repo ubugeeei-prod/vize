@@ -260,7 +260,7 @@ jobs:
           assert.equal(version.status,0);
           assert.equal(version.stdout,'Version 7.1.0-dev\n');
           assert.equal(version.stderr,'');
-          writeFileSync(join(process.env.RUNNER_TEMP,'native-provider-contract/provider.json'),JSON.stringify({binary,sha256,version:'7.1.0-dev',upstream:process.env.PROVIDER_SOURCE},null,2)+'\n');
+          writeFileSync(join(process.env.RUNNER_TEMP,'native-provider-contract/provider.json'),JSON.stringify({binary,sha256,version:'7.1.0-dev',serverName:'typescript',upstream:process.env.PROVIDER_SOURCE},null,2)+'\n');
           JS
       - name: Capture complete Initialize ACK completion EOF and raw stderr
         working-directory: source

@@ -16,6 +16,7 @@ if (captureProvider) {
     "77dd575e73107c00cc95cbccc3764ab7210089b5634f75e219b61632bd5d230b",
   );
   assert.equal(captureProvider.version, "7.1.0-dev");
+  assert.equal(captureProvider.serverName, "typescript");
   assert.equal(captureProvider.upstream, "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799");
 }
 const executable = realpathSync(
@@ -189,11 +190,12 @@ try {
     "initialize",
     30000,
   );
+  observation = { ...observation, initialized };
   if (captureProvider) {
     assert.equal(initialized.jsonrpc, "2.0");
     assert.equal(initialized.id, 1);
     assert.equal(initialized.error, undefined);
-    assert.equal(initialized.result?.serverInfo?.name, "typescript-go");
+    assert.equal(initialized.result?.serverInfo?.name, captureProvider.serverName);
     assert.equal(initialized.result?.serverInfo?.version, captureProvider.version);
     assert(initialized.result?.capabilities && typeof initialized.result.capabilities === "object");
   } else {
