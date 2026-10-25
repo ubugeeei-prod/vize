@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "noUncheckedSideEffectImports": false,
+    "paths": {
+      "#lib/*": [
+        "../.././packages/web/src/lib/*",
+        "../../../../../../../../.tmpAvKT65/packages/web/src/lib/*",
+        "../.././packages/web/src/lib/*.vue.ts"
+      ]
+    },
+    "strict": true
+  },
+  "exclude": [],
+  "include": [
+    "../../__vize_vue_modules.d.ts",
+    "../../packages/web/src/App.vue.ts",
+    "../../packages/web/src/lib/greet/index.ts"
+  ]
+}

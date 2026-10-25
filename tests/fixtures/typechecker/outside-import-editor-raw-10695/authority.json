@@ -1,0 +1,70 @@
+{
+  "schema": "vize.outside-import-editor-raw-packet-authority",
+  "version": 1,
+  "purpose": "Immutable pre-policy RAW CorsaBridge packet; includes generated-only diagnostics and suggestions, distinct from mapped CLI diagnostics. The older four-entry failure is retained.",
+  "source": "13fa41356d075047a229f580014b637d3bbeb57f",
+  "runtimePolicyComparisonSource": "9469f272b189d0220a9838539f2c878fc5d70edd",
+  "observer": "8c955180e3d5c5ceb0b0f4c2c612c9f505fccd5a",
+  "run": 40232105476,
+  "artifactId": 12612983703,
+  "artifactDigest": "sha256:2dcdf94dcbf41b25389079af83b374ca5fd05dc5b22f40a5dbdc3f034ded291e",
+  "sourceTestBinary": "397f3118d6e5be2b8c1472f3e5cb205281c77bf677ca028f328ab7dc1ee818c9",
+  "sdk": {
+    "name": "@typescript/typescript-linux-x64",
+    "version": "7.0.2",
+    "sha256": "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4",
+    "physicalPath": "/home/runner/_work/_temp/corsa-alias-observer/sdk/node_modules/@typescript/typescript-linux-x64/lib/tsc"
+  },
+  "independentOriginParser": "TypeScript 5.9.3; every preserved diagnostic span matched an actual ImportDeclaration StringLiteral or TypeAliasDeclaration Identifier",
+  "generatedImport": "/tmp/vize-canon/editor/sessions/session-aD9Bei/projects/f3352a3cdb59ced63987d492281a74859df9a95a63013f45b8c1e32231365d3e/packages/web/src/lib/greet/index.ts",
+  "authoredImport": "#lib/greet",
+  "completeRawVectorsByteEqual": true,
+  "originalAssertionStatuses": [
+    101,
+    101
+  ],
+  "sourceQualification": false,
+  "files": [
+    {
+      "path": "before-policy-app.vue.txt",
+      "bytes": 140,
+      "sha256": "591ecac8c496406def7e5c3c9f0820b7e4256479633dcc79e46d05e38d818957"
+    },
+    {
+      "path": "before-policy-diagnostics.json",
+      "bytes": 2003,
+      "sha256": "4109b8ba35cf7287f5942af3eeba363148b55f90b6c36546cc8b0f0b40f53ad7"
+    },
+    {
+      "path": "before-policy-generated-tsconfig.json",
+      "bytes": 543,
+      "sha256": "4d8a3b4cc59a317c6d0b1fc0adc350b90f2d9e8d7701c87919e49ce2efeb96f0"
+    },
+    {
+      "path": "before-policy-generated.vue.ts.txt",
+      "bytes": 18870,
+      "sha256": "6a378912699e7fe2e50f10a83dbd4bb2deebbf7aa647d003ce018bcf94da6f8e"
+    },
+    {
+      "path": "before-policy-greet.ts.txt",
+      "bytes": 60,
+      "sha256": "1912420b756d7bf8d814e0eb6d97c606de6ce520ebe9404c5f5e4764ab3f5eb8"
+    },
+    {
+      "path": "before-policy-process.json",
+      "bytes": 5510,
+      "sha256": "c58669760a3183e8714240c27d27cc47353b35ea5d9fe6a667d4a5083791af8e"
+    },
+    {
+      "path": "prior-four-diagnostics.json",
+      "bytes": 1301,
+      "sha256": "a3696aa489d654ca05a1e5de37c1aabba1835b33f66b0b87b17ef86eb87884da"
+    }
+  ],
+  "privatePreservation": {
+    "relativePath": ".git/wt/preserved-evidence/20261026/corsa-alias-observer-10695/8c955180-40232105476-router-mapper/",
+    "archiveSha256": "cf9b811035c4e365904d1261b3c42d20f93bc7d45b4753d9528c57b2dce8afe4",
+    "manifestSha256": "8f2c9360f4dcdadc1e19e1bbb11f5189c21c0057afb9408041b96184e2030168"
+  },
+  "rawProcessEncoding": "before-policy-process.json preserves complete original stdout/stderr as JSON strings, without stripping bytes; the immutable artifact also keeps their raw text files."
+}
