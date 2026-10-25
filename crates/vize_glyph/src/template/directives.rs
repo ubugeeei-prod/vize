@@ -84,12 +84,27 @@ pub(super) fn format_directive_value(
     vue_version: crate::VueVersion,
     attribute_depth: usize,
 ) -> (String, bool, bool) {
+    let (mut value, indent, owns_lines) =
+        format_directive_value_inner(name, value, options, vue_version, attribute_depth);
+    if options.end_of_line == crate::EndOfLine::Cr && value.contains('\n') {
+        value = super::literal_spans::normalize_layout_lf_to_cr(&value, Representation::Html);
+    }
+    (value, indent, owns_lines)
+}
+
+fn format_directive_value_inner(
+    name: &str,
+    value: &str,
+    options: &FormatOptions,
+    vue_version: crate::VueVersion,
+    attribute_depth: usize,
+) -> (String, bool, bool) {
     // Embedded JavaScript formatters consume LF-delimited lines. A prior SFC
     // pass may have emitted the same attribute with lone CR terminators; feed
     // the parser the equivalent LF spelling so its wrap decision is stable.
     let normalized;
     let value = if options.end_of_line == crate::EndOfLine::Cr && value.contains('\r') {
-        normalized = value.replace('\r', "\n");
+        normalized = super::literal_spans::normalize_layout_cr(value, Representation::Html);
         normalized.as_str()
     } else {
         value

@@ -62,6 +62,7 @@ void test("source CLI directive layouts preserve parsed expressions and rendered
     for (const [ending, newline] of [
       ["lf", "\n"],
       ["crlf", "\r\n"],
+      ["cr", "\r"],
     ]) {
       const source = fixture.input.replaceAll("\n", newline);
       const expected = fixture.expected.replaceAll("\n", newline);
@@ -109,6 +110,46 @@ void test("source CLI directive layouts preserve parsed expressions and rendered
           };
           assert.equal(await render(expected, state), await render(source, state), fixture.id);
         }
+      }
+    }
+  }
+
+  for (const raw of ["\n", "\r\n", "\r"]) {
+    const literal = `String.raw\`first${raw}  exact \${unread} line${raw}last\``;
+    const source = `<template>\r  <div :class="{ [${literal}]: visible, active: visible }" />\r</template>\r`;
+    const file = path.join(directory, "Raw.vue");
+    fs.writeFileSync(file, source);
+    let canonical: string | undefined;
+    for (const mode of ["--write", "--check", "--write"]) {
+      const result = spawnSync(
+        binary,
+        [
+          "fmt",
+          mode,
+          "--no-config",
+          "--preset",
+          "prettier",
+          "--print-width",
+          "80",
+          "--trailing-comma",
+          "none",
+          "--end-of-line",
+          "cr",
+          file,
+        ],
+        { encoding: "utf8", timeout: 60_000 },
+      );
+      assert.ifError(result.error);
+      assert.equal(result.status, 0, result.stderr);
+      const actual = fs.readFileSync(file, "utf8");
+      assert.ok(actual.includes(literal), "raw literal separators and content survive");
+      if (canonical !== undefined) assert.equal(actual, canonical);
+      canonical = actual;
+    }
+    for (const unread of [0, 2]) {
+      for (const visible of [false, true]) {
+        const state = { unread, visible };
+        assert.equal(await render(canonical!, state), await render(source, state));
       }
     }
   }

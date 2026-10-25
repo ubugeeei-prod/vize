@@ -29,16 +29,25 @@ fn trim_expression(expression: &str) -> &str {
 
 fn strip_generated_group_indent(expression: &str, options: &FormatOptions) -> String {
     let expression = trim_expression(expression);
-    let Some((first, rest)) = expression.split_once('\n') else {
+    let separator = if options.end_of_line == crate::EndOfLine::Cr {
+        '\r'
+    } else {
+        '\n'
+    };
+    let Some((first, rest)) = expression.split_once(separator) else {
         return expression.to_compact_string();
     };
     let indent = options.indent_string();
     let mut unindented = String::with_capacity(expression.len());
     unindented.push_str(first);
-    let mut literal = ValueLines::new(expression, Representation::JavaScript);
+    let mut literal = if separator == '\r' {
+        ValueLines::with_cr(expression, Representation::JavaScript)
+    } else {
+        ValueLines::new(expression, Representation::JavaScript)
+    };
     literal.advance_line(first);
-    for line in rest.split('\n') {
-        unindented.push('\n');
+    for line in rest.split(separator) {
+        unindented.push(separator);
         if literal.line_is_raw() {
             unindented.push_str(line);
         } else {

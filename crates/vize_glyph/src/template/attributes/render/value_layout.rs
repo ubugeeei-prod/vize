@@ -29,13 +29,6 @@ pub(super) fn write_overflowing_value(
     else {
         return false;
     };
-    let normalized;
-    let value = if newline == b"\r" && value.contains('\r') {
-        normalized = value.replace('\r', "\n");
-        normalized.as_str()
-    } else {
-        value
-    };
     let Some(line) = output
         .rsplit(|byte| matches!(byte, b'\r' | b'\n'))
         .next()
@@ -57,8 +50,13 @@ pub(super) fn write_overflowing_value(
     output.extend_from_slice(newline);
     // The existing SFC mask owns all lines after a quote with no same-line
     // value. Emit their final indentation here; its outer writer keeps them raw.
-    let mut literal = ValueLines::new(value, Representation::Html);
-    for line in value.split('\n') {
+    let separator = if newline == b"\r" { '\r' } else { '\n' };
+    let mut literal = if separator == '\r' {
+        ValueLines::with_cr(value, Representation::Html)
+    } else {
+        ValueLines::new(value, Representation::Html)
+    };
+    for line in value.split(separator) {
         let line = line.trim_end_matches('\r');
         if !literal.line_is_raw() {
             write_indent(output, indent, depth + layout.base_depth + 1);

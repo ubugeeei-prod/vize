@@ -17,7 +17,11 @@ fn directive_layout_uses_ast_and_final_indentation() -> Result<(), Box<dyn std::
     let cases: Vec<Case> =
         serde_json::from_str(include_str!("fixtures/preset-layout-10609/directives.json"))?;
     for case in cases {
-        for (ending, newline) in [(EndOfLine::Lf, "\n"), (EndOfLine::Crlf, "\r\n")] {
+        for (ending, newline) in [
+            (EndOfLine::Lf, "\n"),
+            (EndOfLine::Crlf, "\r\n"),
+            (EndOfLine::Cr, "\r"),
+        ] {
             let mut options = FormatOptions::prettier_compat();
             options.print_width = case.print_width;
             options.trailing_comma = TrailingComma::None;
@@ -35,6 +39,70 @@ fn directive_layout_uses_ast_and_final_indentation() -> Result<(), Box<dyn std::
                     case.id
                 );
                 previous = result.code.to_string();
+            }
+        }
+    }
+    Ok(())
+}
+
+#[test]
+fn cr_object_layout_preserves_mixed_literal_separators() -> Result<(), Box<dyn std::error::Error>> {
+    let options = FormatOptions {
+        end_of_line: EndOfLine::Cr,
+        trailing_comma: TrailingComma::None,
+        print_width: 80,
+        ..FormatOptions::prettier_compat()
+    };
+    for raw in ["\n", "\r\n", "\r"] {
+        let literal = format!("String.raw`first{raw}  exact ${{unread}} line{raw}last`");
+        let source = format!(
+            "<template>\r  <div :class=\"{{ [{literal}]: visible, active: visible }}\" />\r</template>\r"
+        );
+        let first = format_sfc(&source, &options)?;
+        assert!(
+            first.code.contains(literal.as_str()),
+            "raw {raw:?}: {}",
+            first.code
+        );
+        let mut previous = first.code;
+        for _ in 0..2 {
+            let next = format_sfc(&previous, &options)?;
+            assert!(!next.changed, "raw {raw:?}: {}", next.code);
+            assert_eq!(next.code, previous, "raw {raw:?}");
+            assert!(next.code.contains(literal.as_str()));
+            previous = next.code;
+        }
+    }
+    Ok(())
+}
+
+#[test]
+fn cr_object_output_is_canonical_from_all_code_line_endings()
+-> Result<(), Box<dyn std::error::Error>> {
+    let cases: Vec<Case> =
+        serde_json::from_str(include_str!("fixtures/preset-layout-10609/directives.json"))?;
+    let options = FormatOptions {
+        end_of_line: EndOfLine::Cr,
+        trailing_comma: TrailingComma::None,
+        print_width: 80,
+        ..FormatOptions::prettier_compat()
+    };
+    for case in cases
+        .into_iter()
+        .filter(|case| case.id.starts_with("object-properties"))
+    {
+        let expected = case.expected.replace('\n', "\r");
+        for source_newline in ["\n", "\r\n", "\r"] {
+            let mut source = case.input.replace('\n', source_newline);
+            for _ in 0..3 {
+                let result = format_sfc(&source, &options)?;
+                assert_eq!(
+                    result.code.as_str(),
+                    expected,
+                    "{} {source_newline:?}",
+                    case.id
+                );
+                source = result.code.to_string();
             }
         }
     }
