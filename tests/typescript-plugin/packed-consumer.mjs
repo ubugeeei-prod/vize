@@ -293,7 +293,15 @@ try {
     JSON.stringify(tsDiagnostics),
   );
   await checkNavigation(client, navigation, results, vue, vueText, path.join(src, "util.ts"));
-  await checkInheritedConfig(client, inherited, nativeApi, tsserver, consumer, output, results);
+  const inheritedQualification = await checkInheritedConfig(
+    client,
+    inherited,
+    nativeApi,
+    tsserver,
+    consumer,
+    output,
+    results,
+  );
   let renamed = vueText;
   const lineOffsets = [0];
   for (let index = 0; index < vueText.length; index++)
@@ -472,6 +480,8 @@ try {
           sha256: digest(fs.readFileSync(file)),
         })),
         results: Object.keys(results),
+        qualificationRole: "typescript-vue-projection",
+        inheritedQualification,
         passed: true,
       },
       null,

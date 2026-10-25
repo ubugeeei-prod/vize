@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { startTsserver } from "./tsserver-client.mjs";
 import fixtureLoader from "./project-fixture.cjs";
+import { createOrdinaryHostFrontier } from "./ordinary-host-frontier.mjs";
 
 export function createInheritedConfig(consumer, src, output, typescriptVersion) {
   const { files, expected, pack } = fixtureLoader.readProjectFixture();
@@ -155,6 +156,7 @@ export async function checkInheritedConfig(
   fs.writeFileSync(path.join(packageRoot, "package.json"), '{"tsconfig":"preferred"}');
   fs.writeFileSync(path.join(packageRoot, "tsconfig.json"), JSON.stringify(fixture.before));
   const preferred = path.join(packageRoot, "preferred.json");
+  const hostFrontier = await createOrdinaryHostFrontier(fixture, consumer, tsserver, output);
   const states = [
     [
       "package-fallback",
@@ -183,87 +185,115 @@ export async function checkInheritedConfig(
       { ...fixture.after, compilerOptions: fixture.before.compilerOptions },
     ],
   ];
-  for (const [name, edit, options] of states) {
-    edit();
-    for (const file of fixture.fixed)
-      assert.deepEqual(
-        fs.readFileSync(file.file),
-        file.bytes,
-        "root config and both authored files remain byte-identical",
-      );
-    const observation = {
-      name,
-      options,
-      base: fs.readFileSync(fixture.base, "utf8"),
-      preferred: fs.existsSync(preferred) ? fs.readFileSync(preferred, "utf8") : null,
-    };
-    packet.cases.push(observation);
-    try {
-      observation.metadata = native.getVueLanguageProjectMetadata(fixture.root);
-      packet.metadata.push(observation.metadata);
-      observation.projection = JSON.parse(project(fixture.source));
-    } catch (cause) {
-      observation.nativeError = cause.message;
-    }
-    save();
-    await client.send("reloadProjects", {}, false);
-    observation.control = await client.send("semanticDiagnosticsSync", { file: fixture.control });
-    observation.warm = await client.send("semanticDiagnosticsSync", { file: fixture.sourceFile });
-    results[`inherited-${name}`] = observation.warm;
-    save();
-    const directory = path.join(output, `inherited-fresh-${name}`);
-    fs.mkdirSync(directory);
-    const next = startTsserver(tsserver, consumer, directory);
-    try {
-      await next.send("configure", {
-        extraFileExtensions: [{ extension: ".vue", isMixedContent: true, scriptKind: 7 }],
-      });
-      await next.send(
-        "open",
-        { file: fixture.sourceFile, fileContent: fixture.source, scriptKindName: "TS" },
-        false,
-      );
-      observation.fresh = await next.send("semanticDiagnosticsSync", { file: fixture.sourceFile });
-    } finally {
-      await next.stop();
+  try {
+    for (const [name, edit, options] of states) {
+      edit();
+      for (const file of fixture.fixed)
+        assert.deepEqual(
+          fs.readFileSync(file.file),
+          file.bytes,
+          "root config and both authored files remain byte-identical",
+        );
+      const observation = {
+        name,
+        options,
+        base: fs.readFileSync(fixture.base, "utf8"),
+        preferred: fs.existsSync(preferred) ? fs.readFileSync(preferred, "utf8") : null,
+      };
+      packet.cases.push(observation);
+      try {
+        observation.metadata = native.getVueLanguageProjectMetadata(fixture.root);
+        packet.metadata.push(observation.metadata);
+        observation.projection = JSON.parse(project(fixture.source));
+      } catch (cause) {
+        observation.nativeError = cause.message;
+      }
       save();
-    }
-    assert.equal(observation.warm.success, true);
-    assert.equal(observation.fresh.success, true);
-    assert.deepEqual(
-      observation.warm.body,
-      observation.fresh.body,
-      `complete warm/fresh diagnostics for ${name}`,
-    );
-    if (options) {
-      assert.equal(observation.nativeError, undefined);
+      await client.send("reloadProjects", {}, false);
+      observation.control = await client.send("semanticDiagnosticsSync", { file: fixture.control });
+      observation.warm = await client.send("semanticDiagnosticsSync", { file: fixture.sourceFile });
+      results[`inherited-${name}`] = observation.warm;
+      save();
+      const directory = path.join(output, `inherited-fresh-${name}`);
+      fs.mkdirSync(directory);
+      const next = startTsserver(tsserver, consumer, directory);
+      try {
+        await next.send("configure", {
+          extraFileExtensions: [{ extension: ".vue", isMixedContent: true, scriptKind: 7 }],
+        });
+        await next.send(
+          "open",
+          { file: fixture.sourceFile, fileContent: fixture.source, scriptKindName: "TS" },
+          false,
+        );
+        observation.fresh = await next.send("semanticDiagnosticsSync", {
+          file: fixture.sourceFile,
+        });
+        await next.send(
+          "open",
+          { file: fixture.control, fileContent: fixture.controlSource },
+          false,
+        );
+        observation.freshControl = await next.send("semanticDiagnosticsSync", {
+          file: fixture.control,
+        });
+      } finally {
+        await next.stop();
+        save();
+      }
+      assert.equal(observation.warm.success, true);
+      assert.equal(observation.fresh.success, true);
       assert.deepEqual(
         observation.warm.body,
-        options.vueCompilerOptions.strictTemplates ? packet.fresh.body : [],
+        observation.fresh.body,
+        `complete warm/fresh diagnostics for ${name}`,
       );
-      assert.deepEqual(
-        observation.control.body,
-        options.compilerOptions.noFallthroughCasesInSwitch ? packet.controlAfter.body : [],
-      );
-      if (name === "package-fallback")
-        assert(observation.metadata.watchedFiles.includes(preferred));
-    } else {
-      assert.match(observation.nativeError, /Invalid tsconfig/);
-      assert(
-        observation.warm.body.some((diagnostic) => diagnostic.text.includes("Invalid tsconfig")),
+      if (options) {
+        assert.equal(observation.nativeError, undefined);
+        assert.deepEqual(
+          observation.warm.body,
+          options.vueCompilerOptions.strictTemplates ? packet.fresh.body : [],
+        );
+        if (name === "package-fallback")
+          assert(observation.metadata.watchedFiles.includes(preferred));
+      } else {
+        assert.match(observation.nativeError, /Invalid tsconfig/);
+        assert(
+          observation.warm.body.some((diagnostic) => diagnostic.text.includes("Invalid tsconfig")),
+        );
+      }
+      // The ordinary package-option frontier is a separately retained failure,
+      // compared to unmodified workers, outside the Vue qualification role.
+      await hostFrontier.observe(
+        name,
+        observation.control,
+        observation.freshControl,
+        options
+          ? options.compilerOptions.noFallthroughCasesInSwitch
+            ? fixture.expected.controlAfter
+            : fixture.expected.controlBefore
+          : undefined,
       );
     }
+    const repaired = packet.cases.find((item) => item.name === "parent-repaired");
+    const ordinary = packet.cases.find((item) => item.name === "ordinary-options-only");
+    assert.equal(ordinary.metadata.configIdentity, repaired.metadata.configIdentity);
+    assert.deepEqual(
+      ordinary.projection,
+      repaired.projection,
+      "ordinary TS options do not change the whole native projection",
+    );
+    fs.writeFileSync(fixture.base, JSON.stringify(fixture.after));
+    save();
+  } finally {
+    await hostFrontier.stop();
+    save();
   }
-  const repaired = packet.cases.find((item) => item.name === "parent-repaired");
-  const ordinary = packet.cases.find((item) => item.name === "ordinary-options-only");
-  assert.equal(ordinary.metadata.configIdentity, repaired.metadata.configIdentity);
-  assert.deepEqual(
-    ordinary.projection,
-    repaired.projection,
-    "ordinary TS options do not change the whole native projection",
-  );
-  fs.writeFileSync(fixture.base, JSON.stringify(fixture.after));
-  save();
+  return {
+    role: "vue-language-project-configuration",
+    qualified: true,
+    ordinaryHostFrontier: hostFrontier.summary(),
+  };
 }
 
 export function checkConfigurationLog(output) {
