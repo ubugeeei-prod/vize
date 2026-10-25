@@ -61,7 +61,7 @@ export function attributionOrder() {
     })),
   );
 }
-function inputsFromOriginal(origin) {
+export function inputsFromOriginal(origin) {
   const receipt = read(path.join(origin, "receipt.json"));
   assert.equal(receipt.node, campaign.node);
   assert.equal(receipt.completed, true);
