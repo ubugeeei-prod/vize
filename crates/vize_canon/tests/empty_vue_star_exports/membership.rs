@@ -86,6 +86,30 @@ fn expected() -> (Value, Value) {
     );
     *helper = update["after"].clone();
     manifest["provenance"]["currentHelperUpdate"] = update;
+    let context =
+        fs::read(support::corpus().join("malformed-membership/context-update-10667.json")).unwrap();
+    assert_eq!(
+        support::hash(&context),
+        "aff5780de5a57a5e634c6df929ce08eeb9ef34f26b31ea4c9a9731533bf11262"
+    );
+    let context: Value = serde_json::from_slice(&context).unwrap();
+    assert_eq!(context["version"], 1);
+    assert_eq!(context["issue"], 10667);
+    let updates = context["entries"].as_array().unwrap();
+    assert_eq!(updates.len(), 2);
+    for (index, update) in [74usize, 75].into_iter().zip(updates) {
+        assert_eq!(update["entry"], index);
+        let member = members.get_mut(index).unwrap();
+        assert_eq!(*member, update["before"]);
+        assert_eq!(update["before"][0], update["after"][0]);
+        assert_eq!(update["deltaBytes"], -1);
+        assert_eq!(
+            update["after"][1].as_u64().unwrap() + 1,
+            update["before"][1].as_u64().unwrap()
+        );
+        *member = update["after"].clone();
+    }
+    manifest["provenance"]["currentContextUpdate"] = context;
     (manifest, json!(members))
 }
 
