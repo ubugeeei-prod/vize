@@ -182,7 +182,34 @@ jobs:
           for target in compile ssr vapor_ssr babel_is_custom_element babel_merge_props babel_v_slots pragma v_model_argument v_slots_forwarding adversarial_snapshots; do
             cargo test --locked --profile ci -p vize_atelier_jsx --test "$target" || status=1
           done
-          cargo test --locked --profile ci -p vize_vitrine --lib jsx_compile_result_supports_ssr_output || status=1
+          exit "$status"
+      - name: Exact pure Rust JSX adapter DTO test
+        if: always()
+        env: { INSTA_UPDATE: new }
+        run: |
+          set -euo pipefail
+          directory="$RUNNER_TEMP/jsx-authored-native"
+          test_name=napi::jsx::tests::jsx_compile_result_supports_ssr_output
+          cargo test --locked --profile ci -p vize_vitrine --lib "$test_name" -- --exact --list > "$directory/napi-dto.list.stdout" 2> "$directory/napi-dto.list.stderr"
+          python3 - <<'PYCODE'
+          import os
+          from pathlib import Path
+          lines=(Path(os.environ['RUNNER_TEMP'])/'jsx-authored-native/napi-dto.list.stdout').read_text().splitlines()
+          assert [line for line in lines if line.endswith(': test')]==['napi::jsx::tests::jsx_compile_result_supports_ssr_output: test'], lines
+          PYCODE
+          status=0
+          cargo test --locked --profile ci -p vize_vitrine --lib "$test_name" -- --exact > "$directory/napi-dto.run.stdout" 2> "$directory/napi-dto.run.stderr" || status=1
+          python3 - <<'PYCODE'
+          import hashlib,json,os,re
+          from pathlib import Path
+          directory=Path(os.environ['RUNNER_TEMP'])/'jsx-authored-native'
+          stdout=(directory/'napi-dto.run.stdout').read_text()
+          passed=bool(re.search(r'test result: ok\. 1 passed; 0 failed; 0 ignored;',stdout))
+          names=[line for line in (directory/'napi-dto.list.stdout').read_text().splitlines() if line.endswith(': test')]
+          receipt={'sourceHead':(directory/'source.txt').read_text().splitlines()[0],'selected':names,'selectedCount':len(names),'exactOnePassed':passed,'scope':'pure Rust adapter DTO and compile implementation; no Node ABI execution credit','filesSha256':{p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in directory.glob('napi-dto.*') if p.is_file()}}
+          (directory/'napi-dto.receipt.json').write_text(json.dumps(receipt,indent=2)+'\n')
+          assert passed, stdout
+          PYCODE
           exit "$status"
       - name: Verify complete native fixture and historical custody
         if: always()
