@@ -1,0 +1,50 @@
+[
+  {
+    "id": "consumer-ternary-inline",
+    "input": "<template>\n  <button :aria-label=\"unread > 0 ? `${unread} unread messages are waiting for you in the inbox right now, please read` : 'no unread messages at all'\">\n    go\n  </button>\n</template>\n",
+    "expected": "<template>\n  <button\n    :aria-label=\"\n      unread > 0\n        ? `${unread} unread messages are waiting for you in the inbox right now, please read`\n        : 'no unread messages at all'\n    \"\n  >\n    go\n  </button>\n</template>\n",
+    "printWidth": 120
+  },
+  {
+    "id": "consumer-ternary-next-line",
+    "input": "<template>\n  <button :aria-label=\"\n        unread > 0\n          ? `${unread} unread messages are waiting for you in the inbox right now, please read`\n          : 'no unread messages at all'\n      \">\n    go\n  </button>\n</template>\n",
+    "expected": "<template>\n  <button\n    :aria-label=\"\n      unread > 0\n        ? `${unread} unread messages are waiting for you in the inbox right now, please read`\n        : 'no unread messages at all'\n    \"\n  >\n    go\n  </button>\n</template>\n",
+    "printWidth": 120
+  },
+  {
+    "id": "consumer-ternary-hugged",
+    "input": "<template>\n  <button :aria-label=\"unread > 0\n  ? `${unread} unread messages are waiting for you in the inbox right now, please read`\n  : 'no unread messages at all'\">\n    go\n  </button>\n</template>\n",
+    "expected": "<template>\n  <button\n    :aria-label=\"\n      unread > 0\n        ? `${unread} unread messages are waiting for you in the inbox right now, please read`\n        : 'no unread messages at all'\n    \"\n  >\n    go\n  </button>\n</template>\n",
+    "printWidth": 120
+  },
+  {
+    "id": "inline-tail-ternary-inline",
+    "input": "<template>\n  <section>\n    <MyChip :color=\"props.selectedIdentifier === SELECTED_IDENTIFIER_CONSTANT ? 'primary' : 'secondary'\" />\n  </section>\n</template>\n",
+    "expected": "<template>\n  <section>\n    <MyChip\n      :color=\"\n        props.selectedIdentifier === SELECTED_IDENTIFIER_CONSTANT\n          ? 'primary'\n          : 'secondary'\n      \"\n    />\n  </section>\n</template>\n",
+    "printWidth": 80
+  },
+  {
+    "id": "inline-tail-ternary-next-line",
+    "input": "<template>\n  <section>\n    <MyChip :color=\"\n        props.selectedIdentifier === SELECTED_IDENTIFIER_CONSTANT\n          ? 'primary'\n          : 'secondary'\n      \" />\n  </section>\n</template>\n",
+    "expected": "<template>\n  <section>\n    <MyChip\n      :color=\"\n        props.selectedIdentifier === SELECTED_IDENTIFIER_CONSTANT\n          ? 'primary'\n          : 'secondary'\n      \"\n    />\n  </section>\n</template>\n",
+    "printWidth": 80
+  },
+  {
+    "id": "object-properties-inline",
+    "input": "<template>\n  <div :class=\"{ active: isSelected && isEnabled && hasPermissionForTheSelectedItemInTheCurrentView, disabled: !isEnabled, '状態': unread > 0 }\" />\n</template>\n",
+    "expected": "<template>\n  <div\n    :class=\"{\n      active:\n        isSelected &&\n        isEnabled &&\n        hasPermissionForTheSelectedItemInTheCurrentView,\n      disabled: !isEnabled,\n      状態: unread > 0\n    }\"\n  />\n</template>\n",
+    "printWidth": 80
+  },
+  {
+    "id": "object-properties-next-line",
+    "input": "<template>\n  <div :class=\"\n    { active: isSelected && isEnabled && hasPermissionForTheSelectedItemInTheCurrentView, disabled: !isEnabled, '状態': unread > 0 }\n  \" />\n</template>\n",
+    "expected": "<template>\n  <div\n    :class=\"{\n      active:\n        isSelected &&\n        isEnabled &&\n        hasPermissionForTheSelectedItemInTheCurrentView,\n      disabled: !isEnabled,\n      状態: unread > 0\n    }\"\n  />\n</template>\n",
+    "printWidth": 80
+  },
+  {
+    "id": "literal-quasi",
+    "input": "<template>\n  <div :title=\"visible ? `first\n  exact ${unread}   line` : 'fallback'\" />\n</template>\n",
+    "expected": "<template>\n  <div\n    :title=\"\n      visible\n        ? `first\n  exact ${unread}   line`\n        : 'fallback'\n    \"\n  />\n</template>\n",
+    "printWidth": 60
+  }
+]

@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10660,
+  "regressionCommit": "da6d833de40c8a084022d0229beaeec25a92eb41",
+  "sourceRevision": "da6d833de40c8a084022d0229beaeec25a92eb41",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "explicit-default",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Box.vue",
+          "source": "src/Box.vue.txt"
+        },
+        {
+          "file": "src/Status.vue",
+          "source": "src/Status.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "authored-impossible-comparison",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Box.vue",
+          "source": "src/Box.vue.txt"
+        },
+        {
+          "file": "src/Status.vue",
+          "source": "src/Status.authored.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Status.vue",
+          "line": 13,
+          "column": 29,
+          "severity": 1,
+          "code": 2367,
+          "message": "This comparison appears to be unintentional because the types '\"error\" | \"success\"' and '\"pending\"' have no overlap."
+        }
+      ]
+    }
+  ]
+}

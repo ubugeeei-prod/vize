@@ -152,3 +152,46 @@ fn bounded_large_groups_emit_zero_or_one_diagnostic() {
         );
     }
 }
+
+#[test]
+fn ambient_declarations_do_not_occupy_runtime_macro_groups() {
+    for source in [
+        "declare const ambient = defineModel();",
+        "declare const ambient = defineModel(); defineModel(); defineModel(); defineProps();",
+        "declare const ambient = withDefaults(defineModel(), {}); defineModel(); defineProps();",
+        "declare const ambient = defineProps(); defineModel(); defineModel(); defineProps();",
+    ] {
+        assert!(lint_with_order(source, ORDER).is_empty(), "{source}");
+    }
+    assert!(
+        lint("declare const ambient = defineProps(); defineProps(); defineEmits();").is_empty()
+    );
+    assert!(
+        lint_with_order(
+            "declare const ambient = definePage(); definePage(); definePage(); defineModel();",
+            &["definePage", "defineModel"]
+        )
+        .is_empty()
+    );
+    // Only the prefix is skipped. Once a runtime group starts, an ambient
+    // declaration remains a barrier, whether or not its invalid initializer
+    // resembles the group's call. The real later call owns the diagnostic.
+    for source in [
+        "defineModel(); declare const ambient = defineModel(); defineModel();",
+        "defineModel(); declare const ambient: string; defineModel();",
+        "defineModel(); declare const ambient = withDefaults(defineModel(), {}); defineModel();",
+    ] {
+        assert_eq!(
+            lint_with_order(source, ORDER),
+            [format!("`defineModel` {NOT_AT_TOP}")],
+            "{source}"
+        );
+    }
+    assert_eq!(
+        lint_with_order(
+            "declare const ambient = defineModel(); defineProps(); defineModel();",
+            ORDER
+        ),
+        ["`defineModel` should be above `defineProps`."]
+    );
+}

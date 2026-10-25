@@ -23,6 +23,7 @@ mod expose;
 mod extract;
 mod globals;
 mod module_exports;
+mod module_reads;
 mod occurrences;
 mod parse;
 mod process;
@@ -40,6 +41,7 @@ mod walk;
 pub use define_art::parse_define_art;
 pub use module_exports::AuthoredModuleExport;
 pub(crate) use module_exports::ModuleExportCapture;
+pub(crate) use module_reads::ModuleReadFacts;
 #[cfg(test)]
 pub(crate) use parse::parse_script_setup_for_unused;
 pub use parse::{

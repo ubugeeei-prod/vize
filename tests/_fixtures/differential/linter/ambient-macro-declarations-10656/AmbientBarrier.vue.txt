@@ -1,0 +1,6 @@
+<script setup lang="ts">
+const first = defineModel();
+declare const ambient = defineModel();
+const second = defineModel();
+</script>
+<template><div /></template>

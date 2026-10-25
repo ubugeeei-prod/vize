@@ -1035,6 +1035,49 @@
         "issue": "https://github.com/ubugeeei-prod/vize/issues/10606",
         "reporter": "ubugeeei"
       }
+    },
+    {
+      "id": "compiler/sfc/sibling-script-import-reads-10616",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "sibling-script-import-reads-10616",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "8f3ca7135e471de11340082664e4b4f8f4b089a1a15fb2cf9d2eb525c0af751e",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "sibling-script-import-reads-10616/module.expected.txt",
+        "sha256": "725f54682558b1af8699663b472dfcf871a3cd7f36cb77ed81f75583ff90dc0e",
+        "source": "Verified public 0.567.0 CLI before the change: build Layout.vue --format json --output out --ssr --no-config; binary SHA256 1c19c303ccd9f52f204fe83a6c687c247943c1a4f758423250ab744b310bde62"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); Croquis descriptor and armature tokenizer remain legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"],
+        "scriptLang": "ts"
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
     }
   ],
   "runtimePacks": [

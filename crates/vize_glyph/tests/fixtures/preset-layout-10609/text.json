@@ -1,0 +1,44 @@
+[
+  {
+    "id": "consumer-10609",
+    "input": "<script setup lang=\"ts\">\nimport { computed, ref } from \"vue\";\n\nconst count = ref(0);\nconst unread = ref(0);\nconst name = ref(\"\");\n</script>\n\n<template>\n  <div>\n    <span class=\"counter\">{{ count }}/{{ count + 1 }}問目 — この行は printWidth の 120 桁を超えるくらい長い文字列を含んでいます、折り返してほしい</span>\n    <button\n      :aria-label=\"\n        unread > 0\n          ? `${unread} unread messages are waiting for you in the inbox right now, please read`\n          : 'no unread messages at all'\n      \"\n    >\n      go\n    </button>\n    <MyButton class=\"nav-toggle\" icon @click.stop=\"openNav\"\n      ><MyIcon large>menu</MyIcon></MyButton\n    >\n  </div>\n</template>\n",
+    "expected": "<script setup lang=\"ts\">\nimport { computed, ref } from \"vue\";\n\nconst count = ref(0);\nconst unread = ref(0);\nconst name = ref(\"\");\n</script>\n\n<template>\n  <div>\n    <span class=\"counter\"\n      >{{ count }}/{{ count + 1 }}問目 — この行は printWidth の 120\n      桁を超えるくらい長い文字列を含んでいます、折り返してほしい</span\n    >\n    <button\n      :aria-label=\"\n        unread > 0\n          ? `${unread} unread messages are waiting for you in the inbox right now, please read`\n          : 'no unread messages at all'\n      \"\n    >\n      go\n    </button>\n    <MyButton class=\"nav-toggle\" icon @click.stop=\"openNav\"><MyIcon large>menu</MyIcon></MyButton>\n  </div>\n</template>\n",
+    "printWidth": 120
+  },
+  {
+    "id": "consumer-10615",
+    "input": "<script setup lang=\"ts\">\nconst props = defineProps<{ totalPoint: number; selectedIdentifier: string; label: string }>();\nconst SELECTED_IDENTIFIER_CONSTANT = \"selected-identifier-constant\";\n</script>\n\n<template>\n  <section>\n    <p>\n      <span class=\"heading bold\">{{ props.totalPoint }}</span>{{ props.label }} points were awarded in total\n    </p>\n    <MyChip :color=\"props.selectedIdentifier === SELECTED_IDENTIFIER_CONSTANT ? 'primary' : 'secondary'\" />\n    <MyChip :active=\"props.selectedIdentifier === SELECTED_IDENTIFIER_CONSTANT && props.totalPoint > 100\" />\n  </section>\n</template>\n",
+    "expected": "<script setup lang=\"ts\">\nconst props = defineProps<{\n  totalPoint: number;\n  selectedIdentifier: string;\n  label: string;\n}>();\nconst SELECTED_IDENTIFIER_CONSTANT = \"selected-identifier-constant\";\n</script>\n\n<template>\n  <section>\n    <p>\n      <span class=\"heading bold\">{{ props.totalPoint }}</span\n      >{{ props.label }} points were awarded in total\n    </p>\n    <MyChip\n      :color=\"\n        props.selectedIdentifier === SELECTED_IDENTIFIER_CONSTANT\n          ? 'primary'\n          : 'secondary'\n      \"\n    />\n    <MyChip\n      :active=\"\n        props.selectedIdentifier === SELECTED_IDENTIFIER_CONSTANT &&\n        props.totalPoint > 100\n      \"\n    />\n  </section>\n</template>\n",
+    "printWidth": 80
+  },
+  {
+    "id": "adjacent-interpolations",
+    "input": "<template>\n  <p><span>prefix</span>{{ label }} {{ unread }} entries are waiting for you in the inbox right now, please read</p>\n</template>\n",
+    "printWidth": 64
+  },
+  {
+    "id": "unicode-words",
+    "input": "<template>\n  <p>{{ label }}/{{ unread }} 状態 列 幅 を維持します ordinary words can wrap safely on spaces</p>\n</template>\n",
+    "printWidth": 64
+  },
+  {
+    "id": "opaque-whitespace",
+    "input": "<template>\n  <pre>  {{label}} exact\n  spaces    preserved</pre>\n  <div v-pre>{{label}} exact\n  spaces    preserved</div>\n  <p :title=\"visible ? 'yes' : 'no'\">{{label}} suffix words</p>\n</template>\n",
+    "printWidth": 60
+  },
+  {
+    "id": "no-runtime-space",
+    "input": "<template>\n  <p><strong>{{ label }}</strong>{{ unread }}remaining</p>\n</template>\n",
+    "printWidth": 40
+  },
+  {
+    "id": "deep-plain",
+    "input": "<template>\n  <div>\n    <div>\n      <div>\n        <div>\n          <div>\n            <div>\n              <span>Enable \"Generate Virtual TS\" option to see generated TypeScript</span>\n            </div>\n          </div>\n        </div>\n      </div>\n    </div>\n  </div>\n</template>\n",
+    "printWidth": 80
+  },
+  {
+    "id": "deep-plain-wrapped",
+    "input": "<template>\n  <div>\n    <div>\n      <div>\n        <div>\n          <div>\n            <div>\n              <span>Enable \"Generate Virtual TS\" option to see generated\n              TypeScript</span>\n            </div>\n          </div>\n        </div>\n      </div>\n    </div>\n  </div>\n</template>\n",
+    "printWidth": 80
+  }
+]

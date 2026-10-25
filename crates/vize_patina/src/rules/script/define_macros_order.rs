@@ -171,7 +171,9 @@ fn macro_name<'s>(statement: &Statement<'s>) -> Option<&'s str> {
     match statement {
         Statement::ExpressionStatement(stmt) => macro_of_expression(&stmt.expression),
         // `const props = defineProps(...)`: any declarator may hold the macro.
-        Statement::VariableDeclaration(decl) => decl
+        // Ambient declarations do not execute a macro, including initializers
+        // retained by the parser while a TypeScript buffer is being edited.
+        Statement::VariableDeclaration(decl) if !decl.declare => decl
             .declarations
             .iter()
             .find_map(|declarator| declarator.init.as_ref().and_then(macro_of_expression)),
