@@ -80,7 +80,8 @@ after Vue hydrates it. Vue then owns the island's descendants. The
 - `styleLoaders`: host preprocessing pipelines keyed by style language.
 
 The initial integration targets stable Vue virtual DOM output with inline
-JavaScript/TypeScript scripts and HTML templates. External script/template files, template/script preprocessors, custom
+JavaScript/TypeScript scripts and HTML templates. Authored Vapor markers produce
+an explicit error. External script/template files, template/script preprocessors, custom
 block loaders and macro module loaders produce explicit errors. They are not
 silently emitted as valid JavaScript.
 

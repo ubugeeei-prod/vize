@@ -63,6 +63,7 @@ void test("native export byte geometry stays correct after astral and non-ASCII 
   assert.match(output.code, /export default __vize_component__;/);
   assert.match(output.code, /__scopeId = "data-v-[a-f0-9]+"/);
   assert.ok(output.map);
+  assert.equal(output.map.file, `${filename}.js`);
   assert.deepEqual(trace(output.code, output.map, "const answer"), {
     source: filename,
     line: 3,
@@ -179,6 +180,35 @@ void test("unsupported preprocessing and block modules fail with actionable erro
     () => compileTurbopackSfc(filename, "<template><div></template>", options),
     /\[vize\]/,
   );
+});
+
+void test("stable compilation rejects the real parser's Vapor marker presence", () => {
+  for (const script of [
+    "<script vapor>export default {}</script>",
+    '<script vapor="false">export default {}</script>',
+    "<SCRIPT vapor>export default {}</SCRIPT>",
+    "<script setup vapor>const n = 1;</script>",
+    '<script setup vapor="">const n = 1;</script>',
+    '<script setup="false" vapor="false">const n = 1;</script>',
+  ]) {
+    assert.throws(
+      () => compileTurbopackSfc(filename, `${script}<template><div/></template>`, options),
+      /Vapor SFC blocks are not supported/,
+      script,
+    );
+  }
+  for (const script of [
+    "<script VAPOR>export default {}</script>",
+    '<script VaPoR="false">export default {}</script>',
+    '<script data-vapor nonvapor title="vapor">export default {}</script>',
+    "<!-- <script vapor> --><script>export default {}</script>",
+    '<script setup>const marker = "<script vapor>";</script>',
+  ]) {
+    assert.doesNotThrow(
+      () => compileTurbopackSfc(filename, `${script}<template><div/></template>`, options),
+      script,
+    );
+  }
 });
 
 void test("style extraction preserves authored CRLF and UTF-16 mapping after an astral prefix", async () => {

@@ -43,7 +43,7 @@ export function compileTurbopackSfc(filename: string, source: string, options: S
   }
   const descriptor = (() => {
     try {
-      return parseSfc(source, { filename });
+      return parseSfc(source, { filename, includeAttrs: true });
     } catch (error) {
       throw new Error(
         `[vize] ${filename}: ${error instanceof Error ? error.message : String(error)}`,
@@ -51,17 +51,20 @@ export function compileTurbopackSfc(filename: string, source: string, options: S
       );
     }
   })();
-  if (descriptor.script?.src || descriptor.scriptSetup?.src || descriptor.template?.src) {
-    throw new Error(
-      `[vize] ${filename}: external script/template blocks require an inline SFC for this integration.`,
-    );
-  }
   if (descriptor.template?.lang && descriptor.template.lang !== "html") {
     throw new Error(
       `[vize] ${filename}: template preprocessor ${descriptor.template.lang} is not configured for Turbopack.`,
     );
   }
   for (const script of [descriptor.script, descriptor.scriptSetup]) {
+    if (script && !Array.isArray(script.attrs)) {
+      throw new Error(`[vize] ${filename}: native parsed script attributes are unavailable.`);
+    }
+    if (script?.attrs?.some(({ name }) => name === "vapor")) {
+      throw new Error(
+        `[vize] ${filename}: Vapor SFC blocks are not supported by the stable Turbopack integration.`,
+      );
+    }
     if (script?.lang && !["js", "ts", "javascript", "typescript"].includes(script.lang)) {
       throw new Error(
         `[vize] ${filename}: script language ${script.lang} is not configured for Turbopack.`,
@@ -219,7 +222,14 @@ export function compileTurbopackSfc(filename: string, source: string, options: S
     );
   }
   emitted.append(`\nexport default ${component};`);
-  return { code: emitted.code, map: emitted.map, warnings: compiled.warnings };
+  const map = emitted.map;
+  return {
+    code: emitted.code,
+    // Production scope hoisting joins input maps by their generated file. The
+    // rule's `as: "*.js"` appends this suffix to the original SFC identity.
+    map: map ? { ...map, file: `${filename}.js` } : null,
+    warnings: compiled.warnings,
+  };
 }
 
 export default function vizeLoader(this: LoaderContext<SfcLoaderOptions>, source: string): void {

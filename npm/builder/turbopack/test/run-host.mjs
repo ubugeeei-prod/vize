@@ -6,11 +6,12 @@ import { createRequire } from "node:module";
 import { createServer } from "node:net";
 import { inspect as inspectError } from "node:util";
 import { chromium } from "playwright";
-import { prepareConsumer, consumer, output, run, sha256 } from "./prepare-consumer.mjs";
+import { prepareConsumer, consumer, output, run } from "./prepare-consumer.mjs";
 import { checkRspackConsumer } from "./run-rspack.mjs";
 import { checkHostErrors } from "./run-errors.mjs";
 import { normalHostShutdown } from "./host-process.mjs";
 import { checkPackedModules } from "./run-modules.mjs";
+import { checkAuthoredMaps } from "./run-source-maps.mjs";
 
 const receipt = await prepareConsumer();
 const require = createRequire(path.join(consumer, "package.json"));
@@ -298,44 +299,7 @@ try {
     measurements.push({ phase: `build-${name}`, ms: result.elapsedMs });
     await exercise("start", `start-${name}`);
   }
-  const maps = [];
-  function authoredSources(map) {
-    assert.equal(map.version, 3);
-    if (Array.isArray(map.sections))
-      return map.sections.flatMap((section) => authoredSources(section.map));
-    return (map.sources ?? []).map((source, index) => ({
-      source: decodeURI(source),
-      content: map.sourcesContent?.[index],
-    }));
-  }
-  async function inspectMaps(directory) {
-    for (const entry of await fs.readdir(directory, { withFileTypes: true })) {
-      const filename = path.join(directory, entry.name);
-      if (entry.isDirectory()) await inspectMaps(filename);
-      else if (entry.name.endsWith(".map")) {
-        const map = JSON.parse(await fs.readFile(filename, "utf8"));
-        const sources = authoredSources(map).filter(({ source }) =>
-          source.endsWith("components/组件 space/FixtureCounter.vue"),
-        );
-        if (sources.length) {
-          assert.ok(
-            sources.some(({ content }) => content === original),
-            "the authored SFC content must survive map composition",
-          );
-          const bytes = await fs.readFile(filename);
-          await fs.mkdir(path.join(output, "maps"), { recursive: true });
-          await fs.writeFile(path.join(output, "maps", `${maps.length}.map`), bytes);
-          maps.push({
-            file: path.relative(consumer, filename),
-            sha256: sha256(bytes),
-            sources: sources.map(({ source }) => source),
-          });
-        }
-      }
-    }
-  }
-  await inspectMaps(path.join(consumer, ".next/static"));
-  assert.ok(maps.length, "production maps retain authored SFC sources");
+  const maps = await checkAuthoredMaps(sourcePath, original);
   await checkRspackConsumer(browser, measurements);
   await fs.writeFile(
     path.join(output, "qualification.json"),

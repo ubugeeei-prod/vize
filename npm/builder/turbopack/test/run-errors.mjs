@@ -34,4 +34,19 @@ export async function checkHostErrors(url, filename, original, measurements) {
     await fs.writeFile(filename, original);
   }
   assert.match(await responseWith(200, "recovered-sfc"), /Counter 2 🐱/);
+  for (const [label, marker] of [
+    ["vapor-presence", "vapor"],
+    ["vapor-false-value", 'vapor="false"'],
+  ]) {
+    try {
+      assert.ok(original.includes("<script setup"));
+      await fs.writeFile(filename, original.replace("<script setup", `<script setup ${marker}`));
+      const error = await responseWith(500, label);
+      assert.match(error, /FixtureCounter\.vue/);
+      assert.match(error, /Vapor SFC blocks are not supported/);
+    } finally {
+      await fs.writeFile(filename, original);
+    }
+    assert.match(await responseWith(200, `${label}-recovered`), /Counter 2 🐱/);
+  }
 }

@@ -105,6 +105,7 @@ export async function checkRspackConsumer(browser, measurements) {
     }
     await fs.mkdir(path.join(output, "maps"), { recursive: true });
     await fs.writeFile(path.join(output, "maps", `rspack-${mode}.map`), mapBytes);
+    await fs.writeFile(path.join(output, "maps", `rspack-${mode}.js`), bundle);
 
     const server = createServer(async (request, response) => {
       if (request.url === "/") {
