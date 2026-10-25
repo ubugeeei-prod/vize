@@ -8,6 +8,9 @@ on:
       - crates/vize_canon/tests/fix_history_diagnostics.rs
       - tests/_fixtures/differential/typechecker/**
       - tests/differential/typechecker.ts
+      - tests/tooling/typechecker-differential.test.ts
+      - tests/tooling/typechecker-workspace.test.ts
+      - tests/tooling/differential-dialect-coverage.test.mjs
       - crates/vize_canon/src/corsa_bridge/**
       - crates/vize_canon/src/lsp_client/**
       - crates/vize_canon/src/corsa_server/**
