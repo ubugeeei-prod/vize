@@ -218,7 +218,11 @@ fn typed_context_values_preserve_complete_native_mapper_and_cli_packets() {
             let options = expected_config["compilerOptions"].take();
             let mut files = vec![case.file.clone(), "src/dep.ts".to_owned()];
             files.sort();
-            let expected = json!({"files":if messages.is_empty(){vec![]}else{vec![json!({"file":case.file,"diagnostics":messages})]},"programs":[{"root":".","tsconfig":"tsconfig.native.json","compilerOptions":options,"files":files}],"errorCount":errors.len(),"warningCount":0,"fileCount":2});
+            let expected_files: Vec<_> = files
+                .iter()
+                .map(|file| json!({"file":file,"diagnostics":if file == &case.file { messages.clone() } else { Vec::new() }}))
+                .collect();
+            let expected = json!({"files":expected_files,"programs":[{"root":".","tsconfig":"tsconfig.native.json","compilerOptions":options,"files":files}],"errorCount":errors.len(),"warningCount":0,"fileCount":2});
             assert_eq!(
                 output.status.code(),
                 Some(i32::from(!errors.is_empty())),

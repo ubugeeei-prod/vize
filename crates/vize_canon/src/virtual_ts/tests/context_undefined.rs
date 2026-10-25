@@ -33,7 +33,13 @@ impl<'a> Visit<'a> for ContextAst {
     }
 }
 
-fn contexts() -> Vec<(String, String)> {
+struct ContextCase {
+    name: String,
+    text: String,
+    has_own_slots: bool,
+}
+
+fn contexts() -> Vec<ContextCase> {
     let mut contexts = Vec::new();
     for dialect in [VueVersion::V3, VueVersion::V2, VueVersion::V2_7] {
         for strict in [false, true] {
@@ -85,10 +91,11 @@ fn contexts() -> Vec<(String, String)> {
                         ["(void 0) as unknown as { node: Element | undefined };"]
                     );
                 }
-                contexts.push((
-                    format!("{dialect:?}-strict{strict}-rich{rich}"),
-                    text.to_string(),
-                ));
+                contexts.push(ContextCase {
+                    name: format!("{dialect:?}-strict{strict}-rich{rich}"),
+                    text: text.to_string(),
+                    has_own_slots: rich,
+                });
             }
         }
     }
@@ -97,9 +104,19 @@ fn contexts() -> Vec<(String, String)> {
 
 #[test]
 fn every_context_option_uses_operator_placeholders_without_undefined_lookup() {
-    for (name, context) in contexts() {
+    for ContextCase {
+        name,
+        text: context,
+        has_own_slots,
+    } in contexts()
+    {
+        let caller = if has_own_slots {
+            "const $slots: Record<string, unknown> = {};\n"
+        } else {
+            ""
+        };
         let source = format!(
-            "export {{}};\nfunction template() {{\n{context}\nconst undefined = 'authored';\n}}\n"
+            "export {{}};\nfunction template() {{\n{caller}{context}\nconst undefined = 'authored';\n}}\n"
         );
         let allocator = Allocator::default();
         let parsed = Parser::new(&allocator, &source, SourceType::ts()).parse();
@@ -161,7 +178,12 @@ fn actual_native_context_options_keep_whole_clean_and_authored_error_packets() {
         .join("../../target/vize-tests/typed-context-undefined-options-10667");
     fs::create_dir_all(&output_root).unwrap();
     let mut observations = Vec::new();
-    for (name, context) in contexts() {
+    for ContextCase {
+        name,
+        text: context,
+        has_own_slots,
+    } in contexts()
+    {
         for invalid in [false, true] {
             let root = output_root.join(format!("{name}-invalid{invalid}"));
             fs::create_dir_all(root.join("node_modules")).unwrap();
@@ -177,8 +199,15 @@ fn actual_native_context_options_keep_whole_clean_and_authored_error_packets() {
             } else {
                 ""
             };
+            // `has_own_slots` is a caller-owned binding contract. Supply that
+            // original binding instead of asking the context emitter to invent it.
+            let caller = if has_own_slots {
+                "const $slots: Record<string, unknown> = {};\n"
+            } else {
+                ""
+            };
             let source = format!(
-                "export {{}};\nfunction template() {{\n{context}\nconst undefined = 'authored';\n{error}}}\n"
+                "export {{}};\nfunction template() {{\n{caller}{context}\nconst undefined = 'authored';\n{error}}}\n"
             );
             fs::write(root.join("Context.ts"), &source).unwrap();
             let expected = if invalid {
