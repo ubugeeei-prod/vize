@@ -4,9 +4,14 @@ import path from "node:path";
 import { readPinnedArtifact } from "../../../differential/harness.mjs";
 
 export const SESSION_SOURCE_PIN = "cc87bb5960ea9e49e82672205df919de58bb4b24";
-export const SESSION_CANDIDATES = {
+export const ORIGINAL_SESSION_CANDIDATES = {
   path: "docs/davinci/plan/lsp-retained-session-candidates.tsv",
   sha256: "0bc776ff5fc1e1d7bde32bfae865b1b87e8c84e99a6bcf5c8e2cfb4652daf4ba",
+};
+export const CURRENT_SESSION_SOURCE_PIN = "284c7c4f6a7a1a50d9acec8d877c47aae21cfe42";
+export const SESSION_CANDIDATES = {
+  path: "docs/davinci/plan/lsp-retained-session-current-candidates.tsv",
+  sha256: "9023c6cf5d8e223862c64fa75c98fc8f877aba7aa1ac71c907c694942a831f6a",
 };
 export type SourceWitness = { path: string; line: number; column: number; sha256: string };
 type TestRange = { name: string; startLine: number; endLine: number };
@@ -93,7 +98,12 @@ export function linkSessionSourceOrigins(repoRoot: string, witnesses: SourceWitn
     : [];
   return {
     state: "pending-original-input-and-session-reconciliation",
-    catalog: { ...SESSION_CANDIDATES, sourceRevision: SESSION_SOURCE_PIN, present },
+    catalog: {
+      ...SESSION_CANDIDATES,
+      sourceRevision: CURRENT_SESSION_SOURCE_PIN,
+      originalCatalog: { ...ORIGINAL_SESSION_CANDIDATES, sourceRevision: SESSION_SOURCE_PIN },
+      present,
+    },
     candidates: candidates.flatMap((candidate) => {
       const selectedTests = candidate.tests
         .filter((test) =>
@@ -113,7 +123,8 @@ export function linkSessionSourceOrigins(repoRoot: string, witnesses: SourceWitn
           category: candidate.category,
           purpose:
             candidate.category === "control" ? "safety control opportunity" : "response candidate",
-          evidenceClaim: "selected test source existed at the recorded fix",
+          evidenceClaim:
+            "selected current test source is associated with the recorded historical fix",
           original: candidate.original,
           current: candidate.current,
           selectedTests,
