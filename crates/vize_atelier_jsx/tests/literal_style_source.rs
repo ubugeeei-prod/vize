@@ -190,6 +190,30 @@ fn reviewed_cssom_boundaries_keep_the_original_runtime_operations() {
 }
 
 #[test]
+fn case_equivalent_style_sources_keep_the_complete_runtime_path() {
+    let inputs:Vec<Value>=serde_json::from_str(include_str!("../../../tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/attribute-case-inputs.json")).unwrap();
+    assert_eq!(inputs.len(), 8);
+    let mut packets = Vec::new();
+    for input in inputs {
+        for retained in [false, true] {
+            for mapped in [false, true] {
+                let source = input["template"].as_str().unwrap();
+                let (output, arena, reparses) = template(source, retained, mapped);
+                packets.push(json!({"id":input["id"],"family":"template","source":source,"retained":retained,"mapped":mapped,"output":output,"arenaBytes":arena,"expressionReparses":reparses}));
+            }
+        }
+        for standalone in [false, true] {
+            let source = input["jsx"].as_str().unwrap();
+            let (output, arena, reparses) = jsx(source, JsxOutputMode::Vapor, false, standalone);
+            packets.push(json!({"id":input["id"],"family":"jsx","source":source,"standalone":standalone,"output":output,"arenaBytes":arena,"expressionReparses":reparses}));
+        }
+    }
+    if let Some(path) = std::env::var_os("VIZE_LITERAL_STYLE_CASE_CAPTURE") {
+        std::fs::write(path, serde_json::to_vec_pretty(&packets).unwrap()).unwrap();
+    }
+}
+
+#[test]
 fn measured_whole_compile_source_work() {
     let Some(path) = std::env::var_os("VIZE_LITERAL_STYLE_PROFILE_CAPTURE") else {
         return;
