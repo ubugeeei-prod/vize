@@ -19,6 +19,7 @@ jobs:
     env:
       CARGO_BUILD_JOBS: "24"
       CARGO_INCREMENTAL: "0"
+      BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { fetch-depth: 0, persist-credentials: false }
@@ -35,6 +36,21 @@ jobs:
           mkdir -p "$RUNNER_TEMP/jsx-authored-native"
           git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/jsx-authored-native/source.txt"
           cargo test --locked --profile ci -p vize_atelier_jsx --test authored_native_modules -- --nocapture
+      - name: Measure the exact old and new authored-module contracts
+        run: |
+          set -euo pipefail
+          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          baseline="$RUNNER_TEMP/jsx-authored-base"
+          observer=crates/vize_atelier_jsx/tests/authored_module_profile.rs
+          git worktree add --detach "$baseline" "$BASE_SHA"
+          cp "$observer" "$baseline/$observer"
+          cmp "$observer" "$baseline/$observer"
+          git -C "$baseline" diff --exit-code -- crates/*/src
+          export CARGO_TARGET_DIR="$GITHUB_WORKSPACE/target"
+          (cd "$baseline" && VIZE_JSX_AUTHORED_PROFILE_CAPTURE="$RUNNER_TEMP/jsx-authored-native/base-profile.json" cargo test --locked --profile ci -p vize_atelier_jsx --test authored_module_profile -- --nocapture)
+          VIZE_JSX_AUTHORED_PROFILE_CAPTURE="$RUNNER_TEMP/jsx-authored-native/head-profile.json" cargo test --locked --profile ci -p vize_atelier_jsx --test authored_module_profile -- --nocapture
+          git -C "$baseline" rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/jsx-authored-native/base-source.txt"
+          sha256sum "$observer" "$baseline/$observer" > "$RUNNER_TEMP/jsx-authored-native/observer.sha256"
       - name: Existing JSX library contracts
         if: always()
         run: cargo test --locked --profile ci -p vize_atelier_jsx --lib
