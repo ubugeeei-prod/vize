@@ -7467,6 +7467,121 @@
           "message": "Type 'string' is not assignable to type 'number'."
         }
       ]
+    },
+    {
+      "id": "typechecker/escaped-import-literals-10763/original-quoted-alias-graph",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "escaped-import-literals-10763",
+      "case": "original-quoted-alias-graph",
+      "test": "escaped_module_paths_preserve_complete_authored_diagnostics",
+      "regressionCommit": "178f9d7b9137d34941cfdd8cf6b9051bef3b79bd",
+      "sourceRevision": "62652a4d4029fa11016dfa1ac8c24669b42c8d7a",
+      "packReference": {
+        "path": "escaped-import-literals-10763/cases.json",
+        "sha256": "3aa9e69eb21197705007dae206511037e4726bccba9268d00fad22ba4a430be6"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "escaped-import-literals-10763/tsconfig.json.txt",
+          "sha256": "65e3534396c89259726688c5d237ec210b98754801857924a176e7b6bdf444eb"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "escaped-import-literals-10763/App.vue.txt",
+          "sha256": "0b12fcd133cc545f3fa2b3502f7067b81813e1d597f15407e08290414bc39cf4"
+        },
+        {
+          "file": "src/\u65e5\u672c\u8a9e\ud83c\udf63 quoted'\"directory/lib/greet/index.ts",
+          "path": "escaped-import-literals-10763/greet.ts.txt",
+          "sha256": "e3f0a1233aef0813dca919b61cf564e1af873e12ff1d3186541fd033864a4a93"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "typechecker/escaped-import-literals-10763/quoted-alias-with-authored-type-error",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "escaped-import-literals-10763",
+      "case": "quoted-alias-with-authored-type-error",
+      "test": "escaped_module_paths_preserve_complete_authored_diagnostics",
+      "regressionCommit": "178f9d7b9137d34941cfdd8cf6b9051bef3b79bd",
+      "sourceRevision": "62652a4d4029fa11016dfa1ac8c24669b42c8d7a",
+      "packReference": {
+        "path": "escaped-import-literals-10763/cases.json",
+        "sha256": "3aa9e69eb21197705007dae206511037e4726bccba9268d00fad22ba4a430be6"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "escaped-import-literals-10763/tsconfig.json.txt",
+          "sha256": "65e3534396c89259726688c5d237ec210b98754801857924a176e7b6bdf444eb"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "escaped-import-literals-10763/App.invalid.vue.txt",
+          "sha256": "464423219ab43a695eeb8d4674ffdbc7c36a23a856242ee53df67aab439e6b29"
+        },
+        {
+          "file": "src/\u65e5\u672c\u8a9e\ud83c\udf63 quoted'\"directory/lib/greet/index.ts",
+          "path": "escaped-import-literals-10763/greet.ts.txt",
+          "sha256": "e3f0a1233aef0813dca919b61cf564e1af873e12ff1d3186541fd033864a4a93"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 4,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ]
     }
   ],
   "protocolCases": [

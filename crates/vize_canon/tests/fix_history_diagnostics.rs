@@ -873,6 +873,20 @@ fn rewritten_import_literals_preserve_complete_batch_diagnostics() {
     );
 }
 
+#[test]
+fn escaped_module_paths_preserve_complete_authored_diagnostics() {
+    check_pack(
+        "escaped-import-literals-10763",
+        "escaped_module_paths_preserve_complete_authored_diagnostics",
+        "178f9d7b9137d34941cfdd8cf6b9051bef3b79bd",
+        Some(10763),
+        &[
+            "original-quoted-alias-graph",
+            "quoted-alias-with-authored-type-error",
+        ],
+    );
+}
+
 fn check_pack(
     name: &str,
     test: &str,
@@ -900,7 +914,9 @@ fn check_pack(
     assert_eq!(
         pack.source_revision,
         match name {
-            "import-literal-geometry-10762" => "62652a4d4029fa11016dfa1ac8c24669b42c8d7a",
+            "import-literal-geometry-10762" | "escaped-import-literals-10763" => {
+                "62652a4d4029fa11016dfa1ac8c24669b42c8d7a"
+            }
             "package-target-deletion-refresh" => "13fa41356d075047a229f580014b637d3bbeb57f",
             "template-context-undefined-10667"
             | "contextual-prop-anchors-10661"
