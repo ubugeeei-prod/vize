@@ -10,12 +10,16 @@ use vize_l2::{file::FileArtifact, lang::js::JsxMarkupFile, op::Op, walk::NodeRef
 
 use super::{NativeLintFinding, tabindex_no_positive};
 
+mod img_alt;
+
 /// Whole-query refusals retain the owner's original observations.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeCanonicalLintRefusal {
     SourceMismatch,
     ScriptComment { span: Span },
     MarkupComment { span: Span },
+    IndeterminateAttribute { span: Span },
+    UnsupportedImageElement { span: Span },
     NodeLimit,
 }
 
