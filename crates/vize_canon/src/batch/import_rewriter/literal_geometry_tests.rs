@@ -233,3 +233,49 @@ fn tsx_module_geometry_does_not_rewrite_attribute_or_text_literals() {
     assert_eq!(rewritten.source_map.get_original_offset(generated), text);
     assert_eq!(rewritten.source_map.get_virtual_offset(text), generated);
 }
+
+#[test]
+fn lsp_utf16_positions_cross_the_actual_rewritten_byte_map() {
+    use crate::batch::source_map::{line_col_to_offset, offset_to_line_col};
+
+    for newline in ["\n", "\r\n"] {
+        let prefix = "/* 雪🍣 */ import W from '";
+        let source = format!("// 日本語🍣{newline}{prefix}target'; const tail = 1;{newline}");
+        let path = "/mirror/日本語🍣/Widget.vue.ts";
+        let expected = source.replace("target", path);
+        let result = ImportRewriter::new().rewrite_with(&source, SourceType::ts(), |_, _| {
+            Some(path.to_owned().into())
+        });
+        assert_eq!(result.code.as_str(), expected);
+        let authored_start = prefix.encode_utf16().count() as u32;
+        for (byte, _) in path.char_indices() {
+            let generated_col =
+                authored_start + path.get(..byte).unwrap().encode_utf16().count() as u32;
+            let generated = line_col_to_offset(&result.code, 1, generated_col).unwrap();
+            let original = result.source_map.get_original_offset(generated);
+            assert_eq!(
+                offset_to_line_col(&source, original),
+                Some((1, authored_start))
+            );
+        }
+        for (original_col, generated_col) in [
+            (authored_start - 1, authored_start - 1),
+            (
+                authored_start + 6,
+                authored_start + path.encode_utf16().count() as u32,
+            ),
+            (
+                authored_start + 7,
+                authored_start + path.encode_utf16().count() as u32 + 1,
+            ),
+        ] {
+            let generated = line_col_to_offset(&result.code, 1, generated_col).unwrap();
+            let original = result.source_map.get_original_offset(generated);
+            assert_eq!(
+                offset_to_line_col(&source, original),
+                Some((1, original_col))
+            );
+            assert_eq!(result.source_map.get_virtual_offset(original), generated);
+        }
+    }
+}
