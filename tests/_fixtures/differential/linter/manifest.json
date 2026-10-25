@@ -2374,7 +2374,7 @@
         {
           "path": "crates/vize_carton/src/corsa_resolver/tests/project_packages.rs",
           "before": null,
-          "after": "6d2d716232dc934551f2af7b6ef498f033df02e91a3b7a3670939ec302a6ffe1"
+          "after": "bf5660d9741fe2942d0c3c411c2c93d195112aaa838091c7bb0922390712b5b5"
         },
         {
           "path": "crates/vize_carton/src/corsa_resolver/tests/fixture_cases.rs",
@@ -2421,7 +2421,7 @@
         {
           "selector": "corsa_resolver::tests::project_packages::default_discovery_never_uses_ambient_runtime_or_package_manager",
           "source": "crates/vize_carton/src/corsa_resolver/tests/project_packages.rs",
-          "sha256": "6d2d716232dc934551f2af7b6ef498f033df02e91a3b7a3670939ec302a6ffe1"
+          "sha256": "bf5660d9741fe2942d0c3c411c2c93d195112aaa838091c7bb0922390712b5b5"
         },
         {
           "selector": "linter::corsa_session::paths::store::runtime_tests::runtime_selection_fixture_uses_selected_config_roots",

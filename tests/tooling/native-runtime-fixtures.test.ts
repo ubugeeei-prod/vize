@@ -16,8 +16,10 @@ import {
 import { planPrChecks } from "../../tools/support/compat/github/plan-pr-checks.ts";
 import { loadTypecheckerManifest } from "../differential/typechecker.ts";
 import { loadLinterManifest } from "../differential/linter-api.ts";
+import { loadLspManifest, lspFixtureInventory } from "../differential/lsp.ts";
+import { unchangedNativeRuntimeGuidance } from "../../tools/support/compat/github/native-runtime-guidance.ts";
 
-type Product = "linter" | "typechecker";
+type Product = "linter" | "typechecker" | "lsp";
 type RuntimeCase = {
   id: string;
   state: string;
@@ -28,7 +30,7 @@ type RuntimeCase = {
   tests: Array<{ selector: string; source: string; sha256: string }>;
 };
 type Manifest = {
-  cases: Array<{ id: string }>;
+  cases: Array<{ id: string; requestCount?: number }>;
   cohorts?: Array<{ id: string; cases: { path: string } }>;
   runtimeCases: RuntimeCase[];
 };
@@ -86,7 +88,7 @@ function analyze(
 }
 
 void test("actual Rust graph registrations qualify exact source pairs outside language denominators", () => {
-  for (const product of ["linter", "typechecker"] as const) {
+  for (const product of ["linter", "typechecker", "lsp"] as const) {
     const manifest = manifestFor(product);
     assert.deepEqual(analyze(product), {
       product,
@@ -96,12 +98,14 @@ void test("actual Rust graph registrations qualify exact source pairs outside la
     const loaded =
       product === "typechecker"
         ? loadTypecheckerManifest(fileURLToPath(new URL(pathFor(product), root)))
-        : loadLinterManifest(fileURLToPath(new URL(pathFor(product), root)), fileURLToPath(root));
+        : product === "linter"
+          ? loadLinterManifest(fileURLToPath(new URL(pathFor(product), root)), fileURLToPath(root))
+          : loadLspManifest(fileURLToPath(new URL(pathFor(product), root)));
     assert.deepEqual(loaded.manifest.cases, manifest.cases);
     // Linter input-only registrations were already outside its executable
     // cohort denominator. Preserve both inventories rather than equating them.
     const planned =
-      product === "typechecker"
+      product !== "linter"
         ? manifest.cases.map(({ id }) => id)
         : manifest.cohorts!.flatMap((cohort) => {
             const cases = JSON.parse(
@@ -114,11 +118,18 @@ void test("actual Rust graph registrations qualify exact source pairs outside la
       planned.toSorted(),
     );
     assert(!loaded.cases.some((entry: { id: string }) => entry.id === manifest.runtimeCases[0].id));
+    if (product === "lsp") {
+      const lsp = loadLspManifest(fileURLToPath(new URL(pathFor(product), root)));
+      assert.deepEqual(
+        lspFixtureInventory(lsp),
+        manifest.cases.map(({ id, requestCount }) => ({ id, requestCount })),
+      );
+    }
   }
 });
 
 void test("stale, missing, inactive and forged runtime identities cannot qualify", () => {
-  for (const product of ["linter", "typechecker"] as const) {
+  for (const product of ["linter", "typechecker", "lsp"] as const) {
     const row = manifestFor(product).runtimeCases[0];
     assert.equal(analyze(product, { previous: [row] })?.state, "new-input-missing");
     assert.equal(analyze(product, { rows: [] })?.state, "new-input-missing");
@@ -135,7 +146,7 @@ void test("stale, missing, inactive and forged runtime identities cannot qualify
 });
 
 void test("missing, malformed, empty and hash-drifted graph packs fail closed", () => {
-  for (const product of ["linter", "typechecker"] as const) {
+  for (const product of ["linter", "typechecker", "lsp"] as const) {
     assert.equal(
       analyze(product, { files: { [runtimeFixturePath]: null } })?.state,
       "invalid-manifest-or-input",
@@ -163,7 +174,7 @@ void test("missing, malformed, empty and hash-drifted graph packs fail closed", 
 });
 
 void test("source, selector and test body mutations reject even when their supplied hash is updated", () => {
-  for (const product of ["linter", "typechecker"] as const) {
+  for (const product of ["linter", "typechecker", "lsp"] as const) {
     for (const mutate of [
       (row: RuntimeCase) => {
         row.sources[0].before = "0".repeat(64);
@@ -203,10 +214,14 @@ void test("source, selector and test body mutations reject even when their suppl
 });
 
 void test("mixed and future product edits still need normal language inputs", () => {
-  for (const product of ["linter", "typechecker"] as const) {
+  for (const product of ["linter", "typechecker", "lsp"] as const) {
     const row = manifestFor(product).runtimeCases[0];
     const other =
-      product === "linter" ? "crates/vize_patina/src/lib.rs" : "crates/vize_canon/src/batch.rs";
+      product === "linter"
+        ? "crates/vize_patina/src/lib.rs"
+        : product === "typechecker"
+          ? "crates/vize_canon/src/batch.rs"
+          : "crates/vize_resident/src/lib.rs";
     const paths = [...row.sources.map(({ path }) => path), other];
     assert.equal(analyze(product, { paths })?.state, "new-input-missing");
     const bytes = Buffer.from("<template><div /></template>\n");
@@ -215,7 +230,7 @@ void test("mixed and future product edits still need normal language inputs", ()
       {
         id: `${product}/runtime-gate-unit-control/new`,
         state: "active",
-        targets: [product === "linter" ? "lint" : "batch"],
+        targets: [product === "linter" ? "lint" : product === "typechecker" ? "batch" : "stdio"],
         inputs: [{ path, sha256: hash(bytes) }],
       },
     ];
@@ -315,4 +330,28 @@ void test("explicit fake runtime selection retains every old source and global d
       after.replace("assert_eq!(result.exit_code, 2);", "assert_eq!(result.exit_code, 0);"),
     ),
   );
+});
+
+void test("native compiler guidance changes cannot alter diagnostic behavior or unrelated tests", () => {
+  for (const path of [
+    "crates/vize_maestro/src/ide/diagnostics.rs",
+    "crates/vize_maestro/src/ide/diagnostics/typecheck_unavailable_tests.rs",
+  ]) {
+    const before = sourceImage("base", path)!.toString("utf8");
+    const after = sourceImage("head", path)!.toString("utf8");
+    assert(unchangedNativeRuntimeGuidance(path, before, after));
+    assert(!unchangedNativeRuntimeGuidance(path, before, `${after}\n// unrelated edit\n`));
+    assert(
+      !unchangedNativeRuntimeGuidance(
+        path,
+        before,
+        after.replace(
+          path.endsWith("typecheck_unavailable_tests.rs")
+            ? "DiagnosticSeverity::HINT"
+            : "pub mod sources",
+          "UNRELATED_BEHAVIOR_CHANGE",
+        ),
+      ),
+    );
+  }
 });

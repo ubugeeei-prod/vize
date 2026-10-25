@@ -24,6 +24,8 @@ test("runtime changes and observer-only changes select the existing CLI and sour
     "npm/cli/package.json",
     "editors/vscode/src/corsa-runtime.ts",
     "tests/tooling/native-runtime-cli-selection.test.mjs",
+    "crates/vize_maestro/src/ide/diagnostics.rs",
+    "crates/vize_maestro/src/ide/diagnostics/typecheck_unavailable_tests.rs",
     "tests/tooling/native-runtime-napi-selection.test.mjs",
     "tests/tooling/support/native-runtime-selection/lsp.mjs",
     ".github/actions/test-native-runtime-selection/action.yml",
