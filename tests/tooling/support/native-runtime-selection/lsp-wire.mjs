@@ -16,6 +16,7 @@ export class SourceLspWire {
     workspace,
     directory,
     fileDescriptorLifecycle = false,
+    descriptorAliasAudit = false,
   }) {
     fs.mkdirSync(directory, { recursive: true });
     this.directory = directory;
@@ -29,9 +30,11 @@ export class SourceLspWire {
       "-s",
       "16777216",
       "-e",
-      fileDescriptorLifecycle
-        ? "trace=process,read,write,readv,writev,openat,close,dup,dup2,dup3,network"
-        : "trace=process,read,write,readv,writev",
+      descriptorAliasAudit
+        ? "trace=process,read,write,readv,writev,openat,close,dup,dup2,dup3,network,fcntl,close_range"
+        : fileDescriptorLifecycle
+          ? "trace=process,read,write,readv,writev,openat,close,dup,dup2,dup3,network"
+          : "trace=process,read,write,readv,writev",
       "-o",
       this.prefix,
       executable,

@@ -170,6 +170,7 @@ export async function observeSourceLspSelection({ campaign = "runtime-selection"
       workspace: consumer.workspace,
       directory,
       fileDescriptorLifecycle: snapshotCampaign,
+      descriptorAliasAudit: betaCampaign,
     });
     const uri = pathToFileURL(consumer.entry).href,
       rootUri = pathToFileURL(consumer.workspace).href;
@@ -414,6 +415,8 @@ export async function observeSourceLspSelection({ campaign = "runtime-selection"
         !profile.cleanupProtocolFailure &&
         !profile.auditFailure,
       );
+      if (betaCampaign && profile.qualification)
+        profile.qualification.scopedWorkspaceSemanticCredit = profile.functionalQualified;
       report.profiles.push(profile);
       write(path.join(output, "source-lsp-selection.json"), report);
     }

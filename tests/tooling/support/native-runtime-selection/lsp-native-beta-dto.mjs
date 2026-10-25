@@ -89,7 +89,7 @@ export function validateNativeBetaDtoLifecycle(owners, consumer) {
   return {
     selectedProvider: true,
     nativeCleanExitQualified: true,
-    semanticCredit: true,
+    semanticCredit: false,
     scope:
       "Exact A183 source Maestro selected-config packets and retained attached DerivedSnapshots refusal; API configuration metadata is independently owned and provides no LS overlay-view credit.",
     betaContractSourceSha256: sha256(Buffer.from(source)),
@@ -115,6 +115,11 @@ function captureRetainedApi(owners) {
   for (const observed of owners) {
     const raw = capture.owners.find((owner) => owner.process === observed.process);
     assert(raw, "same actual process owns API socket bytes");
+    const stdio = decodeNativeIo({ ...raw });
+    assert(
+      stdio.events.some((row) => row.operation === "read" && row.fd === 0 && row.count === 0),
+      "actual native stdin EOF read(0)=0; terminal unknown bytes cannot substitute",
+    );
     const requests = packet(observed.streams.client.frames),
       responses = packet(observed.streams.server.frames);
     for (const attach of requests.filter((row) => row.method === "custom/initializeAPISession")) {
@@ -158,6 +163,32 @@ function captureRetainedApi(owners) {
           BigInt(row.interval.startNanoseconds) > BigInt(accepted.interval.endNanoseconds) &&
           BigInt(row.interval.endNanoseconds) < BigInt(closed.interval.startNanoseconds),
       );
+      for (const row of rows) {
+        const alias = /^(dup|dup2|dup3|fcntl)\((\d+)(?:,\s*([^,)]*))?/u.exec(row.call);
+        if (alias) {
+          const source = Number(alias[2]);
+          const target = /^(dup2|dup3)$/u.test(alias[1]) ? Number(alias[3]) : null;
+          assert(
+            !(source === fd && (alias[1] !== "fcntl" || /F_DUPFD/u.test(alias[3]))) &&
+              target !== fd,
+            "API socket descriptor aliasing remains unsupported",
+          );
+        }
+        assert(
+          !row.call.startsWith("close_range("),
+          "range closure could invalidate accepted API lifetime",
+        );
+        assert(
+          !row.call.includes("SCM_RIGHTS"),
+          "descriptor passing is outside accepted API lifetime coverage",
+        );
+        const allocation =
+          /^(?:openat|socket|accept|accept4|dup|dup2|dup3)\(.*\)\s+=\s+(\d+)\b/u.exec(row.call);
+        assert(
+          !allocation || Number(allocation[1]) !== fd,
+          "accepted API descriptor must not be reused before its observed close",
+        );
+      }
       const decoded = decodeNativeIo({ ...raw, rows }, [fd]);
       const stream = (operation) =>
         Buffer.concat(
