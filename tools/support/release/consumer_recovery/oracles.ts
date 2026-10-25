@@ -10,7 +10,10 @@ export const policyFiles = [
   ".github/workflows/release-consumer-recovery.yml",
   ".github/workflows/release-operator.yml",
   ".github/workflows/release-public-acceptance.yml",
-  "npm/cli/src/corsa-runtime.ts",
+  "tests/_fixtures/release/legacy-0.571/corsa-runtime.ts",
+  "tests/_fixtures/release/legacy-0.571/identity.json",
+  "tests/_fixtures/release/legacy-0.571/policy-files.json",
+  "tests/_fixtures/release/user-typechecker-provider.json",
   "tests/performance/support/warm-type-backed-public-archives.ts",
   "tools/support/release/consumer_recovery/archive.ts",
   "tools/support/release/consumer_recovery/consumer.ts",
@@ -38,6 +41,7 @@ export const policyFiles = [
   "tools/support/release/public_acceptance/lsp_case.ts",
   "tools/support/release/public_acceptance/lsp_packets.ts",
   "tools/support/release/public_acceptance/lsp_source.ts",
+  "tools/support/release/public_acceptance/lsp_user_provider.ts",
   "tools/support/release/public_acceptance/native.ts",
   "tools/support/release/public_acceptance/plan.ts",
   "tools/support/release/public_acceptance/registry.ts",
@@ -73,19 +77,39 @@ export const policyFiles = [
   "tools/support/release/windows_hover_acceptance.ts",
 ] as const;
 
+// Read the retired inventory as authenticated data. It cannot authorize a new
+// collection against today's checkout; assertCheckoutAuthority remains current-only.
+const legacyInventoryBytes = readFileSync(
+  new URL("../../../../tests/_fixtures/release/legacy-0.571/policy-files.json", import.meta.url),
+);
+same(
+  sha256(legacyInventoryBytes),
+  "0e0164f73394f5af1142abaddd9cd9881f8ccc52748d6d421a83f6dca01a8f4b",
+  "frozen legacy policy inventory",
+);
+const legacyPolicyFiles = JSON.parse(legacyInventoryBytes.toString()) as string[];
+const policyDeclaration = (files: readonly string[]) =>
+  `export const policyFiles = [\n${files.map((file) => `  ${JSON.stringify(file)},`).join("\n")}\n] as const;`;
+
 /** Read an authenticated historical policy as data, never as an imported module. */
 export function sourceAuthority(sha: string, read: (sha: string, file: string) => string) {
   assert.match(sha, /^[0-9a-f]{40}$/);
-  const declaration = `export const policyFiles = [\n${policyFiles
-    .map((file) => `  ${JSON.stringify(file)},`)
-    .join("\n")}\n] as const;`;
   const inventory = read(sha, "tools/support/release/consumer_recovery/oracles.ts");
-  same(
-    inventory.match(/^export const policyFiles = \[\n(?: {2}"[^"\r\n]*",\n)*\] as const;$/gm),
-    [declaration],
-    "unsupported historical recovery source inventory",
+  const declarations = inventory.match(
+    /^export const policyFiles = \[\n(?: {2}"[^"\r\n]*",\n)*\] as const;$/gm,
   );
-  return policyFiles.map((file) => ({ file, sha256: sha256(read(sha, file)) }));
+  assert.ok(
+    declarations && declarations.length === 1,
+    "one closed recovery source inventory required",
+  );
+  const selected =
+    declarations[0] === policyDeclaration(policyFiles)
+      ? policyFiles
+      : declarations[0] === policyDeclaration(legacyPolicyFiles)
+        ? legacyPolicyFiles
+        : undefined;
+  assert.ok(selected, "unsupported historical recovery source inventory");
+  return selected.map((file) => ({ file, sha256: sha256(read(sha, file)) }));
 }
 
 /** New collections must still execute exactly their own reviewed source bytes. */

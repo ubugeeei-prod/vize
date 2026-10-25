@@ -1,0 +1,14 @@
+{
+  "schema": "vize.legacyCorsaObserver.v1",
+  "version": "0.571.0",
+  "tagCommit": "b50074835fbea16018856f044ffcb39742e96770",
+  "sourceCommit": "aeab2e4994e1ccd55a9ae22b15ab849d03f93cc5",
+  "originalPath": "npm/cli/src/corsa-runtime.ts",
+  "sha256": "204311ddecf0dd9a687bfdf04ffaf3a4b5ec336e3ab71400fd7b660cf479935b",
+  "scope": "Frozen trusted observer for the historical bundled702 cohort only; never a production runtime or current default resolver.",
+  "policyInventory": {
+    "sourceFile": "tools/support/release/consumer_recovery/oracles.ts",
+    "sourceSha256": "0cd0b1e6d705b5690cf5a66044351f39dc6ce56525afada747e6f521c9366e96",
+    "fixtureSha256": "0e0164f73394f5af1142abaddd9cd9881f8ccc52748d6d421a83f6dca01a8f4b"
+  }
+}

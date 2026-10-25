@@ -69,6 +69,30 @@ export function readLspSourceFiles(root: string, head: string) {
 export function tomlJson(source: string) {
   return JSON.parse(JSON.stringify(parseToml(source)));
 }
+
+export const userProviderFixture = "tests/_fixtures/release/user-typechecker-provider.json";
+
+/** A new explicit-provider cohort; historical H metadata and golden bytes stay unchanged. */
+export function userProviderContract(root: string, head: string) {
+  const bytes = readRawBlob(root, head, userProviderFixture);
+  const expected = {
+    schema: "vize.publicLspUserProvider.v1",
+    cohort: "explicit-user-provider-702-v1",
+    resolutionMode: "explicit-user-provider",
+    name: "@typescript/typescript-linux-x64",
+    version: "7.0.2",
+    platform: "linux",
+    arch: "x64",
+    executableRelativePath: "lib/tsc",
+    integrity:
+      "sha512-EYdf2cNg7rgCWJnxCdJ+F3V39O8ihb37eHAu1LK8oAFizgTQbPOK7zHHXbPt8rX24COqODXeI3sIf0fCXG7H/A==",
+    archiveSha256: "7ecad6f67377e831856367ab062ef394f21506a611405bf8ac0ff039348637d3",
+    executableSha256: "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4",
+    executableBytes: 24101026,
+  } as const;
+  assert.deepEqual(JSON.parse(bytes.toString()), expected);
+  return { ...expected, sourceFile: userProviderFixture, sourceSha256: sha256(bytes), head };
+}
 export function sourceMetadata(root: string, head: string) {
   const read = (file: string) => readRawBlob(root, head, file);
   const cargo = tomlJson(read("Cargo.toml").toString());
@@ -80,6 +104,9 @@ export function sourceMetadata(root: string, head: string) {
   assert.match(metadata.toolchain, /^\d+\.\d+\.\d+$/u);
   const cli = JSON.parse(read("npm/cli/package.json").toString());
   const name = "@typescript/typescript-linux-x64";
+  if (cli.optionalDependencies?.[name] === undefined) {
+    return { ...metadata, provider: userProviderContract(root, head) };
+  }
   assert.equal(cli.optionalDependencies[name], "catalog:corsa-runtime");
   const catalog = read("pnpm-workspace.yaml").toString();
   const section = /^  corsa-runtime:\n([\s\S]*?)(?=^  [a-z]|$(?![\s\S]))/mu.exec(catalog)?.[1];
