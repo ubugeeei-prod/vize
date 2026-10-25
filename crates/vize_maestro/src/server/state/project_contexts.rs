@@ -388,6 +388,7 @@ impl ServerState {
         }
     }
 
+    #[cfg(test)]
     pub(crate) fn retire_project_contexts(&self) {
         self.project_contexts
             .shutting_down
