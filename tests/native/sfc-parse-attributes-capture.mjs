@@ -18,18 +18,38 @@ assert.equal(source, process.env.VIZE_SFC_ATTRS_SOURCE_SHA);
 const nativeRoot = path.join(sourceRoot, "npm/native");
 const require = createRequire(path.join(nativeRoot, "package.json"));
 const binding = require("./index.js");
-const receipt = JSON.parse(
-  await fs.readFile(path.join(nativeRoot, ".artifacts/native/build-token-receipt.json"), "utf8"),
-);
-assert.equal(receipt.source, source);
-assert.equal(binding.getNativeBuildToken(), receipt.identity.token);
-const binary = await fs.realpath(path.join(nativeRoot, receipt.binary.filename));
+const { getBindingIdentity } = require("./native-binding-identity.js");
+const identity = getBindingIdentity(binding);
+assert.equal(identity.kind, "native");
+assert.match(identity.token, /^[0-9a-f]{32}$/);
+assert.equal(binding.getNativeBuildToken(), identity.token);
+const binaries = (await fs.readdir(nativeRoot)).filter((name) => name.endsWith(".node"));
+assert.equal(binaries.length, 1);
+const filename = binaries[0];
+const binary = await fs.realpath(path.join(nativeRoot, filename));
 const hash = (value) => createHash("sha256").update(value).digest("hex");
-assert.equal(hash(await fs.readFile(binary)), receipt.binary.sha256);
 assert.ok(
   Object.keys(require.cache).includes(binary),
   "the selected image must be the actual locally built addon",
 );
+const receipt = {
+  schema: "vize.sfc-parse-attributes-source.v1",
+  role,
+  source,
+  triggerSha: process.env.GITHUB_SHA,
+  runId: process.env.GITHUB_RUN_ID,
+  runAttempt: process.env.GITHUB_RUN_ATTEMPT,
+  node: process.version,
+  platform: process.platform,
+  arch: process.arch,
+  identity,
+  binary: {
+    filename,
+    bytes: (await fs.stat(binary)).size,
+    sha256: hash(await fs.readFile(binary)),
+  },
+};
+await fs.writeFile(path.join(directory, "image.json"), JSON.stringify(receipt, null, 2) + "\n");
 const cases = JSON.parse(
   await fs.readFile(
     new URL("../fixtures/sfc/parsed-attributes/cases.json", import.meta.url),
