@@ -45,9 +45,7 @@ jobs:
       - name: Build the actual source-native package
         run: vp run --filter './npm/native' build:ci
       - name: Seal the selected image and exact source
-        env:
-          GITHUB_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-        run: node npm/native/scripts/native-build-receipt.mjs
+        run: GITHUB_SHA="$SOURCE_SHA" node npm/native/scripts/native-build-receipt.mjs
       - name: Verify runtime selectors, all native paths and whole outputs
         shell: bash
         run: |
@@ -63,3 +61,4 @@ jobs:
             target/vize-tests/sfc-runtime-version/
             npm/native/.artifacts/native/build-token-receipt.json
           if-no-files-found: error
+          include-hidden-files: true
