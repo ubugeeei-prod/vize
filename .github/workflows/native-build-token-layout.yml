@@ -12,8 +12,8 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: native-token-layout-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+  group: native-token-layout-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
+  cancel-in-progress: false
 jobs:
   producer:
     name: Darwin x64 producer (${{ matrix.role }})

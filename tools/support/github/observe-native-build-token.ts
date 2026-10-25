@@ -39,21 +39,58 @@ async function producer(directory: string, role: string, expectedSource: string,
   const before = Object.fromEntries(
     sourceFiles.map((file) => [file, hash(fs.readFileSync(path.join(root, file)))]),
   );
-  const realCargo = execFileSync("rustup", ["which", "cargo"], {
+  const originalPath = process.env.PATH ?? "";
+  const originalCargo = execFileSync("/usr/bin/which", ["cargo"], {
     cwd: root,
     encoding: "utf8",
   }).trim();
+  const realRustc = execFileSync("rustup", ["which", "rustc"], {
+    cwd: root,
+    encoding: "utf8",
+  }).trim();
+  const selectedRustc = execFileSync("/usr/bin/which", ["rustc"], {
+    cwd: root,
+    encoding: "utf8",
+  }).trim();
+  const targetLibrary = execFileSync(
+    realRustc,
+    ["--print", "target-libdir", "--target", "x86_64-apple-darwin"],
+    { cwd: root, encoding: "utf8" },
+  ).trim();
+  json(path.join(output, "toolchain-before.json"), {
+    originalPath,
+    originalCargo,
+    selectedRustc,
+    realRustc,
+    targetLibrary,
+    selectedRustcVersion: execFileSync("rustc", ["-vV"], { cwd: root, encoding: "utf8" }),
+    selectedSysroot: execFileSync("rustc", ["--print", "sysroot"], { cwd: root, encoding: "utf8" }),
+    pinnedRustcVersion: execFileSync(realRustc, ["-vV"], { cwd: root, encoding: "utf8" }),
+    installedTargets: execFileSync("rustup", ["target", "list", "--installed"], {
+      cwd: root,
+      encoding: "utf8",
+    }),
+    targetFiles: fs.existsSync(targetLibrary) ? fs.readdirSync(targetLibrary) : null,
+  });
+  assert(
+    fs.existsSync(targetLibrary),
+    "installed repository compiler lacks the requested target library directory",
+  );
+  assert(
+    fs.readdirSync(targetLibrary).some((name) => name.startsWith("libcore-")),
+    "installed target core library is absent",
+  );
   const bin = path.join(output, "observer-bin");
   fs.mkdirSync(bin);
   const invocation = path.join(output, "cargo-invocation.json");
-  // Observe the fresh producer environment, then execute the exact pinned Cargo
-  // binary with unchanged arguments and environment. Never mint/replace its token.
+  // Observe the fresh producer environment, then execute the original Cargo proxy
+  // command with unchanged arguments and the explicitly installed repository rustc. Never mint/replace its token.
   fs.writeFileSync(
     path.join(bin, "cargo"),
     `#!${process.execPath}\n` +
       `const fs=require('node:fs');const cp=require('node:child_process');\n` +
-      `fs.writeFileSync(${JSON.stringify(invocation)},JSON.stringify({argv:process.argv.slice(2),cwd:process.cwd(),token:process.env.VIZE_NATIVE_BUILD_TOKEN,cargo:${JSON.stringify(realCargo)}},null,2)+'\\n',{flag:'wx'});\n` +
-      `const r=cp.spawnSync(${JSON.stringify(realCargo)},process.argv.slice(2),{env:process.env,stdio:'inherit'});if(r.error)throw r.error;process.exit(r.status??1);\n`,
+      `fs.writeFileSync(${JSON.stringify(invocation)},JSON.stringify({argv:process.argv.slice(2),cwd:process.cwd(),token:process.env.VIZE_NATIVE_BUILD_TOKEN,cargo:${JSON.stringify(originalCargo)},rustc:${JSON.stringify(realRustc)}},null,2)+'\\n',{flag:'wx'});\n` +
+      `const r=cp.spawnSync("cargo",process.argv.slice(2),{env:{...process.env,PATH:${JSON.stringify(originalPath)},RUSTC:${JSON.stringify(realRustc)}},stdio:'inherit'});if(r.error)throw r.error;process.exit(r.status??1);\n`,
     { mode: 0o755 },
   );
   const receipt = path.join(output, "build-receipt.json");
@@ -107,8 +144,8 @@ async function producer(directory: string, role: string, expectedSource: string,
     releaseVersion: version,
     target: "x86_64-apple-darwin",
     node: { executable: process.execPath, version: process.version, arch: process.arch },
-    rustc: execFileSync("rustc", ["-vV"], { cwd: root, encoding: "utf8" }),
-    cargo: execFileSync(realCargo, ["--version"], { cwd: root, encoding: "utf8" }),
+    rustc: execFileSync(realRustc, ["-vV"], { cwd: root, encoding: "utf8" }),
+    cargo: execFileSync(originalCargo, ["--version"], { cwd: root, encoding: "utf8" }),
     xcode: execFileSync("xcodebuild", ["-version"], { encoding: "utf8" }),
     command: { executable: process.execPath, argv: args },
     status,
