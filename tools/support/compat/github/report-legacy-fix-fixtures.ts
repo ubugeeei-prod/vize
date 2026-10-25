@@ -16,6 +16,7 @@ import {
 } from "./native-shutdown-protocol-fixtures.ts";
 
 import { newNativeRuntimeCases } from "./native-runtime-fixtures.ts";
+import { newRawEditorCases } from "./raw-editor-fixtures.ts";
 
 /** PRs opened before this (just after the gate merged) stay report-only. */
 export const GATE_SINCE = "2026-10-20T06:00:00Z";
@@ -65,6 +66,7 @@ interface Manifest {
   cases?: ManifestCase[];
   protocolCases?: unknown;
   runtimeCases?: unknown;
+  rawEditorCases?: unknown;
   cssApiCases?: unknown;
 }
 
@@ -212,6 +214,10 @@ function checkProduct(
       manifest.runtimeCases,
       readFile,
     );
+    const rawEditor =
+      product === "typechecker"
+        ? newRawEditorCases(before?.rawEditorCases, manifest.rawEditorCases, readFile, canonPaths)
+        : { ids: [], sources: new Set<string>() };
     const productPaths = paths.filter((path) =>
       product === "lsp"
         ? /^crates\/vize_(?:maestro|resident)\/src\//.test(path)
@@ -224,6 +230,7 @@ function checkProduct(
         ? productPaths.some(
             (path) =>
               !runtime.sources.has(path) &&
+              !rawEditor.sources.has(path) &&
               !(product === "typechecker" && nativeShutdownProtocolSource(path)),
           )
         : true;
@@ -242,7 +249,7 @@ function checkProduct(
     return {
       product,
       state: registered ? "new-inputs-registered" : "new-input-missing",
-      cases: [...cases, ...protocols, ...runtime.ids, ...cssApi],
+      cases: [...cases, ...protocols, ...runtime.ids, ...rawEditor.ids, ...cssApi],
     };
   } catch (error) {
     return { product, state: "invalid-manifest-or-input", cases: [], reason: String(error) };
