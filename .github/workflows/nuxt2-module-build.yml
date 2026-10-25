@@ -1,4 +1,5 @@
 name: Nuxt 2 module build
+run-name: Nuxt 2 host runtime @ ${{ github.event.pull_request.head.sha || github.sha }}
 on:
   pull_request:
     branches: [main]
@@ -13,6 +14,8 @@ on:
       - tools/support/compat/nuxt/fixtures/nuxt2-module-build/**
       - tools/support/compat/nuxt/nuxt2-module-build.ts
       - tools/support/compat/nuxt/nuxt2-lint-config.ts
+      - tools/support/compat/nuxt/nuxt2-typecheck.ts
+      - tools/support/compat/nuxt/fixtures/nuxt2-typecheck/**
       - tools/support/compat/nuxt/nuxt-auto-init-config.ts
   push:
     branches: [main]
@@ -27,6 +30,8 @@ on:
       - tools/support/compat/nuxt/fixtures/nuxt2-module-build/**
       - tools/support/compat/nuxt/nuxt2-module-build.ts
       - tools/support/compat/nuxt/nuxt2-lint-config.ts
+      - tools/support/compat/nuxt/nuxt2-typecheck.ts
+      - tools/support/compat/nuxt/fixtures/nuxt2-typecheck/**
       - tools/support/compat/nuxt/nuxt-auto-init-config.ts
   workflow_dispatch:
 
@@ -39,18 +44,20 @@ concurrency:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  NODE_OPTIONS: --openssl-legacy-provider
 
 jobs:
   nuxt2-module-build:
-    name: Nuxt 2 webpack build and SSR
+    name: Nuxt 2 webpack SSR, hydration and HMR
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
-          node-version: "22"
+          node-version: "24"
           cache: true
           run-install: false
       - name: Install workspace tooling
@@ -78,11 +85,15 @@ jobs:
         working-directory: npm/framework/nuxt
         run: vp pack
       - name: Verify version-specific plans and original modern oracle
-        run: vp node --test npm/framework/nuxt-lint-config/src/*.test.ts npm/framework/nuxt/src/lint/generation*.test.ts npm/framework/nuxt/src/builder.test.ts
+        run: vp node --test npm/framework/nuxt-lint-config/src/*.test.ts npm/framework/nuxt/src/lint/generation*.test.ts npm/framework/nuxt/src/builder.test.ts npm/framework/nuxt/src/lint/checker/setup.test.ts
       - name: Install the Nuxt 2 reproduction
         working-directory: tools/support/compat/nuxt/fixtures/nuxt2-module-build
         run: npm ci --legacy-peer-deps --no-audit --no-fund
-      - name: Verify candidate webpack build and SSR routes
+      - uses: ./.github/actions/setup-ubuntu-archive
+      - name: Install Chromium for the Nuxt 2 runtime check
+        working-directory: tests
+        run: vize-ci-apt-retry vp exec playwright install --with-deps chromium
+      - name: Verify candidate webpack build, SSR, hydration and dev HMR
         run: vp env exec node tools/support/compat/nuxt/nuxt2-module-build.ts "$RUNNER_TEMP/nuxt2-module-proof"
       - name: Upload Nuxt 2 build and SSR evidence
         if: always()

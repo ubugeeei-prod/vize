@@ -23,6 +23,7 @@ mod pug_refusal;
 mod quoted_generic_parameters;
 mod template_expression_syntax;
 mod type_only_import_use;
+mod typed_context_undefined;
 mod unicode_prop_bindings;
 mod unknown_options_10218;
 

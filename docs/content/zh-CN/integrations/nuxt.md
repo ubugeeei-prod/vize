@@ -277,7 +277,7 @@ export default ((app) => {
 
 ## Nuxt 2 与 Vue 2
 
-模块支持 Nuxt 2、3 和 4。Vize 的编译器输出 Vue 3 代码，因此在 Nuxt 2 中，模块会把 `.vue` 的编译交给现有的编译器（`@vitejs/plugin-vue2`、`vue-loader` 或 Nuxt 自带的编译器），同时继续提供 lint 和 Musea。更早的 Vue 项目也可以通过 `vueVersion: 0.11`、`vueVersion: 1` 或 `vueVersion: "legacy"` 获得同样的行为。
+Nuxt 2 使用同一个 `@vizejs/nuxt` 包。编译、SSR 和 HMR 由现有的 Vue 2 编译器和 Nuxt 负责。Vize 生成 lint 配置，可选的 `checker` 使用开发环境的 builder。Nuxt 2 中禁用 Musea。Vize 的原生编译器输出 Vue 3 代码，不会替代 Vue 2 编译器。
 
 版本会被自动检测。如果某个封装让 Nuxt Kit 无法看到版本，请手动指定：
 

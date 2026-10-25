@@ -41,6 +41,7 @@ export const INFRASTRUCTURE_PATHS = new Set([
   "tools/benchmarks/scripts/typechecker-native-profile-corpus-fixture.mjs",
   "tools/benchmarks/scripts/typechecker-native-dependency-link.test.mjs",
   "tests/tooling/native-buildinfo-ownership.test.mjs",
+  "tests/tooling/typechecker-native-phase-membership.test.mjs",
   ...[
     "typechecker-native-graph-archive",
     "typechecker-native-profile-replay",

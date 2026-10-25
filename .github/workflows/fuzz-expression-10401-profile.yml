@@ -1,0 +1,162 @@
+name: Expression slow unit 10401 profile
+on:
+  pull_request:
+    paths:
+      - .github/workflows/fuzz-expression-10401-profile.yml
+      - crates/vize_atelier_core/examples/fuzz_expression_10401_profile.rs
+      - tests/fuzz/regressions/js_ts_expression/issue-10401.input
+      - davinci/vize_l0/src/expression_guard/**
+      - davinci/vize_l0/src/expression_guard.rs
+      - vendor/oxc_parser/src/**
+  workflow_dispatch: {}
+permissions:
+  contents: read
+concurrency:
+  group: expression-10401-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  profile:
+    name: Expression 10401 ${{ matrix.role }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        role: [baseline, candidate]
+    env:
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: never
+      ROLE: ${{ matrix.role }}
+      DRIVER_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      SOURCE_SHA: ${{ matrix.role == 'baseline' && '3a4bf713f85589a50da5d0a7aaf8ae33fdcdc004' || github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Checkout frozen driver and exact input
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ env.DRIVER_SHA }}
+          path: driver
+          persist-credentials: false
+      - name: Checkout immutable source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          path: source
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # master
+        with:
+          toolchain: nightly-2026-10-23
+      # Downloaded sources may be reused; compiled targets are never restored.
+      - uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: expression-profile-downloads-${{ runner.os }}
+      - name: Prepare source and provenance
+        run: |
+          set -euo pipefail
+          mkdir -p evidence
+          test "$(git -C source rev-parse HEAD)" = "$SOURCE_SHA"
+          test "$(git -C driver rev-parse HEAD)" = "$DRIVER_SHA"
+          input="$GITHUB_WORKSPACE/driver/tests/fuzz/regressions/js_ts_expression/issue-10401.input"
+          echo "6d668844f745732cdc92bdafa21f72ba5d09d9c14305d4ea9174fb802493dcc8  $input" | sha256sum -c -
+          mkdir -p source/crates/vize_atelier_core/examples
+          cp driver/crates/vize_atelier_core/examples/fuzz_expression_10401_profile.rs source/crates/vize_atelier_core/examples/
+          {
+            printf 'source_sha=%s\ndriver_sha=%s\nrole=%s\n' "$SOURCE_SHA" "$DRIVER_SHA" "$ROLE"
+            rustc +nightly-2026-10-23 -Vv
+            uname -a
+            sha256sum "$input" driver/crates/vize_atelier_core/examples/fuzz_expression_10401_profile.rs
+            git -C source status --short
+          } > evidence/provenance.txt
+          target="$RUNNER_TEMP/expression-10401-$ROLE-$SOURCE_SHA-optimized"
+          test ! -e "$target"
+          echo "CARGO_TARGET_DIR=$target" >> "$GITHUB_ENV"
+          echo "EXPRESSION_INPUT=$input" >> "$GITHUB_ENV"
+      - name: Build optimized phase probe with source line information
+        id: optimized-build
+        working-directory: source
+        env:
+          CARGO_PROFILE_CI_OPT_DEBUG: "1"
+        run: cargo +nightly-2026-10-23 build --locked --profile ci-opt -p vize_atelier_core --example fuzz_expression_10401_profile 2>&1 | tee ../evidence/optimized-build.log
+      - name: Measure guard, guarded parse, and raw parser separately
+        run: |
+          set -euo pipefail
+          binary="$CARGO_TARGET_DIR/ci-opt/examples/fuzz_expression_10401_profile"
+          sha256sum "$binary" > evidence/optimized-binary.sha256
+          "$binary" inspect "$EXPRESSION_INPUT" > evidence/input-inspection.json
+          "$binary" controls "$EXPRESSION_INPUT" > evidence/controls.json
+          for phase in guard guarded raw; do
+            repetitions=1
+            if [[ "$phase" == guard ]]; then repetitions=1000; fi
+            timeout 90 "$binary" "$phase" "$EXPRESSION_INPUT" "$repetitions" > "evidence/$phase.json" 2> "evidence/$phase-metadata.json"
+          done
+      - name: Install source profiler
+        if: always() && steps.optimized-build.outcome == 'success'
+        run: sudo apt-get update -qq && sudo apt-get install -y valgrind
+      - name: Profile exact guarded and raw parser source
+        if: always() && steps.optimized-build.outcome == 'success'
+        run: |
+          set -euo pipefail
+          binary="$CARGO_TARGET_DIR/ci-opt/examples/fuzz_expression_10401_profile"
+          for phase in guard raw; do
+            set +e
+            timeout 120 valgrind --tool=callgrind --callgrind-out-file="evidence/$phase.callgrind" "$binary" "$phase" "$EXPRESSION_INPUT" 1 > "evidence/$phase-profile.json" 2> "evidence/$phase-profile.log"
+            status=$?
+            set -e
+            printf '%s\n' "$status" > "evidence/$phase-profile.exit"
+            if [[ -f "evidence/$phase.callgrind" ]]; then
+              callgrind_annotate --inclusive=yes --tree=both --auto=yes "evidence/$phase.callgrind" > "evidence/$phase-source-profile.txt"
+            fi
+          done
+      - name: Build and replay exact original sanitizer regime
+        if: always() && steps.optimized-build.outcome == 'success'
+        working-directory: source
+        run: |
+          set -euo pipefail
+          cargo +nightly-2026-10-23 install cargo-fuzz --locked --version 0.13.2 --target-dir "$RUNNER_TEMP/expression-10401-$ROLE-$SOURCE_SHA-tool"
+          target="$RUNNER_TEMP/expression-10401-$ROLE-$SOURCE_SHA-asan"
+          test ! -e "$target"
+          export CARGO_TARGET_DIR="$target"
+          cargo +nightly-2026-10-23 fuzz build --fuzz-dir tests/fuzz js_ts_expression -v 2>&1 | tee ../evidence/asan-build.log
+          binary="$target/x86_64-unknown-linux-gnu/release/js_ts_expression"
+          sha256sum "$binary" > ../evidence/asan-binary.sha256
+          timeout 120 "$binary" "$EXPRESSION_INPUT" -runs=1 -max_len=65536 -timeout=25 -rss_limit_mb=4096 -malloc_limit_mb=2048 > ../evidence/asan-replay.log 2>&1
+      - name: Require causal private parser regressions on candidate
+        if: matrix.role == 'candidate'
+        working-directory: source
+        run: |
+          set -euo pipefail
+          target="$RUNNER_TEMP/expression-10401-$ROLE-$SOURCE_SHA-tests"
+          test ! -e "$target"
+          CARGO_TARGET_DIR="$target" cargo +nightly-2026-10-23 test --locked -p vize_oxc_parser --profile ci type_argument_close_tests 2>&1 | tee ../evidence/causal-tests.log
+      - name: Retain all phase measurements and source profiles
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: expression-10401-${{ matrix.role }}-${{ env.SOURCE_SHA }}
+          path: evidence/
+          if-no-files-found: error
+          retention-days: 30
+  compare-control-packets:
+    name: Expression 10401 AST and diagnostic packet parity
+    needs: profile
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 5
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: expression-10401-*
+          path: evidence
+      - name: Require unchanged complete packets for every TS, TSX and JSX control
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          packets = sorted(Path('evidence').glob('*/controls.json'))
+          assert len(packets) == 2, packets
+          base, head = (json.loads(path.read_text()) for path in packets)
+          assert len(base) == 91 and len(head) == 91
+          assert base == head, 'AST, diagnostics or spans changed'
+          print(f'All {len(base)} complete AST/diagnostic packets match.')
+          PY

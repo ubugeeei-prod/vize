@@ -23,6 +23,7 @@ const initVuePlugin = require(path.join(root, "npm/typescript-plugin/index.cjs")
     languageService: import("typescript").LanguageService;
     languageServiceHost: import("typescript").LanguageServiceHost;
     serverHost: typeof ts.sys;
+    config?: { nativePath: string };
   }): import("typescript").LanguageService;
 };
 
@@ -96,7 +97,11 @@ test("TypeScript Vue plugin keeps missing-provider import errors explicit", () =
     const withoutPlugin = collectDiagnostics(project.mainTs, false);
     assert.ok(hasCannotFindVueModule(withoutPlugin, "./app.vue"), formatDiagnostics(withoutPlugin));
 
-    const withPlugin = collectDiagnostics(project.mainTs, true);
+    const withPlugin = collectDiagnostics(
+      project.mainTs,
+      true,
+      path.join(project.root, "missing-native-provider"),
+    );
     assert.equal(
       hasCannotFindVueModule(withPlugin, "./app.vue"),
       true,
@@ -261,14 +266,17 @@ function createVueProject(mainSource: string, vueFiles: Record<string, string>) 
   return { root: rootDir, mainTs };
 }
 
-function collectDiagnostics(mainTs: string, enablePlugin: boolean) {
-  return createLanguageService(mainTs, enablePlugin).getSemanticDiagnostics(mainTs);
+function collectDiagnostics(mainTs: string, enablePlugin: boolean, nativePath?: string) {
+  return createLanguageService(mainTs, enablePlugin, undefined, nativePath).getSemanticDiagnostics(
+    mainTs,
+  );
 }
 
 function createLanguageService(
   mainTs: string,
   enablePlugin: boolean,
   configureHost?: (host: import("typescript").LanguageServiceHost) => void,
+  nativePath?: string,
 ) {
   const host = createHost(path.dirname(path.dirname(mainTs)), mainTs);
   configureHost?.(host);
@@ -278,6 +286,7 @@ function createLanguageService(
         languageService: service,
         languageServiceHost: host,
         serverHost: ts.sys,
+        ...(nativePath ? { config: { nativePath } } : {}),
       })
     : service;
 }
