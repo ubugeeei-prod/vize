@@ -60,10 +60,24 @@ For manual installation:
 vp install -D vize
 ```
 
-The package declares TypeScript 7's native Corsa runtime as an optional dependency, so standard
-installs include the runtime needed by `vize check`. The `--corsa-path` CLI option remains available
-for custom native TypeScript builds. For project type checking, prefer TypeScript 7.1's content
-mapper, documented below. tsrs can run that same project.
+The native TypeScript compiler is provided by your project, not bundled or downloaded by Vize.
+For project type checking, install `typescript@7.1.0-beta` and use its content mapper as described
+in the [Type Checking guide](https://vize.dev/guide/type-checking). `vize check`, the language
+server, and type-aware linting use the same native runtime resolver. Explicit runtime settings
+such as `--corsa-path`, `typeChecker.corsaPath`, and `CORSA_PATH` take priority over discovery in
+the selected project's dependency graph. A missing runtime reports an actionable error;
+formatting and other commands that do not need type information remain available.
+
+To keep TypeScript 6 for other tools, install the native compiler under an npm alias:
+
+```bash
+vp install -D typescript-native@npm:typescript@7.1.0-beta
+```
+
+Vize does not declare a compiler peer dependency, because a canonical `typescript` package,
+a project alias, and an explicitly configured external executable are all valid runtime sources.
+The selected compiler must support the operation being requested; a TypeScript 6 JavaScript
+compiler is not a native checker runtime.
 
 ## Package Scripts
 

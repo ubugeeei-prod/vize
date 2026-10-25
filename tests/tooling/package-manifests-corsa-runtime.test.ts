@@ -24,28 +24,26 @@ const USER_GUIDANCE_FILES = [
   "npm/cli/README.md",
 ];
 
-test("Corsa runtime is declared for vize check users", () => {
-  const packageJson = JSON.parse(
-    fs.readFileSync(path.join(root, "npm/cli/package.json"), "utf-8"),
-  ) as {
-    dependencies?: Record<string, string>;
-    optionalDependencies?: Record<string, string>;
-    peerDependencies?: Record<string, string>;
-    peerDependenciesMeta?: Record<string, { optional?: boolean }>;
-  };
-
-  for (const name of ["@typescript/native-preview", "typescript"]) {
-    for (const section of [
-      "dependencies",
-      "optionalDependencies",
-      "peerDependencies",
-      "peerDependenciesMeta",
-    ] as const) {
-      assert.equal(packageJson[section]?.[name], undefined);
+test("published CLI and editor do not install or constrain a user's compiler", () => {
+  for (const relative of ["npm/cli/package.json", "editors/vscode/package.json"]) {
+    const packageJson = JSON.parse(fs.readFileSync(path.join(root, relative), "utf-8")) as Record<
+      string,
+      Record<string, unknown> | undefined
+    >;
+    for (const name of [
+      "@typescript/native-preview",
+      "typescript",
+      ...TYPESCRIPT_PLATFORM_PACKAGES,
+    ]) {
+      for (const section of [
+        "dependencies",
+        "optionalDependencies",
+        "peerDependencies",
+        "peerDependenciesMeta",
+      ]) {
+        assert.equal(packageJson[section]?.[name], undefined, `${relative}: ${section}.${name}`);
+      }
     }
-  }
-  for (const name of TYPESCRIPT_PLATFORM_PACKAGES) {
-    assert.equal(packageJson.optionalDependencies?.[name], "catalog:corsa-runtime");
   }
 });
 
@@ -82,18 +80,14 @@ test("workspace tooling does not depend on the retired native preview package", 
   );
 });
 
-test("workspace tooling installs the stable TypeScript 7 native runtime", () => {
-  for (const [relative, version] of [
-    ["package.json", "catalog:corsa-runtime"],
-    ["editors/vscode/package.json", "7.0.2"],
-  ] as const) {
-    const packageJson = JSON.parse(fs.readFileSync(path.join(root, relative), "utf-8")) as {
-      optionalDependencies?: Record<string, string>;
-    };
-
-    for (const name of TYPESCRIPT_PLATFORM_PACKAGES) {
-      assert.equal(packageJson.optionalDependencies?.[name], version, relative);
-    }
+test("the private workspace retains its immutable comparison runtime", () => {
+  const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf-8")) as {
+    private?: boolean;
+    optionalDependencies?: Record<string, string>;
+  };
+  assert.equal(packageJson.private, true);
+  for (const name of TYPESCRIPT_PLATFORM_PACKAGES) {
+    assert.equal(packageJson.optionalDependencies?.[name], "catalog:corsa-runtime");
   }
 });
 
