@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { test } from "node:test";
 import { performance } from "node:perf_hooks";
 import { originalPositionFor, TraceMap } from "@jridgewell/trace-mapping";
@@ -85,7 +86,19 @@ const _imports_0 = 'user';
     options,
   );
   assert.match(output.code, /const __vize_component___ =/);
-  assert.match(output.code, /const _imports_0_ = typeof/);
+  assert.match(output.code, /import __vize_asset__ from "\.\/pixel\.png";/);
+  assert.match(
+    output.code,
+    /const _imports_1 = typeof __vize_asset__ === "string" \? __vize_asset__ : __vize_asset__\.src;/,
+  );
+  assert.match(output.code, /src: _imports_1\b/);
+  assert.match(output.code, /const _imports_0 = 'user';/);
+  assert.match(output.code, /_toDisplayString\(\$setup\._imports_0\)/);
+  const syntax = spawnSync(process.execPath, ["--input-type=module", "--check"], {
+    input: output.code,
+    encoding: "utf8",
+  });
+  assert.equal(syntax.status, 0, syntax.stderr);
   assert.match(output.code, /export default __vize_component___;/);
   assert.ok(output.code.includes("🐱 export default fake"));
 });
