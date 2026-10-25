@@ -11,13 +11,16 @@ const { compile } = createRequire(require.resolve("vue"))("@vue/compiler-dom");
 const { parse } = require("vue/compiler-sfc");
 const { renderToString } = require("vue/server-renderer");
 
-function normalized(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(normalized);
+function normalized(value: unknown, goal: "script" | "style"): unknown {
+  if (Array.isArray(value)) return value.map((child) => normalized(child, goal));
   if (!value || typeof value !== "object") return value;
   return Object.fromEntries(
     Object.entries(value)
       .filter(
         ([key]) =>
+          // PostCSS source geometry is trivia; an ESTree import's source
+          // Literal is semantic and must remain part of the comparison.
+          !(key === "source" && goal === "style") &&
           ![
             "start",
             "end",
@@ -25,7 +28,6 @@ function normalized(value: unknown): unknown {
             "loc",
             "raw",
             "raws",
-            "source",
             "parent",
             "comments",
             "tokens",
@@ -34,7 +36,7 @@ function normalized(value: unknown): unknown {
             "extra",
           ].includes(key),
       )
-      .map(([key, child]) => [key, normalized(child)]),
+      .map(([key, child]) => [key, normalized(child, goal)]),
   );
 }
 
@@ -49,7 +51,7 @@ export async function assertBlocksEquivalent(before: string, after: string): Pro
       const options = { parser: "typescript" } as ParserOptions;
       const oldAst = await typescript.typescript.parse(a.descriptor[key].content, options);
       const newAst = await typescript.typescript.parse(b.descriptor[key].content, options);
-      assert.deepEqual(normalized(newAst), normalized(oldAst));
+      assert.deepEqual(normalized(newAst, "script"), normalized(oldAst, "script"));
     }
   }
   assert.equal(a.descriptor.styles.length, b.descriptor.styles.length);
@@ -57,7 +59,7 @@ export async function assertBlocksEquivalent(before: string, after: string): Pro
     const options = { parser: "css" } as ParserOptions;
     const oldAst = await postcss.css.parse(a.descriptor.styles[index].content, options);
     const newAst = await postcss.css.parse(b.descriptor.styles[index].content, options);
-    assert.deepEqual(normalized(newAst), normalized(oldAst));
+    assert.deepEqual(normalized(newAst, "style"), normalized(oldAst, "style"));
   }
 }
 

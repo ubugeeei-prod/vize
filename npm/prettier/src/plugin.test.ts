@@ -136,7 +136,7 @@ void test("literal-line Docs preserve indentation, trailing spaces and all host 
 });
 
 void test("cursor offsets remain UTF-16 positions across Unicode, BOM and CRLF", async () => {
-  for (const newline of ["\n", "\r\n"]) {
+  for (const newline of ["\n", "\r\n", "\r"]) {
     const source = `\uFEFF<template>${newline}<p>雪 😀 marker</p>${newline}</template>`;
     for (const delta of [0, 1, 3, 5]) {
       const before = source.indexOf("雪 😀") + delta;
@@ -149,6 +149,14 @@ void test("cursor offsets remain UTF-16 positions across Unicode, BOM and CRLF",
       assert.equal(result.cursorOffset, result.formatted.indexOf("雪 😀") + delta);
       assert.equal(result.formatted.startsWith("\uFEFF"), true);
       assert.equal(result.formatted.includes(newline), true);
+      const inserted = await formatWithCursor(source, {
+        filepath: "Cursor.vue",
+        plugins: [plugin],
+        endOfLine: "auto",
+        cursorOffset: before,
+        insertPragma: true,
+      });
+      assert.equal(inserted.cursorOffset, inserted.formatted.indexOf("雪 😀") + delta);
     }
   }
 });
@@ -229,6 +237,11 @@ void test("Art uses the existing engine and retains variant metadata and renderi
   assert.equal(await format(actual, { filepath: "Example.art", plugins: [plugin] }), actual);
   const before = parseArt(source);
   const after = parseArt(actual);
+  const semanticVariants = (value: typeof after) => ({
+    ...value,
+    variants: value.variants.map(({ template: _template, ...metadata }) => metadata),
+  });
+  assert.deepEqual(semanticVariants(after), semanticVariants(before));
   assert.deepEqual(after.metadata, before.metadata);
   assert.equal(after.variants.length, 1);
   assert.equal(after.variants[0].name, "Basic");
@@ -237,4 +250,45 @@ void test("Art uses the existing engine and retains variant metadata and renderi
     await renderTemplate(before.variants[0].template, { label: "雪 😀" }),
   );
   await assertBlocksEquivalent(source, actual);
+});
+
+void test("semantic oracles reject changed imports, style values and rendered adjacency", async () => {
+  await assert.rejects(
+    assertBlocksEquivalent(
+      '<script>import value from "./before"</script>',
+      '<script>import value from "./after"</script>',
+    ),
+    { name: "AssertionError" },
+  );
+  await assert.rejects(
+    assertBlocksEquivalent("<style>.a{color:red}</style>", "<style>.a{color:blue}</style>"),
+    { name: "AssertionError" },
+  );
+  await assert.rejects(
+    assertRenderedEquivalent(
+      "<template><p><span>left</span>{{ label }}</p></template>",
+      "<template><p><span>left</span> {{ label }}</p></template>",
+    ),
+    { name: "AssertionError" },
+  );
+});
+
+void test("explicit parser aliases and Vue grammar options use the same native pass", async () => {
+  const calls: string[] = [];
+  const counted = createPlugin((source, options) => {
+    calls.push(options.vueVersion ?? "");
+    return formatSfc(source, options);
+  });
+  for (const parser of ["vize", "vue", "vize-art"]) {
+    const actual = await format(input, {
+      parser,
+      plugins: [counted],
+      vizeVueVersion: "2",
+    } as Options);
+    assert.equal(
+      actual,
+      formatSfc(input, { preset: "prettier", vueVersion: "2", endOfLine: "lf" }).code,
+    );
+  }
+  assert.deepEqual(calls, ["2", "2", "2"]);
 });
