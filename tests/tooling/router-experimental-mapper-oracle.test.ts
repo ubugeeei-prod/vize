@@ -401,6 +401,16 @@ test(
           check("explicit-plugin-root-precedence", "tsconfig.root.json"),
           validPacket,
         );
+        // This independently admitted config uses the published string plugin
+        // and the host's logical absolute root, rather than the Vize-specific
+        // object-option precedence control above.
+        fs.writeFileSync(
+          path.join(project.root, "tsconfig.logical.json"),
+          JSON.stringify({
+            ...rootOptions,
+            compilerOptions: { rootDir: "." },
+          }),
+        );
         const aliasReference = run(
           `${label}-logical-project-reference`,
           process.execPath,
@@ -408,7 +418,7 @@ test(
             path.join(project.root, "node_modules/vue-tsc/bin/vue-tsc.js"),
             "--noEmit",
             "-p",
-            path.join(logicalRoot, "tsconfig.root.json"),
+            path.join(logicalRoot, "tsconfig.logical.json"),
             "--pretty",
             "false",
           ],
@@ -421,7 +431,7 @@ test(
             "--runExternalCode",
             "--noEmit",
             "-p",
-            path.join(logicalRoot, "tsconfig.root.json"),
+            path.join(logicalRoot, "tsconfig.logical.json"),
             "--pretty",
             "false",
           ],
