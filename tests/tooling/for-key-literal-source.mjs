@@ -96,7 +96,7 @@ for (const epoch of ["base", "head"]) {
       });
       const app = vue.createVaporApp(component, {
         items: ["A"],
-        capture: (value) => {
+        capture: () => (value) => {
           row.calls.push(value);
           return value;
         },
