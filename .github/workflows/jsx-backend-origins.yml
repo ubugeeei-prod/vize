@@ -1,0 +1,86 @@
+name: JSX backend source origins
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "crates/vize_atelier_jsx/**"
+      - "crates/vize_atelier_vapor/src/**"
+      - "crates/vize_atelier_ssr/src/**"
+      - "crates/vize_atelier_core/src/codegen/**"
+      - ".github/workflows/jsx-backend-origins.yml"
+permissions: { contents: read }
+concurrency:
+  group: jsx-backend-origins-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  origins:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    env:
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      QUALIFICATION_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # master
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: test-scripts, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - name: Capture exact backend maps and code equality
+        env:
+          VIZE_JSX_BACKEND_ORIGIN_CAPTURE: ${{ runner.temp }}/jsx-backend-origins/origins.json
+        run: |
+          mkdir -p "$RUNNER_TEMP/jsx-backend-origins"
+          test "$(git rev-parse HEAD)" = "$QUALIFICATION_HEAD_SHA"
+          git diff --exit-code
+          cargo test --locked --profile ci -p vize_atelier_jsx --test backend_module_origins -- --nocapture
+      - name: Measure unchanged default backends before and after the source change
+        run: |
+          set -euo pipefail
+          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          baseline="$RUNNER_TEMP/jsx-origin-base"
+          observer=crates/vize_atelier_jsx/tests/backend_codegen_profile.rs
+          git worktree add --detach "$baseline" "$BASE_SHA"
+          cp "$observer" "$baseline/$observer"
+          cmp "$observer" "$baseline/$observer"
+          git -C "$baseline" diff --exit-code -- crates/*/src
+          (cd "$baseline" && CARGO_TARGET_DIR="$RUNNER_TEMP/jsx-origin-base-target" VIZE_JSX_DEFAULT_PROFILE_CAPTURE="$RUNNER_TEMP/jsx-backend-origins/base-profile.json" cargo test --locked --profile ci -p vize_atelier_jsx --test backend_codegen_profile -- --nocapture)
+          VIZE_JSX_DEFAULT_PROFILE_CAPTURE="$RUNNER_TEMP/jsx-backend-origins/head-profile.json" cargo test --locked --profile ci -p vize_atelier_jsx --test backend_codegen_profile -- --nocapture
+          git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/jsx-backend-origins/head-source.txt"
+          git -C "$baseline" rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/jsx-backend-origins/base-source.txt"
+          sha256sum "$observer" "$baseline/$observer" > "$RUNNER_TEMP/jsx-backend-origins/observer.sha256"
+      - name: Compare whole backend outputs and report measured default overhead
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          const directory = `${process.env.RUNNER_TEMP}/jsx-backend-origins`;
+          const base = JSON.parse(fs.readFileSync(`${directory}/base-profile.json`));
+          const head = JSON.parse(fs.readFileSync(`${directory}/head-profile.json`));
+          assert.equal(base.length, 6); assert.equal(head.length, 6);
+          const median = xs => xs.toSorted((a,b) => a-b)[Math.floor(xs.length/2)];
+          const rows = head.map((row,index) => {
+            const previous = base[index];
+            for (const key of ['source','ssr','output','iterationsPerSample']) assert.deepEqual(row[key], previous[key]);
+            assert.equal(row.samplesNs.length, 9); assert.equal(previous.samplesNs.length, 9);
+            return {source:row.source,ssr:row.ssr,baseMedianNs:median(previous.samplesNs),headMedianNs:median(row.samplesNs),ratio:median(row.samplesNs)/median(previous.samplesNs)};
+          });
+          fs.writeFileSync(`${directory}/comparison.json`, JSON.stringify({scope:'default backend entrypoints; full compile including parsing/lowering; report only',rows},null,2)+'\n');
+          console.log(JSON.stringify(rows,null,2));
+          JS
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: jsx-backend-origins-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/jsx-backend-origins
+          if-no-files-found: error
+          retention-days: 14

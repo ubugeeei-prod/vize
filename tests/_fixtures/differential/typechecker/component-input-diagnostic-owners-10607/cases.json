@@ -1,0 +1,212 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10607,
+  "regressionCommit": "bd905e766c37ad5bacabaacbec02c90def36726e",
+  "sourceRevision": "bd905e766c37ad5bacabaacbec02c90def36726e",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "art-generic-form-invalid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "form-tsconfig.json.txt"
+        },
+        {
+          "file": "src/GenericForm.vue",
+          "source": "GenericForm.vue.txt"
+        },
+        {
+          "file": "src/types.ts",
+          "source": "types.ts.txt"
+        },
+        {
+          "file": "src/Form.art.vue",
+          "source": "Form.art.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Form.art.vue",
+          "line": 13,
+          "column": 34,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'null' is not assignable to type 'string | undefined'."
+        }
+      ]
+    },
+    {
+      "id": "art-generic-form-repaired",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "form-tsconfig.json.txt"
+        },
+        {
+          "file": "src/GenericForm.vue",
+          "source": "GenericForm.vue.txt"
+        },
+        {
+          "file": "src/types.ts",
+          "source": "types.ts.txt"
+        },
+        {
+          "file": "src/Form.art.vue",
+          "source": "Form.repaired.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "slot-prop-without-children-invalid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child3.vue",
+          "source": "Child3.vue.txt"
+        },
+        {
+          "file": "src/Min.vue",
+          "source": "Min.none.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Min.vue",
+          "line": 7,
+          "column": 19,
+          "severity": 1,
+          "code": 2532,
+          "message": "Object is possibly 'undefined'."
+        }
+      ]
+    },
+    {
+      "id": "slot-prop-named-child-invalid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child3.vue",
+          "source": "Child3.vue.txt"
+        },
+        {
+          "file": "src/Min.vue",
+          "source": "Min.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Min.vue",
+          "line": 7,
+          "column": 19,
+          "severity": 1,
+          "code": 2532,
+          "message": "Object is possibly 'undefined'."
+        }
+      ]
+    },
+    {
+      "id": "slot-prop-two-named-children-invalid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child3.vue",
+          "source": "Child3.vue.txt"
+        },
+        {
+          "file": "src/Min.vue",
+          "source": "Min.both.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Min.vue",
+          "line": 7,
+          "column": 19,
+          "severity": 1,
+          "code": 2532,
+          "message": "Object is possibly 'undefined'."
+        }
+      ]
+    },
+    {
+      "id": "slot-prop-named-child-repaired",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child3.vue",
+          "source": "Child3.vue.txt"
+        },
+        {
+          "file": "src/Min.vue",
+          "source": "Min.repaired.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "two-files-same-offset-invalid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child3.vue",
+          "source": "Child3.vue.txt"
+        },
+        {
+          "file": "src/One.vue",
+          "source": "Min.vue.txt"
+        },
+        {
+          "file": "src/Two.vue",
+          "source": "Min.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/One.vue",
+          "line": 7,
+          "column": 19,
+          "severity": 1,
+          "code": 2532,
+          "message": "Object is possibly 'undefined'."
+        },
+        {
+          "file": "src/Two.vue",
+          "line": 7,
+          "column": 19,
+          "severity": 1,
+          "code": 2532,
+          "message": "Object is possibly 'undefined'."
+        }
+      ]
+    }
+  ]
+}

@@ -14,6 +14,13 @@ use vize_croquis::croquis::PassedProp;
 
 use super::NAMED_PROP_DIAGNOSTIC_MARKER;
 
+pub(super) struct PropDiagnosticRows {
+    pub(super) name: std::ops::Range<usize>,
+    pub(super) value: std::ops::Range<usize>,
+    pub(super) ignored_primary: bool,
+    pub(super) merged: bool,
+}
+
 #[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 pub(super) fn append_prop_entry(
     ts: &mut String,
@@ -27,14 +34,14 @@ pub(super) fn append_prop_entry(
     emitted_merged_class: &mut bool,
     before_following_spread: bool,
     authored_named_keys: &mut FxHashSet<String>,
-) {
+) -> Option<PropDiagnosticRows> {
     let template_offset = source_context.offset;
     let mut merged_value_ranges = Vec::new();
     let merge_named_bindings =
         merge_class_bindings && matches!(prop.name.as_str(), "class" | "style");
     let generated_value = if merge_named_bindings {
         if *emitted_merged_class {
-            return;
+            return None;
         }
         *emitted_merged_class = true;
         merged_class_binding_value(class_bindings, Some(&mut merged_value_ranges))
@@ -42,9 +49,7 @@ pub(super) fn append_prop_entry(
     } else {
         generated_prop_span(prop, template_binding_access)
     };
-    let Some(mut generated_value) = generated_value else {
-        return;
-    };
+    let mut generated_value = generated_value?;
     let inline_callback = crate::virtual_ts::scope::is_inline_callback_prop(prop);
     if inline_callback {
         // The authored callback is checked against its resolved type separately.
@@ -171,6 +176,14 @@ pub(super) fn append_prop_entry(
             template_binding_access,
         );
     }
+    Some(PropDiagnosticRows {
+        name: entry_gen_start..key_gen_end,
+        // A callback literal carries a synthetic `never`, not the authored
+        // body. Only the separately checked callback can own its value range.
+        value: if inline_callback { 0..0 } else { value_span },
+        ignored_primary: before_following_spread && !repeated_named_key,
+        merged: merge_named_bindings,
+    })
 }
 
 pub(crate) fn entry_sub_spans(

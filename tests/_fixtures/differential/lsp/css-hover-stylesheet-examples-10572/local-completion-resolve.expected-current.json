@@ -1,0 +1,31 @@
+{
+  "data": {
+    "vizeCss": {
+      "kind": "property",
+      "name": "display",
+      "property": null
+    }
+  },
+  "detail": "CSS property",
+  "documentation": {
+    "kind": "markdown",
+    "value": "**display**\n\n_CSS property_\n\nIn combination with 'float' and 'position', determines the type of box or boxes that are generated for an element.\n\n**Syntax**\n\n```css\n[ <display-outside> || <display-inside> ] | <display-listitem> | <display-internal> | <display-box> | <display-legacy>\n```\n\n**Example**\n\n```css\n.example {\n  display: block;\n}\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/display)"
+  },
+  "insertTextFormat": 1,
+  "kind": 10,
+  "label": "display",
+  "sortText": "04display",
+  "textEdit": {
+    "newText": "display",
+    "range": {
+      "end": {
+        "character": 19,
+        "line": 6
+      },
+      "start": {
+        "character": 12,
+        "line": 6
+      }
+    }
+  }
+}

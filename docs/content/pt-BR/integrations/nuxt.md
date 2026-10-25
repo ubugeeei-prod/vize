@@ -277,7 +277,7 @@ Dentro de uma aplicação Nuxt, o módulo não instala esses mocks globalmente, 
 
 ## Nuxt 2 e Vue 2
 
-O módulo oferece suporte a Nuxt 2, 3 e 4. O compilador do Vize gera código Vue 3, então no Nuxt 2 o módulo deixa a compilação de `.vue` com o compilador existente (`@vitejs/plugin-vue2`, `vue-loader` ou o do próprio Nuxt) e continua fornecendo lint e Musea. O mesmo vale para projetos Vue mais antigos com `vueVersion: 0.11`, `vueVersion: 1` ou `vueVersion: "legacy"`.
+No Nuxt 2, use o mesmo pacote `@vizejs/nuxt`. O compilador, o SSR e o HMR continuam sendo os do Vue 2 e do Nuxt. O Vize gera a configuração de lint; o `checker` opcional usa o builder de desenvolvimento. O Musea fica desativado no Nuxt 2. O compilador nativo do Vize gera código Vue 3 e não substitui o compilador do Vue 2.
 
 As versões são detectadas automaticamente. Se um wrapper as esconde do Nuxt Kit, defina-as você mesmo:
 

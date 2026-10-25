@@ -1,0 +1,138 @@
+name: ESLint plugin consumer
+
+on:
+  workflow_dispatch: {}
+  pull_request:
+    paths:
+      - "npm/eslint/**"
+      - "npm/oxlint/src/eslint*"
+      - "npm/oxlint/src/native.ts"
+      - "npm/oxlint/src/configs.ts"
+      - ".github/workflows/eslint-plugin-consumer.yml"
+
+permissions: { contents: read }
+
+concurrency:
+  group: eslint-plugin-consumer-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  consumer:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    env:
+      CARGO_BUILD_JOBS: "12"
+      CARGO_TERM_COLOR: always
+      VIZE_PREFER_WORKSPACE_BINDING: "1"
+      VIZE_ESLINT_EVIDENCE: ${{ github.workspace }}/target/eslint-consumer
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          {
+            version: latest,
+            node-version-file: package.json,
+            cache: true,
+            cache-save: false,
+            run-install: false,
+          }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: test-scripts, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - run: vp install --frozen-lockfile --prefer-offline
+      - name: Build the actual source native addon and shared rule bridge
+        run: |
+          vp run --filter './npm/native' build:ci
+          vp run --filter './npm/oxlint' build
+          vp run --filter './npm/eslint' build
+      - name: Preserve exact source and dependency authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$VIZE_ESLINT_EVIDENCE"
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { createHash } from 'node:crypto';
+          import { execFileSync } from 'node:child_process';
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const sha = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+          assert.equal(sha, process.env.SOURCE_SHA);
+          const files = ['Cargo.lock', 'pnpm-lock.yaml', 'npm/eslint/package.json', 'npm/eslint/src/index.ts', 'npm/eslint/test/consumer.test.mjs', 'npm/oxlint/src/eslint.ts', 'npm/oxlint/src/eslint-source.ts', 'npm/oxlint/src/native.ts'];
+          const inputs = Object.fromEntries(files.map(file => { const bytes = readFileSync(file); return [file, { sha256: createHash('sha256').update(bytes).digest('hex'), bytes: bytes.length }]; }));
+          writeFileSync(`${process.env.VIZE_ESLINT_EVIDENCE}/source.json`, JSON.stringify({ sha, inputs }, null, 2) + '\n');
+          JS
+      - name: Qualify real flat-config consumers, source authority and call counts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test npm/eslint/test/consumer.test.mjs 2>&1 | tee "$VIZE_ESLINT_EVIDENCE/consumer.log"
+          (cd npm/oxlint && vp test run src/file-state.test.ts src/batched-rules.test.ts src/active-rule-collection.test.ts) 2>&1 | tee "$VIZE_ESLINT_EVIDENCE/shared-routing.log"
+          node npm/oxlint/src/eslint-acceptance.test.mjs 2>&1 | tee "$VIZE_ESLINT_EVIDENCE/legacy-export.log"
+          for round in 1 2 3 4 5; do
+            node npm/eslint/test/startup-profile.mjs > "$VIZE_ESLINT_EVIDENCE/startup-$round.json"
+          done
+      - name: Verify no physical SFC reads, including native code
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v strace >/dev/null; then sudo apt-get update; sudo apt-get install -y strace; fi
+          export VIZE_ESLINT_WATCHED_SOURCE="$RUNNER_TEMP/eslint-source-$SOURCE_SHA/Disk.vue"
+          strace -f -yy -e trace=open,openat,openat2 -o "$VIZE_ESLINT_EVIDENCE/source-opens.raw.log" node npm/eslint/test/source-read-probe.mjs "$VIZE_ESLINT_WATCHED_SOURCE" > "$VIZE_ESLINT_EVIDENCE/source-read-packets.json"
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const lines = readFileSync(`${process.env.VIZE_ESLINT_EVIDENCE}/source-opens.raw.log`, 'utf8').split('\n');
+          const opens = lines.filter(line => line.includes(process.env.VIZE_ESLINT_WATCHED_SOURCE));
+          const reads = opens.filter(line => /O_RDONLY|O_RDWR/.test(line));
+          assert.ok(opens.some(line => /O_WRONLY/.test(line)), 'physical sentinel source write must be traced');
+          assert.deepEqual(reads, [], 'unsaved lintText must not read the physical SFC');
+          writeFileSync(`${process.env.VIZE_ESLINT_EVIDENCE}/source-reads.json`, JSON.stringify({ source: process.env.VIZE_ESLINT_WATCHED_SOURCE, opens, sourceReadCount: reads.length }, null, 2) + '\n');
+          JS
+      - name: Qualify packed public entries in an isolated consumer
+        shell: bash
+        run: |
+          set -euo pipefail
+          vp exec pnpm --dir npm/oxlint pack --pack-destination "$VIZE_ESLINT_EVIDENCE"
+          vp exec pnpm --dir npm/eslint pack --pack-destination "$VIZE_ESLINT_EVIDENCE"
+          export VIZE_ESLINT_PACKED_CONSUMER="$RUNNER_TEMP/eslint-packed-$SOURCE_SHA"
+          mkdir -p "$VIZE_ESLINT_PACKED_CONSUMER"
+          node --input-type=module <<'JS'
+          import { writeFileSync, mkdirSync, symlinkSync, readdirSync } from 'node:fs';
+          import { execFileSync } from 'node:child_process';
+          import { resolve, join } from 'node:path';
+          const root = process.cwd();
+          const consumer = process.env.VIZE_ESLINT_PACKED_CONSUMER;
+          writeFileSync(join(consumer, 'package.json'), JSON.stringify({ private: true, type: 'module' }));
+          const packages = readdirSync(process.env.VIZE_ESLINT_EVIDENCE).filter(file => file.endsWith('.tgz')).map(file => resolve(process.env.VIZE_ESLINT_EVIDENCE, file));
+          execFileSync('vp', ['exec', 'pnpm', 'add', '--ignore-scripts', '--no-optional', '--save-exact', ...packages, 'eslint@10.13.0', 'typescript@6.0.3'], { cwd: consumer, stdio: 'inherit' });
+          mkdirSync(join(consumer, 'node_modules/@vizejs'), { recursive: true });
+          symlinkSync(join(root, 'npm/native'), join(consumer, 'node_modules/@vizejs/native'), 'dir');
+          JS
+          cp npm/eslint/test/packed-consumer.mjs "$VIZE_ESLINT_PACKED_CONSUMER/consumer.mjs"
+          (cd "$VIZE_ESLINT_PACKED_CONSUMER" && node consumer.mjs) > "$VIZE_ESLINT_EVIDENCE/packed-consumer.json"
+          cp "$VIZE_ESLINT_PACKED_CONSUMER/package.json" "$VIZE_ESLINT_EVIDENCE/packed-package.json"
+          cp "$VIZE_ESLINT_PACKED_CONSUMER/pnpm-lock.yaml" "$VIZE_ESLINT_EVIDENCE/packed-pnpm-lock.yaml"
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { readFileSync } from 'node:fs';
+          const source = JSON.parse(readFileSync(`${process.env.VIZE_ESLINT_EVIDENCE}/consumer.json`));
+          const packed = JSON.parse(readFileSync(`${process.env.VIZE_ESLINT_EVIDENCE}/packed-consumer.json`));
+          assert.equal(packed.nativeBuildToken, source.nativeBuildToken);
+          assert.deepEqual(packed.nativeImages, source.nativeImages);
+          JS
+      - name: Retain complete source-native packets, raw traces and timings
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: eslint-plugin-consumer-${{ github.run_id }}-${{ github.run_attempt }}-${{ env.SOURCE_SHA }}
+          path: target/eslint-consumer/**
+          if-no-files-found: error
+          retention-days: 14

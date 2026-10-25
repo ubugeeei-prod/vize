@@ -84,7 +84,6 @@ void test("packed Nuxt module uses a jiti-safe require entry and keeps the ESM e
         `globalThis[${JSON.stringify(viteLoadMarker)}] =`,
         `  (globalThis[${JSON.stringify(viteLoadMarker)}] ?? 0) + 1;`,
         "export const moduleUrl = import.meta.url;",
-        "export function parseSync() { return {}; }",
       ].join("\n"),
     );
 
@@ -156,11 +155,10 @@ void test("packed Nuxt module uses a jiti-safe require entry and keeps the ESM e
       },
     ]);
     assert.deepEqual(hookNames, ["close", "builder:prepared", "build:templates"]);
-    assert.equal((globalThis as Record<string, unknown>)[viteLoadMarker], 1);
+    assert.equal((globalThis as Record<string, unknown>)[viteLoadMarker], undefined);
 
-    // The probe runs in a fresh child process, so the parent marker above does not carry over:
-    // viteLoads: 1 asserts the ESM entry loads Vite eagerly at import time, without invoking the
-    // module, in contrast with the CJS entry which loads no Vite until the handler runs.
+    // Neither entry may load unused Vite APIs when a Vue 2 host owns compilation.
+    // Vite 7 (used by Nuxt Bridge) has no parseSync export.
     const esmProbe = JSON.parse(
       execFileSync(
         process.execPath,
@@ -178,7 +176,7 @@ void test("packed Nuxt module uses a jiti-safe require entry and keeps the ESM e
         { cwd: fixtureRoot, encoding: "utf8", timeout: SUBPROCESS_TIMEOUT_MS },
       ),
     ) as { type?: string; viteLoads?: number };
-    assert.deepEqual(esmProbe, { type: "function", viteLoads: 1 });
+    assert.deepEqual(esmProbe, { type: "function" });
     delete (globalThis as Record<string, unknown>)[viteLoadMarker];
   } finally {
     fs.rmSync(packDir, { recursive: true, force: true });

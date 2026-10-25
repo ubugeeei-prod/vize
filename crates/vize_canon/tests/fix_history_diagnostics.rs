@@ -878,7 +878,8 @@ fn check_pack(
     assert_eq!(
         pack.source_revision,
         match name {
-            "contextual-prop-anchors-10661"
+            "template-context-undefined-10667"
+            | "contextual-prop-anchors-10661"
             | "typed-import-meta"
             | "slot-outlet-key"
             | "options-api-any-instance"
@@ -939,7 +940,8 @@ fn check_pack(
             | "planned-generic-syntax-route-10598"
             | "unicode-prop-bindings-10573"
             | "narrowed-slot-host-guard-10660"
-            | "empty-generic-public-contract-10540" => regression,
+            | "empty-generic-public-contract-10540"
+            | "component-input-diagnostic-owners-10607" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
             }
@@ -1301,5 +1303,35 @@ fn unicode_prop_bindings_preserve_complete_authored_diagnostics() {
             "reserved-hyphen-ascii",
             "unicode-continue",
         ],
+    );
+}
+
+#[test]
+fn component_input_copies_preserve_complete_authored_diagnostics() {
+    check_pack(
+        "component-input-diagnostic-owners-10607",
+        "component_input_copies_preserve_complete_authored_diagnostics",
+        "bd905e766c37ad5bacabaacbec02c90def36726e",
+        Some(10607),
+        &[
+            "art-generic-form-invalid",
+            "art-generic-form-repaired",
+            "slot-prop-without-children-invalid",
+            "slot-prop-named-child-invalid",
+            "slot-prop-two-named-children-invalid",
+            "slot-prop-named-child-repaired",
+            "two-files-same-offset-invalid",
+        ],
+    );
+}
+
+#[test]
+fn undefined_context_keeps_complete_authored_diagnostics() {
+    check_pack(
+        "template-context-undefined-10667",
+        "undefined_context_keeps_complete_authored_diagnostics",
+        "2806a05b4b9dac514afd0fb5c0cd3fb9925d9c54",
+        Some(10667),
+        &["prop-used"],
     );
 }

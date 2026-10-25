@@ -1,0 +1,121 @@
+name: Public JSR types and runtime capabilities
+on:
+  pull_request:
+    paths:
+      - .github/workflows/jsr-public-types.yml
+      - tools/support/release/jsr/consumer-types.ts.fixture
+      - tools/support/release/jsr/consumer.ts
+      - tools/support/release/jsr/consumer-deno.json
+  workflow_dispatch:
+    inputs:
+      version:
+        description: An already published immutable JSR version (no publication)
+        type: string
+        default: "0.571.0"
+        required: true
+permissions: { contents: read }
+jobs:
+  consumer:
+    name: Public JSR types and runtime (${{ matrix.runtime }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        runtime: [node, deno, bun]
+    env:
+      PUBLIC_JSR_VERSION: ${{ inputs.version || '0.571.0' }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            tools/support/release/jsr
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24", package-manager-cache: false }
+      - if: matrix.runtime == 'deno'
+        uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2
+        with: { deno-version: "2.9.7" }
+      - if: matrix.runtime == 'bun'
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with: { bun-version: "1.3.14" }
+      - name: Prepare the isolated public consumer
+        working-directory: ${{ github.workspace }}
+        run: |
+          [[ "$PUBLIC_JSR_VERSION" =~ ^0\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]
+          mkdir -p "$RUNNER_TEMP/jsr-public-consumer"
+          cp tools/support/release/jsr/consumer.ts "$RUNNER_TEMP/jsr-public-consumer/consumer.ts"
+          cp tools/support/release/jsr/consumer-types.ts.fixture "$RUNNER_TEMP/jsr-public-consumer/consumer-types.ts"
+          cp tools/support/release/jsr/consumer-deno.json "$RUNNER_TEMP/jsr-public-consumer/deno.json"
+          node --input-type=module <<'JS'
+          import fs from "node:fs";
+          const root = process.env.RUNNER_TEMP + "/jsr-public-consumer";
+          fs.writeFileSync(root + "/package.json", JSON.stringify({private: true, type: "module"}));
+          const config = JSON.parse(fs.readFileSync(root + "/deno.json", "utf8"));
+          const exact = "jsr:@vizejs/vize@" + process.env.PUBLIC_JSR_VERSION;
+          config.imports = Object.fromEntries(["", "config", "native", "vite"].map(subpath => {
+            const suffix = subpath ? "/" + subpath : "";
+            return ["@vizejs/vize" + suffix, exact + suffix];
+          }));
+          fs.writeFileSync(root + "/deno.json", JSON.stringify(config, null, 2));
+          JS
+      - name: Install the public JSR package (Node)
+        working-directory: ${{ runner.temp }}/jsr-public-consumer
+        if: matrix.runtime == 'node'
+        run: |
+          npm install --ignore-scripts --save-exact typescript@6.0.3 @types/node@25.9.2 vite@8.2.4 vue@3.5.42 2>&1 | tee install.log
+          npx --yes jsr@0.14.3 add "@vizejs/vize@$PUBLIC_JSR_VERSION" 2>&1 | tee jsr-add.log
+      - name: Check the public types and execute every entry point (Node)
+        working-directory: ${{ runner.temp }}/jsr-public-consumer
+        if: matrix.runtime == 'node'
+        run: |
+          node --version | tee runtime-version.txt
+          node node_modules/typescript/bin/tsc --strict --noEmit --target ESNext --module NodeNext --moduleResolution NodeNext consumer-types.ts 2>&1 | tee types.log
+          node consumer.ts @vizejs/vize --vite 2>&1 | tee runtime.log
+      - name: Install the public JSR package (Bun)
+        working-directory: ${{ runner.temp }}/jsr-public-consumer
+        if: matrix.runtime == 'bun'
+        run: |
+          bun add --ignore-scripts --exact typescript@6.0.3 @types/node@25.9.2 vite@8.2.4 vue@3.5.42 2>&1 | tee install.log
+          bunx --bun jsr@0.14.3 add "@vizejs/vize@$PUBLIC_JSR_VERSION" 2>&1 | tee jsr-add.log
+      - name: Check the public types and execute every entry point (Bun)
+        working-directory: ${{ runner.temp }}/jsr-public-consumer
+        if: matrix.runtime == 'bun'
+        run: |
+          bun --version | tee runtime-version.txt
+          bun node_modules/typescript/bin/tsc --strict --noEmit --target ESNext --module NodeNext --moduleResolution NodeNext consumer-types.ts 2>&1 | tee types.log
+          bun run consumer.ts @vizejs/vize --vite 2>&1 | tee runtime.log
+      - name: Check the public types and execute every entry point (Deno)
+        working-directory: ${{ runner.temp }}/jsr-public-consumer
+        if: matrix.runtime == 'deno'
+        run: |
+          deno --version | tee runtime-version.txt
+          deno check --config deno.json consumer-types.ts 2>&1 | tee types.log
+          deno run --config deno.json --allow-all consumer.ts "jsr:@vizejs/vize@$PUBLIC_JSR_VERSION" --vite 2>&1 | tee runtime.log
+      - name: Preserve public metadata and dependency locks
+        working-directory: ${{ runner.temp }}/jsr-public-consumer
+        if: always()
+        run: |
+          curl --fail --silent --show-error --location -A vize-jsr-public-types/1.0 https://jsr.io/@vizejs/vize/meta.json -o public-metadata.json
+          node --input-type=module <<'JS'
+          import fs from "node:fs";
+          import {createHash} from "node:crypto";
+          const metadata = JSON.parse(fs.readFileSync("public-metadata.json", "utf8"));
+          if (!metadata.versions[process.env.PUBLIC_JSR_VERSION]?.createdAt) throw new Error("Version missing from public JSR");
+          const files = fs.readdirSync(".").filter(name => /(?:\.log|\.json|\.lock|\.txt)$/.test(name));
+          const rows = files.map(name => ({name,sha256:createHash("sha256").update(fs.readFileSync(name)).digest("hex")}));
+          fs.writeFileSync("evidence-sha256.json", JSON.stringify({version:process.env.PUBLIC_JSR_VERSION,observedAt:new Date().toISOString(),files:rows},null,2));
+          JS
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: jsr-public-types-${{ matrix.runtime }}
+          path: |
+            ${{ runner.temp }}/jsr-public-consumer/*.log
+            ${{ runner.temp }}/jsr-public-consumer/*.json
+            ${{ runner.temp }}/jsr-public-consumer/*.lock
+            ${{ runner.temp }}/jsr-public-consumer/*.txt
+          if-no-files-found: error
