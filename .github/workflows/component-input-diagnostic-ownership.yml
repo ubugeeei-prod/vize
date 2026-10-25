@@ -103,12 +103,64 @@ jobs:
               --output "$RUNNER_TEMP/component-input-ownership/$sdk" "${extra[@]}" || failed=1
           done
           exit "$failed"
+      - name: Retain all 144 unchanged generic repair observations
+        env:
+          VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/component-input-d6c4/tsgo
+          VIZE_TEST_CONTENT_MAPPER_VUE: ${{ runner.temp }}/component-input-consumer/node_modules/vue
+        run: |
+          set -euo pipefail
+          capture="$RUNNER_TEMP/component-input-ownership/generic-regression"
+          mkdir -p "$capture"
+          cargo test --locked --profile ci -p vize --test integration quoted_generic_parameters:: -- --list --format terse > "$capture/inventory.txt" 2> "$capture/build.log"
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const capture = `${process.env.RUNNER_TEMP}/component-input-ownership/generic-regression`;
+          const actual = readFileSync(`${capture}/inventory.txt`, 'utf8').split('\n').filter(line => line.endsWith(': test')).map(line => line.slice(0, -6)).sort();
+          const expected = [
+            'content_mapper_tsgo_cli::quoted_generic_parameters::quoted_generic_parameters_keep_complete_cli_and_official_host_packets_through_repairs',
+            'content_mapper_tsgo_cli::quoted_generic_parameters::syntax::malformed_generic_attributes_keep_provider_syntax_codes_and_authored_ranges_through_repairs',
+            'content_mapper_tsgo_cli::quoted_generic_parameters::body_error::independent_authored_body_errors_survive_generic_repairs',
+          ].sort();
+          assert.deepEqual(actual, expected, 'the complete original three-test authority must execute');
+          writeFileSync(`${capture}/inventory.json`, JSON.stringify({source: process.env.SOURCE_SHA, actual}, null, 2) + '\n');
+          JS
+          cargo test --locked --profile ci -p vize --test integration quoted_generic_parameters:: -- --test-threads=1 --nocapture > "$capture/execution.log" 2>&1
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { createHash } from 'node:crypto';
+          import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
+          import path from 'node:path';
+          const root = 'target/vize-tests/content-mapper-quoted-generic-parameters';
+          const schemas = new Map([
+            ['vize.quoted-generic-parameters-host-observation', 32],
+            ['vize.quoted-generic-syntax-host-observation', 48],
+            ['vize.generic-body-error-host-observation', 64],
+          ]);
+          const packets = [];
+          const walk = directory => {
+            for (const item of readdirSync(directory, {withFileTypes: true})) {
+              const file = path.join(directory, item.name);
+              if (item.isDirectory()) walk(file);
+              else if (item.isFile() && file.endsWith('.json')) {
+                const bytes = readFileSync(file), packet = JSON.parse(bytes);
+                if (schemas.has(packet.schema)) packets.push({file, schema: packet.schema, sha256: createHash('sha256').update(bytes).digest('hex')});
+              }
+            }
+          };
+          walk(root);
+          for (const [schema, count] of schemas) assert.equal(packets.filter(packet => packet.schema === schema).length, count, schema);
+          assert.equal(packets.length, 144);
+          const capture = `${process.env.RUNNER_TEMP}/component-input-ownership/generic-regression`;
+          writeFileSync(`${capture}/whole-packet-inventory.json`, JSON.stringify({source: process.env.SOURCE_SHA, completePackets: packets.length, packets}, null, 2) + '\n');
+          JS
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: component-input-ownership-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             ${{ runner.temp }}/component-input-ownership
+            target/vize-tests/content-mapper-quoted-generic-parameters
             ${{ runner.temp }}/component-input-consumer/package.json
             ${{ runner.temp }}/component-input-consumer/package-lock.json
             ${{ runner.temp }}/component-input-beta/package.json
