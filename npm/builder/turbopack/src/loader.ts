@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import {
   compileSfc,
   collectSfcTemplateAssetUrls,
-  extractSfcSrcInfo,
+  parseSfc,
   generateSfcScopeId,
   rewriteSfcTemplateAssetReferences,
 } from "@vizejs/native";
@@ -31,9 +31,32 @@ function utf16Offset(code: string, offset: number | undefined): number {
 export function compileTurbopackSfc(filename: string, source: string, options: SfcLoaderOptions) {
   const root = options.root ?? process.cwd();
   const scopeId = generateSfcScopeId(filename, root, options.isProduction, source);
-  const src = extractSfcSrcInfo(source);
-  if (src.scriptSrc || src.templateSrc) {
-    throw new Error(`[vize] ${filename}: external script/template blocks require an inline SFC for this integration.`);
+  const descriptor = (() => {
+    try {
+      return parseSfc(source, { filename });
+    } catch (error) {
+      throw new Error(
+        `[vize] ${filename}: ${error instanceof Error ? error.message : String(error)}`,
+        { cause: error },
+      );
+    }
+  })();
+  if (descriptor.script?.src || descriptor.scriptSetup?.src || descriptor.template?.src) {
+    throw new Error(
+      `[vize] ${filename}: external script/template blocks require an inline SFC for this integration.`,
+    );
+  }
+  if (descriptor.template?.lang && descriptor.template.lang !== "html") {
+    throw new Error(
+      `[vize] ${filename}: template preprocessor ${descriptor.template.lang} is not configured for Turbopack.`,
+    );
+  }
+  for (const script of [descriptor.script, descriptor.scriptSetup]) {
+    if (script?.lang && !["js", "ts", "javascript", "typescript"].includes(script.lang)) {
+      throw new Error(
+        `[vize] ${filename}: script language ${script.lang} is not configured for Turbopack.`,
+      );
+    }
   }
   const compilerOptions = {
     ...options.compilerOptions,
@@ -51,10 +74,15 @@ export function compileTurbopackSfc(filename: string, source: string, options: S
   const compiled = compileSfc(source, compilerOptions);
   if (compiled.errors.length) throw new Error(`[vize] ${filename}:\n${compiled.errors.join("\n")}`);
   if (compiled.customBlocks.length || compiled.macroArtifacts.length) {
-    throw new Error(`[vize] ${filename}: custom block and macro module loaders are not configured for Turbopack.`);
+    throw new Error(
+      `[vize] ${filename}: custom block and macro module loaders are not configured for Turbopack.`,
+    );
   }
   const shape = compiled.moduleShape;
-  if (!shape) throw new Error(`[vize] ${filename}: native compiler did not provide component module geometry.`);
+  if (!shape)
+    throw new Error(
+      `[vize] ${filename}: native compiler did not provide component module geometry.`,
+    );
   const used = new Set<string>();
   const unique = (base: string) => {
     let name = base;
@@ -76,7 +104,8 @@ export function compileTurbopackSfc(filename: string, source: string, options: S
   } else {
     throw new Error(`[vize] ${filename}: native compiler did not emit a component export.`);
   }
-  if (compiled.hasScoped) emitted.append(`\n${component}.__scopeId = ${JSON.stringify(`data-v-${scopeId}`)};`);
+  if (compiled.hasScoped)
+    emitted.append(`\n${component}.__scopeId = ${JSON.stringify(`data-v-${scopeId}`)};`);
 
   const imports: string[] = [];
   const modules: string[] = [];
@@ -84,51 +113,94 @@ export function compileTurbopackSfc(filename: string, source: string, options: S
   const moduleNames = new Set<string>();
   for (const style of compiled.styles) {
     if (!style.src && !/\S/.test(style.content)) continue;
-    const lang = style.lang ?? "css";
+    const lang =
+      style.lang ?? ((style.src ? path.extname(style.src.split("?", 1)[0]).slice(1) : "") || "css");
     if (!options.styleLanguages.includes(lang)) {
-      throw new Error(`[vize] ${filename}: configure styleLoaders.${lang} to compile <style lang="${lang}">.`);
+      throw new Error(
+        `[vize] ${filename}: configure styleLoaders.${lang} to compile <style lang="${lang}">.`,
+      );
     }
-    const params = new URLSearchParams({ type: "style", index: String(style.index), lang, vize: "turbopack" });
+    const params = new URLSearchParams({
+      type: "style",
+      index: String(style.index),
+      lang,
+      vize: "turbopack",
+      id: scopeId,
+      owner: path.relative(root, filename).replace(/\\/g, "/"),
+    });
     // Keep the conventional Vue query prefix for shared HMR import ownership.
     if (style.scoped) params.set("scoped", `data-v-${scopeId}`);
     if (!style.src) params.set("inline", "");
     if (!options.isProduction) params.set("dev", "");
-    const request = `${style.src ?? `./${path.basename(filename)}`}?vue&${params}`;
+    const stylePath = style.src ?? `./${path.basename(filename)}`;
+    const requestFor = () => `${stylePath}${stylePath.includes("?") ? "&" : "?"}vue&${params}`;
+    const request = requestFor();
     if (style.module) {
       const name = style.moduleName ?? "$style";
-      if (moduleNames.has(name)) throw new Error(`[vize] ${filename}: duplicate CSS module name ${JSON.stringify(name)}.`);
+      if (moduleNames.has(name))
+        throw new Error(`[vize] ${filename}: duplicate CSS module name ${JSON.stringify(name)}.`);
       moduleNames.add(name);
       params.set("module", name);
       const binding = unique(`__vize_style_${style.index}__`);
-      imports.push(`import ${binding} from ${JSON.stringify(`${style.src ?? `./${path.basename(filename)}`}?vue&${params}`)};`);
+      imports.push(`import ${binding} from ${JSON.stringify(requestFor())};`);
       modules.push(`${JSON.stringify(name)}: ${binding}`);
-      moduleUpdates.push(genCSSModuleHotReloadCode(scopeId, JSON.stringify(`${style.src ?? `./${path.basename(filename)}`}?vue&${params}`), binding, name, "import.meta.turbopackHot").replaceAll("_sfc_main", component));
+      moduleUpdates.push(
+        genCSSModuleHotReloadCode(
+          scopeId,
+          JSON.stringify(requestFor()),
+          binding,
+          name,
+          "import.meta.turbopackHot",
+        ).replaceAll("_sfc_main", component),
+      );
     } else imports.push(`import ${JSON.stringify(request)};`);
   }
   if (modules.length) emitted.append(`\n${component}.__cssModules = { ${modules.join(", ")} };`);
-  const assets = collectSfcTemplateAssetUrls(source).map((asset) => ({ ...asset, varName: unique(asset.varName) }));
+  const assets = collectSfcTemplateAssetUrls(source).map((asset) => ({
+    ...asset,
+    varName: unique(asset.varName),
+  }));
   if (assets.length) {
     emitted.edit(rewriteSfcTemplateAssetReferences(emitted.code, assets));
     for (const asset of assets) {
       const binding = unique("__vize_asset__");
       let request = asset.url.startsWith("~") ? asset.url.slice(1) : asset.url;
       request = request.split("#", 1)[0];
-      imports.push(`import ${binding} from ${JSON.stringify(request)};\nconst ${asset.varName} = typeof ${binding} === "string" ? ${binding} : ${binding}.src;`);
+      imports.push(
+        `import ${binding} from ${JSON.stringify(request)};\nconst ${asset.varName} = typeof ${binding} === "string" ? ${binding} : ${binding}.src;`,
+      );
     }
   }
   emitted.prepend(`${imports.join("\n")}\n`);
-  if (!options.isProduction) emitted.append(`\n${component}.__file = ${JSON.stringify(path.relative(root, filename).replace(/\\/g, "/"))};`);
+  if (!options.isProduction)
+    emitted.append(
+      `\n${component}.__file = ${JSON.stringify(path.relative(root, filename).replace(/\\/g, "/"))};`,
+    );
   if (!options.isProduction && !options.ssr && options.hotReload !== false) {
     const metadata = {
-      source: hash(source), script: compiled.scriptHash, template: compiled.templateHash,
+      source: hash(source),
+      script: compiled.scriptHash,
+      template: compiled.templateHash,
       options: hash(JSON.stringify(compilerOptions)),
       canRerender: !options.vapor,
       module: hash(emitted.code),
-      styles: JSON.stringify(compiled.styles.map(({ content, ...style }) => ({ ...style, active: Boolean(style.src || /\S/.test(content)) }))),
+      styles: JSON.stringify(
+        compiled.styles.map(({ content, ...style }) => ({
+          ...style,
+          active: Boolean(style.src || /\S/.test(content)),
+        })),
+      ),
     };
     // This substitution only touches shared generated boilerplate, never authored code.
     emitted.append(moduleUpdates.join("\n"));
-    emitted.append(genHotReloadCode(scopeId, metadata, hmrImportSnapshot(emitted.code) ?? "null", "import.meta.turbopackHot").replaceAll("_sfc_main", component));
+    emitted.append(
+      genHotReloadCode(
+        scopeId,
+        metadata,
+        hmrImportSnapshot(emitted.code) ?? "null",
+        "import.meta.turbopackHot",
+      ).replaceAll("_sfc_main", component),
+    );
   }
   emitted.append(`\nexport default ${component};`);
   return { code: emitted.code, map: emitted.map, warnings: compiled.warnings };
@@ -140,5 +212,7 @@ export default function vizeLoader(this: LoaderContext<SfcLoaderOptions>, source
     const result = compileTurbopackSfc(this.resourcePath, source, this.getOptions());
     for (const warning of result.warnings) this.emitWarning(new Error(`[vize] ${warning}`));
     callback(null, result.code, result.map);
-  } catch (error) { callback(error instanceof Error ? error : new Error(String(error))); }
+  } catch (error) {
+    callback(error instanceof Error ? error : new Error(String(error)));
+  }
 }

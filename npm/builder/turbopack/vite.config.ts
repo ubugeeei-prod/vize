@@ -6,7 +6,7 @@ export default defineConfig({
   pack: {
     entry: ["src/index.ts", "src/loader.ts", "src/style-loader.ts", "src/scope-loader.ts"],
     format: ["esm", "cjs"],
-    dts: { resolver: "tsc" },
+    dts: { resolver: "tsc", eager: true },
     clean: true,
     deps: { alwaysBundle: ["@vizejs/builder-shared"] },
   },

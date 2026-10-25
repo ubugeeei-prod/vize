@@ -71,6 +71,7 @@
     "@types/node": "catalog:typescript",
     "@vizejs/builder-shared": "workspace:*",
     "next": "16.4.3",
+    "playwright": "catalog:testing",
     "react": "19.2.5",
     "react-dom": "19.2.5",
     "typescript": "catalog:typescript",

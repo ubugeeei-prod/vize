@@ -1,4 +1,4 @@
-import * as sources from "webpack-sources";
+import sources from "webpack-sources";
 import { diffChars } from "diff";
 
 export interface SourceMapV3 {

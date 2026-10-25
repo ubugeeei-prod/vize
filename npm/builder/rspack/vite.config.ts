@@ -19,7 +19,7 @@ export default defineConfig({
       "src/loader/scope-loader.ts",
     ],
     format: "esm",
-    dts: true,
+    dts: { eager: true, resolver: "tsc" },
     clean: true,
     minify: true,
     sourcemap: false,

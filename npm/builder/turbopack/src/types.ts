@@ -1,6 +1,7 @@
 import type { SfcCompileOptionsNapi } from "@vizejs/native";
 
-export type LoaderItem = string | { loader: string; options?: Record<string, unknown> };
+export type JsonValue = string | number | boolean | JsonValue[] | { [key: string]: JsonValue };
+export type LoaderItem = string | { loader: string; options?: Record<string, JsonValue> };
 
 export interface VizeTurbopackOptions {
   /** Project root used for portable, deterministic component identities. */
@@ -8,7 +9,18 @@ export interface VizeTurbopackOptions {
   sourceMap?: boolean;
   vapor?: boolean;
   hotReload?: boolean;
-  compilerOptions?: Omit<SfcCompileOptionsNapi, "filename" | "scopeId" | "ssr" | "mode">;
+  compilerOptions?: Omit<
+    SfcCompileOptionsNapi,
+    | "filename"
+    | "scopeId"
+    | "ssr"
+    | "mode"
+    | "sourceMap"
+    | "vapor"
+    | "isProd"
+    | "isTs"
+    | "inlineTemplate"
+  >;
   /** Host preprocessor loaders, in normal webpack right-to-left order. */
   styleLoaders?: Record<string, LoaderItem[]>;
 }
