@@ -88,6 +88,16 @@
       "path": "collision-controls.json",
       "bytes": 2791,
       "sha256": "7064d54c006f6f1abf9b2209fa60dc8781a2d69142c652ea34266070c0a7c787"
+    },
+    {
+      "path": "receiver-plan-controls.json",
+      "bytes": 4126,
+      "sha256": "54e936aadfaea932e695225f95d4186c7d13d9d17f8ac2a29486681d6c186b1f"
+    },
+    {
+      "path": "receiver-plan-independent-packets.json",
+      "bytes": 4129,
+      "sha256": "f82f962f4c744e6f5f46e1e2358040db74d55d15eee320ac5ab683da8997c952"
     }
   ]
 }
