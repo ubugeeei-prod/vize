@@ -70,6 +70,7 @@ pub(super) fn generate_create_component(
             for op in slot.block.operation.iter() {
                 if let OperationNode::CreateComponent(inner_comp) = op
                     && inner_comp.kind == ComponentKind::Regular
+                    && static_component_value(ctx, inner_comp).is_none()
                     && !ctx.is_component_resolved(inner_comp.tag)
                 {
                     emit_component_resolution(
@@ -305,7 +306,7 @@ fn static_component_value<'a, 'node>(
     component: &'node CreateComponentIRNode<'a>,
 ) -> Option<&'node vize_atelier_core::SimpleExpressionNode<'a>> {
     (ctx.jsx_closure && component.kind == ComponentKind::Regular && !component.asset)
-        .then(|| component.is_expr.as_deref())
+        .then_some(component.is_expr.as_deref())
         .flatten()
 }
 

@@ -61,7 +61,9 @@ fn visit_operation<'a>(operation: &OperationNode<'a>, root: bool, usages: &mut U
                     visit_block(block, false, usages);
                 }
             }
-            if component.kind != ComponentKind::Regular {
+            if component.kind != ComponentKind::Regular
+                || (!component.asset && component.is_expr.is_some())
+            {
                 return;
             }
             match usages.iter_mut().find(|usage| usage.tag == component.tag) {

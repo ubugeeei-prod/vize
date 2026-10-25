@@ -16,7 +16,10 @@ use vize_atelier_jsx::{JsxCompileConfig, JsxLang, JsxOutputMode, compile_jsx, pa
 use vize_l0::{Allocator, profiler::global_profiler};
 
 #[derive(Default)]
-struct ComponentCalls(Vec<(String, Span)>);
+struct ComponentCalls {
+    creations: Vec<(String, Span)>,
+    resolutions: Vec<String>,
+}
 
 impl<'a> Visit<'a> for ComponentCalls {
     fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
@@ -27,7 +30,15 @@ impl<'a> Visit<'a> for ComponentCalls {
             )
             && let Some(value) = call.arguments.first()
         {
-            self.0.push((callee.name.to_string(), value.span()));
+            self.creations.push((callee.name.to_string(), value.span()));
+        }
+        if let Expression::Identifier(callee) = &call.callee
+            && matches!(
+                callee.name.as_str(),
+                "_resolveComponent" | "_resolveDynamicComponent"
+            )
+        {
+            self.resolutions.push(callee.name.to_string());
         }
         walk::walk_call_expression(self, call);
     }
@@ -52,6 +63,11 @@ fn only_actual_immutable_native_component_symbols_are_static_values() {
         (
             "const",
             "const Child={}; export const App=()=> <section><Child/></section>;",
+            true,
+        ),
+        (
+            "repeated",
+            "const Child={}; export const App=()=> <section><Child/><Child/></section>;",
             true,
         ),
         (
@@ -159,17 +175,32 @@ fn only_actual_immutable_native_component_symbols_are_static_values() {
                     u64::from(!members),
                     "one shared semantic fact build: {name}"
                 );
-                assert_eq!(proofs, u64::from(stable), "actual symbol proof: {name}");
-                assert_eq!(calls.0.len(), 1, "one real component creation: {name}");
-                let (helper, value) = calls.0.first().expect("component call");
+                let count = if name == "repeated" { 2 } else { 1 };
                 assert_eq!(
-                    helper,
-                    if stable {
-                        "_createComponentWithFallback"
-                    } else {
-                        "_createDynamicComponent"
-                    }
+                    proofs,
+                    if stable { count as u64 } else { 0 },
+                    "actual symbol proof: {name}"
                 );
+                assert_eq!(
+                    calls.creations.len(),
+                    count,
+                    "real component creations: {name}"
+                );
+                assert_eq!(
+                    calls.resolutions,
+                    [],
+                    "lexical values never become named assets: {name}"
+                );
+                for (helper, _) in &calls.creations {
+                    assert_eq!(
+                        helper,
+                        if stable {
+                            "_createComponentWithFallback"
+                        } else {
+                            "_createDynamicComponent"
+                        }
+                    );
+                }
                 if stable {
                     let map = SourceMap::from_json_string(output.source_map().expect("map"))
                         .expect("map JSON");
@@ -187,28 +218,31 @@ fn only_actual_immutable_native_component_symbols_are_static_values() {
                     } else {
                         "Child"
                     };
-                    let authored = source
-                        .rfind(&format!("<{tag}/>"))
-                        .expect("authored component tag")
-                        + 1;
-                    let origin = (
-                        position(&code, value.start as usize),
-                        position(source, authored),
-                    );
-                    assert_eq!(
-                        actual
-                            .iter()
-                            .filter(|token| token.0 == origin.0)
-                            .copied()
-                            .collect::<Vec<_>>(),
-                        [origin],
-                        "actual component-value origin: {name}"
-                    );
+                    let authored_values = source
+                        .match_indices(&format!("<{tag}/>"))
+                        .map(|(offset, _)| offset + 1)
+                        .collect::<Vec<_>>();
+                    assert_eq!(authored_values.len(), calls.creations.len());
+                    for ((_, value), authored) in calls.creations.iter().zip(authored_values) {
+                        let origin = (
+                            position(&code, value.start as usize),
+                            position(source, authored),
+                        );
+                        assert_eq!(
+                            actual
+                                .iter()
+                                .filter(|token| token.0 == origin.0)
+                                .copied()
+                                .collect::<Vec<_>>(),
+                            [origin],
+                            "actual component-value origin: {name}"
+                        );
+                    }
                 }
             } else {
                 assert_eq!(builds, 0, "default VDOM performs no stability scan: {name}");
                 assert_eq!(proofs, 0);
-                assert_eq!(calls.0, []);
+                assert_eq!(calls.creations, []);
             }
             let map =
                 SourceMap::from_json_string(output.source_map().expect("map")).expect("map JSON");
