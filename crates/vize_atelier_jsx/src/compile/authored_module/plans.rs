@@ -13,7 +13,13 @@ use oxc_ast::ast::{
 use oxc_ast_visit::{Visit, walk};
 use oxc_span::{GetSpan, Span};
 
+pub(super) struct BindingOrigin {
+    pub(super) name: vize_l0::String,
+    pub(super) span: Span,
+}
+
 pub(super) struct Plan {
+    pub(super) binding: Option<BindingOrigin>,
     pub(super) span: Span,
     pub(super) setup: ComponentSetupSpan,
 }
@@ -22,6 +28,9 @@ pub(super) fn collect(
     program: &oxc_ast::ast::Program<'_>,
     roots: &[(u32, u32)],
 ) -> Result<Vec<Plan>, JsxDiagnostic> {
+    if roots.is_empty() {
+        return Ok(Vec::new());
+    }
     let mut visitor = Plans {
         roots,
         plans: Vec::new(),
@@ -97,6 +106,7 @@ impl Plans<'_> {
         let (type_params_start, type_params_end) =
             type_parameters_range(arrow.type_parameters.as_deref());
         self.plans.push(Plan {
+            binding: None,
             span: arrow.span,
             setup: ComponentSetupSpan {
                 declaration_start: arrow.span.start,
@@ -118,13 +128,22 @@ impl Plans<'_> {
 
 impl<'a> Visit<'a> for Plans<'_> {
     fn visit_variable_declarator(&mut self, declaration: &VariableDeclarator<'a>) {
-        if declaration.id.get_identifier_name().is_some()
+        if let Some(name) = declaration.id.get_identifier_name()
             && let Some(Expression::ArrowFunctionExpression(arrow)) = declaration
                 .init
                 .as_ref()
                 .map(Expression::get_inner_expression)
         {
+            let previous = self.plans.len();
             self.arrow(arrow);
+            if self.plans.len() > previous
+                && let Some(plan) = self.plans.last_mut()
+            {
+                plan.binding = Some(BindingOrigin {
+                    name: name.as_str().into(),
+                    span: declaration.id.span(),
+                });
+            }
         }
         walk::walk_variable_declarator(self, declaration);
     }

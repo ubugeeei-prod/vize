@@ -7,6 +7,7 @@ on:
       - "crates/vize_atelier_vapor/src/**"
       - "crates/vize_atelier_ssr/src/**"
       - "crates/vize_vitrine/src/napi/jsx.rs"
+      - "tests/_fixtures/differential/jsx/authored-native-modules-10700/**"
       - ".github/workflows/jsx-authored-native-modules.yml"
 permissions: { contents: read }
 concurrency:
@@ -32,10 +33,16 @@ jobs:
       - name: Complete native module and source-map oracles
         env:
           VIZE_JSX_AUTHORED_NATIVE_CAPTURE: ${{ runner.temp }}/jsx-authored-native/packets.json
+          VIZE_JSX_ADMISSION_CAPTURE: ${{ runner.temp }}/jsx-authored-native/admission.json
+          VIZE_JSX_STATEFUL_SSR_CAPTURE: ${{ runner.temp }}/jsx-authored-native/stateful-vdom-ssr.json
+          INSTA_UPDATE: new
         run: |
           mkdir -p "$RUNNER_TEMP/jsx-authored-native"
           git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/jsx-authored-native/source.txt"
-          cargo test --locked --profile ci -p vize_atelier_jsx --test authored_native_modules -- --nocapture
+          status=0
+          cargo test --locked --profile ci -p vize_atelier_jsx --test authored_native_modules -- --nocapture || status=1
+          VIZE_JSX_NATIVE_USES_CAPTURE="$RUNNER_TEMP/jsx-authored-native/component-uses.json" cargo test --locked --profile ci -p vize_atelier_jsx --test native_component_uses -- --nocapture || status=1
+          exit "$status"
       - name: Measure the exact old and new authored-module contracts
         run: |
           set -euo pipefail
@@ -86,6 +93,9 @@ jobs:
             assert not current['output']['diagnostics'], current['output']
             counters={entry['name']:entry['total'] for entry in current['counters']}
             roots=counters['atelier.jsx.module.native_roots']
+            assert counters['atelier.jsx.module.component_use_candidates']==0
+            assert counters['atelier.jsx.module.component_use_semantic_builds']==0
+            assert counters['atelier.jsx.module.component_use_refusals']==0
             assert counters['atelier.jsx.module.native_plans']==roots
             assert counters['atelier.jsx.module.native_generated_maps']==(roots if current['map'] else 0)
             if current['ssr']: assert counters['l4.ssr.accepted']==roots
