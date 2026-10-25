@@ -214,6 +214,7 @@ test(
       return packet;
     };
     const project = await prepareExperimentalRouterProject(outputRoot);
+    const logicalRoot = path.join(outputRoot, "linked-project");
     try {
       fs.writeFileSync(
         path.join(outputRoot, "source-cli-identity.json"),
@@ -275,6 +276,7 @@ test(
           vueCompilerOptions: { plugins: [] },
         }),
       );
+      fs.symlinkSync(project.root, logicalRoot, process.platform === "win32" ? "junction" : "dir");
       const config = path.join(project.root, "tsconfig.mapper.json"),
         disabledConfig = path.join(project.root, "tsconfig.disabled.json");
       for (const newline of ["\n", "\r\n"]) {
@@ -399,8 +401,37 @@ test(
           check("explicit-plugin-root-precedence", "tsconfig.root.json"),
           validPacket,
         );
+        const aliasReference = run(
+          `${label}-logical-project-reference`,
+          process.execPath,
+          [
+            path.join(project.root, "node_modules/vue-tsc/bin/vue-tsc.js"),
+            "--noEmit",
+            "-p",
+            path.join(logicalRoot, "tsconfig.root.json"),
+            "--pretty",
+            "false",
+          ],
+          project.root,
+        );
+        const aliasMapper = run(
+          `${label}-logical-project-mapper`,
+          host,
+          [
+            "--runExternalCode",
+            "--noEmit",
+            "-p",
+            path.join(logicalRoot, "tsconfig.root.json"),
+            "--pretty",
+            "false",
+          ],
+          project.root,
+        );
+        assert.deepEqual(aliasReference, validPacket);
+        assert.deepEqual(aliasMapper, validPacket);
       }
     } finally {
+      if (fs.existsSync(logicalRoot)) fs.unlinkSync(logicalRoot);
       project.cleanup();
     }
   },
