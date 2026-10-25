@@ -1,0 +1,51 @@
+name: Corsa package refresh
+on:
+  workflow_dispatch:
+permissions: { contents: read }
+concurrency:
+  group: corsa-alias-observer-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  CARGO_BUILD_JOBS: 12
+jobs:
+  alias-attribution:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with: { version: latest, node-version-file: package.json, run-install: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with:
+          toolchain: 1.99.1
+          components: clippy,rust-src,rustfmt
+          targets: wasm32-unknown-unknown,wasm32-wasip2
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: nextest-ci, cache-key-suffix: Linux-X64-1.99.1 }
+      - name: Ensure the native process observer
+        run: |
+          if ! command -v strace >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y strace
+          fi
+      - name: Install the frozen fixture toolchain
+        run: vp install --filter './tests' --frozen-lockfile --prefer-offline --ignore-scripts
+      - name: Observe both untouched sources with one physical SDK
+        env:
+          VIZE_PACKAGE_REFRESH_CAPTURE: ${{ runner.temp }}/corsa-alias-observer
+        run: |
+          cp tools/support/compat/github/corsa-package-refresh/alias-observer.mjs "$RUNNER_TEMP/corsa-alias-observer.mjs"
+          vp node "$RUNNER_TEMP/corsa-alias-observer.mjs"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: corsa-alias-observer-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/corsa-alias-observer
+          if-no-files-found: error
+          retention-days: 14
