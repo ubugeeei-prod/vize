@@ -21,8 +21,6 @@ jobs:
     name: Local patched SDK terminal drain controls (not native semantic credit)
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 15
-    env:
-      CARGO_TARGET_DIR: ${{ runner.temp }}/native-dto-patched-sdk-controls-${{ github.sha }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { fetch-depth: 0 }
@@ -33,7 +31,9 @@ jobs:
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with: { wild-version: "0.9.0" }
       - name: Verify exact stock source reconstruction and isolated override
-        run: node tests/tooling/support/native-beta-dto/sdk-split-drain/custody.mjs
+        run: |
+          echo "CARGO_TARGET_DIR=$RUNNER_TEMP/native-dto-patched-sdk-controls-$GITHUB_SHA" >> "$GITHUB_ENV"
+          node tests/tooling/support/native-beta-dto/sdk-split-drain/custody.mjs
       - name: Exercise cached head, cloned leases, idempotence and terminal refusal over real local IPC
         run: |
           test ! -e "$CARGO_TARGET_DIR"
