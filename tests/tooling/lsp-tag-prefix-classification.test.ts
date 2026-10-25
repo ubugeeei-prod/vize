@@ -6,6 +6,7 @@ import { performance } from "node:perf_hooks";
 import { test } from "node:test";
 import { readPinnedArtifact } from "../differential/harness.mjs";
 import { binaryRelativePath } from "../differential/build-receipt.ts";
+import { isDiagnosticsForUri } from "./support/lsp/assertions.ts";
 import { resolveFreshVuePackage } from "./support/lsp/fresh-vue-project.ts";
 import { root, testOutputRoot } from "./support/lsp/paths.ts";
 import type { JsonRpcMessage } from "./support/lsp/protocol.ts";
@@ -187,7 +188,7 @@ async function initializePrefixSession(
   });
   await session.waitForNotification(
     "textDocument/publishDiagnostics",
-    (params) => params.uri === uri && params.version === 1,
+    (params) => isDiagnosticsForUri(params, uri) && params.version === 1,
     45000,
   );
 }

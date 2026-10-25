@@ -45,6 +45,12 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with: { key: test-scripts, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
       - run: vp install --frozen-lockfile --prefer-offline
+      - name: Check every referenced tooling TypeScript project
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p target/vize-tests/tag-prefix-classification-10622
+          node tools/support/typescript/check-project.ts 2>&1 | tee target/vize-tests/tag-prefix-classification-10622/typescript.log
       - name: Build and receipt the exact source CLI
         run: |
           cargo build --profile ci -p vize
