@@ -229,3 +229,35 @@ fn ssr_keeps_existing_object_and_functional_roles_distinct() {
     assert!(!out.has_errors(), "{:?}", out.diagnostics);
     assert!(out.module_code().contains("__ssrInlineRender: true"));
 }
+
+#[test]
+fn legacy_vapor_server_option_uses_the_same_genuine_ssr_component_role() {
+    for source in [
+        "export default()=> <p>Hello</p>;",
+        "import Child from './Child.js'; export const App=()=> <Child/>;",
+        "import {ref} from 'vue'; export const App=(props:{label:string})=>{const count=ref(0);return <p>{props.label}:{count.value}</p>;};",
+    ] {
+        let allocator = Allocator::new();
+        let mut global = JsxCompileConfig {
+            ssr: true,
+            default_mode: JsxOutputMode::Vapor,
+            ..Default::default()
+        };
+        global.vdom.source_map = true;
+        let expected = compile_jsx(&allocator, source, JsxLang::Tsx, &global);
+        assert!(!expected.has_errors(), "{:?}", expected.diagnostics);
+        let mut legacy = global.clone();
+        legacy.ssr = false;
+        legacy.vapor.ssr = true;
+        let actual = compile_jsx(&allocator, source, JsxLang::Tsx, &legacy);
+        assert!(!actual.has_errors(), "{:?}", actual.diagnostics);
+        assert_eq!(actual.module_code(), expected.module_code());
+        assert_eq!(actual.source_map(), expected.source_map());
+        assert!(
+            actual
+                .components
+                .iter()
+                .all(|component| matches!(component, vize_atelier_jsx::JsxComponent::Ssr(_)))
+        );
+    }
+}
