@@ -1,6 +1,6 @@
 //! Exact normalization of generated ordinal names in the existing corpus.
 
-use super::super::Diagnostic;
+use super::fix_history_contract::Diagnostic;
 
 pub(crate) fn normalize_generated_check_ordinals(diagnostics: &[Diagnostic]) -> Vec<Diagnostic> {
     diagnostics

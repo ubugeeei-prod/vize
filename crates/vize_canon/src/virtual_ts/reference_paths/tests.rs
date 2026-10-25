@@ -44,6 +44,14 @@ fn unrepresentable_paths_report_the_exact_value_and_reason() {
             "line breaks and NUL are not representable in a TypeScript reference path",
         ),
         (
+            "a\u{2028}b.d.ts",
+            "line breaks and NUL are not representable in a TypeScript reference path",
+        ),
+        (
+            "a\u{2029}b.d.ts",
+            "line breaks and NUL are not representable in a TypeScript reference path",
+        ),
+        (
             "a'\"b.d.ts",
             "a TypeScript reference path cannot contain both quote delimiters",
         ),
@@ -76,6 +84,14 @@ fn document_projection_rejects_unrepresentable_paths_with_a_configuration_error(
         ),
         (
             "types\0b.d.ts",
+            "line breaks and NUL are not representable in a TypeScript reference path",
+        ),
+        (
+            "types\u{2028}b.d.ts",
+            "line breaks and NUL are not representable in a TypeScript reference path",
+        ),
+        (
+            "types\u{2029}b.d.ts",
             "line breaks and NUL are not representable in a TypeScript reference path",
         ),
         (

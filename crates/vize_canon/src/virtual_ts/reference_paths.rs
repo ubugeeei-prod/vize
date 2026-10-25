@@ -9,7 +9,7 @@ pub(crate) struct InvalidReferencePath<'a> {
 }
 
 fn delimiter(path: &str) -> Result<char, InvalidReferencePath<'_>> {
-    let reason = if path.contains(['\r', '\n', '\0']) {
+    let reason = if path.contains(['\r', '\n', '\0', '\u{2028}', '\u{2029}']) {
         Some("line breaks and NUL are not representable in a TypeScript reference path")
     } else if path.contains('"') && path.contains('\'') {
         Some("a TypeScript reference path cannot contain both quote delimiters")

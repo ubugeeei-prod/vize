@@ -126,6 +126,7 @@ export const toolingTestScopes = [
     tests: [
       "tests/tooling/router-experimental-check.test.ts",
       "tests/tooling/router-experimental-provider.test.ts",
+      "tests/tooling/reference-path-compiler-oracle.test.ts",
     ],
   },
   {

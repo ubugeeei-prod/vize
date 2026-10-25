@@ -85,6 +85,7 @@ export const TYPECHECKER_TESTS = {
   "jsx-prop-token-ranges-10494": "jsx_prop_tokens_preserve_complete_batch_diagnostics",
   "experimental-router-import-10520":
     "experimental_page_import_preserves_published_path_diagnostics",
+  "literal-reference-paths-10551": "literal_reference_paths_preserve_complete_authored_diagnostics",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
@@ -154,4 +155,5 @@ export const sourceRevisions = {
   "portable-pug-10434": "c2132e45d47aad595aac7e07f5e71a78b8ffd1c8",
   "jsx-prop-token-ranges-10494": "aaeeb1c1264a319737fa11e56971c9d73064d6a3",
   "experimental-router-import-10520": "a29d9c0b1961ada51037db402c3b74436a56d623",
+  "literal-reference-paths-10551": "0a7f029e3be412a89232bd82127d3ac9bb058514",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
