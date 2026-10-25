@@ -28,7 +28,6 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: ${{ runner.temp }}/jsr-public-consumer
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -61,34 +60,40 @@ jobs:
           fs.writeFileSync(root + "/deno.json", JSON.stringify(config, null, 2));
           JS
       - name: Install the public JSR package (Node)
+        working-directory: ${{ runner.temp }}/jsr-public-consumer
         if: matrix.runtime == 'node'
         run: |
           npm install --ignore-scripts --save-exact typescript@6.0.3 @types/node@25.9.2 vite@8.2.4 vue@3.5.42 2>&1 | tee install.log
           npx --yes jsr@0.14.3 add "@vizejs/vize@$PUBLIC_JSR_VERSION" 2>&1 | tee jsr-add.log
       - name: Check the public types and execute every entry point (Node)
+        working-directory: ${{ runner.temp }}/jsr-public-consumer
         if: matrix.runtime == 'node'
         run: |
           node --version | tee runtime-version.txt
           node node_modules/typescript/bin/tsc --strict --noEmit --target ESNext --module NodeNext --moduleResolution NodeNext consumer-types.ts 2>&1 | tee types.log
           node consumer.ts @vizejs/vize --vite 2>&1 | tee runtime.log
       - name: Install the public JSR package (Bun)
+        working-directory: ${{ runner.temp }}/jsr-public-consumer
         if: matrix.runtime == 'bun'
         run: |
           bun add --ignore-scripts --exact typescript@6.0.3 @types/node@25.9.2 vite@8.2.4 vue@3.5.42 2>&1 | tee install.log
           bunx --bun jsr@0.14.3 add "@vizejs/vize@$PUBLIC_JSR_VERSION" 2>&1 | tee jsr-add.log
       - name: Check the public types and execute every entry point (Bun)
+        working-directory: ${{ runner.temp }}/jsr-public-consumer
         if: matrix.runtime == 'bun'
         run: |
           bun --version | tee runtime-version.txt
           bun node_modules/typescript/bin/tsc --strict --noEmit --target ESNext --module NodeNext --moduleResolution NodeNext consumer-types.ts 2>&1 | tee types.log
           bun run consumer.ts @vizejs/vize --vite 2>&1 | tee runtime.log
       - name: Check the public types and execute every entry point (Deno)
+        working-directory: ${{ runner.temp }}/jsr-public-consumer
         if: matrix.runtime == 'deno'
         run: |
           deno --version | tee runtime-version.txt
           deno check --config deno.json consumer-types.ts 2>&1 | tee types.log
           deno run --config deno.json --allow-all consumer.ts "jsr:@vizejs/vize@$PUBLIC_JSR_VERSION" --vite 2>&1 | tee runtime.log
       - name: Preserve public metadata and dependency locks
+        working-directory: ${{ runner.temp }}/jsr-public-consumer
         if: always()
         run: |
           curl --fail --silent --show-error --location -A vize-jsr-public-types/1.0 https://jsr.io/@vizejs/vize/meta.json -o public-metadata.json
