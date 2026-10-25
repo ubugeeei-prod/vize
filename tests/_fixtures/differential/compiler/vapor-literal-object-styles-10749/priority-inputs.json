@@ -1,0 +1,50 @@
+[
+  {
+    "id": "priority-trailing-space",
+    "expression": "{\"color\":\"red!important \",\"fontWeight\":\"700\"}",
+    "fold": false,
+    "referenceCss": "color:red!important ;font-weight:700;"
+  },
+  {
+    "id": "priority-uppercase",
+    "expression": "{\"color\":\"red !IMPORTANT\",\"fontWeight\":\"700\"}",
+    "fold": false,
+    "referenceCss": "color:red !IMPORTANT;font-weight:700;"
+  },
+  {
+    "id": "priority-gap",
+    "expression": "{\"color\":\"red ! important\",\"fontWeight\":\"700\"}",
+    "fold": false,
+    "referenceCss": "color:red ! important;font-weight:700;"
+  },
+  {
+    "id": "priority-custom-trailing",
+    "expression": "{\"--Brand\":\"blue!important \"}",
+    "fold": false,
+    "referenceCss": "--Brand:blue!important ;"
+  },
+  {
+    "id": "priority-ascii-space",
+    "expression": "{\"color\":\"red !important\",\"fontWeight\":\"700\"}",
+    "fold": true,
+    "referenceCss": "color:red !important;font-weight:700;"
+  },
+  {
+    "id": "nbsp",
+    "expression": "{\"color\":\"red !important\",\"fontWeight\":\"700\"}",
+    "fold": false,
+    "referenceCss": "color:red !important;font-weight:700;"
+  },
+  {
+    "id": "bom",
+    "expression": "{\"color\":\"red﻿!important\",\"fontWeight\":\"700\"}",
+    "fold": false,
+    "referenceCss": "color:red﻿!important;font-weight:700;"
+  },
+  {
+    "id": "em-space",
+    "expression": "{\"color\":\"red !important\",\"fontWeight\":\"700\"}",
+    "fold": false,
+    "referenceCss": "color:red !important;font-weight:700;"
+  }
+]
