@@ -91,3 +91,25 @@ test("artifact workflow executes the installed VSIX with same-source receipt cus
   assert.match(runner, /processes\.spawns\[0\]\.binarySha256, producer\.native\.sha256/u);
   assert.match(runner, /finally[\s\S]*host-logs[\s\S]*fs\.rmSync\(directory/u);
 });
+
+test("local completion ownership uses the installed client after the real watcher and keeps the original Art campaign", () => {
+  const suite = fs.readFileSync(
+    path.join(root, "editors/vscode/test/suite/router-config-real.cjs"),
+    "utf8",
+  );
+  const local = fs.readFileSync(
+    path.join(root, "editors/vscode/test/suite/router-local-resolve.cjs"),
+    "utf8",
+  );
+  assert.ok(
+    suite.indexOf("await localResolution.afterWatch(on, after)") >
+      suite.indexOf("filesystem-only tsconfig watcher delivery"),
+  );
+  assert.match(local, /vscode\.commands\.executeCommand\(command, \.\.\.args\)/u);
+  assert.match(local, /"vscode\.executeCompletionItemProvider"/u);
+  assert.match(local, /"vize\.test\.executeLspRequest"/u);
+  assert.equal(local.includes("workspace/didChangeWatchedFiles"), false);
+  assert.equal(local.includes("LspSession"), false);
+  assert.match(local, /stale completion does not reach the native compiler/u);
+  assert.match(suite, /assert\.deepEqual\(failures, \[\]\)/u);
+});

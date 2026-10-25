@@ -15,6 +15,8 @@ const {
   retain,
 } = require("./router-host-packets.cjs");
 
+const { prepareLocalResolution } = require("./router-local-resolve.cjs");
+
 const caseName = (document) =>
   document.fileName.includes(`${path.sep}art-variants${path.sep}`)
     ? "art-variants"
@@ -115,6 +117,11 @@ exports.run = async function run() {
   assert.equal(selected.extensionVersion, extension.packageJSON.version);
   const [enabled, disabled] = manifest.projects;
   for (const document of documents.values()) assert.equal(document.isClosed, false);
+
+  let localResolution;
+  await test("local-resolution-initial", async () => {
+    localResolution = await prepareLocalResolution(manifest);
+  });
 
   for (const file of enabled.pages) {
     const document = documents.get(file);
@@ -237,6 +244,10 @@ exports.run = async function run() {
           );
         });
       }
+      await test(`local-resolution-${on ? "on" : "off"}`, async () => {
+        assert.ok(localResolution);
+        await localResolution.afterWatch(on, after);
+      });
     });
   const allSpawns = records().filter(({ kind }) => kind === "spawn");
   const spawns = allSpawns.filter(({ argv }) => argv[0] === "lsp");

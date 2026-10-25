@@ -24,3 +24,10 @@ The public completion adapter follows pinned VS Code 1.107.1 behavior:
 Native packets remain unmodified. Closed controls reject shifted public ranges,
 changed insertion text, and changed whitespace behavior. Whole packets and native
 compiler traffic are retained before assertions, including failed Art cases.
+
+The installed-client ownership witness adds two ordinary Vue controls outside the
+page scanner. It compares complete directive and CSS completion items through
+the real client and public editor API across OS-delivered tsconfig changes. It
+retains mixed-owner refusals, a URI-bound native completion and an authored edit
+that must block stale completion resolution before forwarding to the compiler.
+These controls do not change any scanner declaration or relax the Art failures.

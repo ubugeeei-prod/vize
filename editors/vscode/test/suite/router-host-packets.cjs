@@ -481,4 +481,13 @@ function assertCapture(actual, project, document, enabled, invalid = false) {
   }
 }
 
-module.exports = { assertCapture, capture, diagnostics, frames, publication, records, retain };
+module.exports = {
+  assertCapture,
+  capture,
+  diagnostics,
+  frames,
+  publication,
+  publicCompletion,
+  records,
+  retain,
+};
