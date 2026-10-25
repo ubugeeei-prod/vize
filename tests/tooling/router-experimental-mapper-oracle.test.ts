@@ -228,7 +228,7 @@ test(
           typescript: {
             contentMapper: {
               exec: [binary, "content-mapper"],
-              compilerOptions: ["checkJs", "noUnusedLocals"],
+              compilerOptions: ["checkJs", "noUnusedLocals", "rootDir"],
               dynamicConfig: true,
             },
           },
@@ -310,11 +310,11 @@ test(
         assert.equal(disabled.text.split(`useRoute${routeType}()`).length - 1, 0);
         assertRouteMappings(source, enabled);
         assertRouteMappings(source, disabled);
-        const check = (name: string, configName: string) =>
+        const check = (name: string, configName: string, extra: string[] = []) =>
           run(
             `${label}-${name}`,
             host,
-            ["--runExternalCode", "--noEmit", "-p", configName, "--pretty", "false"],
+            ["--runExternalCode", "--noEmit", "-p", configName, "--pretty", "false", ...extra],
             project.root,
           );
         const reference = (name: string) =>
@@ -343,6 +343,31 @@ test(
         fs.writeFileSync(project.pagePath, source);
         assert.deepEqual(check("repaired", "tsconfig.mapper.json"), validPacket);
         assert.deepEqual(reference("repaired"), validPacket);
+        const rootConfig = path.join(project.root, "tsconfig.root.json");
+        const rootOptions = {
+          extends: "./tsconfig.json",
+          compilerOptions: { rootDir: "./src" },
+          contentMappers: [{ package: "router-source-mapper", extensions: [".vue"] }],
+        };
+        fs.writeFileSync(rootConfig, JSON.stringify(rootOptions));
+        assert.deepEqual(check("authored-root-mismatch", "tsconfig.root.json"), disabledPacket(1));
+        assert.deepEqual(
+          check("host-root-override", "tsconfig.root.json", ["--rootDir", project.root]),
+          validPacket,
+        );
+        fs.writeFileSync(
+          rootConfig,
+          JSON.stringify({
+            ...rootOptions,
+            vueCompilerOptions: {
+              plugins: [{ name: "vue-router/volar/sfc-typed-router", options: { rootDir: "." } }],
+            },
+          }),
+        );
+        assert.deepEqual(
+          check("explicit-plugin-root-precedence", "tsconfig.root.json"),
+          validPacket,
+        );
       }
     } finally {
       project.cleanup();

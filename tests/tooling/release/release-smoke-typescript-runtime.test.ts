@@ -15,7 +15,7 @@ const root = fileURLToPath(new URL("../../../", import.meta.url));
 const contract = {
   dynamicConfig: true,
   exec: ["node", "./bin/vize", "content-mapper"],
-  compilerOptions: ["checkJs", "noUnusedLocals"],
+  compilerOptions: ["checkJs", "noUnusedLocals", "rootDir"],
 };
 const diagnostics = [
   ["errors/Broken.vue", "TS2322"],

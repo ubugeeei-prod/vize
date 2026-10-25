@@ -233,10 +233,11 @@ test("manual focused campaigns preserve the full default and upload before gatin
   assert.equal(input.default, false);
   assert.equal(workflow.on.workflow_dispatch.inputs["directive-owners-only"], undefined);
   const groups: string[] = [];
-  for (const [job, suffix, rename, official] of [
-    ["exact-tsgo-project", "", false, false],
-    ["event-rename", "-event-rename", true, false],
-    ["official-css-options", "-official-css-options", false, true],
+  for (const [job, suffix, rename, official, router] of [
+    ["exact-tsgo-project", "", false, false, false],
+    ["event-rename", "-event-rename", true, false, false],
+    ["official-css-options", "-official-css-options", false, true, false],
+    ["router-experimental", "-router-experimental", false, false, true],
   ] as const) {
     const context = {
       github: {
@@ -247,6 +248,7 @@ test("manual focused campaigns preserve the full default and upload before gatin
       inputs: {
         "event-rename-only": rename,
         "official-css-options-only": official,
+        "router-experimental-only": router,
       },
     };
     const evaluate = (expression: string): unknown =>
@@ -268,19 +270,15 @@ test("manual focused campaigns preserve the full default and upload before gatin
       [job],
     );
   }
-  assert.equal(
-    new Set(groups).size,
-    3,
-    "all three campaigns must run without canceling each other",
-  );
+  assert.equal(new Set(groups).size, 4, "all four campaigns must run without canceling each other");
   assert.equal(
     workflow.jobs["exact-tsgo-project"].if,
-    "${{ !inputs.event-rename-only && !inputs.official-css-options-only && !inputs.published-defaults-only }}",
+    "${{ !inputs.router-experimental-only && !inputs.event-rename-only && !inputs.official-css-options-only && !inputs.published-defaults-only }}",
   );
   const focused = workflow.jobs["event-rename"];
   assert.equal(
     focused.if,
-    "github.event_name == 'workflow_dispatch' && inputs.event-rename-only && !inputs.official-css-options-only && !inputs.published-defaults-only",
+    "github.event_name == 'workflow_dispatch' && !inputs.router-experimental-only && inputs.event-rename-only && !inputs.official-css-options-only && !inputs.published-defaults-only",
   );
   const rust = focused.steps.find((step) => step.name === "Setup Rust");
   const pinned = /^channel = "([^"]+)"$/mu.exec(readRepoFile("rust-toolchain.toml"))?.[1];
@@ -321,7 +319,7 @@ test("official TypeScript acceptance keeps the reported host and complete instal
   const job = workflow.jobs["official-css-options"];
   assert.equal(
     job.if,
-    "github.event_name == 'workflow_dispatch' && (inputs.official-css-options-only || inputs.published-defaults-only)",
+    "github.event_name == 'workflow_dispatch' && !inputs.router-experimental-only && (inputs.official-css-options-only || inputs.published-defaults-only)",
   );
   assert.equal(job["timeout-minutes"], 15);
   const setup = job.steps.find((step) => step.name === "Setup pinned Node and Vite Plus")!;

@@ -824,7 +824,7 @@ fn assert_installed_mapper_contract(install_dir: &Path) -> Result<(), String> {
         != Some(&json!({
             "dynamicConfig": true,
             "exec": ["node", "./bin/vize", "content-mapper"],
-            "compilerOptions": ["checkJs", "noUnusedLocals"],
+            "compilerOptions": ["checkJs", "noUnusedLocals", "rootDir"],
         }))
     {
         return Err(format!(
