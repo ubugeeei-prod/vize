@@ -1,0 +1,6 @@
+<script setup lang="ts">
+defineProps<{ café? : string; required: number }>()
+</script>
+<template>
+  <div>{{ required }}</div>
+</template>

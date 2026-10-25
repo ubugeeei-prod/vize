@@ -1,0 +1,175 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10573,
+  "regressionCommit": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
+  "sourceRevision": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "reported-optional-unused",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Case.vue",
+          "source": "sources/reported-optional-unused.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "unicode-ascii-collision",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Case.vue",
+          "source": "sources/unicode-ascii-collision.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "unicode-ascii-number",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Case.vue",
+          "source": "sources/unicode-ascii-number.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "quoted-cooked-unicode",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Case.vue",
+          "source": "sources/quoted-cooked-unicode.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "escaped-identifier",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Case.vue",
+          "source": "sources/escaped-identifier.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "supplementary-crlf",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Case.vue",
+          "source": "sources/supplementary-crlf.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "runtime-japanese",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Case.vue",
+          "source": "sources/runtime-japanese.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "defaulted-unicode",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Case.vue",
+          "source": "sources/defaulted-unicode.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "keyed-unicode",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Case.vue",
+          "source": "sources/keyed-unicode.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "reserved-hyphen-ascii",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Case.vue",
+          "source": "sources/reserved-hyphen-ascii.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "unicode-continue",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Case.vue",
+          "source": "sources/unicode-continue.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

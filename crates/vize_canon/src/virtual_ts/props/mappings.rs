@@ -2,11 +2,22 @@
 
 use std::ops::Range;
 
+use oxc_syntax::identifier::is_identifier_name;
 use vize_carton::{String, append};
 use vize_croquis::Croquis;
 
-use super::super::helpers::to_safe_identifier;
+use super::super::helpers::{is_reserved_identifier, to_safe_identifier};
 use crate::virtual_ts::{VizeMapping, VizeSemanticLink, VizeSemanticLinkKind};
+
+/// Prop locals share the authored lexical names consumed by template reads
+/// and setup anchors. Synthetic identifier fragments have a different policy.
+pub(super) fn prop_binding_identifier(name: &str) -> String {
+    if is_identifier_name(name) && !is_reserved_identifier(name) {
+        String::from(name)
+    } else {
+        to_safe_identifier(name)
+    }
+}
 
 pub(crate) struct PropsSource<'a> {
     pub(crate) mappings: &'a mut Vec<VizeMapping>,
@@ -65,7 +76,7 @@ impl<'a> PropBindingMappings<'a> {
         name: &str,
         has_default: bool,
     ) {
-        let binding = to_safe_identifier(name);
+        let binding = prop_binding_identifier(name);
         let start = ts.len() + "  const ".len();
         if has_default {
             append!(
@@ -155,3 +166,6 @@ impl<'a> PropBindingMappings<'a> {
         Some(start..start + name.len())
     }
 }
+
+#[cfg(test)]
+mod tests;
