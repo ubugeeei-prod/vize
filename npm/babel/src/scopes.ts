@@ -7,7 +7,11 @@ interface Reservations {
 
 /** Earlier pre hooks can reserve identifiers before adding their declarations. */
 export function captureReservations(file: BabelFile): Reservations | undefined {
-  const names = Object.keys(file.scope.uids).filter((name) => file.scope.uids[name]);
+  // Babel 8 deliberately rejects the old `uids` getter. Its program scope
+  // stores reservations in a Set; Babel 7 retains the record representation.
+  const names = file.scope.uidsSet
+    ? [...file.scope.uidsSet]
+    : Object.keys(file.scope.uids).filter((name) => file.scope.uids[name]);
   if (names.length === 0) return undefined;
   const authoredBindings = new Set(Object.keys(file.scope.bindings));
   const seen = new Set<Scope>([file.scope]);
@@ -24,7 +28,10 @@ export function captureReservations(file: BabelFile): Reservations | undefined {
 export function restoreReservations(file: BabelFile, reserved: Reservations | undefined): void {
   if (!reserved) return;
   const names = new Set(reserved.names);
-  for (const name of names) file.scope.uids[name] = true;
+  for (const name of names) {
+    if (file.scope.uidsSet) file.scope.uidsSet.add(name);
+    else file.scope.uids[name] = true;
+  }
   const seen = new Set<Scope>();
   const restore = (scope: Scope) => {
     if (seen.has(scope)) return;

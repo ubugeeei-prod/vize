@@ -38,6 +38,7 @@ export interface Scope {
   crawl(): void;
   bindings: Record<string, unknown>;
   uids: Record<string, boolean>;
+  uidsSet?: Set<string>;
   generateUid(name: string): string;
   rename(name: string, replacement: string): void;
   getBinding(name: string): unknown;

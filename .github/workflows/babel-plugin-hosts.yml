@@ -66,6 +66,15 @@ jobs:
           set -euo pipefail
           export VIZE_BABEL_PACKED_PLUGIN=$(find "$RUNNER_TEMP/babel-plugin/packed" -maxdepth 1 -name '*.tgz' -print -quit)
           node npm/native/scripts/test-preparation.mjs node --test npm/babel/test/packed-hosts.test.mjs
+      - name: Measure complete host transforms and the real native-call boundary
+        if: always()
+        env:
+          VIZE_BABEL_NATIVE_ROOT: ${{ github.workspace }}/npm/native
+          VIZE_BABEL_PROFILE_OUTPUT: ${{ runner.temp }}/babel-plugin/profile.json
+        run: |
+          set -euo pipefail
+          export VIZE_BABEL_PACKED_PLUGIN=$(find "$RUNNER_TEMP/babel-plugin/packed" -maxdepth 1 -name '*.tgz' -print -quit)
+          node npm/native/scripts/test-preparation.mjs node npm/babel/test/profile-host.mjs
       - name: Check package source and declarations
         if: always()
         run: vp run --filter './npm/babel' check
