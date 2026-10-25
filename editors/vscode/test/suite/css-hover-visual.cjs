@@ -6,10 +6,14 @@ const vscode = require("vscode");
 const { assertPackagedExtension, describeRange, waitFor } = require("./real-server-support.cjs");
 
 exports.run = async function run() {
-  const { fixtureSource, hoverCases, vscodeVersion } =
-    await import("../css-hover-visual-contract.mjs");
-  const { currentHoverPackets, currentDocumentColors, currentColorPresentations } =
+  const { fixtureSource, vscodeVersion } = await import("../css-hover-visual-contract.mjs");
+  const { currentDocumentColors, currentColorPresentations } =
     await import("../css-hover-current-packets.mjs");
+  const {
+    literalCurrentHoverPackets: currentHoverPackets,
+    literalHoverCases: hoverCases,
+    literalVisualPhases,
+  } = await import("../css-hover-literal-current-packets.mjs");
   const destination = process.env.VIZE_CSS_VISUAL_OUTPUT;
   const packets = [];
   let document;
@@ -135,13 +139,16 @@ exports.run = async function run() {
         params: { textDocument: { uri: document.uri.toString() }, position },
       });
       retain(`${expected.id}-hover.json`, { expected, position, hovers: expanded, raw });
-      if (expected.baselineNull) {
-        // Immutable baseline expectation. Product acceptance gets its own contract.
-        assert.equal(raw, null);
+      const expectedPacket = currentHoverPackets[expected.id];
+      assert.notEqual(
+        expectedPacket,
+        undefined,
+        "each live request needs an explicit current contract",
+      );
+      assert.deepEqual(raw, expectedPacket, "complete current native hover packet");
+      if (expectedPacket === null) {
         assert.deepEqual(hovers, []);
       } else {
-        const expectedPacket = currentHoverPackets[expected.id];
-        assert.deepEqual(raw, expectedPacket, "complete current native hover packet");
         assert.deepEqual(
           expanded.map((hover) => ({
             range: hover.range,
@@ -227,12 +234,22 @@ exports.run = async function run() {
       uri: document.uri,
       range: hex.range,
     });
+    const publicPresentations = presentations.map((entry) => ({
+      label: entry.label,
+      textEdit: entry.textEdit,
+      additionalTextEdits: entry.additionalTextEdits,
+    }));
+    retain("presentations.json", { publicPresentations });
     assert.deepEqual(
-      JSON.parse(JSON.stringify(presentations)),
-      currentColorPresentations,
+      publicPresentations,
+      currentColorPresentations.map((entry) => ({
+        ...entry,
+        textEdit: undefined,
+        additionalTextEdits: undefined,
+      })),
       "complete unchanged public color presentations",
     );
-    for (const expected of hoverCases.filter((entry) => !entry.baselineNull)) {
+    for (const expected of hoverCases.filter((entry) => entry.render)) {
       await phase(
         expected.id,
         document.positionAt(fixtureSource.indexOf(expected.needle) + expected.offset),
@@ -240,7 +257,10 @@ exports.run = async function run() {
     }
     await phase("picker", hex.range.start);
     assert.equal(document.getText(), fixtureSource);
-    retain("complete.json", { unchangedDocument: true, captured: ["property", "named", "picker"] });
+    retain("complete.json", {
+      unchangedDocument: true,
+      captured: literalVisualPhases.map((phase) => phase.id),
+    });
   } catch (error) {
     retain("host-error.json", { message: error.message, stack: error.stack });
     throw error;

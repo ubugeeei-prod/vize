@@ -10,12 +10,16 @@ on:
       - "crates/vize_maestro/src/ide/style.rs"
       - "crates/vize_maestro/src/server/annotations/document_color.rs"
       - "crates/vize_maestro/src/server/annotations/document_color/**"
+      - "crates/vize_maestro/src/server/annotations.rs"
+      - "crates/vize_maestro/src/server/handlers/typed.rs"
       - "crates/vize_maestro/src/ide/style/documentation.rs"
       - "crates/vize_maestro/src/ide/style/tests/hover.rs"
       - "editors/vscode/test/run-css-hover-visual.mjs"
       - "editors/vscode/test/suite/css-hover-visual.cjs"
       - "tests/tooling/vscode-css-hover-visual.test.mjs"
       - "tests/tooling/vscode-css-hover-source-custody.test.mjs"
+      - "tests/tooling/vscode-css-hover-literal-visual.test.mjs"
+      - "tests/tooling/lsp-css-color-literal-hover.test.ts"
       - "tests/tooling/lsp-css-color-declaration-admission.test.ts"
       - "tests/_fixtures/differential/lsp/css-color-declaration-admission-10562/**"
 
@@ -65,14 +69,20 @@ jobs:
           cargo build --profile ci -p vize
           node tests/differential/build-receipt.ts
       - name: Check capture refusal boundaries
-        run: node --test tests/tooling/vscode-css-hover-visual.test.mjs tests/tooling/vscode-css-hover-source-custody.test.mjs
+        run: node --test tests/tooling/vscode-css-hover-visual.test.mjs tests/tooling/vscode-css-hover-source-custody.test.mjs tests/tooling/vscode-css-hover-literal-visual.test.mjs
       - name: Check real SFC CSS example packets and completion parity
         run: cargo test --profile ci -p vize_maestro ide::style::tests -- --test-threads=4
+      - name: Verify selected color work and publication boundaries on the actual source
+        env:
+          VIZE_CSS_SELECTED_WORK_CAPTURE: ${{ github.workspace }}/target/vize-tests/css-color-literal-hover/scanner-work.json
+        run: |
+          mkdir -p target/vize-tests/css-color-literal-hover
+          cargo test --locked --profile ci -p vize_maestro --lib server::annotations::document_color:: -- --nocapture
       - name: Verify all eighteen current hovers and frozen color and presentation vectors
         env:
           VIZE_LSP_BIN: target/ci/vize
           VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
-        run: node --test tests/tooling/lsp-css-color-declaration-admission.test.ts
+        run: node --test tests/tooling/lsp-css-color-declaration-admission.test.ts tests/tooling/lsp-css-color-literal-hover.test.ts
       - name: Build and package the actual extension
         run: |
           vp run --workspace-root build:vscode-extension
@@ -94,6 +104,7 @@ jobs:
           path: |
             output/playwright/css-hover/
             target/vize-tests/css-color-declaration-admission/
+            target/vize-tests/css-color-literal-hover/
             target/differential/lsp-sessions/
           include-hidden-files: true
           if-no-files-found: warn

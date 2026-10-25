@@ -2,7 +2,7 @@
   "schema": "vize.css-hover.source-custody",
   "version": 1,
   "historicalBaselineRevision": "2934b35b18393c188b3da5f8e50595299589fb8c",
-  "productTreeRevision": "3be9e876959a79bcd7b039386325a6840dd372ab",
+  "productTreeRevision": "cc8e49af9193f6ccdcd319c937c8bca62743307b",
   "baselineCratesTreeOid": "3963f87b333566d98319039ce43fcd3714dd02fa",
   "baselineCratesSha256": "981087aca813963e627a19d46a458c3dd151cb0a11bb395b4c50e46d410475b4",
   "historicalCapture": {
@@ -257,6 +257,123 @@
             "mode": "100644",
             "type": "blob",
             "oid": "a8b30aa1b555bc034bf7cf250f93e87b31f49d15"
+          }
+        }
+      ]
+    },
+    {
+      "name": "selected-color-hover-10556",
+      "baseRevision": "bdaf6d4d547fdf74ba93ceff0f1853abe32588f2",
+      "reviewedRevision": "c71cc41310fef3b3bb7669de2a48165ee8e2a2f2",
+      "changes": [
+        {
+          "path": "crates/vize_maestro/src/server/annotations.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/server/annotations.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "23b8aadec88538b4edf8af6adaec7fecbfea5ba9"
+          },
+          "after": {
+            "path": "crates/vize_maestro/src/server/annotations.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "ca581e076b503ded29ab4c384bc00b886d0f426e"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/server/annotations/document_color.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/server/annotations/document_color.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "4405bbfe949c334e02b27201fba2fe0a71a7c5fb"
+          },
+          "after": {
+            "path": "crates/vize_maestro/src/server/annotations/document_color.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "bdff217702dc931f39590da27b7440740af87ed9"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/server/annotations/document_color/hover.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize_maestro/src/server/annotations/document_color/hover.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "9d4960a6e2cce8934b68b1c959f218a8a4cb7a1c"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/server/annotations/document_color/hover/tests.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize_maestro/src/server/annotations/document_color/hover/tests.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "1301b22de95b9d1b2df3c86c9d94a08e90c3055f"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/server/annotations/document_color/hover/tests/publication.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize_maestro/src/server/annotations/document_color/hover/tests/publication.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "9b558d1be5f65181288cb43129ab861606de3c8b"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/server/annotations/document_color/scan.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/server/annotations/document_color/scan.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "49f4d585fcf065d54d60f769e6b56f5c9d79ba80"
+          },
+          "after": {
+            "path": "crates/vize_maestro/src/server/annotations/document_color/scan.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "8a4ccd30b1ef6f7341b86f3c1f1ea814736877ce"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/server/annotations/document_color/scan/selection.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize_maestro/src/server/annotations/document_color/scan/selection.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "9b68c9794476d2b2f8af476f03c17dc0a05b22f1"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/server/annotations/document_color/scan/selection/tests.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize_maestro/src/server/annotations/document_color/scan/selection/tests.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "3a6da8ee850287372edbe8e2321ebb71ade03e4b"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/server/handlers/typed.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/server/handlers/typed.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "a4fe1406df52d9e32cf37ef68f2decb50f5bf5f7"
+          },
+          "after": {
+            "path": "crates/vize_maestro/src/server/handlers/typed.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "f8a4e35c0cfbd0e749ec3f7aaf44d77e10c55dd5"
           }
         }
       ]

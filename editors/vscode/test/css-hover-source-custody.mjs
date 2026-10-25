@@ -65,6 +65,11 @@ const reviewedLayers = [
     baseRevision: historicalBaselineRevision,
     reviewedRevision: "9fa7d40b7aaebbd7b0b1058939e7c7cc3032023c",
   },
+  {
+    name: "selected-color-hover-10556",
+    baseRevision: "bdaf6d4d547fdf74ba93ceff0f1853abe32588f2",
+    reviewedRevision: "c71cc41310fef3b3bb7669de2a48165ee8e2a2f2",
+  },
 ];
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const compareStrings = (a, b) => (a < b ? -1 : a > b ? 1 : 0);

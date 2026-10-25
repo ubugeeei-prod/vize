@@ -354,8 +354,8 @@ await test("merged main integration rejects altered postimages, modes, preimages
 await test("historical anchors and the pinned integrated product tree remain qualified", () => {
   const root = fileURLToPath(new URL("../../", import.meta.url));
   const report = verifyPinnedCssHoverProduct(root);
-  assert.equal(report.productionChanges.length, 158);
-  assert.equal(report.reviewedCssChanges.length, 9);
+  assert.equal(report.productionChanges.length, 165);
+  assert.equal(report.reviewedCssChanges.length, 16);
   assert.equal(report.mergedMain.integrationLayer.changes.length, 34);
   assert.equal(report.successorMain.integrationLayer.changes.length, 122);
   assert.equal(report.currentContracts.changes.length, 1);
@@ -374,6 +374,6 @@ await test("historical anchors and the pinned integrated product tree remain qua
   assert.equal(report.currentHostAcceptance, false);
   assert.deepEqual(
     contract.layers.map((layer) => layer.changes.length),
-    [7, 2],
+    [7, 2, 9],
   );
 });

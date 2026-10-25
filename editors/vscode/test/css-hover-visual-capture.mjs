@@ -2,6 +2,10 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { assertProviderPicker, assertRenderedCss } from "./css-hover-visual-contract.mjs";
+import {
+  assertLiteralRenderedCss,
+  literalVisualPhases,
+} from "./css-hover-literal-current-packets.mjs";
 
 const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 export async function until(produce, label, timeoutMs = 60_000) {
@@ -121,7 +125,8 @@ export async function captureCssHover({ chromium, port, destination }) {
       uploadThroughput: 0,
     });
     fs.writeFileSync(path.join(destination, "renderer-ready"), "offline\n");
-    for (const id of ["property", "named", "picker"]) {
+    for (const phase of literalVisualPhases) {
+      const { id } = phase;
       await until(
         () => {
           if (fs.existsSync(path.join(destination, "host-error.json")))
@@ -165,11 +170,10 @@ export async function captureCssHover({ chromium, port, destination }) {
           const result = await until(
             async () => {
               const result = await snapshot(page, session, destination, id);
-              return result.hoverText.includes(
-                id === "property" ? "display" : "CSS value for color",
-              ) && result.tokens.length > 0
-                ? result
-                : null;
+              if (!result.hoverText.includes(phase.caption)) return null;
+              if (id === "literal") assertLiteralRenderedCss(result);
+              else assertRenderedCss(result);
+              return result;
             },
             `${id} hover CSS tokenization`,
             15_000,
@@ -183,7 +187,8 @@ export async function captureCssHover({ chromium, port, destination }) {
             (await executableExample.count()) ? executableExample.first() : fences.first()
           ).scrollIntoViewIfNeeded();
           await snapshot(page, session, destination, `${id}-fence`);
-          assertRenderedCss(result);
+          if (id === "literal") assertLiteralRenderedCss(result);
+          else assertRenderedCss(result);
         }
         assessments.push({ id, status: "pass" });
       } catch (error) {
