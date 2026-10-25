@@ -7,6 +7,10 @@ on:
         description: "Exact source baseline for complete existing projection parity"
         required: true
         type: string
+      measure-source:
+        description: "Capture optimized source-API allocation requests and paired timing"
+        type: boolean
+        default: false
   pull_request:
     paths:
       - "crates/vize_canon/src/virtual_ts/generator/component_constructors.rs"
@@ -82,6 +86,46 @@ jobs:
           const observer = readFileSync('crates/vize_canon/tests/constructor_emission_projection.rs');
           const receipt = { base: process.env.BASE_SHA, head: process.env.HEAD_SHA, observerSha256: hash(observer), basePacketSha256: hash(baseBytes), headPacketSha256: hash(headBytes), completePackets: head.length, scope: 'Exact source projection parity; not native type-engine or publication acceptance' };
           writeFileSync(`${directory}/receipt.json`, JSON.stringify(receipt, null, 2) + '\n');
+          console.log(JSON.stringify(receipt));
+          JS
+      - name: Measure optimized source APIs on the identical base and head observer
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.measure-source }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          capture="$RUNNER_TEMP/constructor-emitter"
+          baseline="$RUNNER_TEMP/constructor-base"
+          observer=crates/vize_canon/tests/generic_parameter_profile.rs
+          cp "$observer" "$baseline/$observer"
+          cmp "$observer" "$baseline/$observer"
+          export CARGO_TARGET_DIR="$GITHUB_WORKSPACE/target"
+          (cd "$baseline" && VIZE_GENERIC_PARAMETER_PROFILE_CAPTURE="$capture/profile-base.json" cargo test --locked --profile ci-opt -p vize_canon --test generic_parameter_profile complete_source_generic_parameter_profile -- --exact --ignored --nocapture) > "$capture/profile-base.log" 2>&1
+          VIZE_GENERIC_PARAMETER_PROFILE_CAPTURE="$capture/profile-head.json" cargo test --locked --profile ci-opt -p vize_canon --test generic_parameter_profile complete_source_generic_parameter_profile -- --exact --ignored --nocapture > "$capture/profile-head.log" 2>&1
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { createHash } from 'node:crypto';
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const directory = `${process.env.RUNNER_TEMP}/constructor-emitter`;
+          const read = name => JSON.parse(readFileSync(`${directory}/${name}`));
+          const base = read('profile-base.json'), head = read('profile-head.json');
+          assert.equal(base.rows.length, 6); assert.equal(head.rows.length, 6);
+          const median = values => [...values].sort((a, b) => a - b)[1];
+          const rows = head.rows.map((current, index) => {
+            const previous = base.rows[index];
+            assert.deepEqual([current.case, current.mapper, current.source, current.iterationsPerSample], [previous.case, previous.mapper, previous.source, previous.iterationsPerSample]);
+            if (current.case !== 'literal') assert.deepEqual(current.packet, previous.packet);
+            else assert.notDeepEqual(current.packet, previous.packet, 'quoted generic fixture must reach the repaired production projection');
+            return { case: current.case, mapper: current.mapper, iterationsPerSample: current.iterationsPerSample,
+              baseAllocationCalls: previous.allocationCallsPerSample, headAllocationCalls: current.allocationCallsPerSample,
+              baseRequestedBytes: previous.requestedBytesPerSample, headRequestedBytes: current.requestedBytesPerSample,
+              baseMedianNanoseconds: median(previous.samplesNanoseconds), headMedianNanoseconds: median(current.samplesNanoseconds) };
+          });
+          const sha256 = path => createHash('sha256').update(readFileSync(path)).digest('hex');
+          const receipt = { base: process.env.BASE_SHA, head: process.env.HEAD_SHA,
+            profile: 'ci-opt', observerSha256: sha256('crates/vize_canon/tests/generic_parameter_profile.rs'),
+            basePacketSha256: sha256(`${directory}/profile-base.json`), headPacketSha256: sha256(`${directory}/profile-head.json`),
+            scope: head.scope, allocationDefinition: head.allocationDefinition, rows };
+          writeFileSync(`${directory}/profile-receipt.json`, JSON.stringify(receipt, null, 2) + '\n');
           console.log(JSON.stringify(receipt));
           JS
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

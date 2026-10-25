@@ -78,7 +78,6 @@ fn project(source: &str) -> (GeneratedVueFile, GeneratedVueFile, serde_json::Val
         0,
         &VirtualTsOptions::default(),
         VirtualTsGenerationOptions {
-            generic_parameters: generic_parameters.as_ref(),
             split_script_setup_offsets: analysis.split_script_setup_offsets(&descriptor),
             script_syntax_boundaries: &retained.boundaries,
             ..Default::default()

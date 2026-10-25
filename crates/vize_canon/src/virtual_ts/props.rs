@@ -171,6 +171,9 @@ fn extract_generic_names(raw: &str) -> String {
 
 #[cfg(test)]
 fn strip_const_modifiers(raw: &str) -> String {
+    if raw.trim().is_empty() {
+        return String::default();
+    }
     super::generic_parameters::GenericParameters::parse(raw).alias_authored
 }
 
