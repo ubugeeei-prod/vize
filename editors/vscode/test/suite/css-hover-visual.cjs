@@ -29,7 +29,9 @@ exports.run = async function run() {
     const editor = await vscode.window.showTextDocument(document);
     editor.selection = new vscode.Selection(position, position);
     editor.revealRange(new vscode.Range(position, position), vscode.TextEditorRevealType.InCenter);
-    if (id !== "picker") await vscode.commands.executeCommand("editor.action.showHover");
+    // Ordinary keyboard hover uses ColorData.provider for concrete colors;
+    // never invoke the standalone picker backed by VS Code's default provider.
+    await vscode.commands.executeCommand("editor.action.showHover");
     retain("phase.json", {
       id,
       document: document.uri.toString(),

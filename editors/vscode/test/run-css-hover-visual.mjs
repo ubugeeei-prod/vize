@@ -175,7 +175,14 @@ try {
   // while the extension host writes its independent failure evidence.
   const observed = capture.then(
     () => ({ ok: true }),
-    (error) => ({ error }),
+    (error) => {
+      write("capture-error.json", {
+        message: error.message,
+        cause: String(error.cause ?? ""),
+        stack: error.stack,
+      });
+      return { error };
+    },
   );
   const result = await runVSCodeCommandWithTimeout(runVSCodeCommand, args, {
     environment,

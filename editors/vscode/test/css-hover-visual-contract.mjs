@@ -55,12 +55,22 @@ export function assertRenderedCss(snapshot) {
     snapshot.tokens.some((token) => token.text.trim()),
     "CSS fence must be tokenized",
   );
-  const colors = new Set(
-    snapshot.tokens.filter((token) => token.text.trim()).map((token) => token.color),
-  );
+  const meaningful = snapshot.codeBlocks.some((block) => {
+    const declaration = block.text.match(/([\w-]+)\s*:\s*([\w#-]+)\s*;/);
+    if (!declaration) return false;
+    const property = block.tokens.find((token) => token.text.trim() === declaration[1]);
+    const value = block.tokens.find((token) => token.text.trim() === declaration[2]);
+    const punctuation = block.tokens.find((token) => /[:;]/.test(token.text));
+    return (
+      property &&
+      value &&
+      punctuation &&
+      new Set([property.color, value.color, punctuation.color]).size === 3
+    );
+  });
   assert.ok(
-    colors.size >= 2,
-    `CSS fence must render distinct token colors: ${JSON.stringify(snapshot.tokens)}`,
+    meaningful,
+    `CSS fence must distinguish property/value/punctuation tokens: ${JSON.stringify(snapshot.codeBlocks)}`,
   );
 }
 

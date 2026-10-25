@@ -44,6 +44,15 @@ async function snapshot(page, session, destination, id) {
         className: node.className,
         color: getComputedStyle(node).color,
       })),
+      codeBlocks: [...(hover?.querySelectorAll(".monaco-tokenized-source") ?? [])].map((block) => ({
+        text: block.textContent,
+        html: block.outerHTML,
+        tokens: [...block.querySelectorAll("span")].map((node) => ({
+          text: node.textContent,
+          className: node.className,
+          color: getComputedStyle(node).color,
+        })),
+      })),
       links: [...(hover?.querySelectorAll("a") ?? [])].map((node) => ({
         text: node.textContent,
         href: node.href,
@@ -91,6 +100,7 @@ export async function captureCssHover({ chromium, port, destination }) {
   await until(async () => (await fetch(`${endpoint}/json/version`)).ok, "Electron CDP endpoint");
   const browser = await chromium.connectOverCDP(endpoint);
   const network = [];
+  const assessments = [];
   try {
     const page = await until(
       () =>
@@ -125,39 +135,78 @@ export async function captureCssHover({ chromium, port, destination }) {
       );
       // Preserve current real DOM before locating/interacting with a decorator.
       await snapshot(page, session, destination, `${id}-before`);
-      if (id === "picker") {
-        const observed = await until(async () => {
-          const nodes = page.locator(".colorpicker-color-decoration");
-          const backgrounds = await nodes.evaluateAll((items) =>
-            items.map((node) => getComputedStyle(node).backgroundColor),
+      try {
+        if (id === "picker") {
+          const observed = await until(
+            async () => {
+              const nodes = page.locator(".colorpicker-color-decoration");
+              const backgrounds = await nodes.evaluateAll((items) =>
+                items.map((node) => getComputedStyle(node).backgroundColor),
+              );
+              const index = backgrounds.indexOf("rgb(51, 102, 153)");
+              return index < 0 ? null : { nodes, index };
+            },
+            "Vize provider-backed color decorator",
+            15_000,
           );
-          const index = backgrounds.indexOf("rgb(51, 102, 153)");
-          return index < 0 ? null : { nodes, index };
-        }, "Vize provider-backed color decorator");
-        // Refresh the snapshot immediately before using this live locator.
-        await snapshot(page, session, destination, "picker-decorator");
-        await observed.nodes.nth(observed.index).hover();
-        await until(async () => {
-          const result = await snapshot(page, session, destination, "picker");
-          assertProviderPicker(result);
-          return result;
-        }, "real provider color picker");
-      } else {
-        await until(async () => {
-          const result = await snapshot(page, session, destination, id);
+          // Refresh the snapshot immediately before using this live locator.
+          await snapshot(page, session, destination, "picker-decorator");
+          await observed.nodes.nth(observed.index).hover();
+          await until(
+            async () => {
+              const result = await snapshot(page, session, destination, "picker");
+              assertProviderPicker(result);
+              return result;
+            },
+            "real provider color picker",
+            15_000,
+          );
+        } else {
+          const result = await until(
+            async () => {
+              const result = await snapshot(page, session, destination, id);
+              return result.hoverText.includes(
+                id === "property" ? "background-color" : "CSS value for color",
+              ) && result.tokens.length > 0
+                ? result
+                : null;
+            },
+            `${id} hover CSS tokenization`,
+            15_000,
+          );
+          // Keep the real code fence visible even when the provider-backed
+          // picker fills the top of a named-color popup.
+          await snapshot(page, session, destination, `${id}-before-fence-scroll`);
+          await page
+            .locator(".monaco-hover .monaco-tokenized-source")
+            .first()
+            .scrollIntoViewIfNeeded();
+          await snapshot(page, session, destination, `${id}-fence`);
           assertRenderedCss(result);
-          assert.ok(
-            result.hoverText.includes(
-              id === "property" ? "background-color" : "CSS value for color",
-            ),
-          );
-          return result;
-        }, `${id} hover CSS tokenization`);
+        }
+        assessments.push({ id, status: "pass" });
+      } catch (error) {
+        await snapshot(page, session, destination, `${id}-failed`);
+        assessments.push({
+          id,
+          status: "fail",
+          message: error.message,
+          cause: String(error.cause ?? ""),
+          stack: error.stack,
+        });
       }
+      fs.writeFileSync(
+        path.join(destination, "visual-assessments.json"),
+        `${JSON.stringify(assessments, null, 2)}\n`,
+      );
       await page.keyboard.press("Escape");
       fs.writeFileSync(path.join(destination, `${id}.ack`), "captured\n");
     }
     await until(() => fs.existsSync(path.join(destination, "complete.json")), "host completion");
+    assert.ok(
+      assessments.every((result) => result.status === "pass"),
+      `Actual packaged visual gaps: ${JSON.stringify(assessments)}`,
+    );
   } finally {
     fs.writeFileSync(
       path.join(destination, "network.json"),

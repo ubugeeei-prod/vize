@@ -22,17 +22,22 @@ await test("CSS capture disables built-in default color fallback and keeps autho
   );
 });
 
-await test("render acceptance rejects a fence or mock token list without distinct computed colors", () => {
+await test("render acceptance rejects fallback greys and requires property/value/punctuation in one CSS fence", () => {
   const snapshot = {
     hoverText: "background-color",
     links: [{ href: "https://developer.mozilla.org/docs/Web/CSS/background-color" }],
     tokens: [{ text: "color", color: "rgb(255, 255, 255)" }],
+    codeBlocks: [
+      {
+        text: "<color>",
+        tokens: [
+          { text: "<color", color: "rgb(204, 204, 204)" },
+          { text: ">", color: "rgb(212, 212, 212)" },
+        ],
+      },
+    ],
   };
-  assert.throws(() => assertRenderedCss(snapshot), /distinct token colors/);
-  assertRenderedCss({
-    ...snapshot,
-    tokens: [...snapshot.tokens, { text: "red", color: "rgb(206, 145, 120)" }],
-  });
+  assert.throws(() => assertRenderedCss(snapshot), /property\/value\/punctuation/);
   assertRenderedCss({
     ...snapshot,
     links: [
@@ -43,6 +48,16 @@ await test("render acceptance rejects a fence or mock token list without distinc
       },
     ],
     tokens: [...snapshot.tokens, { text: "red", color: "rgb(206, 145, 120)" }],
+    codeBlocks: [
+      {
+        text: ".sample { color: red; }",
+        tokens: [
+          { text: "color", color: "rgb(156, 220, 254)" },
+          { text: "red", color: "rgb(206, 145, 120)" },
+          { text: ": ", color: "rgb(212, 212, 212)" },
+        ],
+      },
+    ],
   });
 });
 
