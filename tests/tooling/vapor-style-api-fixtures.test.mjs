@@ -25,7 +25,7 @@ for (const pin of [...row[0].inputs, ...row[0].witnesses])
   files.set(`head:${pin.path}`, readFileSync(pin.path));
 const read = (side, path) => files.get(`${side}:${path}`) ?? null;
 
-test("actual finite Vapor CSR source witness grants exactly the real source closure", () => {
+await test("actual finite Vapor CSR source witness grants exactly the real source closure", () => {
   const result = newVaporStyleApiCases(undefined, row, read);
   assert.deepEqual(result.ids, [VAPOR_STYLE_API_CASE_ID]);
   assert.deepEqual(
@@ -35,12 +35,12 @@ test("actual finite Vapor CSR source witness grants exactly the real source clos
   assert.equal(result.sources.size, 14);
 });
 
-test("missing registration cannot be appeased by a generic SSR filler", () => {
+await test("missing registration cannot be appeased by a generic SSR filler", () => {
   for (const current of [undefined, []])
     assert.throws(() => newVaporStyleApiCases(undefined, current, read));
 });
 
-test("every actual producer byte and its absence observation is pinned", () => {
+await test("every actual producer byte and its absence observation is pinned", () => {
   for (const source of authority.sourceFiles) {
     for (const side of ["base", "head"]) {
       const changed = (which, path) =>
@@ -52,7 +52,7 @@ test("every actual producer byte and its absence observation is pinned", () => {
   }
 });
 
-test("every input, raw packet and executable witness rejects missing or mutated bytes", () => {
+await test("every input, raw packet and executable witness rejects missing or mutated bytes", () => {
   for (const pin of [...row[0].inputs, ...row[0].witnesses]) {
     for (const mutation of [null, Buffer.from("changed bytes")]) {
       const changed = (side, path) =>
@@ -62,7 +62,7 @@ test("every input, raw packet and executable witness rejects missing or mutated 
   }
 });
 
-test("schema broadening, native credit, fake selectors and future APIs are denied", () => {
+await test("schema broadening, native credit, fake selectors and future APIs are denied", () => {
   for (const mutate of [
     (value) => {
       value[0].id += "-future";
@@ -108,7 +108,7 @@ test("schema broadening, native credit, fake selectors and future APIs are denie
   }
 });
 
-test("historical rows provide no source privilege to a future source pair", () => {
+await test("historical rows provide no source privilege to a future source pair", () => {
   const future = (side, path) => (side === "base" ? read("head", path) : read(side, path));
   const result = newVaporStyleApiCases(row, row, future);
   assert.deepEqual(result.ids, []);
@@ -116,7 +116,7 @@ test("historical rows provide no source privilege to a future source pair", () =
   assert.throws(() => newVaporStyleApiCases(undefined, row, future));
 });
 
-test("the frozen180 source inputs are identical to all original actual packets", () => {
+await test("the frozen180 source inputs are identical to all original actual packets", () => {
   const inputs = JSON.parse(readFileSync(root + "inputs.json", "utf8"));
   const original = JSON.parse(readFileSync(root + "observed-head.json", "utf8"));
   assert.equal(inputs.length, 180);

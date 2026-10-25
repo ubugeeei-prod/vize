@@ -38,11 +38,7 @@ fn expected(code: &str, source: &str) -> Vec<(u32, u32, u32, u32, Option<String>
         (after(code, "style=\\\""), after(source, ":style=\""), None),
         (code.find("id=").unwrap(), source.find("id=").unwrap(), None),
         (after(code, "id=\\\""), after(source, "id=\""), None),
-        (
-            code.find("export function render").unwrap(),
-            source.find("<button").unwrap(),
-            None,
-        ),
+        (code.find("export function render").unwrap(), 0, None),
         (
             code.rfind("_ctx.label").unwrap(),
             source.rfind("label").unwrap(),
@@ -183,17 +179,14 @@ fn folded_css_has_real_complete_utf16_origins_and_rejects_mutations() {
                 assert!(checked(&output.code, &source, &changed_raw).is_err());
                 negatives.push(changed_map);
             }
+            // This direct template API owns a RootNode over the whole input,
+            // beginning at zero even when a real element follows comments.
+            // Zero is therefore valid for render(), but never for this CSS
+            // aggregate whose actual expression begins inside the button.
             let mut wrong_root = tokens.clone();
-            let root = wrong_root.get_mut(7).unwrap();
-            root.2 = 0;
-            root.3 = 0;
-            // A real first root at zero is valid; use the CSS aggregate as the
-            // synthetic zero-origin negative in that one transport shape.
-            if prefix.is_empty() {
-                let style = wrong_root.get_mut(4).unwrap();
-                style.2 = 0;
-                style.3 = 0;
-            }
+            let style = wrong_root.get_mut(4).unwrap();
+            style.2 = 0;
+            style.3 = 0;
             let mut changed = document.clone();
             changed["mappings"] = json!(mappings(&wrong_root));
             assert!(
@@ -216,7 +209,14 @@ fn folded_css_has_real_complete_utf16_origins_and_rejects_mutations() {
                 .is_err()
             );
             negatives.push(foreign);
-            assert!(checked(&format!(" {code}", code = output.code), &source, raw).is_err());
+            assert!(
+                checked(
+                    &output.code.replacen("<button", " <button", 1),
+                    &source,
+                    raw
+                )
+                .is_err()
+            );
             packets.push(json!({"source":source,"retained":retained,"code":output.code,"map":document,"tokens":tokens,"negativeMaps":negatives}));
         }
     }
