@@ -24,6 +24,8 @@ pub(crate) use expressions::NAMED_PROP_DIAGNOSTIC_MARKER;
 #[cfg(feature = "native")]
 pub(crate) use expressions::key_sub_spans;
 mod generator;
+mod reference_paths;
+pub(crate) use reference_paths::validate_reference_paths;
 mod helpers;
 mod import_meta;
 pub mod incremental;
