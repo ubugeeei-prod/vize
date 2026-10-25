@@ -7,6 +7,7 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { summarizeNativeEvents } from "./native-analysis.mjs";
+import { validateNativeTargetCustody } from "./native-target.mjs";
 
 const repository = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
 const arguments_ = process.argv.slice(2);
@@ -368,6 +369,17 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
     assert.equal(build.generated.sha256, imageHash);
     await write("native-build-receipt.json", build);
     revalidateBuiltSource = () => validateCiBuild(nativeDirectory, build);
+    const targetCustody = JSON.parse(
+      await fs.readFile(
+        path.join(
+          nativeDirectory,
+          ".artifacts/native/formatter-history/parcel-target-custody.json",
+        ),
+        "utf8",
+      ),
+    );
+    assert.deepEqual(targetCustody, validateNativeTargetCustody(targetCustody.preflight, build));
+    await write("native-target-custody.json", targetCustody);
   }
   await makeApp(consumer);
   const manifest = JSON.parse(await fs.readFile(path.join(consumer, "package.json"), "utf8"));

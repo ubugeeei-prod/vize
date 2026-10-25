@@ -50,21 +50,21 @@ jobs:
       - uses: ./.github/actions/setup-ubuntu-archive
       - name: Install locked workspace providers
         run: vp install --frozen-lockfile --prefer-offline
-      - name: Authenticate committed source and use an absent build directory
+      - name: Authenticate committed source and observe the actual absent Cargo target
         run: |
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
           test -z "$(git status --porcelain --untracked-files=normal)"
-          export CARGO_TARGET_DIR="$RUNNER_TEMP/parcel-native-$SOURCE_SHA"
-          test ! -e "$CARGO_TARGET_DIR"
-          printf 'CARGO_TARGET_DIR=%s\n' "$CARGO_TARGET_DIR" >> "$GITHUB_ENV"
+          node tools/support/compat/parcel/native-target.mjs before "$GITHUB_WORKSPACE"
           node npm/native/scripts/build-ci.mjs --request-ci-capture
       - name: Build the actual native source
         run: vp run --filter './npm/native' build:ci
+      - name: Bind target absence to the actual compiler artifact
+        run: node tools/support/compat/parcel/native-target.mjs after "$GITHUB_WORKSPACE"
       - name: Build the published adapter shape
         working-directory: npm/builder/parcel
         run: vp pack
       - name: Validate geometry and configuration
-        run: node --test npm/builder/parcel/src/*.test.ts tools/support/compat/parcel/profile-analysis.test.mjs tools/support/compat/parcel/native-analysis.test.mjs
+        run: node --test npm/builder/parcel/src/*.test.ts tools/support/compat/parcel/profile-analysis.test.mjs tools/support/compat/parcel/native-analysis.test.mjs tools/support/compat/parcel/native-target.test.mjs
       - name: Install the fixture browser
         working-directory: npm/builder/parcel
         run: vize-ci-apt-retry vp exec playwright install --with-deps chromium
