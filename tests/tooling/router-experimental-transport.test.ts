@@ -218,7 +218,7 @@ test("single-delimited compiler references preserve a literal double quote root"
 
 test("a delimiter embedded in a compiler reference value is rejected", () => {
   const both = `${project}'"`;
-  for (const quote of ["'", '\"']) {
+  for (const quote of ["'", '"']) {
     const broken = `/// <reference path=${quote}${both}/typed-router.d.ts${quote} />\n${body}`;
     assert.throws(() => experimentalRouterDocumentTransport(broken, both), assert.AssertionError);
   }
