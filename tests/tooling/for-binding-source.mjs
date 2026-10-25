@@ -177,8 +177,8 @@ const cases = [
 for (const fixture of cases)
   for (const newline of ["LF", "CRLF"]) {
     const body = fixture.nested
-      ? String.raw`<section v-for="\u005frow of items"><p v-for="\u005frow of _row" :title="_row">{{ _row }}</p></section>`
-      : `<p v-for="${fixture.alias} in items" :title="${fixture.value}">{{ ${fixture.value} }}</p>`;
+      ? String.raw`<section v-for="\u005frow of items"><p v-for="\u005frow of _row" :key="_row" :title="_row">{{ _row }}</p></section>`
+      : `<p v-for="${fixture.alias} in items" :key="${fixture.value}" :title="${fixture.value}">{{ ${fixture.value} }}</p>`;
     const source =
       `<script>export default {}</script>\n<template>\n${body}\n</template>`.replaceAll(
         "\n",
@@ -238,29 +238,51 @@ for (const fixture of cases)
     }
   }
 
+async function observe(packet, run) {
+  try {
+    await run();
+  } catch (error) {
+    const trace = error.stack ?? String(error);
+    const file = path.join(directory, `${packet.id}-${packet.newline}-${packet.backend}.error.txt`);
+    fs.writeFileSync(file, trace);
+    packet.runtimeError = {
+      name: error.name,
+      message: error.message,
+      stackFile: file,
+      sha256: hash(trace),
+    };
+    if (epoch === "head") throw error;
+  }
+}
+
 // SSR uses its actual installed Vue graph. Client modes use the repository's
 // pinned genuine dual-renderer browser build under the existing DOM host.
 for (const packet of records.filter((row) => row.backend === "ssr")) {
-  const fixture = cases.find((row) => row.id === packet.id);
-  const module = await import(pathToFileURL(packet.file));
-  const component = { ...module.default, props: ["items", "fallback"], inheritAttrs: false };
-  const warnings = [];
-  const app = vue.createSSRApp(component, { items: structuredClone(fixture.items), fallback: "A" });
-  app.config.warnHandler = (warning) => warnings.push(warning);
-  packet.serverHtml = await ssr.renderToString(app);
-  packet.warnings = warnings;
-  const host = window.document.createElement("div");
-  host.innerHTML = packet.serverHtml;
-  packet.observed = Array.from(host.querySelectorAll("p"), (element) => ({
-    text: element.textContent,
-    title: element.getAttribute("title"),
-  }));
-  if (epoch === "head")
-    assert.deepEqual(
-      packet.observed,
-      fixture.expected.slice(0, -1).map((value) => ({ text: value, title: value })),
-      `${packet.id}:ssr`,
-    );
+  await observe(packet, async () => {
+    const fixture = cases.find((row) => row.id === packet.id);
+    const module = await import(pathToFileURL(packet.file));
+    const component = { ...module.default, props: ["items", "fallback"], inheritAttrs: false };
+    const warnings = [];
+    const app = vue.createSSRApp(component, {
+      items: structuredClone(fixture.items),
+      fallback: "A",
+    });
+    app.config.warnHandler = (warning) => warnings.push(warning);
+    packet.serverHtml = await ssr.renderToString(app);
+    packet.warnings = warnings;
+    const host = window.document.createElement("div");
+    host.innerHTML = packet.serverHtml;
+    packet.observed = Array.from(host.querySelectorAll("p"), (element) => ({
+      text: element.textContent,
+      title: element.getAttribute("title"),
+    }));
+    if (epoch === "head")
+      assert.deepEqual(
+        packet.observed,
+        fixture.expected.slice(0, -1).map((value) => ({ text: value, title: value })),
+        `${packet.id}:ssr`,
+      );
+  });
 }
 const browserBytes = fs.readFileSync(vueVaporBrowserRuntime, "utf8");
 const browserUrl = `data:text/javascript;base64,${Buffer.from(browserBytes).toString("base64")}`;
@@ -273,55 +295,57 @@ registerHooks({
   },
 });
 for (const packet of records.filter((row) => row.backend !== "ssr")) {
-  const fixture = cases.find((row) => row.id === packet.id);
-  const module = await import(pathToFileURL(packet.file));
-  const render = module.render ?? module.default?.render;
-  assert.equal(typeof render, "function");
-  const componentOptions = { render, props: ["items", "fallback"], inheritAttrs: false };
-  const component =
-    packet.backend === "vapor" ? client.defineVaporComponent(componentOptions) : componentOptions;
-  const state = client.reactive({ items: structuredClone(fixture.items), fallback: "A" });
-  const app =
-    packet.backend === "vapor"
-      ? client.createVaporApp(component, state)
-      : client.createApp(component, state);
-  const warnings = [];
-  app.config.warnHandler = (warning) => warnings.push(warning);
-  const host = window.document.createElement("div");
-  window.document.body.append(host);
-  try {
-    app.mount(host);
-    await client.nextTick();
-    packet.initialHtml = host.innerHTML;
-    packet.observed = Array.from(host.querySelectorAll("p"), (element) => ({
-      text: element.textContent,
-      title: element.getAttribute("title"),
-    }));
-    if (epoch === "head")
-      assert.deepEqual(
-        packet.observed,
-        fixture.expected.slice(0, -1).map((value) => ({ text: value, title: value })),
-        `${packet.id}:${packet.backend}:mount`,
-      );
-    if (Array.isArray(state.items)) state.items.push(structuredClone(fixture.addition));
-    else Object.assign(state.items, structuredClone(fixture.addition));
-    await client.nextTick();
-    packet.updatedHtml = host.innerHTML;
-    packet.updated = Array.from(host.querySelectorAll("p"), (element) => ({
-      text: element.textContent,
-      title: element.getAttribute("title"),
-    }));
-    if (epoch === "head")
-      assert.deepEqual(
-        packet.updated,
-        fixture.expected.map((value) => ({ text: value, title: value })),
-        `${packet.id}:${packet.backend}:update`,
-      );
-    packet.warnings = warnings;
-  } finally {
-    app.unmount();
-    host.remove();
-  }
+  await observe(packet, async () => {
+    const fixture = cases.find((row) => row.id === packet.id);
+    const module = await import(pathToFileURL(packet.file));
+    const render = module.render ?? module.default?.render;
+    assert.equal(typeof render, "function");
+    const componentOptions = { render, props: ["items", "fallback"], inheritAttrs: false };
+    const component =
+      packet.backend === "vapor" ? client.defineVaporComponent(componentOptions) : componentOptions;
+    const state = client.reactive({ items: structuredClone(fixture.items), fallback: "A" });
+    const app =
+      packet.backend === "vapor"
+        ? client.createVaporApp(component, state)
+        : client.createApp(component, state);
+    const warnings = [];
+    app.config.warnHandler = (warning) => warnings.push(warning);
+    const host = window.document.createElement("div");
+    window.document.body.append(host);
+    try {
+      app.mount(host);
+      await client.nextTick();
+      packet.initialHtml = host.innerHTML;
+      packet.observed = Array.from(host.querySelectorAll("p"), (element) => ({
+        text: element.textContent,
+        title: element.getAttribute("title"),
+      }));
+      if (epoch === "head")
+        assert.deepEqual(
+          packet.observed,
+          fixture.expected.slice(0, -1).map((value) => ({ text: value, title: value })),
+          `${packet.id}:${packet.backend}:mount`,
+        );
+      if (Array.isArray(state.items)) state.items.push(structuredClone(fixture.addition));
+      else Object.assign(state.items, structuredClone(fixture.addition));
+      await client.nextTick();
+      packet.updatedHtml = host.innerHTML;
+      packet.updated = Array.from(host.querySelectorAll("p"), (element) => ({
+        text: element.textContent,
+        title: element.getAttribute("title"),
+      }));
+      if (epoch === "head")
+        assert.deepEqual(
+          packet.updated,
+          fixture.expected.map((value) => ({ text: value, title: value })),
+          `${packet.id}:${packet.backend}:update`,
+        );
+      packet.warnings = warnings;
+    } finally {
+      app.unmount();
+      host.remove();
+    }
+  });
 }
 console.log(
   JSON.stringify({

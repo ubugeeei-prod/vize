@@ -164,15 +164,6 @@ impl GenerateContext<'_> {
 
     /// Push a loop scope. A destructured value the textual scanner cannot
     /// follow gets its parsed reads, rooted at the loop item.
-    pub(crate) fn push_for_scope(
-        &mut self,
-        value_alias: Option<&str>,
-        key_alias: Option<&str>,
-        index_alias: Option<&str>,
-    ) {
-        self.push_for_scope_inner(value_alias, key_alias, index_alias, [None; 3]);
-    }
-
     pub(crate) fn push_for_scope_retained(
         &mut self,
         value: Option<&vize_atelier_core::SimpleExpressionNode<'_>>,

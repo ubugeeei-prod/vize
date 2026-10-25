@@ -183,7 +183,11 @@ fn generate_for_key_function(
             Some(pattern)
                 if pattern.trim_start().starts_with(['{', '[']) && needs_parsed_reads(pattern) =>
             {
-                ctx.resolve_pattern_parameter(pattern)
+                for_node
+                    .value
+                    .as_ref()
+                    .and_then(|node| ctx.resolve_retained_pattern_parameter(node))
+                    .unwrap_or_else(|| ctx.resolve_pattern_parameter(pattern))
             }
             Some(alias) => alias.to_compact_string(),
             None => "_item".to_compact_string(),

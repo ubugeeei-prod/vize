@@ -22,7 +22,14 @@ pub(crate) fn collect_for_scoped_params(for_node: &ForNode, source: &str) -> FxH
 fn collect_expression_params(expr: &ExpressionNode, params: &mut FxHashSet<String>, source: &str) {
     let content = match expr {
         ExpressionNode::Simple(simple) => {
-            if let Some(names) = &simple.identifiers {
+            if let Some(names) = &simple.identifiers
+                && simple.js_ast.is_some_and(|ast| {
+                    ast.raw == simple.content
+                        && ast
+                            .as_slot_parameters()
+                            .is_some_and(|parameters| parameters.is_ok())
+                })
+            {
                 params.extend(names.iter().map(|name| String::from(*name)));
                 return;
             }

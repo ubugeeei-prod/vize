@@ -76,10 +76,32 @@ impl GenerateContext<'_> {
         let Some(declarator) = declarator else {
             return String::from(pattern);
         };
+        self.resolve_parameter_goal(&declarator.id, &source, PREFIX.len(), pattern)
+    }
+
+    pub(in crate::generate) fn resolve_retained_pattern_parameter(
+        &mut self,
+        node: &vize_atelier_core::SimpleExpressionNode<'_>,
+    ) -> Option<String> {
+        let retained = node
+            .js_ast
+            .filter(|retained| retained.raw == node.content)?;
+        let parameters = retained.as_slot_parameters()?.ok()?;
+        let parameter = parameters.items.first()?;
+        Some(self.resolve_parameter_goal(&parameter.pattern, node.content, 0, node.content))
+    }
+
+    fn resolve_parameter_goal(
+        &mut self,
+        goal: &BindingPattern<'_>,
+        source: &str,
+        offset: usize,
+        pattern: &str,
+    ) -> String {
         // Expression spans inside the pattern, in source order.
         let mut spans = SmallVec::<[(usize, usize); 4]>::new();
         let mut pending = SmallVec::<[&BindingPattern<'_>; 8]>::new();
-        pending.push(&declarator.id);
+        pending.push(goal);
         while let Some(pattern) = pending.pop() {
             match pattern {
                 BindingPattern::BindingIdentifier(_) => {}
@@ -114,7 +136,7 @@ impl GenerateContext<'_> {
         spans.sort_unstable();
         let own_scope = self.for_scopes.pop();
         let mut parameter = String::with_capacity(pattern.len());
-        let mut cursor = PREFIX.len();
+        let mut cursor = offset;
         for (start, end) in spans {
             // A default nested in another default was resolved with it.
             if start < cursor {
@@ -127,7 +149,7 @@ impl GenerateContext<'_> {
         }
         parameter.push_str(
             source
-                .get(cursor..PREFIX.len() + pattern.len())
+                .get(cursor..offset + pattern.len())
                 .unwrap_or_default(),
         );
         self.for_scopes.extend(own_scope);
