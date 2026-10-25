@@ -1,0 +1,11 @@
+{
+  "name": "vize-10617-reference-host",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "dependencies": {
+    "typescript": "5.9.3",
+    "vue-tsc": "3.3.13",
+    "vue": "3.5.35"
+  }
+}

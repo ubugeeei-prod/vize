@@ -1,0 +1,448 @@
+import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
+import { performance } from "node:perf_hooks";
+import { test } from "node:test";
+import { repoRoot } from "../_helpers/realworld-patch.ts";
+import { resolveVizeLaunchCommand } from "./support/lsp/launch.ts";
+import {
+  assertErrorMappings,
+  compilerRows,
+  decodeFrames,
+  expectedHost,
+  frame,
+  location,
+  makeSourceProject,
+  readGlobalsFixture,
+  request,
+  sha,
+  writeInputs,
+  type Packet,
+} from "./support/content-mapper-instance-globals-10617.ts";
+
+test("10617 retains the original reported files, exact beta host and closed framing", () => {
+  const { files, cases } = readGlobalsFixture();
+  assert.equal(
+    cases.find(({ id }) => id === "original")!.source,
+    files.get("project/src/Globals.vue.txt"),
+  );
+  assert.equal(
+    cases.find(({ id }) => id === "original")!.globals,
+    files.get("project/src/globals.d.ts.txt"),
+  );
+  assert.equal(cases.length, 20);
+  const packet = { jsonrpc: "2.0", id: 1, result: { text: "日本語🍣\r\n", mappings: [] } };
+  assert.deepEqual(decodeFrames(frame(packet).toString()), [packet]);
+  assert.throws(() => decodeFrames(frame(packet).subarray(0, -1).toString()));
+});
+
+await test(
+  "real beta mapper rejects undeclared instance globals without widening declared or lexical owners",
+  {
+    skip:
+      !process.env.VIZE_TEST_BIN && process.env.VIZE_TEST_GLOBALS_REQUIRED !== "1"
+        ? "requires the exact-source consumer campaign"
+        : false,
+    timeout: 600_000,
+  },
+  async () => {
+    const output =
+      process.env.VIZE_TEST_GLOBALS_OUTPUT ??
+      path.join(repoRoot, "target/differential/instance-globals-10617");
+    fs.mkdirSync(output, { recursive: true });
+    assert.ok(process.env.VIZE_TEST_BIN);
+    const [binary] = resolveVizeLaunchCommand(undefined, process.env.VIZE_TEST_BIN, {
+      required: true,
+      repoRoot,
+      onVerifiedLaunch(launch) {
+        fs.writeFileSync(
+          path.join(output, "source-launch.json"),
+          `${JSON.stringify(launch, null, 2)}\n`,
+        );
+      },
+    });
+    const { authority, files, cases } = readGlobalsFixture();
+    const published = path.join(output, "published"),
+      reference = path.join(output, "reference"),
+      source = path.join(output, "source");
+    writeInputs(published, files);
+    fs.mkdirSync(reference, { recursive: true });
+    for (const name of ["package.json", "package-lock.json"])
+      fs.writeFileSync(path.join(reference, name), files.get(`reference/${name}.txt`)!);
+    const records: Packet[] = [],
+      checks: Array<{ id: string; run: () => string | void }> = [],
+      sizes: unknown[] = [],
+      discovery: unknown[] = [];
+    const run = (label: string, command: string, args: string[], cwd: string, input?: Buffer) => {
+      const started = performance.now();
+      const raw = spawnSync(command, args, {
+        cwd,
+        input,
+        encoding: "utf8",
+        timeout: 120_000,
+        maxBuffer: 32 * 1024 * 1024,
+        env: { ...process.env, LANG: "C", LC_ALL: "C" },
+      });
+      const packet: Packet = {
+        label,
+        command,
+        args,
+        cwd,
+        status: raw.status,
+        signal: raw.signal,
+        error: raw.error?.message ?? null,
+        stdout: raw.stdout ?? "",
+        stderr: raw.stderr ?? "",
+        elapsedMs: performance.now() - started,
+      };
+      records.push(packet);
+      fs.writeFileSync(
+        path.join(output, "processes.json"),
+        `${JSON.stringify(records, null, 2)}\n`,
+      );
+      assert.equal(packet.error, null, label);
+      assert.equal(packet.signal, null, label);
+      return packet;
+    };
+    try {
+      for (const root of [published, reference])
+        assert.equal(
+          run(
+            `${path.basename(root)}/locked-install`,
+            process.platform === "win32" ? "npm.cmd" : "npm",
+            [
+              "ci",
+              "--ignore-scripts",
+              "--no-audit",
+              "--no-fund",
+              "--prefer-offline",
+              "--registry=https://registry.npmjs.org",
+            ],
+            root,
+          ).status,
+          0,
+        );
+      const publicCli = path.join(published, "node_modules/vize/bin/vize"),
+        host = path.join(published, "node_modules/typescript/bin/tsc"),
+        ts5 = path.join(reference, "node_modules/typescript/bin/tsc");
+      assert.equal(
+        run("official-beta-version", host, ["--version"], published).stdout,
+        "Version 7.1.0-beta\n",
+      );
+      assert.equal(
+        run("published-vize-version", publicCli, ["--version"], published).stdout,
+        "vize 0.566.0\n",
+      );
+      const identity = makeSourceProject(source, published, repoRoot, binary, files);
+      fs.writeFileSync(
+        path.join(output, "source-adapter.json"),
+        `${JSON.stringify({ authority, ...identity }, null, 2)}\n`,
+      );
+      for (const root of [published, source]) {
+        fs.mkdirSync(path.join(root, "oracle"), { recursive: true });
+        const config = JSON.parse(files.get("project/tsconfig.json.txt")!);
+        delete config.contentMappers;
+        delete config.include;
+        config.files = ["src/globals.d.ts", "oracle/Context.ts"];
+        fs.writeFileSync(path.join(root, "oracle.tsconfig.json"), JSON.stringify(config));
+      }
+      const publicWires: Buffer[] = [
+        frame(request(1, "initialize", { positionEncodings: ["utf-8"] })),
+        frame(
+          request(2, "openProject", {
+            projectHandle: "published",
+            configFileName: path.join(published, "tsconfig.json"),
+            compilerOptions: JSON.parse(files.get("project/tsconfig.json.txt")!).compilerOptions,
+          }),
+        ),
+      ];
+      const faithful: Array<() => void> = [];
+      const wires: Buffer[] = [
+        frame(request(1, "initialize", { positionEncodings: ["utf-8"] })),
+        frame(
+          request(2, "openProject", {
+            projectHandle: "source",
+            configFileName: path.join(source, "tsconfig.json"),
+            compilerOptions: JSON.parse(files.get("project/tsconfig.json.txt")!).compilerOptions,
+          }),
+        ),
+      ];
+      const sourceCases: Array<{ id: number; source: string; entry: (typeof cases)[number] }> = [];
+      let id = 3;
+      for (const [variant, newline, unicode] of [
+        ["lf", "\n", false],
+        ["crlf-unicode", "\r\n", true],
+      ] as const) {
+        for (const entry of cases) {
+          const label = `${variant}/${entry.id}`;
+          const content = (
+            unicode ? entry.source.replace("{{ ", '{{ "日本語🍣" }} {{ ') : entry.source
+          ).replaceAll("\n", newline);
+          for (const root of [published, source]) {
+            fs.writeFileSync(path.join(root, "src/Globals.vue"), content);
+            fs.writeFileSync(path.join(root, "src/globals.d.ts"), entry.globals);
+            fs.writeFileSync(path.join(root, "oracle/Context.ts"), entry.oracle);
+          }
+          fs.writeFileSync(path.join(output, `${variant}-${entry.id}.vue.txt`), content);
+          const beta = run(
+            `${label}/independent-beta-context`,
+            host,
+            ["--noEmit", "--pretty", "false", "-p", "oracle.tsconfig.json"],
+            source,
+          );
+          const independent = run(
+            `${label}/independent-5.9-context`,
+            process.execPath,
+            [ts5, "--noEmit", "--pretty", "false", "-p", "oracle.tsconfig.json"],
+            source,
+          );
+          const before = run(
+            `${label}/published-official-host`,
+            host,
+            ["--runExternalCode", "--noEmit", "--pretty", "false", "-p", "tsconfig.json"],
+            published,
+          );
+          const after = run(
+            `${label}/source-official-host`,
+            host,
+            ["--runExternalCode", "--noEmit", "--pretty", "false", "-p", "tsconfig.json"],
+            source,
+          );
+          const checkArgs = [
+            "check",
+            "src",
+            "--tsconfig",
+            "tsconfig.json",
+            "--format",
+            "json",
+            "--quiet",
+            "--corsa-path",
+            host,
+          ];
+          if (label === "lf/original")
+            checkArgs.push("--profile-json", path.join(output, "source-profile.json"));
+          const cli = run(`${label}/source-check`, binary, checkArgs, source);
+          if (label === "lf/original")
+            run(
+              "reported-sfc-reference-unqualified",
+              process.execPath,
+              [
+                path.join(reference, "node_modules/vue-tsc/bin/vue-tsc.js"),
+                "--noEmit",
+                "--pretty",
+                "false",
+                "-p",
+                "tsconfig.json",
+              ],
+              published,
+            );
+          wires.push(
+            frame(
+              request(id, "transform", {
+                projectHandle: "source",
+                fileName: path.join(source, "src/Globals.vue"),
+                content,
+              }),
+            ),
+          );
+          publicWires.push(
+            frame(
+              request(id, "transform", {
+                projectHandle: "published",
+                fileName: path.join(published, "src/Globals.vue"),
+                content,
+              }),
+            ),
+          );
+          sourceCases.push({ id: id++, source: content, entry });
+          if (["original", "valid", "undeclared-only", "repaired"].includes(entry.id))
+            faithful.push(() => {
+              const rows = compilerRows(beta.stdout);
+              const expectedBefore = rows
+                .flatMap((row, index) => {
+                  const error = entry.errors[index];
+                  if (error.kind === "undeclared") return [];
+                  const at = location(content, error.anchor, error.token);
+                  return [
+                    `src/Globals.vue(${at.line},${at.column}): error TS${row.code}: ${row.message}\n`,
+                  ];
+                })
+                .join("");
+              assert.deepEqual(
+                {
+                  status: before.status,
+                  signal: before.signal,
+                  error: before.error,
+                  stdout: before.stdout,
+                  stderr: before.stderr,
+                },
+                {
+                  status: expectedBefore ? 2 : 0,
+                  signal: null,
+                  error: null,
+                  stdout: expectedBefore,
+                  stderr: "",
+                },
+                `faithful published red/control ${label}`,
+              );
+            });
+          checks.push({
+            id: label,
+            run() {
+              const rows = compilerRows(beta.stdout);
+              assert.equal(beta.status, rows.length ? 2 : 0, label);
+              assert.equal(beta.stderr, "", label);
+              assert.equal(independent.status, beta.status, label);
+              assert.equal(
+                independent.stdout,
+                beta.stdout,
+                `full independent context messages ${label}`,
+              );
+              assert.equal(independent.stderr, beta.stderr, label);
+              const expected = expectedHost(content, entry, rows);
+              if (entry.discovery) {
+                discovery.push({
+                  label,
+                  scope: "Options API own method discovery",
+                  before,
+                  after,
+                  cli,
+                  expected,
+                });
+                if (before.status === 0 && after.status !== 0)
+                  throw new Error("new Options API own-dollar regression");
+                return "discovery-unqualified";
+              }
+              assert.equal(after.status, expected ? 2 : 0, label);
+              assert.equal(after.stdout, expected, label);
+              assert.equal(after.stderr, "", label);
+              const activeErrors = entry.errors
+                .map((error, index) => ({ error, row: rows[index] }))
+                .filter(({ error }) => !error.suppressed);
+              const diagnostics = activeErrors.map(({ error, row }) => {
+                const at = location(content, error.anchor, error.token);
+                const line = content.split(/\r?\n/u)[at.line - 1].trim();
+                return `error:${at.line}:${at.column} [TS${row.code}] ${row.message} (source: ${line.length > 160 ? `${line.slice(0, 157)}...` : line})`;
+              });
+              const report = {
+                files: [
+                  { file: "src/Globals.vue", diagnostics },
+                  { file: "src/globals.d.ts", diagnostics: [] },
+                ],
+                programs: [
+                  {
+                    root: ".",
+                    tsconfig: "tsconfig.json",
+                    compilerOptions: JSON.parse(files.get("project/tsconfig.json.txt")!)
+                      .compilerOptions,
+                    files: ["src/Globals.vue", "src/globals.d.ts"],
+                  },
+                ],
+                errorCount: diagnostics.length,
+                warningCount: 0,
+                fileCount: 2,
+              };
+              assert.equal(cli.status, expected ? 1 : 0, label);
+              assert.equal(cli.stderr, "", label);
+              assert.deepEqual(
+                JSON.parse(cli.stdout),
+                report,
+                `whole native check report ${label}`,
+              );
+            },
+          });
+        }
+      }
+      const publicWire = run(
+        "published/same-process-complete-protocol",
+        publicCli,
+        ["content-mapper"],
+        published,
+        Buffer.concat(publicWires),
+      );
+      fs.writeFileSync(
+        path.join(output, "published-protocol.json"),
+        `${JSON.stringify(decodeFrames(publicWire.stdout), null, 2)}\n`,
+      );
+      const wire = run(
+        "source/same-process-complete-protocol",
+        binary,
+        ["content-mapper"],
+        source,
+        Buffer.concat(wires),
+      );
+      assert.equal(wire.status, 0);
+      assert.equal(wire.stderr, "");
+      const responses = decodeFrames(wire.stdout);
+      fs.writeFileSync(
+        path.join(output, "source-protocol.json"),
+        `${JSON.stringify(responses, null, 2)}\n`,
+      );
+      assert.deepEqual(
+        responses.map(({ jsonrpc, id: responseId, error }) => [jsonrpc, responseId, error ?? null]),
+        Array.from({ length: id - 1 }, (_, index) => ["2.0", index + 1, null]),
+      );
+      for (const row of sourceCases) {
+        const result = responses.find((packet) => packet.id === row.id)!.result!;
+        checks.push({
+          id: `protocol/${row.id}/${row.entry.id}`,
+          run() {
+            assertErrorMappings(row.source, row.entry, result);
+          },
+        });
+        sizes.push({
+          id: row.id,
+          case: row.entry.id,
+          sourceBytes: Buffer.byteLength(row.source),
+          generatedBytes: Buffer.byteLength(result.text),
+          mappingCount: result.mappings.length,
+          generatedSha256: sha(result.text),
+        });
+      }
+      const first = sourceCases.find((row) => row.entry.id === "valid")!,
+        repair = sourceCases.find((row) => row.entry.id === "repaired")!;
+      assert.deepEqual(
+        responses.find((row) => row.id === first.id)!.result,
+        responses.find((row) => row.id === repair.id)!.result,
+        "whole generated packet valid/repair determinism",
+      );
+      fs.writeFileSync(path.join(output, "sizes.json"), `${JSON.stringify(sizes, null, 2)}\n`);
+      const outcomes = checks.map(({ id: label, run: check }) => {
+        try {
+          const state = check();
+          return { id: label, outcome: state ?? "pass" };
+        } catch (error) {
+          return { id: label, outcome: "gap", detail: String(error) };
+        }
+      });
+      fs.writeFileSync(
+        path.join(output, "outcomes.json"),
+        `${JSON.stringify(outcomes, null, 2)}\n`,
+      );
+      fs.writeFileSync(
+        path.join(output, "discovery.json"),
+        `${JSON.stringify(discovery, null, 2)}\n`,
+      );
+      assert.ok(
+        fs.existsSync(path.join(output, "source-profile.json")),
+        "actual source instrumentation must be retained",
+      );
+      for (const check of faithful) check();
+      const discoveryOnly = process.env.VIZE_TEST_GLOBALS_DISCOVERY === "1";
+      fs.writeFileSync(
+        path.join(output, "qualification.json"),
+        `${JSON.stringify({ status: discoveryOnly ? "discovery-only; no acceptance credit" : "semantic-and-selected-mapping-only; complete-golden-pending", fullPacketQualification: false, outcomes }, null, 2)}\n`,
+      );
+      if (!discoveryOnly)
+        assert.deepEqual(
+          outcomes.filter(({ outcome }) => outcome === "gap"),
+          [],
+          "whole beta/native/protocol gaps; raw packets retained",
+        );
+    } finally {
+      for (const root of [published, reference, source])
+        fs.rmSync(path.join(root, "node_modules"), { recursive: true, force: true });
+    }
+  },
+);
