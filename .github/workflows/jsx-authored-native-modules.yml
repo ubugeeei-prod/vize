@@ -33,7 +33,7 @@ jobs:
           cache-save: false
           run-install: false
       - name: Install the committed native oracle dependencies
-        run: node tools/support/github/vp-install.ts --filter vize-workspace --filter './tests...' --filter './npm/ui...'
+        run: node tools/support/github/vp-install.ts --filter vize-workspace --filter './tests...' --filter './npm/ui...' --filter @vize/jsx-vapor-oracle
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # master
         with: { toolchain: "1.99.1" }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
