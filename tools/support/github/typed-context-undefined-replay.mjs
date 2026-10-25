@@ -11,7 +11,7 @@ import {
   cpSync,
   copyFileSync,
 } from "node:fs";
-import { resolve, join, dirname, basename } from "node:path";
+import { resolve, join, basename } from "node:path";
 const [mode, outArg, phase] = process.argv.slice(2),
   out = resolve(outArg);
 const hash = (b) => createHash("sha256").update(b).digest("hex"),

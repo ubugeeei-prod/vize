@@ -34,6 +34,14 @@ struct Case {
     expected: String,
 }
 
+fn sha256(bytes: &[u8]) -> String {
+    Sha256::digest(bytes)
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect::<Vec<_>>()
+        .concat()
+}
+
 fn write(root: &Path, file: &str, bytes: &[u8]) {
     let path = root.join(file);
     fs::create_dir_all(path.parent().unwrap()).unwrap();
@@ -73,7 +81,15 @@ fn typed_context_values_preserve_complete_native_mapper_and_cli_packets() {
         .unwrap();
     assert!(revision.status.success());
     let observer = std::env::current_exe().unwrap();
-    let images: Vec<_> = [native.as_path(), beta.as_path(), Path::new(env!("CARGO_BIN_EXE_vize")), observer.as_path()].into_iter().map(|path| json!({"path":path,"sha256":format!("{:x}",Sha256::digest(fs::read(path).unwrap()))})).collect();
+    let images: Vec<_> = [
+        native.as_path(),
+        beta.as_path(),
+        Path::new(env!("CARGO_BIN_EXE_vize")),
+        observer.as_path(),
+    ]
+    .into_iter()
+    .map(|path| json!({"path":path,"sha256":sha256(&fs::read(path).unwrap())}))
+    .collect();
     let identity = json!({"sourceRevision":String::from_utf8(revision.stdout).unwrap().trim(),"images":images});
     let fixture = workspace_root()
         .join("tests/_fixtures/differential/typechecker/template-context-undefined-10667");
@@ -99,7 +115,7 @@ fn typed_context_values_preserve_complete_native_mapper_and_cli_packets() {
                 .unwrap();
             let original = fs::read_to_string(fixture.join(&case.source)).unwrap();
             assert_eq!(
-                format!("{:x}", Sha256::digest(original.as_bytes())),
+                sha256(original.as_bytes()),
                 case.sha256,
                 "pinned input bytes"
             );

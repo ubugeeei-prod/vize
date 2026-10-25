@@ -16,11 +16,11 @@ concurrency:
   cancel-in-progress: true
 jobs:
   qualify:
-    if: ${{ github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 25
     env:
-      SOURCE_SHA: ${{ inputs.source_ref }}
+      SOURCE_SHA: ${{ inputs.source_ref || github.event.pull_request.head.sha }}
       BEFORE_SHA: 7a4ab266003bfea2d13d1f5901b55d11b031a702
       CARGO_INCREMENTAL: "0"
       CARGO_BUILD_JOBS: "12"
@@ -28,7 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          ref: ${{ github.workflow_sha }}
+          ref: ${{ env.SOURCE_SHA }}
           persist-credentials: false
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
