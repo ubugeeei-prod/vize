@@ -79,11 +79,12 @@ jobs:
           set -euo pipefail
           export VIZE_BABEL_PACKED_PLUGIN=$(find "$RUNNER_TEMP/babel-plugin/packed" -maxdepth 1 -name '*.tgz' -print -quit)
           node npm/native/scripts/test-preparation.mjs node npm/babel/test/profile-host.mjs
-      - name: Qualify real client SSR and hydration with matching Vue runtimes
+      - name: Qualify eight supported client SSR and hydration rows
         if: always()
         env:
           VIZE_BABEL_NATIVE_ROOT: ${{ github.workspace }}/npm/native
           VIZE_BABEL_RUNTIME_OUTPUT: ${{ runner.temp }}/babel-plugin/runtime
+          VIZE_BABEL_RUNTIME_ROLE: supported
         run: |
           set -euo pipefail
           export VIZE_BABEL_PACKED_PLUGIN=$(find "$RUNNER_TEMP/babel-plugin/packed" -maxdepth 1 -name '*.tgz' -print -quit)
