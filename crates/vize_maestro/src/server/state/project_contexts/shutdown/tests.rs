@@ -139,3 +139,66 @@ fn a_panicking_owner_still_waits_for_every_other_owner() {
         Err(CorsaBridgeError::CommunicationError(_))
     ));
 }
+
+#[test]
+fn pinned_owner_graphs_capture_the_complete_registry() {
+    #[derive(serde::Deserialize)]
+    #[serde(deny_unknown_fields, rename_all = "camelCase")]
+    struct Fixture {
+        schema: std::string::String,
+        version: u8,
+        bridge_cases: Vec<serde_json::Value>,
+        owner_cases: Vec<Case>,
+    }
+    #[derive(serde::Deserialize)]
+    #[serde(deny_unknown_fields, rename_all = "camelCase")]
+    struct Case {
+        id: std::string::String,
+        cached_projects: Vec<std::string::String>,
+        expected_owners: usize,
+    }
+    let fixture: Fixture = serde_json::from_str(include_str!(
+        "../../../../../../../tests/_fixtures/runtime/lsp-owned-shutdown-10760/ownership.json"
+    ))
+    .unwrap();
+    assert_eq!(fixture.schema, "vize.owned-compiler-shutdown");
+    assert_eq!(fixture.version, 1);
+    assert_eq!(fixture.bridge_cases.len(), 4);
+    assert_eq!(
+        fixture
+            .owner_cases
+            .iter()
+            .map(|case| case.id.as_str())
+            .collect::<Vec<_>>(),
+        ["root-only", "root-and-two-cached"]
+    );
+    for case in fixture.owner_cases {
+        let (_directory, owner, a, b) = super::super::tests::fixture();
+        let mut admitted = vec![owner.clone()];
+        for package in case.cached_projects {
+            let uri = match package.as_str() {
+                "a" => &a,
+                "b" => &b,
+                _ => panic!("unregistered owner input: {package}"),
+            };
+            admitted.push(owner.document_project_state(uri).unwrap());
+        }
+        let bridges = admitted
+            .iter()
+            .map(|state| {
+                let bridge = Arc::new(CorsaBridge::new());
+                *state.corsa_bridge.write() = Some(bridge.clone());
+                bridge
+            })
+            .collect::<Vec<_>>();
+        let captured = owner.take_shutdown_states();
+        assert_eq!(captured.len(), case.expected_owners, "{}", case.id);
+        for (state, bridge) in admitted.iter().zip(bridges) {
+            assert!(captured.iter().any(|captured| Arc::ptr_eq(captured, state)));
+            assert!(state.owns_corsa_bridge(&bridge));
+            assert!(state.project_context_retired());
+            assert!(block_on(state.get_corsa_bridge()).is_none());
+        }
+        assert!(owner.cached_project_states().is_empty());
+    }
+}
