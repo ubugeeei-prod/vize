@@ -5,8 +5,8 @@ mod support;
 mod vue_file;
 
 mod attribute_name_roundtrip;
-mod cfg_fact_group;
 mod cfg_decoded_coordinates;
+mod cfg_fact_group;
 mod cfg_native_coordinates;
 mod cfg_pass_snapshot;
 mod comment_only_text_groups;
