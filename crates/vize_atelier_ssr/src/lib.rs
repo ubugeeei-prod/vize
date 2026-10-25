@@ -18,7 +18,8 @@ pub use codegen::{SsrCodegenContext, SsrCodegenResult, SsrSfcContext};
 #[expect(deprecated, reason = "kept exported until removal")]
 pub use compile::compile_ssr_with_vue_parser_quirks;
 pub use compile::{
-    compile_l2_to_ssr, compile_ssr, compile_ssr_with_custom_elements_and_template_syntax,
+    compile_l2_to_ssr, compile_l2_to_ssr_with_experimental_options, compile_ssr,
+    compile_ssr_with_custom_elements_and_template_syntax,
     compile_ssr_with_custom_elements_template_syntax_and_experimental_options,
     compile_ssr_with_options, compile_ssr_with_sfc_context,
     compile_ssr_with_sfc_context_and_capture, compile_ssr_with_sfc_slotted_context,
