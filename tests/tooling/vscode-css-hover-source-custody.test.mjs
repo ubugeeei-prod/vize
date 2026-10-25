@@ -144,31 +144,38 @@ await test("merged main integration rejects altered postimages, modes, preimages
   const p1 = composeReviewedCssTrees(entries(contract.historicalBaselineRevision), [
     contract.layers[0],
   ]);
-  const actual = entries(contract.mergedMain.sourceRevision);
-  for (const mutation of ["blob", "mode", "preimage", "extra"]) {
-    const layer = structuredClone(contract.mergedMain.integrationLayer);
-    if (mutation === "blob") layer.changes[0].after.oid = "1".repeat(40);
-    else if (mutation === "mode") layer.changes[0].after.mode = "100755";
-    else if (mutation === "preimage") layer.changes[0].before.oid = "2".repeat(40);
-    else
-      layer.changes.push({
-        path: "crates/unreviewed.rs",
-        before: null,
-        after: row("crates/unreviewed.rs", "3".repeat(40)),
-      });
-    assert.throws(
-      () => assertExactCssTree(actual, composeReviewedCssTrees(p1, [layer])),
-      /reviewed (blob\/mode|preimage)/,
-    );
+  for (const [preimage, target] of [
+    [p1, contract.mergedMain],
+    [entries(contract.mergedMain.sourceRevision), contract.successorMain],
+  ]) {
+    const actual = entries(target.sourceRevision);
+    for (const mutation of ["blob", "mode", "preimage", "extra"]) {
+      const layer = structuredClone(target.integrationLayer);
+      if (mutation === "blob") layer.changes[0].after.oid = "1".repeat(40);
+      else if (mutation === "mode") layer.changes[0].after.mode = "100755";
+      else if (mutation === "preimage")
+        layer.changes[0].before = row(layer.changes[0].path, "2".repeat(40));
+      else
+        layer.changes.push({
+          path: "crates/unreviewed.rs",
+          before: null,
+          after: row("crates/unreviewed.rs", "3".repeat(40)),
+        });
+      assert.throws(
+        () => assertExactCssTree(actual, composeReviewedCssTrees(preimage, [layer])),
+        /reviewed (blob\/mode|preimage)/,
+      );
+    }
   }
 });
 
 await test("historical anchors and the pinned integrated product tree remain qualified", () => {
   const root = fileURLToPath(new URL("../../", import.meta.url));
   const report = verifyPinnedCssHoverProduct(root);
-  assert.equal(report.productionChanges.length, 43);
+  assert.equal(report.productionChanges.length, 158);
   assert.equal(report.reviewedCssChanges.length, 9);
   assert.equal(report.mergedMain.integrationLayer.changes.length, 34);
+  assert.equal(report.successorMain.integrationLayer.changes.length, 122);
   assert.equal(report.historicalBaselineRevision, "2934b35b18393c188b3da5f8e50595299589fb8c");
   assert.equal(report.historicalCapture.sourceRevision, "0cc8615736db2f2ef6b82177aa2e92a7de9f86dc");
   assert.equal(report.historicalCapture.witnesses.length, 5);

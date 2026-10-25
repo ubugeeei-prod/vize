@@ -10,6 +10,7 @@ const directory = path.dirname(fileURLToPath(import.meta.url));
 export const historicalBaselineRevision = "2934b35b18393c188b3da5f8e50595299589fb8c";
 const captureRevision = "0cc8615736db2f2ef6b82177aa2e92a7de9f86dc";
 const mergedMainRevision = "116a05062ad5ce4b9fa56bba0c801835498418fa";
+const successorMainRevision = "9c8388e3dde4a03e5be74ee8a0ced20560983aea";
 const historicalBuildPaths = ["Cargo.toml", "Cargo.lock", "rust-toolchain.toml", ".cargo"];
 const reviewedBuildPaths = [
   ...historicalBuildPaths,
@@ -180,16 +181,33 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
   );
   assert.equal(fingerprint(integrated), contract.mergedMain.cratesSha256);
   assertExactCssTree(readTree(mergedMainRevision, ["crates"]), integrated);
+  const successor = contract.successorMain;
+  assert.equal(successor.sourceRevision, successorMainRevision);
+  git("merge-base", "--is-ancestor", successorMainRevision, revision);
+  assert.equal(git("rev-parse", `${successorMainRevision}^{tree}`).trim(), successor.sourceTreeOid);
+  assert.equal(successor.integrationLayer.baseRevision, mergedMainRevision);
+  assert.equal(successor.integrationLayer.reviewedRevision, successorMainRevision);
+  assert.equal(successor.integrationLayer.name, "merged-main-integration-9c8388e");
+  assert.equal(successor.integrationLayer.changes.length, 122);
+  const currentMain = composeReviewedCssTrees(integrated, [successor.integrationLayer]);
+  assert.equal(git("rev-parse", `${successorMainRevision}:crates`).trim(), successor.cratesTreeOid);
+  assert.equal(fingerprint(currentMain), successor.cratesSha256);
+  assertExactCssTree(readTree(successorMainRevision, ["crates"]), currentMain);
   // The old Docs revision may be unreachable after rebase. Its reviewed
   // before/after blobs and modes are pinned in the committed contract; do not
   // infer a new base, fetch a floating ref, or skip a missing old revision.
-  const expected = composeReviewedCssTrees(integrated, contract.layers.slice(1));
+  const expected = composeReviewedCssTrees(currentMain, contract.layers.slice(1));
   const actual = readTree(revision, ["crates"]);
   assertExactCssTree(actual, expected);
   assert.deepEqual(
     sorted(readTree(mergedMainRevision, contract.buildPaths, false)),
-    contract.buildInputs,
+    contract.mergedMain.buildInputs,
     "merged main build context changed",
+  );
+  assert.deepEqual(
+    sorted(readTree(successorMainRevision, contract.buildPaths, false)),
+    contract.buildInputs,
+    "successor main build context changed",
   );
   assert.deepEqual(
     sorted(readTree(revision, contract.buildPaths, false)),
@@ -228,10 +246,11 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
     contractSha256: hash(contractBytes),
     reviewedLayers: contract.layers,
     mergedMain: contract.mergedMain,
+    successorMain: successor,
     cratesSha256: fingerprint(actual),
     productionChanges: [
       ...new Set(
-        [...contract.layers, integration].flatMap((layer) =>
+        [...contract.layers, integration, successor.integrationLayer].flatMap((layer) =>
           layer.changes.map((change) => change.path),
         ),
       ),
