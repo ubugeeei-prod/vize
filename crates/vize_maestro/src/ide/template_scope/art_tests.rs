@@ -106,3 +106,58 @@ fn art_scopes_select_nearest_loop_and_slot_in_the_requested_variant() {
         }
     }
 }
+
+#[test]
+fn art_scopes_choose_the_nearer_loop_or_slot_when_names_overlap() {
+    for inline in [false, true] {
+        for newline in ["\n", "\r\n"] {
+            let source = "<script setup>const item = 'outer'; const rows = [];</script>\n<art title=\"Scope\" component=\"./Child.vue\">\n<variant name=\"First\" default>\n<div v-for=\"item in rows\"><Child v-slot=\"{ item }\">🧭{{ item }}<em v-for=\"item in rows\">{{ item }}</em></Child></div>\n</variant>\n</art>\n".replace('\n', newline);
+            let state = ServerState::new();
+            let uri = Url::parse(if inline {
+                "file:///tmp/Inline.vue"
+            } else {
+                "file:///tmp/Scope.art.vue"
+            })
+            .unwrap();
+            state
+                .documents
+                .open(uri.clone(), source.clone(), 1, "vue".into());
+            for (usage, declaration, slot) in [
+                (
+                    source.find("🧭{{ item }}").unwrap() + "🧭{{ ".len(),
+                    source.find("v-slot=\"{ item }\"").unwrap() + "v-slot=\"{ ".len(),
+                    true,
+                ),
+                (
+                    source.rfind("{{ item }}").unwrap() + 3,
+                    source.rfind("item in rows").unwrap(),
+                    false,
+                ),
+            ] {
+                let ctx = IdeContext::new(&state, &uri, usage).unwrap();
+                let expected = TemplateScopeBinding {
+                    name: "item".into(),
+                    start: declaration,
+                    end: declaration + 4,
+                    kind: if slot {
+                        TemplateScopeBindingKind::SlotProp
+                    } else {
+                        TemplateScopeBindingKind::Value
+                    },
+                };
+                assert_eq!(
+                    definition(&ctx, "item"),
+                    Some(GotoDefinitionResponse::Scalar(expected.location(&ctx)))
+                );
+                assert_eq!(
+                    hover(&ctx, "item"),
+                    if slot {
+                        v_slot_hover(&ctx, "item")
+                    } else {
+                        v_for_hover(&ctx, "item")
+                    }
+                );
+            }
+        }
+    }
+}

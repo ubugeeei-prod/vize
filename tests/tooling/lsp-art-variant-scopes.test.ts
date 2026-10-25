@@ -30,7 +30,7 @@ const slotValue = 'outside'
 </script>
 ${ordinary}<art title="Scope" component="./Child.vue">
 <variant name="First" default>
-<div v-for="(item, firstOnly) in rows">🧭{{ item }}<Child v-slot="{ slotValue }">{{ slotValue }}</Child></div>
+<div v-for="(item, firstOnly) in rows">🧭{{ item }}<Child v-slot="{ slotValue }">{{ slotValue }}</Child><Child v-slot="{ item }">{{ item }}<em v-for="item in rows">{{ item }}</em></Child></div>
 </variant>
 <variant name="Second">
 <section v-for="(item, secondOnly) in rows">🧭{{ item }}<span v-for="item in rows">{{ item }}</span><Child v-slot="{ slotValue }">{{ slotValue }}</Child></section>
@@ -88,6 +88,22 @@ ${ordinary}<art title="Scope" component="./Child.vue">
             kind: "v-slot",
             tag: '<Child v-slot="{ slotValue }">',
             own: "secondOnly",
+          },
+          {
+            usage: source.indexOf("{{ item }}<em") + 3,
+            declaration: source.indexOf('v-slot="{ item }"') + 'v-slot="{ '.length,
+            name: "item",
+            kind: "v-slot",
+            tag: '<Child v-slot="{ item }">',
+            own: "firstOnly",
+          },
+          {
+            usage: source.indexOf("{{ item }}</em>") + 3,
+            declaration: source.indexOf('<em v-for="item in rows">') + '<em v-for="'.length,
+            name: "item",
+            kind: "v-for",
+            tag: '<em v-for="item in rows">',
+            own: "firstOnly",
           },
         ];
         for (const entry of cases) {

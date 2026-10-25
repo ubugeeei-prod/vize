@@ -86,7 +86,9 @@ pub(crate) fn v_for_definition(ctx: &IdeContext<'_>, word: &str) -> Option<GotoD
 }
 
 pub(crate) fn definition(ctx: &IdeContext<'_>, word: &str) -> Option<GotoDefinitionResponse> {
-    v_for_definition(ctx, word).or_else(|| v_slot_definition(ctx, word))
+    // The scope-chain lookup refuses a slot when a nearer loop shadows it.
+    // Check it before the loop tree walk, which cannot see slot declarations.
+    v_slot_definition(ctx, word).or_else(|| v_for_definition(ctx, word))
 }
 
 pub(crate) fn v_for_hover(ctx: &IdeContext<'_>, word: &str) -> Option<Hover> {
@@ -162,5 +164,5 @@ pub(crate) fn v_slot_hover(ctx: &IdeContext<'_>, word: &str) -> Option<Hover> {
 }
 
 pub(crate) fn hover(ctx: &IdeContext<'_>, word: &str) -> Option<Hover> {
-    v_for_hover(ctx, word).or_else(|| v_slot_hover(ctx, word))
+    v_slot_hover(ctx, word).or_else(|| v_for_hover(ctx, word))
 }
