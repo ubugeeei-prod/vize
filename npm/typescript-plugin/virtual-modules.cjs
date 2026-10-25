@@ -76,7 +76,15 @@ function installVueVirtualModules(ts, info) {
     return value;
   };
   const originalOptions = bind("getCompilationSettings");
-  const options = () => ({ ...originalOptions?.(), allowNonTsExtensions: true });
+  const options = () => {
+    const original = originalOptions?.() || {};
+    // TypeScript stores the parsed configFile as a non-enumerable option.
+    // Losing it crashes configured-project reload when another SFC opens.
+    return Object.create(Object.getPrototypeOf(original), {
+      ...Object.getOwnPropertyDescriptors(original),
+      allowNonTsExtensions: { value: true, enumerable: true, configurable: true, writable: true },
+    });
+  };
   const resolverHost = {
     ...serverHost,
     ...host,
@@ -101,6 +109,10 @@ function installVueVirtualModules(ts, info) {
     ).resolvedModule;
     const resolvedFileName = result?.resolvedFileName.replace(/(\.(?:vue|art))\.tsx?$/, "$1");
     if (!isSfc(name)) return result;
+    // Respect a real declaration or TypeScript module selected by TypeScript,
+    // such as Card.d.vue.ts. Only our nonexistent .vue.ts probe is virtual.
+    if (result && !isSfc(result.resolvedFileName) && fileExists(result.resolvedFileName))
+      return result;
     if (!resolvedFileName || !isSfc(resolvedFileName) || !fileExists(resolvedFileName))
       return undefined;
     return { ...result, resolvedFileName, extension: ts.Extension.Ts };

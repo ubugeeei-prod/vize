@@ -235,13 +235,15 @@ function createMappedLanguageService(ts, service, support) {
             ]
           : [];
       // EXPECT applies to the complete syntax+semantic set, never a per-packet subset.
-      const all = [
-        ...service.getSyntacticDiagnostics(file),
-        ...service.getSemanticDiagnostics(file),
-      ];
+      const syntax = service.getSyntacticDiagnostics(file);
+      const semantic = service.getSemanticDiagnostics(file);
+      const all = [...syntax, ...semantic];
       const applied = support.engine.applyDiagnosticDirectives(document.projection, all);
+      const channel = new Set(method === "getSyntacticDiagnostics" ? syntax : semantic);
       const current =
-        method === "getSuggestionDiagnostics" ? service[method](file) : applied.diagnostics;
+        method === "getSuggestionDiagnostics"
+          ? service[method](file)
+          : applied.diagnostics.filter((value) => channel.has(value));
       const mapped = current.flatMap((value) => {
         const range = support.engine.mapLanguageDiagnosticRange(
           document.projection,
@@ -258,15 +260,16 @@ function createMappedLanguageService(ts, service, support) {
           result.relatedInformation = relatedInformation(value.relatedInformation);
         return [result];
       });
-      // Return compiler syntax+semantic diagnostics once, in the semantic lane.
-      return method === "getSyntacticDiagnostics"
-        ? []
-        : unique([
-            ...mapped,
-            ...(method === "getSemanticDiagnostics"
-              ? applied.sourceDiagnostics.map(diagnostic)
-              : []),
-          ]);
+      const nativeSyntax = new Set(document.projection.diagnostics);
+      const authored =
+        method === "getSuggestionDiagnostics"
+          ? []
+          : applied.sourceDiagnostics.filter((value) =>
+              method === "getSyntacticDiagnostics"
+                ? nativeSyntax.has(value)
+                : !nativeSyntax.has(value),
+            );
+      return unique([...mapped, ...authored.map(diagnostic)]);
     };
   }
   // Methods without an authored-range adapter must never expose generated

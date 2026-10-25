@@ -39,6 +39,9 @@ test("TypeScript Vue plugin exposes generated SFC component types", () => {
       project.mainTs,
       project.ambientDts,
     ]);
+    const originalOptions = host.getCompilationSettings();
+    const configFile = ts.parseJsonText("tsconfig.json", "{}");
+    Object.defineProperty(originalOptions, "configFile", { value: configFile });
     const service = initVuePlugin({ typescript: ts }).create({
       languageService: ts.createLanguageService(host),
       languageServiceHost: host,
@@ -46,6 +49,12 @@ test("TypeScript Vue plugin exposes generated SFC component types", () => {
       serverHost: ts.sys,
       config: { nativePath: project.nativeDir },
     });
+    assert.equal(host.getCompilationSettings().configFile, configFile);
+    assert.equal(
+      Object.getOwnPropertyDescriptor(host.getCompilationSettings(), "configFile")?.enumerable,
+      false,
+    );
+    assert.equal(originalOptions.allowNonTsExtensions, undefined);
     const source = fs.readFileSync(project.mainTs, "utf8");
     const quickInfo = service.getQuickInfoAtPosition(
       project.mainTs,
@@ -122,6 +131,10 @@ test("TypeScript Vue plugin exposes generated SFC component types", () => {
       formatDiagnostics(service.getSemanticDiagnostics(project.mainTs)),
       /Property 'title' is missing/,
     );
+    assert.match(
+      formatDiagnostics(service.getSemanticDiagnostics(project.mainTs)),
+      /declaredTitle/,
+    );
     assert.equal(
       nativeGenerationCount(project.nativeCalls),
       3,
@@ -165,15 +178,21 @@ function createProject() {
     mainTs,
     [
       'import App from "./App.vue";',
+      'import Declared from "./Declared.vue";',
       'import { BarrelApp } from "./components";',
       'import { PackageApp } from "@acme/ui";',
       'import "./SideEffect.vue";',
       'const props: InstanceType<typeof App>["$props"] = {};',
+      'const declaredProps: InstanceType<typeof Declared>["$props"] = {};',
       "BarrelApp;",
       "PackageApp;",
       "props;",
       "",
     ].join("\n"),
+  );
+  fs.writeFileSync(
+    path.join(srcDir, "Declared.d.vue.ts"),
+    "declare const component: new () => { $props: { declaredTitle: string } };\nexport default component;\n",
   );
   const appVue = path.join(srcDir, "App.vue");
   fs.writeFileSync(
@@ -264,6 +283,7 @@ function createProject() {
 function createHost(rootDir: string, rootFiles: string[]) {
   const options: import("typescript").CompilerOptions = {
     allowSyntheticDefaultImports: true,
+    allowArbitraryExtensions: true,
     module: ts.ModuleKind.ESNext,
     moduleResolution: ts.ModuleResolutionKind.Bundler,
     noEmit: true,

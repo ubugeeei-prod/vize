@@ -188,6 +188,7 @@ async function request(name, command, file, text, marker, extra = {}) {
     ...extra,
   });
   results[name] = response;
+  assert.equal(response.success, true, JSON.stringify(response));
   return response;
 }
 try {
@@ -238,6 +239,24 @@ try {
         "double",
       );
     }
+  const brokenFile = path.join(src, "Broken.vue"),
+    brokenSource = '<script setup lang="ts">\nconst n = 1;\n';
+  fs.writeFileSync(brokenFile, brokenSource);
+  await client.send(
+    "open",
+    { file: brokenFile, fileContent: brokenSource, scriptKindName: "TS" },
+    false,
+  );
+  const syntaxPacket = await request(
+    "native-syntax-diagnostics",
+    "syntacticDiagnosticsSync",
+    brokenFile,
+    brokenSource,
+  );
+  assert(
+    syntaxPacket.body.some((entry) => entry.code === 100001),
+    JSON.stringify(syntaxPacket),
+  );
   const vueDiagnostics = await request("vue-diagnostics", "semanticDiagnosticsSync", vue, vueText);
   assert(
     vueDiagnostics.body.some((entry) => entry.code === 2322 && entry.start.line === 5),
