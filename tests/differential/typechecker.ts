@@ -105,6 +105,7 @@ export const TYPECHECKER_TESTS = {
     "planned_generic_syntax_keeps_independent_body_errors_through_repairs",
   "template-context-undefined-10667": "undefined_context_keeps_complete_authored_diagnostics",
   "package-target-deletion-refresh": "missing_exported_package_target_preserves_ts2307",
+  "import-literal-geometry-10762": "rewritten_import_literals_preserve_complete_batch_diagnostics",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
@@ -182,6 +183,7 @@ const sourceRevisions = {
   "planned-generic-syntax-route-10598": "957827706dd439d9810a24f65b4a16c45f266b5e",
   "template-context-undefined-10667": "2806a05b4b9dac514afd0fb5c0cd3fb9925d9c54",
   "package-target-deletion-refresh": "13fa41356d075047a229f580014b637d3bbeb57f",
+  "import-literal-geometry-10762": "62652a4d4029fa11016dfa1ac8c24669b42c8d7a",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 
 export type Artifact = { path: string; sha256: string };
