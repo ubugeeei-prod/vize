@@ -159,7 +159,7 @@ const sourceRevisions = {
   "long-prop-kebab-case-10423": "d8849fab885cb40b9516889a464549fd29af3f92",
   "pug-refusal-10430": "cb141dfffe07cce5d49bf6221b5d6b7ad8f5cc8e",
   "portable-pug-10434": "c2132e45d47aad595aac7e07f5e71a78b8ffd1c8",
-  "jsx-prop-token-ranges-10494": "ec31d1907818f7dc8b157ceb844f6d28292a247d",
+  "jsx-prop-token-ranges-10494": "aaeeb1c1264a319737fa11e56971c9d73064d6a3",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 
 export type Artifact = { path: string; sha256: string };

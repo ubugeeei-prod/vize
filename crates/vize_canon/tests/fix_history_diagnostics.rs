@@ -1166,7 +1166,7 @@ fn jsx_prop_tokens_preserve_complete_batch_diagnostics() {
     check_pack(
         "jsx-prop-token-ranges-10494",
         "jsx_prop_tokens_preserve_complete_batch_diagnostics",
-        "ec31d1907818f7dc8b157ceb844f6d28292a247d",
+        "aaeeb1c1264a319737fa11e56971c9d73064d6a3",
         Some(10494),
         &["tsx-invalid-and-valid-props", "jsx-invalid-and-valid-props"],
     );
