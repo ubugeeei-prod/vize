@@ -235,7 +235,7 @@ export function useAnimate(
       sync();
       onCleanup(() => {
         stopFrames();
-        created?.cancel();
+        if (created) cancelAnimation(created);
         if (animation.value === created) animation.value = null;
         playState.value = "idle";
       });
@@ -290,8 +290,18 @@ export function useAnimate(
     pause: control((current) => current.pause()),
     reverse: control((current) => current.reverse()),
     finish: control((current) => current.finish()),
-    cancel: control((current) => current.cancel()),
+    cancel: control(cancelAnimation),
   };
+}
+
+/** Observe the current promises before cancellation, including after replay.
+ * Cancellation rejects both promises with AbortError; handling that expected
+ * lifecycle result leaves the original promises available to their consumers.
+ */
+function cancelAnimation(animation: Animation): void {
+  void animation.finished.catch(() => undefined);
+  void animation.ready.catch(() => undefined);
+  animation.cancel();
 }
 
 function toPlatformKeyframes(frames: AnimationKeyframes): Keyframe[] | PropertyIndexedKeyframes {
