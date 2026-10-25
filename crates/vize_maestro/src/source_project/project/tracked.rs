@@ -89,7 +89,7 @@ pub struct ProjectQueryResult<'host, T> {
 }
 
 impl<T> ProjectQueryResult<'_, T> {
-    #[cfg(feature = "experimental-source-navigation")]
+    #[cfg(feature = "retained-program")]
     fn check_project_current(&self) -> Result<(), SnapshotRefusal> {
         if self
             ._lease
@@ -115,7 +115,7 @@ impl<T> ProjectQueryResult<'_, T> {
     /// The underlying actual read guard enforces snapshot freshness; asynchronous
     /// transport and atomic store mutation remain outside this boundary.
     pub fn publish<R>(self, publish: impl FnOnce(T) -> R) -> Result<R, SnapshotRefusal> {
-        #[cfg(feature = "experimental-source-navigation")]
+        #[cfg(feature = "retained-program")]
         self.check_project_current()?;
         self.result.publish(self.host.documents(), publish)
     }

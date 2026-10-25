@@ -42,6 +42,7 @@ impl NativeNavigationProject<'_> {
         let result = ready
             .publish(|response| self.checked_response(response))
             .map_err(NavigationRefusal::Host)?;
+        #[cfg(feature = "experimental-source-navigation")]
         if matches!(result, Err(NavigationRefusal::ConfigurationChanged)) {
             self.retire_changed_configuration(uri);
         }

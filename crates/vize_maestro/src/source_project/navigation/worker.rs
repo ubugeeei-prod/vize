@@ -18,22 +18,31 @@ use super::{NavigationRefusal, SourceSnapshot, profile::Profile, retained};
 mod refusals;
 pub(super) use refusals::refused;
 pub(super) mod highlights;
+pub(super) mod intrinsic;
+#[cfg(feature = "experimental-source-navigation")]
 pub(super) mod linked;
+#[cfg(feature = "experimental-source-navigation")]
 pub(super) mod module_links;
+#[cfg(feature = "experimental-source-navigation")]
 pub(super) mod selected;
 
 pub(super) const WORKER_LIMIT: usize = 16;
 const REQUEST_LIMIT: usize = 16;
 
 pub(super) enum Command {
+    IntrinsicTag(intrinsic::Request),
+    #[cfg(feature = "experimental-source-navigation")]
     ModuleLinks(module_links::Request),
     Highlights(highlights::Request),
+    #[cfg(feature = "experimental-source-navigation")]
     LinkedEditing(linked::Request),
+    #[cfg(feature = "experimental-source-navigation")]
     TemplateDefinition(
         Position,
         oneshot::Sender<Result<Vec<Location>, NavigationRefusal>>,
     ),
     #[cfg(test)]
+    #[cfg(feature = "experimental-source-navigation")]
     SelectedInspect(
         Position,
         oneshot::Sender<Result<selected::Inspection, NavigationRefusal>>,
@@ -56,6 +65,7 @@ pub(super) enum Command {
     #[cfg(test)]
     Pause(std::sync::mpsc::Sender<()>, Receiver<()>),
     #[cfg(test)]
+    #[cfg(feature = "experimental-source-navigation")]
     Panic,
 }
 
@@ -86,6 +96,11 @@ pub(super) struct Control {
     #[cfg(test)]
     pub(super) parses: AtomicUsize,
     #[cfg(test)]
+    pub(super) walks: AtomicUsize,
+    #[cfg(test)]
+    pub(super) intrinsic_entries: AtomicUsize,
+    #[cfg(test)]
+    #[cfg(feature = "experimental-source-navigation")]
     pub(super) sfc_productions: AtomicUsize,
     #[cfg(test)]
     pub(super) queries: AtomicUsize,
@@ -152,6 +167,11 @@ impl NavigationWorker {
             #[cfg(test)]
             parses: AtomicUsize::new(0),
             #[cfg(test)]
+            walks: AtomicUsize::new(0),
+            #[cfg(test)]
+            intrinsic_entries: AtomicUsize::new(0),
+            #[cfg(test)]
+            #[cfg(feature = "experimental-source-navigation")]
             sfc_productions: AtomicUsize::new(0),
             #[cfg(test)]
             queries: AtomicUsize::new(0),
@@ -172,12 +192,15 @@ impl NavigationWorker {
                 let _slot = slot;
                 match profile {
                     Profile::Program(options) => retained::run(owner, options, receiver, stop),
+                    #[cfg(feature = "experimental-source-navigation")]
                     Profile::Vue(configuration) => {
                         retained::vue::run(owner, configuration, receiver, stop);
                     }
+                    #[cfg(feature = "experimental-source-navigation")]
                     Profile::SelectedVue(configuration) => {
                         retained::selected::run(owner, configuration, receiver, stop);
                     }
+                    #[cfg(feature = "experimental-source-navigation")]
                     Profile::TemplateNamesVue(configuration) => {
                         retained::linked::run(owner, configuration, receiver, stop);
                     }
@@ -256,6 +279,7 @@ impl NavigationWorker {
     }
 
     #[cfg(test)]
+    #[cfg(feature = "experimental-source-navigation")]
     pub(super) async fn drain_barrier(
         &self,
         position: Position,
@@ -298,11 +322,13 @@ impl NavigationWorker {
     }
 
     #[cfg(test)]
+    #[cfg(feature = "experimental-source-navigation")]
     pub(super) fn sfc_productions(&self) -> usize {
         self.control.sfc_productions.load(Ordering::Acquire)
     }
 
     #[cfg(test)]
+    #[cfg(feature = "experimental-source-navigation")]
     pub(super) fn panic_worker(&self) {
         self.enqueue(Command::Panic).unwrap();
     }

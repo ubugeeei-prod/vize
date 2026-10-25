@@ -8,6 +8,7 @@ import { expectedBuildIdentity, validateBuildReceipt } from "./build-receipt.ts"
 import { assertExactRows, sha256 } from "./harness.mjs";
 import {
   initializeCapabilities,
+  fixtureLanguageId,
   loadLspManifest,
   lspFixtureInventory,
   NATIVE_REASON,
@@ -69,7 +70,7 @@ async function runLspCase(
       wire.notify("textDocument/didOpen", {
         textDocument: {
           uri: entryUri,
-          languageId: "vue",
+          languageId: fixtureLanguageId(fixture.data),
           version: fixture.data.documentVersion,
           text: fixture.files
             .find((file) => file.runtimePath === fixture.entry)

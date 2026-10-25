@@ -18,9 +18,14 @@ use vize_l2::{
 };
 
 mod highlights;
+mod intrinsic;
+#[cfg(feature = "experimental-source-navigation")]
 pub(super) mod linked;
+#[cfg(feature = "experimental-source-navigation")]
 pub(super) mod module_links;
+#[cfg(feature = "experimental-source-navigation")]
 pub(super) mod selected;
+#[cfg(feature = "experimental-source-navigation")]
 pub(super) mod vue;
 
 use super::{
@@ -50,7 +55,11 @@ pub(super) fn run(
     control
         .parses
         .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-    let syntax = parse_program_once(&arena, input, options);
+    vize_l0::profiler::global_profiler().record_counter("maestro.native_program.parses", 1);
+    let syntax = vize_l0::profile!(
+        "maestro.native_program.parse",
+        parse_program_once(&arena, input, options)
+    );
     if control.retired() {
         return;
     }
@@ -72,7 +81,18 @@ pub(super) fn run(
     let Ok(mut producer) = FileProducer::new(&arena, snapshot.source()) else {
         return refused(receiver, &control, NavigationRefusal::Projection);
     };
-    if producer.program(program, ProgramScope::Module).is_err() {
+    let mut intrinsic_tags = intrinsic::Tags::default();
+    #[cfg(test)]
+    control
+        .walks
+        .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    vize_l0::profiler::global_profiler().record_counter("maestro.native_program.walks", 1);
+    if vize_l0::profile!(
+        "maestro.native_program.walk",
+        producer.program_observed(program, ProgramScope::Module, &mut intrinsic_tags)
+    )
+    .is_err()
+    {
         return refused(receiver, &control, NavigationRefusal::Projection);
     }
     let file = match producer.finish() {
@@ -88,20 +108,39 @@ pub(super) fn run(
         issues.extend(file.interrupted_programs());
         return refused(receiver, &control, NavigationRefusal::Producer(issues));
     }
+    vize_l0::profile!(
+        "maestro.native_program.intrinsic_index",
+        intrinsic_tags
+            .0
+            .sort_unstable_by_key(|(_, span)| span.start)
+    );
+    vize_l0::profiler::global_profiler().record_counter(
+        "maestro.native_program.intrinsic_entries",
+        intrinsic_tags.0.len() as u64,
+    );
+    #[cfg(test)]
+    control
+        .intrinsic_entries
+        .store(intrinsic_tags.0.len(), std::sync::atomic::Ordering::Relaxed);
     let lines = vize_l0::line_index::LineBreaks::Lsp
         .line_starts(snapshot.source())
         .collect::<Vec<_>>();
     {
+        #[cfg(feature = "experimental-source-navigation")]
         let module_sources = module_links::admit(&syntax, block, &file);
         let query = RetainedNavigation {
             snapshot: &snapshot,
             file: &file,
             lines: &lines,
             native: None,
+            intrinsic_tags: &intrinsic_tags.0,
             #[cfg(test)]
             original,
         };
+        #[cfg(feature = "experimental-source-navigation")]
         serve(&query, Some(&module_sources), receiver, &control);
+        #[cfg(not(feature = "experimental-source-navigation"))]
+        serve(&query, receiver, &control);
     }
     // Explicit order: borrowed response work, then File, original syntax, arena.
     drop(file);
@@ -110,7 +149,9 @@ pub(super) fn run(
 
 fn serve(
     query: &RetainedNavigation<'_, '_>,
-    module_sources: Option<&module_links::Admission<'_, '_, '_>>,
+    #[cfg(feature = "experimental-source-navigation")] module_sources: Option<
+        &module_links::Admission<'_, '_, '_>,
+    >,
     receiver: Receiver<Command>,
     control: &Control,
 ) {
@@ -120,9 +161,25 @@ fn serve(
             break;
         }
         match command {
+            Command::IntrinsicTag(request) => {
+                if !request.reply.is_canceled() {
+                    #[cfg(test)]
+                    control
+                        .queries
+                        .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                    vize_l0::profiler::global_profiler()
+                        .record_counter("maestro.native_program.intrinsic_queries", 1);
+                    let _ = request.reply.send(vize_l0::profile!(
+                        "maestro.native_program.intrinsic_query",
+                        query.intrinsic_tag(request.position)
+                    ));
+                }
+            }
+            #[cfg(feature = "experimental-source-navigation")]
             Command::ModuleLinks(request) => {
                 module_links::answer(query, module_sources, request, control);
             }
+            #[cfg(feature = "experimental-source-navigation")]
             Command::LinkedEditing(request) => request.refuse(NavigationRefusal::Language),
             Command::Highlights(request) => {
                 if !request.reply.is_canceled() {
@@ -133,12 +190,14 @@ fn serve(
                     let _ = request.reply.send(query.highlights(request.position));
                 }
             }
+            #[cfg(feature = "experimental-source-navigation")]
             Command::TemplateDefinition(_, reply) => {
                 if !reply.is_canceled() {
                     let _ = reply.send(Err(NavigationRefusal::Language));
                 }
             }
             #[cfg(test)]
+            #[cfg(feature = "experimental-source-navigation")]
             Command::SelectedInspect(_, reply) => {
                 let _ = reply.send(Err(NavigationRefusal::Language));
             }
@@ -186,6 +245,7 @@ fn serve(
                 let _ = resumed.recv();
             }
             #[cfg(test)]
+            #[cfg(feature = "experimental-source-navigation")]
             Command::Panic => panic!("actual native worker unwind"),
         }
     }
@@ -203,6 +263,7 @@ struct RetainedNavigation<'file, 'arena> {
     file: &'file FileArtifact<'arena>,
     lines: &'file [usize],
     native: Option<vize_l1_to_l2::native_file::NativeSfc<'file, 'arena>>,
+    intrinsic_tags: &'file [(&'arena str, Span)],
     #[cfg(test)]
     original: Original,
 }

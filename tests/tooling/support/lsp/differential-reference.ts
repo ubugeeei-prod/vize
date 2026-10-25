@@ -6,6 +6,7 @@ import { BUILD_RECIPE } from "../../../differential/build-receipt.ts";
 import { sha256 } from "../../../differential/harness.mjs";
 import {
   initializeCapabilities,
+  fixtureLanguageId,
   materializeWorkspace,
   NATIVE_REASON,
 } from "../../../differential/lsp-manifest.ts";
@@ -47,7 +48,7 @@ export function referenceObservation(fixture: LspFixture): WireObservation {
       params: {
         textDocument: {
           uri: entryUri,
-          languageId: "vue",
+          languageId: fixtureLanguageId(fixture.data),
           version: fixture.data.documentVersion,
           text: fixture.files.find((file) => file.runtimePath === fixture.entry)?.bytes.toString(),
         },

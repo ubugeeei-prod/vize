@@ -4,7 +4,12 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { isDeepStrictEqual } from "node:util";
 import { validateBuildReceipt } from "./build-receipt.ts";
 import { sha256, validateResultEnvelope } from "./harness.mjs";
-import { initializeCapabilities, materializeWorkspace, NATIVE_REASON } from "./lsp-manifest.ts";
+import {
+  fixtureLanguageId,
+  initializeCapabilities,
+  materializeWorkspace,
+  NATIVE_REASON,
+} from "./lsp-manifest.ts";
 import { decodeFrames } from "./lsp-wire.ts";
 import { validateLspWorkspace } from "./lsp-workspace.ts";
 import {
@@ -82,7 +87,7 @@ export function inspectLspObservation(
       params: {
         textDocument: {
           uri: entryUri,
-          languageId: "vue",
+          languageId: fixtureLanguageId(fixture.data),
           version: fixture.data.documentVersion,
           text: fixture.files
             .find((file) => file.runtimePath === fixture.entry)

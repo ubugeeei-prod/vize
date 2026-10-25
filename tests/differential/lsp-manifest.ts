@@ -9,6 +9,16 @@ import type { FixtureData, LoadedLspManifest, PlannedLspFixture, LspFixture } fr
 
 export const NATIVE_REASON = "native whole-product LSP adapter unavailable";
 
+/** The actual didOpen profile is authored evidence, independent of a filename. */
+export function fixtureLanguageId(data: FixtureData): string {
+  const languageId = data.languageId === undefined ? "vue" : data.languageId;
+  assert(
+    ["vue", "javascriptreact", "typescriptreact"].includes(languageId),
+    "unsupported authored LSP document profile",
+  );
+  return languageId;
+}
+
 export function lspFixtureInventory(loaded: LoadedLspManifest) {
   const planned = loaded.manifest.cases.map(({ id, requestCount }) => ({ id, requestCount }));
   assert.deepEqual(
@@ -40,6 +50,7 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
     assert.equal(data.id, planned.id);
     assert.match(data.provenance.fixCommit, /^[a-f0-9]{40}$/);
     assert.equal(data.documentVersion, 1);
+    fixtureLanguageId(data);
     if (Object.hasOwn(data, "openDocument")) assert.equal(data.openDocument, false);
     assert.deepEqual(
       planned.initializationOptions,

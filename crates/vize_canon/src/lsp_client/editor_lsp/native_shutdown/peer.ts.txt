@@ -14,18 +14,29 @@ function retain(packet: unknown) {
   appendFileSync(logPath, JSON.stringify(packet) + "\n");
 }
 
-async function respond(request: Packet, result: unknown, error?: unknown) {
+async function writePackets(packets: unknown[]) {
+  const frames = packets.map((packet) => {
+    const payload = Buffer.from(JSON.stringify(packet));
+    return Buffer.concat([Buffer.from(`Content-Length: ${payload.length}\r\n\r\n`), payload]);
+  });
+  await new Promise<void>((resolve, reject) => {
+    process.stdout.write(Buffer.concat(frames), (error) => (error ? reject(error) : resolve()));
+  });
+}
+
+function notification(params: unknown) {
+  const packet = { jsonrpc: "2.0", method: "window/logMessage", params };
+  retain({ direction: "notification", wholePacket: packet });
+  return packet;
+}
+
+async function respond(request: Packet, result: unknown, error?: unknown, trailing: unknown[] = []) {
   const response = error
     ? { jsonrpc: "2.0", id: request.id, error }
     : { jsonrpc: "2.0", id: request.id, result };
   retain({ direction: "response", wholePacket: response });
-  const payload = Buffer.from(JSON.stringify(response));
-  await new Promise<void>((resolve, reject) => {
-    process.stdout.write(
-      Buffer.concat([Buffer.from(`Content-Length: ${payload.length}\r\n\r\n`), payload]),
-      (error) => error ? reject(error) : resolve(),
-    );
-  });
+  const notifications = trailing.map(notification);
+  await writePackets([response, ...notifications]);
 }
 
 let pending = Buffer.alloc(0);
@@ -44,6 +55,9 @@ for await (const bytes of process.stdin) {
     pending = pending.subarray(boundary + 4 + length);
     retain({ direction: "request", wholePacket: request });
     if (request.method === "initialize") {
+      if (shutdown === "stale") {
+        await writePackets([notification({ type: 3, message: "handled method 'shutdown' (99) in 1ns" })]);
+      }
       await respond(request, { capabilities: {} });
     } else if (request.method === "textDocument/documentSymbol") {
       await respond(request, []);
@@ -61,7 +75,17 @@ for await (const bytes of process.stdin) {
       if (shutdown === "error") {
         await respond(request, null, { code: -32603, message: "controlled shutdown refusal", data: { phase: "shutdown" } });
       } else {
-        await respond(request, shutdown === "non-null" ? { not: "null" } : null);
+        const current = { type: 3, message: `handled method 'shutdown' (${request.id}) in 6.071µs` };
+        const trailing = shutdown === "complete" ? [current]
+          : shutdown === "unrelated" ? [
+            { type: 3, message: "handled method 'textDocument/hover' (1) in 1ns" },
+            { type: 2, message: current.message },
+            { type: "3", message: current.message },
+            current,
+          ] : shutdown === "malformed" ? [{ type: 3, message: `handled method 'shutdown' (${request.id}) in invalid` }]
+          : [];
+        await respond(request, shutdown === "non-null" ? { not: "null" } : null, undefined, trailing);
+        if (shutdown === "eof") process.stdout.end();
       }
     } else {
       assert.equal(request.id, undefined, `unexpected request: ${request.method}`);
