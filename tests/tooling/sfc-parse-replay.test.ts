@@ -133,19 +133,46 @@ test("uncertainty resamples whole pairs and refuses incomplete or reordered evid
   assert.throws(() => summarizeRunner({ ...report, observations: reordered }), /order drift/u);
 });
 
+function assertNormalRoute(workflow: string, job: string, production: boolean) {
+  const expression = workflow.match(
+    new RegExp(`^  ${job}:\\n    if: \\$\\{\\{ (.+) \\}\\}$`, "mu"),
+  )?.[1];
+  assert.ok(expression, `missing condition for ${job}`);
+  const terms = expression.split(/\s*&&\s*/u);
+  const unique = new Set(terms);
+  assert.equal(unique.size, terms.length, `${job} repeats a routing guard`);
+  for (const required of [
+    `${production ? "" : "!"}inputs.production_only`,
+    "!inputs.historical_sfc_parse",
+    "!inputs.level_memory_only",
+    "!inputs.sfc_member_only",
+  ]) {
+    assert.ok(unique.has(required), `${job} must retain ${required}`);
+    unique.delete(required);
+  }
+  for (const extra of unique) {
+    assert.match(extra, /^!inputs\.[a-z_]+$/u, `${job} may only exclude additional modes`);
+    const input = extra.slice("!inputs.".length);
+    assert.match(workflow, new RegExp(`^      ${input}:$`, "mu"));
+  }
+}
+
 test("normal workflow exact-head and ancestry guards remain separate from historical routing", () => {
   const workflow = readFileSync(
     new URL("../../.github/workflows/criterion-bench.yml", import.meta.url),
     "utf8",
   );
   assert.equal(workflow.match(/\[\[ "\$HEAD_SHA" == "\$DISPATCH_SHA" \]\]/gu)?.length, 2);
-  assert.match(
-    workflow,
-    /criterion-ab:\n    if: \$\{\{ !inputs.production_only && !inputs.historical_sfc_parse && !inputs.level_memory_only \}\}/u,
-  );
-  assert.match(
-    workflow,
-    /production-pairs:\n    if: \$\{\{ inputs.production_only && !inputs.historical_sfc_parse && !inputs.level_memory_only \}\}/u,
-  );
+  assertNormalRoute(workflow, "criterion-ab", false);
+  assertNormalRoute(workflow, "production-pairs", true);
+  for (const job of ["criterion-ab", "production-pairs"]) {
+    for (const mode of ["historical_sfc_parse", "level_memory_only", "sfc_member_only"]) {
+      const changed = workflow.replace(
+        new RegExp(`(${job}:\\n    if: [^\\n]*)!inputs\\.${mode}`, "u"),
+        `$1inputs.${mode}`,
+      );
+      assert.throws(() => assertNormalRoute(changed, job, job === "production-pairs"));
+    }
+  }
   assert.match(workflow, /uses: \.\/\.github\/workflows\/sfc-parse-replay.yml/u);
 });

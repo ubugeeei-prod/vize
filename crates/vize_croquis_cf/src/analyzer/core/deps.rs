@@ -9,6 +9,9 @@ impl CrossFileAnalyzer {
     /// These components have no static import edge, so the runtime ancestry
     /// must be recorded after all SFCs have been registered.
     pub(super) fn add_nuxt_render_edges(&mut self) {
+        let profiler = vize_l0::profiler::global_profiler();
+        let _phase = profiler.global_span("croquis_cf.dependencies.nuxt_render");
+        profiler.record_counter("croquis_cf.dependencies.nuxt_render.calls", 1);
         let mut edges = Vec::new();
         for app in self.registry.vue_components() {
             if app.path.file_name().and_then(|name| name.to_str()) != Some("app.vue") {
@@ -41,6 +44,10 @@ impl CrossFileAnalyzer {
                 }
             }
         }
+        profiler.record_counter(
+            "croquis_cf.dependencies.nuxt_render.edge_attempts",
+            edges.len() as u64,
+        );
         for (parent, child) in edges {
             self.graph
                 .add_edge(parent, child, DependencyEdge::ComponentUsage);
@@ -48,6 +55,9 @@ impl CrossFileAnalyzer {
     }
 
     pub(super) fn update_dependency_edges(&mut self, file_id: FileId) {
+        let profiler = vize_l0::profiler::global_profiler();
+        let _phase = profiler.global_span("croquis_cf.dependencies.update");
+        profiler.record_counter("croquis_cf.dependencies.update.calls", 1);
         let Some(entry) = self.registry.get(file_id) else {
             return;
         };
@@ -68,10 +78,16 @@ impl CrossFileAnalyzer {
         self.clear_component_usage_edges(file_id);
 
         for (source, is_type_only) in imports_data {
-            let Some(target_id) = self.resolve_import(source.as_str(), current_dir.as_deref())
-            else {
+            profiler.record_counter("croquis_cf.dependencies.resolve_import.attempts", 1);
+            let target = vize_l0::profile!(
+                "croquis_cf.dependencies.resolve_import",
+                self.resolve_import(source.as_str(), current_dir.as_deref())
+            );
+            let Some(target_id) = target else {
+                profiler.record_counter("croquis_cf.dependencies.resolve_import.misses", 1);
                 continue;
             };
+            profiler.record_counter("croquis_cf.dependencies.resolve_import.hits", 1);
             let edge_type = if is_type_only {
                 DependencyEdge::TypeImport
             } else {
@@ -80,7 +96,15 @@ impl CrossFileAnalyzer {
             self.graph.add_edge(file_id, target_id, edge_type);
         }
 
-        for target_id in crate::facts::component_usage_targets(&self.registry, file_id) {
+        let targets = vize_l0::profile!(
+            "croquis_cf.dependencies.component_targets",
+            crate::facts::component_usage_targets(&self.registry, file_id)
+        );
+        profiler.record_counter(
+            "croquis_cf.dependencies.component_targets.returned",
+            targets.len() as u64,
+        );
+        for target_id in targets {
             self.graph
                 .add_edge(file_id, target_id, DependencyEdge::ComponentUsage);
         }
@@ -95,6 +119,8 @@ impl CrossFileAnalyzer {
     }
 
     fn clear_component_usage_edges(&mut self, file_id: FileId) {
+        let _phase = vize_l0::profiler::global_profiler()
+            .global_span("croquis_cf.dependencies.clear_component_edges");
         let targets = self.graph.get_node(file_id).map_or_else(Vec::new, |node| {
             node.imports
                 .iter()

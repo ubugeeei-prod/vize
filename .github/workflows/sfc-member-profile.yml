@@ -1,0 +1,69 @@
+name: Native SFC member phase comparison
+on:
+  workflow_call:
+    inputs:
+      base_sha: { required: true, type: string }
+      head_sha: { required: true, type: string }
+      conflicting_modes: { required: true, type: boolean }
+permissions:
+  contents: read
+jobs:
+  profile:
+    name: Optimized native member phases and whole metadata
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 45
+    env:
+      MEMBER_BASE_SHA: ${{ inputs.base_sha }}
+      MEMBER_HEAD_SHA: ${{ inputs.head_sha }}
+      MEMBER_CONFLICTING_MODES: ${{ inputs.conflicting_modes }}
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: never
+    steps:
+      - name: Checkout immutable candidate and frozen driver
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ inputs.head_sha }}
+          path: head
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Refuse stale, foreign, ambiguous or conflicting dispatch
+        run: |
+          set -euo pipefail
+          [[ "$MEMBER_BASE_SHA" =~ ^[0-9a-f]{40}$ && "$MEMBER_HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$MEMBER_HEAD_SHA" == "$GITHUB_SHA" && "$MEMBER_CONFLICTING_MODES" == false ]]
+          [[ "$GITHUB_REPOSITORY" == ubugeeei-prod/vize ]]
+          [[ "$(git -C head rev-parse HEAD)" == "$MEMBER_HEAD_SHA" ]]
+          git -C head merge-base --is-ancestor "$MEMBER_BASE_SHA" "$MEMBER_HEAD_SHA"
+      - name: Checkout immutable baseline
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ inputs.base_sha }}
+          path: base
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: head/package.json
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # master
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      # Both builds share downloaded Cargo registry/git sources in CARGO_HOME,
+      # but the driver creates fresh, role/SHA-specific compiled target trees.
+      # Restored or sticky compiled targets must never enter this measurement.
+      - name: Install exact native build tools
+        working-directory: head
+        run: vp install --filter './npm/native...' --frozen-lockfile --prefer-offline
+      - name: Qualify exact packet preservation and evidence refusals
+        run: node --test head/tests/tooling/sfc-member-profile.test.mjs
+      - name: Build both optimized sources before paired native profiling
+        run: node head/tools/benchmarks/scripts/sfc-member-profile.mjs "$GITHUB_WORKSPACE/base" "$GITHUB_WORKSPACE/head" "$GITHUB_WORKSPACE/artifacts/sfc-member-profile"
+      - name: Retain complete source, binary, metadata and phase receipts
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sfc-member-profile-${{ inputs.head_sha }}-${{ github.run_attempt }}
+          path: artifacts/sfc-member-profile/
+          if-no-files-found: warn
+          retention-days: 30

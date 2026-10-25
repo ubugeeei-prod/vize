@@ -6,6 +6,10 @@ import { analyzeLegacyFix } from "../../tools/support/compat/github/report-legac
 import { nativeShutdownProtocolSource } from "../../tools/support/compat/github/native-shutdown-protocol-fixtures.ts";
 import { loadTypecheckerManifest } from "../differential/typechecker.ts";
 
+type ProtocolFixtureCase = {
+  tests: Array<{ selector: string; source: string; sha256: string }>;
+};
+
 const root = new URL("../../", import.meta.url);
 const source = "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown";
 const manifestPath = "tests/_fixtures/differential/typechecker/manifest.json";
@@ -153,10 +157,10 @@ void test("empty, malformed and hash-drifted raw envelope packs fail closed", ()
 
 void test("missing or forged wire selectors, source bodies and module registration cannot qualify", () => {
   for (const change of [
-    (value) => value.tests.pop(),
-    (value) => (value.tests[1].selector += "_forged"),
-    (value) => (value.tests[1].source = `${source}/other.rs`),
-    (value) => (value.tests[1].sha256 = "0".repeat(64)),
+    (value: ProtocolFixtureCase) => value.tests.pop(),
+    (value: ProtocolFixtureCase) => (value.tests[1].selector += "_forged"),
+    (value: ProtocolFixtureCase) => (value.tests[1].source = `${source}/other.rs`),
+    (value: ProtocolFixtureCase) => (value.tests[1].sha256 = "0".repeat(64)),
   ]) {
     const changed = structuredClone(row);
     change(changed);

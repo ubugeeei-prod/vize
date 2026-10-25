@@ -5414,6 +5414,534 @@
           }
         ]
       }
+    },
+    {
+      "id": "typechecker/unicode-prop-bindings-10573/reported-optional-unused",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "unicode-prop-bindings-10573",
+      "case": "reported-optional-unused",
+      "test": "unicode_prop_bindings_preserve_complete_authored_diagnostics",
+      "regressionCommit": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
+      "sourceRevision": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
+      "packReference": {
+        "path": "unicode-prop-bindings-10573/cases.json",
+        "sha256": "92d47deb23536d9cf5b726a55241cd0acfd6df14b732400e796b8d33c8b01483"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "unicode-prop-bindings-10573/tsconfig.json.txt",
+          "sha256": "575f35e70e31f6cc221bf0454f74df123683b3933f62df60fe81c7fb1243d18d"
+        },
+        {
+          "file": "src/Case.vue",
+          "path": "unicode-prop-bindings-10573/sources/reported-optional-unused.vue.txt",
+          "sha256": "7fb1800dfe663add5a369623d3f0bfa25fc72a0867097c82d4eac1e6f141f7a7"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "typechecker/unicode-prop-bindings-10573/unicode-ascii-collision",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "unicode-prop-bindings-10573",
+      "case": "unicode-ascii-collision",
+      "test": "unicode_prop_bindings_preserve_complete_authored_diagnostics",
+      "regressionCommit": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
+      "sourceRevision": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
+      "packReference": {
+        "path": "unicode-prop-bindings-10573/cases.json",
+        "sha256": "92d47deb23536d9cf5b726a55241cd0acfd6df14b732400e796b8d33c8b01483"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "unicode-prop-bindings-10573/tsconfig.json.txt",
+          "sha256": "575f35e70e31f6cc221bf0454f74df123683b3933f62df60fe81c7fb1243d18d"
+        },
+        {
+          "file": "src/Case.vue",
+          "path": "unicode-prop-bindings-10573/sources/unicode-ascii-collision.vue.txt",
+          "sha256": "4129f34ce579b51a0e5909a6e5d705c0df5f7abddd17c3facb621938ee2961f1"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "typechecker/unicode-prop-bindings-10573/unicode-ascii-number",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "unicode-prop-bindings-10573",
+      "case": "unicode-ascii-number",
+      "test": "unicode_prop_bindings_preserve_complete_authored_diagnostics",
+      "regressionCommit": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
+      "sourceRevision": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
+      "packReference": {
+        "path": "unicode-prop-bindings-10573/cases.json",
+        "sha256": "92d47deb23536d9cf5b726a55241cd0acfd6df14b732400e796b8d33c8b01483"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "unicode-prop-bindings-10573/tsconfig.json.txt",
+          "sha256": "575f35e70e31f6cc221bf0454f74df123683b3933f62df60fe81c7fb1243d18d"
+        },
+        {
+          "file": "src/Case.vue",
+          "path": "unicode-prop-bindings-10573/sources/unicode-ascii-number.vue.txt",
+          "sha256": "8cd3cf01081b184d69d9dd142f956955f39447e588de310951a4db5f7361a4ec"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "typechecker/unicode-prop-bindings-10573/quoted-cooked-unicode",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "unicode-prop-bindings-10573",
+      "case": "quoted-cooked-unicode",
+      "test": "unicode_prop_bindings_preserve_complete_authored_diagnostics",
+      "regressionCommit": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
+      "sourceRevision": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
+      "packReference": {
+        "path": "unicode-prop-bindings-10573/cases.json",
+        "sha256": "92d47deb23536d9cf5b726a55241cd0acfd6df14b732400e796b8d33c8b01483"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "unicode-prop-bindings-10573/tsconfig.json.txt",
+          "sha256": "575f35e70e31f6cc221bf0454f74df123683b3933f62df60fe81c7fb1243d18d"
+        },
+        {
+          "file": "src/Case.vue",
+          "path": "unicode-prop-bindings-10573/sources/quoted-cooked-unicode.vue.txt",
+          "sha256": "a71919a9f510fe21b65a066b8c2d2bfea11932b8e045e52533d153fdff26a891"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "typechecker/unicode-prop-bindings-10573/escaped-identifier",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "unicode-prop-bindings-10573",
+      "case": "escaped-identifier",
+      "test": "unicode_prop_bindings_preserve_complete_authored_diagnostics",
+      "regressionCommit": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
+      "sourceRevision": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
+      "packReference": {
+        "path": "unicode-prop-bindings-10573/cases.json",
+        "sha256": "92d47deb23536d9cf5b726a55241cd0acfd6df14b732400e796b8d33c8b01483"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "unicode-prop-bindings-10573/tsconfig.json.txt",
+          "sha256": "575f35e70e31f6cc221bf0454f74df123683b3933f62df60fe81c7fb1243d18d"
+        },
+        {
+          "file": "src/Case.vue",
+          "path": "unicode-prop-bindings-10573/sources/escaped-identifier.vue.txt",
+          "sha256": "89b55bde1d9d17ca0b62d1040a60ed2c34a5203ebe9724e3c38b59779d323d33"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "typechecker/unicode-prop-bindings-10573/supplementary-crlf",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "unicode-prop-bindings-10573",
+      "case": "supplementary-crlf",
+      "test": "unicode_prop_bindings_preserve_complete_authored_diagnostics",
+      "regressionCommit": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
+      "sourceRevision": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
+      "packReference": {
+        "path": "unicode-prop-bindings-10573/cases.json",
+        "sha256": "92d47deb23536d9cf5b726a55241cd0acfd6df14b732400e796b8d33c8b01483"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "unicode-prop-bindings-10573/tsconfig.json.txt",
+          "sha256": "575f35e70e31f6cc221bf0454f74df123683b3933f62df60fe81c7fb1243d18d"
+        },
+        {
+          "file": "src/Case.vue",
+          "path": "unicode-prop-bindings-10573/sources/supplementary-crlf.vue.txt",
+          "sha256": "d7305c0ef22bf6589dc039ef1112fab4a3a6399d67626bf3414f2fd7060e8818"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "typechecker/unicode-prop-bindings-10573/runtime-japanese",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "unicode-prop-bindings-10573",
+      "case": "runtime-japanese",
+      "test": "unicode_prop_bindings_preserve_complete_authored_diagnostics",
+      "regressionCommit": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
+      "sourceRevision": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
+      "packReference": {
+        "path": "unicode-prop-bindings-10573/cases.json",
+        "sha256": "92d47deb23536d9cf5b726a55241cd0acfd6df14b732400e796b8d33c8b01483"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "unicode-prop-bindings-10573/tsconfig.json.txt",
+          "sha256": "575f35e70e31f6cc221bf0454f74df123683b3933f62df60fe81c7fb1243d18d"
+        },
+        {
+          "file": "src/Case.vue",
+          "path": "unicode-prop-bindings-10573/sources/runtime-japanese.vue.txt",
+          "sha256": "3b890e17895d676bf60b2aca9e7ef4530b5e13ebeb98c12be7cdf177e17d2dcc"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "typechecker/unicode-prop-bindings-10573/defaulted-unicode",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "unicode-prop-bindings-10573",
+      "case": "defaulted-unicode",
+      "test": "unicode_prop_bindings_preserve_complete_authored_diagnostics",
+      "regressionCommit": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
+      "sourceRevision": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
+      "packReference": {
+        "path": "unicode-prop-bindings-10573/cases.json",
+        "sha256": "92d47deb23536d9cf5b726a55241cd0acfd6df14b732400e796b8d33c8b01483"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "unicode-prop-bindings-10573/tsconfig.json.txt",
+          "sha256": "575f35e70e31f6cc221bf0454f74df123683b3933f62df60fe81c7fb1243d18d"
+        },
+        {
+          "file": "src/Case.vue",
+          "path": "unicode-prop-bindings-10573/sources/defaulted-unicode.vue.txt",
+          "sha256": "abd9044673f1a58554e1efd86940d6851fc9e7f8521c0b0fa70d3840fc75d045"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "typechecker/unicode-prop-bindings-10573/keyed-unicode",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "unicode-prop-bindings-10573",
+      "case": "keyed-unicode",
+      "test": "unicode_prop_bindings_preserve_complete_authored_diagnostics",
+      "regressionCommit": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
+      "sourceRevision": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
+      "packReference": {
+        "path": "unicode-prop-bindings-10573/cases.json",
+        "sha256": "92d47deb23536d9cf5b726a55241cd0acfd6df14b732400e796b8d33c8b01483"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "unicode-prop-bindings-10573/tsconfig.json.txt",
+          "sha256": "575f35e70e31f6cc221bf0454f74df123683b3933f62df60fe81c7fb1243d18d"
+        },
+        {
+          "file": "src/Case.vue",
+          "path": "unicode-prop-bindings-10573/sources/keyed-unicode.vue.txt",
+          "sha256": "595c3cfd72fd34f95ba51c0e908a271d1306d240c80f49fce8e1c69343a50d2d"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "typechecker/unicode-prop-bindings-10573/reserved-hyphen-ascii",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "unicode-prop-bindings-10573",
+      "case": "reserved-hyphen-ascii",
+      "test": "unicode_prop_bindings_preserve_complete_authored_diagnostics",
+      "regressionCommit": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
+      "sourceRevision": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
+      "packReference": {
+        "path": "unicode-prop-bindings-10573/cases.json",
+        "sha256": "92d47deb23536d9cf5b726a55241cd0acfd6df14b732400e796b8d33c8b01483"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "unicode-prop-bindings-10573/tsconfig.json.txt",
+          "sha256": "575f35e70e31f6cc221bf0454f74df123683b3933f62df60fe81c7fb1243d18d"
+        },
+        {
+          "file": "src/Case.vue",
+          "path": "unicode-prop-bindings-10573/sources/reserved-hyphen-ascii.vue.txt",
+          "sha256": "28b2460ddacd5930c5f349566c97e19249f4d60d3469741886c2909983e94601"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "typechecker/unicode-prop-bindings-10573/unicode-continue",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "unicode-prop-bindings-10573",
+      "case": "unicode-continue",
+      "test": "unicode_prop_bindings_preserve_complete_authored_diagnostics",
+      "regressionCommit": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
+      "sourceRevision": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
+      "packReference": {
+        "path": "unicode-prop-bindings-10573/cases.json",
+        "sha256": "92d47deb23536d9cf5b726a55241cd0acfd6df14b732400e796b8d33c8b01483"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "unicode-prop-bindings-10573/tsconfig.json.txt",
+          "sha256": "575f35e70e31f6cc221bf0454f74df123683b3933f62df60fe81c7fb1243d18d"
+        },
+        {
+          "file": "src/Case.vue",
+          "path": "unicode-prop-bindings-10573/sources/unicode-continue.vue.txt",
+          "sha256": "122632f6d0045b04e04d85907f9c74d289465f2613b58b43a720b22b696514f6"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
     }
   ],
   "protocolCases": [

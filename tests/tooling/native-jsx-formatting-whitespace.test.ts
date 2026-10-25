@@ -38,19 +38,16 @@ const oracleName = oracleNames.get(domVersion);
 assert.ok(oracleName, `No recorded complete DOM oracle for harness ${domVersion}`);
 const outputPath = new URL(oracleName, fixture);
 const window = new Window();
-for (const name of [
-  "window",
-  "document",
-  "Node",
-  "Element",
-  "HTMLElement",
-  "SVGElement",
-  "Text",
-  "Comment",
-]) {
-  (globalThis as Record<string, unknown>)[name] =
-    name === "window" ? window : (window as unknown as Record<string, unknown>)[name];
-}
+Object.assign(globalThis, {
+  window,
+  document: window.document,
+  Node: window.Node,
+  Element: window.Element,
+  HTMLElement: window.HTMLElement,
+  SVGElement: window.SVGElement,
+  Text: window.Text,
+  Comment: window.Comment,
+});
 const runtimeEntry = pathToFileURL(
   testsRequire.resolve("@vue/runtime-dom/dist/runtime-dom.esm-browser.prod.js"),
 );
@@ -68,15 +65,21 @@ type Dom =
       attributes: string[][];
       children: Dom[];
     };
-function observe(node: Node): Dom {
+type ObservableNode = { readonly nodeType: number; readonly textContent: string | null };
+function observe(node: ObservableNode): Dom {
   if (node.nodeType === 3) return { kind: "text", value: node.textContent ?? "" };
   assert.equal(node.nodeType, 1, "the whole static DOM contains no hidden extra nodes");
-  const element = node as Element;
+  assert.ok(node instanceof window.Element, "mounted element belongs to the original DOM window");
+  const element = node;
   return {
     kind: "element",
     tag: element.localName,
     namespace: element.namespaceURI,
-    attributes: [...element.attributes].map((attribute) => [attribute.name, attribute.value]),
+    attributes: [...element.attributes].map((attribute) => {
+      const { name, value } = attribute;
+      assert.ok(typeof name === "string" && typeof value === "string");
+      return [name, value];
+    }),
     children: [...element.childNodes].map(observe),
   };
 }
@@ -130,7 +133,7 @@ function run(entry: (typeof cases)[number]) {
     app.mount(container);
     const dom = [...container.childNodes].map(observe);
     const sourceOps: Array<{ kind: string; start: number; end: number }> = [];
-    let refusedText: { start: number; end: number } | null = null;
+    const refusedText: { range?: { start: number; end: number } } = {};
     {
       const ast = babel.parseSync(entry.source, {
         sourceType: "module",
@@ -154,10 +157,10 @@ function run(entry: (typeof cases)[number]) {
         },
         JSXText(path) {
           if (entry.admit && entry.keepText) record(path.node, "text");
-          if (!entry.admit && refusedText === null) {
+          if (!entry.admit && refusedText.range === undefined) {
             const { start, end } = path.node;
             if (start == null || end == null) throw new Error("original text range missing");
-            refusedText = {
+            refusedText.range = {
               start: Buffer.byteLength(entry.source.slice(0, start)),
               end: Buffer.byteLength(entry.source.slice(0, end)),
             };
@@ -171,7 +174,11 @@ function run(entry: (typeof cases)[number]) {
           `${entry.id}: explicit retained-text witness must match every mounted node`,
         );
     }
-    if (!entry.admit) assert.ok(refusedText);
+    const refusal: Array<{ kind: string; start: number; end: number }> = [];
+    if (!entry.admit) {
+      assert.ok(refusedText.range, "unsupported text has its original source range");
+      refusal.push({ kind: "value-normalization", ...refusedText.range });
+    }
     return {
       id: entry.id,
       sourceSha256: createHash("sha256").update(entry.source).digest("hex"),
@@ -180,7 +187,7 @@ function run(entry: (typeof cases)[number]) {
       html: container.innerHTML,
       dom,
       sourceOps,
-      refusal: entry.admit ? [] : [{ kind: "value-normalization", ...refusedText }],
+      refusal,
     };
   } finally {
     app.unmount();
