@@ -9,9 +9,9 @@ use vize_carton::{FxHashSet, String, ToCompactString, cstr};
 use super::{VirtualProject, tsconfig_paths::normalize_path_lexically};
 use crate::virtual_ts::{TemplateGlobal, VirtualTsOptions};
 
-mod transform;
 #[cfg(test)]
 mod provider;
+mod transform;
 use transform::apply;
 #[cfg(test)]
 mod config_tests;

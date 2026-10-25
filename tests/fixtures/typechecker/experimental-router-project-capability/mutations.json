@@ -60,9 +60,7 @@
       "id": "preview/active-custom-before-types",
       "provider": "preview",
       "plugin": true,
-      "customConditions": [
-        "vize-provider-control"
-      ],
+      "customConditions": ["vize-provider-control"],
       "mutation": {
         "operation": "prepend-export-condition",
         "name": "vize-provider-control",
@@ -177,11 +175,42 @@
       },
       "expectedState": "Admitted",
       "sdkHelper": "resolved-type-alias",
-      "requiresRoles": [
-        "compiler-config",
-        "provider-capability"
-      ],
+      "requiresRoles": ["compiler-config", "provider-capability"],
       "requiresNewAuthorityOnPackageEdit": true
+    },
+    {
+      "id": "preview/mixed-export-root",
+      "provider": "preview",
+      "plugin": true,
+      "mutation": {
+        "operation": "add-export-root-condition",
+        "name": "default",
+        "target": "./dist/vue-router.d.ts"
+      },
+      "expectedState": "Refused",
+      "sdkHelper": "must-observe"
+    },
+    {
+      "id": "preview/encoded-separator-target",
+      "provider": "preview",
+      "plugin": true,
+      "mutation": {
+        "operation": "replace-type-target",
+        "target": "./dist%2fexperimental/index.d.ts"
+      },
+      "expectedState": "Refused",
+      "sdkHelper": "must-observe"
+    },
+    {
+      "id": "preview/node-modules-target",
+      "provider": "preview",
+      "plugin": true,
+      "mutation": {
+        "operation": "replace-type-target",
+        "target": "./dist/node_modules/index.d.ts"
+      },
+      "expectedState": "Refused",
+      "sdkHelper": "must-observe"
     }
   ],
   "requiredSequences": [
@@ -191,24 +220,9 @@
       "preview/remove-type-target",
       "preview/enabled"
     ],
-    [
-      "preview/enabled",
-      "preview/remove-entry",
-      "preview/enabled"
-    ],
-    [
-      "preview/enabled",
-      "preview/real-type-reexport",
-      "preview/enabled"
-    ],
-    [
-      "preview/enabled",
-      "preview/disabled",
-      "preview/enabled"
-    ]
+    ["preview/enabled", "preview/remove-entry", "preview/enabled"],
+    ["preview/enabled", "preview/real-type-reexport", "preview/enabled"],
+    ["preview/enabled", "preview/disabled", "preview/enabled"]
   ],
-  "requiredConcurrentProjects": [
-    "published/enabled",
-    "preview/enabled"
-  ]
+  "requiredConcurrentProjects": ["published/enabled", "preview/enabled"]
 }

@@ -71,6 +71,10 @@ fn simultaneous_real_same_version_packages_have_distinct_type_capabilities() {
         .unwrap()
         .unwrap();
     assert_eq!(helper.kind, Kind::Alias);
+    assert_eq!(
+        helper.sha256,
+        "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b"
+    );
     assert_eq!(helper.parameters.len(), 1);
     assert!(helper.parameters.first().unwrap().string_constraint);
     let published_page = published
@@ -87,9 +91,20 @@ fn simultaneous_real_same_version_packages_have_distinct_type_capabilities() {
     assert_eq!(preview_page.parameters.len(), 2);
     assert!(preview_page.parameters.first().unwrap().string_constraint);
     assert!(preview_page.parameters.last().unwrap().unconstrained);
-    assert!(published_page.path.starts_with(published_root));
-    assert!(helper.path.starts_with(preview_root));
-    assert!(preview_page.path.starts_with(preview_root));
+    assert_eq!(
+        published_page.path,
+        published_root.join("dist/index-u4XkZVDG.d.ts")
+    );
+    assert_eq!(helper.path, preview_root.join("dist/index-BA_Jc-EQ.d.ts"));
+    assert_eq!(
+        preview_page.path,
+        preview_root.join("dist/index-BA_Jc-EQ.d.ts")
+    );
+    assert_eq!(
+        &preview_files.get(&helper.path).unwrap()
+            [helper.start_byte as usize..helper.end_byte as usize],
+        "type RoutePropsForFilePath<FilePath extends string> = [RouteNamesForFilePath<FilePath>] extends [never] ? RouteParamsGeneric : RouteMap[RouteNamesForFilePath<FilePath>]['params'];"
+    );
     let counts = (published_reads.borrow().len(), preview_reads.borrow().len());
     assert!(
         published
@@ -108,17 +123,23 @@ fn simultaneous_real_same_version_packages_have_distinct_type_capabilities() {
         counts,
         "warm symbol queries perform no reads"
     );
-    assert!(
-        published_reads
-            .borrow()
-            .iter()
-            .all(|path| path.starts_with(published_root))
+    assert_eq!(
+        *published_reads.borrow(),
+        [
+            published_entry,
+            published_root.join("dist/index-u4XkZVDG.ts"),
+            published_root.join("dist/index-u4XkZVDG.tsx"),
+            published_root.join("dist/index-u4XkZVDG.d.ts"),
+        ]
     );
-    assert!(
-        preview_reads
-            .borrow()
-            .iter()
-            .all(|path| path.starts_with(preview_root))
+    assert_eq!(
+        *preview_reads.borrow(),
+        [
+            preview_entry,
+            preview_root.join("dist/index-BA_Jc-EQ.ts"),
+            preview_root.join("dist/index-BA_Jc-EQ.tsx"),
+            preview_root.join("dist/index-BA_Jc-EQ.d.ts"),
+        ]
     );
 }
 

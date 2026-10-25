@@ -198,10 +198,23 @@ where
                 cstr!("declaration {} is unavailable", path.display()),
             )
         })?;
+        self.capture_module(path, &source)
+    }
+
+    fn capture_module(&mut self, path: &Path, source: &str) -> Result<(), Refusal> {
+        if self.modules.contains_key(path) {
+            return Ok(());
+        }
+        if self.modules.len() >= 64 {
+            return Err(Refusal::new(
+                "export-file-budget",
+                "declaration export graph exceeds the bounded file budget",
+            ));
+        }
         self.counts.parsed_files += 1;
         self.counts.parsed_bytes += source.len();
         self.modules
-            .insert(path.to_path_buf(), parse_module(path, &source)?);
+            .insert(path.to_path_buf(), parse_module(path, source)?);
         Ok(())
     }
 
@@ -249,13 +262,14 @@ where
         };
         for suffix in suffixes {
             let candidate = PathBuf::from(cstr!("{stem}{suffix}"));
-            if (self.read)(&candidate)?.is_some() {
+            if let Some(source) = (self.read)(&candidate)? {
                 if !suffix.starts_with(".d.") {
                     return Err(Refusal::new(
                         "source-shadows-declaration",
                         "a source file wins before the expected declaration target",
                     ));
                 }
+                self.capture_module(&candidate, &source)?;
                 self.resolved.insert(key, candidate.clone());
                 return Ok(candidate);
             }

@@ -109,6 +109,21 @@ pub(super) fn experimental_type_target(
     let exports = member(&manifest, "exports").ok_or_else(|| {
         Refusal::new("missing-package-exports", "package exports are unavailable")
     })?;
+    let OrderedValue::Object(subpaths) = exports else {
+        return Err(Refusal::new(
+            "unsupported-exports-root",
+            "an explicit subpath exports object is required",
+        ));
+    };
+    if subpaths
+        .iter()
+        .any(|(key, _)| key != "." && !key.starts_with("./"))
+    {
+        return Err(Refusal::new(
+            "mixed-exports-root",
+            "package exports mix subpaths with condition or invalid keys",
+        ));
+    }
     let entry = member(exports, "./experimental").ok_or_else(|| {
         Refusal::new(
             "missing-experimental-entry",
@@ -118,11 +133,13 @@ pub(super) fn experimental_type_target(
     let target = select(entry, active_conditions, false)?
         .ok_or_else(|| Refusal::new("no-condition-winner", "no explicit type target wins"))?;
     if !target.starts_with("./")
-        || target
-            .split('/')
-            .skip(1)
-            .any(|part| part.is_empty() || matches!(part, "." | ".."))
-        || target.contains(['\\', '?', '#'])
+        || target.split('/').skip(1).any(|part| {
+            part.is_empty()
+                || matches!(part, "." | "..")
+                || part.eq_ignore_ascii_case("node_modules")
+        })
+        || target.contains(['\\', '?', '#', '%'])
+        || target.chars().any(char::is_control)
         || ![".d.ts", ".d.mts", ".d.cts"]
             .iter()
             .any(|suffix| target.ends_with(suffix))
@@ -246,6 +263,10 @@ mod tests {
     fn duplicate_ambiguous_and_incomplete_targets_are_explicit_refusals() {
         for (source, code) in [
             (
+                r#"{"exports":{"./experimental":{"types":"./a.d.ts"},"default":"./a.d.ts"}}"#,
+                "mixed-exports-root",
+            ),
+            (
                 r#"{"exports":{"./experimental":{"types":"./a.d.ts","types":"./b.d.ts"}}}"#,
                 "invalid-package-json",
             ),
@@ -255,6 +276,14 @@ mod tests {
             ),
             (
                 r#"{"exports":{"./experimental":{"types":"../outside.d.ts"}}}"#,
+                "unsupported-type-target",
+            ),
+            (
+                r#"{"exports":{"./experimental":{"types":"./dist%2fexperimental/index.d.ts"}}}"#,
+                "unsupported-type-target",
+            ),
+            (
+                r#"{"exports":{"./experimental":{"types":"./dist/node_modules/index.d.ts"}}}"#,
                 "unsupported-type-target",
             ),
             (
