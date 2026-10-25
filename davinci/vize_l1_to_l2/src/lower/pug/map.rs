@@ -24,7 +24,7 @@ struct Segment {
 
 #[cfg(test)]
 mod tests {
-    use super::PugSourceMap;
+    use super::{PugSourceMap, StdVec};
 
     #[test]
     fn reverse_positions_only_accept_exact_authored_copies() {
@@ -36,7 +36,7 @@ mod tests {
         assert_eq!(
             (0..15)
                 .map(|at| map.verbatim_offset_to_html(at))
-                .collect::<Vec<_>>(),
+                .collect::<StdVec<_>>(),
             [
                 None,
                 None,
