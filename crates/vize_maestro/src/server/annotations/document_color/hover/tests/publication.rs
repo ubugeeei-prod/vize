@@ -4,7 +4,7 @@
 use crate::server::{MaestroServer, project_contexts::DocumentServer};
 use futures::{FutureExt, channel::oneshot, executor::block_on};
 use tower_lsp::{
-    LspService,
+    LanguageServer, LspService,
     jsonrpc::Error,
     lsp_types::{
         HoverParams, Position, TextDocumentContentChangeEvent, TextDocumentIdentifier,
@@ -37,11 +37,7 @@ fn completed_whole_color_hover_is_refused_after_async_source_mutation() {
                 work_done_progress_params: Default::default(),
             };
             let owner = DocumentServer::primary(server);
-            let response = owner
-                .local_hover_response(&params)
-                .unwrap()
-                .unwrap()
-                .unwrap();
+            let response = server.hover(params).await.unwrap().unwrap();
             let wanted = serde_json::json!({"contents":{"kind":"markdown","value":super::DOCUMENTATION},"range":{
                 "start":super::position(source,offset),"end":super::position(source,offset+7)
             }});
