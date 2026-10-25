@@ -4456,7 +4456,6 @@ dependencies = [
  "serde_json",
  "tempfile",
  "vize_l0",
- "which",
 ]
 
 [[package]]
