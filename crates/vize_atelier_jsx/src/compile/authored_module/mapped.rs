@@ -8,7 +8,7 @@ pub(super) struct ModuleWriter<'a> {
     source: &'a str,
     components: &'a [JsxComponent],
     origins: &'a [crate::emission::RootSourceMap],
-    maps: Vec<Option<SourceMap>>,
+    maps: Vec<Option<SourceMap<'a>>>,
     code: String,
     map: Option<SourceMapBuilder>,
 }
