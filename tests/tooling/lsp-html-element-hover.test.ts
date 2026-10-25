@@ -216,14 +216,14 @@ await test("successful native Corsa HTML hovers include the selected documentati
         rows: nativeRows,
       },
     ];
-    for (const language of ["pug", "PUG", "jade", "JADE"]) {
+    for (const [languageIndex, language] of ["pug", "PUG", "jade", "JADE"].entries()) {
       const text = `<!-- Ω🧭 -->\n<template lang="${language}">\n  button(disabled) Save\n  h2 Section\n  a(href="/") Home\n  input(type="text")\n  search Find\n  sub 2\n</template>\n`;
       for (const [suffix, newline] of [
         ["lf", "\n"],
         ["crlf", "\r\n"],
       ]) {
         documents.push({
-          name: `${language}-${suffix}.vue`,
+          name: `${languageIndex}-${language}-${suffix}.vue`,
           text: text.replaceAll("\n", newline),
           rows: nativeRows.map((row, index) => ({
             ...row,
@@ -239,6 +239,11 @@ await test("successful native Corsa HTML hovers include the selected documentati
         });
       }
     }
+    assert.equal(
+      new Set(documents.map(({ name }) => name.toLowerCase())).size,
+      documents.length,
+      "independent dialect fixtures must name distinct files on case-insensitive hosts",
+    );
     for (const { name, text, rows: documentRows } of documents) {
       const documentUri = pathToFileURL(path.join(workspace, name)).href;
       if (name !== "App.vue") {
