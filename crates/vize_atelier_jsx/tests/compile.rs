@@ -192,5 +192,8 @@ fn ssr_stateful_component_roles_preserve_client_mode_metadata() {
             .collect::<Vec<_>>(),
         [JsxOutputMode::Vdom, JsxOutputMode::Vapor]
     );
-    assert!(out.module_code().contains("__ssrInlineRender: true"));
+    insta::assert_snapshot!(
+        "ssr_stateful_component_roles_module_10701",
+        out.module_code()
+    );
 }
