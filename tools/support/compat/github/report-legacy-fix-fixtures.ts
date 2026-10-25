@@ -10,6 +10,11 @@ import {
   nativeShutdownProtocolSource,
   newNativeShutdownProtocolCases,
 } from "./native-shutdown-protocol-fixtures.ts";
+import {
+  NATIVE_BETA_DTO_PROTOCOL_ID,
+  nativeBetaDtoProtocolSource,
+  newNativeBetaDtoProtocolCases,
+} from "./native-beta-dto-fixtures.ts";
 
 /** PRs opened before this (just after the gate merged) stay report-only. */
 export const GATE_SINCE = "2026-10-20T06:00:00Z";
@@ -76,6 +81,21 @@ export function legacyProducts(paths: readonly string[]): Product[] {
     }
   }
   return [...products].sort((left, right) => left.localeCompare(right));
+}
+
+// Route only one explicitly registered protocol ID; malformed/unknown rows
+// remain with the original closed validator and cannot disappear in filtering.
+function protocolPartition(value: unknown, id: string, include: boolean): unknown {
+  if (!Array.isArray(value)) return value;
+  return value.filter((row: unknown) => {
+    const matches =
+      row !== null &&
+      typeof row === "object" &&
+      !Array.isArray(row) &&
+      "id" in row &&
+      row.id === id;
+    return matches === include;
+  });
 }
 
 function sha256(bytes: Buffer): string {
@@ -198,18 +218,36 @@ function checkProduct(
     const canonPaths = paths.filter((path) => path.startsWith("crates/vize_canon/src/"));
     const protocolRequired =
       product === "typechecker" && canonPaths.some(nativeShutdownProtocolSource);
+    const dtoProtocols =
+      product === "typechecker"
+        ? newNativeBetaDtoProtocolCases(
+            protocolPartition(before?.protocolCases, NATIVE_BETA_DTO_PROTOCOL_ID, true),
+            protocolPartition(manifest.protocolCases, NATIVE_BETA_DTO_PROTOCOL_ID, true),
+            readFile,
+          )
+        : [];
+    const dtoRegistered = dtoProtocols.includes(NATIVE_BETA_DTO_PROTOCOL_ID);
     const batchRequired =
-      product !== "typechecker" || canonPaths.some((path) => !nativeShutdownProtocolSource(path));
+      product !== "typechecker" ||
+      canonPaths.some(
+        (path) =>
+          !nativeShutdownProtocolSource(path) &&
+          !(dtoRegistered && nativeBetaDtoProtocolSource(path)),
+      );
     const protocols =
       product === "typechecker"
-        ? newNativeShutdownProtocolCases(before?.protocolCases, manifest.protocolCases, readFile)
+        ? newNativeShutdownProtocolCases(
+            protocolPartition(before?.protocolCases, NATIVE_BETA_DTO_PROTOCOL_ID, false),
+            protocolPartition(manifest.protocolCases, NATIVE_BETA_DTO_PROTOCOL_ID, false),
+            readFile,
+          )
         : [];
     const registered =
       (!batchRequired || cases.length > 0) && (!protocolRequired || protocols.length > 0);
     return {
       product,
       state: registered ? "new-inputs-registered" : "new-input-missing",
-      cases: [...cases, ...protocols],
+      cases: [...cases, ...protocols, ...dtoProtocols],
     };
   } catch (error) {
     return { product, state: "invalid-manifest-or-input", cases: [], reason: String(error) };
