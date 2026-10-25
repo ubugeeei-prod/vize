@@ -38,7 +38,7 @@
   "scripts": {
     "build": "vp pack",
     "check": "vp check src vite.config.ts",
-    "test": "node --test test/packed-hosts.test.mjs"
+    "test": "node --test test/packed-hosts.test.mjs test/runtime-renderers.test.mjs"
   },
   "dependencies": {
     "@jridgewell/remapping": "2.3.5",
