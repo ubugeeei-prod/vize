@@ -2,24 +2,40 @@
   "name": "prettier-plugin-vize",
   "version": "0.474.0",
   "description": "Prettier integration for Vize Glyph Vue and Art formatting",
-  "keywords": ["prettier", "plugin", "vize", "vue", "formatter"],
+  "keywords": [
+    "formatter",
+    "plugin",
+    "prettier",
+    "vize",
+    "vue"
+  ],
   "homepage": "https://github.com/ubugeeei-prod/vize",
-  "bugs": { "url": "https://github.com/ubugeeei-prod/vize/issues" },
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/ubugeeei-prod/vize",
     "directory": "npm/prettier"
   },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "type": "module",
   "sideEffects": false,
-  "files": ["dist", "README.md"],
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
   "exports": {
-    ".": { "types": "./dist/index.d.mts", "import": "./dist/index.mjs" }
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    }
   },
-  "publishConfig": { "access": "public" },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "vp pack",
     "test": "node --test src/*.test.ts",
@@ -27,8 +43,9 @@
     "check:fix": "vp check --fix src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts"
   },
-  "dependencies": { "@vizejs/native": "workspace:*" },
-  "peerDependencies": { "prettier": ">=3.9.10 <4" },
+  "dependencies": {
+    "@vizejs/native": "workspace:*"
+  },
   "devDependencies": {
     "@types/node": "catalog:typescript",
     "prettier": "3.9.10",
@@ -36,7 +53,12 @@
     "vite-plus": "catalog:vite-stack",
     "vue": "catalog:vue-stable"
   },
-  "engines": { "node": ">=22" },
+  "peerDependencies": {
+    "prettier": ">=3.9.10 <4"
+  },
+  "engines": {
+    "node": ">=22"
+  },
   "metadata": {
     "vize": {
       "stability": "experimental",
