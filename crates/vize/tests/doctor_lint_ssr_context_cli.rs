@@ -140,16 +140,16 @@ fn client_only_apps_keep_non_ssr_boundary_findings() {
     write(
         directory.path(),
         "src/App.vue",
-        "<script setup>\nawait Promise.resolve();\nwindow.innerWidth;\n</script><template><div /></template>",
+        "<script setup>\nwindow.innerWidth;\n</script><template><div>{{ JSON.parse('{}') }}</div></template>",
     );
-    let (doctor, lint, cross_file) = packets(directory.path(), "client-only-async");
+    let (doctor, lint, cross_file) = packets(directory.path(), "client-only-error-boundary");
     assert_eq!(
         doctor
             .findings()
             .iter()
             .map(|finding| finding.code.as_str())
             .collect::<Vec<_>>(),
-        ["VIZE_DOCTOR_CF_ASYNC_WITHOUT_SUSPENSE"]
+        ["VIZE_DOCTOR_CF_UNCAUGHT_ERROR_BOUNDARY"]
     );
     assert_eq!(rule_ids(&lint), Vec::<&str>::new());
     assert_eq!(rule_ids(&cross_file), ["cross-file"]);

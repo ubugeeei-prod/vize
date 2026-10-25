@@ -26,7 +26,13 @@ fn project_ssr_capability_preserves_the_public_boundary_group_switch() {
         analyzer.set_ssr_enabled(ssr_enabled);
         let mut single = vize_croquis::Analyzer::with_options(AnalyzerOptions::full());
         single.analyze_script_setup("await Promise.resolve(); window.innerWidth;");
-        analyzer.add_file_with_analysis(Path::new("App.vue"), "", single.finish());
+        let mut analysis = single.finish();
+        // Supply the macro fact directly: this checks group/context policy,
+        // independently of the script parser's await-fact producer.
+        analysis
+            .macros
+            .add_top_level_await("Promise.resolve()".into(), 0, 23);
+        analyzer.add_file_with_analysis(Path::new("App.vue"), "", analysis);
         let result = analyzer.analyze();
         let mut codes = result
             .diagnostics
