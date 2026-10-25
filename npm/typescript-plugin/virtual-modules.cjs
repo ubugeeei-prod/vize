@@ -94,6 +94,10 @@ function installVueVirtualModules(ts, info) {
     ).resolvedModule;
     const resolvedFileName = result?.resolvedFileName.replace(/(\.(?:vue|art))\.tsx?$/, "$1");
     if (!isSfc(name)) return result;
+    // Respect a real declaration or TypeScript module selected by TypeScript,
+    // such as Card.d.vue.ts. Only our nonexistent .vue.ts probe is virtual.
+    if (result && !isSfc(result.resolvedFileName) && fileExists(result.resolvedFileName))
+      return result;
     if (!resolvedFileName || !isSfc(resolvedFileName) || !fileExists(resolvedFileName))
       return undefined;
     return { ...result, resolvedFileName, extension: ts.Extension.Ts };
