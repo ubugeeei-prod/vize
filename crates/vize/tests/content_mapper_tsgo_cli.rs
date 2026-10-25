@@ -10,6 +10,7 @@ const JAVASCRIPT_TSC_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_JAVASCRIPT_TSC";
 const VUE_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_VUE";
 
 mod const_enum_import;
+mod contextual_prop_anchors;
 mod dynamic_template_refs;
 mod generic_constructor_slots;
 mod global_components;

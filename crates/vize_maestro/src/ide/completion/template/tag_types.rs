@@ -28,9 +28,10 @@ pub(super) async fn classify(
     ctx: &IdeContext<'_>,
     analysis: &SfcCroquisAnalysis,
     bridge: &CorsaBridge,
+    prefix: &str,
 ) -> BTreeMap<String, bool> {
     let mut stage = "script_setup";
-    let result = classify_inner(ctx, analysis, bridge, &mut stage).await;
+    let result = classify_inner(ctx, analysis, bridge, prefix, &mut stage).await;
     if capture_enabled() {
         tracing::warn!(target: "vize_component_types", evidence = %json!({
             "uri":ctx.uri.as_str(),"source":ctx.content,"stage":stage,"result":result
@@ -43,6 +44,7 @@ async fn classify_inner(
     ctx: &IdeContext<'_>,
     analysis: &SfcCroquisAnalysis,
     bridge: &CorsaBridge,
+    prefix: &str,
     stage: &mut &'static str,
 ) -> Option<BTreeMap<String, bool>> {
     if !analysis.croquis.bindings.is_script_setup || ctx.state.legacy_vue2_enabled() {
@@ -75,7 +77,11 @@ async fn classify_inner(
         .bindings
         .iter()
         .filter_map(|(name, kind)| {
+            // Only labels this request can emit need native classification.
+            // Use the emitter's exact authored/kebab spellings, including its
+            // case policy, so aliases and colliding labels remain candidates.
             if matches!(kind, BindingType::Props | BindingType::LiteralConst)
+                || !super::tag_names::component_matches_prefix(name, prefix)
                 || !(name.chars().next().is_some_and(char::is_uppercase)
                     || crate::ide::definition::component_import::resolve_component_file(ctx, name)
                         .is_some())

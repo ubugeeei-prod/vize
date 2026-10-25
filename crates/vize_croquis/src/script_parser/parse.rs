@@ -194,6 +194,7 @@ pub fn parse_script_with_options(source: &str, options: ScriptParserOptions) -> 
         SourceType::from_path("script.ts").unwrap_or_default(),
         false,
         false,
+        false,
         None,
     )
 }
@@ -213,6 +214,7 @@ pub(crate) fn parse_script_plain_with_exports(
     jsx: bool,
     skip_diagnostics: bool,
     occurrences: bool,
+    unused: bool,
     exports: Option<&mut ModuleExportCapture>,
 ) -> ScriptParseResult {
     let path = if jsx { "script.tsx" } else { "script.ts" };
@@ -222,6 +224,7 @@ pub(crate) fn parse_script_plain_with_exports(
         SourceType::from_path(path).unwrap_or_default(),
         skip_diagnostics,
         occurrences,
+        unused,
         exports,
     )
 }
@@ -232,6 +235,7 @@ pub(crate) fn parse_script_with_options_source_type(
     source_type: SourceType,
     skip_diagnostics: bool,
     occurrences: bool,
+    unused: bool,
     mut exports: Option<&mut ModuleExportCapture>,
 ) -> ScriptParseResult {
     let allocator = Allocator::default();
@@ -242,7 +246,13 @@ pub(crate) fn parse_script_with_options_source_type(
     );
     ModuleExportCapture::observe_if(exports.as_deref_mut(), &ret);
     if ret.panicked {
-        return ScriptParseResult::default();
+        let mut result = ScriptParseResult::default();
+        if unused {
+            result
+                .setup_context
+                .set_module_read_facts(super::ModuleReadFacts::Unknown);
+        }
+        return result;
     }
 
     let source_len = source.len() as u32;
@@ -298,6 +308,16 @@ pub(crate) fn parse_script_with_options_source_type(
     if !ret.diagnostics.is_empty() {
         result.setup_context.clear_ssr_facts();
         result.occurrence_capture = None;
+    }
+    if unused {
+        result.setup_context.set_module_read_facts(profile!(
+            "croquis.script_plain.module_reads",
+            if ret.diagnostics.is_empty() {
+                super::module_reads::observe(&ret.program)
+            } else {
+                super::ModuleReadFacts::Unknown
+            }
+        ));
     }
     result.macros.invalidate_default_objects();
     result

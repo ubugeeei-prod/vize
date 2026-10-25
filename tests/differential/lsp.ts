@@ -16,6 +16,7 @@ import {
 import { inspectLspObservation, validateLspReport } from "./lsp-report.ts";
 import { LspWire } from "./lsp-wire.ts";
 import { lspWorkspace, observeLspWorkspace } from "./lsp-workspace.ts";
+import { sourceSessionUnsupportedLegacy } from "./lsp-source-sessions.ts";
 import {
   errorText,
   hasCapabilities,
@@ -39,6 +40,10 @@ async function runLspCase(
     native: { state: "unsupported", reason: NATIVE_REASON },
     comparison: { state: "not-compared", reason: NATIVE_REASON },
   };
+  if (fixture.data.sourceSession) {
+    row.legacy = sourceSessionUnsupportedLegacy();
+    return row;
+  }
   let workspace;
   let wire;
   try {
@@ -147,6 +152,7 @@ export async function runLspPack({
       plannedCases: loaded.cases.length,
       legacyMatches: 0,
       legacyFailures: 0,
+      legacyUnsupported: 0,
       baselineDrift: 0,
       nativeUnsupported: loaded.cases.length,
       pairedComparisons: 0,
@@ -202,6 +208,7 @@ export async function runLspPack({
     plannedCases: loaded.cases.length,
     legacyMatches: report.rows.filter((row) => row.legacy.verdict === "matched-reference").length,
     legacyFailures: report.rows.filter((row) => row.legacy.state === "failed").length,
+    legacyUnsupported: report.rows.filter((row) => row.legacy.state === "unsupported").length,
     baselineDrift: report.rows.filter((row) => row.legacy.verdict === "baseline-drift").length,
     nativeUnsupported: loaded.cases.length,
     pairedComparisons: 0,

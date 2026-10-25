@@ -1,0 +1,2 @@
+export const token = "imported";
+export const enum State { Ready }

@@ -48,6 +48,7 @@ pub(super) fn analyze_application(
     public_sfc: bool,
 ) -> Result<DoctorReport, DoctorError> {
     let mut analyzer = CrossFileAnalyzer::with_project_root(doctor_options(), root);
+    analyzer.set_ssr_enabled(super::super::project_ssr::ssr_enabled(root));
     let mut source_maps = FxHashMap::default();
     let mut public_sfc_findings = Vec::new();
     let mut ordered_sources = sources.iter().collect::<Vec<_>>();

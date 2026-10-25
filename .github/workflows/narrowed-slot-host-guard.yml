@@ -1,0 +1,69 @@
+name: Narrowed slot host guard
+
+on:
+  pull_request:
+    paths:
+      - "crates/vize_canon/src/virtual_ts/expressions/generic_props_call.rs"
+      - "crates/vize_canon/tests/narrowed_slot_host_guard.rs"
+      - "tests/_fixtures/differential/typechecker/narrowed-slot-host-guard-10660/**"
+      - "tools/support/compat/content-mapper/narrowed-slot-guard.ts"
+      - "tools/support/compat/content-mapper/native-capture.ts"
+      - "tests/tooling/differential-dialect-coverage.test.mjs"
+      - ".github/workflows/narrowed-slot-host-guard.yml"
+
+permissions: { contents: read }
+concurrency:
+  group: narrowed-slot-guard-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  real-mapper-and-raw-native:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    env:
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "26.12.1", package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: narrowed-slot-guard, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - name: Build the exact source CLI
+        run: |
+          set -euo pipefail
+          [[ "$(git rev-parse HEAD)" == "$SOURCE_SHA" ]]
+          cargo build --locked --profile ci -p vize --bin vize
+      - name: Install the exact reported packages
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/narrowed-slot-consumer"
+          cd "$RUNNER_TEMP/narrowed-slot-consumer"
+          npm init -y
+          npm install --prefer-online --ignore-scripts --no-audit --no-fund --save-exact vize@0.569.0 typescript@7.1.0-beta vue@3.5.44
+          npm view typescript@7.1.0-beta gitHead dist.integrity --json > beta-metadata.json
+      - name: Capture complete mapper and pre-projection native vectors
+        run: |
+          node tools/support/compat/content-mapper/narrowed-slot-guard.ts \
+            --consumer "$RUNNER_TEMP/narrowed-slot-consumer" \
+            --candidate "$GITHUB_WORKSPACE/target/ci/vize" \
+            --source "$SOURCE_SHA" \
+            --output "$RUNNER_TEMP/narrowed-slot-evidence"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: narrowed-slot-guard-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/narrowed-slot-evidence
+            ${{ runner.temp }}/narrowed-slot-consumer/package.json
+            ${{ runner.temp }}/narrowed-slot-consumer/package-lock.json
+            ${{ runner.temp }}/narrowed-slot-consumer/beta-metadata.json
+            !${{ runner.temp }}/narrowed-slot-evidence/**/node_modules/**
+          if-no-files-found: error
+          retention-days: 7

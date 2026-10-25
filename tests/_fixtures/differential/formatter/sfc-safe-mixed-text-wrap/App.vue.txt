@@ -1,0 +1,25 @@
+<script setup lang="ts">
+import { computed, ref } from "vue";
+
+const count = ref(0);
+const unread = ref(0);
+const name = ref("");
+</script>
+
+<template>
+  <div>
+    <span class="counter">{{ count }}/{{ count + 1 }}問目 — この行は printWidth の 120 桁を超えるくらい長い文字列を含んでいます、折り返してほしい</span>
+    <button
+      :aria-label="
+        unread > 0
+          ? `${unread} unread messages are waiting for you in the inbox right now, please read`
+          : 'no unread messages at all'
+      "
+    >
+      go
+    </button>
+    <MyButton class="nav-toggle" icon @click.stop="openNav"
+      ><MyIcon large>menu</MyIcon></MyButton
+    >
+  </div>
+</template>

@@ -1,0 +1,92 @@
+name: Vite relative style origins
+on:
+  pull_request:
+    paths:
+      - .github/workflows/vite-style-relative-imports.yml
+      - npm/builder/vite/**
+      - npm/native/**
+      - crates/vize_atelier_sfc/src/vite_plugin/**
+      - tools/support/compat/vite-style-relative-imports.mjs
+      - tests/_fixtures/_projects/vize-style-relative-imports-host/**
+permissions: { contents: read }
+concurrency:
+  group: vite-style-relative-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  CARGO_TERM_COLOR: always
+  SOURCE_SHA: ${{ github.event.pull_request.head.sha }}
+jobs:
+  style-origins:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          version: latest
+          node-version-file: package.json
+          run-install: false
+          cache: true
+          cache-save: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          {
+            key: vite-relative-style-origins,
+            cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}",
+          }
+      - uses: ./.github/actions/setup-rust-script
+      - name: Install locked source adapter dependencies and exact CSS host
+        run: |
+          vp install --frozen-lockfile --prefer-offline --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...'
+          npm ci --prefix tests/_fixtures/_projects/vize-style-relative-imports-host --ignore-scripts --no-audit --no-fund
+          if [ -e node_modules/lightningcss ] || [ -L node_modules/lightningcss ]; then
+            mv node_modules/lightningcss "$RUNNER_TEMP/vize-original-lightningcss-link"
+          fi
+          ln -s "$GITHUB_WORKSPACE/tests/_fixtures/_projects/vize-style-relative-imports-host/node_modules/lightningcss" node_modules/lightningcss
+      - name: Build exact source addon and candidate adapter
+        run: |
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          vp run --workspace-root build:native:test
+          vp run --workspace-root build:vite-plugin
+          node npm/builder/vite/scripts/run-tests.mjs --require-prepared
+      - name: Retain all locked adapter tests and cross-root build contracts
+        working-directory: npm/builder/vite
+        run: |
+          node ../../native/scripts/test-preparation.mjs node scripts/run-tests.mjs --require-prepared
+          node ../../native/scripts/test-preparation.mjs node src/test.ts
+          node ../../native/scripts/test-preparation.mjs node --test src/vite-plus/*.test.ts
+      - name: Verify real CSS imports assets checkouts dev and SSR with the source addon
+        env:
+          VIZE_STYLE_RELATIVE_MATRIX: "1"
+          VIZE_STYLE_RELATIVE_IMPORTS_REPORT: ${{ runner.temp }}/vite-relative-style-matrix.json
+        run: node npm/native/scripts/test-preparation.mjs node --test npm/builder/vite/src/style-relative-imports.test.ts
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          repository: naitokosuke/vize-style-relative-import-repro
+          ref: 9df512b6be97428d37ca4e4d769c33b2babd512e
+          path: .tmp/vize-style-relative-public
+          persist-credentials: false
+      - name: Install the untouched reported consumer with exact pnpm
+        working-directory: .tmp/vize-style-relative-public
+        run: |
+          npx --yes pnpm@12.9.0 install --frozen-lockfile
+          ln -s "$GITHUB_WORKSPACE/tests/_fixtures/_projects/vize-style-relative-imports-host/node_modules/lightningcss" node_modules/lightningcss
+      - name: Prove published failure then cold and warm source success on the original consumer
+        env:
+          VIZE_STYLE_REQUIRE_SOURCE_NATIVE: "1"
+        run: node npm/native/scripts/test-preparation.mjs node tools/support/compat/vite-style-relative-imports.mjs --project .tmp/vize-style-relative-public --candidate-root npm/builder/vite --output "$RUNNER_TEMP/vite-relative-public"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: vite-relative-style-${{ env.SOURCE_SHA }}-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/vite-relative-style-matrix.json
+            ${{ runner.temp }}/vite-relative-public/
+          if-no-files-found: error
+          retention-days: 14

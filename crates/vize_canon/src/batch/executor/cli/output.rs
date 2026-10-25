@@ -12,6 +12,7 @@ use crate::batch::executor::diagnostics::{
     DiagnosticMapper, dedup_diagnostics, restore_authored_paths_in_messages,
 };
 use crate::batch::{Diagnostic, VirtualProject};
+use vize_carton::{profile, profiler::global_profiler};
 
 pub(super) fn parse_output_diagnostics(
     output: &Output,
@@ -21,29 +22,87 @@ pub(super) fn parse_output_diagnostics(
     let mut decoded = Vec::new();
     let mut mapper = DiagnosticMapper::new(project);
     let mut paths = CliPathResolver::new(project.virtual_root());
-    #[expect(clippy::disallowed_types, reason = "from_utf8_lossy yields std Cow")]
-    let stdout = std::string::String::from_utf8_lossy(&output.stdout);
-    decode_cli_diagnostics(
-        stdout.as_ref(),
-        project,
-        &mut mapper,
-        &mut paths,
-        &mut decoded,
+    profile!("canon.corsa.cli.parse.decode", {
+        #[expect(clippy::disallowed_types, reason = "from_utf8_lossy yields std Cow")]
+        let stdout = std::string::String::from_utf8_lossy(&output.stdout);
+        decode_cli_diagnostics(
+            stdout.as_ref(),
+            project,
+            &mut mapper,
+            &mut paths,
+            &mut decoded,
+        );
+        #[expect(clippy::disallowed_types, reason = "from_utf8_lossy yields std Cow")]
+        let stderr = std::string::String::from_utf8_lossy(&output.stderr);
+        decode_cli_diagnostics(
+            stderr.as_ref(),
+            project,
+            &mut mapper,
+            &mut paths,
+            &mut decoded,
+        );
+    });
+    let profiler = global_profiler();
+    if profiler.is_enabled() {
+        profiler.record_counter_enabled("canon.corsa.cli.decoded.entries", decoded.len() as u64);
+        let bytes = decoded
+            .iter()
+            .map(|entry| match entry {
+                Decoded::Project(diagnostic) => diagnostic.message.len() as u64,
+                Decoded::Raw { raw, .. } => raw.message.len() as u64,
+            })
+            .sum();
+        profiler.record_counter_enabled("canon.corsa.cli.decoded.message_bytes", bytes);
+    }
+    let diagnostics = profile!(
+        "canon.corsa.cli.parse.assemble",
+        assemble_decoded(decoded, &mut mapper, owns)
     );
-    #[expect(clippy::disallowed_types, reason = "from_utf8_lossy yields std Cow")]
-    let stderr = std::string::String::from_utf8_lossy(&output.stderr);
-    decode_cli_diagnostics(
-        stderr.as_ref(),
-        project,
-        &mut mapper,
-        &mut paths,
-        &mut decoded,
+    record_message_volume(
+        &diagnostics,
+        "canon.corsa.cli.assembled.entries",
+        "canon.corsa.cli.assembled.message_bytes",
     );
-    let diagnostics = assemble_decoded(decoded, &mut mapper, owns);
     // A single template error surfaces twice — the dynamic prop binding it sits
     // on is generated at two virtual positions that map back to the same source
     // attribute span (#1389). Collapse exact duplicates at the collection point.
-    dedup_diagnostics(restore_authored_paths_in_messages(diagnostics, project))
+    let diagnostics = profile!(
+        "canon.corsa.cli.parse.restore_paths",
+        restore_authored_paths_in_messages(diagnostics, project)
+    );
+    record_message_volume(
+        &diagnostics,
+        "canon.corsa.cli.restored.entries",
+        "canon.corsa.cli.restored.message_bytes",
+    );
+    let diagnostics = profile!(
+        "canon.corsa.cli.parse.deduplicate",
+        dedup_diagnostics(diagnostics)
+    );
+    record_message_volume(
+        &diagnostics,
+        "canon.corsa.cli.deduplicated.entries",
+        "canon.corsa.cli.deduplicated.message_bytes",
+    );
+    diagnostics
+}
+
+fn record_message_volume(
+    diagnostics: &[Diagnostic],
+    entries_key: &'static str,
+    bytes_key: &'static str,
+) {
+    let profiler = global_profiler();
+    if profiler.is_enabled() {
+        profiler.record_counter_enabled(entries_key, diagnostics.len() as u64);
+        profiler.record_counter_enabled(
+            bytes_key,
+            diagnostics
+                .iter()
+                .map(|diagnostic| diagnostic.message.len() as u64)
+                .sum(),
+        );
+    }
 }
 
 /// Every stream of one run is decoded before the one assembly pass runs, so
