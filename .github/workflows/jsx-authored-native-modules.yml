@@ -86,7 +86,12 @@ jobs:
       - name: Existing mode and Babel option producer contracts
         if: always()
         env: { INSTA_UPDATE: new }
-        run: cargo test --locked --profile ci -p vize_atelier_jsx --test compile --test ssr --test vapor_ssr --test babel_is_custom_element --test babel_merge_props --test babel_v_slots --test pragma --test v_model_argument --test v_slots_forwarding
+        run: |
+          status=0
+          for target in compile ssr vapor_ssr babel_is_custom_element babel_merge_props babel_v_slots pragma v_model_argument v_slots_forwarding; do
+            cargo test --locked --profile ci -p vize_atelier_jsx --test "$target" || status=1
+          done
+          exit "$status"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
