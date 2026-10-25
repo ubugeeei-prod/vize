@@ -56,7 +56,7 @@ impl CorsaExecutor {
             )
         ) {
             Ok(client) => client,
-            Err(error) if should_fallback_to_cli(&error) => {
+            Err(error) if !project.requires_project_session() && should_fallback_to_cli(&error) => {
                 warn_fallback(
                     FallbackStep::SessionToCli,
                     &map_corsa_error(error.as_str().into()),
@@ -83,7 +83,8 @@ impl CorsaExecutor {
         extend_diagnostic_path_uris(project, &mut uris);
         let result = match check_session_client(&mut client, project, &uris) {
             Err(error @ crate::batch::error::CorsaError::CorsaExecution { .. })
-                if explicit_config_attachment_unsupported(&error) =>
+                if !project.requires_project_session()
+                    && explicit_config_attachment_unsupported(&error) =>
             {
                 warn_fallback(FallbackStep::SessionToCli, &error);
                 check_with_cli(&self.corsa_path, project, self.checkers())
@@ -149,14 +150,17 @@ impl CorsaExecutor {
             };
             if result.is_err() {
                 state.session = None;
-                state.metrics.session_to_cli_fallbacks += 1;
-                state.metrics.last_session_to_cli_fallback = true;
+                if !project.requires_project_session() {
+                    state.metrics.session_to_cli_fallbacks += 1;
+                    state.metrics.last_session_to_cli_fallback = true;
+                }
             }
             result
         };
 
         match session_result {
             Ok(result) => Ok(result),
+            Err(error) if project.requires_project_session() => Err(error),
             Err(error) => {
                 warn_fallback(FallbackStep::SessionToCli, &error);
                 self.check_with_servers(project, servers)

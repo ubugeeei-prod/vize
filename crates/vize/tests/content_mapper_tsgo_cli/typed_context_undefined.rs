@@ -80,6 +80,20 @@ fn typed_context_values_preserve_complete_native_mapper_and_cli_packets() {
         .output()
         .unwrap();
     assert!(revision.status.success());
+    let expected_root = PathBuf::from(
+        std::env::var_os("VIZE_TEST_CONTEXT_UNDEFINED_SOURCE_ROOT")
+            .expect("actual compiled workspace root required"),
+    );
+    assert_eq!(
+        workspace_root().canonicalize().unwrap(),
+        expected_root.canonicalize().unwrap()
+    );
+    let expected_revision = std::env::var("VIZE_TEST_CONTEXT_UNDEFINED_SOURCE_REVISION")
+        .expect("actual compiled source revision required");
+    assert_eq!(
+        String::from_utf8(revision.stdout.clone()).unwrap().trim(),
+        expected_revision
+    );
     let observer = std::env::current_exe().unwrap();
     let images: Vec<_> = [
         native.as_path(),
@@ -100,6 +114,7 @@ fn typed_context_values_preserve_complete_native_mapper_and_cli_packets() {
     assert_eq!(cases.cases.len(), 15);
     let root = workspace_root().join("target/vize-tests/typed-context-undefined-10667");
     let mut observations = Vec::new();
+    let mut cli_observations = Vec::new();
     for (variant, newline, prefix) in [
         ("lf", "\n", ""),
         ("crlf", "\r\n", ""),
@@ -223,27 +238,24 @@ fn typed_context_values_preserve_complete_native_mapper_and_cli_packets() {
                 .map(|file| json!({"file":file,"diagnostics":if file == &case.file { messages.clone() } else { Vec::new() }}))
                 .collect();
             let expected = json!({"files":expected_files,"programs":[{"root":".","tsconfig":"tsconfig.native.json","compilerOptions":options,"files":files}],"errorCount":errors.len(),"warningCount":0,"fileCount":2});
-            assert_eq!(
-                output.status.code(),
-                Some(i32::from(!errors.is_empty())),
-                "CLI {variant}/{}: {:?}",
-                case.id,
-                output
-            );
-            assert!(
-                output.stderr.is_empty(),
-                "CLI {}: {:?}",
-                case.id,
-                output.stderr
-            );
-            assert_eq!(
-                serde_json::from_slice::<Value>(&output.stdout).unwrap(),
+            cli_observations.push((
+                format!("{variant}/{}", case.id),
+                output,
                 expected,
-                "CLI {variant}/{}",
-                case.id
-            );
+                i32::from(!errors.is_empty()),
+            ));
             assert_mapper_geometry(case, &source, &transform);
         }
+    }
+    assert_eq!(cli_observations.len(), 60);
+    for (name, output, expected, status) in cli_observations {
+        assert_eq!(output.status.code(), Some(status), "CLI {name}: {output:?}");
+        assert!(output.stderr.is_empty(), "CLI {name}: {:?}", output.stderr);
+        assert_eq!(
+            serde_json::from_slice::<Value>(&output.stdout).unwrap(),
+            expected,
+            "CLI {name}"
+        );
     }
     assert_eq!(observations.len(), 180);
     for (name, output, expected, status) in observations {

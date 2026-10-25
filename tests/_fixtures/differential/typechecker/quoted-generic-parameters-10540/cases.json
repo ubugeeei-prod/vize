@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10540,
+  "regressionCommit": "711b56b2499b9136d8965a59c65713a2b78540f4",
+  "sourceRevision": "711b56b2499b9136d8965a59c65713a2b78540f4",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "literal-comma-valid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Comma.vue",
+          "source": "src/Comma.vue.txt"
+        },
+        {
+          "file": "src/Edges.vue",
+          "source": "src/Edges.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "valid/src/App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "numeric-prop-invalid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Comma.vue",
+          "source": "src/Comma.vue.txt"
+        },
+        {
+          "file": "src/Edges.vue",
+          "source": "src/Edges.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "invalid/src/App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 7,
+          "column": 11,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type '\"a,b\"'."
+        }
+      ]
+    },
+    {
+      "id": "repaired-literal-prop-valid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Comma.vue",
+          "source": "src/Comma.vue.txt"
+        },
+        {
+          "file": "src/Edges.vue",
+          "source": "src/Edges.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "repaired/src/App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

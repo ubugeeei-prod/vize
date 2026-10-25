@@ -125,10 +125,29 @@ if (mode === "prepare") {
   const executables = build.filter((x) => x.reason === "compiler-artifact" && x.executable);
   assert(executables.length >= 2);
   const images = [];
+  const checkout = resolve(phase === "before" ? "before" : "source");
+  const target = resolve("target", phase === "before" ? "context-before" : "context-head");
+  const prior =
+    phase === "after" ? JSON.parse(readFileSync(join(out, "before-images.json"), "utf8")) : null;
   for (const row of executables) {
+    assert(
+      row.package_id.startsWith(`path+file://${checkout}/`),
+      "compiler artifact belongs to the actual source checkout",
+    );
+    assert(
+      row.executable.startsWith(`${target}/`),
+      "before and head executable images have isolated build ownership",
+    );
     const data = readFileSync(row.executable),
       destination = join(directory, basename(row.executable));
     copyFileSync(row.executable, destination);
+    const previous = prior?.images.find((image) => image.target.name === row.target.name);
+    if (previous)
+      assert.notEqual(
+        hash(data),
+        previous.sha256,
+        "head image must not reuse the before executable",
+      );
     images.push({
       path: row.executable,
       retained: destination,

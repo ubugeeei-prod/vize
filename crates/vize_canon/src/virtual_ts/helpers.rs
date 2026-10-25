@@ -3,6 +3,10 @@
 //! Contains utility functions for type declarations, event type mapping,
 //! identifier conversion, and template context generation.
 
+#[cfg(feature = "native")]
+pub(crate) const ERROR_COMPONENT_STUB: &str =
+    "declare const __vize_component: any;\nexport default __vize_component;\n";
+
 use std::ops::Range;
 
 mod dom_events;

@@ -109,7 +109,13 @@ export function main(argv = process.argv.slice(2)) {
     "typechecker-native-phase-forwarding.test.mjs",
     "typechecker-native-profile-corpus-fixture.mjs",
     "typechecker-native-dependency-link.test.mjs",
-    ...["graph-archive", "profile-replay", "profile-corpus", "source-custody"].flatMap((name) => [
+    ...[
+      "graph-archive",
+      "profile-replay",
+      "profile-corpus",
+      "source-custody",
+      "build-info",
+    ].flatMap((name) => [
       "typechecker-native-" + name + ".mjs",
       "typechecker-native-" + name + ".test.mjs",
     ]),

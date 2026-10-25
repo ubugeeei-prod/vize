@@ -8,6 +8,7 @@ mod template_model;
 mod template_model_modifiers;
 mod template_names;
 mod with_defaults;
+use super::generic_parameters::GenericParameters;
 pub(crate) use mappings::{PropBindingMappings, PropsSource, prop_source};
 pub(crate) use model_props::emitted_model_prop_names;
 use model_props::{append_macro_props_type_literal, append_model_props_type_literal};
@@ -41,7 +42,7 @@ fn inner_macro_type(type_args: &str) -> &str {
 pub(crate) fn generate_props_type(
     ts: &mut String,
     summary: &Croquis,
-    generic_param: Option<&str>,
+    generic_param: Option<&GenericParameters>,
     options_api_props: Option<&OptionsApiPropsSource>,
     type_only_imported_names: &FxHashSet<CompactString>,
     emission: PropsTypeEmission,
@@ -67,10 +68,7 @@ pub(crate) fn generate_props_type(
         || imported_props_would_collide;
 
     let generic_decl = generic_param
-        .map(|g| {
-            let with_defaults = strip_const_modifiers(&add_generic_defaults(g));
-            cstr!("<{with_defaults}>")
-        })
+        .map(|g| cstr!("<{}>", g.alias_declaration))
         .unwrap_or_default();
 
     ts.push_str("// ========== Exported Types ==========\n");
@@ -82,12 +80,12 @@ pub(crate) fn generate_props_type(
             ts.push_str(inner_type);
             if has_models {
                 ts.push_str(" & ");
-                append_model_props_type_literal(ts, summary, models);
+                append_model_props_type_literal(ts, summary, models, generic_param);
             }
             ts.push_str(";\n");
         } else if has_props || has_models {
             ts.push_str("type __VizeResolvedProps = ");
-            append_macro_props_type_literal(ts, summary, models);
+            append_macro_props_type_literal(ts, summary, models, generic_param);
             ts.push_str(";\n");
         } else if let Some(options_api_props) = options_api_props {
             emit_options_api_props_type(
@@ -101,21 +99,21 @@ pub(crate) fn generate_props_type(
     } else if props_already_defined {
         if has_models {
             ts.push_str("type __VizeResolvedProps = Props & ");
-            append_model_props_type_literal(ts, summary, models);
+            append_model_props_type_literal(ts, summary, models, generic_param);
             ts.push_str(";\n");
         }
     } else if let Some(inner_type) = define_props_inner_type {
         ts.push_str(unused_generic_comment(generic_param, inner_type));
         if has_models {
             append!(*ts, "export type Props{generic_decl} = {inner_type} & ");
-            append_model_props_type_literal(ts, summary, models);
+            append_model_props_type_literal(ts, summary, models, generic_param);
             ts.push_str(";\n");
         } else {
             append!(*ts, "export type Props{generic_decl} = {inner_type};\n");
         }
     } else if has_props || has_models {
         append!(*ts, "export type Props{generic_decl} = ");
-        append_macro_props_type_literal(ts, summary, models);
+        append_macro_props_type_literal(ts, summary, models, generic_param);
         ts.push_str(";\n");
     } else if let Some(options_api_props) = options_api_props {
         emit_options_api_props_type(ts, &generic_decl, options_api_props, "Props", true);
@@ -176,163 +174,22 @@ pub(super) fn strip_generic_params(type_name: &str) -> &str {
 
 /// First identifier of a generic parameter declaration, skipping the TS 5.0
 /// `const` modifier: `const T extends Tab` declares `T`, not `const`.
-fn generic_param_name(param: &str) -> &str {
-    let mut tokens = param.split_whitespace();
-    match tokens.next() {
-        Some("const") => tokens.next().unwrap_or(param),
-        Some(token) => token,
-        None => param,
-    }
+#[cfg(test)]
+fn extract_generic_names(raw: &str) -> String {
+    super::generic_parameters::GenericParameters::parse(raw).names
 }
 
-/// Extract just the generic parameter names from a full generic declaration.
-/// e.g., `"T extends Foo, P extends Bar"` → `"T, P"`
-/// e.g., `"T"` → `"T"`
-/// e.g., `"T extends Record<string, any>, U"` → `"T, U"`
-/// e.g., `"const T extends Tab"` → `"T"`
-pub(crate) fn extract_generic_names(generic_param: &str) -> String {
-    let mut names = String::default();
-    let mut depth = 0i32; // track <> nesting
-    let mut current_name = String::default();
-    let mut in_extends = false;
-
-    for ch in generic_param.chars() {
-        match ch {
-            '<' => depth += 1,
-            '>' => depth -= 1,
-            ',' if depth == 0 => {
-                let trimmed = current_name.trim();
-                if !trimmed.is_empty() {
-                    // Extract just the name (before "extends")
-                    let name = generic_param_name(trimmed);
-                    if !names.is_empty() {
-                        names.push_str(", ");
-                    }
-                    names.push_str(name);
-                }
-                current_name = String::default();
-                in_extends = false;
-                continue;
-            }
-            _ => {}
-        }
-        if depth == 0 {
-            current_name.push(ch);
-        }
+#[cfg(test)]
+fn strip_const_modifiers(raw: &str) -> String {
+    if raw.trim().is_empty() {
+        return String::default();
     }
-
-    // Handle the last parameter
-    let trimmed = current_name.trim();
-    if !trimmed.is_empty() {
-        let name = generic_param_name(trimmed);
-        if !names.is_empty() {
-            names.push_str(", ");
-        }
-        names.push_str(name);
-    }
-
-    let _ = in_extends;
-    names
+    super::generic_parameters::GenericParameters::parse(raw).alias_authored
 }
 
-/// Drop TS 5.0 `const` modifiers from a generic parameter list.
-/// The modifier is only legal on function/method/class type parameters
-/// (TS1277), so callers that splice parameters into `type`/`interface`
-/// declarations must strip it first.
-/// e.g., `"const T extends Tab = any"` → `"T extends Tab = any"`
-pub(crate) fn strip_const_modifiers(generic_param: &str) -> String {
-    let mut result = String::default();
-    let mut depth = 0i32;
-    let mut current_param = String::default();
-
-    for ch in generic_param.chars() {
-        match ch {
-            '<' => depth += 1,
-            '>' => depth -= 1,
-            ',' if depth == 0 => {
-                append_param_without_const(&mut result, current_param.trim());
-                result.push_str(", ");
-                current_param.clear();
-                continue;
-            }
-            _ => {}
-        }
-        current_param.push(ch);
-    }
-
-    let trimmed = current_param.trim();
-    if !trimmed.is_empty() {
-        append_param_without_const(&mut result, trimmed);
-    }
-
-    result
-}
-
-/// Append a single generic parameter with its leading `const` modifier removed.
-fn append_param_without_const(result: &mut String, param: &str) {
-    let stripped = param
-        .strip_prefix("const")
-        .filter(|rest| rest.starts_with(|ch: char| ch.is_ascii_whitespace()))
-        .map(str::trim_start)
-        .unwrap_or(param);
-    result.push_str(stripped);
-}
-
-/// Add `= any` defaults to each generic parameter that doesn't already have a default.
-/// e.g., `"T extends Foo, P"` → `"T extends Foo = any, P = any"`
-/// e.g., `"T = string"` → `"T = string"` (unchanged, already has default)
-pub(crate) fn add_generic_defaults(generic_param: &str) -> String {
-    let mut result = String::default();
-    let mut depth = 0i32;
-    let mut current_param = String::default();
-
-    for ch in generic_param.chars() {
-        match ch {
-            '<' => {
-                depth += 1;
-                current_param.push(ch);
-            }
-            '>' => {
-                depth -= 1;
-                current_param.push(ch);
-            }
-            ',' if depth == 0 => {
-                append_param_with_default(&mut result, current_param.trim());
-                result.push_str(", ");
-                current_param = String::default();
-            }
-            _ => {
-                current_param.push(ch);
-            }
-        }
-    }
-
-    // Handle the last parameter
-    let trimmed = current_param.trim();
-    if !trimmed.is_empty() {
-        append_param_with_default(&mut result, trimmed);
-    }
-
-    result
-}
-
-/// Append a single generic parameter with `= any` default if it doesn't have one.
-fn append_param_with_default(result: &mut String, param: &str) {
-    result.push_str(param);
-    // Check if this param already has a default (contains `=` at depth 0)
-    let mut depth = 0i32;
-    let has_default = param.chars().any(|ch| {
-        match ch {
-            '<' => depth += 1,
-            '>' => depth -= 1,
-            '=' if depth == 0 => return true,
-            _ => {}
-        }
-        false
-    });
-    if !has_default {
-        result.push_str(" = any");
-    }
+#[cfg(test)]
+fn add_generic_defaults(raw: &str) -> String {
+    super::generic_parameters::GenericParameters::parse(raw).declaration
 }
 
 #[cfg(test)]
@@ -395,10 +252,6 @@ mod tests {
                 "LongAuthoredGenericParameter extends Record<string, readonly [number, string]>, T, 日本 = 'quoted'",
             ),
             (
-                "const\r\nLongAuthoredGenericParameter extends Map<string, Set<number>>,\r\nconst T = \"quoted\"",
-                "LongAuthoredGenericParameter extends Map<string, Set<number>>, T = \"quoted\"",
-            ),
-            (
                 "const 日本 extends Record<string, '🧭'>, const T, const LongAuthoredGenericParameter = 日本",
                 "日本 extends Record<string, '🧭'>, T, LongAuthoredGenericParameter = 日本",
             ),
@@ -427,6 +280,18 @@ mod tests {
                 expected.join(", ")
             );
         }
+    }
+
+    #[test]
+    fn const_modifier_newlines_preserve_invalid_authored_input() {
+        // Both TypeScript 6 and native 7 report TS1359 on this const: a line
+        // break ends its modifier role. Do not turn it into a clean alias.
+        let raw = "const\r\nLongAuthoredGenericParameter extends Map<string, Set<number>>,\r\nconst T = \"quoted\"";
+        let plan = super::super::generic_parameters::GenericParameters::parse(raw);
+        assert_ne!(plan.diagnostics, Vec::new());
+        assert_eq!(plan.declaration, raw);
+        assert_eq!(plan.alias_declaration, raw);
+        assert_eq!(plan.alias_authored, raw);
     }
 
     #[test]

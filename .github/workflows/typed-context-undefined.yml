@@ -24,7 +24,7 @@ jobs:
       BEFORE_SHA: 7a4ab266003bfea2d13d1f5901b55d11b031a702
       CARGO_INCREMENTAL: "0"
       CARGO_BUILD_JOBS: "12"
-      CARGO_TARGET_DIR: ${{ github.workspace }}/target
+      CARGO_TARGET_DIR: ${{ github.workspace }}/target/context-head
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -81,6 +81,10 @@ jobs:
         run: node tools/support/github/typed-context-undefined-replay.mjs prepare "$RUNNER_TEMP/typed-context-undefined"
       - name: Compile the immutable before producer and record its actual failure
         working-directory: before
+        env:
+          CARGO_TARGET_DIR: ${{ github.workspace }}/target/context-before
+          VIZE_TEST_CONTEXT_UNDEFINED_SOURCE_ROOT: ${{ github.workspace }}/before
+          VIZE_TEST_CONTEXT_UNDEFINED_SOURCE_REVISION: ${{ env.BEFORE_SHA }}
         run: |
           set -euo pipefail
           directory="$RUNNER_TEMP/typed-context-undefined"
@@ -104,6 +108,9 @@ jobs:
         run: node tools/support/github/typed-context-undefined-replay.mjs seal "$RUNNER_TEMP/typed-context-undefined" after
       - name: Require full raw native mapper CLI and option outcomes
         working-directory: source
+        env:
+          VIZE_TEST_CONTEXT_UNDEFINED_SOURCE_ROOT: ${{ github.workspace }}/source
+          VIZE_TEST_CONTEXT_UNDEFINED_SOURCE_REVISION: ${{ env.SOURCE_SHA }}
         run: |
           set -euo pipefail
           directory="$RUNNER_TEMP/typed-context-undefined"

@@ -27,6 +27,15 @@ impl SetupHelperPlan {
         shadowed_helpers(summary, source, preserve_event_navigation)
     }
 
+    #[cfg(feature = "native")]
+    pub(in crate::virtual_ts::generator) fn emit_error_recovery(
+        &self,
+        ts: &mut String,
+        hoisted: bool,
+    ) {
+        emit(ts, self, hoisted, false, false);
+    }
+
     pub(crate) fn emit_import_anchors(&self, ts: &mut String) {
         if self.vue_template_ref_import {
             ts.push_str("// Keep the authored Vue helper import used by its specialized setup signature\nvoid useTemplateRef;\n");
@@ -37,6 +46,7 @@ impl SetupHelperPlan {
         &self,
         ts: &mut String,
         summary: &Croquis,
+        generic_parameters: Option<&crate::virtual_ts::generic_parameters::GenericParameters>,
     ) -> Option<String> {
         let emits = summary
             .macros
@@ -57,7 +67,7 @@ impl SetupHelperPlan {
             }
         });
         let models = (!self.shadowed.contains("defineModel"))
-            .then(|| super::super::emits::template_model_emit_type(summary))
+            .then(|| super::super::emits::template_model_emit_type(summary, generic_parameters))
             .flatten();
         let ty = match (base, models) {
             (Some(base), Some(models)) => vize_carton::cstr!("{base} & {models}"),
