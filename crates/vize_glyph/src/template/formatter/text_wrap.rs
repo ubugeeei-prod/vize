@@ -99,7 +99,8 @@ impl TemplateFormatter<'_> {
 
     /// A text run adjacent to a closing tag can move to a new line by breaking
     /// before `>` without introducing a runtime space between the two nodes.
-    pub(super) fn following_text_overflows(
+    #[inline]
+    pub(super) fn following_text_overflows<const CANONICAL: bool>(
         &self,
         output: &[u8],
         source: &str,
@@ -111,6 +112,16 @@ impl TemplateFormatter<'_> {
         if tail.is_empty() || matches!(tail.as_bytes().first(), Some(b'<' | b'\r' | b'\n')) {
             return false;
         }
+        self.following_inline_text_overflows::<CANONICAL>(output, tail)
+    }
+
+    #[cold]
+    #[inline(never)]
+    fn following_inline_text_overflows<const CANONICAL: bool>(
+        &self,
+        output: &[u8],
+        tail: &str,
+    ) -> bool {
         let mut end = 0;
         while let Some(&byte) = tail.as_bytes().get(end) {
             if byte == b'<' || matches!(byte, b'\r' | b'\n') {
@@ -125,9 +136,7 @@ impl TemplateFormatter<'_> {
             }
         }
         let tail = tail.get(..end).unwrap_or_default();
-        if !self.options.canonical_directive_layout
-            && memchr::memmem::find(tail.as_bytes(), b"{{").is_some_and(|open| open > 0)
-        {
+        if !CANONICAL && memchr::memmem::find(tail.as_bytes(), b"{{").is_some_and(|open| open > 0) {
             // The default profile already wraps a prefixed sole mustache
             // inside its syntax; keep that established layout.
             return false;

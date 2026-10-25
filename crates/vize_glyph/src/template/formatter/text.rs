@@ -13,7 +13,7 @@ use vize_l0::String;
 impl TemplateFormatter<'_> {
     /// Flush accumulated text content with interpolation formatting.
     #[inline]
-    pub(super) fn flush_text_buffer(
+    pub(super) fn flush_text_buffer<const CANONICAL: bool>(
         &self,
         output: &mut Vec<u8>,
         text: &mut TextRun,
@@ -69,8 +69,7 @@ impl TemplateFormatter<'_> {
         }
         let join = joiner.open(start);
         self.open_chunk(output, depth, join);
-        if self.options.canonical_directive_layout
-            && self.write_wrapped_text_run(output, &formatted, (start, end), depth, joiner)
+        if CANONICAL && self.write_wrapped_text_run(output, &formatted, (start, end), depth, joiner)
         {
             joiner.finish(end);
             return;

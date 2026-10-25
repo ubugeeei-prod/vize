@@ -48,7 +48,7 @@ impl TemplateFormatter<'_> {
     /// lets the formatter use whitespace inside the tag as the safe break point
     /// before runtime text would push the completed element past print width.
     #[inline(always)]
-    pub(super) fn hugged_inline_suffix_width(
+    pub(super) fn hugged_inline_suffix_width<const CANONICAL: bool>(
         &self,
         input: &str,
         start: usize,
@@ -67,7 +67,7 @@ impl TemplateFormatter<'_> {
         // Newlines inside an interpolation remain with the JS/literal owner.
         let compact;
         let child = if child.contains(['\r', '\n']) {
-            if self.options.canonical_directive_layout {
+            if CANONICAL {
                 if child
                     .as_bytes()
                     .first()
