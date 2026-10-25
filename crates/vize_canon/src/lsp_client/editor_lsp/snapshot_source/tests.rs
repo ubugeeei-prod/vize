@@ -202,3 +202,6 @@ fn trace_source(params: &serde_json::Value, name: &str, text: &str) {
         tracing::info!(target: "vize_editor_preparation", phase="initial_compiler_source", request=%params, name, text);
     }
 }
+
+#[cfg(unix)]
+mod native_beta;
