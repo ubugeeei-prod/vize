@@ -11,8 +11,7 @@ use crate::support::corsa_requirement;
 
 #[derive(Deserialize)]
 struct Fixture {
-    #[serde(rename = "historicalIssue")]
-    historical_issue: u32,
+    issue: u32,
     cases: Vec<Case>,
 }
 
@@ -29,10 +28,10 @@ struct Case {
 fn cases() -> Vec<Case> {
     let fixture: Fixture = serde_json::from_str(include_str!(concat!(
         env!("CARGO_MANIFEST_DIR"),
-        "/../../tests/_fixtures/differential/typechecker/unicode-prop-bindings-10573/cases.json"
+        "/../../tests/_fixtures/differential/typechecker/unicode-prop-bindings-10573/edit-cycles.json"
     )))
     .unwrap();
-    assert_eq!(fixture.historical_issue, 10573);
+    assert_eq!(fixture.issue, 10573);
     assert_eq!(fixture.cases.len(), 11);
     fixture.cases
 }

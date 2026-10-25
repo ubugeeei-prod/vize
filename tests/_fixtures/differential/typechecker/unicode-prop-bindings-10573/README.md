@@ -12,7 +12,7 @@ The eleven authored cases cover the report, Unicode/ASCII collisions and their
 distinct value types, quoted and escaped cooked keys, a supplementary-plane
 identifier with CRLF, a Japanese runtime prop, a defaulted prop, a keyed type,
 reserved/hyphenated/ASCII controls, and a Unicode continuation character.
-`cases.json` pins complete expected mapper messages and CLI diagnostic strings.
+`edit-cycles.json` pins complete expected mapper messages and CLI diagnostic strings.
 The CLI and real pinned mapper host each run every valid, invalid and repaired
 source. No finding is filtered, deduplicated or rewritten during comparison.
 
