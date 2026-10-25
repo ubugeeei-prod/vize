@@ -83,6 +83,10 @@ jobs:
         if: always()
         env: { INSTA_UPDATE: new }
         run: cargo test --locked --profile ci -p vize_atelier_jsx --lib
+      - name: Existing mode and Babel option producer contracts
+        if: always()
+        env: { INSTA_UPDATE: new }
+        run: cargo test --locked --profile ci -p vize_atelier_jsx --test compile --test ssr --test vapor_ssr --test babel_is_custom_element --test babel_merge_props --test babel_v_slots --test pragma --test v_model_argument --test v_slots_forwarding
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
@@ -90,5 +94,6 @@ jobs:
           path: |
             ${{ runner.temp }}/jsx-authored-native
             crates/vize_atelier_jsx/src/**/*.snap.new
+            crates/vize_atelier_jsx/tests/**/*.snap.new
           if-no-files-found: error
           retention-days: 14
