@@ -220,7 +220,6 @@ test("TypeScript Vue plugin does not require a patchable tsserver host", () => {
         languageService: service,
         languageServiceHost: host,
         serverHost: ts.sys,
-        ...(nativePath ? { config: { nativePath } } : {}),
       });
     });
     assert.notEqual(wrapped, service);
