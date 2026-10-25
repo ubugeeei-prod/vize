@@ -115,7 +115,6 @@ jobs:
       CARGO_TARGET_DIR: ${{ github.workspace }}/target
       VIZE_TEST_REQUIRE_TSGO: "1"
       VIZE_TEST_REQUIRE_PIN_INPUT_FIXTURE: "1"
-      VIZE_NATIVE_SYNTAX_CAPTURE_DIR: ${{ runner.temp }}/native-handoff-replay/packets
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -166,6 +165,8 @@ jobs:
           cargo test --locked --profile ci -p vize_canon --test native_syntax_semantics --no-run --message-format=json > "$RUNNER_TEMP/native-handoff-replay/build.stdout" 2> "$RUNNER_TEMP/native-handoff-replay/build.stderr"
       - name: Replay the original handoff with whole output custody
         working-directory: source
+        env:
+          VIZE_NATIVE_SYNTAX_CAPTURE_DIR: ${{ runner.temp }}/native-handoff-replay/packets
         run: node ../tools/support/github/native-handoff-replay.mjs "$RUNNER_TEMP/native-handoff-replay"
       - name: Retain original source, provider, executable and whole packets
         if: ${{ always() }}
