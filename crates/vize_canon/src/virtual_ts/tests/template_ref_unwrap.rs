@@ -68,7 +68,7 @@ const direction = ref<'rtl'>('rtl')
         assert_eq!(
             exact_line_count(
                 &code,
-                "    var direction: __U<__R_direction> = undefined as any;",
+                "    var direction: __U<__R_direction> = (void 0) as any;",
             ),
             1,
             "template expressions should emit the exact unwrapped ref shadow:\n{code}",
@@ -93,7 +93,7 @@ const { props, size } = useField()
         "the authored maybe-ref binding must retain its exact template capture:\n{code}",
     );
     assert_eq!(
-        exact_line_count(&code, "    var props: __UN<__R_props> = undefined as any;",),
+        exact_line_count(&code, "    var props: __UN<__R_props> = (void 0) as any;",),
         1,
         "the authored binding must remain the exact template-visible `props`:\n{code}",
     );

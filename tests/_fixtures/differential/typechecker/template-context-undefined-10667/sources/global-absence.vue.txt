@@ -1,0 +1,5 @@
+<script setup lang="ts">
+const value = undefined;
+void value;
+</script>
+<template><p>{{ undefined }}</p></template>

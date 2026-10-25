@@ -220,7 +220,9 @@ impl Project {
                 observed.historical_query_position,
                 // #10185 extends the global component prelude by 132 UTF-16
                 // code units while retaining the parent navigation helper.
-                (21_499usize
+                // #10667 shortens the eager macro, ref shadow and context
+                // values by one UTF-16 code unit each, before this authored query.
+                (21_496usize
                     + witness::public_input_prelude_utf16_delta()
                     + witness::kebab_case_prelude_utf16_delta()
                     + witness::component_navigation_helper_utf16_len())

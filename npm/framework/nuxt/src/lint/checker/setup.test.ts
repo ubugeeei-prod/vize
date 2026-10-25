@@ -123,6 +123,52 @@ void test("setup rejects a checker without the generated artifact", async () => 
   );
 });
 
+void test("the real Nuxt 2 version shape registers the default webpack checker", async () => {
+  class Nuxt2 {
+    static version = "v2.17.3";
+    options = { buildDir: "/project/.nuxt", dev: true, rootDir: "/project" };
+  }
+  const registered: string[] = [];
+  const result = await setupNuxtLintChecker(true, new Nuxt2(), generation, {
+    addWebpackPlugin: async () => {
+      registered.push("webpack");
+    },
+    addVitePlugin: async () => {
+      registered.push("vite");
+    },
+    warn: (message) => {
+      registered.push(message);
+    },
+  });
+  assert.equal(result?.builder, "webpack");
+  assert.deepEqual(registered, ["webpack"]);
+});
+
+void test("Nuxt 2 checkers register on the passed host without implicit Nuxt Kit context", async () => {
+  for (const vite of [false, true]) {
+    const hooks = new Map<string, (...args: unknown[]) => unknown>();
+    class Nuxt2 {
+      static version = "v2.17.3";
+      options = { buildDir: "/project/.nuxt", dev: true, rootDir: "/project", bridge: { vite } };
+      hook(name: string, callback: (...args: unknown[]) => unknown) {
+        hooks.set(name, callback);
+      }
+    }
+    const result = await setupNuxtLintChecker(true, new Nuxt2(), generation);
+    assert.equal(result?.builder, vite ? "vite" : "webpack");
+    const client = { name: "client", plugins: [] as unknown[] };
+    const server = { name: "server", plugins: [] as unknown[] };
+    if (vite) {
+      hooks.get("vite:extendConfig")!(client, { isClient: true, isServer: false });
+      hooks.get("vite:extendConfig")!(server, { isClient: false, isServer: true });
+    } else {
+      hooks.get("webpack:config")!([client, server]);
+    }
+    assert.equal(client.plugins.length, 1);
+    assert.deepEqual(server.plugins, []);
+  }
+});
+
 void test("setup reports an unsupported dev builder without partial registration", async () => {
   const warnings: string[] = [];
   const result = await setupNuxtLintChecker(true, nuxt({ builder: "custom-builder" }), generation, {

@@ -45,7 +45,7 @@ export function verifyNuxtAutoInitConfig(fixture: string, artifacts: string): vo
       fs.writeFileSync(target, bytes, { flag: "wx" });
       original[relative] = hash(bytes);
     }
-    assert.equal(Object.keys(original).length, 5);
+    assert.equal(Object.keys(original).length, 9);
     const modules = path.join(project, "node_modules");
     fs.mkdirSync(modules);
     for (const name of fs.readdirSync(path.join(fixture, "node_modules"))) {
