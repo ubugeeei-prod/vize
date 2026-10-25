@@ -22,7 +22,7 @@ use std::{
 };
 
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
-use vize_l0::{String, cstr, profiler::global_profiler};
+use vize_l0::{String, cstr, profile, profiler::global_profiler};
 
 use crate::profile_support;
 use vize_curator::profile::{
@@ -43,8 +43,15 @@ use stats_run::StatsRun;
 /// Main entry point for the build command.
 pub(crate) fn run(args: BuildArgs) {
     let start = Instant::now();
+    args.profile_export.begin(args.profile);
     let slow_threshold = Duration::from_millis(args.slow_threshold);
-    let build_config = load_build_config(args.no_config, args.config.as_deref());
+    let config_start = Instant::now();
+    let build_config = profile!(
+        "cli.build.config.load",
+        load_build_config(args.no_config, args.config.as_deref())
+    );
+    let config_elapsed = config_start.elapsed();
+    let setup_start = Instant::now();
     if build_config
         .dialect
         .is_some_and(|dialect| dialect.is_legacy())
@@ -76,7 +83,11 @@ pub(crate) fn run(args: BuildArgs) {
         )]
     });
     let patterns = default_patterns.as_deref().unwrap_or(&args.patterns);
-    let CollectedFiles { mut files, roots } = collect_files_or_exit(patterns);
+    let setup_elapsed = setup_start.elapsed();
+    let collect_start = Instant::now();
+    let CollectedFiles { mut files, roots } =
+        profile!("cli.build.collect.files", collect_files_or_exit(patterns));
+    let collect_elapsed = collect_start.elapsed();
 
     if files.is_empty() {
         eprintln!("No .vue files found matching the patterns");
@@ -84,25 +95,29 @@ pub(crate) fn run(args: BuildArgs) {
     }
 
     let stats_only = matches!(args.format, OutputFormat::Stats);
-    let planned_inputs = if stats_only && args.dump_dir.is_none() {
-        Vec::new()
-    } else {
-        let inputs = match plan_inputs(std::mem::take(&mut files), &roots) {
-            Ok(inputs) => inputs,
-            Err(error) => {
+    let planning_start = Instant::now();
+    let planned_inputs = profile!("cli.build.outputs.plan", {
+        if stats_only && args.dump_dir.is_none() {
+            Vec::new()
+        } else {
+            let inputs = match plan_inputs(std::mem::take(&mut files), &roots) {
+                Ok(inputs) => inputs,
+                Err(error) => {
+                    eprintln!("\x1b[31mError:\x1b[0m {error}");
+                    std::process::exit(1);
+                }
+            };
+            if !stats_only
+                && let Err(error) =
+                    preflight_outputs(&inputs, &args.output, args.format, args.script_ext)
+            {
                 eprintln!("\x1b[31mError:\x1b[0m {error}");
                 std::process::exit(1);
             }
-        };
-        if !stats_only
-            && let Err(error) =
-                preflight_outputs(&inputs, &args.output, args.format, args.script_ext)
-        {
-            eprintln!("\x1b[31mError:\x1b[0m {error}");
-            std::process::exit(1);
+            inputs
         }
-        inputs
-    };
+    });
+    let planning_elapsed = planning_start.elapsed();
 
     let total_files = if stats_only && args.dump_dir.is_none() {
         files.len()
@@ -110,14 +125,13 @@ pub(crate) fn run(args: BuildArgs) {
         planned_inputs.len()
     };
     let stats = CompileStats::new(total_files);
-    let collect_elapsed = start.elapsed();
+    let preparation_elapsed = start.elapsed();
 
-    args.profile_export.begin(args.profile);
     if args.profile {
         eprintln!(
             "Found {} files in {:.4}s. Compiling using {} threads...",
             total_files,
-            collect_elapsed.as_secs_f64(),
+            preparation_elapsed.as_secs_f64(),
             rayon::current_num_threads()
         );
         eprintln!();
@@ -265,10 +279,28 @@ pub(crate) fn run(args: BuildArgs) {
 
         let phases = [
             ProfilePhase {
+                name: "load config",
+                duration: config_elapsed,
+                kind: ProfilePhaseKind::Wall,
+                note: "configuration discovery and evaluation",
+            },
+            ProfilePhase {
+                name: "configure build",
+                duration: setup_elapsed,
+                kind: ProfilePhaseKind::Wall,
+                note: "validation and worker setup",
+            },
+            ProfilePhase {
                 name: "collect files",
                 duration: collect_elapsed,
                 kind: ProfilePhaseKind::Wall,
                 note: "ignore-aware walk",
+            },
+            ProfilePhase {
+                name: "plan outputs",
+                duration: planning_elapsed,
+                kind: ProfilePhaseKind::Wall,
+                note: "input and output validation",
             },
             ProfilePhase {
                 name: if args.dump_dir.is_some() {
