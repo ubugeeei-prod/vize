@@ -98,12 +98,28 @@ jobs:
           const root = `${process.env.RUNNER_TEMP}/asset-import-bindings`;
           const read = name => JSON.parse(fs.readFileSync(`${root}/${name}.json`));
           const base = read('base-native'), head = read('head-native');
-          assert.equal(base.packets.length, 50);
+          assert.equal(base.packets.length, 64);
           assert.equal(head.packets.length, base.packets.length);
           assert.equal(base.sourceSha, process.env.BASE_SHA);
           assert.equal(head.sourceSha, process.env.HEAD_SHA);
           assert.notEqual(base.native.buildToken, head.native.buildToken);
           assert.notEqual(base.native.sha256, head.native.sha256);
+          const targets = fs.readFileSync(`${root}/source-target-token.txt`, 'utf8').trim().split('\n').map(line => line.split(' '));
+          assert.equal(targets.length, 2);
+          assert.notEqual(targets[0][1], targets[1][1]);
+          for (const [epoch, report] of [['base', base], ['head', head]]) {
+            const [sha, target, token] = targets.find(row => row[0] === report.sourceSha);
+            assert.equal(sha, report.sourceSha);
+            assert.equal(report.native.buildToken, token, 'actual loaded image immutable identity');
+            const messages = fs.readFileSync(`${root}/${epoch}-native-build.jsonl`, 'utf8').trim().split('\n').map(line => JSON.parse(line));
+            const emissions = messages.filter(row => row.reason === 'compiler-artifact' && row.target.name === 'vize_vitrine' && row.target.kind.includes('cdylib'));
+            assert.equal(emissions.length, 1);
+            assert.equal(emissions[0].fresh, false, 'actual source producer must compile in its isolated target');
+            const sourceRoot = epoch === 'head' ? process.env.GITHUB_WORKSPACE : `${process.env.RUNNER_TEMP}/asset-import-bindings-base`;
+            assert.equal(emissions[0].target.src_path, `${sourceRoot}/crates/vize_vitrine/src/lib.rs`);
+            assert.ok(emissions[0].filenames.includes(`${target}/ci/libvize_vitrine.so`));
+            assert.deepEqual(fs.readFileSync(`${target}/ci/libvize_vitrine.so`), fs.readFileSync(report.native.image));
+          }
           let repaired = 0, unchanged = 0;
           for (let index = 0; index < base.packets.length; index++) {
             const before = base.packets[index], after = head.packets[index];
@@ -145,6 +161,8 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: asset-import-bindings-${{ github.run_id }}-${{ github.run_attempt }}-${{ env.HEAD_SHA }}
-          path: ${{ runner.temp }}/asset-import-bindings/**
+          path: |
+            ${{ runner.temp }}/asset-import-bindings/**
+            !${{ runner.temp }}/asset-import-bindings/node_modules/**
           if-no-files-found: error
           retention-days: 14

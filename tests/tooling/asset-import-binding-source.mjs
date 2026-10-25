@@ -5,7 +5,7 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const require = createRequire(import.meta.url);
 const [epoch, image, output] = process.argv.slice(2);
@@ -34,6 +34,12 @@ const report = {
     package: runtime,
     sha256: hash(fs.readFileSync(runtime)),
     version: require(runtime).version,
+    importEntry: import.meta.resolve("vue"),
+    importEntrySha256: hash(fs.readFileSync(fileURLToPath(import.meta.resolve("vue")))),
+    serverRendererEntry: import.meta.resolve("vue/server-renderer"),
+    serverRendererEntrySha256: hash(
+      fs.readFileSync(fileURLToPath(import.meta.resolve("vue/server-renderer"))),
+    ),
   },
   scope:
     "real source native collector + existing rewriter; data URL asset modules; Node --check and actual Vue VNode/free-reference semantics; not a bundler speed claim",
@@ -48,6 +54,48 @@ process.on("exit", () => {
 });
 const asset = "<template><img src='./a.svg'></template>";
 const cases = [
+  [
+    "normal-ts",
+    "<script lang='ts'>const _imports_0: string = 'authored'; export default {value: _imports_0}</script>" +
+      asset,
+    1,
+    "value",
+  ],
+  [
+    "setup-ts",
+    "<script setup lang='ts'>const _imports_0: string = 'authored'</script><template><img src='./a.svg' :title='_imports_0'></template>",
+    1,
+  ],
+  [
+    "type-only-negative",
+    "<script setup lang='ts'>type _imports_0 = string; const title: _imports_0 = 'authored'</script><template><img src='./a.svg' :title='title'></template>",
+    0,
+  ],
+  [
+    "escaped-braced",
+    String.raw`<script>const \u{5f}imports_\u{30} = 'authored'; export default {value: _imports_0}</script>` +
+      asset,
+    1,
+    "value",
+  ],
+  [
+    "template-long-pattern",
+    "<template><img v-for='({ a, b, c, d, e, f, g, h, i, j, k, label: _imports_0 }, index) of items' :key='index' src='./a.svg' :title='_imports_0'></template>",
+    1,
+    "pattern",
+  ],
+  [
+    "template-for-entity",
+    "<template><img v-for='&#95;imports_0 of items' :key='_imports_0' src='./a.svg' :title='_imports_0'></template>",
+    1,
+    "for",
+  ],
+  [
+    "template-for-escaped",
+    String.raw`<template><img v-for='\u005fimports_0 of items' :key='_imports_0' src='./a.svg' :title='_imports_0'></template>`,
+    1,
+    "for",
+  ],
   [
     "normal-const",
     "<script>const _imports_0 = 'authored'; export default {value: _imports_0}</script>" + asset,
