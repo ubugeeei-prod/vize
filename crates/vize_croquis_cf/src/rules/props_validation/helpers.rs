@@ -160,7 +160,7 @@ fn is_boolean_literal(value: &str) -> bool {
 }
 
 fn is_numeric_literal(value: &str) -> bool {
-    value.parse::<f64>().is_ok()
+    value.parse::<f64>().is_ok_and(f64::is_finite)
 }
 
 pub(super) fn imported_aliases_for_child(
@@ -278,6 +278,20 @@ mod tests {
         ));
         assert!(prop_type_accepts_actual("true", "true", &definitions));
         assert!(!prop_type_accepts_actual("true", "false", &definitions));
+        assert!(prop_type_accepts_actual("0", "-0", &definitions));
+        assert!(prop_type_accepts_actual("-1", "-1", &definitions));
+        assert!(!prop_type_accepts_actual("-1", "-2", &definitions));
+        for value in ["NaN", "Infinity", "-Infinity"] {
+            let prop = PassedPropInfo {
+                name: CompactString::const_new("number"),
+                name_is_dynamic: false,
+                value: Some(CompactString::new(value)),
+                start: 0,
+                end: 0,
+                is_dynamic: true,
+            };
+            assert_eq!(actual_literal_type(&prop), None);
+        }
     }
 
     #[test]

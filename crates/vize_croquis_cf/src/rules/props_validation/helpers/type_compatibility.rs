@@ -1,7 +1,7 @@
 //! Reject static values only when the complete declared type is understood.
 
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{Statement, TSLiteral, TSType, TSTypeName};
+use oxc_ast::ast::{Expression, Statement, TSLiteral, TSType, TSTypeName};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::cstr;
@@ -85,15 +85,20 @@ fn accepts(
             (TSLiteral::StringLiteral(left), TSType::TSLiteralType(right)) => Some(
                 matches!(&right.literal, TSLiteral::StringLiteral(right) if left.value == right.value),
             ),
-            (TSLiteral::NumericLiteral(left), TSType::TSLiteralType(right)) => Some(
-                matches!(&right.literal, TSLiteral::NumericLiteral(right) if left.value == right.value),
-            ),
+            (
+                left @ (TSLiteral::NumericLiteral(_) | TSLiteral::UnaryExpression(_)),
+                TSType::TSLiteralType(right),
+            ) => numeric_value(left).map(|left| numeric_value(&right.literal) == Some(left)),
             (TSLiteral::BooleanLiteral(left), TSType::TSLiteralType(right)) => Some(
                 matches!(&right.literal, TSLiteral::BooleanLiteral(right) if left.value == right.value),
             ),
             // A wide runtime type does not prove which literal was supplied.
             (TSLiteral::StringLiteral(_), _) if is_string(actual) => None,
-            (TSLiteral::NumericLiteral(_), _) if is_number(actual) => None,
+            (TSLiteral::NumericLiteral(_) | TSLiteral::UnaryExpression(_), _)
+                if is_number(actual) =>
+            {
+                None
+            }
             (TSLiteral::BooleanLiteral(_), _) if is_boolean(actual) => None,
             (
                 TSLiteral::StringLiteral(_)
@@ -113,6 +118,19 @@ fn accepts(
         | TSType::TSArrayType(_)
         | TSType::TSTupleType(_)
         | TSType::TSTypeLiteral(_) => Some(false),
+        _ => None,
+    }
+}
+
+fn numeric_value(literal: &TSLiteral<'_>) -> Option<f64> {
+    match literal {
+        TSLiteral::NumericLiteral(value) => Some(value.value),
+        TSLiteral::UnaryExpression(unary) if unary.operator.as_str() == "-" => {
+            match &unary.argument {
+                Expression::NumericLiteral(value) => Some(-value.value),
+                _ => None,
+            }
+        }
         _ => None,
     }
 }
