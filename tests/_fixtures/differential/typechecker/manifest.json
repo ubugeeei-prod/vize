@@ -7094,7 +7094,7 @@
         },
         "strace": {
           "path": "tests/tooling/support/native-runtime-selection/lsp-strace.mjs",
-          "sha256": "79f12dd5d444c85636a444317a2cd2ca4b68193befcdc0b0fb3a20f3b58f975e"
+          "sha256": "b189dfc2de82bfd0bd9fce6e5584c02e38c9984ee6c2df2800d8caf2df0fcbaf"
         },
         "fixtureTest": {
           "path": "tests/tooling/lsp-shared-api-campaign.test.mjs",
@@ -7113,6 +7113,14 @@
         "registryTest": {
           "path": "tests/tooling/shared-editor-initial-api-fixtures.test.mjs",
           "sha256": "c3de4d5662c05f677d25e268611e86e94d444396bda4b8b1fbb84e09c1900768"
+        },
+        "straceLines": {
+          "path": "tests/tooling/support/native-runtime-selection/lsp-strace-lines.mjs",
+          "sha256": "75433713a12562fd38fa9d475e15006d43d19771bee7e5524f11eabe454c6ca6"
+        },
+        "straceTest": {
+          "path": "tests/tooling/native-runtime-selection-lsp-strace.test.mjs",
+          "sha256": "952310756b287146a0c6a8c9c07be52a54142008041ef8e3d90ff1391ff49716"
         }
       }
     },
