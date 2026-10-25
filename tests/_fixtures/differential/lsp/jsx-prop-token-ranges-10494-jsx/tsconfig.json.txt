@@ -1,0 +1,1 @@
+{"compilerOptions":{"allowJs":true,"checkJs":true,"jsx":"preserve","jsxImportSource":"vue","module":"ESNext","moduleResolution":"bundler","noEmit":true,"strict":true,"target":"ES2022"},"include":["*.vue","*.tsx","*.jsx"]}

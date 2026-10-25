@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "id": "lsp/regression/jsx-prop-token-ranges-10494-tsx",
+  "provenance": {
+    "fixCommit": "72caad322770d89177ae8e659e418d9d7d3a85eb",
+    "witnessPath": "tests/tooling/lsp-jsx-prop-token-ranges.test.ts",
+    "witnessTest": "JSX and TSX prop hover, references and rename preserve complete authored tokens",
+    "inputOrigin": "Minimized published v0.560.0 quoted JSX prop range failure and unsafe rename in #10494",
+    "contractOrigin": "Independent physical property/declaration coordinates and full includeDeclaration reference responses"
+  },
+  "files": [
+    {
+      "source": "Child.vue.txt",
+      "runtimePath": "Child.vue",
+      "sha256": "8dc96c56ef59e3a4f15ca7f67a1cfbad4b7048d0e36f381558d6cfd085dff7a1"
+    },
+    {
+      "source": "Consumer.tsx.txt",
+      "runtimePath": "Consumer.tsx",
+      "sha256": "7775b11dfc288e836d32edbb678d1adc635ec5d7cf31b383df8b4d0bd3411d1d"
+    },
+    {
+      "source": "vite.config.mjs.txt",
+      "runtimePath": "vite.config.mjs",
+      "sha256": "3a7b420483bb3da9deefe0ee9318981110703f829a289f8392d20e8996140e35"
+    },
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "12311266f2ae09aba06fd3a1b32de339076358437684d1ef7058c36407eba6a4"
+    }
+  ],
+  "entry": "Consumer.tsx",
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "e97e290c08920db40f90d6ac3f89198bf0df5fe49d5fac45d3570cdc68a213ff"
+  },
+  "method": "textDocument/references",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "scope": "Shared canonical virtual TypeScript property tokens; source-inspected custody is not native whole-product completion"
+}
