@@ -89,6 +89,7 @@ const required = [
   "literal_geometry_tests::source_kind_variants_use_the_same_geometry_without_an_extra_parse",
   "literal_geometry_tests::shared_syntax_still_parses_once_and_resolves_every_emitted_occurrence",
   "literal_geometry_tests::tsx_module_geometry_does_not_rewrite_attribute_or_text_literals",
+  "literal_geometry_tests::lsp_utf16_positions_cross_the_actual_rewritten_byte_map",
   "source_map::storage_tests::normal_rewrites_use_one_presized_metadata_buffer_without_reallocation",
   "literal_rewrite::tests::both_original_quotes_preserve_the_exact_decoded_project_path",
   "literal_rewrite::tests::backslashes_and_each_control_character_use_the_existing_ts_encoder",
