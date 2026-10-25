@@ -26,7 +26,11 @@ import { resolveTypecheckRuntime } from "../typecheck-dependency.ts";
 import { isDiagnosticsForUri } from "./assertions.ts";
 import { root } from "./paths.ts";
 import { LspSession } from "./session.ts";
-import { snapshotSessionCaptures, verifySessionCaptures } from "./verify-session-captures.ts";
+import { snapshotSessionCaptures } from "./verify-session-captures.ts";
+import {
+  independentObserverWitness,
+  verifyIndependentObserverCaptures,
+} from "./project-uri-source-control-custody-10622.ts";
 import { auditSourceControlNative } from "./project-uri-source-control-native-10622.ts";
 
 const QUALIFIER = "6573b92e74c93883303e34e9f12869868f567207";
@@ -165,6 +169,11 @@ export async function observeSourceControl(args = process.argv.slice(2)) {
   process.env.VIZE_TRACE_EDITOR_PREPARATION = "1";
   process.env.RUST_LOG = "info";
   process.env.NO_COLOR = "1";
+  const observerWitness = independentObserverWitness(
+    root,
+    fileURLToPath(import.meta.url),
+    new Error("independent observer call site").stack ?? "",
+  );
   write(path.join(output, "identities.json"), {
     role,
     trial,
@@ -176,6 +185,7 @@ export async function observeSourceControl(args = process.argv.slice(2)) {
       file: fileURLToPath(import.meta.url),
       sha256: sha256(fs.readFileSync(fileURLToPath(import.meta.url))),
       passiveSha256: sha256(observer),
+      witness: observerWitness,
     },
     runtime: {
       path: fs.realpathSync(runtime),
@@ -282,7 +292,7 @@ export async function observeSourceControl(args = process.argv.slice(2)) {
     identity,
     "producer executable/source remain exact",
   );
-  const closed = verifySessionCaptures(producerRoot, snapshot);
+  const closed = verifyIndependentObserverCaptures(producerRoot, snapshot, observerWitness);
   assert.equal(closed.sessions.length, 1);
   assert.deepEqual(closed.sessions[0].process, { exitStatus: 0, signal: null, error: null });
   write(path.join(output, "outer-custody.json"), closed);

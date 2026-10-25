@@ -1,21 +1,82 @@
 name: Controlled native lifecycle observations
 
 on:
+  workflow_dispatch:
+    inputs:
+      capture_fresh:
+        type: boolean
+        default: false
+        description: "Explicitly rebuild and recapture both original producers (not needed for archived replay)"
   pull_request:
     paths:
       - ".github/workflows/lsp-uri-source-control.yml"
       - "tests/tooling/support/lsp/project-uri-source-control-10622.ts"
       - "tests/tooling/support/lsp/project-uri-source-control-native-10622.ts"
+      - "tests/tooling/support/lsp/project-uri-source-control-custody-10622.ts"
+      - "tests/tooling/lsp-project-uri-source-control-custody-10622.test.ts"
       - "tests/tooling/lsp-project-uri-source-control-native-10622.test.ts"
+      - "tests/tooling/support/lsp/project-uri-source-control-replay-10622.ts"
+      - "tests/tooling/support/lsp/project-uri-source-control-recorded-10622.ts"
 
-permissions: { contents: read }
+permissions: { contents: read, actions: read }
 
 concurrency:
   group: uri-source-control-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
+  archived-custody:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, cache: true, run-install: false }
+      - run: vp install --frozen-lockfile --prefer-offline
+      - name: Verify all six strict TypeScript projects
+        run: node tools/support/typescript/check-project.ts
+      - name: Install immutable Vue for all five refusal laws
+        shell: bash
+        run: |
+          set -euo pipefail
+          provider="$RUNNER_TEMP/uri-source-replay-vue"
+          mkdir -p "$provider"
+          cp tests/_fixtures/differential/lsp/project-uri-membership-10622/vue-3.5.41/package{,-lock}.json "$provider/"
+          npm ci --prefix "$provider" --ignore-scripts --no-audit --no-fund
+          printf 'VIZE_PROJECT_URI_VUE_PACKAGE=%s/node_modules/vue\n' "$provider" >> "$GITHUB_ENV"
+      - name: Verify actual independent observer and native refusal controls
+        run: node --test tests/tooling/lsp-project-uri-source-control-native-10622.test.ts tests/tooling/lsp-project-uri-source-control-custody-10622.test.ts
+      - name: Replay the exact archived four sessions without rebuilding producers
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/uri-source-control-12603401614.zip"
+          gh api repos/ubugeeei-prod/vize/actions/artifacts/12603401614 > "$RUNNER_TEMP/uri-source-control-artifact.json"
+          node --input-type=module -e 'import fs from "node:fs";import assert from "node:assert/strict";const a=JSON.parse(fs.readFileSync(process.argv[1]));assert.equal(a.id,12603401614);assert.equal(a.expired,false);assert.equal(a.workflow_run.id,40204393736);assert.equal(a.digest,"sha256:8ab9fc5f162cb42f7d0f5093c275f34791fc9765847e0f26598f4b38cd8ac2f6");' "$RUNNER_TEMP/uri-source-control-artifact.json"
+          gh api repos/ubugeeei-prod/vize/actions/artifacts/12603401614/zip > "$archive"
+          printf '8ab9fc5f162cb42f7d0f5093c275f34791fc9765847e0f26598f4b38cd8ac2f6  %s\n' "$archive" | sha256sum --check
+          mkdir "$RUNNER_TEMP/uri-source-control-raw"
+          unzip -q "$archive" -d "$RUNNER_TEMP/uri-source-control-raw"
+          node tests/tooling/support/lsp/project-uri-source-control-replay-10622.ts "$RUNNER_TEMP/uri-source-control-raw" "$archive" target/vize-tests/project-uri-source-control-replay-10622/archived-custody.json
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: uri-source-control-replay-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            target/vize-tests/project-uri-source-control-replay-10622/
+            ${{ runner.temp }}/uri-source-control-artifact.json
+          if-no-files-found: error
+          retention-days: 7
   source-control:
+    if: github.event_name == 'workflow_dispatch' && inputs.capture_fresh
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
     env:
@@ -57,7 +118,7 @@ jobs:
           printf 'VIZE_PROJECT_URI_VUE_PACKAGE=%s/node_modules/vue\n' "$provider" >> "$GITHUB_ENV"
           printf 'CORSA_PATH=%s/node_modules/@typescript/typescript-linux-x64/lib/tsc\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
       - name: Verify raw source-control refusal laws
-        run: node --test tests/tooling/lsp-project-uri-source-control-native-10622.test.ts
+        run: node --test tests/tooling/lsp-project-uri-source-control-native-10622.test.ts tests/tooling/lsp-project-uri-source-control-custody-10622.test.ts
       - name: Build and receipt two clean producers with independent absent targets
         shell: bash
         run: |
