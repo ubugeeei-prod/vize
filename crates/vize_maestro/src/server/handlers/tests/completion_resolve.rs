@@ -73,7 +73,9 @@ In combination with 'float' and 'position', determines the type of box or boxes 
 **Example**
 
 ```css
-display: block;
+.example {
+  display: block;
+}
 ```
 
 **Baseline (catalog snapshot)**

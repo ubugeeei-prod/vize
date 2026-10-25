@@ -4329,6 +4329,7 @@ dependencies = [
  "vize_l4",
  "vize_lightningcss",
  "vize_oxc_parser",
+ "vize_parcel_sourcemap",
 ]
 
 [[package]]
