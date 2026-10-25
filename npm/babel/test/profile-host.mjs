@@ -9,7 +9,7 @@ import { activeNative, hash, json } from "./hosts/environment.mjs";
 const source = process.env.SOURCE_SHA;
 assert.match(source ?? "", /^[a-f0-9]{40}$/);
 const nativeRoot = fs.realpathSync(process.env.VIZE_BABEL_NATIVE_ROOT);
-const host = new URL("./hosts/babel8/package.json", import.meta.url);
+const host = new URL("./hosts/fixtures/babel8/package.json", import.meta.url);
 const requireHost = createRequire(host);
 const core = await import(pathToFileURL(requireHost.resolve("@babel/core")).href);
 const typescript = (

@@ -11,7 +11,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const observations = [];
 const nativeGuardControls = [];
 for (const spec of hostSpecs) {
-  const root = path.join(here, "babel" + spec.major),
+  const root = path.join(here, "fixtures", "babel" + spec.major),
     requireHost = createRequire(path.join(root, "package.json"));
   const core = await import(pathToFileURL(requireHost.resolve("@babel/core")).href);
   assert.equal(core.version, spec.version);

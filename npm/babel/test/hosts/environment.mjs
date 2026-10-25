@@ -83,7 +83,7 @@ export function packageIdentity(requireHost, name) {
 }
 
 export function prepareHost(spec, config) {
-  const root = path.join(directory, "babel" + spec.major);
+  const root = path.join(directory, "fixtures", "babel" + spec.major);
   const manifest = JSON.parse(fs.readFileSync(path.join(root, "package.json")));
   assert.equal(manifest.dependencies["@babel/core"], spec.version);
   const requireHost = createRequire(path.join(root, "package.json"));
