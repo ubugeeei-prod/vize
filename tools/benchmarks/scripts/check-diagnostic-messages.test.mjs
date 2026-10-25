@@ -20,7 +20,7 @@ import {
   vector,
 } from "./check-diagnostic-messages.mjs";
 
-test("message corpus reproduces the original complete 128-error source bytes", () => {
+void test("message corpus reproduces the original complete 128-error source bytes", () => {
   const source = largeSource();
   assert.equal(Buffer.byteLength(source), 1589305);
   assert.equal(sha256(source), "3e665da0ae24805070dd0c982b9e6077cfef5313507393e1ca70326a5eb19f3b");
@@ -31,7 +31,7 @@ test("message corpus reproduces the original complete 128-error source bytes", (
     "0426f2fd026efc85e0513765f9e5c950d4acd6ada07ed4e4f7c640f865b2642c",
   );
 });
-test("message corpus preserves separately authored full, bounded and omitted options", () => {
+void test("message corpus preserves separately authored full, bounded and omitted options", () => {
   const rows = cases();
   assert.deepEqual(
     rows.map((r) => r.name),
@@ -71,10 +71,10 @@ for (const [name, message, expected] of [
   ["Rust BOM whitespace boundary", "'./a\ufeff.vue.ts'", ["./a\ufeff.vue.ts"]],
   ["Rust NEL whitespace boundary", "'./a\u0085.vue.ts'", []],
 ])
-  test(`native candidate inventory preserves ${String(name)}`, () =>
+  void test(`native candidate inventory preserves ${String(name)}`, () =>
     assert.deepEqual(candidates(message), expected));
 
-test("candidate eligibility retains all marker branches and rejects unrelated suffixes", () => {
+void test("candidate eligibility retains all marker branches and rejects unrelated suffixes", () => {
   for (const [reported, expected] of [
     ["./A.vue.ts", "./A.vue"],
     ["./A.vue.tsx", "./A.vue"],
@@ -106,7 +106,7 @@ const processResult = (stdout) => ({
   signal: null,
   error: undefined,
 });
-test("packet oracle compares complete ordered bytes rather than diagnostic counts", () => {
+void test("packet oracle compares complete ordered bytes rather than diagnostic counts", () => {
   const expected = packet();
   assertPacket(processResult(expected), expected);
   for (const changed of [
@@ -140,7 +140,7 @@ function frozenCounters(side) {
     Object.entries(values).map(([key, total]) => [key, { total, samples: 8 }]),
   );
 }
-test("profile comparison preserves inventory and permits only actual search differences", () => {
+void test("profile comparison preserves inventory and permits only actual search differences", () => {
   const base = frozenCounters("base");
   const head = frozenCounters("head");
   assertCounters(base, head, "frozen");
@@ -161,7 +161,7 @@ test("profile comparison preserves inventory and permits only actual search diff
   changed.source_search_ns.samples -= 1;
   assert.throws(() => assertCounters(base, changed, "frozen"));
 });
-test("profile parser rejects truncation, missing and duplicate counter rows", () => {
+void test("profile parser rejects truncation, missing and duplicate counter rows", () => {
   const rows = Object.entries(frozenCounters("base")).map(([key, value]) => ({
     key: `canon.diagnostics.restore_specifiers.${key}`,
     ...value,
@@ -179,7 +179,7 @@ test("profile parser rejects truncation, missing and duplicate counter rows", ()
   ])
     assert.throws(() => counters(changed));
 });
-test("zero-eligible profile requires zero real searches, source input and search time", () => {
+void test("zero-eligible profile requires zero real searches, source input and search time", () => {
   const base = frozenCounters("base");
   const head = frozenCounters("head");
   for (const r of [base, head]) {
@@ -195,7 +195,7 @@ test("zero-eligible profile requires zero real searches, source input and search
     assert.throws(() => assertCounters(base, changed, "large-authored-bounded"));
   }
 });
-test("lexical authority rejects classifier, quote scanner and replacement changes", () => {
+void test("lexical authority rejects classifier, quote scanner and replacement changes", () => {
   const source = fs.readFileSync(
     new URL("../../../crates/vize_canon/src/batch/virtual_specifier_message.rs", import.meta.url),
     "utf8",
@@ -216,7 +216,7 @@ test("lexical authority rejects classifier, quote scanner and replacement change
     assert.throws(() => pinLexer(source, source.replace(needle, "changed")), needle);
   }
 });
-test("native capture retains whole lines, argv, ordered members and rejects lossy layouts", (t) => {
+void test("native capture retains whole lines, argv, ordered members and rejects lossy layouts", (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-message-native-test-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const stem = path.join(root, "123");
@@ -259,7 +259,7 @@ test("native capture retains whole lines, argv, ordered members and rejects loss
   assert.throws(() => nativeVector(root));
 });
 
-test("native member capture reads the actual literal include producer shape without globbing", (t) => {
+void test("native member capture reads the actual literal include producer shape without globbing", (t) => {
   const temporary = fs.realpathSync(
     fs.mkdtempSync(path.join(os.tmpdir(), "vize-message-members-")),
   );
@@ -305,7 +305,7 @@ test("native member capture reads the actual literal include producer shape with
   assert.throws(() => captureMembers(configPath, { ...config, include: ["src/alias.ts"] }));
 });
 
-test("evidence ownership requires an absent entry including dangling symlinks", (t) => {
+void test("evidence ownership requires an absent entry including dangling symlinks", (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-message-output-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const absent = path.join(root, "absent");
