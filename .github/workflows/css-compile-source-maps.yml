@@ -111,7 +111,7 @@ jobs:
         working-directory: head
         run: vp install --filter './npm/native...' --frozen-lockfile --prefer-offline
       - name: Qualify source role and image freshness refusals
-        run: node --test head/tests/tooling/css-source-map-profile.test.mjs
+        run: node --test head/tests/tooling/css-source-map-profile.test.mjs head/tests/tooling/css-source-map-phases.test.mjs
       - name: Build both exact sources and retain ABBA native measurements
         run: node head/tools/benchmarks/scripts/css-source-map-profile.mjs "$GITHUB_WORKSPACE/base" "$GITHUB_WORKSPACE/head" "$GITHUB_WORKSPACE/artifacts/css-source-map-profile"
       - name: Retain every original packet, image, source identity and timing sample

@@ -6,6 +6,8 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { buildPhaseDriver, runPhaseDriver } from "./css-source-map-phases.mjs";
+
 const script = fileURLToPath(import.meta.url);
 const digest = (file) => createHash("sha256").update(fs.readFileSync(file)).digest("hex");
 const git = (root, ...args) =>
@@ -63,7 +65,53 @@ function command(argv, cwd, env, log) {
   }
 }
 
-function worker(identityFile, fixtureRoot, destination) {
+export function profileVectors() {
+  return [
+    { id: "two-rules", source: ".雪😀{color:red}.b{opacity:.5}", batch: 500 },
+    {
+      id: "400-rules",
+      source: Array.from(
+        { length: 400 },
+        (_, i) => `.r${i}雪😀{opacity:${i / 1000};background:url('../asset.png')}`,
+      ).join("\r\n"),
+      batch: 10,
+    },
+    {
+      id: "400-bindings",
+      source: Array.from(
+        { length: 400 },
+        (_, i) => `.r${i}雪😀{width:v-bind(width${i});opacity:${i / 1000}}`,
+      ).join("\r\n"),
+      batch: 10,
+    },
+  ];
+}
+
+export function profileModes(mode, sample = 0) {
+  assert.ok(["interleaved", "isolated-off"].includes(mode));
+  return mode === "isolated-off" ? [false] : sample % 2 === 0 ? [false, true] : [true, false];
+}
+
+export function validateNativeTimingPlan(packet, mode) {
+  assert.equal(packet.measurementMode, mode);
+  assert.deepEqual(
+    packet.timings.map(({ id, source, batch }) => ({ id, source, batch })),
+    profileVectors(),
+  );
+  for (const row of packet.timings) {
+    assert.equal(row.samples.length, mode === "isolated-off" ? 20 : 40);
+    for (const enabled of profileModes(mode))
+      assert.equal(row.samples.filter((sample) => sample.sourceMap === enabled).length, 20);
+    for (const sample of row.samples) {
+      assert.equal(sample.calls, row.batch);
+      assert.ok(Number.isFinite(sample.elapsedNs) && sample.elapsedNs > 0);
+      assert.ok(Number.isFinite(sample.bytes) && sample.bytes > 0);
+      if (mode === "isolated-off") assert.equal(sample.sourceMap, false);
+    }
+  }
+}
+
+function worker(identityFile, fixtureRoot, destination, mode = "interleaved") {
   const identity = JSON.parse(fs.readFileSync(identityFile, "utf8"));
   const native = createRequire(import.meta.url)(identity.binary);
   assert.ok(["base", "head"].includes(identity.side));
@@ -78,14 +126,21 @@ function worker(identityFile, fixtureRoot, destination) {
     native.getNativeBuildToken(),
     digest(identity.binary),
   );
-  const packet = { identity, calls: [], timings: [] };
+  const packet = {
+    identity,
+    measurementMode: mode,
+    workCounterUnits: "utf16-code-units (legacy bytes field)",
+    calls: [],
+    timings: [],
+  };
+  const fixtureModes = profileModes(mode);
   const retain = () => write(destination, packet);
   retain();
   const fixtures = ["public-0.571.0.json", "public-error-neighbor.json"].flatMap(
     (file) => JSON.parse(fs.readFileSync(path.join(fixtureRoot, file), "utf8")).captures,
   );
   for (const entry of fixtures) {
-    for (const sourceMap of [false, true]) {
+    for (const sourceMap of fixtureModes) {
       const result = native.compileCss(entry.source, { ...entry.options, sourceMap });
       packet.calls.push({ source: entry.source, options: { ...entry.options, sourceMap }, result });
       retain();
@@ -107,41 +162,26 @@ function worker(identityFile, fixtureRoot, destination) {
       }
     }
   }
-  const vectors = [
-    { id: "two-rules", source: ".雪😀{color:red}.b{opacity:.5}", batch: 500 },
-    {
-      id: "400-rules",
-      source: Array.from(
-        { length: 400 },
-        (_, i) => `.r${i}雪😀{opacity:${i / 1000};background:url('../asset.png')}`,
-      ).join("\r\n"),
-      batch: 10,
-    },
-    {
-      id: "400-bindings",
-      source: Array.from(
-        { length: 400 },
-        (_, i) => `.r${i}雪😀{width:v-bind(width${i});opacity:${i / 1000}}`,
-      ).join("\r\n"),
-      batch: 10,
-    },
-  ];
+  const vectors = profileVectors();
   for (const vector of vectors) {
     const row = { ...vector, samples: [] };
     packet.timings.push(row);
     const off = { filename: "profile-雪😀.css", minify: false, sourceMap: false };
     const on = { ...off, sourceMap: true };
     const plain = native.compileCss(vector.source, off);
-    const mapped = native.compileCss(vector.source, on);
-    row.outputs = { off: plain, on: mapped };
-    assert.deepEqual((({ map: _, ...rest }) => rest)(mapped), plain);
+    row.outputs = { off: plain };
+    if (mode === "interleaved") {
+      const mapped = native.compileCss(vector.source, on);
+      row.outputs.on = mapped;
+      assert.deepEqual((({ map: _, ...rest }) => rest)(mapped), plain);
+    }
+    assert.equal(plain.map, undefined);
     for (let warm = 0; warm < 100; warm++) {
-      native.compileCss(vector.source, off);
-      native.compileCss(vector.source, on);
+      for (const sourceMap of fixtureModes) native.compileCss(vector.source, sourceMap ? on : off);
     }
     for (let sample = 0; sample < 20; sample++) {
-      const modes = sample % 2 === 0 ? [off, on] : [on, off];
-      for (const options of modes) {
+      for (const sourceMap of profileModes(mode, sample)) {
+        const options = sourceMap ? on : off;
         const start = process.hrtime.bigint();
         let bytes = 0;
         for (let call = 0; call < vector.batch; call++) {
@@ -275,6 +315,69 @@ function run(base, head, destination) {
     write(path.join(destination, `${side}-identity.json`), identity);
     retain();
   }
+  const isolatedPackets = [];
+  for (const [index, side] of receipt.order.entries()) {
+    const file = path.join(destination, `isolated-${index}-${side}.json`);
+    command(
+      [
+        process.execPath,
+        script,
+        "--off-only-worker",
+        path.join(destination, `${side}-identity.json`),
+        path.join(head, "tests/fixtures/css/compile-source-maps"),
+        file,
+      ],
+      head,
+      process.env,
+      path.join(destination, `isolated-${index}-${side}.log`),
+    );
+    const packet = JSON.parse(fs.readFileSync(file, "utf8"));
+    validateNativeTimingPlan(packet, "isolated-off");
+    assert.deepEqual(
+      packet.identity,
+      receipt.builds.find((image) => image.side === side),
+    );
+    assert.equal(packet.calls.length, 42);
+    for (const call of packet.calls) {
+      assert.equal(call.options.sourceMap, false);
+      assert.equal(call.result.map, undefined);
+    }
+    isolatedPackets.push(packet);
+  }
+  for (const packet of isolatedPackets)
+    assert.deepEqual(
+      packet.calls,
+      isolatedPackets[0].calls,
+      "all isolated off-only whole packets must remain exact",
+    );
+  receipt.isolatedOffSummary = profileVectors().map((vector) => ({
+    id: vector.id,
+    results: ["base", "head"].map((side) => {
+      const samples = isolatedPackets
+        .filter((packet) => packet.identity.side === side)
+        .flatMap((packet) =>
+          packet.timings
+            .find((row) => row.id === vector.id)
+            .samples.map((sample) => {
+              assert.equal(sample.sourceMap, false);
+              return sample.elapsedNs / sample.calls;
+            }),
+        )
+        .sort((a, b) => a - b);
+      assert.equal(samples.length, 40);
+      return {
+        side,
+        samples,
+        p50Ns: samples[Math.floor(samples.length / 2)],
+        p95Ns: samples[Math.floor(samples.length * 0.95)],
+      };
+    }),
+  }));
+  receipt.isolatedOffCompleted = true;
+  retain();
+  console.log(
+    JSON.stringify({ stage: "isolated-off-native-complete", summary: receipt.isolatedOffSummary }),
+  );
   const packets = [];
   for (const [index, side] of receipt.order.entries()) {
     const file = path.join(destination, `${index}-${side}.json`);
@@ -291,8 +394,15 @@ function run(base, head, destination) {
       process.env,
       path.join(destination, `${index}-${side}.log`),
     );
-    packets.push(JSON.parse(fs.readFileSync(file, "utf8")));
+    const packet = JSON.parse(fs.readFileSync(file, "utf8"));
+    validateNativeTimingPlan(packet, "interleaved");
+    assert.deepEqual(
+      packet.identity,
+      receipt.builds.find((image) => image.side === side),
+    );
+    packets.push(packet);
   }
+
   for (const packet of packets) {
     assert.equal(packet.calls.length, 84);
     assert.deepEqual(
@@ -344,6 +454,84 @@ function run(base, head, destination) {
       }),
     ),
   }));
+  for (const [index, packet] of packets.entries())
+    for (const vector of packet.timings)
+      assert.deepEqual(
+        vector.outputs.off,
+        isolatedPackets[index].timings.find((row) => row.id === vector.id).outputs.off,
+      );
+  receipt.summary = summary;
+  receipt.nativeCompleted = true;
+  retain();
+  console.log(JSON.stringify({ stage: "interleaved-native-complete", summary }));
+  const phaseDrivers = new Map(),
+    phasePackets = [];
+  if (sources.base === "3a3c8460f966fddbd8e1be4c083d460b24202f90") {
+    const inputs = path.join(destination, "phase-inputs.json");
+    write(inputs, { filename: "profile-雪😀.css", vectors: profileVectors() });
+    for (const image of receipt.builds)
+      phaseDrivers.set(
+        image.side,
+        buildPhaseDriver({
+          image,
+          root: head,
+          producerRoot: image.side === "base" ? base : head,
+          destination,
+          inputs,
+          receipt,
+        }),
+      );
+  }
+  for (const [index, side] of receipt.order.entries()) {
+    const packet = packets[index];
+    if (phaseDrivers.has(side)) {
+      const phases = runPhaseDriver(phaseDrivers.get(side), destination, index);
+      for (const row of phases.vectors) {
+        const native = packet.timings.find((vector) => vector.id === row.id);
+        assert.deepEqual(
+          row.outputs.fullCompile,
+          native.outputs.off,
+          "isolated whole Rust output must equal actual same-source NAPI output",
+        );
+        assert.equal(row.source, native.source);
+      }
+      phasePackets.push({ side, packet: phases });
+    }
+  }
+  if (phasePackets.length) {
+    assert.equal(phasePackets.length, 4);
+    const values = (packet) => packet.vectors.map(({ samples: _, ...row }) => row);
+    for (const entry of phasePackets)
+      assert.deepEqual(
+        values(entry.packet),
+        values(phasePackets[0].packet),
+        "all full phase inputs/results and logical work must remain exact across both roles/repeats",
+      );
+    receipt.phaseSummary = profileVectors().map((vector) => ({
+      id: vector.id,
+      results: ["base", "head"].flatMap((side) =>
+        ["scanner", "processed-input-compile", "full-compile"].map((phase) => {
+          const samples = phasePackets
+            .filter((entry) => entry.side === side)
+            .flatMap((entry) =>
+              entry.packet.vectors
+                .find((row) => row.id === vector.id)
+                .samples.filter((sample) => sample.phase === phase)
+                .map((sample) => sample.elapsedNs / sample.calls),
+            )
+            .sort((a, b) => a - b);
+          assert.equal(samples.length, 40);
+          return {
+            side,
+            phase,
+            samples,
+            p50Ns: samples[Math.floor(samples.length / 2)],
+            p95Ns: samples[Math.floor(samples.length * 0.95)],
+          };
+        }),
+      ),
+    }));
+  }
   receipt.summary = summary;
   receipt.completed = true;
   retain();
@@ -352,5 +540,7 @@ function run(base, head, destination) {
 
 if (process.argv[1] && path.resolve(process.argv[1]) === script) {
   if (process.argv[2] === "--worker") worker(...process.argv.slice(3));
+  else if (process.argv[2] === "--off-only-worker")
+    worker(...process.argv.slice(3), "isolated-off");
   else run(...process.argv.slice(2));
 }
