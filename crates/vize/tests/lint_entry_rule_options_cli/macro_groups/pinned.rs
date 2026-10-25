@@ -4,29 +4,47 @@ use std::{fs, path::Path, process::Command};
 
 #[test]
 fn registered_authored_inputs_keep_macro_group_and_ambient_barrier_diagnostics() {
-    let inputs = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../tests/_fixtures/differential/linter/repeated-macro-groups-10610");
-    let project = tempfile::tempdir().unwrap();
-    write_file(
-        project.path(),
-        "vite.config.mjs",
-        &fs::read_to_string(inputs.join("vite.config.mjs")).unwrap(),
-    );
-    for (name, input, violation) in [
-        ("TwoModels.lf.vue", "TwoModels.lf.vue.txt", None),
-        ("TwoModels.crlf.vue", "TwoModels.crlf.vue.txt", None),
+    let inputs =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/_fixtures/differential/linter");
+    for (family, name, input, violation) in [
         (
+            "repeated-macro-groups-10610",
+            "TwoModels.lf.vue",
+            "TwoModels.lf.vue.txt",
+            None,
+        ),
+        (
+            "repeated-macro-groups-10610",
+            "TwoModels.crlf.vue",
+            "TwoModels.crlf.vue.txt",
+            None,
+        ),
+        (
+            "repeated-macro-groups-10610",
             "SplitGroup.vue",
             "SplitGroup.vue.txt",
             Some((66, super::ABOVE)),
         ),
-        ("AmbientPrefix.vue", "AmbientPrefix.vue.txt", None),
         (
+            "ambient-macro-declarations-10656",
+            "AmbientPrefix.vue",
+            "AmbientPrefix.vue.txt",
+            None,
+        ),
+        (
+            "ambient-macro-declarations-10656",
             "AmbientBarrier.vue",
             "AmbientBarrier.vue.txt",
             Some((29, super::MODEL_TOP)),
         ),
     ] {
+        let inputs = inputs.join(family);
+        let project = tempfile::tempdir().unwrap();
+        write_file(
+            project.path(),
+            "vite.config.mjs",
+            &fs::read_to_string(inputs.join("vite.config.mjs")).unwrap(),
+        );
         write_file(
             project.path(),
             name,

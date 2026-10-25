@@ -2245,6 +2245,34 @@
             "sha256": "629deec3565de51676aa49d2aa40e4d32485454f5516120d29a6c69e3c85c7f9"
           },
           {
+            "path": "vite.config.mjs",
+            "role": "native-cli-config",
+            "sha256": "486630fa1aa8d4320f6765722933be31afdb2f579f939954567c9eb9fd3308cc"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/ambient-macro-declarations-10656",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "ambient-macro-declarations-10656",
+        "files": [
+          {
             "path": "AmbientPrefix.vue.txt",
             "role": "regression-reproduction",
             "sha256": "dd87643b81b0b952db3723f789d3fe1b9827c166d225f4b207fc88449d8faec0"
@@ -2267,7 +2295,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
             "selector": "linter manifest pinned authored sources"
           }
         ]
