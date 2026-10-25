@@ -55,3 +55,13 @@ export declare function applyDiagnosticDirectives<T extends { start?: number }>(
   projection: LanguageProjection,
   generatedDiagnostics: readonly T[],
 ): { diagnostics: T[]; sourceDiagnostics: ProjectionDiagnostic[] };
+/** Diagnostic-only gap semantics from the native Content Mapper protocol. */
+export declare function mapLanguageDiagnosticRange(
+  projection: LanguageProjection,
+  start: number,
+  length: number,
+): {
+  start: number;
+  length: number;
+  fidelity: "exact" | "atom" | "approximate" | "none";
+};

@@ -3,7 +3,45 @@ const { test } = require("node:test");
 const {
   toUtf16LanguageProjection,
   applyDiagnosticDirectives,
+  mapLanguageDiagnosticRange,
 } = require("../language-projection.js");
+
+test("diagnostic punctuation gaps follow the native span law without enabling navigation", () => {
+  // A generated handler diagnostic encloses synthetic parentheses around a
+  // mapped expression, as the actual TS6 service reports.
+  const projection = {
+    mappings: [
+      [2, 3, 4, 3, 1, 0],
+      [10, 4, 20, 4, 0, 0xfffff],
+    ],
+  };
+  assert.deepEqual(mapLanguageDiagnosticRange(projection, 9, 6), {
+    start: 7,
+    length: 17,
+    fidelity: "approximate",
+  });
+  assert.deepEqual(mapLanguageDiagnosticRange(projection, 11, 2), {
+    start: 21,
+    length: 2,
+    fidelity: "exact",
+  });
+  assert.deepEqual(mapLanguageDiagnosticRange(projection, 3, 1), {
+    start: 4,
+    length: 3,
+    fidelity: "atom",
+  });
+  assert.deepEqual(mapLanguageDiagnosticRange(projection, 6, 2), {
+    start: 7,
+    length: 0,
+    fidelity: "none",
+  });
+  assert.deepEqual(mapLanguageDiagnosticRange(projection, 14, 0), {
+    start: 24,
+    length: 0,
+    fidelity: "exact",
+  });
+  assert.equal(projection.mappings[0][5], 0);
+});
 
 test("converts independent UTF-8 spaces, preserving CRLF and diagnostic-only metadata", () => {
   const projection = toUtf16LanguageProjection(
