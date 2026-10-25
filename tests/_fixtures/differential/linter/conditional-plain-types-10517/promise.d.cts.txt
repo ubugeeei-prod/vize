@@ -1,0 +1,4 @@
+export async function save() {}
+export function submit() { save(); }
+
+export const view = <div />;

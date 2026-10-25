@@ -1,10 +1,8 @@
 //! Complete public JSX/TSX packets; the source replay appends this test only.
-use super::{JsxLang, LintPreset, LintResult, Linter, REACTIVITY};
+use super::{JsxLang, LintPreset, LintResult, Linter};
 use serde_json::{Value, json};
 use std::path::PathBuf;
 
-const PROMISE: &str = "export async function save() {}\nexport function submit() { save(); }\n";
-const EMPTY: &str = "export const value = 1;\n";
 const RULES: [&str; 2] = ["type/no-floating-promises", "type/no-reactivity-loss"];
 
 fn complete(result: &LintResult) -> Value {
@@ -83,9 +81,14 @@ fn conditional_plain_type_packets_are_complete() {
     std::fs::write(root.join("tsconfig.json"), "{\"compilerOptions\":{\"strict\":true,\"target\":\"ESNext\",\"module\":\"ESNext\",\"moduleResolution\":\"Bundler\",\"jsx\":\"preserve\"},\"include\":[\"*.tsx\"]}\n").unwrap();
     let missing = root.join("missing-provider");
     assert!(!missing.exists());
+    let inputs = std::env::var_os("VIZE_PLAIN_TYPE_PACKETS_INPUT_DIR")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| {
+            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("../../tests/_fixtures/differential/linter/conditional-plain-types-10517")
+        });
     let mut packets = Vec::new();
-    for (kind, source) in [("promise", PROMISE), ("reactivity", REACTIVITY)] {
-        let jsx_source = format!("{source}\nexport const view = <div />;\n");
+    for kind in ["promise", "reactivity"] {
         for (case, extension) in [
             ("active", "tsx"),
             ("javascript", "jsx"),
@@ -100,12 +103,13 @@ fn conditional_plain_type_packets_are_complete() {
         ] {
             let filename = root.join(format!("{kind}-{case}.{extension}"));
             let filename = filename.to_str().unwrap();
-            let current = match case {
-                "no-query" => EMPTY,
-                "default" => source,
-                _ => &jsx_source,
+            let input = match case {
+                "no-query" => "no-query.tsx.txt".to_owned(),
+                "default" => format!("{kind}-default.tsx.txt"),
+                _ => format!("{kind}.{extension}.txt"),
             };
-            std::fs::write(filename, current).unwrap();
+            let current = std::fs::read_to_string(inputs.join(&input)).unwrap();
+            std::fs::write(filename, &current).unwrap();
             let selected = if case == "unavailable" || case == "no-query" {
                 &missing
             } else {
@@ -125,7 +129,7 @@ fn conditional_plain_type_packets_are_complete() {
                     linter.with_disabled_rules(RULES.iter().map(|rule| (*rule).into()).collect());
             }
             let result = linter.lint_jsx(
-                current,
+                &current,
                 filename,
                 if extension == "jsx" {
                     JsxLang::Jsx
@@ -135,18 +139,18 @@ fn conditional_plain_type_packets_are_complete() {
             );
             let diagnostics = if case == "active" {
                 if kind == "promise" {
-                    let start = PROMISE.find("save();").unwrap();
+                    let start = current.find("save();").unwrap();
                     vec![warning(
-                        RULES[0],
+                        "type/no-floating-promises",
                         "Floating Promise must be awaited, returned, or explicitly ignored with `void`",
                         "Add `await`, return the Promise, or prefix it with `void` when the fire-and-forget behavior is intentional.",
                         start,
                         start + 6,
                     )]
                 } else {
-                    let start = REACTIVITY.find("state.count").unwrap();
+                    let start = current.find("state.count").unwrap();
                     vec![warning(
-                        RULES[1],
+                        "type/no-reactivity-loss",
                         "Assigning 'state.count' to 'count' stores a plain snapshot",
                         "Use `toRef(source, 'key')`, `toRefs(source)`, or access the property on the reactive object.",
                         start,

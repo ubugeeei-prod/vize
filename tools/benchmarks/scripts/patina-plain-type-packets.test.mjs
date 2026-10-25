@@ -1,8 +1,12 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import test from "node:test";
 import {
   PROVIDER_SHA,
+  INPUT_ROOT,
+  readPacketInputs,
   TEST_NAME,
   TEST_SUFFIX,
   testExecutable,
@@ -43,9 +47,34 @@ void test("Cargo executable authority requires exactly one real Patina test arti
     JSON.stringify({ ...artifact, profile: { test: false } }),
     JSON.stringify({ ...artifact, target: { name: "other" } }),
   ]) {
-    assert.throws(() => testExecutable(bytes), /exactly one source-built/u);
+    assert.throws(() => testExecutable(bytes), /one source-built/u);
   }
   assert.throws(() => testExecutable("truncated compiler JSON"));
+});
+
+void test("native source reads stay tied to the new pinned authored inputs", () => {
+  const repository = path.resolve(new URL("../../../", import.meta.url).pathname);
+  const inputs = readPacketInputs(repository);
+  assert.equal(inputs.size, 13);
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "patina-packet-pins-"));
+  try {
+    fs.mkdirSync(path.join(root, INPUT_ROOT), { recursive: true });
+    fs.copyFileSync(
+      path.join(repository, "tests/_fixtures/differential/linter/manifest.json"),
+      path.join(root, "tests/_fixtures/differential/linter/manifest.json"),
+    );
+    for (const name of inputs.keys())
+      fs.copyFileSync(path.join(repository, INPUT_ROOT, name), path.join(root, INPUT_ROOT, name));
+    fs.appendFileSync(path.join(root, INPUT_ROOT, "promise.tsx.txt"), "// changed\n");
+    assert.throws(() => readPacketInputs(root), /pinned packet input changed/u);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+  const document = packets();
+  assert.throws(
+    () => verifyPackets(JSON.stringify(document), inputs),
+    /replayed source must match pinned/u,
+  );
 });
 
 function packets() {

@@ -13,13 +13,35 @@ export const TEST_SUFFIX = "\nmod packets;\n";
 export const TEST_NAME =
   "linter::native_type_aware::plain_module_tests::packets::conditional_plain_type_packets_are_complete";
 export const PROVIDER_SHA = "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4";
+export const INPUT_ROOT = "tests/_fixtures/differential/linter/conditional-plain-types-10517";
+
+export function readPacketInputs(root) {
+  const manifest = JSON.parse(
+    fs.readFileSync(path.join(root, "tests/_fixtures/differential/linter/manifest.json")),
+  );
+  const entry = manifest.cases.find(
+    (row) => row.id === "linter/current-api/conditional-plain-types-10517",
+  );
+  assert.equal(entry.inputs.root, "conditional-plain-types-10517");
+  assert.equal(entry.inputs.files.length, 13);
+  const inputs = new Map(
+    entry.inputs.files.map((file) => {
+      assert.match(
+        file.path,
+        /^(?:(?:promise|reactivity)(?:-default)?\.(?:tsx|jsx|d\.ts|d\.mts|d\.cts)|no-query\.tsx)\.txt$/u,
+      );
+      const bytes = fs.readFileSync(path.join(root, INPUT_ROOT, file.path));
+      assert.equal(sha256(bytes), file.sha256, `pinned packet input changed: ${file.path}`);
+      return [file.path, bytes.toString()];
+    }),
+  );
+  assert.equal(inputs.size, 13, "pinned packet names must be unique");
+  return inputs;
+}
 
 export function verifyAppendOnly(original, reviewed) {
-  assert.deepEqual(
-    reviewed,
-    Buffer.concat([original, Buffer.from(TEST_SUFFIX)]),
-    "reviewed test parent must preserve every original test byte and append only its module declaration",
-  );
+  const expected = Buffer.concat([original, Buffer.from(TEST_SUFFIX)]);
+  assert.deepEqual(reviewed, expected, "original tests must retain every byte");
 }
 
 export function testExecutable(stdout) {
@@ -34,15 +56,11 @@ export function testExecutable(stdout) {
         row.profile?.test &&
         row.executable,
     );
-  assert.equal(
-    artifacts.length,
-    1,
-    "exactly one source-built Patina unit-test executable is required",
-  );
+  assert.equal(artifacts.length, 1, "expected one source-built Patina test executable");
   return artifacts[0].executable;
 }
 
-export function verifyPackets(bytes) {
+export function verifyPackets(bytes, inputs) {
   const document = JSON.parse(bytes);
   assert.equal(document.provider_version, "7.0.2");
   assert.equal(document.packets.length, 20);
@@ -98,6 +116,22 @@ export function verifyPackets(bytes) {
       ]);
     }
     assert.equal(typeof row.source, "string");
+    if (inputs) {
+      const extension =
+        {
+          javascript: "jsx",
+          "declaration-ts": "d.ts",
+          "declaration-mts": "d.mts",
+          "declaration-cts": "d.cts",
+        }[row.case] ?? "tsx";
+      const input =
+        row.case === "no-query"
+          ? "no-query.tsx.txt"
+          : row.case === "default"
+            ? `${row.kind}-default.tsx.txt`
+            : `${row.kind}.${extension}.txt`;
+      assert.equal(row.source, inputs.get(input), `replayed source must match pinned ${input}`);
+    }
   }
   return document;
 }
@@ -178,6 +212,8 @@ function main([baseInput, headInput, baseSha, headSha, outputInput]) {
   };
   const fixture = path.join(roots.head, "tools/benchmarks/fixtures/patina-project-batch");
   readAuthority(fixture);
+  const packetInputs = readPacketInputs(roots.head);
+  log("pinned-inputs.json", JSON.stringify(Object.fromEntries(packetInputs), null, 2));
   const consumer = path.join(output, "consumer");
   fs.mkdirSync(consumer);
   for (const name of ["package.json", "package-lock.json"])
@@ -265,6 +301,7 @@ function main([baseInput, headInput, baseSha, headSha, outputInput]) {
         {
           ...env,
           VIZE_PLAIN_TYPE_PACKETS_CASE_ROOT: consumer,
+          VIZE_PLAIN_TYPE_PACKETS_INPUT_DIR: path.join(roots.head, INPUT_ROOT),
           VIZE_PLAIN_TYPE_PACKETS_CAPTURE_DIR: capture,
         },
       );
@@ -275,7 +312,7 @@ function main([baseInput, headInput, baseSha, headSha, outputInput]) {
     assert.match(stdout.toString(), /^test result: ok\. 1 passed; 0 failed; 0 ignored;/mu);
     assert.ok(stdout.toString().includes(`test ${TEST_NAME} ... ok`));
     const packets = fs.readFileSync(path.join(capture, "packets.json"));
-    verifyPackets(packets);
+    verifyPackets(packets, packetInputs);
     log(`${side}-packets.json`, packets);
     assert.deepEqual(fs.readFileSync(path.join(root, TEST_PARENT)), reviewed);
     assert.deepEqual(fs.readFileSync(path.join(root, TEST_CHILD)), child);

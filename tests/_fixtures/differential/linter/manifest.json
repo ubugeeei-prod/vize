@@ -58,6 +58,98 @@
   },
   "cases": [
     {
+      "id": "linter/current-api/conditional-plain-types-10517",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "conditional-plain-types-10517",
+        "files": [
+          {
+            "path": "no-query.tsx.txt",
+            "role": "conditional-native-type-admission-control",
+            "sha256": "5d8f65d2774e206bc9f7a7a4ad39ca2dc563b5c31e46ab57ef4874961237ce29"
+          },
+          {
+            "path": "promise-default.tsx.txt",
+            "role": "conditional-native-type-admission-control",
+            "sha256": "17f2b1bcc1eb7aa0b84dfdaac9355c9762bc834cc8ed85029bab1e9de5fe54ea"
+          },
+          {
+            "path": "promise.d.cts.txt",
+            "role": "conditional-native-type-admission-control",
+            "sha256": "eb99c1a9e342d07614fb0df8d39fda3d7ceb020644de17783651f8b03e572be2"
+          },
+          {
+            "path": "promise.d.mts.txt",
+            "role": "conditional-native-type-admission-control",
+            "sha256": "eb99c1a9e342d07614fb0df8d39fda3d7ceb020644de17783651f8b03e572be2"
+          },
+          {
+            "path": "promise.d.ts.txt",
+            "role": "conditional-native-type-admission-control",
+            "sha256": "eb99c1a9e342d07614fb0df8d39fda3d7ceb020644de17783651f8b03e572be2"
+          },
+          {
+            "path": "promise.jsx.txt",
+            "role": "conditional-native-type-admission-control",
+            "sha256": "eb99c1a9e342d07614fb0df8d39fda3d7ceb020644de17783651f8b03e572be2"
+          },
+          {
+            "path": "promise.tsx.txt",
+            "role": "conditional-native-type-admission-control",
+            "sha256": "eb99c1a9e342d07614fb0df8d39fda3d7ceb020644de17783651f8b03e572be2"
+          },
+          {
+            "path": "reactivity-default.tsx.txt",
+            "role": "conditional-native-type-admission-control",
+            "sha256": "9377731e6fb4948dc886ce40d0d702ce2b42cdccee2bbeecb7bcbe8d9bccc6b3"
+          },
+          {
+            "path": "reactivity.d.cts.txt",
+            "role": "conditional-native-type-admission-control",
+            "sha256": "468b85b0cf4387c77f791a4b139b0ba5ade01f4bac0a33cc77c5586bf156cae8"
+          },
+          {
+            "path": "reactivity.d.mts.txt",
+            "role": "conditional-native-type-admission-control",
+            "sha256": "468b85b0cf4387c77f791a4b139b0ba5ade01f4bac0a33cc77c5586bf156cae8"
+          },
+          {
+            "path": "reactivity.d.ts.txt",
+            "role": "conditional-native-type-admission-control",
+            "sha256": "468b85b0cf4387c77f791a4b139b0ba5ade01f4bac0a33cc77c5586bf156cae8"
+          },
+          {
+            "path": "reactivity.jsx.txt",
+            "role": "conditional-native-type-admission-control",
+            "sha256": "468b85b0cf4387c77f791a4b139b0ba5ade01f4bac0a33cc77c5586bf156cae8"
+          },
+          {
+            "path": "reactivity.tsx.txt",
+            "role": "conditional-native-type-admission-control",
+            "sha256": "468b85b0cf4387c77f791a4b139b0ba5ade01f4bac0a33cc77c5586bf156cae8"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "ts",
+              "jsx",
+              "tsx"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/current-api/split-script-component-read-10228",
       "state": "active",
       "targets": ["lint"],
