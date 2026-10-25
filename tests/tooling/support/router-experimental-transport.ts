@@ -46,9 +46,9 @@ export function experimentalRouterDocumentTransport(
     const newline = source.indexOf("\n", cursor);
     const end = newline === -1 ? source.length : newline + 1;
     const line = source.slice(cursor, end).replace(/\r?\n$/u, "");
-    const reference = /^\/\/\/ <reference path="([^"]+)" \/>$/u.exec(line);
+    const reference = /^\/\/\/ <reference path=(?:"([^"]+)"|'([^']+)') \/>$/u.exec(line);
     if (reference) {
-      paths.push(reference[1]);
+      paths.push(reference[1] ?? reference[2]);
       const start = cursor + '/// <reference path="'.length;
       spans.push({ start, end: start + projectRoot.length });
     } else if (!/^\/\/\/ <reference lib="[^"]+" \/>$/u.test(line)) {
