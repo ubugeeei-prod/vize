@@ -251,7 +251,7 @@ void test(
       observations.currentValues = currentValues;
       await page.screenshot({ path: path.join(output, "runtime-controls.png"), fullPage: true });
 
-      const editedSource = runtimeComponent.replace('default: "007"', 'default: "008"');
+      const editedSource = runtimeComponent.replace('"007"', '"008"');
       await writeFile(componentPath, editedSource);
       const changed = await api("analysis");
       observations.changed = changed;

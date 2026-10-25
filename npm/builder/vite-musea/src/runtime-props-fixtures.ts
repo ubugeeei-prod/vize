@@ -1,5 +1,5 @@
 /** Real native/API/browser regression input. No metadata is supplied by the fixture. */
-export const runtimeComponent = `<script setup lang="ts">
+export const canonicalRuntimeComponent = `<script setup lang="ts">
 defineProps({
   label: { type: String, default: "true" },
   code: { type: String, default: "007" },
@@ -34,3 +34,9 @@ export const expectedRuntimeDefaults = {
   items: ["a", "日本語"],
   data: { flag: true, count: 2 },
 };
+
+/** Exercise quoted, escaped and computed literal keys through the real HTTP/browser path. */
+export const runtimeComponent = canonicalRuntimeComponent
+  .replaceAll("type:", '["ty\\u0070e"]:')
+  .replaceAll("required:", '"requ\\u0069red":')
+  .replaceAll("default:", "'default':");

@@ -233,10 +233,7 @@ pub(in crate::script_parser) fn extract_runtime_prop_type(
             let ObjectPropertyKind::ObjectProperty(prop) = prop else {
                 return None;
             };
-            let PropertyKey::StaticIdentifier(id) = &prop.key else {
-                return None;
-            };
-            (id.name.as_str() == "type")
+            (runtime_object_property_name(&prop.key) == Some("type"))
                 .then(|| extract_runtime_prop_type(&prop.value, source))
                 .flatten()
         }),
@@ -311,10 +308,7 @@ pub(in crate::script_parser) fn extract_runtime_prop_default(
         let ObjectPropertyKind::ObjectProperty(prop) = prop else {
             return None;
         };
-        let PropertyKey::StaticIdentifier(id) = &prop.key else {
-            return None;
-        };
-        if id.name.as_str() != "default" {
+        if runtime_object_property_name(&prop.key) != Some("default") {
             return None;
         }
 
@@ -329,8 +323,7 @@ pub(in crate::script_parser) fn detect_required_prop(value: &Expression<'_>) -> 
     if let Expression::ObjectExpression(obj) = value {
         for prop in obj.properties.iter() {
             if let ObjectPropertyKind::ObjectProperty(p) = prop
-                && let PropertyKey::StaticIdentifier(id) = &p.key
-                && id.name.as_str() == "required"
+                && runtime_object_property_name(&p.key) == Some("required")
                 && let Expression::BooleanLiteral(b) = &p.value
             {
                 return b.value;
