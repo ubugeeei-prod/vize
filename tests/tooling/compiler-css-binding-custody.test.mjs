@@ -96,6 +96,17 @@ await test("binding source gate admits only actual newly registered exact source
     readFile: side,
   };
   assert.deepEqual(failingProducts(analyzeLegacyFix(request)), []);
+  const actualChanged = execFileSync("git", ["diff", "--name-only", baseline, fixed], {
+    cwd: root,
+    encoding: "utf8",
+  })
+    .trim()
+    .split("\n");
+  assert.deepEqual(
+    failingProducts(analyzeLegacyFix({ ...request, paths: actualChanged })),
+    [],
+    "all actual producer source changes must be certified, including cfg(test) modules",
+  );
   for (const file of cssBindingProducerPaths)
     assert.deepEqual(legacyProducts([file]), ["compiler"]);
   for (const extra of [

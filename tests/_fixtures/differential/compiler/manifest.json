@@ -1287,7 +1287,7 @@
           {
             "path": "authority.json",
             "role": "authority",
-            "sha256": "ecc5b8c7c2dfeaa5f528344f930d29d2ffeac8c109c0e0d7e5bacff6c558cbae"
+            "sha256": "5be6dcfb3dbb49ecb3f04a9a48c1f4798b58fe2cdbcbf037fdf644021c626561"
           },
           {
             "path": "source-before-observation.json",

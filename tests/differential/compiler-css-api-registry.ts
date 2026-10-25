@@ -9,6 +9,7 @@ export const cssMapProducerPaths = [
 export const cssBindingProducerPaths = [
   ...cssMapProducerPaths.slice(0, 4),
   "crates/vize_atelier_sfc/src/css/parser/source_map/positions.rs",
+  "crates/vize_atelier_sfc/src/css/parser/source_map/tests.rs",
   "crates/vize_croquis/src/sfc.rs",
   "crates/vize_croquis/src/sfc/css_transform.rs",
 ] as const;
@@ -26,7 +27,7 @@ type Spec = {
   beforeRevision: string;
   fixRevision: string;
   paths: readonly string[];
-  missingBefore: number;
+  missingBefore: readonly number[];
   sourceBefore: boolean;
   witness: { runner: string; requestCount: number };
 };
@@ -45,7 +46,7 @@ const specs: readonly Spec[] = [
     beforeRevision: "b0033883518f364cfbd3dd0ab9464715e9f51758",
     fixRevision: "510b0bb1033a22265e3408693a4aa00b78351cef",
     paths: cssMapProducerPaths,
-    missingBefore: 3,
+    missingBefore: [3],
     sourceBefore: false,
     witness: { runner: "tests/native/css-compile-source-maps.mjs", requestCount: 84 },
   },
@@ -62,7 +63,7 @@ const specs: readonly Spec[] = [
     beforeRevision: "3a3c8460f966fddbd8e1be4c083d460b24202f90",
     fixRevision: "91c25c1b4a2ea842705e4db321b6e92d2b70ba42",
     paths: cssBindingProducerPaths,
-    missingBefore: 4,
+    missingBefore: [4, 5],
     sourceBefore: true,
     witness: { runner: "tests/native/css-v-bind-source-maps.mjs", requestCount: 40 },
   },
