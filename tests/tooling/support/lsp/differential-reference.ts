@@ -1,6 +1,8 @@
+import assert from "node:assert/strict";
 import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { sourceSessionUnsupportedLegacy } from "../../../differential/lsp-source-sessions.ts";
 import { lspWorkspace } from "../../../differential/lsp-workspace.ts";
 import { BUILD_RECIPE } from "../../../differential/build-receipt.ts";
 import { sha256 } from "../../../differential/harness.mjs";
@@ -22,6 +24,11 @@ import type {
 
 // Synthetic frames exercise validator laws, never product runtime evidence.
 export function referenceObservation(fixture: LspFixture): WireObservation {
+  assert.equal(
+    fixture.data.sourceSession,
+    undefined,
+    "source transitions cannot use synthetic initial-document wire",
+  );
   const workspace = path.join(os.tmpdir(), "lsp-fixture-law");
   const workspaceUri = pathToFileURL(workspace).href;
   const entryUri = pathToFileURL(path.join(workspace, fixture.entry)).href;
@@ -130,6 +137,13 @@ export function referenceReport(
       processError: null,
     },
     rows: loaded.cases.map((fixture) => {
+      if (fixture.data.sourceSession)
+        return {
+          id: fixture.id,
+          legacy: sourceSessionUnsupportedLegacy(),
+          native: { state: "unsupported", reason: NATIVE_REASON },
+          comparison: { state: "not-compared", reason: NATIVE_REASON },
+        };
       const observation = referenceObservation(fixture);
       const mapping = lspWorkspace(fixture).mapping;
       return {
@@ -152,8 +166,9 @@ export function referenceReport(
     }),
     summary: {
       plannedCases: loaded.cases.length,
-      legacyMatches: loaded.cases.length,
+      legacyMatches: loaded.cases.filter((fixture) => !fixture.data.sourceSession).length,
       legacyFailures: 0,
+      legacyUnsupported: loaded.cases.filter((fixture) => fixture.data.sourceSession).length,
       baselineDrift: 0,
       nativeUnsupported: loaded.cases.length,
       pairedComparisons: 0,

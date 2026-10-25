@@ -5,16 +5,12 @@ import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 import { LspSession, LspRequestError } from "./support/lsp/session.ts";
 import { root } from "./support/lsp/paths.ts";
+import { decodeFrames } from "../differential/lsp-wire.ts";
+import { readLocalResolveSourceSession } from "../differential/lsp-source-sessions.ts";
 
 const output = path.join(root, "target/differential/local-completion-resolve");
-const source = `<script setup lang="ts">
-const stable: number = 1
-const route = useRoute()
-route.params.id
-</script>
-<template><div>{{ stable }}</div></template>
-<style>.x { display: flex; }</style>
-`;
+const fixture = readLocalResolveSourceSession(root);
+const source = fixture.files.get(fixture.spec.documentPaths[0])!.toString("utf8");
 type Json = null | boolean | number | string | Json[] | { [key: string]: Json };
 const position = (offset: number) => {
   const prefix = source.slice(0, offset);
@@ -34,22 +30,31 @@ test("local and catalog completion resolve survives real multi-root configuratio
       path.join(output, "observations.json"),
       `${JSON.stringify(observed, null, 2)}\n`,
     );
-  const folders = ["a", "b"].map((name) => path.join(workspace, name));
-  const config = (hover: boolean) =>
-    `export default ${JSON.stringify({ vue: { languageServer: { hover, completion: true, ecosystem: true, typecheck: false, lint: false }, linter: { enabled: false } } })};\n`;
-  const pages = folders.map((folder) => {
-    fs.mkdirSync(path.join(folder, "src/pages/products"), { recursive: true });
-    fs.writeFileSync(path.join(folder, "package.json"), '{"private":true,"type":"module"}\n');
-    fs.writeFileSync(path.join(folder, "vite.config.mjs"), config(true));
-    fs.writeFileSync(
-      path.join(folder, "tsconfig.json"),
-      '{"compilerOptions":{"strict":true},"include":["src/**/*"]}\n',
-    );
-    const file = path.join(folder, "src/pages/products/[id].vue");
-    fs.writeFileSync(file, source);
+  const folders = fixture.spec.workspaceFolders.map((name) => path.join(workspace, name));
+  for (const file of fixture.initialFiles) {
+    const destination = path.join(workspace, file.path);
+    fs.mkdirSync(path.dirname(destination), { recursive: true });
+    fs.writeFileSync(destination, file.bytes);
+  }
+  const pages = fixture.spec.documentPaths.map((name) => {
+    const file = path.join(workspace, name);
+    assert.equal(fs.readFileSync(file, "utf8"), source);
     return { file, uri: pathToFileURL(file).href };
   });
+  observed.push({
+    kind: "authored-inputs",
+    caseSha256: fixture.caseSha256,
+    files: fixture.initialFiles.map(({ path: name }) => ({
+      path: name,
+      source: fs.readFileSync(path.join(workspace, name), "utf8"),
+    })),
+  });
+  save();
   const session = new LspSession();
+  session.responseObservers.push((message) => {
+    observed.push({ kind: "raw-response", message });
+    save();
+  });
   session.notificationObservers.push((method, params) => {
     observed.push({ kind: "notification", method, params });
     save();
@@ -87,6 +92,7 @@ test("local and catalog completion resolve survives real multi-root configuratio
       "textDocument/publishDiagnostics",
       (packet) => (packet as { uri: string }).uri === uri,
     );
+  let completed = false;
   try {
     await request("initialize", {
       processId: process.pid,
@@ -95,17 +101,8 @@ test("local and catalog completion resolve survives real multi-root configuratio
         uri: pathToFileURL(folder).href,
         name: path.basename(folder),
       })),
-      capabilities: {
-        textDocument: {
-          completion: {
-            completionItem: {
-              documentationFormat: ["markdown"],
-              resolveSupport: { properties: ["documentation"] },
-            },
-          },
-        },
-      },
-      initializationOptions: { typecheck: false, lint: false },
+      capabilities: fixture.capabilities,
+      initializationOptions: fixture.data.initializationOptions,
     });
     session.notify("initialized", {});
     for (const { uri } of pages) {
@@ -122,12 +119,7 @@ test("local and catalog completion resolve survives real multi-root configuratio
       textDocument: { uri },
       position: position(source.indexOf("const stable") + "const st".length),
     });
-    const expectedItem = {
-      label: "id",
-      kind: 10,
-      detail: "Vue Router file route param: string",
-      sortText: "0",
-    };
+    const expectedItem = fixture.localItem;
     const item = async (uri: string) => {
       const vector = await request("textDocument/completion", completionParams(uri));
       assert.deepEqual(vector, [expectedItem]);
@@ -159,10 +151,16 @@ test("local and catalog completion resolve survives real multi-root configuratio
     delete insertion.documentation;
     assert.deepEqual(insertion, selected);
 
-    const changed = path.join(folders[0], "vite.config.mjs");
-    fs.writeFileSync(changed, config(false));
+    const changed = path.join(workspace, fixture.spec.transition.target);
+    fs.writeFileSync(changed, fixture.changedConfig);
+    observed.push({
+      kind: "configuration-write",
+      path: path.relative(workspace, changed),
+      source: fs.readFileSync(changed, "utf8"),
+    });
+    save();
     session.notify("workspace/didChangeWatchedFiles", {
-      changes: [{ uri: pathToFileURL(changed).href, type: 2 }],
+      changes: [{ uri: pathToFileURL(changed).href, type: fixture.spec.transition.eventType }],
     });
     assert.deepEqual(await publish(pages[0].uri), {
       diagnostics: [],
@@ -192,9 +190,55 @@ test("local and catalog completion resolve survives real multi-root configuratio
       }),
       (error: unknown) => error instanceof LspRequestError && error.code === -32801,
     );
+    completed = true;
   } finally {
-    save();
-    await session.shutdown();
-    fs.rmSync(workspace, { recursive: true, force: true });
+    try {
+      await session.shutdown();
+      await session.waitForClosed();
+      if (process.env.VIZE_LSP_REQUIRE_SOURCE_BUILD === "1") {
+        const captures = path.join(root, "target/differential/lsp-sessions");
+        const candidates = fs
+          .readdirSync(captures)
+          .filter((name) => name.startsWith(`${process.pid}-`));
+        assert.equal(
+          candidates.length,
+          1,
+          "this dedicated executor owns exactly one source-bound session",
+        );
+        const capture = path.join(captures, candidates[0]);
+        fs.cpSync(capture, path.join(output, "source-session"), { recursive: true });
+        if (completed) {
+          const requests = decodeFrames(
+            fs.readFileSync(path.join(capture, "client.bin")),
+          ).messages.filter(
+            (message) => typeof message.id === "number" && typeof message.method === "string",
+          );
+          assert.deepEqual(
+            requests.map(({ id }) => id),
+            Array.from({ length: fixture.spec.plannedClientRpcCount }, (_, index) => index + 1),
+          );
+          assert.equal(requests[0].method, "initialize");
+          assert.equal(requests.at(-1)?.method, "shutdown");
+        }
+      }
+      if (completed) {
+        const raw = observed.filter(
+          (entry) => (entry as { kind?: string }).kind === "raw-response",
+        ) as Array<{ message: { id: number } }>;
+        assert.deepEqual(
+          raw.map(({ message }) => message.id),
+          Array.from({ length: fixture.spec.plannedClientRpcCount }, (_, index) => index + 1),
+        );
+        assert.equal(
+          observed.filter((entry) =>
+            ["response", "error"].includes((entry as { kind: string }).kind),
+          ).length,
+          fixture.spec.directWrapperRpcCount,
+        );
+      }
+    } finally {
+      save();
+      fs.rmSync(workspace, { recursive: true, force: true });
+    }
   }
 });
