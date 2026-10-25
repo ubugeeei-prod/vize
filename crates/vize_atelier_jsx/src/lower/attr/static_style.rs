@@ -28,8 +28,8 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
             if name == "v-bind" {
                 return None;
             }
-            if name == "style" {
-                if selected.is_some() {
+            if name.eq_ignore_ascii_case("style") {
+                if name != "style" || selected.is_some() {
                     return None;
                 }
                 selected = Some(attribute);

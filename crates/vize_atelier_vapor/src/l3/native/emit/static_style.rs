@@ -16,7 +16,10 @@ pub(super) fn fold(node: &mut Node<'_>, source: &str) -> Option<StaticStyle> {
     let Content::Element { attributes, .. } = &node.content else {
         return None;
     };
-    if attributes.iter().any(|(name, ..)| *name == "style") {
+    if attributes
+        .iter()
+        .any(|(name, ..)| name.eq_ignore_ascii_case("style"))
+    {
         return None;
     }
     let mut selected = None;
@@ -24,8 +27,12 @@ pub(super) fn fold(node: &mut Node<'_>, source: &str) -> Option<StaticStyle> {
         if binding.kind == BindingKind::Spread || binding.dynamic_name.is_some() {
             return None;
         }
-        if binding.kind == BindingKind::Prop && binding.name == "style" {
-            if selected.is_some() || !binding.modifiers.is_empty() || binding.merge.is_some() {
+        if binding.kind == BindingKind::Prop && binding.name.eq_ignore_ascii_case("style") {
+            if binding.name != "style"
+                || selected.is_some()
+                || !binding.modifiers.is_empty()
+                || binding.merge.is_some()
+            {
                 return None;
             }
             selected = Some(index);

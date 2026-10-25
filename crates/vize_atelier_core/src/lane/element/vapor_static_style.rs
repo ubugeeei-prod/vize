@@ -11,7 +11,9 @@ pub(super) fn fold<'a>(ctx: &TransformContext<'a>, element: &mut ElementNode<'a>
     let mut selected = None;
     for (index, prop) in element.props.iter().enumerate() {
         match prop {
-            PropNode::Attribute(attribute) if attribute.name == "style" => return,
+            PropNode::Attribute(attribute) if attribute.name.eq_ignore_ascii_case("style") => {
+                return;
+            }
             PropNode::Directive(directive) if directive.name == "bind" => {
                 let Some(ExpressionNode::Simple(name)) = &directive.arg else {
                     return;
@@ -19,8 +21,11 @@ pub(super) fn fold<'a>(ctx: &TransformContext<'a>, element: &mut ElementNode<'a>
                 if !name.is_static {
                     return;
                 }
-                if name.content == "style" {
-                    if selected.is_some() || !directive.modifiers.is_empty() {
+                if name.content.eq_ignore_ascii_case("style") {
+                    if name.content != "style"
+                        || selected.is_some()
+                        || !directive.modifiers.is_empty()
+                    {
                         return;
                     }
                     selected = Some(index);

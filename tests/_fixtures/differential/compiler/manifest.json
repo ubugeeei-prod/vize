@@ -1571,7 +1571,11 @@
         },
         {
           "path": "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/admission-source-pairs.json",
-          "sha256": "c2e9baec7a3760a6c6bf7d0193e6c9c27a6ee2ae380aaf15ce760d790285bb7d"
+          "sha256": "877498deb12e3227b6bf24c165b5df025539e4e89fd420f2c80f56c7c1403474"
+        },
+        {
+          "path": "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/attribute-case-inputs.json",
+          "sha256": "d8510c242246ef26e1639ce5bd3d69b562837f78437fbcec01bed4b119b3f9ad"
         },
         {
           "path": "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/authority.json",
@@ -1606,7 +1610,7 @@
         {
           "path": "crates/vize_atelier_jsx/tests/literal_style_source.rs",
           "symbol": "complete_literal_style_source_observations",
-          "sha256": "9429e04158c5cb27ae397bdaabebef6fa060ee3c3ecf4f2bd142a6520dbe53a3"
+          "sha256": "f65aff47a6b28867a63c82ffc4e7dabf546e6438b63bb753ee89f36b2f843ce3"
         },
         {
           "path": "crates/vize_atelier_jsx/tests/literal_object_styles.rs",
@@ -1633,7 +1637,7 @@
         {
           "path": "crates/vize_atelier_core/src/lane/element/vapor_static_style.rs",
           "beforeSha256": null,
-          "afterSha256": "327ac2d090f15fb754fa46cb1b52dc83264ac41fd5249dd0f7a75c20796e1168"
+          "afterSha256": "646962e6669edff43d3f30e2f290b7644bed190472a1898bf74f9e05e452a757"
         },
         {
           "path": "crates/vize_atelier_core/src/lib.rs",
@@ -1658,7 +1662,7 @@
         {
           "path": "crates/vize_atelier_jsx/src/lower/attr/static_style.rs",
           "beforeSha256": null,
-          "afterSha256": "52b75a3bc7df54c3b76508389f40cfcd0e6da7d3b78e5decc55cd82981efb3eb"
+          "afterSha256": "9468e859a7f19aa4fa6cc8b2f3fef1b5231b43d3e591571a931fb625dfc03c53"
         },
         {
           "path": "crates/vize_atelier_jsx/src/vapor.rs",
@@ -1678,7 +1682,7 @@
         {
           "path": "crates/vize_atelier_vapor/src/l3/native/emit/static_style.rs",
           "beforeSha256": null,
-          "afterSha256": "e4fe122719e047eb4d6d36c4aa42a0f39f9848f043074dc2639ef4b8420f2e59"
+          "afterSha256": "b8069a9df5326dad0c13027679618151d73f68ac48567a4ac97707355e351b07"
         },
         {
           "path": "crates/vize_relief/src/inline_style.rs",
