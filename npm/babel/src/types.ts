@@ -36,6 +36,11 @@ export interface ParserOptions {
 
 export interface Scope {
   crawl(): void;
+  bindings: Record<string, unknown>;
+  uids: Record<string, boolean>;
+  generateUid(name: string): string;
+  rename(name: string, replacement: string): void;
+  getBinding(name: string): unknown;
 }
 
 export interface BabelFile {
@@ -48,7 +53,11 @@ export interface BabelFile {
     sourceMaps?: boolean | "inline" | "both";
   };
   inputMap: { toObject(): object } | null;
-  path: { replaceWith(node: AstNode): void; scope: Scope };
+  path: {
+    replaceWith(node: AstNode): void;
+    scope: Scope;
+    traverse(visitor: { Scopable(path: { scope: Scope }): void }): void;
+  };
   scope: Scope;
   get(key: symbol): unknown;
   set(key: symbol, value: unknown): void;

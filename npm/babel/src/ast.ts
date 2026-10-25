@@ -1,4 +1,4 @@
-import type { AstNode, BabelApi, FileAst, ParserOptions } from "./types.ts";
+import type { AstNode, BabelApi, FileAst, ParserOptions, Scope } from "./types.ts";
 
 export function isNode(value: unknown): value is AstNode {
   return (
@@ -29,21 +29,57 @@ export function enableSyntax(filename: string, parser: ParserOptions): void {
 }
 
 /** Explicit foreign runtime selection is a configuration error, never Vue output. */
-export function rejectForeignRuntime(ast: FileAst): void {
+export function rejectForeignRuntime(ast: FileAst, plugins: unknown, scope: Scope): void {
+  if (Array.isArray(plugins)) {
+    for (const plugin of plugins) {
+      if (typeof plugin !== "object" || plugin === null || !("key" in plugin)) continue;
+      if (
+        typeof plugin.key === "string" &&
+        /^(?:@babel\/plugin-)?transform-react-jsx(?:-development|\/development)?$/u.test(plugin.key)
+      ) {
+        rejectReact();
+      }
+    }
+  }
   const body = ast.program.body;
   if (Array.isArray(body)) {
     for (const node of body) {
+      if (isNode(node) && node.type === "TSImportEqualsDeclaration" && node.importKind !== "type") {
+        const owner = node.moduleReference;
+        if (isNode(owner) && isNode(owner.expression) && foreignName(owner.expression.value))
+          rejectReact();
+      }
+      if (isNode(node) && node.type === "VariableDeclaration" && !scope.getBinding("require")) {
+        const declarations = node.declarations;
+        if (Array.isArray(declarations))
+          for (const declaration of declarations) {
+            if (!isNode(declaration) || !isNode(declaration.init)) continue;
+            const call = declaration.init;
+            if (
+              call.type === "CallExpression" &&
+              isNode(call.callee) &&
+              call.callee.type === "Identifier" &&
+              call.callee.name === "require" &&
+              Array.isArray(call.arguments) &&
+              call.arguments.length === 1 &&
+              isNode(call.arguments[0]) &&
+              foreignName(call.arguments[0].value)
+            )
+              rejectReact();
+          }
+      }
       if (!isNode(node) || node.type !== "ImportDeclaration" || node.importKind === "type")
         continue;
-      const source = node.source;
+      const specifiers = node.specifiers;
       if (
-        isNode(source) &&
-        typeof source.value === "string" &&
-        /^react(?:\/|$)/u.test(source.value)
-      ) {
-        throw new Error(
-          "Vize compiles Vue JSX; scope this plugin to Vue files using Babel overrides",
-        );
+        Array.isArray(specifiers) &&
+        specifiers.length > 0 &&
+        specifiers.every((specifier) => isNode(specifier) && specifier.importKind === "type")
+      )
+        continue;
+      const source = node.source;
+      if (isNode(source) && typeof source.value === "string" && foreignName(source.value)) {
+        rejectReact();
       }
     }
   }
@@ -60,4 +96,12 @@ export function rejectForeignRuntime(ast: FileAst): void {
         throw new Error("Custom JSX factory pragmas are not supported by the native Babel adapter");
     }
   }
+}
+
+function foreignName(value: unknown): boolean {
+  return typeof value === "string" && /^react(?:\/|$)/u.test(value);
+}
+
+function rejectReact(): never {
+  throw new Error("Vize compiles Vue JSX; scope this plugin to Vue files using Babel overrides");
 }
