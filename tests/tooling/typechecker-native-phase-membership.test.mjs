@@ -10,7 +10,8 @@ import {
   nativeVueSources,
 } from "../../tools/benchmarks/scripts/typechecker-native-phase-membership.mjs";
 
-const file = new URL("../_fixtures/ci/native-phase-membership-original.json", import.meta.url);
+const fixturePath = "tests/_fixtures/ci/native-phase-membership-original.json";
+const file = new URL(`../../${fixturePath}`, import.meta.url);
 const stat = fs.lstatSync(file);
 assert(stat.isFile() && (stat.mode & 0o777) === 0o644);
 const bytes = fs.readFileSync(file);
