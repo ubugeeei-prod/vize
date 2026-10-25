@@ -2618,5 +2618,123 @@
         }
       }
     ]
-  }
+  },
+  "productSnapshot": {
+    "sourceRevision": "3be9e876959a79bcd7b039386325a6840dd372ab",
+    "cratesSha256": "328c05bc9c94b3e49a31df257392de5bf149c213776818dc9b85c3fa7e944d32",
+    "cratesEntries": 9383,
+    "buildInputsSha256": "eb2d9309d150a12e58c137acaf0d6104a791598ede20972d69c0717255949517",
+    "vsixInputsSha256": "7ae0809dff0363fd34a8aab2acd5475dcf40ac07338195dca5aaaa77237e1669",
+    "fixturesSha256": "366dd0c032556e689dff346e00a58de5bad414db4a16fda13b22bc5c751dda30"
+  },
+  "reviewedFixtures": [
+    {
+      "path": "tests/_fixtures/differential/lsp/css-color-declaration-admission-10562-css/Colors.vue.txt",
+      "mode": "100644",
+      "type": "blob",
+      "oid": "f02b44f8b3aaeff0707ceeeeb65e65a7ac911d88"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/css-color-declaration-admission-10562-css/case.json",
+      "mode": "100644",
+      "type": "blob",
+      "oid": "5a9297053b60dc99f6eba0d29b2e547656f56c91"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/css-color-declaration-admission-10562-css/response.expected.json",
+      "mode": "100644",
+      "type": "blob",
+      "oid": "39ffa8a88fb486b933604488780f7ef9040ca254"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/css-color-declaration-admission-10562-stylus/Colors.vue.txt",
+      "mode": "100644",
+      "type": "blob",
+      "oid": "6b22f6f4b2687c12bb20f45ea8da7d7a4fcee9d3"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/css-color-declaration-admission-10562-stylus/case.json",
+      "mode": "100644",
+      "type": "blob",
+      "oid": "eebc7ff416191f26a40a5fb9b8cb4209467df11b"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/css-color-declaration-admission-10562-stylus/response.expected.json",
+      "mode": "100644",
+      "type": "blob",
+      "oid": "21cdbf02d341344f8c78840a20fca1e7c60ac5f9"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/css-color-declaration-admission-10562/hover.expected-stylesheet-examples-10572.json",
+      "mode": "100644",
+      "type": "blob",
+      "oid": "60db3173ac6855c8b3a88331e2e0302f3d86f932"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/css-color-declaration-admission-10562/negative.public-0.565.0.json",
+      "mode": "100644",
+      "type": "blob",
+      "oid": "ef36ca2b696e63b9c21330e2f330da988413da22"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/css-color-declaration-admission-10562/positive.public-0.565.0.json",
+      "mode": "100644",
+      "type": "blob",
+      "oid": "0fceb090132c41c16e3ffb7744219047a93eaa9c"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/css-hover-stylesheet-examples-10572/Colors.vue.txt",
+      "mode": "100644",
+      "type": "blob",
+      "oid": "e7c7fb73d6d4a4c0e130fed197cf39f17c7cf266"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/css-hover-stylesheet-examples-10572/case.json",
+      "mode": "100644",
+      "type": "blob",
+      "oid": "c36be39b720690d4ec5f8c19da25c76988acbb4b"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/css-hover-stylesheet-examples-10572/historical-2934/Colors.vue.txt",
+      "mode": "100644",
+      "type": "blob",
+      "oid": "fa5b44b51eed4d9b68af9a09a6ffc880b664b5da"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/css-hover-stylesheet-examples-10572/historical-2934/build-receipt.json",
+      "mode": "100644",
+      "type": "blob",
+      "oid": "7d9bd6dbfe22a426b5936a1a7ff89dd147cc1e26"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/css-hover-stylesheet-examples-10572/historical-2934/hex-baseline-hover.json",
+      "mode": "100644",
+      "type": "blob",
+      "oid": "f732ec831ec2c1ec421b649b0e55a4448a5d09e7"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/css-hover-stylesheet-examples-10572/historical-2934/identity.json",
+      "mode": "100644",
+      "type": "blob",
+      "oid": "6add4e6a4106e297414f77011747a7266e304590"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/css-hover-stylesheet-examples-10572/historical-2934/rgba-baseline-hover.json",
+      "mode": "100644",
+      "type": "blob",
+      "oid": "e75299d41a02f3b783e7db0cc52c877510180f5c"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/css-hover-stylesheet-examples-10572/local-completion-resolve.expected-current.json",
+      "mode": "100644",
+      "type": "blob",
+      "oid": "56b28f447db853f55ea7aa5771ab0f745597c8ae"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/css-hover-stylesheet-examples-10572/responses.expected.json",
+      "mode": "100644",
+      "type": "blob",
+      "oid": "ee5d979ca6d4b22173681dd8a8da5db1e749d157"
+    }
+  ]
 }

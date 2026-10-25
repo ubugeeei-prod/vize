@@ -35,6 +35,25 @@ const reviewedBuildPaths = [
 ];
 const historicalDirectory =
   "tests/_fixtures/differential/lsp/css-hover-stylesheet-examples-10572/historical-2934";
+const contractPath = "editors/vscode/test/css-hover-source-custody.json";
+// These are complete module/fixture memberships, not a list of changed files.
+// A new or renamed input inside an owned module must require a new review.
+const ownedSourcePaths = [
+  "crates/vize_maestro/src/ide/style.rs",
+  "crates/vize_maestro/src/ide/style",
+  "crates/vize_maestro/src/server/annotations.rs",
+  "crates/vize_maestro/src/server/annotations/document_color.rs",
+  "crates/vize_maestro/src/server/annotations/document_color",
+  "crates/vize_maestro/src/server/handlers/typed.rs",
+  "crates/vize_maestro/src/server/handlers/tests/completion_resolve.rs",
+];
+const ownedFixturePaths = [
+  "tests/_fixtures/differential/lsp/css-color-declaration-admission-10562",
+  "tests/_fixtures/differential/lsp/css-color-declaration-admission-10562-css",
+  "tests/_fixtures/differential/lsp/css-color-declaration-admission-10562-stylus",
+  "tests/_fixtures/differential/lsp/css-hover-stylesheet-examples-10572",
+  "tests/_fixtures/differential/lsp/css-concrete-color-hover-10556",
+];
 const reviewedLayers = [
   {
     name: "declaration-admission-10562",
@@ -51,6 +70,69 @@ const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const compareStrings = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
 const sorted = (records) => [...records].sort((a, b) => compareStrings(a.path, b.path));
 const fingerprint = (records) => hash(JSON.stringify(sorted(records)));
+const belongsTo = (name, roots) =>
+  roots.some((root) => name === root || name.startsWith(`${root}/`));
+
+function readGitTree(repoRoot, revision, paths, recursive = true) {
+  return execFileSync(
+    "git",
+    ["ls-tree", ...(recursive ? ["-r"] : []), "-z", revision, "--", ...paths],
+    { cwd: repoRoot, encoding: "utf8", maxBuffer: 32 * 1024 * 1024 },
+  )
+    .split("\0")
+    .filter(Boolean)
+    .map((line) => {
+      const tab = line.indexOf("\t");
+      assert.ok(tab > 0);
+      const [mode, type, oid] = line.slice(0, tab).split(" ");
+      return { path: line.slice(tab + 1), mode, type, oid };
+    });
+}
+
+// Squash commits retain contents but deliberately omit the source branch's
+// commit ancestry. Authenticate the entire historical product composition and
+// the current committed owned inputs. This grants no current-host acceptance:
+// unrelated main inputs are qualified only by the separate full-depth runner.
+export function assertCssSnapshotProvenance(
+  repoRoot,
+  contractBytes,
+  expectedCrates,
+  snapshot,
+  fixtures,
+) {
+  const loadedContract = JSON.parse(contractBytes);
+  assert.deepEqual(snapshot, loadedContract.productSnapshot, "foreign product snapshot identity");
+  assert.deepEqual(fixtures, loadedContract.reviewedFixtures, "foreign fixture snapshot identity");
+  assert.match(snapshot.sourceRevision, /^[a-f0-9]{40}$/);
+  assert.equal(snapshot.cratesSha256, fingerprint(expectedCrates), "foreign product snapshot");
+  assert.equal(snapshot.cratesEntries, expectedCrates.length, "product snapshot membership");
+  assert.equal(snapshot.fixturesSha256, fingerprint(fixtures), "foreign fixture snapshot");
+  const git = (...args) => execFileSync("git", args, { cwd: repoRoot, encoding: "utf8" });
+  assert.equal(
+    hash(git("show", `HEAD:${contractPath}`)),
+    hash(contractBytes),
+    "current committed source-custody contract differs from the loaded contract",
+  );
+  assertExactCssTree(
+    readGitTree(repoRoot, "HEAD", ownedSourcePaths),
+    expectedCrates.filter(({ path: name }) => belongsTo(name, ownedSourcePaths)),
+  );
+  assert.ok(fixtures.every(({ path: name }) => belongsTo(name, ownedFixturePaths)));
+  assertExactCssTree(readGitTree(repoRoot, "HEAD", ownedFixturePaths), fixtures);
+  assert.equal(
+    git(
+      "status",
+      "--porcelain=v1",
+      "--untracked-files=all",
+      "--",
+      ...ownedSourcePaths,
+      ...ownedFixturePaths,
+      contractPath,
+    ),
+    "",
+    "dirty, staged or untracked owned CSS inputs",
+  );
+}
 
 export function composeReviewedCssTrees(baseline, layers) {
   const current = new Map(baseline.map((entry) => [entry.path, entry]));
@@ -140,15 +222,7 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
   const git = (...args) =>
     execFileSync("git", args, { cwd: repoRoot, encoding: "utf8", maxBuffer: 32 * 1024 * 1024 });
   const readTree = (revision, paths, recursive = true) =>
-    git("ls-tree", ...(recursive ? ["-r"] : []), "-z", revision, "--", ...paths)
-      .split("\0")
-      .filter(Boolean)
-      .map((line) => {
-        const tab = line.indexOf("\t");
-        assert.ok(tab > 0);
-        const [mode, type, oid] = line.slice(0, tab).split(" ");
-        return { path: line.slice(tab + 1), mode, type, oid };
-      });
+    readGitTree(repoRoot, revision, paths, recursive);
   const contractBytes = fs.readFileSync(path.join(directory, "css-hover-source-custody.json"));
   const contract = JSON.parse(contractBytes);
   assert.equal(contract.schema, "vize.css-hover.source-custody");
@@ -168,7 +242,6 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
   const revision = pinnedProduct ? contract.productTreeRevision : head;
   if (pinnedProduct) {
     assert.match(revision, /^[a-f0-9]{40}$/);
-    git("merge-base", "--is-ancestor", revision, "HEAD");
   } else {
     assert.equal(head, expectedRevision, "source-custody head must match the requested source");
     assertCleanCssSourceWorkingTree(repoRoot);
@@ -239,8 +312,23 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
     ...contract.layers.slice(1),
     currentContracts,
   ]);
-  const actual = readTree(revision, ["crates"]);
-  assertExactCssTree(actual, expected);
+  assert.equal(contract.productSnapshot.sourceRevision, contract.productTreeRevision);
+  assert.equal(
+    contract.productSnapshot.cratesSha256,
+    fingerprint(expected),
+    "foreign product snapshot",
+  );
+  assert.equal(contract.productSnapshot.cratesEntries, expected.length);
+  if (pinnedProduct)
+    assertCssSnapshotProvenance(
+      repoRoot,
+      contractBytes,
+      expected,
+      contract.productSnapshot,
+      contract.reviewedFixtures,
+    );
+  const actual = pinnedProduct ? expected : readTree(revision, ["crates"]);
+  if (!pinnedProduct) assertExactCssTree(actual, expected);
   assert.deepEqual(
     sorted(readTree(mergedMainRevision, contract.buildPaths, false)),
     contract.mergedMain.buildInputs,
@@ -251,11 +339,13 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
     contract.buildInputs,
     "successor main build context changed",
   );
-  assert.deepEqual(
-    sorted(readTree(revision, contract.buildPaths, false)),
-    contract.buildInputs,
-    "workspace build inputs changed",
-  );
+  assert.equal(contract.productSnapshot.buildInputsSha256, fingerprint(contract.buildInputs));
+  if (!pinnedProduct)
+    assert.deepEqual(
+      sorted(readTree(revision, contract.buildPaths, false)),
+      contract.buildInputs,
+      "workspace build inputs changed",
+    );
   const infrastructure = contract.vsixInfrastructure;
   assert.equal(infrastructure.baseRevision, successorMainRevision);
   assert.equal(infrastructure.sourceRevision, vsixInfrastructureRevision);
@@ -270,11 +360,14 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
   );
   const vsixInputs = sorted(infrastructure.changes.map(({ after }) => after));
   assert.deepEqual(sorted(readTree(vsixInfrastructureRevision, reviewedVsixPaths)), vsixInputs);
-  assert.deepEqual(
-    sorted(readTree(revision, reviewedVsixPaths)),
-    composeCurrentVsixInputs(vsixInputs, currentContracts.toolingChanges),
-    "VSIX infrastructure inputs changed",
-  );
+  const expectedVsixInputs = composeCurrentVsixInputs(vsixInputs, currentContracts.toolingChanges);
+  assert.equal(contract.productSnapshot.vsixInputsSha256, fingerprint(expectedVsixInputs));
+  if (!pinnedProduct)
+    assert.deepEqual(
+      sorted(readTree(revision, reviewedVsixPaths)),
+      expectedVsixInputs,
+      "VSIX infrastructure inputs changed",
+    );
   assert.deepEqual(
     currentContracts.witnesses.map(({ path }) => path),
     [
@@ -315,7 +408,10 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
     historicalBaselineRevision,
     historicalCapture: contract.historicalCapture,
     sourceRevision: revision,
-    proofKind: pinnedProduct ? "pinned-product-snapshot" : "current-checkout",
+    proofKind: pinnedProduct ? "historical-composition-and-owned-checkout" : "current-checkout",
+    currentCheckoutRevision: head,
+    currentSourceAcceptance: !pinnedProduct,
+    currentHostAcceptance: false,
     contractSha256: hash(contractBytes),
     reviewedLayers: contract.layers,
     mergedMain: contract.mergedMain,
@@ -337,12 +433,10 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
   };
 }
 
-// Ordinary shallow PR checks validate exact pinned trees without claiming
-// ancestry across omitted history. Strict actual-host verification retains both
-// main ancestry checks on its full-depth checkout.
-// Ordinary PR checks may run on GitHub's merge tree containing unrelated main
-// changes. They validate this explicit reviewed product snapshot; actual host
-// acceptance always calls the separate strict current-checkout verifier below.
+// Ordinary checks authenticate a complete immutable historical composition and
+// the current owned CSS inputs, including genuine one-parent squash commits.
+// They grant no current-host acceptance. The strict full-depth verifier retains
+// all historical main ancestry, complete HEAD/build-context and dirty-source gates.
 export function verifyPinnedCssHoverProduct(repoRoot) {
   return verifyCssSnapshot(repoRoot, undefined, true);
 }

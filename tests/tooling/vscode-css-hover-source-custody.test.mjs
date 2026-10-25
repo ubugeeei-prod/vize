@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -7,6 +8,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import {
   assertExactCssTree,
+  assertCssSnapshotProvenance,
   assertCleanCssSourceWorkingTree,
   composeReviewedCssTrees,
   composeCurrentVsixInputs,
@@ -61,6 +63,148 @@ await test("current tooling alignment admits only its exact preimage and complet
       composeCurrentVsixInputs([before], [{ ...change, after: row(file, after.oid, "100755") }]),
     ),
   );
+});
+
+await test("one-parent squash authenticates owned contents without fabricating product ancestry", () => {
+  const repository = fs.mkdtempSync(path.join(os.tmpdir(), "vize-css-squash-custody-"));
+  const git = (...args) => execFileSync("git", args, { cwd: repository, encoding: "utf8" });
+  const write = (name, bytes) => {
+    fs.mkdirSync(path.dirname(path.join(repository, name)), { recursive: true });
+    fs.writeFileSync(path.join(repository, name), bytes);
+  };
+  const commit = (message) => {
+    git("add", ".");
+    git(
+      "-c",
+      "user.name=Vize fixture",
+      "-c",
+      "user.email=fixture@example.invalid",
+      "-c",
+      "commit.gpgsign=false",
+      "-c",
+      "core.hooksPath=/dev/null",
+      "commit",
+      "--quiet",
+      "-m",
+      message,
+    );
+    return git("rev-parse", "HEAD").trim();
+  };
+  const records = (root) =>
+    git("ls-tree", "-r", "-z", "HEAD", "--", root)
+      .split("\0")
+      .filter(Boolean)
+      .map((line) => {
+        const [header, name] = line.split("\t");
+        const [mode, type, oid] = header.split(" ");
+        return { path: name, mode, type, oid };
+      });
+  const fingerprint = (entries) =>
+    createHash("sha256").update(JSON.stringify(entries)).digest("hex");
+  const source = "crates/vize_maestro/src/ide/style/documentation.rs";
+  const fixture =
+    "tests/_fixtures/differential/lsp/css-hover-stylesheet-examples-10572/responses.expected.json";
+  const contractPath = "editors/vscode/test/css-hover-source-custody.json";
+  try {
+    git("init", "--quiet");
+    write("README.md", "main\n");
+    const base = commit("test: retain main parent");
+    write(source, 'pub const CSS: &str = "reviewed";\n');
+    write(fixture, '{"result":"whole reviewed packet"}\n');
+    const product = commit("test: retain reviewed product stage");
+    const expected = records("crates");
+    const fixtures = records("tests/_fixtures/differential/lsp");
+    const snapshot = {
+      sourceRevision: product,
+      cratesSha256: fingerprint(expected),
+      cratesEntries: expected.length,
+      fixturesSha256: fingerprint(fixtures),
+    };
+    const contractBytes = Buffer.from(
+      JSON.stringify({ productSnapshot: snapshot, reviewedFixtures: fixtures }) + "\n",
+    );
+    write(contractPath, contractBytes);
+    write("crates/unrelated-main/src/lib.rs", "pub const NEW_MAIN: u8 = 1;\n");
+    commit("test: assemble exact squash contents");
+    const squash = git(
+      "-c",
+      "user.name=Vize fixture",
+      "-c",
+      "user.email=fixture@example.invalid",
+      "commit-tree",
+      "HEAD^{tree}",
+      "-p",
+      base,
+      "-m",
+      "test: reproduce GitHub one-parent squash",
+    ).trim();
+    git("checkout", "--quiet", "--detach", squash);
+    assert.equal(git("show", "-s", "--format=%P", "HEAD").trim(), base);
+    assert.throws(() => git("merge-base", "--is-ancestor", product, "HEAD"));
+    const verify = () =>
+      assertCssSnapshotProvenance(repository, contractBytes, expected, snapshot, fixtures);
+    verify();
+    const untracked = "crates/vize_maestro/src/ide/style/untracked.rs";
+    write(untracked, "new owned input\n");
+    assert.throws(() => verify(), /dirty, staged or untracked owned CSS inputs/);
+    fs.rmSync(path.join(repository, untracked));
+    assert.throws(
+      () =>
+        assertCssSnapshotProvenance(
+          repository,
+          contractBytes,
+          expected,
+          { ...snapshot, sourceRevision: base },
+          fixtures,
+        ),
+      /foreign product snapshot/,
+    );
+    assert.throws(
+      () =>
+        assertCssSnapshotProvenance(
+          repository,
+          contractBytes,
+          [row(source, "1".repeat(40))],
+          snapshot,
+          fixtures,
+        ),
+      /foreign product snapshot/,
+    );
+    for (const mutation of [
+      "blob",
+      "mode",
+      "extra",
+      "rename",
+      "golden",
+      "extra-golden",
+      "contract",
+    ]) {
+      git("checkout", "--quiet", "--detach", squash);
+      if (mutation === "blob") write(source, "tampered\n");
+      else if (mutation === "mode") fs.chmodSync(path.join(repository, source), 0o755);
+      else if (mutation === "extra")
+        write("crates/vize_maestro/src/ide/style/unreviewed.rs", "new owned input\n");
+      else if (mutation === "rename")
+        fs.renameSync(
+          path.join(repository, source),
+          path.join(repository, "crates/vize_maestro/src/ide/style/renamed.rs"),
+        );
+      else if (mutation === "golden") write(fixture, '{"result":"weakened"}\n');
+      else if (mutation === "extra-golden")
+        write(
+          "tests/_fixtures/differential/lsp/css-hover-stylesheet-examples-10572/unreviewed.json",
+          "{}\n",
+        );
+      else write(contractPath, "{}\n");
+      commit(`test: reject squash ${mutation}`);
+      assert.throws(
+        () => verify(),
+        /reviewed blob\/mode|current committed source-custody contract/,
+      );
+    }
+  } finally {
+    fs.rmSync(repository, { recursive: true, force: true });
+  }
 });
 
 await test("dirty and staged approved sources, untracked source and dirty build inputs fail closed", () => {
@@ -183,7 +327,10 @@ await test("merged main integration rejects altered postimages, modes, preimages
       { sourceRevision: contract.productTreeRevision, integrationLayer: contract.currentContracts },
     ],
   ]) {
-    const actual = entries(target.sourceRevision);
+    const actual =
+      target.integrationLayer === contract.currentContracts
+        ? composeReviewedCssTrees(preimage, [contract.currentContracts])
+        : entries(target.sourceRevision);
     for (const mutation of ["blob", "mode", "preimage", "extra"]) {
       const layer = structuredClone(target.integrationLayer);
       if (mutation === "blob") layer.changes[0].after.oid = "1".repeat(40);
@@ -222,7 +369,9 @@ await test("historical anchors and the pinned integrated product tree remain qua
     ),
   );
   assert.equal(report.sourceRevision, contract.productTreeRevision);
-  assert.equal(report.proofKind, "pinned-product-snapshot");
+  assert.equal(report.proofKind, "historical-composition-and-owned-checkout");
+  assert.equal(report.currentSourceAcceptance, false);
+  assert.equal(report.currentHostAcceptance, false);
   assert.deepEqual(
     contract.layers.map((layer) => layer.changes.length),
     [7, 2],
