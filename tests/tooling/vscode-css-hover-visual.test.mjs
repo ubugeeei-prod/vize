@@ -14,6 +14,21 @@ import {
   currentColorPresentations,
 } from "../../editors/vscode/test/css-hover-current-packets.mjs";
 
+await test("registered renderer differential input pins both complete current hovers", () => {
+  const fixture = new URL(
+    "../_fixtures/differential/lsp/css-hover-stylesheet-examples-10572/",
+    import.meta.url,
+  );
+  assert.equal(fs.readFileSync(new URL("Colors.vue.txt", fixture), "utf8"), fixtureSource);
+  assert.deepEqual(
+    JSON.parse(fs.readFileSync(new URL("responses.expected.json", fixture), "utf8")),
+    [
+      { position: { line: 6, character: 5 }, result: currentHoverPackets.property },
+      { position: { line: 3, character: 10 }, result: currentHoverPackets.named },
+    ],
+  );
+});
+
 await test("current whole packets author only valid stylesheet example bytes and keep color coordinates", () => {
   assert.ok(
     currentHoverPackets.named.contents.value.includes("```css\n.example {\n  color: red;\n}\n```"),
