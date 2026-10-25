@@ -38,11 +38,23 @@
     {
       "sha": "6b3701e275bdd91dfb405f1d04156018ff2f9d11",
       "tree": "face6e4b53e16dc0c4040fb98d3013618d6162c3"
+    },
+    {
+      "sha": "6b81ed9986fd8bd96b92bc0a29a15519ed0b31fb",
+      "tree": "4e4fcbbbd3a8e8f14031b301020492dd55f336cc"
+    },
+    {
+      "sha": "941d22c98964c41e60789da00409cba863a3b918",
+      "tree": "6d39c97625d4a6ea1fed104c127b88f0206a6c29"
+    },
+    {
+      "sha": "6b12d64200c075bae03d99ac273600967357eb97",
+      "tree": "32cae275200d39bcb7e9559b18847290223c1aac"
     }
   ],
   "currentComposedBeforeLedger": {
-    "sha": "c17ef3ccdb37ea194483819f9ac0c52de75f7753",
-    "tree": "8b00a0e6a2eb2094a1c163c3e9e62d2bbaba4695"
+    "sha": "d286a9db1ce03d47d89065ff0aadb15de226901c",
+    "tree": "f96aa142ce13690ae9a32362c9ae873ba50ff456"
   },
   "priorCampaigns": [
     {
@@ -50,6 +62,13 @@
       "run": 40220480900,
       "artifact": 12608819005,
       "actual": "cold36 green; actual source Babel7 ESM18/CJS18 green; Babel8 fails removed Scope#uids before native; all raw packets retained"
+    },
+    {
+      "source": "f163648d237b58bb148a501f9a306d695363dcdf",
+      "run": 40220983092,
+      "artifact": 12609558429,
+      "actual": "SUCCESS:64 wholeVueHTML compiled VDOMcases+8expectedrefusals,36cold controls,debug source real-call profiling; no VaporSSRtarget runtime credit"
     }
-  ]
+  ],
+  "runtimeQualification": "new strict12rows:exactBabel7/8 ESM/CJS,stableVDOM,Vaporrc9/rc11; mandatory actualSSR/client/hydration/effects/attrs/all-nodeidentity; nativepin931 remains unchanged; final-AST guard proposal NOT included"
 }
