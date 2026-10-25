@@ -37,19 +37,18 @@ fn self_and_mutual_imports_never_alias_lint_probe_documents() {
             .iter()
             .map(|(path, _)| path.clone())
             .collect();
+        let first_mirror = session.join("First.vue.patina.component.ts");
+        let second_mirror = session.join("Second.vue.patina.component.ts");
+        let expected_paths = if mutual {
+            vize_l0::FxHashSet::from_iter([first_mirror.clone(), second_mirror.clone()])
+        } else {
+            vize_l0::FxHashSet::from_iter([first_mirror.clone()])
+        };
         assert_eq!(
-            paths.len(),
-            prepared.files.len(),
-            "one mirror per component"
+            paths, expected_paths,
+            "complete disjoint component identities"
         );
-        for path in [&first, &second] {
-            let probe = super::virtual_file_path(&session, root, &path.to_string_lossy());
-            assert!(
-                !paths.contains(&probe),
-                "dependencies cannot own a lint document"
-            );
-        }
-        for (_, code) in &prepared.files {
+        for (path, code) in &prepared.files {
             let allocator = oxc_allocator::Allocator::default();
             let parsed =
                 oxc_parser::Parser::new(&allocator, code, oxc_span::SourceType::ts()).parse();
@@ -57,20 +56,22 @@ fn self_and_mutual_imports_never_alias_lint_probe_documents() {
             let mut specifiers = super::Specifiers::default();
             oxc_ast_visit::Visit::visit_program(&mut specifiers, &parsed.program);
             assert!(!specifiers.0.is_empty(), "fixture must retain the cycle");
-            let mut component_edges = 0;
+            let mut component_edges = Vec::new();
             for (_, _, specifier) in specifiers.0 {
                 if specifier == "vue" {
                     continue;
                 }
-                component_edges += 1;
-                assert!(
-                    paths.contains(&std::path::PathBuf::from(specifier.as_str())),
-                    "a cycle must point to a component mirror: {specifier}"
-                );
+                component_edges.push(std::path::PathBuf::from(specifier.as_str()));
             }
+            let expected_peer = if mutual && path == &first_mirror {
+                second_mirror.clone()
+            } else {
+                first_mirror.clone()
+            };
             assert_eq!(
-                component_edges, 1,
-                "the authored component cycle stays intact"
+                component_edges,
+                vec![expected_peer],
+                "complete authored component edges stay intact"
             );
         }
         let retained = paths;
@@ -116,15 +117,35 @@ fn tsx_and_external_component_mirrors_keep_disjoint_identities() {
         );
         assert_eq!(prepared.files.len(), 1);
         let (target, code) = prepared.files.first().unwrap();
-        assert!(target.to_string_lossy().ends_with(".patina.component.tsx"));
+        let relative = target
+            .strip_prefix(&session)
+            .expect("private component namespace");
+        if root == project_root {
+            assert_eq!(
+                relative,
+                std::path::Path::new("Child'😀.vue.patina.component.tsx")
+            );
+        } else {
+            assert_eq!(
+                relative.file_name(),
+                Some(std::ffi::OsStr::new("Child'😀.vue.patina.component.tsx"))
+            );
+            let parent = relative.parent().unwrap();
+            assert_eq!(
+                parent.parent(),
+                Some(std::path::Path::new("external-components"))
+            );
+            let _: u64 = parent
+                .file_name()
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .parse()
+                .unwrap();
+        }
         assert_ne!(
             target,
             &super::virtual_file_path(&session, &project_root, &child.to_string_lossy())
-        );
-        assert!(target.starts_with(&session));
-        assert_eq!(
-            target.starts_with(session.join("external-components")),
-            root == outside_root
         );
         let allocator = oxc_allocator::Allocator::default();
         let parsed = oxc_parser::Parser::new(&allocator, code, oxc_span::SourceType::tsx()).parse();
