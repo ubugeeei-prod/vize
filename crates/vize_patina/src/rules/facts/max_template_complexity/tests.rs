@@ -121,9 +121,17 @@ fn a_component_within_the_thresholds_is_silent() {
     reason = "compare complete diagnostic packets"
 )]
 fn unicode_and_line_endings_preserve_the_complete_product_diagnostic() {
-    for newline in ["\n", "\r\n"] {
-        let source = format!("<!-- 作者😀 -->{newline}{}", COMPLEX.replace('\n', newline));
-        let result = lint(&source);
+    for source in [
+        include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/_fixtures/differential/linter/complexity-coordinates-10465/Dashboard.lf.vue.txt"
+        )),
+        include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/_fixtures/differential/linter/complexity-coordinates-10465/Dashboard.crlf.vue.txt"
+        )),
+    ] {
+        let result = lint(source);
         assert_eq!((result.error_count, result.warning_count), (0, 1));
         assert_eq!(result.filename, "Dashboard.vue");
         let tag = source.find("<template>").unwrap() as u32;

@@ -1,0 +1,24 @@
+<!-- 作者😀 -->
+<script setup lang="ts">
+defineProps<{ rows: Row[] }>()
+</script>
+
+<template>
+  <section>
+    <h1>{{ user ? user.name : 'Guest' }}</h1>
+    <DataTable :rows="rows">
+      <template #cell="{ row, column }">
+        <span v-if="column.key === 'status'" :class="row.active ? 'on' : 'off'">
+          {{ row.status ?? 'unknown' }}
+        </span>
+        <a v-else-if="column.key === 'link' && row.url" :href="row.url">{{ row.label }}</a>
+        <template v-else>
+          <em v-for="tag in row.tags" :key="tag">
+            <b v-if="tag.pinned || tag.starred">{{ tag.hot ? '!' : '' }}</b>
+          </em>
+        </template>
+      </template>
+    </DataTable>
+    <p v-if="!rows.length && !loading">No data</p>
+  </section>
+</template>
