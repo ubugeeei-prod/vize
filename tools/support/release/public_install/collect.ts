@@ -16,6 +16,7 @@ import {
   freshOutputs,
   lookup,
   majorAtLeast7,
+  hasCheckerOptionalDependency,
   overrides,
   producerAuthority,
   rejectOverrides,
@@ -104,13 +105,24 @@ export async function collect(args: CollectArguments): Promise<Record<string, un
     );
   const cliRoot = path.join(install, "node_modules/vize");
   const cliManifest = readJson(exactPath(path.join(cliRoot, "package.json"), install));
-  const corsaVersion = lookup(cliManifest, "optionalDependencies", corsa);
+  const userProvider = sourceDeclarations.corsaResolutionMode === "explicit-user-provider";
+  if (userProvider && hasCheckerOptionalDependency(cliManifest))
+    throw new CustodyError("public CLI Corsa dependency differs from its actual H declaration");
+  const corsaVersion = userProvider
+    ? lookup(consumer, "devDependencies", corsa)
+    : lookup(cliManifest, "optionalDependencies", corsa);
   if (
     typeof corsaVersion !== "string" ||
     !corsaVersionPattern.test(corsaVersion) ||
     !majorAtLeast7(corsaVersion)
   )
-    throw new CustodyError("exact public bundled Corsa version declaration missing");
+    throw new CustodyError(
+      userProvider
+        ? "exact explicitly declared private user provider required"
+        : "exact public bundled Corsa version declaration missing",
+    );
+  if (userProvider && lookup(lock, "packages", "", "devDependencies", corsa) !== corsaVersion)
+    throw new CustodyError("explicit user provider must match the root lock declaration");
   if (
     corsaVersion !== sourceDeclarations.corsaVersion ||
     lookup(cliManifest, "dependencies", "@vizejs/native") !== version
@@ -166,7 +178,7 @@ export async function collect(args: CollectArguments): Promise<Record<string, un
     } else {
       const launcher = exactPath(path.join(packageDir, "lib/tsc"), packageDir);
       if (!executable(launcher))
-        throw new CustodyError("public bundled Corsa launcher is not executable");
+        throw new CustodyError("public checker provider launcher is not executable");
       bundledCorsa = {
         packageName: name,
         version: expected,
@@ -211,7 +223,9 @@ export async function collect(args: CollectArguments): Promise<Record<string, un
       "lock, payload manifest or reviewed collector bytes changed during collection",
     );
   const report = {
-    schema: "vize-public-registry-install-v1",
+    schema: userProvider
+      ? "vize-public-registry-user-install-v1"
+      : "vize-public-registry-install-v1",
     checkedAt: new Date().toISOString(),
     version,
     source,
@@ -219,7 +233,15 @@ export async function collect(args: CollectArguments): Promise<Record<string, un
     packageLockPath: lockPath,
     packageLockSha256: digest(lockBytes),
     registry: records,
-    bundledCorsa,
+    ...(userProvider
+      ? {
+          resolutionMode: "explicit-user-provider",
+          cohort: "explicit-user-provider-v1",
+          userTypechecker: { ...bundledCorsa, declaration: "devDependencies" },
+          scope:
+            "Private explicitly installed provider campaign; no default resolver, alias or beta capability claim.",
+        }
+      : { bundledCorsa }),
     publicArchiveComparison: archiveReceipts.map(({ files: _files, ...item }) => item),
     payloadManifestPath: payloadManifest,
     payloadManifestSha256: digest(payloadBytes),
@@ -239,7 +261,12 @@ export async function collect(args: CollectArguments): Promise<Record<string, un
       sha256: digest(fs.readFileSync(hook)),
       configurationEnvironment: "VIZE_PUBLIC_NATIVE_CUSTODY",
     },
-    sourceOverrides: Object.fromEntries(overrides.map((key) => [key, ""])),
+    sourceOverrides: Object.fromEntries(
+      [...overrides, ...(userProvider ? ["TSRS_PATH", "TSRS_EXECUTABLE"] : [])].map((key) => [
+        key,
+        "",
+      ]),
+    ),
     collectorAuthority: authority,
     sourceManifestPayloads: sourceDeclarations.files,
     success: true,
