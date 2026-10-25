@@ -74,6 +74,37 @@ fn fresh_subscription_ignores_past_completion_and_retains_unrelated_wire_values(
 }
 
 #[test]
+fn unrelated_fresh_envelopes_cannot_complete_shutdown_without_current_info() {
+    for (method, params) in [
+        (
+            "window/showMessage",
+            json!({"type":3,"message":"handled method 'shutdown' (7) in 1ns"}),
+        ),
+        (
+            "window/logMessage",
+            json!({"type":3,"message":"handled method 'textDocument/hover' (6) in 1ns"}),
+        ),
+        (
+            "window/logMessage",
+            json!({"type":2,"message":"handled method 'shutdown' (7) in 1ns"}),
+        ),
+        (
+            "window/logMessage",
+            json!({"type":"3","message":"handled method 'shutdown' (7) in 1ns"}),
+        ),
+    ] {
+        let (sender, events) = broadcast();
+        assert_eq!(sender.send(event(method, params.clone())), 1);
+        drop(sender);
+        assert_eq!(
+            drain(&events).unwrap_err().to_string(),
+            "process is closed: native shutdown completion",
+            "{method}: {params}"
+        );
+    }
+}
+
+#[test]
 fn disconnected_completion_channel_is_not_a_successful_drain() {
     let (sender, events) = broadcast::<InboundEvent>();
     drop(sender);

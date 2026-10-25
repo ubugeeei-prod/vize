@@ -5322,7 +5322,7 @@
         {
           "selector": "lsp_client::editor_lsp::native_shutdown::completion::tests::complete_provider_envelopes_and_failures_match_pinned_packets",
           "source": "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown/completion/tests.rs",
-          "sha256": "e196a9fde31f48a2c9df7de9e86ef627b1c58ffff1bdb1a2e151bbc7fe5a5b11"
+          "sha256": "f48c929f84a4ce21c7d8518dad71c52e892332356d65257eb4bb1c3c86f8c968"
         },
         {
           "selector": "lsp_client::editor_lsp::native_shutdown::tests::completion::buffered_completion_and_unrelated_notifications_preserve_the_whole_transcript",
