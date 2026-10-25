@@ -57,7 +57,15 @@ jobs:
           node tests/differential/build-receipt.ts
       - name: Verify descriptor and complete report regressions
         run: |
-          cargo test --locked --profile ci -p vize --lib -- commands::lint::cross_file:: --nocapture
+          mkdir -p target/vize-tests/cross-file-sfc-effects
+          cargo test --locked --profile ci -p vize --lib -- commands::lint::cross_file::effect_summary_tests:: --nocapture > target/vize-tests/cross-file-sfc-effects/rust.stdout 2> target/vize-tests/cross-file-sfc-effects/rust.stderr
+          cat target/vize-tests/cross-file-sfc-effects/rust.stdout
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          const raw = fs.readFileSync('target/vize-tests/cross-file-sfc-effects/rust.stdout', 'utf8');
+          assert.match(raw, /test result: ok\. 5 passed; 0 failed; 0 ignored;/u);
+          JS
       - name: Compare complete public and source CLI packets with the actual WASM reference
         run: node tests/tooling/support/cross-file-sfc-effects.ts
       - name: Preserve complete packets, provider identities and phase profiles

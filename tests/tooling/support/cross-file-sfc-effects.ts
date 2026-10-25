@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -122,19 +123,12 @@ assert.equal(
   run("source-version", sourceBinary, ["--version"], repo).toString("utf8"),
   expected.cliVersion + "\n",
 );
-const nativeImages = fs
-  .readdirSync(path.join(consumer, "node_modules/@vizejs"))
-  .filter((name) => name.startsWith("native-"))
-  .flatMap((name) => {
-    const dir = path.join(consumer, "node_modules/@vizejs", name);
-    return fs
-      .readdirSync(dir)
-      .filter((file) => file.endsWith(".node"))
-      .map((file) => {
-        const image = path.join(dir, file);
-        return { path: image, sha256: hash(fs.readFileSync(image)) };
-      });
-  });
+const publicRequire = createRequire(path.join(consumer, "package.json"));
+const native: unknown = publicRequire("@vizejs/native");
+assert.equal(typeof record(native).runCli, "function");
+const nativeImages = Object.keys(publicRequire.cache)
+  .filter((image) => image.endsWith(".node") && image.startsWith(consumer + path.sep))
+  .map((image) => ({ path: image, sha256: hash(fs.readFileSync(image)) }));
 assert.equal(nativeImages.length, 1);
 save("public-native-images.json", nativeImages);
 
