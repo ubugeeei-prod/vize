@@ -1,0 +1,4 @@
+<script setup lang="ts" generic="const /* modifier, */ T extends 'a,b' = 'a,b', U extends `x,${string}` = 'x,y', F extends (left: T, right: U) => readonly [T, U] = (left: T, right: U) => readonly [T, U]">
+defineProps<{ value: T; templateValue: U; callback?: F }>()
+</script>
+<template><div /></template>

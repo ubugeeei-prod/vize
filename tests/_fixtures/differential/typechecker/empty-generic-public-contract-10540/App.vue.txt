@@ -1,0 +1,20 @@
+<script setup lang="ts">
+import { useTemplateRef } from 'vue';
+import Child from './Child.vue';
+import Generic from './Generic.vue';
+import Fragment from './Fragment.vue';
+import type { ComponentExposed } from 'vue-component-type-helpers';
+type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B ? 1 : 2) ? true : false;
+type Assert<T extends true> = T;
+type ChildEl = Assert<Equal<InstanceType<typeof Child>['$el'], HTMLAnchorElement | HTMLImageElement>>;
+type GenericEl = Assert<Equal<ComponentExposed<typeof Generic>['$el'], SVGSVGElement>>;
+type FragmentExposed = Assert<Equal<ComponentExposed<typeof Fragment>, {}>>;
+const child = useTemplateRef('child');
+const generic = useTemplateRef('generic');
+type RefEl = Assert<Equal<NonNullable<typeof generic.value>['$el'], SVGSVGElement>>;
+generic.value?.run();
+// @ts-expect-error
+generic.value?.missing;
+// @ts-expect-error
+child.value?.$el.notAnElementProperty;
+</script><template><Child ref="child" /><Generic ref="generic" /></template>

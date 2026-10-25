@@ -119,6 +119,7 @@ jobs:
           cargo test -p vize --test integration -- content_mapper_tsgo_cli::standard_tsgo_contextually_types_multiline_callback_prop --nocapture
           cargo test -p vize --test integration -- content_mapper_tsgo_cli::unknown_options_10218:: --nocapture
           cargo test -p vize --test integration -- content_mapper_tsgo_cli::generic_constructor_slots:: --nocapture
+          cargo test -p vize --test integration -- content_mapper_tsgo_cli::quoted_generic_parameters:: --nocapture
           cargo test -p vize --test integration -- content_mapper_tsgo_cli::long_prop_kebab_case:: --nocapture
           cargo test -p vize --test integration -- content_mapper_tsgo_cli::optional_prop_spacing:: --nocapture
           cargo test -p vize --test integration -- content_mapper_tsgo_cli::pug_refusal:: --nocapture
@@ -388,6 +389,7 @@ jobs:
           name: content-mapper-owner-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             target/vize-tests/content-mapper-directive-owners
+            target/vize-tests/content-mapper-quoted-generic-parameters
             ${{ runner.temp }}/content-mapper-native-host.json
             ${{ runner.temp }}/content-mapper-editor-stress
           if-no-files-found: error
