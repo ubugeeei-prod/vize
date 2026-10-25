@@ -7,7 +7,6 @@ export interface VizeTurbopackOptions {
   /** Project root used for portable, deterministic component identities. */
   root?: string;
   sourceMap?: boolean;
-  vapor?: boolean;
   hotReload?: boolean;
   compilerOptions?: Omit<
     SfcCompileOptionsNapi,

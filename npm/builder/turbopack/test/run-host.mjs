@@ -4,10 +4,13 @@ import path from "node:path";
 import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
 import { createServer } from "node:net";
+import { inspect as inspectError } from "node:util";
 import { chromium } from "playwright";
 import { prepareConsumer, consumer, output, run, sha256 } from "./prepare-consumer.mjs";
 import { checkRspackConsumer } from "./run-rspack.mjs";
 import { checkHostErrors } from "./run-errors.mjs";
+import { normalHostShutdown } from "./host-process.mjs";
+import { checkPackedModules } from "./run-modules.mjs";
 
 const receipt = await prepareConsumer();
 const require = createRequire(path.join(consumer, "package.json"));
@@ -84,12 +87,16 @@ async function launch(mode, label) {
   return {
     url,
     async stop() {
-      process.kill("SIGTERM");
+      const shutdown = {
+        statusBefore: process.exitCode,
+        signalBefore: process.signalCode,
+        requested: process.kill("SIGTERM"),
+      };
       const result = await closed;
-      await saveExit(result);
+      await saveExit({ ...result, shutdown });
       assert.ok(
-        result.status === 0 || result.signal === "SIGTERM",
-        "host process must close normally",
+        normalHostShutdown(result, shutdown),
+        `host process must close normally: ${JSON.stringify({ ...result, shutdown })}\n${Buffer.concat(stdout)}\n${Buffer.concat(stderr)}`,
       );
     },
   };
@@ -133,6 +140,7 @@ async function exercise(mode, label = mode) {
   const errors = [];
   const warnings = [];
   const requests = [];
+  let primaryFailure;
   page.on("pageerror", (error) => errors.push(error.stack ?? error.message));
   page.on("console", (message) => {
     if (message.type() === "error") errors.push(message.text());
@@ -238,6 +246,13 @@ async function exercise(mode, label = mode) {
       path.join(output, `${label}-network.json`),
       JSON.stringify(requests, null, 2) + "\n",
     );
+  } catch (error) {
+    primaryFailure = error;
+    await fs.writeFile(
+      path.join(output, `${label}-failure.stderr`),
+      inspectError(error, { depth: 8, colors: false }) + "\n",
+    );
+    throw error;
   } finally {
     await fs.writeFile(
       path.join(output, `${label}-final.html`),
@@ -248,11 +263,21 @@ async function exercise(mode, label = mode) {
       JSON.stringify({ errors, warnings }, null, 2) + "\n",
     );
     await page.close();
-    await server.stop();
+    try {
+      await server.stop();
+    } catch (error) {
+      if (primaryFailure)
+        throw new AggregateError(
+          [primaryFailure, error],
+          `${label} failed and host shutdown failed`,
+        );
+      throw error;
+    }
   }
 }
 
 try {
+  await checkPackedModules(sourcePath, original, measurements);
   await exercise("dev");
   await fs.writeFile(sourcePath, original);
   const errorServer = await launch("dev", "errors");

@@ -76,12 +76,11 @@ after Vue hydrates it. Vue then owns the island's descendants. The
 - `root`: project root used for stable scope identities; defaults to the host root.
 - `sourceMap`: emit authored source maps; defaults to `true`.
 - `hotReload`: enable development updates; defaults to `true`.
-- `vapor`: select native Vapor output; requires a compatible Vue runtime.
 - `compilerOptions`: additional native SFC compiler options.
 - `styleLoaders`: host preprocessing pipelines keyed by style language.
 
-The initial integration supports inline JavaScript/TypeScript scripts and HTML
-templates. External script/template files, template/script preprocessors, custom
+The initial integration targets stable Vue virtual DOM output with inline
+JavaScript/TypeScript scripts and HTML templates. External script/template files, template/script preprocessors, custom
 block loaders and macro module loaders produce explicit errors. They are not
 silently emitted as valid JavaScript.
 

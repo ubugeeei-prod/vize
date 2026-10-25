@@ -75,7 +75,7 @@ export function compileTurbopackSfc(filename: string, source: string, options: S
     mode: "module",
     sourceMap: options.sourceMap ?? true,
     ssr: options.ssr,
-    vapor: options.vapor ?? false,
+    vapor: false,
     isProd: options.isProduction,
     // Let Turbopack see JavaScript and retain the render boundary for HMR.
     isTs: false,
@@ -188,7 +188,7 @@ export function compileTurbopackSfc(filename: string, source: string, options: S
       script: compiled.scriptHash,
       template: compiled.templateHash,
       options: hash(JSON.stringify(compilerOptions)),
-      canRerender: !options.vapor,
+      canRerender: true,
       // Native CSS module class maps depend on the SFC content. The host owns
       // those maps here, and the assignments above replace the native values.
       // Compare native script/template identities for that discarded metadata;

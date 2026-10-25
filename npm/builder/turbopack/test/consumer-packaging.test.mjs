@@ -5,6 +5,9 @@ import os from "node:os";
 import path from "node:path";
 import { assertBundledHelpers } from "./prepare-consumer.mjs";
 import { sourceNativeResolutions } from "./consumer-lock.mjs";
+import { normalHostShutdown } from "./host-process.mjs";
+import { spawn } from "node:child_process";
+import { once } from "node:events";
 
 void test("public bundle inspection visits nested loader entries and rejects private imports", async () => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), "vize-turbopack-packaging-"));
@@ -28,6 +31,36 @@ void test("public bundle inspection visits nested loader entries and rejects pri
   } finally {
     await fs.rm(root, { recursive: true, force: true });
   }
+});
+
+void test("controlled SIGTERM handles Next's numeric exit without accepting earlier crashes", async (t) => {
+  if (process.platform === "win32")
+    return t.skip("the actual host job uses Linux signal semantics");
+  async function terminated(script, request) {
+    const child = spawn(process.execPath, ["-e", script], { stdio: ["ignore", "pipe", "pipe"] });
+    t.after(() => {
+      if (child.exitCode === null && child.signalCode === null) child.kill("SIGKILL");
+    });
+    const closed = once(child, "close");
+    if (request) await once(child.stdout, "data");
+    else await closed;
+    const shutdown = {
+      statusBefore: child.exitCode,
+      signalBefore: child.signalCode,
+      requested: child.kill("SIGTERM"),
+    };
+    const [status, signal] = await closed;
+    return normalHostShutdown({ status, signal }, shutdown);
+  }
+  const ready = 'process.stdout.write("ready");setInterval(()=>{},1000);';
+  assert.equal(await terminated(ready, true), true);
+  assert.equal(
+    await terminated('process.on("SIGTERM",()=>process.exit(143));' + ready, true),
+    true,
+  );
+  assert.equal(await terminated('process.on("SIGTERM",()=>process.exit(1));' + ready, true), false);
+  assert.equal(await terminated("process.exit(143)", false), false);
+  assert.equal(await terminated("process.exit(1)", false), false);
 });
 
 void test("source custody reads pnpm project documents and rejects alternate native resolutions", () => {
