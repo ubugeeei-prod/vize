@@ -51,6 +51,14 @@ void test("actual head release requires the whole same-ID ACK before native shut
   assert.throws(() =>
     assertSnapshotDrainBeforeOwnerShutdown([...input, input[1]], output, shutdown),
   );
+  for (const handle of [0, -1, "3", 3.5, null]) {
+    const malformed = structuredClone(output);
+    malformed[0].packet.result.snapshot = handle;
+    assert.throws(
+      () => assertSnapshotDrainBeforeOwnerShutdown(input, malformed, shutdown),
+      /exact known beta numeric snapshot handle/u,
+    );
+  }
   const wrongType = structuredClone(input);
   wrongType[1].packet.params.snapshot = "3";
   assert.throws(

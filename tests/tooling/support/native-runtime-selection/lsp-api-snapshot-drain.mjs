@@ -67,7 +67,7 @@ export function assertSnapshotDrainBeforeOwnerShutdown(input, output, shutdown) 
       const reply = response(frame);
       const handle = reply.packet.result?.snapshot;
       assert(
-        Number.isSafeInteger(handle) && handle >= 0,
+        Number.isSafeInteger(handle) && handle > 0,
         "exact known beta numeric snapshot handle",
       );
       return { request: frame, response: reply, handle };
