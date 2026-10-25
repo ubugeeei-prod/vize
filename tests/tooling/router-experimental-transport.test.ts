@@ -142,11 +142,17 @@ test("frozen whole-document coordinates identify the independently authored quer
       );
       assert.ok(offset >= prefix.length);
       assert.deepEqual(
-        expected.requests[1].response.map((item) => item.data.vizeCompletion.item.data.position),
+        expected.requests[1].response.map(
+          (item: { data: { vizeCompletion: { item: { data: { position: number } } } } }) =>
+            item.data.vizeCompletion.item.data.position,
+        ),
         [offset, offset, offset, offset, offset],
       );
       assert.deepEqual(
-        expected.resolved.map((item) => item.data.vizeCompletion.item.data.position),
+        expected.resolved.map(
+          (item: { data: { vizeCompletion: { item: { data: { position: number } } } } }) =>
+            item.data.vizeCompletion.item.data.position,
+        ),
         [offset, offset, offset, offset, offset],
       );
     }
