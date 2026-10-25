@@ -109,9 +109,8 @@ pub(super) fn trace_native_inlay(stage: &str, value: impl FnOnce() -> Value) {
 #[cfg(test)]
 mod trace_tests {
     use super::trace_native_inlay;
-    use parking_lot::Mutex;
     use serde_json::{Value, json};
-    use std::{cell::Cell, process::Command};
+    use std::{cell::Cell, process::Command, sync::Mutex};
     use tracing::{Event, Metadata, Subscriber, field, span};
     use vize_l0::cstr;
 
@@ -148,7 +147,7 @@ mod trace_tests {
             let mut fields = Fields(json!({}));
             event.record(&mut fields);
             let metadata = event.metadata();
-            EVENTS.lock().push(json!({
+            EVENTS.lock().unwrap().push(json!({
                 "level": metadata.level().as_str(),
                 "target": metadata.target(),
                 "fields": fields.0
@@ -174,7 +173,7 @@ mod trace_tests {
             if mode == "enabled" {
                 assert_eq!(called.get(), 1);
                 assert_eq!(
-                    *EVENTS.lock(),
+                    *EVENTS.lock().unwrap(),
                     vec![json!({
                         "level": "INFO",
                         "target": "vize_canon::lsp_client::editor_lsp::inlay_hint",
@@ -187,7 +186,7 @@ mod trace_tests {
                 );
             } else {
                 assert_eq!(called.get(), 0);
-                assert_eq!(*EVENTS.lock(), Vec::<Value>::new());
+                assert_eq!(*EVENTS.lock().unwrap(), Vec::<Value>::new());
             }
             return;
         }

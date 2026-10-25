@@ -7052,7 +7052,7 @@
         {
           "path": "crates/vize_canon/src/lsp_client/editor_lsp/inlay_hint.rs",
           "before": "0c477b1f2dbab225f4d63935c687f4eb5ae88017966c857692c739dc463448bd",
-          "after": "6f43f25b70046abcde4664b09a5d6c974793e690628cc5ddda8aff673acac07c"
+          "after": "09c61739d1ae45d3853fd9c137a1e0d306fa8aaba7949e3efe7688b271eb41bb"
         }
       ],
       "lspCase": {
