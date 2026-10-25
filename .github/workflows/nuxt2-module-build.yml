@@ -13,6 +13,7 @@ on:
       - davinci/vize_l0/src/config/**
       - tools/support/compat/nuxt/fixtures/nuxt2-module-build/**
       - tools/support/compat/nuxt/nuxt2-module-build.ts
+      - tools/support/compat/nuxt/nuxt2-bridge-source.ts
       - tools/support/compat/nuxt/nuxt2-lint-config.ts
       - tools/support/compat/nuxt/nuxt2-typecheck.ts
       - tools/support/compat/nuxt/fixtures/nuxt2-typecheck/**
@@ -29,6 +30,7 @@ on:
       - davinci/vize_l0/src/config/**
       - tools/support/compat/nuxt/fixtures/nuxt2-module-build/**
       - tools/support/compat/nuxt/nuxt2-module-build.ts
+      - tools/support/compat/nuxt/nuxt2-bridge-source.ts
       - tools/support/compat/nuxt/nuxt2-lint-config.ts
       - tools/support/compat/nuxt/nuxt2-typecheck.ts
       - tools/support/compat/nuxt/fixtures/nuxt2-typecheck/**

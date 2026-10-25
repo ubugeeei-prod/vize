@@ -10,6 +10,7 @@ import { resolveOfficialNativeImage } from "./official-fixtures.ts";
 import {
   directiveControls,
   formDirectiveControls,
+  relocationControls,
   type Diagnostic,
   type Project,
 } from "./diagnostic-ownership-projects.ts";
@@ -33,7 +34,7 @@ const slotBase = pack.cases.find((project) => project.id === "slot-prop-named-ch
 assert.ok(slotBase);
 const formBase = pack.cases.find((project) => project.id === "art-generic-form-invalid");
 assert.ok(formBase);
-const projects = [
+const ownershipProjects = [
   ...pack.cases,
   ...directiveControls(slotBase),
   ...formDirectiveControls(formBase),
@@ -42,12 +43,18 @@ const digest = (bytes: string | Uint8Array) => createHash("sha256").update(bytes
 const args = process.argv.slice(2),
   options = new Map<string, string>();
 let baselineOnly = false;
+let relocationOnly = false;
 for (let index = 0; index < args.length; index++) {
   const key = args.at(index);
   assert.ok(key);
   if (key === "--baseline-only") {
     assert.equal(baselineOnly, false);
     baselineOnly = true;
+    continue;
+  }
+  if (key === "--relocation-controls") {
+    assert.equal(relocationOnly, false);
+    relocationOnly = true;
     continue;
   }
   assert.ok(
@@ -58,6 +65,8 @@ for (let index = 0; index < args.length; index++) {
       "--source-sha",
       "--mapper-host",
       "--mapper-version",
+      "--comparison-cli",
+      "--comparison-source-sha",
     ].includes(key),
   );
   const value = args.at(++index);
@@ -77,6 +86,15 @@ fs.mkdirSync(output, { recursive: true });
 const candidate = baselineOnly ? undefined : fs.realpathSync(required("--candidate-cli"));
 const sourceSha = options.get("--source-sha");
 if (!baselineOnly) assert.match(sourceSha ?? "", /^[0-9a-f]{40}$/u);
+assert.equal(options.has("--comparison-cli"), options.has("--comparison-source-sha"));
+if (options.has("--comparison-cli")) {
+  assert.ok(relocationOnly && !baselineOnly);
+  assert.equal(required("--comparison-source-sha"), "5597001751a477402537a1cc61cae487feefef9c");
+}
+const comparisonCli = options.has("--comparison-cli")
+  ? fs.realpathSync(required("--comparison-cli"))
+  : undefined;
+const projects = relocationOnly ? relocationControls() : ownershipProjects;
 const environment = Object.fromEntries(
   Object.entries(process.env).filter(
     ([key]) =>
@@ -173,16 +191,26 @@ for (const [id, file, expected] of versions) {
 }
 write(path.join(output, "providers.json"), {
   sourceSha,
-  mode: baselineOnly ? "registry-baseline-only" : "source-cli-qualification",
+  comparisonSourceSha: options.get("--comparison-source-sha"),
+  mode: relocationOnly
+    ? "relocation-control-observations-not-qualified"
+    : baselineOnly
+      ? "registry-baseline-only"
+      : "source-cli-qualification",
   notPublicationAcceptance: true,
   explicitMapperHost: options.has("--mapper-host"),
   mapperVersion: officialVersion,
   packageLockSha256: digest(fs.readFileSync(path.join(consumer, "package-lock.json"))),
   packSha256: digest(packBytes),
   packages: ["vize", "typescript", "vue", "@vizejs/native"].map(readManifest),
-  binaries: [official, bundled, baselineCli, nativeImage, ...(candidate ? [candidate] : [])].map(
-    (file) => ({ path: file, sha256: digest(fs.readFileSync(file)) }),
-  ),
+  binaries: [
+    official,
+    bundled,
+    baselineCli,
+    nativeImage,
+    ...(candidate ? [candidate] : []),
+    ...(comparisonCli ? [comparisonCli] : []),
+  ].map((file) => ({ path: file, sha256: digest(fs.readFileSync(file)) })),
   mapperIdentityCustody:
     "installed manifest/resolution and separate native-image probe; not a raw provider RPC witness",
 });
@@ -199,8 +227,13 @@ for (const project of projects)
     for (const prefix of ["", header]) {
       const id = `${project.id}-${newline === "\n" ? "lf" : "crlf"}-${prefix ? "unicode" : "plain"}`;
       const files: Record<string, string> = {};
-      for (const entry of project.inputs) {
-        let text = fs.readFileSync(path.join(packRoot, entry.source), "utf8");
+      for (const entry of project.inlineInputs
+        ? Object.entries(project.inlineInputs).map(([file, text]) => ({ file, text }))
+        : project.inputs.map(({ file, source }) => ({
+            file,
+            text: fs.readFileSync(path.join(packRoot, source), "utf8"),
+          }))) {
+        let text = entry.text;
         if (
           (entry.file === "src/Min.vue" || entry.file === "src/Form.art.vue") &&
           project.replaceParent
@@ -214,6 +247,8 @@ for (const project of projects)
           text = text
             .replaceAll("  <GenericForm", `  ${prefix}<GenericForm`)
             .replaceAll("  <Child3", `  ${prefix}<Child3`);
+        if (relocationOnly && entry.file === "src/Min.vue")
+          text = text.replaceAll("  <Comp", `  ${prefix}<Comp`);
         const file =
           project.ordinaryForm && entry.file === "src/Form.art.vue" ? "src/Form.vue" : entry.file;
         files[file] = text.replaceAll("\n", newline);
@@ -240,7 +275,7 @@ for (const project of projects)
           fs.writeFileSync(destination, text);
         }
         const nodeModules = path.join(directory, "node_modules");
-        if (side === "baseline")
+        if (side === "baseline" && !comparisonCli)
           fs.symlinkSync(path.join(consumer, "node_modules"), nodeModules, "dir");
         else {
           fs.mkdirSync(path.join(nodeModules, "vize"), { recursive: true });
@@ -251,11 +286,11 @@ for (const project of projects)
           );
           write(path.join(nodeModules, "vize/package.json"), {
             name: "vize",
-            version: `0.0.0-source-${sourceSha}`,
+            version: `0.0.0-source-${side === "baseline" ? options.get("--comparison-source-sha") : sourceSha}`,
             private: true,
             typescript: {
               contentMapper: {
-                exec: [candidate, "content-mapper"],
+                exec: [side === "baseline" ? comparisonCli : candidate, "content-mapper"],
                 dynamicConfig: true,
                 compilerOptions: ["checkJs", "noUnusedLocals"],
               },
@@ -270,7 +305,12 @@ for (const project of projects)
             ]),
           ),
         });
-        const mapperCommand = side === "baseline" ? [process.execPath, baselineCli] : [candidate!];
+        const mapperCommand =
+          side === "baseline"
+            ? comparisonCli
+              ? [comparisonCli]
+              : [process.execPath, baselineCli]
+            : [candidate!];
         const requests = [
           {
             jsonrpc: "2.0",
@@ -321,7 +361,7 @@ for (const project of projects)
           directory,
           path.join(directory, "official-mapper"),
         );
-        const cli = side === "baseline" ? [process.execPath, baselineCli] : [candidate!];
+        const cli = mapperCommand;
         observations[`${side}-check`] = run(
           [
             ...cli,
@@ -358,19 +398,46 @@ for (const project of projects)
     }
 write(path.join(output, "inventory.json"), {
   cases: rows.length,
-  originalCases: 60,
-  additionalEdgeCases: 8,
+  originalCases: relocationOnly ? 0 : 60,
+  additionalEdgeCases: relocationOnly ? rows.length : 8,
   executedProcesses: rows.reduce((total, row) => total + Object.keys(row.observations).length, 0),
   ids: rows.map((row) => row.id),
   mode: baselineOnly ? "baseline-only" : "candidate-and-baseline",
 });
-assert.equal(rows.length, 68);
+if (relocationOnly) {
+  const prelude =
+    "declare const Comp: { pick: (x: number) => boolean };\nconst state: { value?: number } = {};\nstate.value = 1;\n";
+  const pick = "const pick: typeof Comp.pick = (field: typeof state.value) => !!field;\n";
+  for (const [name, source] of [
+    ["before-delete", prelude + pick + "delete state.value;\n"],
+    ["after-delete", prelude + "delete state.value;\n" + pick],
+  ]) {
+    const directory = path.join(output, "independent-typescript-control", name!);
+    fs.mkdirSync(directory, { recursive: true });
+    fs.writeFileSync(path.join(directory, "control.ts"), source!);
+    write(path.join(directory, "tsconfig.json"), {
+      compilerOptions: { strict: true, noEmit: true, types: [] },
+      files: ["control.ts"],
+    });
+    run(
+      [official, "--noEmit", "--pretty", "false", "-p", "tsconfig.json"],
+      directory,
+      path.join(directory, "compiler"),
+    );
+    write(path.join(directory, "input.json"), {
+      source,
+      sha256: digest(source!),
+      kind: "independent-plain-typescript-not-a-projection",
+    });
+  }
+}
+assert.equal(rows.length, relocationOnly ? 56 : 68);
 assert.equal(
   rows.reduce((total, row) => total + Object.keys(row.observations).length, 0),
-  baselineOnly ? 204 : 408,
+  rows.length * (baselineOnly ? 3 : 6),
 );
 // Every full protocol/check/official-host observation is durable before comparisons.
-for (const row of rows) {
+for (const row of relocationOnly ? [] : rows) {
   const config = JSON.parse(row.files["tsconfig.json"]);
   const projectFiles = Object.keys(row.files)
     .filter((file) => file !== "tsconfig.json")
@@ -442,7 +509,8 @@ for (const row of rows) {
 write(path.join(output, "result.json"), {
   sourceSha,
   cases: rows.length,
-  sourceQualified: !baselineOnly,
+  sourceQualified: !baselineOnly && !relocationOnly,
+  relocationDiscovery: relocationOnly,
   registryBaselineOnly: baselineOnly,
   fullNativeVectors: true,
   fullCandidateMapperVectors: !baselineOnly,

@@ -14,7 +14,69 @@ export type Project = {
   replaceParent?: (source: string) => string;
   mapperStdout?: string;
   ordinaryForm?: boolean;
+  inlineInputs?: Record<string, string>;
 };
+
+/** Keep the reviewer's authored program, including the optional-property CFA. */
+export function relocationControls(): Project[] {
+  const setup = `<script setup lang="ts">
+import Comp from './Comp.vue'
+const state: { value?: number } = {}
+state.value = 1
+const noop = () => {}
+</script>
+<template>
+`;
+  const component = `<script setup lang="ts">
+defineProps<{ pick: (x: number) => boolean }>()
+defineEmits<{ save: [] }>()
+</script>
+<template><div /></template>
+`;
+  const config =
+    JSON.stringify(
+      {
+        compilerOptions: {
+          strict: true,
+          noEmit: true,
+          module: "preserve",
+          moduleResolution: "bundler",
+          types: [],
+          lib: ["ESNext", "DOM"],
+        },
+        include: ["src"],
+      },
+      null,
+      2,
+    ) + "\n";
+  return [
+    ["parameter-type-query-delete", "(field: typeof state.value) => !!field", "delete state.value"],
+    [
+      "parameter-indexed-type-query-delete",
+      "(field: typeof state['value']) => !!field",
+      "delete state.value",
+    ],
+    ["return-type-query-delete", "(field): typeof state.value => field", "delete state.value"],
+    ["body-type-query-delete", "(field) => field as typeof state.value", "delete state.value"],
+    ["parameter-type-query-stable", "(field: typeof state.value) => !!field", "state.value"],
+    ["untyped-delete", "(field) => !!field", "delete state.value"],
+    ["untyped-stable", "(field) => !!field", "state.value"],
+  ].flatMap(([id, callback, effect]) =>
+    [false, true].map((expected) => ({
+      id: `relocation-${id}-${expected ? "expect" : "ordinary"}`,
+      inputs: [],
+      inlineInputs: {
+        "tsconfig.json": config,
+        "src/Comp.vue": component,
+        "src/Min.vue":
+          setup +
+          (expected ? "  <!-- @vue-expect-error -->\n" : "") +
+          `  <Comp :pick="${callback}" @save="noop" />\n  <div>{{ ${effect} }}</div>\n</template>\n`,
+      },
+      diagnostics: [],
+    })),
+  );
+}
 
 export function directiveControls(base: Project): Project[] {
   const expect = (source: string) =>

@@ -85,6 +85,11 @@ impl<'a> Visit<'a> for RenderEffects {
             | Expression::AwaitExpression(_)
             | Expression::YieldExpression(_)
             | Expression::ClassExpression(_) => self.0 = true,
+            Expression::UnaryExpression(value)
+                if value.operator == oxc_syntax::operator::UnaryOperator::Delete =>
+            {
+                self.0 = true;
+            }
             Expression::FunctionExpression(_) | Expression::ArrowFunctionExpression(_) => {}
             _ if !self.0 => walk_expression(self, expression),
             _ => {}
@@ -154,9 +159,8 @@ fn pure_expression(expression: &Expression<'_>, identifier: &impl Fn(&str) -> bo
         Expression::ParenthesizedExpression(value) => {
             pure_expression(&value.expression, identifier)
         }
-        Expression::TSAsExpression(value) => pure_expression(&value.expression, identifier),
-        Expression::TSSatisfiesExpression(value) => pure_expression(&value.expression, identifier),
-        Expression::TSTypeAssertion(value) => pure_expression(&value.expression, identifier),
+        // A type query can capture a flow-sensitive outer name even when the
+        // runtime operand is pure. Those types have no relocation proof.
         Expression::TSNonNullExpression(value) => pure_expression(&value.expression, identifier),
         Expression::UnaryExpression(value) => {
             value.operator != oxc_syntax::operator::UnaryOperator::Delete
@@ -187,12 +191,14 @@ fn pure_arrow(arrow: &oxc_ast::ast::ArrowFunctionExpression<'_>) -> bool {
         || !arrow.expression
         || arrow.params.rest.is_some()
         || arrow.type_parameters.is_some()
+        || arrow.return_type.is_some()
     {
         return false;
     }
     if arrow.params.items.iter().any(|parameter| {
         !matches!(parameter.pattern, BindingPattern::BindingIdentifier(_))
             || parameter.initializer.is_some()
+            || parameter.type_annotation.is_some()
             || !parameter.decorators.is_empty()
     }) {
         return false;
@@ -284,6 +290,15 @@ mod tests {
                 ("(field) => field++", false),
                 ("(field) => () => field", false),
                 ("(field) => this", false),
+                ("(field: typeof stable.value) => !!field", false),
+                ("(field: number) => !!field", false),
+                ("(field): typeof stable.value => field", false),
+                ("(field) => field as typeof stable.value", false),
+                ("(field) => field satisfies typeof stable.value", false),
+                ("(field) => <typeof stable.value>field", false),
+                ("stable as typeof stable.value", false),
+                ("stable satisfies typeof stable.value", false),
+                ("<typeof stable.value>stable", false),
             ]
             .into_iter()
             .enumerate()

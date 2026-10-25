@@ -2,6 +2,8 @@
 
 use vize_carton::{String, ToCompactString, cstr};
 
+#[cfg(test)]
+mod cases;
 mod observe;
 
 /// Suffix added to an unresolved authored `.vue.ts`/`.vue.tsx` import so
@@ -28,12 +30,14 @@ pub fn restore_virtual_vue_specifiers(message: &str, authored_source: &str) -> S
     let mut observation = observe::SearchObservation::new();
     let mut rewrites = Vec::new();
     for reported in quoted_specifiers(message) {
+        let authored = authored_specifier(reported);
+        observation.candidate(authored.is_some());
+        let Some(authored) = authored else {
+            continue;
+        };
         if observation.source_contains(authored_source, reported) {
             continue;
         }
-        let Some(authored) = authored_specifier(reported) else {
-            continue;
-        };
         rewrites.push((reported.to_compact_string(), authored.to_compact_string()));
     }
 
@@ -79,7 +83,8 @@ fn authored_specifier(reported: &str) -> Option<&str> {
 /// result is therefore grouped by [`QUOTE_PAIRS`] order, not by position in
 /// `message`: a double-quoted specifier precedes a single-quoted one only if
 /// its quote pair comes first. Both callers rewrite every returned specifier
-/// across the whole message, so order carries no meaning beyond determinism.
+/// across the whole message. Retain this order: a restored spelling can match
+/// a later candidate, so sorting or rescanning could change the result.
 ///
 /// A candidate must look like a specifier — no whitespace and no quote
 /// characters — so an unbalanced pairing can never yield a run of prose.

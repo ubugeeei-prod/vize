@@ -12,6 +12,8 @@
 import { randomBytes } from "node:crypto";
 import fs from "node:fs";
 
+import { beginNativeBuildReceipt, finishNativeBuildReceipt } from "./native-build-receipt.ts";
+
 import {
   type CommandEnvironment,
   commandArguments,
@@ -99,6 +101,7 @@ function buildApplePackage(
 ): number {
   const env = nativeBuildEnvironment();
   if (env === undefined) return 1;
+  const receipt = beginNativeBuildReceipt(packageDir, target, env);
   const exitCode = runCommand(
     "cargo",
     [
@@ -128,6 +131,7 @@ function buildApplePackage(
   }
   const outputPath = joinPath(packageDir, `${binaryName(crateName)}.${platformTag}.node`);
   writeFileDurably(outputPath, fs.readFileSync(builtLibrary), 0o755);
+  finishNativeBuildReceipt(receipt, packageDir, crateName, target, env);
   return 0;
 }
 
@@ -175,7 +179,10 @@ export function main(args: readonly string[]): number {
   if (crossCompile) commandArgs.push("--cross-compile");
   const env = nativeBuildEnvironment();
   if (env === undefined) return 1;
-  return runCommand("vp", commandArgs, { cwd: packageDir, env });
+  const receipt = beginNativeBuildReceipt(packageDir, target, env);
+  const exitCode = runCommand("vp", commandArgs, { cwd: packageDir, env });
+  if (exitCode === 0) finishNativeBuildReceipt(receipt, packageDir, packageName, target, env);
+  return exitCode;
 }
 
 if (isEntrypoint(import.meta.url)) runEntrypoint(() => main(commandArguments()));

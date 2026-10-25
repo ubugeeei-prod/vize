@@ -1,0 +1,14 @@
+{
+  "expected": {
+    "id": "hex-baseline",
+    "needle": "#336699",
+    "offset": 3,
+    "baselineNull": true
+  },
+  "position": {
+    "line": 4,
+    "character": 23
+  },
+  "hovers": [],
+  "raw": null
+}
