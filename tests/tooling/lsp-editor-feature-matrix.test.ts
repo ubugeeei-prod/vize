@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { stripTypeScriptTypes } from "node:module";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import vm from "node:vm";
 import {
   FEATURE_SETTING_KEYS,
   LINT_ONLY_CONFIGURATION_UPDATES,
@@ -293,11 +295,27 @@ test("capability descriptions expose readable editor labels", () => {
 });
 
 test("editor integrations launch vize lsp by default", () => {
-  assert.match(readRepoFile("editors/vscode/src/server-options.ts"), /args:\s*\["lsp"\]/);
-  assert.match(
-    readRepoFile("editors/vscode/src/server-options.ts"),
-    /args:\s*\["lsp",\s*"--debug"\]/,
-  );
+  const source = stripTypeScriptTypes(readRepoFile("editors/vscode/src/server-options.ts"))
+    .replace(/^import[\s\S]*?;\n/gm, "")
+    .replace(/^export /gm, "");
+  // Execute the factory: a workspace Node bin needs an argv prefix, while a
+  // native server retains exactly the same lsp/debug subcommand contract.
+  for (const prefix of [[], ["/workspace 日本語/bin/vize.cjs"]]) {
+    const createOptions = new vm.Script(`${source}\ncreateServerOptions;`).runInNewContext({
+      serverInvocation: (command: string) => ({ command, args: prefix, env: {} }),
+      serverProcessEnv: (env: unknown) => env,
+      TransportKind: { stdio: "stdio" },
+      process,
+    }) as (serverPath: string) => {
+      run: { command: string; args: string[]; transport: string };
+      debug: { args: string[] };
+    };
+    const options = createOptions("/server");
+    assert.equal(options.run.command, "/server");
+    assert.deepEqual(Array.from(options.run.args), [...prefix, "lsp"]);
+    assert.deepEqual(Array.from(options.debug.args), [...prefix, "lsp", "--debug"]);
+    assert.equal(options.run.transport, "stdio");
+  }
   assert.match(readRepoFile("editors/zed/src/lib.rs"), /vec!\["lsp"\.to_string\(\)\]/);
   assert.match(readRepoFile("editors/emacs/vize.el"), /'\("vize" "lsp"\)/);
   assert.match(readRepoFile("editors/helix/languages.toml"), /args = \["lsp"\]/);

@@ -3,6 +3,7 @@ import type { LspInitializationOptions } from "./extension-core.js";
 
 export type ServerCandidateSource =
   | "configured"
+  | "workspace"
   | "bundled"
   | "development"
   | "release"
@@ -15,6 +16,7 @@ export type ServerCandidate = {
 export type InspectedServerCandidate = ServerCandidate & {
   version?: string;
   versionError?: string;
+  workspaceFallbackReason?: string;
 };
 export type ReleaseServerTarget = {
   archiveName: string;

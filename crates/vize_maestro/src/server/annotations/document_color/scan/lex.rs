@@ -69,7 +69,7 @@ pub(super) fn is_declaration_name(
     cursor > name_start && skip_trivia(bytes, cursor, end) == end
 }
 
-fn skip_trivia(bytes: &[u8], mut cursor: usize, limit: usize) -> usize {
+pub(super) fn skip_trivia(bytes: &[u8], mut cursor: usize, limit: usize) -> usize {
     loop {
         while cursor < limit && bytes.get(cursor).is_some_and(u8::is_ascii_whitespace) {
             cursor += 1;
@@ -106,6 +106,43 @@ pub(super) fn skip_string(bytes: &[u8], start: usize, limit: usize) -> usize {
         match bytes.get(cursor) {
             Some(b'\\') => cursor = (cursor + 2).min(limit),
             Some(&byte) if byte == quote => return cursor + 1,
+            Some(_) => cursor += 1,
+            None => break,
+        }
+    }
+    limit
+}
+
+/// Preprocessor interpolation is an expression, not authored CSS value text.
+pub(super) fn skip_interpolation(bytes: &[u8], open: usize, limit: usize) -> usize {
+    let mut cursor = open + 1;
+    let mut depth = 1usize;
+    while cursor < limit {
+        match bytes.get(cursor) {
+            Some(b'\'' | b'"') => cursor = skip_string(bytes, cursor, limit),
+            Some(b'/') if pair_at(bytes, cursor, b"/*") => {
+                cursor = skip_comment(bytes, cursor, limit);
+            }
+            Some(b'/') if pair_at(bytes, cursor, b"//") => {
+                cursor = bytes
+                    .get(cursor..limit)
+                    .unwrap_or_default()
+                    .iter()
+                    .position(|byte| matches!(byte, b'\r' | b'\n'))
+                    .map_or(limit, |relative| cursor + relative);
+            }
+            Some(b'\\') => cursor = (cursor + 2).min(limit),
+            Some(b'{') => {
+                depth += 1;
+                cursor += 1;
+            }
+            Some(b'}') => {
+                depth -= 1;
+                cursor += 1;
+                if depth == 0 {
+                    return cursor;
+                }
+            }
             Some(_) => cursor += 1,
             None => break,
         }
@@ -186,7 +223,7 @@ fn escape_end(bytes: &[u8], slash: usize, limit: usize) -> usize {
     cursor
 }
 
-fn identifier_eq(bytes: &[u8], start: usize, end: usize, expected: &[u8]) -> bool {
+pub(super) fn identifier_eq(bytes: &[u8], start: usize, end: usize, expected: &[u8]) -> bool {
     let mut cursor = start;
     let mut expected_cursor = 0;
     while cursor < end {

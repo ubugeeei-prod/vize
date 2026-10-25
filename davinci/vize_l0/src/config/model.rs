@@ -181,6 +181,13 @@ struct LegacyCheckConfig {
 }
 
 impl RawVizeConfig {
+    pub(crate) fn formatter_ignore_patterns(&self) -> &[String] {
+        match &self.legacy_formatter {
+            Some(legacy) if self.formatter.is_unset() => &legacy.ignore_patterns,
+            _ => &self.formatter.ignore_patterns,
+        }
+    }
+
     /// Authored formatter options, falling back to the legacy `fmt` alias.
     pub(crate) fn formatter_profile(&self) -> &FormatterProfile {
         match &self.legacy_formatter {

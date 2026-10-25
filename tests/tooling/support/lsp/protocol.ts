@@ -32,6 +32,7 @@ export type LspInitializationOptions = {
   semanticTokens?: boolean;
   signatureHelp?: boolean;
   typecheck?: boolean;
+  typecheckTimeoutMs?: number;
   workspaceSymbols?: boolean;
   autoInsert?: boolean;
 };

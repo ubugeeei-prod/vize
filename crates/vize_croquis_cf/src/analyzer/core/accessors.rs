@@ -6,6 +6,9 @@ use vize_croquis::Croquis;
 #[cfg(test)]
 use vize_croquis::EffectGraphSummary;
 
+#[cfg(test)]
+mod clear_tests;
+
 impl CrossFileAnalyzer {
     /// Get the module registry.
     #[inline]
@@ -39,6 +42,7 @@ impl CrossFileAnalyzer {
         self.registry.clear();
         self.graph = DependencyGraph::new();
         self.effect_graph_summaries.clear();
+        self.template_complexity.clear();
     }
 
     pub(super) fn count_edges(&self) -> usize {

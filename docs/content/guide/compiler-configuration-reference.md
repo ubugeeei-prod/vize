@@ -12,23 +12,24 @@ Standalone file discovery, scopes, and analysis settings remain in the
 
 These options live under `compiler` in `defineConfig`; not every integration consumes every field.
 
-| Option              | Values                                  | Common use                                                       |
-| ------------------- | --------------------------------------- | ---------------------------------------------------------------- |
-| `sourceMap`         | `boolean`                               | Enable source maps in the Vite plugin                            |
-| `ssr`               | `boolean`                               | Compile for SSR when not relying on Vite's SSR build flag        |
-| `vapor`             | `boolean`                               | Enable Vapor-mode compilation                                    |
-| `jsxMode`           | `"vdom"` or `"vapor"`                   | Default output backend for `.jsx`/`.tsx` components              |
-| `customRenderer`    | `boolean`                               | Treat lowercase non-HTML tags as custom renderer elements        |
-| `customElements`    | `string[]`                              | Tag patterns compiled as custom elements (`Tres*` for TresJS)    |
-| `templateSyntax`    | `"standard"`, `"strict"`, or `"quirks"` | Choose warning, error, or Vue-quirk handling for template syntax |
-| `scriptExt`         | `"ts"` or `"js"`                        | Preserve TS output or downcompile to JS in the npm build command |
-| `mode`              | `"module"` or `"function"`              | Lower-level compiler output mode                                 |
-| `prefixIdentifiers` | `boolean`                               | Prefix template identifiers with `_ctx`                          |
-| `hoistStatic`       | `boolean`                               | Control static node hoisting                                     |
-| `cacheHandlers`     | `boolean`                               | Control event handler caching                                    |
-| `isTs`              | `boolean`                               | Parse script blocks as TypeScript                                |
-| `runtimeModuleName` | `string`                                | Override runtime import module                                   |
-| `runtimeGlobalName` | `string`                                | Override runtime global for function/IIFE-style output           |
+| Option              | Values                                                              | Common use                                                       |
+| ------------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `sourceMap`         | `boolean`                                                           | Enable source maps in the Vite plugin                            |
+| `ssr`               | `boolean`                                                           | Compile for SSR when not relying on Vite's SSR build flag        |
+| `vapor`             | `boolean`                                                           | Enable Vapor-mode compilation                                    |
+| `jsxMode`           | `"vdom"` or `"vapor"`                                               | Default output backend for `.jsx`/`.tsx` components              |
+| `customRenderer`    | `boolean`                                                           | Treat lowercase non-HTML tags as custom renderer elements        |
+| `customElements`    | `string[]`                                                          | Tag patterns compiled as custom elements (`Tres*` for TresJS)    |
+| `templateSyntax`    | `"standard"`, `"strict"`, or `"quirks"`                             | Choose warning, error, or Vue-quirk handling for template syntax |
+| `whitespace`        | `"condense"`, `"preserve"`, `"vue2-line-breaks"`, `"vue2-preserve"` | Template whitespace; see [Whitespace](#whitespace)               |
+| `scriptExt`         | `"ts"` or `"js"`                                                    | Preserve TS output or downcompile to JS in the npm build command |
+| `mode`              | `"module"` or `"function"`                                          | Lower-level compiler output mode                                 |
+| `prefixIdentifiers` | `boolean`                                                           | Prefix template identifiers with `_ctx`                          |
+| `hoistStatic`       | `boolean`                                                           | Control static node hoisting                                     |
+| `cacheHandlers`     | `boolean`                                                           | Control event handler caching                                    |
+| `isTs`              | `boolean`                                                           | Parse script blocks as TypeScript                                |
+| `runtimeModuleName` | `string`                                                            | Override runtime import module                                   |
+| `runtimeGlobalName` | `string`                                                            | Override runtime global for function/IIFE-style output           |
 
 For Vite projects, direct plugin options override shared config:
 
@@ -50,6 +51,43 @@ export default defineConfig({
 
 Experimental Vue RFC and backend flags live under top-level `experimentals`; see
 [Experimentals](./experimentals.md). Omitted keys, `false`, and `null` are off.
+
+## Whitespace
+
+`compiler.whitespace` defaults to `"condense"`. Select a mode explicitly when migrating
+Vue 2 templates to a Vue 3 build:
+
+| Mode                 | Text and interpolation runs                                                                                                                     | Whitespace-only runs                                                                   |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `"condense"`         | Collapse ASCII whitespace runs to one space.                                                                                                    | Drop leading/trailing runs and line breaks between elements; otherwise keep one space. |
+| `"preserve"`         | Keep mixed text as written, using Vue 3 whitespace rules.                                                                                       | Drop leading/trailing runs; keep one space between meaningful siblings.                |
+| `"vue2-line-breaks"` | Use `condense`, but retain one line break after text or interpolation before the next sibling where condensing would insert a space.            | All other `condense` rules still apply. This is the narrow migration mode.             |
+| `"vue2-preserve"`    | Use Vue 2.7 `whitespace: "preserve"` rules: keep a contiguous text/interpolation run as written, including its leading and trailing whitespace. | Drop runs at the edges of a child list; collapse runs between elements to one space.   |
+
+Whitespace here means space, tab, line feed, form feed and carriage return. Non-breaking
+spaces are not collapsed. `"vue2-preserve"` also follows Vue 2's comment boundaries and
+removes whitespace at the end of a component's default-slot content before named
+`<template #slot>` children.
+
+For example, `"vue2-preserve"` keeps both line breaks and indentation around `{{ value }}`
+in `<span>\n  {{ value }}\n</span>`. `"vue2-line-breaks"` does not preserve that entire
+run and is not a replacement for Vue 2's preserve mode.
+
+These options do not change the special handling of `<pre>` and `<textarea>`: the HTML
+first-newline rule still applies, and `<pre>` normalizes CRLF to LF without reflowing its
+content. `v-pre` continues to treat directives and `{{ }}` as literal content; it does
+not choose a whitespace mode.
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  compiler: { whitespace: "vue2-preserve" },
+});
+```
+
+The Vite plugin also accepts `vize({ whitespace: "vue2-preserve" })`. For Nuxt, use
+`vize.compiler.whitespace`; see [migrating from Nuxt 2](../integrations/nuxt.md#migrating-from-nuxt-2).
 
 ## Template Syntax
 

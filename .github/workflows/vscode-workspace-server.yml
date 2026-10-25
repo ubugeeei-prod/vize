@@ -1,0 +1,108 @@
+name: VS Code workspace server
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/vscode-workspace-server.yml
+      - editors/vscode/**
+      - tests/tooling/vscode-workspace-server*.test.mjs
+  workflow_dispatch:
+
+concurrency:
+  group: vscode-workspace-server-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions: { contents: read }
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  VIZE_TEST_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  linux:
+    name: Build production VSIX and verify Linux workspace engine
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          version: latest
+          node-version-file: package.json
+          run-install: false
+          cache: true
+      - uses: ./.github/actions/setup-rust-script
+      - name: Install locked dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Verify workspace resolution and bounded stdio sessions
+        run: vp node --test tests/tooling/vscode-workspace-server.test.mjs tests/tooling/vscode-workspace-server-identity.test.mjs tests/tooling/vscode-server-trust.test.ts
+      - name: Check the extension
+        run: vp run --workspace-root check:vscode-extension
+      - name: Package and validate the production VSIX
+        run: vp run --workspace-root package:vscode-extension
+      - name: Ensure virtual display
+        run: |
+          if ! command -v xvfb-run >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y xvfb
+          fi
+      - name: Run installed VSIX with the pinned workspace engine
+        run: xvfb-run -a vp node editors/vscode/test/run-workspace-server-host.mjs
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: workspace-server-vsix-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            editors/vscode/dist/vize.vsix
+            editors/vscode/dist/extension.cjs
+            editors/vscode/dist/workspace-server-package.json
+          if-no-files-found: error
+          retention-days: 7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: workspace-server-Linux-${{ github.event.pull_request.head.sha || github.sha }}
+          path: editors/vscode/.vscode-test/workspace-server/
+          if-no-files-found: warn
+          retention-days: 7
+
+  windows:
+    name: Verify the same installed VSIX with a Windows workspace engine
+    needs: linux
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - name: Preserve patch and source line endings
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          version: latest
+          node-version-file: package.json
+          run-install: false
+          cache: true
+      - uses: ./.github/actions/setup-rust-script
+      - name: Install locked dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Verify Windows resolution and bounded stdio sessions
+        run: vp node --test tests/tooling/vscode-workspace-server.test.mjs tests/tooling/vscode-workspace-server-identity.test.mjs tests/tooling/vscode-server-trust.test.ts
+      - name: Check the extension and install host dependencies
+        run: vp run --workspace-root check:vscode-extension
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: workspace-server-vsix-${{ github.event.pull_request.head.sha || github.sha }}
+          path: editors/vscode/dist
+      - name: Verify the producer hashes and run its installed VSIX
+        run: vp node editors/vscode/test/run-workspace-server-host.mjs
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: workspace-server-Windows-${{ github.event.pull_request.head.sha || github.sha }}
+          path: editors/vscode/.vscode-test/workspace-server/
+          if-no-files-found: warn
+          retention-days: 7

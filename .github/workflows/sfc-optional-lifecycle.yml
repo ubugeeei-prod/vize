@@ -1,0 +1,53 @@
+name: Native SFC optional lifecycle diagnostic
+on:
+  workflow_call:
+    inputs:
+      expected-driver-sha: { required: true, type: string }
+      conflicting-modes: { required: true, type: boolean }
+permissions:
+  contents: read
+jobs:
+  lifecycle:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    env:
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: never
+      EXPECTED_DRIVER_SHA: ${{ inputs.expected-driver-sha }}
+      CONFLICTING_MODES: ${{ inputs.conflicting-modes }}
+    steps:
+      - name: Refuse stale or conflicting diagnostic dispatch
+        run: |
+          [[ "$EXPECTED_DRIVER_SHA" == "$GITHUB_SHA" && "$CONFLICTING_MODES" == false ]]
+          [[ "$GITHUB_REPOSITORY" == ubugeeei-prod/vize ]]
+      - name: Checkout diagnostic driver
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - name: Checkout frozen source for the failed lifecycle
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          {
+            ref: 1525ff2f7621e8f0b3053451568bec48ff5b8855,
+            path: source,
+            persist-credentials: false,
+          }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: source/package.json, cache: true, run-install: false }
+      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # master
+        with: { toolchain: "1.99.1" }
+      - uses: ./.github/actions/setup-rust-script
+      - name: Install exact source lifecycle dependencies
+        working-directory: source
+        run: vp install --filter './npm/native...' --filter './npm/cli...' --filter './npm/builder/vite...' --filter './npm/builder/vite-musea...' --frozen-lockfile --prefer-offline
+      # No compiled-target cache/restore action belongs in this diagnostic.
+      - name: Compare one public Linux and one isolated source lifecycle
+        run: node tools/benchmarks/scripts/sfc-optional-lifecycle.mjs "$GITHUB_WORKSPACE/source" "$GITHUB_WORKSPACE/artifacts/sfc-optional-lifecycle"
+      - name: Retain Cargo, loaded images and lifecycle phase receipts
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sfc-optional-lifecycle-${{ github.sha }}-${{ github.run_attempt }}
+          path: artifacts/sfc-optional-lifecycle/
+          if-no-files-found: error
+          retention-days: 30
+          include-hidden-files: true
