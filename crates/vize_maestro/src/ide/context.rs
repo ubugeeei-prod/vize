@@ -30,6 +30,8 @@ pub struct IdeContext<'a> {
     /// This document's SFC descriptor, read once from the resident tier
     /// (P5-6a) — see [`IdeContext::descriptor`].
     descriptor: OnceLock<Option<SharedDescriptor>>,
+    /// Pug derivation and semantic scope are shared by this request's fallbacks.
+    pub(in crate::ide) pug_scope: OnceLock<Option<Box<super::template_scope::pug::PugScope>>>,
 }
 
 impl<'a> IdeContext<'a> {
@@ -145,6 +147,7 @@ impl<'a> IdeContext<'a> {
             block_type,
             virtual_docs,
             descriptor,
+            pug_scope: OnceLock::new(),
         }
     }
 

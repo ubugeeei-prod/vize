@@ -22,6 +22,47 @@ struct Segment {
     verbatim: bool,
 }
 
+#[cfg(test)]
+mod tests {
+    use super::PugSourceMap;
+
+    #[test]
+    fn reverse_positions_only_accept_exact_authored_copies() {
+        let mut map = PugSourceMap::default();
+        map.push_synth(1, 2, 5);
+        map.push_verbatim(3, 2);
+        map.push_synth(7, 7, 8);
+        map.push_verbatim(4, 9);
+        assert_eq!(
+            (0..15)
+                .map(|at| map.verbatim_offset_to_html(at))
+                .collect::<Vec<_>>(),
+            [
+                None,
+                None,
+                Some(1),
+                Some(2),
+                Some(3),
+                None,
+                None,
+                None,
+                None,
+                Some(11),
+                Some(12),
+                Some(13),
+                Some(14),
+                None,
+                None
+            ],
+        );
+        assert_eq!(
+            [2, 3, 4, 9, 10, 11, 12]
+                .map(|at| map.offset_to_pug(map.verbatim_offset_to_html(at).unwrap())),
+            [2, 3, 4, 9, 10, 11, 12],
+        );
+    }
+}
+
 /// Ordered, contiguous segments covering the whole derived template.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct PugSourceMap {
@@ -74,6 +115,18 @@ impl PugSourceMap {
             Some((segment, false)) => segment.pug_start,
             None => self.segments.last().map_or(0, |segment| segment.pug_end),
         }
+    }
+
+    /// The derived offset of an authored byte copied verbatim into HTML.
+    ///
+    /// Generated punctuation, indentation and decoded/synthesized spelling have
+    /// no exact reverse position. Editor queries must refuse those positions
+    /// rather than selecting the nearest unrelated generated construct.
+    pub fn verbatim_offset_to_html(&self, at: u32) -> Option<u32> {
+        self.segments.iter().find_map(|segment| {
+            (segment.verbatim && segment.pug_start <= at && at < segment.pug_end)
+                .then(|| segment.html_start + at - segment.pug_start)
+        })
     }
 
     /// Map a derived-template span onto the authored pug: verbatim bytes

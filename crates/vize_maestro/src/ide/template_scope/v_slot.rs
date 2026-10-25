@@ -10,6 +10,11 @@ pub(super) fn binding_at(ctx: &IdeContext<'_>, word: &str) -> Option<TemplateSco
         return None;
     }
 
+    if super::pug::is_pug(ctx) {
+        return super::pug::binding_at(ctx, word)
+            .filter(|binding| binding.kind == TemplateScopeBindingKind::SlotProp);
+    }
+
     let (content, start) = super::active_template(ctx)?;
     if ctx.offset < start || ctx.offset > start + content.len() {
         return None;

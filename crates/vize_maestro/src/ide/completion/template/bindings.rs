@@ -35,8 +35,18 @@ pub(crate) fn analyzed_template_binding_completions(
         return petite_vue_scope_binding_completions(ctx);
     }
 
-    let Some((croquis, template_start)) = crate::ide::template_scope::analyze(ctx) else {
-        return Vec::new();
+    let ordinary;
+    let (croquis, template_local) = if crate::ide::template_scope::pug::is_pug(ctx) {
+        let Some(analysis) = crate::ide::template_scope::pug::analyzed(ctx) else {
+            return Vec::new();
+        };
+        analysis
+    } else {
+        let Some(analysis) = crate::ide::template_scope::analyze(ctx) else {
+            return Vec::new();
+        };
+        ordinary = analysis;
+        (&ordinary.0, ctx.offset.saturating_sub(ordinary.1) as u32)
     };
 
     let mut items_vec = Vec::new();
@@ -45,9 +55,8 @@ pub(crate) fn analyzed_template_binding_completions(
     // De-duplicate outer setup bindings and props against these local names.
     let mut locals = BTreeSet::new();
     {
-        let template_local = ctx.offset.saturating_sub(template_start) as u32;
         for (name, _binding, scope_kind) in
-            crate::ide::template_scope::bindings_visible_at(&croquis, template_local)
+            crate::ide::template_scope::bindings_visible_at(croquis, template_local)
         {
             if !is_template_scope_kind(scope_kind) {
                 continue;
@@ -63,7 +72,7 @@ pub(crate) fn analyzed_template_binding_completions(
         .map(|prop| prop.name.as_str())
         .collect();
 
-    let mut facts = CroquisFacts::new(&croquis);
+    let mut facts = CroquisFacts::new(croquis);
     let view = facts.prepare::<TemplateBindingCompletion>();
     let Ok(bindings) = view.get::<Bindings>() else {
         return items_vec;

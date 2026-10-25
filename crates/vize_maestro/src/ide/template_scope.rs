@@ -6,6 +6,7 @@
 
 mod analysis;
 mod patterned_navigation;
+pub(in crate::ide) mod pug;
 mod v_for;
 mod v_slot;
 #[cfg(feature = "native")]
@@ -109,8 +110,8 @@ pub(crate) fn v_for_hover(ctx: &IdeContext<'_>, word: &str) -> Option<Hover> {
     let mut builder = HoverBuilder::new()
         .title(&binding.name)
         .meta("v-for scope binding");
-    if let Some(opening_tag) = opening_tag_at(&ctx.content, binding.start) {
-        builder = builder.code("vue", opening_tag);
+    if let Some((language, opening_tag)) = scope_excerpt(ctx, binding.start) {
+        builder = builder.code(language, opening_tag);
     }
     Some(
         builder
@@ -144,8 +145,8 @@ pub(crate) fn v_slot_hover(ctx: &IdeContext<'_>, word: &str) -> Option<Hover> {
     let mut builder = HoverBuilder::new()
         .title(&binding.name)
         .meta("v-slot scope binding");
-    if let Some(opening_tag) = opening_tag_at(&ctx.content, binding.start) {
-        builder = builder.code("vue", opening_tag);
+    if let Some((language, opening_tag)) = scope_excerpt(ctx, binding.start) {
+        builder = builder.code(language, opening_tag);
     }
     Some(
         builder
@@ -165,4 +166,15 @@ pub(crate) fn v_slot_hover(ctx: &IdeContext<'_>, word: &str) -> Option<Hover> {
 
 pub(crate) fn hover(ctx: &IdeContext<'_>, word: &str) -> Option<Hover> {
     v_slot_hover(ctx, word).or_else(|| v_for_hover(ctx, word))
+}
+
+fn scope_excerpt<'a>(ctx: &'a IdeContext<'_>, offset: usize) -> Option<(&'static str, &'a str)> {
+    if pug::is_pug(ctx) {
+        let (_, end, start, _) = crate::ide::pug::tag_name_span_at_offset(&ctx.content, offset)?;
+        return (end.saturating_sub(start) <= 1024)
+            .then(|| ctx.content.get(start..end))
+            .flatten()
+            .map(|source| ("pug", source));
+    }
+    opening_tag_at(&ctx.content, offset).map(|source| ("vue", source))
 }
