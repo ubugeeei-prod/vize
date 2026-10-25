@@ -4,11 +4,11 @@ import fs from "node:fs";
 import { stripTypeScriptTypes } from "node:module";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { resolveBundledCorsaRuntime } from "../../../../npm/cli/src/corsa-runtime.ts";
+import { resolveBundledCorsaRuntime } from "../../../../tests/_fixtures/release/legacy-0.571/corsa-runtime.ts";
 import { unpackPublicArchive } from "../../../../tests/performance/support/warm-type-backed-public-archives.ts";
 import { publicReader } from "./http.ts";
 import { rejectOverrides } from "./installed.ts";
-import { sha256 } from "./lsp_source.ts";
+import { sha256, userProviderContract } from "./lsp_source.ts";
 import { readRawBlob } from "./plan.ts";
 
 export const lspOverrides = [
@@ -66,7 +66,7 @@ export function packageProvider(consumer: string, name: string, version: string)
     manifestSha256: sha256(manifest),
   };
 }
-/** Use the shipped CLI's version-bound launcher contract, never a guessed or host binary. */
+/** Historical bundled authority or an explicitly installed private-test provider. */
 export async function installedCorsaProvider(
   consumer: string,
   cliVersion: string,
@@ -78,6 +78,48 @@ export async function installedCorsaProvider(
   const cli = packageProvider(consumer, "vize", cliVersion);
   const provider = packageProvider(consumer, name, version);
   const manifest = JSON.parse(fs.readFileSync(path.join(cli.directory, "package.json"), "utf8"));
+  const frozenCli = JSON.parse(readRawBlob(root, head, "npm/cli/package.json").toString());
+  if (frozenCli.optionalDependencies?.[name] === undefined) {
+    rejectOverrides();
+    const contract = userProviderContract(root, head);
+    assert.equal(name, contract.name);
+    assert.equal(version, contract.version);
+    assert.equal(process.platform, contract.platform);
+    assert.equal(process.arch, contract.arch);
+    assert.equal(
+      manifest.optionalDependencies?.[name],
+      undefined,
+      "no production bundled provider",
+    );
+    const request = JSON.parse(fs.readFileSync(path.join(consumer, "package.json"), "utf8"));
+    const lock = JSON.parse(fs.readFileSync(path.join(consumer, "package-lock.json"), "utf8"));
+    assert.equal(request.devDependencies?.[name], version, "explicit user provider required");
+    assert.equal(
+      lock.packages[""].devDependencies?.[name],
+      version,
+      "explicit locked request required",
+    );
+    assert.equal(provider.integrity, contract.integrity, "reviewed public provider SRI required");
+    const executable = contained(
+      path.join(provider.directory, contract.executableRelativePath),
+      provider.directory,
+    );
+    assert.ok(fs.lstatSync(executable).isFile(), "user provider image must be a regular file");
+    const image = fs.readFileSync(executable);
+    assert.equal(image.length, contract.executableBytes);
+    assert.equal(
+      sha256(image),
+      contract.executableSha256,
+      "reviewed public provider image required",
+    );
+    return {
+      ...provider,
+      executable,
+      executableSha256: sha256(image),
+      resolutionMode: contract.resolutionMode,
+      resolver: { cli, head, contract, request: { name, version, section: "devDependencies" } },
+    };
+  }
   assert.equal(
     manifest.optionalDependencies?.[name],
     version,
@@ -96,7 +138,14 @@ export async function installedCorsaProvider(
   // Both actors may inspect these bytes. Only the reviewed checkout implementation
   // executes: installed code must never run inside the credentialed finalizer.
   const trusted = fs.readFileSync(
-    fileURLToPath(new URL("../../../../npm/cli/src/corsa-runtime.ts", import.meta.url)),
+    fileURLToPath(
+      new URL("../../../../tests/_fixtures/release/legacy-0.571/corsa-runtime.ts", import.meta.url),
+    ),
+  );
+  assert.equal(
+    sha256(trusted),
+    "204311ddecf0dd9a687bfdf04ffaf3a4b5ec336e3ab71400fd7b660cf479935b",
+    "the legacy observer must retain the exact public0.571 resolver bytes",
   );
   assert.equal(
     moduleSha256,

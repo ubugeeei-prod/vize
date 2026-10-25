@@ -14,7 +14,8 @@ import {
 } from "./lsp_assets.ts";
 import { assertBuiltSupport, cargoCommand, freezeSupportLock } from "./lsp_cargo.ts";
 import { assertAllLspPackets } from "./lsp_packets.ts";
-import { assertLspSource, sha256, targets } from "./lsp_source.ts";
+import { assertLspSource, sha256, targets, userProviderContract } from "./lsp_source.ts";
+import { installUserProvider, assertUserProviderInstall } from "./lsp_user_provider.ts";
 import {
   atomicArguments,
   atomicCaptureDirectory,
@@ -59,6 +60,15 @@ export async function assertInstalledLsp(output: string) {
     source.head,
     receipt.provider,
   );
+  if (receipt.provider.resolutionMode === "explicit-user-provider") {
+    assert.equal(receipt.schema, "vize-public-original-event-rename-explicit-user-provider-v1");
+    assertUserProviderInstall(
+      preparation.consumer,
+      output,
+      userProviderContract(process.cwd(), source.head),
+      receipt.userProviderInstall,
+    );
+  }
   assert.deepEqual(packageProvider(preparation.consumer, "vue", "3.5.35"), receipt.vue);
   assert.deepEqual(
     assertAllLspPackets(
@@ -113,11 +123,21 @@ async function run() {
   );
   assert.equal(npmCli.version, version);
   const { name, version: providerVersion } = preparation.lsp.metadata.provider;
-  assert.equal(
-    npmCli.optionalDependencies[name],
-    providerVersion,
-    "published CLI declares exact H provider",
-  );
+  let userProviderInstall;
+  if (preparation.lsp.metadata.provider.resolutionMode === "explicit-user-provider") {
+    assert.equal(npmCli.optionalDependencies?.[name], undefined);
+    userProviderInstall = installUserProvider(
+      consumer,
+      output,
+      userProviderContract(process.cwd(), source.head),
+    );
+  } else {
+    assert.equal(
+      npmCli.optionalDependencies[name],
+      providerVersion,
+      "published legacy CLI declares exact H provider",
+    );
+  }
   const provider = await installedCorsaProvider(
     consumer,
     version,
@@ -134,7 +154,19 @@ async function run() {
   );
   fs.writeFileSync(
     path.join(output, "lsp-installed-authority.json"),
-    JSON.stringify({ source, version, cli, provider, vue, providerProbe }, null, 2) + "\n",
+    JSON.stringify(
+      {
+        source,
+        version,
+        cli,
+        provider,
+        vue,
+        providerProbe,
+        ...(userProviderInstall ? { userProviderInstall } : {}),
+      },
+      null,
+      2,
+    ) + "\n",
     { flag: "wx" },
   );
   const npmLockSha256 = sha256(fs.readFileSync(path.join(consumer, "package-lock.json")));
@@ -227,11 +259,14 @@ async function run() {
     path.join(output, "lsp.json"),
     JSON.stringify(
       {
-        schema: "vize-public-original-event-rename-v1",
+        schema: userProviderInstall
+          ? "vize-public-original-event-rename-explicit-user-provider-v1"
+          : "vize-public-original-event-rename-v1",
         source,
         version,
         cli,
         provider,
+        ...(userProviderInstall ? { userProviderInstall } : {}),
         vue,
         providerProbe,
         npmLockSha256,

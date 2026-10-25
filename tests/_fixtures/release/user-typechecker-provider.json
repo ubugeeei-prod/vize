@@ -1,0 +1,14 @@
+{
+  "schema": "vize.publicLspUserProvider.v1",
+  "cohort": "explicit-user-provider-702-v1",
+  "resolutionMode": "explicit-user-provider",
+  "name": "@typescript/typescript-linux-x64",
+  "version": "7.0.2",
+  "platform": "linux",
+  "arch": "x64",
+  "executableRelativePath": "lib/tsc",
+  "integrity": "sha512-EYdf2cNg7rgCWJnxCdJ+F3V39O8ihb37eHAu1LK8oAFizgTQbPOK7zHHXbPt8rX24COqODXeI3sIf0fCXG7H/A==",
+  "archiveSha256": "7ecad6f67377e831856367ab062ef394f21506a611405bf8ac0ff039348637d3",
+  "executableSha256": "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4",
+  "executableBytes": 24101026
+}
