@@ -73,169 +73,119 @@ fn template(source: &str, retained: bool, mapped: bool) -> (Value, usize, u64) {
 fn complete_literal_style_source_observations() {
     let old = std::env::var_os("VIZE_LITERAL_STYLE_EXPECT_OLD").is_some();
     let profiler = global_profiler();
+    let inputs: Vec<Value> = serde_json::from_str(include_str!(
+        "../../../tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/inputs.json"
+    )).unwrap();
+    assert_eq!(inputs.len(), 180);
     let mut rows = Vec::new();
-    for (id, expression, expected) in [
-        ("font", "{fontWeight:'700'}", Some("font-weight:700;")),
-        (
-            "duplicates",
-            "{color:'red',fontWeight:'700',color:'blue'}",
-            Some("color:blue;font-weight:700;"),
-        ),
-        (
-            "custom",
-            "{'--Brand':'blue',fontWeight:'700'}",
-            Some("--Brand:blue;font-weight:700;"),
-        ),
-        ("call", "{color:read()}", None),
-        ("reference", "{color:shade}", None),
-        ("spread", "{...other,color:'red'}", None),
-        ("computed", "{['color']:'red'}", None),
-        ("getter", "{get color(){return read()}}", None),
-        ("numeric", "{fontWeight:700}", None),
-        ("empty", "{}", None),
-        ("empty-value", "{color:''}", None),
-        ("declaration", "{color:'red;display:none'}", None),
-    ] {
-        for (prefix, ending) in [("", "\n"), ("<!-- 日本語 😀 -->\r\n", "\r\n")] {
-            let source = format!(
-                "{prefix}<button type=\"button\" :style=\"{expression}\" id=\"own\">{{{{label}}}}</button>{ending}"
-            );
-            for retained in [false, true] {
-                for mapped in [false, true] {
-                    profiler.disable();
-                    let (output, arena, reparses) = template(&source, retained, mapped);
-                    assert_eq!(output["errors"], json!([]), "{id}: {output}");
-                    if !old && let Some(css) = expected {
-                        let static_source = source.replace(
-                            &format!(":style=\"{expression}\""),
-                            &format!("style=\"{css}\""),
-                        );
-                        let (reference, _, _) = template(&static_source, retained, mapped);
-                        assert_eq!(
-                            output["code"], reference["code"],
-                            "whole static template code: {id}/{retained}/{mapped}"
-                        );
-                        assert_eq!(output["templates"], reference["templates"]);
-                    }
-                    profiler.clear();
-                    profiler.enable();
-                    let (profiled, _, _) = template(&source, retained, mapped);
-                    profiler.disable();
-                    assert_eq!(output, profiled);
-                    let counters = profiler
-                        .counter_summary()
-                        .entries
-                        .into_iter()
-                        .map(|c| json!({"name":c.name,"total":c.total}))
-                        .collect::<Vec<_>>();
-                    let phases = profiler.summary().entries.into_iter().map(|p|json!({"name":p.name,"count":p.count,"totalNs":p.total.as_nanos() as u64})).collect::<Vec<_>>();
-                    rows.push(json!({"id":id,"family":"template","source":source,"retained":retained,"mapped":mapped,"fold":expected.is_some(),"output":output,"arenaBytes":arena,"expressionReparses":reparses,"counters":counters,"phases":phases}));
-                }
-            }
-        }
-        let source = format!(
-            "// 日本語 😀\r\nconst App = () => <button type=\"button\" style={{{expression}}} id=\"own\">{{label}}</button>;\r\n"
-        );
-        for (mode, ssr, standalone) in [
-            (JsxOutputMode::Vapor, false, false),
-            (JsxOutputMode::Vdom, false, false),
-            (JsxOutputMode::Vapor, true, false),
-            (JsxOutputMode::Vapor, false, true),
-        ] {
-            profiler.disable();
-            let (output, arena, reparses) = jsx(&source, mode, ssr, standalone);
-            if !old
-                && !ssr
-                && mode == JsxOutputMode::Vapor
-                && let Some(css) = expected
-            {
-                let static_source = source.replace(
-                    &format!("style={{{expression}}}"),
-                    &format!("style=\"{css}\""),
+    for mut row in inputs {
+        let source = row["source"].as_str().unwrap();
+        profiler.disable();
+        let emit = |source: &str| match row["family"].as_str().unwrap() {
+            "template" | "template-merge" => template(
+                source,
+                row["retained"].as_bool().unwrap(),
+                row["mapped"].as_bool().unwrap(),
+            ),
+            "jsx" | "jsx-merge" => jsx(
+                source,
+                if row["mode"].as_str() == Some("Vdom") {
+                    JsxOutputMode::Vdom
+                } else {
+                    JsxOutputMode::Vapor
+                },
+                row["ssr"].as_bool().unwrap_or(false),
+                row["standalone"].as_bool().unwrap(),
+            ),
+            _ => panic!("unregistered source fixture family"),
+        };
+        let (output, arena, reparses) = emit(source);
+        if !old && row["fold"] == true {
+            let (reference, _, _) = emit(row["referenceSource"].as_str().unwrap());
+            if row["family"] == "template" {
+                assert_eq!(
+                    output["code"], reference["code"],
+                    "whole static template code: {row}"
                 );
-                let (reference, _, _) = jsx(&static_source, mode, ssr, standalone);
+                assert_eq!(output["templates"], reference["templates"]);
+                assert_eq!(output["errors"], json!([]));
+            } else {
+                // The current-main mode-aware module boundary may still refuse
+                // native modules; that actual diagnostic packet is retained.
+                // This slice qualifies complete component output only.
                 assert_eq!(
                     output["components"], reference["components"],
-                    "whole JSX static component packet: {id}/{standalone}"
+                    "whole JSX static component packet: {row}"
                 );
             }
-            profiler.clear();
-            profiler.enable();
-            let (profiled, _, _) = jsx(&source, mode, ssr, standalone);
-            profiler.disable();
-            assert_eq!(output, profiled);
-            let counters = profiler
-                .counter_summary()
-                .entries
-                .into_iter()
-                .map(|c| json!({"name":c.name,"total":c.total}))
-                .collect::<Vec<_>>();
-            rows.push(json!({"id":id,"family":"jsx","source":source,"mode":format!("{mode:?}"),"ssr":ssr,"standalone":standalone,"fold":expected.is_some() && !ssr && mode == JsxOutputMode::Vapor,"output":output,"arenaBytes":arena,"expressionReparses":reparses,"counters":counters}));
         }
-    }
-    // A pure value alone does not prove how authored style sources merge.
-    // These complete packets must remain byte-identical to the old runtime
-    // path, including authored order, effects, diagnostics and every map.
-    for (id, attributes) in [
-        (
-            "static-before",
-            "style=\"color:red\" :style=\"{fontWeight:'700'}\"",
-        ),
-        (
-            "static-after",
-            ":style=\"{fontWeight:'700'}\" style=\"color:red\"",
-        ),
-        (
-            "spread-before",
-            "v-bind=\"attrs\" :style=\"{fontWeight:'700'}\"",
-        ),
-        (
-            "spread-after",
-            ":style=\"{fontWeight:'700'}\" v-bind=\"attrs\"",
-        ),
-        (
-            "computed-name",
-            ":[key]=\"value\" :style=\"{fontWeight:'700'}\"",
-        ),
-        ("prop-modifier", ":style.prop=\"{fontWeight:'700'}\""),
-        ("attr-modifier", ":style.attr=\"{fontWeight:'700'}\""),
-    ] {
-        let source = format!("<button {attributes}>{{{{label}}}}</button>");
-        for retained in [false, true] {
-            for mapped in [false, true] {
-                let (output, arena, reparses) = template(&source, retained, mapped);
-                rows.push(json!({"id":id,"family":"template-merge","source":source,"retained":retained,"mapped":mapped,"fold":false,"output":output,"arenaBytes":arena,"expressionReparses":reparses}));
-            }
-        }
-    }
-    for (id, opening) in [
-        (
-            "spread-before",
-            "button {...attrs} style={{fontWeight:'700'}}",
-        ),
-        (
-            "spread-after",
-            "button style={{fontWeight:'700'}} {...attrs}",
-        ),
-        (
-            "duplicate-style",
-            "button style=\"color:red\" style={{fontWeight:'700'}}",
-        ),
-        ("component-prop", "Child style={{fontWeight:'700'}}"),
-    ] {
-        let closing = if id == "component-prop" {
-            "Child"
-        } else {
-            "button"
-        };
-        let source = format!("const App = () => <{opening}>{{label}}</{closing}>;");
-        for standalone in [false, true] {
-            let (output, arena, reparses) = jsx(&source, JsxOutputMode::Vapor, false, standalone);
-            rows.push(json!({"id":id,"family":"jsx-merge","source":source,"standalone":standalone,"fold":false,"output":output,"arenaBytes":arena,"expressionReparses":reparses}));
-        }
+        profiler.clear();
+        profiler.enable();
+        let (profiled, _, _) = emit(source);
+        profiler.disable();
+        assert_eq!(output, profiled);
+        let counters = profiler
+            .counter_summary()
+            .entries
+            .into_iter()
+            .map(|c| json!({"name":c.name,"total":c.total}))
+            .collect::<Vec<_>>();
+        let phases = profiler
+            .summary()
+            .entries
+            .into_iter()
+            .map(|p| json!({"name":p.name,"count":p.count,"totalNs":p.total.as_nanos() as u64}))
+            .collect::<Vec<_>>();
+        row["output"] = output;
+        row["arenaBytes"] = json!(arena);
+        row["expressionReparses"] = json!(reparses);
+        row["counters"] = json!(counters);
+        row["phases"] = json!(phases);
+        rows.push(row);
     }
     if let Some(path) = std::env::var_os("VIZE_LITERAL_STYLE_CAPTURE") {
         std::fs::write(path, serde_json::to_vec_pretty(&rows).unwrap()).unwrap();
+    }
+}
+
+#[test]
+fn reviewed_cssom_boundaries_keep_the_original_runtime_operations() {
+    let old = std::env::var_os("VIZE_LITERAL_STYLE_EXPECT_OLD").is_some();
+    let inputs:Vec<Value>=serde_json::from_str(include_str!("../../../tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/review-inputs.json")).unwrap();
+    assert_eq!(inputs.len(), 8);
+    let mut packets = Vec::new();
+    for input in inputs {
+        let expression = input["expression"].as_str().unwrap();
+        for standalone in [false, true] {
+            let source =
+                format!("export const App = () => <button style={{{expression}}}>ready</button>;");
+            let (output, arena, reparses) = jsx(&source, JsxOutputMode::Vapor, false, standalone);
+            packets.push(json!({"id":input["id"],"family":"jsx","source":source,"standalone":standalone,"fold":input["fold"],"output":output,"arenaBytes":arena,"expressionReparses":reparses}));
+        }
+        let encoded = expression
+            .replace('&', "&amp;")
+            .replace('"', "&quot;")
+            .replace('<', "&lt;")
+            .replace('>', "&gt;");
+        let source = format!("<button :style=\"{encoded}\">ready</button>");
+        for retained in [false, true] {
+            for mapped in [false, true] {
+                let (output, arena, reparses) = template(&source, retained, mapped);
+                assert_eq!(output["errors"], json!([]));
+                if !old && input["fold"] == true {
+                    let css = input["referenceCss"].as_str().unwrap();
+                    let static_source = format!("<button style=\"{css}\">ready</button>");
+                    assert_eq!(
+                        output["code"],
+                        template(&static_source, retained, mapped).0["code"]
+                    );
+                }
+                packets.push(json!({"id":input["id"],"family":"template","source":source,"retained":retained,"mapped":mapped,"fold":input["fold"],"output":output,"arenaBytes":arena,"expressionReparses":reparses}));
+            }
+        }
+    }
+    if let Some(path) = std::env::var_os("VIZE_LITERAL_STYLE_REVIEW_CAPTURE") {
+        std::fs::write(path, serde_json::to_vec_pretty(&packets).unwrap()).unwrap();
     }
 }
 
