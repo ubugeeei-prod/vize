@@ -33,7 +33,11 @@ fn actual_beta_complete_text_is_independent_of_the_opaque_ast_and_source_id() {
     assert_eq!(f["text"], expected);
     assert_eq!(expected.encode_utf16().count(), 105);
     assert_ne!(expected.len(), 105);
-    assert_eq!(format!("{:x}", Sha256::digest(BYTES)), f["binarySha256"]);
+    let sha = Sha256::digest(BYTES)
+        .iter()
+        .map(|byte| vize_l0::cstr!("{byte:02x}"))
+        .collect::<vize_l0::String>();
+    assert_eq!(sha.as_str(), f["binarySha256"].as_str().unwrap());
     assert_eq!(source_text(BYTES, name), Ok((expected, name, name)));
     // A runtime-owned opaque source ID is not a text identity or coordinate.
     assert_eq!(
