@@ -30,5 +30,15 @@
     "id": "no-runtime-space",
     "input": "<template>\n  <p><strong>{{ label }}</strong>{{ unread }}remaining</p>\n</template>\n",
     "printWidth": 40
+  },
+  {
+    "id": "deep-plain",
+    "input": "<template>\n  <div>\n    <div>\n      <div>\n        <div>\n          <div>\n            <div>\n              <span>Enable \"Generate Virtual TS\" option to see generated TypeScript</span>\n            </div>\n          </div>\n        </div>\n      </div>\n    </div>\n  </div>\n</template>\n",
+    "printWidth": 80
+  },
+  {
+    "id": "deep-plain-wrapped",
+    "input": "<template>\n  <div>\n    <div>\n      <div>\n        <div>\n          <div>\n            <div>\n              <span>Enable \"Generate Virtual TS\" option to see generated\n              TypeScript</span>\n            </div>\n          </div>\n        </div>\n      </div>\n    </div>\n  </div>\n</template>\n",
+    "printWidth": 80
   }
 ]

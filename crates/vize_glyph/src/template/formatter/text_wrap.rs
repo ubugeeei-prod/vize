@@ -125,6 +125,13 @@ impl TemplateFormatter<'_> {
             }
         }
         let tail = tail.get(..end).unwrap_or_default();
+        if !self.options.canonical_directive_layout
+            && memchr::memmem::find(tail.as_bytes(), b"{{").is_some_and(|open| open > 0)
+        {
+            // The default profile already wraps a prefixed sole mustache
+            // inside its syntax; keep that established layout.
+            return false;
+        }
         let column = self.output_column(output) + 1;
         if column + tail.len() <= self.options.print_width as usize && !tail.contains('\t') {
             return false;

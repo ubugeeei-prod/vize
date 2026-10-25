@@ -72,7 +72,8 @@ impl TemplateFormatter<'_> {
                     .as_bytes()
                     .first()
                     .is_some_and(|byte| byte.is_ascii_whitespace())
-                    || authored_multiline_child_owns_layout(child.as_bytes())
+                    || (child.contains("{{")
+                        && authored_multiline_child_owns_layout(child.as_bytes()))
                 {
                     return None;
                 }
