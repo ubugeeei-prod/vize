@@ -59,12 +59,10 @@ import { AnsweringScreen as PageScreen } from './layout'
         .collect();
     assert_eq!(missing.len(), 1);
     let finding = missing.first().unwrap();
-    assert!(
-        finding.message.contains("<PageScreen>"),
-        "{}",
-        finding.message
+    assert_eq!(
+        finding.message,
+        "**Missing Required Prop**: `currentItem` must be passed to `<PageScreen>`\n\nThis prop is declared as required in the component's `defineProps`."
     );
-    assert!(!finding.message.contains("<MainScreen>"));
     assert_eq!(
         parent.get(finding.primary.start as usize..finding.primary.end as usize),
         Some("<PageScreen :indexed-value=\"null\" :is-playing=\"false\" />")
@@ -102,8 +100,10 @@ import { AdminButton as Button, ShopButton as Shop } from './buttons'
     assert_eq!(report.findings().len(), 1);
     let finding = report.findings().first().unwrap();
     assert_eq!(finding.code, "VIZE_DOCTOR_CF_MISSING_REQUIRED_PROP");
-    assert!(finding.message.contains("shopId"));
-    assert!(finding.message.contains("<Shop>"));
+    assert_eq!(
+        finding.message,
+        "**Missing Required Prop**: `shopId` must be passed to `<Shop>`\n\nThis prop is declared as required in the component's `defineProps`."
+    );
     assert_eq!(
         parent.get(finding.primary.start as usize..finding.primary.end as usize),
         Some("<Shop />")
