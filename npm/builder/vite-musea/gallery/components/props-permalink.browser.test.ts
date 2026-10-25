@@ -52,6 +52,10 @@ await test(
       });
       await preparePermalinkContext(context);
       const page = await context.newPage();
+      let paletteRequests = 0;
+      page.on("request", (request) => {
+        if (new URL(request.url()).pathname.endsWith("/palette")) paletteRequests++;
+      });
       page.on("pageerror", (error) => errors.push(String(error)));
       await page.goto(`${origin}${base}/?other=retained`);
       await page.locator(".art-item").first().click();
@@ -74,12 +78,66 @@ await test(
         attrs: { "data-state": "custom 🎨" },
       };
       observations.push({ phase: "edited", rendered: await preview(page, expected) });
+      const requestsBeforeGlobals = paletteRequests;
+      assert.equal(requestsBeforeGlobals, 1);
+      await page.getByRole("combobox", { name: "Theme", exact: true }).selectOption("1");
+      await page.waitForURL(
+        (url) => url.searchParams.get("museaGlobals") === JSON.stringify({ theme: "dark" }),
+      );
+      await page.evaluate(
+        () =>
+          new Promise<void>((resolve) =>
+            requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+          ),
+      );
+      assert.equal(
+        paletteRequests,
+        requestsBeforeGlobals,
+        "unrelated query changes must not reload the palette or discard unsaved edits",
+      );
+      observations.push({
+        phase: "globals-change",
+        rendered: await preview(page, expected),
+        paletteRequests,
+      });
       await page.getByRole("button", { name: "Copy link", exact: true }).click();
       await page.getByRole("status").filter({ hasText: "Link copied" }).waitFor();
       const copied = await page.evaluate(() => navigator.clipboard.readText());
       const copiedUrl = new URL(copied);
       assert.equal(copiedUrl.pathname.startsWith(`${base}/component/`), true);
       assert.ok(copiedUrl.searchParams.has(MUSEA_PROPS_QUERY));
+      assert.equal(copiedUrl.searchParams.get("museaGlobals"), JSON.stringify({ theme: "dark" }));
+
+      for (const width of [360, 390, 768]) {
+        await page.setViewportSize({ width, height: 1000 });
+        await page.locator(".props-header").scrollIntoViewIfNeeded();
+        const header = await page.locator(".props-header").evaluate((element) => ({
+          width: element.clientWidth,
+          scrollWidth: element.scrollWidth,
+          buttons: [...element.querySelectorAll("button")].map((button) => {
+            const rect = button.getBoundingClientRect();
+            return {
+              text: button.textContent?.trim(),
+              left: rect.left,
+              right: rect.right,
+              width: rect.width,
+            };
+          }),
+        }));
+        assert.ok(header.width >= header.scrollWidth, JSON.stringify({ width, header }));
+        assert.ok(
+          header.buttons.every(
+            (button) => button.width > 0 && button.left >= 0 && button.right <= width,
+          ),
+          JSON.stringify({ width, header }),
+        );
+        observations.push({ phase: "narrow-props-header", viewport: width, ...header });
+        await page.screenshot({
+          path: path.join(output, `props-header-${width}.png`),
+          fullPage: true,
+        });
+      }
+      await page.setViewportSize({ width: 1440, height: 1000 });
 
       // Slot content is rendered literally by the real generated Vue preview.
       const snapshot = JSON.parse(copiedUrl.searchParams.get(MUSEA_PROPS_QUERY)!);

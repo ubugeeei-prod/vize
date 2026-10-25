@@ -88,7 +88,7 @@ const previewUrl = computed(() => {
 });
 
 watch(
-  () => [props.artPath, route.query[MUSEA_PROPS_QUERY]] as const,
+  [() => props.artPath, () => route.query[MUSEA_PROPS_QUERY]],
   ([path, shared]) => {
     const parsed = shared === undefined ? null : readPropsPermalink(shared, path);
     shareError.value = parsed?.error ?? null;
@@ -721,6 +721,8 @@ const controlKindOptions = [
 
 .props-header {
   display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 1.25rem;
@@ -733,6 +735,7 @@ const controlKindOptions = [
 
 .props-header-actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
 }

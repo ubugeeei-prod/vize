@@ -6,6 +6,7 @@ import { createServer, type Plugin } from "vite";
 import vue from "@vitejs/plugin-vue";
 import { generatePreviewHtml, generatePreviewModule } from "../../src/preview/index.ts";
 import type { ArtFileInfo } from "../../src/types/index.ts";
+import { normalizeToolbar } from "../../src/toolbar.ts";
 
 export const base = "/docs/design-system";
 export const defaults = { label: "Authored", tone: "brand", config: { nested: [false, null, 42] } };
@@ -19,6 +20,9 @@ export const art: ArtFileInfo = {
 };
 const previewId = "virtual:musea-permalink-preview";
 const artId = `virtual:musea-art:${art.path}`;
+const toolbar = normalizeToolbar([
+  { id: "theme", title: "Theme", type: "select", options: ["light", "dark"], default: "light" },
+]);
 
 export function createPermalinkServer(output: string) {
   const fixtures: Plugin = {
@@ -29,7 +33,7 @@ export function createPermalinkServer(output: string) {
         {
           tag: "script",
           injectTo: "head-prepend",
-          children: `window.__MUSEA_BASE_PATH__=${JSON.stringify(base)};`,
+          children: `window.__MUSEA_BASE_PATH__=${JSON.stringify(base)};window.__MUSEA_TOOLBAR__=${JSON.stringify(toolbar)};`,
         },
       ];
     },
