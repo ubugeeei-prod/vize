@@ -20,6 +20,17 @@ impl ServerState {
             .unwrap_or_default()
     }
 
+    /// Typed page hints follow this owner's admitted compiler opt-in, not live disk.
+    pub(crate) fn typed_router_typecheck_enabled(&self) -> bool {
+        self.is_lsp_typecheck_enabled()
+            && self
+                .project_contexts
+                .compiler_configuration
+                .read()
+                .as_ref()
+                .is_some_and(|snapshot| snapshot.typed_router_enabled())
+    }
+
     /// Try to claim the right to fire the "type checking unavailable"
     /// message. Returns true the first time it is called, false thereafter
     /// for the lifetime of the server. The caller is responsible for
@@ -300,3 +311,5 @@ impl ServerState {
 
 #[cfg(all(test, unix))]
 mod tests;
+#[cfg(test)]
+mod typed_router_tests;

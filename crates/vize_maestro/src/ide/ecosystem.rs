@@ -44,13 +44,31 @@ pub(crate) fn completions(ctx: &IdeContext<'_>) -> Vec<CompletionItem> {
 
 /// Reuse the same revision that the diagnostics collector already parsed.
 pub(crate) fn diagnostics(
+    state: &crate::server::ServerState,
     uri: &Url,
     descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
 ) -> Vec<Diagnostic> {
     let content = descriptor.source.as_ref();
-    let mut diagnostics = router::route_param_diagnostics(content, uri, descriptor);
+    let mut diagnostics = if typed_route_authority(state) {
+        Vec::new()
+    } else {
+        router::route_param_diagnostics(content, uri, descriptor)
+    };
     diagnostics.extend(i18n::missing_key_diagnostics(content, descriptor, uri));
     diagnostics
+}
+
+/// Native typed pages own route parameter names and types when explicitly configured.
+fn typed_route_authority(state: &crate::server::ServerState) -> bool {
+    #[cfg(feature = "native")]
+    {
+        state.typed_router_typecheck_enabled()
+    }
+    #[cfg(not(feature = "native"))]
+    {
+        let _ = state;
+        false
+    }
 }
 
 pub(crate) fn warning_diagnostic(

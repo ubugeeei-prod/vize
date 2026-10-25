@@ -168,7 +168,7 @@ impl DiagnosticService {
         }
 
         if features.ecosystem {
-            let ecosystem_diags = ecosystem::diagnostics(uri, &descriptor);
+            let ecosystem_diags = ecosystem::diagnostics(state, uri, &descriptor);
             tracing::info!(
                 "collect: ecosystem editor diagnostics: {}",
                 ecosystem_diags.len()
