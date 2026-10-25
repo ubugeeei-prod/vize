@@ -21,9 +21,14 @@
       "sha256": "b307b0bfcc9be1945d2515dfc9b0520a67e6a76eb94203aa2615ddf1205940ab"
     },
     {
+      "path": "src/pages/art-variants/[id=int].art.vue",
+      "bytes": 771,
+      "sha256": "667e8597d581ad31f409d19211181e10113541aee9c8d9364cf1fcfd7c669978"
+    },
+    {
       "path": "typed-router.d.ts",
-      "bytes": 3379,
-      "sha256": "349980b32f971432cbe2d652e613d284cfaf92da200557b76dfa1e772af7b07b"
+      "bytes": 4012,
+      "sha256": "a9be1d569bba0a4b0fb7937861731aad8660ca44f861238d71e22a6b116a4e21"
     }
   ]
 }

@@ -15,6 +15,11 @@ const {
   retain,
 } = require("./router-host-packets.cjs");
 
+const caseName = (document) =>
+  document.fileName.includes(`${path.sep}art-variants${path.sep}`)
+    ? "art-variants"
+    : document.languageId;
+
 exports.run = async function run() {
   const manifest = JSON.parse(fs.readFileSync(process.env.VIZE_TEST_ROUTER_CAMPAIGN, "utf8"));
   const extension = vscode.extensions.getExtension("ubugeeei.vize");
@@ -67,22 +72,24 @@ exports.run = async function run() {
   for (const project of manifest.projects) {
     for (const file of project.pages) {
       const document = await vscode.workspace.openTextDocument(file);
-      await vscode.window.showTextDocument(document);
+      // Pin the buffers: replacing a preview tab may close its document and
+      // would remove that project's real watched-publication control.
+      await vscode.window.showTextDocument(document, { preview: false });
       assert.equal(document.languageId, file.endsWith(".art.vue") ? "art-vue" : "vue");
       documents.set(file, document);
       authored.set(file, document.getText());
-      const label = `${project.name}-${document.languageId}`;
+      const label = `${project.name}-${caseName(document)}`;
       await test(label, async () => {
         const event = await publication(document);
         retain(`${label}-publication`, event);
+        const value = await capture(document, label);
+        baseline.set(file, value);
         assert.deepEqual(event.packet.params, {
           diagnostics: diagnostics(document, project.enabled, false),
           uri: document.uri.toString(),
           version: document.version,
         });
-        const value = await capture(document, label);
         assertCapture(value, project, document, project.enabled);
-        baseline.set(file, value);
       });
     }
   }
@@ -107,12 +114,13 @@ exports.run = async function run() {
   assert.equal(selected.path, manifest.launcher);
   assert.equal(selected.extensionVersion, extension.packageJSON.version);
   const [enabled, disabled] = manifest.projects;
+  for (const document of documents.values()) assert.equal(document.isClosed, false);
 
   for (const file of enabled.pages) {
     const document = documents.get(file);
     const valid = authored.get(file);
     for (const invalid of [true, false])
-      await test(`${document.languageId}-${invalid ? "invalid" : "repair"}`, async () => {
+      await test(`${caseName(document)}-${invalid ? "invalid" : "repair"}`, async () => {
         const start = frames().length;
         const text = invalid
           ? valid.replace("route.params.page.toFixed()", "route.params.page.toUpperCase()")
@@ -125,19 +133,17 @@ exports.run = async function run() {
         );
         assert.equal(await vscode.workspace.applyEdit(edit), true);
         const event = await publication(document, start);
-        retain(`${document.languageId}-${invalid ? "invalid" : "repair"}-publication`, event);
+        retain(`${caseName(document)}-${invalid ? "invalid" : "repair"}-publication`, event);
+        const value = await capture(
+          document,
+          `${caseName(document)}-${invalid ? "invalid" : "repair"}`,
+        );
         assert.deepEqual(event.packet.params, {
           diagnostics: diagnostics(document, true, invalid),
           uri: document.uri.toString(),
           version: document.version,
         });
-        assertCapture(
-          await capture(document, `${document.languageId}-${invalid ? "invalid" : "repair"}`),
-          enabled,
-          document,
-          true,
-          invalid,
-        );
+        assertCapture(value, enabled, document, true, invalid);
       });
   }
 
@@ -175,12 +181,13 @@ exports.run = async function run() {
       for (const file of enabled.pages) {
         const document = documents.get(file);
         const event = await publication(document, after);
-        retain(`config-${on ? "on" : "off"}-${document.languageId}-publication`, event);
-        assert.deepEqual(event.packet.params, {
-          diagnostics: diagnostics(document, on, false),
-          uri: document.uri.toString(),
-          version: document.version,
-        });
+        retain(`config-${on ? "on" : "off"}-${caseName(document)}-publication`, event);
+        await test(`config-${on ? "on" : "off"}-${caseName(document)}-publication`, async () =>
+          assert.deepEqual(event.packet.params, {
+            diagnostics: diagnostics(document, on, false),
+            uri: document.uri.toString(),
+            version: document.version,
+          }));
         const terminal = frames().findIndex(
           (record, index) => index >= after && record.frameBase64 === event.frameBase64,
         );
@@ -200,32 +207,35 @@ exports.run = async function run() {
         );
       }
       for (const file of enabled.pages)
-        assertCapture(
-          await capture(
+        await test(`config-${on ? "on" : "off"}-${caseName(documents.get(file))}`, async () =>
+          assertCapture(
+            await capture(
+              documents.get(file),
+              `config-${on ? "on" : "off"}-${caseName(documents.get(file))}`,
+            ),
+            enabled,
             documents.get(file),
-            `config-${on ? "on" : "off"}-${documents.get(file).languageId}`,
-          ),
-          enabled,
-          documents.get(file),
-          on,
-        );
+            on,
+          ));
       for (const file of disabled.pages) {
         const document = documents.get(file);
-        const value = await capture(
-          document,
-          `sibling-${on ? "on" : "off"}-${document.languageId}`,
-        );
-        assertCapture(value, disabled, document, false);
-        assert.deepEqual(
-          value.native,
-          baseline.get(file).native,
-          "sibling native response vector remains byte-for-byte equivalent",
-        );
-        assert.deepEqual(
-          value.public,
-          baseline.get(file).public,
-          "sibling whole public editor result remains equivalent",
-        );
+        await test(`sibling-${on ? "on" : "off"}-${caseName(document)}`, async () => {
+          const value = await capture(
+            document,
+            `sibling-${on ? "on" : "off"}-${caseName(document)}`,
+          );
+          assertCapture(value, disabled, document, false);
+          assert.deepEqual(
+            value.native,
+            baseline.get(file).native,
+            "sibling native response vector remains byte-for-byte equivalent",
+          );
+          assert.deepEqual(
+            value.public,
+            baseline.get(file).public,
+            "sibling whole public editor result remains equivalent",
+          );
+        });
       }
     });
   const allSpawns = records().filter(({ kind }) => kind === "spawn");

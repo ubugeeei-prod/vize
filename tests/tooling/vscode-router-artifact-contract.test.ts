@@ -22,6 +22,7 @@ test("installed editor fixture pins complete published scanner declarations and 
     [
       "src/pages/products/[id=int].vue",
       "src/pages/art-products/[id=int].art.vue",
+      "src/pages/art-variants/[id=int].art.vue",
       "typed-router.d.ts",
     ],
   );

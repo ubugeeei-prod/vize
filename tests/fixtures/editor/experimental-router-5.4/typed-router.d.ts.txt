@@ -50,6 +50,13 @@ declare module 'vue-router/auto-routes' {
       { 'at': Exclude<Param_date, unknown[] | null> | undefined, 'heading': string | undefined, 'id': number, 'page': number, 'tags': string[] | undefined },
       | never
     >,
+    '/art-variants/[id=int].art': RouteRecordInfo<
+      '/art-variants/[id=int].art',
+      '/art-variants/:id/art',
+      { 'at'?: Exclude<Param_date, unknown[] | null> | undefined, 'heading'?: string | undefined, 'id': number, 'page'?: number, 'tags'?: string[] | undefined },
+      { 'at': Exclude<Param_date, unknown[] | null> | undefined, 'heading': string | undefined, 'id': number, 'page': number, 'tags': string[] | undefined },
+      | never
+    >,
     '/products/[id=int]': RouteRecordInfo<
       '/products/[id=int]',
       '/products/:id',
@@ -81,6 +88,14 @@ declare module 'vue-router/auto-routes' {
     'src/pages/art-products/[id=int].art.vue': {
       routes:
         | '/art-products/[id=int].art'
+      views:
+        | never
+      pathParamNames:
+        | 'id'
+    }
+    'src/pages/art-variants/[id=int].art.vue': {
+      routes:
+        | '/art-variants/[id=int].art'
       views:
         | never
       pathParamNames:

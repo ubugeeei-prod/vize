@@ -37,6 +37,14 @@ export async function prepareRouterHostWorkspace({
 }) {
   const fixture = readRouterEditorFixture(repository);
   const provider = await prepareExperimentalRouterProject(path.join(output, "provider"));
+  const proxy = path.join(sourceExtension, "test/fixtures/passive-vize-server.cjs");
+  // Use the same passive forwarder for the compiler side as well. Its raw
+  // chunks preserve in-memory Art projections that have no on-disk mirror.
+  const observedCorsa = path.join(directory, "typescript-observed");
+  const compilerLauncher = `#!${process.execPath}\nprocess.env.VIZE_TEST_OBSERVED_SERVER_PATH=${JSON.stringify(corsa)};\nprocess.env.VIZE_TEST_CONFIG_PROTOCOL_PATH=${JSON.stringify(path.join(output, "compiler-protocol.jsonl"))};\nrequire(${JSON.stringify(proxy)});\n`;
+  fs.writeFileSync(observedCorsa, compilerLauncher);
+  fs.chmodSync(observedCorsa, 0o755);
+  fs.writeFileSync(path.join(output, "compiler-launcher.js.txt"), compilerLauncher);
   const projects = [];
   for (const name of ["enabled", "disabled"]) {
     const root = path.join(directory, name);
@@ -78,7 +86,7 @@ export async function prepareRouterHostWorkspace({
     fs.writeFileSync(config, `${JSON.stringify(configValue, null, 2)}\n`);
     fs.writeFileSync(
       path.join(root, "vite.config.mjs"),
-      `export default ${JSON.stringify({ vue: { typeChecker: { corsaPath: corsa }, linter: { enabled: false } } })};\n`,
+      `export default ${JSON.stringify({ vue: { typeChecker: { corsaPath: observedCorsa }, linter: { enabled: false } } })};\n`,
     );
     projects.push({
       name,
@@ -91,7 +99,6 @@ export async function prepareRouterHostWorkspace({
     });
   }
   const launcher = path.join(directory, "vize-observed");
-  const proxy = path.join(sourceExtension, "test/fixtures/passive-vize-server.cjs");
   fs.writeFileSync(launcher, `#!${process.execPath}\nrequire(${JSON.stringify(proxy)});\n`);
   fs.chmodSync(launcher, 0o755);
   const workspace = path.join(directory, "router.code-workspace");

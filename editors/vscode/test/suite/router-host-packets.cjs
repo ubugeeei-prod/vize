@@ -195,7 +195,7 @@ async function capture(document, label) {
       position: pos(document, offset),
     });
     const candidate = result.native.completion?.[0]?.data?.vizeCompletion?.item?.data?.fileName;
-    if (candidate) {
+    if (candidate && fs.existsSync(candidate)) {
       const bytes = fs.readFileSync(candidate);
       result.generated = {
         file: candidate,
@@ -398,6 +398,15 @@ function assertCapture(actual, project, document, enabled, invalid = false) {
     const value = new vscode.CompletionItem(item.label, item.kind - 1);
     value.sortText = item.sortText;
     value.detail = item.detail;
+    // Pinned host transforms: microsoft/vscode@1.107.1, CompletionsAdapter
+    // defaultRanges and extHostTypeConverters.CompletionItem.to. The native
+    // packet above remains unchanged; these are public command defaults.
+    value.insertText = item.label;
+    value.keepWhitespace = false;
+    value.range = {
+      inserting: new vscode.Range(document.positionAt(property), document.positionAt(property)),
+      replacing: new vscode.Range(document.positionAt(property), document.positionAt(property + 4)),
+    };
     if (item.documentation) value.documentation = expectedMarkdown(item.documentation.value);
     return publicCompletion(value);
   });
@@ -433,13 +442,27 @@ function assertCapture(actual, project, document, enabled, invalid = false) {
     source: value.source,
     tags: undefined,
   }));
-  assert.deepEqual(actual.public, {
+  const expectedPublic = {
     hover: [publicHover],
     completion: { isIncomplete: false, items: expectedPublicCompletion },
     definition: [location(syntax.definition)],
     references: references.map(location),
     diagnostics: expectedDiagnostics,
-  });
+  };
+  assert.deepEqual(actual.public, expectedPublic);
+  for (const delta of [-1, 1]) {
+    const changed = structuredClone(actual.public);
+    changed.completion.items[0].range.replacing[3] += delta;
+    assert.throws(() => assert.deepEqual(changed, expectedPublic), assert.AssertionError);
+  }
+  for (const [key, value] of [
+    ["insertText", "foreign"],
+    ["keepWhitespace", true],
+  ]) {
+    const changed = structuredClone(actual.public);
+    changed.completion.items[0][key] = value;
+    assert.throws(() => assert.deepEqual(changed, expectedPublic), assert.AssertionError);
+  }
 }
 
 module.exports = { assertCapture, capture, diagnostics, frames, publication, records, retain };
