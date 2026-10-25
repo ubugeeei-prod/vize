@@ -80,11 +80,7 @@ test("only the closed transition profile can have an empty generic request list"
   ]) {
     const files = new Map(fixture.files);
     files.set(name, Buffer.concat([files.get(name)!, Buffer.from("changed")]));
-    assert.throws(
-      () => validateLocalResolveSourceSession(fixture.data, files, plan),
-      undefined,
-      name,
-    );
+    assert.throws(() => validateLocalResolveSourceSession(fixture.data, files, plan), name);
   }
 });
 
@@ -111,11 +107,7 @@ test("before evidence cannot claim an unobserved complete session or a different
     if (change === "error") raw = raw.replace("-32801", "-32802");
     chunk.chunkBase64 = Buffer.from(raw).toString("base64");
     files.set(name, gzipSync(records.map((record) => JSON.stringify(record)).join("\n") + "\n"));
-    assert.throws(
-      () => validateLocalResolveSourceSession(fixture.data, files, plan),
-      undefined,
-      change,
-    );
+    assert.throws(() => validateLocalResolveSourceSession(fixture.data, files, plan), change);
   }
 });
 
