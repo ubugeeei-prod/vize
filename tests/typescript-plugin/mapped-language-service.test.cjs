@@ -99,3 +99,39 @@ test("projection failures remain diagnostics and generated errors do not disappe
   assert.equal(diagnostics[0].file.text, source);
   assert.match(diagnostics[0].messageText, /generated Vize code/);
 });
+
+test("opt-out preserves the original service and ordinary JSX configuration errors remain visible", () => {
+  const init = require("../../npm/typescript-plugin/index.cjs");
+  const file = "/src/plain.tsx";
+  const text = "<div />;";
+  const options = { target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.ESNext, types: [] };
+  const host = {
+    getScriptFileNames: () => [file],
+    getScriptVersion: () => "1",
+    getScriptSnapshot: (name) => (name === file ? ts.ScriptSnapshot.fromString(text) : undefined),
+    getCompilationSettings: () => options,
+    getCurrentDirectory: () => "/src",
+    getDefaultLibFileName: ts.getDefaultLibFilePath,
+    fileExists: (name) => name === file,
+    readFile: (name) => (name === file ? text : undefined),
+  };
+  const original = ts.createLanguageService(host);
+  const plugin = init({ typescript: ts });
+  const keys = Object.keys(host);
+  assert.equal(
+    plugin.create({
+      languageService: original,
+      languageServiceHost: host,
+      config: { enabled: false },
+    }),
+    original,
+  );
+  assert.deepEqual(Object.keys(host), keys);
+  const wrapped = plugin.create({
+    languageService: original,
+    languageServiceHost: host,
+    serverHost: ts.sys,
+  });
+  assert(wrapped.getSemanticDiagnostics(file).some((diagnostic) => diagnostic.code === 17004));
+  assert.equal(host.getCompilationSettings().jsx, undefined);
+});

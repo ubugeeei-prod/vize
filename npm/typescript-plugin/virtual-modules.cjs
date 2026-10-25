@@ -60,11 +60,7 @@ function installVueVirtualModules(ts, info) {
     return value;
   };
   const originalOptions = bind("getCompilationSettings");
-  const options = () => ({
-    ...originalOptions?.(),
-    jsx: originalOptions?.().jsx ?? ts.JsxEmit.Preserve,
-    allowNonTsExtensions: true,
-  });
+  const options = () => ({ ...originalOptions?.(), allowNonTsExtensions: true });
   const resolverHost = {
     ...serverHost,
     ...host,
@@ -91,7 +87,7 @@ function installVueVirtualModules(ts, info) {
     if (!isSfc(name)) return result;
     if (!resolvedFileName || !isSfc(resolvedFileName) || !fileExists(resolvedFileName))
       return undefined;
-    return { ...result, resolvedFileName, extension: ts.Extension.Tsx };
+    return { ...result, resolvedFileName, extension: ts.Extension.Ts };
   }
   const previousLiterals = bind("resolveModuleNameLiterals");
   const previousNames = bind("resolveModuleNames");
