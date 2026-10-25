@@ -184,15 +184,9 @@ export async function projectViteConfigSource(source, env, configDir) {
     const linter = projectVitePlusLintConfig(source.lint);
     validateVueOption(linter, { $ref: "#/definitions/LinterConfig" }, "lint");
     if (Object.keys(linter).length !== 0) overrides.linter = linter;
-    const entries = projectVitePlusLintOverrides(source.lint, "lint");
-    if (entries.length !== 0) {
-      // Entry ignores currently select files for more than the lint command.
-      // Refuse this unrepresentable host scope rather than hide formatter or
-      // checker inputs through a lint-only excludeFiles condition.
-      throw new TypeError(
-        "lint.overrides: scoped vize/* rules cannot yet be shared with native lint; use explicit vue.linter or vue.entries settings",
-      );
-    }
+    // Host overrides stay on the untouched Vite source. Their lint-only
+    // excludeFiles scopes cannot use shared entries without changing other
+    // commands' file selection. Only the global controls are projected here.
   }
   const lint = source.lint?.vue;
   if (typeof lint === "boolean") overrides.linter = { enabled: lint };

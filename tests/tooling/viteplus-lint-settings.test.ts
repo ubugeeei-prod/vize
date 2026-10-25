@@ -59,13 +59,32 @@ test("Vue lint overrides only explicit leaves and canonical scoped arrays retain
   });
 });
 
-test("invalid shared native lint settings and unowned overrides refuse", async () => {
+test("invalid shared native lint settings refuse", async () => {
   for (const lint of [
     { settings: { vize: { preset: "typo" } } },
     { settings: { vize: { typeAware: "false" } } },
-    { overrides: [{ rules: { "vize/vue/no-v-html": "warn" } }] },
-    { overrides: [{ files: ["src/**"], rules: { "vize/vue/no-v-html": "warn" } }] },
     { rules: { "vize/vue/no-v-html": "warning" } },
   ])
     await assert.rejects(resolveViteConfigExport({ lint }), /lint\./);
+});
+
+test("host-scoped lint overrides remain untouched without leaking into shared file scopes", async () => {
+  const source = {
+    lint: {
+      rules: { "vize/vue/no-v-html": "warn" },
+      overrides: [
+        {
+          files: ["src/admin/**/*.vue"],
+          excludeFiles: ["src/admin/generated/**"],
+          rules: { "vize/vue/no-v-html": "off" },
+        },
+      ],
+    },
+  };
+  const before = structuredClone(source);
+  assert.deepEqual(await resolveViteConfigExport(source), {
+    typeChecker: { jsxTypecheck: true },
+    linter: { rules: { "vue/no-v-html": "warn" } },
+  });
+  assert.deepEqual(source, before);
 });
