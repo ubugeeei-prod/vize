@@ -111,7 +111,14 @@ await test(
           await page.getByTitle("Rotate", { exact: true }).click();
           await checkFixedViewport(page, width, height);
           if (preset.name === "iPad") {
+            await page.getByRole("button", { name: "Props", exact: true }).click();
+            await page.getByRole("button", { name: "Variants", exact: true }).click();
+            observations.push({
+              preset: `${preset.name}:tab-restored`,
+              ...(await checkFixedViewport(page, width, height)),
+            });
             await geometry(page);
+            await page.locator(".variant-card").first().scrollIntoViewIfNeeded();
             await page.screenshot({
               path: path.join(output, `${viewport.width}x${viewport.height}-ipad.png`),
             });
