@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { existsSync, readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import {
@@ -6,6 +7,7 @@ import {
   scanConsumerMigrationSurfaces,
   surfaceNameKind,
 } from "../../tools/support/compat/davinci/lib/consumer-migration-scan.ts";
+import { lexicalView } from "../../tools/support/levels/move-host-runtime.ts";
 import { renderConsumerMigrationSurfaceRows } from "../../tools/support/compat/davinci/lib/consumer-migration-render.ts";
 
 const TSV_HEADERS = [
@@ -298,7 +300,9 @@ void test("consumer migration scan keeps every rollout consumer and surface clas
     ["compiler", { stage: true, old: true, raw: true }],
     ["linter", { stage: true, old: true, raw: true }],
     ["typechecker", { stage: true, old: true, raw: true }],
-    ["typechecker-content-mapper", { stage: true, old: false, raw: false }],
+    // Project-root normalization is an OS host adapter. It is recorded as
+    // Carton host presence; the focused guard below still rejects old AST/OXC.
+    ["typechecker-content-mapper", { stage: true, old: true, raw: false }],
     ["formatter", { stage: true, old: true, raw: true }],
     ["lsp", { stage: true, old: true, raw: true }],
   ]);
@@ -371,5 +375,64 @@ void test("LSP L0 surface stays on the preferred physical name", () => {
     lsp.sites
       .filter((site) => site.surfaceId === "l0")
       .every((site) => site.matchedName === "vize_l0" && site.nameKind === "preferred"),
+  );
+});
+
+const readSurfaceSource = (relPath) =>
+  readFileSync(new URL(`../../${relPath}`, import.meta.url), "utf8");
+
+function assertContentMapperHostPath(
+  contentMapper,
+  read = readSurfaceSource,
+  foundation = read("davinci/vize_l0/src/lib.rs"),
+  host = read("crates/vize_carton/src/path.rs"),
+  lowerPathExists = existsSync(new URL("../../davinci/vize_l0/src/path.rs", import.meta.url)),
+) {
+  const nonStage = contentMapper.sites.filter((site) => site.group !== "stage");
+  assert.ok(nonStage.length > 0, "the host adapter must remain visible in the inventory");
+  assert.deepEqual([...new Set(nonStage.map((site) => site.surfaceId))], ["carton"]);
+  for (const site of nonStage) {
+    assert.equal(site.matchedName, "vize_carton");
+    const line = lexicalView(read(site.relPath)).split("\n")[site.line - 1];
+    assert.match(
+      line,
+      /\bvize_carton\s*::\s*path\s*::\s*canonicalize_non_verbatim\b/u,
+      `${site.relPath}:${site.line} must be the existing filesystem normalization function`,
+    );
+  }
+  assert.match(lexicalView(host), /\bpub\s+fn\s+canonicalize_non_verbatim\s*\(/u);
+  assert.doesNotMatch(lexicalView(foundation), /\bpub\s+mod\s+path\s*;/u);
+  assert.equal(lowerPathExists, false, "filesystem path implementation remains in the host layer");
+}
+
+void test("content mapper records the exact host path role without admitting legacy AST or raw OXC", () => {
+  const mapper = scanConsumerMigrationSurfaces().consumers.find(
+    (consumer) => consumer.id === "typechecker-content-mapper",
+  );
+  assert.ok(mapper);
+  assertContentMapperHostPath(mapper);
+  for (const [surfaceId, matchedName, group] of [
+    ["old_ast", "vize_relief", "old"],
+    ["croquis", "vize_croquis", "old"],
+    ["raw_oxc", "oxc_parser", "raw"],
+  ]) {
+    const introduced = { ...mapper, sites: structuredClone(mapper.sites) };
+    const host = introduced.sites.find((site) => site.surfaceId === "carton");
+    introduced.sites.push({ ...host, surfaceId, matchedName, group });
+    assert.throws(() => assertContentMapperHostPath(introduced), { name: "AssertionError" });
+  }
+  assert.throws(() => assertContentMapperHostPath(mapper, () => "vize_carton::AstNode;"));
+  const foundation = readSurfaceSource("davinci/vize_l0/src/lib.rs");
+  assert.throws(() =>
+    assertContentMapperHostPath(mapper, readSurfaceSource, `${foundation}\npub mod path;\n`),
+  );
+  assert.throws(() =>
+    assertContentMapperHostPath(
+      mapper,
+      readSurfaceSource,
+      foundation,
+      readSurfaceSource("crates/vize_carton/src/path.rs"),
+      true,
+    ),
   );
 });
