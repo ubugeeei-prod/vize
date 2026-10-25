@@ -112,12 +112,61 @@ for (const [label, source] of refs) {
         "        let document_uri = self.session_document_uri(uri);",
         '        eprintln!("OBSERVED_OWNER attached={} materialized={} uri={uri} documents={:?}", self.project_session_attached_to_editor, self.materialized_project_session, self.document_texts.keys());\n',
       ],
+      [
+        "crates/vize_canon/src/lsp_client/diagnostics.rs",
+        "        virtual_overlay_diagnostics::ensure_materialized_project(self, std::iter::once(uri))?;",
+        '        eprintln!("OBSERVED_ROUTE attached={} shared={} materialized={} api={} fileDiagnostics={} projectDiagnostics={} uri={uri} documents={:?}", self.project_session_attached_to_editor, self.shared_editor_transport, self.materialized_project_session, self.can_use_api_for_uri(uri), self.supports_file_diagnostics_api(), self.supports_project_diagnostics_api(), self.document_texts.keys());\n',
+      ],
     ]) {
       const original = fs.readFileSync(file, "utf8");
       assert(original.includes(needle));
       originals.set(file, original);
       fs.writeFileSync(file, original.replace(needle, trace + needle));
     }
+    const build = spawnSync(
+      "cargo",
+      [
+        "test",
+        "--lib",
+        "--no-run",
+        "--message-format=json",
+        "--locked",
+        "--profile",
+        "ci",
+        "-p",
+        "vize_canon",
+      ],
+      { cwd: root, env: process.env, encoding: "utf8", timeout: 900_000, maxBuffer: 32_000_000 },
+    );
+    fs.writeFileSync(path.join(capture, `${label}-build.stdout`), build.stdout || "");
+    fs.writeFileSync(path.join(capture, `${label}-build.stderr`), build.stderr || "");
+    assert.equal(build.error, undefined);
+    assert.equal(build.status, 0, build.stderr);
+    const binaries = build.stdout
+      .split("\n")
+      .filter(Boolean)
+      .map((line) => JSON.parse(line))
+      .filter(
+        (row) =>
+          row.reason === "compiler-artifact" &&
+          row.target.name === "vize_canon" &&
+          row.profile.test &&
+          row.executable,
+      )
+      .map((row) => fs.realpathSync(row.executable));
+    assert.equal(binaries.length, 1);
+    const binary = binaries[0];
+    const strace = fs.realpathSync(execFileSync("which", ["strace"], { encoding: "utf8" }).trim());
+    receipt.binary = {
+      source,
+      executable: binary,
+      sha256: hash(binary),
+      observer: {
+        path: strace,
+        sha256: hash(strace),
+        version: execFileSync(strace, ["--version"], { encoding: "utf8" }),
+      },
+    };
     for (const [name, , test] of cases) {
       assert.equal(
         hash(executable),
@@ -125,24 +174,33 @@ for (const [label, source] of refs) {
         "Both revisions must use the same physical SDK",
       );
       const result = spawnSync(
-        "cargo",
+        "bash",
         [
-          "test",
-          "--locked",
-          "--profile",
-          "ci",
-          "-p",
-          "vize_canon",
-          test,
-          "--",
+          "-c",
+          'ulimit -f 32768; exec "$@"',
+          "vize-package-trace",
+          strace,
+          "-ff",
+          "-q",
+          "-ttt",
+          "-T",
+          "-xx",
+          "-s",
+          "16777216",
+          "-e",
+          "trace=process,read,write,readv,writev,openat,close,connect,socket,dup,dup2,dup3",
+          "-o",
+          path.join(capture, `${label}-${name}.trace`),
+          binary,
           "--exact",
+          test,
           "--nocapture",
         ],
         {
           cwd: root,
-          env: { ...process.env, CORSA_PATH: executable },
+          env: { ...process.env, CORSA_PATH: executable, VIZE_TEST_DISABLE_TSGO: "1" },
           encoding: "utf8",
-          timeout: 900_000,
+          timeout: 180_000,
           maxBuffer: 32_000_000,
         },
       );
@@ -156,6 +214,7 @@ for (const [label, source] of refs) {
         signal: result.signal,
         error: result.error?.message,
         sdkSha256: hash(executable),
+        binarySha256: hash(binary),
         expectedFailure: label !== "fixed",
       };
       receipt.results.push(row);
