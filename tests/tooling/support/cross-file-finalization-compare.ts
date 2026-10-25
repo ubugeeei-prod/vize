@@ -117,10 +117,12 @@ save(output, "provider-identities.json", {
   combinedResetStaleQualified,
   rustc: execFileSync("rustc", ["--version", "--verbose"], { encoding: "utf8" }),
   cargo: execFileSync("cargo", ["--version"], { encoding: "utf8" }),
-  note: combinedResetStaleQualified
-    ? "Both actual providers include the same reset/stale fixes."
-    : "Pre-restack source-only comparison: both providers omit the same sibling fixes. Combined integration is unqualified and requires a renewed exact-base/head run after restack.",
+  note: "Final integration requires both actual providers to include the same reset/stale fixes. The observed capability flags remain retained even if this precondition fails.",
 });
+assert.ok(
+  combinedResetStaleQualified,
+  "final comparison requires both integrated reset/stale correctness fixes on both providers",
+);
 
 for (const name of ["corpus.ts", "capture.ts"]) {
   const relative = `tests/tooling/support/cross-file-finalization/${name}`;
