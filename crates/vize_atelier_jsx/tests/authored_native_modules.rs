@@ -120,7 +120,15 @@ fn owned_native_arrows_keep_whole_modules_and_exact_composed_origins() {
         "../../../tests/_fixtures/differential/jsx/authored-native-modules-10700/mapped-roots.json"
     ))
     .expect("frozen complete source packet");
-    assert_eq!(json!(packets), expected);
+    let whole_outputs = packets
+        .into_iter()
+        .map(|packet| {
+            let mut fields = packet.as_object().expect("whole output object").clone();
+            fields.remove("tokens"); // Independently verified above and retained in raw capture.
+            serde_json::Value::Object(fields)
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(json!(whole_outputs), expected);
 }
 
 #[test]
