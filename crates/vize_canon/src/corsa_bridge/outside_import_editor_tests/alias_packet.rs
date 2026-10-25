@@ -11,7 +11,7 @@ use serde_json::{Value, json};
 use vize_carton::String;
 
 const PACKET: &str = include_str!(
-    "../../../../../tests/fixtures/typechecker/outside-import-editor-raw-10695/before-policy-diagnostics.json"
+    "../../../../../tests/fixtures/typechecker/outside-import-editor-raw-10695/before-policy-diagnostics.json.txt"
 );
 const HELPERS: [&str; 5] = [
     "__Ref",

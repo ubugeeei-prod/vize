@@ -19,10 +19,7 @@
   "generatedImport": "/tmp/vize-canon/editor/sessions/session-aD9Bei/projects/f3352a3cdb59ced63987d492281a74859df9a95a63013f45b8c1e32231365d3e/packages/web/src/lib/greet/index.ts",
   "authoredImport": "#lib/greet",
   "completeRawVectorsByteEqual": true,
-  "originalAssertionStatuses": [
-    101,
-    101
-  ],
+  "originalAssertionStatuses": [101, 101],
   "sourceQualification": false,
   "files": [
     {
@@ -31,12 +28,12 @@
       "sha256": "591ecac8c496406def7e5c3c9f0820b7e4256479633dcc79e46d05e38d818957"
     },
     {
-      "path": "before-policy-diagnostics.json",
+      "path": "before-policy-diagnostics.json.txt",
       "bytes": 2003,
       "sha256": "4109b8ba35cf7287f5942af3eeba363148b55f90b6c36546cc8b0f0b40f53ad7"
     },
     {
-      "path": "before-policy-generated-tsconfig.json",
+      "path": "before-policy-generated-tsconfig.json.txt",
       "bytes": 543,
       "sha256": "4d8a3b4cc59a317c6d0b1fc0adc350b90f2d9e8d7701c87919e49ce2efeb96f0"
     },
