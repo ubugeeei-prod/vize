@@ -20,3 +20,10 @@ runs:
         VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
         VIZE_TEST_REQUIRE_TSGO: "1"
       run: vp node --test --test-concurrency=1 tests/snapshots/check/vue-router-page-route-oracle.ts
+    - name: Verify the published experimental Router provider and complete check reports
+      shell: bash
+      env:
+        VIZE_TEST_BIN: ${{ github.workspace }}/target/ci/vize
+        VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
+        VIZE_TEST_REQUIRE_TSGO: "1"
+      run: vp node --test --test-concurrency=1 tests/tooling/router-experimental-provider.test.ts tests/tooling/router-experimental-check.test.ts
