@@ -42,14 +42,21 @@ vp exec vsce package --no-dependencies --out dist/vize.vsix
 ## Requirements
 
 - VS Code 1.75+
-- A matching Vize language server binary. The extension auto-detects bundled, development, cached
-  GitHub release, cargo, and `PATH` binaries, and downloads the matching GitHub release binary when
-  no local binary matches the extension version. `vize.serverPath` is only needed for custom builds.
+- A Vize language server. An explicit `vize.serverPath` takes priority. Otherwise, trusted workspaces
+  use their installed `vize` package, resolved from the nearest `package.json`, including hoisted and
+  pnpm installations. The extension checks its version and LSP initialization contract before use;
+  a different release number from the extension does not replace the project's engine.
 
-Do not set `vize.serverPath` to `node_modules/.bin/vize` from the npm package. That package is for
-project scripts and NAPI-backed commands; the language server is the Rust `vize` executable started
-with the `lsp` subcommand. Use a GitHub release binary, Nix, a local Cargo build, or the binary that
-the extension auto-detects/downloads.
+`vize.server.preferWorkspace` defaults to `true`; set it to `false` to use the extension's usual
+bundled, development, cached GitHub release, cargo, and `PATH` resolution. The matching GitHub
+release is downloaded when needed. Missing, broken, or incompatible workspace installations fall
+back to that resolution. **Vize: Show Status** displays the selected source, version, path, and any
+workspace fallback reason.
+
+Restricted Mode skips workspace executables. A single language client serves all workspace folders;
+if folders resolve distinct Vize installations, use separate windows or select an explicit
+`vize.serverPath`. Such a conflict falls back instead of silently using one project's engine for
+another. Run **Vize: Restart Language Server** after changing the installed Vize package.
 
 ## Configuration
 

@@ -149,6 +149,11 @@
           "default": true,
           "description": "Enable the Vize language server. Existing vite.config.* and tsconfig.json projects use workspace settings and recommended defaults without a separate Vize config. Set false to disable."
         },
+        "vize.server.preferWorkspace": {
+          "type": "boolean",
+          "default": true,
+          "description": "Prefer the trusted workspace's installed Vize language server, after vize.serverPath. Distinct installations in a multi-root workspace fall back to the extension server."
+        },
         "vize.serverPath": {
           "type": "string",
           "default": "",

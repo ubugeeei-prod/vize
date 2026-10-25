@@ -1,0 +1,64 @@
+name: VS Code workspace server
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/vscode-workspace-server.yml
+      - editors/vscode/**
+      - tests/tooling/vscode-workspace-server.test.mjs
+  workflow_dispatch:
+
+concurrency:
+  group: vscode-workspace-server-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions: { contents: read }
+
+jobs:
+  workspace-server:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [blacksmith-32vcpu-ubuntu-2404, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          node-version-file: package.json
+          run-install: false
+          cache: true
+      - uses: ./.github/actions/setup-rust-script
+      - name: Install locked dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Verify workspace resolution and bounded stdio sessions
+        run: vp node --test tests/tooling/vscode-workspace-server.test.mjs tests/tooling/vscode-server-trust.test.ts
+      - name: Check the extension
+        working-directory: editors/vscode
+        run: vp run check
+      - name: Package the production VSIX
+        run: vp run --workspace-root package:vscode-extension
+      - name: Ensure virtual display
+        if: runner.os == 'Linux'
+        run: |
+          if ! command -v xvfb-run >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y xvfb
+          fi
+      - name: Run installed VSIX with the pinned workspace engine (Linux)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a vp node editors/vscode/test/run-workspace-server-host.mjs
+      - name: Run installed VSIX with the pinned workspace engine (Windows)
+        if: runner.os == 'Windows'
+        run: vp node editors/vscode/test/run-workspace-server-host.mjs
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: workspace-server-${{ runner.os }}-${{ github.sha }}
+          path: editors/vscode/.vscode-test/workspace-server/
+          if-no-files-found: warn
+          retention-days: 7
