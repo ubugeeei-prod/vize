@@ -6,6 +6,8 @@ use oxc_span::SourceType;
 use serde_json::json;
 use vize_carton::corsa_resolver::{CorsaResolveRequest, resolve_corsa_executable};
 
+mod alias_packet;
+
 const ORIGINAL: &str = include_str!(
     "../../../../tests/_fixtures/differential/typechecker/outside-import-types/input.json"
 );
@@ -137,17 +139,17 @@ pub(super) fn assert_complete_alias_response(
         std::fs::copy(config, capture.join("generated-tsconfig.json")).unwrap();
         copy_inputs(root, &capture.join("inputs"));
     }
-    // The raw native protocol retains four unused generated type suggestions.
-    // Assert every field; package-resolution errors or new suggestions must fail.
-    assert_eq!(
-        complete,
-        json!([
-            {"range":{"start":{"line":41,"character":5},"end":{"line":41,"character":10}},"severity":4,"code":6196,"source":"ts","message":"'__Ref' is declared but never used.","relatedInformation":null},
-            {"range":{"start":{"line":49,"character":5},"end":{"line":49,"character":19}},"severity":4,"code":6196,"source":"ts","message":"'__VizePrettify' is declared but never used.","relatedInformation":null},
-            {"range":{"start":{"line":51,"character":5},"end":{"line":51,"character":36}},"severity":4,"code":6196,"source":"ts","message":"'__VizeComponentFallthroughProps' is declared but never used.","relatedInformation":null},
-            {"range":{"start":{"line":58,"character":5},"end":{"line":58,"character":37}},"severity":4,"code":6196,"source":"ts","message":"'__VizeComponentMissingInputGuard' is declared but never used.","relatedInformation":null}
-        ])
-    );
+    // This is the complete RAW CorsaBridge response, not mapped CLI diagnostics.
+    // The immutable pre-policy packet retains the generated import's TS5097 and
+    // all five unused helper suggestions. Only their AST-owned source geometry
+    // varies with the private project root or generated helper line positions.
+    // No observed diagnostic supplies an expected position, and no entry is filtered.
+    let target = document
+        .session_project_root
+        .as_ref()
+        .unwrap()
+        .join("packages/web/src/lib/greet/index.ts");
+    assert_eq!(complete, alias_packet::expected(&document.code, &target));
 }
 
 fn copy_inputs(source: &Path, target: &Path) {

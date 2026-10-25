@@ -7,6 +7,11 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { checkCanonicalVueConsumer } from "./support/vite-vue-packed-consumer.ts";
+import {
+  preparePrivateSdkFixture,
+  privateSdkChildEnvironment,
+  retainPrivateSdkProcess,
+} from "./support/vite-plus-private-sdk.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const plugin = path.join(root, "npm/builder/vite");
@@ -19,8 +24,9 @@ function run(cwd: string, args: string[], expected = 0) {
     cwd,
     encoding: "utf8",
     timeout: 120_000,
-    env: { ...process.env, NO_COLOR: "1", FORCE_COLOR: "0" },
+    env: privateSdkChildEnvironment(process.env),
   });
+  retainPrivateSdkProcess(cwd, args, result);
   assert.equal(result.error, undefined);
   const output = result.stdout + result.stderr;
   assert.equal(result.status, expected, output);
@@ -62,6 +68,7 @@ export default defineConfig({
 });
 `,
     );
+    preparePrivateSdkFixture(root, directory);
     write(
       "App.vue",
       '<script setup lang="ts">\nconst html = "hello";\n</script>\n<template><div v-html="html" /></template>\n',

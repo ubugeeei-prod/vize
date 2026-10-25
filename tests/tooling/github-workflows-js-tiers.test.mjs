@@ -113,10 +113,17 @@ void test("PR and merge queue preserve package tests, native declaration, type a
       "run-js": selectedJs,
       "run-original-project": false,
       "js-plan": "${{ needs.pr-source-plan.outputs.js-plan }}",
+      "run-runtime-selection":
+        "${{ needs.pr-source-plan.outputs.user-native-runtime-selection == 'true' }}",
     },
   });
   assert.deepEqual(jsChecks.on.workflow_call.inputs["run-js"], boolean);
   assert.deepEqual(jsChecks.on.workflow_call.inputs["run-original-project"], boolean);
+  assert.deepEqual(jsChecks.on.workflow_call.inputs["run-runtime-selection"], {
+    required: false,
+    type: "boolean",
+    default: false,
+  });
   const jsPlanInput = jsChecks.on.workflow_call.inputs["js-plan"];
   assert.equal(jsPlanInput.type, "string");
   assert.equal(

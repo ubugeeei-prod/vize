@@ -200,24 +200,43 @@ pub(super) fn generate_component_props(
     }
     for &(idx, usage) in checkable_usages {
         if let Some(mut packet) = root_packets.remove(idx) {
+            let packet_ctx = ComponentPropsContext {
+                inference_prelude: Some(&packet.inference),
+                diagnostic_ownership: ctx
+                    .diagnostic_ownership
+                    .map(|_| &packet.diagnostic.diagnostic_ownership),
+                ..*ctx
+            };
             generate_usage_declarations(
-                &mut packet.text,
-                &mut packet.mappings,
-                ctx,
+                &mut packet.diagnostic.text,
+                &mut packet.diagnostic.mappings,
+                &packet_ctx,
                 &shared_contracts,
                 idx,
                 usage,
             );
             component_prop_navigation::emit_usage_references(
-                &mut packet.text,
-                &mut packet.mappings,
-                &mut packet.semantic_links,
-                ctx,
+                &mut packet.diagnostic.text,
+                &mut packet.diagnostic.mappings,
+                &mut packet.diagnostic.semantic_links,
+                &packet_ctx,
                 idx,
                 usage,
             );
-            generate_root_usage_checks(&mut packet.text, &mut packet.mappings, ctx, idx, usage);
-            packet.append_to(ts, mappings, diagnostic_mappings, semantic_links);
+            generate_root_usage_checks(
+                &mut packet.diagnostic.text,
+                &mut packet.diagnostic.mappings,
+                &packet_ctx,
+                idx,
+                usage,
+            );
+            packet.append_to(
+                ts,
+                mappings,
+                diagnostic_mappings,
+                semantic_links,
+                ctx.diagnostic_ownership,
+            );
         }
     }
 }
@@ -383,6 +402,7 @@ fn generate_root_usage_checks(
         )
         .strict_v_model(ctx.strict_v_model)
         .typed_fallthrough_values(ctx.typed_fallthrough_values);
+        check_context.inference_prelude = ctx.inference_prelude;
         generate_component_prop_checks(&mut check_context, usage, idx, component_ref.as_str())
     });
     profile!("canon.virtual_ts.component_slot_checks", {

@@ -42,8 +42,14 @@ function packet(value: any) {
 }
 
 void test("all current SFC wires have the complete bounded transition and old packs stay exact", () => {
+  const manifestText = fs.readFileSync(manifest, "utf8");
+  const runtimeBoundary = manifestText.indexOf(',\n  "runtimeCases": [\n');
+  assert.ok(runtimeBoundary > 0);
+  assert.equal(Object.keys(JSON.parse(manifestText)).at(-1), "runtimeCases");
+  // The closed runtime family is outside the historical language packs. Keep
+  // their original bytes pinned, including formatting, without counting it.
   assert.equal(
-    sha256(fs.readFileSync(manifest)),
+    sha256(`${manifestText.slice(0, runtimeBoundary)}\n}\n`),
     "ea145fc05088aa9156c483d52e10877d0aa44fe9740989c55a24ac61b9010029",
   );
   assert.equal(

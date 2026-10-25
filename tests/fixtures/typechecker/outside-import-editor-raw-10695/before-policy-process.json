@@ -1,0 +1,37 @@
+{
+  "command": "bash",
+  "args": [
+    "-c",
+    "ulimit -f 524288; exec \"$@\"",
+    "vize-alias-trace",
+    "/usr/bin/strace",
+    "-ff",
+    "-q",
+    "-ttt",
+    "-T",
+    "-xx",
+    "-s",
+    "16777216",
+    "-e",
+    "trace=process,read,write,readv,writev,openat,close,connect,socket,dup,dup2,dup3",
+    "-o",
+    "/home/runner/_work/_temp/corsa-alias-observer/before-policy/native.trace",
+    "/home/runner/_work/vize/vize/target/ci/deps/vize_canon-8b2fb80cba323916",
+    "--exact",
+    "corsa_bridge::vue_document_package_config_tests::native_editor_resolves_package_alias_from_monorepo_root",
+    "--nocapture"
+  ],
+  "cwd": "/home/runner/_work/vize/vize",
+  "selectedEnvironment": {
+    "CORSA_PATH": "/home/runner/_work/_temp/corsa-alias-observer/sdk/node_modules/@typescript/typescript-linux-x64/lib/tsc",
+    "VIZE_TEST_TSGO_PATH": "/home/runner/_work/_temp/corsa-alias-observer/sdk/node_modules/@typescript/typescript-linux-x64/lib/tsc",
+    "VIZE_TYPECHECK_REGRESSION_CAPTURE": "/home/runner/_work/_temp/corsa-alias-observer/before-policy/existing-capture",
+    "VIZE_TEST_DISABLE_TSGO": null
+  },
+  "status": 101,
+  "signal": null,
+  "error": null,
+  "stdout": "\nrunning 1 test\ntest corsa_bridge::vue_document_package_config_tests::native_editor_resolves_package_alias_from_monorepo_root ... FAILED\n\nfailures:\n\nfailures:\n    corsa_bridge::vue_document_package_config_tests::native_editor_resolves_package_alias_from_monorepo_root\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2274 filtered out; finished in 0.20s\n\n",
+  "stderr": "\nthread 'corsa_bridge::vue_document_package_config_tests::native_editor_resolves_package_alias_from_monorepo_root' (19405) panicked at crates/vize_canon/src/corsa_bridge/outside_import_editor_tests.rs:142:5:\nassertion `left == right` failed\n  left: Array [Object {\"code\": Number(5097), \"message\": String(\"An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.\"), \"range\": Object {\"end\": Object {\"character\": Number(180), \"line\": Number(98)}, \"start\": Object {\"character\": Number(22), \"line\": Number(98)}}, \"relatedInformation\": Null, \"severity\": Number(1), \"source\": String(\"ts\")}, Object {\"code\": Number(6196), \"message\": String(\"'__Ref' is declared but never used.\"), \"range\": Object {\"end\": Object {\"character\": Number(10), \"line\": Number(41)}, \"start\": Object {\"character\": Number(5), \"line\": Number(41)}}, \"relatedInformation\": Null, \"severity\": Number(4), \"source\": String(\"ts\")}, Object {\"code\": Number(6196), \"message\": String(\"'__VizeUnownedComponentAttrs' is declared but never used.\"), \"range\": Object {\"end\": Object {\"character\": Number(32), \"line\": Number(52)}, \"start\": Object {\"character\": Number(5), \"line\": Number(52)}}, \"relatedInformation\": Null, \"severity\": Number(4), \"source\": String(\"ts\")}, Object {\"code\": Number(6196), \"message\": String(\"'__VizePrettify' is declared but never used.\"), \"range\": Object {\"end\": Object {\"character\": Number(19), \"line\": Number(53)}, \"start\": Object {\"character\": Number(5), \"line\": Number(53)}}, \"relatedInformation\": Null, \"severity\": Number(4), \"source\": String(\"ts\")}, Object {\"code\": Number(6196), \"message\": String(\"'__VizeComponentFallthroughProps' is declared but never used.\"), \"range\": Object {\"end\": Object {\"character\": Number(36), \"line\": Number(55)}, \"start\": Object {\"character\": Number(5), \"line\": Number(55)}}, \"relatedInformation\": Null, \"severity\": Number(4), \"source\": String(\"ts\")}, Object {\"code\": Number(6196), \"message\": String(\"'__VizeComponentMissingInputGuard' is declared but never used.\"), \"range\": Object {\"end\": Object {\"character\": Number(37), \"line\": Number(62)}, \"start\": Object {\"character\": Number(5), \"line\": Number(62)}}, \"relatedInformation\": Null, \"severity\": Number(4), \"source\": String(\"ts\")}]\n right: Array [Object {\"code\": Number(6196), \"message\": String(\"'__Ref' is declared but never used.\"), \"range\": Object {\"end\": Object {\"character\": Number(10), \"line\": Number(41)}, \"start\": Object {\"character\": Number(5), \"line\": Number(41)}}, \"relatedInformation\": Null, \"severity\": Number(4), \"source\": String(\"ts\")}, Object {\"code\": Number(6196), \"message\": String(\"'__VizePrettify' is declared but never used.\"), \"range\": Object {\"end\": Object {\"character\": Number(19), \"line\": Number(49)}, \"start\": Object {\"character\": Number(5), \"line\": Number(49)}}, \"relatedInformation\": Null, \"severity\": Number(4), \"source\": String(\"ts\")}, Object {\"code\": Number(6196), \"message\": String(\"'__VizeComponentFallthroughProps' is declared but never used.\"), \"range\": Object {\"end\": Object {\"character\": Number(36), \"line\": Number(51)}, \"start\": Object {\"character\": Number(5), \"line\": Number(51)}}, \"relatedInformation\": Null, \"severity\": Number(4), \"source\": String(\"ts\")}, Object {\"code\": Number(6196), \"message\": String(\"'__VizeComponentMissingInputGuard' is declared but never used.\"), \"range\": Object {\"end\": Object {\"character\": Number(37), \"line\": Number(58)}, \"start\": Object {\"character\": Number(5), \"line\": Number(58)}}, \"relatedInformation\": Null, \"severity\": Number(4), \"source\": String(\"ts\")}]\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n",
+  "originalAssertionPassed": false
+}

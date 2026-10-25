@@ -1,0 +1,70 @@
+[
+  {
+    "code": 6196,
+    "message": "'__Ref' is declared but never used.",
+    "range": {
+      "end": {
+        "character": 10,
+        "line": 41
+      },
+      "start": {
+        "character": 5,
+        "line": 41
+      }
+    },
+    "relatedInformation": null,
+    "severity": 4,
+    "source": "ts"
+  },
+  {
+    "code": 6196,
+    "message": "'__VizePrettify' is declared but never used.",
+    "range": {
+      "end": {
+        "character": 19,
+        "line": 49
+      },
+      "start": {
+        "character": 5,
+        "line": 49
+      }
+    },
+    "relatedInformation": null,
+    "severity": 4,
+    "source": "ts"
+  },
+  {
+    "code": 6196,
+    "message": "'__VizeComponentFallthroughProps' is declared but never used.",
+    "range": {
+      "end": {
+        "character": 36,
+        "line": 51
+      },
+      "start": {
+        "character": 5,
+        "line": 51
+      }
+    },
+    "relatedInformation": null,
+    "severity": 4,
+    "source": "ts"
+  },
+  {
+    "code": 6196,
+    "message": "'__VizeComponentMissingInputGuard' is declared but never used.",
+    "range": {
+      "end": {
+        "character": 37,
+        "line": 58
+      },
+      "start": {
+        "character": 5,
+        "line": 58
+      }
+    },
+    "relatedInformation": null,
+    "severity": 4,
+    "source": "ts"
+  }
+]

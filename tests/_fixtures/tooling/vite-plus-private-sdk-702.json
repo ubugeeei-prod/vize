@@ -1,0 +1,68 @@
+{
+  "schema": "vize.vite-plus.private-sdk.v1",
+  "cohort": "explicit-private-sdk-702-v1",
+  "version": "7.0.2",
+  "scope": "Historical explicit test provider only; zero production-default, alias discovery, shutdown or foreign-OS execution credit.",
+  "platforms": [
+    {
+      "name": "@typescript/typescript-darwin-arm64",
+      "version": "7.0.2",
+      "integrity": "sha512-gowzar9MwS/aRWp6f3a4KUqzRjAZjOsmGNCM6LcTgXum+dBfgsBVMN+AgvOCCbguXyick6LJhpBszxMebJ8syA==",
+      "archiveSha256": "902e2fe1cf0799198ef902c6b8c310a450fef629a6baba41d45641ef75c04ebd",
+      "archiveBytes": 9270373,
+      "binary": "lib/tsc",
+      "executableSha256": "a82f731365ad69d5c4c15f5e18fba4584bf3b7b839960172a76c3462b5114bf2",
+      "executableBytes": 23653616
+    },
+    {
+      "name": "@typescript/typescript-darwin-x64",
+      "version": "7.0.2",
+      "integrity": "sha512-SZ9xZInqApNlNGc9s0W1VSsktYSOe9cFqNOIqmN1Gs8SmkjKZYFt017G4VwPxASInODuAdbTW7sXiFUf893RgA==",
+      "archiveSha256": "eba158cb54050f723d5ff781438f33de5640054440bb4f2bd170cfe9bc2eb551",
+      "archiveBytes": 10057523,
+      "binary": "lib/tsc",
+      "executableSha256": "76e4987d060ef8207875a53a73619ce665ff16fb2800c0d57a452e21c829bd7b",
+      "executableBytes": 24971184
+    },
+    {
+      "name": "@typescript/typescript-linux-arm64",
+      "version": "7.0.2",
+      "integrity": "sha512-Qh4eU4/y3yDjnfjjyPYihMj5/ODIlmt+Bzu17OI+fiSRDW57QmU5SiN63exPRNJPKUzcc1INa1NXdrJ+MqHjUQ==",
+      "archiveSha256": "c83d931ac9dd7549cde6e71246aa9d6a9812843023df3e277fe3b5dcf41dd0ea",
+      "archiveBytes": 8900516,
+      "binary": "lib/tsc",
+      "executableSha256": "f86e8070c267b12d6c119bf567cb82d8b245e9d93da1864bc7c603cea10a8b2f",
+      "executableBytes": 22872226
+    },
+    {
+      "name": "@typescript/typescript-linux-x64",
+      "version": "7.0.2",
+      "integrity": "sha512-EYdf2cNg7rgCWJnxCdJ+F3V39O8ihb37eHAu1LK8oAFizgTQbPOK7zHHXbPt8rX24COqODXeI3sIf0fCXG7H/A==",
+      "archiveSha256": "7ecad6f67377e831856367ab062ef394f21506a611405bf8ac0ff039348637d3",
+      "archiveBytes": 9669334,
+      "binary": "lib/tsc",
+      "executableSha256": "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4",
+      "executableBytes": 24101026
+    },
+    {
+      "name": "@typescript/typescript-win32-arm64",
+      "version": "7.0.2",
+      "integrity": "sha512-Gyl1Vy6OsWesLzmq+EP0Fb7b4Nid5232AvcA2SFcdYreldpNtYFFofPjnt62y9hQy7VTaZp65ICJjuAQRaVcIQ==",
+      "archiveSha256": "0a73534e6ee50cdbb2a29ac48657ca0ad13cf0f424cf63808e4df7baeb87b8be",
+      "archiveBytes": 8900840,
+      "binary": "lib/tsc.exe",
+      "executableSha256": "2ec832b3d17ce25676fe92b3810ecc0a7580ffb9287d4972bc9a5acc4da2aa50",
+      "executableBytes": 22956896
+    },
+    {
+      "name": "@typescript/typescript-win32-x64",
+      "version": "7.0.2",
+      "integrity": "sha512-0BQ3HkAHHlKLSp1qRvf3SUhGpGsDuhB/jgFw75guyqbxJqEaS0Cw/VFO8i2nHglJUzQCRtMMR/IBAKE3ETMC4g==",
+      "archiveSha256": "61fc4e141d2bc687db580e71bbfa63b9c209f0310645d82ca1b457eb3a24fd19",
+      "archiveBytes": 9776626,
+      "binary": "lib/tsc.exe",
+      "executableSha256": "f9ecfbdc93753d2c972d66a8d0d75f5bd737fd4a5f88b422d9091ea282bcb2c7",
+      "executableBytes": 24520544
+    }
+  ]
+}

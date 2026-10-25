@@ -172,6 +172,7 @@ test("the current PR native runtime lane remains connected to required source an
     [
       "./.github/actions/test-native-canon",
       "./.github/actions/test-native-lsp",
+      "./.github/actions/test-native-runtime-selection",
       "./.github/actions/test-native-ssr",
       "./.github/actions/test-native-scoped-css",
       "./.github/actions/test-native-js-setup",

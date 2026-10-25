@@ -7,6 +7,11 @@ import { spawnSync } from "node:child_process";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { resolveVizeLaunchCommand } from "./support/lsp/launch.ts";
+import {
+  preparePrivateSdkProvider,
+  privateSdkChildEnvironment,
+  retainPrivateSdkProcess,
+} from "./support/vite-plus-private-sdk.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -63,24 +68,26 @@ export const widgetValue = 1;
       for (const [file, source] of Object.entries(sources)) {
         fs.writeFileSync(path.join(project, "src", file), source);
       }
-      const result = spawnSync(
-        command,
-        [
-          ...launch,
-          "check",
-          ".",
-          "--declaration",
-          "--declaration-dir",
-          "types",
-          "--format",
-          "json",
-        ],
-        {
-          cwd: project,
-          encoding: "utf8",
-          timeout: 60_000,
-        },
-      );
+      const provider = preparePrivateSdkProvider(root, project);
+      const argv = [
+        ...launch,
+        "check",
+        ".",
+        "--corsa-path",
+        provider.executable,
+        "--declaration",
+        "--declaration-dir",
+        "types",
+        "--format",
+        "json",
+      ];
+      const result = spawnSync(command, argv, {
+        cwd: project,
+        env: privateSdkChildEnvironment(process.env),
+        encoding: "utf8",
+        timeout: 60_000,
+      });
+      retainPrivateSdkProcess(project, argv, result, command);
       assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`);
       assert.equal(JSON.parse(result.stdout).errorCount, 0);
       for (const [file, name, authored] of [

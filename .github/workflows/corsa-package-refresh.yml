@@ -1,0 +1,73 @@
+name: Corsa package refresh
+on:
+  pull_request:
+    paths:
+      - .github/workflows/corsa-package-refresh.yml
+      - tools/support/compat/github/corsa-package-refresh/**
+      - crates/vize_canon/src/batch/**
+      - crates/vize_canon/tests/fix_history_diagnostics.rs
+      - tests/_fixtures/differential/typechecker/**
+      - tests/differential/typechecker.ts
+      - tests/tooling/typechecker-differential.test.ts
+      - tests/tooling/typechecker-workspace.test.ts
+      - tests/tooling/differential-dialect-coverage.test.mjs
+      - crates/vize_canon/src/corsa_bridge/**
+      - crates/vize_canon/src/lsp_client/**
+      - crates/vize_canon/src/corsa_server/**
+  workflow_dispatch:
+    inputs:
+      historical:
+        description: Repeat the immutable before/after runtime-policy attribution
+        type: boolean
+        default: false
+permissions: { contents: read }
+concurrency:
+  group: corsa-package-refresh-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  CARGO_BUILD_JOBS: 12
+jobs:
+  attribution:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with: { version: latest, node-version-file: package.json, run-install: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with:
+          toolchain: 1.99.1
+          components: clippy,rust-src,rustfmt
+          targets: wasm32-unknown-unknown,wasm32-wasip2
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: nextest-ci, cache-key-suffix: Linux-X64-1.99.1 }
+      - name: Ensure the native process observer
+        run: |
+          if ! command -v strace >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y strace
+          fi
+      - name: Install the frozen real Vue fixture dependency
+        run: vp install --filter './tests' --frozen-lockfile --prefer-offline --ignore-scripts
+      - name: Compare unchanged tests with one physical historical SDK
+        env:
+          VIZE_PACKAGE_REFRESH_CAPTURE: ${{ runner.temp }}/corsa-package-refresh
+          VIZE_COMPARE_HISTORICAL: ${{ inputs.historical }}
+        run: |
+          cp -R tools/support/compat/github/corsa-package-refresh "$RUNNER_TEMP/corsa-package-refresh-harness"
+          vp node "$RUNNER_TEMP/corsa-package-refresh-harness/compare.mjs"
+          vp node "$RUNNER_TEMP/corsa-package-refresh-harness/fixture.mjs"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: corsa-package-refresh-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/corsa-package-refresh
+          if-no-files-found: error
+          retention-days: 14

@@ -4392,9 +4392,12 @@ name = "vize_benchmarks"
 version = "0.474.0"
 dependencies = [
  "criterion",
+ "serde_json",
  "vize",
+ "vize_canon",
  "vize_doctor",
  "vize_fresco",
+ "vize_l0",
 ]
 
 [[package]]

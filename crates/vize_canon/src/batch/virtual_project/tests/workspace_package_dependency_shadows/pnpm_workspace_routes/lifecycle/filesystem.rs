@@ -71,7 +71,13 @@ fn editor_union_rejects_raw_parent_link_before_rewriting_real_pnpm_install() {
         root.join("packages/b/node_modules"),
     )]);
     let error = project
-        .materialize_editor_union(&vize_carton::FxHashSet::default(), &preserved, &[], false)
+        .materialize_editor_union(
+            &Default::default(),
+            &vize_carton::FxHashSet::default(),
+            &preserved,
+            &[],
+            false,
+        )
         .unwrap_err();
     assert_eq!(
         error.to_string(),
@@ -235,7 +241,7 @@ fn editor_union_preserves_alias_claims_when_only_the_previous_snapshot_owns_them
         .unwrap();
     assert!(query.workspace_alias_links().is_empty());
     query
-        .materialize_editor_union(&files, &links, &[], false)
+        .materialize_editor_union(&Default::default(), &files, &links, &[], false)
         .unwrap();
     for (alias, target, manifest) in before {
         assert_eq!(fs::read_link(&alias).unwrap(), target);

@@ -35,7 +35,35 @@ void test("the original archives remain pinned while active package cases follow
   assert.equal(current.split(addedImport).length, 2);
   assert.equal(current.split(addedCall).length, 2);
   const migratedPacked = packed.replaceAll("vize: {", "vue: {");
-  assert.equal(current.replace(addedImport, "").replace(addedCall, ""), migratedPacked);
+  // Current cohort adds only an explicit immutable private provider and inert
+  // whole-process custody. Invert these exact additions; the original SHA and
+  // every original product assertion remain authenticated below.
+  const privateSdkImport =
+    "import {\n" +
+    "  preparePrivateSdkFixture,\n" +
+    "  privateSdkChildEnvironment,\n" +
+    "  retainPrivateSdkProcess,\n" +
+    '} from "./support/vite-plus-private-sdk.ts";\n';
+  const privateSdkSetup = "    preparePrivateSdkFixture(root, directory);\n";
+  const privateSdkCapture = "  retainPrivateSdkProcess(cwd, args, result);\n";
+  const privateSdkEnvironment = "env: privateSdkChildEnvironment(process.env),";
+  for (const addition of [
+    privateSdkImport,
+    privateSdkSetup,
+    privateSdkCapture,
+    privateSdkEnvironment,
+  ])
+    assert.equal(current.split(addition).length, 2, "one exact current-cohort provider addition");
+  assert.equal(
+    current
+      .replace(addedImport, "")
+      .replace(addedCall, "")
+      .replace(privateSdkImport, "")
+      .replace(privateSdkSetup, "")
+      .replace(privateSdkCapture, "")
+      .replace(privateSdkEnvironment, 'env: { ...process.env, NO_COLOR: "1", FORCE_COLOR: "0" },'),
+    migratedPacked,
+  );
 
   const dialect = read(archive + "original-vue-version-index.test.ts.fixture");
   assert.equal(hash(dialect), "6e97eb6a6af314856b7cd16395544c34a839eb7eac9bd651d110fafe5580aeaf");
