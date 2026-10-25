@@ -171,7 +171,7 @@ impl RootOwnerPackets {
                             bindings.binding_type(handler.as_str().trim()) != Some(BindingType::SetupConst)))
                     || element.props.iter().any(|prop| match prop {
                         PropNode::Attribute(_) => false,
-                        PropNode::Directive(directive) => !matches!(directive.name.as_str(), "on" | "bind")
+                        PropNode::Directive(directive) => !matches!(directive.name, "on" | "bind")
                             || !matches!(directive.arg.as_ref(), Some(ExpressionNode::Simple(arg)) if arg.is_static),
                     })
                     || usage.slots.iter().any(|slot|
