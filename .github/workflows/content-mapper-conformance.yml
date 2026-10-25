@@ -250,9 +250,11 @@ jobs:
           function executions(text, inventory, ignored, selected, producer = 'libtest') {
             const events = [...text.matchAll(/^test (.+) \.\.\. (ok|FAILED|ignored(?:,.*)?)$/gmu)].map(match => {
               const rawName = match[1];
-              const compile = producer === 'rustdoc' && rawName.endsWith(' - compile');
+              const shouldPanic = rawName.endsWith(' - should panic');
+              const withoutPanic = shouldPanic ? rawName.slice(0, -' - should panic'.length) : rawName;
+              const compile = producer === 'rustdoc' && withoutPanic.endsWith(' - compile');
               const state = match[2].startsWith('ignored') ? 'ignored' : match[2];
-              return { name: compile ? rawName.slice(0, -' - compile'.length) : rawName, rawName, mode: state === 'ignored' ? 'ignored' : compile ? 'compile' : 'run', state };
+              return { name: compile ? withoutPanic.slice(0, -' - compile'.length) : withoutPanic, rawName, expectation: shouldPanic ? 'panic' : 'normal', mode: state === 'ignored' ? 'ignored' : compile ? 'compile' : 'run', state };
             });
             assert.deepEqual(events.map(event => event.name).sort(), [...selected].sort(), 'all selected cases must produce exactly one complete result');
             assert.deepEqual(events.filter(event => event.state === 'ignored').map(event => event.name).sort(), ignored.filter(name => selected.includes(name)), 'declared ignored-case policy must remain unchanged');
@@ -290,7 +292,11 @@ jobs:
           reject('wrong timing producer', () => names('all doctests ran in 0.01s; merged doctests compilation took 0.00s\n'));
           reject('invalid Rustdoc timing', () => names('all doctests ran in NaNs; merged doctests compilation took 0.00s\n', 'rustdoc'));
           reject('unknown compile case', () => executions(docSample.replace('doc_a - compile', 'doc_c - compile'), docs, [], docs, 'rustdoc'));
-          write('negative-controls.json', { emptyInventory: 'rejected', omittedInventory: 'rejected', duplicateInventory: 'rejected', missing: 'rejected', duplicate: 'rejected', changedIgnore: 'rejected', changedTotal: 'rejected', undeclaredFiltering: 'rejected', emptyRustdoc: 'rejected', omittedRustdoc: 'rejected', wrongTimingProducer: 'rejected', invalidRustdocTiming: 'rejected', unknownCompileCase: 'rejected' });
+          const panicSample = 'test expected_panic - should panic ... ok\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out;\n';
+          executions(panicSample, ['expected_panic'], [], ['expected_panic']);
+          reject('unknown panic case', () => executions(panicSample, ['other_panic'], [], ['other_panic']));
+          reject('failed expected panic', () => executions(panicSample.replace('... ok', '... FAILED'), ['expected_panic'], [], ['expected_panic']));
+          write('negative-controls.json', { emptyInventory: 'rejected', omittedInventory: 'rejected', duplicateInventory: 'rejected', missing: 'rejected', duplicate: 'rejected', changedIgnore: 'rejected', changedTotal: 'rejected', undeclaredFiltering: 'rejected', emptyRustdoc: 'rejected', omittedRustdoc: 'rejected', wrongTimingProducer: 'rejected', invalidRustdocTiming: 'rejected', unknownCompileCase: 'rejected', unknownPanicCase: 'rejected', failedExpectedPanic: 'rejected' });
 
           try {
             const mapper = realpathSync(path.join(process.env.RUNNER_TEMP, 'tsgo'));

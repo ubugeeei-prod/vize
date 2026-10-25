@@ -258,6 +258,8 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
     wrongTimingProducer: "rejected",
     invalidRustdocTiming: "rejected",
     unknownCompileCase: "rejected",
+    unknownPanicCase: "rejected",
+    failedExpectedPanic: "rejected",
   });
 });
 
