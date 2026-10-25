@@ -18,12 +18,46 @@ export function selectPhaseLibraries(entries) {
     }),
   );
 }
+export function selectPhaseDirectory(inventories) {
+  // Host proc-macro dependencies may live alongside a target-triple build.
+  // Only a directory containing the measured Atelier library can own a set.
+  const owners = inventories.filter((row) =>
+    row.entries.some((file) => file.startsWith("libvize_atelier_sfc-") && file.endsWith(".rlib")),
+  );
+  assert.equal(owners.length, 1, "one actual Atelier target directory required");
+  return { directory: owners[0].directory, libraries: selectPhaseLibraries(owners[0].entries) };
+}
+
 export function phaseOutputAbsent(file) {
   assert.equal(fs.existsSync(file), false, "phase driver must start absent");
 }
 export function buildPhaseDriver({ image, root, destination, inputs, receipt }) {
-  const directory = path.join(image.target, "ci-opt/deps");
-  const libraries = selectPhaseLibraries(fs.readdirSync(directory));
+  const target = fs.realpathSync(image.target);
+  const roots = [
+    target,
+    ...fs
+      .readdirSync(target, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => path.join(target, entry.name)),
+  ];
+  const inventories = roots
+    .map((root) => path.join(root, "ci-opt/deps"))
+    .filter((directory) => fs.existsSync(directory))
+    .map((directory) => {
+      directory = fs.realpathSync(directory);
+      assert.ok(directory.startsWith(target + path.sep));
+      return { directory, entries: fs.readdirSync(directory).sort() };
+    });
+  receipt.phaseDiscovery ??= [];
+  receipt.phaseDiscovery.push({ side: image.side, source: image.source, target, inventories });
+  write(path.join(destination, "receipt.json"), receipt);
+  const { directory, libraries } = selectPhaseDirectory(inventories);
+  for (const file of Object.values(libraries))
+    assert.equal(
+      fs.lstatSync(path.join(directory, file)).isFile(),
+      true,
+      "actual role rlibs cannot be foreign symlinks",
+    );
   const source = path.join(root, "tools/benchmarks/harness/css-source-map-phases.rs");
   const binary = path.join(destination, `phase-${image.side}-${image.source}`);
   phaseOutputAbsent(binary);

@@ -5,6 +5,7 @@ import path from "node:path";
 import { test } from "node:test";
 import {
   selectPhaseLibraries,
+  selectPhaseDirectory,
   phaseOutputAbsent,
 } from "../../tools/benchmarks/scripts/css-source-map-phases.mjs";
 import { profileVectors } from "../../tools/benchmarks/scripts/css-source-map-profile.mjs";
@@ -54,4 +55,29 @@ await test("source phases use exactly the unchanged native profile vectors, coun
       batch: 10,
     },
   ]);
+});
+
+await test("phase discovery distinguishes actual target layouts from host dependencies without ambiguous fallback", () => {
+  const entries = ["vize_atelier_sfc", "vize_croquis", "vize_carton", "serde_json"].map(
+    (name) => `lib${name}-1234.rlib`,
+  );
+  for (const directory of ["/owned/ci-opt/deps", "/owned/x86_64-unknown-linux-gnu/ci-opt/deps"]) {
+    const owner = { directory, entries };
+    assert.deepEqual(
+      selectPhaseDirectory([
+        { directory: "/owned/host/ci-opt/deps", entries: ["libserde_json-host.rlib"] },
+        owner,
+      ]),
+      { directory, libraries: selectPhaseLibraries(entries) },
+    );
+    assert.throws(() =>
+      selectPhaseDirectory([owner, { directory: "/owned/other/ci-opt/deps", entries }]),
+    );
+    assert.throws(() => selectPhaseDirectory([{ ...owner, entries: entries.slice(0, 1) }]));
+  }
+  assert.throws(() =>
+    selectPhaseDirectory([
+      { directory: "/owned/ci-opt/deps", entries: ["libserde_json-host.rlib"] },
+    ]),
+  );
 });
