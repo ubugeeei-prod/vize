@@ -13,6 +13,7 @@ use vize_l1::markup::{NativeElement, NativeLintTagRefusal, NativeTemplateCompone
 mod admission;
 mod aria_unsupported_elements;
 mod attribute;
+pub mod canonical;
 pub mod child_facts;
 mod deprecated_attr;
 mod deprecated_element;

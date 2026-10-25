@@ -25,13 +25,6 @@ static META: RuleMeta = RuleMeta {
 #[derive(Default)]
 pub struct TabindexNoPositive;
 
-impl TabindexNoPositive {
-    /// Whether a statically-written `tabindex` value parses to a positive int.
-    fn is_positive(value: &str) -> bool {
-        value.parse::<i32>().is_ok_and(|num| num > 0)
-    }
-}
-
 /// Markup-IR entry point for `a11y/tabindex-no-positive`.
 ///
 /// Inspects the statically-written `tabindex` value on both backends: a Vue
@@ -56,7 +49,7 @@ impl MarkupRule for TabindexNoPositive {
         let Some(value) = binding.static_value() else {
             return;
         };
-        if Self::is_positive(value) {
+        if crate::attribute_policy::positive_tabindex(value) {
             let message = ctx.lint().t("a11y/tabindex-no-positive.message");
             let help = ctx.lint().t("a11y/tabindex-no-positive.help");
             ctx.lint().warn_at_with_help(message, binding.range(), help);
@@ -78,8 +71,7 @@ impl Rule for TabindexNoPositive {
             if let PropNode::Attribute(attr) = prop
                 && attr.name == "tabindex"
                 && let Some(value) = &attr.value
-                && let Ok(num) = value.content.parse::<i32>()
-                && num > 0
+                && crate::attribute_policy::positive_tabindex(&value.content)
             {
                 ctx.warn_with_help(
                     ctx.t("a11y/tabindex-no-positive.message"),

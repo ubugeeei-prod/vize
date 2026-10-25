@@ -1,7 +1,9 @@
 //! Static tabindex integer checks over original same-owner attributes.
 
+use std::borrow::Cow;
+
 use vize_l0::{
-    SmallVec, String,
+    SmallVec, Span, String,
     diag::{Advisory, Diagnostic, DiagnosticPart, MessageLookup, PartKind, Stage},
 };
 use vize_l1::markup::{
@@ -37,30 +39,51 @@ pub(super) fn check(
         if !name.eq_ignore_ascii_case("tabindex") || !positive(value)? {
             continue;
         }
-        let diagnostic = Diagnostic::new(
-            Advisory::Warning,
-            Stage::Surface,
-            range,
-            messages
-                .lookup("a11y/tabindex-no-positive.message")
-                .as_ref(),
-        )
-        .with_part(DiagnosticPart::new(
-            PartKind::Help,
-            range,
-            messages.lookup("a11y/tabindex-no-positive.help").as_ref(),
-        ));
-        findings.push(NativeLintFinding {
-            rule_name: TABINDEX_NO_POSITIVE_RULE,
-            diagnostic,
-        });
+        findings.push(finding(range, messages));
     }
     Ok(findings)
 }
 
+pub(super) fn finding(range: Span, messages: &impl MessageLookup) -> NativeLintFinding {
+    Messages::new(messages).finding(range)
+}
+
+/// One query's immutable catalog selection, initialized only for a finding.
+pub(super) struct Messages {
+    message: Cow<'static, str>,
+    help: Cow<'static, str>,
+}
+
+impl Messages {
+    pub(super) fn new(messages: &impl MessageLookup) -> Self {
+        Self {
+            message: messages.lookup("a11y/tabindex-no-positive.message"),
+            help: messages.lookup("a11y/tabindex-no-positive.help"),
+        }
+    }
+
+    pub(super) fn finding(&self, range: Span) -> NativeLintFinding {
+        let diagnostic = Diagnostic::new(
+            Advisory::Warning,
+            Stage::Surface,
+            range,
+            self.message.as_ref(),
+        )
+        .with_part(DiagnosticPart::new(
+            PartKind::Help,
+            range,
+            self.help.as_ref(),
+        ));
+        NativeLintFinding {
+            rule_name: TABINDEX_NO_POSITIVE_RULE,
+            diagnostic,
+        }
+    }
+}
+
 fn positive(value: &str) -> Result<bool, NativeLintRefusal> {
     if !needs_decoding(value.as_bytes()) {
-        return Ok(value.parse::<i32>().is_ok_and(|number| number > 0));
+        return Ok(crate::attribute_policy::positive_tabindex(value));
     }
     let mut rest = value;
     let mut decoded = String::new("");
@@ -78,5 +101,5 @@ fn positive(value: &str) -> Result<bool, NativeLintRefusal> {
             .get(consumed..)
             .ok_or(NativeLintRefusal::SourceMismatch)?;
     }
-    Ok(decoded.parse::<i32>().is_ok_and(|number| number > 0))
+    Ok(crate::attribute_policy::positive_tabindex(&decoded))
 }

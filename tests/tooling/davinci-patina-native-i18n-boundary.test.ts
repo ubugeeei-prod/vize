@@ -7,6 +7,8 @@ import { withoutI18nHostImports } from "./support/davinci-i18n-host-imports.ts";
 const callers = [
   "crates/vize_patina/tests/native_syntax_img_alt.rs",
   "crates/vize_patina/tests/native_syntax_img_alt/support.rs",
+  "crates/vize_patina/tests/native_canonical_tabindex/support.rs",
+  "crates/vize_patina/tests/native_canonical_tabindex/refusals.rs",
 ];
 const declaration = "use vize_carton::i18n::{Locale, translator};";
 

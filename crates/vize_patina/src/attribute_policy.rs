@@ -1,5 +1,10 @@
 //! Shared exact authored attribute policy for HTML conformance rules.
 
+/// Keep the registered tabindex rule's complete i32 parsing semantics.
+pub fn positive_tabindex(value: &str) -> bool {
+    value.parse::<i32>().is_ok_and(|number| number > 0)
+}
+
 /// Returns a CSS replacement suggestion if the attribute is deprecated on the given element.
 pub fn deprecated_attr_suggestion(element: &str, attr: &str) -> Option<&'static str> {
     deprecated_attr_suggestion_by_tag(attr, |tag| element == tag)
