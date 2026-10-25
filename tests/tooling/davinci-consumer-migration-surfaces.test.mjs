@@ -421,7 +421,24 @@ void test("content mapper records the exact host path role without admitting leg
     introduced.sites.push({ ...host, surfaceId, matchedName, group });
     assert.throws(() => assertContentMapperHostPath(introduced), { name: "AssertionError" });
   }
-  assert.throws(() => assertContentMapperHostPath(mapper, () => "vize_carton::AstNode;"));
+  assert.throws(
+    () =>
+      assertContentMapperHostPath(mapper, (relPath) =>
+        readSurfaceSource(relPath).replaceAll(
+          "vize_carton::path::canonicalize_non_verbatim",
+          "vize_carton::AstNode",
+        ),
+      ),
+    { name: "AssertionError" },
+  );
+  assert.throws(
+    () =>
+      assertContentMapperHostPath({
+        ...mapper,
+        sites: mapper.sites.filter((site) => site.surfaceId !== "carton"),
+      }),
+    { name: "AssertionError" },
+  );
   const foundation = readSurfaceSource("davinci/vize_l0/src/lib.rs");
   assert.throws(() =>
     assertContentMapperHostPath(mapper, readSurfaceSource, `${foundation}\npub mod path;\n`),
