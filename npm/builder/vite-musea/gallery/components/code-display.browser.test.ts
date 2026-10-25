@@ -13,6 +13,7 @@ import { checkCopiedProps } from "./props-usage.browser-fixtures.ts";
 import { registerUsageCodeContracts } from "../../src/usage-code-contracts.ts";
 import { registerPreviewPropsBrowserTest } from "./preview-props.browser-fixtures";
 import { registerPropEditorCancellationTest } from "./prop-editor-cancellation.browser-fixtures";
+import { registerActionsNavigationTest } from "./actions-navigation.browser-fixtures.ts";
 
 registerUsageCodeContracts();
 
@@ -335,3 +336,4 @@ await test(
 
 await registerPreviewPropsBrowserTest();
 await registerPropEditorCancellationTest();
+await registerActionsNavigationTest();

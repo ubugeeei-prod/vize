@@ -156,6 +156,8 @@ function setVariantSectionRef(variantName: string, el: unknown) {
 }
 
 onMounted(() => {
+  // The shared event store outlives this view when navigation passes through Home.
+  clearActions();
   load();
   initActions();
 });
