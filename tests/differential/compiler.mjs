@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { expectedBuildIdentity, validateBuildReceipt } from "./build-receipt.ts";
 import { compareBytes } from "./compare.mjs";
+import { compilerCssApiReport, loadCompilerCssApiCases } from "./compiler-css-api.ts";
 import {
   loadProductManifest,
   readPinnedArtifact,
@@ -102,8 +103,14 @@ function loadDialectInput(root, fixture) {
 export function loadCompilerManifest(manifestPath) {
   const loaded = loadProductManifest(manifestPath, "compiler");
   const root = path.dirname(manifestPath);
+  const cssApiCases = loadCompilerCssApiCases(loaded.manifest.cssApiCases, (file) => {
+    const relative = file.slice("tests/_fixtures/differential/compiler/".length);
+    const physical = path.join(root, relative);
+    return fs.existsSync(physical) ? fs.readFileSync(physical) : null;
+  });
   return {
     ...loaded,
+    cssApiCases,
     cases: loaded.cases.map((fixture) => {
       assert.deepEqual(fixture.targets, ["ssr"]);
       assert.equal(fixture.state, "active");
@@ -252,6 +259,7 @@ export function compilerAttempt(
 
 export function validateCompilerReport(loaded, report, expectedBuild) {
   validateResultEnvelope(loaded, report, expectedBuild.sourceRevision);
+  assert.deepEqual(report.cssApi, compilerCssApiReport(loaded.cssApiCases));
   assert.deepEqual(report.argv, COMPILER_ARGV);
   if (report.buildReceipt) validateBuildReceipt(report.buildReceipt, expectedBuild);
   if (report.binary) {
@@ -405,6 +413,7 @@ export function runCompilerPack({ manifestPath, binaryPath, sourceRevision, repo
     buildReceipt: null,
     binary: null,
     rows: [],
+    cssApi: compilerCssApiReport(loaded.cssApiCases),
     summary: null,
   };
   let build = { sourceRevision };

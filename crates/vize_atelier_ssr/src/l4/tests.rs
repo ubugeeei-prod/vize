@@ -25,6 +25,7 @@ fn select(source: &str, options: &SsrCompilerOptions) -> SsrL4Selection {
         &SsrL4Request {
             options,
             experimental: &experimental,
+            runtime_module_name: "vue",
             template_syntax: TemplateSyntaxMode::Standard,
             has_custom_elements: false,
             context: crate::SsrSfcContext::new(true),

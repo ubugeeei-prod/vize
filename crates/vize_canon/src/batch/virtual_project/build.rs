@@ -142,6 +142,7 @@ pub(super) fn build_vue_registered_file(
             &descriptor,
             context.virtual_ts_options,
             VueCodegenOptions {
+                diagnostic_ownership: None,
                 check_options: context.virtual_ts_check_options,
                 typed_router_root: context.typed_router_root,
                 preserve_unused_diagnostics: context.preserve_unused_diagnostics,

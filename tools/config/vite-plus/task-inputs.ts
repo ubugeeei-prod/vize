@@ -158,6 +158,14 @@ export const cacheInputs = {
     "playground/e2e/**",
   ],
   tooling: toolingInputs,
+  // Strict project gates spawn the checker instead of importing every file in
+  // the root solution. Include source/config inputs even when they are deleted.
+  toolingTypeScriptProjects: [
+    "tsconfig.json",
+    "vite.config.ts",
+    "{tools,tests,npm,docs,.github}/**/*.{ts,mts,cts,js,mjs,cjs,json}",
+    "examples/oxlint-vize/check-configs.ts",
+  ],
   // These two original product observers consume source-built CLI/NAPI,
   // owned fixtures and runtime packages. Plan docs remain compile-time inputs;
   // release prose and decision records are not read by their producers.

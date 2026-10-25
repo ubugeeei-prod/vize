@@ -1,0 +1,5 @@
+<script setup lang="ts">
+defineProps<{ count: number }>();
+defineSlots<{ default(): any; header(): any; footer(props: { total: number }): any }>();
+</script>
+<template><div><slot /><slot name="header" /><slot name="footer" :total="1" /></div></template>

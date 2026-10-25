@@ -1,0 +1,146 @@
+name: Native Vue 2 IR template target
+on:
+  pull_request:
+    paths:
+      - .github/workflows/vue2-ir-template.yml
+      - davinci/vize_l1_to_l2/src/native_vue2*
+      - davinci/vize_l1_to_l2/src/native_vue2/**
+      - davinci/vize_l4/src/targets/vue2*
+      - davinci/vize_l4/src/targets/vue2/**
+      - davinci/vize_l4/examples/vue2_ir_template.rs
+      - davinci/vize_l4/examples/vue2_ir_template_lexical/**
+      - davinci/vize_l4/src/expr/resolved.rs
+      - Cargo.lock
+      - tests/tooling/native-vue2-ir-*.mjs
+  workflow_dispatch:
+permissions: { contents: read }
+concurrency:
+  group: vue2-ir-template-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  native-vue2-template:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        producer: [candidate, before]
+    env:
+      CARGO_BUILD_JOBS: "12"
+      CARGO_TERM_COLOR: always
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      SOURCE_SHA: ${{ matrix.producer == 'before' && '5a8bb7bec7c06a5bc5ee4d53e82b454db9f5ff1e' || github.event.pull_request.head.sha || github.sha }}
+      RECIPE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      VIZE_VUE2_IR_BASELINE: ${{ matrix.producer == 'before' && '1' || '0' }}
+      VIZE_VUE2_IR_REQUIRED: "1"
+      VIZE_VUE2_IR_CAPTURE: target/vize-tests/vue2-ir/native.json
+      VIZE_VUE2_IR_RUNTIME_RESULTS: target/vize-tests/vue2-ir/runtime.json
+      VIZE_VUE2_IR_LEXICAL_RESULTS: target/vize-tests/vue2-ir/lexical.json
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ env.RECIPE_SHA }}
+          path: .vue2-ir-recipe
+          persist-credentials: false
+          sparse-checkout: |
+            davinci/vize_l4/examples/vue2_ir_template.rs
+            davinci/vize_l4/examples/vue2_ir_template_lexical
+            tests/tooling/native-vue2-ir-template.test.mjs
+            tests/tooling/native-vue2-ir-lexical.test.mjs
+            tests/tooling/native-vue2-ir-vnode.mjs
+          sparse-checkout-cone-mode: false
+      - name: Use the same public-IR consumer against both producer revisions
+        run: |
+          test "$(git -C .vue2-ir-recipe rev-parse HEAD)" = "$RECIPE_SHA"
+          cp .vue2-ir-recipe/davinci/vize_l4/examples/vue2_ir_template.rs davinci/vize_l4/examples/
+          cp -R .vue2-ir-recipe/davinci/vize_l4/examples/vue2_ir_template_lexical davinci/vize_l4/examples/
+          cp .vue2-ir-recipe/tests/tooling/native-vue2-ir-*.mjs tests/tooling/
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, cache: true, run-install: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - name: Bind this initial-empty source target and source revision
+        run: |
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          export CARGO_TARGET_DIR="$RUNNER_TEMP/vue2-ir-source-$SOURCE_SHA"
+          printf 'CARGO_TARGET_DIR=%s\n' "$CARGO_TARGET_DIR" >> "$GITHUB_ENV"
+          printf 'VIZE_VUE2_IR_ORACLES_ROOT=%s/vue2-ir-oracles\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+          test ! -e "$CARGO_TARGET_DIR"
+          mkdir -p target/vize-tests/vue2-ir
+          git rev-parse HEAD HEAD^{tree} > target/vize-tests/vue2-ir/source.txt
+          printf '%s\n' "$CARGO_TARGET_DIR" > target/vize-tests/vue2-ir/initial-empty-target.txt
+      - name: Test actual retained owners and the shared-IR emitter
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo test --locked --profile ci -p vize_l1_to_l2 --lib native_vue2:: -- --nocapture 2>&1 | tee target/vize-tests/vue2-ir/lower.log
+          cargo test --locked --profile ci -p vize_l4 --lib targets::vue2:: -- --nocapture 2>&1 | tee target/vize-tests/vue2-ir/emit.log
+      - name: Capture complete generated modules and source phase timings
+        run: cargo run --locked --profile ci -p vize_l4 --example vue2_ir_template > "$VIZE_VUE2_IR_CAPTURE" 2> target/vize-tests/vue2-ir/capture.stderr
+      - name: Seal the actual source-native executable
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { createHash } from 'node:crypto';
+          import { execFileSync } from 'node:child_process';
+          import { readFileSync, statSync, writeFileSync } from 'node:fs';
+          import { join } from 'node:path';
+          const source = execFileSync('git', ['rev-parse', 'HEAD'], {encoding:'utf8'}).trim();
+          assert.equal(source, process.env.SOURCE_SHA);
+          const file = join(process.env.CARGO_TARGET_DIR, 'ci/examples/vue2_ir_template');
+          const hash = bytes => createHash('sha256').update(bytes).digest('hex');
+          const files = execFileSync('git', ['ls-files', '--', 'davinci/vize_l4/src/expr/resolved.rs', 'Cargo.lock', 'Cargo.toml', 'davinci/vize_l1_to_l2/src/lib.rs', 'davinci/vize_l1_to_l2/src/native_vue2.rs', 'davinci/vize_l1_to_l2/src/native_vue2', 'davinci/vize_l4/src/targets.rs', 'davinci/vize_l4/src/targets/vue2.rs', 'davinci/vize_l4/src/targets/vue2'], {encoding:'utf8'}).trim().split('\n');
+          writeFileSync('target/vize-tests/vue2-ir/producer.json', JSON.stringify({source, tree:execFileSync('git',['rev-parse','HEAD^{tree}'],{encoding:'utf8'}).trim(), executable:{file,bytes:statSync(file).size,sha256:hash(readFileSync(file))}, compiler:execFileSync('rustc',['--version'],{encoding:'utf8'}).trim(), consumerRecipe: {source:process.env.RECIPE_SHA, files:Object.fromEntries(['davinci/vize_l4/examples/vue2_ir_template.rs','davinci/vize_l4/examples/vue2_ir_template_lexical/mod.rs','tests/tooling/native-vue2-ir-template.test.mjs','tests/tooling/native-vue2-ir-lexical.test.mjs','tests/tooling/native-vue2-ir-vnode.mjs'].map(file=>[file,hash(readFileSync(file))]))}, sourceFiles: Object.fromEntries(files.map(file => [file,hash(readFileSync(file))])), runId:process.env.GITHUB_RUN_ID},null,2)+'\n');
+          JS
+      - name: Install exact official Vue 2 runtime and compiler pairs
+        shell: bash
+        run: |
+          set -euo pipefail
+          for row in vue26:2.6.14 vue27:2.7.16; do
+            name="${row%%:*}"
+            version="${row#*:}"
+            directory="$VIZE_VUE2_IR_ORACLES_ROOT/$name"
+            mkdir -p "$directory"
+            printf '{"name":"vize-vue2-ir-reference","private":true,"version":"1.0.0"}\n' > "$directory/package.json"
+            npm --prefix "$directory" install --save-exact --ignore-scripts --no-audit --no-fund "vue@$version" "vue-template-compiler@$version" "vue-server-renderer@$version" > "target/vize-tests/vue2-ir/$name.install.stdout" 2> "target/vize-tests/vue2-ir/$name.install.stderr"
+            cp "$directory/package-lock.json" "target/vize-tests/vue2-ir/$name.package-lock.json"
+          done
+      - name: Compare every bounded VNode field and complete SSR HTML
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test tests/tooling/native-vue2-ir-template.test.mjs tests/tooling/native-vue2-ir-lexical.test.mjs 2>&1 | tee target/vize-tests/vue2-ir/runtime.log
+      - name: Preserve source, complete modules, runtime packets and failures
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: vue2-ir-template-${{ matrix.producer }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.event.pull_request.head.sha || github.sha }}
+          path: target/vize-tests/vue2-ir/
+          if-no-files-found: error
+  unchanged-default-modules:
+    needs: native-vue2-template
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: vue2-ir-template-*
+          path: evidence
+      - name: Compare all original modules, maps, links and retained facts
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {readdirSync, readFileSync} from 'node:fs';
+          import {join} from 'node:path';
+          const folders = readdirSync('evidence');
+          assert.equal(folders.length, 2);
+          const read = role => JSON.parse(readFileSync(join('evidence', folders.find(name => name.startsWith(`vue2-ir-template-${role}-`)), 'native.json')));
+          const stable = row => { const {phaseNs, ...rest} = row; return rest; };
+          assert.equal(read('before').rows.length, 19);
+          assert.deepEqual(read('candidate').rows.map(stable), read('before').rows.map(stable));
+          JS

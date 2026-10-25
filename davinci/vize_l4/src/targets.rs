@@ -13,3 +13,4 @@ pub mod ssr;
 mod static_class;
 pub mod ts;
 pub mod vapor;
+pub mod vue2;

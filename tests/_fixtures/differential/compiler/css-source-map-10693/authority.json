@@ -1,0 +1,32 @@
+{
+  "beforeRevision": "b0033883518f364cfbd3dd0ab9464715e9f51758",
+  "fixRevision": "510b0bb1033a22265e3408693a4aa00b78351cef",
+  "sourceFiles": [
+    {
+      "path": "crates/vize_atelier_sfc/src/css.rs",
+      "beforeSha256": "786964c0d60f8e9fa40f96049d5ac8e0b39dad44b600597178d3ecc6c0a39b18",
+      "afterSha256": "e3f3c72ca5e8aa7e969dbe51d06c170538e15397c949059ffa752f138481b915"
+    },
+    {
+      "path": "crates/vize_atelier_sfc/src/css/parser.rs",
+      "beforeSha256": "e3198361d7de3a88f9eeea60d39fb0db31b265dd3cc407b65dc9c7b7b2b3a135",
+      "afterSha256": "b9acfb0caa822fe41136c338317097ea7057545d739a896a2d1a76469b8e341e"
+    },
+    {
+      "path": "crates/vize_atelier_sfc/src/css/parser/engine_boundary.rs",
+      "beforeSha256": "25b8844bec264cb8b73856d9938d579dfab22198947ee37f82d2a0f34b2ee4c3",
+      "afterSha256": "2f575ffd29fef628f1e7671e77b5158df322b710b2b6567ce7745b55f24c9f70"
+    },
+    {
+      "path": "crates/vize_atelier_sfc/src/css/parser/source_map.rs",
+      "beforeSha256": null,
+      "afterSha256": "9407caab92d93bcb935133cf723ba3fd05520f11dec6c732535449b6abb28077"
+    },
+    {
+      "path": "vendor/lightningcss/src/printer.rs",
+      "beforeSha256": "2c3804c18d9ba81e47bb9d5a35a34cae93b1518ea12eab018e393e33a589af9f",
+      "afterSha256": "ae24bd4f827f58a6fc92a918f2de6d3dd24f2fb7f41e88573862f005d5bf87e5"
+    }
+  ],
+  "scope": "source-inspected direct API; generic CLI unsupported; no whole-product native credit"
+}
