@@ -5,6 +5,7 @@
 const nativeBinding = require("./native-binding");
 
 module.exports = nativeBinding;
+module.exports.getVueLanguageProjectMetadata = nativeBinding.getVueLanguageProjectMetadata;
 module.exports.generateVueLanguageCode = nativeBinding.generateVueLanguageCode;
 module.exports.PluginDocumentHandle = nativeBinding.PluginDocumentHandle;
 module.exports.applyOutputPlugins = nativeBinding.applyOutputPlugins;

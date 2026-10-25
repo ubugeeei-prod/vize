@@ -8,6 +8,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { startTsserver, position } from "./tsserver-client.mjs";
 import { createNavigationFixtures, checkNavigation } from "./authored-navigation.mjs";
+import { checkProjectMetadata } from "./project-metadata.mjs";
 
 const typescriptVersion = process.env.VIZE_TYPESCRIPT_PLUGIN_TYPESCRIPT || "6.0.3";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -164,6 +165,7 @@ assert.equal(
   digest(fs.readFileSync(path.join(root, "npm/native", loadedImage.file))),
 );
 fs.writeFileSync(path.join(output, "native-image.json"), JSON.stringify(loadedImage, null, 2));
+checkProjectMetadata(nativeApi, consumer, output);
 for (const [file, source] of [
   [vue, vueText],
   [art, artText],
