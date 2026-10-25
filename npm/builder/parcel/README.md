@@ -80,7 +80,7 @@ qualified separately from post-error recovery. Parcel 2.16.4 can reload a stale
 HTTP-cached document after rapid compilation-error recovery
 ([tracked issue](https://github.com/ubugeeei-prod/vize/issues/10736)). This remains
 an explicit failing frontier; content hashing alone is not a qualified workaround.
-The `test:host:recovery-frontier` script retains strict latest-source assertions
+The `test:recovery-frontier` script retains strict latest-source assertions
 with browser caching enabled.
 
 Parcel tracing (`shouldTrace: true`) records individual native compiler, parser,

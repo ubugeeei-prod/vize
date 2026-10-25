@@ -44,7 +44,7 @@
     "fmt": "vp fmt --write src vite.config.ts",
     "test": "pnpm build && node --test src/*.test.ts",
     "test:host": "node ../../../tools/support/compat/parcel/run.mjs",
-    "test:host:recovery-frontier": "node ../../../tools/support/compat/parcel/run.mjs --recovery-frontier"
+    "test:recovery-frontier": "node ../../../tools/support/compat/parcel/run.mjs --recovery-frontier"
   },
   "dependencies": {
     "@parcel/diagnostic": "2.16.4",
