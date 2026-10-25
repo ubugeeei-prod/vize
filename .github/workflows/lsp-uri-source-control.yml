@@ -40,7 +40,11 @@ jobs:
         with: { node-version-file: package.json, cache: true, run-install: false }
       - run: vp install --frozen-lockfile --prefer-offline
       - name: Verify all six strict TypeScript projects
-        run: node tools/support/typescript/check-project.ts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p target/vize-tests/project-uri-source-control-replay-10622
+          node tools/support/typescript/check-project.ts 2>&1 | tee target/vize-tests/project-uri-source-control-replay-10622/strict-types.log
       - name: Install immutable Vue for all five refusal laws
         shell: bash
         run: |

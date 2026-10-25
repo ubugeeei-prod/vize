@@ -104,7 +104,7 @@ for (const role of ["control", "candidate"]) {
 }
 assert.equal(trials.length, 4);
 for (const field of ["compiler", "cargo", "locks", "runner"]) {
-  const first = object(trials[0].producer)[field];
+  const first: unknown = object(trials[0].producer)[field];
   for (const trial of trials)
     assert.deepEqual(
       object(trial.producer)[field],
