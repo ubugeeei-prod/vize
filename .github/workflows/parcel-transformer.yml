@@ -27,8 +27,6 @@ jobs:
   packed-host:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
-    env:
-      CARGO_TARGET_DIR: ${{ runner.temp }}/parcel-native-${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -51,7 +49,9 @@ jobs:
         run: |
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
           test -z "$(git status --porcelain --untracked-files=normal)"
+          export CARGO_TARGET_DIR="$RUNNER_TEMP/parcel-native-$SOURCE_SHA"
           test ! -e "$CARGO_TARGET_DIR"
+          printf 'CARGO_TARGET_DIR=%s\n' "$CARGO_TARGET_DIR" >> "$GITHUB_ENV"
           node npm/native/scripts/build-ci.mjs --request-ci-capture
       - name: Build the actual native source
         run: vp run --filter './npm/native' build:ci
