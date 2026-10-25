@@ -124,7 +124,7 @@ function executionAuthority(source, consumer, environment) {
       fs.readFileSync(path.join(loader, "vite-runtime.mjs"), "utf8") +
       fs.readFileSync(path.join(loader, "module-runtime.mjs"), "utf8") +
       embedded[1],
-    configFile: fs.realpathSync(consumer.configFile),
+    configFile: fs.realpathSync(path.join(consumer.configRoot, "vite.config.mjs")),
     configCachePattern: new RegExp(
       `^${escape(environment.TMPDIR ?? os.tmpdir())}/vize-config-compile-[A-Za-z0-9]+$`,
       "u",
