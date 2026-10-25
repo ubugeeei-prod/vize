@@ -133,6 +133,7 @@ await test("selectors, opaque values, malformed functions and unsupported profil
     ["css", ".x { /*#336699*/ color:red; }", "#336699"],
     ["css", ".x { background:url(#336699); }", "#336699"],
     ["css", ".x { color:rgb(1 invalid 3); }", "rgb"],
+    ["css", ".x { color:rgb(51 /* ```css **text** */ 102 153); }", "rgb"],
     ["css", ".x { color:rgb(1 var(--value) 3); }", "--value"],
     ["css", ".x { color:#336699z; }", "#336699"],
     ["scss", ".x { color:#{'#336699'}; }", "#336699"],

@@ -111,8 +111,20 @@ fn unsafe_or_unsupported_lookalikes_cannot_gain_color_hover() {
 }
 
 #[test]
-fn functional_comments_never_enter_rendered_markdown() {
+fn unsupported_functional_comments_are_refused_and_multiline_values_are_normalized() {
     let literal = "rgb(51 /* ```css\n**unsafe** */ 102 153)";
+    let source = format!("<style>.日本🧭 {{ color:{literal}; }}</style>");
+    let start = source.find(literal).unwrap();
+    let (state, uri) = document(&source);
+    let ctx = IdeContext::new(&state, &uri, start + 2).unwrap();
+    assert_eq!(
+        super::hover(&ctx).map(|hover| serde_json::to_value(hover).unwrap()),
+        None
+    );
+
+    // Preserve the existing parser's exact admission boundary. Valid multiline
+    // whitespace is accepted, and only its normalized presentation is rendered.
+    let literal = "rgb(51\n  102 153)";
     let source = format!("<style>.日本🧭 {{ color:{literal}; }}</style>");
     let start = source.find(literal).unwrap();
     let end = start + literal.len();
