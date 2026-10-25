@@ -8,6 +8,34 @@ pub struct OffsetAdjustment {
     pub adjustment: i32,
 }
 
+#[cfg(test)]
+mod storage_tests {
+    use super::{ImportSourceMap, ReplacementRange};
+
+    #[test]
+    fn normal_rewrites_use_one_presized_metadata_buffer_without_reallocation() {
+        for count in [0, 1, 4, 5, 64, 256] {
+            let mut map = ImportSourceMap::for_rewrites(count);
+            let pointer = map.replacement_ranges.as_ptr();
+            for index in (0..count).rev() {
+                let start = index as u32 * 8 + 10;
+                map.record_replacement(start, start + 2, 4);
+                assert_eq!(map.replacement_ranges.as_ptr(), pointer);
+            }
+            map.finish_descending_replacements();
+            assert_eq!(map.adjustments.capacity(), 0);
+            assert_eq!(map.replacement_ranges.len(), count);
+            assert_eq!(map.replacement_ranges.as_ptr(), pointer);
+            eprintln!(
+                "literal_mapping_storage rows={count} owned_buffers={} capacity={} bytes={}",
+                usize::from(map.replacement_ranges.capacity() != 0),
+                map.replacement_ranges.capacity(),
+                map.replacement_ranges.capacity() * std::mem::size_of::<ReplacementRange>()
+            );
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct RewriteResult {
     pub code: String,
@@ -47,6 +75,76 @@ impl ImportSourceMap {
         }
     }
 
+    /// Normal module rewrites own one range buffer instead of also duplicating
+    /// their end adjustments. Legacy adjustment-only callers remain supported.
+    pub(super) fn for_rewrites(count: usize) -> Self {
+        Self {
+            adjustments: Vec::new(),
+            replacement_ranges: Vec::with_capacity(count),
+        }
+    }
+
+    pub(super) fn record_replacement(&mut self, start: u32, end: u32, length: u32) {
+        self.replacement_ranges.push(ReplacementRange {
+            original_start: start,
+            original_end: end,
+            virtual_start: start,
+            virtual_end: start.checked_add(length).unwrap(),
+        });
+    }
+
+    /// The writer replaces literals right to left. Publish their actual virtual
+    /// coordinates in source order, applying each shift at its exclusive end.
+    pub(super) fn finish_descending_replacements(&mut self) {
+        self.replacement_ranges.reverse();
+        let mut delta = 0_i64;
+        for range in &mut self.replacement_ranges {
+            let length = range.virtual_end - range.virtual_start;
+            range.virtual_start = (i64::from(range.original_start) + delta)
+                .try_into()
+                .unwrap();
+            range.virtual_end = range.virtual_start.checked_add(length).unwrap();
+            delta = i64::from(range.virtual_end) - i64::from(range.original_end);
+        }
+    }
+
+    fn preceding_delta(&self, index: usize) -> i64 {
+        index
+            .checked_sub(1)
+            .and_then(|index| self.replacement_ranges.get(index))
+            .map_or(0, |range| {
+                i64::from(range.virtual_end) - i64::from(range.original_end)
+            })
+    }
+
+    fn original_offset_from_ranges(&self, offset: u32) -> u32 {
+        let index = self
+            .replacement_ranges
+            .partition_point(|range| range.virtual_end <= offset);
+        if let Some(range) = self.replacement_ranges.get(index)
+            && offset >= range.virtual_start
+        {
+            return range.original_start;
+        }
+        (i64::from(offset) - self.preceding_delta(index))
+            .try_into()
+            .unwrap()
+    }
+
+    fn virtual_offset_from_ranges(&self, offset: u32) -> u32 {
+        let index = self
+            .replacement_ranges
+            .partition_point(|range| range.original_end <= offset);
+        if let Some(range) = self.replacement_ranges.get(index)
+            && offset >= range.original_start
+        {
+            return range.virtual_start;
+        }
+        (i64::from(offset) + self.preceding_delta(index))
+            .try_into()
+            .unwrap()
+    }
+
     pub(super) fn with_replacement_ranges(
         adjustments: Vec<OffsetAdjustment>,
         replacements: Vec<(u32, u32, u32)>,
@@ -74,7 +172,18 @@ impl ImportSourceMap {
         if replacements.is_empty() {
             return self.clone();
         }
-        let mut adjustments = self.adjustments.clone();
+        let mut adjustments = if self.adjustments.is_empty() {
+            self.replacement_ranges
+                .iter()
+                .map(|range| OffsetAdjustment {
+                    original_offset: range.original_end,
+                    adjustment: (range.virtual_end - range.virtual_start) as i32
+                        - (range.original_end - range.original_start) as i32,
+                })
+                .collect()
+        } else {
+            self.adjustments.clone()
+        };
         adjustments.extend(replacements.iter().map(|(start, length)| OffsetAdjustment {
             original_offset: start + 1,
             adjustment: *length as i32 - 1,
@@ -104,6 +213,12 @@ impl ImportSourceMap {
     }
 
     pub fn get_original_offset(&self, virtual_offset: u32) -> u32 {
+        if self.adjustments.is_empty() {
+            if self.replacement_ranges.is_empty() {
+                return virtual_offset;
+            }
+            return self.original_offset_from_ranges(virtual_offset);
+        }
         if let Some(range) = self.replacement_ranges.iter().find(|range| {
             range.virtual_start <= virtual_offset && virtual_offset < range.virtual_end
         }) {
@@ -121,6 +236,12 @@ impl ImportSourceMap {
     }
 
     pub fn get_virtual_offset(&self, original_offset: u32) -> u32 {
+        if self.adjustments.is_empty() {
+            if self.replacement_ranges.is_empty() {
+                return original_offset;
+            }
+            return self.virtual_offset_from_ranges(original_offset);
+        }
         if let Some(range) = self.replacement_ranges.iter().find(|range| {
             range.original_start <= original_offset && original_offset < range.original_end
         }) {
