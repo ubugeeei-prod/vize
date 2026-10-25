@@ -189,8 +189,9 @@ export async function projectViteConfigSource(source, env, configDir) {
     // commands' file selection. Only the global controls are projected here.
   }
   const lint = source.lint?.vue;
-  if (typeof lint === "boolean") overrides.linter = { enabled: lint };
-  else if (object(lint)) {
+  if (typeof lint === "boolean") {
+    overrides.linter = overlayVueOptions(overrides.linter ?? {}, { enabled: lint });
+  } else if (object(lint)) {
     const { typecheck: _typecheck, locale: _locale, helpLevel: _helpLevel, ...native } = lint;
     overrides.linter = overlayVueOptions(overrides.linter ?? {}, native);
   }

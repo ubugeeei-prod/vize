@@ -145,6 +145,58 @@ void test("source CLI top-level Vite+ lint config equals the complete canonical 
         );
       }
     }
+    const common = {
+      settings: { vize: { preset: "incremental" } },
+      rules: { "vize/vue/prefer-props-shorthand": "warn", "vize/vue/no-v-html": "warn" },
+    };
+    for (const fixture of [
+      {
+        layer: true,
+        native: {
+          enabled: true,
+          preset: "incremental",
+          rules: { "vue/prefer-props-shorthand": "warn", "vue/no-v-html": "warn" },
+        },
+      },
+      {
+        layer: false,
+        native: {
+          enabled: false,
+          preset: "incremental",
+          rules: { "vue/prefer-props-shorthand": "warn", "vue/no-v-html": "warn" },
+        },
+      },
+      {
+        layer: false,
+        canonical: { enabled: true, rules: { "vue/no-v-html": "off" } },
+        native: {
+          enabled: true,
+          preset: "incremental",
+          rules: { "vue/prefer-props-shorthand": "warn", "vue/no-v-html": "off" },
+        },
+      },
+      {
+        layer: { preset: "opinionated", rules: { "vue/no-v-html": "off" } },
+        canonical: { preset: "essential" },
+        native: {
+          preset: "essential",
+          rules: { "vue/prefer-props-shorthand": "warn", "vue/no-v-html": "off" },
+        },
+      },
+    ]) {
+      const canonical = run({ vue: { linter: fixture.native } });
+      const shared = run({
+        lint: { ...common, vue: fixture.layer },
+        ...(fixture.canonical ? { vue: { linter: fixture.canonical } } : {}),
+      });
+      assert.equal(shared.status, canonical.status);
+      assert.equal(
+        shared.stdout,
+        canonical.stdout,
+        "complete boolean/object/canonical precedence packet",
+      );
+      assert.equal(shared.stderr, canonical.stderr);
+    }
     const rejected = run({ lint: { rules: { "vize/vue/no-v-html": "warning" } } });
     assert.equal(rejected.status, 2);
     assert.equal(rejected.stdout, "");

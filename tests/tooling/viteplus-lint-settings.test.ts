@@ -40,7 +40,10 @@ test("Vue lint overrides only explicit leaves and canonical scoped arrays retain
       rules: { "vize/vue/no-v-html": "error", "vize/vue/prefer-props-shorthand": "warn" },
       vue: { preset: "incremental", rules: { "vue/no-v-html": "warn" } },
     },
-    vue: { linter: { rules: { "vue/no-v-html": "off" } }, entries: [] },
+    vue: {
+      linter: { rules: { "vue/no-v-html": "off" } },
+      entries: [{ files: ["src/admin/**/*.vue"], linter: { rules: { "vue/no-v-html": "error" } } }],
+    },
   };
   assert.deepEqual(await resolveViteConfigExport(source), {
     typeChecker: { jsxTypecheck: true },
@@ -48,7 +51,7 @@ test("Vue lint overrides only explicit leaves and canonical scoped arrays retain
       preset: "incremental",
       rules: { "vue/no-v-html": "off", "vue/prefer-props-shorthand": "warn" },
     },
-    entries: [],
+    entries: [{ files: ["src/admin/**/*.vue"], linter: { rules: { "vue/no-v-html": "error" } } }],
   });
   assert.deepEqual(await resolveViteConfigExport({ lint: { vue: false } }), {
     typeChecker: { jsxTypecheck: true },
@@ -57,6 +60,53 @@ test("Vue lint overrides only explicit leaves and canonical scoped arrays retain
   assert.deepEqual(await resolveViteConfigExport({ lint: { rules: { "no-console": "error" } } }), {
     typeChecker: { jsxTypecheck: true },
   });
+});
+
+test("boolean and object Vue lint layers preserve common settings while canonical leaves win", async () => {
+  const common = {
+    settings: { vize: { preset: "incremental", typeAware: false } },
+    rules: { "vize/vue/no-v-html": "warn", "vize/vue/prefer-props-shorthand": "error" },
+  };
+  for (const enabled of [true, false]) {
+    assert.deepEqual(await resolveViteConfigExport({ lint: { ...common, vue: enabled } }), {
+      typeChecker: { jsxTypecheck: true },
+      linter: {
+        enabled,
+        preset: "incremental",
+        typeAware: false,
+        rules: { "vue/no-v-html": "warn", "vue/prefer-props-shorthand": "error" },
+      },
+    });
+    assert.deepEqual(
+      await resolveViteConfigExport({
+        lint: { ...common, vue: enabled },
+        vue: { linter: { enabled: !enabled, rules: { "vue/no-v-html": "off" } } },
+      }),
+      {
+        typeChecker: { jsxTypecheck: true },
+        linter: {
+          enabled: !enabled,
+          preset: "incremental",
+          typeAware: false,
+          rules: { "vue/no-v-html": "off", "vue/prefer-props-shorthand": "error" },
+        },
+      },
+    );
+  }
+  assert.deepEqual(
+    await resolveViteConfigExport({
+      lint: { ...common, vue: { rules: { "vue/no-v-html": "off" }, preset: "essential" } },
+      vue: { linter: { preset: "opinionated" } },
+    }),
+    {
+      typeChecker: { jsxTypecheck: true },
+      linter: {
+        preset: "opinionated",
+        typeAware: false,
+        rules: { "vue/no-v-html": "off", "vue/prefer-props-shorthand": "error" },
+      },
+    },
+  );
 });
 
 test("invalid shared native lint settings refuse", async () => {

@@ -6,8 +6,8 @@ on:
     paths:
       - "crates/vize_carton/src/config/**"
       - "davinci/vize_l0/src/config/**"
-      - "crates/vize/src/commands/fmt/**"
-      - "crates/vize/src/commands/fmt.rs"
+      - "crates/vize/src/commands/lint/**"
+      - "crates/vize/src/commands/lint.rs"
       - "npm/cli/pkl/**"
       - "npm/cli/schemas/vize.config.schema.json"
       - "tests/tooling/viteplus-lint-*.test.*"
