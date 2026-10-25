@@ -1,51 +1,84 @@
-name: Canonical corpus objects
-# Seeds the immutable fixture object cache that the PR and queue canonical
-# observers restore. Only trusted default-branch runs write it; pull requests
-# and merge groups only read it (exact pins first, then the same .gitmodules
-# prefix) and still verify every checked-out byte against the committed tree.
+name: Diagnostic canonical ELOOP observation
+
 on:
-  push:
-    branches: [main]
-    paths:
-      - .gitmodules
-      - "tests/_fixtures/_git/**"
-      - .github/workflows/canonical-corpus-objects.yml
-  schedule:
-    # Daily, so the entry is never evicted as unused.
-    - cron: "41 2 * * *"
-  workflow_dispatch:
-permissions: { contents: read }
-concurrency:
-  group: canonical-corpus-objects-${{ github.ref }}
-  cancel-in-progress: false
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
 jobs:
-  seed:
-    name: Seed canonical fixture objects
-    if: ${{ github.ref == 'refs/heads/main' }}
+  observe:
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 30
+    timeout-minutes: 12
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      RUSTC_WRAPPER: ""
+      RUSTC_WORKSPACE_WRAPPER: ""
+      CARGO_INCREMENTAL: "0"
+      BASE_SHA: "30ef8eb44fefa108dbdbcaadeef5d514c882d003"
+      CURRENT_SHA: "78719553cf550bcffbf1d0fb891fda642f42de3a"
     steps:
-      - name: Checkout trusted main
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { persist-credentials: false, ref: "${{ github.sha }}" }
-      - name: Setup Node
-        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with: { node-version-file: "package.json", package-manager-cache: false }
-      - name: Plan canonical corpus identity
-        id: corpus-plan
-        run: node tools/support/compat/github/canonical-corpus-observer.mjs plan
-      - name: Require a trusted cache writer
-        if: ${{ steps.corpus-plan.outputs.cache-trusted != 'true' }}
-        run: echo 'Only trusted default-branch runs seed canonical fixture objects.' >&2; exit 1
-      - name: Cache immutable trusted fixture objects
-        id: objects
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          path: .git/modules/tests/_fixtures/_git
-          key: ${{ steps.corpus-plan.outputs.cache-key }}
-          restore-keys: ${{ steps.corpus-plan.outputs.cache-restore-key }}
-      - name: Fetch pinned fixture objects
-        if: ${{ steps.objects.outputs.cache-hit != 'true' }}
-        run: git submodule update --init --checkout --depth 1 --jobs 32 -- tests/_fixtures/_git
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af
+        with:
+          version: latest
+          node-version: "24.14.0"
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with:
+          toolchain: "1.99.1"
+      - name: Observe each immutable source once in a fresh role root
+        shell: bash
+        run: |
+          set -euo pipefail
+          capture="$RUNNER_TEMP/canonical-eloop-observation"
+          test ! -e "$capture"
+          mkdir -p "$capture"
+          test "$(node -p 'process.versions.node')" = 24.14.0
+          command -v strace > "$capture/strace-path.txt"
+          strace --version > "$capture/strace-version.txt"
+          uname -a > "$capture/uname.txt"
+          cat /proc/self/mountinfo > "$capture/mountinfo.txt"
+          cat /proc/self/maps > "$capture/launcher-maps.txt"
+          rustc -Vv > "$capture/rustc.txt"
+          rustup which rustc > "$capture/rustc-path.txt"
+          sha256sum "$(rustup which rustc)" "$(command -v node)" "$(command -v strace)" > "$capture/tool-executables.sha256"
+          node --version > "$capture/node.txt"
+          git rev-parse HEAD HEAD^{tree} > "$capture/campaign-source.txt"
+          observer="$GITHUB_WORKSPACE/tests/tooling/diagnostic-canonical-eloop-observer.mjs"
+          sha256sum "$observer" tests/tooling/diagnostic-canonical-eloop-verify.mjs .github/workflows/canonical-corpus-objects.yml > "$capture/observer-inputs.sha256"
+          for role in base current; do
+            if [[ "$role" == base ]]; then sha="$BASE_SHA"; else sha="$CURRENT_SHA"; fi
+            source="$RUNNER_TEMP/canonical-eloop-source-$role"
+            output="$capture/$role"
+            test ! -e "$source"
+            mkdir -p "$output"
+            git worktree add --detach "$source" "$sha"
+            git -C "$source" status --porcelain=v1 > "$output/worktree-before.txt"
+            test ! -s "$output/worktree-before.txt"
+            git -C "$source" rev-parse HEAD HEAD^{tree} > "$output/source.txt"
+            (cd "$source" && sha256sum tests/tooling/davinci-canonical-corpus-native-walk.test.mjs tests/tooling/fixtures/canonical_corpus_collector_original.rs tests/davinci_test_support/src/corpus.rs tools/support/compat/github/canonical-corpus-{logical-walk.ts,native-walk.ts,finite-walk.mjs,inventory.mjs,batch.ts,types.ts}) > "$output/source-inputs.sha256"
+            stat -f "$source" "$RUNNER_TEMP" > "$output/filesystem.txt"
+            set +e
+            (cd "$source" && VIZE_ELOOP_OBSERVER_DIRECTORY="$output" VIZE_ELOOP_SOURCE_SHA="$sha" VIZE_ELOOP_ROLE="$role" strace -ff -ttt -yy -s 16384 -v -e trace=%file,getdents64 -o "$output/syscalls" node --import "$observer" --test --test-reporter=tap --test-name-pattern='^current fail-closed Rust collector qualifies finite routes while retaining complete original kernel paths and bytes$' tests/tooling/davinci-canonical-corpus-native-walk.test.mjs) > "$output/stdout.txt" 2> "$output/stderr.txt"
+            status=$?
+            set -e
+            printf '%s\n' "$status" > "$output/exit-status.txt"
+            git -C "$source" status --porcelain=v1 > "$output/worktree-after.txt"
+            test ! -s "$output/worktree-after.txt"
+            (cd "$source" && sha256sum --check "$output/source-inputs.sha256") > "$output/source-inputs-verified.txt"
+          done
+          cmp "$capture/base/source-inputs.sha256" "$capture/current/source-inputs.sha256"
+          node tests/tooling/diagnostic-canonical-eloop-verify.mjs "$capture"
+      - name: Preserve all outcomes without replacing the first observation
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: canonical-eloop-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
+          path: ${{ runner.temp }}/canonical-eloop-observation/**
+          if-no-files-found: error
+          retention-days: 14
