@@ -516,17 +516,32 @@ jobs:
           cp tests/fixtures/typechecker/experimental-router-mapper-host/package-lock.json.txt "$RUNNER_TEMP/router-mapper-host/package-lock.json"
           npm ci --prefix "$RUNNER_TEMP/router-mapper-host" --ignore-scripts --no-audit --no-fund --prefer-offline --registry=https://registry.npmjs.org
           sha256sum "$RUNNER_TEMP/router-mapper-host/package-lock.json" "$RUNNER_TEMP/router-mapper-host/node_modules/typescript/package.json" "$RUNNER_TEMP/router-mapper-host/node_modules/@typescript/typescript-linux-x64/lib/tsc" > "$RUNNER_TEMP/router-experimental/host-identity.sha256"
-      - name: Build source CLI and test immutable project context
+      - name: Build source CLI
+        run: |
+          cargo build --locked --profile ci -p vize --bin vize
+          sha256sum target/ci/vize > "$RUNNER_TEMP/router-experimental/source-cli.sha256"
+      - name: Test immutable project context and batch preservation
+        id: project-context
+        continue-on-error: true
         env:
           CORSA_PATH: ${{ runner.temp }}/router-mapper-host/node_modules/@typescript/typescript-linux-x64/lib/tsc
           VIZE_TEST_REQUIRE_TSGO: "1"
         run: |
-          cargo build --locked --profile ci -p vize --bin vize
-          cargo test --locked --profile ci -p vize_canon content_mapper_config::typed_router_tests:: -- --nocapture
-          cargo test --locked --profile ci -p vize --bin vize commands::content_mapper::typed_router_tests:: -- --nocapture
+          cargo test --locked --profile ci -p vize_canon --lib content_mapper_config::typed_router_tests:: -- --nocapture
+          cargo test --locked --profile ci -p vize --lib commands::content_mapper::typed_router_tests:: -- --nocapture
           cargo test --locked --profile ci -p vize_canon --test fix_history_diagnostics content_mapper_experimental_router_context_preserves_published_page_types -- --nocapture
-          sha256sum target/ci/vize > "$RUNNER_TEMP/router-experimental/source-cli.sha256"
+      - name: Profile one admission and repeated source projections in isolation
+        id: source-profile
+        continue-on-error: true
+        env:
+          VIZE_TEST_ROUTER_PROFILE_OUTPUT: ${{ runner.temp }}/router-experimental/source-profile.json
+        run: >-
+          cargo test --locked --profile ci -p vize_canon --lib
+          batch::virtual_project::content_mapper::typed_router_profile_tests::typed_router_context_admission_is_outside_repeated_projection_work
+          -- --ignored --exact --nocapture
       - name: Require complete published-provider mapper and reference packets
+        id: mapper-oracle
+        continue-on-error: true
         env:
           VIZE_TEST_BIN: ${{ github.workspace }}/target/ci/vize
           VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/router-mapper-host/node_modules/typescript/bin/tsc
@@ -540,3 +555,13 @@ jobs:
           name: router-experimental-mapper-${{ github.sha }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/router-experimental/
           if-no-files-found: error
+      - name: Require every independent router qualification result
+        if: always()
+        env:
+          PROJECT_CONTEXT_OUTCOME: ${{ steps.project-context.outcome }}
+          SOURCE_PROFILE_OUTCOME: ${{ steps.source-profile.outcome }}
+          MAPPER_ORACLE_OUTCOME: ${{ steps.mapper-oracle.outcome }}
+        run: |
+          test "$PROJECT_CONTEXT_OUTCOME" = success
+          test "$SOURCE_PROFILE_OUTCOME" = success
+          test "$MAPPER_ORACLE_OUTCOME" = success

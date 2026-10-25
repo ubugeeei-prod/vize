@@ -492,3 +492,56 @@ test("official-host fixtures preserve every original reported input and referenc
     );
   }
 });
+
+test("experimental Router campaign preserves each independent outcome before its final gate", () => {
+  const workflow = readRepoFile(".github", "workflows", "content-mapper-conformance.yml");
+  const steps = jobSteps(workflow, "router-experimental") as Array<
+    WorkflowStep & { "continue-on-error"?: boolean }
+  >;
+  const context = steps.find((step) => step.id === "project-context")!;
+  assert.equal(context["continue-on-error"], true);
+  assert.match(
+    context.run!,
+    /cargo test --locked --profile ci -p vize --lib commands::content_mapper::typed_router_tests::/u,
+  );
+  assert.match(
+    context.run!,
+    /--test fix_history_diagnostics content_mapper_experimental_router_context_preserves_published_page_types/u,
+  );
+  const profile = steps.find((step) => step.id === "source-profile")!;
+  assert.equal(profile["continue-on-error"], true);
+  assert.match(
+    profile.run!,
+    /typed_router_context_admission_is_outside_repeated_projection_work -- --ignored --exact --nocapture/u,
+  );
+  assert.equal(
+    profile.env?.VIZE_TEST_ROUTER_PROFILE_OUTPUT,
+    "${{ runner.temp }}/router-experimental/source-profile.json",
+  );
+  const oracle = steps.find((step) => step.id === "mapper-oracle")!;
+  assert.equal(oracle["continue-on-error"], true);
+  assert.equal(oracle.env?.VIZE_TEST_ROUTER_EXPERIMENTAL_REQUIRED, "1");
+  const upload = steps.findIndex((step) => step.uses?.startsWith("actions/upload-artifact@"));
+  const gate = steps.findIndex((step) => step.env?.MAPPER_ORACLE_OUTCOME !== undefined);
+  assert.ok(
+    upload > steps.indexOf(context) &&
+      upload > steps.indexOf(profile) &&
+      upload > steps.indexOf(oracle),
+  );
+  assert.equal(steps[upload].if, "always()");
+  assert.ok(gate > upload);
+  assert.equal(steps[gate].if, "always()");
+  assert.deepEqual(steps[gate].env, {
+    PROJECT_CONTEXT_OUTCOME: "${{ steps.project-context.outcome }}",
+    SOURCE_PROFILE_OUTCOME: "${{ steps.source-profile.outcome }}",
+    MAPPER_ORACLE_OUTCOME: "${{ steps.mapper-oracle.outcome }}",
+  });
+  assert.equal(
+    steps[gate].run?.trim(),
+    [
+      'test "$PROJECT_CONTEXT_OUTCOME" = success',
+      'test "$SOURCE_PROFILE_OUTCOME" = success',
+      'test "$MAPPER_ORACLE_OUTCOME" = success',
+    ].join("\n"),
+  );
+});

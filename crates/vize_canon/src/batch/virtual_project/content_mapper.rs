@@ -159,6 +159,18 @@ pub fn generate_vue_content_mapper_transform_with_project_options(
     transform_options: ContentMapperTransformOptions,
     typed_router_root: Option<&Path>,
 ) -> CorsaResult<ContentMapperTransform> {
+    vize_l0::profile!(
+        "canon.content_mapper.transform",
+        generate_transform(path, content, transform_options, typed_router_root)
+    )
+}
+
+fn generate_transform(
+    path: &Path,
+    content: &str,
+    transform_options: ContentMapperTransformOptions,
+    typed_router_root: Option<&Path>,
+) -> CorsaResult<ContentMapperTransform> {
     let authored_content = content;
     let authored = crate::authored_sfc::AuthoredSfc::new(content);
     let content = authored.analyzed();
@@ -562,3 +574,6 @@ mod unknown_options_tests;
 
 #[cfg(test)]
 mod directive_tests;
+
+#[cfg(test)]
+mod typed_router_profile_tests;
