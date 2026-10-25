@@ -1255,6 +1255,53 @@
         "runner": "tests/native/css-compile-source-maps.mjs",
         "requestCount": 84
       }
+    },
+    {
+      "id": "compiler/css/v-bind-source-map-10712",
+      "state": "active",
+      "adapter": "compile-css-binding-map-10712",
+      "targets": ["css"],
+      "inputs": {
+        "root": "v-bind-source-map-10712",
+        "files": [
+          {
+            "path": "input.css",
+            "role": "source",
+            "sha256": "d4bcb58e9c3f773f3dbefa3e86efcd749d70ae7f32e5b6853fcfdc181e3a4aa8"
+          },
+          {
+            "path": "options.json",
+            "role": "options",
+            "sha256": "97e265c0c18813d9ce25f5fe22e63ee87dcf58e0927b72fb0300fec7ac550bd0"
+          },
+          {
+            "path": "source-before.json",
+            "role": "source-before",
+            "sha256": "c322fc9fbbc2464e90910bec90df1e5850a76b357af1299cf3ecf698be1c4f7e"
+          },
+          {
+            "path": "source-after.json",
+            "role": "source-after",
+            "sha256": "befe177d471e97820205deef5a0de882f209f7fa1ed80c4cc194e19330d4fc00"
+          },
+          {
+            "path": "authority.json",
+            "role": "authority",
+            "sha256": "ecc5b8c7c2dfeaa5f528344f930d29d2ffeac8c109c0e0d7e5bacff6c558cbae"
+          },
+          {
+            "path": "source-before-observation.json",
+            "role": "source-before-observation",
+            "sha256": "34b3db351b75e8e73d835e83e86aa29ad533d6691db94fdb75b718b453c335f0"
+          }
+        ]
+      },
+      "genericCli": "unsupported-css-api",
+      "nativeCompatibility": "unsupported",
+      "witness": {
+        "runner": "tests/native/css-v-bind-source-maps.mjs",
+        "requestCount": 40
+      }
     }
   ]
 }

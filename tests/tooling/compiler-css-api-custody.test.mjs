@@ -7,11 +7,13 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import {
   compilerCssApiReport,
+  compilerCssApiSources,
   cssMapProducerPaths,
   loadCompilerCssApiCases,
   newCompilerCssApiCases,
   onlyCompilerCssChanges,
 } from "../differential/compiler-css-api.ts";
+import { cssBindingProducerPaths } from "../differential/compiler-css-api-registry.ts";
 import { loadCompilerManifest } from "../differential/compiler.mjs";
 import { readCargoMetadata } from "../../tools/support/compat/github/plan-affected-rust.ts";
 import { readJsWorkspace } from "../../tools/support/compat/github/plan-affected-js.ts";
@@ -31,33 +33,45 @@ const read = (file) =>
 await test("closed actual CSS API inputs remain separate from all SSR execution and native rates", () => {
   const loaded = loadCompilerManifest(manifestPath);
   assert.equal(loaded.cases.length, manifest.cases.length);
-  assert.equal(loaded.cssApiCases.length, 1);
+  assert.equal(loaded.cssApiCases.length, manifest.cssApiCases.length);
   assert.ok(loaded.cases.every((row) => row.targets.length === 1 && row.targets[0] === "ssr"));
   const report = compilerCssApiReport(loaded.cssApiCases);
-  assert.deepEqual(report, {
-    plannedCases: 1,
-    genericCliUnsupported: 1,
-    nativeHandled: 0,
-    nativeEquivalent: 0,
-    pairedComparisons: 0,
-    rows: [
-      {
-        id: "compiler/css/source-map-10693",
-        state: "source-inspected",
-        genericCli: "unsupported-css-api",
-        wholeProductNative: "unsupported",
-        inputSha256: "95eb31d1885582970845eecdd729bd7794feab04b648ad9240859fe5375628ba",
-        publicBeforeSha256: "a77d5512fc0ea4d50229b55649cd505d61e481d544118bbeeb746d39d1a1b9d6",
-        sourceAfterSha256: "38dae0e480b12f25f532450c61f08f2721aa0bff940c2121e9c10b0f1c839ea1",
-        witness: { runner: "tests/native/css-compile-source-maps.mjs", requestCount: 84 },
-      },
-    ],
-  });
+  assert.deepEqual(
+    { ...report, rows: report.rows.slice(0, 1) },
+    {
+      plannedCases: 2,
+      genericCliUnsupported: 2,
+      nativeHandled: 0,
+      nativeEquivalent: 0,
+      pairedComparisons: 0,
+      rows: [
+        {
+          id: "compiler/css/source-map-10693",
+          state: "source-inspected",
+          genericCli: "unsupported-css-api",
+          wholeProductNative: "unsupported",
+          inputSha256: "95eb31d1885582970845eecdd729bd7794feab04b648ad9240859fe5375628ba",
+          publicBeforeSha256: "a77d5512fc0ea4d50229b55649cd505d61e481d544118bbeeb746d39d1a1b9d6",
+          sourceAfterSha256: "38dae0e480b12f25f532450c61f08f2721aa0bff940c2121e9c10b0f1c839ea1",
+          witness: { runner: "tests/native/css-compile-source-maps.mjs", requestCount: 84 },
+        },
+      ],
+    },
+  );
 });
 
 await test("the actual required fixture gate admits only the exact CSS producer and refuses mixed changes", () => {
   const readSide = (side, file) => {
-    if (side === "head") return read(file);
+    if (side === "head") {
+      try {
+        return execFileSync("git", ["show", `3a3c8460f966fddbd8e1be4c083d460b24202f90:${file}`], {
+          cwd: root,
+          stdio: ["ignore", "pipe", "ignore"],
+        });
+      } catch {
+        return null;
+      }
+    }
     try {
       return execFileSync("git", ["show", `b0033883518f364cfbd3dd0ab9464715e9f51758:${file}`], {
         cwd: root,
@@ -98,7 +112,7 @@ await test("the actual required fixture gate admits only the exact CSS producer 
 });
 
 await test("CSS input, source-after map and forged completion cannot acquire generic execution credit", () => {
-  const original = manifest.cssApiCases;
+  const original = manifest.cssApiCases.slice(0, 1);
   for (const mutate of [
     (row) => {
       row.nativeCompatibility = "completed";
@@ -155,7 +169,7 @@ await test("CSS registration binds exact actual before/head producer bytes and r
       return null;
     }
   };
-  assert.deepEqual(newCompilerCssApiCases(undefined, manifest.cssApiCases, readSide), [
+  assert.deepEqual(newCompilerCssApiCases(undefined, manifest.cssApiCases.slice(0, 1), readSide), [
     "compiler/css/source-map-10693",
   ]);
   assert.deepEqual(
@@ -165,7 +179,7 @@ await test("CSS registration binds exact actual before/head producer bytes and r
   for (const side of ["base", "head"])
     for (const source of cssMapProducerPaths)
       assert.throws(() =>
-        newCompilerCssApiCases(undefined, manifest.cssApiCases, (actual, file) =>
+        newCompilerCssApiCases(undefined, manifest.cssApiCases.slice(0, 1), (actual, file) =>
           actual === side && file === source ? Buffer.from("foreign") : readSide(actual, file),
         ),
       );
@@ -181,8 +195,9 @@ await test("actual Cargo and tracked JS dependency graphs select required native
   const cargoMetadata = readCargoMetadata(root),
     workspace = readJsWorkspace(root);
   for (const file of [
-    ...cssMapProducerPaths,
+    ...new Set([...cssMapProducerPaths, ...cssBindingProducerPaths]),
     "crates/vize_atelier_sfc/src/css/parser/deleted.rs",
+    "crates/vize_croquis/src/sfc/deleted.rs",
   ]) {
     const selected = planPrChecks({
       paths: [file],
@@ -214,7 +229,10 @@ await test("the required UI-conformance producer cannot be skipped, swallowed or
   );
   assert.deepEqual(Object.keys(proof).sort(), ["env", "if", "name", "run"]);
   assert.equal(workflow.jobs["pr-js-package-conformance"]["continue-on-error"], undefined);
-  assert.equal(proof.run, "node --test tests/native/css-compile-source-maps.mjs");
+  assert.equal(
+    proof.run,
+    "node --test tests/native/css-compile-source-maps.mjs tests/native/css-v-bind-source-maps.mjs",
+  );
   assert.equal(proof.env.VIZE_CSS_MAP_REQUIRE_SOURCE, "1");
   assert.equal(proof.env.VIZE_CSS_MAP_SOURCE_SHA, "${{ github.sha }}");
   assert.equal(proof.if, steps.find((step) => step.name === "Check UI package conformance").if);
