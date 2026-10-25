@@ -23,11 +23,9 @@ jobs:
       CARGO_TERM_COLOR: always
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-      CARGO_TARGET_DIR: ${{ runner.temp }}/vue2-ir-source-${{ github.event.pull_request.head.sha || github.sha }}
       VIZE_VUE2_IR_REQUIRED: "1"
       VIZE_VUE2_IR_CAPTURE: target/vize-tests/vue2-ir/native.json
       VIZE_VUE2_IR_RUNTIME_RESULTS: target/vize-tests/vue2-ir/runtime.json
-      VIZE_VUE2_IR_ORACLES_ROOT: ${{ runner.temp }}/vue2-ir-oracles
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -42,6 +40,9 @@ jobs:
       - name: Bind this initial-empty source target and source revision
         run: |
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          export CARGO_TARGET_DIR="$RUNNER_TEMP/vue2-ir-source-$SOURCE_SHA"
+          printf 'CARGO_TARGET_DIR=%s\n' "$CARGO_TARGET_DIR" >> "$GITHUB_ENV"
+          printf 'VIZE_VUE2_IR_ORACLES_ROOT=%s/vue2-ir-oracles\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
           test ! -e "$CARGO_TARGET_DIR"
           mkdir -p target/vize-tests/vue2-ir
           git rev-parse HEAD HEAD^{tree} > target/vize-tests/vue2-ir/source.txt
