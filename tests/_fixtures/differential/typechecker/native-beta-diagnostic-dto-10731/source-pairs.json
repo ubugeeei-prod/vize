@@ -46,11 +46,11 @@
   "producerFiles": [
     {
       "path": ".github/workflows/native-beta-diagnostic-dto.yml",
-      "sha256": "019557e2777688daa66971e45d43a2b4f3c5d34c9f0fe8e51cff5feb62a93ac7"
+      "sha256": "375bc14e1f668e69b1714af5833de88624d48165546caa0e4e08034b547d491c"
     },
     {
       "path": "tests/tooling/support/native-beta-dto/prepare-role.mjs",
-      "sha256": "e168dec0d8f5b7bbf83d5bc2938224473e5909e8513b05627ffbb4f5f6c38e14"
+      "sha256": "42295058df96dce2353ea3e92d4d58e3aad9fea83b40ac41386c256beb29ee58"
     },
     {
       "path": "tests/tooling/support/native-beta-dto/provider.mjs",
@@ -58,11 +58,19 @@
     },
     {
       "path": "tests/tooling/support/native-beta-dto/audit-wire.mjs",
-      "sha256": "a678db7bbbf62959e3ab744ad459bc62c6eee61c24014296cae1a5b24631d56c"
+      "sha256": "f1d1b86571d0dcef93a2f9057dccdde7226bc77dd5e65ff69898d99fa6ea8b3b"
     },
     {
       "path": "tests/tooling/support/native-beta-dto/run-source.mjs",
-      "sha256": "c3fba7858f0f0bf0737111b8b339e0b8da1e675e0b069bd9f48cd11f5cf7355e"
+      "sha256": "5f34df720e3ca174c2a03f02f7e798646ccc908ac0335ac5b20273dc5284b65d"
+    },
+    {
+      "path": "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta_materialized.rs",
+      "sha256": "a3654e527128303ebd9e7c143d2e80c6f84b3798f325d8cf510ed8ec12e42b6d"
+    },
+    {
+      "path": "tests/tooling/support/native-runtime-selection/lsp-strace-lines.mjs",
+      "sha256": "75433713a12562fd38fa9d475e15006d43d19771bee7e5524f11eabe454c6ca6"
     }
   ]
 }

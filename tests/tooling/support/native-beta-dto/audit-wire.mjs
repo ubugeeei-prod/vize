@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { readStraceLines } from "../native-runtime-selection/lsp-strace-lines.mjs";
 
 const root = process.env.VIZE_NATIVE_DTO_CAPTURE;
 const load = (name) => JSON.parse(fs.readFileSync(path.join(root, name), "utf8"));
@@ -28,8 +29,9 @@ const unhex = (value) => Buffer.from(value.replaceAll("\\x", ""), "hex");
 for (const file of files) {
   const tid = Number(file.split(".").at(-1));
   let pending;
-  const lines = fs.readFileSync(path.join(root, file), "utf8").split("\n");
-  for (const [index, original] of lines.entries()) {
+  let index = -1;
+  for (const original of readStraceLines(path.join(root, file))) {
+    index++;
     let line = original;
     if (line.includes("<unfinished ...>")) {
       assert.equal(pending, undefined, "Unobserved nested syscall");
@@ -48,7 +50,13 @@ for (const file of files) {
         unhex(value).toString("utf8"),
       );
       if (decoded.includes(provider.executable))
-        leaders.push({ pid: tid, argvObservation: decoded, lsp: decoded.includes("--lsp") });
+        leaders.push({
+          pid: tid,
+          argvObservation: decoded,
+          lsp: decoded.includes("--lsp"),
+          api: decoded.includes("--api"),
+          version: decoded.includes("--version"),
+        });
     }
     const child = /clone(?:3)?\(.*\)\s+=\s+(\d+)$/.exec(line);
     if (child && line.includes("CLONE_THREAD")) threads.set(Number(child[1]), tid);
@@ -81,8 +89,17 @@ for (const file of files) {
   }
   // An unfinished blocking read at process exit carries no returned bytes.
 }
-const native = leaders.filter((entry) => entry.lsp).sort((a, b) => a.pid - b.pid);
-assert(native.length >= 2, "Separate owned-API and attached-editor native scopes required");
+assert(
+  leaders.every((entry) => entry.lsp || entry.api || entry.version),
+  "Every actual SDK process must have a known role",
+);
+const native = leaders.filter((entry) => !entry.version).sort((a, b) => a.pid - b.pid);
+assert.equal(
+  native.length,
+  1,
+  "The independent owned-API DTO role has exactly one actual native owner",
+);
+assert(native[0].lsp, "The first scope must retain its actual owned API attachment");
 function owner(value) {
   const seen = new Set();
   while (threads.has(value)) {
@@ -151,7 +168,12 @@ const receipts = [];
 fs.mkdirSync(path.join(root, "raw-streams"), { recursive: true });
 for (const [index, process] of native.entries()) {
   const leader = process.pid;
-  const scope = index === 0 ? "api-owned-explicit-file-changes" : "attached-editor-overlay";
+  const scope =
+    index === 0
+      ? "api-owned-explicit-file-changes"
+      : process.api
+        ? "materialized-standalone-api"
+        : "materialized-editor-lsp";
   const streams = new Map();
   for (const row of records) {
     if (owner(row.tid) !== leader) continue;
@@ -197,9 +219,13 @@ for (const [index, process] of native.entries()) {
   const byFd = new Map(observations.map((entry) => [entry.fd, entry]));
   assert(byFd.get(0)?.client && byFd.get(1)?.server);
   relations(byFd.get(0).client.packets, byFd.get(1).server.packets);
-  const apiStreams = observations.filter((entry) => entry.fd >= 3 && entry.client && entry.server);
-  assert.equal(apiStreams.length, 1, "One retained API attachment per native LSP owner");
-  const api = apiStreams[0];
+  const apiStreams = process.api
+    ? [{ client: byFd.get(0).client, server: byFd.get(1).server }]
+    : observations.filter((entry) => entry.fd >= 3 && entry.client && entry.server);
+  assert(apiStreams.length <= 1, "At most one API attachment per native LSP owner");
+  if (index === 0)
+    assert.equal(apiStreams.length, 1, "The DTO scope requires its actual API attachment");
+  const api = apiStreams[0] ?? { client: { packets: [] }, server: { packets: [] } };
   relations(api.client.packets, api.server.packets);
   const requests = api.client.packets.filter((row) => "id" in row && "method" in row);
   const responses = new Map(
@@ -241,24 +267,24 @@ for (const [index, process] of native.entries()) {
         "Owned source bytes must occur in a complete API frame",
       );
     }
-  } else if (source.role === "after" && provider.version === "7.1.0-beta") {
-    assert.deepEqual(
-      requests.filter((row) => semantic.has(row.method)),
-      [],
-      "Attached DerivedSnapshots must not use semantic API queries",
-    );
   }
+  // Materialized standalone API snapshots are an independent owned view. Their
+  // packets are retained, not credited as the real retained-attached front door.
   const lspClient = byFd.get(0).client.packets;
   const lspServer = byFd.get(1).server.packets;
   const shutdown = lspClient.filter((row) => row.method === "shutdown");
-  assert.equal(shutdown.length, 1, "Exactly one native shutdown request required");
-  assert(
-    lspServer.some((row) => row.id === shutdown[0].id && row.result === null),
-    "Whole shutdown ACK required",
-  );
+  if (process.lsp) {
+    assert.equal(shutdown.length, 1, "Exactly one native LSP shutdown request required");
+    assert(
+      lspServer.some((row) => row.id === shutdown[0].id && row.result === null),
+      "Whole LSP shutdown ACK required",
+    );
+  }
   receipts.push({
     scope,
     nativeOwner: leader,
+    nativeMode: process.api ? "api" : "lsp",
+    semanticApiRequests: requests.filter((row) => semantic.has(row.method)),
     nativeExit: exits.get(leader),
     nativeStdinEof: eofReads.some((row) => owner(row.tid) === leader && row.fd === 0),
     exitNotifications: lspClient.filter((row) => row.method === "exit").length,
@@ -267,14 +293,14 @@ for (const [index, process] of native.entries()) {
     compilerKindPackets: kindRows,
   });
 }
-assert.equal(source.attached.rows.length, 4);
+
 save("closed-full-wire.json", {
   source: source.source,
   role: source.role,
   providerVersion: provider.version,
   providerSha256: provider.executableSha256,
   scope:
-    "Independent API-owned explicit disk/FileChanges snapshots and attached editor overlay routes. Complete native frames retained without response-field filtering.",
+    "Independent API-owned explicit disk/FileChanges DTO role only. Materialized frontier and retained-attached real Maestro workspace are separate producers. Complete frames retained without field filtering.",
   leaders,
   owners: receipts,
 });
@@ -294,8 +320,8 @@ if (baseline) {
   for (const receipt of receipts) {
     assert.equal(
       receipt.exitNotifications,
-      1,
-      "Old source standard-exit boundary must remain observed",
+      receipt.nativeMode === "lsp" ? 1 : 0,
+      "Old-source LSP standard-exit / standalone API EOF boundary must remain observed",
     );
     const bytes = fs.readFileSync(path.join(root, receipt.stderr.file));
     const clean = receipt.nativeExit === 0 && bytes.length === 0;

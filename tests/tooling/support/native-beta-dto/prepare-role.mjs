@@ -23,6 +23,7 @@ const output = path.join(
 );
 fs.mkdirSync(output, { recursive: true });
 const observer = "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta.rs";
+const observers = [observer, observer.replace("native_beta.rs", "native_beta_materialized.rs")];
 const registration = "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests.rs";
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const harness = fs.readFileSync(path.join(GITHUB_WORKSPACE, observer));
@@ -32,10 +33,14 @@ if (ROLE === "before") {
   const original = fs.readFileSync(path.join(root, registration), "utf8");
   assert(!original.includes("mod native_beta;"));
   fs.writeFileSync(path.join(root, registration), `${original}\n#[cfg(unix)]\nmod native_beta;\n`);
-  fs.copyFileSync(path.join(GITHUB_WORKSPACE, observer), path.join(root, observer));
+  for (const file of observers)
+    fs.copyFileSync(path.join(GITHUB_WORKSPACE, file), path.join(root, file));
   // The sole tracked delta only registers the separately hashed public-API test.
   assert.equal(git(["diff", "--name-only"], root), registration);
-  assert.equal(git(["ls-files", "--others", "--exclude-standard"], root), observer);
+  assert.equal(
+    git(["ls-files", "--others", "--exclude-standard"], root),
+    [...observers].sort().join("\n"),
+  );
   execFileSync("git", ["diff", "--exit-code", "--", ".", `:(exclude)${registration}`], {
     cwd: root,
   });
@@ -66,6 +71,10 @@ const manifest = {
   sdkVersion: SDK_VERSION,
   head: HEAD_SHA,
   harness: { path: observer, sha256: hash(harness) },
+  observerModules: observers.map((file) => ({
+    path: file,
+    sha256: hash(fs.readFileSync(path.join(root, file))),
+  })),
   production: Object.fromEntries(
     production.map((file) => [file, hash(fs.readFileSync(path.join(root, file)))]),
   ),

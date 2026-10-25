@@ -76,10 +76,81 @@ jobs:
           cargo test --locked --profile ci -p vize_canon --lib lsp_client::initial_diagnostics::
           cargo test --locked --profile ci -p vize_canon --lib lsp_client::editor_lsp::snapshot_source::
           cargo clippy --locked --profile ci -p vize_canon --all-targets -- -D warnings
+      - name: Preserve separate materialized close topology frontier with actual identities
+        if: ${{ matrix.role == 'after' && matrix.sdk.version == '7.1.0-beta' }}
+        env:
+          VIZE_NATIVE_DTO_SELECTOR: lsp_client::editor_lsp::snapshot_source::tests::native_beta::actual_materialized_close_topology_retains_the_closed_dependency
+        run: |
+          owned_capture="$VIZE_NATIVE_DTO_CAPTURE"
+          frontier_capture="$owned_capture/materialized-close-frontier"
+          mkdir -p "$frontier_capture"
+          cp "$owned_capture/build.jsonl" "$frontier_capture/build.jsonl"
+          cp "$owned_capture/provider.json" "$frontier_capture/provider.json"
+          export VIZE_NATIVE_DTO_CAPTURE="$frontier_capture"
+          node "$GITHUB_WORKSPACE/tests/tooling/support/native-beta-dto/run-source.mjs"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
           name: native-beta-dto-${{ matrix.role }}-${{ matrix.sdk.version }}-${{ env.HEAD_SHA }}
           path: target/vize-tests/native-beta-dto/
+          if-no-files-found: error
+          retention-days: 7
+
+  source-workspace:
+    uses: ./.github/workflows/full-source-cli.yml
+  workspace-front-door:
+    needs: source-workspace
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        campaign: [runtime-selection, native-beta-dto-workspace-10731]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false, fetch-depth: 0 }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, cache: true, run-install: false }
+      - run: vp install --frozen-lockfile --prefer-offline
+      - uses: ./.github/actions/restore-source-cli
+        with: { producer: "${{ toJSON(needs.source-workspace.outputs) }}" }
+      - name: Pin validation composition and observer law controls
+        run: |
+          git diff --exit-code b3ef5520644577a1a636e1d33026991bb29b0c9c -- crates/vize_canon/src/lsp_client/initial_diagnostics.rs crates/vize_canon/src/lsp_client/editor_lsp/client.rs
+          node --test tests/tooling/native-runtime-selection-lsp-strace.test.mjs
+          node tests/tooling/support/native-beta-dto/composition.mjs
+      - name: Install exact independent official providers
+        run: |
+          command -v strace
+          provider_root="$RUNNER_TEMP/native-beta-workspace-providers"
+          test ! -e "$provider_root"
+          npm install --prefix "$provider_root/beta" --ignore-scripts --no-audit --no-fund --save-exact --registry=https://registry.npmjs.org typescript@7.1.0-beta vue@3.5.44
+          npm install --prefix "$provider_root/six" --ignore-scripts --no-audit --no-fund --save-exact --registry=https://registry.npmjs.org typescript@6.0.3
+          npm install --prefix "$provider_root/frozen702" --ignore-scripts --no-audit --no-fund --save-exact --registry=https://registry.npmjs.org typescript@7.0.2 vue@3.5.44
+      - name: Preserve default eight profiles or observe separate beta workspace role
+        env:
+          VIZE_REQUIRE_NATIVE_RUNTIME_SELECTION: "1"
+          VIZE_SOURCE_CLI: ${{ github.workspace }}/target/ci/vize
+          VIZE_NATIVE_BETA_ROOT: ${{ runner.temp }}/native-beta-workspace-providers/beta
+          VIZE_TYPESCRIPT_SIX_ROOT: ${{ runner.temp }}/native-beta-workspace-providers/six
+          VIZE_NATIVE_702_ROOT: ${{ runner.temp }}/native-beta-workspace-providers/frozen702
+          CAMPAIGN: ${{ matrix.campaign }}
+        run: |
+          export VIZE_NATIVE_STRACE="$(command -v strace)"
+          if [ "$CAMPAIGN" = runtime-selection ]; then
+            node tests/tooling/support/native-runtime-selection/lsp.mjs
+          else
+            node tests/tooling/support/native-runtime-selection/lsp-native-beta-dto.mjs
+          fi
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: native-beta-workspace-${{ matrix.campaign }}-${{ github.sha }}
+          path: |
+            target/vize-tests/native-beta-dto-composition/**
+            target/vize-tests/native-runtime-selection-lsp/**
+            target/vize-tests/native-beta-dto-workspace-10731/**
+            target/ci/vize.differential-build.json
+            ${{ runner.temp }}/native-beta-workspace-providers/**/package-lock.json
           if-no-files-found: error
           retention-days: 7

@@ -5,6 +5,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 const capture = process.env.VIZE_NATIVE_DTO_CAPTURE;
 const selector =
+  process.env.VIZE_NATIVE_DTO_SELECTOR ??
   "lsp_client::editor_lsp::snapshot_source::tests::native_beta::actual_sdk_semantic_error_repair_navigation_and_two_file_scope_are_complete";
 const artifacts = fs
   .readFileSync(path.join(capture, "build.jsonl"), "utf8")

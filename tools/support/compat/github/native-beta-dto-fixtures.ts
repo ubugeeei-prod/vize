@@ -50,6 +50,7 @@ const scope = new Set([
   `${snapshot}protocol/protocol9/tests.rs`,
   `${snapshot}tests.rs`,
   `${snapshot}tests/native_beta.rs`,
+  `${snapshot}tests/native_beta_materialized.rs`,
 ]);
 const inputs = [
   "snapshot-source-text/protocol9-beta.bin",
@@ -64,6 +65,8 @@ const producerFiles = [
   "tests/tooling/support/native-beta-dto/provider.mjs",
   "tests/tooling/support/native-beta-dto/audit-wire.mjs",
   "tests/tooling/support/native-beta-dto/run-source.mjs",
+  `${snapshot}tests/native_beta_materialized.rs`,
+  "tests/tooling/support/native-runtime-selection/lsp-strace-lines.mjs",
 ];
 const before = "13fa41356d075047a229f580014b637d3bbeb57f";
 const betaCommit = "3e9236361fa97a9e6c685f4833ac457ae2d8c50a";
@@ -218,7 +221,9 @@ export function newNativeBetaDtoProtocolCases(
           "snapshot-source-text/protocol9-beta.json",
         ), "actual DTO pack is not consumed");
     }
-    const actual = read("head", tests[3]!.source)?.toString("utf8") ?? "";
+    const actual = [tests[3]!.source, `${snapshot}tests/native_beta_materialized.rs`]
+      .map((file) => read("head", file)?.toString("utf8") ?? "")
+      .join("\n");
     for (const marker of [
       "#[ignore",
       "native_diagnostics::read(",

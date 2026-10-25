@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "id": "lsp/regression/shared-api-snapshot-reopen-10730",
+  "provenance": {
+    "fixCommit": "88dcd2615a74571777ec5aa6e9eed5191a0699a3",
+    "witnessPath": "tests/tooling/support/native-runtime-selection/lsp-shared-api-reopen.mjs",
+    "inputOrigin": "Authored derivative of the source9469 canonical and alias TypeScript7.0.2 full protocol reproduction; add explicit doubled:number to expose unsaved dependency result types.",
+    "contractOrigin": "Whole authored type diagnostic and hover packets; original9469 raw/API snapshot chronology preserved independently.",
+    "transitions": {
+      "path": "campaign.json",
+      "sha256": "d3312fd24378b1ac94de585ee4ba0088d9e2f025e177c9fc7a30bb20c9eb877e"
+    },
+    "issue": "https://github.com/ubugeeei-prod/vize/issues/10730",
+    "wireContract": {
+      "path": "wire-contract.json",
+      "sha256": "787ac66952fc6b6a8a74b0cbf96aaf41709fb65831a9e874c991d8cb0995f97a"
+    }
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "src/App.vue",
+      "sha256": "8347f4ab02c9790fc28b706a75447f4e1589cc5d0868fa301f72fe3a4d2502a8"
+    },
+    {
+      "source": "support.ts.txt",
+      "runtimePath": "src/support.ts",
+      "sha256": "c40ee5471c06d6e079385b900bbc4366305362f85f25ac4b3a14d7645f54cc57"
+    },
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "214b5ef4f89b5b85b020d54c16eed7f94790387ad2db75c6a5a35ad918f93a88"
+    },
+    {
+      "source": "vite.config.mjs.txt",
+      "runtimePath": "vite.config.mjs",
+      "sha256": "641fe25d9d7e6ba39b0b1d006e760fdd2cfd92cdb7d9dbb6009ceb049df72ef7"
+    }
+  ],
+  "entry": "src/App.vue",
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "1b4919bc758ca4f554edf5b578b7fa7facbd90931af57aa8cf88eced17039bce"
+  },
+  "method": "textDocument/hover",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true,
+    "ecosystem": false
+  },
+  "scope": "These two ordinary manifest requests assert complete typed hovers for the pinned source inputs. The separately pinned 702-only campaign owns stale snapshot, unsaved cross-file diagnostics, repair, close and repeated reopen claims; this manifest case alone does not claim those transitions."
+}

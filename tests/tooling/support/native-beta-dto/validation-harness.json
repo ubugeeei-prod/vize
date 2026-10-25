@@ -1,0 +1,154 @@
+{
+  "scope": "Validation-only immutable harness/fixture copy. No 10733 production source or closed10733 registration pins. Later beta-specific deltas must be listed independently.",
+  "files": [
+    {
+      "path": "tests/tooling/support/native-runtime-selection/authority.mjs",
+      "revision": "91cfa49f7a36a309493d20ec2168296502a78aa3",
+      "sha256": "6f7bfe4fd271a6113818d884e5ee1b2b91805ba8c3cca7e248c68b4ec3763a78"
+    },
+    {
+      "path": "tests/tooling/support/native-runtime-selection/exec-custody.mjs",
+      "revision": "91cfa49f7a36a309493d20ec2168296502a78aa3",
+      "sha256": "ebd335af370574770e769477eceed36e543a8e5ff4cfbd5dc86e0d36244639f0"
+    },
+    {
+      "path": "tests/tooling/support/native-runtime-selection/lsp-native-lifecycle.mjs",
+      "revision": "91cfa49f7a36a309493d20ec2168296502a78aa3",
+      "sha256": "95395e34acb935bd98775e635cdc51331060feb5dc37cd97fa248405fefa8eba"
+    },
+    {
+      "path": "tests/tooling/support/native-runtime-selection/lsp-shared-api-campaign.mjs",
+      "revision": "91cfa49f7a36a309493d20ec2168296502a78aa3",
+      "sha256": "915fc8b0662d4989ee5ffacf9004142fa38127e54e0773e49a70834aa3229b6c"
+    },
+    {
+      "path": "tests/tooling/support/native-runtime-selection/lsp-shared-api-reopen.mjs",
+      "revision": "91cfa49f7a36a309493d20ec2168296502a78aa3",
+      "sha256": "17930e2ea156a5775403888bf20a70e91b12048291294a7d343fd8eaaeb3a2fa"
+    },
+    {
+      "path": "tests/tooling/support/native-runtime-selection/lsp-source-custody.mjs",
+      "revision": "91cfa49f7a36a309493d20ec2168296502a78aa3",
+      "sha256": "abe1920ba0e6badab8b81a4fb1e1eeb16704f9a0bbb83ccdf60f55ddb5b1327b"
+    },
+    {
+      "path": "tests/tooling/support/native-runtime-selection/lsp-strace-terminal.mjs",
+      "revision": "91cfa49f7a36a309493d20ec2168296502a78aa3",
+      "sha256": "006e6ba72071b008f4c9b08a816fc00d243bca657340f6fb6cf5c293edd58d8c"
+    },
+    {
+      "path": "tests/tooling/support/native-runtime-selection/lsp-strace.mjs",
+      "revision": "91cfa49f7a36a309493d20ec2168296502a78aa3",
+      "sha256": "79f12dd5d444c85636a444317a2cd2ca4b68193befcdc0b0fb3a20f3b58f975e"
+    },
+    {
+      "path": "tests/tooling/support/native-runtime-selection/lsp-wire.mjs",
+      "revision": "91cfa49f7a36a309493d20ec2168296502a78aa3",
+      "sha256": "19abd5edafb2cde0be60b90097f28e4f71df644373a613d1e355246645ff37f3"
+    },
+    {
+      "path": "tests/tooling/support/native-runtime-selection/lsp.mjs",
+      "revision": "91cfa49f7a36a309493d20ec2168296502a78aa3",
+      "sha256": "4aabacbc18a702aaeb212a2ee276b07a8605554b4a4b021d2f70c4c73e8a334b"
+    },
+    {
+      "path": "tests/tooling/support/native-runtime-selection/napi-custody.mjs",
+      "revision": "91cfa49f7a36a309493d20ec2168296502a78aa3",
+      "sha256": "52908644ca579d4b72996c4f83759e277c7a0da9292a8b5ddfc6b56e2bb58b57"
+    },
+    {
+      "path": "tests/tooling/support/native-runtime-selection/napi-worker.mjs",
+      "revision": "91cfa49f7a36a309493d20ec2168296502a78aa3",
+      "sha256": "da0d287234a8f4225b9d9a9fd8480449d1530638eea185adc27c72eeab24820f"
+    },
+    {
+      "path": "tests/tooling/support/native-runtime-selection/providers.mjs",
+      "revision": "91cfa49f7a36a309493d20ec2168296502a78aa3",
+      "sha256": "666b2b35d4665fa695eabdf473497ef617ec3871332d2dfc66dbd3f2ed250879"
+    },
+    {
+      "path": "tests/tooling/native-runtime-selection-lsp-strace.test.mjs",
+      "revision": "91cfa49f7a36a309493d20ec2168296502a78aa3",
+      "sha256": "8ba54655e8bdd2ec4c70287e76fb0dd94d320db996435bfeb36fa77c2587bd31"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/shared-api-snapshot-reopen-10730/App.vue.txt",
+      "revision": "91cfa49f7a36a309493d20ec2168296502a78aa3",
+      "sha256": "8347f4ab02c9790fc28b706a75447f4e1589cc5d0868fa301f72fe3a4d2502a8"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/shared-api-snapshot-reopen-10730/campaign.json",
+      "revision": "91cfa49f7a36a309493d20ec2168296502a78aa3",
+      "sha256": "d3312fd24378b1ac94de585ee4ba0088d9e2f025e177c9fc7a30bb20c9eb877e"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/shared-api-snapshot-reopen-10730/case.json",
+      "revision": "91cfa49f7a36a309493d20ec2168296502a78aa3",
+      "sha256": "ae8dd53c5060b16fe59863097bc6916c168e15e5cee7b77139ea5e2022a9a713"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/shared-api-snapshot-reopen-10730/responses.expected.json",
+      "revision": "91cfa49f7a36a309493d20ec2168296502a78aa3",
+      "sha256": "1b4919bc758ca4f554edf5b578b7fa7facbd90931af57aa8cf88eced17039bce"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/shared-api-snapshot-reopen-10730/support.ts.txt",
+      "revision": "91cfa49f7a36a309493d20ec2168296502a78aa3",
+      "sha256": "c40ee5471c06d6e079385b900bbc4366305362f85f25ac4b3a14d7645f54cc57"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/shared-api-snapshot-reopen-10730/tsconfig.json.txt",
+      "revision": "91cfa49f7a36a309493d20ec2168296502a78aa3",
+      "sha256": "214b5ef4f89b5b85b020d54c16eed7f94790387ad2db75c6a5a35ad918f93a88"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/shared-api-snapshot-reopen-10730/vite.config.mjs.txt",
+      "revision": "91cfa49f7a36a309493d20ec2168296502a78aa3",
+      "sha256": "641fe25d9d7e6ba39b0b1d006e760fdd2cfd92cdb7d9dbb6009ceb049df72ef7"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/shared-api-snapshot-reopen-10730/wire-contract.json",
+      "revision": "91cfa49f7a36a309493d20ec2168296502a78aa3",
+      "sha256": "787ac66952fc6b6a8a74b0cbf96aaf41709fb65831a9e874c991d8cb0995f97a"
+    },
+    {
+      "path": "tests/tooling/support/native-runtime-selection/lsp-strace-lines.mjs",
+      "revision": "643d4bd2486fb394aa941f0853a170bd833fc3df",
+      "sha256": "75433713a12562fd38fa9d475e15006d43d19771bee7e5524f11eabe454c6ca6"
+    },
+    {
+      "path": "tests/tooling/support/native-runtime-selection/lsp-strace.mjs",
+      "revision": "643d4bd2486fb394aa941f0853a170bd833fc3df",
+      "sha256": "b189dfc2de82bfd0bd9fce6e5584c02e38c9984ee6c2df2800d8caf2df0fcbaf"
+    },
+    {
+      "path": "tests/tooling/native-runtime-selection-lsp-strace.test.mjs",
+      "revision": "643d4bd2486fb394aa941f0853a170bd833fc3df",
+      "sha256": "952310756b287146a0c6a8c9c07be52a54142008041ef8e3d90ff1391ff49716"
+    }
+  ],
+  "streamingReference": "643d4bd2486fb394aa941f0853a170bd833fc3df",
+  "shutdownSourceLeaf": "6b8e0de49c088e1011141178b36e720579800f54",
+  "shutdownSourceFiles": [
+    {
+      "path": "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown.rs",
+      "sha256": "8a090ef918d81547a11200622ba3a64e59a5332df07e71f17eb6fbc24a9d269f"
+    },
+    {
+      "path": "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown/beta_contract.rs",
+      "sha256": "0ac44ab4686759ee264d28065aa8d293db3978003c0fca6703e82f1ccfcd2871"
+    },
+    {
+      "path": "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown/tests.rs",
+      "sha256": "789f1dc6f3e9e4412d3fbb9ab1bebdef7eb8ab570b261d759491546fddca24be"
+    },
+    {
+      "path": "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown/tests/beta_pairs.rs",
+      "sha256": "05c20946de808976f0ec5d133dd719ab79b98f1dd5a29d94897f3a4468e5b3bd"
+    },
+    {
+      "path": "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown/tests/beta_provider.rs",
+      "sha256": "ce9bf9fd57e1b5c53f94c53ed8142bb8e75be6145d36424ee6702e0efe9b6752"
+    }
+  ]
+}
