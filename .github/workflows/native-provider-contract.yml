@@ -1,0 +1,53 @@
+name: Exact native TypeScript EOF contract
+on:
+  push:
+    branches: [fix/native-beta-eof-contract]
+    paths:
+      - .github/workflows/native-provider-contract.yml
+      - tests/tooling/support/native-provider-contract/**
+      - tests/tooling/native-provider-contract-wire.test.mjs
+      - tests/_fixtures/runtime/native-beta-eof-contract/**
+  workflow_dispatch:
+permissions: { contents: read }
+concurrency:
+  group: exact-native-provider-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  direct-linux-sdk:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { fetch-depth: 1, persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version: 24.19.0, package-manager-cache: false }
+      - name: Validate observer framing and exact initializer relocation
+        run: node --test tests/tooling/native-provider-contract-wire.test.mjs
+      - name: Install only the explicit official SDK provider
+        shell: bash
+        run: |
+          set -euo pipefail
+          provider="$RUNNER_TEMP/exact-native-provider"
+          test ! -e "$provider"
+          npm install --prefix "$provider" --ignore-scripts --no-audit --no-fund --save-exact --registry=https://registry.npmjs.org typescript@7.1.0-beta
+      - name: Observe direct SDK EOF-only and separate standard Exit control
+        env:
+          VIZE_REQUIRE_NATIVE_PROVIDER_CONTRACT: "1"
+          VIZE_NATIVE_PROVIDER_ROOT: ${{ runner.temp }}/exact-native-provider
+        run: node tests/tooling/support/native-provider-contract/observe.mjs
+      - name: Preserve full raw packets, exact SDK image and provider custody
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: exact-native-provider-linux-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
+          path: |
+            target/vize-tests/native-beta-eof-contract/**
+            ${{ runner.temp }}/exact-native-provider/package.json
+            ${{ runner.temp }}/exact-native-provider/package-lock.json
+            ${{ runner.temp }}/exact-native-provider/node_modules/typescript/package.json
+            ${{ runner.temp }}/exact-native-provider/node_modules/@typescript/typescript-linux-x64/package.json
+            ${{ runner.temp }}/native-beta-eof-*/*/package.json
+            ${{ runner.temp }}/native-beta-eof-*/*/tsconfig.json
+            ${{ runner.temp }}/native-beta-eof-*/*/src/*.ts
+          if-no-files-found: error
+          retention-days: 7

@@ -1,0 +1,30 @@
+{
+  "schema": "vize.native-provider-contract.authority",
+  "version": 1,
+  "scope": "Direct official Linux x64 SDK only; no source CLI, generic beta, API DTO or mapper credit",
+  "originalSourceActor": "cbda7c7e410151d440871ecb97f2ad3fda0f8419",
+  "originalRun": 40222915102,
+  "originalArtifact": 12609693721,
+  "originalArchiveBytes": 99690206,
+  "originalArchiveSha256": "38b097808929818c814f8a6c020225a40506b3378510dd1df36eb35a271f14a6",
+  "productionInitializerPath": "crates/vize_canon/src/lsp_client/diagnostics_lsp.rs",
+  "productionInitializerSha256": "e6bcf16051e2cbcd3c65227f9d6c8d40bf457166c4469c8a95227b7687cb2a35",
+  "independentDarwinInitializerScriptSha256": "bc6e7a12bce218438899efb59360b808916edfea8b24847690f7024bda742833",
+  "officialGitHead": "3e9236361fa97a9e6c685f4833ac457ae2d8c50a",
+  "sdkVersion": "7.1.0-beta",
+  "linuxX64ImageSha256": "a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70",
+  "sealedFiles": {
+    "initialize-response.json": "f94f5282cd4c3d710fa52094cc3a48be849380e4c79a8defc9d5fef53b263c2f",
+    "initialize-request.json": "da9aeaa126a8ac6449ae7e9d6e17008bac15fd6bf6d61594aa8ee90e58c90ad3"
+  },
+  "npmPackages": {
+    "typescript": {
+      "resolved": "https://registry.npmjs.org/typescript/-/typescript-7.1.0-beta.tgz",
+      "integrity": "sha512-cjWjZAJDsmZzsNC5GwHNlW0YPM65jZa5oR0KyQcYX3KSVIfTvtBq//vewISyatKk4OLi5grZjHhIVE9fdrw1UQ=="
+    },
+    "@typescript/typescript-linux-x64": {
+      "resolved": "https://registry.npmjs.org/@typescript/typescript-linux-x64/-/typescript-linux-x64-7.1.0-beta.tgz",
+      "integrity": "sha512-kcD51ihf+pnI5KT4uQQYG04OpwznaZYBlIQhDhl8fflFd27NktxXsUeguxZyvUMyWfum7IF2bBS6Jv7ox0AgFQ=="
+    }
+  }
+}
