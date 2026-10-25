@@ -10,7 +10,7 @@ import { prepareConsumer, consumer, output, run, sha256 } from "./prepare-consum
 const receipt = await prepareConsumer();
 const require = createRequire(path.join(consumer, "package.json"));
 const next = require.resolve("next/dist/bin/next");
-const sourcePath = path.join(consumer, "components/组件 space.vue");
+const sourcePath = path.join(consumer, "components/组件 space/FixtureCounter.vue");
 const original = await fs.readFile(sourcePath, "utf8");
 const packets = [];
 const measurements = [];
@@ -44,12 +44,22 @@ async function launch(mode, label) {
     process.once("error", reject);
     process.once("close", (status, signal) => resolve({ status, signal }));
   });
+  async function saveExit(result) {
+    await fs.writeFile(path.join(output, `${label}-server.stdout`), Buffer.concat(stdout));
+    await fs.writeFile(path.join(output, `${label}-server.stderr`), Buffer.concat(stderr));
+    await fs.writeFile(
+      path.join(output, `${label}-server-exit.json`),
+      JSON.stringify(result) + "\n",
+    );
+  }
   const url = `http://127.0.0.1:${selected}`;
   const deadline = Date.now() + 90_000;
   let response;
   while (Date.now() < deadline) {
-    if (process.exitCode !== null)
+    if (process.exitCode !== null) {
+      await saveExit(await closed);
       throw new Error(`Next ${mode} exited: ${Buffer.concat(stderr).toString()}`);
+    }
     try {
       response = await fetch(url);
       if (response.ok) break;
@@ -58,6 +68,10 @@ async function launch(mode, label) {
       /* The actual process has not opened its listener yet. */
     }
     await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  if (!response?.ok) {
+    process.kill("SIGTERM");
+    await saveExit(await closed);
   }
   assert.ok(response?.ok, `Next ${mode} did not become ready: ${Buffer.concat(stderr).toString()}`);
   const html = await response.text();
@@ -70,11 +84,10 @@ async function launch(mode, label) {
     async stop() {
       process.kill("SIGTERM");
       const result = await closed;
-      await fs.writeFile(path.join(output, `${label}-server.stdout`), Buffer.concat(stdout));
-      await fs.writeFile(path.join(output, `${label}-server.stderr`), Buffer.concat(stderr));
-      await fs.writeFile(
-        path.join(output, `${label}-server-exit.json`),
-        JSON.stringify(result) + "\n",
+      await saveExit(result);
+      assert.ok(
+        result.status === 0 || result.signal === "SIGTERM",
+        "host process must close normally",
       );
     },
   };
@@ -260,7 +273,7 @@ try {
       else if (entry.name.endsWith(".map")) {
         const map = JSON.parse(await fs.readFile(filename, "utf8"));
         const sources = authoredSources(map).filter(({ source }) =>
-          source.endsWith("components/组件 space.vue"),
+          source.endsWith("components/组件 space/FixtureCounter.vue"),
         );
         if (sources.length) {
           assert.ok(

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef } from "react";
 import { createSSRApp } from "vue";
-import App from "../components/组件 space.vue";
+import App from "../components/组件 space/FixtureCounter.vue";
 
 export default function Client({ html }) {
   const root = useRef(null);

@@ -28,17 +28,18 @@ export function genHotReloadCode(
   metadata?: HmrMetadata,
   imports = "null",
   hot = "module.hot",
+  component = "_sfc_main",
 ): string {
   return `
 /* hot reload */
 if (${hot}) {
-  _sfc_main.__hmrId = "${id}"
+  ${component}.__hmrId = "${id}"
   const api = __VUE_HMR_RUNTIME__
   const previous = ${hot}.data && ${hot}.data.vize
   // Own writable mappings; CSS module namespace exports may be read-only.
-  if (_sfc_main.__cssModules) {
-    Object.keys(_sfc_main.__cssModules).forEach(name => {
-      _sfc_main.__cssModules[name] = Object.assign(Object.create(null), _sfc_main.__cssModules[name])
+  if (${component}.__cssModules) {
+    Object.keys(${component}.__cssModules).forEach(name => {
+      ${component}.__cssModules[name] = Object.assign(Object.create(null), ${component}.__cssModules[name])
     })
   }
   const current = {
@@ -48,12 +49,12 @@ if (${hot}) {
       // disables state preservation without changing module loading semantics.
       try { return ${imports} } catch { return null }
     })(),
-    component: _sfc_main,
-    setup: _sfc_main.setup && _sfc_main.setup.toString()
+    component: ${component},
+    setup: ${component}.setup && ${component}.setup.toString()
   }
   ${hot}.dispose(data => { data.vize = current })
   ${hot}.accept()
-  if (!api.createRecord('${id}', _sfc_main)) {
+  if (!api.createRecord('${id}', ${component})) {
     const before = previous && previous.metadata
     const after = current.metadata
     const sameImports = previous && previous.imports && current.imports &&
@@ -66,20 +67,20 @@ if (${hot}) {
     if (canPreserve && (before.module === after.module ||
         (typeof before.script === 'string' && before.script === after.script &&
          typeof before.template === 'string' && typeof after.template === 'string' &&
-         before.template !== after.template && typeof _sfc_main.render === 'function'))) {
+         before.template !== after.template && typeof ${component}.render === 'function'))) {
       // Retain both the module table and each mapping captured by setup.
-      if (previous.component.__cssModules && _sfc_main.__cssModules) {
-        Object.keys(_sfc_main.__cssModules).forEach(name => ${genCSSModuleUpdateCode(
+      if (previous.component.__cssModules && ${component}.__cssModules) {
+        Object.keys(${component}.__cssModules).forEach(name => ${genCSSModuleUpdateCode(
           "previous.component.__cssModules[name]",
-          "_sfc_main.__cssModules[name]",
+          `${component}.__cssModules[name]`,
         )})
-        _sfc_main.__cssModules = previous.component.__cssModules
+        ${component}.__cssModules = previous.component.__cssModules
       }
-      if (before.module !== after.module || _sfc_main.__cssModules) {
-        api.rerender('${id}', _sfc_main.render)
+      if (before.module !== after.module || ${component}.__cssModules) {
+        api.rerender('${id}', ${component}.render)
       }
     } else {
-      api.reload('${id}', _sfc_main)
+      api.reload('${id}', ${component})
     }
   }
 }`;
@@ -92,12 +93,13 @@ export function genCSSModuleHotReloadCode(
   varName: string,
   bindingName: string,
   hot = "module.hot",
+  component = "_sfc_main",
 ): string {
   return `
 if (${hot}) {
   ${hot}.accept(${request}, () => {
-    ${genCSSModuleUpdateCode(`_sfc_main.__cssModules[${JSON.stringify(bindingName)}]`, varName)}
-    __VUE_HMR_RUNTIME__.rerender("${id}", _sfc_main.render)
+    ${genCSSModuleUpdateCode(`${component}.__cssModules[${JSON.stringify(bindingName)}]`, varName)}
+    __VUE_HMR_RUNTIME__.rerender("${id}", ${component}.render)
   })
 }`;
 }

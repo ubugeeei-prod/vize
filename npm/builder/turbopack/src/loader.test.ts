@@ -6,6 +6,7 @@ import { compileTurbopackSfc } from "./loader.ts";
 import { withVize, vizeTurbopack } from "./index.ts";
 import styleLoader from "./style-loader.ts";
 import scopeLoader from "./scope-loader.ts";
+import { createGeneratedNameAllocator } from "@vizejs/builder-shared/module-output";
 import type { LoaderContext, SfcLoaderOptions } from "./types.ts";
 
 const filename = "/fixture/组件 space.vue";
@@ -86,6 +87,39 @@ const _imports_0 = 'user';
   assert.match(output.code, /const _imports_0_ = typeof/);
   assert.match(output.code, /export default __vize_component___;/);
   assert.ok(output.code.includes("🐱 export default fake"));
+});
+
+void test("hot reload preserves authored import names, requests and style ownership", () => {
+  const output = compileTurbopackSfc(
+    filename,
+    `<script setup>
+import { label as _sfc_main } from './_sfc_main.js';
+</script><template>{{_sfc_main}}</template><style src="./_sfc_main.css"></style>`,
+    options,
+  );
+  assert.ok(output.code.includes('["./_sfc_main.js:_sfc_main", _sfc_main]'));
+  assert.ok(output.code.includes('"./_sfc_main.css?vue&'));
+  assert.ok(output.code.includes('src\\\":\\\"./_sfc_main.css'));
+  assert.match(output.code, /__vize_component__.__hmrId/);
+});
+
+void test("generated bindings reserve escaped names and keep ordinary modules off the AST path", () => {
+  let parses = 0;
+  const plain = createGeneratedNameAllocator("const value = 1;", () => parses++);
+  assert.equal(plain("__vize_component__"), "__vize_component__");
+  assert.equal(parses, 0);
+  const escape = String.fromCharCode(92) + "u005f";
+  const source = `<script>const ${escape}_vize_component__ = 1; export default { name: "FixtureCounter" };</script><template><div>ok</div></template>`;
+  const output = compileTurbopackSfc(filename, source, options);
+  assert.match(output.code, /const __vize_component___ =/);
+  const collisions = Array.from(
+    { length: 512 },
+    (_, index) => `const __vize_name_${index} = ${index};`,
+  ).join("\n");
+  const reserved = createGeneratedNameAllocator(collisions, () => parses++);
+  for (let index = 0; index < 512; index++)
+    assert.equal(reserved(`__vize_name_${index}`), `__vize_name_${index}_`);
+  assert.equal(parses, 1);
 });
 
 void test("server and production compilation have deterministic scoped identities and no HMR", () => {

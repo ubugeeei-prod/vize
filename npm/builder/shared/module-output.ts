@@ -52,6 +52,38 @@ function parseProgram(code: string): AstNode | null {
   }
 }
 
+const GENERATED_PREFIXES = ["__vize_", "_imports_"];
+
+/** Reserve decoded identifiers only when generated names or escapes can collide. */
+export function createGeneratedNameAllocator(code: string, onSemanticParse?: () => void) {
+  const names = new Set<string>();
+  if (code.includes("\\u") || GENERATED_PREFIXES.some((prefix) => code.includes(prefix))) {
+    onSemanticParse?.();
+    const program = parseProgram(code);
+    if (!program) throw new Error("[vize] Cannot safely allocate generated module bindings.");
+    const pending: unknown[] = [program];
+    while (pending.length) {
+      const value = pending.pop();
+      if (Array.isArray(value)) {
+        for (const child of value) pending.push(child);
+      } else if (value !== null && typeof value === "object") {
+        const node = value as AstNode;
+        if (node.type === "Identifier" && typeof node.name === "string") names.add(node.name);
+        pending.push(...Object.values(node));
+      }
+    }
+  }
+  return (base: string): string => {
+    if (!GENERATED_PREFIXES.some((prefix) => base.startsWith(prefix))) {
+      throw new Error("[vize] Unknown generated binding family.");
+    }
+    let name = base;
+    while (names.has(name)) name += "_";
+    names.add(name);
+    return name;
+  };
+}
+
 function getProgramBody(program: AstNode | null): AstNode[] {
   if (!program || !Array.isArray(program.body)) {
     return [];

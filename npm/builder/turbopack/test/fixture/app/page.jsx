@@ -1,6 +1,6 @@
 import { createSSRApp } from "vue";
 import { renderToString } from "vue/server-renderer";
-import App from "../components/组件 space.vue";
+import App from "../components/组件 space/FixtureCounter.vue";
 import Client from "./client.jsx";
 
 export default async function Page() {

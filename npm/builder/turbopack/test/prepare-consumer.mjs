@@ -103,7 +103,15 @@ export async function prepareConsumer() {
     ["rspack", path.join(packageRoot, "../rspack")],
   ]) {
     const before = new Set(await fs.readdir(packs));
-    await run(`pack-${name}`, "vp", ["exec", "pnpm", "--dir", directory, "pack", "--out", packs]);
+    await run(`pack-${name}`, "vp", [
+      "exec",
+      "pnpm",
+      "--dir",
+      directory,
+      "pack",
+      "--out",
+      path.join(packs, `${name}.tgz`),
+    ]);
     const added = (await fs.readdir(packs)).filter(
       (file) => !before.has(file) && file.endsWith(".tgz"),
     );

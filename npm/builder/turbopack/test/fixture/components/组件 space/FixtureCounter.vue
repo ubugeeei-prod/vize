@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, useCssModule } from "vue";
 import { label } from "@fixture/label";
-import Child from "@fixture/Child.vue";
+import Child from "@fixture/FixtureChild.vue";
 const props = defineProps<{ initial: number }>();
 const count = ref(props.initial);
 const emoji: string = "🐱";

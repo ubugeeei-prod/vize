@@ -4,11 +4,15 @@ import {
   compileSfc,
   collectSfcTemplateAssetUrls,
   parseSfc,
+  extractSfcSrcInfo,
   generateSfcScopeId,
   rewriteSfcTemplateAssetReferences,
 } from "@vizejs/native";
 import { MappedModule, parseSourceMap } from "@vizejs/builder-shared/mapped-module";
-import { hmrImportSnapshot } from "@vizejs/builder-shared/module-output";
+import {
+  createGeneratedNameAllocator,
+  hmrImportSnapshot,
+} from "@vizejs/builder-shared/module-output";
 import { genHotReloadCode, genCSSModuleHotReloadCode } from "@vizejs/builder-shared/hot-reload";
 import type { LoaderContext, SfcLoaderOptions } from "./types.ts";
 
@@ -31,6 +35,12 @@ function utf16Offset(code: string, offset: number | undefined): number {
 export function compileTurbopackSfc(filename: string, source: string, options: SfcLoaderOptions) {
   const root = options.root ?? process.cwd();
   const scopeId = generateSfcScopeId(filename, root, options.isProduction, source);
+  const external = extractSfcSrcInfo(source);
+  if (external.scriptSrc || external.templateSrc) {
+    throw new Error(
+      `[vize] ${filename}: external script/template blocks require an inline SFC for this integration.`,
+    );
+  }
   const descriptor = (() => {
     try {
       return parseSfc(source, { filename });
@@ -83,13 +93,7 @@ export function compileTurbopackSfc(filename: string, source: string, options: S
     throw new Error(
       `[vize] ${filename}: native compiler did not provide component module geometry.`,
     );
-  const used = new Set<string>();
-  const unique = (base: string) => {
-    let name = base;
-    while (used.has(name) || compiled.code.includes(name) || source.includes(name)) name += "_";
-    used.add(name);
-    return name;
-  };
+  const unique = createGeneratedNameAllocator(compiled.code);
   const component = unique("__vize_component__");
   const emitted = new MappedModule(compiled.code, parseSourceMap(compiled.map));
   if (shape.hasDefaultExport) {
@@ -152,7 +156,8 @@ export function compileTurbopackSfc(filename: string, source: string, options: S
           binding,
           name,
           "import.meta.turbopackHot",
-        ).replaceAll("_sfc_main", component),
+          component,
+        ),
       );
     } else imports.push(`import ${JSON.stringify(request)};`);
   }
@@ -192,7 +197,7 @@ export function compileTurbopackSfc(filename: string, source: string, options: S
         })),
       ),
     };
-    // This substitution only touches shared generated boilerplate, never authored code.
+    // Structured generator arguments keep authored import snapshots untouched.
     emitted.append(moduleUpdates.join("\n"));
     emitted.append(
       genHotReloadCode(
@@ -200,7 +205,8 @@ export function compileTurbopackSfc(filename: string, source: string, options: S
         metadata,
         hmrImportSnapshot(emitted.code) ?? "null",
         "import.meta.turbopackHot",
-      ).replaceAll("_sfc_main", component),
+        component,
+      ),
     );
   }
   emitted.append(`\nexport default ${component};`);
