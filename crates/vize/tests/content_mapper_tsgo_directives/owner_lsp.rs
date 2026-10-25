@@ -186,7 +186,7 @@ fn run_session(
                 &cstr!("<!-- @vue-expect-error -->{newline}</template>"),
             );
             let states = [
-                ("calibration", calibration.to_string(), 7),
+                ("calibration", calibration.to_string(), 5),
                 ("both-bad", source.to_string(), 3),
                 (
                     "prop-fixed",
@@ -280,6 +280,44 @@ fn diagnostic(
 }
 
 fn expected_report(source: &str, state: &str) -> Value {
+    if state != "calibration" {
+        return historical_expected_report(source, state);
+    }
+    let child = source.find("value.bad").unwrap() + "value.".len();
+    let handler = source.find("@save=\"wrong\"").unwrap() + 1;
+    let prop = source.find("id=\"bad\"").unwrap();
+    let mut items = vec![
+        diagnostic(
+            source,
+            child,
+            3,
+            2339,
+            "ts",
+            "Property 'bad' does not exist on type '1'.",
+        ),
+        diagnostic(
+            source,
+            handler,
+            4,
+            2322,
+            "ts",
+            "Type '(value: string) => void' is not assignable to type '(value: number) => any'.\n  Types of parameters 'value' and 'value' are incompatible.\n    Type 'number' is not assignable to type 'string'.",
+        ),
+        diagnostic(
+            source,
+            prop,
+            2,
+            2322,
+            "ts",
+            "Type '\"bad\"' is not assignable to type '\"ok\"'.",
+        ),
+    ];
+    items.extend(parameter_suggestions(source));
+    json!({"kind":"full","items":items})
+}
+
+// Keep the previous complete packets available in old-expected.json.
+fn historical_expected_report(source: &str, state: &str) -> Value {
     let mut items = Vec::new();
     if ["parents-fixed", "child-fixed", "orphan"].contains(&state) {
         let offset = source.find("@vue-expect-error").unwrap();
@@ -361,6 +399,6 @@ fn old_expected_report(source: &str, state: &str) -> Value {
         // Actual OLD RED: legitimate script suggestions remain, child is lost.
         json!({"kind":"full","items":parameter_suggestions(source)})
     } else {
-        expected_report(source, state)
+        historical_expected_report(source, state)
     }
 }

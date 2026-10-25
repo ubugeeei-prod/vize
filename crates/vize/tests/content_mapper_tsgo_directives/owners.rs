@@ -91,8 +91,7 @@ fn parent_expect_keeps_child_visible_after_each_parent_repair() {
                         .join("\n")
                 );
                 std::fs::write(case.join("expected.bin"), expected.as_bytes()).unwrap();
-                if output.status.code().is_none()
-                    || output.status.success()
+                if output.status.code() != Some(2)
                     || !output.stderr.is_empty()
                     || output.stdout != expected.as_bytes()
                 {
@@ -107,6 +106,7 @@ fn parent_expect_keeps_child_visible_after_each_parent_repair() {
     }
     assert_eq!(index, 16);
     calibrate(&tsgo, project.path(), &retained, &mut failures);
+    calibrate_plain_typescript(&tsgo, project.path(), &retained, &mut failures);
     assert!(
         failures.is_empty(),
         "all complete observations retained under {}: {failures:#?}",
@@ -146,9 +146,9 @@ pub(super) fn source(newline: &str, prefix: &str, id: &str, handler: &str) -> vi
 
 fn calibrate(tsgo: &Path, project: &Path, retained: &Path, failures: &mut Vec<vize_l0::String>) {
     for (index, (id, handler, count)) in [
-        ("bad", "wrong", 4),
+        ("bad", "wrong", 3),
         ("ok", "wrong", 2),
-        ("bad", "correct", 3),
+        ("bad", "correct", 2),
         ("ok", "correct", 1),
     ]
     .into_iter()
@@ -167,15 +167,19 @@ fn calibrate(tsgo: &Path, project: &Path, retained: &Path, failures: &mut Vec<vi
             serde_json::to_vec_pretty(&json!({
                 "id": id, "handler": handler, "status": output.status.code(),
                 "success": output.status.success(), "expectedCount": count,
-                "contract": "unchanged no-directive fallback; bad-id inference mapping remains unresolved",
+                "contract": "one complete diagnostic per invalid child, handler or prop",
             }))
             .unwrap(),
         )
         .unwrap();
         let expected = calibration_expected(id, handler);
         std::fs::write(case.join("expected.bin"), expected.as_bytes()).unwrap();
-        if output.status.code().is_none()
-            || output.status.success()
+        std::fs::write(
+            case.join("historical-expected.bin"),
+            historical_calibration_expected(id, handler).as_bytes(),
+        )
+        .unwrap();
+        if output.status.code() != Some(2)
             || !output.stderr.is_empty()
             || output.stdout != expected.as_bytes()
         {
@@ -187,9 +191,22 @@ fn calibrate(tsgo: &Path, project: &Path, retained: &Path, failures: &mut Vec<vi
     }
 }
 
-// Frozen complete d6 dynamic-config output. Event inference and prop checking
-// each report the same mapped id diagnostic once.
 fn calibration_expected(id: &str, handler: &str) -> vize_l0::String {
+    let mut output = vize_l0::String::from(
+        "directives/Owner.vue(12,11): error TS2339: Property 'bad' does not exist on type '1'.\n",
+    );
+    if handler == "wrong" {
+        output.push_str("directives/Owner.vue(10,3): error TS2322: Type '(value: string) => void' is not assignable to type '(value: number) => any'.\n  Types of parameters 'value' and 'value' are incompatible.\n    Type 'number' is not assignable to type 'string'.\n");
+    }
+    if id == "bad" {
+        output.push_str("directives/Owner.vue(9,2): error TS2322: Type '\"bad\"' is not assignable to type '\"ok\"'.\n");
+    }
+    output
+}
+
+// Preserve the previous complete calibration packet, including its duplicate
+// prop diagnostic, as evidence rather than retaining that defect as a law.
+fn historical_calibration_expected(id: &str, handler: &str) -> vize_l0::String {
     const BAD_ID: &str = "error TS2322: Type '\"bad\"' is not assignable to type '\"ok\"'.\n";
     let mut output = vize_l0::String::from(
         "directives/Owner.vue(12,11): error TS2339: Property 'bad' does not exist on type '1'.\n",
@@ -204,4 +221,79 @@ fn calibration_expected(id: &str, handler: &str) -> vize_l0::String {
         output.push_str(cstr!("directives/Owner.vue(9,2): {BAD_ID}").as_str());
     }
     output
+}
+
+/// An independent native TypeScript program proves the three type obligations
+/// without Vue transforms, virtual constructors or diagnostic directives.
+fn calibrate_plain_typescript(
+    tsgo: &Path,
+    project: &Path,
+    retained: &Path,
+    failures: &mut Vec<vize_l0::String>,
+) {
+    let config = json!({
+        "compilerOptions": { "strict": true, "target": "ES2022", "module": "ESNext", "moduleResolution": "bundler", "noEmit": true },
+        "files": ["directives/OwnerReference.ts"]
+    });
+    let config = serde_json::to_vec_pretty(&config).unwrap();
+    std::fs::write(project.join("tsconfig.reference.json"), &config).unwrap();
+    std::fs::write(retained.join("tsconfig.reference.json"), &config).unwrap();
+    let mut index = 0;
+    for newline in ["\n", "\r\n"] {
+        for prefix in ["", "/*😀日本*/"] {
+            for (id, handler) in [
+                ("bad", "wrong"),
+                ("ok", "wrong"),
+                ("bad", "correct"),
+                ("ok", "correct"),
+            ] {
+                let source = cstr!(
+                    "export {{}};{newline}const wrong = (_value: string) => {{}};{newline}const correct = (_value: number) => {{}};{newline}{prefix}const id: 'ok' = '{id}';{newline}{prefix}const handler: (value: number) => any = {handler};{newline}const child = 1;{newline}{prefix}child.bad;{newline}"
+                );
+                std::fs::write(project.join("directives/OwnerReference.ts"), &source).unwrap();
+                let output = super::check_project(tsgo, project, "tsconfig.reference.json");
+                let mut expected = vize_l0::String::default();
+                if id == "bad" {
+                    let offset = source.find("const id").unwrap() + "const ".len();
+                    let (line, column) = line_column(&source, offset);
+                    expected.push_str(cstr!("directives/OwnerReference.ts({line},{column}): error TS2322: Type '\"bad\"' is not assignable to type '\"ok\"'.\n").as_str());
+                }
+                if handler == "wrong" {
+                    let offset = source.find("const handler").unwrap() + "const ".len();
+                    let (line, column) = line_column(&source, offset);
+                    expected.push_str(cstr!("directives/OwnerReference.ts({line},{column}): error TS2322: Type '(_value: string) => void' is not assignable to type '(value: number) => any'.\n  Types of parameters '_value' and 'value' are incompatible.\n    Type 'number' is not assignable to type 'string'.\n").as_str());
+                }
+                let offset = source.find("child.bad").unwrap() + "child.".len();
+                let (line, column) = line_column(&source, offset);
+                expected.push_str(cstr!("directives/OwnerReference.ts({line},{column}): error TS2339: Property 'bad' does not exist on type '1'.\n").as_str());
+                let case = retained.join(cstr!("plain-ts-reference-{index}").as_str());
+                std::fs::create_dir_all(&case).unwrap();
+                std::fs::write(case.join("OwnerReference.ts"), source.as_bytes()).unwrap();
+                std::fs::write(case.join("stdout.bin"), &output.stdout).unwrap();
+                std::fs::write(case.join("stderr.bin"), &output.stderr).unwrap();
+                std::fs::write(case.join("expected.bin"), expected.as_bytes()).unwrap();
+                std::fs::write(
+                    case.join("outcome.json"),
+                    serde_json::to_vec_pretty(&json!({
+                        "id": id, "handler": handler, "newline": newline, "prefix": prefix,
+                        "status": output.status.code(), "success": output.status.success(),
+                        "producer": "handwritten native TypeScript; no content mapper"
+                    }))
+                    .unwrap(),
+                )
+                .unwrap();
+                if output.status.code() != Some(2)
+                    || !output.stderr.is_empty()
+                    || output.stdout != expected.as_bytes()
+                {
+                    failures.push(cstr!(
+                        "plain TypeScript reference {index}: expected {expected:?}; {}",
+                        super::output_text(&output)
+                    ));
+                }
+                index += 1;
+            }
+        }
+    }
+    assert_eq!(index, 16);
 }

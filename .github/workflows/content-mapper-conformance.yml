@@ -90,6 +90,24 @@ jobs:
         run: |
           go build -tags=noembed -trimpath -o "$RUNNER_TEMP/tsgo" ./cmd/tsc
           cp internal/bundled/libs/*.d.ts "$RUNNER_TEMP/"
+      - name: Retain exact native host identity before conformance
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { readFileSync, writeFileSync } from 'node:fs';
+          import { createHash } from 'node:crypto';
+          import { execFileSync, spawnSync } from 'node:child_process';
+          const binary = `${process.env.RUNNER_TEMP}/tsgo`;
+          const upstream = execFileSync('git', ['-C', 'typescript-content-mapper', 'rev-parse', 'HEAD'], {encoding: 'utf8'}).trim();
+          assert.equal(upstream, process.env.CONTENT_MAPPER_TYPESCRIPT_SHA);
+          const bytes = readFileSync(binary);
+          const version = spawnSync(binary, ['--version']);
+          assert.equal(version.status, 0);
+          assert.equal(version.signal, null);
+          assert.equal(version.stderr.length, 0);
+          const receipt = { source: process.env.GITHUB_SHA, run: process.env.GITHUB_RUN_ID, upstream, binary, sha256: createHash('sha256').update(bytes).digest('hex'), size: bytes.length, version: {status: version.status, stdout: version.stdout.toString('base64'), stderr: version.stderr.toString('base64')} };
+          writeFileSync(`${process.env.RUNNER_TEMP}/content-mapper-native-host.json`, JSON.stringify(receipt, null, 2) + '\n');
+          JS
       - name: Run authored syntax and setup binding conformance
         env:
           VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
@@ -192,6 +210,16 @@ jobs:
             cargo test -p vize_maestro -- --quiet
             echo "Content Mapper Maestro lifecycle cycle $iteration/20 passed"
           done
+      - name: Preserve whole owner calibration observations
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: content-mapper-owner-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            target/vize-tests/content-mapper-directive-owners
+            ${{ runner.temp }}/content-mapper-native-host.json
+          if-no-files-found: error
+          retention-days: 7
 
   event-rename:
     if: github.event_name == 'workflow_dispatch' && inputs.event-rename-only && !inputs.official-css-options-only && !inputs.published-defaults-only
