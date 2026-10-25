@@ -90,18 +90,19 @@ export async function captureAndCompare(
       }
     }
 
-    // Mask elements before capture (replace with colored box)
-    if (capture.maskElements.length > 0) {
-      for (const selector of capture.maskElements) {
-        await page.evaluate((sel) => {
-          document.querySelectorAll(sel).forEach((el) => {
-            const htmlEl = el as HTMLElement;
-            htmlEl.style.background = "#ff00ff";
-            htmlEl.style.color = "transparent";
-            htmlEl.innerHTML = "";
-          });
-        }, selector);
+    // Screenshot masks cover the rendered rectangle, including replaced
+    // elements, without deleting content or reflowing neighboring components.
+    const mask = capture.maskElements.map((selector) => {
+      if (typeof selector !== "string" || selector.trim().length === 0) {
+        throw new Error("VRT maskElements must contain non-empty selectors");
       }
+      return page.locator(selector);
+    });
+    if (
+      mask.length > 0 &&
+      !(await page.evaluate((color) => CSS.supports("color", color), capture.maskColor))
+    ) {
+      throw new Error(`Invalid VRT mask color: ${capture.maskColor}`);
     }
 
     // Take screenshot
@@ -111,6 +112,8 @@ export async function captureAndCompare(
       fullPage: capture.fullPage,
       animations: capture.animations,
       caret: capture.caret,
+      mask,
+      maskColor: capture.maskColor,
     });
 
     // Check if baseline exists

@@ -72,6 +72,7 @@ export class MuseaVrtRunner {
       waitSelector: options.capture?.waitSelector ?? ".musea-variant",
       hideElements: options.capture?.hideElements ?? [],
       maskElements: options.capture?.maskElements ?? [],
+      maskColor: options.capture?.maskColor ?? "#ff00ff",
     };
     this.comparison = options.comparison ?? {};
     this.ci = options.ci ?? {};

@@ -69,8 +69,10 @@ export interface CaptureConfig {
   waitSelector?: string;
   /** Elements to hide before capture (CSS selectors) */
   hideElements?: string[];
-  /** Elements to mask before capture (CSS selectors) */
+  /** Elements to cover during capture without changing their layout (CSS selectors). */
   maskElements?: string[];
+  /** CSS color used to cover masked elements. @default "#ff00ff" */
+  maskColor?: string;
 }
 
 /**
