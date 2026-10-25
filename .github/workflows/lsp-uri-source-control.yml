@@ -1,0 +1,141 @@
+name: Controlled native lifecycle observations
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/lsp-uri-source-control.yml"
+      - "tests/tooling/support/lsp/project-uri-source-control-10622.ts"
+      - "tests/tooling/support/lsp/project-uri-source-control-native-10622.ts"
+      - "tests/tooling/lsp-project-uri-source-control-native-10622.test.ts"
+
+permissions: { contents: read }
+
+concurrency:
+  group: uri-source-control-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  source-control:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 45
+    env:
+      CARGO_BUILD_JOBS: "12"
+      CARGO_TERM_COLOR: always
+      CARGO_INCREMENTAL: "0"
+      RUSTC_WRAPPER: ""
+      RUSTC_WORKSPACE_WRAPPER: ""
+      SCCACHE_DISABLE: "1"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      RAYON_NUM_THREADS: "4"
+      VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
+      VIZE_TEST_REQUIRE_TSGO: "1"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, cache: true, run-install: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      # Deliberately no target cache: both producer target directories start absent.
+      - run: vp install --frozen-lockfile --prefer-offline
+      - name: Verify every qualifier TypeScript project
+        run: node tools/support/typescript/check-project.ts
+      - name: Install the one immutable Vue provider for all four trials
+        shell: bash
+        run: |
+          set -euo pipefail
+          provider="$RUNNER_TEMP/uri-source-control-vue"
+          mkdir -p "$provider"
+          cp tests/_fixtures/differential/lsp/project-uri-membership-10622/vue-3.5.41/package.json "$provider/package.json"
+          cp tests/_fixtures/differential/lsp/project-uri-membership-10622/vue-3.5.41/package-lock.json "$provider/package-lock.json"
+          npm ci --prefix "$provider" --ignore-scripts --no-audit --no-fund
+          printf 'VIZE_PROJECT_URI_VUE_PACKAGE=%s/node_modules/vue\n' "$provider" >> "$GITHUB_ENV"
+          printf 'CORSA_PATH=%s/node_modules/@typescript/typescript-linux-x64/lib/tsc\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+      - name: Verify raw source-control refusal laws
+        run: node --test tests/tooling/lsp-project-uri-source-control-native-10622.test.ts
+      - name: Build and receipt two clean producers with independent absent targets
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { execFileSync } from 'node:child_process';
+          import { createHash } from 'node:crypto';
+          import fs from 'node:fs';
+          import path from 'node:path';
+          import { writeBuildReceipt, BUILD_RECIPE } from './tests/differential/build-receipt.ts';
+          const root = process.cwd();
+          const out = path.join(root, 'target/vize-tests/project-uri-source-control-10622/producers');
+          fs.mkdirSync(out, {recursive: true});
+          const roles = {control: '225b884276cdc066a692bf2cd1b51a15e952e97b', candidate: '6573b92e74c93883303e34e9f12869868f567207'};
+          const git = (cwd, args) => execFileSync('git', args, {cwd, encoding: 'utf8'}).trim();
+          const hash = (file) => createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+          const compilerPath = execFileSync('rustup', ['which', 'rustc'], {encoding: 'utf8'}).trim();
+          const compiler = {path: compilerPath, sha256: hash(compilerPath), version: execFileSync('rustc', ['--version', '--verbose'], {encoding: 'utf8'})};
+          const cargo = execFileSync('cargo', ['--version'], {encoding: 'utf8'}).trim();
+          for (const [role, sourceRevision] of Object.entries(roles)) {
+            const sourceRoot = path.join(process.env.RUNNER_TEMP, 'uri-source-control-producers', role);
+            assert.equal(fs.existsSync(sourceRoot), false);
+            fs.mkdirSync(path.dirname(sourceRoot), {recursive: true});
+            execFileSync('git', ['worktree', 'add', '--detach', sourceRoot, sourceRevision], {cwd: root, stdio: 'inherit'});
+            assert.equal(git(sourceRoot, ['rev-parse', 'HEAD']), sourceRevision);
+            fs.symlinkSync(path.join(root, 'node_modules'), path.join(sourceRoot, 'node_modules'), 'dir');
+            const targetRoot = path.join(sourceRoot, 'target');
+            assert.equal(fs.existsSync(targetRoot), false, 'no producer compile cache is reused');
+            const locks = Object.fromEntries(['Cargo.lock', 'Cargo.toml', 'package.json', 'pnpm-lock.yaml'].map(file => {
+              assert.equal(hash(path.join(sourceRoot, file)), hash(path.join(root, file)), file);
+              return [file, hash(path.join(sourceRoot, file))];
+            }));
+            const startedAt = new Date().toISOString();
+            const environment = {CARGO_TARGET_DIR: targetRoot, CARGO_INCREMENTAL: '0', RUSTC_WRAPPER: '', RUSTC_WORKSPACE_WRAPPER: '', SCCACHE_DISABLE: '1'};
+            const build = {argv: ['cargo', 'build', '--profile', 'ci', '-p', 'vize'], cwd: sourceRoot, targetRoot, recipe: BUILD_RECIPE, environment};
+            const pending = {state: 'building', role, sourceRevision, sourceRoot, targetRoot, targetInitiallyAbsent: true, startedAt, build, locks, compiler, cargo};
+            fs.writeFileSync(path.join(out, `${role}.json`), JSON.stringify(pending, null, 2) + '\n');
+            assert.equal(execFileSync('rustc', ['--version', '--verbose'], {cwd: sourceRoot, encoding: 'utf8'}), compiler.version);
+            execFileSync(build.argv[0], build.argv.slice(1), {cwd: sourceRoot, env: {...process.env, ...environment}, stdio: 'inherit'});
+            assert.equal(git(sourceRoot, ['status', '--porcelain', '--untracked-files=no']), '');
+            for (const [file, digest] of Object.entries(locks)) assert.equal(hash(path.join(sourceRoot, file)), digest);
+            const receipt = JSON.parse(fs.readFileSync(writeBuildReceipt(sourceRoot), 'utf8'));
+            assert.equal(receipt.sourceRevision, sourceRevision);
+            const record = {...pending, state: 'built', finishedAt: new Date().toISOString(), build, locks, compiler, cargo, receipt, runner: {os: process.platform, arch: process.arch, hostname: execFileSync('hostname', {encoding: 'utf8'}).trim()}};
+            fs.writeFileSync(path.join(out, `${role}.json`), JSON.stringify(record, null, 2) + '\n');
+          }
+          JS
+      - name: Observe original complete packets in control candidate candidate control order
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { spawnSync } from 'node:child_process';
+          import fs from 'node:fs';
+          import path from 'node:path';
+          const output = path.join(process.cwd(), 'target/vize-tests/project-uri-source-control-10622');
+          const producers = path.join(process.env.RUNNER_TEMP, 'uri-source-control-producers');
+          const roles = {control: '225b884276cdc066a692bf2cd1b51a15e952e97b', candidate: '6573b92e74c93883303e34e9f12869868f567207'};
+          const records = [];
+          for (const [role, trial] of [['control', '1'], ['candidate', '1'], ['candidate', '2'], ['control', '2']]) {
+            const args = ['tests/tooling/support/lsp/project-uri-source-control-10622.ts', role, roles[role], path.join(producers, role), trial, path.join(output, role, `trial-${trial}`)];
+            const result = spawnSync(process.execPath, args, {stdio: 'inherit'});
+            records.push({role, trial, argv: [process.execPath, ...args], status: result.status, signal: result.signal, error: result.error?.message ?? null});
+            fs.writeFileSync(path.join(output, 'trial-statuses.json'), JSON.stringify(records, null, 2) + '\n');
+          }
+          assert.equal(records.length, 4);
+          assert.ok(records.every(row => row.status === 0 && row.signal === null && row.error === null), 'all four complete source observations are mandatory');
+          JS
+      - name: Retain complete source receipts and raw observations
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: uri-source-control-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.event.pull_request.head.sha }}
+          path: |
+            target/vize-tests/project-uri-source-control-10622/
+            ${{ runner.temp }}/uri-source-control-producers/control/target/differential/lsp-sessions/
+            ${{ runner.temp }}/uri-source-control-producers/candidate/target/differential/lsp-sessions/
+          if-no-files-found: error
+          retention-days: 7
