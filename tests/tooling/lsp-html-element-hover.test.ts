@@ -8,6 +8,7 @@ import { pathToFileURL } from "node:url";
 import { resolveVuePackagePath } from "../../tools/support/compat/editor-e2e/real-vue-workspace.ts";
 import { readPinnedArtifact } from "../differential/harness.mjs";
 import { loadLspManifest } from "../differential/lsp-manifest.ts";
+import type { LspFixture } from "../differential/lsp-types.ts";
 import { isDiagnosticsForUri } from "./support/lsp/assertions.ts";
 import { root } from "./support/lsp/paths.ts";
 import { LspSession } from "./support/lsp/session.ts";
@@ -280,13 +281,14 @@ await test("successful native Corsa HTML hovers include the selected documentati
       (row) => row.id === "lsp/regression/native-html-tag-range-10449",
     );
     assert.ok(rangeFixture);
+    const requests: LspFixture["requests"] = rangeFixture.requests;
     for (const file of rangeFixture.files) {
       const filePath = path.join(workspace, file.runtimePath);
       const documentUri = pathToFileURL(filePath).href;
       const text = file.bytes.toString("utf8");
       fs.writeFileSync(filePath, text);
       await open(session, documentUri, text);
-      for (const request of rangeFixture.requests) {
+      for (const request of requests) {
         const result = await session.request(
           "textDocument/hover",
           {

@@ -41,7 +41,7 @@ export function runPolicy(
     ].join("\n"),
   );
 
-  const env = {
+  const env: NodeJS.ProcessEnv = {
     ...process.env,
     PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
     FAKE_GH_LOG: ghLogPath,
