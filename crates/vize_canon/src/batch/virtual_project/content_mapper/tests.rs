@@ -14,6 +14,7 @@ use crate::batch::{
 };
 
 mod diagnostic_origin;
+mod diagnostic_ownership;
 mod models;
 mod navigation;
 mod protocol;

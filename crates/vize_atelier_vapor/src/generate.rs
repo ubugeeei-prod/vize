@@ -15,6 +15,7 @@ mod root_component;
 mod root_key;
 mod setup;
 pub(crate) mod spans;
+mod transformed_root;
 
 use crate::ir::{BlockIRNode, CreateComponentIRNode, NegativeBranch, OperationNode};
 use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString, ensure_sufficient_stack};
@@ -28,6 +29,7 @@ pub use entry::{
 use operations::generate_operation;
 use root_component::collect_single_root_returns;
 pub(crate) use setup::escape_js_string_literal;
+pub use transformed_root::generate_vapor_from_transformed_root;
 
 fn block_has_template_refs(block: &BlockIRNode<'_>) -> bool {
     ensure_sufficient_stack(|| {

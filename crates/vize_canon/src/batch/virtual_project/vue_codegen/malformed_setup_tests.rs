@@ -28,6 +28,7 @@ const CORPUS: &str = concat!(
 
 fn options() -> VueCodegenOptions<'static> {
     VueCodegenOptions {
+        diagnostic_ownership: None,
         check_options: Default::default(),
         typed_router_root: None,
         preserve_unused_diagnostics: false,

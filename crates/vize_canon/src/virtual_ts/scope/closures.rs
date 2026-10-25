@@ -113,10 +113,12 @@ pub(super) fn emit_scope_closures(
         SlotOutletChecks::default()
     };
     slot_outlets.emit_helpers(ts);
-    let skipped_expression_ranges =
-        profile!("canon.virtual_ts.component_prop_expression_ranges", {
-            collect_component_prop_expression_ranges(summary, &options, &slot_outlets)
-        });
+    let expression_plan = profile!("canon.virtual_ts.component_prop_expression_ranges", {
+        collect_component_prop_expression_ranges(summary, &options, &slot_outlets)
+    });
+    let skipped_expression_ranges = expression_plan.skipped;
+    let checks =
+        checks.with_diagnostic_ownership(options.diagnostic_ownership, &expression_plan.owners);
 
     let children_map: FxHashMap<u32, Vec<ScopeId>> =
         profile!("canon.virtual_ts.build_scope_tree", {
@@ -199,6 +201,8 @@ pub(super) fn emit_scope_closures(
         FxHashSet::default()
     };
     let props_ctx = ComponentPropsContext {
+        inference_prelude: None,
+        diagnostic_ownership: options.diagnostic_ownership,
         summary,
         model_modifiers: checks.model_modifiers,
         template_ast: options.template_ast,
@@ -235,7 +239,7 @@ pub(super) fn emit_scope_closures(
         usages
             .as_ref()
             .map_or_else(RootOwnerPackets::default, |usages| {
-                RootOwnerPackets::collect(&props_ctx, usages)
+                RootOwnerPackets::collect(&props_ctx, usages, options.script_content)
             })
     } else {
         RootOwnerPackets::default()
@@ -246,10 +250,17 @@ pub(super) fn emit_scope_closures(
         } else {
             for &usage in usages {
                 if let Some(packet) = root_packets.get_mut(usage.0) {
+                    let packet_ctx = ComponentPropsContext {
+                        inference_prelude: Some(&packet.inference),
+                        diagnostic_ownership: options
+                            .diagnostic_ownership
+                            .map(|_| &packet.diagnostic.diagnostic_ownership),
+                        ..props_ctx
+                    };
                     emit_event_references(
-                        &mut packet.text,
-                        &mut packet.mappings,
-                        &props_ctx,
+                        &mut packet.diagnostic.text,
+                        &mut packet.diagnostic.mappings,
+                        &packet_ctx,
                         &[usage],
                     );
                 } else {
@@ -261,6 +272,7 @@ pub(super) fn emit_scope_closures(
     for scope in summary.scopes.iter() {
         let scope_id = scope.id.as_u32();
         let ctx = ScopeGenContext {
+            inference_prelude: None,
             summary,
             virtual_ts_options,
             expressions_by_scope: &expressions_by_scope,
@@ -312,10 +324,23 @@ pub(super) fn emit_scope_closures(
         }
         profile!("canon.virtual_ts.scope_node", {
             if let Some(packet) = root_packets.for_scope(scope) {
+                let packet_ctx = ScopeGenContext {
+                    inference_prelude: Some(&packet.inference),
+                    checks: crate::virtual_ts::expressions::TemplateValueChecks {
+                        diagnostic_ownership: options
+                            .diagnostic_ownership
+                            .map(|_| &packet.diagnostic.diagnostic_ownership),
+                        ..ctx.checks
+                    },
+                    ..ctx
+                };
                 generate_scope_node(
-                    &mut packet.text,
-                    &mut ScopeMappings::new(&mut packet.mappings, &mut packet.diagnostic_mappings),
-                    &ctx,
+                    &mut packet.diagnostic.text,
+                    &mut ScopeMappings::new(
+                        &mut packet.diagnostic.mappings,
+                        &mut packet.diagnostic.diagnostic_mappings,
+                    ),
+                    &packet_ctx,
                     scope,
                     "  ",
                 )

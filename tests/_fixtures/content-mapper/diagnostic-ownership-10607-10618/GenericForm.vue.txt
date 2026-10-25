@@ -1,0 +1,7 @@
+<script setup lang="ts" generic="FormShape extends object">
+import type { FormSlots, Schema } from './types';
+defineProps<{ initialState: Partial<FormShape>; schema: Schema<FormShape>; validateFormFieldOn?: (field: keyof FormShape) => boolean }>();
+defineSlots<FormSlots<FormShape>>();
+defineEmits<{ submit: [value: FormShape]; error: [error: Error] }>();
+</script>
+<template><form><slot :state="{} as FormShape" /></form></template>

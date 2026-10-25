@@ -244,11 +244,14 @@ pub fn compile_css(css: &str, options: &CssCompileOptions) -> CssCompileResult {
         targets,
         options.custom_media,
         options.css_modules,
+        // String-only prepasses do not yet own original source links. Never
+        // return their generated coordinates as if they belonged to `css`.
+        options.source_map && scoped_css == css,
     );
 
     CssCompileResult {
         code: result.code,
-        map: None,
+        map: result.map,
         css_vars,
         errors: result.errors,
         warnings: vec![],
