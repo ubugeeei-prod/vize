@@ -29,6 +29,7 @@ use super::super::props::{
     extract_with_defaults_values, validate_macro_scope_references,
     validate_props_destructure_default_types,
 };
+use super::super::runtime_imports::RuntimeModule;
 use super::super::statement_sections::extract_script_sections_from_program_with_options;
 use super::super::{ScriptCompileResult, TemplateParts};
 use body::compile_script_setup_inline_body;
@@ -78,6 +79,7 @@ pub fn compile_script_setup_inline(
         scope_id,
         scope_id,
         false,
+        &RuntimeModule::new("vue"),
         None,
     )?;
     if let Some(transformed) = transformed {
@@ -105,6 +107,7 @@ pub(crate) fn compile_script_setup_inline_with_context(
     scope_id: &str,
     css_vars_id: &str,
     is_prod: bool,
+    runtime: &RuntimeModule<'_>,
     mut trace: Option<&mut SetupTrace>,
 ) -> Result<ScriptCompileResult, SfcError> {
     // Extract user imports and setup lines from script content once; await detection
@@ -197,22 +200,17 @@ pub(crate) fn compile_script_setup_inline_with_context(
     if is_async {
         if is_vapor {
             if needs_vapor_setup_context {
-                output.extend_from_slice(
-                    b"import { withAsyncContext as _withAsyncContext, defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'\n",
-                );
+                runtime.push_import(&mut output, "withAsyncContext as _withAsyncContext, defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs");
             } else {
-                output.extend_from_slice(
-                    b"import { withAsyncContext as _withAsyncContext, defineVaporComponent as _defineVaporComponent } from 'vue'\n",
-                );
+                runtime.push_import(&mut output, "withAsyncContext as _withAsyncContext, defineVaporComponent as _defineVaporComponent");
             }
         } else if is_ts {
-            output.extend_from_slice(
-                b"import { withAsyncContext as _withAsyncContext, defineComponent as _defineComponent } from 'vue'\n",
+            runtime.push_import(
+                &mut output,
+                "withAsyncContext as _withAsyncContext, defineComponent as _defineComponent",
             );
         } else {
-            output.extend_from_slice(
-                b"import { withAsyncContext as _withAsyncContext } from 'vue'\n",
-            );
+            runtime.push_import(&mut output, "withAsyncContext as _withAsyncContext");
         }
     }
 
@@ -242,6 +240,7 @@ pub(crate) fn compile_script_setup_inline_with_context(
         needs_vapor_setup_context,
         vapor_render_alias,
         is_async,
+        runtime,
         trace,
     )
 }

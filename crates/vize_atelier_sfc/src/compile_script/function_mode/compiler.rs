@@ -37,6 +37,7 @@ pub fn compile_script_setup(
     is_ts: bool,
     template_content: Option<&str>,
 ) -> Result<ScriptCompileResult, SfcError> {
+    let runtime = super::super::runtime_imports::RuntimeModule::new("vue");
     let lazy_hydration_transform = transform_lazy_hydration_macros(content);
     let content = lazy_hydration_transform
         .as_ref()
@@ -66,9 +67,7 @@ pub fn compile_script_setup(
         .transpose()?
         .flatten();
     if rest_proxy.is_some() {
-        output.extend_from_slice(
-            b"import { createPropsRestProxy as _createPropsRestProxy } from 'vue'\n",
-        );
+        runtime.push_import(&mut output, "createPropsRestProxy as _createPropsRestProxy");
     }
 
     let (imports, setup_lines, module_scope) = super::module_scope::extract(content);
@@ -84,15 +83,14 @@ pub fn compile_script_setup(
 
     // Add Vapor-specific import or defineComponent import
     if is_vapor {
-        output.extend_from_slice(
-            b"import { defineVaporComponent as _defineVaporComponent } from 'vue'\n",
-        );
+        runtime.push_import(&mut output, "defineVaporComponent as _defineVaporComponent");
     } else if needs_prop_type {
-        output.extend_from_slice(
-            b"import { defineComponent as _defineComponent, type PropType } from 'vue'\n",
+        runtime.push_import(
+            &mut output,
+            "defineComponent as _defineComponent, type PropType",
         );
     } else {
-        output.extend_from_slice(b"import { defineComponent as _defineComponent } from 'vue'\n");
+        runtime.push_import(&mut output, "defineComponent as _defineComponent");
     }
 
     // Add mergeDefaults import if props destructure has defaults
@@ -104,19 +102,19 @@ pub fn compile_script_setup(
             .map(|d| d.bindings.values().any(|b| b.default.is_some()))
             .unwrap_or(false);
     if needs_merge_defaults {
-        output.extend_from_slice(b"import { mergeDefaults as _mergeDefaults } from 'vue'\n");
+        runtime.push_import(&mut output, "mergeDefaults as _mergeDefaults");
     }
 
     // Add useSlots import if defineSlots was used
     let has_define_slots = ctx.macros.define_slots.is_some();
     if has_define_slots {
-        output.extend_from_slice(b"import { useSlots as _useSlots } from 'vue'\n");
+        runtime.push_import(&mut output, "useSlots as _useSlots");
     }
 
     // Add useModel import if defineModel was used
     let has_define_model = !ctx.macros.define_models.is_empty();
     if has_define_model {
-        output.extend_from_slice(b"import { useModel as _useModel } from 'vue'\n");
+        runtime.push_import(&mut output, "useModel as _useModel");
     }
 
     // Output imports (filtering out type-only imports + dedupe)

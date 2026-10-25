@@ -1,0 +1,15 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "declaration": true,
+    "noEmit": false,
+    "outDir": "./dist",
+    "declarationMap": false,
+    "emitDeclarationOnly": true,
+    "rootDir": "."
+  },
+  "include": ["*.ts"],
+  "exclude": ["node_modules", "dist"],
+  "references": []
+}

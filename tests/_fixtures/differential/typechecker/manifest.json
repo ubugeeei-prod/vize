@@ -7271,6 +7271,67 @@
         ]
       },
       "diagnostics": []
+    },
+    {
+      "id": "typechecker/package-target-deletion-refresh/missing-target",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "package-target-deletion-refresh",
+      "case": "missing-target",
+      "test": "missing_exported_package_target_preserves_ts2307",
+      "regressionCommit": "9dfa45b2bcbbb5ca2ff3548ba16e607f0fc283f0",
+      "sourceRevision": "13fa41356d075047a229f580014b637d3bbeb57f",
+      "packReference": {
+        "path": "package-target-deletion-refresh/cases.json",
+        "sha256": "b339b89affcef1dd2b6b1f1878d33c4ccbe166bd69ac9d37d00eba0c6d955d5c"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "package-target-deletion-refresh/tsconfig.json.txt",
+          "sha256": "564c2e018c6547c05f7751ecc519f6dfbddf6a95074f1e441cc191fd4d7c45f9"
+        },
+        {
+          "file": "src/Host.vue",
+          "path": "package-target-deletion-refresh/Host.vue.txt",
+          "sha256": "2d01188979d639857959887ba4056cce2c1c0a6790e121368c4d30628ff4bf0d"
+        },
+        {
+          "file": "node_modules/@scope/dynamic/package.json",
+          "path": "package-target-deletion-refresh/package.json.txt",
+          "sha256": "570abd17d7d3263ef88c0d2e5fabb7d8a7e3aad78acac19a506ba679499a3af9"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": [
+        {
+          "file": "src/Host.vue",
+          "line": 2,
+          "column": 20,
+          "severity": 1,
+          "code": 2307,
+          "message": "Cannot find module '@scope/dynamic' or its corresponding type declarations."
+        }
+      ]
     }
   ],
   "protocolCases": [
@@ -7304,7 +7365,7 @@
         {
           "selector": "lsp_client::editor_lsp::native_shutdown::tests::null_ack_precedes_eof_foreign_exit_is_preserved_and_failed_ack_still_closes",
           "source": "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown/tests.rs",
-          "sha256": "4d8b400d36717738ea23b0fb5580f2a694abbb2e24c51532f488b98b50f78906"
+          "sha256": "789f1dc6f3e9e4412d3fbb9ab1bebdef7eb8ab570b261d759491546fddca24be"
         }
       ]
     },
@@ -7343,7 +7404,48 @@
         {
           "selector": "lsp_client::editor_lsp::native_shutdown::tests::null_ack_precedes_eof_foreign_exit_is_preserved_and_failed_ack_still_closes",
           "source": "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown/tests.rs",
-          "sha256": "4d8b400d36717738ea23b0fb5580f2a694abbb2e24c51532f488b98b50f78906"
+          "sha256": "789f1dc6f3e9e4412d3fbb9ab1bebdef7eb8ab570b261d759491546fddca24be"
+        }
+      ]
+    },
+    {
+      "id": "typechecker/protocol/native-beta-provider-pairs-10741",
+      "state": "active",
+      "adapter": "native-shutdown-wire-v1",
+      "targets": [
+        "native-shutdown"
+      ],
+      "inputs": [
+        {
+          "path": "native-beta-provider-pairs-10741/provider-pairs.json",
+          "sha256": "4692d73a7d971f633ae66bc1b037330a1c8b86a66630ac42ed7376a0b41e7bf0"
+        }
+      ],
+      "tests": [
+        {
+          "selector": "lsp_client::editor_lsp::native_shutdown::tests::beta_pairs::exact_beta_images_require_the_complete_original_initialize",
+          "source": "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown/tests/beta_pairs.rs",
+          "sha256": "05c20946de808976f0ec5d133dd719ab79b98f1dd5a29d94897f3a4468e5b3bd"
+        },
+        {
+          "selector": "lsp_client::editor_lsp::native_shutdown::tests::beta_provider::exact_beta_editor_owner_keeps_whole_diagnostics_and_clean_eof_shutdown",
+          "source": "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown/tests/beta_provider.rs",
+          "sha256": "ce9bf9fd57e1b5c53f94c53ed8142bb8e75be6145d36424ee6702e0efe9b6752"
+        },
+        {
+          "selector": "lsp_client::editor_lsp::native_shutdown::tests::completion::buffered_completion_and_unrelated_notifications_preserve_the_whole_transcript",
+          "source": "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown/tests/completion.rs",
+          "sha256": "c29ee8d8ff579c8493ab934b58c2400c9a25f8e68e48177d7dc095a513a2564c"
+        },
+        {
+          "selector": "lsp_client::editor_lsp::native_shutdown::tests::completion::malformed_missing_stale_and_eof_completion_still_close_the_owned_process",
+          "source": "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown/tests/completion.rs",
+          "sha256": "c29ee8d8ff579c8493ab934b58c2400c9a25f8e68e48177d7dc095a513a2564c"
+        },
+        {
+          "selector": "lsp_client::editor_lsp::native_shutdown::tests::null_ack_precedes_eof_foreign_exit_is_preserved_and_failed_ack_still_closes",
+          "source": "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown/tests.rs",
+          "sha256": "789f1dc6f3e9e4412d3fbb9ab1bebdef7eb8ab570b261d759491546fddca24be"
         }
       ]
     }

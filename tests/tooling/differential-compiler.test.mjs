@@ -154,6 +154,7 @@ void test("compiler fixture pins a real full-module reference without native cre
       "compiler/sfc/scoped-list-nesting-10606",
       "compiler/sfc/sibling-script-import-reads-10616",
       "compiler/sfc/compact-scoped-at-rules-10639",
+      "compiler/sfc/sfc-runtime-options-native",
       "compiler/sfc/escaped-for-bindings-10714",
     ],
   );
