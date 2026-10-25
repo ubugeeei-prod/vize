@@ -40,6 +40,7 @@ async function geometry(page: Page, end = false) {
 }
 
 async function checkFixedViewport(page: Page, width: number, height: number) {
+  await page.locator(".variant-card").first().frameLocator("iframe").getByRole("status").waitFor();
   const start = await geometry(page);
   assert.equal(start.documentWidth, start.viewport[0], JSON.stringify(start));
   assert.equal(start.frames.length, 2);
@@ -118,7 +119,20 @@ await test(
               ...(await checkFixedViewport(page, width, height)),
             });
             await geometry(page);
-            await page.locator(".variant-card").first().scrollIntoViewIfNeeded();
+            // Place the preview below the sticky toolbar for useful screenshots
+            // even when the gallery itself has only a short landscape viewport.
+            await page
+              .locator(".variant-preview")
+              .first()
+              .evaluate((preview) => {
+                const scroller = preview.closest(".content")!;
+                const toolbar = document.querySelector(".component-sticky-menu")!;
+                scroller.scrollTop +=
+                  preview.getBoundingClientRect().top -
+                  scroller.getBoundingClientRect().top -
+                  toolbar.getBoundingClientRect().height -
+                  12;
+              });
             await page.screenshot({
               path: path.join(output, `${viewport.width}x${viewport.height}-ipad.png`),
             });
