@@ -231,6 +231,9 @@ jobs:
       - name: Install native runtime oracle dependencies
         if: ${{ matrix.lane != 'none' }}
         run: node tools/support/github/vp-install.ts --filter vize-workspace --filter './npm/native...' --filter './npm/ui...' --filter './tests...'
+      - uses: ./.github/actions/setup-frozen-native-test-runtime
+        if: ${{ matrix.lane != 'none' }}
+        with: { partition: "native-${{ matrix.lane }}" }
       - name: Test native typechecker ownership and projection laws
         if: ${{ matrix.lane == 'canon' }}
         uses: ./.github/actions/test-native-canon

@@ -56,6 +56,8 @@ jobs:
           cache: true
           cache-save: false
           run-install: true
+      - uses: ./.github/actions/setup-frozen-native-test-runtime
+        with: { partition: "${{ matrix.cohort }}" }
       - uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
         with:
           tool: cargo-nextest@0.9.146
