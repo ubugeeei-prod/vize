@@ -9,9 +9,9 @@ import { hash, json, packageIdentity } from "../hosts/environment.mjs";
 export { hash, json };
 export const here = path.dirname(fileURLToPath(import.meta.url));
 export const runtimeSpecs = [
-  { id: "stable", version: "3.5.44", target: "vdom" },
-  { id: "rc9", version: "3.6.0-rc.9", target: "vapor" },
-  { id: "rc11", version: "3.6.0-rc.11", target: "vapor" },
+  { id: "stable", fixture: "vdom", version: "3.5.44", target: "vdom" },
+  { id: "rc9", fixture: "vapor-rc9", version: "3.6.0-rc.9", target: "vapor" },
+  { id: "rc11", fixture: "vapor-rc11", version: "3.6.0-rc.11", target: "vapor" },
 ];
 export const hostSpecs = [
   { major: 7, version: "7.29.7" },
@@ -46,7 +46,7 @@ export function settings() {
   };
 }
 export function runtimeIdentity(spec) {
-  const root = path.join(here, spec.id);
+  const root = path.join(here, "fixtures", spec.fixture);
   const requireRuntime = createRequire(path.join(root, "package.json"));
   const vue = packageIdentity(requireRuntime, "vue");
   const renderer = packageIdentity(requireRuntime, "@vue/server-renderer");
@@ -82,7 +82,7 @@ export function runtimeIdentity(spec) {
   };
 }
 export function prepareCompiler(spec, config) {
-  const sourceHost = path.resolve(here, "../hosts/babel" + spec.major);
+  const sourceHost = path.resolve(here, "../hosts/fixtures/babel" + spec.major);
   const fromHost = createRequire(path.join(sourceHost, "package.json"));
   const hostManifest = JSON.parse(fs.readFileSync(path.join(sourceHost, "package.json")));
   const root = path.join(config.output, "compiler" + spec.major);

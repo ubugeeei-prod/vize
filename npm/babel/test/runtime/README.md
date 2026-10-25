@@ -2,7 +2,7 @@
 
 This strict matrix runs one authored CRLF/Unicode `Counter`/`App` TSX program through the actual packed ESM and CJS plugin exports under Babel 7.29.7 and 8.0.9. It uses Vue/server-renderer 3.5.44 for VDOM and 3.6.0-rc.9/rc.11 for Vapor, with real Playwright 1.62.1 Chromium.
 
-Install the existing `../hosts/babel7` and `babel8` locks, then each of `stable`, `rc9`, and `rc11` with `npm ci --ignore-scripts`. The source Actions owner installs Chromium explicitly; this suite never downloads a browser implicitly. `infrastructure.mjs` checks only actual runtime exports, exact compiler graphs, independent reference SSR and real Babel TypeScript parsing. It loads no packed plugin/native addon or browser and grants no runtime producer credit.
+Install the existing `../hosts/fixtures/babel7` and `babel8` locks, then each of `fixtures/vdom`, `fixtures/vapor-rc9`, and `fixtures/vapor-rc11` with `npm ci --ignore-scripts`. The source Actions owner installs Chromium explicitly; this suite never downloads a browser implicitly. `infrastructure.mjs` checks only actual runtime exports, exact compiler graphs, independent reference SSR and real Babel TypeScript parsing. It loads no packed plugin/native addon or browser and grants no runtime producer credit.
 
 The full command is `node --test npm/babel/test/runtime-renderers.test.mjs`, while the genuine source-native preparation owner is active, with:
 

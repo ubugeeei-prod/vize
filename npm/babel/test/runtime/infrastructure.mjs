@@ -106,7 +106,7 @@ for (const spec of hostSpecs) {
   report.hosts.push(row);
   try {
     const requireHost = createRequire(
-      path.resolve(here, "../hosts/babel" + spec.major + "/package.json"),
+      path.resolve(here, "../hosts/fixtures/babel" + spec.major + "/package.json"),
     );
     const core = await import(pathToFileURL(requireHost.resolve("@babel/core")).href);
     const typescript = (

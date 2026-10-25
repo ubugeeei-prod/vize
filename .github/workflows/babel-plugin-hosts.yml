@@ -42,12 +42,12 @@ jobs:
       - name: Install frozen source and exact isolated host graphs
         run: |
           vp install --frozen-lockfile --prefer-offline --filter './npm/babel...' --filter './npm/native...'
-          npm ci --prefix npm/babel/test/hosts/babel7 --ignore-scripts --no-audit --no-fund
-          npm ci --prefix npm/babel/test/hosts/babel8 --ignore-scripts --no-audit --no-fund
-          for runtime in stable rc9 rc11; do
-            npm ci --prefix "npm/babel/test/runtime/$runtime" --ignore-scripts --no-audit --no-fund
+          npm ci --prefix npm/babel/test/hosts/fixtures/babel7 --ignore-scripts --no-audit --no-fund
+          npm ci --prefix npm/babel/test/hosts/fixtures/babel8 --ignore-scripts --no-audit --no-fund
+          for runtime in vdom vapor-rc9 vapor-rc11; do
+            npm ci --prefix "npm/babel/test/runtime/fixtures/$runtime" --ignore-scripts --no-audit --no-fund
           done
-          node npm/babel/test/runtime/stable/node_modules/playwright/cli.js install --with-deps chromium
+          node npm/babel/test/runtime/fixtures/vdom/node_modules/playwright/cli.js install --with-deps chromium
       - name: Build the actual source compiler and both public package entrypoints
         run: |
           set -euo pipefail
@@ -98,7 +98,7 @@ jobs:
           path: |
             ${{ runner.temp }}/babel-plugin
             npm/native/.artifacts/native/build-token-receipt.json
-            npm/babel/test/hosts/babel7/package-lock.json
-            npm/babel/test/hosts/babel8/package-lock.json
+            npm/babel/test/hosts/fixtures/babel7/package-lock.json
+            npm/babel/test/hosts/fixtures/babel8/package-lock.json
           if-no-files-found: error
           retention-days: 14
