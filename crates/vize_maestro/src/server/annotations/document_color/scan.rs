@@ -99,7 +99,8 @@ pub(crate) fn colors_in(content: &str, region: (usize, usize), mode: CssMode) ->
         if mode == CssMode::StylusDeclarations && line_header_pending && !byte.is_ascii_whitespace()
         {
             line_header_pending = false;
-            if let Some(end) = declarations::colonless(content, statement_start, cursor, region_end)
+            if let Some(end) =
+                declarations::stylus_value(content, statement_start, cursor, region_end)
             {
                 tentative_value.get_or_insert(found.len());
                 in_value = true;

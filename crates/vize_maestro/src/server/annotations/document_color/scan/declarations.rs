@@ -175,23 +175,32 @@ fn header(bytes: &[u8], start: usize, end: usize, mode: CssMode) -> (Header, usi
     (Header::Other, at)
 }
 
-/// Stylus permits `color red`; selectors and unindented names do not grant it.
-pub(super) fn colonless(content: &str, line: usize, at: usize, end: usize) -> Option<usize> {
+/// Stylus permits `theme = red` and indented `color red`; selectors do not grant values.
+pub(super) fn stylus_value(content: &str, line: usize, at: usize, end: usize) -> Option<usize> {
     #[cfg(test)]
     super::record_declaration_name_work(at.saturating_sub(line));
     let bytes = content.as_bytes();
-    if !bytes
-        .get(line)
-        .is_some_and(|byte| matches!(byte, b' ' | b'\t'))
-        || skip_trivia(bytes, line, at) != at
-    {
+    if skip_trivia(bytes, line, at) != at {
         return None;
     }
-    let stop = identifier_end(bytes, at, end);
-    if !bytes.get(stop).is_some_and(|b| matches!(b, b' ' | b'\t')) {
+    let name = at + usize::from(bytes.get(at) == Some(&b'$'));
+    let stop = identifier_end(bytes, name, end);
+    if stop == name {
         return None;
     }
     let next = skip_trivia(bytes, stop, end);
+    if bytes.get(next) == Some(&b'=') {
+        return Some(next + 1);
+    }
+    if !bytes
+        .get(line)
+        .is_some_and(|byte| matches!(byte, b' ' | b'\t'))
+    {
+        return None;
+    }
+    if !bytes.get(stop).is_some_and(|b| matches!(b, b' ' | b'\t')) {
+        return None;
+    }
     if bytes.get(next) == Some(&b':') || !crate::ide::style::known_property(content.get(at..stop)?)
     {
         return None;

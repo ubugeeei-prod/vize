@@ -111,3 +111,47 @@ fn preprocessor_expressions_comments_strings_and_urls_do_not_publish_css_colours
         );
     }
 }
+
+#[test]
+fn stylus_assignments_and_preprocessor_parameter_values_are_owned_values() {
+    let source = "<style lang=\"stylus\">theme = #f00\n$accent = red\n.card\n  color theme\n  border-color: blue\n</style>";
+    assert_colors(
+        source,
+        vec![
+            expected(source, "theme = #f00", "#f00", [1., 0., 0., 1.]),
+            expected(source, "$accent = red", "red", [1., 0., 0., 1.]),
+            expected(source, "border-color: blue", "blue", [0., 0., 1., 1.]),
+        ],
+    );
+    let source = "<style lang=\"scss\">@mixin theme($base: #f00, $accent: red) { .x { color: blue; } }</style>";
+    assert_colors(
+        source,
+        vec![
+            expected(source, "$base: #f00", "#f00", [1., 0., 0., 1.]),
+            expected(source, "$accent: red", "red", [1., 0., 0., 1.]),
+            expected(source, "color: blue", "blue", [0., 0., 1., 1.]),
+        ],
+    );
+}
+
+#[test]
+fn rejected_supports_headers_keep_linear_internal_work() {
+    let mut previous = 0;
+    for count in [1_000, 2_000, 4_000, 8_000] {
+        let source = format!(
+            "@supports (/*{}*/ #bad{}) {{ .x {{ color: blue; }} }}",
+            "x".repeat(count),
+            ":a".repeat(count)
+        );
+        let (found, work, _) = super::super::scan::colors_in_mode_with_metrics(
+            &source,
+            (0, source.len()),
+            super::super::scan::CssMode::Stylesheet,
+        );
+        assert_eq!(found.len(), 1);
+        if previous > 0 {
+            assert!(work <= previous * 2 + 32, "{count}: {work}");
+        }
+        previous = work;
+    }
+}

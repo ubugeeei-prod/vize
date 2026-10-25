@@ -123,6 +123,14 @@ pub(super) fn skip_interpolation(bytes: &[u8], open: usize, limit: usize) -> usi
             Some(b'/') if pair_at(bytes, cursor, b"/*") => {
                 cursor = skip_comment(bytes, cursor, limit);
             }
+            Some(b'/') if pair_at(bytes, cursor, b"//") => {
+                cursor = bytes
+                    .get(cursor..limit)
+                    .unwrap_or_default()
+                    .iter()
+                    .position(|byte| matches!(byte, b'\r' | b'\n'))
+                    .map_or(limit, |relative| cursor + relative);
+            }
             Some(b'\\') => cursor = (cursor + 2).min(limit),
             Some(b'{') => {
                 depth += 1;
