@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import Comma from './Comma.vue'
+import Edges from './Edges.vue'
+</script>
+<template>
+  <Comma value="a,b" />
+  <Edges value="a,b" template-value="x,y" />
+</template>

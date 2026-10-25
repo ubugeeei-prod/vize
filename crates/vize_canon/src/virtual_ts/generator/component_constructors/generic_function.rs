@@ -3,7 +3,6 @@
 use super::super::generics::generic_suffix;
 use super::emission::{GenericContext, GenericSignature, SignatureRole};
 use super::{ComponentInstanceAliases, alias_ref};
-use crate::virtual_ts::props::strip_const_modifiers;
 use vize_carton::{String, append};
 
 pub(super) fn emit(
@@ -14,7 +13,11 @@ pub(super) fn emit(
     names: &str,
     props_type: &str,
 ) {
-    let alias_parameters = generic_suffix(&strip_const_modifiers(alias_parameters));
+    let alias_parameters = generic_suffix(
+        aliases
+            .generic_parameters
+            .map_or(alias_parameters, |plan| plan.alias_declaration.as_str()),
+    );
     let authored_parameters = generic_suffix(authored_parameters);
     let arguments = generic_suffix(names);
     let emits = alias_ref("Emits", aliases.emits_is_generic, names);

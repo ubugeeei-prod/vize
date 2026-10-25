@@ -13,8 +13,8 @@
 //! every component and each declared prop read reported `TS2339`.
 
 use vize_carton::{FxHashSet, String, append, cstr};
+use vize_croquis::Croquis;
 use vize_croquis::macros::MacroKind;
-use vize_croquis::{Croquis, ScopeData, ScopeKind};
 
 use super::keyed_template_names::collect_keyed_template_prop_names;
 use super::mappings::PropBindingMappings;
@@ -26,6 +26,7 @@ use super::template_bindings::{
 use super::with_defaults::{collect_with_defaults_names_from_source, template_props_type_ref};
 use super::{strip_generic_params, strip_outer_angle_brackets, type_reference_lookup_key};
 use crate::virtual_ts::generator::setup_scope::define_props_type_requires_setup_scope;
+use crate::virtual_ts::generic_parameters::GenericParameters;
 
 mod opaque_defaults;
 mod type_shape;
@@ -50,7 +51,7 @@ pub(crate) struct TemplatePropsModel {
 }
 
 impl TemplatePropsModel {
-    pub(crate) fn new(summary: &Croquis) -> Self {
+    pub(crate) fn new(summary: &Croquis, generic_param: Option<&GenericParameters>) -> Self {
         let props = summary.macros.props();
         let models = summary.macros.models();
         let define_props_type_args = summary
@@ -61,7 +62,6 @@ impl TemplatePropsModel {
             !props.is_empty() || !models.is_empty() || define_props_type_args.is_some();
 
         let setup_scoped = define_props_type_requires_setup_scope(summary);
-        let generic_param = sfc_generic_param(summary);
         let authored_type_ref =
             props_type_ref(generic_param, setup_scoped.then_some("__VizeSetupProps"));
 
@@ -134,23 +134,14 @@ impl TemplatePropsModel {
 
     /// Emit the setup-scope capture an opaque `withDefaults` argument is typed
     /// from. Must precede the template scope that reads the resolved contract.
-    pub(crate) fn emit_defaults_capture(ts: &mut String, summary: &Croquis) {
-        let model = Self::new(summary);
+    pub(crate) fn emit_defaults_capture(
+        ts: &mut String,
+        summary: &Croquis,
+        generic_parameters: Option<&GenericParameters>,
+    ) {
+        let model = Self::new(summary, generic_parameters);
         generate_opaque_defaults_capture(ts, summary, model.authored_type_ref.as_str());
     }
-}
-
-/// The SFC's `<script setup generic="…">` parameter list, which the generated
-/// `Props` alias is instantiated with.
-fn sfc_generic_param(summary: &Croquis) -> Option<&str> {
-    summary
-        .scopes
-        .iter()
-        .find(|scope| matches!(scope.kind, ScopeKind::ScriptSetup))
-        .and_then(|scope| match scope.data() {
-            ScopeData::ScriptSetup(data) => data.generic.as_ref().map(|generic| generic.as_str()),
-            _ => None,
-        })
 }
 
 /// Props a `withDefaults` call defaults (with a value), and those it defaults
@@ -178,6 +169,7 @@ fn collect_with_defaults_default_names(
 
 /// Names and authored anchor for the mapper-owned props object in template scope.
 pub(crate) struct TemplatePropsScope<'a> {
+    generic_parameters: Option<&'a GenericParameters>,
     props_shadow_anchor: Option<&'a std::ops::Range<usize>>,
     props_object_binding: &'a str,
 }
@@ -186,8 +178,10 @@ impl<'a> TemplatePropsScope<'a> {
     pub(crate) fn new(
         props_shadow_anchor: Option<&'a std::ops::Range<usize>>,
         props_object_binding: &'a str,
+        generic_parameters: Option<&'a GenericParameters>,
     ) -> Self {
         Self {
+            generic_parameters,
             props_shadow_anchor,
             props_object_binding,
         }
@@ -205,11 +199,12 @@ pub(crate) fn generate_props_variables(
     scope: TemplatePropsScope<'_>,
 ) -> FxHashSet<String> {
     let TemplatePropsScope {
+        generic_parameters,
         props_shadow_anchor,
         props_object_binding,
     } = scope;
     let mut keyed_names = FxHashSet::default();
-    let model = TemplatePropsModel::new(summary);
+    let model = TemplatePropsModel::new(summary, generic_parameters);
     if !model.declares_props {
         return keyed_names;
     }

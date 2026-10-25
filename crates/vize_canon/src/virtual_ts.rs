@@ -25,7 +25,10 @@ pub(crate) use expressions::NAMED_PROP_DIAGNOSTIC_MARKER;
 pub(crate) use expressions::key_sub_spans;
 mod generator;
 mod reference_paths;
+#[cfg(feature = "native")]
+pub(crate) use generator::generic_recovery;
 pub(crate) use reference_paths::validate_reference_paths;
+pub(crate) mod generic_parameters;
 mod helpers;
 mod import_meta;
 pub mod incremental;
@@ -74,6 +77,8 @@ pub use generator::{
 };
 pub(crate) use generator::{extract_declared_name, generate_virtual_ts_with_offsets_and_checks};
 pub(crate) use helpers::CONTENT_MAPPER_HELPERS_MODULE;
+#[cfg(feature = "native")]
+pub(crate) use helpers::ERROR_COMPONENT_STUB;
 pub use helpers::{
     DECLARATION_HELPERS_DTS, SHARED_PREAMBLE_DTS, SHARED_PREAMBLE_FILE_NAME, VUE_SETUP_HELPERS,
     VUE_TYPE_HELPERS,

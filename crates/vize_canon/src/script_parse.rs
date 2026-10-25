@@ -77,7 +77,7 @@ pub(crate) fn collect_script_parse_diagnostics(
 /// is JS-flavored) to match how the Vize JSX virtual-TS lowering re-emits the
 /// script body, and mirrors `vize_maestro`'s `script_source_type` so the LSP
 /// single-document parse-diagnostic lane and this batch lane agree.
-fn script_source_type(lang: Option<&str>) -> SourceType {
+pub(crate) fn script_source_type(lang: Option<&str>) -> SourceType {
     match lang.map(|value| value.trim()) {
         Some("tsx") => SourceType::tsx(),
         Some("jsx") => SourceType::jsx(),

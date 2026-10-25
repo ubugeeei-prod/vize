@@ -6,7 +6,7 @@ impl SetupPropsPlan {
         &self,
         ts: &mut String,
         options_api_props: Option<&OptionsApiPropsSource>,
-        generic_param: Option<&str>,
+        generic_param: Option<&crate::virtual_ts::generic_parameters::GenericParameters>,
         forwarded_roots: &super::super::fallthrough::ForwardedRoots,
     ) {
         if self.has_inferred_model_defaults {
