@@ -120,8 +120,8 @@ jobs:
           observer=crates/vize_canon/tests/generic_parameter_profile.rs
           cp "$observer" "$baseline/$observer"
           cmp "$observer" "$baseline/$observer"
-          (cd "$baseline" && CARGO_TARGET_DIR="$RUNNER_TEMP/constructor-target-base" VIZE_GENERIC_PARAMETER_PROFILE_CAPTURE="$capture/profile-base.json" cargo test --locked --profile ci-opt -p vize_canon --test generic_parameter_profile complete_source_generic_parameter_profile -- --exact --ignored --nocapture) > "$capture/profile-base.log" 2>&1
-          CARGO_TARGET_DIR="$RUNNER_TEMP/constructor-target-head" VIZE_GENERIC_PARAMETER_PROFILE_CAPTURE="$capture/profile-head.json" cargo test --locked --profile ci-opt -p vize_canon --test generic_parameter_profile complete_source_generic_parameter_profile -- --exact --ignored --nocapture > "$capture/profile-head.log" 2>&1
+          (cd "$baseline" && CARGO_TARGET_DIR="$RUNNER_TEMP/constructor-target-base" VIZE_GENERIC_PARAMETER_PROFILE_CWD="$RUNNER_TEMP/constructor-profile-cwd" VIZE_GENERIC_PARAMETER_PROFILE_CAPTURE="$capture/profile-base.json" cargo test --locked --profile ci-opt -p vize_canon --test generic_parameter_profile complete_source_generic_parameter_profile -- --exact --ignored --nocapture) > "$capture/profile-base.log" 2>&1
+          CARGO_TARGET_DIR="$RUNNER_TEMP/constructor-target-head" VIZE_GENERIC_PARAMETER_PROFILE_CWD="$RUNNER_TEMP/constructor-profile-cwd" VIZE_GENERIC_PARAMETER_PROFILE_CAPTURE="$capture/profile-head.json" cargo test --locked --profile ci-opt -p vize_canon --test generic_parameter_profile complete_source_generic_parameter_profile -- --exact --ignored --nocapture > "$capture/profile-head.log" 2>&1
           node --input-type=module <<'JS'
           import assert from 'node:assert/strict';
           import { createHash } from 'node:crypto';
@@ -131,6 +131,7 @@ jobs:
           const read = name => JSON.parse(readFileSync(`${directory}/${name}`));
           const base = read('profile-base.json'), head = read('profile-head.json');
           assert.equal(base.rows.length, 6); assert.equal(head.rows.length, 6);
+          assert.equal(base.workingDirectory, head.workingDirectory);
           const median = values => [...values].sort((a, b) => a - b)[1];
           const rows = head.rows.map((current, index) => {
             const previous = base.rows[index];
@@ -156,7 +157,7 @@ jobs:
           const receipt = { base: process.env.BASE_SHA, head: process.env.HEAD_SHA,
             binaries, profile: 'ci-opt', observerSha256: sha256('crates/vize_canon/tests/generic_parameter_profile.rs'),
             basePacketSha256: sha256(`${directory}/profile-base.json`), headPacketSha256: sha256(`${directory}/profile-head.json`),
-            scope: head.scope, allocationDefinition: head.allocationDefinition, rows };
+            scope: head.scope, workingDirectory: head.workingDirectory, allocationDefinition: head.allocationDefinition, rows };
           writeFileSync(`${directory}/profile-receipt.json`, JSON.stringify(receipt, null, 2) + '\n');
           console.log(JSON.stringify(receipt));
           JS

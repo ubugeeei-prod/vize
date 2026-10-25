@@ -114,6 +114,11 @@ fn operation(source: &str, mapper: bool) {
 #[test]
 #[ignore = "paired source allocation/timing qualification; run explicitly on base and head"]
 fn complete_source_generic_parameter_profile() {
+    // Both source executables observe the same filesystem context. Differing
+    // checkout path lengths must not masquerade as allocation improvements.
+    let working_directory = std::env::var_os("VIZE_GENERIC_PARAMETER_PROFILE_CWD").unwrap();
+    std::fs::create_dir_all(&working_directory).unwrap();
+    std::env::set_current_dir(&working_directory).unwrap();
     let mut rows = Vec::new();
     for (name, source) in [
         ("ordinary", ORDINARY),
@@ -152,6 +157,7 @@ fn complete_source_generic_parameter_profile() {
     std::fs::write(capture, serde_json::to_vec_pretty(&json!({
         "scope": "Current-thread source APIs only; no native provider, end-to-end CLI, or instruction ceiling claim",
         "allocationDefinition": "Successful System alloc/alloc_zeroed/realloc requests and requested bytes, excluding warmup and observation serialization",
+        "workingDirectory": std::env::current_dir().unwrap(),
         "rows": rows,
     })).unwrap()).unwrap();
 }
