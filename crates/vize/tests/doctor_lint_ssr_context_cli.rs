@@ -149,7 +149,7 @@ fn client_only_apps_keep_non_ssr_boundary_findings() {
             .iter()
             .map(|finding| finding.code.as_str())
             .collect::<Vec<_>>(),
-        ["VIZE_DOCTOR_CF_UNCAUGHT_ERROR_BOUNDARY"]
+        ["VIZE_DOCTOR_CF_UNCAUGHT_ERROR"]
     );
     assert_eq!(rule_ids(&lint), Vec::<&str>::new());
     assert_eq!(rule_ids(&cross_file), ["cross-file"]);

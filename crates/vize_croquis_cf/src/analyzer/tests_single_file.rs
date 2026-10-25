@@ -10,12 +10,12 @@ fn project_ssr_capability_preserves_the_public_boundary_group_switch() {
     for (group_enabled, ssr_enabled, expected) in [
         (false, false, vec![]),
         (false, true, vec![]),
-        (true, false, vec!["vize:croquis/cf/async-without-suspense"]),
+        (true, false, vec!["vize:croquis/cf/async-no-suspense"]),
         (
             true,
             true,
             vec![
-                "vize:croquis/cf/async-without-suspense",
+                "vize:croquis/cf/async-no-suspense",
                 "vize:croquis/cf/browser-api-ssr",
             ],
         ),
