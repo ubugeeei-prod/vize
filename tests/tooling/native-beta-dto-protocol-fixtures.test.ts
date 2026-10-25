@@ -115,3 +115,65 @@ void test("raw complete ABI source identities, request pairs and producer files 
     }
   }
 });
+
+void test("shared report requires the genuine DTO row and keeps mixed Canon batch requirements", async () => {
+  const { analyzeLegacyFix } =
+    await import("../../tools/support/compat/github/report-legacy-fix-fixtures.ts");
+  const dtoPath = "crates/vize_canon/src/lsp_client/initial_diagnostics/diagnostic_response.rs";
+  const ordinary = Buffer.from("<template><div /></template>\n");
+  const batch = {
+    id: "typechecker/unit-only-ordinary/default",
+    state: "active",
+    targets: ["batch"],
+    inputs: [{ path: "unit-only-ordinary/App.vue.txt", sha256: hash(ordinary) }],
+  };
+  const analyze = (rows: unknown[], paths = [dtoPath], additional: object[] = []) =>
+    analyzeLegacyFix({
+      title: "fix(canon): validate native beta diagnostics",
+      paths,
+      readFile: (side, path) => {
+        if (path === manifestPath)
+          return Buffer.from(
+            JSON.stringify({
+              ...manifest,
+              cases: [...manifest.cases, ...(side === "head" ? additional : [])],
+              protocolCases:
+                side === "head"
+                  ? rows
+                  : manifest.protocolCases.filter(
+                      (entry: { id: string }) => entry.id !== NATIVE_BETA_DTO_PROTOCOL_ID,
+                    ),
+            }),
+          );
+        if (
+          side === "head" &&
+          path === "tests/_fixtures/differential/typechecker/unit-only-ordinary/App.vue.txt"
+        )
+          return ordinary;
+        return read(side, path);
+      },
+    }).products[0];
+  assert.equal(analyze(manifest.protocolCases)?.state, "new-inputs-registered");
+  const missing = manifest.protocolCases.filter(
+    (entry: { id: string }) => entry.id !== NATIVE_BETA_DTO_PROTOCOL_ID,
+  );
+  assert.equal(analyze(missing)?.state, "new-input-missing");
+  assert.equal(
+    analyze(missing, [dtoPath], [batch])?.state,
+    "new-input-missing",
+    "ordinary structural input cannot replace genuine DTO protocol ownership",
+  );
+  assert.equal(
+    analyze(manifest.protocolCases, [dtoPath, "crates/vize_canon/src/check.rs"])?.state,
+    "new-input-missing",
+  );
+  assert.equal(
+    analyze(manifest.protocolCases, [dtoPath, "crates/vize_canon/src/check.rs"], [batch])?.state,
+    "new-inputs-registered",
+  );
+  assert.equal(analyze([...manifest.protocolCases, row])?.state, "invalid-manifest-or-input");
+  assert.equal(
+    analyze([...manifest.protocolCases, { ...row, id: "typechecker/protocol/unknown" }])?.state,
+    "invalid-manifest-or-input",
+  );
+});
