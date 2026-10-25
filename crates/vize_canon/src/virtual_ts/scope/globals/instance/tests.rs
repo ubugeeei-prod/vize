@@ -56,24 +56,18 @@ fn authored_offsets() -> Vec<usize> {
 #[test]
 fn the_legacy_vue2_form_declares_the_name_once_with_an_any_fallback() {
     let output = generate_with_dialect(false, true);
-
-    assert!(
-        output.code.contains(
-            "type __VizeInstanceGlobal<K extends string> = K extends keyof __Ctx ? __Ctx[K] : any;"
-        ),
-        "{}",
-        output.code
-    );
+    let declarations = output
+        .code
+        .lines()
+        .filter(|line| line.contains("__VizeInstanceGlobal") || line.contains("__ctx.$missing"))
+        .collect::<Vec<_>>();
     assert_eq!(
-        output
-            .code
-            .matches("const $missing: __VizeInstanceGlobal<'$missing'> = undefined as any;")
-            .count(),
-        1,
-        "{}",
-        output.code
+        declarations,
+        vec![
+            "  type __VizeInstanceGlobal<K extends string> = K extends keyof __Ctx ? __Ctx[K] : any;",
+            "  const $missing: __VizeInstanceGlobal<'$missing'> = undefined as any;",
+        ]
     );
-    assert!(!output.code.contains("__ctx.$missing"), "{}", output.code);
 }
 
 #[test]
@@ -93,8 +87,14 @@ fn the_default_vue3_form_checks_every_occurrence_on_the_public_instance() {
             "  void (__ctx.$missing);",
         ]
     );
-    assert!(!output.code.contains("__VizeInstanceGlobal"));
-    assert!(!output.code.contains("__vize_strict_template_context"));
+    let context_helpers = output
+        .code
+        .lines()
+        .filter(|line| {
+            line.contains("__VizeInstanceGlobal") || line.contains("__vize_strict_template_context")
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(context_helpers, Vec::<&str>::new());
     assert_mapped_occurrences(&output, "__ctx.");
 }
 
@@ -102,11 +102,12 @@ fn the_default_vue3_form_checks_every_occurrence_on_the_public_instance() {
 fn the_strict_form_reads_every_occurrence_off_the_template_context() {
     let output = generate(true);
 
-    assert!(
-        !output.code.contains("__VizeInstanceGlobal"),
-        "{}",
-        output.code
-    );
+    let aliases = output
+        .code
+        .lines()
+        .filter(|line| line.contains("__VizeInstanceGlobal"))
+        .collect::<Vec<_>>();
+    assert_eq!(aliases, Vec::<&str>::new());
     assert_eq!(
         output
             .code

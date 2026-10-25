@@ -5960,7 +5960,7 @@
       "sourceRevision": "175dfd8a641fb7f06d60176d0a784e80e8c12e84",
       "packReference": {
         "path": "undeclared-instance-globals-10617/cases.json",
-        "sha256": "873f04461c82576c94b064391ed3232bb4f57a7a606f69aa8aa3412000281044"
+        "sha256": "f86c88c590910164e16b861eb85e1a563c960a3b1d52d7177acbda1218cdd449"
       },
       "inputs": [
         {
@@ -5998,18 +5998,18 @@
         {
           "file": "src/Globals.vue",
           "line": 6,
-          "column": 43,
+          "column": 57,
           "severity": 1,
-          "code": 2339,
-          "message": "Property 'missing' does not exist on type '{ known: number; }'."
+          "code": 2551,
+          "message": "Property '$undeclared' does not exist on type 'ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any>'. Did you mean '$declared'?"
         },
         {
           "file": "src/Globals.vue",
           "line": 6,
-          "column": 57,
+          "column": 43,
           "severity": 1,
-          "code": 2551,
-          "message": "Property '$undeclared' does not exist on type '__Ctx'. Did you mean '$declared'?"
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type '{ known: number; }'."
         }
       ]
     },
@@ -6030,7 +6030,7 @@
       "sourceRevision": "175dfd8a641fb7f06d60176d0a784e80e8c12e84",
       "packReference": {
         "path": "undeclared-instance-globals-10617/cases.json",
-        "sha256": "873f04461c82576c94b064391ed3232bb4f57a7a606f69aa8aa3412000281044"
+        "sha256": "f86c88c590910164e16b861eb85e1a563c960a3b1d52d7177acbda1218cdd449"
       },
       "inputs": [
         {
@@ -6071,7 +6071,7 @@
           "column": 33,
           "severity": 1,
           "code": 2551,
-          "message": "Property '$undeclared' does not exist on type '__Ctx'. Did you mean '$declared'?"
+          "message": "Property '$undeclared' does not exist on type 'ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any>'. Did you mean '$declared'?"
         }
       ]
     },
@@ -6092,7 +6092,7 @@
       "sourceRevision": "175dfd8a641fb7f06d60176d0a784e80e8c12e84",
       "packReference": {
         "path": "undeclared-instance-globals-10617/cases.json",
-        "sha256": "873f04461c82576c94b064391ed3232bb4f57a7a606f69aa8aa3412000281044"
+        "sha256": "f86c88c590910164e16b861eb85e1a563c960a3b1d52d7177acbda1218cdd449"
       },
       "inputs": [
         {

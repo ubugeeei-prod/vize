@@ -93,7 +93,8 @@ export const TYPECHECKER_TESTS = {
   "portable-pug-10434": "portable_pug_refusals_preserve_native_batch_diagnostics",
   "jsx-prop-token-ranges-10494": "jsx_prop_tokens_preserve_complete_batch_diagnostics",
   "unicode-prop-bindings-10573": "unicode_prop_bindings_preserve_complete_authored_diagnostics",
-  "undeclared-instance-globals-10617": "undeclared_instance_globals_preserve_complete_authored_diagnostics",
+  "undeclared-instance-globals-10617":
+    "undeclared_instance_globals_preserve_complete_authored_diagnostics",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";

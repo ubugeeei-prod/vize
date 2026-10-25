@@ -91,6 +91,10 @@ fn default_dollar_scopes_do_not_hoist_lexical_slot_loop_or_handler_names() {
     assert_eq!(
         declarations,
         vec![
+            "    const $attrs = __ctx.$attrs;",
+            "    const $slots = __ctx.$slots;",
+            "    const $refs = __ctx.$refs;",
+            "    const $emit = __ctx.$emit;",
             "  const $before = __ctx.$before;",
             "  const $after = __ctx.$after;",
             "  const $form = __ctx.$form;",
