@@ -43,7 +43,11 @@ async function resolveSource(value, env, parents = new Set()) {
 }
 
 function rejectLegacyConfig(source) {
-  if (Object.hasOwn(source, "extends")) {
+  // Vitest owns boolean `extends` on inline project configs. It may retain
+  // that field on the Vite config passed to configResolved. Native config
+  // exports still reject extends in their own normalizer, and vue: remains
+  // independently schema-validated below.
+  if (Object.hasOwn(source, "extends") && typeof source.extends !== "boolean") {
     throw new Error(
       "Custom config extends is no longer supported; use defineConfig(vpConfig).withVue(vueConfig)",
     );
