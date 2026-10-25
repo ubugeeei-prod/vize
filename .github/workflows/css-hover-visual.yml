@@ -1,0 +1,78 @@
+name: Packaged CSS hover visual evidence
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/css-hover-visual.yml"
+      - "editors/vscode/test/css-hover-visual-*.mjs"
+      - "editors/vscode/test/run-css-hover-visual.mjs"
+      - "editors/vscode/test/suite/css-hover-visual.cjs"
+      - "tests/tooling/vscode-css-hover-visual.test.mjs"
+
+permissions: { contents: read }
+
+concurrency:
+  group: css-hover-visual-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  packaged-editor:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    env:
+      CARGO_TERM_COLOR: always
+      CARGO_BUILD_JOBS: "12"
+      RAYON_NUM_THREADS: "4"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha }}
+      VIZE_TEST_VSCODE_VERSION: "1.107.1"
+      VIZE_CSS_VISUAL_OUTPUT: ${{ github.workspace }}/output/playwright/css-hover
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Require the exact reviewed PR source
+        run: test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, cache: true, run-install: false }
+      - name: Install locked JavaScript dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Install repository Rust toolchain
+        run: |
+          rustup toolchain install || rustup show active-toolchain
+          cargo --version
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: editor-host-smoke, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - uses: ./.github/actions/setup-rust-script
+      - name: Build and receipt the actual source CLI with default features
+        run: |
+          cargo build --profile ci -p vize
+          node tests/differential/build-receipt.ts
+      - name: Check capture refusal boundaries
+        run: node --test tests/tooling/vscode-css-hover-visual.test.mjs
+      - name: Build and package the actual extension
+        run: |
+          vp run --workspace-root build:vscode-extension
+          vp run --workspace-root test:vscode-extension:vsix
+      - uses: ./.github/actions/setup-ubuntu-archive
+      - name: Prepare the pinned Electron host
+        run: |
+          if ! command -v xvfb-run >/dev/null 2>&1; then
+            vize-ci-apt-retry sudo apt-get update
+            vize-ci-apt-retry sudo apt-get install -y xvfb
+          fi
+          timeout --signal=TERM --kill-after=10s 300s vp run --workspace-root test:vscode-extension:download
+      - name: Capture public APIs, rendered CSS and provider-backed color picker
+        run: xvfb-run -a -s '-screen 0 1440x1000x24' node editors/vscode/test/run-css-hover-visual.mjs
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: css-hover-visual-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.event.pull_request.head.sha }}
+          path: output/playwright/css-hover/
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 7
