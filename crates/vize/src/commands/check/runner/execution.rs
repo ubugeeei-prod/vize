@@ -141,17 +141,14 @@ pub(super) fn execute_program(
     }
 
     let gen_start = Instant::now();
-    let mut checker = BatchTypeChecker::with_options_and_corsa_path(
+    let mut checker = BatchTypeChecker::prepare_with_options(
         input.project_root,
         BatchTypeCheckerOptions {
             tsconfig_path: checker_tsconfig.path().map(PathBuf::from),
             virtual_ts_options,
         },
-        settings.corsa_path.as_deref(),
     )
     .map_err(|error| cstr!("{}", error))?;
-    checker.set_server_count(settings.servers);
-    checker.set_checker_count(settings.checkers);
     if settings.options_api {
         checker.enable_options_api();
     }
@@ -186,6 +183,11 @@ pub(super) fn execute_program(
         .adopt_diagnostic_sources(input.reported_files.iter().cloned())
         .map_err(|error| cstr!("{}", error))?;
     checker.set_diagnostic_paths(input.reported_files.iter().map(PathBuf::as_path));
+    let mut checker = checker
+        .activate(settings.corsa_path.as_deref())
+        .map_err(|error| cstr!("{}", error))?;
+    checker.set_server_count(settings.servers);
+    checker.set_checker_count(settings.checkers);
     let gen_time = gen_start.elapsed();
 
     if !settings.quiet {

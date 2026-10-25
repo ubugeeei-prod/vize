@@ -121,3 +121,85 @@ test("vize check exits 0 in an empty project with no inputs", () => {
     );
   });
 });
+
+/** Run the real built CLI with no inherited SDK paths, package manager or home. */
+function runCheckWithoutRuntime(args: string[], cwd: string): CheckResult {
+  assert.equal(VIZE.prefix.length, 0, "isolated runtime contracts require the built source CLI");
+  assert(path.isAbsolute(VIZE.command), "isolated runtime contracts require an absolute CLI path");
+  const home = path.join(cwd, "isolated-home");
+  const bin = path.join(home, "bin");
+  fs.mkdirSync(bin, { recursive: true });
+  const result = spawnSync(VIZE.command, ["check", "--quiet", ...args], {
+    cwd,
+    encoding: "utf8",
+    timeout: 30_000,
+    env: {
+      HOME: home,
+      USERPROFILE: home,
+      XDG_CACHE_HOME: path.join(home, "cache"),
+      LOCALAPPDATA: path.join(home, "cache"),
+      APPDATA: path.join(home, "config"),
+      PATH: bin,
+      NO_COLOR: "1",
+      ...(process.platform === "win32" ? { SystemRoot: process.env.SystemRoot } : {}),
+    },
+  });
+  if (result.error) throw result.error;
+  return { status: result.status, stdout: result.stdout, stderr: result.stderr };
+}
+
+for (const extra of [[], ["--no-config"]]) {
+  void test(`vize check preserves complete SFC parse failures without an SDK (${extra.length ? "no-config" : "config discovery"})`, () => {
+    withWorkspace((dir) => {
+      for (const source of [
+        "<template><div></div>",
+        "<template><div>",
+        "\uFEFF<template>\r\n<div>日本語😀\r\n",
+      ]) {
+        fs.writeFileSync(path.join(dir, "Broken.vue"), source);
+        assert.deepEqual(runCheckWithoutRuntime(["Broken.vue", ...extra], dir), {
+          status: 1,
+          stdout: "",
+          stderr:
+            "Error: SFC parse error: Malformed <template> block: the closing tag is missing.\n",
+        });
+      }
+    });
+  });
+}
+
+void test("vize check keeps configuration precedence and complete valid-project missing-runtime help", () => {
+  withWorkspace((dir) => {
+    fs.writeFileSync(path.join(dir, "Broken.vue"), "<template><div>");
+    assert.deepEqual(runCheckWithoutRuntime(["Broken.vue", "--config", "./missing.json"], dir), {
+      status: 2,
+      stdout: "",
+      stderr: "\u001b[31mError:\u001b[0m config file not found: ./missing.json\n",
+    });
+    fs.writeFileSync(path.join(dir, "Valid.vue"), "<template><p /></template>\n");
+    const stderr = [
+      "Error: error: native TypeScript runtime not found",
+      "",
+      "vize check requires a user-installed native TypeScript/tsgo executable.",
+      "Keep your existing 'typescript' package. Install a native compiler under a separate alias, or configure typeChecker.corsaPath, CORSA_PATH, or TSGO_PATH.",
+      "",
+      "The example below selects native TypeScript 7.1.0-beta; choose the native version you want to run.",
+      "",
+      "Example install commands (choose your package manager):",
+      "",
+      "  npm install -D typescript-native@npm:typescript@7.1.0-beta  # npm",
+      "  pnpm add -D typescript-native@npm:typescript@7.1.0-beta  # pnpm",
+      "  yarn add -D typescript-native@npm:typescript@7.1.0-beta  # yarn",
+      "  bun add -D typescript-native@npm:typescript@7.1.0-beta  # bun",
+      "",
+      "",
+    ].join("\n");
+    for (const extra of [[], ["--no-config"]]) {
+      assert.deepEqual(runCheckWithoutRuntime(["Valid.vue", ...extra], dir), {
+        status: 1,
+        stdout: "",
+        stderr,
+      });
+    }
+  });
+});
