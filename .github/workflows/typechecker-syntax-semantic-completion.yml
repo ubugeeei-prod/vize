@@ -31,6 +31,11 @@ on:
         required: false
         default: false
         type: boolean
+      generic_route_controls:
+        description: Require the unchanged 144 generic host packets and producer-owned diagnostic route controls
+        required: false
+        default: false
+        type: boolean
 permissions:
   contents: read
 concurrency:
@@ -284,6 +289,18 @@ jobs:
         with:
           key: nextest-ci
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        if: ${{ inputs.generic_route_controls }}
+        with:
+          version: latest
+          node-version-file: source/package.json
+          cache: true
+          cache-save: false
+          run-install: false
+      - name: Install the composed source's unchanged locked host dependencies
+        if: ${{ inputs.generic_route_controls }}
+        working-directory: source
+        run: vp install --frozen-lockfile --prefer-offline
       - name: Require all owned wire laws and the actual product-client provider lifecycle
         if: ${{ inputs.provider_runtime_controls }}
         working-directory: source
@@ -314,6 +331,59 @@ jobs:
           JS
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
           git diff --exit-code
+      - name: Require diagnostic route ownership refusal repair and ordinary fallback controls
+        if: ${{ !cancelled() && inputs.generic_route_controls }}
+        working-directory: source
+        run: |
+          set -euo pipefail
+          unset VIZE_TEST_DISABLE_TSGO
+          directory="$RUNNER_TEMP/native-provider-contract"
+          failed=0
+          for control in route-owners route-refusal ordinary-fallback config-refusal batch-fixture; do
+            case "$control" in
+              route-owners) arguments=(--lib batch::virtual_project::diagnostic_route::tests::) ;;
+              route-refusal) arguments=(--lib batch::executor::tests::planned_syntax_route::) ;;
+              ordinary-fallback) arguments=(--lib batch::executor::tests::incremental_fallback::incremental_session_fallback_is_counted_per_check) ;;
+              config-refusal) arguments=(--lib batch::executor::session::tests::unsupported_explicit_editor_selection_uses_only_the_exact_internal_fallback_reason) ;;
+              batch-fixture) arguments=(--test fix_history_diagnostics planned_generic_syntax_keeps_independent_body_errors_through_repairs) ;;
+            esac
+            set +e
+            if [[ "$control" == batch-fixture ]]; then
+              CORSA_PATH="$RUNNER_TEMP/tsgo" cargo test --locked --profile ci -p vize_canon "${arguments[@]}" -- --nocapture --test-threads=1 > "$directory/$control.stdout" 2> "$directory/$control.stderr"
+            else
+              cargo test --locked --profile ci -p vize_canon "${arguments[@]}" -- --nocapture --test-threads=1 > "$directory/$control.stdout" 2> "$directory/$control.stderr"
+            fi
+            status=$?
+            set -e
+            printf '%s\n' "$status" > "$directory/$control.status"
+            if (( status != 0 )); then failed=1; fi
+          done
+          exit "$failed"
+      - name: Require all unchanged generic native mapper and plain-session whole outcomes
+        if: ${{ !cancelled() && inputs.generic_route_controls }}
+        working-directory: source
+        env:
+          VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
+        run: |
+          set -euo pipefail
+          unset VIZE_TEST_DISABLE_TSGO
+          directory="$RUNNER_TEMP/native-provider-contract"
+          set +e
+          cargo test --locked --profile ci -p vize --test integration -- content_mapper_tsgo_cli::quoted_generic_parameters:: --nocapture --test-threads=1 > "$directory/generic-hosts.stdout" 2> "$directory/generic-hosts.stderr"
+          status=$?
+          set -e
+          printf '%s\n' "$status" > "$directory/generic-hosts.status"
+          exit "$status"
+      - name: Authenticate every whole host packet and exact executed control
+        if: ${{ !cancelled() && inputs.generic_route_controls }}
+        working-directory: source
+        run: node ../tools/support/github/native-generic-route-proof.mjs "$RUNNER_TEMP/native-provider-contract"
+      - name: Retain every generic host packet even after a strict failure
+        if: ${{ always() && inputs.generic_route_controls }}
+        run: |
+          if [[ -d source/target/vize-tests/content-mapper-quoted-generic-parameters ]]; then
+            cp -a source/target/vize-tests/content-mapper-quoted-generic-parameters "$RUNNER_TEMP/native-provider-contract/"
+          fi
       - name: Retain physical image and complete contract regardless of outcome
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
