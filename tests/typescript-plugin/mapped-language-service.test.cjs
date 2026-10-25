@@ -145,3 +145,34 @@ void test("opt-out preserves the original service and ordinary JSX configuration
   assert(wrapped.getSemanticDiagnostics(file).some((diagnostic) => diagnostic.code === 17004));
   assert.equal(host.getCompilationSettings().jsx, undefined);
 });
+
+void test("syntax and semantic packets preserve their channels while EXPECT sees the complete collection", () => {
+  const file = "/src/Broken.vue";
+  const source = "<script>broken</script>";
+  const syntax = {
+    start: 0,
+    length: 1,
+    code: 1109,
+    category: 1,
+    messageText: "Expression expected",
+  };
+  const semantic = { start: 1, length: 1, code: 2322, category: 1, messageText: "Type mismatch" };
+  const projection = {
+    text: "xy",
+    mappings: [[0, 2, 8, 2, 0, 0xfffff]],
+    diagnostics: [{ start: 0, length: 8, code: 100001, messageText: "Unclosed script" }],
+  };
+  const service = createMappedLanguageService(
+    ts,
+    { getSyntacticDiagnostics: () => [syntax], getSemanticDiagnostics: () => [semantic] },
+    { engine: helper, get: () => ({ source, projection }) },
+  );
+  assert.deepEqual(
+    service.getSyntacticDiagnostics(file).map((value) => value.code),
+    [1109, 100001],
+  );
+  assert.deepEqual(
+    service.getSemanticDiagnostics(file).map((value) => value.code),
+    [2322],
+  );
+});
