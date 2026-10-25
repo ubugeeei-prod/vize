@@ -49,6 +49,7 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/jsx-authored-native"
           git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/jsx-authored-native/source.txt"
+          git diff --exit-code
           status=0
           cargo test --locked --profile ci -p vize_atelier_jsx --test authored_native_modules -- --nocapture || status=1
           VIZE_JSX_NATIVE_USES_CAPTURE="$RUNNER_TEMP/jsx-authored-native/component-uses.json" cargo test --locked --profile ci -p vize_atelier_jsx --test native_component_uses -- --nocapture || status=1
