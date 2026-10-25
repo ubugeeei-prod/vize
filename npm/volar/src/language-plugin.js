@@ -27,10 +27,29 @@ export class VizeVirtualCode {
     if (typeof native.generateVueLanguageCode !== "function") {
       throw new Error("@vizejs/volar-plugin requires the matching native language projection API");
     }
-    this.projection = toUtf16LanguageProjection(
-      source,
-      native.generateVueLanguageCode(source, { ...this.options, filename: this.fileName }),
-    );
+    let nativeProjection = native.generateVueLanguageCode(source, {
+      ...this.options,
+      filename: this.fileName,
+    });
+    if (this.languageId === "art") {
+      const projection = JSON.parse(nativeProjection);
+      if (!projection.diagnostics.some((diagnostic) => diagnostic.code === 100001)) {
+        // Native block recognition must refuse unprojected Musea stories.
+        const descriptor = native.parseSfc(source, { filename: this.fileName });
+        for (const block of descriptor.customBlocks) {
+          if (block.type !== "art" && block.type !== "variant") continue;
+          projection.diagnostics.push({
+            start: block.loc.tagStart,
+            length: block.loc.tagEnd - block.loc.tagStart,
+            code: 100003,
+            messageText:
+              "Musea story blocks require the native Vize language server; this Volar plugin supports Vue SFC content only.",
+          });
+        }
+      }
+      nativeProjection = JSON.stringify(projection);
+    }
+    this.projection = toUtf16LanguageProjection(source, nativeProjection);
     this.source = source;
     const { projection } = this;
     this.embeddedCodes = [
@@ -99,11 +118,11 @@ export function createVizeLanguagePlugin(ts, options = {}) {
   const { includeArt = false, ...codeOptions } = options;
   const languageId = (id) => {
     const name = String(id).toLowerCase();
+    if (name.endsWith(".art.vue") || name.endsWith(".art")) return includeArt ? "art" : undefined;
     if (name.endsWith(".vue")) return "vue";
-    if (includeArt && name.endsWith(".art")) return "art";
   };
   return {
-    extensions: includeArt ? [".vue", ".art"] : [".vue"],
+    extensions: includeArt ? [".art.vue", ".vue", ".art"] : [".vue"],
     getLanguageId: languageId,
     createVirtualCode(id, idOfLanguage, snapshot) {
       const expected = languageId(id);
@@ -118,7 +137,7 @@ export function createVizeLanguagePlugin(ts, options = {}) {
       code.embeddedCodes = [];
     },
     typescript: {
-      extraFileExtensions: (includeArt ? ["vue", "art"] : ["vue"]).map((extension) => ({
+      extraFileExtensions: (includeArt ? ["vue", "art.vue", "art"] : ["vue"]).map((extension) => ({
         extension,
         isMixedContent: true,
         scriptKind: ts.ScriptKind.Deferred,

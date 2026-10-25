@@ -111,10 +111,12 @@ function fixture(name, files, extraOptions = {}, languageOptions = {}) {
           document.source,
           { ...generationOptions, filename: file },
         );
-        assert.deepEqual(
-          toUtf16LanguageProjection(document.source, rawTransformJSON),
-          root.projection,
-        );
+        assert.deepEqual(toUtf16LanguageProjection(document.source, rawTransformJSON), {
+          ...root.projection,
+          diagnostics: root.projection.diagnostics.filter(
+            (diagnostic) => diagnostic.code !== 100003,
+          ),
+        });
         inputs.push({
           name,
           stage,
@@ -192,7 +194,9 @@ void test("actual native projection through Volar and TypeScript: complete packe
     f.capture("initial");
     const oldHover = ls.getQuickInfoAtPosition(file, title);
     assert.deepEqual(
-      ls.getQuickInfoAtPosition(file, title),
+      query("unchanged-repeat-hover", { file, position: title }, () =>
+        ls.getQuickInfoAtPosition(file, title),
+      ),
       oldHover,
       "unchanged snapshot is stable",
     );
@@ -281,6 +285,12 @@ void test("Unicode, CRLF, directives, invalid syntax, generic slots and resolver
     ]);
     assert(invalid.length > 0);
     d.capture("invalid");
+    d.update("Directives.vue", '<script setup lang="ts">const value = 1;');
+    const malformed = query("malformed-sfc-diagnostics", {}, () =>
+      d.languageService.getSemanticDiagnostics(d.path("Directives.vue")),
+    );
+    assert(malformed.some((diagnostic) => diagnostic.code === 100001));
+    d.capture("malformed-sfc");
   } finally {
     d.languageService.dispose();
   }
@@ -330,6 +340,7 @@ void test("Unicode, CRLF, directives, invalid syntax, generic slots and resolver
   }
 
   assert.equal(createVizeLanguagePlugin(ts).getLanguageId("Story.art"), undefined);
+  assert.equal(createVizeLanguagePlugin(ts).getLanguageId("Story.art.vue"), undefined);
   const art = fixture(
     "art-opt-in",
     {
@@ -351,6 +362,48 @@ void test("Unicode, CRLF, directives, invalid syntax, generic slots and resolver
     art.capture("art-opt-in-vue-content");
   } finally {
     art.languageService.dispose();
+  }
+
+  const story = fixture(
+    "musea-story-refusal",
+    {
+      "Story.art.vue":
+        '<art title="Button"><variant name="Default"><button>{{ unknownStoryBinding }}</button></variant></art>',
+    },
+    {},
+    { includeArt: true },
+  );
+  try {
+    const diagnostics = query("musea-story-explicit-refusal", {}, () =>
+      story.languageService.getSemanticDiagnostics(story.path("Story.art.vue")),
+    );
+    assert(diagnostics.some((diagnostic) => diagnostic.code === 100003));
+    story.capture("unsupported-real-musea-story");
+  } finally {
+    story.languageService.dispose();
+  }
+
+  const javascript =
+    "<script>const value = 1; value.missing();</script><template>{{ value }}</template>";
+  for (const checkJavaScript of [false, true]) {
+    const j = fixture(
+      `javascript-${checkJavaScript}`,
+      { "JavaScript.vue": javascript },
+      {},
+      { checkJavaScript },
+    );
+    try {
+      const result = query(`javascript-check-${checkJavaScript}`, {}, () =>
+        j.languageService.getSemanticDiagnostics(j.path("JavaScript.vue")),
+      );
+      assert.equal(
+        result.some((diagnostic) => diagnostic.code === 2339),
+        checkJavaScript,
+      );
+      j.capture("javascript-opt-in");
+    } finally {
+      j.languageService.dispose();
+    }
   }
 
   const eventChild =

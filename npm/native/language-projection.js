@@ -131,6 +131,8 @@ function applyDiagnosticDirectives(projection, generatedDiagnostics) {
  * Content Mapper VirtualToOriginalSpan law in the normalized UTF-16 spaces.
  * Diagnostic boundaries may surround mapped tokens with synthetic punctuation.
  * This does not make those gaps eligible for navigation or edit write-back.
+ * Matches Canon's content_mapper/tests/diagnostic_origin.rs and upstream
+ * microsoft/TypeScript@d6c4afdd tsc/internal/spanmap/spanmap.go.
  */
 function mapLanguageDiagnosticRange(projection, start, length) {
   if (!Number.isSafeInteger(start) || start < 0 || !Number.isSafeInteger(length) || length < 0)

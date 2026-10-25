@@ -37,6 +37,12 @@ syntactic/semantic collection; unused expectations and native parse diagnostics
 are returned in authored coordinates. This service composition is the complete
 diagnostic integration.
 
+Diagnostics follow Content Mapper's range law, including synthetic punctuation
+around a mapped expression. Volar's generic endpoint mapping alone can omit
+those errors. Completely generated problems remain visible with the
+`vize-generated` source label. This diagnostic fallback never enables navigation
+or rename in generated gaps.
+
 For an existing Volar host, `createVizeLanguagePlugin(ts, options)` exposes the
 standard language plugin and virtual code. That lower-level host must also
 integrate native parse diagnostics and `applyDiagnosticDirectives` from
@@ -62,10 +68,10 @@ as Content Mapper. TypeScript paths, aliases and resolver options stay on the
 host. Recreate the composition when native-generation options or that selected
 Vue configuration change.
 
-`.vue` is enabled by default. `includeArt: true` additionally admits `.art` files
+`.vue` is enabled by default. `includeArt: true` additionally admits `.art` and `.art.vue` files
 using Vue SFC content. This does not lower Musea `<variant>`/`<art>` story syntax,
 choose a story variant, or provide Art-specific navigation. Such syntax retains
-the native parser's diagnostics. No generated stub or alternate provider is
+an explicit unsupported-story diagnostic based on the native SFC scanner. No alternate provider is
 substituted when the matching native projection API is unavailable.
 
 The focused Actions workflow builds the reviewed native source and exercises
