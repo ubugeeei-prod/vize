@@ -285,6 +285,8 @@ function checkProduct(
           )
         : [];
     const dtoRegistered = dtoProtocols.includes(NATIVE_BETA_DTO_PROTOCOL_ID);
+    const dtoRequired =
+      product === "typechecker" && canonPaths.some(nativeBetaDtoProtocolSource);
     const runtime = newNativeRuntimeCases(
       product,
       before?.runtimeCases,
@@ -335,7 +337,8 @@ function checkProduct(
       compilerPaths.every((path) => vaporStyle.sources.has(path));
     const registered =
       (cssOnly || vaporOnly || !batchRequired || cases.length > 0) &&
-      (!protocolRequired || protocols.length > 0);
+      (!protocolRequired || protocols.length > 0) &&
+      (!dtoRequired || dtoRegistered);
     return {
       product,
       state: registered ? "new-inputs-registered" : "new-input-missing",
