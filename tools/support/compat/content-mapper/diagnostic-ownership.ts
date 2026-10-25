@@ -214,9 +214,15 @@ for (const project of projects)
           text = text
             .replaceAll("  <GenericForm", `  ${prefix}<GenericForm`)
             .replaceAll("  <Child3", `  ${prefix}<Child3`);
-        files[entry.file] = text.replaceAll("\n", newline);
+        const file =
+          project.ordinaryForm && entry.file === "src/Form.art.vue" ? "src/Form.vue" : entry.file;
+        files[file] = text.replaceAll("\n", newline);
       }
       const config = JSON.parse(files["tsconfig.json"]);
+      if (project.ordinaryForm)
+        config.files = config.files.map((file: string) =>
+          file === "src/Form.art.vue" ? "src/Form.vue" : file,
+        );
       config.contentMappers = [{ package: "vize", extensions: [".vue"] }];
       files["tsconfig.json"] = JSON.stringify(config, null, 2) + "\n";
       const diagnostics = project.diagnostics.map((row) => {
@@ -333,6 +339,20 @@ for (const project of projects)
           directory,
           path.join(directory, "check"),
         );
+        write(path.join(directory, "mapper-startup-configuration.json"), {
+          manifest: JSON.parse(
+            fs.readFileSync(path.join(nodeModules, "vize/package.json"), "utf8"),
+          ),
+          node: process.execPath,
+          nodeSha256: digest(fs.readFileSync(process.execPath)),
+          environmentPolicy:
+            "explicit Node executable directory first; no Vize/native or Node module overrides",
+          custody: "startup configuration; not an external host RPC witness",
+        });
+        // All children have exited. Retain exact manifests/packets above and
+        // remove only this fresh project's dependency link/tree, so artifact
+        // collection cannot follow it and duplicate installed SDK binaries.
+        fs.rmSync(nodeModules, { recursive: true });
       }
       rows.push({ id, files, diagnostics, observations, mapperStdout: project.mapperStdout });
     }

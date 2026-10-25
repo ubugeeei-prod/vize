@@ -6,7 +6,7 @@ on:
       - "crates/vize_canon/src/virtual_ts/diagnostic_ownership/**"
       - "crates/vize_canon/src/virtual_ts/diagnostic_ownership.rs"
       - "crates/vize_canon/src/batch/virtual_project/content_mapper/**"
-      - "tools/support/compat/content-mapper/diagnostic-ownership.ts"
+      - "tools/support/compat/content-mapper/diagnostic-ownership*.ts"
       - "tests/_fixtures/differential/typechecker/component-input-diagnostic-owners-10607/**"
       - ".github/workflows/component-input-diagnostic-ownership.yml"
 
@@ -28,6 +28,16 @@ jobs:
         with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: "package.json", package-manager-cache: false }
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          repository: microsoft/TypeScript
+          ref: d6c4afddb2c55f4a9dea7b59293a99a8fdea1799
+          path: typescript-content-mapper
+          persist-credentials: false
+      - uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
+        with:
+          go-version-file: typescript-content-mapper/tsc/go.mod
+          cache-dependency-path: typescript-content-mapper/tsc/go.sum
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
@@ -50,13 +60,48 @@ jobs:
           cd "$RUNNER_TEMP/component-input-consumer"
           npm init -y
           npm install --prefer-online --ignore-scripts --no-audit --no-fund --save-exact vize@0.566.0 typescript@7.1.0-dev.20261024.1 vue@3.5.42
-      - name: Compare complete native and real SDK packets
+          mkdir -p "$RUNNER_TEMP/component-input-beta"
+          cd "$RUNNER_TEMP/component-input-beta"
+          npm init -y
+          npm install --prefer-online --ignore-scripts --no-audit --no-fund --save-exact typescript@7.1.0-beta
+          npm view typescript@7.1.0-beta gitHead dist.integrity --json > provider-metadata.json
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {readFileSync} from 'node:fs';
+          const metadata = JSON.parse(readFileSync('provider-metadata.json', 'utf8'));
+          assert.equal(metadata.gitHead, '3e9236361fa97a9e6c685f4833ac457ae2d8c50a');
+          assert.match(metadata['dist.integrity'], /^sha512-/u);
+          JS
+      - name: Build and retain the exact source SDK
+        working-directory: typescript-content-mapper/tsc
         run: |
-          node tools/support/compat/content-mapper/diagnostic-ownership.ts \
-            --consumer "$RUNNER_TEMP/component-input-consumer" \
-            --candidate-cli "$GITHUB_WORKSPACE/target/ci/vize" \
-            --source-sha "$SOURCE_SHA" \
-            --output "$RUNNER_TEMP/component-input-ownership/actual-20261024"
+          set -euo pipefail
+          [[ "$(git rev-parse HEAD)" == d6c4afddb2c55f4a9dea7b59293a99a8fdea1799 ]]
+          mkdir -p "$RUNNER_TEMP/component-input-d6c4"
+          go build -tags=noembed -trimpath -o "$RUNNER_TEMP/component-input-d6c4/tsgo" ./cmd/tsc
+          cp internal/bundled/libs/*.d.ts "$RUNNER_TEMP/component-input-d6c4/"
+          git rev-parse HEAD > "$RUNNER_TEMP/component-input-d6c4/source.txt"
+          sha256sum "$RUNNER_TEMP/component-input-d6c4/tsgo" > "$RUNNER_TEMP/component-input-d6c4/binary.sha256"
+      - name: Compare all complete packets on all three physical SDKs
+        run: |
+          set -uo pipefail
+          failed=0
+          for sdk in actual-20261024 beta-3e923 d6c4; do
+            extra=()
+            if [[ "$sdk" == beta-3e923 ]]; then
+              native="$RUNNER_TEMP/component-input-beta/node_modules/@typescript/typescript-linux-x64/lib/tsc"
+              extra=(--mapper-host "$native" --mapper-version 'Version 7.1.0-beta')
+            elif [[ "$sdk" == d6c4 ]]; then
+              native="$RUNNER_TEMP/component-input-d6c4/tsgo"
+              extra=(--mapper-host "$native" --mapper-version "$("$native" --version)")
+            fi
+            node tools/support/compat/content-mapper/diagnostic-ownership.ts \
+              --consumer "$RUNNER_TEMP/component-input-consumer" \
+              --candidate-cli "$GITHUB_WORKSPACE/target/ci/vize" \
+              --source-sha "$SOURCE_SHA" \
+              --output "$RUNNER_TEMP/component-input-ownership/$sdk" "${extra[@]}" || failed=1
+          done
+          exit "$failed"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
@@ -65,6 +110,12 @@ jobs:
             ${{ runner.temp }}/component-input-ownership
             ${{ runner.temp }}/component-input-consumer/package.json
             ${{ runner.temp }}/component-input-consumer/package-lock.json
+            ${{ runner.temp }}/component-input-beta/package.json
+            ${{ runner.temp }}/component-input-beta/package-lock.json
+            ${{ runner.temp }}/component-input-beta/provider-metadata.json
+            ${{ runner.temp }}/component-input-d6c4/source.txt
+            ${{ runner.temp }}/component-input-d6c4/binary.sha256
+            !${{ runner.temp }}/component-input-ownership/**/node_modules/**
           if-no-files-found: error
           retention-days: 7
 
@@ -101,7 +152,9 @@ jobs:
           capture="$RUNNER_TEMP/component-input-parity"
           baseline="$RUNNER_TEMP/component-input-base"
           mkdir -p "$capture"
-          git worktree add --detach "$baseline" "$BASE_SHA"
+          base_revision="$(git merge-base "$BASE_SHA" "$HEAD_SHA")"
+          git worktree add --detach "$baseline" "$base_revision"
+          echo "$base_revision" > "$capture/base-revision.txt"
           observer=crates/vize_canon/tests/constructor_emission_projection.rs
           cp "$observer" "$baseline/$observer"
           cmp "$observer" "$baseline/$observer"
@@ -126,7 +179,7 @@ jobs:
           assert.deepEqual(head, base, 'complete checker/mapper projection packets must be unchanged');
           const hash = bytes => createHash('sha256').update(bytes).digest('hex');
           const observer = readFileSync('crates/vize_canon/tests/constructor_emission_projection.rs');
-          const receipt = { base: process.env.BASE_SHA, head: process.env.HEAD_SHA, observerSha256: hash(observer), basePacketSha256: hash(baseBytes), headPacketSha256: hash(headBytes), completePackets: head.length, scope: 'Exact source projection parity; not native type-engine or publication acceptance' };
+          const receipt = { pullRequestBase: process.env.BASE_SHA, base: readFileSync(`${directory}/base-revision.txt`, 'utf8').trim(), head: process.env.HEAD_SHA, observerSha256: hash(observer), basePacketSha256: hash(baseBytes), headPacketSha256: hash(headBytes), completePackets: head.length, scope: 'Exact source projection parity; not native type-engine or publication acceptance' };
           writeFileSync(`${directory}/receipt.json`, JSON.stringify(receipt, null, 2) + '\n');
           console.log(JSON.stringify(receipt));
           JS

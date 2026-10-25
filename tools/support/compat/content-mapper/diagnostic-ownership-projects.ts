@@ -13,6 +13,7 @@ export type Project = {
   diagnostics: Diagnostic[];
   replaceParent?: (source: string) => string;
   mapperStdout?: string;
+  ordinaryForm?: boolean;
 };
 
 export function directiveControls(base: Project): Project[] {
@@ -71,20 +72,26 @@ export function directiveControls(base: Project): Project[] {
 }
 
 export function formDirectiveControls(base: Project): Project[] {
+  const ordinary = (source: string) =>
+    source
+      .replace("<art>", "<template>")
+      .replace("</art>", "</template>")
+      .replaceAll(/<variant name="[0-9]+">|<\/variant>/gu, "");
   const expect = (source: string) =>
-    source.replace(
+    ordinary(source).replace(
       '  <GenericForm :initial-state="{ role: null',
       '  <!-- @vue-expect-error -->\n  <GenericForm :initial-state="{ role: null',
     );
   return [
-    { ...base, id: "form-expect-used", replaceParent: expect, diagnostics: [] },
+    { ...base, ordinaryForm: true, id: "form-expect-used", replaceParent: expect, diagnostics: [] },
     {
       ...base,
       id: "form-expect-unused",
+      ordinaryForm: true,
       replaceParent: (source) => expect(source).replace("role: null", "role: 'ok'"),
       diagnostics: [
         {
-          file: "src/Form.art.vue",
+          file: "src/Form.vue",
           line: 13,
           column: 3,
           severity: 1,
@@ -92,11 +99,12 @@ export function formDirectiveControls(base: Project): Project[] {
           message: "Unused '@vue-expect-error' directive.",
         },
       ],
-      mapperStdout: "src/Form.art.vue(13,8): error vize4: Unused '@vue-expect-error' directive\n",
+      mapperStdout: "src/Form.vue(13,8): error vize4: Unused '@vue-expect-error' directive\n",
     },
     {
       ...base,
       id: "form-callback-expect-used",
+      ordinaryForm: true,
       replaceParent: (source) =>
         expect(source).replace(
           ':initial-state="{ role: null, tags: [] }" :schema="schema"',
