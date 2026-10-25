@@ -572,26 +572,8 @@
           }
         }
       ],
-      "expectedText": [
-        "",
-        "",
-        "",
-        ""
-      ],
-      "expectedElementIdentities": [
-        [
-          0
-        ],
-        [
-          0
-        ],
-        [
-          0
-        ],
-        [
-          0
-        ]
-      ],
+      "expectedText": ["", "", "", ""],
+      "expectedElementIdentities": [[0], [0], [0], [0]],
       "expectedDom": [
         [
           {
@@ -681,38 +663,8 @@
           }
         }
       ],
-      "expectedText": [
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        ""
-      ],
-      "expectedElementIdentities": [
-        [
-          0
-        ],
-        [
-          0
-        ],
-        [
-          0
-        ],
-        [
-          0
-        ],
-        [
-          0
-        ],
-        [
-          0
-        ],
-        [
-          0
-        ]
-      ],
+      "expectedText": ["", "", "", "", "", "", ""],
+      "expectedElementIdentities": [[0], [0], [0], [0], [0], [0], [0]],
       "expectedDom": [
         [
           {
@@ -823,30 +775,8 @@
           }
         }
       ],
-      "expectedText": [
-        "",
-        "",
-        "",
-        "",
-        ""
-      ],
-      "expectedElementIdentities": [
-        [
-          0
-        ],
-        [
-          0
-        ],
-        [
-          0
-        ],
-        [
-          0
-        ],
-        [
-          0
-        ]
-      ],
+      "expectedText": ["", "", "", "", ""],
+      "expectedElementIdentities": [[0], [0], [0], [0], [0]],
       "expectedDom": [
         [
           {
@@ -927,9 +857,7 @@
         {
           "patch": {
             "attrs": {
-              "class": [
-                "next"
-              ],
+              "class": ["next"],
               "style": {
                 "backgroundColor": "orange"
               }
@@ -960,26 +888,8 @@
           }
         }
       ],
-      "expectedText": [
-        "",
-        "",
-        "",
-        ""
-      ],
-      "expectedElementIdentities": [
-        [
-          0
-        ],
-        [
-          0
-        ],
-        [
-          0
-        ],
-        [
-          0
-        ]
-      ],
+      "expectedText": ["", "", "", ""],
+      "expectedElementIdentities": [[0], [0], [0], [0]],
       "expectedDom": [
         [
           {
@@ -1050,26 +960,8 @@
           }
         }
       ],
-      "expectedText": [
-        "",
-        "spread;own;",
-        "spread;own;",
-        "spread;own;spread;own;"
-      ],
-      "expectedElementIdentities": [
-        [
-          0
-        ],
-        [
-          0
-        ],
-        [
-          0
-        ],
-        [
-          0
-        ]
-      ],
+      "expectedText": ["", "spread;own;", "spread;own;", "spread;own;spread;own;"],
+      "expectedElementIdentities": [[0], [0], [0], [0]],
       "expectedDom": [
         [
           {
@@ -1086,9 +978,7 @@
             "attributes": {
               "title": "first"
             },
-            "children": [
-              "spread;own;"
-            ]
+            "children": ["spread;own;"]
           }
         ],
         [
@@ -1097,9 +987,7 @@
             "attributes": {
               "title": "second"
             },
-            "children": [
-              "spread;own;"
-            ]
+            "children": ["spread;own;"]
           }
         ],
         [
@@ -1108,9 +996,7 @@
             "attributes": {
               "title": "second"
             },
-            "children": [
-              "spread;own;spread;own;"
-            ]
+            "children": ["spread;own;spread;own;"]
           }
         ]
       ],
@@ -1150,12 +1036,7 @@
     },
     {
       "id": "props/ordered-spread-reads",
-      "expectedPropPublications": [
-        1,
-        2,
-        3,
-        4
-      ],
+      "expectedPropPublications": [1, 2, 3, 4],
       "source": "const App = () => <div {...read(\"first\")} title={read(\"title\")} {...read(\"last\")}/>;",
       "initial": {
         "first": {
@@ -1185,51 +1066,12 @@
           }
         }
       ],
-      "expectedText": [
-        "",
-        "",
-        "",
-        ""
-      ],
-      "expectedElementIdentities": [
-        [
-          0
-        ],
-        [
-          0
-        ],
-        [
-          0
-        ],
-        [
-          0
-        ]
-      ],
+      "expectedText": ["", "", "", ""],
+      "expectedElementIdentities": [[0], [0], [0], [0]],
       "expectedReads": [
-        [
-          "first",
-          "title",
-          "last"
-        ],
-        [
-          "first",
-          "title",
-          "last",
-          "first",
-          "title",
-          "last"
-        ],
-        [
-          "first",
-          "title",
-          "last",
-          "first",
-          "title",
-          "last",
-          "first",
-          "title",
-          "last"
-        ],
+        ["first", "title", "last"],
+        ["first", "title", "last", "first", "title", "last"],
+        ["first", "title", "last", "first", "title", "last", "first", "title", "last"],
         [
           "first",
           "title",

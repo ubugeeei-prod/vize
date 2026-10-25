@@ -22,31 +22,31 @@ a reviewed update to the executable verdict inventory.
 
 ## Verdicts
 
-| Case                                | Verdict    | Mounted behavior                                                         |
-| ----------------------------------- | ---------- | ------------------------------------------------------------------------ |
-| `children/dynamic-text`             | equivalent | initial DOM and three text updates retain the authored element           |
-| `props/dynamic-attributes`          | equivalent | attributes and text update while the authored element remains live       |
-| `props/spread-updates`              | equivalent | spread attributes update repeatedly on the same live element             |
-| `props/spread-before-static` | equivalent | ordered source merges, replacements and restoration retain the authored element |
-| `props/spread-after-static` | equivalent | ordered source merges, replacements and restoration retain the authored element |
-| `props/ordered-spread-chain` | equivalent | ordered source merges, replacements and restoration retain the authored element |
-| `props/spread-class-style` | equivalent | ordered source merges, replacements and restoration retain the authored element |
-| `events/spread-listener-order` | equivalent | ordered source merges, replacements and restoration retain the authored element |
-| `props/ordered-spread-reads` | equivalent | every source evaluates once in authored order on each reactive publication |
-| `props/dynamic-value`               | equivalent | falsy, array and nested-VNode attribute values match both JSX references |
-| `props/dynamic-boolean-value`       | equivalent | value-sensitive boolean property updates match both real JSX references  |
-| `props/dynamic-aria-value`          | equivalent | value-sensitive ARIA attribute updates match both real JSX references    |
-| `props/dynamic-xlink-value`         | equivalent | value-sensitive namespaced attributes match both real JSX references     |
-| `props/dynamic-type-value`          | equivalent | value-sensitive input type attributes match both real JSX references     |
-| `events/click-closure`              | equivalent | two real clicks run the captured closure and retain the button           |
-| `children/logical-and`              | divergent  | only vue-jsx-vapor replaces the branch across truthy value changes       |
-| `control-flow/conditional-branch`   | equivalent | falsy, array and nested-VNode conditions match both real JSX references  |
-| `props/live-input-value`            | equivalent | the live input value and sibling output update without replacing either  |
-| `directives/v-model-text`           | equivalent | input events and direct state patches preserve the live model binding    |
-| `directives/v-show-value`           | equivalent | value-sensitive visibility updates match both real JSX references        |
-| `directives/v-show-component-value` | equivalent | value-sensitive component visibility matches both real JSX references    |
-| `components/scoped-default-slot`    | equivalent | component props and a scoped slot closure update independently           |
-| `components/named-slot-updates`     | equivalent | named slot captures and component props update independently             |
+| Case                                | Verdict    | Mounted behavior                                                                |
+| ----------------------------------- | ---------- | ------------------------------------------------------------------------------- |
+| `children/dynamic-text`             | equivalent | initial DOM and three text updates retain the authored element                  |
+| `props/dynamic-attributes`          | equivalent | attributes and text update while the authored element remains live              |
+| `props/spread-updates`              | equivalent | spread attributes update repeatedly on the same live element                    |
+| `props/spread-before-static`        | equivalent | ordered source merges, replacements and restoration retain the authored element |
+| `props/spread-after-static`         | equivalent | ordered source merges, replacements and restoration retain the authored element |
+| `props/ordered-spread-chain`        | equivalent | ordered source merges, replacements and restoration retain the authored element |
+| `props/spread-class-style`          | equivalent | ordered source merges, replacements and restoration retain the authored element |
+| `events/spread-listener-order`      | equivalent | ordered source merges, replacements and restoration retain the authored element |
+| `props/ordered-spread-reads`        | equivalent | every source evaluates once in authored order on each reactive publication      |
+| `props/dynamic-value`               | equivalent | falsy, array and nested-VNode attribute values match both JSX references        |
+| `props/dynamic-boolean-value`       | equivalent | value-sensitive boolean property updates match both real JSX references         |
+| `props/dynamic-aria-value`          | equivalent | value-sensitive ARIA attribute updates match both real JSX references           |
+| `props/dynamic-xlink-value`         | equivalent | value-sensitive namespaced attributes match both real JSX references            |
+| `props/dynamic-type-value`          | equivalent | value-sensitive input type attributes match both real JSX references            |
+| `events/click-closure`              | equivalent | two real clicks run the captured closure and retain the button                  |
+| `children/logical-and`              | divergent  | only vue-jsx-vapor replaces the branch across truthy value changes              |
+| `control-flow/conditional-branch`   | equivalent | falsy, array and nested-VNode conditions match both real JSX references         |
+| `props/live-input-value`            | equivalent | the live input value and sibling output update without replacing either         |
+| `directives/v-model-text`           | equivalent | input events and direct state patches preserve the live model binding           |
+| `directives/v-show-value`           | equivalent | value-sensitive visibility updates match both real JSX references               |
+| `directives/v-show-component-value` | equivalent | value-sensitive component visibility matches both real JSX references           |
+| `components/scoped-default-slot`    | equivalent | component props and a scoped slot closure update independently                  |
+| `components/named-slot-updates`     | equivalent | named slot captures and component props update independently                    |
 
 The JSON corpus and verdict table are checked bidirectionally, so adding or
 removing a case without a verdict fails. The runtime comparison is the source
