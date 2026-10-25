@@ -35,22 +35,14 @@ const initVuePlugin = require(path.join(root, "npm/typescript-plugin/index.cjs")
 test("TypeScript Vue plugin exposes generated SFC component types", () => {
   const project = createProject();
   try {
-    const { bumpProjectVersion, host } = createHost(project.root, [
+    const { bumpProjectVersion, host, getScriptInfo } = createHost(project.root, [
       project.mainTs,
       project.ambientDts,
     ]);
     const service = initVuePlugin({ typescript: ts }).create({
       languageService: ts.createLanguageService(host),
       languageServiceHost: host,
-      project: {
-        getCurrentDirectory: () => project.root,
-        projectService: {
-          getScriptInfo: (file) =>
-            file.endsWith(".vue")
-              ? { hasMixedContent: true, isScriptOpen: () => false }
-              : undefined,
-        },
-      },
+      project: { getCurrentDirectory: () => project.root, projectService: { getScriptInfo } },
       serverHost: ts.sys,
       config: { nativePath: project.nativeDir },
     });
@@ -280,6 +272,7 @@ function createHost(rootDir: string, rootFiles: string[]) {
   };
 
   let projectVersion = 0;
+  const mixedInfos = new Set<string>();
   const host: import("typescript").LanguageServiceHost = {
     directoryExists: (directoryName) => ts.sys.directoryExists(directoryName),
     fileExists: (fileName) => ts.sys.fileExists(fileName),
@@ -290,7 +283,10 @@ function createHost(rootDir: string, rootFiles: string[]) {
     getProjectVersion: () => String(projectVersion),
     getScriptFileNames: () => rootFiles,
     getScriptSnapshot(fileName) {
-      if (fileName.endsWith(".vue")) return ts.ScriptSnapshot.fromString("");
+      if (fileName.endsWith(".vue")) {
+        mixedInfos.add(fileName);
+        return ts.ScriptSnapshot.fromString("");
+      }
       const source = ts.sys.readFile(fileName);
       return source === undefined ? undefined : ts.ScriptSnapshot.fromString(source);
     },
@@ -300,7 +296,12 @@ function createHost(rootDir: string, rootFiles: string[]) {
     readFile: (fileName, encoding) => ts.sys.readFile(fileName, encoding),
     useCaseSensitiveFileNames: () => ts.sys.useCaseSensitiveFileNames,
   };
-  return { bumpProjectVersion: () => projectVersion++, host };
+  return {
+    bumpProjectVersion: () => projectVersion++,
+    host,
+    getScriptInfo: (file: string) =>
+      mixedInfos.has(file) ? { hasMixedContent: true, isScriptOpen: () => false } : undefined,
+  };
 }
 
 function displayPartsText(parts: readonly import("typescript").SymbolDisplayPart[] | undefined) {
