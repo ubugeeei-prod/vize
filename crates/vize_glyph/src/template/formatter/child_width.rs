@@ -66,7 +66,11 @@ impl TemplateFormatter<'_> {
         // Rejoin formatter-owned text wraps before probing the compact width.
         // Newlines inside an interpolation remain with the JS/literal owner.
         let compact;
-        let child = if child.contains(['\r', '\n']) {
+        let child = if child
+            .as_bytes()
+            .iter()
+            .any(|byte| matches!(byte, b'\r' | b'\n'))
+        {
             if CANONICAL {
                 if child
                     .as_bytes()
