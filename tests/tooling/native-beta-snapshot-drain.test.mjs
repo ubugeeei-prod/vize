@@ -15,7 +15,7 @@ const input = [
 ];
 const output = [
   row({ jsonrpc: "2.0", id: 1, result: { snapshot: 3, projects: [] } }, 3),
-  row({ jsonrpc: "2.0", id: 2, result: null }, 7),
+  row({ jsonrpc: "2.0", id: 2, result: true }, 7),
 ];
 const shutdown = row({ jsonrpc: "2.0", id: 4, method: "shutdown" }, 10);
 void test("actual head release requires the whole same-ID ACK before native shutdown", () => {
@@ -30,6 +30,12 @@ void test("actual head release requires the whole same-ID ACK before native shut
     },
     (rows) => {
       rows[1].packet.result = {};
+    },
+    (rows) => {
+      rows[1].packet.result = null;
+    },
+    (rows) => {
+      rows[1].packet.result = false;
     },
     (rows) => {
       rows[1].packet.id = 100;

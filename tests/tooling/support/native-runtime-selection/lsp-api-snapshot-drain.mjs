@@ -92,7 +92,7 @@ export function assertSnapshotDrainBeforeOwnerShutdown(input, output, shutdown) 
       { handle: String(head.handle), snapshot: head.handle },
       "whole exact beta release parameters",
     );
-    assert.equal(reply.packet.result, null, "release ACK is the whole null result");
+    assert.equal(reply.packet.result, true, "known beta API release ACK is the whole true result");
     assert(
       BigInt(head.response.interval.endNanoseconds) < BigInt(request.interval.startNanoseconds),
       "snapshot creation completes before its release",

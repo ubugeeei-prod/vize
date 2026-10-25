@@ -57,7 +57,7 @@ impl Peer {
                             "compilerOptions": {}, "rootFiles": ["/owned/main.ts"]
                         }]})
                     }
-                    "release" => Value::Null,
+                    "release" => Value::Bool(true),
                     method => panic!("unexpected terminal-stage request: {method}"),
                 };
                 write_packet(

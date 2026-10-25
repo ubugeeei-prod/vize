@@ -1,0 +1,32 @@
+{
+  "role": "Pinned primary Go API release ABI and observed wire; not a generic beta or SDK qualification",
+  "typescriptCommit": "3e9236361fa97a9e6c685f4833ac457ae2d8c50a",
+  "path": "tsc/internal/api/session.go",
+  "gitBlob": "93d6ab53c303d6e2f4f56a48c812e93c8f7b9edc",
+  "sha256": "f9daf9a6043a106002ac3fe62f157da07cdb278d97ae1e276835377e6a47655a",
+  "url": "https://github.com/microsoft/TypeScript/blob/3e9236361fa97a9e6c685f4833ac457ae2d8c50a/tsc/internal/api/session.go#L1830",
+  "startLine": 1830,
+  "endLine": 1838,
+  "exactSource": "func (s *Session) handleRelease(ctx context.Context, params *ReleaseParams) (any, error) {\n\tif params == nil || params.Snapshot == 0 {\n\t\treturn nil, fmt.Errorf(\"%w: empty handle\", ErrClientError)\n\t}\n\n\tif err := s.releaseSnapshot(params.Snapshot); err != nil {\n\t\treturn nil, err\n\t}\n\treturn true, nil\n",
+  "successfulApiReleaseResult": true,
+  "differentLspShutdownResult": null,
+  "stockWireWitness": {
+    "source": "9eab4a27d66b86b9e227d1f9b79125f84ef0a59d",
+    "artifact": 12614679184,
+    "zipSha256": "d4027aed8efd68c0d6bf3adefc5ba9870ba6acff2a02d8a73baa58ab00b25622",
+    "request": {
+      "jsonrpc": "2.0",
+      "id": 6,
+      "method": "release",
+      "params": {
+        "handle": "2",
+        "snapshot": 2
+      }
+    },
+    "response": {
+      "jsonrpc": "2.0",
+      "id": 6,
+      "result": true
+    }
+  }
+}
