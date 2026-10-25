@@ -118,7 +118,7 @@ await test("manual identical main uses separate source and records the complete 
     assert.equal(receipt.productionMatchesBaseline, true);
     assert.deepEqual(receipt.changedEntries, []);
     assert.deepEqual(receipt.originalInfrastructurePaths, ORIGINAL);
-    assert.equal(receipt.allowedInfrastructurePaths.length, 27);
+    assert.equal(receipt.allowedInfrastructurePaths.length, 28);
     for (const name of [
       "typechecker-native-build-info.mjs",
       "typechecker-native-build-info.test.mjs",
@@ -127,6 +127,11 @@ await test("manual identical main uses separate source and records the complete 
     assert(
       receipt.allowedInfrastructurePaths.includes(
         "tests/tooling/native-buildinfo-ownership.test.mjs",
+      ),
+    );
+    assert(
+      receipt.allowedInfrastructurePaths.includes(
+        "tests/tooling/typechecker-native-phase-membership.test.mjs",
       ),
     );
     assert.deepEqual(Object.keys(receipt.bridgeFiles), BRIDGES);
@@ -175,7 +180,7 @@ await test("scheduled evidence binds one protected main checkout to the immutabl
 await test("manual permits precisely reviewed infrastructure while preserving neutral bridges", () => {
   fixture((f) => {
     const paths = [...INFRASTRUCTURE_PATHS].filter((path) => !BRIDGES.includes(path));
-    assert.equal(paths.length, 24);
+    assert.equal(paths.length, 25);
     for (const path of paths) put(f.root, path);
     const executable = PREFIX + "typechecker-native-phase-capture.mjs";
     chmodSync(join(f.root, executable), 0o755);
