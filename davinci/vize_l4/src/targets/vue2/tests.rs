@@ -87,7 +87,7 @@ fn module_with_bindings(source: &str, bindings: &[Binding<'_>]) -> String {
         .collect::<Vec<_>>();
     let policy = ContextOnly::new(&tables, &ids);
     let analysis = build_dom_decisions(artifact, &policy).unwrap();
-    let access = Vue2Access::checked(&bindings).unwrap();
+    let access = Vue2Access::checked(bindings).unwrap();
     emit::<NoLinks>(
         &analysis,
         ResolvedExpressions::checked(&tables).unwrap(),
