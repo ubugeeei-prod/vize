@@ -84,7 +84,6 @@ jobs:
       VIZE_SOURCE_CLI_RECEIPT_SHA256: ${{ needs.source-cli.outputs.receipt-sha256 }}
       VIZE_ROUTER_PREVIEW_RECEIPT_SHA256: ${{ needs.provider.outputs.receipt-sha256 }}
       VIZE_ROUTER_PREVIEW_PRODUCER_ATTEMPT: ${{ needs.provider.outputs.producer-attempt }}
-      VIZE_ROUTER_PREVIEW_PROVIDER: ${{ runner.temp }}/router-preview-provider
       VIZE_TEST_BIN: ${{ github.workspace }}/target/ci/vize
       VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize
       VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
@@ -106,6 +105,8 @@ jobs:
       - name: Capture every manual-helper control before strict acceptance
         id: probe
         continue-on-error: true
+        env:
+          VIZE_ROUTER_PREVIEW_PROVIDER: ${{ runner.temp }}/router-preview-provider
         run: vp node tests/tooling/router-preview-probe.ts
       - name: Retain complete provider, input, process, and source custody
         if: always()
