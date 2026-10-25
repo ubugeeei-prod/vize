@@ -45,6 +45,7 @@ const receipt = {
   version: execFileSync(executable, ["--version"], { encoding: "utf8" }).trim(),
   results: [],
 };
+const validationErrors = [];
 fs.writeFileSync(path.join(capture, "attempt.json"), JSON.stringify(receipt, null, 2));
 const cases = [
   [
@@ -177,7 +178,7 @@ for (const [label, source] of refs) {
         "bash",
         [
           "-c",
-          'ulimit -f 32768; exec "$@"',
+          'ulimit -f 524288; exec "$@"',
           "vize-package-trace",
           strace,
           "-ff",
@@ -206,6 +207,19 @@ for (const [label, source] of refs) {
       );
       fs.writeFileSync(path.join(capture, `${label}-${name}.stdout`), result.stdout || "");
       fs.writeFileSync(path.join(capture, `${label}-${name}.stderr`), result.stderr || "");
+      const traces = fs
+        .readdirSync(capture)
+        .filter((file) => file.startsWith(`${label}-${name}.trace.`))
+        .sort()
+        .map((file) => {
+          const absolute = path.join(capture, file);
+          const bytes = fs.statSync(absolute).size;
+          return {
+            file,
+            bytes,
+            sha256: execFileSync("sha256sum", [absolute], { encoding: "utf8" }).slice(0, 64),
+          };
+        });
       const row = {
         label,
         source,
@@ -216,35 +230,46 @@ for (const [label, source] of refs) {
         sdkSha256: hash(executable),
         binarySha256: hash(binary),
         expectedFailure: label !== "fixed",
+        traces,
       };
       receipt.results.push(row);
       fs.writeFileSync(path.join(capture, "receipt.json"), JSON.stringify(receipt, null, 2));
       process.stdout.write(`${JSON.stringify(row)}\n`);
       assert.equal(result.error, undefined);
+      assert(traces.length > 0);
+      assert(
+        traces.every((file) => file.bytes < 512 * 1024 * 1024),
+        "A bounded trace reached its file limit; no complete-stream claim is permitted",
+      );
       assert.match(result.stdout, /running 1 test/);
-      if (label === "fixed") {
-        assert.match(result.stdout, /test result: ok/);
-        assert.equal(
-          result.status,
-          0,
-          "The real deletion contract must pass after invalidation is repaired",
-        );
-      } else {
-        assert.match(result.stdout, /test result: FAILED/);
-        assert.match(
-          result.stderr,
-          name === "bridge"
-            ? /deleting the package target did not refresh Corsa/
-            : /assertion failed: has_code\(&deleted, "TS2307"\)/,
-        );
-        assert.equal(
-          result.status,
-          101,
-          "Attribution must reproduce the same genuine delete failure before and after runtime policy",
-        );
+      try {
+        if (label === "fixed") {
+          assert.match(result.stdout, /test result: ok/);
+          assert.equal(
+            result.status,
+            0,
+            "The real deletion contract must pass after invalidation is repaired",
+          );
+        } else {
+          assert.match(result.stdout, /test result: FAILED/);
+          assert.match(
+            result.stderr,
+            name === "bridge"
+              ? /deleting the package target did not refresh Corsa/
+              : /assertion failed: has_code\(&deleted, "TS2307"\)/,
+          );
+          assert.equal(
+            result.status,
+            101,
+            "Attribution must reproduce the same genuine delete failure before and after runtime policy",
+          );
+        }
+      } catch (error) {
+        validationErrors.push({ source, test, error: error.message });
       }
     }
   } finally {
     for (const [file, original] of originals) fs.writeFileSync(file, original);
   }
 }
+assert.deepEqual(validationErrors, [], "Every current-head lifecycle assertion must pass");
