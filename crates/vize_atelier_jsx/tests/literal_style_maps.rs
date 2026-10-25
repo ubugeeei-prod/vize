@@ -138,15 +138,24 @@ fn mappings(tokens: &[(u32, u32, u32, u32, Option<String>)]) -> String {
 #[test]
 fn folded_css_has_real_complete_utf16_origins_and_rejects_mutations() {
     let mut packets = Vec::new();
-    for prefix in [
-        "",
-        "<!-- 日本語 😀 -->\r\n",
-        "<!-- 日本語 😀 -->",
-        "<!-- inserted -->\n<!-- 日本語 😀 -->\n",
+    for (prefix, expression) in [
+        ("", "{fontWeight:'700'}"),
+        ("<!-- 日本語 😀 -->\r\n", "{fontWeight:'700'}"),
+        ("<!-- 日本語 😀 -->", "{fontWeight:'700'}"),
+        (
+            "<!-- inserted -->\n<!-- 日本語 😀 -->\n",
+            "{fontWeight:'700'}",
+        ),
+        // The parser decodes this original HTML operand, and both emitters
+        // must escape its synthesized CSS again without losing its origin.
+        (
+            "<!-- 日本語 😀 -->",
+            "{fontWeight:'700','--Brand':'a&amp;b&lt;&gt;'}",
+        ),
     ] {
         for retained in [false, true] {
             let source = format!(
-                "{prefix}<button type=\"button\" :style=\"{{fontWeight:'700'}}\" id=\"own\">{{{{label}}}}</button>\r\n"
+                "{prefix}<button type=\"button\" :style=\"{expression}\" id=\"own\">{{{{label}}}}</button>\r\n"
             );
             let allocator = Allocator::new();
             let output = compile_vapor_with_experimental_options(
@@ -164,6 +173,25 @@ fn folded_css_has_real_complete_utf16_origins_and_rejects_mutations() {
                 },
             );
             assert!(output.error_messages.is_empty());
+            if expression.contains("--Brand") {
+                let static_source = source.replace(
+                    &format!(":style=\"{expression}\""),
+                    "style=\"font-weight:700;--Brand:a&amp;b&lt;&gt;;\"",
+                );
+                let reference = compile_vapor_with_experimental_options(
+                    &allocator,
+                    &static_source,
+                    VaporCompilerOptions {
+                        prefix_identifiers: true,
+                        davinci_retained_lane: retained,
+                        ..Default::default()
+                    },
+                    VaporCompilerExperimentalOptions::default(),
+                );
+                assert!(reference.error_messages.is_empty());
+                assert_eq!(output.code, reference.code);
+                assert_eq!(output.templates, reference.templates);
+            }
             let raw = output.map.as_deref().unwrap();
             let tokens = checked(&output.code, &source, raw).unwrap();
             let document: Value = serde_json::from_str(raw).unwrap();

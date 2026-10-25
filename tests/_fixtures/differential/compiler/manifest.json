@@ -1620,7 +1620,7 @@
         {
           "path": "crates/vize_atelier_jsx/tests/literal_style_maps.rs",
           "symbol": "folded_css_has_real_complete_utf16_origins_and_rejects_mutations",
-          "sha256": "71132a8d945bf115e5bc1471e6f05a028928f3e03399340cf19ba06089d04fd0"
+          "sha256": "badda2c866e4bf68b7ee8e11f09a1c6bbd2dae805c2f25157f39263e96fdf693"
         },
         {
           "path": "crates/vize_atelier_jsx/tests/literal_style_sfc.rs",
