@@ -7,8 +7,14 @@ pnpm add -D @babel/core @vizejs/babel-plugin
 ```
 
 The native Vize compiler is a normal package dependency. Babel is the host peer;
-the application supplies its Vue runtime. Vapor output requires a Vue build that
-provides the Vapor runtime APIs.
+the application supplies its Vue runtime. The current Vapor preview targets
+Vue 3.6.0-rc.11 and its build containing the Vapor runtime APIs. Select that
+build through the application's normal module resolution configuration and
+use `createVaporApp` or `createVaporSSRApp` for the client entry.
+
+The runtime conformance matrix uses Vue 3.5.44 for VDOM. Historical 3.6.0-rc.9
+fixtures remain an unsupported ABI frontier with their failed and reference
+packets retained separately.
 
 ```js
 // babel.config.mjs
