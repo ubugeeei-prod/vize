@@ -234,8 +234,8 @@ export async function auditNative(
   });
   assert.equal(seen.size, 534);
   assert.deepEqual(
-    [...seen.keys()].sort((a, b) => a.localeCompare(b)),
-    [...expectedByPath.keys()].sort((a, b) => a.localeCompare(b)),
+    [...seen.keys()].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)),
+    [...expectedByPath.keys()].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)),
   );
   assert.ok(nativeProject && main);
   assert.equal(completions.length, 2);

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { createRequire } from "node:module";
@@ -31,6 +32,104 @@ const originalPaths: Paths = {
   ),
 };
 let parser: ((source: string, options: unknown) => unknown) | undefined;
+
+export function createPassiveCompilerProxy(output: string) {
+  assert.ok(!/\s/.test(process.execPath), "the observer shebang requires an unambiguous Node path");
+  const proxy = path.join(output, "compiler-proxy.cjs");
+  const observer = fs.readFileSync(
+    path.join(root, "editors/vscode/test/fixtures/passive-vize-server.cjs"),
+  );
+  fs.writeFileSync(proxy, Buffer.concat([Buffer.from(`#!${process.execPath}\n`), observer]), {
+    mode: 0o755,
+  });
+  return { proxy, observer };
+}
+
+export function assertPassiveCompilerProxyEsmBoundary(output: string) {
+  fs.writeFileSync(path.join(output, "package.json"), '{"type":"module"}\n');
+  const { proxy, observer } = createPassiveCompilerProxy(output);
+  const wrapper = fs.readFileSync(proxy);
+  assert.deepEqual(wrapper.subarray(wrapper.indexOf(10) + 1), observer);
+  const oldProxy = path.join(output, "compiler-proxy");
+  fs.writeFileSync(oldProxy, wrapper, { mode: 0o755 });
+  const native = path.join(output, "native-protocol.jsonl");
+  const failedTrace = path.join(output, "extensionless-protocol.jsonl");
+  const run = (args: string[], trace: string) => {
+    const result = spawnSync(process.execPath, args, {
+      cwd: output,
+      env: {
+        ...process.env,
+        VIZE_TEST_OBSERVED_SERVER_PATH: process.execPath,
+        VIZE_TEST_CONFIG_PROTOCOL_PATH: trace,
+      },
+    });
+    return {
+      argv: [process.execPath, ...args],
+      status: result.status,
+      signal: result.signal,
+      error: result.error?.message ?? null,
+      stdoutBase64: result.stdout?.toString("base64") ?? null,
+      stderrBase64: result.stderr?.toString("base64") ?? null,
+    };
+  };
+  const direct = run(["--version"], path.join(output, "direct-unused.jsonl"));
+  const before = run([oldProxy, "--version"], failedTrace);
+  const current = run([proxy, "--version"], native);
+  const hash = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
+  fs.writeFileSync(
+    path.join(output, "forwarding-control.json"),
+    JSON.stringify(
+      {
+        purpose: "Node module-format forwarding control; no source LSP or native SDK acceptance",
+        observerSha256: hash(observer),
+        wrapperSha256: hash(wrapper),
+        direct,
+        before,
+        current,
+      },
+      null,
+      2,
+    ) + "\n",
+  );
+  assert.equal(before.error, null);
+  assert.equal(before.status, 1);
+  assert.equal(before.signal, null);
+  assert.ok(before.stderrBase64);
+  assert.match(
+    Buffer.from(before.stderrBase64, "base64").toString(),
+    /require is not defined in ES module scope/,
+  );
+  assert.equal(fs.existsSync(failedTrace), false);
+  for (const result of [direct, current]) {
+    assert.equal(result.error, null);
+    assert.equal(result.status, 0);
+    assert.equal(result.signal, null);
+  }
+  assert.equal(current.stdoutBase64, direct.stdoutBase64);
+  assert.equal(current.stderrBase64, direct.stderrBase64);
+  const events = fs
+    .readFileSync(native, "utf8")
+    .trim()
+    .split("\n")
+    .map((line) => JSON.parse(line));
+  const spawns = events.filter((event) => event.kind === "spawn");
+  assert.equal(spawns.length, 1);
+  assert.equal(spawns[0].binary, process.execPath);
+  assert.deepEqual(spawns[0].argv, ["--version"]);
+  assert.equal(spawns[0].binarySha256, hash(fs.readFileSync(process.execPath)));
+  const chunks = events.filter((event) => event.kind === "chunk" && event.direction === "server");
+  assert.equal(
+    Buffer.concat(chunks.map((event) => Buffer.from(event.chunkBase64, "base64"))).toString(
+      "base64",
+    ),
+    direct.stdoutBase64,
+  );
+  assert.deepEqual(
+    events.filter((event) => event.kind === "exit"),
+    [{ kind: "exit", pid: spawns[0].pid, code: 0, signal: null }],
+  );
+  return native;
+}
 
 function parseImports(source: string) {
   if (!parser) {

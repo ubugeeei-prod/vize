@@ -18,6 +18,8 @@ import {
 import { archiveNative, fixture, object, sha256 } from "./support/project-uri-membership-10622.ts";
 import {
   assertNativeCompletionExchange,
+  assertPassiveCompilerProxyEsmBoundary,
+  createPassiveCompilerProxy,
   nativeImportRelocation,
   normalizeMemberPacket,
   normalizePacket,
@@ -82,6 +84,17 @@ const normalized = (profile: Profile, row = profile.packet) =>
   );
 const provider = prepareProjectUriProvider();
 const hasParser = !!provider.vue;
+
+test("passive compiler observer retains CommonJS execution across an actual ESM package boundary", async () => {
+  const base = path.join(testOutputRoot, "project-uri-membership-10622");
+  fs.mkdirSync(base, { recursive: true });
+  const output = fs.mkdtempSync(path.join(base, "proxy-esm-control-"));
+  const native = assertPassiveCompilerProxyEsmBoundary(output);
+  fs.writeFileSync(
+    path.join(output, "native-archive.json"),
+    JSON.stringify(await archiveNative(native), null, 2) + "\n",
+  );
+});
 
 test("pinned native SDK source and actual public astral packets prove UTF8 completion-data offsets", () => {
   sdkPositionUnitEvidence();
@@ -303,13 +316,7 @@ test("source LF and CRLF astral controls bind complete member packets to actual 
     path.join(workspace, "node_modules/@vue"),
     "dir",
   );
-  const proxy = path.join(output, "compiler-proxy");
-  const observer = fs.readFileSync(
-    path.join(root, "editors/vscode/test/fixtures/passive-vize-server.cjs"),
-  );
-  fs.writeFileSync(proxy, Buffer.concat([Buffer.from(`#!${process.execPath}\n`), observer]), {
-    mode: 0o755,
-  });
+  const { proxy, observer } = createPassiveCompilerProxy(output);
   fs.writeFileSync(
     path.join(workspace, "vite.config.mjs"),
     `export default ${JSON.stringify({ vue: { languageServer: { editor: true, typecheck: true, lint: false }, typeChecker: { corsaPath: proxy } } })};\n`,

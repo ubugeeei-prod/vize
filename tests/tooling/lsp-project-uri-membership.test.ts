@@ -28,6 +28,7 @@ import {
   sha256,
   type NativeAudit,
 } from "./support/project-uri-membership-10622.ts";
+import { createPassiveCompilerProxy } from "./support/project-uri-membership-position-10622.ts";
 import {
   requireTypecheckDependency,
   resolveTypecheckRuntime,
@@ -193,14 +194,7 @@ function prepareWorkspace(directory: string, runtime: string, vue: string, obser
   );
   let selectedRuntime = runtime;
   if (observed) {
-    const proxy = path.join(directory, "compiler-proxy");
-    const source = fs.readFileSync(
-      path.join(root, "editors/vscode/test/fixtures/passive-vize-server.cjs"),
-    );
-    assert.ok(!/[\r\n\s]/u.test(process.execPath));
-    fs.writeFileSync(proxy, Buffer.concat([Buffer.from(`#!${process.execPath}\n`), source]), {
-      mode: 0o755,
-    });
+    const { proxy, observer: source } = createPassiveCompilerProxy(directory);
     write(path.join(directory, "proxy-source.json"), {
       source: "editors/vscode/test/fixtures/passive-vize-server.cjs",
       sha256: sha256(source),
