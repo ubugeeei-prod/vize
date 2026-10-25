@@ -172,7 +172,7 @@ export async function runLspPack({
     const receipt = JSON.parse(
       fs.readFileSync(`${binaryPath}.differential-build.json`, "utf8"),
     ) as BuildReceipt;
-    validateBuildReceipt(receipt, build);
+    validateBuildReceipt(receipt, observedBuild);
     const version = spawnSync(binaryPath, ["--version"], { timeout: 30_000 });
     report.binaryProbe = {
       exitStatus: version.status,
