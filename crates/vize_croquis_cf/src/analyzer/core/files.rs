@@ -106,7 +106,14 @@ impl CrossFileAnalyzer {
     /// add files in an arbitrary order. A parent may be added before the file
     /// referenced by `./Child.vue`; the first pass cannot resolve that target.
     pub fn rebuild_import_edges(&mut self) {
+        let profiler = vize_l0::profiler::global_profiler();
+        let _phase = profiler.global_span("croquis_cf.dependencies.finalize");
+        profiler.record_counter("croquis_cf.dependencies.finalize.calls", 1);
         let file_ids: Vec<_> = self.registry.iter().map(|entry| entry.id).collect();
+        profiler.record_counter(
+            "croquis_cf.dependencies.finalize.files",
+            file_ids.len() as u64,
+        );
         for file_id in file_ids {
             self.update_dependency_edges(file_id);
         }

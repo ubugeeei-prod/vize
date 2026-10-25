@@ -81,7 +81,7 @@ impl MaestroServer {
     pub(super) fn with_project_state(&self, state: std::sync::Arc<super::ServerState>) -> Self {
         Self {
             client: self.client.clone(),
-            #[cfg(feature = "experimental-source-navigation")]
+            #[cfg(feature = "retained-program")]
             navigation: if std::sync::Arc::ptr_eq(&state, &self.state) {
                 self.navigation.clone()
             } else {

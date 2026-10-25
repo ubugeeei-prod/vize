@@ -23,6 +23,7 @@ fn reason_keyword(reason: OpaqueReason) -> &'static str {
         OpaqueReason::NestingRefused => "nesting-refused",
         OpaqueReason::ParseRejected => "parse-rejected",
         OpaqueReason::Compound => "compound",
+        OpaqueReason::SourceCoordinates => "source-coordinates",
     }
 }
 
@@ -62,6 +63,7 @@ fn every_expression_variant_is_matched_without_a_wildcard() {
         OpaqueReason::NestingRefused,
         OpaqueReason::ParseRejected,
         OpaqueReason::Compound,
+        OpaqueReason::SourceCoordinates,
     ];
     for reason in reasons {
         assert_eq!(reason_keyword(reason), reason.mnemonic());

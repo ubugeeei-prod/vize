@@ -95,6 +95,7 @@ pub(crate) fn check_pack(
             | "pug-refusal-10430"
             | "portable-pug-10434"
             | "jsx-prop-token-ranges-10494"
+            | "unicode-prop-bindings-10573"
             | "experimental-router-import-10520"
             | "literal-reference-paths-10551"
             | "content-mapper-experimental-router-10526" => regression,

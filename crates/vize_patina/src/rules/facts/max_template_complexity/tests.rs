@@ -5,6 +5,8 @@ use crate::preset::LintPreset;
 use crate::rule::RuleRegistry;
 use crate::{LintResult, OutputFormat, format_results};
 
+mod decoded_coordinates;
+
 const RULE: &str = "vue/max-template-complexity";
 
 fn lint(source: &str) -> LintResult {

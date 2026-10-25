@@ -56,6 +56,22 @@ impl<'a> JsxMarkupFile<'a> {
     pub fn file(&self) -> &FileArtifact<'a> {
         self.owner.file()
     }
+
+    /// Original fragment delimiters in authored preorder, with the same owner,
+    /// parent fragment, source, unit and scope. No boundary buffer is allocated.
+    /// Canonical markup transparently flattens fragments; output backends retain
+    /// these delimiters to realize their own fragment boundaries.
+    pub fn fragment_boundaries(&self) -> impl Iterator<Item = super::JsxNode<'_, 'a>> {
+        self.owner.nodes().filter(|node| {
+            matches!(
+                node.kind(),
+                Some(
+                    crate::resolution::SyntaxKind::FragmentOpening
+                        | crate::resolution::SyntaxKind::FragmentClosing
+                )
+            )
+        })
+    }
 }
 
 /// A typed whole-view refusal retains the actual completed or rejected owner.
@@ -86,7 +102,7 @@ impl<'a> JsxFileProducer<'a> {
     /// Seal the original-owning static HTML family into its canonical File.
     ///
     /// Dynamic expressions, component/foreign namespaces, directives, spreads,
-    /// fragments and values requiring JSX normalization refuse this whole view.
+    /// and values requiring JSX normalization refuse this whole view.
     /// Ordinary script expressions remain in their genuine original File facts.
     pub fn finish_markup(mut self) -> Result<JsxMarkupFile<'a>, Box<RejectedJsxMarkupFile<'a>>> {
         let span = self.block.span();
@@ -98,7 +114,7 @@ impl<'a> JsxFileProducer<'a> {
             profile!("l2.jsx_markup.emit", {
                 let mut region = self.producer.jsx_region();
                 for root in roots {
-                    if let Err(error) = emit::element(&self.recorder.records, root, &mut region) {
+                    if let Err(error) = emit::node(&self.recorder.records, root, &mut region) {
                         issues.push(JsxMarkupIssue {
                             kind: JsxMarkupIssueKind::Artifact(error),
                             span,

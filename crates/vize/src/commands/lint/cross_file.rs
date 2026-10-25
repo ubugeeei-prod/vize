@@ -10,7 +10,7 @@ pub(super) use component::RULE as CROSS_COMPONENT_RULE;
 pub(super) use fallthrough::RULE as FALLTHROUGH_RULE;
 mod uses_attrs;
 
-use sfc::{CrossFileSourceOffsets, analyze_sfc_for_cross_file};
+use sfc::{CrossFileSfcAnalysis, CrossFileSourceOffsets, analyze_sfc_for_cross_file};
 use std::path::{Path, PathBuf};
 use vize_croquis_cf::{
     CrossFileAnalyzer, CrossFileDiagnostic, CrossFileDiagnosticKind, CrossFileOptions,
@@ -101,10 +101,16 @@ pub(super) fn build_cross_file_lint_output_with_report<S: AsRef<str>>(
 
     for (index, (path, source)) in files.iter().enumerate() {
         let source = source.as_ref();
-        let Some((analysis, offsets)) = analyze_sfc_for_cross_file(source, path) else {
+        let Some(CrossFileSfcAnalysis {
+            analysis,
+            offsets,
+            effects,
+        }) = analyze_sfc_for_cross_file(source, path)
+        else {
             continue;
         };
-        let file_id = analyzer.add_file_with_analysis(path, source, analysis);
+        let file_id =
+            analyzer.add_file_with_analysis_and_effect_summary(path, source, analysis, effects);
         file_indexes.insert(file_id, index);
         source_offsets.insert(file_id, offsets);
     }
@@ -301,3 +307,6 @@ pub(super) fn merge_lint_result(target: &mut LintResult, mut extra: LintResult) 
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod effect_summary_tests;

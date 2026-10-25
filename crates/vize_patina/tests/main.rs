@@ -51,6 +51,7 @@ mod lint_history;
 mod musea_component_names;
 mod musea_variant_registration;
 mod native_aria_unsupported_elements;
+mod native_canonical_img_alt;
 mod native_canonical_tabindex;
 mod native_deprecated_attr;
 mod native_deprecated_element;

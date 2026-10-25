@@ -8,7 +8,7 @@ use crate::{lang::js::JsxMarkupIssueKind, op::Op, walk::NodeRef};
 use alloc::vec::Vec;
 use serde_json::{Value, json};
 
-fn dom(ops: &[Op<'_>]) -> Result<Value, &'static str> {
+pub(super) fn dom(ops: &[Op<'_>]) -> Result<Value, &'static str> {
     let mut nodes = Vec::new();
     for op in ops {
         nodes.push(match op {

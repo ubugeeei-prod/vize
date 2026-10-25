@@ -1,0 +1,109 @@
+name: JSX intrinsic hover observations
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/lsp-jsx-intrinsic-hover.yml"
+      - "crates/vize_maestro/Cargo.toml"
+      - "crates/vize_maestro/src/source_project/**"
+      - "crates/vize_maestro/src/server/intrinsic_hover.rs"
+      - "crates/vize_maestro/src/server/handlers/typed.rs"
+      - "crates/vize_maestro/src/ide/hover/html.rs"
+      - "tests/tooling/lsp-jsx-intrinsic-hover.test.ts"
+      - "tests/tooling/support/lsp/intrinsic-hover-observation.ts"
+      - "tests/tooling/support/lsp/fresh-vue-project.ts"
+
+permissions: { contents: read }
+
+concurrency:
+  group: jsx-intrinsic-hover-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  observations:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    env:
+      CARGO_BUILD_JOBS: "12"
+      CARGO_TERM_COLOR: always
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      RAYON_NUM_THREADS: "4"
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha }}
+      VIZE_LSP_BIN: target/ci/vize
+      VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
+      VIZE_TEST_REQUIRE_TSGO: "1"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, cache: true, run-install: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: test-scripts, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - run: vp install --frozen-lockfile --prefer-offline
+      - name: Build and receipt the exact source CLI
+        run: |
+          cargo build --profile ci -p vize
+          vp exec node tests/differential/build-receipt.ts
+      - name: Record the actual source and both provider identities
+        run: |
+          mkdir -p target/vize-tests/jsx-intrinsic-hover
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { createHash } from 'node:crypto';
+          import { appendFileSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
+          import { execFileSync } from 'node:child_process';
+          import { resolveTypecheckRuntime } from './tests/tooling/support/typecheck-dependency.ts';
+          import { resolveFreshVuePackage } from './tests/tooling/support/lsp/fresh-vue-project.ts';
+          const hash = bytes => createHash('sha256').update(bytes).digest('hex');
+          const build = JSON.parse(readFileSync('target/ci/vize.differential-build.json'));
+          assert.equal(build.sourceRevision, process.env.SOURCE_SHA);
+          const selectedRuntime = resolveTypecheckRuntime(process.cwd());
+          const selectedVue = resolveFreshVuePackage();
+          assert.ok(selectedRuntime && selectedVue, 'the actual protocol dependencies are required');
+          const runtime = realpathSync(selectedRuntime);
+          const vuePackage = realpathSync(selectedVue);
+          appendFileSync(process.env.GITHUB_ENV, `CORSA_BIN=${runtime}\nVIZE_TEST_VUE_PACKAGE=${vuePackage}\n`);
+          const vue = readFileSync(`${vuePackage}/package.json`);
+          const receipt = {
+            source: build,
+            sourceTree: execFileSync('git', ['rev-parse', 'HEAD^{tree}'], { encoding: 'utf8' }).trim(),
+            providers: {
+              intrinsic: 'Original retained native Program and completed File; same-walk intrinsic observer',
+              otherTypedHover: 'Existing Canon TypeScript projection',
+              typescriptRuntime: { sha256: hash(readFileSync(runtime)), version: execFileSync(runtime, ['--version'], { encoding: 'utf8' }).trim() },
+              vue: { version: JSON.parse(vue).version, packageJsonSha256: hash(vue) },
+            },
+            latencyMeaning: 'First DOM requests follow initial diagnostics; warm groups repeat unchanged full-result queries. Whole-request CI observations, not cold startup or universal budgets.',
+            scope: 'Source-qualified bounded intrinsic hover packets and observed CI latency; no native whole-product or publication admission',
+          };
+          writeFileSync('target/vize-tests/jsx-intrinsic-hover/source.json', JSON.stringify(receipt, null, 2) + '\n');
+          JS
+      - name: Observe complete packets, authored controls and request latency
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test --test-concurrency=1 tests/tooling/lsp-jsx-intrinsic-hover.test.ts tests/tooling/differential-lsp-profiles.test.ts 2>&1 | tee target/vize-tests/jsx-intrinsic-hover/protocol.log
+      - name: Verify original parse and walk reuse and asynchronous publication guards
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo test --locked --profile ci -p vize_maestro --lib source_project::navigation::intrinsic_tests:: -- --nocapture 2>&1 | tee target/vize-tests/jsx-intrinsic-hover/native.log
+      - name: Retain owned complete observations and exact source receipt
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: jsx-intrinsic-hover-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.event.pull_request.head.sha }}
+          path: |
+            target/vize-tests/jsx-intrinsic-hover/
+            target/vize-tests/lsp-fresh-capability-policy/intrinsic-*
+            target/differential/lsp-sessions/
+            target/ci/vize.differential-build.json
+          if-no-files-found: error
+          retention-days: 7

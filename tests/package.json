@@ -49,6 +49,7 @@
     "@tiptap/starter-kit": "3.26.0",
     "@tiptap/vue-3": "3.26.0",
     "@tresjs/core": "5.8.1",
+    "@types/babel__core": "catalog:babel-jsx-oracle",
     "@types/node": "catalog:typescript",
     "@types/pngjs": "catalog:content",
     "@vue-flow/core": "1.48.2",

@@ -19,6 +19,11 @@ on:
         required: false
         default: false
         type: boolean
+      patina_plain_type_packets:
+        description: Replay complete conditional native type packets after all benchmark observations
+        required: false
+        default: false
+        type: boolean
 
 run-name: "Benchmark ${{ github.event_name == 'schedule' && format('long baseline...{0}', github.sha) || github.event_name == 'workflow_dispatch' && format('{0}...{1}', inputs.base_sha, inputs.head_sha) || format('PR #{0}', github.event.pull_request.number) }}"
 
@@ -283,11 +288,37 @@ jobs:
             sha256sum base/target/ci-opt/vize head/target/ci-opt/vize
           } > benchmark-provenance.txt
 
+      - name: Replay conditional native type packets after observations
+        if: github.event_name == 'workflow_dispatch' && inputs.patina_plain_type_packets && steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.build-base.outcome != 'failure'
+        run: |
+          node --test head/tools/benchmarks/scripts/patina-plain-type-packets.test.mjs
+          node head/tools/benchmarks/scripts/patina-plain-type-packets.mjs \
+            "$GITHUB_WORKSPACE/base" "$GITHUB_WORKSPACE/head" \
+            "$BENCHMARK_BASE_SHA" "$BENCHMARK_HEAD_SHA" \
+            "$GITHUB_WORKSPACE/patina-plain-type-packets"
+
+      - name: Retain complete native type packets and overlay custody
+        if: always() && github.event_name == 'workflow_dispatch' && inputs.patina_plain_type_packets
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: patina-plain-type-packets
+          path: |
+            patina-plain-type-packets/*.json
+            patina-plain-type-packets/*.stdout
+            patina-plain-type-packets/*.stderr
+            patina-plain-type-packets/*.rs
+            patina-plain-type-packets/summary.md
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Write job summary
         run: |
           cat benchmark-summary.md >> "$GITHUB_STEP_SUMMARY"
           if [[ -f patina-project-batch/summary.md ]]; then
             cat patina-project-batch/summary.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [[ -f patina-plain-type-packets/summary.md ]]; then
+            cat patina-plain-type-packets/summary.md >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Upload benchmark results

@@ -55,6 +55,7 @@ pub(in crate::source_project::navigation) fn run(
         file,
         lines: &lines,
         native: Some(native),
+        intrinsic_tags: &[],
         #[cfg(test)]
         original: {
             let programs = observation

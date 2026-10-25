@@ -16,9 +16,9 @@ use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::macros::MacroKind;
 use vize_croquis::{Croquis, ScopeData, ScopeKind};
 
-use super::super::helpers::to_safe_identifier;
 use super::keyed_template_names::collect_keyed_template_prop_names;
 use super::mappings::PropBindingMappings;
+use super::mappings::prop_binding_identifier;
 use super::setup_scoped::props_type_ref;
 use super::template_bindings::{
     emit_macro_template_prop_bindings, should_skip_template_prop_binding,
@@ -340,7 +340,7 @@ fn emit_keyed_template_prop_binding(
     prop_name: &str,
     has_default: bool,
 ) {
-    let binding_name = to_safe_identifier(prop_name);
+    let binding_name = prop_binding_identifier(prop_name);
     let start = ts.len() + "  const ".len();
     if has_default {
         append!(
@@ -366,7 +366,7 @@ fn emit_unchecked_template_prop_binding(
     props_object_binding: &str,
     prop_name: &str,
 ) {
-    let binding_name = to_safe_identifier(prop_name);
+    let binding_name = prop_binding_identifier(prop_name);
     append!(
         *ts,
         "  const {binding_name} = ({props_object_binding} as Record<string, unknown>)[\"{prop_name}\"];\n"

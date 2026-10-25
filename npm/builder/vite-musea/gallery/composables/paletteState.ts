@@ -133,10 +133,16 @@ export function clearSavedPaletteState(artPath: string): void {
 
 export function initialPaletteValues(controls: PaletteControl[]): Record<string, unknown> {
   return Object.fromEntries(
-    controls.map((control) => [
-      control.name,
-      control.default_value !== undefined ? control.default_value : fallbackValue(control),
-    ]),
+    controls
+      .filter(
+        (control) =>
+          control.control !== "function" &&
+          (!control.unsupported_default || control.default_value !== undefined),
+      )
+      .map((control) => [
+        control.name,
+        control.default_value !== undefined ? control.default_value : fallbackValue(control),
+      ]),
   );
 }
 

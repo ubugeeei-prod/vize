@@ -1,0 +1,2 @@
+const prefix = '作者😀';
+const view = <section title='作者😀'><img src="first"/><img alt=""/><div><img data-alt="x"/></div><img alt/></section>;

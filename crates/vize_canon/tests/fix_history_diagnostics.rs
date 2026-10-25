@@ -799,6 +799,29 @@ fn jsx_prop_tokens_preserve_complete_batch_diagnostics() {
 }
 
 #[test]
+fn unicode_prop_bindings_preserve_complete_authored_diagnostics() {
+    check_pack(
+        "unicode-prop-bindings-10573",
+        "unicode_prop_bindings_preserve_complete_authored_diagnostics",
+        "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
+        Some(10573),
+        &[
+            "reported-optional-unused",
+            "unicode-ascii-collision",
+            "unicode-ascii-number",
+            "quoted-cooked-unicode",
+            "escaped-identifier",
+            "supplementary-crlf",
+            "runtime-japanese",
+            "defaulted-unicode",
+            "keyed-unicode",
+            "reserved-hyphen-ascii",
+            "unicode-continue",
+        ],
+    );
+}
+
+#[test]
 fn experimental_page_import_preserves_published_path_diagnostics() {
     check_pack(
         "experimental-router-import-10520",

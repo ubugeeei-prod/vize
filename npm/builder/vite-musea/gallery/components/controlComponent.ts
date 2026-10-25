@@ -1,3 +1,4 @@
+import FunctionControl from "./controls/FunctionControl.vue";
 import TextControl from "./controls/TextControl.vue";
 import NumberControl from "./controls/NumberControl.vue";
 import BooleanControl from "./controls/BooleanControl.vue";
@@ -10,6 +11,8 @@ import UnsupportedPropControl from "./controls/UnsupportedPropControl.vue";
 export function getControlComponent(kind: string, unsupported = false) {
   if (unsupported) return UnsupportedPropControl;
   switch (kind) {
+    case "function":
+      return FunctionControl;
     case "text":
       return TextControl;
     case "number":

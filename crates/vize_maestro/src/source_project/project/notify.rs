@@ -3,7 +3,7 @@ use super::{SourceQueryProject, abort};
 use tower_lsp::lsp_types::Url;
 
 impl SourceQueryProject<'_> {
-    #[cfg(feature = "experimental-source-navigation")]
+    #[cfg(feature = "retained-program")]
     pub(in crate::source_project) fn snapshot_is_current(
         &self,
         snapshot: &crate::source_project::SourceSnapshot,

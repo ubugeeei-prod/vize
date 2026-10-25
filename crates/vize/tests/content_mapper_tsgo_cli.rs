@@ -20,6 +20,7 @@ mod props_binding;
 mod pug_refusal;
 mod template_expression_syntax;
 mod type_only_import_use;
+mod unicode_prop_bindings;
 mod unknown_options_10218;
 
 fn workspace_root() -> &'static Path {

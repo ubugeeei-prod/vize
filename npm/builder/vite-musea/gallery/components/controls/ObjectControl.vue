@@ -14,14 +14,16 @@ const emit = defineEmits<{
 
 const MonacoEditor = defineAsyncComponent(() => import("../MonacoEditor.vue"));
 
-const jsonString = ref(JSON.stringify(props.modelValue ?? {}, null, 2));
+const jsonString = ref(
+  JSON.stringify(props.modelValue === undefined ? {} : props.modelValue, null, 2),
+);
 const parseError = ref(false);
 const labelId = useId();
 
 watch(
   () => props.modelValue,
   (val) => {
-    const incoming = JSON.stringify(val ?? {}, null, 2);
+    const incoming = JSON.stringify(val === undefined ? {} : val, null, 2);
     if (incoming !== jsonString.value) {
       jsonString.value = incoming;
       parseError.value = false;

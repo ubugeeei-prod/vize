@@ -1,0 +1,4 @@
+import Counter from "./Counter.vue";
+export const text = "<button>";
+export const comparison = 1 < 2;
+export const view = <div data-note="🧭"><button disabled title="Save">Save</button><input type="text"/><Counter count={1}></Counter></div>;

@@ -53,7 +53,7 @@ use vize_l0::Span;
 /// The classes are exactly the measured retained-`None` shapes (P1-5's
 /// contract, P1-9's counters). Two are **text-classifiable** - decidable
 /// from the text alone, and the only refusals [`super::JsExpr::parse_in`]
-/// produces. The other three are **position-classified**: grammatical
+/// produces. The other classes are **position-classified**: grammatical
 /// facts about where the text came from, assignable only by the lowering
 /// that saw the position (P2-8), never recoverable from the text.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -82,6 +82,9 @@ pub enum OpaqueReason {
     /// slices (merged text + interpolation), whose content never existed
     /// as one authored expression.
     Compound,
+    /// Position-classified: the producer cannot retain checked authored/decode
+    /// coordinates. A parsed AST with guessed source geometry is not admitted.
+    SourceCoordinates,
 }
 
 impl OpaqueReason {
@@ -94,6 +97,7 @@ impl OpaqueReason {
             Self::NestingRefused => "nesting-refused",
             Self::ParseRejected => "parse-rejected",
             Self::Compound => "compound",
+            Self::SourceCoordinates => "source-coordinates",
         }
     }
 
@@ -106,6 +110,7 @@ impl OpaqueReason {
             "nesting-refused" => Some(Self::NestingRefused),
             "parse-rejected" => Some(Self::ParseRejected),
             "compound" => Some(Self::Compound),
+            "source-coordinates" => Some(Self::SourceCoordinates),
             _ => None,
         }
     }

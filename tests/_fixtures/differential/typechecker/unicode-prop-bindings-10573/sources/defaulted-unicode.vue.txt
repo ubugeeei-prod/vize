@@ -1,0 +1,6 @@
+<script setup lang="ts">
+withDefaults(defineProps<{ café?: string }>(), { café: 'ready' })
+</script>
+<template>
+  <div>{{ café }}</div>
+</template>
