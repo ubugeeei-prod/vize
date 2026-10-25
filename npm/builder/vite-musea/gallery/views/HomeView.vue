@@ -105,7 +105,8 @@ const stats = computed(() => ({
 
 .home-stats {
   display: flex;
-  gap: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
 }
 
 .home-stat {
@@ -141,11 +142,12 @@ const stats = computed(() => ({
 
 .home-category-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
   gap: 1rem;
 }
 
 .home-card {
+  min-width: 0;
   background: var(--musea-bg-secondary);
   border: 1px solid var(--musea-border);
   border-radius: var(--musea-radius-lg);
@@ -171,15 +173,19 @@ const stats = computed(() => ({
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.75rem;
   margin-bottom: 0.5rem;
 }
 
 .home-card-title {
+  min-width: 0;
+  overflow-wrap: anywhere;
   font-weight: 600;
   font-size: 0.9375rem;
 }
 
 .home-card-desc {
+  overflow-wrap: anywhere;
   color: var(--musea-text-muted);
   font-size: 0.8125rem;
   margin-bottom: 0.75rem;
@@ -193,19 +199,25 @@ const stats = computed(() => ({
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .home-card-meta {
+  flex-shrink: 0;
   font-size: 0.75rem;
   color: var(--musea-text-muted);
 }
 
 .home-card-tags {
   display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
   gap: 0.375rem;
 }
 
 .home-card-tag {
+  overflow-wrap: anywhere;
   font-size: 0.6875rem;
   color: var(--musea-text-muted);
   background: var(--musea-bg-tertiary);
