@@ -76,7 +76,11 @@ impl CrossFileAnalyzer {
         }
 
         if self.options.server_client_boundary || self.options.error_suspense_boundary {
-            let (boundaries, diags) = rules::analyze_boundaries(&self.registry, &self.graph);
+            let (boundaries, diags) = rules::analyze_boundaries_in_ssr_mode(
+                &self.registry,
+                &self.graph,
+                self.options.server_client_boundary,
+            );
             result.boundaries = boundaries;
             result.diagnostics.extend(diags);
         }

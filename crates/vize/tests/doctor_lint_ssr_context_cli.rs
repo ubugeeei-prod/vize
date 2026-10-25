@@ -129,6 +129,32 @@ fn the_last_explicit_false_after_a_spread_is_authoritative() {
     assert_eq!(cross_file, healthy_lint);
 }
 
+#[test]
+fn client_only_apps_keep_non_ssr_boundary_findings() {
+    let directory = tempfile::tempdir().unwrap();
+    project(
+        directory.path(),
+        "export default defineNuxtConfig({ssr:false})",
+        false,
+    );
+    write(
+        directory.path(),
+        "src/App.vue",
+        "<script setup>\nawait Promise.resolve();\nwindow.innerWidth;\n</script><template><div /></template>",
+    );
+    let (doctor, lint, cross_file) = packets(directory.path(), "client-only-async");
+    assert_eq!(
+        doctor
+            .findings()
+            .iter()
+            .map(|finding| finding.code.as_str())
+            .collect::<Vec<_>>(),
+        ["VIZE_DOCTOR_CF_ASYNC_WITHOUT_SUSPENSE"]
+    );
+    assert_eq!(rule_ids(&lint), Vec::<&str>::new());
+    assert_eq!(rule_ids(&cross_file), ["croquis/cf/async-without-suspense"]);
+}
+
 fn project(root: &Path, nuxt: &str, vite_client_build: bool) {
     write(root, "src/App.vue", BROWSER_SOURCE);
     let build = if vite_client_build {

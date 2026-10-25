@@ -48,7 +48,9 @@ pub(super) fn analyze_application(
     public_sfc: bool,
 ) -> Result<DoctorReport, DoctorError> {
     let mut analyzer = CrossFileAnalyzer::with_project_root(
-        doctor_options().with_server_client_boundary(super::super::project_ssr::ssr_enabled(root)),
+        doctor_options()
+            .with_server_client_boundary(super::super::project_ssr::ssr_enabled(root))
+            .with_error_suspense_boundary(true),
         root,
     );
     let mut source_maps = FxHashMap::default();

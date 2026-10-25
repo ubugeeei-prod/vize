@@ -87,7 +87,8 @@ pub(super) fn build_cross_file_lint_output_with_report<S: AsRef<str>>(
 ) -> CrossFileLintOutput {
     let root = std::env::current_dir().unwrap_or_default();
     let options = patina_cross_file_options()
-        .with_server_client_boundary(super::super::project_ssr::ssr_enabled(&root));
+        .with_server_client_boundary(super::super::project_ssr::ssr_enabled(&root))
+        .with_error_suspense_boundary(true);
     let mut analyzer = CrossFileAnalyzer::with_project_root(options, root);
     let mut file_indexes: FxHashMap<FileId, usize> = FxHashMap::default();
     let mut source_offsets: FxHashMap<FileId, CrossFileSourceOffsets> = FxHashMap::default();
