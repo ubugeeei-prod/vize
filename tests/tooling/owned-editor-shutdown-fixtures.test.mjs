@@ -9,6 +9,7 @@ import {
   OWNED_EDITOR_SHUTDOWN_PROTOCOL_ID as ID,
 } from "../../tools/support/compat/github/owned-editor-shutdown-fixtures.ts";
 import { analyzeLegacyFix } from "../../tools/support/compat/github/report-legacy-fix-fixtures.ts";
+import { loadLspManifest } from "../differential/lsp-manifest.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const load = (name) => JSON.parse(fs.readFileSync(path.join(root, name), "utf8"));
@@ -72,6 +73,19 @@ void test("complete real shutdown ownership inputs register exactly two finite C
   );
   assert.equal(actual.sources.has("crates/vize_canon/src/corsa_bridge/other.rs"), false);
   assert.equal(actual.sources.has("crates/vize_maestro/src/server.rs"), false);
+});
+
+void test("ordinary shutdown input materializes through the real LSP loader with exact source coverage", () => {
+  const loaded = loadLspManifest(path.join(root, "tests/_fixtures/differential/lsp/manifest.json"));
+  const fixture = loaded.cases.find(
+    (entry) => entry.id === "lsp/regression/owned-outer-shutdown-10760",
+  );
+  assert.ok(fixture);
+  assert.equal(fixture.requests.length, 2);
+  assert.deepEqual(
+    fixture.files.map((file) => file.runtimePath),
+    ["src/App.vue", "src/support.ts", "tsconfig.json", "vite.config.mjs"],
+  );
 });
 
 void test("exact source transition requires a new unique unchanged protocol row", () => {

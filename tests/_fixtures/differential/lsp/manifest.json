@@ -2560,8 +2560,8 @@
             "dialects": [
               "vue3-sfc",
               "html-template",
-              "ts",
-              "js"
+              "js",
+              "ts"
             ],
             "selector": "LSP manifest pinned authored sources"
           }

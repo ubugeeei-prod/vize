@@ -7610,7 +7610,7 @@
           },
           {
             "path": "tests/tooling/owned-editor-shutdown-fixtures.test.mjs",
-            "sha256": "8018463e5955e80cd5a6133670ec7f7cac11f5d7df5d7e3179e92826c4060131"
+            "sha256": "bc5da2005973737a1882816a5cf4d6d66cc1eba942a1dfa690b42c1e61ca5245"
           },
           {
             "path": "tests/tooling/native-runtime-selection-lsp-strace.test.mjs",
