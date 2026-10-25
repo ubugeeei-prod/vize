@@ -1,0 +1,66 @@
+name: Qualify actual project native compiler selection
+description: Reuse the ordinary same-source CLI or NAPI build with independently installed official compiler providers.
+inputs:
+  surface:
+    description: cli-lsp or napi; no build or public fallback is allowed.
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Validate the selected source surface
+      shell: bash
+      env: { SURFACE: "${{ inputs.surface }}" }
+      run: '[[ "$SURFACE" == cli-lsp || "$SURFACE" == napi ]]'
+    - name: Install passive native exec observation tool
+      shell: bash
+      run: |
+        if ! command -v strace >/dev/null; then
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends strace
+        fi
+        command -v strace
+        strace --version
+    - name: Install explicit official compiler providers in fresh isolated consumers
+      shell: bash
+      env: { SURFACE: "${{ inputs.surface }}" }
+      run: |
+        set -euo pipefail
+        provider_root="$RUNNER_TEMP/native-runtime-selection-$SURFACE"
+        test ! -e "$provider_root"
+        mkdir -p "$provider_root"
+        npm install --prefix "$provider_root/beta" --ignore-scripts --no-audit --no-fund --save-exact --registry=https://registry.npmjs.org typescript@7.1.0-beta vue@3.5.44
+        npm install --prefix "$provider_root/six" --ignore-scripts --no-audit --no-fund --save-exact --registry=https://registry.npmjs.org typescript@6.0.3
+        npm install --prefix "$provider_root/frozen702" --ignore-scripts --no-audit --no-fund --save-exact --registry=https://registry.npmjs.org typescript@7.0.2 vue@3.5.44
+    - name: Require complete actual source provider observations
+      shell: bash
+      env:
+        SURFACE: ${{ inputs.surface }}
+        VIZE_REQUIRE_NATIVE_RUNTIME_SELECTION: "1"
+        VIZE_SOURCE_CLI: ${{ github.workspace }}/target/ci/vize
+        VIZE_NATIVE_BETA_ROOT: ${{ runner.temp }}/native-runtime-selection-${{ inputs.surface }}/beta
+        VIZE_TYPESCRIPT_SIX_ROOT: ${{ runner.temp }}/native-runtime-selection-${{ inputs.surface }}/six
+        VIZE_NATIVE_702_ROOT: ${{ runner.temp }}/native-runtime-selection-${{ inputs.surface }}/frozen702
+      run: |
+        set -euo pipefail
+        export VIZE_NATIVE_STRACE="$(command -v strace)"
+        if [[ "$SURFACE" == cli-lsp ]]; then
+          node --test tests/tooling/native-runtime-cli-selection.test.mjs
+          node tests/tooling/support/native-runtime-selection/lsp.mjs
+        else
+          node --test tests/tooling/native-runtime-napi-selection.test.mjs
+        fi
+    - name: Preserve all source, provider, input and raw observation custody
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: user-native-runtime-${{ inputs.surface }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
+        path: |
+          target/vize-tests/native-runtime-cli-selection-10694/**
+          target/vize-tests/native-runtime-napi-selection-10694/**
+          target/vize-tests/native-runtime-selection-lsp/**
+          target/ci/vize.differential-build.json
+          npm/native/.artifacts/native/formatter-history/build-receipt.json
+          ${{ runner.temp }}/native-runtime-selection-${{ inputs.surface }}/**/package.json
+          ${{ runner.temp }}/native-runtime-selection-${{ inputs.surface }}/**/package-lock.json
+        if-no-files-found: error
+        retention-days: 7

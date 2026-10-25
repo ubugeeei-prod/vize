@@ -8,6 +8,8 @@ import { nativeScopedCaptureRequired } from "./native-scoped-capture.mjs";
 import { nativeVaporCaptureRequired } from "./native-vapor-capture.mjs";
 import { nativeAttributeValues7502CaptureRequired } from "./native-attribute-values-7502-capture.mjs";
 
+import { userNativeRuntimeSelectionRequired } from "./user-native-runtime-selection.ts";
+
 export function planNativeRuntime(
   paths: readonly string[],
   rust?: { packages: readonly string[] },
@@ -42,6 +44,7 @@ export function planNativeRuntime(
       ),
   );
   const lsp =
+    userNativeRuntimeSelectionRequired(paths) ||
     formatter ||
     rust?.packages.some((pkg) => pkg === "vize" || pkg === "vize_maestro") ||
     paths.some((path) =>

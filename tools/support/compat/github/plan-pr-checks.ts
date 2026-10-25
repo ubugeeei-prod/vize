@@ -10,6 +10,7 @@ import { planNativeRuntime } from "./plan-native-runtime.ts";
 import { differentialMatrix } from "./rust-differential-lanes.ts";
 import { rustTestMatrix } from "./rust-test-cohorts.ts";
 import { selectPrTier } from "./select-pr-tier.ts";
+import { userNativeRuntimeSelectionRequired } from "./user-native-runtime-selection.ts";
 
 type Request = {
   paths: readonly string[];
@@ -61,6 +62,13 @@ export function planPrChecks({ paths, eventName, labels, workspace, cargoMetadat
     testMatrix: rustTestMatrix(cargoMetadata, requiredRust.packages),
   };
   const js = planAffectedJs(workspace, paths, affectedRust);
+  const userNativeRuntime = userNativeRuntimeSelectionRequired(paths);
+  if (userNativeRuntime) {
+    if (!js.groups.includes("builders")) js.groups.unshift("builders");
+    js.matrix.group = js.groups;
+    js.native = true;
+    js.reasons.push("runtime selection qualification reuses the source NAPI builder");
+  }
   const native = planNativeRuntime(paths, affectedRust);
   const tier = selectPrTier({ paths, eventName, labels });
   // Preserve the real-tree source/API and reviewed-doc contracts in daily CI.
@@ -68,7 +76,7 @@ export function planPrChecks({ paths, eventName, labels, workspace, cargoMetadat
   // edits do not pay for these independent repository scans.
   const sourceContracts =
     source.rust || source.tooling || paths.some((path) => path.startsWith("docs/"));
-  return { source, rust, js, native, tier, sourceContracts };
+  return { source, rust, js, native, tier, sourceContracts, userNativeRuntime };
 }
 
 export function prCheckOutputs(plan: ReturnType<typeof planPrChecks>): Record<string, string> {
@@ -82,6 +90,7 @@ export function prCheckOutputs(plan: ReturnType<typeof planPrChecks>): Record<st
     heavy: String(plan.tier === "heavy"),
     playground: String(plan.tier === "heavy" && plan.source.playground),
     "native-runtime-matrix": JSON.stringify(plan.native.matrix),
+    "user-native-runtime-selection": String(plan.userNativeRuntime),
   };
 }
 

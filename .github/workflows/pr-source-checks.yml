@@ -25,6 +25,7 @@ jobs:
       js: ${{ steps.plan.outputs.js }}
       js-plan: ${{ steps.plan.outputs.js-plan }}
       native-runtime-matrix: ${{ steps.plan.outputs.native-runtime-matrix }}
+      user-native-runtime-selection: ${{ steps.plan.outputs.user-native-runtime-selection }}
       playground: ${{ steps.plan.outputs.playground }}
       tooling: ${{ steps.plan.outputs.tooling }}
       affected-tooling: ${{ steps.tooling-plan.outputs.tooling }}
@@ -189,6 +190,7 @@ jobs:
       run-js: ${{ needs.pr-source-plan.outputs.js == 'true' }}
       run-original-project: false
       js-plan: ${{ needs.pr-source-plan.outputs.js-plan }}
+      run-runtime-selection: ${{ needs.pr-source-plan.outputs.user-native-runtime-selection == 'true' }}
   pr-native-runtime:
     name: Native runtime (${{ matrix.lane }})
     needs: pr-source-plan
@@ -240,6 +242,10 @@ jobs:
       - name: Test actual source LSP feature and project responses
         if: ${{ matrix.lane == 'lsp' }}
         uses: ./.github/actions/test-native-lsp
+      - name: Qualify actual user compiler selection with the existing source CLI
+        if: ${{ !cancelled() && matrix.lane == 'lsp' && needs.pr-source-plan.outputs.user-native-runtime-selection == 'true' }}
+        uses: ./.github/actions/test-native-runtime-selection
+        with: { surface: cli-lsp }
       - name: Replay complete formatter CLI stock semantics with the source CLI
         if: ${{ success() && matrix.lane == 'lsp' }}
         run: |

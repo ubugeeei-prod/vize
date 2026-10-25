@@ -7,6 +7,7 @@ on:
     inputs:
       run-js: { required: true, type: boolean }
       run-original-project: { required: true, type: boolean }
+      run-runtime-selection: { required: false, type: boolean, default: false }
       js-plan:
         type: string
         required: false
@@ -63,6 +64,10 @@ jobs:
         if: ${{ (inputs.run-js && matrix.group != 'none') }}
         env: { VIZE_JS_PACKAGE_GROUP: "${{ matrix.group }}" }
         run: node .github/actions/test-js-packages-with-history/native-fault-evidence.ts -- vp run --workspace-root "test:js:$VIZE_JS_PACKAGE_GROUP"
+      - name: Qualify actual user compiler selection with the existing source addon
+        if: ${{ !cancelled() && inputs.run-js && inputs.run-runtime-selection && matrix.group == 'builders' }}
+        uses: ./.github/actions/test-native-runtime-selection
+        with: { surface: napi }
       - name: Preserve public native formatter evidence
         if: ${{ !cancelled() && (inputs.run-js && matrix.group != 'none') }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
