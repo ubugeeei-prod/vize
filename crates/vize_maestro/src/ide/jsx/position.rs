@@ -153,28 +153,14 @@ fn generated_offset_to_source(
     generated_offset: usize,
     prefer_end: bool,
 ) -> usize {
-    if let Some(span) = mapping.sub_spans.iter().find(|span| {
-        generated_offset >= span.gen_range.start && generated_offset <= span.gen_range.end
-    }) {
-        let relative = generated_offset.saturating_sub(span.gen_range.start);
-        let source_len = span.src_range.end.saturating_sub(span.src_range.start);
-        return span
-            .src_range
-            .start
-            .saturating_add(relative.min(source_len));
+    if prefer_end {
+        vize_canon::virtual_ts::mapping::map_generated_end_offset_to_source(
+            mapping,
+            generated_offset,
+        )
+    } else {
+        vize_canon::virtual_ts::mapping::map_generated_offset_to_source(mapping, generated_offset)
     }
-    if prefer_end && generated_offset >= mapping.gen_range.end {
-        return mapping.src_range.end;
-    }
-    let generated_relative = generated_offset.saturating_sub(mapping.gen_range.start);
-    let source_len = mapping
-        .src_range
-        .end
-        .saturating_sub(mapping.src_range.start);
-    mapping
-        .src_range
-        .start
-        .saturating_add(generated_relative.min(source_len))
 }
 
 /// Convert a byte offset into an LSP `(line, character)` in `text`, counting

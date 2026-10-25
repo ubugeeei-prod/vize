@@ -200,7 +200,7 @@ pub(crate) fn entry_sub_spans(
     spans
 }
 
-fn key_sub_spans(
+pub(crate) fn key_sub_spans(
     generated: std::ops::Range<usize>,
     source: std::ops::Range<usize>,
 ) -> Vec<VizeSubSpan> {

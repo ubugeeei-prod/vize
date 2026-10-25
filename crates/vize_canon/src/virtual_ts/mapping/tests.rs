@@ -6,6 +6,7 @@ use super::{
 use vize_carton::cstr;
 
 mod caret;
+mod endpoints;
 
 #[test]
 fn prefers_exact_expression_sub_spans() {

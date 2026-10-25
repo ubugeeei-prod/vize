@@ -10,9 +10,12 @@ use std::vec::Vec;
 use vize_carton::{String as CompactString, ToCompactString};
 use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode};
 
-use crate::virtual_ts::{VizeMapping, VizeSubSpan};
+use crate::virtual_ts::{VizeMapping, key_sub_spans};
 
 use super::{JsxExpr, RenderContext, push_mapped_expr};
+
+#[cfg(test)]
+mod name_mapping_tests;
 
 /// Type-only component invocation. The constructor branch consumes the
 /// `$props` contract exported by generated SFC modules; the function branch
@@ -153,12 +156,9 @@ fn render_prop(
                 src_range: *source_start as usize..*source_end as usize,
                 sub_spans: name_gen_range
                     .zip(name_src_range)
-                    .map(|(gen_range, src_range)| VizeSubSpan {
-                        gen_range,
-                        src_range,
-                    })
-                    .into_iter()
-                    .collect(),
+                    .map_or_else(Vec::new, |(generated, source)| {
+                        key_sub_spans(generated, source)
+                    }),
             });
         }
         JsxComponentProp::Spread {
