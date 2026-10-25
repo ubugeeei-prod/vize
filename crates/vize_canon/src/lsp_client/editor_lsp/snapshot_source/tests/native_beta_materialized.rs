@@ -205,9 +205,17 @@ pub(super) fn materialized_overlay_packets(
     let mapped_main = client.session_document_uri(&main_uri);
     let mapped_path = file_uri_to_path(&mapped_main).unwrap();
     let directory = mapped_path.parent().unwrap();
+    let import_candidates = [
+        "support.ts",
+        "support.tsx",
+        "support.d.ts",
+        "support/package.json",
+        "support/index.ts",
+    ]
+    .map(|name| identity(&directory.join(name)));
     let evidence = json!({"scope":"Original close-to-root-expansion frontier; API project descriptor is independently owned metadata, not an LS overlay lease",
         "authoredMain":identity(&main_path),"authoredSupport":identity(&support_path),"mappedMain":identity(&mapped_path),
-        "relativeImportCandidates":["support.ts","support.tsx","support.d.ts","support/package.json","support/index.ts"].map(|name|identity(&directory.join(name))),
+        "relativeImportCandidates":import_candidates,
         "project":client.session.as_ref().map(|session|session.project()),"materializedProject":client.materialized_project_session,
         "attached":client.project_session_attached_to_editor,"virtualPull":virtual_pull,"selectedWholeBatch":whole_batch});
     std::fs::write(

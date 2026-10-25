@@ -46,7 +46,7 @@
   "producerFiles": [
     {
       "path": ".github/workflows/native-beta-diagnostic-dto.yml",
-      "sha256": "375bc14e1f668e69b1714af5833de88624d48165546caa0e4e08034b547d491c"
+      "sha256": "4d0cf97c4cd9a83a974ec763d92ce51c20f6c00af4d183dfa7d7fc658bd32d5b"
     },
     {
       "path": "tests/tooling/support/native-beta-dto/prepare-role.mjs",
@@ -66,7 +66,7 @@
     },
     {
       "path": "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta_materialized.rs",
-      "sha256": "a3654e527128303ebd9e7c143d2e80c6f84b3798f325d8cf510ed8ec12e42b6d"
+      "sha256": "51f07e455dfed7914dc349b2baed6b55f2e8ccd1acd5c299b5e0967111da4346"
     },
     {
       "path": "tests/tooling/support/native-runtime-selection/lsp-strace-lines.mjs",
