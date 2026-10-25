@@ -90,6 +90,7 @@ export function createServerDiscovery(
         } catch (error) {
           workspaceFallbackReason = `Workspace server ${candidate.path} (${candidate.version ?? "unknown version"}) is unavailable or incompatible: ${String(error)}`;
         }
+        if (generation !== state.configurationSyncGeneration) return undefined;
       }
       if (workspaceFallbackReason) state.outputChannel.appendLine(workspaceFallbackReason);
     }

@@ -145,9 +145,6 @@ export async function activate(context: ExtensionContext): Promise<void> {
     workspace.onDidGrantWorkspaceTrust(() =>
       scheduleClientSync(context, "workspace trust granted"),
     ),
-    workspace.onDidChangeWorkspaceFolders(() =>
-      scheduleClientSync(context, "workspace folders changed"),
-    ),
   );
 
   context.subscriptions.push(

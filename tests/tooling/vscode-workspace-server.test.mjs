@@ -87,7 +87,13 @@ function fixture(t) {
   };
 }
 
-function discovery(f, folders = [f.folder], trusted = true, settings = {}) {
+function discovery(
+  f,
+  folders = [f.folder],
+  trusted = true,
+  settings = {},
+  protocol = inspectWorkspaceServerProtocol,
+) {
   const lines = [];
   const workspace = {
     workspaceFolders: folders.map((folder) => ({ uri: { fsPath: folder } })),
@@ -111,7 +117,7 @@ function discovery(f, folders = [f.folder], trusted = true, settings = {}) {
       trustedServerPath,
       workspaceDevServerPaths,
       discoverWorkspaceServers,
-      inspectWorkspaceServerProtocol,
+      inspectWorkspaceServerProtocol: protocol,
       serverInvocation,
     },
     "createServerDiscovery",
@@ -193,6 +199,31 @@ await test("incompatible initialize falls back with the selected path, version a
     /0\.1\.0.*incompatible/,
   );
   assert.ok(current.state.selectedServerCandidate.workspaceFallbackReason.includes(local));
+});
+
+await test("disable during a failing workspace probe prevents fallback execution", async (t) => {
+  const f = fixture(t);
+  f.install();
+  f.server(path.join(f.directory, "extension", "dist", exeName), "1.2.3");
+  let release;
+  let entered;
+  const started = new Promise((resolve) => {
+    entered = resolve;
+  });
+  const probe = new Promise((_, reject) => {
+    release = () => reject(new Error("incompatible"));
+  });
+  const current = discovery(f, [f.folder], true, {}, () => {
+    entered();
+    return probe;
+  });
+  const pending = current.resolve();
+  await started;
+  ++current.state.configurationSyncGeneration;
+  release();
+  assert.equal(await pending, undefined);
+  assert.equal(current.state.selectedServerCandidate, undefined);
+  assert.equal(f.events().length, 1, "only the workspace version inspection may execute");
 });
 
 await test("nearest package, hidden exports, pnpm symlinks and Windows cmd wrappers resolve the package bin", (t) => {
