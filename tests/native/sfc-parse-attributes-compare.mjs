@@ -1,12 +1,34 @@
 import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { execFileSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+import {
+  sourceProvenance,
+  validateProductSource,
+  validateSourceProvenance,
+} from "./sfc-parse-attributes-source.mjs";
 
 const directory = path.resolve(process.argv[2]);
 const base = JSON.parse(await fs.readFile(path.join(directory, "base/packets.json"), "utf8"));
 const head = JSON.parse(await fs.readFile(path.join(directory, "head/packets.json"), "utf8"));
 assert.equal(base.source, "49a98d1e72707083354b8ff11e1cec800ded28b3");
-assert.equal(head.source, process.env.VIZE_SFC_ATTRS_HEAD_SHA);
+const observerActor = execFileSync(
+  "git",
+  ["-C", fileURLToPath(new URL("../../", import.meta.url)), "rev-parse", "HEAD"],
+  { encoding: "utf8" },
+).trim();
+const provenance = sourceProvenance(observerActor);
+assert.equal(head.source, process.env.VIZE_SFC_ATTRS_ACTOR_SHA);
+for (const packet of [base, head]) {
+  validateProductSource(packet.source, packet.role, observerActor);
+  assert.equal(packet.receipt.source, packet.source);
+  validateSourceProvenance(packet.receipt.provenance, observerActor);
+  const image = JSON.parse(
+    await fs.readFile(path.join(directory, packet.role, "image.json"), "utf8"),
+  );
+  assert.deepEqual(image, packet.receipt, "The compared packets must retain their actual image");
+}
 const fixtures = JSON.parse(
   await fs.readFile(
     new URL("../fixtures/sfc/parsed-attributes/cases.json", import.meta.url),
@@ -78,6 +100,7 @@ await fs.writeFile(
       complete: true,
       base: base.source,
       head: head.source,
+      provenance,
       cases: fixtures.length,
       defaultPackets: fixtures.length * 4,
       originalErrorStacksRetained: true,
