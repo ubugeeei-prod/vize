@@ -65,19 +65,46 @@ fn assert_instance_reads(strict: bool, receiver: &str) {
         })
         .collect();
     reads.sort_by_key(|(_, range)| range.start);
-    assert_eq!(
-        reads,
-        vec![
+    let mut expected = vec![
+        ("$before", 1293..1300),
+        ("$after", 1384..1390),
+        ("$form", 1428..1433),
+        ("$field", 1445..1451),
+        ("$unknown", 1463..1471),
+        ("$self", 1500..1505),
+    ];
+    if !strict {
+        // The bare expression, canonical prop owner and second loop body are
+        // genuine generated emissions. Relative-cache reuse never reuses their
+        // generated coordinates or drops the corresponding authored mappings.
+        expected.extend([
             ("$before", 1293..1300),
             ("$after", 1384..1390),
-            ("$form", 1428..1433),
-            ("$field", 1445..1451),
-            ("$unknown", 1463..1471),
             ("$self", 1500..1505),
-        ],
-        "{}",
-        output.code
+        ]);
+        expected.sort_by_key(|(_, range)| range.start);
+    }
+    let generated: Vec<_> = output
+        .mapping
+        .spans()
+        .iter()
+        .filter(|mapping| {
+            output
+                .code
+                .get(..mapping.gen_range.start)
+                .is_some_and(|head| head.ends_with(receiver))
+        })
+        .map(|mapping| mapping.gen_range.clone())
+        .collect();
+    let mut unique_generated = generated.clone();
+    unique_generated.sort_by_key(|range| (range.start, range.end));
+    unique_generated.dedup();
+    assert_eq!(
+        generated.len(),
+        unique_generated.len(),
+        "one mapping per actual emitted property read"
     );
+    assert_eq!(reads, expected, "{}", output.code);
 }
 
 #[test]

@@ -739,6 +739,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     )
                 );
             }
+            template_binding_access.append_instance_diagnostic_prefixes(&mut diagnostic_mappings);
             emit_unresolved_components(
                 &mut ts,
                 summary,

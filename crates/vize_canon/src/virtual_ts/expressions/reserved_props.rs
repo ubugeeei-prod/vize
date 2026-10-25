@@ -36,6 +36,7 @@ pub(super) fn rewrite_reserved_with_segments(
     let code = rewrite_binding(expression, bindings, &mut spans)?;
     Some(super::spread_reserved_props::BindingRewrite {
         code,
+        diagnostic_prefixes: Vec::new(),
         segments: spans
             .unwrap_or_default()
             .into_iter()
@@ -65,6 +66,13 @@ pub(crate) fn map_rewritten_template_binding(
                 .match_indices(rewrite.code.as_str())
             {
                 let base = generated_start + relative;
+                for span in &rewrite.diagnostic_prefixes {
+                    bindings.record_instance_diagnostic_prefix(VizeMapping {
+                        gen_range: base + span.generated.start..base + span.generated.end,
+                        src_range: source_start + span.source.start..source_start + span.source.end,
+                        sub_spans: Vec::new(),
+                    });
+                }
                 for span in &rewrite.segments {
                     mappings.push(VizeMapping {
                         gen_range: base + span.generated.start..base + span.generated.end,

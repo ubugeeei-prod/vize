@@ -25,6 +25,8 @@ const PARSE_SUFFIX: &str = ");";
 pub(crate) struct BindingRewrite {
     pub(crate) code: String,
     pub(crate) segments: Vec<SpreadRewriteSegment>,
+    /// Relative receiver-only anchors. They carry diagnostics, never symbol identity.
+    pub(crate) diagnostic_prefixes: Vec<SpreadRewriteSegment>,
 }
 
 pub(super) type SpreadRewrite = BindingRewrite;
@@ -299,6 +301,7 @@ fn apply_replacements(
     let extra_capacity = replacements.len().saturating_mul(16);
     let mut code = String::with_capacity(expression.len().saturating_add(extra_capacity));
     let mut segments = Vec::with_capacity(replacements.len().saturating_mul(2) + 1);
+    let mut diagnostic_prefixes = Vec::new();
     let mut source_cursor = 0;
 
     for replacement in replacements {
@@ -326,9 +329,14 @@ fn apply_replacements(
                 });
                 code.push_str(": ");
             }
+            let receiver_start = code.len();
             code.push_str(receiver);
             code.push('.');
             let key_start = code.len();
+            diagnostic_prefixes.push(SpreadRewriteSegment {
+                generated: receiver_start..key_start,
+                source: replacement.source.clone(),
+            });
             code.push_str(name);
             segments.push(SpreadRewriteSegment {
                 generated: key_start..code.len(),
@@ -353,7 +361,11 @@ fn apply_replacements(
         &mut code,
         &mut segments,
     );
-    SpreadRewrite { code, segments }
+    SpreadRewrite {
+        code,
+        segments,
+        diagnostic_prefixes,
+    }
 }
 
 fn push_source_segment(

@@ -5,12 +5,15 @@
 //! reserved names through the same typed object.
 
 use super::{helpers::is_reserved_identifier, props::collect_template_prop_names};
-use std::{borrow::Cow, cell::RefCell, rc::Rc};
+use std::{
+    borrow::Cow,
+    cell::{Ref, RefCell},
+};
 use vize_carton::{FxHashMap, FxHashSet, String};
 use vize_croquis::{BindingType, Croquis, ScopeId};
 
 use super::expressions::BindingRewrite;
-use super::types::VirtualTsOptions;
+use super::types::{VirtualTsOptions, VizeMapping};
 
 #[derive(Clone, Copy, Debug)]
 enum Receiver {
@@ -18,7 +21,7 @@ enum Receiver {
     OptionsInstance,
 }
 
-type RewriteCache = FxHashMap<ScopeId, FxHashMap<String, Option<Rc<BindingRewrite>>>>;
+type RewriteCache = FxHashMap<ScopeId, FxHashMap<String, Option<BindingRewrite>>>;
 
 /// Immutable admission and relative rewrite results for one generated file.
 /// Scope-specific views borrow this value; no emission offset enters the cache.
@@ -29,6 +32,8 @@ struct InstanceAccess<'a> {
     setup_spread_bindings: &'a [String],
     infer_dollar_el: bool,
     cache: RefCell<RewriteCache>,
+    /// Actual generated positions belong to emission, independently of the pure cache.
+    diagnostic_prefixes: RefCell<Vec<VizeMapping>>,
 }
 
 #[derive(Debug)]
@@ -112,6 +117,7 @@ impl<'a> TemplateBindingAccess<'a> {
                 setup_spread_bindings,
                 infer_dollar_el,
                 cache: RefCell::default(),
+                diagnostic_prefixes: RefCell::default(),
             }));
         }
         self
@@ -168,30 +174,51 @@ impl<'a> TemplateBindingAccess<'a> {
         &self,
         expression: &str,
         build: impl FnOnce() -> Option<BindingRewrite>,
-    ) -> Option<Rc<BindingRewrite>> {
+    ) -> Option<Ref<'_, BindingRewrite>> {
         let instance = self.instance.as_ref()?.get();
-        if let Some(cached) = instance
+        let cached = instance
             .cache
             .borrow()
             .get(&self.scope_id)
-            .and_then(|scope| scope.get(expression))
-        {
+            .is_some_and(|scope| scope.contains_key(expression));
+        if cached {
             vize_carton::profiler::global_profiler()
                 .record_counter("canon.instance_global_rewrite.cache_hits", 1);
-            return cached.clone();
+        } else {
+            vize_carton::profiler::global_profiler()
+                .record_counter("canon.instance_global_rewrite.cache_misses", 1);
+            let result = build();
+            vize_carton::profiler::global_profiler()
+                .record_counter("canon.instance_global_rewrite.cache_entries", 1);
+            instance
+                .cache
+                .borrow_mut()
+                .entry(self.scope_id)
+                .or_default()
+                .insert(String::from(expression), result);
         }
-        vize_carton::profiler::global_profiler()
-            .record_counter("canon.instance_global_rewrite.cache_misses", 1);
-        let result = build().map(Rc::new);
-        vize_carton::profiler::global_profiler()
-            .record_counter("canon.instance_global_rewrite.cache_entries", 1);
-        instance
-            .cache
-            .borrow_mut()
-            .entry(self.scope_id)
-            .or_default()
-            .insert(String::from(expression), result.clone());
-        result
+        Ref::filter_map(instance.cache.borrow(), |cache| {
+            cache.get(&self.scope_id)?.get(expression)?.as_ref()
+        })
+        .ok()
+    }
+
+    pub(crate) fn record_instance_diagnostic_prefix(&self, mapping: VizeMapping) {
+        if let Some(instance) = &self.instance {
+            instance
+                .get()
+                .diagnostic_prefixes
+                .borrow_mut()
+                .push(mapping);
+            vize_carton::profiler::global_profiler()
+                .record_counter("canon.instance_global_rewrite.diagnostic_prefixes", 1);
+        }
+    }
+
+    pub(crate) fn append_instance_diagnostic_prefixes(&self, output: &mut Vec<VizeMapping>) {
+        if let Some(instance) = &self.instance {
+            output.append(&mut instance.get().diagnostic_prefixes.borrow_mut());
+        }
     }
 
     pub(crate) fn is_empty(&self) -> bool {

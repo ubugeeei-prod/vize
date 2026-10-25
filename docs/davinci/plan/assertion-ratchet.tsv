@@ -256,7 +256,7 @@ crates/vize_canon/src/virtual_ts/strict_template_global_enum_tests.rs	2
 crates/vize_canon/src/virtual_ts/strict_template_global_fallback_tests.rs	3
 crates/vize_canon/src/virtual_ts/strict_template_globals_tests.rs	27
 crates/vize_canon/src/virtual_ts/strict_template_scope_tests.rs	4
-crates/vize_canon/src/virtual_ts/tests.rs	95
+crates/vize_canon/src/virtual_ts/tests.rs	94
 crates/vize_canon/src/virtual_ts/tests/auto_import_shadowing.rs	12
 crates/vize_canon/src/virtual_ts/tests/component_navigation.rs	7
 crates/vize_canon/src/virtual_ts/tests/define_props_scope.rs	21
