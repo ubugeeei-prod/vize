@@ -32,9 +32,9 @@ export const PLAIN_TYPE_SOURCES = {
 
 export type PlainTypeSources = Record<keyof typeof PLAIN_TYPE_SOURCES, string>;
 const compact = (source: string): string => stripRust(source).replace(/\s+/gu, "");
-const fail = (reason: string): never => {
+function fail(reason: string): never {
   throw new Error(`plain type dispatch drift: ${reason}`);
-};
+}
 const requireCode = (source: string, token: string, reason: string): void => {
   if (!compact(source).includes(token)) fail(reason);
 };
