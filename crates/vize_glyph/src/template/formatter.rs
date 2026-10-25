@@ -23,6 +23,7 @@ mod preserved_text;
 mod suppression;
 mod tags;
 mod text;
+mod text_wrap;
 mod whitespace_significant;
 
 #[cfg(test)]
@@ -62,13 +63,22 @@ impl<'a> TemplateFormatter<'a> {
         // specializes the ordinary LF path back to one delimiter scan per text
         // run, while leaving raw-region bytes untouched.
         if self.newline == b"\r" && memchr::memchr(b'\n', input.as_bytes()).is_none() {
-            self.format_inner::<true>(input)
+            if self.options.canonical_directive_layout {
+                self.format_inner::<true, true>(input)
+            } else {
+                self.format_inner::<true, false>(input)
+            }
+        } else if self.options.canonical_directive_layout {
+            self.format_inner::<false, true>(input)
         } else {
-            self.format_inner::<false>(input)
+            self.format_inner::<false, false>(input)
         }
     }
 
-    fn format_inner<const HAS_CR: bool>(&self, input: &str) -> Result<String, FormatError> {
+    fn format_inner<const HAS_CR: bool, const CANONICAL: bool>(
+        &self,
+        input: &str,
+    ) -> Result<String, FormatError> {
         let source = input.as_bytes();
         let len = source.len();
         let mut output = Vec::with_capacity(len + len / 4);
@@ -105,7 +115,7 @@ impl<'a> TemplateFormatter<'a> {
                     memchr::memchr(b'\n', sub_slice(source, pos..end_pos)).is_some()
                 }
             {
-                self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
+                self.flush_text_buffer::<CANONICAL>(&mut output, &mut text, depth, &mut joiner);
                 let expr = input.get(expr_start..expr_end).unwrap_or_default();
                 let depth = joiner.interpolation_depth(pos, end_pos, depth);
                 self.open_chunk(&mut output, depth, joiner.open(pos));
@@ -117,7 +127,7 @@ impl<'a> TemplateFormatter<'a> {
 
             // HTML comment <!-- ... -->
             if pos + 3 < len && sub_slice(source, pos..pos + 4) == b"<!--" {
-                self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
+                self.flush_text_buffer::<CANONICAL>(&mut output, &mut text, depth, &mut joiner);
                 let comment_start = pos;
                 let join = joiner.open(comment_start);
                 if let Some(end_offset) = find_bytes(sub_slice(source, pos..), b"-->") {
@@ -144,15 +154,19 @@ impl<'a> TemplateFormatter<'a> {
                     && byte_at(source, pos + 1) == b'/'
                     && let Some((tag_name, end_pos)) = parse_closing_tag(input, pos)
                 {
-                    self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
+                    self.flush_text_buffer::<CANONICAL>(&mut output, &mut text, depth, &mut joiner);
                     let join = joiner.open(pos);
                     depth = depth.saturating_sub(1);
                     self.open_chunk(&mut output, depth, join);
                     output.extend_from_slice(b"</");
                     output.extend_from_slice(tag_name.as_bytes());
-                    if join.is_continuation()
-                        && !joiner.locks_current_line()
-                        && self.closing_bracket_overflows(&output)
+                    if (CANONICAL && joiner.take_wrapped_text_close(pos))
+                        || (join.is_continuation()
+                            && !joiner.locks_current_line()
+                            && (self.closing_bracket_overflows(&output)
+                                || self.following_text_overflows::<CANONICAL>(
+                                    &output, input, end_pos,
+                                )))
                     {
                         output.extend_from_slice(self.newline);
                         self.write_indent(&mut output, depth);
@@ -166,7 +180,7 @@ impl<'a> TemplateFormatter<'a> {
                 if let Some((tag_name, attrs, is_self_closing, end_pos)) =
                     self.parse_opening_tag(input, pos, depth)
                 {
-                    self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
+                    self.flush_text_buffer::<CANONICAL>(&mut output, &mut text, depth, &mut joiner);
                     let join = joiner.open(pos);
                     let mut sorted_attrs = attrs;
                     if self.options.sort_attributes {
@@ -184,7 +198,7 @@ impl<'a> TemplateFormatter<'a> {
                     let hugged_inline_suffix = if is_self_closing || joiner.locks_current_line() {
                         None
                     } else {
-                        self.hugged_inline_suffix_width(input, end_pos, &tag_name)
+                        self.hugged_inline_suffix_width::<CANONICAL>(input, end_pos, &tag_name)
                     };
                     self.open_chunk(&mut output, depth, join);
                     output.push(b'<');
@@ -310,13 +324,17 @@ impl<'a> TemplateFormatter<'a> {
             if pos < len
                 && (byte_at(source, pos) == b'\n' || (HAS_CR && byte_at(source, pos) == b'\r'))
             {
-                self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
+                // Suppression pragmas own physical lines; ordinary condensed
+                // text instead forms one canonical run across authored wraps.
+                if !CANONICAL || joiner.has_locked_lines() {
+                    self.flush_text_buffer::<CANONICAL>(&mut output, &mut text, depth, &mut joiner);
+                }
                 pos += 1;
             }
         }
 
         // Flush remaining content
-        self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
+        self.flush_text_buffer::<CANONICAL>(&mut output, &mut text, depth, &mut joiner);
 
         // Remove trailing newline for consistency
         while output.last().is_some_and(|&b| b == b'\n' || b == b'\r') {

@@ -20,6 +20,28 @@ use support::fix_history_observation as observation;
 use support::fix_history_paths::{link_vue, safe_relative};
 
 #[test]
+fn contextual_prop_anchors_preserve_authored_diagnostics() {
+    check_pack(
+        "contextual-prop-anchors-10661",
+        "contextual_prop_anchors_preserve_authored_diagnostics",
+        "da6d833de40c8a084022d0229beaeec25a92eb41",
+        Some(10661),
+        &[
+            "original-from",
+            "all-keyword-props",
+            "authored-contextual-locals",
+            "authored-prop-shadow-imports",
+            "reactive-prop-destructure",
+            "const-enum-import",
+            "unicode-identities",
+            "authored-ts2552-retained",
+            "non-colliding-keyword-props",
+            "authored-undefined-shadow",
+        ],
+    );
+}
+
+#[test]
 fn inline_event_assignments_preserve_exact_diagnostics() {
     check_pack(
         "event-handler-narrowing",
@@ -799,7 +821,8 @@ fn check_pack(
     assert_eq!(
         pack.source_revision,
         match name {
-            "typed-import-meta"
+            "contextual-prop-anchors-10661"
+            | "typed-import-meta"
             | "slot-outlet-key"
             | "options-api-any-instance"
             | "authored-unused-symbols"

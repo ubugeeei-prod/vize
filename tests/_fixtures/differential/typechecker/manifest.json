@@ -6059,6 +6059,526 @@
       ]
     },
     {
+      "id": "typechecker/contextual-prop-anchors-10661/original-from",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "contextual-prop-anchors-10661",
+      "case": "original-from",
+      "test": "contextual_prop_anchors_preserve_authored_diagnostics",
+      "regressionCommit": "da6d833de40c8a084022d0229beaeec25a92eb41",
+      "sourceRevision": "da6d833de40c8a084022d0229beaeec25a92eb41",
+      "packReference": {
+        "path": "contextual-prop-anchors-10661/cases.json",
+        "sha256": "028b5c68c9826a459f6744971cfc0df827a0134ce37fac0f3071030dba84c606"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "contextual-prop-anchors-10661/tsconfig.json.txt",
+          "sha256": "ffc582a7966f292055ebfba5bc819ec8055a7b473c82161d93ebd162eb70e2d9"
+        },
+        {
+          "file": "src/dep.ts",
+          "path": "contextual-prop-anchors-10661/dep.ts.txt",
+          "sha256": "feac9cf456f7d03d811e1240b1e562a74247f65076f4f74938c70167a274b6a4"
+        },
+        {
+          "file": "src/Route.vue",
+          "path": "contextual-prop-anchors-10661/original-from/src/Route.vue.txt",
+          "sha256": "789b2bcdafcfce82d741bb0825772990945d38b73f7a22b2db13ec30c3916cfd"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/contextual-prop-anchors-10661/all-keyword-props",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "contextual-prop-anchors-10661",
+      "case": "all-keyword-props",
+      "test": "contextual_prop_anchors_preserve_authored_diagnostics",
+      "regressionCommit": "da6d833de40c8a084022d0229beaeec25a92eb41",
+      "sourceRevision": "da6d833de40c8a084022d0229beaeec25a92eb41",
+      "packReference": {
+        "path": "contextual-prop-anchors-10661/cases.json",
+        "sha256": "028b5c68c9826a459f6744971cfc0df827a0134ce37fac0f3071030dba84c606"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "contextual-prop-anchors-10661/tsconfig.json.txt",
+          "sha256": "ffc582a7966f292055ebfba5bc819ec8055a7b473c82161d93ebd162eb70e2d9"
+        },
+        {
+          "file": "src/dep.ts",
+          "path": "contextual-prop-anchors-10661/dep.ts.txt",
+          "sha256": "feac9cf456f7d03d811e1240b1e562a74247f65076f4f74938c70167a274b6a4"
+        },
+        {
+          "file": "src/Route.vue",
+          "path": "contextual-prop-anchors-10661/all-keyword-props/src/Route.vue.txt",
+          "sha256": "1a38cd8650e1ccf969f87d044e3377a7b7a2966889f661be921111a2b583c4e9"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/contextual-prop-anchors-10661/authored-contextual-locals",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "contextual-prop-anchors-10661",
+      "case": "authored-contextual-locals",
+      "test": "contextual_prop_anchors_preserve_authored_diagnostics",
+      "regressionCommit": "da6d833de40c8a084022d0229beaeec25a92eb41",
+      "sourceRevision": "da6d833de40c8a084022d0229beaeec25a92eb41",
+      "packReference": {
+        "path": "contextual-prop-anchors-10661/cases.json",
+        "sha256": "028b5c68c9826a459f6744971cfc0df827a0134ce37fac0f3071030dba84c606"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "contextual-prop-anchors-10661/tsconfig.json.txt",
+          "sha256": "ffc582a7966f292055ebfba5bc819ec8055a7b473c82161d93ebd162eb70e2d9"
+        },
+        {
+          "file": "src/dep.ts",
+          "path": "contextual-prop-anchors-10661/dep.ts.txt",
+          "sha256": "feac9cf456f7d03d811e1240b1e562a74247f65076f4f74938c70167a274b6a4"
+        },
+        {
+          "file": "src/Route.vue",
+          "path": "contextual-prop-anchors-10661/authored-contextual-locals/src/Route.vue.txt",
+          "sha256": "11b2be2f752ebd1534b93a4c1fb0e3e40b2f662396e8323bb7fcc6e71f07a264"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/contextual-prop-anchors-10661/authored-prop-shadow-imports",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "contextual-prop-anchors-10661",
+      "case": "authored-prop-shadow-imports",
+      "test": "contextual_prop_anchors_preserve_authored_diagnostics",
+      "regressionCommit": "da6d833de40c8a084022d0229beaeec25a92eb41",
+      "sourceRevision": "da6d833de40c8a084022d0229beaeec25a92eb41",
+      "packReference": {
+        "path": "contextual-prop-anchors-10661/cases.json",
+        "sha256": "028b5c68c9826a459f6744971cfc0df827a0134ce37fac0f3071030dba84c606"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "contextual-prop-anchors-10661/tsconfig.json.txt",
+          "sha256": "ffc582a7966f292055ebfba5bc819ec8055a7b473c82161d93ebd162eb70e2d9"
+        },
+        {
+          "file": "src/dep.ts",
+          "path": "contextual-prop-anchors-10661/dep.ts.txt",
+          "sha256": "feac9cf456f7d03d811e1240b1e562a74247f65076f4f74938c70167a274b6a4"
+        },
+        {
+          "file": "src/Route.vue",
+          "path": "contextual-prop-anchors-10661/authored-prop-shadow-imports/src/Route.vue.txt",
+          "sha256": "5fd01024788b3570d87a6f54993eecbb25d0bda0e8399ac93d57d9e313d3bfe8"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/contextual-prop-anchors-10661/reactive-prop-destructure",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "contextual-prop-anchors-10661",
+      "case": "reactive-prop-destructure",
+      "test": "contextual_prop_anchors_preserve_authored_diagnostics",
+      "regressionCommit": "da6d833de40c8a084022d0229beaeec25a92eb41",
+      "sourceRevision": "da6d833de40c8a084022d0229beaeec25a92eb41",
+      "packReference": {
+        "path": "contextual-prop-anchors-10661/cases.json",
+        "sha256": "028b5c68c9826a459f6744971cfc0df827a0134ce37fac0f3071030dba84c606"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "contextual-prop-anchors-10661/tsconfig.json.txt",
+          "sha256": "ffc582a7966f292055ebfba5bc819ec8055a7b473c82161d93ebd162eb70e2d9"
+        },
+        {
+          "file": "src/dep.ts",
+          "path": "contextual-prop-anchors-10661/dep.ts.txt",
+          "sha256": "feac9cf456f7d03d811e1240b1e562a74247f65076f4f74938c70167a274b6a4"
+        },
+        {
+          "file": "src/Route.vue",
+          "path": "contextual-prop-anchors-10661/reactive-prop-destructure/src/Route.vue.txt",
+          "sha256": "a0fdf924ad01c4d245d65ef360c127fcbc5ce11aa276540a49c5bd4e956a6da8"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/contextual-prop-anchors-10661/const-enum-import",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "contextual-prop-anchors-10661",
+      "case": "const-enum-import",
+      "test": "contextual_prop_anchors_preserve_authored_diagnostics",
+      "regressionCommit": "da6d833de40c8a084022d0229beaeec25a92eb41",
+      "sourceRevision": "da6d833de40c8a084022d0229beaeec25a92eb41",
+      "packReference": {
+        "path": "contextual-prop-anchors-10661/cases.json",
+        "sha256": "028b5c68c9826a459f6744971cfc0df827a0134ce37fac0f3071030dba84c606"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "contextual-prop-anchors-10661/tsconfig.json.txt",
+          "sha256": "ffc582a7966f292055ebfba5bc819ec8055a7b473c82161d93ebd162eb70e2d9"
+        },
+        {
+          "file": "src/dep.ts",
+          "path": "contextual-prop-anchors-10661/dep.ts.txt",
+          "sha256": "feac9cf456f7d03d811e1240b1e562a74247f65076f4f74938c70167a274b6a4"
+        },
+        {
+          "file": "src/Route.vue",
+          "path": "contextual-prop-anchors-10661/const-enum-import/src/Route.vue.txt",
+          "sha256": "03bf0ca748a210b1a9c2c0a5a4d016aa242734f6a6ae64fa093cf75866201c22"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/contextual-prop-anchors-10661/unicode-identities",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "contextual-prop-anchors-10661",
+      "case": "unicode-identities",
+      "test": "contextual_prop_anchors_preserve_authored_diagnostics",
+      "regressionCommit": "da6d833de40c8a084022d0229beaeec25a92eb41",
+      "sourceRevision": "da6d833de40c8a084022d0229beaeec25a92eb41",
+      "packReference": {
+        "path": "contextual-prop-anchors-10661/cases.json",
+        "sha256": "028b5c68c9826a459f6744971cfc0df827a0134ce37fac0f3071030dba84c606"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "contextual-prop-anchors-10661/tsconfig.json.txt",
+          "sha256": "ffc582a7966f292055ebfba5bc819ec8055a7b473c82161d93ebd162eb70e2d9"
+        },
+        {
+          "file": "src/dep.ts",
+          "path": "contextual-prop-anchors-10661/dep.ts.txt",
+          "sha256": "feac9cf456f7d03d811e1240b1e562a74247f65076f4f74938c70167a274b6a4"
+        },
+        {
+          "file": "src/Route.vue",
+          "path": "contextual-prop-anchors-10661/unicode-identities/src/Route.vue.txt",
+          "sha256": "d28502cffccafe7ce76db67ad5dcebed5728e465caedf7d020853ed0c06be315"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/contextual-prop-anchors-10661/authored-ts2552-retained",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "contextual-prop-anchors-10661",
+      "case": "authored-ts2552-retained",
+      "test": "contextual_prop_anchors_preserve_authored_diagnostics",
+      "regressionCommit": "da6d833de40c8a084022d0229beaeec25a92eb41",
+      "sourceRevision": "da6d833de40c8a084022d0229beaeec25a92eb41",
+      "packReference": {
+        "path": "contextual-prop-anchors-10661/cases.json",
+        "sha256": "028b5c68c9826a459f6744971cfc0df827a0134ce37fac0f3071030dba84c606"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "contextual-prop-anchors-10661/tsconfig.json.txt",
+          "sha256": "ffc582a7966f292055ebfba5bc819ec8055a7b473c82161d93ebd162eb70e2d9"
+        },
+        {
+          "file": "src/dep.ts",
+          "path": "contextual-prop-anchors-10661/dep.ts.txt",
+          "sha256": "feac9cf456f7d03d811e1240b1e562a74247f65076f4f74938c70167a274b6a4"
+        },
+        {
+          "file": "src/Route.vue",
+          "path": "contextual-prop-anchors-10661/authored-ts2552-retained/src/Route.vue.txt",
+          "sha256": "e4a2dae5bf23a007ad68afa9ea8ac45f3dbfb76ae55cde9da7baa114327e0eb1"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/contextual-prop-anchors-10661/non-colliding-keyword-props",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "contextual-prop-anchors-10661",
+      "case": "non-colliding-keyword-props",
+      "test": "contextual_prop_anchors_preserve_authored_diagnostics",
+      "regressionCommit": "da6d833de40c8a084022d0229beaeec25a92eb41",
+      "sourceRevision": "da6d833de40c8a084022d0229beaeec25a92eb41",
+      "packReference": {
+        "path": "contextual-prop-anchors-10661/cases.json",
+        "sha256": "028b5c68c9826a459f6744971cfc0df827a0134ce37fac0f3071030dba84c606"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "contextual-prop-anchors-10661/tsconfig.json.txt",
+          "sha256": "ffc582a7966f292055ebfba5bc819ec8055a7b473c82161d93ebd162eb70e2d9"
+        },
+        {
+          "file": "src/dep.ts",
+          "path": "contextual-prop-anchors-10661/dep.ts.txt",
+          "sha256": "feac9cf456f7d03d811e1240b1e562a74247f65076f4f74938c70167a274b6a4"
+        },
+        {
+          "file": "src/Route.vue",
+          "path": "contextual-prop-anchors-10661/non-colliding-keyword-props/src/Route.vue.txt",
+          "sha256": "fab2807742be1b287b3cf35ce1bf26a954bffb4acdb7e5079cfeb82772b1af2e"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/contextual-prop-anchors-10661/authored-undefined-shadow",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "contextual-prop-anchors-10661",
+      "case": "authored-undefined-shadow",
+      "test": "contextual_prop_anchors_preserve_authored_diagnostics",
+      "regressionCommit": "da6d833de40c8a084022d0229beaeec25a92eb41",
+      "sourceRevision": "da6d833de40c8a084022d0229beaeec25a92eb41",
+      "packReference": {
+        "path": "contextual-prop-anchors-10661/cases.json",
+        "sha256": "028b5c68c9826a459f6744971cfc0df827a0134ce37fac0f3071030dba84c606"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "contextual-prop-anchors-10661/tsconfig.json.txt",
+          "sha256": "ffc582a7966f292055ebfba5bc819ec8055a7b473c82161d93ebd162eb70e2d9"
+        },
+        {
+          "file": "src/dep.ts",
+          "path": "contextual-prop-anchors-10661/dep.ts.txt",
+          "sha256": "feac9cf456f7d03d811e1240b1e562a74247f65076f4f74938c70167a274b6a4"
+        },
+        {
+          "file": "src/Route.vue",
+          "path": "contextual-prop-anchors-10661/authored-undefined-shadow/src/Route.vue.txt",
+          "sha256": "690481910a2ebabeb0c3dbef4638deb816bdf2aae6d5fd4f5c99c5b44438d570"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/template-context-undefined-10667/prop-used",
       "state": "active",
       "targets": [

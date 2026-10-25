@@ -259,7 +259,7 @@ function __setup() {
   void TrendChart;
 
   // Reference setup bindings (used in template/CSS v-bind)
-  void (null as unknown as keyof typeof TrendChart);
+  void (null as unknown as keyof typeof TrendChart); void _class;
   })();
 }
 

@@ -21,6 +21,16 @@ pub(crate) use template_names::collect_template_prop_names;
 use vize_carton::{CompactString, FxHashSet, String, append, cstr};
 use vize_croquis::Croquis;
 
+/// Use the same local/shadow decision and emitted spelling as prop declarations.
+/// Authored setup locals, imports and reactive destructures keep their own names.
+pub(crate) fn setup_anchor_identifier(summary: &Croquis, name: String) -> String {
+    if template_bindings::should_skip_template_prop_binding(summary, name.as_str()) {
+        name
+    } else {
+        mappings::prop_binding_identifier(name.as_str())
+    }
+}
+
 fn inner_macro_type(type_args: &str) -> &str {
     type_args
         .strip_prefix('<')

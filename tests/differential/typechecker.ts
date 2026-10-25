@@ -94,6 +94,7 @@ export const TYPECHECKER_TESTS = {
   "jsx-prop-token-ranges-10494": "jsx_prop_tokens_preserve_complete_batch_diagnostics",
   "unicode-prop-bindings-10573": "unicode_prop_bindings_preserve_complete_authored_diagnostics",
   "narrowed-slot-host-guard-10660": "slot_host_guards_preserve_authored_impossible_comparisons",
+  "contextual-prop-anchors-10661": "contextual_prop_anchors_preserve_authored_diagnostics",
   "template-context-undefined-10667": "undefined_context_keeps_complete_authored_diagnostics",
 } as const;
 
@@ -165,6 +166,7 @@ const sourceRevisions = {
   "jsx-prop-token-ranges-10494": "aaeeb1c1264a319737fa11e56971c9d73064d6a3",
   "unicode-prop-bindings-10573": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
   "narrowed-slot-host-guard-10660": "da6d833de40c8a084022d0229beaeec25a92eb41",
+  "contextual-prop-anchors-10661": "da6d833de40c8a084022d0229beaeec25a92eb41",
   "template-context-undefined-10667": "2806a05b4b9dac514afd0fb5c0cd3fb9925d9c54",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 

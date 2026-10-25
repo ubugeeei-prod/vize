@@ -79,7 +79,7 @@ function __setup() {
   // @vize-map: expr -> 290:391
 
   // Reference setup bindings (used in template/CSS v-bind)
-  void as; void onFocus; void value;
+  void _as; void onFocus; void value;
   })();
 }
 
