@@ -146,7 +146,20 @@ export function validateLspReport(
 ) {
   validateResultEnvelope(loaded, report, expectedBuild.sourceRevision);
   assert.deepEqual(report.argv, ["lsp"]);
-  if (report.buildReceipt) validateBuildReceipt(report.buildReceipt, expectedBuild);
+  if (report.buildReceipt) {
+    // Receipt-less failed launches carry only the source revision. A claimed
+    // executable observation must supply the complete expected identity.
+    const { sourceRevision, binaryPath, binarySha256, cliVersion } = expectedBuild;
+    assert(typeof binaryPath === "string", "source receipt requires expected binaryPath");
+    assert(typeof binarySha256 === "string", "source receipt requires expected binarySha256");
+    assert(typeof cliVersion === "string", "source receipt requires expected cliVersion");
+    validateBuildReceipt(report.buildReceipt, {
+      sourceRevision,
+      binaryPath,
+      binarySha256,
+      cliVersion,
+    });
+  }
   if (report.binary) {
     assert(report.buildReceipt, "completed executable observations require a source-build receipt");
     assert(report.binaryProbe, "raw executable version probe is required");

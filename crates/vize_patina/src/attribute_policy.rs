@@ -1,5 +1,8 @@
 //! Shared exact authored attribute policy for HTML conformance rules.
 
+mod img_alt;
+pub(crate) use img_alt::{ImageAltMessages, ImageAltPolicy};
+
 /// Keep the registered tabindex rule's complete i32 parsing semantics.
 pub fn positive_tabindex(value: &str) -> bool {
     value.parse::<i32>().is_ok_and(|number| number > 0)

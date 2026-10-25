@@ -2240,6 +2240,88 @@
           }
         ]
       }
+    },
+    {
+      "id": "lsp/regression/css-color-declaration-admission-10562-css",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "css-color-declaration-admission-10562-css",
+        "files": [
+          {
+            "path": "Colors.vue.txt",
+            "sha256": "f7effe51005cad0a23b3ca9c0f733f7f8326151b29cef51926f1de7336538e74"
+          }
+        ]
+      },
+      "case": {
+        "path": "css-color-declaration-admission-10562-css/case.json",
+        "sha256": "724e507777645b8fbfcb507231c19466797533455db4bfcac498dc5c0da0abef"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "hover": true,
+        "typecheck": false,
+        "lint": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/css-color-declaration-admission-10562-stylus",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "css-color-declaration-admission-10562-stylus",
+        "files": [
+          {
+            "path": "Colors.vue.txt",
+            "sha256": "b0dbcf22c8274f7b03700a72850db4dee6b4f1477ef9f885381de48a5cb2e1fc"
+          }
+        ]
+      },
+      "case": {
+        "path": "css-color-declaration-admission-10562-stylus/case.json",
+        "sha256": "4fa79196973d0099b2eb0cafe6f426cab896bd442386b2145fbc9795f0ff2cb2"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "hover": true,
+        "typecheck": false,
+        "lint": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }
