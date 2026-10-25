@@ -39,7 +39,7 @@
     {
       "path": "crates/vize_atelier_jsx/src/vapor.rs",
       "beforeSha256": "c9777eb8e5fadff520ac988af24f3f7d2982c64701a133b68896e2ecb4436371",
-      "afterSha256": "e310ae46ee73f8a9d14dbc9f5cd1a31db1608d8a295bde58245aeaba5de5793b"
+      "afterSha256": "44307ba62db9b8640ddbf251822a95fb9e9170acc6dcd97e40c15aaf08902736"
     },
     {
       "path": "crates/vize_atelier_vapor/src/l3/native/emit.rs",

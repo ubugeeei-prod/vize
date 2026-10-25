@@ -81,7 +81,10 @@ pub fn compile_to_vapor(
         source,
         lang,
         crate::compat::JsxCompatMode::Native,
-        JsxOutputMode::Vapor,
+        // Keep the generic lower_source entrypoint's existing default mode;
+        // AllVapor selects this one optimization independently. Other lazy
+        // lowering facts must not gain new authority in a composed backend.
+        JsxOutputMode::Vdom,
         crate::lower::BabelLoweringOptions {
             literal_styles: if options.ssr {
                 crate::lower::LiteralStyleTarget::Disabled
