@@ -4,7 +4,7 @@
   "versions": {
     "jsx": "2.0.1",
     "babel": "7.29.0",
-    "vue": "3.5.42",
+    "runtimeDom": "3.5.35",
     "dom": "20.11.2"
   },
   "cases": [

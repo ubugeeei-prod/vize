@@ -14,7 +14,7 @@ formatting tokens mint no canonical node, no synthesized buffer/map, and no new
 File storage. Ordinary source parsing, File facts and target admission are unchanged.
 
 The frozen 15-case oracle runs the pinned actual JSX transform and mounts every
-result against Vue 3.5.42. It compares complete HTML and DOM trees, retains complete
+result against the declared tests-package Vue runtime 3.5.35. It compares complete HTML and DOM trees, retains complete
 transformed modules and source hashes, and obtains independent authored byte spans
 from the original reference parser. Ten native-admitted cases and five explicit
 refusals cover LF, CRLF, bare CR, tabs, blank lines, nested elements, adjacent

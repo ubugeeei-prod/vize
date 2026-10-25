@@ -39,7 +39,7 @@ for (const name of [
     name === "window" ? window : (window as unknown as Record<string, unknown>)[name];
 }
 const Vue = await import(
-  pathToFileURL(rootRequire.resolve("vue/dist/vue.runtime.esm-browser.prod.js")).href
+  pathToFileURL(testsRequire.resolve("@vue/runtime-dom/dist/runtime-dom.esm-browser.prod.js")).href
 );
 
 type Dom =
@@ -176,7 +176,7 @@ const actual = {
   versions: {
     jsx: rootRequire("@vue/babel-plugin-jsx/package.json").version,
     babel: rootRequire("@babel/core/package.json").version,
-    vue: rootRequire("vue/package.json").version,
+    runtimeDom: testsRequire("@vue/runtime-dom/package.json").version,
     dom: testsRequire("happy-dom/package.json").version,
   },
   cases: cases.map(run),
