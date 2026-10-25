@@ -126,6 +126,7 @@ mod tests {
             assert_eq!(actual.code.get(prefix.generated.clone()), Some("__ctx."));
             assert_eq!(expression.get(prefix.source.clone()), Some("$ghost"));
         }
+        drop(actual);
         assert_eq!(rewrite("'$ghost' /* $ghost */", &bindings).as_deref(), None);
         assert_eq!(
             rewrite("(($ghost) => $ghost)(1)", &bindings).as_deref(),
