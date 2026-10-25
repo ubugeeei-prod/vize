@@ -66,11 +66,11 @@ processes remain. These are local capability costs, not isolated-machine or
 end-to-end product performance claims.
 
 | 256 children, 257 semantic nodes | Canonical publication | Boundary query | Shared analysis |
-| --- | ---: | ---: | ---: |
-| Parent compact | 17.782 µs | n/a | 1.417 µs |
-| Current compact | 17.689 µs | 1.348 µs | 1.398 µs |
-| Current layout | 22.886 µs | 1.667 µs | 1.408 µs |
-| Current 256 fragments | 24.386 µs | 2.168 µs | 1.397 µs |
+| -------------------------------- | --------------------: | -------------: | --------------: |
+| Parent compact                   |             17.782 µs |            n/a |        1.417 µs |
+| Current compact                  |             17.689 µs |       1.348 µs |        1.398 µs |
+| Current layout                   |             22.886 µs |       1.667 µs |        1.408 µs |
+| Current 256 fragments            |             24.386 µs |       2.168 µs |        1.397 µs |
 
 The fragment input retains 512 original delimiter witnesses and the same
 257 semantic nodes. Boundary enumeration is measured separately from canonical

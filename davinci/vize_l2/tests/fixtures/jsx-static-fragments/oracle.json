@@ -90,12 +90,7 @@
           "kind": "element",
           "tag": "div",
           "namespace": "http://www.w3.org/1999/xhtml",
-          "attributes": [
-            [
-              "id",
-              "first"
-            ]
-          ],
+          "attributes": [["id", "first"]],
           "children": []
         }
       ],
@@ -108,12 +103,7 @@
           "kind": "element",
           "tag": "div",
           "namespace": "http://www.w3.org/1999/xhtml",
-          "attributes": [
-            [
-              "id",
-              "first"
-            ]
-          ],
+          "attributes": [["id", "first"]],
           "children": []
         },
         {
@@ -185,12 +175,7 @@
           "kind": "element",
           "tag": "span",
           "namespace": "http://www.w3.org/1999/xhtml",
-          "attributes": [
-            [
-              "data-state",
-              "ok"
-            ]
-          ],
+          "attributes": [["data-state", "ok"]],
           "children": []
         }
       ],
@@ -215,12 +200,7 @@
           "kind": "element",
           "tag": "span",
           "namespace": "http://www.w3.org/1999/xhtml",
-          "attributes": [
-            [
-              "data-state",
-              "ok"
-            ]
-          ],
+          "attributes": [["data-state", "ok"]],
           "children": []
         },
         {
@@ -1095,12 +1075,7 @@
           "kind": "element",
           "tag": "section",
           "namespace": "http://www.w3.org/1999/xhtml",
-          "attributes": [
-            [
-              "id",
-              "plain"
-            ]
-          ],
+          "attributes": [["id", "plain"]],
           "children": [
             {
               "kind": "element",
@@ -1122,12 +1097,7 @@
           "kind": "element",
           "tag": "section",
           "namespace": "http://www.w3.org/1999/xhtml",
-          "attributes": [
-            [
-              "id",
-              "plain"
-            ]
-          ],
+          "attributes": [["id", "plain"]],
           "children": [
             {
               "kind": "element",
