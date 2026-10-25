@@ -41,10 +41,49 @@ const report = {
   runtime: { version: vueVaporVersion, sha256: hash(runtimeBytes), file: vueVaporBrowserRuntime },
   rows: [],
 };
+const marker = "_for_item0.value";
 const fixtures = [
-  ["escaped-string", String.raw`\u005frow`, "capture('_for_item0.value')"],
-  ["escaped-template", String.raw`\u005frow`, "capture(`_for_item0.value`)"],
-  ["ordinary-string-control", "row", "capture('_for_item0.value')"],
+  ["escaped-string", String.raw`\u005frow`, "capture('_for_item0.value')", marker],
+  ["escaped-template", String.raw`\u005frow`, "capture(`_for_item0.value`)", marker],
+  ["escaped-regex", String.raw`\u005frow`, "capture(/_for_item0.value/.source)", marker],
+  [
+    "escaped-comment",
+    String.raw`\u005frow`,
+    "capture(/* _for_item0.value */ '_for_item0.value')",
+    marker,
+  ],
+  [
+    "escaped-property",
+    String.raw`\u005frow`,
+    "capture(holder._for_item0.value)",
+    "authored-property",
+  ],
+  [
+    "escaped-static-property",
+    String.raw`\u005frow`,
+    "capture(({_for_item0: {value: 'authored-property'}})._for_item0.value)",
+    "authored-property",
+  ],
+  [
+    "callback-local-shadow",
+    String.raw`\u005frow`,
+    "(_row => capture(_row + '_for_item0.value'))('shadow')",
+    "shadow_for_item0.value",
+  ],
+  ["ordinary-string-control", "row", "capture('_for_item0.value')", marker],
+  [
+    "escaped-key-index-literals",
+    String.raw`(row, \u005fkey, \u005findex)`,
+    "capture('_for_key0.value:_for_index0.value')",
+    "_for_key0.value:_for_index0.value",
+  ],
+  [
+    "callback-member-shadow",
+    String.raw`\u005frow`,
+    "(_for_item0 => capture(_for_item0.value))({value: 'shadow'})",
+    "shadow",
+  ],
+  ["outer-loop", null, null, "outer:A"],
 ];
 for (const epoch of ["base", "head"]) {
   const receipt = JSON.parse(fs.readFileSync(path.join(providers, `${epoch}-native.json`), "utf8"));
@@ -52,13 +91,16 @@ for (const epoch of ["base", "head"]) {
   const native = require(image);
   assert.equal(hash(fs.readFileSync(image)), receipt.native.sha256);
   assert.equal(native.getNativeBuildToken(), receipt.native.token);
-  for (const [id, alias, key] of fixtures)
+  for (const [id, alias, key, expected] of fixtures)
     for (const newline of ["LF", "CRLF"]) {
-      const source =
-        `<script>export default {}</script>\n<template><p v-for="${alias} of items" :key="${key}">ok</p></template>`.replaceAll(
-          "\n",
-          newline === "LF" ? "\n" : "\r\n",
-        );
+      const body =
+        id === "outer-loop"
+          ? String.raw`<div v-for="\u005fouter of groups" :key="_outer.id"><p v-for="\u005frow of _outer.items" :key="capture(_outer.id + ':' + _row)">ok</p></div>`
+          : `<p v-for="${alias} of items" :key="${key}">ok</p>`;
+      const source = `<script>export default {}</script>\n<template>${body}</template>`.replaceAll(
+        "\n",
+        newline === "LF" ? "\n" : "\r\n",
+      );
       const options = { filename: `${id}.vue`, vapor: true, sourceMap: true };
       const result = native.compileSfc(source, options);
       const row = {
@@ -73,7 +115,7 @@ for (const epoch of ["base", "head"]) {
         result,
         calls: [],
         warnings: [],
-        expectedArgument: "_for_item0.value",
+        expectedArgument: expected,
       };
       report.rows.push(row);
       assert.deepEqual(result.errors, []);
@@ -83,11 +125,17 @@ for (const epoch of ["base", "head"]) {
       const compiled = await import(pathToFileURL(file));
       const component = vue.defineVaporComponent({
         render: compiled.default.render,
-        props: ["items", "capture"],
+        props: ["items", "groups", "holder", "capture"],
         inheritAttrs: false,
         setup: (props) => ({
           get items() {
             return props.items;
+          },
+          get groups() {
+            return props.groups;
+          },
+          get holder() {
+            return props.holder;
           },
           get capture() {
             return props.capture;
@@ -96,6 +144,8 @@ for (const epoch of ["base", "head"]) {
       });
       const app = vue.createVaporApp(component, {
         items: ["A"],
+        groups: [{ id: "outer", items: ["A"] }],
+        holder: { _for_item0: { value: "authored-property" } },
         capture: () => (value) => {
           row.calls.push(value);
           return value;
@@ -136,13 +186,13 @@ console.log(
 );
 assert.ok(
   report.rows
-    .filter((row) => row.epoch === "base" && row.id.startsWith("escaped"))
+    .filter(
+      (row) => row.epoch === "base" && ["escaped-string", "escaped-template"].includes(row.id),
+    )
     .every((row) => row.matches),
   "actual before source must retain escaped callback literals",
 );
 assert.ok(
-  report.rows
-    .filter((row) => row.epoch === "head" && row.id.startsWith("escaped"))
-    .every((row) => row.matches),
+  report.rows.filter((row) => row.epoch === "head").every((row) => row.matches),
   "source head must preserve authored callback literals",
 );

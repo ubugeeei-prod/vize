@@ -55,31 +55,51 @@ impl GenerateContext<'_> {
                 .rev()
                 .find(|binding| name == binding.local.as_str())
             {
-                return Some(binding.path.clone());
+                return Some(if scope.callback_locals {
+                    binding.local.clone()
+                } else {
+                    binding.path.clone()
+                });
             }
             if let Some(ref value_alias) = scope.value_alias {
                 let for_var = cstr!("_for_item{}", scope.depth);
                 if value_alias.starts_with(['{', '[', '(']) {
                     for binding in parse_destructure_bindings(value_alias.as_str()) {
                         if name == binding.local.as_str() {
-                            return Some(cstr!("{}.value{}", for_var, binding.path));
+                            return Some(if scope.callback_locals {
+                                binding.local
+                            } else {
+                                cstr!("{}.value{}", for_var, binding.path)
+                            });
                         }
                     }
                 } else if name == value_alias.as_str() {
-                    return Some(cstr!("{}.value", for_var));
+                    return Some(if scope.callback_locals {
+                        name.to_compact_string()
+                    } else {
+                        cstr!("{}.value", for_var)
+                    });
                 }
             }
 
             if let Some(ref key_alias) = scope.key_alias
                 && name == key_alias.as_str()
             {
-                return Some(cstr!("_for_key{}.value", scope.depth));
+                return Some(if scope.callback_locals {
+                    name.to_compact_string()
+                } else {
+                    cstr!("_for_key{}.value", scope.depth)
+                });
             }
 
             if let Some(ref index_alias) = scope.index_alias
                 && name == index_alias.as_str()
             {
-                return Some(cstr!("_for_index{}.value", scope.depth));
+                return Some(if scope.callback_locals {
+                    name.to_compact_string()
+                } else {
+                    cstr!("_for_index{}.value", scope.depth)
+                });
             }
         }
 
@@ -191,6 +211,7 @@ impl GenerateContext<'_> {
             key_alias: key_alias.map(String::new),
             index_alias: index_alias.map(String::new),
             depth,
+            callback_locals: false,
             read_overrides: std::vec::Vec::new(),
         });
         for (node, kind) in retained.into_iter().zip(["item", "key", "index"]) {
@@ -223,6 +244,9 @@ pub(crate) struct ForScope {
     pub(crate) index_alias: Option<String>,
     /// Depth of for nesting (0-based)
     pub(crate) depth: usize,
+    /// This scope's key callback receives raw authored locals. Resolve only
+    /// their AST references directly, leaving outer scope reads reactive.
+    pub(in crate::generate) callback_locals: bool,
     /// Parsed reads for value patterns with defaults, computed keys or rest
     /// elements; the last one recorded for a name wins.
     pub(in crate::generate) read_overrides: std::vec::Vec<DestructureBinding>,
