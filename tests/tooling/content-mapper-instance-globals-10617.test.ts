@@ -6,6 +6,7 @@ import { performance } from "node:perf_hooks";
 import { test } from "node:test";
 import { repoRoot } from "../_helpers/realworld-patch.ts";
 import { resolveVizeLaunchCommand } from "./support/lsp/launch.ts";
+import { runCopyAndCollisionControls } from "./support/content-mapper-instance-globals-copies-10617.ts";
 import {
   assertDiagnosticPrefixGeometry,
   assertPrefixGeometryMutations,
@@ -422,6 +423,20 @@ await test(
       }
       checks.push(
         ...runRewriteProfileControls(files, cases, source, output, binary, host, ts5, run),
+      );
+      checks.push(
+        ...runCopyAndCollisionControls(
+          files,
+          source,
+          published,
+          output,
+          binary,
+          publicCli,
+          host,
+          ts5,
+          hostMatrix.hosts,
+          run,
+        ),
       );
       const publicWire = run(
         "published/same-process-complete-protocol",

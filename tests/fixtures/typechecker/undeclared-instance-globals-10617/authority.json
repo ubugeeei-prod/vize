@@ -78,6 +78,16 @@
       "path": "profile-controls.json",
       "bytes": 4044,
       "sha256": "0c571eeff8826a1aca4c1fb1e13d98f744b6c83aaec9e3c320cea9f6f9d771f7"
+    },
+    {
+      "path": "copy-controls.json",
+      "bytes": 14177,
+      "sha256": "5288ad2b6df42c53f2f5d645282f8fda14470a16db269729054f199a7038a328"
+    },
+    {
+      "path": "collision-controls.json",
+      "bytes": 2791,
+      "sha256": "7064d54c006f6f1abf9b2209fa60dc8781a2d69142c652ea34266070c0a7c787"
     }
   ]
 }
