@@ -6,6 +6,7 @@ import { createHash } from "node:crypto";
 import { appendFileSync } from "node:fs";
 
 import { changedPaths } from "./plan-source-checks.ts";
+import { newLanguageProjectCases } from "./language-project-fixtures.ts";
 import {
   nativeShutdownProtocolSource,
   newNativeShutdownProtocolCases,
@@ -58,6 +59,7 @@ interface Manifest {
   product?: unknown;
   cases?: ManifestCase[];
   protocolCases?: unknown;
+  languageProjectCases?: unknown;
 }
 
 const manifestPath = (product: Product) => `tests/_fixtures/differential/${product}/manifest.json`;
@@ -198,8 +200,19 @@ function checkProduct(
     const canonPaths = paths.filter((path) => path.startsWith("crates/vize_canon/src/"));
     const protocolRequired =
       product === "typechecker" && canonPaths.some(nativeShutdownProtocolSource);
+    const languageProject =
+      product === "typechecker"
+        ? newLanguageProjectCases(
+            before?.languageProjectCases,
+            manifest.languageProjectCases,
+            readFile,
+          )
+        : { ids: [] as string[], sources: new Set<string>() };
     const batchRequired =
-      product !== "typechecker" || canonPaths.some((path) => !nativeShutdownProtocolSource(path));
+      product !== "typechecker" ||
+      canonPaths.some(
+        (path) => !languageProject.sources.has(path) && !nativeShutdownProtocolSource(path),
+      );
     const protocols =
       product === "typechecker"
         ? newNativeShutdownProtocolCases(before?.protocolCases, manifest.protocolCases, readFile)
@@ -209,7 +222,7 @@ function checkProduct(
     return {
       product,
       state: registered ? "new-inputs-registered" : "new-input-missing",
-      cases: [...cases, ...protocols],
+      cases: [...cases, ...protocols, ...languageProject.ids],
     };
   } catch (error) {
     return { product, state: "invalid-manifest-or-input", cases: [], reason: String(error) };
