@@ -21,6 +21,7 @@ mod tests;
 
 /// Score one evaluated expression position standing at template nesting
 /// `depth`, carried by op `op`.
+#[inline]
 pub(super) fn score(
     expr: ExprRef<'_>,
     op: Option<NodeId>,
