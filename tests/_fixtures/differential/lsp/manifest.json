@@ -2550,7 +2550,7 @@
         {
           "path": "crates/vize_maestro/src/ide/diagnostics/typecheck_unavailable_tests.rs",
           "before": "08d381606e630b9a03dc8b505e0c2699d1285b0b1cb654307f5e1a65c7329de3",
-          "after": "de8af8a6f617a679a7421d0f78764a815865f3135c9feddd3066405de28680b9"
+          "after": "e413af3ac80a9706b89146e1aad38dbdc4b5df39ee702cd33c28e4462997304d"
         }
       ],
       "tests": [
@@ -2562,12 +2562,12 @@
         {
           "selector": "ide::diagnostics::typecheck_unavailable_tests::unavailable_typecheck_diagnostic_points_to_typescript_7",
           "source": "crates/vize_maestro/src/ide/diagnostics/typecheck_unavailable_tests.rs",
-          "sha256": "de8af8a6f617a679a7421d0f78764a815865f3135c9feddd3066405de28680b9"
+          "sha256": "e413af3ac80a9706b89146e1aad38dbdc4b5df39ee702cd33c28e4462997304d"
         },
         {
           "selector": "ide::diagnostics::typecheck_unavailable_tests::unavailable_typecheck_notice_points_to_typescript_7",
           "source": "crates/vize_maestro/src/ide/diagnostics/typecheck_unavailable_tests.rs",
-          "sha256": "de8af8a6f617a679a7421d0f78764a815865f3135c9feddd3066405de28680b9"
+          "sha256": "e413af3ac80a9706b89146e1aad38dbdc4b5df39ee702cd33c28e4462997304d"
         }
       ]
     }

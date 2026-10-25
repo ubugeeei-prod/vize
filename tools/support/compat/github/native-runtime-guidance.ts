@@ -24,7 +24,7 @@ export const nativeRuntimeGuidanceRegistration = {
     {
       path: "crates/vize_maestro/src/ide/diagnostics/typecheck_unavailable_tests.rs",
       before: "08d381606e630b9a03dc8b505e0c2699d1285b0b1cb654307f5e1a65c7329de3",
-      after: "de8af8a6f617a679a7421d0f78764a815865f3135c9feddd3066405de28680b9",
+      after: "e413af3ac80a9706b89146e1aad38dbdc4b5df39ee702cd33c28e4462997304d",
     },
   ],
   tests: [
@@ -72,18 +72,22 @@ export function unchangedNativeRuntimeGuidance(
     return retained !== null && retained === strip(after);
   }
   if (path === "crates/vize_maestro/src/ide/diagnostics/typecheck_unavailable_tests.rs") {
-    const previous = [
-      '    assert!(message.contains("typescript@^7"));',
-      '    assert!(message.contains("typeChecker.corsaPath"));',
-    ].join("\n");
-    const current = [
-      '    assert!(message.contains("typescript-native@npm:typescript@7.1.0-beta"));',
-      '    assert!(message.contains("typeChecker.corsaPath"));',
-      '    assert!(message.contains("CORSA_PATH"));',
-      '    assert!(message.contains("TSGO_PATH"));',
-      '    assert!(!message.contains("typescript@^7"));',
-    ].join("\n");
-    return before.split(previous).length === 2 && before.replace(previous, current) === after;
+    const oldHint = "    assert_ts7_guidance(&hint.message);";
+    const newHint =
+      '    assert_eq!(\n        hint.message,\n        "Type checking is unavailable in this workspace. Make sure `tsconfig.json` exists. \\\n         Provide a native TypeScript compiler, for example `typescript-native@npm:typescript@7.1.0-beta`, \\\n         or configure `typeChecker.corsaPath`, `CORSA_PATH`, or `TSGO_PATH`; \\\n         see https://vizejs.dev/guide/static-analysis."\n    );';
+    const oldNotice = "    assert_ts7_guidance(TYPECHECK_UNAVAILABLE_NOTICE_MESSAGE);";
+    const newNotice =
+      '    assert_eq!(\n        TYPECHECK_UNAVAILABLE_NOTICE_MESSAGE,\n        "Vize: type checking is unavailable in this workspace. Make sure tsconfig.json exists. \\\n         Provide a native TypeScript compiler, for example `typescript-native@npm:typescript@7.1.0-beta`, \\\n         or configure `typeChecker.corsaPath`, `CORSA_PATH`, or `TSGO_PATH`."\n    );';
+    const oldHelper =
+      '\nfn assert_ts7_guidance(message: &str) {\n    assert!(message.contains("typescript@^7"));\n    assert!(message.contains("typeChecker.corsaPath"));\n    assert!(!message.contains("@typescript/native-preview"));\n}\n';
+    return (
+      before.split(oldHint).length === 2 &&
+      before.split(oldNotice).length === 2 &&
+      before.endsWith(oldHelper) &&
+      before.replace(oldHint, newHint).replace(oldNotice, newNotice).slice(0, -oldHelper.length) ===
+        after
+    );
   }
+
   return false;
 }
