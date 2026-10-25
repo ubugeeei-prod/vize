@@ -50,6 +50,12 @@ const receipt = {
       "npm/volar/src/language-plugin.js",
       "npm/volar/src/language-service.js",
       "npm/volar/test/service.test.js",
+      "npm/volar/test/service-harness.js",
+      "npm/volar/test/expected-packets.provenance.json",
+      ...fs
+        .readdirSync("npm/volar/test/expected-packets")
+        .sort()
+        .map((file) => `npm/volar/test/expected-packets/${file}`),
     ].map((file) => [file, sha256(file)]),
   ),
 };

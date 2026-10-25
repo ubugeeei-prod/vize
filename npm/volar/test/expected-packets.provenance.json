@@ -19,5 +19,10 @@
   },
   "normalization": "Replace the one complete fixture workspace root with <workspace> in strings. Preserve all JSONable result fields and ordered arrays; represent diagnostic SourceFile objects by exact authored fileName and text, not cyclic compiler AST internals. No coordinate or message normalization.",
   "expectedPackets": 38,
-  "expectedFileSha256": "64d303cf7846abe6f78e4bb798f816a44a3010fa24e62f595bab871cb62c78b3"
+  "expectedFileSha256": "64d303cf7846abe6f78e4bb798f816a44a3010fa24e62f595bab871cb62c78b3",
+  "expectedPacketDataSha256": "cc4105b72d75ee50cf42b7612551c0f7843539df51ae26b7cf7d3568dbb4dccf",
+  "storage": {
+    "files": ["basic.json", "updates-and-language.json", "art.json", "feature-boundaries.json"],
+    "rule": "Concatenate complete JSON arrays in this order. Packet fields, values and array order match the original expectedFileSha256; only file layout and JSON whitespace changed."
+  }
 }

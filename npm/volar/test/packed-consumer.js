@@ -145,16 +145,18 @@ childEnvironment.VIZE_VOLAR_PACKED_RECEIPT = path.join(output, "loaded-image.jso
 run(process.execPath, ["probe.js"], consumer);
 const tests = path.join(consumer, "test");
 fs.mkdirSync(tests);
-const sourceTest = fs.readFileSync(path.join(root, "npm/volar/test/service.test.js"), "utf8");
-assert(sourceTest.includes('from "../src/index.js"'));
-fs.writeFileSync(
-  path.join(tests, "service.test.js"),
-  sourceTest.replace('from "../src/index.js"', 'from "@vizejs/volar-plugin"'),
-);
-fs.copyFileSync(
-  path.join(root, "npm/volar/test/expected-packets.json"),
-  path.join(tests, "expected-packets.json"),
-);
+for (const file of ["service.test.js", "service-harness.js"]) {
+  const sourceTest = fs.readFileSync(path.join(root, "npm/volar/test", file), "utf8");
+  assert(sourceTest.includes('from "../src/index.js"'));
+  fs.writeFileSync(
+    path.join(tests, file),
+    sourceTest.replace('from "../src/index.js"', 'from "@vizejs/volar-plugin"'),
+  );
+}
+for (const file of ["expected-packets", "expected-packets.provenance.json"])
+  fs.cpSync(path.join(root, "npm/volar/test", file), path.join(tests, file), {
+    recursive: true,
+  });
 run(process.execPath, ["--test", "test/service.test.js"], consumer);
 fs.copyFileSync(
   path.join(consumer, "package-lock.json"),
