@@ -25,7 +25,11 @@ function distHashes(directory: string): Record<string, string> {
   );
 }
 
-export function verifyNuxtAutoInitConfig(fixture: string, artifacts: string): void {
+export function verifyNuxtAutoInitConfig(
+  fixture: string,
+  artifacts: string,
+  expectedNuxtVersion = "v2.17.3",
+): void {
   // Vite+ 0.1.24 selects workspace-root lint settings. A nested reproduction
   // otherwise runs this repository's rules instead of the issue's Vite config.
   const project = fs.mkdtempSync(path.join(os.tmpdir(), "vize-nuxt-auto-init-"));
@@ -45,7 +49,22 @@ export function verifyNuxtAutoInitConfig(fixture: string, artifacts: string): vo
       fs.writeFileSync(target, bytes, { flag: "wx" });
       original[relative] = hash(bytes);
     }
-    assert.equal(Object.keys(original).length, 9);
+    for (const file of [
+      "package.json",
+      "package-lock.json",
+      "nuxt.config.js",
+      "pages/index.vue",
+      "pages/about.vue",
+      "components/RuntimeCard.vue",
+      "assets/_palette.scss",
+      "assets/runtime.svg",
+      "lib/runtime-label.js",
+    ])
+      assert.equal(
+        Object.hasOwn(original, file),
+        true,
+        `the complete authored application includes ${file}`,
+      );
     const modules = path.join(project, "node_modules");
     fs.mkdirSync(modules);
     for (const name of fs.readdirSync(path.join(fixture, "node_modules"))) {
@@ -53,11 +72,15 @@ export function verifyNuxtAutoInitConfig(fixture: string, artifacts: string): vo
     }
     assert.equal(fs.existsSync(path.join(modules, "vite-plus")), false);
     fs.symlinkSync(path.join(root, "node_modules/vite-plus"), path.join(modules, "vite-plus"));
-    const run = spawnSync(process.execPath, [fileURLToPath(import.meta.url), project, artifacts], {
-      cwd: project,
-      stdio: "inherit",
-      timeout: 60_000,
-    });
+    const run = spawnSync(
+      process.execPath,
+      [fileURLToPath(import.meta.url), project, artifacts, expectedNuxtVersion],
+      {
+        cwd: project,
+        stdio: "inherit",
+        timeout: 60_000,
+      },
+    );
     assert.equal(run.error, undefined);
     assert.equal(run.signal, null);
     assert.equal(run.status, 0);
@@ -74,7 +97,11 @@ export function verifyNuxtAutoInitConfig(fixture: string, artifacts: string): vo
   }
 }
 
-async function runProbe(fixture: string, artifacts: string): Promise<void> {
+async function runProbe(
+  fixture: string,
+  artifacts: string,
+  expectedNuxtVersion: string,
+): Promise<void> {
   const configBytes = fs.readFileSync(path.join(fixture, "nuxt.config.js"));
   const viteBytes = fs.readFileSync(path.join(inputDir, "vite.config.ts"));
   const source = fs.readFileSync(path.join(inputDir, "NoKey.vue.txt"));
@@ -129,7 +156,7 @@ async function runProbe(fixture: string, artifacts: string): Promise<void> {
         vize: { compiler: false, lint: true, musea: false },
       },
     });
-    assert.equal(at(nuxt, "constructor", "version"), "v2.17.3");
+    assert.equal(at(nuxt, "constructor", "version"), expectedNuxtVersion);
     const generated = path.join(fixture, ".oxlint.vize.json");
     files.push(generated);
     assert.equal(at(readJson(generated), "settings", "vize", "preset"), "incremental");
@@ -186,7 +213,7 @@ async function runProbe(fixture: string, artifacts: string): Promise<void> {
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const [fixture, artifacts] = process.argv.slice(2);
+  const [fixture, artifacts, expectedNuxtVersion = "v2.17.3"] = process.argv.slice(2);
   assert.ok(fixture && artifacts, "usage: nuxt-auto-init-config.ts FIXTURE ARTIFACTS");
-  await runProbe(path.resolve(fixture), path.resolve(artifacts));
+  await runProbe(path.resolve(fixture), path.resolve(artifacts), expectedNuxtVersion);
 }

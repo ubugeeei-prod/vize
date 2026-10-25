@@ -122,6 +122,13 @@ export const mergeOnlyToolingTests = [
 // Unlisted tests retain the broad tooling inputs until separately audited.
 export const toolingTestScopes = [
   {
+    input: "toolingTypeScriptProjects",
+    tests: [
+      "tests/tooling/typescript-tooling-project.test.ts",
+      "tests/tooling/typescript-ci-gates.test.ts",
+    ],
+  },
+  {
     input: "toolingProductObservers",
     tests: [
       "tests/tooling/art-lint-public-boundaries.test.mjs",

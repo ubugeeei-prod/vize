@@ -8,6 +8,7 @@ import { LspSession, LspRequestError } from "./support/lsp/session.ts";
 import { root } from "./support/lsp/paths.ts";
 import { readLocalResolveSourceSession } from "../differential/lsp-source-sessions.ts";
 import { decodeFrames } from "../differential/lsp-wire.ts";
+import { readPinnedArtifact } from "../differential/harness.mjs";
 
 const fixture = readLocalResolveSourceSession(root);
 const source = fixture.files.get(fixture.spec.documentPaths[0])!.toString("utf8");
@@ -22,12 +23,35 @@ const catalog = before.find(
     entry.response.some((item) => item.data?.vizeCss),
 ).response;
 const selected = catalog.find((item: { label: string }) => item.label === "display");
-const resolved = before.find(
+const historicalResolved = before.find(
   (entry: { kind: string; method: string; params?: { label: string } }) =>
     entry.kind === "response" &&
     entry.method === "completionItem/resolve" &&
     entry.params?.label === "display",
 ).response;
+// Historical public-before bytes remain immutable. This separate CURRENT
+// reference authors only the approved Example fence; live packets below are
+// compared whole, without normalization or accepting either response form.
+const resolved = JSON.parse(
+  readPinnedArtifact(
+    path.join(root, "tests/_fixtures/differential/lsp/css-hover-stylesheet-examples-10572"),
+    {
+      path: "local-completion-resolve.expected-current.json",
+      sha256: "33f35ddde74f1bc0221e47d07d891d594bac2c86fdaea0c21b3ae2539a667035",
+    },
+  ).toString("utf8"),
+);
+assert.deepEqual(
+  { ...resolved, documentation: historicalResolved.documentation },
+  historicalResolved,
+);
+assert.equal(
+  resolved.documentation.value,
+  historicalResolved.documentation.value.replace(
+    "```css\ndisplay: block;\n```",
+    "```css\n.example {\n  display: block;\n}\n```",
+  ),
+);
 const position = (offset: number) => {
   const prefix = source.slice(0, offset);
   return {

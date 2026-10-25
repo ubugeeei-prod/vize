@@ -7,6 +7,10 @@ import { appendFileSync } from "node:fs";
 
 import { changedPaths } from "./plan-source-checks.ts";
 import {
+  newCompilerCssApiCases,
+  onlyCompilerCssChanges,
+} from "../../../../tests/differential/compiler-css-api.ts";
+import {
   nativeShutdownProtocolSource,
   newNativeShutdownProtocolCases,
 } from "./native-shutdown-protocol-fixtures.ts";
@@ -61,6 +65,7 @@ interface Manifest {
   cases?: ManifestCase[];
   protocolCases?: unknown;
   runtimeCases?: unknown;
+  cssApiCases?: unknown;
 }
 
 const manifestPath = (product: Product) => `tests/_fixtures/differential/${product}/manifest.json`;
@@ -226,12 +231,18 @@ function checkProduct(
       product === "typechecker"
         ? newNativeShutdownProtocolCases(before?.protocolCases, manifest.protocolCases, readFile)
         : [];
+    const cssApi =
+      product === "compiler"
+        ? newCompilerCssApiCases(before?.cssApiCases, manifest.cssApiCases, readFile)
+        : [];
+    const cssOnly = product === "compiler" && cssApi.length > 0 && onlyCompilerCssChanges(paths);
     const registered =
-      (!batchRequired || cases.length > 0) && (!protocolRequired || protocols.length > 0);
+      (cssOnly || !batchRequired || cases.length > 0) &&
+      (!protocolRequired || protocols.length > 0);
     return {
       product,
       state: registered ? "new-inputs-registered" : "new-input-missing",
-      cases: [...cases, ...protocols, ...runtime.ids],
+      cases: [...cases, ...protocols, ...runtime.ids, ...cssApi],
     };
   } catch (error) {
     return { product, state: "invalid-manifest-or-input", cases: [], reason: String(error) };
