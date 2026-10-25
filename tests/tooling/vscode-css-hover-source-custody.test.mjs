@@ -53,6 +53,7 @@ await test("dirty and staged approved sources, untracked source and dirty build 
     "assets-staged",
     "embedded-schema",
     "auxiliary-cargo",
+    "vsix-validator",
   ]) {
     const repository = fs.mkdtempSync(path.join(os.tmpdir(), "vize-css-source-custody-"));
     const git = (...args) => execFileSync("git", args, { cwd: repository, encoding: "utf8" });
@@ -66,6 +67,7 @@ await test("dirty and staged approved sources, untracked source and dirty build 
         "assets/example.txt",
         "npm/cli/schemas/vize.config.schema.json",
         "tests/vize_test_runner/Cargo.toml",
+        "tools/commands/editors/vscode/assert-vsix-package.rs",
       ]) {
         fs.mkdirSync(path.dirname(path.join(repository, name)), { recursive: true });
         fs.writeFileSync(path.join(repository, name), "original\n");
@@ -103,6 +105,11 @@ await test("dirty and staged approved sources, untracked source and dirty build 
       } else if (change === "embedded-schema")
         fs.appendFileSync(
           path.join(repository, "npm/cli/schemas/vize.config.schema.json"),
+          "dirty\n",
+        );
+      else if (change === "vsix-validator")
+        fs.appendFileSync(
+          path.join(repository, "tools/commands/editors/vscode/assert-vsix-package.rs"),
           "dirty\n",
         );
       else if (change === "auxiliary-cargo")
@@ -147,6 +154,13 @@ await test("merged main integration rejects altered postimages, modes, preimages
   for (const [preimage, target] of [
     [p1, contract.mergedMain],
     [entries(contract.mergedMain.sourceRevision), contract.successorMain],
+    [
+      composeReviewedCssTrees(
+        entries(contract.successorMain.sourceRevision),
+        contract.layers.slice(1),
+      ),
+      { sourceRevision: contract.productTreeRevision, integrationLayer: contract.currentContracts },
+    ],
   ]) {
     const actual = entries(target.sourceRevision);
     for (const mutation of ["blob", "mode", "preimage", "extra"]) {
@@ -176,6 +190,8 @@ await test("historical anchors and the pinned integrated product tree remain qua
   assert.equal(report.reviewedCssChanges.length, 9);
   assert.equal(report.mergedMain.integrationLayer.changes.length, 34);
   assert.equal(report.successorMain.integrationLayer.changes.length, 122);
+  assert.equal(report.currentContracts.changes.length, 1);
+  assert.equal(report.vsixInfrastructure.changes.length, 7);
   assert.equal(report.historicalBaselineRevision, "2934b35b18393c188b3da5f8e50595299589fb8c");
   assert.equal(report.historicalCapture.sourceRevision, "0cc8615736db2f2ef6b82177aa2e92a7de9f86dc");
   assert.equal(report.historicalCapture.witnesses.length, 5);

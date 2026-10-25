@@ -11,6 +11,16 @@ export const historicalBaselineRevision = "2934b35b18393c188b3da5f8e50595299589f
 const captureRevision = "0cc8615736db2f2ef6b82177aa2e92a7de9f86dc";
 const mergedMainRevision = "116a05062ad5ce4b9fa56bba0c801835498418fa";
 const successorMainRevision = "9c8388e3dde4a03e5be74ee8a0ced20560983aea";
+const vsixInfrastructureRevision = "9e5fa02567cb8757e5740269694e062761acfda6";
+const reviewedVsixPaths = [
+  ".github/workflows/vscode-vsix-validation.yml",
+  "tests/tooling/differential-lsp-source-sessions.test.ts",
+  "tests/tooling/source-session-tooling-project.test.ts",
+  "tests/tooling/vscode-vsix-configuration.test.ts",
+  "tools/commands/editors/vscode/assert-vsix-package.rs",
+  "tools/support/editors/vsix_configuration.rs",
+  "tools/support/lib.rs",
+];
 const historicalBuildPaths = ["Cargo.toml", "Cargo.lock", "rust-toolchain.toml", ".cargo"];
 const reviewedBuildPaths = [
   ...historicalBuildPaths,
@@ -90,7 +100,15 @@ export function assertExactCssTree(actual, expected) {
 export function assertCleanCssSourceWorkingTree(repoRoot) {
   const status = execFileSync(
     "git",
-    ["status", "--porcelain=v1", "--untracked-files=all", "--", "crates", ...reviewedBuildPaths],
+    [
+      "status",
+      "--porcelain=v1",
+      "--untracked-files=all",
+      "--",
+      "crates",
+      ...reviewedBuildPaths,
+      ...reviewedVsixPaths,
+    ],
     {
       cwd: repoRoot,
       encoding: "utf8",
@@ -196,7 +214,17 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
   // The old Docs revision may be unreachable after rebase. Its reviewed
   // before/after blobs and modes are pinned in the committed contract; do not
   // infer a new base, fetch a floating ref, or skip a missing old revision.
-  const expected = composeReviewedCssTrees(currentMain, contract.layers.slice(1));
+  const currentContracts = contract.currentContracts;
+  assert.equal(currentContracts.name, "stylesheet-current-completion-contract-10572");
+  assert.equal(currentContracts.baseRevision, successorMainRevision);
+  assert.deepEqual(
+    currentContracts.changes.map(({ path }) => path),
+    ["crates/vize_maestro/src/server/handlers/tests/completion_resolve.rs"],
+  );
+  const expected = composeReviewedCssTrees(currentMain, [
+    ...contract.layers.slice(1),
+    currentContracts,
+  ]);
   const actual = readTree(revision, ["crates"]);
   assertExactCssTree(actual, expected);
   assert.deepEqual(
@@ -214,6 +242,37 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
     contract.buildInputs,
     "workspace build inputs changed",
   );
+  const infrastructure = contract.vsixInfrastructure;
+  assert.equal(infrastructure.baseRevision, successorMainRevision);
+  assert.equal(infrastructure.sourceRevision, vsixInfrastructureRevision);
+  assert.deepEqual(
+    infrastructure.changes.map(({ path }) => path),
+    reviewedVsixPaths,
+  );
+  if (!pinnedProduct) git("merge-base", "--is-ancestor", vsixInfrastructureRevision, revision);
+  assert.deepEqual(
+    sorted(readTree(successorMainRevision, reviewedVsixPaths)),
+    sorted(infrastructure.changes.flatMap(({ before }) => (before ? [before] : []))),
+  );
+  const vsixInputs = sorted(infrastructure.changes.map(({ after }) => after));
+  assert.deepEqual(sorted(readTree(vsixInfrastructureRevision, reviewedVsixPaths)), vsixInputs);
+  assert.deepEqual(
+    sorted(readTree(revision, reviewedVsixPaths)),
+    vsixInputs,
+    "VSIX infrastructure inputs changed",
+  );
+  assert.deepEqual(
+    currentContracts.witnesses.map(({ path }) => path),
+    [
+      `tests/_fixtures/differential/lsp/css-hover-stylesheet-examples-10572/local-completion-resolve.expected-current.json`,
+    ],
+  );
+  for (const witness of currentContracts.witnesses)
+    assert.equal(
+      hash(fs.readFileSync(path.join(repoRoot, witness.path))),
+      witness.sha256,
+      "current complete completion reference bytes",
+    );
 
   for (const witness of contract.historicalCapture.witnesses) {
     assert.ok(
@@ -247,6 +306,8 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
     reviewedLayers: contract.layers,
     mergedMain: contract.mergedMain,
     successorMain: successor,
+    currentContracts,
+    vsixInfrastructure: infrastructure,
     cratesSha256: fingerprint(actual),
     productionChanges: [
       ...new Set(

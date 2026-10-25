@@ -2,7 +2,7 @@
   "schema": "vize.css-hover.source-custody",
   "version": 1,
   "historicalBaselineRevision": "2934b35b18393c188b3da5f8e50595299589fb8c",
-  "productTreeRevision": "20cbf6e6cd5c4c9c87bf17da892bb906e39507db",
+  "productTreeRevision": "c3e833ce4d6a90652442e8f1b704dd39c5413902",
   "baselineCratesTreeOid": "3963f87b333566d98319039ce43fcd3714dd02fa",
   "baselineCratesSha256": "981087aca813963e627a19d46a458c3dd151cb0a11bb395b4c50e46d410475b4",
   "historicalCapture": {
@@ -2482,5 +2482,124 @@
         }
       ]
     }
+  },
+  "currentContracts": {
+    "name": "stylesheet-current-completion-contract-10572",
+    "baseRevision": "9c8388e3dde4a03e5be74ee8a0ced20560983aea",
+    "reviewedRevision": "c3e833ce4d6a90652442e8f1b704dd39c5413902",
+    "changes": [
+      {
+        "path": "crates/vize_maestro/src/server/handlers/tests/completion_resolve.rs",
+        "before": {
+          "path": "crates/vize_maestro/src/server/handlers/tests/completion_resolve.rs",
+          "mode": "100644",
+          "type": "blob",
+          "oid": "4cf525421a085e37561643ba1ddf0a579bbc942f"
+        },
+        "after": {
+          "path": "crates/vize_maestro/src/server/handlers/tests/completion_resolve.rs",
+          "mode": "100644",
+          "type": "blob",
+          "oid": "bcd2ce5e2371446639312ed4d42c23ec2fc1ad7d"
+        }
+      }
+    ],
+    "witnesses": [
+      {
+        "path": "tests/_fixtures/differential/lsp/css-hover-stylesheet-examples-10572/local-completion-resolve.expected-current.json",
+        "sha256": "33f35ddde74f1bc0221e47d07d891d594bac2c86fdaea0c21b3ae2539a667035"
+      }
+    ]
+  },
+  "vsixInfrastructure": {
+    "baseRevision": "9c8388e3dde4a03e5be74ee8a0ced20560983aea",
+    "sourceRevision": "9e5fa02567cb8757e5740269694e062761acfda6",
+    "changes": [
+      {
+        "path": ".github/workflows/vscode-vsix-validation.yml",
+        "before": null,
+        "after": {
+          "path": ".github/workflows/vscode-vsix-validation.yml",
+          "mode": "100644",
+          "type": "blob",
+          "oid": "9f3638269f9e64f2578e20c6a8080555a4a875a9"
+        }
+      },
+      {
+        "path": "tests/tooling/differential-lsp-source-sessions.test.ts",
+        "before": {
+          "path": "tests/tooling/differential-lsp-source-sessions.test.ts",
+          "mode": "100644",
+          "type": "blob",
+          "oid": "c47d75c3efe55aaed129809eba0b30b12fb89bde"
+        },
+        "after": {
+          "path": "tests/tooling/differential-lsp-source-sessions.test.ts",
+          "mode": "100644",
+          "type": "blob",
+          "oid": "168d90b1a84b73945c35019e9baa8e4c81421ff3"
+        }
+      },
+      {
+        "path": "tests/tooling/source-session-tooling-project.test.ts",
+        "before": null,
+        "after": {
+          "path": "tests/tooling/source-session-tooling-project.test.ts",
+          "mode": "100644",
+          "type": "blob",
+          "oid": "bfaa77f27f7e1b9bd6f8f019459017d64c2c61d0"
+        }
+      },
+      {
+        "path": "tests/tooling/vscode-vsix-configuration.test.ts",
+        "before": null,
+        "after": {
+          "path": "tests/tooling/vscode-vsix-configuration.test.ts",
+          "mode": "100644",
+          "type": "blob",
+          "oid": "a064cc0808e297a73e575105ce2313b637ad54a3"
+        }
+      },
+      {
+        "path": "tools/commands/editors/vscode/assert-vsix-package.rs",
+        "before": {
+          "path": "tools/commands/editors/vscode/assert-vsix-package.rs",
+          "mode": "100644",
+          "type": "blob",
+          "oid": "c57ca9035b6f72eaf6910121eb1bf94728076b77"
+        },
+        "after": {
+          "path": "tools/commands/editors/vscode/assert-vsix-package.rs",
+          "mode": "100644",
+          "type": "blob",
+          "oid": "e76f53830d3a527e72250c4fc51c8a32929e75c7"
+        }
+      },
+      {
+        "path": "tools/support/editors/vsix_configuration.rs",
+        "before": null,
+        "after": {
+          "path": "tools/support/editors/vsix_configuration.rs",
+          "mode": "100644",
+          "type": "blob",
+          "oid": "4e3477353be00d2efdc7fb8e991c6680886711df"
+        }
+      },
+      {
+        "path": "tools/support/lib.rs",
+        "before": {
+          "path": "tools/support/lib.rs",
+          "mode": "100644",
+          "type": "blob",
+          "oid": "6305d765a608f3c7ee88cae7856ea97748edc9c0"
+        },
+        "after": {
+          "path": "tools/support/lib.rs",
+          "mode": "100644",
+          "type": "blob",
+          "oid": "15e58d7c2451ff51c91324aa019f5f8ad3aaa0b1"
+        }
+      }
+    ]
   }
 }
