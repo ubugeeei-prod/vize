@@ -261,6 +261,13 @@ async function install(project, output) {
 }
 function identity(side, root, source, binary, token) {
   const require = createRequire(path.join(root, "package.json"));
+  const esmEntry = (name) => {
+    const folder = path.join(root, "node_modules", name);
+    const manifest = JSON.parse(fs.readFileSync(path.join(folder, "package.json"), "utf8"));
+    const target = manifest.exports["."].import;
+    assert.equal(typeof target, "string", name + " must expose its actual ESM import entry");
+    return path.join(folder, target);
+  };
   const nativeEntry =
     side === "source"
       ? path.join(source, "npm/native/index.js")
@@ -282,11 +289,11 @@ function identity(side, root, source, binary, token) {
     pluginEntry:
       side === "source"
         ? path.join(source, "npm/builder/vite/src/index.ts")
-        : require.resolve("@vizejs/vite-plugin"),
+        : esmEntry("@vizejs/vite-plugin"),
     museaEntry:
       side === "source"
         ? path.join(source, "npm/builder/vite-musea/src/plugin/index.ts")
-        : require.resolve("@vizejs/vite-plugin-musea"),
+        : esmEntry("@vizejs/vite-plugin-musea"),
     fixtureParent: root,
   };
 }
