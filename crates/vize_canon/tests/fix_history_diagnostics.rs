@@ -455,6 +455,21 @@ fn generic_constructor_intersections_preserve_slot_payloads() {
 }
 
 #[test]
+fn quoted_generic_parameters_preserve_complete_batch_diagnostics() {
+    check_pack(
+        "quoted-generic-parameters-10540",
+        "quoted_generic_parameters_preserve_complete_batch_diagnostics",
+        "711b56b2499b9136d8965a59c65713a2b78540f4",
+        Some(10540),
+        &[
+            "literal-comma-valid",
+            "numeric-prop-invalid",
+            "repaired-literal-prop-valid",
+        ],
+    );
+}
+
+#[test]
 fn content_mapper_global_components_preserve_batch_acceptance() {
     check_pack(
         "content-mapper-global-component-10185",
@@ -840,7 +855,8 @@ fn check_pack(
             | "long-prop-kebab-case-10423"
             | "pug-refusal-10430"
             | "portable-pug-10434"
-            | "jsx-prop-token-ranges-10494" => regression,
+            | "jsx-prop-token-ranges-10494"
+            | "quoted-generic-parameters-10540" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
             }

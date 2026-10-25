@@ -5414,6 +5414,177 @@
           }
         ]
       }
+    },
+    {
+      "id": "typechecker/quoted-generic-parameters-10540/literal-comma-valid",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "quoted-generic-parameters-10540",
+      "case": "literal-comma-valid",
+      "test": "quoted_generic_parameters_preserve_complete_batch_diagnostics",
+      "regressionCommit": "711b56b2499b9136d8965a59c65713a2b78540f4",
+      "sourceRevision": "711b56b2499b9136d8965a59c65713a2b78540f4",
+      "packReference": {
+        "path": "quoted-generic-parameters-10540/cases.json",
+        "sha256": "110a118f58a6d63dc6292dd7a1450df2ddfa54a86fe31b77126bdb37eca28c10"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "quoted-generic-parameters-10540/tsconfig.json.txt",
+          "sha256": "a418f49bf70b8a43c7cc4d1dc574760b22f6454e6befe9ce9aac0695d9e45e9c"
+        },
+        {
+          "file": "src/Comma.vue",
+          "path": "quoted-generic-parameters-10540/src/Comma.vue.txt",
+          "sha256": "a16d868e2004c7a6a12b27c5a7238045c4b385673cd9f2ff033c16d1ad7ae711"
+        },
+        {
+          "file": "src/Edges.vue",
+          "path": "quoted-generic-parameters-10540/src/Edges.vue.txt",
+          "sha256": "b6a7f01d88aa66ae91cb0083e105fc47db9af470374eb9584f987280d6bfc7b1"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "quoted-generic-parameters-10540/valid/src/App.vue.txt",
+          "sha256": "9570052536ef495ec25142d3f809a1cf9bd456b4ec1da71ed5bd87b7c1183f00"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/quoted-generic-parameters-10540/numeric-prop-invalid",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "quoted-generic-parameters-10540",
+      "case": "numeric-prop-invalid",
+      "test": "quoted_generic_parameters_preserve_complete_batch_diagnostics",
+      "regressionCommit": "711b56b2499b9136d8965a59c65713a2b78540f4",
+      "sourceRevision": "711b56b2499b9136d8965a59c65713a2b78540f4",
+      "packReference": {
+        "path": "quoted-generic-parameters-10540/cases.json",
+        "sha256": "110a118f58a6d63dc6292dd7a1450df2ddfa54a86fe31b77126bdb37eca28c10"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "quoted-generic-parameters-10540/tsconfig.json.txt",
+          "sha256": "a418f49bf70b8a43c7cc4d1dc574760b22f6454e6befe9ce9aac0695d9e45e9c"
+        },
+        {
+          "file": "src/Comma.vue",
+          "path": "quoted-generic-parameters-10540/src/Comma.vue.txt",
+          "sha256": "a16d868e2004c7a6a12b27c5a7238045c4b385673cd9f2ff033c16d1ad7ae711"
+        },
+        {
+          "file": "src/Edges.vue",
+          "path": "quoted-generic-parameters-10540/src/Edges.vue.txt",
+          "sha256": "b6a7f01d88aa66ae91cb0083e105fc47db9af470374eb9584f987280d6bfc7b1"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "quoted-generic-parameters-10540/invalid/src/App.vue.txt",
+          "sha256": "1f6b2904275df8ac6af1c1a0dc68b1cf65557958340aadeffe1694b7bafd59c1"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/quoted-generic-parameters-10540/repaired-literal-prop-valid",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "quoted-generic-parameters-10540",
+      "case": "repaired-literal-prop-valid",
+      "test": "quoted_generic_parameters_preserve_complete_batch_diagnostics",
+      "regressionCommit": "711b56b2499b9136d8965a59c65713a2b78540f4",
+      "sourceRevision": "711b56b2499b9136d8965a59c65713a2b78540f4",
+      "packReference": {
+        "path": "quoted-generic-parameters-10540/cases.json",
+        "sha256": "110a118f58a6d63dc6292dd7a1450df2ddfa54a86fe31b77126bdb37eca28c10"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "quoted-generic-parameters-10540/tsconfig.json.txt",
+          "sha256": "a418f49bf70b8a43c7cc4d1dc574760b22f6454e6befe9ce9aac0695d9e45e9c"
+        },
+        {
+          "file": "src/Comma.vue",
+          "path": "quoted-generic-parameters-10540/src/Comma.vue.txt",
+          "sha256": "a16d868e2004c7a6a12b27c5a7238045c4b385673cd9f2ff033c16d1ad7ae711"
+        },
+        {
+          "file": "src/Edges.vue",
+          "path": "quoted-generic-parameters-10540/src/Edges.vue.txt",
+          "sha256": "b6a7f01d88aa66ae91cb0083e105fc47db9af470374eb9584f987280d6bfc7b1"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "quoted-generic-parameters-10540/repaired/src/App.vue.txt",
+          "sha256": "9aa2d7f64ec745a584fa2baf94c9d91691faf349c2da4dc6a176e9f87ce463cf"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     }
   ],
   "protocolCases": [

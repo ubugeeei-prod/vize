@@ -16,6 +16,11 @@ use crate::script_parse::ScriptParseDiagnostic;
 
 pub(crate) type GenericRow = (Range<usize>, Range<usize>);
 
+#[cfg(test)]
+thread_local! {
+    static PREPARATIONS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
 const PREFIX: &str = "function __vize_generic<";
 
 #[derive(Debug)]
@@ -37,6 +42,7 @@ pub(crate) struct GenericParameters {
     trailing_line_comment: bool,
     pub(crate) parameters: Vec<GenericParameter>,
     pub(crate) diagnostics: Vec<ScriptParseDiagnostic>,
+    pub(crate) escaped_wrapper: bool,
     pub(crate) names: String,
     pub(crate) declaration: String,
     pub(crate) alias_declaration: String,
@@ -51,6 +57,8 @@ pub(crate) struct GenericParameters {
 
 impl GenericParameters {
     pub(crate) fn parse(raw: &str) -> Self {
+        #[cfg(test)]
+        PREPARATIONS.with(|count| count.set(count.get() + 1));
         profile!(
             "canon.virtual_ts.parse_generic_parameters",
             Self::prepare(raw)
@@ -104,6 +112,23 @@ impl GenericParameters {
             Some(Statement::FunctionDeclaration(function)) => function.type_parameters.as_deref(),
             _ => None,
         };
+        let escaped_wrapper = diagnostics.is_empty()
+            && match (parsed.program.body.first(), declaration) {
+                (Some(Statement::FunctionDeclaration(function)), Some(parameters)) => {
+                    parsed.program.body.len() != 1
+                        || function.span.end as usize != source.len()
+                        || parameters.span.start as usize != PREFIX.len() - 1
+                        || parameters.span.end as usize != PREFIX.len() + raw.len() + 2
+                }
+                _ => diagnostics.is_empty(),
+            };
+        if escaped_wrapper && diagnostics.is_empty() {
+            diagnostics.push(ScriptParseDiagnostic {
+                message: "Generic attribute must contain one complete type-parameter list".into(),
+                start: 0,
+                end: raw.len() as u32,
+            });
+        }
         let relative = |span: Span| {
             (span.start as usize)
                 .saturating_sub(PREFIX.len())
@@ -156,6 +181,7 @@ impl GenericParameters {
             }),
             parameters,
             diagnostics,
+            escaped_wrapper,
             names: String::default(),
             declaration: String::default(),
             alias_declaration: String::default(),

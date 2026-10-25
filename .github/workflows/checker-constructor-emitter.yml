@@ -1,6 +1,12 @@
 name: Checker constructor emitter parity
 
 on:
+  workflow_dispatch:
+    inputs:
+      base-sha:
+        description: "Exact source baseline for complete existing projection parity"
+        required: true
+        type: string
   pull_request:
     paths:
       - "crates/vize_canon/src/virtual_ts/generator/component_constructors.rs"
@@ -12,24 +18,24 @@ on:
 permissions: { contents: read }
 
 concurrency:
-  group: constructor-emitter-${{ github.event.pull_request.number }}
+  group: constructor-emitter-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
   parity:
-    if: startsWith(github.event.pull_request.title, 'refactor(canon)') || startsWith(github.event.pull_request.title, 'perf(canon)')
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.pull_request.title, 'refactor(canon)') || startsWith(github.event.pull_request.title, 'perf(canon)')
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     env:
       CARGO_BUILD_JOBS: "24"
       CARGO_INCREMENTAL: "0"
-      BASE_SHA: ${{ github.event.pull_request.base.sha }}
-      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      BASE_SHA: ${{ inputs.base-sha || github.event.pull_request.base.sha }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           {
-            ref: "${{ github.event.pull_request.head.sha }}",
+            ref: "${{ github.event.pull_request.head.sha || github.sha }}",
             fetch-depth: 0,
             persist-credentials: false,
           }

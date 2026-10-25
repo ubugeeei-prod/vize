@@ -117,3 +117,78 @@ fn malformed_parameters_keep_the_entire_authored_signature() {
         }
     }
 }
+
+#[test]
+fn a_valid_synthetic_program_cannot_escape_the_parameter_boundary() {
+    for raw in [
+        "T>() {} function other<U",
+        "T>() {} const accepted = 1; function other<U",
+    ] {
+        let plan = GenericParameters::parse(raw);
+        assert!(plan.escaped_wrapper);
+        assert_eq!(
+            plan.diagnostics,
+            vec![crate::script_parse::ScriptParseDiagnostic {
+                message: "Generic attribute must contain one complete type-parameter list".into(),
+                start: 0,
+                end: raw.len() as u32,
+            }]
+        );
+        for (rendered, rows) in plan.declaration_variants() {
+            assert_eq!(rendered, raw);
+            assert_eq!(rows, &[(0..raw.len(), 0..raw.len())]);
+        }
+    }
+}
+
+#[test]
+fn source_generation_prepares_one_plan_and_refuses_invalid_authored_syntax() {
+    for newline in ["\n", "\r\n"] {
+        let valid = "<!-- 日本 🧭 -->\n<script setup lang=\"ts\" generic=\"const T extends 'a,b'\">\nconst props = defineProps<{ value: T }>()\ndefineEmits<{ change: [value: T] }>()\ndefineSlots<{ default: (value: T) => unknown }>()\n</script>\n<template>{{ props.value }}</template>".replace('\n', newline);
+        let options =
+            crate::sfc_typecheck::SfcTypeCheckOptions::new("src/Comma.vue").with_virtual_ts();
+        let before = super::PREPARATIONS.with(std::cell::Cell::get);
+        let result = crate::sfc_typecheck::type_check_sfc(&valid, &options);
+        assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+        assert!(result.virtual_ts.is_some());
+        assert_eq!(super::PREPARATIONS.with(std::cell::Cell::get) - before, 1);
+        for invalid in ["T extends", "T>() {} function other<U"] {
+            let broken = valid.replace("const T extends 'a,b'", invalid);
+            let before = super::PREPARATIONS.with(std::cell::Cell::get);
+            let result = crate::sfc_typecheck::type_check_sfc(&broken, &options);
+            assert!(!result.diagnostics.is_empty(), "{invalid}");
+            assert!(result.virtual_ts.is_none(), "{invalid}");
+            assert_eq!(super::PREPARATIONS.with(std::cell::Cell::get) - before, 1);
+            let start = broken.find(invalid).unwrap() as u32;
+            for diagnostic in &result.diagnostics {
+                assert_eq!(diagnostic.code.as_deref(), Some("script-parse-error"));
+                assert!(
+                    diagnostic.start >= start && diagnostic.end <= start + invalid.len() as u32
+                );
+            }
+        }
+    }
+}
+
+#[cfg(feature = "native")]
+#[test]
+fn all_mapper_options_reuse_one_prepared_plan() {
+    let source = "<script setup lang=\"ts\" generic=\"const T extends 'a,b'\">defineProps<{ value: T }>()</script><template>{{ value }}</template>";
+    for bits in 0..16u8 {
+        let options = crate::ContentMapperTransformOptions::default()
+            .with_options_api(bits & 1 != 0)
+            .with_preserve_unused_diagnostics(bits & 2 != 0)
+            .with_check_javascript(bits & 4 != 0)
+            .with_external_component_attrs_module(bits & 8 != 0);
+        let before = super::PREPARATIONS.with(std::cell::Cell::get);
+        let result = crate::generate_vue_content_mapper_transform_with_options(
+            std::path::Path::new("src/Comma.vue"),
+            source,
+            options,
+        )
+        .unwrap();
+        assert!(result.diagnostics.is_empty());
+        assert!(!result.text.is_empty());
+        assert_eq!(super::PREPARATIONS.with(std::cell::Cell::get) - before, 1);
+    }
+}

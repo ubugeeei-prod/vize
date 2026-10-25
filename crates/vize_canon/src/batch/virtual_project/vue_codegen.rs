@@ -74,6 +74,39 @@ pub(super) fn generate_vue_virtual_ts(
         .filter(|value: &&str| !value.trim().is_empty())
         .map(crate::virtual_ts::generic_parameters::GenericParameters::parse);
 
+    if let Some(plan) = generic_parameters
+        .as_ref()
+        .filter(|plan| plan.escaped_wrapper)
+    {
+        let start =
+            crate::virtual_ts::generic_parameters::authored_generic_range(source, descriptor)
+                .map_or(0, |range| range.start as u32);
+        return Ok(GeneratedVueFile {
+            generic_copies: None,
+            typed_router_import: false,
+            empty_module_exports: false,
+            module_exports: None,
+            code: invalid_sfc_fallback_virtual_ts(),
+            mappings: Vec::new(),
+            mapping_meta: Vec::new(),
+            semantic_links: Vec::new(),
+            prop_default_key_links: Vec::new(),
+            diagnostics: plan
+                .diagnostics
+                .iter()
+                .map(|diagnostic| {
+                    diagnostic_for_offset(
+                        path,
+                        source,
+                        start + diagnostic.start,
+                        diagnostic.message.clone(),
+                        SfcBlockType::ScriptSetup,
+                    )
+                })
+                .collect(),
+        });
+    }
+
     let view = match vize_atelier_sfc::prepare_root_patterned_template(
         descriptor,
         codegen_options.experimental_patterned_template,
