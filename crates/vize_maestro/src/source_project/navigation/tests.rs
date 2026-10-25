@@ -4,6 +4,7 @@
 )]
 mod capacity;
 mod highlights;
+mod intrinsic;
 mod jsx;
 mod lifecycle;
 mod linked;

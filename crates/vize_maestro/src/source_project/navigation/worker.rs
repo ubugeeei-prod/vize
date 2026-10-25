@@ -18,6 +18,7 @@ use super::{NavigationRefusal, SourceSnapshot, profile::Profile, retained};
 mod refusals;
 pub(super) use refusals::refused;
 pub(super) mod highlights;
+pub(super) mod intrinsic;
 pub(super) mod linked;
 pub(super) mod module_links;
 pub(super) mod selected;
@@ -26,6 +27,7 @@ pub(super) const WORKER_LIMIT: usize = 16;
 const REQUEST_LIMIT: usize = 16;
 
 pub(super) enum Command {
+    IntrinsicTag(intrinsic::Request),
     ModuleLinks(module_links::Request),
     Highlights(highlights::Request),
     LinkedEditing(linked::Request),
@@ -85,6 +87,8 @@ pub(super) struct Control {
     finished: AtomicBool,
     #[cfg(test)]
     pub(super) parses: AtomicUsize,
+    #[cfg(test)]
+    pub(super) walks: AtomicUsize,
     #[cfg(test)]
     pub(super) sfc_productions: AtomicUsize,
     #[cfg(test)]
@@ -151,6 +155,8 @@ impl NavigationWorker {
             finished: AtomicBool::new(false),
             #[cfg(test)]
             parses: AtomicUsize::new(0),
+            #[cfg(test)]
+            walks: AtomicUsize::new(0),
             #[cfg(test)]
             sfc_productions: AtomicUsize::new(0),
             #[cfg(test)]
@@ -295,6 +301,11 @@ impl NavigationWorker {
             self.control.parses.load(Ordering::Acquire),
             self.control.queries.load(Ordering::Acquire),
         )
+    }
+
+    #[cfg(test)]
+    pub(super) fn program_walks(&self) -> usize {
+        self.control.walks.load(Ordering::Acquire)
     }
 
     #[cfg(test)]

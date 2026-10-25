@@ -7,6 +7,7 @@
 mod cache;
 mod coordinates;
 mod highlights;
+mod intrinsic;
 mod linked;
 mod module_links;
 pub(in crate::source_project) mod names;
@@ -26,6 +27,7 @@ use vize_l1::embed::{Lang, syntax::ProgramOptions};
 use vize_l2::file::{FileIssue, PositionQueryError};
 
 use super::{SnapshotRefusal, SourceQueryProject, SourceSnapshot};
+pub use intrinsic::IntrinsicTagTarget;
 pub(crate) use module_links::ModuleDocumentLinkError;
 use profile::{Profile, QueryFamily};
 use worker::NavigationWorker;

@@ -68,6 +68,7 @@ fn with_original(
         let admission = super::admit(&syntax, block, &file);
         let original = syntax.admitted_program().unwrap();
         let query = RetainedNavigation {
+            intrinsic_tags: &[],
             snapshot: &snapshot,
             file: &file,
             lines: &lines,

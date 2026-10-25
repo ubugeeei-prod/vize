@@ -18,6 +18,7 @@ use vize_l2::{
 };
 
 mod highlights;
+mod intrinsic;
 pub(super) mod linked;
 pub(super) mod module_links;
 pub(super) mod selected;
@@ -50,7 +51,11 @@ pub(super) fn run(
     control
         .parses
         .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-    let syntax = parse_program_once(&arena, input, options);
+    vize_l0::profiler::global_profiler().record_counter("maestro.native_program.parses", 1);
+    let syntax = vize_l0::profile!(
+        "maestro.native_program.parse",
+        parse_program_once(&arena, input, options)
+    );
     if control.retired() {
         return;
     }
@@ -72,7 +77,18 @@ pub(super) fn run(
     let Ok(mut producer) = FileProducer::new(&arena, snapshot.source()) else {
         return refused(receiver, &control, NavigationRefusal::Projection);
     };
-    if producer.program(program, ProgramScope::Module).is_err() {
+    let mut intrinsic_tags = intrinsic::Tags::default();
+    #[cfg(test)]
+    control
+        .walks
+        .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    vize_l0::profiler::global_profiler().record_counter("maestro.native_program.walks", 1);
+    if vize_l0::profile!(
+        "maestro.native_program.walk",
+        producer.program_observed(program, ProgramScope::Module, &mut intrinsic_tags)
+    )
+    .is_err()
+    {
         return refused(receiver, &control, NavigationRefusal::Projection);
     }
     let file = match producer.finish() {
@@ -88,6 +104,16 @@ pub(super) fn run(
         issues.extend(file.interrupted_programs());
         return refused(receiver, &control, NavigationRefusal::Producer(issues));
     }
+    vize_l0::profile!(
+        "maestro.native_program.intrinsic_index",
+        intrinsic_tags
+            .0
+            .sort_unstable_by_key(|(_, span)| span.start)
+    );
+    vize_l0::profiler::global_profiler().record_counter(
+        "maestro.native_program.intrinsic_entries",
+        intrinsic_tags.0.len() as u64,
+    );
     let lines = vize_l0::line_index::LineBreaks::Lsp
         .line_starts(snapshot.source())
         .collect::<Vec<_>>();
@@ -98,6 +124,7 @@ pub(super) fn run(
             file: &file,
             lines: &lines,
             native: None,
+            intrinsic_tags: &intrinsic_tags.0,
             #[cfg(test)]
             original,
         };
@@ -120,6 +147,20 @@ fn serve(
             break;
         }
         match command {
+            Command::IntrinsicTag(request) => {
+                if !request.reply.is_canceled() {
+                    #[cfg(test)]
+                    control
+                        .queries
+                        .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                    vize_l0::profiler::global_profiler()
+                        .record_counter("maestro.native_program.intrinsic_queries", 1);
+                    let _ = request.reply.send(vize_l0::profile!(
+                        "maestro.native_program.intrinsic_query",
+                        query.intrinsic_tag(request.position)
+                    ));
+                }
+            }
             Command::ModuleLinks(request) => {
                 module_links::answer(query, module_sources, request, control);
             }
@@ -203,6 +244,7 @@ struct RetainedNavigation<'file, 'arena> {
     file: &'file FileArtifact<'arena>,
     lines: &'file [usize],
     native: Option<vize_l1_to_l2::native_file::NativeSfc<'file, 'arena>>,
+    intrinsic_tags: &'file [(&'arena str, Span)],
     #[cfg(test)]
     original: Original,
 }
