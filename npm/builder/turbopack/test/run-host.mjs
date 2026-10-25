@@ -6,6 +6,7 @@ import { createRequire } from "node:module";
 import { createServer } from "node:net";
 import { chromium } from "playwright";
 import { prepareConsumer, consumer, output, run, sha256 } from "./prepare-consumer.mjs";
+import { checkRspackConsumer } from "./run-rspack.mjs";
 
 const receipt = await prepareConsumer();
 const require = createRequire(path.join(consumer, "package.json"));
@@ -238,6 +239,10 @@ async function exercise(mode, label = mode) {
     );
   } finally {
     await fs.writeFile(
+      path.join(output, `${label}-final.html`),
+      await page.content().catch((error) => String(error)),
+    );
+    await fs.writeFile(
       path.join(output, `${label}-browser-errors.json`),
       JSON.stringify({ errors, warnings }, null, 2) + "\n",
     );
@@ -247,6 +252,7 @@ async function exercise(mode, label = mode) {
 }
 
 try {
+  await checkRspackConsumer(browser, measurements);
   await exercise("dev");
   await fs.writeFile(sourcePath, original);
   for (const name of ["cold", "warm"]) {

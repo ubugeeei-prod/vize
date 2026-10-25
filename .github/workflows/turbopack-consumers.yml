@@ -73,4 +73,7 @@ jobs:
             target/turbopack-consumers/${{ github.run_id }}-${{ github.run_attempt }}/maps/**
             target/turbopack-consumers/${{ github.run_id }}-${{ github.run_attempt }}/consumer/package.json
             target/turbopack-consumers/${{ github.run_id }}-${{ github.run_attempt }}/consumer/package-lock.json
+            target/turbopack-consumers/${{ github.run_id }}-${{ github.run_attempt }}/strict-consumer/package.json
+            target/turbopack-consumers/${{ github.run_id }}-${{ github.run_attempt }}/strict-consumer/pnpm-workspace.yaml
+            target/turbopack-consumers/${{ github.run_id }}-${{ github.run_attempt }}/strict-consumer/pnpm-lock.yaml
             npm/native/.artifacts/native/build-token-receipt.json

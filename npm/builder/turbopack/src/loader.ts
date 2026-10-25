@@ -189,7 +189,16 @@ export function compileTurbopackSfc(filename: string, source: string, options: S
       template: compiled.templateHash,
       options: hash(JSON.stringify(compilerOptions)),
       canRerender: !options.vapor,
-      module: hash(emitted.code),
+      // Native CSS module class maps depend on the SFC content. The host owns
+      // those maps here, and the assignments above replace the native values.
+      // Compare native script/template identities for that discarded metadata;
+      // setup, imported values, options and style structure remain guarded by
+      // the shared runtime. Missing native hashes retain the conservative path.
+      module: hash(
+        modules.length && compiled.scriptHash && compiled.templateHash
+          ? JSON.stringify([compiled.scriptHash, compiled.templateHash])
+          : emitted.code,
+      ),
       styles: JSON.stringify(
         compiled.styles.map(({ content, ...style }) => ({
           ...style,

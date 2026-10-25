@@ -5,6 +5,7 @@ import { createRequire } from "node:module";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { parse } from "yaml";
 
 export const packageRoot = fileURLToPath(new URL("../", import.meta.url));
 export const repoRoot = path.resolve(packageRoot, "../../..");
@@ -157,6 +158,7 @@ export async function prepareConsumer() {
           ...Object.fromEntries(
             Object.entries(tarballs).map(([name, file]) => [name, `file:${file}`]),
           ),
+          "@rspack/core": "2.1.8",
           next: "16.4.3",
           react: "19.2.5",
           "react-dom": "19.2.5",
@@ -222,6 +224,115 @@ export async function prepareConsumer() {
     ],
     consumer,
   );
+  // A hoisted install can hide missing public runtime dependencies. Resolve the
+  // same tarballs from a standalone pnpm consumer with isolated node_modules.
+  const strictConsumer = path.join(output, "strict-consumer");
+  await fs.mkdir(strictConsumer);
+  const strictManifest = JSON.parse(await fs.readFile(path.join(consumer, "package.json"), "utf8"));
+  strictManifest.packageManager = JSON.parse(
+    await fs.readFile(path.join(repoRoot, "package.json"), "utf8"),
+  ).packageManager;
+  await fs.writeFile(
+    path.join(strictConsumer, "package.json"),
+    JSON.stringify(strictManifest, null, 2) + "\n",
+  );
+  await fs.writeFile(
+    path.join(strictConsumer, "pnpm-workspace.yaml"),
+    `packages: ["."]\noverrides:\n  "@vizejs/native": ${JSON.stringify(`file:${nativeTar}`)}\n`,
+  );
+  for (const frozen of [false, true]) {
+    await run(frozen ? "strict-install-frozen" : "strict-install", "vp", [
+      "exec",
+      "pnpm",
+      "--dir",
+      strictConsumer,
+      "install",
+      "--ignore-scripts",
+      frozen ? "--frozen-lockfile" : "--no-frozen-lockfile",
+      "--strict-peer-dependencies",
+    ]);
+  }
+  const strictLockBytes = await fs.readFile(path.join(strictConsumer, "pnpm-lock.yaml"));
+  const strictLock = parse(strictLockBytes.toString());
+  assert.equal(
+    path.resolve(strictConsumer, strictLock.overrides["@vizejs/native"].replace(/^file:/, "")),
+    nativeTar,
+  );
+  const nativeResolutions = Object.entries(strictLock.packages).filter(([key]) =>
+    key.startsWith("@vizejs/native@"),
+  );
+  assert.ok(nativeResolutions.length);
+  const nativeIntegrity = `sha512-${createHash("sha512")
+    .update(await fs.readFile(nativeTar))
+    .digest("base64")}`;
+  for (const [key, entry] of nativeResolutions) {
+    assert.ok(key.includes("file:"), "a registry native image is not source qualification");
+    assert.equal(entry.resolution.integrity, nativeIntegrity);
+    assert.equal(
+      path.resolve(strictConsumer, entry.resolution.tarball.replace(/^file:/, "")),
+      nativeTar,
+    );
+  }
+  const strictRequire = createRequire(path.join(strictConsumer, "package.json"));
+  const strictNative = strictRequire.resolve("@vizejs/native");
+  const strictEntries = {};
+  for (const entry of [
+    "@vizejs/turbopack-plugin",
+    "@vizejs/turbopack-plugin/loader",
+    "@vizejs/turbopack-plugin/style-loader",
+    "@vizejs/turbopack-plugin/scope-loader",
+    "@vizejs/rspack-plugin",
+    "@vizejs/rspack-plugin/loader",
+  ]) {
+    const resolved = strictRequire.resolve(entry);
+    assert.ok(resolved.startsWith(strictConsumer + path.sep));
+    assert.ok(Object.keys(strictRequire(entry)).length);
+    const issuer = createRequire(resolved);
+    assert.equal(issuer.resolve("@vizejs/native"), strictNative);
+    assert.equal(issuer("@vizejs/native").getNativeBuildToken(), sourceReceipt.identity.token);
+    assert.throws(() => issuer.resolve("@vizejs/builder-shared"));
+    strictEntries[entry] = path.relative(strictConsumer, resolved);
+  }
+  assert.equal(
+    sha256(await fs.readFile(path.join(path.dirname(strictNative), sourceReceipt.binary.filename))),
+    sourceReceipt.binary.sha256,
+  );
+  await fs.copyFile(
+    path.join(consumer, "public-types.mts"),
+    path.join(strictConsumer, "public-types.mts"),
+  );
+  await run(
+    "strict-public-types",
+    process.execPath,
+    [
+      path.join(packageRoot, "node_modules/typescript/bin/tsc"),
+      "--ignoreConfig",
+      "--noEmit",
+      "--strict",
+      "--skipLibCheck",
+      "--target",
+      "ES2022",
+      "--module",
+      "NodeNext",
+      "--moduleResolution",
+      "NodeNext",
+      "public-types.mts",
+    ],
+    strictConsumer,
+  );
+  await fs.writeFile(
+    path.join(output, "strict-resolution.json"),
+    JSON.stringify(
+      {
+        entries: strictEntries,
+        nativeSha256: sourceReceipt.binary.sha256,
+        nativeResolutions,
+        lockSha256: sha256(strictLockBytes),
+      },
+      null,
+      2,
+    ) + "\n",
+  );
   const receipt = {
     source: revision,
     native: sourceReceipt,
@@ -234,7 +345,7 @@ export async function prepareConsumer() {
       ),
     ),
     runtimes: Object.fromEntries(
-      ["next", "react", "react-dom", "vue"].map((name) => [
+      ["@rspack/core", "next", "react", "react-dom", "vue"].map((name) => [
         name,
         installed(`${name}/package.json`).version,
       ]),
