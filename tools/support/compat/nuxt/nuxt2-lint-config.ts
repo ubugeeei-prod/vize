@@ -35,19 +35,31 @@ function distHashes(directory: string): Record<string, string> {
   );
 }
 
-export function verifyNuxt2LintConfig(fixture: string, artifacts: string): void {
+export function verifyNuxt2LintConfig(
+  fixture: string,
+  artifacts: string,
+  expectedNuxtVersion = "v2.17.3",
+): void {
   // The module resolves itself from cwd, as in the original Nuxt CLI build.
-  const run = spawnSync(process.execPath, [fileURLToPath(import.meta.url), fixture, artifacts], {
-    cwd: fixture,
-    stdio: "inherit",
-    timeout: 60_000,
-  });
+  const run = spawnSync(
+    process.execPath,
+    [fileURLToPath(import.meta.url), fixture, artifacts, expectedNuxtVersion],
+    {
+      cwd: fixture,
+      stdio: "inherit",
+      timeout: 60_000,
+    },
+  );
   assert.equal(run.error, undefined);
   assert.equal(run.signal, null);
   assert.equal(run.status, 0);
 }
 
-async function runProbe(fixture: string, artifacts: string): Promise<void> {
+async function runProbe(
+  fixture: string,
+  artifacts: string,
+  expectedNuxtVersion: string,
+): Promise<void> {
   const packages: Record<string, Record<string, string>> = {};
   for (const name of ["nuxt", "nuxt-lint-config"]) {
     const installed = distHashes(path.join(fixture, "node_modules/@vizejs", name, "dist"));
@@ -66,7 +78,7 @@ async function runProbe(fixture: string, artifacts: string): Promise<void> {
   const temporaryFiles: string[] = [];
   try {
     const nuxtVersion = at(nuxt, "constructor", "version");
-    assert.equal(nuxtVersion, "v2.17.3");
+    assert.equal(nuxtVersion, expectedNuxtVersion);
     const generated = path.join(fixture, ".oxlint.vize.json");
     temporaryFiles.push(generated);
     const artifact = readJson(generated);
@@ -174,7 +186,7 @@ async function runProbe(fixture: string, artifacts: string): Promise<void> {
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const [fixture, artifacts] = process.argv.slice(2);
+  const [fixture, artifacts, expectedNuxtVersion = "v2.17.3"] = process.argv.slice(2);
   assert.ok(fixture && artifacts, "usage: nuxt2-lint-config.ts FIXTURE ARTIFACTS");
-  await runProbe(path.resolve(fixture), path.resolve(artifacts));
+  await runProbe(path.resolve(fixture), path.resolve(artifacts), expectedNuxtVersion);
 }

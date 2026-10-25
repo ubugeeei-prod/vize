@@ -90,6 +90,24 @@ pub struct Printer<'a, 'c, W> {
 }
 
 impl<'a, 'c, W: std::fmt::Write + Sized> Printer<'a, 'c, W> {
+  #[inline]
+  fn mapping_columns(&self) -> bool {
+    #[cfg(feature = "sourcemap")]
+    if self.source_map.is_some() {
+      return true;
+    }
+    false
+  }
+
+  #[inline]
+  fn string_columns(&self, text: &str) -> u32 {
+    if self.mapping_columns() {
+      text.encode_utf16().count() as u32
+    } else {
+      text.len() as u32
+    }
+  }
+
   /// Create a new Printer wrapping the given destination.
   pub fn new(dest: &'a mut W, options: PrinterOptions<'a>) -> Self {
     Printer {
@@ -141,7 +159,7 @@ impl<'a, 'c, W: std::fmt::Write + Sized> Printer<'a, 'c, W> {
   /// NOTE: Is is assumed that the string does not contain any newline characters.
   /// If such a string is written, it will break source maps.
   pub fn write_str(&mut self, s: &str) -> Result<(), PrinterError> {
-    self.col += s.len() as u32;
+    self.col += self.string_columns(s);
     self.dest.write_str(s)?;
     Ok(())
   }
@@ -160,7 +178,7 @@ impl<'a, 'c, W: std::fmt::Write + Sized> Printer<'a, 'c, W> {
       }
     }
 
-    self.col += (s.len() - last_line_start) as u32;
+    self.col += self.string_columns(&s[last_line_start..]);
     self.dest.write_str(s)?;
     Ok(())
   }
@@ -171,7 +189,11 @@ impl<'a, 'c, W: std::fmt::Write + Sized> Printer<'a, 'c, W> {
       self.line += 1;
       self.col = 0;
     } else {
-      self.col += 1;
+      self.col += if self.mapping_columns() {
+        c.len_utf16() as u32
+      } else {
+        1
+      };
     }
     self.dest.write_char(c)?;
     Ok(())
@@ -288,6 +310,7 @@ impl<'a, 'c, W: std::fmt::Write + Sized> Printer<'a, 'c, W> {
   /// as appropriate. If the `css_modules` option was enabled, then a hash
   /// is added, and the mapping is added to the CSS module.
   pub fn write_ident(&mut self, ident: &str, handle_css_module: bool) -> Result<(), PrinterError> {
+    let mapping_columns = self.mapping_columns();
     if handle_css_module {
       if let Some(css_module) = &mut self.css_module {
         let dest = &mut self.dest;
@@ -302,6 +325,17 @@ impl<'a, 'c, W: std::fmt::Write + Sized> Printer<'a, 'c, W> {
             ""
           },
           |s| {
+            if mapping_columns {
+              let mut writer = MappingWriter {
+                dest: &mut **dest,
+                column: &mut self.col,
+              };
+              if first {
+                first = false;
+                return serialize_identifier(s, &mut writer);
+              }
+              return serialize_name(s, &mut writer);
+            }
             self.col += s.len() as u32;
             if first {
               first = false;
@@ -323,6 +357,7 @@ impl<'a, 'c, W: std::fmt::Write + Sized> Printer<'a, 'c, W> {
 
   pub(crate) fn write_dashed_ident(&mut self, ident: &str, is_declaration: bool) -> Result<(), PrinterError> {
     self.write_str("--")?;
+    let mapping_columns = self.mapping_columns();
 
     match &mut self.css_module {
       Some(css_module) if css_module.config.dashed_idents => {
@@ -337,6 +372,15 @@ impl<'a, 'c, W: std::fmt::Write + Sized> Printer<'a, 'c, W> {
             ""
           },
           |s| {
+            if mapping_columns {
+              return serialize_name(
+                s,
+                &mut MappingWriter {
+                  dest: &mut **dest,
+                  column: &mut self.col,
+                },
+              );
+            }
             self.col += s.len() as u32;
             serialize_name(s, dest)
           },
@@ -415,7 +459,21 @@ impl<'a, 'c, W: std::fmt::Write + Sized> Printer<'a, 'c, W> {
 
 impl<'a, 'b, 'c, W: std::fmt::Write + Sized> std::fmt::Write for Printer<'a, 'c, W> {
   fn write_str(&mut self, s: &str) -> std::fmt::Result {
-    self.col += s.len() as u32;
+    self.col += self.string_columns(s);
     self.dest.write_str(s)
+  }
+}
+
+// CSS Modules serialize directly into the destination. Count the escaped
+// bytes actually written, rather than the unescaped pattern input length.
+struct MappingWriter<'a, W> {
+  dest: &'a mut W,
+  column: &'a mut u32,
+}
+
+impl<W: std::fmt::Write> std::fmt::Write for MappingWriter<'_, W> {
+  fn write_str(&mut self, text: &str) -> std::fmt::Result {
+    *self.column += text.encode_utf16().count() as u32;
+    self.dest.write_str(text)
   }
 }
