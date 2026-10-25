@@ -271,9 +271,12 @@ for (const row of observations) {
       `${row.id}/${side.side}: complete source packet`,
     );
     assert.equal(side.mapper.status, expected.length ? 2 : 0, row.id);
+    // The mapper reports generated module declarations before setup-body code;
+    // the native CLI independently restores authored source order above.
+    const mapperExpected = body && nonfunctional ? [expected[1]!, expected[0]!] : expected;
     assert.equal(
       side.mapper.stdout,
-      expected
+      mapperExpected
         .map((d) => `App.vue(${d.line},${d.column}): error TS${d.code}: ${d.message}\n`)
         .join(""),
       `${row.id}/${side.side}: complete mapper packet`,
