@@ -22,3 +22,10 @@ EOF and close failures all retain their strict behavior and complete transcripts
 The SDK still hides request IDs: production correlation remains a fresh
 pre-request subscription and the single Shutdown of its private owned connection.
 No version-only whitelist, stream filter, retry or timeout change is introduced.
+
+An explicit ignored native control requires the exact physical provider and a
+whole-stream capture directory. Actions selects it with `--ignored --exact`;
+missing inputs fail instead of silently returning. Real CorsaProjectClient
+sessions check handwritten TypeScript through valid, error and repaired states,
+compare every DTO field, assert the actual authenticated editor close branch,
+and retain whole child stdout/stderr/status before requiring clean shutdown.

@@ -30,6 +30,10 @@ const pairSelectors = [
     selector: `${selectorRoot}tests::provider_pairs::admission_matches_pinned_complete_provider_pairs`,
     source: `${root}/tests/provider_pairs.rs`,
   },
+  {
+    selector: `${selectorRoot}tests::native_provider::pinned_mapper_sessions_keep_complete_diagnostics_and_clean_owned_shutdown`,
+    source: `${root}/tests/native_provider.rs`,
+  },
   ...selectors.slice(1),
 ];
 
@@ -124,6 +128,7 @@ export function newNativeShutdownProtocolCases(
       const source = readFile("head", `${root}/tests.rs`)?.toString("utf8");
       require(source !== undefined &&
         /\bmod provider_pairs;/.test(source), "missing ordinary pair test module");
+      require(source !== undefined && /#\[cfg\(unix\)\]\s+mod native_provider;/.test(source), "missing ordinary native provider test module");
     }
     require(Array.isArray(row.tests) &&
       row.tests.length === registeredSelectors.length, "all registered selectors required");

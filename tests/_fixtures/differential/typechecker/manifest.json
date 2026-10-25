@@ -5977,7 +5977,7 @@
         {
           "selector": "lsp_client::editor_lsp::native_shutdown::tests::null_ack_precedes_eof_foreign_exit_is_preserved_and_failed_ack_still_closes",
           "source": "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown/tests.rs",
-          "sha256": "b81bc0593e35c8838322e15c19db55cecb00a579c5d4ad4c4de3d1bd070561ac"
+          "sha256": "4d8b400d36717738ea23b0fb5580f2a694abbb2e24c51532f488b98b50f78906"
         }
       ]
     },
@@ -6001,6 +6001,11 @@
           "sha256": "a7c5fd000fef6e2b161e69dc949527983163f7923078b441a4b4ca6ba26663d8"
         },
         {
+          "selector": "lsp_client::editor_lsp::native_shutdown::tests::native_provider::pinned_mapper_sessions_keep_complete_diagnostics_and_clean_owned_shutdown",
+          "source": "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown/tests/native_provider.rs",
+          "sha256": "fa52766aace1e77ef65094974e302b34d57feb769ef29ddf0cc0759251451f8e"
+        },
+        {
           "selector": "lsp_client::editor_lsp::native_shutdown::tests::completion::buffered_completion_and_unrelated_notifications_preserve_the_whole_transcript",
           "source": "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown/tests/completion.rs",
           "sha256": "c29ee8d8ff579c8493ab934b58c2400c9a25f8e68e48177d7dc095a513a2564c"
@@ -6013,7 +6018,7 @@
         {
           "selector": "lsp_client::editor_lsp::native_shutdown::tests::null_ack_precedes_eof_foreign_exit_is_preserved_and_failed_ack_still_closes",
           "source": "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown/tests.rs",
-          "sha256": "b81bc0593e35c8838322e15c19db55cecb00a579c5d4ad4c4de3d1bd070561ac"
+          "sha256": "4d8b400d36717738ea23b0fb5580f2a694abbb2e24c51532f488b98b50f78906"
         }
       ]
     }

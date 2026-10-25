@@ -92,6 +92,8 @@ fn fake_missing_and_changed_physical_images_cannot_borrow_a_provider_contract() 
     }
 }
 
+#[cfg(unix)]
+mod native_provider;
 mod provider_pairs;
 
 #[cfg(unix)]
