@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -76,7 +76,7 @@ void test("benchmark conflict guard rejects real markers without mistaking long 
       [`${"<".repeat(32)} HEAD\nbefore\n${"=".repeat(32)}\nafter\n${">".repeat(32)} topic\n`, 0],
     ] as const) {
       fs.writeFileSync(path.join(root, "input"), text);
-      const result = spawnSync(
+      const result: SpawnSyncReturns<string> = spawnSync(
         "git",
         ["grep", "--no-index", "-n", "-E", expression, "--", "input"],
         { cwd: root, encoding: "utf8" },
