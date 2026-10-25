@@ -42,8 +42,9 @@ jobs:
       - name: Verify workspace resolution and bounded stdio sessions
         run: vp node --test tests/tooling/vscode-workspace-server.test.mjs tests/tooling/vscode-server-trust.test.ts
       - name: Check the extension
-        working-directory: editors/vscode
-        run: vp run check
+        run: |
+          vp node editors/vscode/node_modules/typescript/bin/tsc --noEmit -p editors/vscode/tsconfig.json
+          vp check editors/vscode/src editors/vscode/vite.config.ts
       - name: Package the production VSIX
         run: vp run --workspace-root package:vscode-extension
       - name: Ensure virtual display
