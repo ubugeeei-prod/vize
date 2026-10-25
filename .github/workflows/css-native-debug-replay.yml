@@ -1,0 +1,81 @@
+name: Native CSS qualified debug replay
+on:
+  workflow_dispatch:
+  push:
+    branches: ["test/css-native-debug-profile"]
+    paths:
+      - ".github/workflows/css-native-debug-replay.yml"
+      - "tools/benchmarks/scripts/css-native-debug-replay.mjs"
+      - "tools/benchmarks/scripts/css-native-debug-samples.mjs"
+      - "tools/benchmarks/scripts/css-native-cpu-profile.mjs"
+      - "tests/tooling/css-native-cpu-profile.test.mjs"
+      - "tests/tooling/css-native-debug-profile.test.mjs"
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: css-native-debug-replay-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  replay:
+    if: ${{ github.event_name == 'workflow_dispatch' || !github.event.deleted }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ github.sha }}", path: harness, persist-credentials: false }
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          {
+            ref: "3a3c8460f966fddbd8e1be4c083d460b24202f90",
+            path: base,
+            persist-credentials: false,
+          }
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          {
+            ref: "fcab3f87d3249cccaecc5050d73d2af6ac89d3f8",
+            path: head,
+            persist-credentials: false,
+          }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: head/package.json, cache: true, run-install: false }
+      - name: Install the actual Linux software-event sampler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y linux-tools-common linux-tools-generic binutils
+          node --input-type=module - <<'JS'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          import {execFileSync} from 'node:child_process';
+          const depends = execFileSync('dpkg-query', ['-W', '-f', '${Depends}', 'linux-tools-generic'], {encoding:'utf8'});
+          const packages = [...new Set(depends.match(/linux-tools-[0-9][a-zA-Z0-9.+-]*-generic/gu))];
+          assert.equal(packages.length, 1);
+          const files = execFileSync('dpkg-query', ['-L', packages[0]], {encoding:'utf8'})
+            .split('\n').filter(file => file.endsWith('/perf')).map(file => fs.realpathSync(file));
+          assert.equal(files.length, 1);
+          fs.appendFileSync(process.env.GITHUB_ENV, `VIZE_CSS_PERF=${files[0]}\n`);
+          JS
+      - name: Qualify partial ACK frames and exact historical producer custody
+        working-directory: harness
+        run: node --test tests/tooling/css-native-attribution.test.mjs tests/tooling/css-native-cpu-profile.test.mjs tests/tooling/css-native-debug-profile.test.mjs
+      - name: Verify and reuse the actual qualified debug images without rebuilding
+        working-directory: harness
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node tools/benchmarks/scripts/css-native-debug-replay.mjs "$GITHUB_WORKSPACE/artifacts/producer-replay" "$GITHUB_WORKSPACE"
+      - name: Retain controlled CPU loops and source/inline allocation caller evidence
+        timeout-minutes: 18
+        working-directory: harness
+        run: node tools/benchmarks/scripts/css-native-debug-samples.mjs "$GITHUB_WORKSPACE/artifacts/producer-replay/inputs.json" "$GITHUB_WORKSPACE/artifacts/debug-samples"
+      - name: Retain every raw trace and historical producer identity
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: css-native-debug-replay-${{ github.sha }}-${{ github.run_id }}
+          path: artifacts/
+          compression-level: 3
+          if-no-files-found: error
+          retention-days: 14

@@ -3,9 +3,25 @@ import { test } from "node:test";
 import { readFileSync } from "node:fs";
 import {
   sampledEventCount,
+  readPerfAck,
   samplingPlan,
   validateSamplePacket,
 } from "../../tools/benchmarks/scripts/css-native-cpu-profile.mjs";
+
+await test("real perf ACK frames permit partial FIFO reads and reject malformed or truncated frames", () => {
+  const consume = (chunks) =>
+    readPerfAck((buffer) => {
+      const chunk = Buffer.from(chunks.shift() ?? "");
+      chunk.copy(buffer);
+      return chunk.length;
+    });
+  for (const chunks of [["ack\n"], ["a", "ck\n"], ["a", "c", "k", "\n"], ["ac", "k\n"]]) {
+    const expected = [...chunks].map((value) => Buffer.from(value).toString("hex"));
+    assert.deepEqual(consume([...chunks]), { ack: "ack\n", chunks: expected });
+  }
+  for (const chunks of [[], ["a"], ["a\n"], ["ack!"], ["bad\n"], ["ack\nextra"]])
+    assert.throws(() => consume([...chunks]));
+});
 
 await test("CPU samples preserve each fixed vector and both operation-specific ABBA role orders", () => {
   const plan = samplingPlan();

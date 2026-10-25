@@ -51,6 +51,22 @@ export function sampledEventCount(text) {
   for (const row of rows) assert.match(row, /^\s*\d+\.\d+:?\s*$/u);
   return rows.length;
 }
+export function readPerfAck(readChunk) {
+  const chunks = [];
+  let length = 0;
+  while (length < 4) {
+    const buffer = Buffer.alloc(4 - length);
+    const count = readChunk(buffer);
+    assert.ok(Number.isInteger(count) && count > 0 && count <= buffer.length);
+    const chunk = buffer.subarray(0, count);
+    chunks.push(chunk);
+    length += count;
+    if (chunk.includes(10)) break;
+  }
+  const ack = Buffer.concat(chunks).toString();
+  assert.equal(ack, "ack\n");
+  return { ack, chunks: chunks.map((chunk) => chunk.toString("hex")) };
+}
 function worker(configFile, ordinal, destination, controlPath, ackPath) {
   assert.equal(process.platform, "linux");
   assert.equal(process.arch, "x64");
@@ -92,9 +108,11 @@ function worker(configFile, ordinal, destination, controlPath, ackPath) {
   let descriptors;
   const control = (name) => {
     fs.writeSync(descriptors[0], name + "\n");
-    const value = Buffer.alloc(4);
-    assert.equal(fs.readSync(descriptors[1], value, 0, 4, null), 4);
-    const ack = value.toString();
+    const { ack, chunks } = readPerfAck((buffer) =>
+      fs.readSync(descriptors[1], buffer, 0, buffer.length, null),
+    );
+    packet.ackReads ??= [];
+    packet.ackReads.push({ command: name, chunks });
     controls.push({ command: name, ack });
     packet.samplingControl = controls;
     assert.equal(ack, "ack\n");

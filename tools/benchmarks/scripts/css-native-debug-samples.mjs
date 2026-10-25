@@ -36,6 +36,7 @@ async function run(configFile, destination) {
     configFile,
     configSha256: digest(configFile),
     images: config.images,
+    replayAuthority: config.replayAuthority ?? null,
     commands: [],
     controls: [],
     samples: [],

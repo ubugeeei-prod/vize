@@ -5,6 +5,45 @@ import {
   validateCompilerReceipt,
   validateDebugIdentity,
 } from "../../tools/benchmarks/scripts/css-native-debug-build.mjs";
+import {
+  debugArchive,
+  validateDebugArchive,
+} from "../../tools/benchmarks/scripts/css-native-debug-replay.mjs";
+
+await test("replay admits only the actual failed-sampler archive with separately qualified producers", () => {
+  const metadata = {
+    id: debugArchive.artifact,
+    size_in_bytes: debugArchive.bytes,
+    digest: `sha256:${debugArchive.sha256}`,
+    expired: false,
+    workflow_run: { id: debugArchive.run, head_sha: debugArchive.harnessSource },
+  };
+  validateDebugArchive(metadata);
+  for (const change of [
+    (value) => {
+      value.id++;
+    },
+    (value) => {
+      value.size_in_bytes--;
+    },
+    (value) => {
+      value.digest = "sha256:" + "0".repeat(64);
+    },
+    (value) => {
+      value.expired = true;
+    },
+    (value) => {
+      value.workflow_run.id++;
+    },
+    (value) => {
+      value.workflow_run.head_sha = "f".repeat(40);
+    },
+  ]) {
+    const changed = structuredClone(metadata);
+    change(changed);
+    assert.throws(() => validateDebugArchive(changed));
+  }
+});
 
 function fixture() {
   const producer = {

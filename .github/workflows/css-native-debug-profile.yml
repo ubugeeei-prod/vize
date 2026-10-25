@@ -2,7 +2,7 @@ name: Native CSS source line profiles
 on:
   workflow_dispatch:
   push:
-    branches: ["test/css-native-debug-profile"]
+    branches: ["test/css-native-debug-build"]
     paths:
       - ".github/workflows/css-native-debug-profile.yml"
       - "tools/benchmarks/scripts/css-native-debug-*.mjs"
