@@ -123,9 +123,9 @@ impl fmt::Display for GenericSignature<'_> {
             arguments,
             ..
         } = self;
-        write!(
+        writeln!(
             formatter,
-            "type {name} = {parameters}(props: __VizeGenericContext{arguments}['props']{props_tail}, ctx?: Pick<__VizeGenericContext{arguments}, 'attrs' | 'emit' | 'slots'>, expose?: __VizeGenericContext{arguments}['expose']) => import('vue').VNode & {{ __ctx?: __VizeGenericContext{arguments} }};\n"
+            "type {name} = {parameters}(props: __VizeGenericContext{arguments}['props']{props_tail}, ctx?: Pick<__VizeGenericContext{arguments}, 'attrs' | 'emit' | 'slots'>, expose?: __VizeGenericContext{arguments}['expose']) => import('vue').VNode & {{ __ctx?: __VizeGenericContext{arguments} }};"
         )
     }
 }
