@@ -4,7 +4,9 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
+import { loadLspManifest } from "../differential/lsp-manifest.ts";
 import { isDiagnosticsForUri } from "./support/lsp/assertions.ts";
+import { root } from "./support/lsp/paths.ts";
 import { LspSession } from "./support/lsp/session.ts";
 
 // Independent authoring grammar: https://html.spec.whatwg.org/multipage/syntax.html#void-elements
@@ -30,6 +32,33 @@ test("native HTML hover examples preserve complete void and paired forms", async
   let requests = 0;
   try {
     await session.initialize(workspace, { editor: true, typecheck: false, lint: false });
+    const fixture = loadLspManifest(
+      path.join(root, "tests/_fixtures/differential/lsp/manifest.json"),
+    ).cases.find((row) => row.id === "lsp/regression/html-void-hover-examples");
+    assert.ok(fixture);
+    for (const file of fixture.files) {
+      const target = path.join(workspace, file.runtimePath);
+      const uri = pathToFileURL(target).href;
+      const text = file.bytes.toString("utf8");
+      fs.writeFileSync(target, text);
+      session.notify("textDocument/didOpen", {
+        textDocument: { uri, languageId: "vue", version: 1, text },
+      });
+      await session.waitForNotification(
+        "textDocument/publishDiagnostics",
+        (params) => isDiagnosticsForUri(params, uri),
+        120_000,
+      );
+      for (const request of fixture.requests) {
+        const result = await session.request("textDocument/hover", {
+          ...request.params,
+          textDocument: { uri },
+        });
+        assert.deepEqual(result, request.result, `${file.runtimePath}: complete Hover`);
+        requests += 1;
+      }
+      session.notify("textDocument/didClose", { textDocument: { uri } });
+    }
     for (const tag of [...voidTags, "button", "div", "textarea", "svg", "math"]) {
       for (const ending of ["\n", "\r\n"]) {
         const isVoid = voidTags.includes(tag);
@@ -84,7 +113,7 @@ test("native HTML hover examples preserve complete void and paired forms", async
         session.notify("textDocument/didClose", { textDocument: { uri } });
       }
     }
-    assert.equal(requests, 72);
+    assert.equal(requests, 76);
   } finally {
     await session.shutdown();
     fs.rmSync(workspace, { recursive: true, force: true });

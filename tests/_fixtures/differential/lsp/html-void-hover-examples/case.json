@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "id": "lsp/regression/html-void-hover-examples",
+  "provenance": {
+    "fixCommit": "77d2190d1d94eb9731f559de8e97defefd4559d5",
+    "witnessPath": "crates/vize_maestro/src/ide/hover/html/tests.rs",
+    "witnessTest": "complete_examples_follow_html_void_grammar_and_preserve_paired_elements",
+    "inputOrigin": "Void HTML examples reproduced on public v0.557.0; original complete packets retained in the delivery evidence",
+    "contractOrigin": "Existing complete public type/documentation preserved; the HTML authoring grammar independently corrects the example and adds the void syntax note; ranges counted from authored source"
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "3f8689dde3212bc61a47d92a6daa0760a37ec38b1f43929a89c806187889d6e5"
+    },
+    {
+      "source": "App.crlf.vue.txt",
+      "runtimePath": "App.crlf.vue",
+      "sha256": "86cfaa66f160280a7b08175f0af074f43a73e322d9e36e9df34ab1f0fe5733a3"
+    }
+  ],
+  "entry": "App.vue",
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "2eec73beee0c3b68585375d20dcd499c05cd022b50602d821c26bc1f11981ea4"
+  },
+  "method": "textDocument/hover",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "scope": "complete fallback input tag/attribute hovers and authored ranges; no full preprocessor or native migration acceptance claim"
+}

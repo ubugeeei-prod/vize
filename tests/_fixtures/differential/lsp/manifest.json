@@ -1833,6 +1833,50 @@
           }
         ]
       }
+    },
+    {
+      "id": "lsp/regression/html-void-hover-examples",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "html-void-hover-examples",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "3f8689dde3212bc61a47d92a6daa0760a37ec38b1f43929a89c806187889d6e5"
+          },
+          {
+            "path": "App.crlf.vue.txt",
+            "sha256": "86cfaa66f160280a7b08175f0af074f43a73e322d9e36e9df34ab1f0fe5733a3"
+          }
+        ]
+      },
+      "case": {
+        "path": "html-void-hover-examples/case.json",
+        "sha256": "023298f986f276b5e7097167f79b837cd562c7ff5a89f58efaa2177072da6c09"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }
