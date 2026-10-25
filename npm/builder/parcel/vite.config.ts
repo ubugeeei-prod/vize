@@ -7,6 +7,10 @@ export default defineConfig({
     entry: ["src/index.ts", "src/style.ts"],
     format: "cjs",
     dts: true,
+    deps: {
+      // Keep the host's declaration graph external, including CJS watcher types.
+      neverBundle: [/^@parcel\//],
+    },
     clean: true,
     minify: false,
     sourcemap: false,
