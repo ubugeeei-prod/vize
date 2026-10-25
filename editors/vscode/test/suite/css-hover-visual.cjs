@@ -8,6 +8,8 @@ const { assertPackagedExtension, describeRange, waitFor } = require("./real-serv
 exports.run = async function run() {
   const { fixtureSource, hoverCases, vscodeVersion } =
     await import("../css-hover-visual-contract.mjs");
+  const { currentHoverPackets, currentDocumentColors, currentColorPresentations } =
+    await import("../css-hover-current-packets.mjs");
   const destination = process.env.VIZE_CSS_VISUAL_OUTPUT;
   const packets = [];
   let document;
@@ -94,7 +96,7 @@ exports.run = async function run() {
       "offline renderer capture ready",
       60_000,
     );
-    const firstPosition = document.positionAt(fixtureSource.indexOf("background-color") + 3);
+    const firstPosition = document.positionAt(fixtureSource.indexOf("display") + 3);
     await waitFor(
       async () => {
         const hover = await vscode.commands.executeCommand(
@@ -138,6 +140,35 @@ exports.run = async function run() {
         assert.equal(raw, null);
         assert.deepEqual(hovers, []);
       } else {
+        const expectedPacket = currentHoverPackets[expected.id];
+        assert.deepEqual(raw, expectedPacket, "complete current native hover packet");
+        assert.deepEqual(
+          expanded.map((hover) => ({
+            range: hover.range,
+            contents: hover.contents.map(({ constructor, ...fields }) => fields),
+          })),
+          [
+            {
+              range: [
+                expectedPacket.range.start.line,
+                expectedPacket.range.start.character,
+                expectedPacket.range.end.line,
+                expectedPacket.range.end.character,
+              ],
+              contents: [
+                {
+                  language: undefined,
+                  value: expectedPacket.contents.value,
+                  isTrusted: false,
+                  supportThemeIcons: false,
+                  supportHtml: false,
+                  baseUri: undefined,
+                },
+              ],
+            },
+          ],
+          "complete public MarkdownString getters and authored range",
+        );
         assert.ok(
           expanded.some((hover) =>
             hover.contents.some(
@@ -165,6 +196,18 @@ exports.run = async function run() {
       params: { textDocument: { uri: document.uri.toString() } },
     });
     retain("colors.json", { publicColors, rawColors });
+    assert.deepEqual(publicColors, currentDocumentColors, "complete unchanged public colors");
+    assert.deepEqual(
+      rawColors,
+      currentDocumentColors.map((entry) => ({
+        color: entry.color,
+        range: {
+          start: { line: entry.range[0], character: entry.range[1] },
+          end: { line: entry.range[2], character: entry.range[3] },
+        },
+      })),
+      "complete unchanged native colors",
+    );
     assert.deepEqual(
       publicColors.map((entry) => entry.source),
       ["red", "#336699", "rgba(51, 102, 153, 0.5)"],
@@ -180,10 +223,15 @@ exports.run = async function run() {
     })) {
       assert.ok(Math.abs(hex.color[channel] - expected) < 0.00001, channel);
     }
-    await request("vscode.executeColorPresentationProvider", hex.color, {
+    const presentations = await request("vscode.executeColorPresentationProvider", hex.color, {
       uri: document.uri,
       range: hex.range,
     });
+    assert.deepEqual(
+      JSON.parse(JSON.stringify(presentations)),
+      currentColorPresentations,
+      "complete unchanged public color presentations",
+    );
     for (const expected of hoverCases.filter((entry) => !entry.baselineNull)) {
       await phase(
         expected.id,

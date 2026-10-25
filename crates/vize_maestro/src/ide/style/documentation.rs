@@ -42,7 +42,10 @@ pub(super) fn markdown(selected: Selected) -> String {
             if kind == "property"
                 && let Some(value) = entry.values.first()
             {
-                doc = doc.example("css", &[entry.name, ": ", value.name, ";"].concat());
+                doc = doc.example(
+                    "css",
+                    &rule_example(&[entry.name, ": ", value.name, ";"].concat()),
+                );
             }
             references(
                 availability(doc, entry.status, entry.baseline, entry.browsers),
@@ -79,13 +82,20 @@ pub(super) fn markdown(selected: Selected) -> String {
                     .title(selected.label())
                     .meta(&["CSS value for ", property.name].concat())
                     .paragraph(value.description)
-                    .example("css", &example)
+                    .example("css", &rule_example(&example))
                     .docs("CSS specification", value.reference),
                 property,
             )
             .build()
         }
     }
+}
+
+// Markdown CSS fences use a stylesheet grammar. A bare declaration is parsed
+// as selector text, so keep executable examples in a real rule context while
+// leaving the catalog's abstract syntax metadata unchanged.
+fn rule_example(declaration: &str) -> String {
+    [".example {\n  ", declaration, "\n}"].concat()
 }
 
 fn calc_example(property: &CssEntry) -> &'static str {
@@ -113,7 +123,10 @@ fn value_header(property: &CssEntry, name: &str, description: Option<&str>) -> M
     } else if let Some(description) = property.description {
         doc = doc.section("Property", description);
     }
-    doc = doc.example("css", &[property.name, ": ", name, ";"].concat());
+    doc = doc.example(
+        "css",
+        &rule_example(&[property.name, ": ", name, ";"].concat()),
+    );
     if let Some(syntax) = property.syntax {
         doc = doc.section(
             "Property syntax",

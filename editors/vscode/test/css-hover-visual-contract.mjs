@@ -8,12 +8,13 @@ export const fixtureSource = `<template><div class="sample">Color custody</div><
   color: red;
   background-color: #336699;
   border-color: rgba(51, 102, 153, 0.5);
+  display: block;
 }
 </style>
 `;
 
 export const hoverCases = [
-  { id: "property", needle: "background-color", offset: 3, markdown: "CSS property" },
+  { id: "property", needle: "display", offset: 3, markdown: "CSS property" },
   { id: "named", needle: "red;", offset: 1, markdown: "CSS value for color" },
   { id: "hex-baseline", needle: "#336699", offset: 3, baselineNull: true },
   { id: "rgba-baseline", needle: "rgba(51, 102, 153, 0.5)", offset: 12, baselineNull: true },

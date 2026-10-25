@@ -4,7 +4,9 @@ on:
   pull_request:
     paths:
       - ".github/workflows/css-hover-visual.yml"
-      - "editors/vscode/test/css-hover-visual-*.mjs"
+      - "editors/vscode/test/css-hover-*.mjs"
+      - "crates/vize_maestro/src/ide/style/documentation.rs"
+      - "crates/vize_maestro/src/ide/style/tests/hover.rs"
       - "editors/vscode/test/run-css-hover-visual.mjs"
       - "editors/vscode/test/suite/css-hover-visual.cjs"
       - "tests/tooling/vscode-css-hover-visual.test.mjs"
@@ -54,6 +56,8 @@ jobs:
           node tests/differential/build-receipt.ts
       - name: Check capture refusal boundaries
         run: node --test tests/tooling/vscode-css-hover-visual.test.mjs
+      - name: Check real SFC CSS example packets and completion parity
+        run: cargo test --profile ci -p vize_maestro ide::style::tests -- --test-threads=4
       - name: Build and package the actual extension
         run: |
           vp run --workspace-root build:vscode-extension

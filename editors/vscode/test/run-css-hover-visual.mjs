@@ -49,10 +49,16 @@ const identity = expectedBuildIdentity(root);
 const receiptPath = path.join(root, `${identity.binaryPath}.differential-build.json`);
 const receipt = JSON.parse(fs.readFileSync(receiptPath, "utf8"));
 validateBuildReceipt(receipt, identity);
-assert.equal(
-  git("diff", "--name-only", baselineRevision, "HEAD", "--", "crates"),
-  "",
-  "baseline capture requires unchanged production crates",
+const ownedRendererChanges = new Set([
+  "crates/vize_maestro/src/ide/style/documentation.rs",
+  "crates/vize_maestro/src/ide/style/tests/hover.rs",
+]);
+const productionChanges = git("diff", "--name-only", baselineRevision, "HEAD", "--", "crates")
+  .split("\n")
+  .filter(Boolean);
+assert.ok(
+  productionChanges.every((file) => ownedRendererChanges.has(file)),
+  "capture source must contain only the approved CSS example renderer delta",
 );
 const serverPath = fs.realpathSync(path.join(root, identity.binaryPath));
 const actualVersion = execFileSync(serverPath, ["--version"], { encoding: "utf8" }).trim();
@@ -156,6 +162,7 @@ try {
     actualCliVersion: actualVersion,
     sourceTree: git("rev-parse", "HEAD^{tree}"),
     baselineRevision,
+    productionChanges,
     vscodeVersion,
     vscodeExecutable: { path: vscodeExecutable, sha256: hash(fs.readFileSync(vscodeExecutable)) },
     vsix: { sha256: hash(fs.readFileSync(vsixPath)), bytes: fs.statSync(vsixPath).size },

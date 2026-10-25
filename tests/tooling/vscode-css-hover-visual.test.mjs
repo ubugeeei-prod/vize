@@ -8,6 +8,39 @@ import {
   hoverCases,
   workspaceSettings,
 } from "../../editors/vscode/test/css-hover-visual-contract.mjs";
+import {
+  currentHoverPackets,
+  currentDocumentColors,
+  currentColorPresentations,
+} from "../../editors/vscode/test/css-hover-current-packets.mjs";
+
+await test("current whole packets author only valid stylesheet example bytes and keep color coordinates", () => {
+  assert.ok(
+    currentHoverPackets.named.contents.value.includes("```css\n.example {\n  color: red;\n}\n```"),
+  );
+  assert.ok(
+    currentHoverPackets.named.contents.value.includes(
+      "**Property syntax**\n\n```css\n<color>\n```",
+    ),
+  );
+  assert.ok(
+    currentHoverPackets.property.contents.value.includes(
+      "```css\n.example {\n  display: block;\n}\n```",
+    ),
+  );
+  assert.deepEqual(
+    currentDocumentColors.map((entry) => entry.range),
+    [
+      [3, 9, 3, 12],
+      [4, 20, 4, 27],
+      [5, 16, 5, 39],
+    ],
+  );
+  assert.deepEqual(
+    currentColorPresentations.map((entry) => entry.label),
+    ["#336699", "rgb(51, 102, 153)", "hsl(210 50% 40%)"],
+  );
+});
 
 await test("CSS capture disables built-in default color fallback and keeps authored literal controls", () => {
   const settings = workspaceSettings("/actual/source-built/vize");

@@ -166,7 +166,7 @@ export async function captureCssHover({ chromium, port, destination }) {
             async () => {
               const result = await snapshot(page, session, destination, id);
               return result.hoverText.includes(
-                id === "property" ? "background-color" : "CSS value for color",
+                id === "property" ? "display" : "CSS value for color",
               ) && result.tokens.length > 0
                 ? result
                 : null;
@@ -177,10 +177,11 @@ export async function captureCssHover({ chromium, port, destination }) {
           // Keep the real code fence visible even when the provider-backed
           // picker fills the top of a named-color popup.
           await snapshot(page, session, destination, `${id}-before-fence-scroll`);
-          await page
-            .locator(".monaco-hover .monaco-tokenized-source")
-            .first()
-            .scrollIntoViewIfNeeded();
+          const fences = page.locator(".monaco-hover .monaco-tokenized-source");
+          const executableExample = fences.filter({ hasText: ".example {" });
+          await (
+            (await executableExample.count()) ? executableExample.first() : fences.first()
+          ).scrollIntoViewIfNeeded();
           await snapshot(page, session, destination, `${id}-fence`);
           assertRenderedCss(result);
         }
