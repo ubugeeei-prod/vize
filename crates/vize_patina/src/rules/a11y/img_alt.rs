@@ -95,7 +95,7 @@ impl Rule for ImgAlt {
             }
         });
 
-        if ImageAltPolicy::for_tag(&element.tag).is_missing(has_alt) {
+        if ImageAltPolicy::for_tag(element.tag).is_missing(has_alt) {
             let text = ImageAltMessages::from_lookup(|key| ctx.t(key));
             ctx.warn_with_help(text.message(), &element.loc, text.help());
         }

@@ -77,6 +77,7 @@ jobs:
           (cd "$baseline" && CARGO_TARGET_DIR="$base_target" cargo build "${flags[@]}" --verbose --message-format=json --example native_image_alt_original) > "$capture/base-build.jsonl" 2> "$capture/base-build.stderr"
           cp "$base_target/ci-opt/examples/native_image_alt_original" "$capture/base-observer"
           CARGO_TARGET_DIR="$head_target" cargo build "${flags[@]}" --verbose --message-format=json --example native_image_alt_original --example native_image_alt_canonical > "$capture/head-build.jsonl" 2> "$capture/head-build.stderr"
+          CARGO_TARGET_DIR="$head_target" cargo clippy "${flags[@]}" --lib --example native_image_alt_original --example native_image_alt_canonical -- -D warnings > "$capture/head-clippy.log" 2>&1
           cp "$head_target/ci-opt/examples/native_image_alt_original" "$capture/head-observer"
           cp "$head_target/ci-opt/examples/native_image_alt_canonical" "$capture/canonical-observer"
           sha256sum "$capture/"*-observer > "$capture/executables.sha256"
