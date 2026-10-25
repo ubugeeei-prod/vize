@@ -33,6 +33,7 @@ fn capture_authored_module_source_profile() {
         "import {ref} from 'vue'; const label=ref('text'); export const App=()=> <p>{label.value}</p>; export default App;",
         "// 日本語 😀\r\nimport Child from './Child.js'; export const App=(props:{label:string})=> {const label=props.label; return <Child label={label}/>;}; export default App;",
         "const init=sideEffect(); export const A=()=> <p>{init}</p>; export const B=()=> <b>{init}</b>; export default A;",
+        "const Child={}; export const App=()=> <section><Child/></section>;",
     ] {
         for ssr in [false, true] {
             for map in [false, true] {

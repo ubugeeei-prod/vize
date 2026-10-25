@@ -313,12 +313,25 @@ pub(super) fn transform_component<'a>(
             .iter()
             .any(|prop| matches!(prop, PropNode::Directive(directive) if directive.name == "once"));
 
+    let asset = kind == ComponentKind::Regular;
+    // A bare JSX identifier can carry an actual semantic immutability proof.
+    // Preserve the value expression while making the shared block/slot layout
+    // static too; changing only the creation helper leaves dynamic boundaries.
+    let kind = if ctx.jsx_closure
+        && kind == ComponentKind::Dynamic
+        && is_expr.as_ref().is_some_and(|expression| {
+            expression.const_type == vize_atelier_core::ConstantType::CanSkipPatch
+        }) {
+        ComponentKind::Regular
+    } else {
+        kind
+    };
     let create_component = CreateComponentIRNode {
         id: element_id,
         tag: el.tag,
         props,
         slots,
-        asset: kind == ComponentKind::Regular,
+        asset,
         once,
         dynamic_slots: has_dynamic_slot,
         kind,
