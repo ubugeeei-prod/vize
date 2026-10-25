@@ -1,0 +1,20 @@
+{
+  "name": "vize-babel7-packed-host",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@babel/core": "7.29.7",
+    "@babel/plugin-proposal-decorators": "7.29.7",
+    "@babel/plugin-transform-class-properties": "7.29.7",
+    "@babel/plugin-transform-modules-commonjs": "7.29.7",
+    "@babel/plugin-transform-react-jsx": "7.29.7",
+    "@babel/plugin-transform-typescript": "7.29.9",
+    "@jridgewell/gen-mapping": "0.3.13",
+    "@jridgewell/remapping": "2.3.5",
+    "@jridgewell/trace-mapping": "0.3.31",
+    "@vue/server-renderer": "3.5.44",
+    "convert-source-map": "2.0.0",
+    "vue": "3.5.44"
+  }
+}
