@@ -64,7 +64,16 @@ const slotContent = shallowRef<Record<string, string>>({});
 const copiedUsage = ref(false);
 const art = computed(() => getArt(props.artPath));
 const unsupported = computed(() => new Set(palette.value?.unsupportedProps ?? []));
-const appliedValues = computed(() => supportedProps(mergedValues.value, unsupported.value));
+const jsonUnsupported = computed(
+  () =>
+    new Set([
+      ...unsupported.value,
+      ...(palette.value?.controls ?? [])
+        .filter((control) => control.control === "function")
+        .map((control) => control.name),
+    ]),
+);
+const appliedValues = computed(() => supportedProps(mergedValues.value, jsonUnsupported.value));
 const retainedUnsupported = computed(() =>
   Object.keys(mergedValues.value).filter((name) => unsupported.value.has(name)),
 );
@@ -157,7 +166,8 @@ function onCodeEditorUpdate(newContent: string) {
   try {
     const parsed = JSON.parse(newContent);
     if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
-      codeError.value = unsupportedPropEdit(mergedValues.value, parsed, unsupported.value) ?? null;
+      codeError.value =
+        unsupportedPropEdit(mergedValues.value, parsed, jsonUnsupported.value) ?? null;
       if (!codeError.value) setAllValues(parsed as Record<string, unknown>);
     } else {
       codeError.value = "JSON must be an object";

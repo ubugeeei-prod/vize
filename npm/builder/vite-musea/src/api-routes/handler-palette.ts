@@ -12,7 +12,7 @@ import {
   resolveComponentSourcePath,
   resolveReadableArtPath,
 } from "../component-source.js";
-import { loadNative, analyzeSfcFallback } from "../native-loader.js";
+import { loadNative, analyzeSfcFallback, type SfcProp } from "../native-loader.js";
 import { parseScriptSetupForArt } from "../art-module.js";
 import { resolveArtComponent } from "../art-component.js";
 import { analyzeScriptComponent } from "../script-component-analysis.js";
@@ -22,6 +22,8 @@ type PaletteControl = {
   name: string;
   control: string;
   default_value?: unknown;
+  default_source?: string;
+  unsupported_default?: boolean;
   description?: string;
   required: boolean;
   options: Array<{ label: string; value: unknown }>;
@@ -37,13 +39,6 @@ type PaletteResponse = {
   groups: string[];
   json: string;
   typescript: string;
-};
-
-type SfcProp = {
-  name: string;
-  type: string;
-  required: boolean;
-  default_value?: unknown;
 };
 
 /** GET /api/arts/:path/palette */
@@ -151,7 +146,13 @@ function applyPropMetadata(control: PaletteControl, prop: SfcProp): void {
   control.name = prop.name;
   control.required = prop.required;
   if (control.default_value === undefined && prop.default_value !== undefined) {
-    control.default_value = parseDefault(prop.default_value);
+    control.default_value = prop.default_value;
+  }
+  if (prop.unsupported_default) {
+    control.unsupported_default = true;
+    control.default_source = prop.default_source;
+    control.description =
+      "The component retains its authored default; this expression is not evaluated for Controls.";
   }
   if (inferred.control !== "text" || control.control === "text") {
     control.control = inferred.control;
@@ -166,8 +167,15 @@ function controlFromProp(prop: SfcProp): PaletteControl {
   return {
     name: prop.name,
     control: inferred.control,
-    default_value: prop.default_value === undefined ? undefined : parseDefault(prop.default_value),
-    description: undefined,
+    default_value: prop.default_value,
+    ...(prop.unsupported_default
+      ? {
+          unsupported_default: true,
+          default_source: prop.default_source,
+          description:
+            "The component retains its authored default; this expression is not evaluated for Controls.",
+        }
+      : {}),
     required: prop.required,
     options: inferred.options,
     range: undefined,
@@ -177,6 +185,8 @@ function controlFromProp(prop: SfcProp): PaletteControl {
 
 function inferControl(type: string): Pick<PaletteControl, "control" | "options"> {
   const normalized = type.trim();
+  if (normalized.includes("=>") || normalized === "Function")
+    return { control: "function", options: [] };
   const options = literalOptions(normalized);
   if (options.length > 0) return { control: "select", options };
   if (normalized === "boolean") return { control: "boolean", options: [] };
@@ -207,14 +217,6 @@ function literalOptions(type: string): Array<{ label: string; value: unknown }> 
     .map((value) => ({ label: String(value), value }));
 }
 
-function parseDefault(value: unknown): unknown {
-  if (typeof value !== "string") return value;
-  if (value === "true") return true;
-  if (value === "false") return false;
-  if (/^-?\d+(?:\.\d+)?$/.test(value)) return Number(value);
-  return value.replace(/^["']|["']$/g, "");
-}
-
 function normalizePropName(name: string): string {
   return name.replace(/[-_]/g, "").toLowerCase();
 }
@@ -234,6 +236,7 @@ function generateTypescript(palette: PaletteResponse): string {
 function controlTsType(control: PaletteControl): string {
   if (control.control === "boolean") return "boolean";
   if (control.control === "number" || control.control === "range") return "number";
+  if (control.control === "function") return "(...args: unknown[]) => unknown";
   if (control.control === "array") return "unknown[]";
   if (control.control === "object") return "Record<string, unknown>";
   if (control.control === "select" && control.options.length > 0) {

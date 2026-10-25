@@ -1056,6 +1056,25 @@ export declare function parseDesignTokensFromJson(source: string): string;
 export declare function parseDesignTokensFromPath(tokensPath: string): string;
 
 /**
+ * Analyze authored props and emits from the shared SFC script analysis.
+ * Defaults are JSON values only when statically proven; executable expressions
+ * remain explicit `unsupported_default` metadata with their authored source.
+ */
+export declare function analyzeSfc(
+  source: string,
+  options?: SfcAnalyzeOptions | undefined | null,
+): any;
+
+/** Metadata analysis does not resolve external modules or execute defaults. */
+export interface SfcAnalyzeOptions {
+  filename?: string;
+  /** Include native phase timings and actual work counts in the result. */
+  profile?: boolean;
+  /** Bypass the bounded exact-source cache, for cold measurements. */
+  cache?: boolean;
+}
+
+/**
  * Parse the original SFC, including content/tag geometry in UTF-8 bytes.
  * Invalid SFC syntax throws `InvalidSfc` with the unchanged parser reason.
  */

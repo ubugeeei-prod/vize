@@ -74,6 +74,7 @@ module.exports.parseArtStatusWarnings = nativeBinding.parseArtStatusWarnings;
 module.exports.parseCssAst = nativeBinding.parseCssAst;
 module.exports.parseDesignTokensFromJson = nativeBinding.parseDesignTokensFromJson;
 module.exports.parseDesignTokensFromPath = nativeBinding.parseDesignTokensFromPath;
+module.exports.analyzeSfc = nativeBinding.analyzeSfc;
 module.exports.parseSfc = nativeBinding.parseSfc;
 module.exports.parseTemplate = nativeBinding.parseTemplate;
 module.exports.printCssAst = nativeBinding.printCssAst;

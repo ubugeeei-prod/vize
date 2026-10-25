@@ -249,6 +249,19 @@ Musea は次のことを実現できます。
 
 ## Props パレット
 
+型付きの `defineProps` と実行時のオブジェクト・配列宣言は、native の SFC メタデータから
+Controls を生成します。文字列・数値・真偽値・配列・オブジェクトの既定値は JSON の型を保持し、
+variant で指定した値を優先します。静的な配列・オブジェクトの factory は実行せずに読み取ります。
+関数や実行が必要な既定値はコンポーネント側で保持し、代替値の捏造や式の実行は行いません。
+関数 prop は読み取り専用です。
+
+native API の `analyzeSfc(source, { filename, profile: true })` では props、emits に加えて、
+descriptor 解析・共有解析・既定値の射影・Rust JSON 結果の構築の時間と実行回数を取得できます。
+計測値は N-API 変換と profile 自体の構築を含みません。キャッシュはファイル名とソースの完全一致で
+のみ再利用し、ソースの変更で更新します。cold 計測には `cache: false` を指定してください。
+静的に扱えない既定値は `unsupported_default: true` と元の `default_source` を返し、
+`default_value` を作りません。
+
 ![Musea の Props パネル](/musea-props.png)
 
 Props パレットは、コンポーネントのメタデータと art の定義から、操作用のコントロールを推測します。

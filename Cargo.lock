@@ -5039,6 +5039,7 @@ dependencies = [
  "napi-build",
  "napi-derive",
  "oxc-miette 4.0.0",
+ "oxc_ast",
  "oxc_codegen",
  "oxc_sourcemap",
  "oxc_span",

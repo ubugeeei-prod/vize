@@ -176,37 +176,34 @@
             "name": "label",
             "type": "string",
             "required": false,
-            "default_value": "\"Seed\""
+            "default_value": "Seed"
           },
           {
             "name": "scope.name",
             "type": "string",
             "required": false,
-            "default_value": "\"Seed custom\""
+            "default_value": "Seed custom"
           },
           {
             "name": "__proto__",
             "type": "string",
             "required": false,
-            "default_value": "\"Seed proto\""
+            "default_value": "Seed proto"
           },
           {
             "name": "constructor",
             "type": "string",
             "required": false,
-            "default_value": "\"Seed constructor\""
+            "default_value": "Seed constructor"
           },
           {
             "name": "hasOwnProperty",
             "type": "string",
             "required": false,
-            "default_value": "\"Seed method\""
+            "default_value": "Seed method"
           }
         ],
-        "emits": [
-          "change",
-          "submit"
-        ]
+        "emits": ["change", "submit"]
       }
     },
     {
@@ -230,24 +227,14 @@
       "filename": "original-compact.vue",
       "title": "Compact / Original",
       "source": "<script setup lang=\"ts\">\nimport { toRaw, useAttrs } from 'vue';\ndefineOptions({ inheritAttrs: false });\nconst props = defineProps<{ label?: string; constructor?: string; hasOwnProperty?: string }>();\nconst attrs = useAttrs();\nconst currentProps = () => Object.fromEntries(Object.entries(toRaw(props)).filter(([, value]) => value !== undefined));\n</script>\n<template><output>{{ JSON.stringify({ props: currentProps(), attrs: { ...attrs } }) }}</output></template>",
-      "names": [
-        "label",
-        "constructor",
-        "hasOwnProperty"
-      ]
+      "names": ["label", "constructor", "hasOwnProperty"]
     },
     {
       "name": "five literal compact props",
       "filename": "literal-compact.vue",
       "title": "Compact / Literal",
       "source": "<script setup lang=\"ts\">\nimport { toRaw, useAttrs } from 'vue';\ndefineOptions({ inheritAttrs: false });\nconst props = defineProps<{ label?: string; \"scope.name\"?: string; __proto__?: string; constructor?: string; hasOwnProperty?: string }>();\nconst attrs = useAttrs();\nconst currentProps = () => Object.fromEntries(Object.entries(toRaw(props)).filter(([, value]) => value !== undefined));\n</script>\n<template><output>{{ JSON.stringify({ props: currentProps(), attrs: { ...attrs }, ownProto: Object.hasOwn(toRaw(props), \"__proto__\"), prototypeUnchanged: Object.getPrototypeOf(Object.prototype) === null && Object.prototype.constructor === Object }) }}</output></template>",
-      "names": [
-        "label",
-        "scope.name",
-        "__proto__",
-        "constructor",
-        "hasOwnProperty"
-      ]
+      "names": ["label", "scope.name", "__proto__", "constructor", "hasOwnProperty"]
     }
   ],
   "editedValues": {

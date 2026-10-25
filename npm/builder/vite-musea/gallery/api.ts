@@ -17,6 +17,8 @@ export interface PaletteControl {
   name: string;
   control: string;
   default_value?: unknown;
+  default_source?: string;
+  unsupported_default?: boolean;
   description?: string;
   required: boolean;
   options: Array<{ label: string; value: unknown }>;
@@ -40,6 +42,8 @@ export interface AnalysisApiResponse {
     type: string;
     required: boolean;
     default_value?: unknown;
+    default_source?: string;
+    unsupported_default?: boolean;
   }>;
   emits: string[];
 }

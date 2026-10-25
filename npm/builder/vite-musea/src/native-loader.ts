@@ -10,6 +10,21 @@ import ts from "typescript";
 
 import { extractWithDefaults } from "./with-defaults.js";
 
+/** JSON defaults proven without evaluating component code. */
+export interface SfcProp {
+  name: string;
+  type: string;
+  required: boolean;
+  default_value?: unknown;
+  default_source?: string;
+  unsupported_default?: boolean;
+}
+
+export interface SfcAnalysis {
+  props: SfcProp[];
+  emits: string[];
+}
+
 // Native binding types
 export interface NativeBinding {
   parseArtStatusWarnings?: (source: string, options?: { filename?: string }) => string[];
@@ -103,16 +118,8 @@ export interface NativeBinding {
   findDependentDesignTokens?: (tokenMap: Record<string, unknown>, targetPath: string) => string[];
   analyzeSfc?: (
     source: string,
-    options?: { filename?: string },
-  ) => {
-    props: Array<{
-      name: string;
-      type: string;
-      required: boolean;
-      default_value?: unknown;
-    }>;
-    emits: string[];
-  };
+    options?: { filename?: string; profile?: boolean; cache?: boolean },
+  ) => SfcAnalysis;
 }
 
 // Lazy-load native binding
@@ -136,25 +143,9 @@ export function loadNative(): NativeBinding {
  * JS-based fallback for SFC analysis when native `analyzeSfc` is not available.
  * Reads direct type-literal props and preserves the existing emits/defaults contract.
  */
-export function analyzeSfcFallback(
-  source: string,
-  _options?: { filename?: string },
-): {
-  props: Array<{
-    name: string;
-    type: string;
-    required: boolean;
-    default_value?: unknown;
-  }>;
-  emits: string[];
-} {
+export function analyzeSfcFallback(source: string, _options?: { filename?: string }): SfcAnalysis {
   try {
-    const props: Array<{
-      name: string;
-      type: string;
-      required: boolean;
-      default_value?: unknown;
-    }> = [];
+    const props: SfcProp[] = [];
     const emits: string[] = [];
 
     // Extract the <script setup> block
@@ -173,7 +164,7 @@ export function analyzeSfcFallback(
         name,
         type,
         required: !optional && defaultValue === undefined,
-        ...(defaultValue !== undefined ? { default_value: defaultValue } : {}),
+        ...(defaultValue !== undefined ? fallbackDefault(defaultValue) : {}),
       });
     }
 
@@ -225,4 +216,40 @@ function directTypeLiteralProps(
       ];
     }) ?? []
   );
+}
+
+/** Preserve the JSON contract when an older native binary requires the typed fallback. */
+function fallbackDefault(
+  source: string,
+): Pick<SfcProp, "default_value" | "default_source" | "unsupported_default"> {
+  const file = ts.createSourceFile(
+    "default.ts",
+    `const value = (${source});`,
+    ts.ScriptTarget.Latest,
+    true,
+  );
+  const statement = file.statements[0];
+  let value =
+    statement && ts.isVariableStatement(statement)
+      ? statement.declarationList.declarations[0]?.initializer
+      : undefined;
+  while (
+    value &&
+    (ts.isParenthesizedExpression(value) ||
+      ts.isAsExpression(value) ||
+      ts.isSatisfiesExpression(value))
+  )
+    value = value.expression;
+  if (value && (ts.isStringLiteral(value) || ts.isNoSubstitutionTemplateLiteral(value)))
+    return { default_value: value.text };
+  if (value && ts.isNumericLiteral(value)) return { default_value: Number(value.text) };
+  if (value?.kind === ts.SyntaxKind.TrueKeyword) return { default_value: true };
+  if (value?.kind === ts.SyntaxKind.FalseKeyword) return { default_value: false };
+  if (value?.kind === ts.SyntaxKind.NullKeyword) return { default_value: null };
+  if (value && ts.isPrefixUnaryExpression(value) && ts.isNumericLiteral(value.operand)) {
+    const number = Number(value.operand.text);
+    if (value.operator === ts.SyntaxKind.MinusToken) return { default_value: -number };
+    if (value.operator === ts.SyntaxKind.PlusToken) return { default_value: number };
+  }
+  return { default_source: source, unsupported_default: true };
 }

@@ -19,6 +19,7 @@
     reason = "N-API values cross the boundary as std `String`s"
 )]
 
+mod analysis;
 mod batch;
 mod batch_helpers;
 mod batch_results;
@@ -32,6 +33,7 @@ mod parse;
 mod thread_pool;
 mod types;
 
+pub use analysis::*;
 pub use batch::*;
 pub use batch_results::*;
 pub use bundler::*;

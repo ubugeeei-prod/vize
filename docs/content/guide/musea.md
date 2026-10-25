@@ -239,6 +239,20 @@ Musea can surface:
 
 The palette pipeline can infer interactive controls from component metadata and art definitions.
 
+Typed `defineProps` and runtime object/array declarations use native SFC metadata. String,
+number, boolean, array, and object defaults retain their JSON types; authored variant values take
+precedence. Static object and array factories are read without executing project code. Functions
+and defaults that depend on executable expressions remain owned by the component: Controls does
+not invent a replacement value or execute the expression. Function props are read-only.
+
+The public `analyzeSfc(source, { filename, profile: true })` native API reports props, emits, and
+optional phase timings (`descriptorParseNs`, `analyzeNs`, `defaultProjectionNs`, `serializeNs`)
+with actual call counts. `serializeNs` covers construction of the Rust JSON result, excluding the
+N-API conversion and optional profile envelope. A bounded cache reuses metadata only for the exact
+filename and source; edits invalidate the entry. Use `{ cache: false, profile: true }` for cold
+measurements. Unsupported defaults have `unsupported_default: true` and their authored
+`default_source`, without a fabricated `default_value`.
+
 Use **Copy link** in Props Controls to share the current values, custom controls, removed props,
 and slot content. Opening the link selects the Props tab and restores that snapshot in the
 preview, including in a fresh browser. Explicit URL state takes precedence over

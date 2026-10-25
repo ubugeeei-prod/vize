@@ -83,6 +83,11 @@ mod plugin_sdk {
     mod tests;
 }
 
+#[cfg(all(test, not(feature = "napi")))]
+mod sfc {
+    mod analysis;
+}
+
 #[cfg(feature = "napi")]
 pub use art::*;
 #[cfg(feature = "napi")]
