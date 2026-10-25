@@ -3,11 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
-import {
-  completionLabels,
-  isDiagnosticsForUri,
-  offsetToPosition,
-} from "./support/lsp/assertions.ts";
+import { isDiagnosticsForUri, offsetToPosition } from "./support/lsp/assertions.ts";
 import { testOutputRoot } from "./support/lsp/paths.ts";
 import { LspSession } from "./support/lsp/session.ts";
 
@@ -122,7 +118,21 @@ ${ordinary}<art title="Scope" component="./Child.vue">
               value: `**${entry.name}**\n\n_${entry.kind} scope binding_\n\n\`\`\`vue\n${entry.tag}\n\`\`\`\n\n${loop ? "Loop value alias declared by the nearest `v-for` and available to this template scope." : "Slot prop binding declared by the nearest scoped slot and available to this template subtree."}\n\n**Behavior**\n- Shadows outer template and script bindings with the same name.\n- ${loop ? "Type-backed sessions should refine this with the iterable item type when the backend answers." : "Type-backed sessions should refine this with the child component slot prop type when the backend answers."}`,
             },
           });
-          const labels = completionLabels(await session.request("textDocument/completion", params));
+          const completion: unknown = await session.request("textDocument/completion", params);
+          const items: unknown = Array.isArray(completion)
+            ? completion
+            : completion !== null && typeof completion === "object" && "items" in completion
+              ? completion.items
+              : undefined;
+          assert.ok(
+            Array.isArray(items),
+            "completion must return an item array or completion list",
+          );
+          const labels = items.map((item: unknown) => {
+            assert.ok(item !== null && typeof item === "object" && "label" in item);
+            assert.ok(typeof item.label === "string");
+            return item.label;
+          });
           assert.deepEqual(
             labels
               .filter((label) =>
