@@ -26,6 +26,7 @@ export const PLAIN_TYPE_SOURCES = {
   engine: "linter/engine.rs",
   batch: "linter/engine/batch.rs",
   config: "linter/config.rs",
+  selection: "linter/rule_selection.rs",
   constructors: "linter/config/constructors.rs",
 } as const;
 
@@ -260,6 +261,16 @@ export function derivePlainTypeDispatch(
     body(sources.config, "with_rule"),
     "ifis_type_rule(rule_name){self.type_aware_enabled=true;}",
     "explicit type-rule opt-in changed",
+  );
+  requireCode(
+    body(sources.selection, "with_enabled_rules"),
+    "ifrules.as_ref().is_some_and(|rules|has_type_rule(rules)){self.type_aware_enabled=true;}",
+    "explicit enabled type-rule selection no longer opts in",
+  );
+  requireCode(
+    body(sources.selection, "with_additional_rules"),
+    "ifhas_type_rule(&rules){self.type_aware_enabled=true;}",
+    "additional type-rule selection no longer opts in",
   );
   if (
     compact(body(sources.config, "is_rule_enabled")) !==

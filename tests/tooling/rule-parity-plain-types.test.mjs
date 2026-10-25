@@ -169,6 +169,13 @@ const controls = [
     "self.type_aware_enabled = true;",
   ],
   ["explicit type-rule opt-in", "config", "if is_type_rule(rule_name)", "if false"],
+  [
+    "enabled type-rule opt-in",
+    "selection",
+    "if rules.as_ref().is_some_and(|rules| has_type_rule(rules))",
+    "if false",
+  ],
+  ["additional type-rule opt-in", "selection", "if has_type_rule(&rules)", "if false"],
   ["default opt-out", "constructors", "type_aware_enabled: false,", "type_aware_enabled: true,"],
   ["configured disable", "config", "if self.disabled_rules.contains(rule_name)", "if false"],
   ["enabled-rule filter", "config", "Some(set) => set.contains(rule_name)", "Some(_set) => true"],

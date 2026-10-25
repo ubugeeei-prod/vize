@@ -101,7 +101,8 @@ export function derivationSection(model: DispatchModel): string[] {
       " This subset does not make the remaining native type-query" +
       " branches run on JSX. Native targets must" +
       " enable type-aware lint (constructors default to off; the host" +
-      " builder or an explicit type-rule registration can opt in), register" +
+      " builder, explicit type-rule registration or explicit type-rule" +
+      " selection can opt in), register" +
       " the rule and admit it through the configured enabled-rule filter" +
       " without disabling it. No candidate query means no checker session:" +
       " static findings may remain, but that is not successful type-query" +
