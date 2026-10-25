@@ -188,10 +188,11 @@ export function retainPrivateSdkProcess(
   cwd: string,
   argv: string[],
   result: ReturnType<typeof spawnSync>,
+  executable = process.execPath,
 ): void {
   const context = contexts.get(path.resolve(cwd));
   if (!context) return; // Initial package builds are the unchanged source producer.
-  const stem = `${String(context.sequence++).padStart(2, "0")}-${argv.join("-").replaceAll(/[^a-zA-Z0-9_-]/g, "_")}`;
+  const stem = `${String(context.sequence++).padStart(2, "0")}-${hash(Buffer.from(JSON.stringify(argv)))}`;
   retain(path.join(context.evidence, `${stem}.process.json`), result);
   fs.writeFileSync(
     path.join(context.evidence, `${stem}.command.json`),
@@ -199,7 +200,7 @@ export function retainPrivateSdkProcess(
       {
         cwd,
         argv,
-        executable: process.execPath,
+        executable,
         nativeProvider: context.executable,
         runtimeOverrides: Object.fromEntries(
           overrides.map((key) => [key, privateSdkChildEnvironment(process.env)[key] ?? null]),
