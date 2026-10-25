@@ -14,12 +14,17 @@ import { PNG } from "pngjs";
  */
 export async function readPng(filepath: string): Promise<PNG> {
   return new Promise((resolve, reject) => {
-    fs.createReadStream(filepath)
+    const input = fs.createReadStream(filepath);
+    input
+      .on("error", reject)
       .pipe(new PNG())
       .on("parsed", function (this: PNG) {
         resolve(this);
       })
-      .on("error", reject);
+      .on("error", (error) => {
+        input.destroy();
+        reject(error);
+      });
   });
 }
 
