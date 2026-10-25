@@ -117,6 +117,21 @@ void test("NAPI process custody rejects absent, foreign and failed API owner rec
         provider,
       ),
     );
+    assert.throws(
+      () =>
+        napiNativeExecutions(
+          [
+            { file: "node", text: node },
+            {
+              file: "failed-fallback",
+              text: 'execve("/unowned/npm", ["npm", "root", "-g"], 0x1) = -1 ENOENT (No such file or directory)\n+++ exited with 1 +++\n',
+            },
+          ],
+          process.execPath,
+          null,
+        ),
+      /failed exec attempts/u,
+    );
     assert.deepEqual(empty("App.vue"), {
       filename: "App.vue",
       errorCount: 0,

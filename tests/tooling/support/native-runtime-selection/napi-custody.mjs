@@ -10,8 +10,9 @@ export function napiNativeExecutions(files, node, expected) {
   const selected = [];
   let entered = false;
   for (const file of files) {
-    const events = parseExecTrace(file.text).filter((row) => row.success);
+    const events = parseExecTrace(file.text);
     for (const event of events) {
+      assert(event.success, "failed exec attempts cannot disappear from native selection custody");
       const physicalPath = fs.realpathSync(event.executable);
       if (physicalPath === frontend) {
         entered = true;
@@ -94,6 +95,7 @@ export function runNapiObservation({ strace, worker, input, cwd, env, directory,
     stdout: { bytes: result.stdout?.length ?? 0, sha256: sha256(result.stdout ?? Buffer.alloc(0)) },
     stderr: { bytes: result.stderr?.length ?? 0, sha256: sha256(result.stderr ?? Buffer.alloc(0)) },
     traces,
+    allExecutions: [],
     selectedExecutions: [],
     state: "pending",
     meaning:
@@ -103,6 +105,10 @@ export function runNapiObservation({ strace, worker, input, cwd, env, directory,
     fs.writeFileSync(path.join(directory, "process.json"), `${JSON.stringify(receipt, null, 2)}\n`);
   save();
   try {
+    receipt.allExecutions = traces.flatMap((file) =>
+      parseExecTrace(file.text).map((event) => ({ trace: file.file, ...event })),
+    );
+    save();
     assert.equal(receipt.error, null);
     assert.equal(receipt.signal, null);
     assert.equal(receipt.status, 0);

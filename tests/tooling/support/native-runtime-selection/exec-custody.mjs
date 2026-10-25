@@ -155,6 +155,7 @@ export function runStracedCli({ strace, cli, args, cwd, env, directory, expected
     error: result.error?.message ?? null,
     streams,
     rawFiles,
+    allExecutions: [],
     selectedExecutions: [],
     validation: "pending",
     meaning:
@@ -173,7 +174,15 @@ export function runStracedCli({ strace, cli, args, cwd, env, directory, expected
       assert.ok(file.bytes <= 16 * 1024 * 1024, "bounded complete execve observation");
       file.events = parseExecTrace(fs.readFileSync(path.join(directory, file.file), "utf8"));
     }
-    const successful = rawFiles.flatMap((file) => file.events).filter((x) => x.success);
+    receipt.allExecutions = rawFiles.flatMap((file) =>
+      file.events.map((event) => ({ trace: file.file, ...event })),
+    );
+    save();
+    assert.ok(
+      receipt.allExecutions.every((event) => event.success),
+      "all compiler/frontend exec attempts must be accounted for; failed fallback is not absence proof",
+    );
+    const successful = receipt.allExecutions;
     assert.ok(
       successful.some((x) => fs.realpathSync(x.executable) === cli),
       "actual source CLI exec required",
