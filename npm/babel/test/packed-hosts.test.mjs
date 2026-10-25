@@ -76,7 +76,7 @@ function worker(spec, format, phase) {
   assert(observed.observations.every((item) => item.assertion === null));
 }
 
-test("packed cold consumers preserve plain and scoped host results without native resolution", () => {
+void test("packed cold consumers preserve plain and scoped host results without native resolution", () => {
   const failures = [];
   for (const spec of hostSpecs)
     for (const format of ["esm", "cjs"]) {
@@ -90,7 +90,7 @@ test("packed cold consumers preserve plain and scoped host results without nativ
 });
 for (const spec of hostSpecs)
   for (const format of ["esm", "cjs"]) {
-    test("Babel " + spec.version + " actual packed " + format + " host contracts", () =>
+    void test("Babel " + spec.version + " actual packed " + format + " host contracts", () =>
       worker(spec, format, "positive"),
     );
   }
