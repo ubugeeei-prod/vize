@@ -517,10 +517,14 @@ jobs:
           npm ci --prefix "$RUNNER_TEMP/router-mapper-host" --ignore-scripts --no-audit --no-fund --prefer-offline --registry=https://registry.npmjs.org
           sha256sum "$RUNNER_TEMP/router-mapper-host/package-lock.json" "$RUNNER_TEMP/router-mapper-host/node_modules/typescript/package.json" "$RUNNER_TEMP/router-mapper-host/node_modules/@typescript/typescript-linux-x64/lib/tsc" > "$RUNNER_TEMP/router-experimental/host-identity.sha256"
       - name: Build source CLI and test immutable project context
+        env:
+          CORSA_PATH: ${{ runner.temp }}/router-mapper-host/node_modules/@typescript/typescript-linux-x64/lib/tsc
+          VIZE_TEST_REQUIRE_TSGO: "1"
         run: |
           cargo build --locked --profile ci -p vize --bin vize
           cargo test --locked --profile ci -p vize_canon content_mapper_config::typed_router_tests:: -- --nocapture
           cargo test --locked --profile ci -p vize --bin vize commands::content_mapper::typed_router_tests:: -- --nocapture
+          cargo test --locked --profile ci -p vize_canon --test fix_history_diagnostics content_mapper_experimental_router_context_preserves_published_page_types -- --nocapture
           sha256sum target/ci/vize > "$RUNNER_TEMP/router-experimental/source-cli.sha256"
       - name: Require complete published-provider mapper and reference packets
         env:

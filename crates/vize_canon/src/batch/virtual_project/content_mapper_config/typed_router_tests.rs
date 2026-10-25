@@ -18,7 +18,7 @@ fn host_configuration(
 #[test]
 fn host_root_is_admitted_once_and_explicit_plugin_root_takes_precedence() {
     let directory = tempfile::tempdir().unwrap();
-    let root = vize_l0::path::canonicalize_non_verbatim(directory.path());
+    let root = vize_carton::path::canonicalize_non_verbatim(directory.path());
     let config = root.join("tsconfig.json");
     std::fs::write(
         &config,
@@ -45,7 +45,7 @@ fn host_root_is_admitted_once_and_explicit_plugin_root_takes_precedence() {
 #[test]
 fn enabled_identity_tracks_effective_root_but_disabled_identity_does_not() {
     let directory = tempfile::tempdir().unwrap();
-    let root = vize_l0::path::canonicalize_non_verbatim(directory.path());
+    let root = vize_carton::path::canonicalize_non_verbatim(directory.path());
     let config = root.join("tsconfig.json");
     std::fs::write(
         &config,
@@ -74,7 +74,7 @@ fn enabled_identity_tracks_effective_root_but_disabled_identity_does_not() {
 #[test]
 fn inherited_opt_in_uses_selected_project_anchor_and_malformed_roots_decline() {
     let directory = tempfile::tempdir().unwrap();
-    let root = vize_l0::path::canonicalize_non_verbatim(directory.path());
+    let root = vize_carton::path::canonicalize_non_verbatim(directory.path());
     std::fs::write(
         root.join("base.json"),
         r#"{"vueCompilerOptions":{"plugins":["vue-router/volar/sfc-typed-router"]}}"#,

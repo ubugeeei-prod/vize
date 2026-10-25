@@ -68,7 +68,7 @@ impl ContentMapperProjectConfiguration {
             if config_file_name.as_os_str().is_empty() {
                 return None;
             }
-            let project_root = vize_l0::path::canonicalize_non_verbatim(
+            let project_root = vize_carton::path::canonicalize_non_verbatim(
                 config_file_name.parent().unwrap_or(Path::new(".")),
             );
             super::typed_router::configured_root_from_options(

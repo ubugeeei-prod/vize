@@ -842,7 +842,8 @@ fn check_pack(
             | "pug-refusal-10430"
             | "portable-pug-10434"
             | "jsx-prop-token-ranges-10494"
-            | "experimental-router-import-10520" => regression,
+            | "experimental-router-import-10520"
+            | "content-mapper-experimental-router-10526" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
             }
@@ -900,12 +901,16 @@ fn check_pack(
     let mut capture = observation::Capture::from_environment();
     for case in pack.cases {
         let project = tempfile::tempdir().expect("a project must be created");
-        let project_root = if name == "experimental-router-import-10520" {
+        let uses_router_provider = matches!(
+            name,
+            "experimental-router-import-10520" | "content-mapper-experimental-router-10526"
+        );
+        let project_root = if uses_router_provider {
             support::fix_history_router_provider::prepare(&root, project.path(), &fixtures)
         } else {
             std::fs::canonicalize(project.path()).expect("project identity must resolve")
         };
-        if pack.project_options.is_none() && name != "experimental-router-import-10520" {
+        if pack.project_options.is_none() && !uses_router_provider {
             std::fs::create_dir(project_root.join("node_modules"))
                 .expect("node_modules must be created");
             link_vue(&vue, &project_root.join("node_modules/vue"));
@@ -1185,5 +1190,16 @@ fn experimental_page_import_preserves_published_path_diagnostics() {
         "a29d9c0b1961ada51037db402c3b74436a56d623",
         Some(10520),
         &["imported-define-page-unknown-path"],
+    );
+}
+
+#[test]
+fn content_mapper_experimental_router_context_preserves_published_page_types() {
+    check_pack(
+        "content-mapper-experimental-router-10526",
+        "content_mapper_experimental_router_context_preserves_published_page_types",
+        "190c82fb9c8bbdc2c519b335b1661563270f4d2c",
+        Some(10526),
+        &["published-page-valid", "published-page-invalid-number"],
     );
 }

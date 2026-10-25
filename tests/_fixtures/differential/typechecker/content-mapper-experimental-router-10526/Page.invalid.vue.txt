@@ -1,0 +1,17 @@
+<script setup lang="ts">
+import { useRoute } from 'vue-router'
+import { definePage } from 'vue-router/experimental'
+definePage({
+  params: {
+    query: { page: { parser: 'int', format: 'value', default: 1 }, tags: { parser: 'string', format: 'array' }, at: { parser: 'date', format: 'value' } },
+    hash: { heading: {} },
+  },
+})
+const route = useRoute()
+const id: number = route.params.id
+const page: string = route.params.page
+const tags: string[] | undefined = route.params.tags
+const at: Date | undefined = route.params.at
+const heading: string | undefined = route.params.heading
+</script>
+<template><div>{{ route.params.id.toFixed() }} {{ route.params.page.toFixed() }}</div></template>

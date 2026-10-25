@@ -6,6 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import {
+  experimentalRouterFixture,
   experimentalRouterPage,
   prepareExperimentalRouterProject,
 } from "./support/router-experimental-provider.ts";
@@ -25,6 +26,10 @@ type Response = {
   error?: unknown;
   result: Partial<Transform> & { configIdentity?: string };
 };
+const mapperCorpus = new URL(
+  "../_fixtures/differential/typechecker/content-mapper-experimental-router-10526/",
+  import.meta.url,
+);
 const validPacket: Packet = { status: 0, signal: null, error: null, stdout: "", stderr: "" };
 const broadParams =
   "Record<never, never> | { at: Date | undefined; heading: string | undefined; id: number; page: number; tags: string[] | undefined; }";
@@ -218,6 +223,31 @@ test(
         ...validPacket,
         stdout: "Version 7.1.0-dev.20261017.1\n",
       });
+      assert.equal(
+        fs.readFileSync(new URL("Page.valid.vue.txt", mapperCorpus), "utf8"),
+        project.pageSource,
+      );
+      assert.equal(
+        fs.readFileSync(new URL("Page.invalid.vue.txt", mapperCorpus), "utf8"),
+        project.pageSource.replace("const page: number", "const page: string"),
+      );
+      assert.equal(
+        fs.readFileSync(new URL("typed-router.d.ts.txt", mapperCorpus), "utf8"),
+        project.generatedDeclaration,
+      );
+      assert.deepEqual(
+        fs.readFileSync(new URL("provider.json.txt", mapperCorpus)),
+        fs.readFileSync(path.join(experimentalRouterFixture, "provider.json")),
+      );
+      assert.deepEqual(
+        fs.readFileSync(new URL("mapper-host-package-lock.json.txt", mapperCorpus)),
+        fs.readFileSync(
+          new URL(
+            "../fixtures/typechecker/experimental-router-mapper-host/package-lock.json.txt",
+            import.meta.url,
+          ),
+        ),
+      );
       const packageRoot = path.join(project.root, "node_modules/router-source-mapper");
       fs.mkdirSync(packageRoot, { recursive: true });
       fs.writeFileSync(
@@ -234,16 +264,17 @@ test(
           },
         }),
       );
-      for (const disabled of [false, true]) {
-        fs.writeFileSync(
-          path.join(project.root, disabled ? "tsconfig.disabled.json" : "tsconfig.mapper.json"),
-          JSON.stringify({
-            extends: "./tsconfig.json",
-            ...(disabled ? { vueCompilerOptions: { plugins: [] } } : {}),
-            contentMappers: [{ package: "router-source-mapper", extensions: [".vue"] }],
-          }),
-        );
-      }
+      fs.copyFileSync(
+        new URL("tsconfig.mapper.json.txt", mapperCorpus),
+        path.join(project.root, "tsconfig.mapper.json"),
+      );
+      fs.writeFileSync(
+        path.join(project.root, "tsconfig.disabled.json"),
+        JSON.stringify({
+          extends: "./tsconfig.mapper.json",
+          vueCompilerOptions: { plugins: [] },
+        }),
+      );
       const config = path.join(project.root, "tsconfig.mapper.json"),
         disabledConfig = path.join(project.root, "tsconfig.disabled.json");
       for (const newline of ["\n", "\r\n"]) {

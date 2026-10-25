@@ -5481,6 +5481,151 @@
           "message": "Object literal may only specify known properties, and 'missing' does not exist in type '{ id?: \"date\" | DefinePagePathParamOptions | keyof ParamParsers_Native | undefined; }'."
         }
       ]
+    },
+    {
+      "id": "typechecker/content-mapper-experimental-router-10526/published-page-valid",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "content-mapper-experimental-router-10526",
+      "case": "published-page-valid",
+      "test": "content_mapper_experimental_router_context_preserves_published_page_types",
+      "regressionCommit": "190c82fb9c8bbdc2c519b335b1661563270f4d2c",
+      "sourceRevision": "190c82fb9c8bbdc2c519b335b1661563270f4d2c",
+      "packReference": {
+        "path": "content-mapper-experimental-router-10526/cases.json",
+        "sha256": "86ceb6d9a1698310c85928f0cb349923d479941e7b8971d4b14b5348ec993ac9"
+      },
+      "inputs": [
+        {
+          "file": "src/pages/products/[id=int].vue",
+          "path": "content-mapper-experimental-router-10526/Page.valid.vue.txt",
+          "sha256": "199bd1ad1ec5be0ab9f93f4ce116b2924d63132ebefa6534f69f0be0fcd8328a"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "content-mapper-experimental-router-10526/tsconfig.json.txt",
+          "sha256": "88fd4f1d6d986627d8f757cb5f7f191467d42d082c01e5425ba9fbf7a3298dbd"
+        },
+        {
+          "file": "tsconfig.mapper.json",
+          "path": "content-mapper-experimental-router-10526/tsconfig.mapper.json.txt",
+          "sha256": "59a1950d87ae720dcff0bf4ecb5d431b97828fda7362160ac70f668cfa43ea9a"
+        },
+        {
+          "file": "typed-router.d.ts",
+          "path": "content-mapper-experimental-router-10526/typed-router.d.ts.txt",
+          "sha256": "c52a3076fa34d4ae489577ea20bc5c2768219a9c9eef3dcc68657b8ce7539974"
+        },
+        {
+          "file": "provider.json",
+          "path": "content-mapper-experimental-router-10526/provider.json.txt",
+          "sha256": "e6712b311544c2de98ae3af225b15de3cc41c0269ddefa826f07ea9a33753e77"
+        },
+        {
+          "file": "mapper-host-package-lock.json",
+          "path": "content-mapper-experimental-router-10526/mapper-host-package-lock.json.txt",
+          "sha256": "8190afe04c7becd38aafbbe8fbbbac8829006f3d45889bf2e283a64ce8fc6ea5"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "typechecker/content-mapper-experimental-router-10526/published-page-invalid-number",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "content-mapper-experimental-router-10526",
+      "case": "published-page-invalid-number",
+      "test": "content_mapper_experimental_router_context_preserves_published_page_types",
+      "regressionCommit": "190c82fb9c8bbdc2c519b335b1661563270f4d2c",
+      "sourceRevision": "190c82fb9c8bbdc2c519b335b1661563270f4d2c",
+      "packReference": {
+        "path": "content-mapper-experimental-router-10526/cases.json",
+        "sha256": "86ceb6d9a1698310c85928f0cb349923d479941e7b8971d4b14b5348ec993ac9"
+      },
+      "inputs": [
+        {
+          "file": "src/pages/products/[id=int].vue",
+          "path": "content-mapper-experimental-router-10526/Page.invalid.vue.txt",
+          "sha256": "bb4ac962685e8c6c6772c94f077b8391684a2e561cd31e9196cf455fc370f2f2"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "content-mapper-experimental-router-10526/tsconfig.json.txt",
+          "sha256": "88fd4f1d6d986627d8f757cb5f7f191467d42d082c01e5425ba9fbf7a3298dbd"
+        },
+        {
+          "file": "tsconfig.mapper.json",
+          "path": "content-mapper-experimental-router-10526/tsconfig.mapper.json.txt",
+          "sha256": "59a1950d87ae720dcff0bf4ecb5d431b97828fda7362160ac70f668cfa43ea9a"
+        },
+        {
+          "file": "typed-router.d.ts",
+          "path": "content-mapper-experimental-router-10526/typed-router.d.ts.txt",
+          "sha256": "c52a3076fa34d4ae489577ea20bc5c2768219a9c9eef3dcc68657b8ce7539974"
+        },
+        {
+          "file": "provider.json",
+          "path": "content-mapper-experimental-router-10526/provider.json.txt",
+          "sha256": "e6712b311544c2de98ae3af225b15de3cc41c0269ddefa826f07ea9a33753e77"
+        },
+        {
+          "file": "mapper-host-package-lock.json",
+          "path": "content-mapper-experimental-router-10526/mapper-host-package-lock.json.txt",
+          "sha256": "8190afe04c7becd38aafbbe8fbbbac8829006f3d45889bf2e283a64ce8fc6ea5"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": [
+        {
+          "file": "src/pages/products/[id=int].vue",
+          "line": 12,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ]
     }
   ]
 }

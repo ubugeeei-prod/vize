@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10526,
+  "regressionCommit": "190c82fb9c8bbdc2c519b335b1661563270f4d2c",
+  "sourceRevision": "190c82fb9c8bbdc2c519b335b1661563270f4d2c",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "published-page-valid",
+      "inputs": [
+        {
+          "file": "src/pages/products/[id=int].vue",
+          "source": "Page.valid.vue.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "tsconfig.mapper.json",
+          "source": "tsconfig.mapper.json.txt"
+        },
+        {
+          "file": "typed-router.d.ts",
+          "source": "typed-router.d.ts.txt"
+        },
+        {
+          "file": "provider.json",
+          "source": "provider.json.txt"
+        },
+        {
+          "file": "mapper-host-package-lock.json",
+          "source": "mapper-host-package-lock.json.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "published-page-invalid-number",
+      "inputs": [
+        {
+          "file": "src/pages/products/[id=int].vue",
+          "source": "Page.invalid.vue.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "tsconfig.mapper.json",
+          "source": "tsconfig.mapper.json.txt"
+        },
+        {
+          "file": "typed-router.d.ts",
+          "source": "typed-router.d.ts.txt"
+        },
+        {
+          "file": "provider.json",
+          "source": "provider.json.txt"
+        },
+        {
+          "file": "mapper-host-package-lock.json",
+          "source": "mapper-host-package-lock.json.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/pages/products/[id=int].vue",
+          "line": 12,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}

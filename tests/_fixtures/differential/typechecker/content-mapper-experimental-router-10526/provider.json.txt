@@ -1,0 +1,98 @@
+{
+  "schema": "vize.router-experimental-provider",
+  "version": 1,
+  "issue": 10520,
+  "provider": {
+    "name": "vue-router",
+    "version": "5.4.0",
+    "tarball": "https://registry.npmjs.org/vue-router/-/vue-router-5.4.0.tgz",
+    "integrity": "sha512-pFvcYcxinDHjZUlf7AzFBrT8r8Xqvv4uMHoJnjc+EqPawXQvHTkF8S4tfSmQLpriVHUGfkaKlI7Et0KRjTMTdw==",
+    "archiveSha256": "0c3a6d93f5236da11d0d2496fa4244e56a2518d8a2c5cb93a81e6956e117dbab"
+  },
+  "contract": {
+    "optIn": "vueCompilerOptions.plugins: vue-router/volar/sfc-typed-router",
+    "unpublishedHelpersAbsent": ["_RoutePropsForFilePath"],
+    "experimentalExports": [
+      "definePage",
+      "defineParamParser",
+      "defineParamParserRaw",
+      "defineHashParamParser",
+      "experimental_createRouter"
+    ],
+    "stableExports": ["useRoute", "useRouter"],
+    "primaryDocs": [
+      "https://router.vuejs.org/experimental/router-resolver",
+      "https://router.vuejs.org/experimental/param-parsers"
+    ],
+    "talk": "https://talk-2026-typesafe-url.netlify.app/jp/1"
+  },
+  "providerFiles": [
+    {
+      "path": "package.json",
+      "sha256": "738107ee305f1c6bdb29c1622950ba100e6857bc6c4a745954bba55383fb5d67",
+      "bytes": 6072
+    },
+    {
+      "path": "dist/volar/sfc-typed-router.cjs",
+      "sha256": "2833921a7b42f8b9691123ef3807242a63ac5c58722057f5862a87705e829884",
+      "bytes": 4040
+    },
+    {
+      "path": "dist/experimental/index.d.ts",
+      "sha256": "95c7c590e8194142f74faa771875c9e07fbc27c789652d3ed2ec89c01a88a7a8",
+      "bytes": 5573
+    },
+    {
+      "path": "dist/unplugin/index.mjs",
+      "sha256": "a93f9be5b83fd2607f47b86bb0a81af4d2e97f1b0e3eef5274182aec3b693f9d",
+      "bytes": 634
+    }
+  ],
+  "files": [
+    {
+      "path": "generate.mjs",
+      "sha256": "49687bd525be764e8059008fb94c27ef59f1d9da23792d97e452f2a18fa5df74",
+      "bytes": 548
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "156c500f099725c70b1432e1a9964b0867ce4e4e8c8728240a934a4a50c3f127",
+      "bytes": 35014
+    },
+    {
+      "path": "package.json",
+      "sha256": "aa3c2f683930df340d8ea962f8fe474cfa78193d2251d2bcfcff57c7cd1437d2",
+      "bytes": 234
+    },
+    {
+      "path": "src/pages/index.vue",
+      "sha256": "07033b03a0b3d3c35c16fef923fc846fd858408dff515765280fd79bd536f16c",
+      "bytes": 37
+    },
+    {
+      "path": "src/pages/products/[id=int].vue",
+      "sha256": "199bd1ad1ec5be0ab9f93f4ce116b2924d63132ebefa6534f69f0be0fcd8328a",
+      "bytes": 693
+    },
+    {
+      "path": "src/params/date.ts",
+      "sha256": "cd1c4ef8f84c3dfff8e957635138256f8c1a47fa7f0b29a82f9a8ed727fb14ea",
+      "bytes": 256
+    },
+    {
+      "path": "src/router/index.ts",
+      "sha256": "128fbad96a5a8014b5efc2ac13378551e3276eb5d7393d9b6b2b33865ba3eae9",
+      "bytes": 346
+    },
+    {
+      "path": "tsconfig.json",
+      "sha256": "88fd4f1d6d986627d8f757cb5f7f191467d42d082c01e5425ba9fbf7a3298dbd",
+      "bytes": 316
+    },
+    {
+      "path": "typed-router.d.ts",
+      "sha256": "c52a3076fa34d4ae489577ea20bc5c2768219a9c9eef3dcc68657b8ce7539974",
+      "bytes": 2746
+    }
+  ]
+}

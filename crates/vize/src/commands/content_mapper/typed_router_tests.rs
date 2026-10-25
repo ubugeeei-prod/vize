@@ -43,7 +43,7 @@ fn expected(config: &Path, root: &Path, file: &Path, source: &str) -> Value {
 #[test]
 fn two_open_projects_keep_complete_transform_packets_isolated() {
     let directory = tempfile::tempdir().unwrap();
-    let root = vize_l0::path::canonicalize_non_verbatim(directory.path());
+    let root = vize_carton::path::canonicalize_non_verbatim(directory.path());
     let enabled = root.join("enabled.json");
     let disabled = root.join("disabled.json");
     std::fs::write(
@@ -120,7 +120,7 @@ impl Write for EditAfterResponse<'_> {
 #[test]
 fn transforms_do_not_read_config_and_reopen_replaces_admitted_context() {
     let directory = tempfile::tempdir().unwrap();
-    let root = vize_l0::path::canonicalize_non_verbatim(directory.path());
+    let root = vize_carton::path::canonicalize_non_verbatim(directory.path());
     let config = root.join("tsconfig.json");
     let file = root.join("src/pages/[id].vue");
     let source = "<script setup lang=\"ts\">import { useRoute } from 'vue-router'; const route = useRoute()</script><template>{{ route.params.id }}</template>";
