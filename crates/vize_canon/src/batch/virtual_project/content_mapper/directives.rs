@@ -33,18 +33,16 @@ pub(super) fn sfc_diagnostic_directives(
     let authored = TemplateDiagnosticDirectives::for_descriptor(source, descriptor);
     let mut directives = Vec::new();
     let mut expects_unused_table = false;
-    let navigation_echoes = echoes
+    let owned_echoes = echoes
         .iter()
-        .filter(|echo| echo.bare_navigation)
         .map(|echo| &echo.generated)
         .collect::<Vec<_>>();
 
     for directive in authored.directives() {
-        // Exported navigation mappings stay untouched. Only a proven bare
-        // copy is excluded from EXPECT ownership; otherwise its early read
-        // stretches one expectation across unrelated slot and sibling code.
+        // Exported navigation mappings stay untouched. Only emitter-proven
+        // echoes with a real primary are excluded from EXPECT ownership.
         let excluded = if directive.policy == DirectivePolicy::Expect {
-            navigation_echoes.as_slice()
+            owned_echoes.as_slice()
         } else {
             &[]
         };

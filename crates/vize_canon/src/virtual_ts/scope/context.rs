@@ -73,6 +73,7 @@ impl ComponentBindingCheck<'_> {
 
 /// Context for recursive scope generation, bundling shared parameters.
 pub(crate) struct ScopeGenContext<'a, 'template> {
+    pub(super) inference_prelude: Option<&'a RefCell<super::root_owner_packets::RootOwnerBuffer>>,
     pub(crate) summary: &'a Croquis,
     pub(crate) virtual_ts_options: &'a VirtualTsOptions,
     pub(crate) expressions_by_scope: &'a FxHashMap<u32, Vec<&'a vize_croquis::TemplateExpression>>,
@@ -192,6 +193,7 @@ pub(super) struct EventHandlerExprContext<'a> {
 
 #[derive(Clone, Copy)]
 pub(super) struct ComponentPropsContext<'a, 'template> {
+    pub(super) inference_prelude: Option<&'a RefCell<super::root_owner_packets::RootOwnerBuffer>>,
     pub(crate) diagnostic_ownership:
         Option<&'a crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector>,
     pub(super) summary: &'a Croquis,

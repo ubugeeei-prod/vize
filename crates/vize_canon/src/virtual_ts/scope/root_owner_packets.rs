@@ -12,17 +12,19 @@ use super::{component_prop_navigation, context::ComponentPropsContext};
 use crate::template_diagnostic_directives::{DirectivePolicy, TemplateDiagnosticDirectives};
 use crate::virtual_ts::{VizeSemanticLink, types::VizeMapping};
 
+mod safety;
+
 #[derive(Default)]
-pub(super) struct RootOwnerPacket {
-    pub(super) diagnostic_ownership:
+pub(crate) struct RootOwnerBuffer {
+    pub(crate) diagnostic_ownership:
         crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector,
-    pub(super) text: String,
-    pub(super) mappings: Vec<VizeMapping>,
-    pub(super) diagnostic_mappings: Vec<VizeMapping>,
-    pub(super) semantic_links: Vec<VizeSemanticLink>,
+    pub(crate) text: String,
+    pub(crate) mappings: Vec<VizeMapping>,
+    pub(crate) diagnostic_mappings: Vec<VizeMapping>,
+    pub(crate) semantic_links: Vec<VizeSemanticLink>,
 }
 
-impl RootOwnerPacket {
+impl RootOwnerBuffer {
     pub(super) fn append_to(
         self,
         text: &mut String,
@@ -64,6 +66,42 @@ impl RootOwnerPacket {
     }
 }
 
+/// Inference declarations precede the diagnostic packet, in the same lexical
+/// scope. No ignore interval then has to overlap the packet's single EXPECT.
+#[derive(Default)]
+pub(super) struct RootOwnerPacket {
+    pub(super) inference: std::cell::RefCell<RootOwnerBuffer>,
+    pub(super) diagnostic: RootOwnerBuffer,
+}
+
+impl RootOwnerPacket {
+    pub(super) fn append_to(
+        self,
+        text: &mut String,
+        mappings: &mut Vec<VizeMapping>,
+        diagnostic_mappings: &mut Vec<VizeMapping>,
+        links: &mut Vec<VizeSemanticLink>,
+        diagnostic_ownership: Option<
+            &crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector,
+        >,
+    ) {
+        self.inference.into_inner().append_to(
+            text,
+            mappings,
+            diagnostic_mappings,
+            links,
+            diagnostic_ownership,
+        );
+        self.diagnostic.append_to(
+            text,
+            mappings,
+            diagnostic_mappings,
+            links,
+            diagnostic_ownership,
+        );
+    }
+}
+
 #[derive(Default)]
 pub(super) struct RootOwnerPackets {
     packets: FxHashMap<usize, RootOwnerPacket>,
@@ -75,6 +113,7 @@ impl RootOwnerPackets {
     pub(super) fn collect(
         ctx: &ComponentPropsContext<'_, '_>,
         usages: &[(usize, &ComponentUsage)],
+        script: Option<&str>,
     ) -> Self {
         let mut result = Self::default();
         let Some(root) = ctx.template_ast else {
@@ -110,6 +149,7 @@ impl RootOwnerPackets {
             .map(|&(idx, usage)| (usage.start, (idx, usage)))
             .collect();
         crate::virtual_ts::script_facts::with_bindings(ctx.summary, |bindings| {
+            let mut safety = safety::RelocationSafety::new(script, bindings);
             for child in &root.children {
                 let TemplateChildNode::Element(element) = child else {
                     continue;
@@ -123,7 +163,7 @@ impl RootOwnerPackets {
                     || bindings.binding_type(usage.name.as_str()) != Some(BindingType::SetupConst)
                     || usage.props.is_empty()
                     || usage.props.iter().all(|prop| matches!(prop.name.as_str(), "key" | "ref"))
-                    || usage.props.iter().any(|prop| prop.is_dynamic || prop.name_is_dynamic)
+                    || usage.props.iter().any(|prop| prop.name_is_dynamic)
                     || !usage.spread_props.is_empty()
                     || usage.events.is_empty()
                     || usage.events.iter().any(|event| event.name_is_dynamic
@@ -131,12 +171,24 @@ impl RootOwnerPackets {
                             bindings.binding_type(handler.as_str().trim()) != Some(BindingType::SetupConst)))
                     || element.props.iter().any(|prop| match prop {
                         PropNode::Attribute(_) => false,
-                        PropNode::Directive(directive) => directive.name != "on"
+                        PropNode::Directive(directive) => !matches!(directive.name.as_str(), "on" | "bind")
                             || !matches!(directive.arg.as_ref(), Some(ExpressionNode::Simple(arg)) if arg.is_static),
                     })
                     || usage.slots.iter().any(|slot|
                         component_prop_navigation::slot_navigation_source_range(ctx.template_source, slot)
                             .is_some_and(|range| range.start < usage.start as usize || range.end > usage.end as usize))
+                {
+                    continue;
+                }
+                if usage
+                    .props
+                    .iter()
+                    .any(|prop| prop.is_dynamic && !safety.allows(usage.scope_id.as_u32(), prop))
+                    || usage.events.iter().any(|event| {
+                        event.handler.as_ref().is_none_or(|handler| {
+                            !safety.initialized_const(handler.as_str().trim())
+                        })
+                    })
                 {
                     continue;
                 }
@@ -385,7 +437,7 @@ mod tests {
             ),
             (
                 SCRIPT,
-                "<!-- @vue-expect-error --><Comp :id=\"value\" @missing=\"noop\">{{ value.bad }}</Comp>",
+                "<!-- @vue-expect-error --><Comp :id=\"value.bad\" @missing=\"noop\">{{ value.bad }}</Comp>",
             ),
             (
                 "import Comp from './Comp.vue'; let value: string | number = '';",

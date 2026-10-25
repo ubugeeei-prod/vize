@@ -129,6 +129,8 @@ impl<'a> ComponentPropSource<'a> {
 }
 
 pub(crate) struct ComponentPropCheckContext<'a, 'b> {
+    pub(crate) inference_prelude:
+        Option<&'a std::cell::RefCell<super::super::scope::RootOwnerBuffer>>,
     pub(crate) ts: &'b mut String,
     pub(crate) mappings: &'b mut Vec<VizeMapping>,
     pub(crate) template_binding_access: &'a TemplateBindingAccess,
@@ -147,6 +149,7 @@ impl<'a, 'b> ComponentPropCheckContext<'a, 'b> {
         indent: &'b str,
     ) -> Self {
         Self {
+            inference_prelude: None,
             ts,
             mappings,
             template_binding_access,
@@ -250,15 +253,35 @@ pub(crate) fn generate_component_prop_checks(
     } else {
         String::from(indent)
     };
-    let resolved_props = super::callback_prop_resolution::generate_callback_props_resolution(
-        ts,
-        usage,
-        idx,
-        component_ref,
-        template_binding_access,
-        source_context,
-        callback_indent.as_str(),
-    );
+    let resolve = |text: &mut String, source_context| {
+        super::callback_prop_resolution::generate_callback_props_resolution(
+            text,
+            usage,
+            idx,
+            component_ref,
+            template_binding_access,
+            source_context,
+            callback_indent.as_str(),
+        )
+    };
+    let resolved_props = if let Some(prelude) = ctx.inference_prelude {
+        let mut prelude = prelude.borrow_mut();
+        let super::super::scope::RootOwnerBuffer {
+            text,
+            diagnostic_ownership,
+            ..
+        } = &mut *prelude;
+        resolve(
+            text,
+            source_context.with_diagnostic_ownership(
+                source_context
+                    .diagnostic_ownership
+                    .map(|_| &*diagnostic_ownership),
+            ),
+        )
+    } else {
+        resolve(ts, source_context)
+    };
     let mut name_occurrences: FxHashMap<String, u32> = FxHashMap::default();
     for prop in &usage.props {
         if !is_checkable_prop(prop) && !crate::virtual_ts::scope::is_inline_ref_callback_prop(prop)

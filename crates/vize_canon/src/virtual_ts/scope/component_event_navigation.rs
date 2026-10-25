@@ -23,6 +23,7 @@ pub(super) fn emit_event_references(
     checkable_usages: &[(usize, &ComponentUsage)],
 ) {
     let navigation_ctx = EventNavigationContext {
+        inference_prelude: ctx.inference_prelude,
         diagnostic_ownership: ctx.diagnostic_ownership,
         scopes: &ctx.summary.scopes,
         template_source: ctx.template_source,
@@ -61,6 +62,7 @@ pub(super) fn emit_scoped_event_references(
     indent: &str,
 ) {
     let navigation_ctx = EventNavigationContext {
+        inference_prelude: None,
         diagnostic_ownership: ctx.source_context.diagnostic_ownership,
         scopes: ctx.source_context.scopes,
         template_source: ctx.source_context.template,
@@ -89,6 +91,7 @@ pub(super) fn emit_scoped_event_references(
 }
 
 struct EventNavigationContext<'a> {
+    inference_prelude: Option<&'a std::cell::RefCell<super::root_owner_packets::RootOwnerBuffer>>,
     diagnostic_ownership:
         Option<&'a crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector>,
     scopes: &'a vize_croquis::ScopeChain,
@@ -149,15 +152,37 @@ fn emit_usage_event_references(
         }
         let is_model_event = ctx.preserve_event_navigation && event.name.starts_with("update:");
         if !emitted_resolved_events && ctx.preserve_event_navigation {
-            emit_resolved_events(
-                ts,
-                ctx,
-                usage,
-                component_ref,
-                idx,
-                resolved_events.as_str(),
-                event_indent,
-            );
+            if let Some(prelude) = ctx.inference_prelude {
+                let mut prelude = prelude.borrow_mut();
+                let super::root_owner_packets::RootOwnerBuffer {
+                    text,
+                    diagnostic_ownership,
+                    ..
+                } = &mut *prelude;
+                let inference_ctx = EventNavigationContext {
+                    diagnostic_ownership: ctx.diagnostic_ownership.map(|_| &*diagnostic_ownership),
+                    ..*ctx
+                };
+                emit_resolved_events(
+                    text,
+                    &inference_ctx,
+                    usage,
+                    component_ref,
+                    idx,
+                    resolved_events.as_str(),
+                    event_indent,
+                );
+            } else {
+                emit_resolved_events(
+                    ts,
+                    ctx,
+                    usage,
+                    component_ref,
+                    idx,
+                    resolved_events.as_str(),
+                    event_indent,
+                );
+            }
             emitted_resolved_events = true;
         }
         if is_model_event {

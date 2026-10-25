@@ -32,6 +32,7 @@ mod node;
 mod patterns;
 mod ref_instances;
 mod root_owner_packets;
+pub(crate) use root_owner_packets::RootOwnerBuffer;
 mod slot_outlet_props;
 pub(crate) use slot_outlet_props::has_inferred_slots;
 #[cfg(test)]
