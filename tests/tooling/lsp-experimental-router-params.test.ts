@@ -57,15 +57,8 @@ function normalize(
   directory: string,
   generated?: RouterGeneratedDocument | null,
 ): Json {
-  const roots = new Set([directory, fs.realpathSync(directory)]);
-  if (directory.startsWith("/private/")) roots.add(directory.slice(8));
-  else if (directory.startsWith("/var/")) roots.add(`/private${directory}`);
-  return normalizeExperimentalRouterPackets(
-    value,
-    [...roots],
-    fs.realpathSync(directory),
-    generated,
-  );
+  const canonical = fs.realpathSync(directory);
+  return normalizeExperimentalRouterPackets(value, [directory, canonical], canonical, generated);
 }
 
 function generatedGolden(expected: Golden, kind: "valid" | "invalid"): string {
