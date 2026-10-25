@@ -507,7 +507,7 @@ mod tests {
                 );
             }
             let template = cstr!(
-                "<!-- 日本 🧭 --><!-- @vue-expect-error -->{newline}<Comp :id=\"value\" @save=\"noop\" /><button @click=\"state.kind = 'b'\" />"
+                "<!-- 日本 🧭 --><!-- @vue-expect-error -->{newline}<Comp :id=\"value\" @save=\"noop\" /><button @click=\"state.kind = 'b'\"></button>"
             );
             let before = render(script, &template, false, true);
             let after = render(script, &template, true, true);
