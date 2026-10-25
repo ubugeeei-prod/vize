@@ -1,6 +1,7 @@
 import { enableSyntax, hasJsx, rejectForeignRuntime } from "./ast.ts";
 import { getCompiler } from "./native.ts";
 import { normalizeOptions } from "./options.ts";
+import { captureReservations, restoreReservations } from "./scopes.ts";
 import { composeInputMap } from "./source-map.ts";
 import type { BabelApi, BabelFile, VizeBabelMetadata, VizeBabelOptions } from "./types.ts";
 
@@ -25,8 +26,10 @@ export default function vizeBabelPlugin(
       if (!hasJsx(file.ast, api.types.VISITOR_KEYS)) return;
       if (file.get(compiled))
         throw new Error("JSX was introduced after this file's native compilation pass");
-      rejectForeignRuntime(file.ast);
+      rejectForeignRuntime(file.ast, file.opts.plugins, file.scope);
+      const reservations = captureReservations(file);
       const maps = Boolean(file.opts.sourceMaps);
+      const hostGenerator = file.opts.generatorOpts;
       const printed = api.transformFromAstSync(file.ast, file.code, {
         filename: file.opts.filename,
         sourceFileName: file.opts.sourceFileName,
@@ -39,6 +42,10 @@ export default function vizeBabelPlugin(
         sourceMaps: maps,
         inputSourceMap: maps ? (file.inputMap?.toObject() ?? false) : false,
         comments: file.opts.comments,
+        generatorOpts: {
+          ...(typeof hostGenerator === "object" && hostGenerator !== null ? hostGenerator : {}),
+          sourceMaps: maps,
+        },
       });
       if (!printed || typeof printed.code !== "string")
         throw new Error("Babel could not serialize the current JSX AST");
@@ -71,7 +78,7 @@ export default function vizeBabelPlugin(
         parserOpts: { ...file.opts.parserOpts, sourceType: "module" },
       });
       if (!generated || hasJsx(generated, api.types.VISITOR_KEYS)) {
-        throw new Error("The native JSX compiler did not return a complete JavaScript module");
+        throw new Error("The native JSX compiler did not return a complete JSX-free module");
       }
       const inputMap = maps ? composeInputMap(output.map, printed.map) : null;
       file.path.replaceWith(generated.program);
@@ -81,6 +88,7 @@ export default function vizeBabelPlugin(
       }
       file.scope = file.path.scope;
       file.scope.crawl();
+      restoreReservations(file, reservations);
       file.code = output.code;
       file.inputMap = inputMap;
       const old = file.metadata.vize;
