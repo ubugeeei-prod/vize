@@ -59,7 +59,10 @@ fn a_failed_native_backend_preserves_the_script_parser_fallback() {
 }
 
 fn assert_ts7_guidance(message: &str) {
-    assert!(message.contains("typescript@^7"));
+    assert!(message.contains("typescript-native@npm:typescript@7.1.0-beta"));
     assert!(message.contains("typeChecker.corsaPath"));
+    assert!(message.contains("CORSA_PATH"));
+    assert!(message.contains("TSGO_PATH"));
+    assert!(!message.contains("typescript@^7"));
     assert!(!message.contains("@typescript/native-preview"));
 }
