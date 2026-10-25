@@ -428,11 +428,11 @@ await test("standalone DOM output reads the selected real runtime global", skip,
     const component = vm.runInNewContext(`(function(){${row.function.code}\n})()`, context);
     assert.equal(typeof component.render, "function");
     const state = component.data();
-    const rendered = component.render(state, []);
+    const rendered = component.render(state, [], {}, {}, state, component);
     assert.equal(rendered.type, "button");
     assert.equal(rendered.children, "1");
     rendered.props.onClick({});
-    const updated = component.render(state, []);
+    const updated = component.render(state, [], {}, {}, state, component);
     assert.equal(updated.children, "2");
     assert.deepEqual(reads, [chosen]);
     appendFileSync(
@@ -540,10 +540,10 @@ await test(
           SelectedVue: Vue,
         });
         const state = component.data();
-        const first = component.render(state, []);
+        const first = component.render(state, [], {}, {}, state, component);
         assert.equal(first.children, "1");
         first.props.onClick({});
-        assert.equal(component.render(state, []).children, "2");
+        assert.equal(component.render(state, [], {}, {}, state, component).children, "2");
       }
     }
   },
