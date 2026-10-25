@@ -55,7 +55,7 @@ impl CorsaProjectClient {
     /// project. The mirror's tsconfig is the authority for native condition
     /// selection; merely opening a file under its `node_modules` tree would
     /// otherwise create an inferred project with default compiler options.
-    /// Replace only the native project handle when package topology changes.
+    /// Replace native project transports when package topology changes.
     /// Standard tsgo retains negative module-resolution state across a file
     /// summary refresh, while a new handle observes the already-materialized
     /// Canon snapshot without restarting the bridge process.
@@ -122,12 +122,12 @@ impl CorsaProjectClient {
         self.session_document_uris.clear();
         self.external_document_uris.clear();
         self.diagnostics.clear();
-        if (root_changed || config_changed) && !self.project_session_attached_to_editor {
+        // Standard diagnostic APIs can fall back to an independent editor.
+        // Its module-resolution cache belongs to the old topology too; a new
+        // API handle does not invalidate that retained LSP project.
+        if (reload || root_changed || config_changed) && !self.project_session_attached_to_editor {
             self.retire_editor_lsp()?;
         }
-        // This method only creates attached shared editors. Any editor left
-        // unattached here is the independent owner retained from before this
-        // replacement, and still needs its original filesystem transition.
         Ok(ProjectActivation::Replaced {
             retained_independent_editor: self.editor_lsp.is_some()
                 && !self.project_session_attached_to_editor,
