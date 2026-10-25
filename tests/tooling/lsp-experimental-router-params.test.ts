@@ -2,9 +2,16 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { createHash } from "node:crypto";
 import path from "node:path";
+import os from "node:os";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 import { prepareExperimentalRouterProject } from "./support/router-experimental-provider.ts";
+import {
+  createExperimentalRouterWorkspace,
+  experimentalRouterDocumentTransport,
+  normalizeExperimentalRouterPackets,
+  type RouterGeneratedDocument,
+} from "./support/router-experimental-transport.ts";
 import { root } from "./support/lsp/paths.ts";
 import { LspSession } from "./support/lsp/session.ts";
 import { resolveTypecheckRuntime } from "./support/typecheck-dependency.ts";
@@ -37,35 +44,36 @@ type Golden = {
   requests: Array<{ method: string; params: Json; response: Json }>;
   resolved: Json[];
   invalidDiagnostics: Json;
+  generated: Record<"valid" | "invalid", { file: string; sha256: string }>;
 };
 
 function golden(variant: string): Golden {
   return JSON.parse(fs.readFileSync(path.join(custody, `${variant}.expected.json`), "utf8"));
 }
 
-// Only allocated process and workspace addresses vary. Every protocol field,
-// range, revision and generated-file offset remains part of the comparison.
-function normalize(value: unknown, directory: string): Json {
+// Transport addresses move only in path fields and compiler-owned references.
+function normalize(
+  value: unknown,
+  directory: string,
+  generated?: RouterGeneratedDocument | null,
+): Json {
   const roots = new Set([directory, fs.realpathSync(directory)]);
   if (directory.startsWith("/private/")) roots.add(directory.slice(8));
   else if (directory.startsWith("/var/")) roots.add(`/private${directory}`);
-  const visit = (entry: unknown): Json => {
-    if (typeof entry === "string") {
-      let result = entry.replace(
-        /^(file:\/\/)?\/[^\n]*?\/vize-canon\/editor\/sessions\/session-[^/]+\/projects\/[0-9a-f]{64}(?=\/)/,
-        (_, scheme: string | undefined) => `${scheme ?? ""}$VIRTUAL`,
-      );
-      for (const address of [...roots].sort((a, b) => b.length - a.length))
-        result = result.replaceAll(address, "$PROJECT");
-      return result;
-    }
-    if (Array.isArray(entry)) return entry.map(visit);
-    if (entry !== null && typeof entry === "object")
-      return Object.fromEntries(Object.entries(entry).map(([key, item]) => [key, visit(item)]));
-    assert.ok(entry === null || typeof entry === "boolean" || typeof entry === "number");
-    return entry;
-  };
-  return visit(value);
+  return normalizeExperimentalRouterPackets(
+    value,
+    [...roots],
+    fs.realpathSync(directory),
+    generated,
+  );
+}
+
+function generatedGolden(expected: Golden, kind: "valid" | "invalid"): string {
+  const entry = expected.generated[kind];
+  assert.match(entry.file, /^(?:lf|crlf|explicit)\.(?:valid|invalid)\.virtual\.ts\.txt$/u);
+  const bytes = fs.readFileSync(path.join(custody, entry.file));
+  assert.equal(createHash("sha256").update(bytes).digest("hex"), entry.sha256);
+  return bytes.toString("utf8");
 }
 
 function replaceExpected(value: Json, key: "version" | "revision", expected: number): Json {
@@ -145,15 +153,22 @@ function assertQueries(
   expected: Golden,
   directory: string,
   revision: number,
+  kind: "valid" | "invalid",
   compare: (actual: unknown, expected: unknown, message?: string) => void,
 ) {
+  assert.ok(actual.generated, "the exact generated native document must be retained");
+  compare(
+    experimentalRouterDocumentTransport(actual.generated.source, fs.realpathSync(directory))
+      .normalizedSource,
+    generatedGolden(expected, kind),
+  );
   const packets = actual.requests.map(({ elapsedMs: _, ...packet }) => packet);
   compare(
-    normalize(packets, directory),
+    normalize(packets, directory, actual.generated),
     replaceExpected(expected.requests as unknown as Json, "revision", revision),
   );
   compare(
-    normalize(actual.resolved, directory),
+    normalize(actual.resolved, directory, actual.generated),
     replaceExpected(expected.resolved, "revision", revision),
   );
 }
@@ -222,6 +237,9 @@ test(
     assert.ok(runtime, "the real native TypeScript runtime is required");
     fs.mkdirSync(output, { recursive: true });
     const provider = await prepareExperimentalRouterProject(path.join(output, "provider"));
+    const workspaceParent = fs.realpathSync(
+      fs.mkdtempSync(path.join(os.tmpdir(), "vize-router-editor-")),
+    );
     const receipts: unknown[] = [];
     const failures: string[] = [];
     const compare = (actual: unknown, expected: unknown, message?: string) => {
@@ -235,7 +253,7 @@ test(
     try {
       for (const variant of ["lf", "crlf"]) {
         const expected = golden(variant);
-        const directory = path.join(output, variant);
+        const directory = createExperimentalRouterWorkspace(workspaceParent, variant);
         copyProject(provider.root, directory, expected.source, runtime, true);
         const declaration = fs.readFileSync(path.join(directory, "typed-router.d.ts"));
         const session = new LspSession();
@@ -277,7 +295,14 @@ test(
             compare(normalize(published, directory), expectedDiagnostics);
             const actual = await queries(session, uri, source);
             receipt.stages.push({ version, published, ...actual });
-            assertQueries(actual, expected, directory, version, compare);
+            assertQueries(
+              actual,
+              expected,
+              directory,
+              version,
+              version === 2 ? "invalid" : "valid",
+              compare,
+            );
           }
           compare(
             fs.readFileSync(path.join(directory, "typed-router.d.ts")),
@@ -296,8 +321,8 @@ test(
       }
 
       const expected = golden("explicit");
-      const enabled = path.join(output, "enabled");
-      const disabled = path.join(output, "disabled");
+      const enabled = createExperimentalRouterWorkspace(workspaceParent, "enabled");
+      const disabled = createExperimentalRouterWorkspace(workspaceParent, "disabled");
       copyProject(provider.root, enabled, expected.source, runtime, true);
       copyProject(provider.root, disabled, expected.source, runtime, false);
       const session = new LspSession();
@@ -318,6 +343,7 @@ test(
           expected,
           enabled,
           1,
+          "valid",
           compare,
         );
         const disabledUri = open(session, disabled, expected.source);
@@ -334,6 +360,7 @@ test(
           expected,
           enabled,
           1,
+          "valid",
           compare,
         );
         for (const [version, admitted] of [
@@ -359,6 +386,7 @@ test(
               expected,
               enabled,
               4,
+              "valid",
               compare,
             );
           } else {
@@ -379,6 +407,7 @@ test(
       }
     } finally {
       provider.cleanup();
+      fs.rmSync(workspaceParent, { recursive: true, force: true });
     }
     assert.deepEqual(failures, [], "every independent whole protocol comparison must pass");
   },

@@ -32,6 +32,8 @@ runs:
           tests/tooling/lsp-editor-feature-isolation.test.ts \
           tests/tooling/lsp-preprocessor-colors.test.ts \
           tests/tooling/lsp-experimental-router-params.test.ts \
+          tests/tooling/lsp-experimental-router-variable-roots.test.ts \
+          tests/tooling/router-experimental-transport.test.ts \
           tests/tooling/lsp-html-void-examples.test.ts \
           tests/tooling/lsp-html-element-hover.test.ts \
           tests/tooling/lsp-diagnostics-lifecycle.test.ts \
@@ -49,6 +51,9 @@ runs:
         name: experimental-route-lsp-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}
         path: |
           target/differential/experimental-router-params/observation.json
+          target/differential/experimental-router-variable-roots/observation.json
+          target/differential/experimental-router-variable-roots/provider/provider-identity.json
+          target/differential/experimental-router-variable-roots/provider/provider-processes.json
           target/differential/experimental-router-params/provider/provider-identity.json
           target/differential/experimental-router-params/provider/provider-processes.json
           target/ci/vize.differential-build.json
@@ -63,6 +68,7 @@ runs:
           target/ci/vize.differential-build.json
           target/differential/lsp-sessions
           target/differential/experimental-router-params
+          target/differential/experimental-router-variable-roots
           ${{ runner.temp }}/native-lsp
         if-no-files-found: ignore
         retention-days: 7
