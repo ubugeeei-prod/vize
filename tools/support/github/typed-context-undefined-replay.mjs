@@ -190,14 +190,16 @@ if (mode === "prepare") {
     after = packets("source/target/vize-tests/typed-context-undefined-10667"),
     options = packets("source/target/vize-tests/typed-context-undefined-options-10667");
   assert.equal(readFileSync(join(out, "before.status"), "utf8"), "101\n");
-  assert(readFileSync(join(out, "before.stderr"), "utf8").includes("operator context"));
-  assert.equal(before.length, 4);
+  assert(readFileSync(join(out, "before.stderr"), "utf8").includes("lf/prop-used/native-raw-702"));
+  assert.equal(before.length, 240);
   assert.equal(readFileSync(join(out, "ast.status"), "utf8"), "0\n");
   assert.equal(readFileSync(join(out, "after.status"), "utf8"), "0\n");
   assert.equal(readFileSync(join(out, "options.status"), "utf8"), "0\n");
   assert.equal(after.length, 240);
   assert.equal(options.length, 48);
-  const baseline = Object.fromEntries(before.map((p) => [p.value.host, p.value]));
+  const minimal = before.filter((p) => p.path.includes("/lf/prop-used/"));
+  assert.equal(minimal.length, 4);
+  const baseline = Object.fromEntries(minimal.map((p) => [p.value.host, p.value]));
   for (const host of ["native-raw-702", "native-raw-beta", "mapper-beta"]) {
     const p = baseline[host];
     assert.equal(p.stderr.length, 0);

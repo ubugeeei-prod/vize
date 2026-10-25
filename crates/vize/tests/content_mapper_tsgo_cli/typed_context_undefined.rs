@@ -115,6 +115,7 @@ fn typed_context_values_preserve_complete_native_mapper_and_cli_packets() {
     let root = workspace_root().join("target/vize-tests/typed-context-undefined-10667");
     let mut observations = Vec::new();
     let mut cli_observations = Vec::new();
+    let mut geometries = Vec::new();
     for (variant, newline, prefix) in [
         ("lf", "\n", ""),
         ("crlf", "\r\n", ""),
@@ -251,7 +252,7 @@ fn typed_context_values_preserve_complete_native_mapper_and_cli_packets() {
                 expected,
                 i32::from(!errors.is_empty()),
             ));
-            assert_mapper_geometry(case, &source, &transform);
+            geometries.push((case, source, transform));
         }
     }
     assert_eq!(cli_observations.len(), 60);
@@ -273,5 +274,9 @@ fn typed_context_values_preserve_complete_native_mapper_and_cli_packets() {
             expected,
             "{name}: entire stdout"
         );
+    }
+    assert_eq!(geometries.len(), 60);
+    for (case, source, transform) in geometries {
+        assert_mapper_geometry(case, &source, &transform);
     }
 }
