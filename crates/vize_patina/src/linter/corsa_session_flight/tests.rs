@@ -1,9 +1,8 @@
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::{Arc, Barrier, Mutex};
-use std::time::Duration;
 
-use super::{PoolInner, get_or_spawn};
+use super::{Claim, PoolInner, claim, get_or_spawn};
 use crate::linter::corsa_session_pool::CorsaSessionKey;
 use vize_l0::{String, ToCompactString};
 
@@ -20,7 +19,6 @@ fn concurrent_misses_spawn_once() {
                 barrier.wait();
                 get_or_spawn(&inner, &key, || {
                     calls.fetch_add(1, Ordering::SeqCst);
-                    std::thread::sleep(Duration::from_millis(40));
                     Ok(Arc::new(1))
                 })
             }));
@@ -40,34 +38,55 @@ fn failed_spawn_is_not_cached() {
     let inner = Mutex::new(PoolInner::<Arc<u8>>::default());
     let calls = AtomicUsize::new(0);
     let key = key("/app");
-    let barrier = Barrier::new(4);
+    let spawn_started = Barrier::new(2);
+    let followers_claimed = Barrier::new(4);
     let failures = std::thread::scope(|scope| {
-        let mut handles = Vec::new();
-        for _ in 0..4 {
+        let mut handles = vec![scope.spawn(|| {
+            get_or_spawn(&inner, &key, || {
+                calls.fetch_add(1, Ordering::SeqCst);
+                spawn_started.wait();
+                followers_claimed.wait();
+                Err(failed_spawn())
+            })
+        })];
+        spawn_started.wait();
+        for _ in 0..3 {
             handles.push(scope.spawn(|| {
-                barrier.wait();
-                get_or_spawn(&inner, &key, || {
-                    calls.fetch_add(1, Ordering::SeqCst);
-                    std::thread::sleep(Duration::from_millis(30));
-                    Err(failed_spawn())
-                })
+                let follower = {
+                    let mut guard = inner.lock().expect("pool");
+                    claim(&mut guard, &key)
+                };
+                // A caller released from a start barrier can still reach claim
+                // after failure removes the flight. Retain every actual Wait
+                // claim before allowing this flight's leader to fail.
+                followers_claimed.wait();
+                let Claim::Wait(flight) = follower else {
+                    panic!("follower must join the pending flight");
+                };
+                flight.wait()
             }));
         }
         handles
             .into_iter()
-            .map(|handle| handle.join().expect("spawn thread").is_err())
+            .map(|handle| handle.join().expect("spawn thread"))
             .collect::<Vec<_>>()
     });
-    let all_failed = failures.iter().all(|failed| *failed);
+    let all_failed = failures.iter().all(|result| result == &Err(failed_spawn()));
     assert!(all_failed);
     assert_eq!(calls.load(Ordering::SeqCst), 1);
-
     let retried = get_or_spawn(&inner, &key, || {
         calls.fetch_add(1, Ordering::SeqCst);
         Ok(Arc::new(3))
     })
     .expect("a later caller retries after a failed spawn");
     assert_eq!(*retried, 3);
+    assert_eq!(calls.load(Ordering::SeqCst), 2);
+    let cached = get_or_spawn(&inner, &key, || {
+        calls.fetch_add(1, Ordering::SeqCst);
+        Ok(Arc::new(4))
+    })
+    .expect("the successful retry is cached");
+    assert!(Arc::ptr_eq(&retried, &cached));
     assert_eq!(calls.load(Ordering::SeqCst), 2);
 }
 
