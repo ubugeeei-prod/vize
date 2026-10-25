@@ -33,7 +33,6 @@
     }
   ],
   "entry": "App.vue",
-  "languageId": "vue",
   "expected": {
     "source": "response.expected.json",
     "sha256": "63330e200323205a7d1d4365a45030e3a61fdd3518b3a8970dda6359cdeef0b4"
