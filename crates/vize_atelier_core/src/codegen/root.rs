@@ -7,7 +7,7 @@ use crate::{RootNode, RuntimeHelper, TemplateChildNode};
 
 use super::context::CodegenContext;
 use super::helpers::{escape_js_string, to_valid_asset_identifier};
-use vize_l0::{String, camelize, capitalize};
+use vize_l0::{String, camelize, capitalize, js_string::push_js_string_literal};
 
 /// Check if a root-level text node is ignorable whitespace.
 pub(super) fn is_ignorable_root_text(child: &TemplateChildNode<'_>) -> bool {
@@ -79,10 +79,7 @@ pub(super) fn generate_preamble_from_helpers(
                 preamble.push_str(ctx.helper(*h));
             }
             preamble.push_str(" } from ");
-            vize_l0::js_string::push_js_string_literal(
-                &mut preamble,
-                ctx.runtime_module_name.as_str(),
-            );
+            push_js_string_literal(&mut preamble, ctx.runtime_module_name.as_str());
             preamble.push('\n');
         }
         crate::options::CodegenMode::Function => {

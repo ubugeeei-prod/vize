@@ -199,7 +199,8 @@ await test("capture all native runtime configurations before semantic assertions
         }
       }
     }
-    const authoredSource = String.raw`<script>import { ref as authoredRef } from '@runtime/quote\'雪'; export default { data() { return { n: 1 } } }</script><template><button @click="n++">{{ n }}</button></template>`;
+    const authoredSource = String.raw`<script>import { ref as authoredRef } from '@runtime/quote\'雪';
+export default { data() { return { n: 1 } } }</script><template><button @click="n++">{{ n }}</button></template>`;
     const authoredFile = {
       path: "./Authored.vue",
       source: authoredSource,
@@ -236,6 +237,58 @@ await test("capture all native runtime configurations before semantic assertions
         authoredStandalone.push({ target, options, source: authoredSource, single, batch, stats });
       }
     }
+    // Preserve the discovered adjacent-statement input: a line replacement
+    // cannot own its component declaration, so the existing external-import
+    // contract must keep the complete statement and report the remaining import.
+    for (const [control, source, runtimeModuleName, authoredModule] of [
+      [
+        "same-line-quoted",
+        authoredSource.replace(";\nexport", "; export"),
+        "@runtime/quote'雪",
+        "@runtime/quote'雪",
+      ],
+      [
+        "same-line-unicode",
+        String.raw`<script>import { ref as authoredRef } from 'v\u0075e'; export default { data() { return { n: 1 } } }</script><template><button @click="n++">{{ n }}</button></template>`,
+        undefined,
+        "vue",
+      ],
+    ]) {
+      const file = { path: `./${control}.vue`, source, scopeId: "runtime-options" };
+      writeFileSync(file.path, source);
+      const options = {
+        filename: file.path,
+        scopeId: file.scopeId,
+        mode: "function",
+        sourceMap: true,
+        ...(runtimeModuleName === undefined ? {} : { runtimeModuleName }),
+      };
+      const single = observe(control, options, () => native.compileSfc(source, options));
+      const batch = observe(`${control}-files`, options, () =>
+        native.compileSfcBatchWithResults([file], {
+          ...options,
+          includeSourceMap: true,
+          includeHashes: true,
+          includeStyles: true,
+          includeCustomBlocks: true,
+          includeMacroArtifacts: true,
+        }),
+      );
+      const stats = observe(`${control}-stats`, options, () =>
+        native.compileSfcBatch(file.path, options),
+      );
+      authoredStandalone.push({
+        target: "dom",
+        control,
+        external: true,
+        authoredModule,
+        options,
+        source,
+        single,
+        batch,
+        stats,
+      });
+    }
   } finally {
     process.chdir(previous);
   }
@@ -248,7 +301,7 @@ await test("capture all native runtime configurations before semantic assertions
 
 function completeCases() {
   assert.equal(cases.length, 144, "all 72 module and 72 standalone configurations were captured");
-  assert.equal(observations.length, 919, "every native API return was retained");
+  assert.equal(observations.length, 925, "every native API return was retained");
   return cases;
 }
 
@@ -514,7 +567,7 @@ await test(
   skip,
   () => {
     completeCases();
-    assert.equal(authoredStandalone.length, 6);
+    assert.equal(authoredStandalone.length, 8);
     const Vue = require(join(process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_VUE, "node_modules/vue"));
     for (const row of authoredStandalone) {
       const { path, scopeId, ...file } = row.batch.results[0];
@@ -525,7 +578,31 @@ await test(
       assert.equal(row.stats.failed, 0);
       assert.equal(row.stats.success, 1);
       assert.equal(row.stats.outputBytes, Buffer.byteLength(file.code));
-      const external = row.target === "ssr" || row.options.runtimeModuleName === undefined;
+      const external =
+        row.external ?? (row.target === "ssr" || row.options.runtimeModuleName === undefined);
+      if (row.control) {
+        const { parse } = require(
+          join(process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_VUE, "node_modules/@babel/parser"),
+        );
+        const parsed = parse(file.code, { sourceType: "module", allowReturnOutsideFunction: true });
+        assert.deepEqual(
+          parsed.program.body
+            .filter((node) => node.type === "ImportDeclaration")
+            .map((node) => node.source.value),
+          [row.authoredModule],
+        );
+        assert.equal(
+          parsed.program.body.some(
+            (node) =>
+              node.type === "VariableDeclaration" &&
+              node.declarations.some(
+                (declaration) =>
+                  declaration.id.type === "Identifier" && declaration.id.name === "_sfc_main",
+              ),
+          ),
+          true,
+        );
+      }
       assert.deepEqual(
         file.warnings,
         external

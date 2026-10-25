@@ -28,7 +28,12 @@ fn import_block_matches(imports: &str, module_source: &str, local_name: Option<&
     let parser = Parser::new(&allocator, imports, source_type);
     let result = parser.parse();
 
-    if !result.diagnostics.is_empty() {
+    if !result.diagnostics.is_empty()
+        // Standalone's line replacement owns one complete import statement.
+        // Keep an authored line containing further statements intact, with its
+        // existing external-import warning, rather than dropping those owners.
+        || (local_name.is_none() && result.program.body.len() != 1)
+    {
         return false;
     }
 
