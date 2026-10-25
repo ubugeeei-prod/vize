@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import FooBar from './Child.vue'
+import fooBar from './Child.vue'
+const unrelated = ref(1)
+</script>
+<template>
+  <!-- 🧭 separate authored names share one emitted kebab label -->
+  🧭 <foo-bar />
+  <FooBar />
+  <fooBar />
+</template>

@@ -47,7 +47,7 @@ const disabledFlag: string = "yes";
     expected: {
       file: "App.vue",
       diagnostic:
-        "error:6:26 [TS2322] Type 'string' is not assignable to type 'Booleanish | undefined'.",
+        "error:6:26 [TS2322] Type 'string' is not assignable to type 'Booleanish | undefined'. (source: <button type=\"button\" :disabled=\"disabledFlag\">go</button>; binding: 'disabled')",
     },
   },
   {
@@ -66,7 +66,7 @@ const clickHandler = 123;
     expected: {
       file: "App.vue",
       diagnostic:
-        "error:6:33 [TS2345] Argument of type 'number' is not assignable to parameter of type '(_e: PointerEvent) => unknown'.",
+        "error:6:33 [TS2345] Argument of type 'number' is not assignable to parameter of type '(_e: PointerEvent) => unknown'. (source: <button type=\"button\" @click=\"clickHandler\">go</button>; binding: @click)",
     },
   },
   {
@@ -95,7 +95,7 @@ defineProps<{
     expected: {
       file: "App.vue",
       diagnostic:
-        'error:6:10 [TS2322] Type \'"danger"\' is not assignable to type \'"primary" | "secondary"\'.',
+        'error:6:10 [TS2322] Type \'"danger"\' is not assignable to type \'"primary" | "secondary"\'. (source: <Child variant="danger" />; binding: variant)',
     },
   },
 ];
@@ -113,7 +113,7 @@ const disabledFlag: string = "yes";
 `;
 export const CORPUS_PLANT_DIAGNOSTICS = [
   "error:2:7 [TS2322] Type 'string' is not assignable to type 'number'.",
-  "error:7:26 [TS2322] Type 'string' is not assignable to type 'Booleanish | undefined'.",
+  "error:7:26 [TS2322] Type 'string' is not assignable to type 'Booleanish | undefined'. (source: <button type=\"button\" :disabled=\"disabledFlag\">{{ n }}</button>; binding: 'disabled')",
 ];
 
 const PLANT_TSCONFIG = {

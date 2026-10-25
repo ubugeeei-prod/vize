@@ -1,0 +1,1 @@
+  void as; void (null as unknown as keyof typeof from); void of;

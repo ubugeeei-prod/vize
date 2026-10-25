@@ -48,7 +48,7 @@ impl TemplateFormatter<'_> {
     /// lets the formatter use whitespace inside the tag as the safe break point
     /// before runtime text would push the completed element past print width.
     #[inline(always)]
-    pub(super) fn hugged_inline_suffix_width(
+    pub(super) fn hugged_inline_suffix_width<const CANONICAL: bool>(
         &self,
         input: &str,
         start: usize,
@@ -57,22 +57,40 @@ impl TemplateFormatter<'_> {
         let source = input.as_bytes();
         let close = start + memchr::memchr(b'<', source.get(start..)?)?;
         let child = input.get(start..close)?;
-        let child_bytes = child.as_bytes();
         if child.is_empty() {
             return None;
         }
         if source.get(close + 1) != Some(&b'/') {
             return None;
         }
-        // An authored multiline leading interpolation owns its established
-        // layout. Later multiline interpolations in a mixed text run may be
-        // normalized to one line, so they still contribute their formatted
-        // width to the opening-tag decision.
-        if child_bytes.iter().any(|byte| matches!(byte, b'\r' | b'\n'))
-            && authored_multiline_child_owns_layout(child_bytes)
-        {
-            return None;
-        }
+        // Rejoin formatter-owned text wraps before probing the compact width.
+        // Newlines inside an interpolation remain with the JS/literal owner.
+        let compact;
+        let child = if memchr::memchr2(b'\r', b'\n', child.as_bytes()).is_some() {
+            if CANONICAL {
+                if child
+                    .as_bytes()
+                    .first()
+                    .is_some_and(|byte| byte.is_ascii_whitespace())
+                    || (child.contains("{{")
+                        && authored_multiline_child_owns_layout(child.as_bytes()))
+                {
+                    return None;
+                }
+                let formatted =
+                    format_interpolations_with_vue_version(child, self.options, self.vue_version);
+                compact = super::text_wrap::compact_text_child(&formatted)?;
+                compact.as_str()
+            } else {
+                if authored_multiline_child_owns_layout(child.as_bytes()) {
+                    return None;
+                }
+                child
+            }
+        } else {
+            child
+        };
+        let child_bytes = child.as_bytes();
         let (closing_name, _) = parse_closing_tag(input, close)?;
         if closing_name != tag_name {
             return None;
@@ -136,7 +154,7 @@ impl TemplateFormatter<'_> {
             > self.options.print_width as usize
     }
 
-    #[inline]
+    #[inline(always)]
     pub(super) fn write_wrapped_hugged_child(
         &self,
         output: &mut Vec<u8>,
@@ -197,7 +215,7 @@ impl TemplateFormatter<'_> {
         true
     }
 
-    #[inline]
+    #[inline(always)]
     pub(super) fn write_wrapped_text_interpolation(
         &self,
         output: &mut Vec<u8>,

@@ -55,7 +55,6 @@ fn build_analyzer(files: &[FixtureFile], options: CrossFileOptions) -> CrossFile
         );
     }
     analyzer.rebuild_import_edges();
-    analyzer.rebuild_component_edges();
     analyzer
 }
 

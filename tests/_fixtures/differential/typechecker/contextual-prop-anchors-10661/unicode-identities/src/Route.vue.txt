@@ -1,0 +1,5 @@
+<script setup lang="ts">
+defineProps<{ café: string; caf_: string; 日本語: string; "𐐀value": string; "a\u200cb": string; $value: string; _private: string }>();
+const résumé = "scope";
+</script>
+<template><p>{{ café }} {{ caf_ }} {{ 日本語 }} {{ $props["𐐀value"] }} {{ $props["a\u200cb"] }} {{ $value }} {{ _private }} {{ résumé }}</p></template>

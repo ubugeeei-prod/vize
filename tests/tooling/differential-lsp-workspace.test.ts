@@ -78,7 +78,10 @@ test("all pinned LSP cases retain their inputs and only the two configured outli
   }
   const report = referenceReport(loaded, build);
   assert.deepEqual(report.argv, ["lsp"]);
-  assert.equal(validateLspReport(loaded, report, build).legacyMatches, inventory.length);
+  const unsupported = loaded.cases.filter((fixture) => fixture.data.sourceSession).length;
+  const summary = validateLspReport(loaded, report, build);
+  assert.equal(summary.legacyMatches, inventory.length - unsupported);
+  assert.equal(summary.legacyUnsupported, unsupported);
   assert.equal(report.summary.nativeHandled, 0);
   assert.equal(report.summary.nativeEquivalent, 0);
 });
