@@ -56,6 +56,10 @@ fn owned_native_arrows_keep_whole_modules_and_exact_composed_origins() {
                 !parse_module(allocator.as_oxc(), &code, JsxLang::Tsx).has_errors(),
                 "{code}"
             );
+            assert!(
+                code.contains("__vapor: true"),
+                "Vapor hydration identity must survive the server target"
+            );
             assert!(code.contains(if ssr {
                 "__ssrInlineRender: true"
             } else {
