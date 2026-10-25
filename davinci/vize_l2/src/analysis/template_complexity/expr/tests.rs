@@ -133,6 +133,35 @@ fn identity_projection_keeps_utf8_bounds_and_authored_overflow_refusals() {
 }
 
 #[test]
+fn terminal_leaves_preserve_facts_and_compounds_still_visit_nested_decisions() {
+    let a = Allocator::default();
+    for expression in ["name", "true", "null", "42", "42n", "/a/", "'😀'", "this"] {
+        let js = JsExpr::parse_in(&a, expression, Span::new(0, expression.len() as u32)).unwrap();
+        let mut facts = expected("a && (b ? c : d)", "a && (b ? c : d)", "b ? c : d");
+        let previous = facts.clone();
+        score(ExprRef::Js(js), NodeId::from_index(4), 3, &mut facts);
+        assert_eq!(facts, previous, "terminal {expression}");
+    }
+    for expression in [
+        "`value ${a && (b ? c : d)}`",
+        "obj[a && (b ? c : d)]",
+        "[a && (b ? c : d)]",
+        "({ value: a && (b ? c : d) })",
+        "fn(a && (b ? c : d))",
+        "(() => a && (b ? c : d))",
+    ] {
+        let js = JsExpr::parse_in(&a, expression, Span::new(0, expression.len() as u32)).unwrap();
+        let mut facts = ComplexityFacts::empty();
+        score(ExprRef::Js(js), NodeId::from_index(3), 0, &mut facts);
+        assert_eq!(
+            facts,
+            expected(expression, "a && (b ? c : d)", "b ? c : d"),
+            "compound {expression}",
+        );
+    }
+}
+
+#[test]
 fn entity_interiors_refuse_the_whole_expression_instead_of_publishing_partial_facts() {
     let a = Allocator::default();
     let expression = "ready && (yes ? '😀' : 'no')";

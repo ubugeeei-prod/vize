@@ -28,6 +28,7 @@ pub(super) fn score(
     facts: &mut ComplexityFacts,
 ) {
     match expr {
+        ExprRef::Js(js) if terminal(js.ast) => {}
         ExprRef::Js(js) => {
             let previous = (facts.contributions.len(), facts.cyclomatic, facts.cognitive);
             let mut scorer = Scorer {
@@ -53,6 +54,24 @@ pub(super) fn score(
             unknown(expr, op, depth, facts);
         }
     }
+}
+
+/// These leaves cannot contain either counted decision. Skip both the rollback
+/// frame at an expression position and the generic visitor's leaf dispatch.
+/// Templates, computed members and every other compound retain their walk.
+fn terminal(expr: &Expression<'_>) -> bool {
+    matches!(
+        expr,
+        Expression::Identifier(_)
+            | Expression::BooleanLiteral(_)
+            | Expression::NullLiteral(_)
+            | Expression::NumericLiteral(_)
+            | Expression::BigIntLiteral(_)
+            | Expression::RegExpLiteral(_)
+            | Expression::StringLiteral(_)
+            | Expression::ThisExpression(_)
+            | Expression::Super(_)
+    )
 }
 
 fn unknown(expr: ExprRef<'_>, op: Option<NodeId>, depth: u32, facts: &mut ComplexityFacts) {
@@ -130,6 +149,12 @@ impl<'a> Scorer<'_, 'a> {
 }
 
 impl<'a> Visit<'a> for Scorer<'_, 'a> {
+    fn visit_expression(&mut self, it: &Expression<'a>) {
+        if !terminal(it) {
+            walk::walk_expression(self, it);
+        }
+    }
+
     fn visit_logical_expression(&mut self, it: &LogicalExpression<'a>) {
         // This node is a tree root: a logical operand behind parentheses
         // is flattened by `operand` and never reaches this hook.
