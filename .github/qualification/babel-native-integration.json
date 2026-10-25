@@ -5,10 +5,15 @@
     "tree": "3d7d7754b74e3294ba354498b08d5b533b84d7d8"
   },
   "native": {
-    "pin": "931a99792e0042faf090e879dc8e39201a2c0d87",
-    "tree": "b868878622eebaeda815cceda1fc9dfada19f76d",
+    "pin": "664c7dc3846c068a756b7562e11eab35a9497d9d",
+    "tree": "3e1d3d673c142beb6653ad8ef47109f81850e99d",
     "base": "aeab2e4994e1ccd55a9ae22b15ab849d03f93cc5",
-    "integrationMerge": "b33828862c6165532d06f1e1267565244aaf8901"
+    "integrationMerge": "b33828862c6165532d06f1e1267565244aaf8901",
+    "previousPins": [
+      "931a99792e0042faf090e879dc8e39201a2c0d87"
+    ],
+    "guardedIntegrationMerge": "0bb2db0ec51f425afb9eb39bfbb455ec85d130c2",
+    "producerTreeComparison": "allJSX/Vapor/SSRdirectories+NAPIjsx byte/treeexact664; pinned13fa has no independent producer diff fromaeab; future10709 not present and not overwritten"
   },
   "babelOrderedInputs": [
     {
@@ -50,11 +55,23 @@
     {
       "sha": "6b12d64200c075bae03d99ac273600967357eb97",
       "tree": "32cae275200d39bcb7e9559b18847290223c1aac"
+    },
+    {
+      "sha": "5d6ccea038a4e450f47f4997276caf78b86566ca",
+      "tree": "7a3ac0e00f31ea668c5569db6e8ef52fa9d567ba"
+    },
+    {
+      "sha": "a399e2c336084fa360438be4d9c38e7620a3234e",
+      "tree": "de8dbf1d24f017a7bf5442d329473fa6432ebedd"
+    },
+    {
+      "sha": "35db290bb9b8e867a34019df3004083c843daf18",
+      "tree": "e38b0b3e1554feb6e3fb064177485d37d45ee1c3"
     }
   ],
   "currentComposedBeforeLedger": {
-    "sha": "d286a9db1ce03d47d89065ff0aadb15de226901c",
-    "tree": "f96aa142ce13690ae9a32362c9ae873ba50ff456"
+    "sha": "6b39b568a94f47b31117bb7ff27c941799740968",
+    "tree": "8a5bcddeed13201e990506680a6dac000f4918ba"
   },
   "priorCampaigns": [
     {
@@ -68,7 +85,13 @@
       "run": 40220983092,
       "artifact": 12609558429,
       "actual": "SUCCESS:64 wholeVueHTML compiled VDOMcases+8expectedrefusals,36cold controls,debug source real-call profiling; no VaporSSRtarget runtime credit"
+    },
+    {
+      "source": "61c6faacbe90fa52881d0c1190fa4ce44df0d8da",
+      "run": 40222498370,
+      "artifact": 12609827645,
+      "actual": "RED browser host CJS import before launch; all12CSR+12SSR compiles and all12whole independent NodeSSR packets exit0/stderr0/byteequal; no browser credit"
     }
   ],
-  "runtimeQualification": "new strict12rows:exactBabel7/8 ESM/CJS,stableVDOM,Vaporrc9/rc11; mandatory actualSSR/client/hydration/effects/attrs/all-nodeidentity; nativepin931 remains unchanged; final-AST guard proposal NOT included"
+  "runtimeQualification": "strict12 source rows against guarded664; publicPlaywrightCJS host fix+byteidentical fixture relocation+single physicalimage retention; generatorguard proposal still excluded"
 }
