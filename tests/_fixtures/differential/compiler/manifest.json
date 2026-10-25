@@ -1273,7 +1273,7 @@
         },
         {
           "path": "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/admission-source-pairs.json",
-          "sha256": "f4b89df97e69df1a6f08bfa81a0bfbab56ad272a8686adbbef425864dae7bac7"
+          "sha256": "9fcc48195adf45e190ba88fbfb878a89e8e3861980cfcb642947bbf388cbb88a"
         },
         {
           "path": "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/attribute-case-inputs.json",
@@ -1304,6 +1304,10 @@
           "sha256": "6294b18d69e400369ac8ca3bdf6373c1294fdcddcca300dd82676a152150f764"
         },
         {
+          "path": "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/priority-inputs.json",
+          "sha256": "077394f98a482ad0fb01f4ac09769732254e78ce9aaa6057070a2f2e228aa861"
+        },
+        {
           "path": "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/review-inputs.json",
           "sha256": "70d1f7b95a94080628a7134d7d44722f11453f6c7e8f25be52b4e6fb08699b66"
         }
@@ -1312,12 +1316,12 @@
         {
           "path": "crates/vize_atelier_jsx/tests/literal_style_source.rs",
           "symbol": "complete_literal_style_source_observations",
-          "sha256": "f65aff47a6b28867a63c82ffc4e7dabf546e6438b63bb753ee89f36b2f843ce3"
+          "sha256": "09a903698328436c8de15218365b2df2008f2e42af325e1663a5f8008641fe2f"
         },
         {
           "path": "crates/vize_atelier_jsx/tests/literal_object_styles.rs",
           "symbol": "original_literal_ast_has_canonical_object_and_css_semantics",
-          "sha256": "7cde2ce71c1c61eeb4e4cd5d8062be0e455aa4ab79108e6f76556c1ec573b1d3"
+          "sha256": "cec9e48c493dfd3e343b0ccdb814a8782488a6534b7b2ffa903bd60acb56fbec"
         },
         {
           "path": "crates/vize_atelier_jsx/tests/literal_style_maps.rs",
@@ -1328,6 +1332,11 @@
           "path": "crates/vize_atelier_jsx/tests/literal_style_sfc.rs",
           "symbol": "original_sfc_literal_style_reaches_the_shared_static_template",
           "sha256": "03b8f2d1250db9129485a73d2e63cdc4944e50cfa75da84c1af05718f4c24c90"
+        },
+        {
+          "path": "crates/vize_atelier_jsx/tests/literal_style_source.rs",
+          "symbol": "priority_tokens_keep_original_runtime_semantics",
+          "sha256": "09a903698328436c8de15218365b2df2008f2e42af325e1663a5f8008641fe2f"
         }
       ],
       "sources": [
@@ -1394,7 +1403,7 @@
         {
           "path": "crates/vize_relief/src/inline_style/literal.rs",
           "beforeSha256": null,
-          "afterSha256": "28b2c954429ca3fd218ae5458fac2a98715822fdf38f55a94eaf543de80d8fb0"
+          "afterSha256": "b69e196eeaca998c69037dbb101ee0c95dc7c5f5d2b74a2b6a5b8a4bf2eda0e6"
         },
         {
           "path": "crates/vize_relief/src/lib.rs",

@@ -64,7 +64,7 @@
     {
       "path": "crates/vize_relief/src/inline_style/literal.rs",
       "beforeSha256": null,
-      "afterSha256": "28b2c954429ca3fd218ae5458fac2a98715822fdf38f55a94eaf543de80d8fb0"
+      "afterSha256": "b69e196eeaca998c69037dbb101ee0c95dc7c5f5d2b74a2b6a5b8a4bf2eda0e6"
     },
     {
       "path": "crates/vize_relief/src/lib.rs",

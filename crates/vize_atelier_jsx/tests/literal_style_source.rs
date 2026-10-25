@@ -190,6 +190,47 @@ fn reviewed_cssom_boundaries_keep_the_original_runtime_operations() {
 }
 
 #[test]
+fn priority_tokens_keep_original_runtime_semantics() {
+    let old = std::env::var_os("VIZE_LITERAL_STYLE_EXPECT_OLD").is_some();
+    let inputs:Vec<Value>=serde_json::from_str(include_str!("../../../tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/priority-inputs.json")).unwrap();
+    assert_eq!(inputs.len(), 8);
+    let mut packets = Vec::new();
+    for input in inputs {
+        let expression = input["expression"].as_str().unwrap();
+        for standalone in [false, true] {
+            let source =
+                format!("export const App = () => <button style={{{expression}}}>ready</button>;");
+            let (output, arena, reparses) = jsx(&source, JsxOutputMode::Vapor, false, standalone);
+            packets.push(json!({"id":input["id"],"family":"jsx","source":source,"standalone":standalone,"fold":input["fold"],"output":output,"arenaBytes":arena,"expressionReparses":reparses}));
+        }
+        let encoded = expression
+            .replace('&', "&amp;")
+            .replace('"', "&quot;")
+            .replace('<', "&lt;")
+            .replace('>', "&gt;");
+        let source = format!("<button :style=\"{encoded}\">ready</button>");
+        for retained in [false, true] {
+            for mapped in [false, true] {
+                let (output, arena, reparses) = template(&source, retained, mapped);
+                assert_eq!(output["errors"], json!([]));
+                if !old && input["fold"] == true {
+                    let css = input["referenceCss"].as_str().unwrap();
+                    let static_source = format!("<button style=\"{css}\">ready</button>");
+                    assert_eq!(
+                        output["code"],
+                        template(&static_source, retained, mapped).0["code"]
+                    );
+                }
+                packets.push(json!({"id":input["id"],"family":"template","source":source,"retained":retained,"mapped":mapped,"fold":input["fold"],"output":output,"arenaBytes":arena,"expressionReparses":reparses}));
+            }
+        }
+    }
+    if let Some(path) = std::env::var_os("VIZE_LITERAL_STYLE_PRIORITY_CAPTURE") {
+        std::fs::write(path, serde_json::to_vec_pretty(&packets).unwrap()).unwrap();
+    }
+}
+
+#[test]
 fn case_equivalent_style_sources_keep_the_complete_runtime_path() {
     let inputs:Vec<Value>=serde_json::from_str(include_str!("../../../tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/attribute-case-inputs.json")).unwrap();
     assert_eq!(inputs.len(), 8);
@@ -224,6 +265,11 @@ fn measured_whole_compile_source_work() {
     for (id, expression) in [
         ("literal", "{fontWeight:'700'}"),
         ("call", "{color:read()}"),
+        ("priority-safe", "{color:'red !important',fontWeight:'700'}"),
+        (
+            "priority-refused",
+            "{color:'red !IMPORTANT',fontWeight:'700'}",
+        ),
     ] {
         let source =
             format!("const App = () => <button style={{{expression}}}>{{label}}</button>;");
