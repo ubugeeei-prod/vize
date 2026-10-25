@@ -20,12 +20,12 @@ const registration = {
     {
       path: "crates/vize_canon/src/lsp_client/editor_lsp/client.rs",
       before: "02601e1d2bb3eee642b663fd3336156f32791a35cf5999e689c69956626357fb",
-      after: "be7c5924613e2f284b8d9e88d30d5512077de2cbfd8ca1e8e77cca15f7c0a971",
+      after: "7d67741d6da1d3f0e4ef1083f617b409d2f40bd8ae83e9e77ac9e7a0f1f4c781",
     },
     {
       path: "crates/vize_canon/src/lsp_client/editor_lsp/inlay_hint.rs",
       before: "0c477b1f2dbab225f4d63935c687f4eb5ae88017966c857692c739dc463448bd",
-      after: "09c61739d1ae45d3853fd9c137a1e0d306fa8aaba7949e3efe7688b271eb41bb",
+      after: "8d79f8a1dc8240ae72d99a3ef9f1543122d44a93c9ea8e5e417e89c05956631e",
     },
   ],
   lspCase: {
@@ -39,7 +39,7 @@ const registration = {
   producer: {
     workflow: {
       path: ".github/workflows/lsp-shared-api-reopen.yml",
-      sha256: "04c66c27dbd17e47306850cacfd623e4dca48531c4845cadc8ffae67bc83cd76",
+      sha256: "9979883bed8e9ad01f62e625a31e5a2e7ee9e20c8f64f27ec0ff436ff77c9ca7",
     },
     entry: {
       path: "tests/tooling/support/native-runtime-selection/lsp-shared-api-reopen.mjs",
@@ -85,7 +85,7 @@ const registration = {
     },
     registryTest: {
       path: "tests/tooling/shared-editor-initial-api-fixtures.test.mjs",
-      sha256: "c3de4d5662c05f677d25e268611e86e94d444396bda4b8b1fbb84e09c1900768",
+      sha256: "4b8677802acd7fa52d9520a365119d19a717fa91239e081c238bbb78cacce7dc",
     },
     straceLines: {
       path: "tests/tooling/support/native-runtime-selection/lsp-strace-lines.mjs",

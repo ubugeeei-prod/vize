@@ -324,11 +324,30 @@ impl CorsaProjectClient {
         result
     }
 
+    /// Record the exact discard caller only under the existing opt-in gate.
+    pub(super) fn trace_editor_discard(&self, caller: impl FnOnce() -> String) {
+        super::inlay_hint::trace_native_inlay("editorDiscard", || {
+            let caller = caller();
+            serde_json::json!({
+                "branch": if self.project_session_attached_to_editor { "attached" } else { "independent" },
+                "projectRoot": self.project_root,
+                "executable": self.executable.as_str(),
+                "outerPid": std::process::id(),
+                "nativePidExposedBySdk": false,
+                "editorPresent": self.editor_lsp.is_some(),
+                "sessionPresent": self.session.is_some(),
+                "documentCount": self.document_texts.len(),
+                "caller": caller.as_str()
+            })
+        });
+    }
+
     /// Drop the editor session immediately after an external project-shape
     /// change. Unlike [`Self::retire_editor_lsp`], this does not wait for a
     /// protocol `shutdown` response from the stale process, so file-operation
     /// notifications cannot hold the foreground LSP queue hostage.
     pub(in crate::lsp_client) fn discard_editor_lsp(&mut self) -> Result<(), String> {
+        self.trace_editor_discard(|| cstr!("{:?}", std::backtrace::Backtrace::force_capture()));
         if self.project_session_attached_to_editor {
             return self.retire_shared_editor_transport(true);
         }

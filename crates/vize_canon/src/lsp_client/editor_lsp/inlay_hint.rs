@@ -215,4 +215,74 @@ mod trace_tests {
             assert!(output.stderr.is_empty(), "{mode}: {output:?}");
         }
     }
+
+    #[test]
+    fn discard_trace_payload_is_lazy_and_complete() {
+        const PROBE: &str = "VIZE_TEST_EDITOR_DISCARD_TRACE_PROBE";
+        if let Some(mode) = std::env::var_os(PROBE) {
+            let called = Cell::new(0);
+            let mut client = crate::lsp_client::CorsaProjectClient::empty_for_test(
+                std::path::PathBuf::from("/trace/project"),
+            );
+            tracing::subscriber::with_default(Capture, || {
+                for attached in [false, true] {
+                    client.project_session_attached_to_editor = attached;
+                    client.trace_editor_discard(|| {
+                        called.set(called.get() + 1);
+                        "captured caller".into()
+                    });
+                }
+            });
+            if mode == "enabled" {
+                assert_eq!(called.get(), 2);
+                let expected = ["independent", "attached"].map(|branch| {
+                    json!({
+                        "level": "INFO",
+                        "target": "vize_canon::lsp_client::editor_lsp::inlay_hint",
+                        "fields": {
+                            "message": "native inlay hint observation",
+                            "stage": "editorDiscard",
+                            "value": serde_json::to_string(&json!({
+                                "branch": branch,
+                                "projectRoot": "/trace/project",
+                                "executable": "",
+                                "outerPid": std::process::id(),
+                                "nativePidExposedBySdk": false,
+                                "editorPresent": false,
+                                "sessionPresent": false,
+                                "documentCount": 0,
+                                "caller": "captured caller"
+                            })).unwrap()
+                        }
+                    })
+                });
+                assert_eq!(*EVENTS.lock().unwrap(), expected);
+            } else {
+                assert_eq!(called.get(), 0);
+                assert_eq!(*EVENTS.lock().unwrap(), Vec::<Value>::new());
+            }
+            return;
+        }
+        for (mode, setting) in [
+            ("default", None),
+            ("disabled", Some("0")),
+            ("enabled", Some("1")),
+        ] {
+            let mut command = Command::new(std::env::current_exe().unwrap());
+            command
+                .args([
+                    "--exact",
+                    "lsp_client::editor_lsp::inlay_hint::trace_tests::discard_trace_payload_is_lazy_and_complete",
+                    "--nocapture",
+                ])
+                .env(PROBE, mode)
+                .env_remove("VIZE_TRACE_EDITOR_PREPARATION");
+            if let Some(setting) = setting {
+                command.env("VIZE_TRACE_EDITOR_PREPARATION", setting);
+            }
+            let output = command.output().unwrap();
+            assert!(output.status.success(), "{mode}: {output:?}");
+            assert!(output.stderr.is_empty(), "{mode}: {output:?}");
+        }
+    }
 }

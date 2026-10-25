@@ -43,6 +43,18 @@ function reader(overrides = new Map()) {
   const tests = client.indexOf("\n#[cfg(all(test, unix))]\nmod initial_snapshot_tests {");
   assert.ok(tests > 0);
   client = client.slice(0, tests);
+  const discardBegin = client.indexOf(
+    "    /// Record the exact discard caller only under the existing opt-in gate.\n",
+  );
+  const discardEnd = client.indexOf(
+    "    /// Drop the editor session immediately after an external project-shape\n",
+    discardBegin,
+  );
+  assert.ok(discardBegin >= 0 && discardEnd > discardBegin);
+  client = (client.slice(0, discardBegin) + client.slice(discardEnd)).replace(
+    '        self.trace_editor_discard(|| cstr!("{:?}", std::backtrace::Backtrace::force_capture()));\n',
+    "",
+  );
   const trace = fs
     .readFileSync(path.join(root, tracePath), "utf8")
     .split("\n#[cfg(test)]\nmod trace_tests {")[0]
