@@ -21,6 +21,7 @@ fn generate(source: &str, editor: bool) -> GeneratedVueFile {
         &descriptor,
         &VirtualTsOptions::default(),
         VueCodegenOptions {
+            diagnostic_ownership: None,
             check_options: Default::default(),
             typed_router_root: None,
             preserve_unused_diagnostics: false,

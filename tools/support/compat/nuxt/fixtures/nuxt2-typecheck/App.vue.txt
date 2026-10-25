@@ -1,0 +1,13 @@
+<script lang="ts">
+const message: string = 'Nuxt 2 types'
+export default {
+  data() {
+    return { message }
+  },
+}
+</script>
+<template>
+  <section v-if="$fetchState.pending && $store && $nuxt && $config">
+    {{ message.toUpperCase() }} {{ $route.path }} {{ $router.push($route.path) }}
+  </section>
+</template>

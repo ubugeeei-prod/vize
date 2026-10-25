@@ -277,7 +277,7 @@ Dans une application Nuxt, le module n’installe pas ces simulations globalemen
 
 ## Nuxt 2 et Vue 2
 
-Le module prend en charge Nuxt 2, 3 et 4. Le compilateur de Vize produit du code Vue 3 : avec Nuxt 2, le module laisse la compilation des fichiers `.vue` au compilateur existant (`@vitejs/plugin-vue2`, `vue-loader` ou celui de Nuxt) et fournit toujours le lint et Musea. Il en va de même pour les projets Vue plus anciens avec `vueVersion: 0.11`, `vueVersion: 1` ou `vueVersion: "legacy"`.
+Sur Nuxt 2, utilisez le même paquet `@vizejs/nuxt`. Le compilateur, le rendu SSR et le HMR restent ceux de Vue 2 et de Nuxt. Vize génère la configuration de lint ; le `checker` optionnel utilise le builder de développement. Musea est désactivé sur Nuxt 2. Le compilateur natif de Vize produit du code Vue 3 et ne remplace pas le compilateur Vue 2.
 
 Les versions sont détectées automatiquement. Si une surcouche les cache à Nuxt Kit, indiquez-les vous-même :
 

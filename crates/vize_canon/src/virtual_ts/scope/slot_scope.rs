@@ -148,7 +148,8 @@ pub(super) fn generate_v_slot_scope(
                 ctx.template_offset,
                 &ctx.summary.scopes,
             )
-            .with_model_modifiers(ctx.checks.model_modifiers),
+            .with_model_modifiers(ctx.checks.model_modifiers)
+            .with_diagnostic_ownership(ctx.checks.diagnostic_ownership),
             binding_prefix: "__vize_slot_host_",
             indent,
             explicit_generics: ctx.explicit_generics,

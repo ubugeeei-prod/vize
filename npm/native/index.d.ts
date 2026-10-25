@@ -100,6 +100,7 @@ export interface BatchCompileOptionsNapi {
   experimentalServerScript?: boolean;
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
+  /** Runtime dialect selector; omitted or "3" uses Vue 3. Legacy code generation is unavailable. */
   vueVersion?: string;
   styleTrim?: boolean;
   templateCacheHandlers?: boolean;
@@ -1081,7 +1082,7 @@ export interface SfcAnalyzeOptions {
 export declare function parseSfc(
   source: string,
   options?: SfcParseOptionsNapi | undefined | null,
-): any;
+): SfcParseResultNapi;
 
 /** Parse template to AST only */
 export declare function parseTemplate(
@@ -1333,6 +1334,7 @@ export interface SfcCompileOptionsNapi {
   experimentalServerScript?: boolean;
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
+  /** Runtime dialect selector; omitted or "3" uses Vue 3. Legacy code generation is unavailable. */
   vueVersion?: string;
   styleTrim?: boolean;
   templateCacheHandlers?: boolean;
@@ -1378,6 +1380,67 @@ export interface SfcElementOrderOptionsNapi {
 
 export interface SfcParseOptionsNapi {
   filename?: string;
+  /** Include effective parser attributes in authored name order. */
+  includeAttrs?: boolean;
+}
+
+export interface SfcParseResultNapi {
+  filename: string;
+  source: string;
+  template: SfcParsedTemplateNapi | null;
+  script: SfcParsedScriptNapi | null;
+  scriptSetup: SfcParsedScriptNapi | null;
+  styles: Array<SfcParsedStyleNapi>;
+  customBlocks: Array<SfcParsedCustomBlockNapi>;
+}
+
+/** An effective parsed attribute. Boolean and empty values remain empty strings. */
+export interface SfcParsedAttributeNapi {
+  name: string;
+  value: string;
+}
+
+export interface SfcParsedCustomBlockNapi {
+  type: string;
+  content: string;
+  loc: SfcParsedLocationNapi;
+  attrs?: Array<SfcParsedAttributeNapi>;
+}
+
+/** All offsets and columns use UTF-8 bytes in the original source. */
+export interface SfcParsedLocationNapi {
+  start: number;
+  end: number;
+  tagStart: number;
+  tagEnd: number;
+  startLine: number;
+  startColumn: number;
+  endLine: number;
+  endColumn: number;
+}
+
+export interface SfcParsedScriptNapi {
+  content: string;
+  loc: SfcParsedLocationNapi;
+  lang: string | null;
+  setup: boolean;
+  attrs?: Array<SfcParsedAttributeNapi>;
+}
+
+export interface SfcParsedStyleNapi {
+  content: string;
+  loc: SfcParsedLocationNapi;
+  lang: string | null;
+  scoped: boolean;
+  module: string | null;
+  attrs?: Array<SfcParsedAttributeNapi>;
+}
+
+export interface SfcParsedTemplateNapi {
+  content: string;
+  loc: SfcParsedLocationNapi;
+  lang: string | null;
+  attrs?: Array<SfcParsedAttributeNapi>;
 }
 
 export interface SfcSrcInfoNapi {

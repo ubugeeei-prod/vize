@@ -29,6 +29,8 @@ pub(in crate::batch::virtual_project) struct GeneratedVueFile {
 
 #[derive(Clone, Copy)]
 pub(in crate::batch::virtual_project) struct VueCodegenOptions<'a> {
+    pub(in crate::batch::virtual_project) diagnostic_ownership:
+        Option<&'a crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector>,
     pub(in crate::batch::virtual_project) check_options: VirtualTsCheckOptions,
     pub(in crate::batch::virtual_project) typed_router_root: Option<&'a std::path::Path>,
     pub(in crate::batch::virtual_project) preserve_unused_diagnostics: bool,
