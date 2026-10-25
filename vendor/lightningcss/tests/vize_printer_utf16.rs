@@ -115,3 +115,52 @@ fn serialized_identifiers_modules_and_comments_keep_actual_generated_columns() {
     assert_eq!(actual, [(2, 0, 1, 2), (2, 21, 1, 23)]);
   }
 }
+
+#[test]
+fn module_dashed_identifier_writes_preserve_their_real_utf16_width() {
+  let source = ".a{--雪😀:1;color:var(--雪😀)}.b{opacity:.5}";
+  let stylesheet = StyleSheet::parse(
+    source,
+    ParserOptions {
+      css_modules: Some(Config {
+        pattern: Pattern::parse("[local]").unwrap(),
+        dashed_idents: true,
+        ..Default::default()
+      }),
+      ..Default::default()
+    },
+  )
+  .unwrap();
+  let mut map = SourceMap::new("/");
+  map.add_source("input.css");
+  let plain = stylesheet
+    .to_css(PrinterOptions {
+      minify: true,
+      ..Default::default()
+    })
+    .unwrap();
+  let mapped = stylesheet
+    .to_css(PrinterOptions {
+      minify: true,
+      source_map: Some(&mut map),
+      ..Default::default()
+    })
+    .unwrap();
+  assert_eq!(mapped.code, source);
+  assert_eq!(mapped.code, plain.code);
+  assert_eq!(mapped.exports, plain.exports);
+  let actual: Vec<_> = map
+    .get_mappings()
+    .into_iter()
+    .map(|mapping| {
+      let origin = mapping.original.unwrap();
+      (
+        mapping.generated_line,
+        mapping.generated_column,
+        origin.original_line,
+        origin.original_column,
+      )
+    })
+    .collect();
+  assert_eq!(actual, [(0, 0, 0, 0), (0, 28, 0, 28)]);
+}

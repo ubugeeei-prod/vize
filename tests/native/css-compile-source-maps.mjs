@@ -6,12 +6,17 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { loadCompilerManifest } from "../differential/compiler.mjs";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const fixture = fileURLToPath(
   new URL("../fixtures/css/compile-source-maps/public-0.571.0.json", import.meta.url),
 );
 const frozen = JSON.parse(fs.readFileSync(fixture, "utf8"));
+const family = loadCompilerManifest(
+  path.join(root, "tests/_fixtures/differential/compiler/manifest.json"),
+).cssApiCases;
+assert.equal(family.length, 1);
 const errors = JSON.parse(
   fs.readFileSync(
     new URL("../fixtures/css/compile-source-maps/public-error-neighbor.json", import.meta.url),
@@ -85,6 +90,13 @@ await test("real source native CSS preserves every frozen public field and emits
       try {
         const { map, ...preserved } = result;
         assert.deepEqual(preserved, entry.output);
+        if (entry.id === "unicode-crlf" && options.minify) {
+          assert.equal(entry.source, family[0].source);
+          if (sourceMap) {
+            assert.deepEqual(options, family[0].options);
+            assert.deepEqual(result, family[0].after);
+          } else assert.deepEqual(result, family[0].before);
+        }
         if (!sourceMap || unqualified.has(entry.id)) {
           assert.equal(map, undefined, `${entry.id} must not claim transformed source ownership`);
           assert.deepEqual(result, entry.output);
