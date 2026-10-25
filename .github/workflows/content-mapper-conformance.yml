@@ -228,7 +228,7 @@ jobs:
             if (label === 'original-version') assert.equal(stderr.length, 0);
             return stdout.toString('utf8');
           }
-          function names(text) {
+          function names(text, producer = 'libtest') {
             const result = [];
             const declared = [];
             for (const line of text.split('\n').filter(Boolean)) {
@@ -240,7 +240,10 @@ jobs:
                 declared.push(Number(summary[1]));
               }
             }
-            assert.deepEqual(declared, [result.length], 'complete inventory count must match its exact rows');
+            // Rustdoc lists its complete case rows without libtest's footer. Its full
+            // execution must still prove the exact same names and aggregate count.
+            assert.ok(producer === 'libtest' || producer === 'rustdoc');
+            assert.deepEqual(declared, producer === 'libtest' ? [result.length] : [], 'inventory framing must match its declared producer');
             assert.equal(new Set(result).size, result.length, 'inventory names must be unique per target');
             return result.sort();
           }
@@ -273,7 +276,12 @@ jobs:
           reject('changed ignore policy', () => executions(sample, ['a', 'b'], [], ['a', 'b']));
           reject('changed total', () => executions(sample.replace('1 passed', '2 passed'), ['a', 'b'], ['b'], ['a', 'b']));
           reject('undeclared filtering', () => executions(sample.replace('0 filtered out', '1 filtered out'), ['a', 'b'], ['b'], ['a', 'b']));
-          write('negative-controls.json', { emptyInventory: 'rejected', omittedInventory: 'rejected', duplicateInventory: 'rejected', missing: 'rejected', duplicate: 'rejected', changedIgnore: 'rejected', changedTotal: 'rejected', undeclaredFiltering: 'rejected' });
+          const docs = names('doc_a: test\ndoc_b: test\n', 'rustdoc');
+          const docSample = 'test doc_a ... ok\ntest doc_b ... ok\ntest result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out;\n';
+          executions(docSample, docs, [], docs);
+          reject('empty Rustdoc inventory', () => executions(docSample, names('', 'rustdoc'), [], []));
+          reject('omitted Rustdoc row', () => { const partial = names('doc_a: test\n', 'rustdoc'); executions(docSample, partial, [], partial); });
+          write('negative-controls.json', { emptyInventory: 'rejected', omittedInventory: 'rejected', duplicateInventory: 'rejected', missing: 'rejected', duplicate: 'rejected', changedIgnore: 'rejected', changedTotal: 'rejected', undeclaredFiltering: 'rejected', emptyRustdoc: 'rejected', omittedRustdoc: 'rejected' });
 
           try {
             const mapper = realpathSync(path.join(process.env.RUNNER_TEMP, 'tsgo'));
@@ -310,8 +318,9 @@ jobs:
             assert.equal(new Set(targets.map(target => target.key)).size, targets.length);
             for (const target of targets) {
               const command = ['test', '--locked', '-p', 'vize_maestro', ...target.selector, '--'];
-              target.inventory = names(run(`list-${target.key.replaceAll(':', '-')}`, 'cargo', [...command, '--list', '--format', 'terse'], mapper));
-              target.ignored = names(run(`ignored-${target.key.replaceAll(':', '-')}`, 'cargo', [...command, '--ignored', '--list', '--format', 'terse'], mapper));
+              const producer = target.key.startsWith('doctest:') ? 'rustdoc' : 'libtest';
+              target.inventory = names(run(`list-${target.key.replaceAll(':', '-')}`, 'cargo', [...command, '--list', '--format', 'terse'], mapper), producer);
+              target.ignored = names(run(`ignored-${target.key.replaceAll(':', '-')}`, 'cargo', [...command, '--ignored', '--list', '--format', 'terse'], mapper), producer);
               assert.ok(target.ignored.every(name => target.inventory.includes(name)));
               for (const name of target.inventory) receipt.inventory.push({ target: target.key, name, ignored: target.ignored.includes(name), provider: name === legacy ? 'original' : 'mapper' });
             }

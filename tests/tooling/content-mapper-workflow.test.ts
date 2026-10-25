@@ -253,6 +253,8 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
     changedIgnore: "rejected",
     changedTotal: "rejected",
     undeclaredFiltering: "rejected",
+    emptyRustdoc: "rejected",
+    omittedRustdoc: "rejected",
   });
 });
 
