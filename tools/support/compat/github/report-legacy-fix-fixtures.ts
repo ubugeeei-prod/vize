@@ -17,6 +17,10 @@ import {
 
 import { newNativeRuntimeCases } from "./native-runtime-fixtures.ts";
 import {
+  newOwnedEditorShutdownCases,
+  OWNED_EDITOR_SHUTDOWN_PROTOCOL_ID,
+} from "./owned-editor-shutdown-fixtures.ts";
+import {
   SHARED_EDITOR_INITIAL_API_PROTOCOL_ID,
   newSharedEditorInitialApiCases,
 } from "./shared-editor-initial-api-fixtures.ts";
@@ -151,6 +155,18 @@ function checkCompilerCase(
   );
 }
 
+function ownedEditorShutdownRows(value: unknown, owned: boolean): unknown {
+  if (!Array.isArray(value)) return owned ? undefined : value;
+  return value.filter((row: unknown) => {
+    const matches =
+      typeof row === "object" &&
+      row !== null &&
+      "id" in row &&
+      row.id === OWNED_EDITOR_SHUTDOWN_PROTOCOL_ID;
+    return matches === owned;
+  });
+}
+
 function checkProduct(
   product: Product,
   paths: readonly string[],
@@ -239,6 +255,17 @@ function checkProduct(
             readFile,
           )
         : { ids: [] as string[], sources: new Set<string>() };
+    const ownedEditorShutdown =
+      product === "typechecker"
+        ? newOwnedEditorShutdownCases(
+            ownedEditorShutdownRows(before?.protocolCases, true),
+            ownedEditorShutdownRows(manifest.protocolCases, true),
+            readFile,
+          )
+        : { ids: [], sources: new Set<string>() };
+    const ownedEditorShutdownIds = canonPaths.some((path) => ownedEditorShutdown.sources.has(path))
+      ? ownedEditorShutdown.ids
+      : [];
     const productPaths = paths.filter((path) =>
       product === "lsp"
         ? /^crates\/vize_(?:maestro|resident)\/src\//.test(path)
@@ -251,6 +278,7 @@ function checkProduct(
         ? productPaths.some(
             (path) =>
               !runtime.sources.has(path) &&
+              !ownedEditorShutdown.sources.has(path) &&
               !sharedApi.sources.has(path) &&
               !(product === "typechecker" && nativeShutdownProtocolSource(path)),
           )
@@ -258,8 +286,16 @@ function checkProduct(
     const protocols =
       product === "typechecker"
         ? newNativeShutdownProtocolCases(
-            protocolPartition(before?.protocolCases, SHARED_EDITOR_INITIAL_API_PROTOCOL_ID, false),
-            protocolPartition(manifest.protocolCases, SHARED_EDITOR_INITIAL_API_PROTOCOL_ID, false),
+            protocolPartition(
+              ownedEditorShutdownRows(before?.protocolCases, false),
+              SHARED_EDITOR_INITIAL_API_PROTOCOL_ID,
+              false,
+            ),
+            protocolPartition(
+              ownedEditorShutdownRows(manifest.protocolCases, false),
+              SHARED_EDITOR_INITIAL_API_PROTOCOL_ID,
+              false,
+            ),
             readFile,
           )
         : [];
@@ -274,7 +310,14 @@ function checkProduct(
     return {
       product,
       state: registered ? "new-inputs-registered" : "new-input-missing",
-      cases: [...cases, ...protocols, ...runtime.ids, ...sharedApi.ids, ...cssApi],
+      cases: [
+        ...cases,
+        ...protocols,
+        ...ownedEditorShutdownIds,
+        ...runtime.ids,
+        ...sharedApi.ids,
+        ...cssApi,
+      ],
     };
   } catch (error) {
     return { product, state: "invalid-manifest-or-input", cases: [], reason: String(error) };
