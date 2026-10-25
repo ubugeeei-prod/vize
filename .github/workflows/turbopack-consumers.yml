@@ -10,6 +10,7 @@ on:
       - "npm/native/**"
       - "crates/vize_atelier_sfc/**"
       - "crates/vize_vitrine/**"
+      - "tests/tooling/turbopack-workflow.test.mjs"
       - ".github/workflows/turbopack-consumers.yml"
 
 permissions: { contents: read }

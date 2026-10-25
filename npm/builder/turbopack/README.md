@@ -69,7 +69,7 @@ script or imported-value changes reload the component.
 
 For a server-rendered Vue island inside a React host, retain the initial HTML
 after Vue hydrates it. Vue then owns the island's descendants. The
-[consumer fixture](./test/fixture/app/client.jsx) demonstrates this boundary.
+[consumer fixture](./test/fixtures/app/client.jsx) demonstrates this boundary.
 
 ## Options and current scope
 

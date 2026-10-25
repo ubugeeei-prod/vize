@@ -146,7 +146,7 @@ export async function prepareConsumer() {
       );
     }
   }
-  await fs.cp(path.join(packageRoot, "test/fixture"), consumer, { recursive: true });
+  await fs.cp(path.join(packageRoot, "test/fixtures"), consumer, { recursive: true });
   await fs.writeFile(
     path.join(consumer, "package.json"),
     JSON.stringify(

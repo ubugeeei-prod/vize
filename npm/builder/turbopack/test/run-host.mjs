@@ -196,7 +196,7 @@ async function exercise(mode, label = mode) {
       );
       await inspect(page, "dev-template-update");
       await edit(
-        "rgb(12,34,56)",
+        "rgb(12, 34, 56)",
         "rgb(32,54,76)",
         () => getComputedStyle(document.querySelector("#counter")).color === "rgb(32, 54, 76)",
       );
