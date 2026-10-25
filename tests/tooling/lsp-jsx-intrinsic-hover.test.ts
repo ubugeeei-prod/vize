@@ -7,6 +7,10 @@ import { readPinnedArtifact } from "../differential/harness.mjs";
 import { isDiagnosticsForUri, offsetToPosition } from "./support/lsp/assertions.ts";
 import { FRESH_EDITOR_CAPABILITIES } from "./support/lsp/fresh-capability-policy.ts";
 import { withFreshVueProject } from "./support/lsp/fresh-vue-project.ts";
+import {
+  IntrinsicHoverTimings,
+  intrinsicWorkspaceControls,
+} from "./support/lsp/intrinsic-hover-observation.ts";
 import { root, testOutputRoot } from "./support/lsp/paths.ts";
 import type { JsonRpcMessage } from "./support/lsp/protocol.ts";
 import { LspRequestError } from "./support/lsp/session.ts";
@@ -103,7 +107,14 @@ test("JSX intrinsic hovers share complete DOM packets and preserve resolved proj
               },
             },
           );
-          const observations: unknown[] = [{ initialize }];
+          const observations: unknown[] = [
+            {
+              initialize,
+              workspaceControls: intrinsicWorkspaceControls(workspace),
+            },
+          ];
+          const timings = new IntrinsicHoverTimings();
+          let complete = false;
           try {
             for (const [extension, languageId] of [
               ["jsx", "javascriptreact"],
@@ -135,12 +146,14 @@ test("JSX intrinsic hovers share complete DOM packets and preserve resolved proj
                   const params = { textDocument: { uri }, position: offsetToPosition(text, at) };
                   const started = performance.now();
                   const result = await session.request("textDocument/hover", params);
+                  const elapsedMs = performance.now() - started;
+                  timings.record(label, kind, elapsedMs);
                   observations.push({
                     label,
                     kind,
                     params,
                     result,
-                    elapsedMs: performance.now() - started,
+                    elapsedMs,
                   });
                   assert.deepEqual(result, expected, `${label} ${kind}`);
                 };
@@ -279,11 +292,20 @@ test("JSX intrinsic hovers share complete DOM packets and preserve resolved proj
               null,
               `${mode} filename cannot grant a JSX profile`,
             );
+            complete = true;
           } finally {
             fs.mkdirSync(path.join(testOutputRoot, "jsx-intrinsic-hover"), { recursive: true });
             fs.writeFileSync(
               path.join(testOutputRoot, "jsx-intrinsic-hover", `${mode}.json`),
               JSON.stringify(observations, null, 2) + "\n",
+            );
+            const summary = { mode, complete, requestLatency: timings.summary() };
+            fs.writeFileSync(
+              path.join(testOutputRoot, "jsx-intrinsic-hover", `${mode}.timings.json`),
+              JSON.stringify(summary, null, 2) + "\n",
+            );
+            caseTest.diagnostic(
+              `JSX intrinsic hover observed CI latency: ${JSON.stringify(summary)}`,
             );
           }
         });
