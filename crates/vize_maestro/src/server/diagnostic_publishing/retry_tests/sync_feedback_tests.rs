@@ -238,21 +238,29 @@ fn complete_same_world_result_cannot_be_replaced_by_pending_type_status() {
 
 #[test]
 fn pending_type_status_refuses_stale_source_environment_closed_and_disabled_worlds() {
-    for control in ["source", "environment", "closed", "disabled", "retired"] {
+    #[derive(Clone, Copy, Debug)]
+    enum Control {
+        Source,
+        Environment,
+        Closed,
+        Disabled,
+        Retired,
+    }
+    use Control::{Closed, Disabled, Environment, Retired, Source};
+    for control in [Source, Environment, Closed, Disabled, Retired] {
         let mut fixture = original_fixture();
         let server = fixture.service.inner();
         let stamp = server.state.corsa_request_stamp();
         match control {
-            "source" => change(&fixture, &fixture.app, 3, ORIGINAL),
-            "environment" => server.state.mark_corsa_disk_state_dirty(),
-            "closed" => {
+            Source => change(&fixture, &fixture.app, 3, ORIGINAL),
+            Environment => server.state.mark_corsa_disk_state_dirty(),
+            Closed => {
                 server.state.documents.close(&fixture.app);
             }
-            "disabled" => server
+            Disabled => server
                 .state
                 .apply_lsp_initialization_options(Some(&json!({"typecheck":false}))),
-            "retired" => server.state.retire_project_contexts(),
-            _ => unreachable!(),
+            Retired => server.state.retire_project_contexts(),
         }
         let observed = diagnostics(drain(
             &mut fixture.socket,
@@ -260,7 +268,7 @@ fn pending_type_status_refuses_stale_source_environment_closed_and_disabled_worl
         ));
         assert!(
             observed.is_empty(),
-            "{control} must not publish pending native status"
+            "{control:?} must not publish pending native status"
         );
     }
 }
