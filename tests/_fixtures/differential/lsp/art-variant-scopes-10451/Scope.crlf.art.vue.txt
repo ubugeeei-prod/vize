@@ -1,0 +1,10 @@
+<script setup lang="ts">
+const rows = [1, 2]
+const item = 'outside'
+</script>
+<art title="Scope" component="./Child.vue">
+<variant name="First" default><i v-for="item in rows">{{ item }}</i></variant>
+<variant name="Second">
+<section v-for="item in rows">🧭{{ item }}</section>
+</variant>
+</art>

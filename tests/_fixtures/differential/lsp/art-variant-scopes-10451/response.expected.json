@@ -1,0 +1,19 @@
+{
+  "position": {
+    "line": 7,
+    "character": 35
+  },
+  "result": {
+    "uri": "${workspace}/Scope.art.vue",
+    "range": {
+      "start": {
+        "line": 7,
+        "character": 16
+      },
+      "end": {
+        "line": 7,
+        "character": 20
+      }
+    }
+  }
+}

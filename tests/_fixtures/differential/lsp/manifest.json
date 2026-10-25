@@ -1899,6 +1899,49 @@
           }
         ]
       }
+    },
+    {
+      "id": "lsp/regression/art-variant-scopes-10451",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "art-variant-scopes-10451",
+        "files": [
+          {
+            "path": "Scope.art.vue.txt",
+            "sha256": "e0a8b578c3caf01793f9f94f0a43eed8d6d9ab3f590a4a1240191435c99ac278"
+          },
+          {
+            "path": "Scope.crlf.art.vue.txt",
+            "sha256": "1efb09e288ee03f7bbee82a9a95b2261a74ba42d992bb690687b3f03dc1f8774"
+          },
+          {
+            "path": "Child.vue.txt",
+            "sha256": "c4e75a2b5d0b350bf89669429d287dc39fd987d7405d4118895a8d69443898c4"
+          }
+        ]
+      },
+      "case": {
+        "path": "art-variant-scopes-10451/case.json",
+        "sha256": "00eae5dd52c06198c196dea66879c62e32c0715e986cae4750a7fd0cda44e88d"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }

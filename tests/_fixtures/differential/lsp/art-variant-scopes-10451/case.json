@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "id": "lsp/regression/art-variant-scopes-10451",
+  "provenance": {
+    "fixCommit": "775357cb5156ce4acc7a2970cc9dbd3c13d5b052",
+    "witnessPath": "tests/tooling/lsp-art-variant-scopes.test.ts",
+    "witnessTest": "art authored editor scopes isolate variants and shadow setup bindings without a type service",
+    "inputOrigin": "Minimal derivative of the v0.560.0 authored variant scope failure in issue #10451",
+    "contractOrigin": "Independently authored physical variant-local declaration coordinates; complete definition response"
+  },
+  "files": [
+    {
+      "source": "Scope.art.vue.txt",
+      "runtimePath": "Scope.art.vue",
+      "sha256": "e0a8b578c3caf01793f9f94f0a43eed8d6d9ab3f590a4a1240191435c99ac278"
+    },
+    {
+      "source": "Scope.crlf.art.vue.txt",
+      "runtimePath": "Scope.crlf.art.vue",
+      "sha256": "1efb09e288ee03f7bbee82a9a95b2261a74ba42d992bb690687b3f03dc1f8774"
+    },
+    {
+      "source": "Child.vue.txt",
+      "runtimePath": "Child.vue",
+      "sha256": "c4e75a2b5d0b350bf89669429d287dc39fd987d7405d4118895a8d69443898c4"
+    }
+  ],
+  "entry": "Scope.art.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "ea19779aa96a003f18f7784618dc5b36bc5e9ef5788db5197b902f5026325df9"
+  },
+  "method": "textDocument/definition",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "scope": "Authored definition isolation without a type service; pinned source dialect custody does not establish native whole-product parity"
+}

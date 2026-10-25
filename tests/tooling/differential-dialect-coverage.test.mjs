@@ -168,19 +168,19 @@ void test("linter and LSP coverage record every pinned authored source dialect",
     },
   });
   assert.deepEqual(summarizeDialectCoverage(load("lsp").cases), {
-    plannedCases: 48,
+    plannedCases: 49,
     verifiedCases: 0,
-    provisionalCases: 48,
-    unknownReadinessCases: 48,
+    provisionalCases: 49,
+    unknownReadinessCases: 49,
     verified: {},
     provisional: {
-      "html-template": 42,
+      "html-template": 43,
       js: 3,
       jsx: 2,
       "pug-template": 3,
-      ts: 34,
+      ts: 35,
       tsx: 2,
-      "vue3-sfc": 47,
+      "vue3-sfc": 48,
     },
   });
 });
