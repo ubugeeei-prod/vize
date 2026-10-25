@@ -45,7 +45,7 @@ jobs:
           path: target/vize-tests/native-beta-dto-composition/**
           if-no-files-found: error
   actual-source-wire:
-    name: ${{ matrix.role == 'before' && matrix.sdk.version == '7.1.0-beta' && 'Baseline refusal observation' || 'Source control (after uses LOCAL patched SDK)' }} (${{ matrix.role }}, ${{ matrix.sdk.version }})
+    name: ${{ matrix.role == 'before' && matrix.sdk.version == '7.1.0-beta' && 'Baseline refusal observation' || matrix.role == 'after' && 'LOCAL patched SDK source control' || 'Stock SDK source control' }} (${{ matrix.role }}, ${{ matrix.sdk.version }})
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 25
     strategy:
