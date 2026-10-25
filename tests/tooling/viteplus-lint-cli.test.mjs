@@ -20,7 +20,7 @@ const list = [1, 2];
 </template>
 `;
 
-test("source CLI top-level Vite+ lint config equals the complete canonical native diagnostic packet", (t) => {
+void test("source CLI top-level Vite+ lint config equals the complete canonical native diagnostic packet", (t) => {
   const [binary] = resolveVizeLaunchCommand(undefined, path.join(root, "target/ci/vize"), {
     required: true,
     repoRoot: root,
