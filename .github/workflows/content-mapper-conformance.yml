@@ -121,22 +121,6 @@ jobs:
           cargo test -p vize --test integration -- content_mapper_tsgo_cli::generic_constructor_slots:: --nocapture
           cargo test -p vize --test integration -- content_mapper_tsgo_cli::long_prop_kebab_case:: --nocapture
           cargo test -p vize --test integration -- content_mapper_tsgo_cli::pug_refusal:: --nocapture
-      - name: Observe original unknown option native oracle twice
-        continue-on-error: true
-        env:
-          VIZE_TEST_TSGO_PATH: ${{ runner.temp }}/tsgo
-          VIZE_TEST_REQUIRE_TSGO: "1"
-        run: |
-          failed=0
-          for attempt in 1 2; do
-            if cargo test -p vize_maestro original_unknown_options_preserve_complete_editor_vectors -- --nocapture; then
-              echo "Original unknown option native oracle attempt $attempt/2 passed"
-            else
-              echo "::warning::Original unknown option native oracle attempt $attempt/2 reproduced the independent baseline failure"
-              failed=1
-            fi
-          done
-          exit "$failed"
       - name: Run TS-40 current-projection baselines
         run: |
           cargo test -p vize --test integration -- davinci_ts40_projection_cli:: --nocapture
@@ -201,15 +185,174 @@ jobs:
           cargo test -p vize --test integration -- content_mapper_tsgo_declaration_lsp:: --nocapture
           cargo test -p vize --test integration -- content_mapper_tsgo_lsp_event_forms:: --nocapture
           cargo test -p vize_canon --test lsp_import_resolution -- --nocapture
-      - name: Stress exact editor lifecycle
-        env:
-          TSGO_PATH: ${{ runner.temp }}/tsgo
-          VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
+      - name: Stress every editor case against its exact native provider
         run: |
-          for iteration in $(seq 1 20); do
-            cargo test -p vize_maestro -- --quiet
-            echo "Content Mapper Maestro lifecycle cycle $iteration/20 passed"
-          done
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { createHash } from 'node:crypto';
+          import { mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
+          import { createRequire } from 'node:module';
+          import path from 'node:path';
+          import { spawnSync } from 'node:child_process';
+
+          const root = process.cwd();
+          const capture = path.join(process.env.RUNNER_TEMP, 'content-mapper-editor-stress');
+          mkdirSync(capture, { recursive: true });
+          const digest = bytes => createHash('sha256').update(bytes).digest('hex');
+          const fileHash = file => digest(readFileSync(file));
+          const write = (name, value) => writeFileSync(path.join(capture, name), JSON.stringify(value, null, 2) + '\n');
+          const legacy = 'ide::diagnostics::editor_typecheck_unknown_options_tests::original_unknown_options_preserve_complete_editor_vectors';
+          const receipt = { source: process.env.GITHUB_SHA, run: process.env.GITHUB_RUN_ID, status: 'RUNNING', initializationEvidence: 'Fixture, source and startup configuration custody; not a raw RPC witness', providers: {}, inventory: [], cycles: [] };
+          const aliases = ['CORSA_PATH', 'CORSA_EXECUTABLE', 'TSGO_PATH', 'TSGO_EXECUTABLE', 'TSRS_PATH', 'TSRS_EXECUTABLE', 'VIZE_TEST_TSGO_PATH', 'VIZE_TEST_DISABLE_TSGO', 'VIZE_UNKNOWN_TEMPLATE_CAPTURE'];
+          function environment(binary, fixtureCapture) {
+            const env = { ...process.env, SOURCE_SHA: process.env.GITHUB_SHA };
+            for (const key of aliases) delete env[key];
+            if (binary) Object.assign(env, { CORSA_PATH: binary, TSGO_PATH: binary, VIZE_TEST_TSGO_PATH: binary, VIZE_TEST_REQUIRE_TSGO: '1' });
+            if (fixtureCapture) env.VIZE_UNKNOWN_TEMPLATE_CAPTURE = fixtureCapture;
+            return env;
+          }
+          let sequence = 0;
+          function run(label, command, args, binary, fixtureCapture) {
+            const directory = `${String(sequence++).padStart(3, '0')}-${label}`;
+            const destination = path.join(capture, directory);
+            mkdirSync(destination);
+            const env = environment(binary, fixtureCapture);
+            const result = spawnSync(command, args, { cwd: root, env, maxBuffer: 64 * 1024 * 1024, timeout: 180000 });
+            const stdout = result.stdout ?? Buffer.alloc(0), stderr = result.stderr ?? Buffer.alloc(0);
+            writeFileSync(path.join(destination, 'stdout.bin'), stdout);
+            writeFileSync(path.join(destination, 'stderr.bin'), stderr);
+            writeFileSync(path.join(destination, 'process.json'), JSON.stringify({ command, arguments: args, cwd: root, provider: binary ?? null, providerSha256: binary ? fileHash(binary) : null, startupEnvironment: Object.fromEntries([...aliases, 'SOURCE_SHA', 'VIZE_TEST_REQUIRE_TSGO'].map(key => [key, env[key] ?? null])), status: result.status, signal: result.signal, error: result.error?.message ?? null, stdoutSha256: digest(stdout), stderrSha256: digest(stderr) }, null, 2) + '\n');
+            assert.equal(result.error, undefined, `${label}: process error; retained under ${directory}`);
+            assert.equal(result.signal, null, `${label}: process signal`);
+            assert.equal(result.status, 0, `${label}: full output retained under ${directory}`);
+            if (label === 'original-version') assert.equal(stderr.length, 0);
+            return stdout.toString('utf8');
+          }
+          function names(text) {
+            const result = [];
+            const declared = [];
+            for (const line of text.split('\n').filter(Boolean)) {
+              const match = /^(.*): test$/u.exec(line);
+              if (match) result.push(match[1]);
+              else {
+                const summary = /^(\d+) tests?, 0 benchmarks?$/u.exec(line);
+                assert.ok(summary, `unexpected complete inventory row: ${line}`);
+                declared.push(Number(summary[1]));
+              }
+            }
+            assert.deepEqual(declared, [result.length], 'complete inventory count must match its exact rows');
+            assert.equal(new Set(result).size, result.length, 'inventory names must be unique per target');
+            return result.sort();
+          }
+          function executions(text, inventory, ignored, selected) {
+            const events = [...text.matchAll(/^test (.+) \.\.\. (ok|FAILED|ignored(?:,.*)?)$/gmu)].map(match => ({ name: match[1], state: match[2].startsWith('ignored') ? 'ignored' : match[2] }));
+            assert.deepEqual(events.map(event => event.name).sort(), [...selected].sort(), 'all selected cases must produce exactly one complete result');
+            assert.deepEqual(events.filter(event => event.state === 'ignored').map(event => event.name).sort(), ignored.filter(name => selected.includes(name)), 'declared ignored-case policy must remain unchanged');
+            assert.equal(events.some(event => event.state === 'FAILED'), false);
+            const summaries = [...text.matchAll(/^test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored; (\d+) measured; (\d+) filtered out;/gmu)];
+            assert.equal(summaries.length, 1, 'each target must finish with one complete summary');
+            const actual = summaries[0].slice(1).map(Number);
+            const ignoredCount = ignored.filter(name => selected.includes(name)).length;
+            assert.deepEqual(actual, [selected.length - ignoredCount, 0, ignoredCount, 0, inventory.length - selected.length], 'complete inventory and summary counts must agree');
+            return events;
+          }
+          function reject(label, operation) {
+            let rejected = false;
+            try { operation(); } catch { rejected = true; }
+            assert.equal(rejected, true, `${label}: evidence must fail closed`);
+          }
+          // Negative controls guard against empty, omitted, duplicate and widened evidence.
+          const sample = 'test a ... ok\ntest b ... ignored\ntest result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out;\n';
+          names('a: test\nb: test\n2 tests, 0 benchmarks\n');
+          reject('empty inventory', () => names(''));
+          reject('omitted inventory row', () => names('a: test\n2 tests, 0 benchmarks\n'));
+          reject('duplicate inventory row', () => names('a: test\na: test\n2 tests, 0 benchmarks\n'));
+          executions(sample, ['a', 'b'], ['b'], ['a', 'b']);
+          reject('missing case', () => executions(sample.replace('test a ... ok\n', ''), ['a', 'b'], ['b'], ['a', 'b']));
+          reject('duplicate case', () => executions('test a ... ok\n' + sample, ['a', 'b'], ['b'], ['a', 'b']));
+          reject('changed ignore policy', () => executions(sample, ['a', 'b'], [], ['a', 'b']));
+          reject('changed total', () => executions(sample.replace('1 passed', '2 passed'), ['a', 'b'], ['b'], ['a', 'b']));
+          reject('undeclared filtering', () => executions(sample.replace('0 filtered out', '1 filtered out'), ['a', 'b'], ['b'], ['a', 'b']));
+          write('negative-controls.json', { emptyInventory: 'rejected', omittedInventory: 'rejected', duplicateInventory: 'rejected', missing: 'rejected', duplicate: 'rejected', changedIgnore: 'rejected', changedTotal: 'rejected', undeclaredFiltering: 'rejected' });
+
+          try {
+            const mapper = realpathSync(path.join(process.env.RUNNER_TEMP, 'tsgo'));
+            const mapperReceipt = JSON.parse(readFileSync(path.join(process.env.RUNNER_TEMP, 'content-mapper-native-host.json')));
+            assert.equal(fileHash(mapper), mapperReceipt.sha256);
+            assert.equal(mapperReceipt.upstream, process.env.CONTENT_MAPPER_TYPESCRIPT_SHA);
+            receipt.providers.mapper = mapperReceipt;
+            const require = createRequire(path.join(root, 'npm/cli/package.json'));
+            const manifestPath = require.resolve('@typescript/typescript-linux-x64/package.json');
+            const manifest = JSON.parse(readFileSync(manifestPath));
+            assert.equal(manifest.name, '@typescript/typescript-linux-x64');
+            assert.equal(manifest.version, '7.0.2');
+            const original = realpathSync(path.join(path.dirname(manifestPath), 'lib/tsc'));
+            assert.equal(readFileSync(original).subarray(0, 4).toString('hex'), '7f454c46');
+            assert.equal(fileHash(original), '4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4');
+            assert.equal(run('original-version', original, ['--version']), 'Version 7.0.2\n');
+            receipt.providers.original = { binary: original, sha256: fileHash(original), manifestPath, manifestSha256: fileHash(manifestPath), version: manifest.version, gitHead: manifest.gitHead };
+            const metadata = JSON.parse(run('metadata', 'cargo', ['metadata', '--locked', '--no-deps', '--format-version=1']));
+            const pkg = metadata.packages.find(pkg => pkg.name === 'vize_maestro');
+            assert.ok(pkg);
+            const build = run('build-once', 'cargo', ['test', '--locked', '-p', 'vize_maestro', '--no-run', '--message-format=json'], mapper);
+            const messages = build.split('\n').filter(Boolean).map(line => JSON.parse(line));
+            assert.equal(messages.at(-1).reason, 'build-finished');
+            assert.equal(messages.at(-1).success, true);
+            const binaries = messages.filter(message => message.reason === 'compiler-artifact' && message.package_id === pkg.id && message.profile.test && message.executable);
+            assert.ok(binaries.length > 0);
+            const targets = binaries.map(artifact => {
+              const kind = artifact.target.kind;
+              assert.equal(kind.length, 1);
+              assert.ok(kind[0] === 'lib' || kind[0] === 'test');
+              return { key: `${kind[0]}:${artifact.target.name}`, selector: kind[0] === 'lib' ? ['--lib'] : ['--test', artifact.target.name], executable: artifact.executable, executableSha256: fileHash(artifact.executable), features: artifact.features };
+            });
+            targets.push({ key: 'doctest:vize_maestro', selector: ['--doc'] });
+            assert.equal(new Set(targets.map(target => target.key)).size, targets.length);
+            for (const target of targets) {
+              const command = ['test', '--locked', '-p', 'vize_maestro', ...target.selector, '--'];
+              target.inventory = names(run(`list-${target.key.replaceAll(':', '-')}`, 'cargo', [...command, '--list', '--format', 'terse'], mapper));
+              target.ignored = names(run(`ignored-${target.key.replaceAll(':', '-')}`, 'cargo', [...command, '--ignored', '--list', '--format', 'terse'], mapper));
+              assert.ok(target.ignored.every(name => target.inventory.includes(name)));
+              for (const name of target.inventory) receipt.inventory.push({ target: target.key, name, ignored: target.ignored.includes(name), provider: name === legacy ? 'original' : 'mapper' });
+            }
+            assert.equal(receipt.inventory.filter(test => test.name.includes(legacy)).length, 1);
+            assert.equal(receipt.inventory.find(test => test.name === legacy).ignored, false);
+            const legacyTarget = targets.find(target => target.inventory.includes(legacy));
+            assert.equal(legacyTarget.key, 'lib:vize_maestro');
+            receipt.targets = targets;
+            write('receipt.json', receipt);
+            for (let cycle = 1; cycle <= 20; cycle++) {
+              const completed = [];
+              for (const target of targets) {
+                const selected = target.inventory.filter(name => name !== legacy);
+                const command = ['test', '--locked', '-p', 'vize_maestro', ...target.selector, '--', '--format', 'pretty', '--color', 'never', '--skip', legacy];
+                const stdout = run(`cycle-${cycle}-${target.key.replaceAll(':', '-')}`, 'cargo', command, mapper);
+                completed.push(...executions(stdout, target.inventory, target.ignored, selected).map(event => ({ target: target.key, ...event, provider: 'mapper' })));
+              }
+              const fixtureCapture = path.join(capture, `cycle-${cycle}-original-fixtures`);
+              const stdout = run(`cycle-${cycle}-original`, 'cargo', ['test', '--locked', '-p', 'vize_maestro', ...legacyTarget.selector, '--', '--exact', legacy, '--format', 'pretty', '--color', 'never'], original, fixtureCapture);
+              completed.push(...executions(stdout, legacyTarget.inventory, legacyTarget.ignored, [legacy]).map(event => ({ target: legacyTarget.key, ...event, provider: 'original' })));
+              const identity = test => `${test.target}\0${test.name}`;
+              assert.deepEqual(completed.map(identity).sort(), receipt.inventory.map(identity).sort(), 'combined providers must execute the complete original inventory exactly once per cycle');
+              assert.equal(completed.filter(test => test.provider === 'original').length, 1);
+              for (const test of completed) assert.equal(test.provider, receipt.inventory.find(expected => identity(expected) === identity(test)).provider);
+              assert.equal(fileHash(mapper), mapperReceipt.sha256);
+              assert.equal(fileHash(original), receipt.providers.original.sha256);
+              for (const target of targets.filter(target => target.executable)) assert.equal(fileHash(target.executable), target.executableSha256, 'test executable must remain the once-built image');
+              receipt.cycles.push({ cycle, completed, active: completed.filter(test => test.state === 'ok').length, ignored: completed.filter(test => test.state === 'ignored').length });
+              write('receipt.json', receipt);
+              console.log(`Editor lifecycle cycle ${cycle}/20 passed: ${receipt.cycles.at(-1).active} active + ${receipt.cycles.at(-1).ignored} declared ignores; both exact providers covered`);
+            }
+            assert.equal(receipt.cycles.length, 20);
+            receipt.status = 'COMPLETE_INVENTORY_PASSED';
+          } catch (error) {
+            receipt.status = 'FAILED';
+            receipt.error = error.stack;
+            throw error;
+          } finally {
+            write('receipt.json', receipt);
+          }
+          JS
       - name: Preserve whole owner calibration observations
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -218,6 +361,7 @@ jobs:
           path: |
             target/vize-tests/content-mapper-directive-owners
             ${{ runner.temp }}/content-mapper-native-host.json
+            ${{ runner.temp }}/content-mapper-editor-stress
           if-no-files-found: error
           retention-days: 7
 

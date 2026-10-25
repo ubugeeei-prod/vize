@@ -17,9 +17,8 @@ const CONTENT_MAPPER_PROTOCOL_COMMAND =
 const SPANMAP_PROTOCOL_COMMAND =
   "go test ./internal/spanmap -run '^(TestOriginalToVirtualOverlappingSpans|TestValidateOriginalOverlapAndFeatures)$' -count=1";
 const TSGO_BUILD_COMMAND = 'go build -tags=noembed -trimpath -o "$RUNNER_TEMP/tsgo" ./cmd/tsc';
-const MAESTRO_COMMAND = "cargo test -p vize_maestro -- --quiet";
-const MAESTRO_LOOP = "for iteration in $(seq 1 20); do";
-const MAESTRO_SUCCESS_LOG = 'echo "Content Mapper Maestro lifecycle cycle $iteration/20 passed"';
+const MAESTRO_STRESS = "Stress every editor case against its exact native provider";
+const ORIGINAL_NATIVE_SHA = "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4";
 const PACKAGE_ROUTE_COMMANDS = [
   "cargo test -p vize --test integration -- check_importer_scoped_package_cli:: --nocapture",
   "cargo test -p vize --test integration -- check_package_declaration_barrel_cli:: --nocapture",
@@ -183,35 +182,78 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
   assert.equal(editorSteps[0].name, "Run Content Mapper LSP and virtual-overlay editor checks");
   assert.equal(editorSteps[0].env?.TSGO_PATH, "${{ runner.temp }}/tsgo");
   assert.equal(editorSteps[0].env?.VIZE_TEST_CONTENT_MAPPER_TSGO, "${{ runner.temp }}/tsgo");
-  const stressSteps = stepsRunning(steps, MAESTRO_COMMAND);
+  const stressSteps = steps.filter((step) => step.name === MAESTRO_STRESS);
   assert.equal(stressSteps.length, 1, "expected exactly one Maestro lifecycle stress step");
-  const stressStep = steps[stressSteps[0]];
+  const stressStep = stressSteps[0];
   const stressRun = stressStep.run ?? "";
-  assert.equal(stressStep.env?.TSGO_PATH, "${{ runner.temp }}/tsgo");
-  assert.equal(stressStep.env?.VIZE_TEST_CONTENT_MAPPER_TSGO, "${{ runner.temp }}/tsgo");
   assert.equal(
-    [...stressRun.matchAll(/^\s*cargo test -p vize_maestro -- --quiet\s*$/gm)].length,
+    steps.some((step) => Object.hasOwn(step, "continue-on-error")),
+    false,
+    "every case now runs on its bound provider and every default-job failure must gate",
+  );
+  assert.match(stressRun, /assert\.equal\(manifest\.version, '7\.0\.2'\)/);
+  assert.match(stressRun, /assert\.equal\(manifest\.name, '@typescript\/typescript-linux-x64'\)/);
+  assert.ok(stressRun.includes(ORIGINAL_NATIVE_SHA));
+  assert.match(stressRun, /Version 7\.0\.2\\n/);
+  assert.match(
+    stressRun,
+    /initializationEvidence: 'Fixture, source and startup configuration custody; not a raw RPC witness'/,
+  );
+  assert.match(
+    stressRun,
+    /CORSA_PATH: binary, TSGO_PATH: binary, VIZE_TEST_TSGO_PATH: binary, VIZE_TEST_REQUIRE_TSGO: '1'/,
+  );
+  assert.match(stressRun, /'--ignored', '--list', '--format', 'terse'/);
+  assert.match(stressRun, /key: 'doctest:vize_maestro', selector: \['--doc'\]/);
+  assert.match(
+    stressRun,
+    /assert\.deepEqual\(completed\.map\(identity\)\.sort\(\), receipt\.inventory\.map\(identity\)\.sort\(\)/,
+  );
+  assert.match(stressRun, /assert\.equal\(receipt\.cycles\.length, 20\)/);
+  assert.match(
+    stressRun,
+    /assert\.equal\(fileHash\(target\.executable\), target\.executableSha256/,
+  );
+  assert.match(stressRun, /stdout\.bin/);
+  assert.match(stressRun, /stderr\.bin/);
+  assert.match(stressRun, /source: process\.env\.GITHUB_SHA/);
+  assert.equal(
+    [...stressRun.matchAll(/'--no-run'/gu)].length,
     1,
-    "expected one direct Maestro command in the iteration loop",
+    "test executables must build once before provider splits",
   );
   assert.equal(
-    [...stressRun.matchAll(/^\s*(?:for|while|until)\b/gm)].length,
+    [...stressRun.matchAll(/for \(let cycle = 1; cycle <= 20; cycle\+\+\)/gu)].length,
     1,
-    "retry loops are forbidden in the lifecycle stress step",
+    "one complete 20-cycle campaign must cover both providers",
   );
   assert.doesNotMatch(
     stressRun,
     /\bsleep\b|--test-threads(?:=|\s+)1|RUST_TEST_THREADS\s*=\s*1|\|\|\s*true|\bset\s+\+e\b|\b(?:retry|attempt)\b|(?:grep|rg).*\b(?:panic|fail)/i,
     "stress step must not serialize, retry, sleep, ignore failures, or filter panics",
   );
-  const loopStart = stressRun.indexOf(MAESTRO_LOOP);
-  assert.ok(loopStart >= 0, "Maestro stress step must run a 20-iteration loop");
-  const maestroRun = stressRun.indexOf(MAESTRO_COMMAND);
-  const successLog = stressRun.indexOf(MAESTRO_SUCCESS_LOG);
-  const loopEnd = stressRun.slice(loopStart).search(/^\s*done\s*$/m) + loopStart;
-  assert.ok(loopStart < maestroRun, "Maestro command must run inside the loop");
-  assert.ok(maestroRun < successLog, "success log must follow the Maestro command");
-  assert.ok(successLog < loopEnd, "success log must run inside the same loop");
+  const controlsStart = stressRun.indexOf("function names(");
+  const controlsEnd = stressRun.indexOf("\ntry {\n  const mapper");
+  assert.ok(controlsStart > 0 && controlsEnd > controlsStart);
+  const retained = new Map<string, unknown>();
+  runInNewContext(stressRun.slice(controlsStart, controlsEnd), {
+    assert,
+    write(name: string, value: unknown) {
+      const serialized = JSON.stringify(value);
+      assert.ok(typeof serialized === "string");
+      retained.set(name, JSON.parse(serialized));
+    },
+  });
+  assert.deepEqual(retained.get("negative-controls.json"), {
+    emptyInventory: "rejected",
+    omittedInventory: "rejected",
+    duplicateInventory: "rejected",
+    missing: "rejected",
+    duplicate: "rejected",
+    changedIgnore: "rejected",
+    changedTotal: "rejected",
+    undeclaredFiltering: "rejected",
+  });
 });
 
 test("manual focused campaigns preserve the full default and upload before gating", () => {
