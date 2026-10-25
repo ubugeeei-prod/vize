@@ -14,6 +14,15 @@ impl EditorLspSession {
         created: &[PathBuf],
         deleted: &[PathBuf],
     ) -> Result<(), String> {
+        // A retained editor can still have a removed generated dependency
+        // open. Retire that overlay before the filesystem deletion: native
+        // watchers otherwise observe an open file and keep its module alive.
+        for path in deleted {
+            let uri = crate::file_uri::path_to_file_uri(path);
+            if self.documents.contains_key(uri.as_str()) {
+                self.close_mirrored_document(uri.as_str())?;
+            }
+        }
         let mut changes = Vec::new();
         for (paths, typ) in [
             (changed, FileChangeType::CHANGED),

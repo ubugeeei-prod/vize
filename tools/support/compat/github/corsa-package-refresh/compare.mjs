@@ -61,6 +61,7 @@ const cases = [
 const refs = [
   ["before-policy", "13fa41356d075047a229f580014b637d3bbeb57f"],
   ["runtime-policy", "9469f272b189d0220a9838539f2c878fc5d70edd"],
+  ["fixed", observer],
 ];
 for (const [label, source] of refs) {
   git("checkout", "--detach", source);
@@ -131,18 +132,34 @@ for (const [label, source] of refs) {
         signal: result.signal,
         error: result.error?.message,
         sdkSha256: hash(executable),
+        expectedFailure: label !== "fixed",
       };
       receipt.results.push(row);
       fs.writeFileSync(path.join(capture, "receipt.json"), JSON.stringify(receipt, null, 2));
       process.stdout.write(`${JSON.stringify(row)}\n`);
       assert.equal(result.error, undefined);
       assert.match(result.stdout, /running 1 test/);
-      assert.match(result.stdout, /test result: FAILED/);
-      assert.equal(
-        result.status,
-        101,
-        "Attribution must reproduce the same genuine delete failure before and after runtime policy",
-      );
+      if (label === "fixed") {
+        assert.match(result.stdout, /test result: ok/);
+        assert.equal(
+          result.status,
+          0,
+          "The real deletion contract must pass after invalidation is repaired",
+        );
+      } else {
+        assert.match(result.stdout, /test result: FAILED/);
+        assert.match(
+          result.stderr,
+          name === "bridge"
+            ? /deleting the package target did not refresh Corsa/
+            : /assertion failed: has_code\(&deleted, "TS2307"\)/,
+        );
+        assert.equal(
+          result.status,
+          101,
+          "Attribution must reproduce the same genuine delete failure before and after runtime policy",
+        );
+      }
     }
   } finally {
     for (const [file, original] of originals) fs.writeFileSync(file, original);
