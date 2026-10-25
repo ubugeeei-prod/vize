@@ -76,3 +76,23 @@ export interface VizePublicRegistryInstallCollectorReceipt extends VizePublicReg
   };
   sourceManifestPayloads: Array<{ path: string; sha256: string }>;
 }
+
+/** Current explicit-provider campaign; the historical bundled v1 schema stays intact. */
+export interface VizePublicRegistryUserInstallAuthority extends Omit<
+  VizePublicRegistryInstallAuthority,
+  "schema" | "bundledCorsa" | "sourceOverrides"
+> {
+  schema: "vize-public-registry-user-install-v1";
+  resolutionMode: "explicit-user-provider";
+  cohort: "explicit-user-provider-v1";
+  scope: string;
+  userTypechecker: VizePublicRegistryInstallAuthority["bundledCorsa"] & {
+    declaration: "devDependencies";
+  };
+  sourceOverrides: VizePublicRegistryInstallAuthority["sourceOverrides"] & {
+    TSRS_PATH: "";
+    TSRS_EXECUTABLE: "";
+  };
+}
+export type VizePublicRegistryUserInstallCollectorReceipt = VizePublicRegistryUserInstallAuthority &
+  Pick<VizePublicRegistryInstallCollectorReceipt, "collectorAuthority" | "sourceManifestPayloads">;

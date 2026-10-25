@@ -15,7 +15,12 @@ export const overrides = [
   "TSGO_PATH",
   "TSGO_EXECUTABLE",
 ] as const;
-const observerOverrides = ["VIZE_PUBLIC_NATIVE_CUSTODY", "VIZE_OXLINT_NATIVE_CUSTODY"] as const;
+const observerOverrides = [
+  "VIZE_PUBLIC_NATIVE_CUSTODY",
+  "VIZE_OXLINT_NATIVE_CUSTODY",
+  "TSRS_PATH",
+  "TSRS_EXECUTABLE",
+] as const;
 export const producerFiles: readonly string[] = [
   "tools/commands/release/npm/collect-public-install.rs",
   "tools/support/archive/tar.ts",
@@ -172,10 +177,25 @@ function catalogVersion(workspace: Buffer, catalog: string, packageName: string)
 export const corsaVersionPattern = /^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?$/u;
 export const majorAtLeast7 = (version: string): boolean => Number(version.split(".")[0]) >= 7;
 
+export function hasCheckerOptionalDependency(manifest: unknown): boolean {
+  const optional = lookup(manifest, "optionalDependencies");
+  return (
+    optional !== null &&
+    typeof optional === "object" &&
+    !Array.isArray(optional) &&
+    Object.keys(optional).some(
+      (name) =>
+        name === "typescript" ||
+        name.startsWith("@typescript/typescript-") ||
+        name.startsWith("@typescript/native-preview"),
+    )
+  );
+}
+
 export function sourceManifests(
   root: string,
   source: Pick<Source, "H" | "tag">,
-): { files: FileDigest[]; corsaVersion: string } {
+): { files: FileDigest[]; corsaVersion: string; corsaResolutionMode?: "explicit-user-provider" } {
   const version = source.tag.slice(1);
   const manifests = [
     ["npm/cli/package.json", "vize"],
@@ -189,6 +209,7 @@ export function sourceManifests(
   if (!corsaVersionPattern.test(corsa) || !majorAtLeast7(corsa))
     throw new CustodyError("H exact public Corsa catalog version required");
   const files: FileDigest[] = [{ path: "pnpm-workspace.yaml", sha256: digest(workspace) }];
+  let userProvider = false;
   for (const [file, expectedName] of manifests) {
     const data = sourceFile(root, source.H, file);
     const manifest: unknown = JSON.parse(data.toString("utf8"));
@@ -207,7 +228,11 @@ export function sourceManifests(
         "optionalDependencies",
         "@typescript/typescript-darwin-arm64",
       );
-      if (declared !== "catalog:corsa-runtime" && declared !== corsa)
+      if (declared === undefined) {
+        if (hasCheckerOptionalDependency(manifest))
+          throw new CustodyError("H CLI has an incomplete bundled checker declaration");
+        userProvider = true;
+      } else if (declared !== "catalog:corsa-runtime" && declared !== corsa)
         throw new CustodyError("H CLI bundled Corsa declaration differs from its catalog");
     } else {
       const declaration = lookup(manifest, "optionalDependencies", "@vizejs/native-darwin-arm64");
@@ -222,7 +247,11 @@ export function sourceManifests(
       throw new CustodyError("H does not declare the Darwin ARM64 native target");
     files.push({ path: file, sha256: digest(data) });
   }
-  return { files, corsaVersion: corsa };
+  return {
+    files,
+    corsaVersion: corsa,
+    ...(userProvider ? { corsaResolutionMode: "explicit-user-provider" as const } : {}),
+  };
 }
 
 export function producerAuthority(root: string, expected?: string): ProducerAuthority {
