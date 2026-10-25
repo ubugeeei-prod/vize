@@ -83,12 +83,14 @@ void test("host CSS maps preserve state across native map metadata changes while
   assert.deepEqual(hmr.calls, ["rerender", "reload", "rerender", "reload"]);
 });
 
-void test("missing script identity and changed setup retain the conservative reload path", () => {
+void test("missing script identity uses emitted code and changed setup reloads", () => {
   const templateOnly = "<template><div/></template><style module>.button{color:red}</style>";
   const missing = session();
   missing.update(templateOnly);
-  missing.update(templateOnly.replace("red", "blue"));
-  assert.deepEqual(missing.calls, ["reload"]);
+  const styleOnly = templateOnly.replace("red", "blue");
+  missing.update(styleOnly);
+  missing.update(styleOnly.replace("<div/>", "<span/>"));
+  assert.deepEqual(missing.calls, ["rerender", "reload"]);
   const initial =
     "<script setup>const initial = 2;</script><template>{{initial}}</template><style module>.button{color:red}</style>";
   const changed = session();
