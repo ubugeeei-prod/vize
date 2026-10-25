@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/unicode-prop-projection.yml
+      - tools/support/compat/github/unicode-prop-projection-custody.mjs
       - crates/vize_canon/src/virtual_ts/props/mappings.rs
       - crates/vize_canon/src/virtual_ts/props/mappings/**
       - crates/vize_canon/src/virtual_ts/props/template_model.rs
@@ -105,36 +106,8 @@ jobs:
         with: { toolchain: stable }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with: { wild-version: "0.9.0" }
-      - uses: ./.github/actions/setup-rust-sticky-cache
-        with: { key: test-scripts, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
-      - name: Capture unchanged complete checker and mapper packets
-        run: |
-          set -euo pipefail
-          baseline="$RUNNER_TEMP/unicode-prop-base"
-          capture="$RUNNER_TEMP/unicode-prop-parity"
-          mkdir -p "$capture"
-          git worktree add --detach "$baseline" "$BASE_SHA"
-          observer=crates/vize_canon/tests/constructor_emission_projection.rs
-          cp "$observer" "$baseline/$observer"
-          cmp "$observer" "$baseline/$observer"
-          git -C "$baseline" diff --exit-code -- crates/vize_canon/src
-          export CARGO_TARGET_DIR="$GITHUB_WORKSPACE/target"
-          (cd "$baseline" && VIZE_CONSTRUCTOR_PROJECTION_CAPTURE="$capture/base.json" cargo test --locked --profile ci -p vize_canon --test constructor_emission_projection complete_constructor_projection_packets -- --exact --nocapture) > "$capture/base.log" 2>&1
-          VIZE_CONSTRUCTOR_PROJECTION_CAPTURE="$capture/head.json" cargo test --locked --profile ci -p vize_canon --test constructor_emission_projection complete_constructor_projection_packets -- --exact --nocapture > "$capture/head.log" 2>&1
-      - name: Require all 228 complete packets unchanged
-        run: |
-          node --input-type=module <<'JS'
-          import assert from 'node:assert/strict';
-          import { readFileSync, writeFileSync } from 'node:fs';
-          import { createHash } from 'node:crypto';
-          const directory = `${process.env.RUNNER_TEMP}/unicode-prop-parity`;
-          const baseBytes = readFileSync(`${directory}/base.json`), headBytes = readFileSync(`${directory}/head.json`);
-          const base = JSON.parse(baseBytes), head = JSON.parse(headBytes);
-          assert.equal(base.length, 228); assert.equal(head.length, 228);
-          assert.deepEqual(head, base);
-          const hash = bytes => createHash('sha256').update(bytes).digest('hex');
-          writeFileSync(`${directory}/receipt.json`, JSON.stringify({ base: process.env.BASE_SHA, head: process.env.HEAD_SHA, packets: head.length, baseSha256: hash(baseBytes), headSha256: hash(headBytes) }, null, 2) + '\n');
-          JS
+      - name: Compile and run both roles in initially absent isolated targets
+        run: node tools/support/compat/github/unicode-prop-projection-custody.mjs
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:

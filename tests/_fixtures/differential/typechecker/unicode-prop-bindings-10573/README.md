@@ -26,6 +26,9 @@ The product differential registration independently pins the complete valid
 authored input for each case. The dedicated workflow preserves all raw CLI and
 mapper outputs and both provider identities, and compares all 228 unaffected
 checker/mapper packets against the exact PR base without changing their oracle.
+Each role starts with an absent, separate compiled target. Actual Cargo JSON,
+fresh Canon/observer artifacts, Git-verified source bytes and executed observer
+paths/hashes are retained; compiled targets are never shared between roles.
 
 Before-fix physical `@vizejs/native@0.566.0` API results for all eleven cases are
 retained alongside the reported public receipt. They confirm the actual emitted
