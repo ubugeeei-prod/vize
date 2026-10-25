@@ -54,7 +54,8 @@ const specs = [
 
 function fields(value, expected) {
   assert.ok(value && typeof value === "object" && !Array.isArray(value));
-  assert.deepEqual(Object.keys(value).sort(), [...expected].sort());
+  const compare = (left, right) => left.localeCompare(right);
+  assert.deepEqual(Object.keys(value).sort(compare), [...expected].sort(compare));
 }
 
 function verifySuccessor(spec, row, historical, successor, source) {
