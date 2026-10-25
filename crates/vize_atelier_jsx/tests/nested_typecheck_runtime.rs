@@ -38,6 +38,9 @@ fn nested_analysis_keeps_complete_normal_vdom_and_vapor_packets() {
         .nth(2)
         .unwrap()
         .join("tests/_fixtures/differential/typecheck/jsx-nested-native-expressions-8441");
+    // Compile every case before assertions, so the first changed refusal does
+    // not hide later producer, style or module packets from Actions review.
+    let mut cases = Vec::new();
     for name in ["AfsStepperDialog.stories", "native-nested-controls"] {
         let source = std::fs::read_to_string(fixture.join(format!("{name}.tsx.txt"))).unwrap();
         for (label, mode) in [
@@ -53,12 +56,26 @@ fn nested_analysis_keeps_complete_normal_vdom_and_vapor_packets() {
                 format!("{name}.{label}.runtime.json.txt")
             };
             let expected: Value =
-                serde_json::from_slice(&std::fs::read(fixture.join(output)).unwrap()).unwrap();
-            assert_eq!(
-                complete_runtime_packet(&source, mode),
-                expected,
-                "{name}/{label}"
-            );
+                serde_json::from_slice(&std::fs::read(fixture.join(&output)).unwrap()).unwrap();
+            cases.push(json!({
+                "name": name, "mode": label, "source": source,
+                "historicalPacket": output, "historical": expected,
+                "current": complete_runtime_packet(&source, mode),
+            }));
         }
+    }
+    if let Some(path) = std::env::var_os("VIZE_JSX_NESTED_RUNTIME_CAPTURE") {
+        std::fs::write(
+            path,
+            serde_json::to_vec(&json!({ "schemaVersion": 1, "cases": cases })).unwrap(),
+        )
+        .unwrap();
+    }
+    for case in cases {
+        assert_eq!(
+            case["current"], case["historical"],
+            "{}/{}",
+            case["name"], case["mode"]
+        );
     }
 }
