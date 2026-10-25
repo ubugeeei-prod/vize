@@ -26,6 +26,9 @@ jobs:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       VIZE_TEST_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
+      - name: Preserve patch and source line endings on Windows
+        if: runner.os == 'Windows'
+        run: git config --global core.autocrlf false
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
