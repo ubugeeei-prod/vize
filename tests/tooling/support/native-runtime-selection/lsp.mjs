@@ -14,6 +14,12 @@ import {
   runtimeChildEnvironment,
   sha256,
 } from "./providers.mjs";
+import {
+  BUILD_RECIPE,
+  binaryRelativePath,
+  expectedBuildIdentity,
+  validateBuildReceipt,
+} from "../../../differential/build-receipt.ts";
 import { SourceLspWire } from "./lsp-wire.mjs";
 import { captureNativeOwners } from "./lsp-strace.mjs";
 
@@ -21,7 +27,6 @@ const write = (file, value) => fs.writeFileSync(file, JSON.stringify(value, null
 const repoRoot = fs.realpathSync(
   path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../.."),
 );
-const git = (args) => execFileSync("git", args, { cwd: repoRoot, encoding: "utf8" }).trim();
 const result = (response) => {
   assert.equal(response.error, undefined, JSON.stringify(response));
   return response.result;
@@ -47,16 +52,23 @@ function sourceIdentity() {
     "x64",
     "the qualified 7.0.2 image is the explicitly owned Linux x64 provider",
   );
-  assert.ok(process.env.SOURCE_CLI && path.isAbsolute(process.env.SOURCE_CLI));
-  const executable = fs.realpathSync(process.env.SOURCE_CLI);
+  const requested = process.env.VIZE_SOURCE_CLI ?? process.env.SOURCE_CLI;
+  assert.ok(requested && path.isAbsolute(requested));
+  if (process.env.VIZE_SOURCE_CLI && process.env.SOURCE_CLI)
+    assert.equal(
+      fs.realpathSync(process.env.VIZE_SOURCE_CLI),
+      fs.realpathSync(process.env.SOURCE_CLI),
+    );
+  const executable = fs.realpathSync(requested);
+  assert.equal(
+    executable,
+    fs.realpathSync(path.join(repoRoot, binaryRelativePath())),
+    "only the original installed canonical source artifact is admitted",
+  );
   const receiptFile = `${executable}.differential-build.json`;
   const receipt = JSON.parse(fs.readFileSync(receiptFile, "utf8"));
-  assert.equal(receipt.schema, "vize.differential.build");
-  assert.equal(receipt.version, 1);
-  assert.equal(receipt.recipe, "cargo build --profile ci -p vize");
-  assert.equal(receipt.binaryPath, "target/ci/vize");
-  assert.equal(receipt.sourceRevision, git(["rev-parse", "HEAD"]));
-  assert.equal(receipt.binarySha256, sha256(fs.readFileSync(executable)));
+  const expected = expectedBuildIdentity(repoRoot);
+  validateBuildReceipt(receipt, expected, BUILD_RECIPE);
   const probe = spawnSync(executable, ["--version"], { encoding: null });
   assert.equal(probe.error, undefined);
   assert.equal(probe.status, 0);
