@@ -6,6 +6,7 @@ import http from "node:http";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { validateNativeTargetCustody } from "./native-target.mjs";
 
 const repository = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
 const proof = path.resolve(process.argv[2] ?? "target/parcel-host");
@@ -338,6 +339,17 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
     assert.equal(build.source.head, run("git", ["rev-parse", "HEAD"], repository).trim());
     assert.equal(build.generated.sha256, imageHash);
     await write("native-build-receipt.json", build);
+    const targetCustody = JSON.parse(
+      await fs.readFile(
+        path.join(
+          nativeDirectory,
+          ".artifacts/native/formatter-history/parcel-target-custody.json",
+        ),
+        "utf8",
+      ),
+    );
+    assert.deepEqual(targetCustody, validateNativeTargetCustody(targetCustody.preflight, build));
+    await write("native-target-custody.json", targetCustody);
   }
   await makeApp(consumer);
   const manifest = JSON.parse(await fs.readFile(path.join(consumer, "package.json"), "utf8"));
