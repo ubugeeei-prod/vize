@@ -3,6 +3,7 @@
 //! Handles generating TypeScript code for template expressions (with optional
 //! v-if narrowing) and component prop value type assertions.
 
+mod binding_mapping;
 mod callback_prop_resolution;
 #[cfg(test)]
 mod callback_prop_resolution_tests;

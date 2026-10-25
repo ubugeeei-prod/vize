@@ -296,7 +296,7 @@ pub(crate) fn generate_component_prop_checks(
                 sub_spans.extend(spans);
             } else if let Some(src_range) = value_src_range.clone() {
                 sub_spans.push(VizeSubSpan {
-                    gen_range: value_span,
+                    gen_range: value_span.clone(),
                     src_range,
                 });
             }
@@ -305,6 +305,15 @@ pub(crate) fn generate_component_prop_checks(
                 src_range: prop_src_start..prop_src_end,
                 sub_spans,
             });
+            if let Some(source) = value_src_range.as_ref() {
+                generated_value.map_instance_binding(
+                    ts,
+                    mappings,
+                    value_span,
+                    source.start,
+                    template_binding_access,
+                );
+            }
             if strict_v_model
                 && super::model_update::is_model_prop(usage, prop)
                 && let Some(target_source) = value_src_range

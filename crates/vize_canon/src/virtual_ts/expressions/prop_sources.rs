@@ -6,6 +6,7 @@
 //! vue-tsc), and the authored value range that anchors errors inside the
 //! bound expression.
 
+use super::binding_mapping::BindingSource;
 use super::component_props::ComponentPropSource;
 use super::incomplete::{IsolatedExpression, isolate_incomplete_expression};
 use super::reserved_props::rewrite_reserved_template_binding;
@@ -14,10 +15,11 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::Expression;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
+use std::borrow::Cow;
 use std::ops::Range;
 use vize_carton::String;
 use vize_croquis::croquis::PassedProp;
-use vize_croquis::drawer::strip_js_comments;
+use vize_croquis::drawer::{strip_js_comments, strip_js_comments_with_offsets};
 
 fn push_ts_string_literal(out: &mut String, value: &str) {
     out.push('"');
@@ -34,19 +36,27 @@ fn push_ts_string_literal(out: &mut String, value: &str) {
     out.push('"');
 }
 
-pub(crate) struct PropSpan {
+pub(crate) struct PropSpan<'a> {
     pub(crate) text: String,
     mapped_start: usize,
     mapped_len: usize,
+    binding_source: Option<PropBindingSource<'a>>,
 }
 
-impl PropSpan {
+struct PropBindingSource<'a> {
+    expression: Cow<'a, str>,
+    trimmed: Range<usize>,
+    offsets: Option<Vec<u32>>,
+}
+
+impl PropSpan<'_> {
     pub(crate) fn plain(text: String) -> Self {
         let mapped_len = text.len();
         Self {
             text,
             mapped_start: 0,
             mapped_len,
+            binding_source: None,
         }
     }
 
@@ -57,6 +67,43 @@ impl PropSpan {
     pub(crate) fn omits_tail(&self) -> bool {
         self.mapped_start + self.mapped_len < self.text.len()
     }
+
+    /// Map only this actual value. Inference copies own their separate ranges.
+    pub(crate) fn map_instance_binding(
+        &self,
+        ts: &str,
+        mappings: &mut Vec<crate::virtual_ts::VizeMapping>,
+        generated: Range<usize>,
+        authored_start: usize,
+        bindings: &TemplateBindingAccess,
+    ) -> bool {
+        let Some(source) = &self.binding_source else {
+            return false;
+        };
+        let (start, offsets) = if let Some(offsets) = &source.offsets {
+            let Some(offsets) = offsets.get(source.trimmed.clone()) else {
+                return true;
+            };
+            (authored_start, Some(offsets))
+        } else {
+            (authored_start + source.trimmed.start, None)
+        };
+        super::reserved_props::map_rewritten_binding_source(
+            ts,
+            mappings,
+            generated,
+            BindingSource {
+                expression: source
+                    .expression
+                    .get(source.trimmed.clone())
+                    .unwrap_or_default(),
+                start,
+                offsets,
+            },
+            bindings,
+        );
+        true
+    }
 }
 
 pub(crate) fn generated_prop_value(
@@ -66,25 +113,25 @@ pub(crate) fn generated_prop_value(
     generated_prop_span(prop, template_binding_access).map(|span| span.text)
 }
 
-pub(crate) fn generated_prop_span(
-    prop: &PassedProp,
+pub(crate) fn generated_prop_span<'a>(
+    prop: &'a PassedProp,
     template_binding_access: &TemplateBindingAccess,
-) -> Option<PropSpan> {
+) -> Option<PropSpan<'a>> {
     generated_prop_span_with_comment_policy(prop, template_binding_access, false)
 }
 
-pub(crate) fn generated_prop_span_preserving_comments(
-    prop: &PassedProp,
+pub(crate) fn generated_prop_span_preserving_comments<'a>(
+    prop: &'a PassedProp,
     template_binding_access: &TemplateBindingAccess,
-) -> Option<PropSpan> {
+) -> Option<PropSpan<'a>> {
     generated_prop_span_with_comment_policy(prop, template_binding_access, true)
 }
 
-fn generated_prop_span_with_comment_policy(
-    prop: &PassedProp,
+fn generated_prop_span_with_comment_policy<'a>(
+    prop: &'a PassedProp,
     template_binding_access: &TemplateBindingAccess,
     preserve_comments: bool,
-) -> Option<PropSpan> {
+) -> Option<PropSpan<'a>> {
     if !prop.is_dynamic {
         let mut value = String::default();
         if let Some(static_value) = prop.value.as_ref() {
@@ -108,16 +155,19 @@ fn generated_prop_span_with_comment_policy(
 
     let raw_value = prop.value.as_ref()?.as_str();
     let value = if preserve_comments {
-        std::borrow::Cow::Borrowed(raw_value)
+        Cow::Borrowed(raw_value)
     } else {
         strip_js_comments(raw_value)
     };
     let trimmed_value = value.as_ref().trim();
     let rewritten_value = rewrite_reserved_template_binding(trimmed_value, template_binding_access);
+    let maps_instance_binding = rewritten_value.is_some()
+        && template_binding_access.has_instance_globals()
+        && trimmed_value.contains('$');
     let raw = rewritten_value
         .as_ref()
         .map_or_else(|| value.as_ref(), |rewritten| rewritten.as_str());
-    Some(match isolate_incomplete_expression(raw) {
+    let mut span = match isolate_incomplete_expression(raw) {
         IsolatedExpression::Borrowed(text) => PropSpan::plain(String::from(text)),
         IsolatedExpression::Owned {
             text,
@@ -127,8 +177,28 @@ fn generated_prop_span_with_comment_policy(
             text,
             mapped_start,
             mapped_len,
+            binding_source: None,
         },
-    })
+    };
+    if maps_instance_binding {
+        // Keep the producer's input so mapping never guesses from generated
+        // text. Offset allocation is needed only for an actual rewrite whose
+        // comments were removed; ordinary and disabled values retain no plan.
+        let (expression, offsets) = if matches!(value, Cow::Owned(_)) {
+            strip_js_comments_with_offsets(raw_value)
+        } else {
+            (value, None)
+        };
+        let trimmed = expression.trim();
+        let trim_start = expression.len() - expression.trim_start().len();
+        let trim_end = trim_start + trimmed.len();
+        span.binding_source = Some(PropBindingSource {
+            expression,
+            trimmed: trim_start..trim_end,
+            offsets,
+        });
+    }
+    Some(span)
 }
 
 /// Append one generated prop value and return its range without synthetic
@@ -248,6 +318,8 @@ fn anchor_token(name_region: &str, name: &str) -> Option<(usize, usize)> {
 #[cfg(test)]
 mod tests {
     use super::{anchor_token, append_prop_value};
+
+    mod instance_bindings;
 
     #[test]
     fn groups_only_unparenthesized_top_level_sequences() {

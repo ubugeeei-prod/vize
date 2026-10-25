@@ -58,49 +58,34 @@ pub(crate) fn map_rewritten_template_binding(
     expression: &str,
     bindings: &TemplateBindingAccess,
 ) {
-    if bindings.has_instance_globals() && expression.contains('$') {
-        if let Some(rewrite) = super::instance_rewrite::rewrite(expression, bindings) {
-            for (relative, _) in ts
-                .get(generated_start..)
-                .unwrap_or_default()
-                .match_indices(rewrite.code.as_str())
-            {
-                let base = generated_start + relative;
-                for span in &rewrite.diagnostic_prefixes {
-                    bindings.record_instance_diagnostic_prefix(VizeMapping {
-                        gen_range: base + span.generated.start..base + span.generated.end,
-                        src_range: source_start + span.source.start..source_start + span.source.end,
-                        sub_spans: Vec::new(),
-                    });
-                }
-                for span in &rewrite.segments {
-                    mappings.push(VizeMapping {
-                        gen_range: base + span.generated.start..base + span.generated.end,
-                        src_range: source_start + span.source.start..source_start + span.source.end,
-                        sub_spans: Vec::new(),
-                    });
-                }
-            }
+    map_rewritten_binding_source(
+        ts,
+        mappings,
+        generated_start..ts.len(),
+        super::binding_mapping::BindingSource {
+            expression,
+            start: source_start,
+            offsets: None,
+        },
+        bindings,
+    );
+}
+
+pub(super) fn map_rewritten_binding_source(
+    ts: &str,
+    mappings: &mut Vec<VizeMapping>,
+    generated: std::ops::Range<usize>,
+    source: super::binding_mapping::BindingSource<'_>,
+    bindings: &TemplateBindingAccess,
+) {
+    if bindings.has_instance_globals() && source.expression.contains('$') {
+        if let Some(rewrite) = super::instance_rewrite::rewrite(source.expression, bindings) {
+            super::binding_mapping::map_rewrite(
+                ts, mappings, generated, &source, &rewrite, bindings,
+            );
         }
-        return;
-    }
-    let mut spans = Some(Vec::new());
-    let Some(rewritten) = rewrite_binding(expression, bindings, &mut spans) else {
-        return;
-    };
-    for (relative, _) in ts
-        .get(generated_start..)
-        .unwrap_or_default()
-        .match_indices(rewritten.as_str())
-    {
-        let base = generated_start + relative;
-        for span in spans.as_deref().unwrap_or_default() {
-            mappings.push(VizeMapping {
-                gen_range: base + span.gen_range.start..base + span.gen_range.end,
-                src_range: source_start + span.src_range.start..source_start + span.src_range.end,
-                sub_spans: Vec::new(),
-            });
-        }
+    } else if let Some(rewrite) = rewrite_reserved_with_segments(source.expression, bindings) {
+        super::binding_mapping::map_rewrite(ts, mappings, generated, &source, &rewrite, bindings);
     }
 }
 
