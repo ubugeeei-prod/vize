@@ -1210,3 +1210,14 @@ fn unicode_prop_bindings_preserve_complete_authored_diagnostics() {
         ],
     );
 }
+
+#[test]
+fn undefined_context_keeps_complete_authored_diagnostics() {
+    check_pack(
+        "template-context-undefined-10667",
+        "undefined_context_keeps_complete_authored_diagnostics",
+        "2806a05b4b9dac514afd0fb5c0cd3fb9925d9c54",
+        Some(10667),
+        &["prop-used"],
+    );
+}

@@ -129,3 +129,103 @@ fn embedded_model_placeholder_keeps_its_type_assertion_without_a_value_lookup() 
         )
     );
 }
+
+#[test]
+#[ignore = "requires both real physical native providers and the published Vue graph"]
+fn actual_native_context_options_keep_whole_clean_and_authored_error_packets() {
+    use std::{fs, path::PathBuf, process::Command};
+    let native = PathBuf::from(
+        std::env::var_os("VIZE_TEST_CONTEXT_UNDEFINED_NATIVE")
+            .expect("actual native 7.0.2 required"),
+    );
+    let beta = PathBuf::from(
+        std::env::var_os("VIZE_TEST_CONTENT_MAPPER_TSGO").expect("actual native beta required"),
+    );
+    let vue = PathBuf::from(
+        std::env::var_os("VIZE_TEST_CONTENT_MAPPER_VUE").expect("published Vue graph required"),
+    );
+    let output_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../../target/vize-tests/typed-context-undefined-options-10667");
+    fs::create_dir_all(&output_root).unwrap();
+    let mut observations = Vec::new();
+    for (name, context) in contexts() {
+        for invalid in [false, true] {
+            let root = output_root.join(format!("{name}-invalid{invalid}"));
+            fs::create_dir_all(root.join("node_modules")).unwrap();
+            let link = root.join("node_modules/vue");
+            if !link.exists() {
+                #[cfg(unix)]
+                std::os::unix::fs::symlink(&vue, &link).unwrap();
+                #[cfg(windows)]
+                std::os::windows::fs::symlink_dir(&vue, &link).unwrap();
+            }
+            let error = if invalid {
+                "const bad: number = undefined;\nvoid bad;\n"
+            } else {
+                ""
+            };
+            let source = format!(
+                "export {{}};\nfunction template() {{\n{context}\nconst undefined = 'authored';\n{error}}}\n"
+            );
+            fs::write(root.join("Context.ts"), &source).unwrap();
+            let expected = if invalid {
+                let marker = source.find("const bad: number").unwrap() + "const ".len();
+                let before = source.get(..marker).unwrap();
+                let line = before.bytes().filter(|b| *b == b'\n').count() + 1;
+                let column = before.rsplit('\n').next().unwrap().encode_utf16().count() + 1;
+                format!(
+                    "Context.ts({line},{column}): error TS2322: Type 'string' is not assignable to type 'number'.\n"
+                )
+            } else {
+                String::new()
+            };
+            for (host, binary) in [("native-702", &native), ("native-beta", &beta)] {
+                let argv = [
+                    "--noEmit",
+                    "--strict",
+                    "--target",
+                    "es2022",
+                    "--module",
+                    "esnext",
+                    "--moduleResolution",
+                    "bundler",
+                    "--skipLibCheck",
+                    "--pretty",
+                    "false",
+                    "--ignoreConfig",
+                    "Context.ts",
+                ];
+                let result = Command::new(binary)
+                    .current_dir(&root)
+                    .args(argv)
+                    .output()
+                    .unwrap();
+                fs::write(root.join(format!("{host}.stdout.raw")), &result.stdout).unwrap();
+                fs::write(root.join(format!("{host}.stderr.raw")), &result.stderr).unwrap();
+                fs::write(root.join(format!("{host}.json")), serde_json::to_vec_pretty(&serde_json::json!({"schema":"vize.typed-context-options-host","version":1,"host":host,"argv":argv,"binary":binary,"source":source,"status":result.status.code(),"stdout":result.stdout,"stderr":result.stderr})).unwrap()).unwrap();
+                observations.push((
+                    format!("{name}-invalid{invalid}/{host}"),
+                    result,
+                    expected.clone(),
+                    if !invalid {
+                        0
+                    } else if host == "native-702" {
+                        1
+                    } else {
+                        2
+                    },
+                ));
+            }
+        }
+    }
+    assert_eq!(observations.len(), 48);
+    for (name, result, expected, status) in observations {
+        assert_eq!(result.status.code(), Some(status), "{name}: {result:?}");
+        assert!(result.stderr.is_empty(), "{name}: {:?}", result.stderr);
+        assert_eq!(
+            String::from_utf8(result.stdout).unwrap(),
+            expected,
+            "{name}: entire stdout"
+        );
+    }
+}

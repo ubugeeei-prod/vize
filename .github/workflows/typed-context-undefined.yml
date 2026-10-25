@@ -1,0 +1,143 @@
+name: Typed context undefined contracts
+on:
+  pull_request:
+    paths:
+      - .github/workflows/typed-context-undefined.yml
+  workflow_dispatch:
+    inputs:
+      source_ref:
+        description: Exact immutable source SHA containing the observer and fix
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: typed-context-undefined-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  qualify:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    env:
+      SOURCE_SHA: ${{ inputs.source_ref }}
+      BEFORE_SHA: 7a4ab266003bfea2d13d1f5901b55d11b031a702
+      CARGO_INCREMENTAL: "0"
+      CARGO_BUILD_JOBS: "12"
+      CARGO_TARGET_DIR: ${{ github.workspace }}/target
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          path: source
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ env.BEFORE_SHA }}
+          path: before
+          persist-credentials: false
+      - name: Authenticate both immutable production sources
+        run: |
+          set -euo pipefail
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          test "$(git -C source rev-parse HEAD)" = "$SOURCE_SHA"
+          test "$(git -C before rev-parse HEAD)" = "$BEFORE_SHA"
+          directory="$RUNNER_TEMP/typed-context-undefined"
+          mkdir -p "$directory"
+          git -C source rev-parse HEAD > "$directory/source.sha"
+          git -C before rev-parse HEAD > "$directory/before.sha"
+          git -C source ls-files -s > "$directory/head-source-index.txt"
+          git -C before ls-files -s > "$directory/before-source-index.txt"
+          cp -a source/tests/_fixtures/differential/typechecker/template-context-undefined-10667/public public
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: nextest-ci
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          version: latest
+          node-version-file: source/package.json
+          cache: true
+          cache-save: false
+          run-install: false
+      - name: Install frozen source dependencies
+        working-directory: source
+        run: vp install --frozen-lockfile --prefer-offline
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "26.12.1", package-manager-cache: false }
+      - name: Install the pinned public dependency graph without hooks
+        working-directory: public
+        run: npm exec --yes --ignore-scripts --package=pnpm@12.9.0 -- pnpm install --frozen-lockfile --ignore-scripts
+      - name: Preserve the public failure and install a test-only baseline observer
+        run: node tools/support/github/typed-context-undefined-replay.mjs prepare "$RUNNER_TEMP/typed-context-undefined"
+      - name: Compile the immutable before producer and record its actual failure
+        working-directory: before
+        run: |
+          set -euo pipefail
+          directory="$RUNNER_TEMP/typed-context-undefined"
+          cargo test --locked --profile ci -p vize --test integration --no-run --message-format=json > "$directory/before-build.jsonl" 2> "$directory/before-build.stderr"
+          set +e
+          cargo test --locked --profile ci -p vize --test integration content_mapper_tsgo_cli::typed_context_undefined::typed_context_values_preserve_complete_native_mapper_and_cli_packets -- --ignored --exact --nocapture --test-threads=1 > "$directory/before.stdout" 2> "$directory/before.stderr"
+          status=$?
+          set -e
+          printf '%s\n' "$status" > "$directory/before.status"
+          test "$status" -eq 101
+      - name: Preserve the before executable images prior to the next build
+        run: node tools/support/github/typed-context-undefined-replay.mjs seal "$RUNNER_TEMP/typed-context-undefined" before
+      - name: Compile the exact head producer and both observers
+        working-directory: source
+        run: |
+          set -euo pipefail
+          directory="$RUNNER_TEMP/typed-context-undefined"
+          cargo test --locked --profile ci -p vize --test integration --no-run --message-format=json > "$directory/after-build.jsonl" 2> "$directory/after-build.stderr"
+          cargo test --locked --profile ci -p vize_canon --lib --no-run --message-format=json >> "$directory/after-build.jsonl" 2>> "$directory/after-build.stderr"
+      - name: Preserve the head executable images
+        run: node tools/support/github/typed-context-undefined-replay.mjs seal "$RUNNER_TEMP/typed-context-undefined" after
+      - name: Require full raw native mapper CLI and option outcomes
+        working-directory: source
+        run: |
+          set -euo pipefail
+          directory="$RUNNER_TEMP/typed-context-undefined"
+          cargo test --locked --profile ci -p vize_canon --lib virtual_ts::tests::context_undefined:: -- --nocapture --test-threads=1 > "$directory/ast.stdout" 2> "$directory/ast.stderr"
+          set +e
+          cargo test --locked --profile ci -p vize_canon --lib virtual_ts::tests::context_undefined::actual_native_context_options_keep_whole_clean_and_authored_error_packets -- --ignored --exact --nocapture --test-threads=1 > "$directory/options.stdout" 2> "$directory/options.stderr"
+          option_status=$?
+          cargo test --locked --profile ci -p vize --test integration content_mapper_tsgo_cli::typed_context_undefined::typed_context_values_preserve_complete_native_mapper_and_cli_packets -- --ignored --exact --nocapture --test-threads=1 > "$directory/after.stdout" 2> "$directory/after.stderr"
+          after_status=$?
+          set -e
+          printf '%s\n' "$option_status" > "$directory/options.status"
+          printf '%s\n' "$after_status" > "$directory/after.status"
+          test "$option_status" -eq 0
+          test "$after_status" -eq 0
+      - name: Verify whole packets and exact generated-prefix mapping deltas
+        run: node tools/support/github/typed-context-undefined-replay.mjs verify "$RUNNER_TEMP/typed-context-undefined"
+      - name: Retain all raw evidence including failed observations
+        if: ${{ always() }}
+        run: |
+          directory="$RUNNER_TEMP/typed-context-undefined"
+          mkdir -p "$directory"
+          for phase in before source; do
+            for name in typed-context-undefined-10667 typed-context-undefined-options-10667; do
+              path="$phase/target/vize-tests/$name"
+              if [[ -d "$path" ]]; then
+                mkdir -p "$directory/$phase"
+                cp -a "$path" "$directory/$phase/"
+              fi
+            done
+          done
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ always() }}
+        with:
+          name: typed-context-undefined-${{ github.run_id }}-${{ github.run_attempt }}-${{ env.SOURCE_SHA }}
+          path: ${{ runner.temp }}/typed-context-undefined/
+          if-no-files-found: error
+          retention-days: 14

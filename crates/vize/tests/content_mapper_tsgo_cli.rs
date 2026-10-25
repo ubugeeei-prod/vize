@@ -21,6 +21,7 @@ mod props_binding;
 mod pug_refusal;
 mod template_expression_syntax;
 mod type_only_import_use;
+mod typed_context_undefined;
 mod unicode_prop_bindings;
 mod unknown_options_10218;
 
