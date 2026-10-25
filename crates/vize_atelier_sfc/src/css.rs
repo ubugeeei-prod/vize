@@ -214,11 +214,20 @@ pub fn print_css_ast(_ast: serde_json::Value, _options: &CssCompileOptions) -> C
 /// Compile CSS using LightningCSS (native feature enabled)
 #[cfg(feature = "native")]
 pub fn compile_css(css: &str, options: &CssCompileOptions) -> CssCompileResult {
+    if options.source_map {
+        compile_css_inner::<true>(css, options)
+    } else {
+        compile_css_inner::<false>(css, options)
+    }
+}
+
+#[cfg(feature = "native")]
+fn compile_css_inner<const MAP: bool>(css: &str, options: &CssCompileOptions) -> CssCompileResult {
     let bump = vize_carton::pool::acquire();
     let filename = options.filename.as_deref().unwrap_or("style.css");
 
     // Extract v-bind() expressions before parsing
-    let (processed_css, css_vars, edits) = if options.source_map {
+    let (processed_css, css_vars, edits) = if MAP {
         let mut edits = Vec::new();
         let (code, vars) = vize_croquis::sfc::__internal::extract_and_transform_v_bind_with_edits(
             &bump,
