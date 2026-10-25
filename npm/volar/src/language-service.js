@@ -13,12 +13,28 @@ export function createVizeLanguageService(ts, host, options = {}) {
     if (snapshot) language.scripts.set(id, snapshot);
     else language.scripts.delete(id);
   });
-  const adapterHost = Object.fromEntries(
-    Object.entries(host).map(([key, value]) => [
-      key,
-      typeof value === "function" ? value.bind(host) : value,
-    ]),
-  );
+  // Hosts may be class instances with non-enumerable prototype methods and
+  // private fields. Keep those methods bound to their actual owner while
+  // letting Volar decorate a private facade instead of mutating that owner.
+  const boundMethods = new WeakMap();
+  const adapterHost = new Proxy(Object.create(host), {
+    get(target, key, receiver) {
+      if (Object.hasOwn(target, key)) return Reflect.get(target, key, receiver);
+      const value = host[key];
+      if (typeof value !== "function") return value;
+      if (!boundMethods.has(value)) boundMethods.set(value, value.bind(host));
+      return boundMethods.get(value);
+    },
+    set(target, key, value) {
+      Object.defineProperty(target, key, {
+        value,
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      });
+      return true;
+    },
+  });
   adapterHost.getScriptSnapshot = originalSnapshot;
   adapterHost.getScriptKind ??= () => ts.ScriptKind.Unknown;
   adapterHost.resolveModuleNameLiterals ??= (
