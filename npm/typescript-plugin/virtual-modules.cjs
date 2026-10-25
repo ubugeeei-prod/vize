@@ -311,19 +311,39 @@ function createProjectConfiguration(
             observed.set(file, digest);
             return digest;
           };
-          const altered = [...fingerprints].some(([file, digest]) => fingerprint(file) !== digest);
+          let altered = false;
+          // Every known input must precede the native snapshot, even after the
+          // first mismatch. Later reads must not bless concurrently changed bytes.
+          for (const [file, digest] of fingerprints)
+            if (fingerprint(file) !== digest) altered = true;
           if (!metadata || error || altered) {
             try {
               if (typeof engine.native?.getVueLanguageProjectMetadata !== "function")
                 throw new Error("Native project configuration metadata is unavailable");
-              const next = engine.native.getVueLanguageProjectMetadata(name);
-              if (
-                !next ||
-                typeof next.configIdentity !== "string" ||
-                !Array.isArray(next.watchedFiles) ||
-                next.watchedFiles.some((file) => typeof file !== "string" || !path.isAbsolute(file))
-              )
-                throw new Error("Invalid native project configuration metadata");
+              let next;
+              for (let capture = 0; capture < 3; capture++) {
+                const candidate = engine.native.getVueLanguageProjectMetadata(name);
+                if (
+                  !candidate ||
+                  typeof candidate.configIdentity !== "string" ||
+                  !Array.isArray(candidate.watchedFiles) ||
+                  candidate.watchedFiles.some(
+                    (file) => typeof file !== "string" || !path.isAbsolute(file),
+                  )
+                )
+                  throw new Error("Invalid native project configuration metadata");
+                const discovered = candidate.watchedFiles.filter((file) => !observed.has(file));
+                if (!discovered.length) {
+                  next = candidate;
+                  break;
+                }
+                // Newly discovered inputs must also be watched and fingerprinted
+                // before the snapshot whose identity we eventually admit.
+                watch([...watchers.keys(), ...candidate.watchedFiles]);
+                for (const file of discovered) fingerprint(file);
+              }
+              if (!next)
+                throw new Error("Project configuration dependencies changed during three captures");
               watch(next.watchedFiles);
               metadata = next;
               error = undefined;

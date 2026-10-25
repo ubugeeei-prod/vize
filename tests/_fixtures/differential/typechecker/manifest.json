@@ -7172,7 +7172,7 @@
         {
           "selector": "createProjectConfiguration",
           "source": "npm/typescript-plugin/virtual-modules.cjs",
-          "sha256": "c22138d495d52e0c79cf590d28a9720cd0472f4e3274a17872e4cd791ae9a21c"
+          "sha256": "6b09582840ead1ba8c1a42bcaf91e7b15b8193364b97591f36ad3aa36bcb8343"
         },
         {
           "selector": "createMappedLanguageService",
@@ -7197,7 +7197,7 @@
         {
           "selector": "one project fingerprints its native closure once per epoch and disposes exact watches",
           "source": "tests/typescript-plugin/mapped-language-service.test.cjs",
-          "sha256": "a82c870b076c8e7a513c507e5d49a81b807c7933dcb6274790e02f5b3b1991ce"
+          "sha256": "7ef225887dcdbe157cd1bee8aa0b3ff0fab0c77cfd43800458dcee70921bad97"
         },
         {
           "selector": "packed-consumer",

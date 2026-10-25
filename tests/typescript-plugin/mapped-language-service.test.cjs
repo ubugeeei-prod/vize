@@ -473,7 +473,7 @@ void test("one project fingerprints its native closure once per epoch and dispos
   try {
     queryAll();
     queryAll();
-    assert.equal(resolverCalls, 1);
+    assert.equal(resolverCalls, 2);
     assert.equal(generationCalls, 25);
     assert.deepEqual([...watches.keys()], [config, base, missing]);
     assert.deepEqual(
@@ -488,7 +488,7 @@ void test("one project fingerprints its native closure once per epoch and dispos
     );
     version++;
     queryAll();
-    assert.equal(resolverCalls, 1, "an unchanged project epoch does not reload the resolver");
+    assert.equal(resolverCalls, 2, "an unchanged project epoch does not reload the resolver");
     assert.equal(generationCalls, 25);
     assert.deepEqual([...reads.values()], [2, 2, 2]);
     assert.equal(
@@ -511,7 +511,7 @@ void test("one project fingerprints its native closure once per epoch and dispos
     queryAll();
     assert.equal(
       resolverCalls,
-      1,
+      2,
       "unchanged watcher events retain the canonical resolver snapshot",
     );
     assert.equal(generationCalls, 25);
@@ -525,20 +525,20 @@ void test("one project fingerprints its native closure once per epoch and dispos
       "a config event invalidates the actual host project version",
     );
     queryAll();
-    assert.equal(resolverCalls, 2);
+    assert.equal(resolverCalls, 3);
     assert.equal(generationCalls, 50);
     assert.deepEqual([...reads.values()], [4, 4, 4]);
     files.set(missing, "preferred");
     watches.get(missing)(missing, ts.FileWatcherEventKind.Created);
     const preferred = queryAll();
-    assert.equal(resolverCalls, 3);
+    assert.equal(resolverCalls, 4);
     assert(
       preferred.every((document) => document.projection.text === 'export default "preferred";'),
     );
     files.delete(missing);
     watches.get(missing)(missing, ts.FileWatcherEventKind.Deleted);
     assert(queryAll().every((document) => document.projection.text === 'export default "strict";'));
-    assert.equal(resolverCalls, 4);
+    assert.equal(resolverCalls, 5);
     malformed = true;
     files.set(base, "invalid");
     version++;
@@ -548,10 +548,129 @@ void test("one project fingerprints its native closure once per epoch and dispos
     files.set(base, "strict");
     version++;
     assert(queryAll().every((document) => !document.error));
-    assert.equal(resolverCalls, 6, "a rejected snapshot can recover on the next project epoch");
+    assert.equal(resolverCalls, 7, "a rejected snapshot can recover on the next project epoch");
+    const resolver = native.getVueLanguageProjectMetadata;
+    let changeDuringResolve = true;
+    native.getVueLanguageProjectMetadata = () => {
+      const result = resolver();
+      if (changeDuringResolve) {
+        changeDuringResolve = false;
+        files.set(base, "concurrent");
+      }
+      return result;
+    };
+    files.set(config, "ordinary-root-change");
+    watches.get(config)(config, ts.FileWatcherEventKind.Changed);
+    queryAll();
+    watches.get(base)(base, ts.FileWatcherEventKind.Changed);
+    assert(
+      queryAll().every((document) => document.projection.text === 'export default "concurrent";'),
+      "a second known input changing during metadata resolution must invalidate the prior projection",
+    );
+    const discovered = path.join(root, "new-preferred.json");
+    let createDuringResolve = true;
+    native.getVueLanguageProjectMetadata = () => {
+      resolverCalls++;
+      const result = {
+        configIdentity: `closure:${files.get(discovered) || "fallback"}`,
+        watchedFiles: [config, base, missing, discovered],
+      };
+      if (createDuringResolve) {
+        createDuringResolve = false;
+        files.set(discovered, "created");
+      }
+      return result;
+    };
+    native.generateVueLanguageCode = () => {
+      generationCalls++;
+      return JSON.stringify({
+        text: `export default ${JSON.stringify(files.get(discovered) || files.get(base))};`,
+        extension: ".tsx",
+        mappings: [],
+        diagnostics: [],
+      });
+    };
+    const beforeDiscovery = resolverCalls;
+    files.set(config, "discover-closure");
+    watches.get(config)(config, ts.FileWatcherEventKind.Changed);
+    const createdDuringCapture = queryAll();
+    assert.equal(
+      resolverCalls - beforeDiscovery,
+      2,
+      "new inputs are confirmed after their first fingerprint",
+    );
+    assert(
+      createdDuringCapture.every(
+        (document) => document.projection.text === 'export default "created";',
+      ),
+    );
+    assert.equal(
+      JSON.parse(createdDuringCapture[0].configuration)[2],
+      "closure:created",
+      "the admitted identity must consume the newly fingerprinted bytes",
+    );
+    files.delete(discovered);
+    watches.get(discovered)(discovered, ts.FileWatcherEventKind.Deleted);
+    assert(
+      queryAll().every((document) => document.projection.text === 'export default "concurrent";'),
+      "returning to the initial fallback cannot reuse a wrongly labeled projection",
+    );
+    const stableResolver = native.getVueLanguageProjectMetadata;
+    const unstablePaths = [];
+    let captures = 0;
+    native.getVueLanguageProjectMetadata = () => {
+      const input = path.join(root, `unstable-${++captures}.json`);
+      unstablePaths.push(input);
+      return { configIdentity: `unstable:${captures}`, watchedFiles: [config, input] };
+    };
+    files.set(config, "unstable-closure");
+    watches.get(config)(config, ts.FileWatcherEventKind.Changed);
+    const beforeFailureGenerations = generationCalls;
+    const rejected = queryAll();
+    const unstableError = "Project configuration dependencies changed during three captures";
+    assert.equal(captures, 3);
+    assert.equal(
+      generationCalls,
+      beforeFailureGenerations,
+      "actively expanding captures never generate a partial projection",
+    );
+    assert(
+      rejected.every(
+        (document) => document.error === unstableError && document.projection === undefined,
+      ),
+    );
+    assert.equal(JSON.parse(rejected[0].configuration)[2], unstableError);
+    const failureService = createMappedLanguageService(
+      ts,
+      {
+        getSemanticDiagnostics() {
+          throw new Error("an unstable project must not query generated diagnostics");
+        },
+      },
+      support,
+    );
+    const failure = failureService.getSemanticDiagnostics([...sources.keys()][0]);
+    assert.equal(failure[0].file.text, [...sources.values()][0]);
+    assert.deepEqual(
+      failure.map(({ file: _file, ...packet }) => packet),
+      [
+        {
+          start: 0,
+          length: 0,
+          code: 100003,
+          source: "vize",
+          messageText: unstableError,
+          category: ts.DiagnosticCategory.Error,
+        },
+      ],
+    );
+    native.getVueLanguageProjectMetadata = stableResolver;
+    watches.get(config)(config, ts.FileWatcherEventKind.Changed);
+    assert(queryAll().every((document) => !document.error));
+    assert.deepEqual([...watches.keys()], [config, base, missing, discovered]);
     support.dispose();
     assert.equal(watches.size, 0);
-    assert.deepEqual(closed, [config, base, missing]);
+    assert.deepEqual(closed, [...unstablePaths, config, base, missing, discovered]);
     assert.equal(host.getProjectVersion, originalVersion);
     assert.equal(support.snapshots.size, 0);
     const file = [...sources.keys()][0];
