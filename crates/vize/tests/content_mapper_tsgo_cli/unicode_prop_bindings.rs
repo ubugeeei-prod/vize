@@ -91,6 +91,35 @@ fn native_projection_preserves_all_authored_unicode_mapping_boundaries() {
                 .expect("complete native projection");
             let mut packet = serde_json::to_value(&result).unwrap();
             packet.as_object_mut().unwrap().remove("analysis_time_ms");
+            packet["virtual_ts_mappings"] = Value::Array(
+                result
+                    .virtual_ts_mappings
+                    .iter()
+                    .map(|mapping| {
+                        json!({
+                            "generated": mapping.gen_range,
+                            "authored": mapping.src_range,
+                            "subSpans": mapping.sub_spans.iter().map(|span| json!({
+                                "generated": span.gen_range,
+                                "authored": span.src_range,
+                            })).collect::<Vec<_>>(),
+                        })
+                    })
+                    .collect(),
+            );
+            packet["virtual_ts_semantic_links"] = Value::Array(
+                result
+                    .virtual_ts_semantic_links
+                    .iter()
+                    .map(|link| {
+                        json!({
+                            "source": link.source_range,
+                            "target": link.target_range,
+                            "kind": format!("{:?}", link.kind),
+                        })
+                    })
+                    .collect(),
+            );
             capture("projection", &case.id, phase, &packet);
             assert_eq!(result.error_count, 0, "{} {phase}: {packet}", case.id);
             assert_eq!(result.warning_count, 0, "{} {phase}: {packet}", case.id);
