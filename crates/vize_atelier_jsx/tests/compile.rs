@@ -121,7 +121,20 @@ fn ssr_config_routes_components_to_ssr_and_preserves_client_mode_metadata() {
     };
     let src = "const A = () => <a>{msg}</a>;\n\
                const B = () => { \"use vue:vapor\"; return <b/>; };";
-    let out = compile(src, &config);
+    // Keep this original functional expression input as an explicit refusal
+    // control; per-component producer code and client mode metadata still exist.
+    let allocator = Allocator::new();
+    let out = compile_jsx(&allocator, src, JsxLang::Jsx, &config);
+    assert_eq!(
+        out.diagnostics
+            .iter()
+            .map(|diagnostic| diagnostic.message.as_str())
+            .collect::<Vec<_>>(),
+        [
+            "SSR expression-bodied VDOM components require an explicit functional props and attribute fallthrough projection; use a stateful block-body component or the Vapor component role"
+        ]
+    );
+    assert!(out.module_code().is_empty());
 
     assert_eq!(out.components.len(), 2);
     assert_eq!(out.components[0].mode(), JsxOutputMode::Vdom);
@@ -162,4 +175,22 @@ fn invalid_directive_produces_a_diagnostic() {
         "expected a diagnostic for the typo'd directive"
     );
     insta::assert_debug_snapshot!(out.diagnostics);
+}
+
+#[test]
+fn ssr_stateful_component_roles_preserve_client_mode_metadata() {
+    let config = JsxCompileConfig {
+        ssr: true,
+        ..Default::default()
+    };
+    let source = "const A = () => { return <a>{msg}</a>; };\nconst B = () => { \"use vue:vapor\"; return <b/>; };";
+    let out = compile(source, &config);
+    assert_eq!(
+        out.components
+            .iter()
+            .map(JsxComponent::mode)
+            .collect::<Vec<_>>(),
+        [JsxOutputMode::Vdom, JsxOutputMode::Vapor]
+    );
+    assert!(out.module_code().contains("__ssrInlineRender: true"));
 }

@@ -386,7 +386,9 @@ fn camel_slots_forwarding_keeps_whole_modules_and_backend_diagnostics() {
                 ..Default::default()
             },
         ] {
-            assert_camel_alias(source, &config, 0);
+            // The original expression-bodied SSR profile remains an exact
+            // refusal case; alias normalization must preserve that same range.
+            assert_camel_alias(source, &config, usize::from(config.ssr));
         }
     }
 }
@@ -412,7 +414,9 @@ fn camel_inline_slots_compile_on_every_backend() {
                 ..Default::default()
             },
         ] {
-            assert_camel_alias(source, &config, 0);
+            // The original expression-bodied SSR profile remains an exact
+            // refusal case; alias normalization must preserve that same range.
+            assert_camel_alias(source, &config, usize::from(config.ssr));
         }
     }
 }
@@ -515,5 +519,20 @@ fn legacy_namespace_spellings_forward_the_same_whole_ssr_module() {
             expected.code,
             "{source}"
         );
+    }
+}
+
+#[test]
+fn camel_slot_aliases_compile_for_stateful_ssr_component_roles() {
+    let config = JsxCompileConfig {
+        ssr: true,
+        ..Default::default()
+    };
+    for source in [
+        "const A = () => {return <B v-slots={slots}/>;};",
+        "const A = () => {return <B v-slots={{default: () => <i/>, bar: () => <b/>}}/>;};",
+        "const A = () => {return <ul>{items.map(i => <B key={i} v-slots={slots}/>)}</ul>;};",
+    ] {
+        assert_camel_alias(source, &config, 0);
     }
 }
