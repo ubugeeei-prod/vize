@@ -9,6 +9,10 @@
 //! - [`tag_scan`]: shared byte-oriented tag scanning primitives
 //! - [`rule_sets`]: rule-name sets gating shared analysis work
 
+#[cfg(not(target_arch = "wasm32"))]
+mod batch;
+#[cfg(not(target_arch = "wasm32"))]
+pub use batch::PreparedLint;
 mod ecosystem_hint;
 mod jsx;
 mod offset;
@@ -235,6 +239,23 @@ impl Linter {
         filename: &str,
         lang: vize_atelier_jsx::JsxLang,
     ) -> LintResult {
+        let mut result = self.lint_jsx_without_types(source, filename, lang);
+        #[cfg(not(target_arch = "wasm32"))]
+        super::native_type_aware::plain_module::append_plain_module_type_diagnostics(
+            self,
+            source,
+            filename,
+            &mut result,
+        );
+        self.apply_diagnostic_policy(result)
+    }
+
+    fn lint_jsx_without_types(
+        &self,
+        source: &str,
+        filename: &str,
+        lang: vize_atelier_jsx::JsxLang,
+    ) -> LintResult {
         let capacity = (source.len() * 4).max(self.initial_capacity);
         let allocator = Allocator::with_capacity(capacity);
 
@@ -340,7 +361,7 @@ impl Linter {
         }
 
         self.lint_jsx_script(source, filename, &mut result);
-        self.apply_diagnostic_policy(result)
+        result
     }
 
     /// Lint a Vue template with a provided allocator (for reuse).

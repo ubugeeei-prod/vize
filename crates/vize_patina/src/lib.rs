@@ -126,6 +126,8 @@ pub use ir::{
 };
 /// CSS AST provider used by [`ParsedStyleSheet`] and [`rules::css::CssRule`].
 pub use lightningcss as css_ast;
+#[cfg(not(target_arch = "wasm32"))]
+pub use linter::PreparedLint;
 pub use linter::css_rules::{BuiltinCssRuleMeta, builtin_css_rules};
 pub use linter::script_rules::{BuiltinScriptRuleMeta, builtin_script_rules};
 pub use linter::{LintResult, Linter};

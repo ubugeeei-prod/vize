@@ -116,7 +116,7 @@ pub(super) fn apply_lint_fixes(source: &str, result: &LintResult) -> Option<Stri
     Some(fixed)
 }
 
-fn jsx_lang_for_path(path: &Path) -> Option<JsxLang> {
+pub(super) fn jsx_lang_for_path(path: &Path) -> Option<JsxLang> {
     match path.extension().and_then(|extension| extension.to_str()) {
         Some("jsx") => Some(JsxLang::Jsx),
         Some("tsx") => Some(JsxLang::Tsx),
@@ -124,7 +124,7 @@ fn jsx_lang_for_path(path: &Path) -> Option<JsxLang> {
     }
 }
 
-fn is_storybook_csf_path(path: &Path) -> bool {
+pub(super) fn is_storybook_csf_path(path: &Path) -> bool {
     let Some(file_name) = path.file_name().and_then(|file_name| file_name.to_str()) else {
         return false;
     };

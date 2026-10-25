@@ -1,6 +1,6 @@
 mod art;
 pub(in crate::linter::engine) mod facade;
-mod pug;
+pub(super) mod pug;
 
 use super::{
     SfcTemplateLintInput, TemplateAnalysis, TemplateRuleEnv, extract_template_fast, offset_result,
@@ -296,7 +296,7 @@ impl Linter {
         }
     }
 
-    fn append_sfc_document_rule_diagnostics(
+    pub(super) fn append_sfc_document_rule_diagnostics(
         &self,
         source: &str,
         filename: &str,
@@ -333,7 +333,7 @@ impl Linter {
     }
 }
 
-fn empty_lint_result(filename: &str) -> LintResult {
+pub(in crate::linter::engine) fn empty_lint_result(filename: &str) -> LintResult {
     LintResult {
         filename: filename.to_compact_string(),
         diagnostics: Vec::new(),

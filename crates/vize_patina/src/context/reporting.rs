@@ -188,15 +188,27 @@ pub(crate) fn retain_unless_sfc_suppressed(
     descriptor: &SfcDescriptor<'_>,
     diagnostics: &mut Vec<LintDiagnostic>,
 ) -> bool {
-    let Some(directives) = SfcDirectiveState::scan_if_present(descriptor) else {
-        return false;
-    };
-    let before = diagnostics.len();
-    diagnostics.retain(|diagnostic| {
-        let line = directives.offset_to_line(diagnostic.start);
-        !directives.is_disabled_at(diagnostic.rule_name, line, diagnostic.start)
-    });
-    diagnostics.len() != before
+    SfcSuppression::new(descriptor).is_some_and(|directives| directives.retain(diagnostics))
+}
+
+/// Owned suppression state retained across project snapshot publication.
+pub(crate) struct SfcSuppression(SfcDirectiveState);
+
+impl SfcSuppression {
+    pub(crate) fn new(descriptor: &SfcDescriptor<'_>) -> Option<Self> {
+        SfcDirectiveState::scan_if_present(descriptor).map(Self)
+    }
+
+    pub(crate) fn retain(&self, diagnostics: &mut Vec<LintDiagnostic>) -> bool {
+        let before = diagnostics.len();
+        diagnostics.retain(|diagnostic| {
+            let line = self.0.offset_to_line(diagnostic.start);
+            !self
+                .0
+                .is_disabled_at(diagnostic.rule_name, line, diagnostic.start)
+        });
+        diagnostics.len() != before
+    }
 }
 
 /// Drop diagnostics covered by an `eslint-*` / `oxlint-*` comment in a plain

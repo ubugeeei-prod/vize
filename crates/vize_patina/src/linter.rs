@@ -28,6 +28,8 @@ pub(crate) mod script_rules;
 mod severity;
 
 pub use config::{LintResult, Linter};
+#[cfg(not(target_arch = "wasm32"))]
+pub use engine::PreparedLint;
 
 #[cfg(test)]
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
