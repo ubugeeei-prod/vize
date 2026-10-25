@@ -1,0 +1,65 @@
+{
+  "name": "@vizejs/babel-plugin",
+  "version": "0.474.0",
+  "description": "Vue JSX and TSX compilation through the shared Vize compiler",
+  "homepage": "https://github.com/ubugeeei-prod/vize/tree/main/npm/babel",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei-prod/vize",
+    "directory": "npm/babel"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "check": "vp check src vite.config.ts",
+    "test": "node --test src/*.test.ts"
+  },
+  "dependencies": {
+    "@jridgewell/remapping": "2.3.5",
+    "@vizejs/native": "workspace:*",
+    "convert-source-map": "2.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:typescript",
+    "typescript": "catalog:typescript",
+    "vite-plus": "catalog:vite-stack"
+  },
+  "peerDependencies": {
+    "@babel/core": "^7.29.7 || ^8.0.9"
+  },
+  "engines": {
+    "node": "^22.18.0 || >=24.11.0"
+  },
+  "metadata": {
+    "vize": {
+      "stability": "compatibility-preview",
+      "stabilityDocs": "https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#package-support-tiers"
+    }
+  }
+}
