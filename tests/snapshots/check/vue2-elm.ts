@@ -64,7 +64,7 @@ async function verifyVue2ElmSnapshot(): Promise<void> {
 
       assertSnapshot(
         SNAPSHOT_DIR,
-        "vue2-elm-check",
+        "vue2-elm-context-check",
         `${JSON.stringify(omitProgramEvidence(first.report), null, 2)}\n`,
       );
     },

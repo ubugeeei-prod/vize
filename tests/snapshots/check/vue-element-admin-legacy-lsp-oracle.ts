@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 
+import contextPackets from "../../_fixtures/differential/typechecker/vue2-rename-context-custody/successor.json" with { type: "json" };
 import {
   withPinnedFixtureWorkspace,
   type PinnedFixtureWorkspace,
@@ -187,19 +188,7 @@ function assertCleanCheck(result: VizeCheckResult): void {
 
 function assertBrokenCheck(result: VizeCheckResult): void {
   assert.equal(result.status, 1, result.stderr || result.stdout);
-  assert.deepEqual(omitProgramEvidence(result.report), {
-    files: [
-      {
-        file: sourcePath,
-        diagnostics: [
-          "error:2:20 [TS2339] Property 'list' does not exist on the component instance.",
-        ],
-      },
-    ],
-    errorCount: 1,
-    warningCount: 0,
-    fileCount: 1,
-  });
+  assert.deepEqual(omitProgramEvidence(result.report), contextPackets.rename);
 }
 
 function json(value: unknown): string {

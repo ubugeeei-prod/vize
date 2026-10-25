@@ -9,6 +9,9 @@ const callers = [
   "crates/vize_patina/tests/native_syntax_img_alt/support.rs",
   "crates/vize_patina/tests/native_canonical_tabindex/support.rs",
   "crates/vize_patina/tests/native_canonical_tabindex/refusals.rs",
+  "crates/vize_patina/tests/native_canonical_img_alt/support.rs",
+  "crates/vize_patina/tests/native_canonical_img_alt/refusals.rs",
+  "crates/vize_patina/examples/image_alt_measurement/mod.rs",
 ];
 const declaration = "use vize_carton::i18n::{Locale, translator};";
 

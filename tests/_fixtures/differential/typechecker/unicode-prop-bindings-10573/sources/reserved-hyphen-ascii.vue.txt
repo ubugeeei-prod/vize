@@ -1,0 +1,6 @@
+<script setup lang="ts">
+const props = defineProps<{ class: string; 'data-id': number; ascii: string }>()
+</script>
+<template>
+  <div>{{ ascii }}</div> <div>{{ props['class'] }} {{ props['data-id'] }}</div>
+</template>

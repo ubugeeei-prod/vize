@@ -78,6 +78,7 @@ jobs:
         env:
           VIZE_MUSEA_NATIVE_BROWSER_TESTS: "1"
         run: |
+          vp exec tsx --test src/runtime-props-native.browser.test.ts src/runtime-props-quoted-native.test.ts
           vp exec tsx --test src/art-component.test.ts src/inline-art.browser.test.ts src/vrt-api.browser.test.ts src/vrt-report.browser.test.ts src/vrt/report-identity.test.ts src/usage-component.browser.test.ts src/compact-props.test.ts src/api-routes/handler-palette-compact.test.ts src/compact-props.browser.test.ts src/cli/serve.test.ts src/cli/service/input.test.ts src/cli/service/reports.test.ts src/hosted-vrt-service.browser.test.ts src/hosted-vrt-lifecycle.browser.test.ts src/literal-variant-keys.browser.test.ts src/literal-variant-keys.test.ts src/hosted-vrt-literal.browser.test.ts src/hosted-vrt-reconnect.browser.test.ts src/packed-gallery-base.browser.test.ts src/unsupported-props.browser.test.ts gallery/utils/supportedProps.test.ts
           vp exec tsx --test src/inline-art-static.browser.test.ts
           vp exec tsx --test src/variant-bindings-native.browser.test.ts src/variant-bindings-http.test.ts
@@ -97,6 +98,7 @@ jobs:
           name: musea-native-inline-${{ github.sha }}
           path: |
             artifacts/musea-native-inline/**
+            artifacts/musea-native-runtime-props/**
             artifacts/musea-native-static/**
             artifacts/musea-native-bindings/**
             artifacts/musea-native-vrt-api/**
@@ -167,6 +169,7 @@ jobs:
           vp exec tsx --test src/vrt/mask-capture.browser.test.ts
           vp exec tsx --test src/vrt/diff-style.browser.test.ts
           vp exec tsx --test src/vrt/before-capture.browser.test.ts
+          vp exec tsx --test gallery/components/content-layout.browser.test.ts
       - name: Retain gallery browser observations and screenshots
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -183,6 +186,8 @@ jobs:
             artifacts/musea-viewports/observations.json
             artifacts/musea-sidebar-rotation/*.png
             artifacts/musea-sidebar-rotation/observations.json
+            artifacts/musea-content-layout/*.png
+            artifacts/musea-content-layout/observations.json
             artifacts/musea-hosted/*.png
             artifacts/musea-hosted/observations.json
             artifacts/musea-snapshot-collisions/*.png

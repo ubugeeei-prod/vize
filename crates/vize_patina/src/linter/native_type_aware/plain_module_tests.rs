@@ -180,3 +180,5 @@ fn messages<'a>(result: &'a LintResult, rule: &str) -> Vec<&'a str> {
         .map(|diagnostic| diagnostic.message.as_str())
         .collect()
 }
+
+mod packets;

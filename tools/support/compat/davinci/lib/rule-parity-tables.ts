@@ -21,7 +21,9 @@ const croquisCell = (r: MatrixRule): string => {
   return parts.length > 0 ? parts.join("; ") : "—";
 };
 const jsxCell = (r: MatrixRule): string => {
-  if (r.jsx === "yes") return `yes (${r.jsxLane})`;
+  if (r.jsx === "yes") {
+    return `yes (${r.jsxLane}${r.jsxLane.includes("plain-types") ? "; conditional native types" : ""})`;
+  }
   if (r.jsxLane === "no-jsx-hooks") return "no (no JSX-reachable hooks)";
   return "no";
 };
@@ -103,6 +105,7 @@ export function crossChecksSection(matrix: Matrix, stats: RuleStats): string[] {
     ["SEMANTIC_TEMPLATE_RULES", model.semanticTemplateRules],
     ["SHARED_SFC_DESCRIPTOR_RULES", model.sharedSfcDescriptorRules],
     ["TYPE_AWARE_RULES", model.typeAwareRules],
+    ["plain-module type branches", model.plainTypes.rules],
   ];
   for (const [setName, set] of engineSets) {
     for (const name of set) {

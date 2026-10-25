@@ -67,6 +67,7 @@ const {
    *
    * @default undefined
    */
+  // eslint-disable-next-line vue/prop-name-casing, vue/no-unused-properties -- consume the native attribute so only BlockUI state controls aria-busy, rather than fallthrough attrs
   readonly "aria-busy"?: string | boolean;
 
   /**

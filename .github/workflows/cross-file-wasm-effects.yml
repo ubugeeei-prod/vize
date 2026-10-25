@@ -1,0 +1,77 @@
+name: Cross-file WASM effect grammars
+run-name: Cross-file WASM effects @ ${{ github.event.pull_request.head.sha || github.sha }}
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - .github/workflows/cross-file-wasm-effects.yml
+      - crates/vize_vitrine/src/wasm/cross_file.rs
+      - crates/vize_vitrine/src/wasm/cross_file/effect_summary/**
+      - crates/vize_vitrine/src/wasm/cross_file/effect_summary.rs
+      - tests/tooling/support/cross-file-wasm-effects.ts
+      - tests/tooling/support/cross-file-sfc-effects/**
+permissions:
+  contents: read
+concurrency:
+  group: cross-file-wasm-effects-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  CARGO_INCREMENTAL: "0"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  EXPECTED_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+jobs:
+  actual-wasm-packets:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with:
+          toolchain: "1.99.1"
+          targets: wasm32-unknown-unknown
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: cross-file-wasm-effects
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
+        with:
+          tool: wasm-bindgen-cli@0.2.129
+      - name: Install frozen workspace tools
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Verify actual block grammars and binding owners
+        run: |
+          mkdir -p target/vize-tests/cross-file-wasm-effects
+          cargo test --locked --profile ci -p vize_vitrine --no-default-features --features wasm --lib -- wasm::cross_file::effect_summary::tests:: --nocapture > target/vize-tests/cross-file-wasm-effects/rust.stdout 2> target/vize-tests/cross-file-wasm-effects/rust.stderr
+          cat target/vize-tests/cross-file-wasm-effects/rust.stdout
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          assert.match(fs.readFileSync('target/vize-tests/cross-file-wasm-effects/rust.stdout', 'utf8'), /test result: ok\. 6 passed; 0 failed; 0 ignored;/u);
+          JS
+      - name: Build the existing actual WASM release configuration
+        run: node tools/support/tasks/build-vize-wasm-package.ts
+      - name: Verify whole source WASM responses against actual public observations
+        run: node tests/tooling/support/cross-file-wasm-effects.ts
+      - name: Preserve complete providers, responses and actual source artifact
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cross-file-wasm-effects-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            target/vize-tests/cross-file-wasm-effects
+            npm/wasm/vize_vitrine.js
+            npm/wasm/vize_vitrine_bg.wasm
+          if-no-files-found: error
+          retention-days: 14

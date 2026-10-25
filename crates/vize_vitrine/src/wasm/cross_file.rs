@@ -6,6 +6,8 @@
     clippy::disallowed_macros,
     reason = "wasm-bindgen values cross the boundary as std `String`s"
 )]
+mod effect_summary;
+
 use super::{to_js_value, utf8_byte_to_utf16_offset};
 use vize_croquis_cf::CrossFileDiagnosticKind::{
     ArrayMutationNotTriggering, AsyncBoundaryCrossing, AsyncWithoutSuspense, BrowserApiInSsr,
@@ -114,8 +116,13 @@ pub fn analyze_cross_file_wasm(files: JsValue, options: JsValue) -> Result<JsVal
                 // Add file with pre-computed analysis
                 let script_start = analysis.script_offset as usize;
                 let script_content = analysis.script_content.unwrap_or_default();
-                let file_id =
-                    analyzer.add_file_with_analysis(std_path, &script_content, analysis.croquis);
+                let effects = effect_summary::from_descriptor(&descriptor);
+                let file_id = analyzer.add_file_with_analysis_and_effect_summary(
+                    std_path,
+                    &script_content,
+                    analysis.croquis,
+                    effects,
+                );
                 analyzer.record_template_complexity(file_id, source);
 
                 // Record the script and template offsets for this file

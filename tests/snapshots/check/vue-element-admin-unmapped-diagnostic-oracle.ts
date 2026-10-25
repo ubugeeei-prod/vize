@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 
+import contextPackets from "../../_fixtures/differential/typechecker/vue2-rename-context-custody/successor.json" with { type: "json" };
 import { withPinnedFixtureWorkspace } from "../../_helpers/realworld-patch.ts";
 import {
   type CheckReport,
@@ -100,20 +101,7 @@ test("vue-element-admin data-key-only rename keeps every published range inside 
         // diagnostic the CLI drops as unmappable.
         const check = runVizeCheck(fixture.workspaceDir, corsaPath, [sourcePath]);
         assert.equal(check.status, 1, check.stderr || check.stdout);
-        assert.deepEqual(sortedReport(check.report), {
-          files: [
-            {
-              file: sourcePath,
-              diagnostics: [
-                "error:2:20 [TS2339] Property 'list' does not exist on the component instance.",
-                "error:50:14 [TS2339] Property 'list' does not exist on type '__VizeThis'.",
-              ],
-            },
-          ],
-          errorCount: 2,
-          warningCount: 0,
-          fileCount: 1,
-        });
+        assert.deepEqual(sortedReport(check.report), contextPackets.dataKey);
 
         const repairedSource = fixture.applyExactPatch(sourcePath, brokenDataKey, cleanDataKey);
         assert.equal(repairedSource, source, "the reverse patch must restore the pinned source");

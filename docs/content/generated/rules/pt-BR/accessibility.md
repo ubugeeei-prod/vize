@@ -783,7 +783,7 @@ A imagem do avatar não tem o atributo `alt`.
 
 O exemplo correto evita o diagnóstico desta regra com a configuração acima; outras regras ainda podem emitir diagnósticos.
 
-[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/img_alt.rs#L16) · [Todas as regras](all.md)
+[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/img_alt.rs#L17) · [Todas as regras](all.md)
 
 ### `a11y/interactive-supports-focus`
 

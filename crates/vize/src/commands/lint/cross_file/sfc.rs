@@ -9,8 +9,10 @@ use vize_atelier_sfc::{
     croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_occurrences as capture_sfc},
     parse_sfc,
 };
-use vize_croquis::Croquis;
-use vize_l0::Allocator;
+use vize_croquis::{
+    Croquis, EffectGraphScript, EffectGraphSummary, build_effect_graph_from_sfc_scripts,
+};
+use vize_l0::{Allocator, profile, profiler::global_profiler};
 use vize_relief::{PropNode, TemplateChildNode};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -41,17 +43,26 @@ impl CrossFileSourceOffsets {
     }
 }
 
+pub(super) struct CrossFileSfcAnalysis {
+    pub(super) analysis: Croquis,
+    pub(super) offsets: CrossFileSourceOffsets,
+    pub(super) effects: EffectGraphSummary,
+}
+
 pub(super) fn analyze_sfc_for_cross_file(
     source: &str,
     path: &Path,
-) -> Option<(Croquis, CrossFileSourceOffsets)> {
+) -> Option<CrossFileSfcAnalysis> {
     let filename = path.to_string_lossy();
-    let descriptor = parse_sfc(
-        source,
-        SfcParseOptions {
-            filename: filename.as_ref().into(),
-            ..Default::default()
-        },
+    let descriptor = profile!(
+        "cli.lint.cross_file.sfc.descriptor",
+        parse_sfc(
+            source,
+            SfcParseOptions {
+                filename: filename.as_ref().into(),
+                ..Default::default()
+            },
+        )
     )
     .ok()?;
 
@@ -110,7 +121,29 @@ pub(super) fn analyze_sfc_for_cross_file(
         });
     }
 
-    Some((analysis, offsets))
+    let script = descriptor
+        .script
+        .as_ref()
+        .map(|block| EffectGraphScript::new(block.content.as_ref(), block.lang.as_deref()));
+    let setup = descriptor
+        .script_setup
+        .as_ref()
+        .map(|block| EffectGraphScript::new(block.content.as_ref(), block.lang.as_deref()));
+    let effects = profile!("cli.lint.cross_file.sfc.effect_graph", {
+        // The shared builder parses each supplied block in its declared grammar.
+        // Count those inputs separately from the one descriptor/graph call.
+        global_profiler().record_counter(
+            "cli.lint.cross_file.sfc.effect_script_parse_inputs",
+            u64::from(script.is_some()) + u64::from(setup.is_some()),
+        );
+        build_effect_graph_from_sfc_scripts(script, setup).summary()
+    });
+
+    Some(CrossFileSfcAnalysis {
+        analysis,
+        offsets,
+        effects,
+    })
 }
 
 fn fallthrough_root(root: &vize_relief::RootNode<'_>) -> Option<FallthroughRoot> {

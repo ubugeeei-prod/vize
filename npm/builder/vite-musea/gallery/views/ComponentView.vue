@@ -462,6 +462,8 @@ onUnmounted(() => {
 
 .component-tabs {
   display: flex;
+  overflow-x: auto;
+  min-width: 0;
   gap: 0.25rem;
   border-bottom: 1px solid var(--musea-border);
   background: color-mix(in srgb, var(--musea-bg-primary) 92%, transparent);
@@ -707,6 +709,34 @@ onUnmounted(() => {
 }
 
 @media (max-width: 960px) {
+  .component-view {
+    padding: 1.25rem;
+  }
+
+  .component-sticky-menu {
+    padding-bottom: 0.75rem;
+  }
+
+  .variants-view {
+    grid-template-columns: 1fr;
+  }
+
+  .variant-toc-column {
+    order: -1;
+    position: static;
+  }
+
+  .actions-footer {
+    margin: 0 -1.25rem -1.25rem;
+  }
+
+  .actions-footer-toggle {
+    padding-inline: 0.875rem;
+  }
+}
+
+/* A visible sidebar can make the content narrow while the outer viewport stays wide. */
+@container musea-content (max-width: 960px) {
   .component-view {
     padding: 1.25rem;
   }
