@@ -4,6 +4,7 @@ on:
     paths:
       - .github/workflows/corsa-package-refresh.yml
       - tools/support/compat/github/corsa-package-refresh/**
+      - tests/tooling/corsa-package-refresh-bootstrap.test.mjs
       - crates/vize_canon/src/batch/**
       - crates/vize_canon/tests/fix_history_diagnostics.rs
       - tests/_fixtures/differential/typechecker/**
@@ -36,7 +37,7 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.sha }}
       - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         with: { version: latest, node-version-file: package.json, run-install: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
@@ -56,10 +57,13 @@ jobs:
           fi
       - name: Install the frozen real Vue fixture dependency
         run: vp install --filter './tests' --frozen-lockfile --prefer-offline --ignore-scripts
+      - name: Verify observer bootstrap and source roles
+        run: vp node --test tests/tooling/corsa-package-refresh-bootstrap.test.mjs
       - name: Compare unchanged tests with one physical historical SDK
         env:
           VIZE_PACKAGE_REFRESH_CAPTURE: ${{ runner.temp }}/corsa-package-refresh
           VIZE_COMPARE_HISTORICAL: ${{ inputs.historical }}
+          VIZE_PACKAGE_REFRESH_TRIGGER_HEAD: ${{ github.event.pull_request.head.sha || '' }}
         run: |
           cp -R tools/support/compat/github/corsa-package-refresh "$RUNNER_TEMP/corsa-package-refresh-harness"
           vp node "$RUNNER_TEMP/corsa-package-refresh-harness/compare.mjs"
@@ -67,7 +71,7 @@ jobs:
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
-          name: corsa-package-refresh-${{ github.event.pull_request.head.sha || github.sha }}
+          name: corsa-package-refresh-${{ github.sha }}
           path: ${{ runner.temp }}/corsa-package-refresh
           if-no-files-found: error
           retention-days: 14

@@ -3,6 +3,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { validateSourceProvenance } from "./source.mjs";
 
 assert.equal(process.env.GITHUB_ACTIONS, "true");
 const capture = process.env.VIZE_PACKAGE_REFRESH_CAPTURE;
@@ -11,6 +12,11 @@ const hash = (file) => createHash("sha256").update(fs.readFileSync(file)).digest
 const lifecycle = JSON.parse(fs.readFileSync(path.join(capture, "receipt.json"), "utf8"));
 const source = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
 assert.equal(source, lifecycle.observer);
+const provenance = validateSourceProvenance(lifecycle.provenance, source);
+validateSourceProvenance(
+  JSON.parse(fs.readFileSync(path.join(capture, "source.json"), "utf8")),
+  source,
+);
 assert.equal(hash(lifecycle.executable), lifecycle.sha256);
 const file = "crates/vize_canon/tests/fix_history_diagnostics.rs";
 const original = fs.readFileSync(file, "utf8");
@@ -75,6 +81,7 @@ try {
       {
         kind: "focused-batch-observation",
         source,
+        provenance,
         selector,
         binary,
         binarySha256: hash(binary),
