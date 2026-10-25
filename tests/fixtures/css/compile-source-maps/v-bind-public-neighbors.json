@@ -33,32 +33,18 @@
       },
       "output": {
         "code": ".a {\n  color: var(--123abc-theme);\n}\n\n.b {\n  color: #00f;\n}\n",
-        "cssVars": [
-          "theme"
-        ],
+        "cssVars": ["theme"],
         "errors": [],
         "warnings": []
       },
       "tokens": [
         {
-          "generated": [
-            0,
-            0
-          ],
-          "original": [
-            0,
-            0
-          ]
+          "generated": [0, 0],
+          "original": [0, 0]
         },
         {
-          "generated": [
-            4,
-            0
-          ],
-          "original": [
-            0,
-            23
-          ]
+          "generated": [4, 0],
+          "original": [0, 23]
         }
       ]
     },
@@ -71,32 +57,18 @@
       },
       "output": {
         "code": ".a{color:var(--123abc-theme)}.b{color:#00f}",
-        "cssVars": [
-          "theme"
-        ],
+        "cssVars": ["theme"],
         "errors": [],
         "warnings": []
       },
       "tokens": [
         {
-          "generated": [
-            0,
-            0
-          ],
-          "original": [
-            0,
-            0
-          ]
+          "generated": [0, 0],
+          "original": [0, 0]
         },
         {
-          "generated": [
-            0,
-            29
-          ],
-          "original": [
-            0,
-            23
-          ]
+          "generated": [0, 29],
+          "original": [0, 23]
         }
       ]
     },
@@ -109,43 +81,22 @@
       },
       "output": {
         "code": ".雪😀 {\n  color: var(--v6c12f146);\n}\n\n.b {\n  opacity: var(--123abc-next);\n}\n\n.c {\n  color: red;\n}\n",
-        "cssVars": [
-          "主题😀",
-          "next"
-        ],
+        "cssVars": ["主题😀", "next"],
         "errors": [],
         "warnings": []
       },
       "tokens": [
         {
-          "generated": [
-            0,
-            0
-          ],
-          "original": [
-            0,
-            0
-          ]
+          "generated": [0, 0],
+          "original": [0, 0]
         },
         {
-          "generated": [
-            4,
-            0
-          ],
-          "original": [
-            2,
-            2
-          ]
+          "generated": [4, 0],
+          "original": [2, 2]
         },
         {
-          "generated": [
-            8,
-            0
-          ],
-          "original": [
-            3,
-            0
-          ]
+          "generated": [8, 0],
+          "original": [3, 0]
         }
       ]
     },
@@ -158,43 +109,22 @@
       },
       "output": {
         "code": ".雪😀{color:var(--v6c12f146)}.b{opacity:var(--123abc-next)}.c{color:red}",
-        "cssVars": [
-          "主题😀",
-          "next"
-        ],
+        "cssVars": ["主题😀", "next"],
         "errors": [],
         "warnings": []
       },
       "tokens": [
         {
-          "generated": [
-            0,
-            0
-          ],
-          "original": [
-            0,
-            0
-          ]
+          "generated": [0, 0],
+          "original": [0, 0]
         },
         {
-          "generated": [
-            0,
-            28
-          ],
-          "original": [
-            2,
-            2
-          ]
+          "generated": [0, 28],
+          "original": [2, 2]
         },
         {
-          "generated": [
-            0,
-            58
-          ],
-          "original": [
-            3,
-            0
-          ]
+          "generated": [0, 58],
+          "original": [3, 0]
         }
       ]
     },
@@ -207,44 +137,22 @@
       },
       "output": {
         "code": ".a {\n  color: var(--123abc-a);\n}\n\n.b {\n  opacity: var(--123abc-b);\n}\n\n.c {\n  width: var(--123abc-c);\n}\n",
-        "cssVars": [
-          "a",
-          "b",
-          "c"
-        ],
+        "cssVars": ["a", "b", "c"],
         "errors": [],
         "warnings": []
       },
       "tokens": [
         {
-          "generated": [
-            0,
-            0
-          ],
-          "original": [
-            0,
-            0
-          ]
+          "generated": [0, 0],
+          "original": [0, 0]
         },
         {
-          "generated": [
-            4,
-            0
-          ],
-          "original": [
-            0,
-            19
-          ]
+          "generated": [4, 0],
+          "original": [0, 19]
         },
         {
-          "generated": [
-            8,
-            0
-          ],
-          "original": [
-            0,
-            40
-          ]
+          "generated": [8, 0],
+          "original": [0, 40]
         }
       ]
     },
@@ -257,44 +165,22 @@
       },
       "output": {
         "code": ".a{color:var(--123abc-a)}.b{opacity:var(--123abc-b)}.c{width:var(--123abc-c)}",
-        "cssVars": [
-          "a",
-          "b",
-          "c"
-        ],
+        "cssVars": ["a", "b", "c"],
         "errors": [],
         "warnings": []
       },
       "tokens": [
         {
-          "generated": [
-            0,
-            0
-          ],
-          "original": [
-            0,
-            0
-          ]
+          "generated": [0, 0],
+          "original": [0, 0]
         },
         {
-          "generated": [
-            0,
-            25
-          ],
-          "original": [
-            0,
-            19
-          ]
+          "generated": [0, 25],
+          "original": [0, 19]
         },
         {
-          "generated": [
-            0,
-            52
-          ],
-          "original": [
-            0,
-            40
-          ]
+          "generated": [0, 52],
+          "original": [0, 40]
         }
       ]
     },
@@ -307,32 +193,18 @@
       },
       "output": {
         "code": ".a {\n  --note: \"v-bind(fake)\";\n  color: var(--123abc-real);\n}\n\n.b {\n  opacity: .5;\n}\n",
-        "cssVars": [
-          "real"
-        ],
+        "cssVars": ["real"],
         "errors": [],
         "warnings": []
       },
       "tokens": [
         {
-          "generated": [
-            0,
-            0
-          ],
-          "original": [
-            0,
-            18
-          ]
+          "generated": [0, 0],
+          "original": [0, 18]
         },
         {
-          "generated": [
-            5,
-            0
-          ],
-          "original": [
-            0,
-            62
-          ]
+          "generated": [5, 0],
+          "original": [0, 62]
         }
       ]
     },
@@ -345,32 +217,18 @@
       },
       "output": {
         "code": ".a{--note:\"v-bind(fake)\";color:var(--123abc-real)}.b{opacity:.5}",
-        "cssVars": [
-          "real"
-        ],
+        "cssVars": ["real"],
         "errors": [],
         "warnings": []
       },
       "tokens": [
         {
-          "generated": [
-            0,
-            0
-          ],
-          "original": [
-            0,
-            18
-          ]
+          "generated": [0, 0],
+          "original": [0, 18]
         },
         {
-          "generated": [
-            0,
-            50
-          ],
-          "original": [
-            0,
-            62
-          ]
+          "generated": [0, 50],
+          "original": [0, 62]
         }
       ]
     },
@@ -383,32 +241,18 @@
       },
       "output": {
         "code": ".a {\n  width: var(--v51525f9e);\n}\n\n.b {\n  opacity: .5;\n}\n",
-        "cssVars": [
-          "theme.get('width')"
-        ],
+        "cssVars": ["theme.get('width')"],
         "errors": [],
         "warnings": []
       },
       "tokens": [
         {
-          "generated": [
-            0,
-            0
-          ],
-          "original": [
-            0,
-            0
-          ]
+          "generated": [0, 0],
+          "original": [0, 0]
         },
         {
-          "generated": [
-            4,
-            0
-          ],
-          "original": [
-            0,
-            38
-          ]
+          "generated": [4, 0],
+          "original": [0, 38]
         }
       ]
     },
@@ -421,32 +265,18 @@
       },
       "output": {
         "code": ".a{width:var(--v51525f9e)}.b{opacity:.5}",
-        "cssVars": [
-          "theme.get('width')"
-        ],
+        "cssVars": ["theme.get('width')"],
         "errors": [],
         "warnings": []
       },
       "tokens": [
         {
-          "generated": [
-            0,
-            0
-          ],
-          "original": [
-            0,
-            0
-          ]
+          "generated": [0, 0],
+          "original": [0, 0]
         },
         {
-          "generated": [
-            0,
-            26
-          ],
-          "original": [
-            0,
-            38
-          ]
+          "generated": [0, 26],
+          "original": [0, 38]
         }
       ]
     },
@@ -459,33 +289,18 @@
       },
       "output": {
         "code": ".a {\n  padding: var(--123abc-x) var(--123abc-y);\n}\n\n.b {\n  color: red;\n}\n",
-        "cssVars": [
-          "x",
-          "y"
-        ],
+        "cssVars": ["x", "y"],
         "errors": [],
         "warnings": []
       },
       "tokens": [
         {
-          "generated": [
-            0,
-            0
-          ],
-          "original": [
-            0,
-            0
-          ]
+          "generated": [0, 0],
+          "original": [0, 0]
         },
         {
-          "generated": [
-            4,
-            0
-          ],
-          "original": [
-            0,
-            31
-          ]
+          "generated": [4, 0],
+          "original": [0, 31]
         }
       ]
     },
@@ -498,33 +313,18 @@
       },
       "output": {
         "code": ".a{padding:var(--123abc-x) var(--123abc-y)}.b{color:red}",
-        "cssVars": [
-          "x",
-          "y"
-        ],
+        "cssVars": ["x", "y"],
         "errors": [],
         "warnings": []
       },
       "tokens": [
         {
-          "generated": [
-            0,
-            0
-          ],
-          "original": [
-            0,
-            0
-          ]
+          "generated": [0, 0],
+          "original": [0, 0]
         },
         {
-          "generated": [
-            0,
-            43
-          ],
-          "original": [
-            0,
-            31
-          ]
+          "generated": [0, 43],
+          "original": [0, 31]
         }
       ]
     },
@@ -543,14 +343,8 @@
       },
       "tokens": [
         {
-          "generated": [
-            0,
-            0
-          ],
-          "original": [
-            0,
-            0
-          ]
+          "generated": [0, 0],
+          "original": [0, 0]
         }
       ]
     },
@@ -569,14 +363,8 @@
       },
       "tokens": [
         {
-          "generated": [
-            0,
-            0
-          ],
-          "original": [
-            0,
-            0
-          ]
+          "generated": [0, 0],
+          "original": [0, 0]
         }
       ]
     },
@@ -589,12 +377,8 @@
       },
       "output": {
         "code": ".a{color:var(--123abc-theme)} }",
-        "cssVars": [
-          "theme"
-        ],
-        "errors": [
-          "CSS parse error: Unexpected end of input at style.css:0:32"
-        ],
+        "cssVars": ["theme"],
+        "errors": ["CSS parse error: Unexpected end of input at style.css:0:32"],
         "warnings": []
       },
       "tokens": []
@@ -608,12 +392,8 @@
       },
       "output": {
         "code": ".a{color:var(--123abc-theme)} }",
-        "cssVars": [
-          "theme"
-        ],
-        "errors": [
-          "CSS parse error: Unexpected end of input at style.css:0:32"
-        ],
+        "cssVars": ["theme"],
+        "errors": ["CSS parse error: Unexpected end of input at style.css:0:32"],
         "warnings": []
       },
       "tokens": []
@@ -628,9 +408,7 @@
       },
       "output": {
         "code": ".a[data-v-123abc] {\n  color: var(--123abc-theme);\n}\n\n.b[data-v-123abc] {\n  color: #00f;\n}\n",
-        "cssVars": [
-          "theme"
-        ],
+        "cssVars": ["theme"],
         "errors": [],
         "warnings": []
       },
@@ -646,9 +424,7 @@
       },
       "output": {
         "code": ".a[data-v-123abc]{color:var(--123abc-theme)}.b[data-v-123abc]{color:#00f}",
-        "cssVars": [
-          "theme"
-        ],
+        "cssVars": ["theme"],
         "errors": [],
         "warnings": []
       },
@@ -663,9 +439,7 @@
       },
       "output": {
         "code": ".a {\n  color: var(--123abc-theme);\n}\n",
-        "cssVars": [
-          "theme"
-        ],
+        "cssVars": ["theme"],
         "errors": [],
         "warnings": []
       },
@@ -680,9 +454,7 @@
       },
       "output": {
         "code": ".a{color:var(--123abc-theme)}",
-        "cssVars": [
-          "theme"
-        ],
+        "cssVars": ["theme"],
         "errors": [],
         "warnings": []
       },

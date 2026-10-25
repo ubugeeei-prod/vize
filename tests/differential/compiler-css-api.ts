@@ -138,7 +138,7 @@ export function loadCompilerCssApiCases(value: unknown, read: Reader) {
       assert.equal(file.path, spec.paths[index]);
       assert(typeof file.afterSha256 === "string");
       assert.match(file.afterSha256, /^[0-9a-f]{64}$/u);
-      if (index === spec.missingBefore) assert.equal(file.beforeSha256, null);
+      if (spec.missingBefore.includes(index)) assert.equal(file.beforeSha256, null);
       else {
         assert(typeof file.beforeSha256 === "string");
         assert.match(file.beforeSha256, /^[0-9a-f]{64}$/u);

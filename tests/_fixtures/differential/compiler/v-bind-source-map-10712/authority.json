@@ -28,6 +28,11 @@
       "afterSha256": "206ffa267db59b55f51ebe7fc9d237df7e1cd5e5c3ff11cbfe74a9ab05db1beb"
     },
     {
+      "path": "crates/vize_atelier_sfc/src/css/parser/source_map/tests.rs",
+      "beforeSha256": null,
+      "afterSha256": "31079b26fc37ce54261d3957ed6da36116f6b085a0cb10f08b241f268c6e6e37"
+    },
+    {
       "path": "crates/vize_croquis/src/sfc.rs",
       "beforeSha256": "f350944cc67366b7a7280dff46aad7bc687283986e34b6eb2bc788116a82f89f",
       "afterSha256": "4b409f7ec3202de3831ad6ddac62cbe6ac12a5018ce68791d2b87fc8373d29cf"
