@@ -188,7 +188,10 @@ void test("explicit fmt.vue false keeps shared formatter options without taking 
     const metadata = (result as ConfigWithVizeTasks)[taskConfigKey]!;
     assert.equal(metadata.options.fmt, false);
     assert.deepEqual(result.fmt?.ignorePatterns, ["generated/**"]);
-    assert.deepEqual((await resolveConfigExport(metadata.config!)).formatter, formatter);
+    assert.deepEqual((await resolveConfigExport(metadata.config!)).formatter, {
+      ignorePatterns: ["generated/**"],
+      ...formatter,
+    });
   }
 
   const enabled = await defineConfig({}, { plugin: false, tasks: false, lint: false }).withVue({

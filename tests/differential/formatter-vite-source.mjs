@@ -112,7 +112,9 @@ export function viteConfigurationPlans(root) {
     base: inherited.base,
     source: Object.fromEntries(Object.entries(inherited.own).filter(([key]) => key !== "extends")),
     promisedBase: inherited.own.extends[1],
-    formatter: { singleQuote: true, tabWidth: 4 },
+    // #10614 shares the authored common width below the explicit Vue leaves.
+    // Historical source vectors above retain their immutable original bytes.
+    formatter: { printWidth: 90, singleQuote: true, tabWidth: 4 },
     vp: { server: { port: 4321, host: true }, lint: {}, fmt: { printWidth: 90 } },
     options: { ...integration, check: true, lint: true, fmt: true },
   });
