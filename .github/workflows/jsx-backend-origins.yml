@@ -19,10 +19,14 @@ jobs:
     env:
       CARGO_BUILD_JOBS: "24"
       CARGO_INCREMENTAL: "0"
+      QUALIFICATION_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
       BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { fetch-depth: 0, persist-credentials: false }
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: package.json, package-manager-cache: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # master
@@ -36,6 +40,8 @@ jobs:
           VIZE_JSX_BACKEND_ORIGIN_CAPTURE: ${{ runner.temp }}/jsx-backend-origins/origins.json
         run: |
           mkdir -p "$RUNNER_TEMP/jsx-backend-origins"
+          test "$(git rev-parse HEAD)" = "$QUALIFICATION_HEAD_SHA"
+          git diff --exit-code
           cargo test --locked --profile ci -p vize_atelier_jsx --test backend_module_origins -- --nocapture
       - name: Measure unchanged default backends before and after the source change
         run: |

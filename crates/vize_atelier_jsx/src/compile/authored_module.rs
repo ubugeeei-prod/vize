@@ -1,6 +1,7 @@
 //! Assemble VDOM modules at OXC-authored spans, retaining their lexical scopes.
 
 mod collisions;
+mod component_uses;
 mod contexts;
 mod mapped;
 mod native;
@@ -118,7 +119,14 @@ pub(super) fn emit(
     }
     let renderers = vize_l0::profile!(
         "atelier.jsx.module.collisions",
-        collisions::check(components, spans, preamble, &parsed.program, lang)
+        collisions::check(
+            components,
+            spans,
+            preamble,
+            &parsed.program,
+            lang,
+            &native_plans
+        )
     )?;
     let mut writer = ModuleWriter::new(source, components, origins, source_map)?;
     // Hashbangs and directives retain their original leading position. Imports

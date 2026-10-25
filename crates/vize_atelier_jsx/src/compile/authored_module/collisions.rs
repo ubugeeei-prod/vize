@@ -17,6 +17,7 @@ pub(super) fn check(
     preamble: &str,
     authored: &Program<'_>,
     lang: JsxLang,
+    plans: &[super::plans::Plan],
 ) -> Result<Vec<Renderer>, JsxDiagnostic> {
     let allocator = oxc_allocator::Allocator::default();
     let generated = crate::parse_module(&allocator, preamble, JsxLang::Jsx);
@@ -63,6 +64,10 @@ pub(super) fn check(
         }
     }
     let mut scoping = None;
+    vize_l0::profile!(
+        "atelier.jsx.module.component_uses",
+        super::component_uses::check(authored, plans, &mut scoping)
+    )?;
     parsed_components.iter().zip(spans).map(|(parsed, &(start, end))| {
         let mut generated = Bindings { renderer_only: true, ..Default::default() };
         generated.visit_program(&parsed.program);

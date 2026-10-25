@@ -56,15 +56,6 @@ fn owned_native_arrows_keep_whole_modules_and_exact_composed_origins() {
                 !parse_module(allocator.as_oxc(), &code, JsxLang::Tsx).has_errors(),
                 "{code}"
             );
-            assert!(
-                code.contains("__vapor: true"),
-                "Vapor hydration identity must survive the server target"
-            );
-            assert!(code.contains(if ssr {
-                "__ssrInlineRender: true"
-            } else {
-                "__vapor: true"
-            }));
             let map = SourceMap::from_json_string(with.source_map().expect("native module map"))
                 .expect("valid map");
             assert_eq!(
@@ -125,10 +116,24 @@ fn owned_native_arrows_keep_whole_modules_and_exact_composed_origins() {
         std::fs::write(path, serde_json::to_vec_pretty(&packets).expect("packets"))
             .expect("capture");
     }
+    let expected: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/_fixtures/differential/jsx/authored-native-modules-10700/mapped-roots.json"
+    ))
+    .expect("frozen complete source packet");
+    let whole_outputs = packets
+        .into_iter()
+        .map(|packet| {
+            let mut fields = packet.as_object().expect("whole output object").clone();
+            fields.remove("tokens"); // Independently verified above and retained in raw capture.
+            serde_json::Value::Object(fields)
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(json!(whole_outputs), expected);
 }
 
 #[test]
 fn native_module_admission_is_owned_by_ast_not_enclosing_name_spelling() {
+    let mut packets = Vec::new();
     let cases = [
         "export default () => <strong>Hello</strong>;",
         "export const App = () => <div>{flag ? <i>yes</i> : null}</div>;",
@@ -154,15 +159,7 @@ fn native_module_admission_is_owned_by_ast_not_enclosing_name_spelling() {
                 !parse_module(allocator.as_oxc(), &code, JsxLang::Tsx).has_errors(),
                 "{code}"
             );
-            if source.contains("#!/") {
-                assert!(code.starts_with("#!/usr/bin/env node\n'use client';"));
-            }
-            if source.contains("import Child") {
-                assert!(code.contains("Child"));
-                assert!(!code.contains("_ctx.Child"));
-                assert!(!code.contains("$setup.Child"));
-                assert!(!code.contains("_resolveComponent(\"Child\")"));
-            }
+            packets.push(full_packet(source, ssr, &out));
         }
         for source in [
             "export const nodes=[1].map(n=><i>{n}</i>);",
@@ -194,8 +191,22 @@ fn native_module_admission_is_owned_by_ast_not_enclosing_name_spelling() {
                     .iter()
                     .any(|diagnostic| diagnostic.end > diagnostic.start)
             );
+            packets.push(full_packet(source, ssr, &out));
         }
     }
+    let actual = json!(packets);
+    if let Some(path) = std::env::var_os("VIZE_JSX_ADMISSION_CAPTURE") {
+        std::fs::write(
+            path,
+            serde_json::to_vec_pretty(&actual).expect("complete packet"),
+        )
+        .expect("capture");
+    }
+    let expected: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/_fixtures/differential/jsx/authored-native-modules-10700/admission.json"
+    ))
+    .expect("frozen admission packet");
+    assert_eq!(actual, expected);
 }
 
 #[test]
@@ -231,7 +242,20 @@ fn ssr_keeps_existing_object_and_functional_roles_distinct() {
         },
     );
     assert!(!out.has_errors(), "{:?}", out.diagnostics);
-    assert!(out.module_code().contains("__ssrInlineRender: true"));
+    let actual = full_packet(
+        "export const App=(props:{label:string})=> {return <p>{props.label}</p>;};",
+        true,
+        &out,
+    );
+    if let Some(path) = std::env::var_os("VIZE_JSX_STATEFUL_SSR_CAPTURE") {
+        std::fs::write(
+            path,
+            serde_json::to_vec_pretty(&actual).expect("complete packet"),
+        )
+        .expect("capture");
+    }
+    let expected:serde_json::Value=serde_json::from_str(include_str!("../../../tests/_fixtures/differential/jsx/authored-native-modules-10700/stateful-vdom-ssr.json")).expect("frozen stateful packet");
+    assert_eq!(actual, expected);
 }
 
 #[test]
@@ -264,4 +288,12 @@ fn legacy_vapor_server_option_uses_the_same_genuine_ssr_component_role() {
                 .all(|component| matches!(component, vize_atelier_jsx::JsxComponent::Ssr(_)))
         );
     }
+}
+
+fn full_packet(
+    source: &str,
+    ssr: bool,
+    output: &vize_atelier_jsx::JsxCompileOutput,
+) -> serde_json::Value {
+    json!({"source":source,"ssr":ssr,"module":output.module_code().as_str(),"moduleMap":output.source_map().map(|map|serde_json::from_str::<serde_json::Value>(map).expect("valid map")),"components":output.components.iter().map(|component| json!({"name":component.component_name(),"mode":component.mode().as_config_str(),"code":component.code(),"preamble":component.preamble(),"map":component.map().map(|map|serde_json::from_str::<serde_json::Value>(map).expect("valid component map")),"setup":format!("{:?}",component.component_setup()),"style":format!("{:?}",component.scoped_style())})).collect::<Vec<_>>(),"diagnostics":output.diagnostics.iter().map(|diagnostic|json!({"error":diagnostic.is_error(),"message":diagnostic.message.as_str(),"start":diagnostic.start,"end":diagnostic.end})).collect::<Vec<_>>()})
 }
