@@ -8,6 +8,45 @@ fn transform(source: &str) -> super::ContentMapperTransform {
     generate_vue_content_mapper_transform(Path::new("/project/App.vue"), source).unwrap()
 }
 
+fn without_owned_input_echoes(source: &str) -> super::ContentMapperTransform {
+    super::transform_with_diagnostic_ownership(
+        Path::new("/project/App.vue"),
+        source,
+        super::ContentMapperTransformOptions::default(),
+        None,
+    )
+    .unwrap()
+}
+
+fn static_id_echoes(
+    source: &str,
+    generated: &str,
+    id: &str,
+) -> Vec<super::protocol::ContentMapperDiagnosticDirective> {
+    use super::protocol::ContentMapperDiagnosticDirective as Directive;
+    let original = source.find(&format!("id=\"{id}\"")).unwrap();
+    let entry = format!("\"id\": \"{id}\"");
+    let generated = generated.find(&entry).unwrap();
+    vec![
+        Directive([
+            original,
+            2,
+            generated,
+            generated + 4,
+            DIRECTIVE_POLICY_IGNORE,
+            0,
+        ]),
+        Directive([
+            original + 4,
+            id.len(),
+            generated + 6,
+            generated + entry.len(),
+            DIRECTIVE_POLICY_IGNORE,
+            0,
+        ]),
+    ]
+}
+
 #[test]
 fn expect_directive_targets_the_next_template_line() {
     let source = "<script setup lang=\"ts\">\nconst count = 1\n</script>\n<template>\n  <!-- @vue-expect-error -->\n  {{ count.bad }}\n</template>\n";
@@ -196,10 +235,22 @@ fn static_component_expect_owns_one_packet_without_its_child() {
                     "<script setup lang=\"ts\">import Comp from './Comp.vue'; const value = 1; const noop = () => {{}};</script>{newline}<template>{prefix}<!-- @vue-expect-error -->{newline}<Comp{newline} id=\"{id}\" @{event}=\"noop\">{{{{ value.bad }}}}</Comp></template>"
                 );
                 let result = transform(source.as_str());
+                let baseline = without_owned_input_echoes(source.as_str())
+                    .diagnostic_directives
+                    .unwrap();
                 let directives = result.diagnostic_directives.unwrap();
-                assert_eq!(directives.directives.len(), 1, "{directives:?}");
+                let mut expected = static_id_echoes(source.as_str(), result.text.as_str(), id);
+                expected.extend(baseline.directives);
+                assert_eq!(
+                    directives.directives, expected,
+                    "ordered synthetic and unchanged authored tuples"
+                );
+                assert_eq!(
+                    directives.unused_expect_directive_diagnostics,
+                    baseline.unused_expect_directive_diagnostics
+                );
                 assert_eq!(directives.unused_expect_directive_diagnostics.len(), 1);
-                let [token, length, start, end, policy, unused] = directives.directives[0].0;
+                let [token, length, start, end, policy, unused] = directives.directives[2].0;
                 assert_eq!(&source[token..token + length], "@vue-expect-error");
                 assert_eq!((policy, unused), (DIRECTIVE_POLICY_EXPECT, 0));
                 let parent = source.find("<Comp").unwrap();
@@ -243,14 +294,32 @@ fn unrelated_marker_text_never_creates_owner_directives() {
         let source = vize_l0::cstr!(
             "<script setup lang=\"ts\">import Comp from './Comp.vue'; const value = 1; const noop = () => {{}};</script><template>{template}</template>"
         );
-        let directives = transform(source.as_str())
+        let result = transform(source.as_str());
+        let baseline = without_owned_input_echoes(source.as_str())
+            .diagnostic_directives
+            .expect("legacy component-prop echo directives");
+        let directives = result
             .diagnostic_directives
             .expect("internal component-prop echo directives");
+        let id = if template.contains("id=\"@vue-expect-error\"") {
+            "@vue-expect-error"
+        } else {
+            "bad"
+        };
+        let mut expected = static_id_echoes(source.as_str(), result.text.as_str(), id);
+        expected.extend(baseline.directives);
+        assert_eq!(
+            directives.directives, expected,
+            "a marker literal is an ignored input value, never an authored directive"
+        );
+        assert_eq!(
+            directives.unused_expect_directive_diagnostics,
+            baseline.unused_expect_directive_diagnostics
+        );
         assert!(directives.unused_expect_directive_diagnostics.is_empty());
         assert!(directives.directives.iter().all(|directive| {
-            let [original, length, _, _, policy, _] = directive.0;
+            let [_, _, _, _, policy, _] = directive.0;
             policy == DIRECTIVE_POLICY_IGNORE
-                && &source[original..original + length] != "@vue-expect-error"
         }));
     }
     let source = "<script setup lang=\"ts\">import Comp from './Comp.vue'; const value = 1; const noop = () => {};</script><template><Comp id=\"bad\" @save=\"noop\">{{ value.bad }}</Comp><!-- @vue-expect-error --></template>";
