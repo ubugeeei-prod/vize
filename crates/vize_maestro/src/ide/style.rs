@@ -17,7 +17,7 @@ pub(crate) use completion::complete;
 pub(crate) use completion::vue_completions;
 pub(crate) use hover::hover;
 #[cfg(feature = "native")]
-pub(crate) use resolve::resolve;
+pub(crate) use resolve::{resolve, resolve_catalog};
 
 use super::IdeContext;
 use tower_lsp::lsp_types::{Position, Range};

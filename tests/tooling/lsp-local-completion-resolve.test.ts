@@ -122,6 +122,8 @@ test("local and catalog completion resolve survives real multi-root configuratio
     const expectedItem = fixture.localItem;
     const item = async (uri: string) => {
       const vector = await request("textDocument/completion", completionParams(uri));
+      // This is the pinned public failure vector; membership alone would lose
+      // the historical item, ordering and extra-field contract.
       assert.deepEqual(vector, [expectedItem]);
       return (vector as Json[])[0];
     };

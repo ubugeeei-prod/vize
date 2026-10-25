@@ -172,7 +172,9 @@ impl LanguageServer for MaestroServer {
             // Static items and immutable CSS catalog identities have no source
             // owner. A retired primary cannot make their local answer stale.
             // Native marker presence wins, including malformed/mixed payloads.
-            if !native_owned && (item.data.is_none() || crate::ide::style::resolve(&mut item)) {
+            if !native_owned
+                && (item.data.is_none() || crate::ide::style::resolve_catalog(&mut item))
+            {
                 return Ok(item);
             }
             item

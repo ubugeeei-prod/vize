@@ -92,7 +92,7 @@ Widely available; interoperable since 2015-07-29; widely available since 2018-01
 }
 
 #[test]
-fn invalid_css_catalog_identity_and_mismatched_label_or_kind_remain_unchanged() {
+fn invalid_css_catalog_identity_and_mismatched_label_or_kind_keep_the_freshness_guard() {
     crate::runtime::block_on(async {
         let service = retired_service();
         let server = service.inner();
@@ -119,7 +119,10 @@ fn invalid_css_catalog_identity_and_mismatched_label_or_kind_remain_unchanged() 
             item.label = label.into();
             item.kind = Some(serde_json::from_value(json!(kind)).unwrap());
             item.data = Some(json!({"vizeCss":payload}));
-            assert_eq!(server.completion_resolve(item.clone()).await.unwrap(), item);
+            assert_eq!(
+                server.completion_resolve(item).await.unwrap_err().code,
+                tower_lsp::jsonrpc::ErrorCode::ContentModified,
+            );
         }
         assert_unstarted(server);
     });
@@ -140,8 +143,17 @@ fn native_marker_presence_and_unknown_data_keep_the_original_freshness_boundary(
             json!({"vizeCompletion":{"uri":"not a URI"}}),
             json!({"vizeCompletion":{"uri":"file:///unavailable.vue","revision":1}}),
             json!({"vizeCompletion":null,"vizeCss":{"kind":"property","name":"display","property":null}}),
+            json!({"vizeCss":{"kind":"property","name":"display","property":null},"unknownOwner":{"uri":"file:///unavailable.vue"}}),
+            json!({"vizeCss":{"kind":"property","name":"display","property":null},"unknownOwner":null}),
+            json!({"vizeCss":{"kind":"property","name":"display","property":null,"unknownOwner":{"uri":"file:///unavailable.vue"}}}),
+            json!({"vizeCss":{"kind":"property","name":"display"}}),
+            json!({"vizeCss":{"kind":"property","name":"display","property":false}}),
+            json!({"vizeCss":{"kind":"property","name":"display","property":"color"}}),
         ] {
             let mut item = item();
+            if data.get("vizeCss").is_some() {
+                item.label = "display".into();
+            }
             item.data = Some(data.clone());
             assert_eq!(
                 server.completion_resolve(item).await.unwrap_err().code,

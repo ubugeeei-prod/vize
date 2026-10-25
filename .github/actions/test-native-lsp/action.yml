@@ -31,6 +31,7 @@ runs:
           tests/tooling/lsp-vue-language-tools-oracles.test.ts \
           tests/tooling/lsp-editor-feature-isolation.test.ts \
           tests/tooling/lsp-local-completion-resolve.test.ts \
+          tests/tooling/lsp-local-completion-ownership.test.ts \
           tests/tooling/lsp-preprocessor-colors.test.ts \
           tests/tooling/lsp-html-void-examples.test.ts \
           tests/tooling/lsp-html-element-hover.test.ts \
