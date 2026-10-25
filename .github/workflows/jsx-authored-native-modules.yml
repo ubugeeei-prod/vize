@@ -24,6 +24,16 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { fetch-depth: 0, persist-credentials: false }
+      - uses: ./.github/actions/cache-vp-bootstrap
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          version: latest
+          node-version-file: package.json
+          cache: true
+          cache-save: false
+          run-install: false
+      - name: Install the committed native oracle dependencies
+        run: node tools/support/github/vp-install.ts --filter vize-workspace --filter './tests...' --filter './npm/ui...'
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # master
         with: { toolchain: "1.99.1" }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
@@ -122,6 +132,25 @@ jobs:
           for target in compile ssr vapor_ssr babel_is_custom_element babel_merge_props babel_v_slots pragma v_model_argument v_slots_forwarding; do
             cargo test --locked --profile ci -p vize_atelier_jsx --test "$target" || status=1
           done
+          exit "$status"
+      - name: Capture whole native fixture packets and genuine runtime traces
+        if: always()
+        env:
+          VIZE_FALSY_AND_CAPTURE: ${{ runner.temp }}/jsx-authored-native/falsy-producers.json
+          VIZE_JSX_FALSY_REFUSAL_CAPTURE: ${{ runner.temp }}/jsx-authored-native/falsy-original-refusals.json
+          VIZE_JSX_VALUE_CAPTURE: ${{ runner.temp }}/jsx-authored-native/falsy-modules.json
+          VIZE_JSX_FALSY_RECEIPT: ${{ runner.temp }}/jsx-authored-native/falsy-runtime.json
+          VIZE_JSX_NESTED_RUNTIME_CAPTURE: ${{ runner.temp }}/jsx-authored-native/nested-packets.json
+          VIZE_JSX_VAPOR_COMPAT_CAPTURE: ${{ runner.temp }}/jsx-authored-native/compat-modules.json
+          VIZE_JSX_VAPOR_COMPAT_TRACE_CAPTURE: ${{ runner.temp }}/jsx-authored-native/compat-runtime.json
+          VIZE_L4_SSR_REQUIRE_NATIVE: "1"
+        run: |
+          status=0
+          mkdir -p "$RUNNER_TEMP/jsx-authored-native"
+          for target in falsy_and nested_typecheck_runtime vue_jsx_vapor_compat_oracle; do
+            cargo test --locked --profile ci -p vize_atelier_jsx --test "$target" -- --nocapture > "$RUNNER_TEMP/jsx-authored-native/$target.stdout.log" 2> "$RUNNER_TEMP/jsx-authored-native/$target.stderr.log" || status=1
+          done
+          VIZE_JSX_VAPOR_COMPAT_TRACE_CAPTURE="$RUNNER_TEMP/jsx-authored-native/reference-metadata.json" node tests/tooling/jsx-vapor-oracle/oracle.mjs --reference > "$RUNNER_TEMP/jsx-authored-native/reference.stdout.json" 2> "$RUNNER_TEMP/jsx-authored-native/reference.stderr.log" || status=1
           exit "$status"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
