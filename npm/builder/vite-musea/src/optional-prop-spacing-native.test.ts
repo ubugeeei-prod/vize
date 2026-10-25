@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdir, writeFile } from "node:fs/promises";
+import { appendFile, mkdir, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import path from "node:path";
 import test from "node:test";
@@ -18,6 +18,10 @@ void test(
   async () => {
     const repository = fileURLToPath(new URL("../../../../", import.meta.url));
     const output = path.join(repository, "artifacts/musea-native-optional-spacing");
+    const trace = async (phase: string) => {
+      console.log(JSON.stringify({ phase: "optional-prop-spacing", step: phase }));
+      await appendFile(path.join(output, "phases.jsonl"), JSON.stringify({ phase }) + "\n");
+    };
     const root = path.join(output, "project");
     const component = path.join(root, "src/SpacingProbe.vue");
     const art = path.join(root, "src/SpacingProbe.art.vue");
@@ -68,20 +72,27 @@ void test(
       const endpoint = `http://127.0.0.1:${address.port}/__musea__/api/arts/${encodeURIComponent(art)}`;
       for (const newline of ["\n", "\r\n"]) {
         const source = initial.replaceAll("\n", newline);
+        await trace(`write-${JSON.stringify(newline)}`);
         await writeFile(component, source);
+        await trace("native-begin");
         const native = binding.analyzeSfc(source, {
           filename: component,
           cache: false,
           profile: false,
         });
+        await trace("native-end");
         assert.deepEqual(native, { emits: [], props: expected });
+        await trace("http-analysis-begin");
         const analysisResponse = await fetch(`${endpoint}/analysis`);
         assert.equal(analysisResponse.status, 200);
         const analysis = await analysisResponse.json();
+        await trace("http-analysis-end");
         assert.deepEqual(analysis, native);
+        await trace("http-palette-begin");
         const paletteResponse = await fetch(`${endpoint}/palette`);
         assert.equal(paletteResponse.status, 200);
         const palette = await paletteResponse.json();
+        await trace("http-palette-end");
         assert.deepEqual(
           palette.controls.map(({ name, required }: { name: string; required: boolean }) => ({
             name,
