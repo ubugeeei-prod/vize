@@ -1,0 +1,7 @@
+<!-- 🧭 native hover range #10449 -->
+<template>
+  🧭<button disabled>Save</button>
+  <input
+    type="text"
+  >
+</template>

@@ -265,9 +265,7 @@
     {
       "id": "lsp/fix-history/folding-nested-elements",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "folding-nested-elements",
         "files": [
@@ -290,19 +288,19 @@
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
-        "evidence": [{
-          "kind": "source-inspection",
-          "dialects": ["vue3-sfc", "html-template"],
-          "selector": "LSP manifest pinned authored sources"
-        }]
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/fix-history/folding-unclosed-element",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "folding-unclosed-element",
         "files": [
@@ -325,19 +323,19 @@
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
-        "evidence": [{
-          "kind": "source-inspection",
-          "dialects": ["vue3-sfc", "html-template"],
-          "selector": "LSP manifest pinned authored sources"
-        }]
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/fix-history/folding-script-markup",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "folding-script-markup",
         "files": [
@@ -360,19 +358,19 @@
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
-        "evidence": [{
-          "kind": "source-inspection",
-          "dialects": ["vue3-sfc", "html-template", "ts"],
-          "selector": "LSP manifest pinned authored sources"
-        }]
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
       "id": "lsp/fix-history/folding-unopened",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "folding-unopened",
         "files": [
@@ -395,11 +393,13 @@
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
-        "evidence": [{
-          "kind": "source-inspection",
-          "dialects": ["vue3-sfc", "html-template", "ts"],
-          "selector": "LSP manifest pinned authored sources"
-        }]
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
       }
     },
     {
@@ -1260,9 +1260,7 @@
     {
       "id": "lsp/regression/broken-overlay-isolation-10201",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "case": {
         "path": "broken-overlay-isolation-10201/case.json",
         "sha256": "30dc112bd507de46c73675b29ec641a4338e9720d13a66b59f4448f46f21f474"
@@ -1651,9 +1649,7 @@
     {
       "id": "lsp/regression/jsx-rewritten-import-diagnostic",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "jsx-rewritten-import-diagnostic",
         "files": [
@@ -1739,9 +1735,7 @@
     {
       "id": "lsp/regression/content-mapper-nuxt-emit-10195",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "content-mapper-nuxt-emit-10195",
         "files": [
@@ -1788,9 +1782,7 @@
     {
       "id": "lsp/regression/stylus-colors-10442",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "stylus-colors-10442",
         "files": [
@@ -1824,11 +1816,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "pug-template",
-              "html-template"
-            ],
+            "dialects": ["vue3-sfc", "pug-template", "html-template"],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -1837,9 +1825,7 @@
     {
       "id": "lsp/regression/html-void-hover-examples",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "html-void-hover-examples",
         "files": [
@@ -1869,10 +1855,46 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template"
-            ],
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/native-html-tag-range-10449",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "native-html-tag-range-10449",
+        "files": [
+          {
+            "path": "Field.vue.txt",
+            "sha256": "d72fc3dc532990de1bb2473eb3c9d1290a938926b93c40f479250f876b752c6c"
+          },
+          {
+            "path": "Field.crlf.vue.txt",
+            "sha256": "88e5c5d44d2a90db852c22b3c2fe308cd54683b6457b9617a810a3226da45ca8"
+          }
+        ]
+      },
+      "case": {
+        "path": "native-html-tag-range-10449/case.json",
+        "sha256": "09632dbb643e991a969e4e1f0c100e86027896f48b80449588b962a3be9e90a8"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
             "selector": "LSP manifest pinned authored sources"
           }
         ]

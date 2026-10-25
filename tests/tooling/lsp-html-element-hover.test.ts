@@ -271,6 +271,28 @@ await test("successful native Corsa HTML hovers include the selected documentati
         );
       }
     }
+    const rangeFixture = loadLspManifest(path.join(pack, "manifest.json")).cases.find(
+      (row) => row.id === "lsp/regression/native-html-tag-range-10449",
+    );
+    assert.ok(rangeFixture);
+    for (const file of rangeFixture.files) {
+      const filePath = path.join(workspace, file.runtimePath);
+      const documentUri = pathToFileURL(filePath).href;
+      const text = file.bytes.toString("utf8");
+      fs.writeFileSync(filePath, text);
+      await open(session, documentUri, text);
+      for (const request of rangeFixture.requests) {
+        const result = await session.request(
+          "textDocument/hover",
+          {
+            ...request.params,
+            textDocument: { uri: documentUri },
+          },
+          120_000,
+        );
+        assert.deepEqual(result, request.result, `${file.runtimePath}: pinned whole native hover`);
+      }
+    }
   } finally {
     await session?.shutdown();
     fs.rmSync(workspace, { recursive: true, force: true });

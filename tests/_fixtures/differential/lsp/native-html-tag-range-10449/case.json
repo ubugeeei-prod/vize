@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "id": "lsp/regression/native-html-tag-range-10449",
+  "provenance": {
+    "fixCommit": "5fefa7a0d1e5476c01502dd965fc051c51dd7844",
+    "witnessPath": "crates/vize_maestro/src/ide/hover/html/tag_range_tests.rs",
+    "witnessTest": "native_tag_ranges_replace_helper_coordinates_with_full_authored_utf16_names",
+    "inputOrigin": "Minimal derivative of twelve complete public v0.558.0 native responses exposing synthetic declaration coordinates",
+    "contractOrigin": "Pinned complete DOM signatures and selected documentation; physical tag-name ranges authored independently in UTF-16"
+  },
+  "files": [
+    {
+      "source": "Field.vue.txt",
+      "runtimePath": "Field.vue",
+      "sha256": "d72fc3dc532990de1bb2473eb3c9d1290a938926b93c40f479250f876b752c6c"
+    },
+    {
+      "source": "Field.crlf.vue.txt",
+      "runtimePath": "Field.crlf.vue",
+      "sha256": "88e5c5d44d2a90db852c22b3c2fe308cd54683b6457b9617a810a3226da45ca8"
+    }
+  ],
+  "entry": "Field.vue",
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "cf0216381749032dae6a7d1903a57793aa30988af0896d4dfda8027366873220"
+  },
+  "method": "textDocument/hover",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "scope": "Complete native DOM type/documentation and physical tag-name ranges; source-inspected input custody does not establish native whole-product parity"
+}
