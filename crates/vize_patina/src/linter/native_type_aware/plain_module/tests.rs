@@ -30,10 +30,11 @@ fn plain_plan_outlives_source_and_preserves_existing_findings_on_failure() {
         prepare_plain_module(&linter, &source, "owned.ts", initial)
     };
     assert_owned(&prepared);
-    assert!(
-        prepared
-            .virtual_content()
-            .is_some_and(|content| content.contains("__vize_patina_promise_"))
+    assert_eq!(
+        prepared.virtual_content(),
+        Some(
+            "export async function save() {}\nexport function submit() { save();\nfunction __vize_patina_promise_0() { return (save()); }\n }\n"
+        ),
     );
     let result = prepared.finish(
         &linter,

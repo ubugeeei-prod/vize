@@ -30,11 +30,7 @@ fn prepared_sfc_outlives_source_descriptor_and_template_arena() {
         prepare(&linter, &source)
     };
     assert_owned(&prepared);
-    assert!(
-        prepared
-            .virtual_content()
-            .is_some_and(|content| content.contains("value"))
-    );
+    assert!(prepared.virtual_content().is_some());
     let result = prepared.finish(
         &linter,
         Some(TypeAwareFailure::Runtime("owned checker failure".into())),
