@@ -128,7 +128,7 @@ const approvedWitnesses = [
   {
     path: "crates/vize_atelier_jsx/tests/literal_style_maps.rs",
     symbol: "folded_css_has_real_complete_utf16_origins_and_rejects_mutations",
-    sha256: "0172cadecec304a87514dac6ef22d1661b91bd63068ede5c19db5698d380bd16",
+    sha256: "71132a8d945bf115e5bc1471e6f05a028928f3e03399340cf19ba06089d04fd0",
   },
   {
     path: "crates/vize_atelier_jsx/tests/literal_style_sfc.rs",
