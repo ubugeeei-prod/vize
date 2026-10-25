@@ -242,10 +242,6 @@ mod tests {
                 "LongAuthoredGenericParameter extends Record<string, readonly [number, string]>, T, 日本 = 'quoted'",
             ),
             (
-                "const\r\nLongAuthoredGenericParameter extends Map<string, Set<number>>,\r\nconst T = \"quoted\"",
-                "LongAuthoredGenericParameter extends Map<string, Set<number>>, T = \"quoted\"",
-            ),
-            (
                 "const 日本 extends Record<string, '🧭'>, const T, const LongAuthoredGenericParameter = 日本",
                 "日本 extends Record<string, '🧭'>, T, LongAuthoredGenericParameter = 日本",
             ),
@@ -274,6 +270,18 @@ mod tests {
                 expected.join(", ")
             );
         }
+    }
+
+    #[test]
+    fn const_modifier_newlines_preserve_invalid_authored_input() {
+        // Both TypeScript 6 and native 7 report TS1359 on this const: a line
+        // break ends its modifier role. Do not turn it into a clean alias.
+        let raw = "const\r\nLongAuthoredGenericParameter extends Map<string, Set<number>>,\r\nconst T = \"quoted\"";
+        let plan = super::super::generic_parameters::GenericParameters::parse(raw);
+        assert_ne!(plan.diagnostics, Vec::new());
+        assert_eq!(plan.declaration, raw);
+        assert_eq!(plan.alias_declaration, raw);
+        assert_eq!(plan.alias_authored, raw);
     }
 
     #[test]

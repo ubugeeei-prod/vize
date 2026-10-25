@@ -388,6 +388,7 @@ jobs:
           name: content-mapper-owner-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             target/vize-tests/content-mapper-directive-owners
+            target/vize-tests/content-mapper-quoted-generic-parameters
             ${{ runner.temp }}/content-mapper-native-host.json
             ${{ runner.temp }}/content-mapper-editor-stress
           if-no-files-found: error

@@ -152,7 +152,12 @@ fn source_generation_prepares_one_plan_and_refuses_invalid_authored_syntax() {
         assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
         assert!(result.virtual_ts.is_some());
         assert_eq!(super::PREPARATIONS.with(std::cell::Cell::get) - before, 1);
-        for invalid in ["T extends", "T>() {} function other<U"] {
+        for invalid in [
+            "T extends",
+            "T>() {} function other<U",
+            "const\nT",
+            "const\r\nT",
+        ] {
             let broken = valid.replace("const T extends 'a,b'", invalid);
             let before = super::PREPARATIONS.with(std::cell::Cell::get);
             let result = crate::sfc_typecheck::type_check_sfc(&broken, &options);
