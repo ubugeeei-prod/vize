@@ -39,7 +39,8 @@ pub(crate) fn check_pack(
     assert_eq!(
         pack.source_revision,
         match name {
-            "typed-import-meta"
+            "contextual-prop-anchors-10661"
+            | "typed-import-meta"
             | "slot-outlet-key"
             | "options-api-any-instance"
             | "authored-unused-symbols"
@@ -97,7 +98,8 @@ pub(crate) fn check_pack(
             | "jsx-prop-token-ranges-10494"
             | "unicode-prop-bindings-10573"
             | "experimental-router-import-10520"
-            | "literal-reference-paths-10551" => regression,
+            | "literal-reference-paths-10551"
+            | "narrowed-slot-host-guard-10660" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
             }
