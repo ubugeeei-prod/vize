@@ -2,7 +2,7 @@
 //!
 //! Handles `IfNode` and `ForNode` from the template AST.
 
-use vize_carton::Box;
+use vize_carton::{Box, Vec};
 
 use crate::ir::{BlockIRNode, ForIRNode, IfIRNode, InsertionAnchor, NegativeBranch, OperationNode};
 use vize_atelier_core::{
@@ -287,7 +287,21 @@ fn clone_simple_expr<'a>(
 ) -> Box<'a, SimpleExpressionNode<'a>> {
     match expr {
         ExpressionNode::Simple(simple) => {
-            let node = SimpleExpressionNode::from_node(simple);
+            let mut node = SimpleExpressionNode::from_node(simple);
+            if let Some(names) = &simple.identifiers
+                && simple.js_ast.is_some_and(|ast| {
+                    ast.raw == simple.content
+                        && ast
+                            .as_slot_parameters()
+                            .is_some_and(|parameters| parameters.is_ok())
+                })
+            {
+                let mut retained = Vec::new_in(&ctx.allocator);
+                for name in names {
+                    retained.push(*name);
+                }
+                node.identifiers = Some(retained);
+            }
             Box::new_in(node, &ctx.allocator)
         }
         ExpressionNode::Compound(compound) => {

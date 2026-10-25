@@ -120,6 +120,7 @@ fn select_l2_lane_with_experimental_options<'a>(
     root_origin: Option<Span>,
 ) -> SsrL4Selection {
     let texts = SideTable::new();
+    let scopes = SideTable::new();
     let for_wrappers = SideTable::new();
     let wrappers = SideTable::new();
     let if_facts = SideTable::new();
@@ -128,6 +129,7 @@ fn select_l2_lane_with_experimental_options<'a>(
         root,
         root_origin,
         facts: PlanFacts {
+            scopes: &scopes,
             texts: &texts,
             for_wrappers: &for_wrappers,
             wrappers: &wrappers,

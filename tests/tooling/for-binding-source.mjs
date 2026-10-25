@@ -4,6 +4,7 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { createRequire, registerHooks } from "node:module";
 import { pathToFileURL } from "node:url";
+import { inspect } from "node:util";
 import { vueVaporBrowserRuntime, vueVaporVersion } from "./support/vue-vapor-release.mjs";
 
 const require = createRequire(import.meta.url);
@@ -73,6 +74,14 @@ process.on("exit", () =>
 );
 
 const cases = [
+  {
+    id: "parameter-default",
+    alias: String.raw`\u005frow = 'A'`,
+    value: "_row",
+    items: [undefined, "B"],
+    addition: "C",
+    expected: ["A", "B", "C"],
+  },
   {
     id: "ordinary",
     alias: "row",
@@ -195,6 +204,15 @@ for (const fixture of cases)
       const file = path.join(directory, `${fixture.id}-${newline}-${backend}.mjs`);
       fs.writeFileSync(file, result.code);
       const packet = {
+        runtimeInputText: inspect(
+          {
+            items: fixture.items,
+            fallback: "A",
+            addition: fixture.addition,
+            expected: fixture.expected,
+          },
+          { depth: null, colors: false, sorted: false, compact: false },
+        ),
         id: fixture.id,
         newline,
         backend,

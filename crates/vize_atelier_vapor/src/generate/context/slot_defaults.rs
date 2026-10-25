@@ -48,7 +48,18 @@ impl GenerateContext<'_> {
         vize_carton::profiler::global_profiler()
             .record_counter("vapor.for_binding.retained_reads", 1);
         for parameter in &parameters.items {
-            self.resolve_binding_reads(&parameter.pattern, node.content, root, |ctx, binding| {
+            let read = if let Some(initializer) = &parameter.initializer {
+                let span = initializer.span();
+                let Some(default) = node.content.get(span.start as usize..span.end as usize) else {
+                    continue;
+                };
+                let default = self.resolve_expression(default);
+                self.use_helper("getDefaultValue");
+                cstr!("_getDefaultValue({root}, () => ({default}))")
+            } else {
+                String::from(root)
+            };
+            self.resolve_binding_reads(&parameter.pattern, node.content, &read, |ctx, binding| {
                 if let Some(scope) = ctx.for_scopes.last_mut() {
                     scope.read_overrides.push(binding);
                 }

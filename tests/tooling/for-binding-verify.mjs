@@ -6,8 +6,8 @@ const base = read("base-native"),
   head = read("head-native");
 assert.equal(base.sourceSha, process.env.BASE_SHA);
 assert.equal(head.sourceSha, process.env.HEAD_SHA);
-assert.equal(base.records.length, 72);
-assert.equal(head.records.length, 72);
+assert.equal(base.records.length, 78);
+assert.equal(head.records.length, 78);
 assert.notEqual(base.native.sha256, head.native.sha256);
 assert.notEqual(base.native.token, head.native.token);
 const targets = fs
@@ -54,6 +54,7 @@ for (let index = 0; index < head.records.length; index++) {
   const before = base.records[index],
     after = head.records[index];
   assert.equal(before.source, after.source);
+  assert.equal(before.runtimeInputText, after.runtimeInputText);
   assert.deepEqual(before.options, after.options);
   assert.equal(before.id, after.id);
   assert.equal(before.backend, after.backend);
@@ -87,20 +88,27 @@ assert.ok(
 );
 const beforeProfile = read("base-profile"),
   afterProfile = read("head-profile");
-assert.equal(beforeProfile.rows.length, 15);
-assert.equal(afterProfile.rows.length, 15);
+assert.equal(beforeProfile.rows.length, 18);
+assert.equal(afterProfile.rows.length, 18);
 for (const row of afterProfile.rows) {
   assert.equal(row.calls, 1);
   assert.equal(row.success, true);
   if (row.case.startsWith("ordinary"))
     assert.equal(
-      row.counters.filter((counter) => counter.name.startsWith("atelier.for_binding.")).length,
+      row.counters.filter(
+        (counter) =>
+          counter.name.startsWith("atelier.for_binding.") ||
+          counter.name === "davinci.for_binding.parses",
+      ).length,
       0,
     );
   else
     assert.ok(
       row.counters.some(
-        (counter) => counter.name === "atelier.for_binding.parses" && counter.total > 0,
+        (counter) =>
+          (counter.name === "atelier.for_binding.parses" ||
+            counter.name === "davinci.for_binding.parses") &&
+          counter.total > 0,
       ),
     );
 }
@@ -110,7 +118,7 @@ fs.writeFileSync(
     {
       sourceBefore: base.sourceSha,
       sourceHead: head.sourceSha,
-      cases: 72,
+      cases: 78,
       unchanged,
       changed,
       nativeBefore: base.native,

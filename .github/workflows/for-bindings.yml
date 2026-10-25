@@ -4,6 +4,11 @@ on:
   workflow_dispatch: {}
   pull_request:
     paths:
+      - "davinci/vize_l1_to_l2/src/lower/forop*"
+      - "davinci/vize_l1_to_l2/src/lower/forop/**"
+      - "davinci/vize_l1_to_l2/src/emit/**"
+      - "crates/vize_atelier_ssr/src/l4/**"
+      - "crates/vize_atelier_vapor/src/lower/control.rs"
       - "crates/vize_atelier_core/src/steps/v_for*"
       - "crates/vize_atelier_core/src/steps/v_for/**"
       - "crates/vize_atelier_core/src/lane/context.rs"
@@ -92,7 +97,8 @@ jobs:
             SOURCE_SHA="$sha" "$capture/$epoch-observer" > "$capture/$epoch-profile.json" 2> "$capture/$epoch-profile.stderr"
             SOURCE_SHA="$sha" node tests/tooling/for-binding-source.mjs "$epoch" "$capture/$epoch.node" "$capture" > "$capture/$epoch-native.stdout" 2> "$capture/$epoch-native.stderr"
           done
-          CARGO_TARGET_DIR="$RUNNER_TEMP/for-bindings-targets/$HEAD_SHA" cargo test --locked -p vize_atelier_core --lib steps::v_for --profile ci -- --nocapture > "$capture/unit.stdout" 2> "$capture/unit.stderr"
+          CARGO_TARGET_DIR="$RUNNER_TEMP/for-bindings-targets/$HEAD_SHA" cargo test --locked -p vize_atelier_core --lib v_for --profile ci -- --nocapture > "$capture/unit.stdout" 2> "$capture/unit.stderr"
+          CARGO_TARGET_DIR="$RUNNER_TEMP/for-bindings-targets/$HEAD_SHA" cargo test --locked -p vize_l1_to_l2 --lib lower::forop --profile ci -- --nocapture > "$capture/native-for-unit.stdout" 2> "$capture/native-for-unit.stderr"
           sha256sum "$capture/"*.node "$capture/"*-observer > "$capture/executables.sha256"
       - name: Verify full unchanged packets, actual collision repair and source custody
         shell: bash

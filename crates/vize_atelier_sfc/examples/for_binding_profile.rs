@@ -14,6 +14,10 @@ fn main() {
         ),
         ("escaped", r"<p v-for='\u005frow of items'>{{ _row }}</p>"),
         (
+            "escaped-parameter-default",
+            r#"<p v-for="\u005frow = 'A' of items">{{ _row }}</p>"#,
+        ),
+        (
             "escaped-pattern",
             r"<p v-for='{ label: \u005frow = fallback } of items'>{{ _row }}</p>",
         ),
