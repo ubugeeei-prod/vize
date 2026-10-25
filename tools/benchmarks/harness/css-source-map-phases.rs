@@ -4,7 +4,17 @@ use vize_atelier_sfc::{CssCompileOptions, compile_css};
 use vize_carton::pool;
 use vize_croquis::sfc::__internal::extract_and_transform_v_bind_with_scope;
 
+fn persist(output: &str, vectors: &[serde_json::Value], status: &str) {
+    std::fs::write(output, serde_json::json!({
+        "schema":"vize.css.source-map.source-phases", "version":1, "status":status, "vectors":vectors,
+        "note":"Processed-input compilation includes the existing public guard and no-binding prepass; these timings are not disjoint additive internal phases or instruction qualification."
+    }).to_string()).unwrap();
+}
+
 fn main() {
+    let output = std::env::args().nth(2).expect("owned phase output");
+    let mut vectors = Vec::new();
+    persist(&output, &vectors, "attempt");
     let inputs = std::env::args().nth(1).expect("pinned phase inputs");
     let inputs: serde_json::Value =
         serde_json::from_slice(&std::fs::read(inputs).unwrap()).unwrap();
@@ -13,7 +23,6 @@ fn main() {
         filename: Some(filename.into()),
         ..Default::default()
     };
-    let mut vectors = Vec::new();
     for vector in inputs.get("vectors").unwrap().as_array().unwrap() {
         let source = vector.get("source").unwrap().as_str().unwrap();
         let batch = vector.get("batch").unwrap().as_u64().unwrap();
@@ -24,6 +33,15 @@ fn main() {
         };
         let full = compile_css(source, &options);
         let backend = compile_css(&processed, &options);
+        vectors.push(serde_json::json!({
+            "id":vector.get("id").unwrap(), "source":source,
+            "options":{"filename":filename,"minify":false,"sourceMap":false},
+            "logicalWork":{"authoredBytes":source.len(),"processedBytes":processed.len(),"variables":vars.len()},
+            "outputs":{"scanner":{"code":processed,"variables":vars.iter().map(|v|v.as_str()).collect::<Vec<_>>()},"processedInputCompile":backend,"fullCompile":full},
+            "samples":[],
+        }));
+        // Retain every complete output before the first agreement assertion.
+        persist(&output, &vectors, "outputs");
         assert_eq!(full.code, backend.code);
         assert_eq!(full.errors, backend.errors);
         assert_eq!(full.warnings, backend.warnings);
@@ -68,19 +86,13 @@ fn main() {
                 }));
             }
         }
-        vectors.push(serde_json::json!({
-            "id":vector.get("id").unwrap(), "source":source,
-            "options":{"filename":filename,"minify":false,"sourceMap":false},
-            "logicalWork":{"authoredBytes":source.len(),"processedBytes":processed.len(),"variables":vars.len()},
-            "outputs":{"scanner":{"code":processed,"variables":vars.iter().map(|v|v.as_str()).collect::<Vec<_>>()},"processedInputCompile":backend,"fullCompile":full},
-            "samples":samples,
-        }));
+        vectors
+            .last_mut()
+            .unwrap()
+            .as_object_mut()
+            .unwrap()
+            .insert("samples".into(), serde_json::Value::Array(samples));
+        persist(&output, &vectors, "vectors");
     }
-    println!(
-        "{}",
-        serde_json::json!({
-            "schema":"vize.css.source-map.source-phases", "version":1, "vectors":vectors,
-            "note":"Processed-input compilation includes the existing public guard and no-binding prepass; these timings are not disjoint additive internal phases or instruction qualification."
-        })
-    );
+    persist(&output, &vectors, "complete");
 }

@@ -6,6 +6,7 @@ import { test } from "node:test";
 import {
   selectPhaseLibraries,
   selectPhaseDirectory,
+  phaseDependencyPlan,
   phaseOutputAbsent,
 } from "../../tools/benchmarks/scripts/css-source-map-phases.mjs";
 import { profileVectors } from "../../tools/benchmarks/scripts/css-source-map-profile.mjs";
@@ -31,6 +32,9 @@ await test("phase outputs must start absent and reused binaries cannot acquire f
     phaseOutputAbsent(file);
     fs.writeFileSync(file, "retained output");
     assert.throws(() => phaseOutputAbsent(file));
+    const dangling = path.join(directory, "dangling");
+    fs.symlinkSync(path.join(directory, "missing"), dangling);
+    assert.throws(() => phaseOutputAbsent(dangling));
   } finally {
     fs.rmSync(directory, { recursive: true, force: true });
   }
@@ -79,5 +83,26 @@ await test("phase discovery distinguishes actual target layouts from host depend
     selectPhaseDirectory([
       { directory: "/owned/ci-opt/deps", entries: ["libserde_json-host.rlib"] },
     ]),
+  );
+});
+
+await test("driver dependency plan keeps actual target libraries and same-role host proc macros together", () => {
+  const entries = ["vize_atelier_sfc", "vize_croquis", "vize_carton", "serde_json"].map(
+    (name) => `lib${name}-1234.rlib`,
+  );
+  const host = { directory: "/owned/ci-opt/deps", entries: ["libserde_derive-host.so"] },
+    native = { directory: "/owned/x86_64-unknown-linux-gnu/ci-opt/deps", entries };
+  assert.deepEqual(phaseDependencyPlan("/owned", [host, native], "x86_64-unknown-linux-gnu"), {
+    directory: native.directory,
+    libraries: selectPhaseLibraries(entries),
+    triple: "x86_64-unknown-linux-gnu",
+    searchDirectories: [native.directory, host.directory],
+  });
+  assert.throws(() => phaseDependencyPlan("/owned", [native], "x86_64-unknown-linux-gnu"));
+  assert.throws(() => phaseDependencyPlan("/foreign", [host, native], "x86_64-unknown-linux-gnu"));
+  assert.deepEqual(
+    phaseDependencyPlan("/owned", [{ ...host, entries }], "x86_64-unknown-linux-gnu")
+      .searchDirectories,
+    [host.directory],
   );
 });

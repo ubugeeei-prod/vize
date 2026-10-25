@@ -289,7 +289,14 @@ function run(base, head, destination) {
     for (const image of receipt.builds)
       phaseDrivers.set(
         image.side,
-        buildPhaseDriver({ image, root: head, destination, inputs, receipt }),
+        buildPhaseDriver({
+          image,
+          root: head,
+          producerRoot: image.side === "base" ? base : head,
+          destination,
+          inputs,
+          receipt,
+        }),
       );
   }
   const packets = [];
