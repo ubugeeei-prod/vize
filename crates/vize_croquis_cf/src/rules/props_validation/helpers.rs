@@ -126,11 +126,7 @@ pub(super) fn actual_literal_type(prop: &PassedPropInfo) -> Option<CompactString
     }
 
     let value = prop.value.as_deref()?.trim();
-    if is_string_literal(value) {
-        Some(CompactString::new(value))
-    } else if is_boolean_literal(value) {
-        Some(CompactString::new(value))
-    } else if is_numeric_literal(value) {
+    if is_string_literal(value) || is_boolean_literal(value) || is_numeric_literal(value) {
         Some(CompactString::new(value))
     } else {
         None
