@@ -37,7 +37,7 @@ jobs:
         with: { toolchain: "1.99.1" }
       - name: Install exact source lifecycle dependencies
         working-directory: source
-        run: vp install --filter './npm/native...' --filter './npm/builder/vite...' --filter './npm/builder/vite-musea...' --frozen-lockfile --prefer-offline
+        run: vp install --filter './npm/native...' --filter './npm/cli...' --filter './npm/builder/vite...' --filter './npm/builder/vite-musea...' --frozen-lockfile --prefer-offline
       # No compiled-target cache/restore action belongs in this diagnostic.
       - name: Compare one public Linux and one isolated source lifecycle
         run: node driver/tools/benchmarks/scripts/sfc-optional-lifecycle.mjs "$GITHUB_WORKSPACE/source" "$GITHUB_WORKSPACE/artifacts/sfc-optional-lifecycle"
@@ -49,3 +49,4 @@ jobs:
           path: artifacts/sfc-optional-lifecycle/
           if-no-files-found: error
           retention-days: 30
+          include-hidden-files: true

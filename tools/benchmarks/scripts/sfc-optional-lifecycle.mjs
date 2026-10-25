@@ -50,6 +50,8 @@ function run(args, cwd, env, log) {
     return {
       command: args,
       cwd,
+      log,
+      stderrLog: log + ".stderr",
       status: child.status,
       signal: child.signal,
       error: child.error?.message,
@@ -60,6 +62,11 @@ function run(args, cwd, env, log) {
   }
 }
 function success(value) {
+  if (value.error || value.signal || value.status !== 0) {
+    for (const log of [value.log, value.stderrLog]) {
+      if (fs.existsSync(log)) console.error(fs.readFileSync(log, "utf8").slice(-32768));
+    }
+  }
   assert.equal(value.error, undefined);
   assert.equal(value.signal, null, JSON.stringify(value));
   assert.equal(value.status, 0, JSON.stringify(value));
@@ -82,6 +89,22 @@ async function worker(identityFile, output) {
   fs.writeFileSync(component, componentSource);
   fs.writeFileSync(art, artSource);
   fs.writeFileSync(path.join(root, "index.html"), "<!doctype html><html><body></body></html>");
+  const { default: ts } = await import(pathToFileURL(identity.typescriptEntry).href);
+  assert.equal(ts.version, "6.0.3");
+  const truth = ts.createSourceFile(
+    "truth.ts",
+    "type Props = { " + members + " }",
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS,
+  );
+  assert.deepEqual(truth.parseDiagnostics, []);
+  const alias = truth.statements[0];
+  assert.ok(ts.isTypeAliasDeclaration(alias) && ts.isTypeLiteralNode(alias.type));
+  assert.deepEqual(
+    alias.type.members.map((member) => member.questionToken !== undefined),
+    names.map((name) => name !== "required"),
+  );
   const require = createRequire(identity.nativeEntry);
   const binding = require(identity.nativeEntry);
   const images = () =>
@@ -170,6 +193,23 @@ async function worker(identityFile, output) {
         expected.props.map(({ name, required }) => ({ name, required })),
       );
       assert.deepEqual(JSON.parse(packet.palette.json).controls, packet.palette.controls);
+      const exported = ts.createSourceFile(
+        "palette.ts",
+        packet.palette.typescript,
+        ts.ScriptTarget.Latest,
+        true,
+        ts.ScriptKind.TS,
+      );
+      assert.deepEqual(exported.parseDiagnostics, []);
+      const declaration = exported.statements[0];
+      assert.ok(ts.isInterfaceDeclaration(declaration));
+      assert.deepEqual(
+        declaration.members.map((member) => ({
+          name: ts.isStringLiteral(member.name) ? member.name.text : member.name.getText(exported),
+          required: member.questionToken === undefined,
+        })),
+        expected.props.map(({ name, required }) => ({ name, required })),
+      );
       retain();
       trace("http-palette-end");
     }
@@ -237,6 +277,7 @@ async function install(project, output) {
         ...packages.map((name) => name + "@0.566.0"),
         "vite@8.3.5",
         "vue@3.5.35",
+        "typescript@6.0.3",
       ],
       project,
       process.env,
@@ -286,6 +327,7 @@ function identity(side, root, source, binary, token) {
     token,
     viteEntry: require.resolve("vite"),
     vueEntry: require.resolve("vue/dist/vue.runtime.esm-bundler.js"),
+    typescriptEntry: require.resolve("typescript"),
     pluginEntry:
       side === "source"
         ? path.join(source, "npm/builder/vite/src/index.ts")
@@ -419,7 +461,7 @@ async function campaign(source, output) {
         ["vp", "run", "--filter", name, "build"],
         source,
         process.env,
-        path.join(output, name.replaceAll("/", "-") + "-build.log"),
+        path.join(output, name.replaceAll(/[^a-z0-9]/gi, "-") + "-build.log"),
       ),
     );
   }
