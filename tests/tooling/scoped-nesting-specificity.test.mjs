@@ -26,7 +26,7 @@ const executions = [];
 if (process.env.VIZE_SCOPED_NESTING_REQUIRE_SOURCE === "1")
   assert.ok(captures, "current source capture is required by the scoped CSS lane");
 
-test(
+await test(
   "selector-list nesting preserves complete scoped CSS, cascade and Chromium pixels",
   { skip: !captures && !referenceOnly },
   async () => {
@@ -173,11 +173,13 @@ test(
           output,
           JSON.stringify(
             {
-              source: process.env.GITHUB_SHA ?? null,
+              source: process.env.HEAD_SHA ?? null,
+              eventSource: process.env.GITHUB_SHA ?? null,
               browser: browser.version(),
               reference: pack.reference,
               before: pack.before,
               currentSource: !!captures,
+              baselineRegressions: regressions,
               executions,
             },
             null,
