@@ -41,7 +41,8 @@ pub(super) enum Command {
         Position,
         oneshot::Sender<Result<Vec<Location>, NavigationRefusal>>,
     ),
-    #[cfg(all(test, feature = "experimental-source-navigation"))]
+    #[cfg(test)]
+    #[cfg(feature = "experimental-source-navigation")]
     SelectedInspect(
         Position,
         oneshot::Sender<Result<selected::Inspection, NavigationRefusal>>,
@@ -63,7 +64,8 @@ pub(super) enum Command {
     ),
     #[cfg(test)]
     Pause(std::sync::mpsc::Sender<()>, Receiver<()>),
-    #[cfg(all(test, feature = "experimental-source-navigation"))]
+    #[cfg(test)]
+    #[cfg(feature = "experimental-source-navigation")]
     Panic,
 }
 
@@ -95,7 +97,8 @@ pub(super) struct Control {
     pub(super) parses: AtomicUsize,
     #[cfg(test)]
     pub(super) walks: AtomicUsize,
-    #[cfg(all(test, feature = "experimental-source-navigation"))]
+    #[cfg(test)]
+    #[cfg(feature = "experimental-source-navigation")]
     pub(super) sfc_productions: AtomicUsize,
     #[cfg(test)]
     pub(super) queries: AtomicUsize,
@@ -163,7 +166,8 @@ impl NavigationWorker {
             parses: AtomicUsize::new(0),
             #[cfg(test)]
             walks: AtomicUsize::new(0),
-            #[cfg(all(test, feature = "experimental-source-navigation"))]
+            #[cfg(test)]
+            #[cfg(feature = "experimental-source-navigation")]
             sfc_productions: AtomicUsize::new(0),
             #[cfg(test)]
             queries: AtomicUsize::new(0),
@@ -270,7 +274,8 @@ impl NavigationWorker {
             .map_err(|_| NavigationRefusal::WorkerUnavailable)?
     }
 
-    #[cfg(all(test, feature = "experimental-source-navigation"))]
+    #[cfg(test)]
+    #[cfg(feature = "experimental-source-navigation")]
     pub(super) async fn drain_barrier(
         &self,
         position: Position,
@@ -317,12 +322,14 @@ impl NavigationWorker {
         self.control.walks.load(Ordering::Acquire)
     }
 
-    #[cfg(all(test, feature = "experimental-source-navigation"))]
+    #[cfg(test)]
+    #[cfg(feature = "experimental-source-navigation")]
     pub(super) fn sfc_productions(&self) -> usize {
         self.control.sfc_productions.load(Ordering::Acquire)
     }
 
-    #[cfg(all(test, feature = "experimental-source-navigation"))]
+    #[cfg(test)]
+    #[cfg(feature = "experimental-source-navigation")]
     pub(super) fn panic_worker(&self) {
         self.enqueue(Command::Panic).unwrap();
     }

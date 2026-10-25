@@ -34,7 +34,8 @@ impl NativeNavigationProject<'_> {
         snapshot: Arc<SourceSnapshot>,
         family: QueryFamily,
     ) -> Result<Arc<NavigationWorker>, NavigationRefusal> {
-        #[cfg(all(test, feature = "experimental-source-navigation"))]
+        #[cfg(test)]
+        #[cfg(feature = "experimental-source-navigation")]
         if matches!(family, QueryFamily::Names) {
             let ticket = self.source.capture_names_parser()?;
             return self.names_worker(snapshot, &ticket);
@@ -42,7 +43,8 @@ impl NativeNavigationProject<'_> {
         let cache = match family {
             QueryFamily::Program => &self.workers,
             QueryFamily::Selected => &self.selected_workers,
-            #[cfg(all(test, feature = "experimental-source-navigation"))]
+            #[cfg(test)]
+            #[cfg(feature = "experimental-source-navigation")]
             QueryFamily::Names => &self.names_workers,
         };
         loop {
@@ -58,7 +60,8 @@ impl NativeNavigationProject<'_> {
                 (QueryFamily::Selected, Profile::Vue(configuration)) => {
                     Profile::SelectedVue(configuration)
                 }
-                #[cfg(all(test, feature = "experimental-source-navigation"))]
+                #[cfg(test)]
+                #[cfg(feature = "experimental-source-navigation")]
                 (QueryFamily::Names, Profile::Vue(configuration)) => {
                     Profile::TemplateNamesVue(configuration)
                 }

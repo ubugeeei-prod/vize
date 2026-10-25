@@ -20,7 +20,8 @@ pub(in crate::source_project) mod profile;
 mod retained;
 #[cfg(feature = "experimental-source-navigation")]
 mod selected;
-#[cfg(all(test, feature = "experimental-source-navigation"))]
+#[cfg(test)]
+#[cfg(feature = "experimental-source-navigation")]
 mod tests;
 mod worker;
 

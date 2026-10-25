@@ -28,7 +28,8 @@ pub(in crate::source_project::navigation) fn refused(
                     let _ = reply.send(Err(refusal.clone()));
                 }
             }
-            #[cfg(all(test, feature = "experimental-source-navigation"))]
+            #[cfg(test)]
+            #[cfg(feature = "experimental-source-navigation")]
             Command::SelectedInspect(_, reply) => {
                 let _ = reply.send(Err(refusal.clone()));
             }
@@ -52,7 +53,8 @@ pub(in crate::source_project::navigation) fn refused(
                 let _ = entered.send(());
                 let _ = resumed.recv();
             }
-            #[cfg(all(test, feature = "experimental-source-navigation"))]
+            #[cfg(test)]
+            #[cfg(feature = "experimental-source-navigation")]
             Command::Panic => panic!("actual native worker unwind"),
         }
     }

@@ -47,6 +47,7 @@ impl VueConfiguration {
 pub(super) enum QueryFamily {
     Program,
     Selected,
-    #[cfg(all(test, feature = "experimental-source-navigation"))]
+    #[cfg(test)]
+    #[cfg(feature = "experimental-source-navigation")]
     Names,
 }
