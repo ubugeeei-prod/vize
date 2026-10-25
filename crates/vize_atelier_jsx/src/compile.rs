@@ -153,6 +153,11 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
         config.compat,
         config.default_mode,
         BabelLoweringOptions {
+            literal_styles: if !config.ssr && !config.vapor.ssr {
+                crate::lower::LiteralStyleTarget::SelectedVapor
+            } else {
+                crate::lower::LiteralStyleTarget::Disabled
+            },
             vdom_compat: !config.ssr,
             transform_on_helper: transform_on_helper.as_deref(),
             object_slots_helper: object_slot_helpers
