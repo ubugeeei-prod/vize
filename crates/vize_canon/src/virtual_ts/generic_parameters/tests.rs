@@ -147,11 +147,11 @@ fn source_generation_prepares_one_plan_and_refuses_invalid_authored_syntax() {
         let valid = "<!-- 日本 🧭 -->\n<script setup lang=\"ts\" generic=\"const T extends 'a,b'\">\nconst props = defineProps<{ value: T }>()\ndefineEmits<{ change: [value: T] }>()\ndefineSlots<{ default: (value: T) => unknown }>()\n</script>\n<template>{{ props.value }}</template>".replace('\n', newline);
         let options =
             crate::sfc_typecheck::SfcTypeCheckOptions::new("src/Comma.vue").with_virtual_ts();
-        let before = super::PREPARATIONS.with(std::cell::Cell::get);
+        let before = super::preparation_count(false);
         let result = crate::sfc_typecheck::type_check_sfc(&valid, &options);
         assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
         assert!(result.virtual_ts.is_some());
-        assert_eq!(super::PREPARATIONS.with(std::cell::Cell::get) - before, 1);
+        assert_eq!(super::preparation_count(false) - before, 1);
         for invalid in [
             "T extends",
             "T>() {} function other<U",
@@ -159,11 +159,11 @@ fn source_generation_prepares_one_plan_and_refuses_invalid_authored_syntax() {
             "const\r\nT",
         ] {
             let broken = valid.replace("const T extends 'a,b'", invalid);
-            let before = super::PREPARATIONS.with(std::cell::Cell::get);
+            let before = super::preparation_count(false);
             let result = crate::sfc_typecheck::type_check_sfc(&broken, &options);
             assert!(!result.diagnostics.is_empty(), "{invalid}");
             assert!(result.virtual_ts.is_none(), "{invalid}");
-            assert_eq!(super::PREPARATIONS.with(std::cell::Cell::get) - before, 1);
+            assert_eq!(super::preparation_count(false) - before, 1);
             let start = broken.find(invalid).unwrap() as u32;
             for diagnostic in &result.diagnostics {
                 assert_eq!(diagnostic.code.as_deref(), Some("script-parse-error"));
@@ -185,7 +185,7 @@ fn all_mapper_options_reuse_one_prepared_plan() {
             .with_preserve_unused_diagnostics(bits & 2 != 0)
             .with_check_javascript(bits & 4 != 0)
             .with_external_component_attrs_module(bits & 8 != 0);
-        let before = super::PREPARATIONS.with(std::cell::Cell::get);
+        let before = super::preparation_count(false);
         let result = crate::generate_vue_content_mapper_transform_with_options(
             std::path::Path::new("src/Comma.vue"),
             source,
@@ -194,6 +194,6 @@ fn all_mapper_options_reuse_one_prepared_plan() {
         .unwrap();
         assert!(result.diagnostics.is_empty());
         assert!(!result.text.is_empty());
-        assert_eq!(super::PREPARATIONS.with(std::cell::Cell::get) - before, 1);
+        assert_eq!(super::preparation_count(false) - before, 1);
     }
 }

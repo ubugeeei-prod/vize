@@ -17,8 +17,16 @@ use crate::script_parse::ScriptParseDiagnostic;
 pub(crate) type GenericRow = (Range<usize>, Range<usize>);
 
 #[cfg(test)]
-thread_local! {
-    static PREPARATIONS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+fn preparation_count(increment: bool) -> usize {
+    thread_local! {
+        static COUNT: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+    }
+    COUNT.with(|count| {
+        if increment {
+            count.set(count.get() + 1);
+        }
+        count.get()
+    })
 }
 
 const PREFIX: &str = "function __vize_generic<";
@@ -59,7 +67,7 @@ pub(crate) struct GenericParameters {
 impl GenericParameters {
     pub(crate) fn parse(raw: &str) -> Self {
         #[cfg(test)]
-        PREPARATIONS.with(|count| count.set(count.get() + 1));
+        preparation_count(true);
         profile!(
             "canon.virtual_ts.parse_generic_parameters",
             Self::prepare(raw)

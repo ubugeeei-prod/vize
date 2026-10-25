@@ -72,7 +72,10 @@ fn malformed_generic_recovery_preserves_whole_imports_and_independent_body_mappi
                     .map(|(at, _)| at)
                     .collect();
                 assert_eq!(signatures.len(), 1);
-                assert_eq!(result.text.match_indices(RAW).count(), 1);
+                assert_eq!(
+                    result.text.match_indices(cstr!("<{RAW}>").as_str()).count(),
+                    1
+                );
                 let signature = *signatures.first().unwrap();
                 let raw_generated = signature + "function __setup<".len();
                 let raw_authored =
