@@ -126,6 +126,7 @@ fn retained_typescript_syntax_has_only_the_native_diagnostic_owner() {
             .all(|d| d.block_type == Some(SfcBlockType::Template))
     );
     let batch_template = GeneratedVueFile {
+        generic_copies: None,
         diagnostics: batch
             .diagnostics
             .iter()

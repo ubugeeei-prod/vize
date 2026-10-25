@@ -13,13 +13,13 @@ pub(crate) use inference::has_inferred_slots;
 
 use vize_carton::{CompactString, FxHashMap, FxHashSet, String, cstr};
 use vize_croquis::{
-    Croquis, ScopeData, ScopeKind,
+    Croquis,
     croquis::{PassedProp, SpreadProp},
 };
 use vize_relief::RootNode;
 
 use crate::virtual_ts::generator::generics::references_any_identifier;
-use crate::virtual_ts::props::extract_generic_names;
+use crate::virtual_ts::generic_parameters::GenericParameters;
 use std::ops::Range;
 
 pub(super) use emit::generate_scope_slot_outlet_checks;
@@ -49,7 +49,11 @@ pub(super) struct SlotOutletChecks {
 }
 
 impl SlotOutletChecks {
-    pub(super) fn collect(summary: &Croquis, root: Option<&RootNode<'_>>) -> Self {
+    pub(super) fn collect(
+        summary: &Croquis,
+        root: Option<&RootNode<'_>>,
+        generic_parameters: Option<&GenericParameters>,
+    ) -> Self {
         let by_scope = collect::collect_slot_outlets_by_scope(summary, root);
         let infer = summary.macros.define_slots().is_none();
         let mut static_name_counts = FxHashMap::default();
@@ -69,7 +73,7 @@ impl SlotOutletChecks {
             || (dynamic_names && outlet_count > 1);
         Self {
             by_scope,
-            slots_type: slots_type_ref(summary),
+            slots_type: slots_type_ref(summary, generic_parameters),
             infer,
             merge_payloads,
         }
@@ -112,17 +116,17 @@ impl SlotOutletChecks {
 /// `defineSlots` type references its type parameters exports `Slots` with those
 /// parameters re-declared, so the bare alias would collapse to their defaults
 /// (#3065); instantiate it with the SFC's own parameters instead.
-fn slots_type_ref(summary: &Croquis) -> String {
+fn slots_type_ref(summary: &Croquis, generic_parameters: Option<&GenericParameters>) -> String {
     let Some(define_slots) = summary.macros.define_slots() else {
         return String::from("__VizeSlots");
     };
     if super::super::script_facts::contains_binding(summary, "slots") {
         return String::from("typeof slots");
     }
-    let Some(generic_decl) = sfc_generic_param(summary) else {
+    let Some(generic) = generic_parameters else {
         return String::from("__VizeSlots");
     };
-    let generic_names = extract_generic_names(generic_decl);
+    let generic_names = &generic.names;
     let names: Vec<String> = generic_names
         .split(',')
         .map(str::trim)
@@ -135,16 +139,4 @@ fn slots_type_ref(summary: &Croquis) -> String {
     } else {
         String::from("__VizeSlots")
     }
-}
-
-/// The SFC's `<script setup generic="…">` parameter list.
-fn sfc_generic_param(summary: &Croquis) -> Option<&str> {
-    summary
-        .scopes
-        .iter()
-        .find(|scope| matches!(scope.kind, ScopeKind::ScriptSetup))
-        .and_then(|scope| match scope.data() {
-            ScopeData::ScriptSetup(data) => data.generic.as_ref().map(|generic| generic.as_str()),
-            _ => None,
-        })
 }
