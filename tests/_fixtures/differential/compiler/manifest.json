@@ -1273,7 +1273,7 @@
         },
         {
           "path": "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/admission-source-pairs.json",
-          "sha256": "877498deb12e3227b6bf24c165b5df025539e4e89fd420f2c80f56c7c1403474"
+          "sha256": "f4b89df97e69df1a6f08bfa81a0bfbab56ad272a8686adbbef425864dae7bac7"
         },
         {
           "path": "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/attribute-case-inputs.json",
@@ -1369,7 +1369,7 @@
         {
           "path": "crates/vize_atelier_jsx/src/vapor.rs",
           "beforeSha256": "c9777eb8e5fadff520ac988af24f3f7d2982c64701a133b68896e2ecb4436371",
-          "afterSha256": "e310ae46ee73f8a9d14dbc9f5cd1a31db1608d8a295bde58245aeaba5de5793b"
+          "afterSha256": "44307ba62db9b8640ddbf251822a95fb9e9170acc6dcd97e40c15aaf08902736"
         },
         {
           "path": "crates/vize_atelier_vapor/src/l3/native/emit.rs",
