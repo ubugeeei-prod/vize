@@ -12,6 +12,10 @@ import {
 } from "./native-shutdown-protocol-fixtures.ts";
 
 import { newNativeRuntimeCases } from "./native-runtime-fixtures.ts";
+import {
+  SHARED_EDITOR_INITIAL_API_PROTOCOL_ID,
+  newSharedEditorInitialApiCases,
+} from "./shared-editor-initial-api-fixtures.ts";
 
 /** PRs opened before this (just after the gate merged) stay report-only. */
 export const GATE_SINCE = "2026-10-20T06:00:00Z";
@@ -79,6 +83,21 @@ export function legacyProducts(paths: readonly string[]): Product[] {
     }
   }
   return [...products].sort((left, right) => left.localeCompare(right));
+}
+
+// Route only one explicitly registered protocol ID; malformed/unknown rows
+// remain with the original closed validator and cannot disappear in filtering.
+function protocolPartition(value: unknown, id: string, include: boolean): unknown {
+  if (!Array.isArray(value)) return value;
+  return value.filter((row: unknown) => {
+    const matches =
+      row !== null &&
+      typeof row === "object" &&
+      !Array.isArray(row) &&
+      "id" in row &&
+      row.id === id;
+    return matches === include;
+  });
 }
 
 function sha256(bytes: Buffer): string {
@@ -207,6 +226,14 @@ function checkProduct(
       manifest.runtimeCases,
       readFile,
     );
+    const sharedApi =
+      product === "typechecker"
+        ? newSharedEditorInitialApiCases(
+            protocolPartition(before?.protocolCases, SHARED_EDITOR_INITIAL_API_PROTOCOL_ID, true),
+            protocolPartition(manifest.protocolCases, SHARED_EDITOR_INITIAL_API_PROTOCOL_ID, true),
+            readFile,
+          )
+        : { ids: [] as string[], sources: new Set<string>() };
     const productPaths = paths.filter((path) =>
       product === "lsp"
         ? /^crates\/vize_(?:maestro|resident)\/src\//.test(path)
@@ -219,19 +246,24 @@ function checkProduct(
         ? productPaths.some(
             (path) =>
               !runtime.sources.has(path) &&
+              !sharedApi.sources.has(path) &&
               !(product === "typechecker" && nativeShutdownProtocolSource(path)),
           )
         : true;
     const protocols =
       product === "typechecker"
-        ? newNativeShutdownProtocolCases(before?.protocolCases, manifest.protocolCases, readFile)
+        ? newNativeShutdownProtocolCases(
+            protocolPartition(before?.protocolCases, SHARED_EDITOR_INITIAL_API_PROTOCOL_ID, false),
+            protocolPartition(manifest.protocolCases, SHARED_EDITOR_INITIAL_API_PROTOCOL_ID, false),
+            readFile,
+          )
         : [];
     const registered =
       (!batchRequired || cases.length > 0) && (!protocolRequired || protocols.length > 0);
     return {
       product,
       state: registered ? "new-inputs-registered" : "new-input-missing",
-      cases: [...cases, ...protocols, ...runtime.ids],
+      cases: [...cases, ...protocols, ...runtime.ids, ...sharedApi.ids],
     };
   } catch (error) {
     return { product, state: "invalid-manifest-or-input", cases: [], reason: String(error) };
