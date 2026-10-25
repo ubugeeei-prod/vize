@@ -94,4 +94,22 @@ await test("sample workload custody compares complete published output and exact
     change(changed);
     assert.throws(() => validateSamplePacket(changed, config, item));
   }
+  const debugConfig = { ...config, kind: "debug-source" };
+  assert.throws(() => validateSamplePacket(packet, debugConfig, item));
+  const controlled = {
+    ...packet,
+    samplingControl: [
+      { command: "enable", ack: "ack\n" },
+      { command: "disable", ack: "ack\n" },
+    ],
+  };
+  validateSamplePacket(controlled, debugConfig, item);
+  for (const samplingControl of [
+    [],
+    controlled.samplingControl.slice(0, 1),
+    [{ command: "enable", ack: "invented" }, controlled.samplingControl[1]],
+  ])
+    assert.throws(() =>
+      validateSamplePacket({ ...controlled, samplingControl }, debugConfig, item),
+    );
 });

@@ -14,10 +14,11 @@ import {
   validateReplayImage,
 } from "./css-native-attribution.mjs";
 import { profileVectors } from "./css-source-map-profile.mjs";
+import { streamedDigest, validateDebugIdentity } from "./css-native-debug-build.mjs";
 
 const script = fileURLToPath(import.meta.url);
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
-const digest = (file) => hash(fs.readFileSync(file));
+const digest = streamedDigest;
 const read = (file) => JSON.parse(fs.readFileSync(file, "utf8"));
 const write = (file, value) => fs.writeFileSync(file, JSON.stringify(value, null, 2) + "\n");
 
@@ -38,6 +39,11 @@ export function validateSamplePacket(packet, config, item) {
   assert.deepEqual(packet.after, row.expected[item.operation]);
   assert.equal(packet.calls, item.calls);
   assert.equal(packet.codeUnits, item.calls * packet.before.code.length);
+  if (config.kind === "debug-source")
+    assert.deepEqual(packet.samplingControl, [
+      { command: "enable", ack: "ack\n" },
+      { command: "disable", ack: "ack\n" },
+    ]);
 }
 export function sampledEventCount(text) {
   const rows = text.split("\n").filter((line) => line.trim());
@@ -45,7 +51,7 @@ export function sampledEventCount(text) {
   for (const row of rows) assert.match(row, /^\s*\d+\.\d+:?\s*$/u);
   return rows.length;
 }
-function worker(configFile, ordinal, destination) {
+function worker(configFile, ordinal, destination, controlPath, ackPath) {
   assert.equal(process.platform, "linux");
   assert.equal(process.arch, "x64");
   assert.equal(process.version, campaign.node);
@@ -54,7 +60,9 @@ function worker(configFile, ordinal, destination) {
   assert.ok(item);
   const image = config.images[item.side],
     native = createRequire(import.meta.url)(image.transportBinary);
-  validateReplayImage(
+  const validateImage =
+    config.kind === "debug-source" ? validateDebugIdentity : validateReplayImage;
+  validateImage(
     item.side,
     image.producer,
     digest(image.transportBinary),
@@ -80,9 +88,31 @@ function worker(configFile, ordinal, destination) {
   retain();
   assert.deepEqual(packet.before, row.expected[item.operation]);
   for (let warm = 0; warm < 100; warm++) native.compileCss(source, row.options);
+  const controls = [];
+  let descriptors;
+  const control = (name) => {
+    fs.writeSync(descriptors[0], name + "\n");
+    const value = Buffer.alloc(4);
+    assert.equal(fs.readSync(descriptors[1], value, 0, 4, null), 4);
+    const ack = value.toString();
+    controls.push({ command: name, ack });
+    packet.samplingControl = controls;
+    assert.equal(ack, "ack\n");
+  };
+  if (config.kind === "debug-source") {
+    assert.ok(controlPath && ackPath);
+    assert.equal(fs.lstatSync(controlPath).isFIFO(), true);
+    assert.equal(fs.lstatSync(ackPath).isFIFO(), true);
+    descriptors = [controlPath, ackPath].map((file) => fs.openSync(file, fs.constants.O_RDWR));
+    control("enable");
+  }
   for (let call = 0; call < item.calls; call++) {
     packet.codeUnits += native.compileCss(source, row.options).code.length;
     packet.calls++;
+  }
+  if (descriptors) {
+    control("disable");
+    for (const fd of descriptors) fs.closeSync(fd);
   }
   packet.after = native.compileCss(source, row.options);
   packet.status = "complete";
@@ -120,7 +150,7 @@ function command(argv, root, name, record) {
   assert.equal(result.status, 0, `actual command failed; retained ${error}`);
   return fs.readFileSync(output, "utf8");
 }
-async function run(destination) {
+async function run(destination, prepareOnly = false) {
   assert.equal(process.env.GITHUB_ACTIONS, "true");
   assert.equal(process.version, campaign.node);
   destination = path.resolve(destination);
@@ -229,6 +259,11 @@ async function run(destination) {
       .trim();
     record.node = { file: process.execPath, sha256: digest(process.execPath) };
     retain();
+    if (prepareOnly) {
+      record.status = "prepared-original-inputs";
+      retain();
+      return;
+    }
     for (const [ordinal, item] of samplingPlan().entries()) {
       assert.equal(digest(configFile), record.inputsSha256);
       const name = `${ordinal}-${item.side}-${item.operation}-${item.id}`,
@@ -331,5 +366,6 @@ async function run(destination) {
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === script) {
   if (process.argv[2] === "--worker") worker(...process.argv.slice(3));
+  else if (process.argv[2] === "--prepare") await run(process.argv[3], true);
   else await run(process.argv[2]);
 }

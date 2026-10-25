@@ -1,0 +1,93 @@
+name: Native CSS source line profiles
+on:
+  workflow_dispatch:
+  push:
+    branches: ["test/css-native-debug-profile"]
+    paths:
+      - ".github/workflows/css-native-debug-profile.yml"
+      - "tools/benchmarks/scripts/css-native-debug-*.mjs"
+      - "tools/benchmarks/scripts/css-native-rustc-receipt.mjs"
+      - "tools/benchmarks/scripts/css-native-cpu-profile.mjs"
+      - "tests/tooling/css-native-debug-profile.test.mjs"
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: css-native-debug-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  CARGO_BUILD_JOBS: "12"
+  CARGO_INCREMENTAL: "0"
+  CARGO_TERM_COLOR: never
+jobs:
+  source-lines:
+    if: ${{ github.event_name == 'workflow_dispatch' || !github.event.deleted }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ github.sha }}", path: harness, persist-credentials: false }
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          {
+            ref: "3a3c8460f966fddbd8e1be4c083d460b24202f90",
+            path: base,
+            persist-credentials: false,
+          }
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          {
+            ref: "fcab3f87d3249cccaecc5050d73d2af6ac89d3f8",
+            path: head,
+            persist-credentials: false,
+          }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: head/package.json, cache: true, run-install: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - name: Install the actual Linux sampler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y linux-tools-common linux-tools-generic binutils
+          node --input-type=module - <<'JS'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          import {execFileSync} from 'node:child_process';
+          const depends = execFileSync('dpkg-query', ['-W', '-f', '${Depends}', 'linux-tools-generic'], {encoding:'utf8'});
+          const packages = [...new Set(depends.match(/linux-tools-[0-9][a-zA-Z0-9.+-]*-generic/gu))];
+          assert.equal(packages.length, 1);
+          const files = execFileSync('dpkg-query', ['-L', packages[0]], {encoding:'utf8'})
+            .split('\n').filter(file => file.endsWith('/perf')).map(file => fs.realpathSync(file));
+          assert.equal(files.length, 1);
+          fs.appendFileSync(process.env.GITHUB_ENV, `VIZE_CSS_PERF=${files[0]}\n`);
+          JS
+      - run: vp install --filter './npm/native...' --frozen-lockfile --prefer-offline
+        working-directory: head
+      - name: Verify actual compiler/output and source-role refusal controls
+        working-directory: harness
+        run: node --test tests/tooling/css-native-attribution.test.mjs tests/tooling/css-native-cpu-profile.test.mjs tests/tooling/css-native-debug-profile.test.mjs tests/tooling/css-source-map-phases.test.mjs
+      - name: Retain the original release-image input and whole-output authority
+        working-directory: harness
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node tools/benchmarks/scripts/css-native-cpu-profile.mjs --prepare "$GITHUB_WORKSPACE/artifacts/reference"
+      - name: Build and qualify the two actual pristine debug-info producers
+        timeout-minutes: 25
+        working-directory: harness
+        run: node tools/benchmarks/scripts/css-native-debug-build.mjs "$GITHUB_WORKSPACE/base" "$GITHUB_WORKSPACE/head" "$GITHUB_WORKSPACE/artifacts/reference/inputs.json" "$GITHUB_WORKSPACE/artifacts/debug-producers"
+      - name: Capture all controlled native loops before source and inline analysis
+        timeout-minutes: 18
+        working-directory: harness
+        run: node tools/benchmarks/scripts/css-native-debug-samples.mjs "$GITHUB_WORKSPACE/artifacts/debug-producers/inputs.json" "$GITHUB_WORKSPACE/artifacts/debug-samples"
+      - name: Preserve complete images, actual compiler receipts, maps and source CPU samples
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: css-native-debug-${{ github.sha }}-${{ github.run_id }}
+          path: artifacts/
+          compression-level: 3
+          if-no-files-found: error
+          retention-days: 14
