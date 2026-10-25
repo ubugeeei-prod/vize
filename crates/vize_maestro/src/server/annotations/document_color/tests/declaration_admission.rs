@@ -1,8 +1,9 @@
 use super::{Color, ColorInformation, DocumentColorService, Position, Range};
 
 fn expected(source: &str, prefix: &str, literal: &str, rgba: [f32; 4]) -> ColorInformation {
-    assert!(prefix.ends_with(literal));
-    let start = source.find(prefix).unwrap() + prefix.len() - literal.len();
+    let relative = prefix.len().checked_sub(literal.len()).unwrap();
+    assert_eq!(prefix.get(relative..), Some(literal));
+    let start = source.find(prefix).unwrap() + relative;
     let point = |at| {
         let at = vize_l0::line_index::offset_to_position(source, at);
         Position::new(at.line, at.character)
@@ -137,21 +138,44 @@ fn stylus_assignments_and_preprocessor_parameter_values_are_owned_values() {
 #[test]
 fn rejected_supports_headers_keep_linear_internal_work() {
     let mut previous = 0;
+    let mut observations = Vec::new();
     for count in [1_000, 2_000, 4_000, 8_000] {
         let source = format!(
             "@supports (/*{}*/ #bad{}) {{ .x {{ color: blue; }} }}",
             "x".repeat(count),
             ":a".repeat(count)
         );
-        let (found, work, _) = super::super::scan::colors_in_mode_with_metrics(
+        let (found, work, rgb_probes) = super::super::scan::colors_in_mode_with_metrics(
             &source,
             (0, source.len()),
             super::super::scan::CssMode::Stylesheet,
         );
-        assert_eq!(found.len(), 1);
+        let values = found
+            .iter()
+            .map(|literal| {
+                (
+                    literal.start,
+                    literal.end,
+                    literal.red,
+                    literal.green,
+                    literal.blue,
+                    literal.alpha,
+                )
+            })
+            .collect::<Vec<_>>();
+        let at = source.find("blue").unwrap();
+        assert_eq!(values, vec![(at, at + 4, 0., 0., 1., 1.)]);
+        observations.push(serde_json::json!({
+            "inputBytes": source.len(), "repetitions": count,
+            "scannerWork": work, "rgbParserProbes": rgb_probes,
+            "completeColors": values,
+        }));
         if previous > 0 {
             assert!(work <= previous * 2 + 32, "{count}: {work}");
         }
         previous = work;
+    }
+    if let Ok(path) = std::env::var("VIZE_CSS_COLOR_WORK_CAPTURE") {
+        std::fs::write(path, serde_json::to_vec_pretty(&observations).unwrap()).unwrap();
     }
 }
