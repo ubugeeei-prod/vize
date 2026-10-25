@@ -15,6 +15,7 @@ use vize_carton::{FxHashMap, String, ToCompactString};
 pub(super) mod engine_boundary;
 mod nesting;
 mod normalize;
+mod source_map;
 
 /// Convert major version to LightningCSS format (major << 16)
 pub(crate) fn version_to_u32(major: u32) -> u32 {
@@ -26,6 +27,7 @@ use super::CssModuleExport as VizeCssModuleExport;
 /// CSS Modules compilation result
 pub(crate) struct CssInternalResult {
     pub code: String,
+    pub map: Option<String>,
     pub errors: Vec<String>,
     pub exports: Option<FxHashMap<String, VizeCssModuleExport>>,
 }
@@ -117,6 +119,7 @@ pub(crate) fn print_css_ast_internal(
             use std::fmt::Write as _;
             let _ = write!(&mut message, "{e}");
             return CssInternalResult {
+                map: None,
                 code: String::from(""),
                 errors: vec![message],
                 exports: None,
@@ -134,6 +137,7 @@ pub(crate) fn print_css_ast_internal(
         use std::fmt::Write as _;
         let _ = write!(&mut message, "{e:?}");
         return CssInternalResult {
+            map: None,
             code: String::from(""),
             errors: vec![message],
             exports: None,
@@ -164,6 +168,7 @@ pub(crate) fn print_css_ast_internal(
             });
 
             CssInternalResult {
+                map: None,
                 code: result.code.into(),
                 errors: vec![],
                 exports,
@@ -174,6 +179,7 @@ pub(crate) fn print_css_ast_internal(
             use std::fmt::Write as _;
             let _ = write!(&mut message, "{e:?}");
             CssInternalResult {
+                map: None,
                 code: String::from(""),
                 errors: vec![message],
                 exports: None,
@@ -190,9 +196,11 @@ pub(crate) fn compile_css_internal(
     targets: Targets,
     custom_media: bool,
     css_modules: bool,
+    source_map: bool,
 ) -> CssInternalResult {
     if nesting::css_nesting_exceeds_max_depth(css) {
         return CssInternalResult {
+            map: None,
             code: css.to_compact_string(),
             errors: vec![String::from(nesting::NESTING_DEPTH_ERROR)],
             exports: None,
@@ -228,6 +236,7 @@ pub(crate) fn compile_css_internal(
             message.push_str(&e.to_compact_string());
             errors.push(message);
             return CssInternalResult {
+                map: None,
                 code: css.to_compact_string(),
                 errors,
                 exports: None,
@@ -247,15 +256,24 @@ pub(crate) fn compile_css_internal(
         let _ = write!(&mut message, "{:?}", e);
         errors.push(message);
         return CssInternalResult {
+            map: None,
             code: css.to_compact_string(),
             errors,
             exports: None,
         };
     }
 
+    // The engine's embedded-map composition has separate source ownership.
+    // Until that boundary is qualified, expose maps only for this actual input.
+    let mut map = (source_map && stylesheet.source_map_url(0).is_none()).then(|| {
+        let mut map = parcel_sourcemap::SourceMap::new("/");
+        map.add_source(filename);
+        map
+    });
     let printer_options = PrinterOptions {
         minify,
         targets,
+        source_map: map.as_mut(),
         ..Default::default()
     };
 
@@ -277,6 +295,9 @@ pub(crate) fn compile_css_internal(
             });
 
             CssInternalResult {
+                map: map
+                    .as_ref()
+                    .and_then(|map| source_map::serialize(map, filename, css)),
                 code: result.code.into(),
                 errors: vec![],
                 exports,
@@ -289,6 +310,7 @@ pub(crate) fn compile_css_internal(
             let _ = write!(&mut message, "{:?}", e);
             errors.push(message);
             CssInternalResult {
+                map: None,
                 code: css.to_compact_string(),
                 errors,
                 exports: None,
@@ -335,6 +357,7 @@ pub(crate) fn bundle_css_internal(
             use std::fmt::Write as _;
             let _ = write!(&mut message, "{:?}", e);
             return CssInternalResult {
+                map: None,
                 code: String::from(""),
                 errors: vec![message],
                 exports: None,
@@ -352,6 +375,7 @@ pub(crate) fn bundle_css_internal(
         use std::fmt::Write as _;
         let _ = write!(&mut message, "{:?}", e);
         return CssInternalResult {
+            map: None,
             code: String::from(""),
             errors: vec![message],
             exports: None,
@@ -382,6 +406,7 @@ pub(crate) fn bundle_css_internal(
             });
 
             CssInternalResult {
+                map: None,
                 code: result.code.into(),
                 errors: vec![],
                 exports,
@@ -392,6 +417,7 @@ pub(crate) fn bundle_css_internal(
             use std::fmt::Write as _;
             let _ = write!(&mut message, "{:?}", e);
             CssInternalResult {
+                map: None,
                 code: String::from(""),
                 errors: vec![message],
                 exports: None,

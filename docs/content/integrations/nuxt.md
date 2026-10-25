@@ -273,6 +273,10 @@ Lint configuration generation works on Nuxt 2. The opt-in `checker` runs the gen
 
 Nuxt Bridge also uses Vue 2. Preserve its `@vitejs/plugin-vue2` compiler. Bridge's Vite mode requires both `bridge.vite: true` and `bridge.nitro: true`; see the [official Bridge Vite guide](https://nuxt.com/docs/4.x/bridge/vite). A module-import check alone does not establish runtime support for a Bridge builder.
 
+The Bridge source campaign pins Nuxt 2.18.1, Bridge 3.6.1 and Vue 2.7.16 and runs the same application on webpack and Vite, including a Vite control without the module. Its Vite 7.1.12 fixture explicitly uses `nitro.rollupConfig.treeshake: false` to preserve Vue 2's runtime platform hooks and `vite.build.rollupOptions.output.assetFileNames: "_nuxt/[name].[hash].[ext]"` to align client and SSR asset URLs. These host settings are part of that pinned runtime qualification.
+
+The package's Vite peer range remains `^7.3.0 || ^8.0.0`. The source-bound Vite 7.1 campaign does not qualify a fresh published-package installation on Vite 7.1.
+
 The versions are detected automatically. If a wrapper hides them from Nuxt Kit, set them yourself:
 
 ```ts
