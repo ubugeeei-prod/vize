@@ -1,0 +1,89 @@
+name: Shared editor snapshot readiness
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - .github/workflows/lsp-shared-api-reopen.yml
+      - crates/vize_canon/src/lsp_client/initial_diagnostics.rs
+      - crates/vize_canon/src/lsp_client/editor_lsp/client.rs
+      - tests/tooling/support/native-runtime-selection/lsp*.mjs
+      - tests/tooling/lsp-shared-api-campaign.test.mjs
+      - tests/_fixtures/differential/lsp/shared-api-snapshot-reopen-10730/**
+  workflow_dispatch:
+permissions: { contents: read }
+concurrency:
+  group: shared-api-reopen-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  CARGO_TERM_COLOR: always
+  NODE_OPTIONS: --disable-warning=DEP0040 --disable-warning=DEP0169
+jobs:
+  source:
+    uses: ./.github/workflows/full-source-cli.yml
+  observe:
+    needs: source
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, cache: true, run-install: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1", components: clippy }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: test-scripts, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - run: vp install --frozen-lockfile --prefer-offline
+      - uses: ./.github/actions/restore-source-cli
+        with: { producer: "${{ toJSON(needs.source.outputs) }}" }
+      - name: Preserve every strict TypeScript project
+        run: node --test tests/tooling/typescript-tooling-project.test.ts
+      - name: Preserve independent and inconsistent attachment boundaries
+        run: |
+          mkdir -p target/vize-tests/shared-api-reopen-702
+          set +e
+          cargo test --locked --profile ci -p vize_canon --lib lsp_client::editor_lsp::client::initial_snapshot_tests:: -- --nocapture > target/vize-tests/shared-api-reopen-702/transport-controls.stdout 2> target/vize-tests/shared-api-reopen-702/transport-controls.stderr
+          status=$?
+          set -e
+          printf '%s\n' "$status" > target/vize-tests/shared-api-reopen-702/transport-controls.status
+          cat target/vize-tests/shared-api-reopen-702/transport-controls.stdout
+          cat target/vize-tests/shared-api-reopen-702/transport-controls.stderr >&2
+          test "$status" -eq 0
+          node -e 'const fs=require("node:fs");const assert=require("node:assert/strict");assert.match(fs.readFileSync("target/vize-tests/shared-api-reopen-702/transport-controls.stdout","utf8"),/test result: ok\. 2 passed; 0 failed;/u)'
+          cargo clippy --locked --profile ci -p vize_canon --lib -- -D warnings
+          node --test tests/tooling/lsp-shared-api-campaign.test.mjs tests/tooling/native-runtime-selection-lsp-strace.test.mjs
+      - name: Install official providers into fresh isolated roots
+        run: |
+          if ! command -v strace >/dev/null; then sudo apt-get update && sudo apt-get install --yes --no-install-recommends strace; fi
+          provider_root="$RUNNER_TEMP/shared-api-reopen-providers"
+          test ! -e "$provider_root"
+          mkdir -p "$provider_root"
+          npm install --prefix "$provider_root/beta" --ignore-scripts --no-audit --no-fund --save-exact --registry=https://registry.npmjs.org typescript@7.1.0-beta vue@3.5.44
+          npm install --prefix "$provider_root/six" --ignore-scripts --no-audit --no-fund --save-exact --registry=https://registry.npmjs.org typescript@6.0.3
+          npm install --prefix "$provider_root/frozen702" --ignore-scripts --no-audit --no-fund --save-exact --registry=https://registry.npmjs.org typescript@7.0.2 vue@3.5.44
+      - name: Assert whole packets through shared source and dependency transitions
+        env:
+          VIZE_REQUIRE_NATIVE_RUNTIME_SELECTION: "1"
+          VIZE_SOURCE_CLI: ${{ github.workspace }}/target/ci/vize
+          VIZE_NATIVE_BETA_ROOT: ${{ runner.temp }}/shared-api-reopen-providers/beta
+          VIZE_TYPESCRIPT_SIX_ROOT: ${{ runner.temp }}/shared-api-reopen-providers/six
+          VIZE_NATIVE_702_ROOT: ${{ runner.temp }}/shared-api-reopen-providers/frozen702
+          VIZE_TRACE_EDITOR_PREPARATION: "1"
+        run: |
+          export VIZE_NATIVE_STRACE="$(command -v strace)"
+          node tests/tooling/support/native-runtime-selection/lsp-shared-api-reopen.mjs
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: shared-api-reopen-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
+          path: |
+            target/vize-tests/shared-api-reopen-702/**
+            target/vize-tests/shared-api-reopen-original-702/**
+            target/ci/vize.differential-build.json
+            ${{ runner.temp }}/shared-api-reopen-providers/**/package.json
+            ${{ runner.temp }}/shared-api-reopen-providers/**/package-lock.json
+          if-no-files-found: error
+          retention-days: 7

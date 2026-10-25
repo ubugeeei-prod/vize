@@ -18,6 +18,10 @@ import { sourceIdentity, executionAuthority } from "./lsp-source-custody.mjs";
 import { validateNativeLifecycle } from "./lsp-native-lifecycle.mjs";
 import { SourceLspWire } from "./lsp-wire.mjs";
 import { captureNativeOwners } from "./lsp-strace.mjs";
+import {
+  prepareSharedApiCampaign,
+  observeSharedApiTransitions,
+} from "./lsp-shared-api-campaign.mjs";
 
 const write = (file, value) => fs.writeFileSync(file, JSON.stringify(value, null, 2) + "\n");
 const repoRoot = fs.realpathSync(
@@ -46,13 +50,25 @@ function exactHover(packet, source, token) {
   assert.deepEqual(result(packet), expected, `complete ${token} hover`);
 }
 
-export async function observeSourceLspSelection() {
+export async function observeSourceLspSelection({ campaign = "runtime-selection" } = {}) {
+  assert.ok(
+    ["runtime-selection", "shared-api-reopen-702", "shared-api-reopen-original-702"].includes(
+      campaign,
+    ),
+  );
+  const snapshotCampaign = campaign !== "runtime-selection";
+  const extendedCampaign = campaign === "shared-api-reopen-702";
   const source = sourceIdentity(repoRoot, import.meta.filename),
     providers = loadNativeProviders();
   assert.ok(providers.frozen702, "the separately installed qualified 7.0.2 provider is mandatory");
   assert.ok(process.env.VIZE_NATIVE_STRACE && path.isAbsolute(process.env.VIZE_NATIVE_STRACE));
   const strace = fs.realpathSync(process.env.VIZE_NATIVE_STRACE);
-  const output = path.join(repoRoot, "target/vize-tests/native-runtime-selection-lsp");
+  const output = path.join(
+    repoRoot,
+    snapshotCampaign
+      ? `target/vize-tests/${campaign}`
+      : "target/vize-tests/native-runtime-selection-lsp",
+  );
   fs.mkdirSync(output, { recursive: true });
   const temporary = fs.realpathSync(
     fs.mkdtempSync(path.join(process.env.RUNNER_TEMP ?? os.tmpdir(), "vize-native-lsp-consumers-")),
@@ -76,6 +92,7 @@ export async function observeSourceLspSelection() {
   );
 
   const report = {
+    campaign,
     source,
     strace: {
       path: strace,
@@ -85,25 +102,31 @@ export async function observeSourceLspSelection() {
     providers,
     shutdownSourceSha256: sha256(Buffer.from(nativeSource)),
     profiles: [],
-    scope:
-      "Real source CLI/LSP selection and complete authored packets. No published/editor/cache dispatch, generic source-session, blanket API or beta clean-exit credit.",
+    scope: snapshotCampaign
+      ? "Bounded canonical/alias TypeScript7.0.2 shared snapshot campaign. Default eight-profile runtime selection is separate; no generic source-session, socket or full-syscall coverage credit."
+      : "Real source CLI/LSP selection and complete authored packets. No published/editor/cache dispatch, generic source-session, blanket API or beta clean-exit credit.",
   };
-  for (const kind of [
-    "canonical-beta",
-    "alias-beta",
-    "explicit-beta",
-    "selected-config",
-    "absent",
-    "stale-decoys",
-    "canonical-702",
-    "alias-702",
-  ]) {
+  const kinds = snapshotCampaign
+    ? ["canonical-702", "alias-702"]
+    : [
+        "canonical-beta",
+        "alias-beta",
+        "explicit-beta",
+        "selected-config",
+        "absent",
+        "stale-decoys",
+        "canonical-702",
+        "alias-702",
+      ];
+  for (const kind of kinds) {
     const directory = path.join(output, kind),
       consumer = prepareNativeRuntimeConsumer({
         directory: path.join(temporary, kind),
         kind,
         providers,
       });
+    const sharedCampaign = extendedCampaign ? prepareSharedApiCampaign(repoRoot, consumer) : null;
+    const sources = sharedCampaign?.sources ?? SOURCES;
     const inputs = captureConsumerInputs(consumer),
       environment = runtimeChildEnvironment(
         process.env,
@@ -115,7 +138,7 @@ export async function observeSourceLspSelection() {
       "VIZE_TEST_OBSERVED_SERVER_PATH",
       "VIZE_TRACE_EDITOR_PREPARATION",
     ])
-      delete environment[key];
+      if (!(snapshotCampaign && key === "VIZE_TRACE_EDITOR_PREPARATION")) delete environment[key];
     for (const key of CORSA_OVERRIDES) assert.equal(environment[key], undefined);
     const profile = {
       kind,
@@ -125,6 +148,7 @@ export async function observeSourceLspSelection() {
         CORSA_OVERRIDES.map((key) => [key, environment[key] ?? null]),
       ),
       phases: [],
+      ...(sharedCampaign ? { snapshotCampaign: sharedCampaign.custody } : {}),
     };
     const wire = new SourceLspWire({
       executable: source.executable,
@@ -132,6 +156,7 @@ export async function observeSourceLspSelection() {
       environment,
       workspace: consumer.workspace,
       directory,
+      fileDescriptorLifecycle: snapshotCampaign,
     });
     const uri = pathToFileURL(consumer.entry).href,
       rootUri = pathToFileURL(consumer.workspace).href;
@@ -153,10 +178,10 @@ export async function observeSourceLspSelection() {
       result(profile.initialize);
       wire.notify("initialized", {});
       for (const [name, text, version, open] of [
-        ["valid", SOURCES.valid, 1, true],
-        ["error", SOURCES.error, 2, false],
-        ["repair", SOURCES.repair, 3, false],
-        ["reopen", SOURCES.valid, 4, true],
+        ["valid", sources.valid, 1, true],
+        ["error", sources.error, 2, false],
+        ["repair", sources.repair, 3, false],
+        ["reopen", sources.valid, 4, true],
       ]) {
         if (name === "reopen") wire.notify("textDocument/didClose", { textDocument: { uri } });
         const from = wire.events.length;
@@ -265,6 +290,14 @@ export async function observeSourceLspSelection() {
         );
         profile.phases.push(phase);
       }
+      if (sharedCampaign)
+        await observeSharedApiTransitions({
+          wire,
+          consumer,
+          campaign: sharedCampaign,
+          profile,
+          exactHover,
+        });
       wire.notify("textDocument/didClose", { textDocument: { uri } });
       profile.shutdown = await wire.request("shutdown");
       assert.equal(result(profile.shutdown), null);
@@ -291,6 +324,18 @@ export async function observeSourceLspSelection() {
         profile.closeFailure = String(error);
       }
       profile.outer = wire.save();
+      if (snapshotCampaign)
+        profile.sourceProfileObservations = {
+          passiveTraceEnabled: environment.VIZE_TRACE_EDITOR_PREPARATION === "1",
+          snapshotRefreshPhaseLines: Buffer.concat(wire.errors)
+            .toString("utf8")
+            .split("\n")
+            .filter((line) => line.includes("initial_api_snapshot_refresh")),
+          outerRequests: wire.events
+            .filter((event) => event.direction === "client" && event.packet.id !== undefined)
+            .map((event) => ({ id: event.packet.id, method: event.packet.method })),
+          noTimingOrUniversalPerformanceClaim: true,
+        };
       try {
         assert.deepEqual(wire.status, { code: 0, signal: null });
         assert.equal(wire.pending.length, 0);

@@ -52,8 +52,10 @@ impl CorsaProjectClient {
         {
             return Ok(None);
         }
+        // Editor overlays use retained logical keys; the API can map the same
+        // document to a distinct materialized URI after acknowledgement.
+        self.refresh_acknowledged_editor_snapshot(uri)?;
         let document_uri = self.session_document_uri(uri);
-        self.refresh_acknowledged_editor_snapshot(&document_uri)?;
         let session = self.project_session()?;
         let read = InitialDiagnosticsRead {
             client: session.client().clone(),

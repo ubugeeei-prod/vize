@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "sourceValid": "<script setup lang=\"ts\">\nimport { twice } from \"./support\";\nconst value: number = 2;\nconst doubled: number = twice(value);\n</script>\n<template><p>{{ value }} {{ doubled }}</p></template>\n",
+  "sourceError": "<script setup lang=\"ts\">\nimport { twice } from \"./support\";\nconst value: number = \"wrong\";\nconst doubled: number = twice(value);\n</script>\n<template><p>{{ value }} {{ doubled }}</p></template>\n",
+  "dependencyValid": "export const twice = (value: number): number => value * 2;\n",
+  "dependencyError": "export const twice = (value: number): string => String(value);\n",
+  "scope": "Independently authored source and dependency transitions. The dedicated real source campaign checks complete diagnostics and hovers after unsaved edits, repairs, dependency close, and repeated reopen; no socket coverage or broad runtime selection credit."
+}

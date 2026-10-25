@@ -16,7 +16,7 @@ impl CorsaProjectClient {
     /// its immutable snapshot even after subsequent LSP queries see the edit.
     pub(in crate::lsp_client) fn refresh_acknowledged_editor_snapshot(
         &mut self,
-        document_uri: &str,
+        logical_uri: &str,
     ) -> Result<(), String> {
         if !self.project_session_attached_to_editor {
             return Ok(());
@@ -28,8 +28,7 @@ impl CorsaProjectClient {
         }
         let phase =
             crate::corsa_bridge::preparation_trace::Phase::start("initial_api_snapshot_refresh", 1);
-        self.editor_lsp_session()?
-            .ready_document_uri(document_uri)?;
+        self.editor_lsp_session()?.ready_document_uri(logical_uri)?;
         let session = self
             .session
             .as_mut()
@@ -348,4 +347,52 @@ fn document_maps_equal(lhs: &FxHashMap<String, String>, rhs: &FxHashMap<String, 
         && lhs
             .iter()
             .all(|(uri, text)| rhs.get(uri.as_str()).is_some_and(|current| current == text))
+}
+
+#[cfg(all(test, unix))]
+mod initial_snapshot_tests {
+    use super::CorsaProjectClient;
+    use std::os::unix::fs::PermissionsExt;
+
+    fn guarded_client() -> (tempfile::TempDir, CorsaProjectClient, std::path::PathBuf) {
+        let root = tempfile::tempdir().unwrap();
+        let executable = root.path().join("must-not-start");
+        std::fs::write(&executable, "#!/bin/sh\n: > \"$0.invoked\"\nexit 1\n").unwrap();
+        std::fs::set_permissions(&executable, std::fs::Permissions::from_mode(0o700)).unwrap();
+        let mut client = CorsaProjectClient::empty_for_test(root.path().to_path_buf());
+        client.executable = executable.to_str().unwrap().into();
+        let marker = root.path().join("must-not-start.invoked");
+        (root, client, marker)
+    }
+
+    #[test]
+    fn independent_initial_snapshot_does_not_initialize_an_editor() {
+        let (_root, mut client, marker) = guarded_client();
+        client
+            .refresh_acknowledged_editor_snapshot("file:///unopened.ts")
+            .unwrap();
+        assert!(client.editor_lsp.is_none());
+        assert!(client.session.is_none());
+        assert!(
+            !marker.exists(),
+            "independent route must not execute any provider"
+        );
+    }
+
+    #[test]
+    fn inconsistent_initial_attachment_refuses_without_spawning_an_owner() {
+        let (_root, mut client, marker) = guarded_client();
+        client.project_session_attached_to_editor = true;
+        assert!(
+            client
+                .refresh_acknowledged_editor_snapshot("file:///unopened.ts")
+                .is_err()
+        );
+        assert!(client.editor_lsp.is_none());
+        assert!(client.session.is_none());
+        assert!(
+            !marker.exists(),
+            "inconsistent attachment must not execute any provider"
+        );
+    }
 }

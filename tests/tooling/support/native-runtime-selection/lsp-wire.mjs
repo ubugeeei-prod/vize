@@ -9,7 +9,14 @@ const sha = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
 /** Own the actual straced source process and retain every original outer byte. */
 export class SourceLspWire {
-  constructor({ executable, strace, environment, workspace, directory }) {
+  constructor({
+    executable,
+    strace,
+    environment,
+    workspace,
+    directory,
+    fileDescriptorLifecycle = false,
+  }) {
     fs.mkdirSync(directory, { recursive: true });
     this.directory = directory;
     this.prefix = path.join(directory, "syscalls");
@@ -22,7 +29,9 @@ export class SourceLspWire {
       "-s",
       "16777216",
       "-e",
-      "trace=process,read,write,readv,writev",
+      fileDescriptorLifecycle
+        ? "trace=process,read,write,readv,writev,openat,close,dup,dup2,dup3,network"
+        : "trace=process,read,write,readv,writev",
       "-o",
       this.prefix,
       executable,
