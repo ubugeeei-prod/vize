@@ -105,6 +105,23 @@ fn actual_mapper_generation_reports_gated_parse_and_allocation_costs() {
     }
     // Retain every actual observation before checking the independent laws.
     for row in &rows {
+        let flow = row["spans"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|span| span["name"] == "canon.virtual_ts.root_expect.render_flow");
+        let has_candidate = row["candidateParsesPerGeneration"].as_u64().unwrap() != 0;
+        if has_candidate {
+            let flow = flow.expect("one parser-owned render-flow proof per EXPECT generation");
+            assert_eq!(flow["calls"], ITERATIONS);
+            assert_eq!(flow["allocationCalls"], 0);
+            assert_eq!(flow["requestedBytes"], 0);
+        } else {
+            assert!(
+                flow.is_none(),
+                "ordinary/disabled projection does no relocation flow walk"
+            );
+        }
         let retained = row["spans"]
             .as_array()
             .unwrap()

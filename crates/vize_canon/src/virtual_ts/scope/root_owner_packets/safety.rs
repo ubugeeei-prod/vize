@@ -7,12 +7,90 @@ use oxc_ast::ast::{
     BindingPattern, Expression, ObjectPropertyKind, PropertyKind, Statement,
     VariableDeclarationKind,
 };
+use oxc_ast_visit::{Visit, walk::walk_expression};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{FxHashMap, FxHashSet, String, profile};
 use vize_croquis::{BindingType, croquis::PassedProp};
 
 use crate::virtual_ts::script_facts::ScriptBindings;
+
+/// Const references can still be narrowed by a render-time property mutation
+/// or assertion call. Never move across such a frontier. Handler/function
+/// bodies are declarations, not render-time invocations, and remain isolated.
+pub(super) fn stable_render_flow(root: &vize_relief::RootNode<'_>) -> bool {
+    profile!(
+        "canon.virtual_ts.root_expect.render_flow",
+        stable_children(&root.children)
+    )
+}
+
+fn stable_children(children: &[vize_relief::TemplateChildNode<'_>]) -> bool {
+    use vize_relief::{ExpressionNode, PropNode, TemplateChildNode};
+    children.iter().all(|child| match child {
+        TemplateChildNode::Interpolation(node) => stable_expression(&node.content),
+        TemplateChildNode::Element(element) => {
+            element.props.iter().all(|prop| {
+                let PropNode::Directive(directive) = prop else {
+                    return true;
+                };
+                if matches!(directive.name, "on" | "slot") {
+                    return true;
+                }
+                if directive.name == "for" {
+                    return false;
+                }
+                let argument = directive.arg.as_ref().is_none_or(|arg| {
+                    matches!(arg, ExpressionNode::Simple(arg) if arg.is_static)
+                        || stable_expression(arg)
+                });
+                argument && directive.exp.as_ref().is_none_or(stable_expression)
+            }) && stable_children(&element.children)
+        }
+        TemplateChildNode::If(node) => node.branches.iter().all(|branch| {
+            branch.condition.as_ref().is_none_or(stable_expression)
+                && stable_children(&branch.children)
+        }),
+        // A loop has its own declaration/CFA environment; don't move a root
+        // packet across an unproved replay of that environment.
+        TemplateChildNode::For(_) => false,
+        _ => true,
+    })
+}
+
+fn stable_expression(node: &vize_relief::ExpressionNode<'_>) -> bool {
+    let vize_relief::ExpressionNode::Simple(simple) = node else {
+        return false;
+    };
+    let Some(retained) = simple.js_ast.and_then(|ast| ast.as_expression()) else {
+        return false;
+    };
+    if retained.raw != simple.content {
+        return false;
+    }
+    let mut effects = RenderEffects(false);
+    effects.visit_expression(retained.ast);
+    !effects.0
+}
+
+struct RenderEffects(bool);
+impl<'a> Visit<'a> for RenderEffects {
+    fn visit_expression(&mut self, expression: &Expression<'a>) {
+        match expression {
+            Expression::AssignmentExpression(_)
+            | Expression::UpdateExpression(_)
+            | Expression::CallExpression(_)
+            | Expression::NewExpression(_)
+            | Expression::TaggedTemplateExpression(_)
+            | Expression::AwaitExpression(_)
+            | Expression::YieldExpression(_)
+            | Expression::ClassExpression(_) => self.0 = true,
+            Expression::FunctionExpression(_) | Expression::ArrowFunctionExpression(_) => {}
+            _ if !self.0 => walk_expression(self, expression),
+            _ => {}
+        }
+    }
+}
 
 /// The cache is generation-local, and its key includes the lexical scope and
 /// the exact authored expression identity. Ordinary generation never creates

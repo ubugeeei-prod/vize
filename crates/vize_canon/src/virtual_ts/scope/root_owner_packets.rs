@@ -141,7 +141,7 @@ impl RootOwnerPackets {
                     .map(|range| (range.start, range.end))
             })
             .collect();
-        if expected_owners.is_empty() {
+        if expected_owners.is_empty() || !safety::stable_render_flow(root) {
             return result;
         }
         let by_start: FxHashMap<_, _> = usages
@@ -484,6 +484,39 @@ mod tests {
                     "{template}"
                 );
             }
+        }
+    }
+
+    #[test]
+    fn render_cfa_frontiers_keep_complete_original_order_but_handlers_stay_isolated() {
+        let script = "import Comp from './Comp.vue'; const state = { kind: 'a' as 'a' | 'b' }; const value = 1; const noop = () => {}; declare function assertState(value: unknown): asserts value is { kind: 'a' };";
+        for newline in ["\n", "\r\n"] {
+            for effect in [
+                "state.kind = 'b'",
+                "value++",
+                "assertState(state)",
+                "({ ...state, kind: (state.kind = 'b') })",
+            ] {
+                let template = cstr!(
+                    "<!-- 日本 🧭 --><!-- @vue-expect-error -->{newline}<Comp :id=\"value\" @save=\"noop\" /><div>{{{{ {effect} }}}}</div>"
+                );
+                assert_eq!(
+                    render(script, &template, false, true),
+                    render(script, &template, true, true),
+                    "render effect {effect} cannot be moved across"
+                );
+            }
+            let template = cstr!(
+                "<!-- 日本 🧭 --><!-- @vue-expect-error -->{newline}<Comp :id=\"value\" @save=\"noop\" /><button @click=\"state.kind = 'b'\" />"
+            );
+            let before = render(script, &template, false, true);
+            let after = render(script, &template, true, true);
+            assert_ne!(
+                before.0, after.0,
+                "a non-invoked handler body cannot bar unrelated pure root ownership"
+            );
+            assert_eq!(mapping_payloads(&before), mapping_payloads(&after));
+            assert_eq!(link_payloads(&before), link_payloads(&after));
         }
     }
 
