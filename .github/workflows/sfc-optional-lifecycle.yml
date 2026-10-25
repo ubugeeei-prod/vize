@@ -22,7 +22,7 @@ jobs:
           [[ "$GITHUB_REPOSITORY" == ubugeeei-prod/vize ]]
       - name: Checkout diagnostic driver
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { path: driver, persist-credentials: false }
+        with: { persist-credentials: false }
       - name: Checkout frozen source for the failed lifecycle
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -35,13 +35,13 @@ jobs:
         with: { node-version-file: source/package.json, cache: true, run-install: false }
       - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # master
         with: { toolchain: "1.99.1" }
-      - uses: ./source/.github/actions/setup-rust-script
+      - uses: ./.github/actions/setup-rust-script
       - name: Install exact source lifecycle dependencies
         working-directory: source
         run: vp install --filter './npm/native...' --filter './npm/cli...' --filter './npm/builder/vite...' --filter './npm/builder/vite-musea...' --frozen-lockfile --prefer-offline
       # No compiled-target cache/restore action belongs in this diagnostic.
       - name: Compare one public Linux and one isolated source lifecycle
-        run: node driver/tools/benchmarks/scripts/sfc-optional-lifecycle.mjs "$GITHUB_WORKSPACE/source" "$GITHUB_WORKSPACE/artifacts/sfc-optional-lifecycle"
+        run: node tools/benchmarks/scripts/sfc-optional-lifecycle.mjs "$GITHUB_WORKSPACE/source" "$GITHUB_WORKSPACE/artifacts/sfc-optional-lifecycle"
       - name: Retain Cargo, loaded images and lifecycle phase receipts
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
