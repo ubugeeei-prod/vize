@@ -32,6 +32,9 @@ jobs:
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 45
     steps:
+      - name: Preserve exact source line endings on Windows
+        if: runner.os == 'Windows'
+        run: git config --global core.autocrlf false
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           {
@@ -114,6 +117,9 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     steps:
+      - name: Preserve exact source line endings on Windows
+        if: runner.os == 'Windows'
+        run: git config --global core.autocrlf false
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           {
@@ -138,6 +144,7 @@ jobs:
           rust-script tools/commands/editors/vscode/package-typescript-provider.rs x86_64-unknown-linux-gnu .native-artifacts editors/vscode/dist/vize-linux-x64.vsix
           rust-script tools/commands/editors/vscode/package-typescript-provider.rs x86_64-pc-windows-msvc .native-artifacts editors/vscode/dist/vize-win32-x64.vsix
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
         with:
           name: typescript-provider-vsix-${{ github.event.pull_request.head.sha || github.sha }}
           path: |
@@ -157,6 +164,9 @@ jobs:
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 20
     steps:
+      - name: Preserve exact source line endings on Windows
+        if: runner.os == 'Windows'
+        run: git config --global core.autocrlf false
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           {

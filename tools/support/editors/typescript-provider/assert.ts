@@ -90,7 +90,7 @@ export function assertPlatformVsix(
     "VSIX lacks its deterministic target platform",
   );
   assert(
-    zipBytes(vsix, "[Content_Types].xml", 1_000_000).toString().includes('Extension="node"'),
+    zipBytes(vsix, "[Content_Types].xml", 1_000_000).toString().includes('Extension=".node"'),
     "VSIX does not declare native image content types",
   );
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-platform-vsix-check-"));
