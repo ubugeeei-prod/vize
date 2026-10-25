@@ -1,3 +1,5 @@
+import path from "node:path";
+
 const STYLE_MARKER = ".__vize_style_";
 
 /** Keep the CSS extension in the path, outside Vue/Nuxt's query metadata. */
@@ -19,6 +21,19 @@ export function createStyleVirtualId(id: string): string {
     ? ""
     : `&${new URLSearchParams({ "vize-file": filename }).toString().replaceAll(".", "%2E")}`;
   return `${filename}${STYLE_MARKER}${index}${suffix}?${(id.slice(start + 1) + source).replaceAll(".", "%2E")}`;
+}
+
+/** Give Vite's CSS resolvers a physical origin without changing emitted imports. */
+export function resolveStyleVirtualId(id: string, root: string): string {
+  const styleId = createStyleVirtualId(id);
+  const queryStart = styleId.indexOf("?");
+  const params = new URLSearchParams(styleId.slice(queryStart + 1));
+  const source = params.get("vize-file");
+  if (!params.has("vize-root-relative") || !source?.startsWith("/")) return styleId;
+
+  const marker = styleId.slice(0, queryStart).lastIndexOf(STYLE_MARKER);
+  const physicalSource = path.resolve(root, source.slice(1)).split(path.sep).join("/");
+  return `${physicalSource}${styleId.slice(marker)}`;
 }
 
 /** Recover the authored SFC before native classification and cache lookup. */
