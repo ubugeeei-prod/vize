@@ -26,23 +26,7 @@ function bytes(root, relative) {
   return fs.readFileSync(file);
 }
 
-export function soleChildVueAuthority(root) {
-  const raw = bytes(root, AUTHORITY);
-  assert.equal(hash(raw), HASH, "closed Vue current authority changed");
-  const result = JSON.parse(raw.toString());
-  assert.equal(result.schema, "vize.independent-vue-history-current-reference");
-  assert.equal(result.version, 1);
-  assert.deepEqual(
-    result.records.map((row) => row.id),
-    [
-      IDS[0],
-      "sfc-vue2-7-filter-chain",
-      IDS[1],
-      "native-hardcoded-2",
-      "native-hardcoded-2.7",
-      "native-hardcoded-3",
-    ],
-  );
+export function assertClosedFormatterManifest(root) {
   assert.equal(hash(bytes(root, CLI_MANIFEST)), CLI_HASH, "whole formatter manifest changed");
   const originalManifest = JSON.parse(bytes(root, CLI_MANIFEST));
   const liveBytes = bytes(root, LIVE_CLI_MANIFEST);
@@ -61,6 +45,26 @@ export function soleChildVueAuthority(root) {
     "original formatter metadata changed",
   );
   assert.equal(new Set(liveManifest.cases.map((row) => row.id)).size, liveManifest.cases.length);
+}
+
+export function soleChildVueAuthority(root) {
+  const raw = bytes(root, AUTHORITY);
+  assert.equal(hash(raw), HASH, "closed Vue current authority changed");
+  const result = JSON.parse(raw.toString());
+  assert.equal(result.schema, "vize.independent-vue-history-current-reference");
+  assert.equal(result.version, 1);
+  assert.deepEqual(
+    result.records.map((row) => row.id),
+    [
+      IDS[0],
+      "sfc-vue2-7-filter-chain",
+      IDS[1],
+      "native-hardcoded-2",
+      "native-hardcoded-2.7",
+      "native-hardcoded-3",
+    ],
+  );
+  assertClosedFormatterManifest(root);
   assert.equal(hash(bytes(root, API_MANIFEST)), API_HASH, "whole Vue14 manifest changed");
   assert.equal(result.nativeOwner.path, "tests/tooling/glyph-vue2-native.test.ts");
   assert.equal(hash(Buffer.from(result.nativeOwner.content)), result.nativeOwner.sha256);
