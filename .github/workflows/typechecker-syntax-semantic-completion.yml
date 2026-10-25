@@ -21,6 +21,11 @@ on:
         required: false
         default: false
         type: boolean
+      provider_contract_only:
+        description: Capture the exact foreign mapper physical image and complete wire contract
+        required: false
+        default: false
+        type: boolean
 permissions:
   contents: read
 concurrency:
@@ -32,7 +37,7 @@ env:
   QUALIFIER_SHA: ${{ inputs.source_ref }}
 jobs:
   native-syntax-completion:
-    if: ${{ !inputs.handoff_only }}
+    if: ${{ !inputs.handoff_only && !inputs.provider_contract_only }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 105
     steps:
@@ -101,7 +106,7 @@ jobs:
           retention-days: 7
 
   native-handoff-replay:
-    if: ${{ inputs.handoff_only }}
+    if: ${{ inputs.handoff_only && !inputs.provider_contract_only }}
     name: Native shutdown baseline (${{ matrix.side }})
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
@@ -187,5 +192,84 @@ jobs:
         with:
           name: native-handoff-replay-${{ matrix.side }}-${{ env.SOURCE_SHA }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/native-handoff-replay/
+          if-no-files-found: error
+          retention-days: 14
+
+  native-provider-contract:
+    if: ${{ inputs.provider_contract_only }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    env:
+      SOURCE_SHA: ${{ inputs.source_ref }}
+      PROVIDER_SOURCE: d6c4afddb2c55f4a9dea7b59293a99a8fdea1799
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          path: source
+          persist-credentials: false
+      - name: Authenticate source and driver without changing product admission
+        working-directory: source
+        run: |
+          set -euo pipefail
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          mkdir -p "$RUNNER_TEMP/native-provider-contract/provider"
+          git rev-parse HEAD > "$RUNNER_TEMP/native-provider-contract/source.sha"
+          git ls-files -s > "$RUNNER_TEMP/native-provider-contract/whole-source-index.txt"
+          git -C .. rev-parse HEAD > "$RUNNER_TEMP/native-provider-contract/driver.sha"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          repository: microsoft/TypeScript
+          ref: ${{ env.PROVIDER_SOURCE }}
+          path: typescript-content-mapper
+          persist-credentials: false
+      - uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
+        with:
+          go-version-file: typescript-content-mapper/tsc/go.mod
+          cache-dependency-path: typescript-content-mapper/tsc/go.sum
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: source/package.json, package-manager-cache: false }
+      - name: Build the exact physical upstream image with the existing flags
+        working-directory: typescript-content-mapper/tsc
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$PROVIDER_SOURCE"
+          go version > "$RUNNER_TEMP/native-provider-contract/go-version.txt"
+          go build -tags=noembed -trimpath -o "$RUNNER_TEMP/tsgo" ./cmd/tsc > "$RUNNER_TEMP/native-provider-contract/build.stdout" 2> "$RUNNER_TEMP/native-provider-contract/build.stderr"
+          cp internal/bundled/libs/*.d.ts "$RUNNER_TEMP/"
+          cp "$RUNNER_TEMP/tsgo" "$RUNNER_TEMP/native-provider-contract/provider/tsgo"
+          cp internal/bundled/libs/*.d.ts "$RUNNER_TEMP/native-provider-contract/provider/"
+          go version -m "$RUNNER_TEMP/tsgo" > "$RUNNER_TEMP/native-provider-contract/go-build-info.txt"
+      - name: Authenticate the complete physical provider and declared version
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { createHash } from 'node:crypto';
+          import { readFileSync, writeFileSync } from 'node:fs';
+          import { join } from 'node:path';
+          import { spawnSync } from 'node:child_process';
+          const binary=join(process.env.RUNNER_TEMP,'tsgo');
+          const sha256=createHash('sha256').update(readFileSync(binary)).digest('hex');
+          assert.equal(sha256,'77dd575e73107c00cc95cbccc3764ab7210089b5634f75e219b61632bd5d230b');
+          const version=spawnSync(binary,['--version'],{encoding:'utf8',timeout:10000});
+          assert.equal(version.status,0);
+          assert.equal(version.stdout,'Version 7.1.0-dev\n');
+          assert.equal(version.stderr,'');
+          writeFileSync(join(process.env.RUNNER_TEMP,'native-provider-contract/provider.json'),JSON.stringify({binary,sha256,version:'7.1.0-dev',upstream:process.env.PROVIDER_SOURCE},null,2)+'\n');
+          JS
+      - name: Capture complete Initialize ACK completion EOF and raw stderr
+        working-directory: source
+        run: node ../tools/support/github/native-shutdown-handshake.mjs "$RUNNER_TEMP/native-provider-contract" "$RUNNER_TEMP/native-provider-contract/provider.json"
+      - name: Retain physical image and complete contract regardless of outcome
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: native-provider-contract-${{ github.run_id }}-${{ github.run_attempt }}-${{ env.SOURCE_SHA }}
+          path: ${{ runner.temp }}/native-provider-contract/
           if-no-files-found: error
           retention-days: 14

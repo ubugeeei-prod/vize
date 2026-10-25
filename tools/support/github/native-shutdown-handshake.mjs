@@ -9,11 +9,22 @@ const directory = join(resolve(process.argv[2]), "actual-native-handshake");
 mkdirSync(directory);
 const project = mkdtempSync(join(directory, "project-"));
 writeFileSync(join(project, "tsconfig.json"), '{"compilerOptions":{"strict":true},"files":[]}\n');
-const executable = realpathSync("node_modules/@typescript/typescript-linux-x64/lib/tsc");
+const captureProvider = process.argv[3] ? JSON.parse(readFileSync(process.argv[3], "utf8")) : null;
+if (captureProvider) {
+  assert.equal(
+    captureProvider.sha256,
+    "77dd575e73107c00cc95cbccc3764ab7210089b5634f75e219b61632bd5d230b",
+  );
+  assert.equal(captureProvider.version, "7.1.0-dev");
+  assert.equal(captureProvider.upstream, "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799");
+}
+const executable = realpathSync(
+  captureProvider?.binary ?? "node_modules/@typescript/typescript-linux-x64/lib/tsc",
+);
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
 assert.equal(
   sha256(readFileSync(executable)),
-  "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4",
+  captureProvider?.sha256 ?? "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4",
 );
 const shutdownSource = readFileSync(
   "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown.rs",
@@ -22,7 +33,7 @@ const shutdownSource = readFileSync(
 const contractMatch =
   /fn known_contract\(\) -> Value \{\s*serde_json::json!\(([\s\S]*?)\)\s*\}/.exec(shutdownSource);
 assert(contractMatch, "the complete known contract must remain an explicit JSON value");
-const expectedInitialize = JSON.parse(contractMatch[1]);
+const expectedInitialize = captureProvider ? null : JSON.parse(contractMatch[1]);
 const rootUri = pathToFileURL(project).href;
 // Mirror diagnostics_lsp::initialize_lsp_params without changing logging.
 // Preserve these complete parameters and the original source hash as custody.
@@ -178,8 +189,23 @@ try {
     "initialize",
     30000,
   );
-  assert.deepEqual(initialized, { jsonrpc: "2.0", id: 1, result: expectedInitialize });
-  observation = { ...observation, completeInitializeMatchesKnownContract: true, initialized };
+  if (captureProvider) {
+    assert.equal(initialized.jsonrpc, "2.0");
+    assert.equal(initialized.id, 1);
+    assert.equal(initialized.error, undefined);
+    assert.equal(initialized.result?.serverInfo?.name, "typescript-go");
+    assert.equal(initialized.result?.serverInfo?.version, captureProvider.version);
+    assert(initialized.result?.capabilities && typeof initialized.result.capabilities === "object");
+  } else {
+    assert.deepEqual(initialized, { jsonrpc: "2.0", id: 1, result: expectedInitialize });
+  }
+  observation = {
+    ...observation,
+    completeInitializeMatchesKnownContract: !captureProvider,
+    completeInitializeCaptured: true,
+    productAdmissionChanged: false,
+    initialized,
+  };
   send({ jsonrpc: "2.0", method: "initialized", params: {} });
   send({ jsonrpc: "2.0", id: 2, method: "shutdown" });
   const acknowledgement = await receive(
@@ -210,6 +236,7 @@ try {
       JSON.stringify(
         {
           source: process.env.SOURCE_SHA,
+          captureProvider,
           executable: {
             path: executable,
             sha256: sha256(readFileSync(executable)),
