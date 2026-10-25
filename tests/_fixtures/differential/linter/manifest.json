@@ -2173,6 +2173,54 @@
           }
         ]
       }
+    },
+    {
+      "id": "linter/native-canonical-image-alt-10563",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "native-canonical-image-alt-10563",
+        "files": [
+          {
+            "path": "images.lf.vue.txt",
+            "role": "native-canonical-query-control",
+            "sha256": "f1e000c5ff1d3b470d305c02a4db20114db928628e96b6511320459d8c7ee979"
+          },
+          {
+            "path": "images.crlf.vue.txt",
+            "role": "native-canonical-query-control",
+            "sha256": "6de8cb1b9da6217556cca59e23901847f3fec13d0ea85a0cfac7f294e7802dc3"
+          },
+          {
+            "path": "images.jsx.txt",
+            "role": "native-canonical-query-control",
+            "sha256": "af92e645d77094931e1f11c80d7e53b1e18f299ba00603ed448ecba6f8d5eff7"
+          },
+          {
+            "path": "images.tsx.txt",
+            "role": "native-canonical-query-control",
+            "sha256": "af92e645d77094931e1f11c80d7e53b1e18f299ba00603ed448ecba6f8d5eff7"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "jsx",
+              "tsx"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }

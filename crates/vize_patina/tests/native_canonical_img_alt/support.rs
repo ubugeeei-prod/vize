@@ -78,28 +78,36 @@ pub fn query(
 
 /// The reference is the registered compatibility route, never native custody.
 pub fn parity(dialect: Dialect, body: &str, newline: &str, locale: Locale) -> Vec<Value> {
+    let source = match dialect {
+        Dialect::Vue => vize_l0::cstr!("<!--作者😀-->{newline}<template>{body}</template>"),
+        Dialect::Jsx | Dialect::Tsx => {
+            vize_l0::cstr!("const prefix = '作者😀';{newline}const view = {body};")
+        }
+    };
+    source_parity(dialect, &source, locale)
+}
+
+pub fn source_parity(dialect: Dialect, source: &str, locale: Locale) -> Vec<Value> {
     let a = Allocator::default();
     let mut registry = RuleRegistry::new();
     registry.register(Box::new(ImgAlt));
     let linter = Linter::with_registry(registry).with_locale(locale);
     let messages = translator().for_locale(locale);
-    let (source, actual, reference) = match dialect {
+    let (actual, reference) = match dialect {
         Dialect::Vue => {
-            let source = vize_l0::cstr!("<!--作者😀-->{newline}<template>{body}</template>");
-            let owner = lower_sfc_native(&a, &source, options());
+            let owner = lower_sfc_native(&a, source, options());
             let admitted = owner
                 .admitted()
                 .unwrap_or_else(|| panic!("{source}: {:?}", owner.issues()));
             let lint = NativeCanonicalLint::from_vue(admitted);
             assert!(core::ptr::eq(lint.file(), owner.file().unwrap().file()));
             let findings = query(&lint, &messages);
-            let reference = linter.lint_sfc(&source, "native.vue");
+            let reference = linter.lint_sfc(source, "native.vue");
             drop(owner);
-            (source, findings, reference)
+            (findings, reference)
         }
         Dialect::Jsx | Dialect::Tsx => {
-            let source = vize_l0::cstr!("const prefix = '作者😀';{newline}const view = {body};");
-            let owner = jsx(&a, &source, matches!(dialect, Dialect::Tsx));
+            let owner = jsx(&a, source, matches!(dialect, Dialect::Tsx));
             let lint = NativeCanonicalLint::from_jsx(&owner).unwrap();
             assert!(core::ptr::eq(lint.file(), owner.file()));
             let findings = query(&lint, &messages);
@@ -108,9 +116,9 @@ pub fn parity(dialect: Dialect, body: &str, newline: &str, locale: Locale) -> Ve
             } else {
                 vize_atelier_jsx::JsxLang::Jsx
             };
-            let reference = linter.lint_jsx(&source, "native.tsx", lang);
+            let reference = linter.lint_jsx(source, "native.tsx", lang);
             drop(owner);
-            (source, findings, reference)
+            (findings, reference)
         }
     };
     // The canonical borrow has ended. Findings cannot retain arena storage.

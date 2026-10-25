@@ -175,6 +175,7 @@ fn v_pre_unknown_directives_and_invalid_expressions_keep_producer_refusals() {
         "<template><div v-pre><img :[alt]='x'/></div></template>",
         "<template><img v-unknown='x'/></template>",
         "<template><img :alt='broken +'/></template>",
+        "<template><img :alt='photo?.description'/></template>",
         "<template><img .alt='text'/></template>",
         "<template><img :ALT.camel='text'/></template>",
         "<template><img v-bind:alt.prop='text'/></template>",

@@ -93,3 +93,24 @@ fn pending_header_is_flushed_at_siblings_and_at_end_of_file() {
         );
     }
 }
+
+#[test]
+fn pinned_production_inputs_compare_full_packets_on_their_genuine_owners() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../tests/_fixtures/differential/linter/native-canonical-image-alt-10563");
+    for (file, dialect) in [
+        ("images.lf.vue.txt", Dialect::Vue),
+        ("images.crlf.vue.txt", Dialect::Vue),
+        ("images.jsx.txt", Dialect::Jsx),
+        ("images.tsx.txt", Dialect::Tsx),
+    ] {
+        let source = std::fs::read_to_string(root.join(file)).unwrap();
+        for locale in [Locale::En, Locale::Ja, Locale::Zh] {
+            assert_eq!(
+                support::source_parity(dialect, &source, locale).len(),
+                2,
+                "{file}"
+            );
+        }
+    }
+}

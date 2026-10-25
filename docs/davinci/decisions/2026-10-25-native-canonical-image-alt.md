@@ -20,8 +20,7 @@ Static alt names count regardless of the attribute value, including empty and
 bare attributes. The Vue producer also admits simple statically named bound
 attributes with self-contained values; the query does not evaluate their
 expressions. Unresolved external value references remain a File admission
-refusal. The
-current producer refuses modifier/dot/same-name binds, dynamic arguments,
+refusal. The current producer refuses modifier/dot/same-name binds, dynamic arguments,
 object spreads, unknown directives, v-pre and invalid expressions before a
 canonical lint context exists. JSX dynamic values, spreads and entity
 normalization retain their typed whole-view producer refusals. These are
@@ -45,6 +44,16 @@ nonzero source blocks, whole paired-element ranges, catalog lookup bounds and
 repeat equality. The compatibility route is an oracle, not native ownership.
 Outputs are checked after the original owner's arena is dropped. Refusal laws
 retain the actual failed producer or admitted File without fabricating nodes.
+
+The `native-image-alt-query.yml` source workflow builds the original-header
+observer byte-for-byte on the immutable base and head, then compares its entire
+diagnostic packets. Both runs use genuine L1 `NativeTemplateComponent` owners
+and include the same original child iteration. The new canonical observer
+reports absolute query phases separately for actual Vue, JSX and TSX owners;
+there is no trusted conversion between these private owner families. Each
+observer reports nine 500-call samples after preparation and warmup, in the
+same optimized profile, with result destruction outside the measured phase.
+Source timings cannot establish a cross-representation or whole-product ratio.
 
 The configured linter route is unchanged. This adds one bounded native consumer;
 it does not admit all Vue syntax, add a Pug producer, establish whole-product
