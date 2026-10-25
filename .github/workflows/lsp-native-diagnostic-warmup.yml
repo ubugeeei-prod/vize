@@ -101,13 +101,18 @@ jobs:
           cargo test --locked --profile ci -p vize_maestro --lib server::state::config_tests::
           cargo clippy --locked --profile ci -p vize_maestro --all-targets -- -D warnings
           node --test --test-concurrency=1 tests/tooling/lsp-initial-diagnostics-version.test.ts tests/tooling/lsp-responsive-lint-diagnostics.test.ts tests/tooling/vscode-extension-core-behavior.test.ts tests/tooling/vscode-extension-manifest.test.ts tests/tooling/lsp-startup-local-interactive.test.ts
+      - name: Stage each exact producer's receipt and actual raw stdio captures
+        if: ${{ !cancelled() && steps.producer.outcome == 'success' }}
+        run: |
+          retained="$GITHUB_WORKSPACE/target/vize-tests/native-diagnostic-warmup-10604/$VIZE_WARMUP_ROLE-source"
+          mkdir -p "$retained"
+          cp "$VIZE_WARMUP_SOURCE_ROOT/target/ci/vize.differential-build.json" "$retained/"
+          cp -R "$VIZE_WARMUP_SOURCE_ROOT/target/differential/lsp-sessions" "$retained/"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: native-diagnostic-warmup-${{ matrix.role }}-${{ github.run_id }}-${{ github.event.pull_request.head.sha }}
           path: |
             target/vize-tests/native-diagnostic-warmup-10604/
-            target/differential/lsp-sessions/
-            target/ci/vize.differential-build.json
           if-no-files-found: error
           retention-days: 3
