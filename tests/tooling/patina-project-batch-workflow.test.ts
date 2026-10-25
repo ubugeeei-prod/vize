@@ -1,4 +1,8 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import test from "node:test";
 import { parse } from "yaml";
 import { readRepoFile } from "./support/github-workflows.ts";
@@ -50,4 +54,37 @@ void test("type-aware batch qualification stays optional and reuses exact optimi
     "patina-project-batch/summary.md",
     "patina-project-batch/dependency-install.log",
   ]);
+});
+
+void test("benchmark conflict guard rejects real markers without mistaking long license headings", () => {
+  const workflow = parse(readRepoFile(".github", "workflows", "benchmark.yml"));
+  const source = workflow.jobs["pr-benchmark"].steps.find(
+    (step: { name?: string }) => step.name === "Check base checkout",
+  ).run;
+  const expression = source.match(/git grep -n -E '([^']+)'/u)?.[1];
+  assert.equal(expression, "^(<<<<<<<|=======$|>>>>>>>)");
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "benchmark-conflict-guard-"));
+  try {
+    for (const [text, expected] of [
+      ["Mozilla Public License Version 2.0\n=================================\n", 1],
+      ["License\n==================================\n", 1],
+      ["<<<<<<< HEAD\nbefore\n=======\nafter\n>>>>>>> topic\n", 0],
+      ["<<<<<<< HEAD\r\nbefore\r\n=======\r\nafter\r\n>>>>>>> topic\r\n", 0],
+      ["<<<<<<< HEAD\nunclosed\n", 0],
+      ["=======\n", 0],
+      ["unopened\n>>>>>>> topic\n", 0],
+      [`${"<".repeat(32)} HEAD\nbefore\n${"=".repeat(32)}\nafter\n${">".repeat(32)} topic\n`, 0],
+    ] as const) {
+      fs.writeFileSync(path.join(root, "input"), text);
+      const result = spawnSync(
+        "git",
+        ["grep", "--no-index", "-n", "-E", expression, "--", "input"],
+        { cwd: root, encoding: "utf8" },
+      );
+      assert.equal(result.error, undefined);
+      assert.equal(result.status, expected, `${JSON.stringify(text)}: ${result.stderr}`);
+    }
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });

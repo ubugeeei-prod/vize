@@ -95,7 +95,7 @@ jobs:
             echo "::error title=Invalid benchmark range::base_sha must be an ancestor of head_sha"
             exit 1
           fi
-          if git grep -n -E '^(<<<<<<<|=======|>>>>>>>)' -- . ':(exclude)tests/_fixtures/_git/**'; then
+          if git grep -n -E '^(<<<<<<<|=======$|>>>>>>>)' -- . ':(exclude)tests/_fixtures/_git/**'; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
             {
               echo "## PR Benchmark"
