@@ -1,4 +1,5 @@
 import type { PluginTracer } from "@parcel/types";
+import { randomUUID } from "node:crypto";
 
 /** Synchronous native boundaries appear as individual operations in Parcel traces. */
 export function nativeOperation<T>(
@@ -8,7 +9,11 @@ export function nativeOperation<T>(
   action: () => T,
 ): T {
   if (!tracer.enabled) return action();
-  const measurement = tracer.createMeasurement(`napi:${name}`, "native", filename);
+  // Parcel can deliver one worker event to several ReporterRunner listeners.
+  // A per-call ID lets consumers retain every raw event without counting copies.
+  const measurement = tracer.createMeasurement(`napi:${name}`, "native", filename, {
+    callId: randomUUID(),
+  });
   try {
     return action();
   } finally {

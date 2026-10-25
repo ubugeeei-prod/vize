@@ -6,6 +6,7 @@ import http from "node:http";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { summarizeNativeEvents } from "./native-analysis.mjs";
 
 const repository = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
 const arguments_ = process.argv.slice(2);
@@ -722,7 +723,9 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
     .filter(Boolean)
     .map((line) => JSON.parse(line));
   const compileCalls = (events) =>
-    events.filter((event) => event.name === "napi:compileSfc").length;
+    new Set(
+      events.filter((event) => event.name === "napi:compileSfc").map((event) => event.args.callId),
+    ).size;
   assert.ok(compileCalls(nativeEventsBeforeSass) > 0, "actual compiler calls must be captured");
   assert.equal(
     compileCalls(nativeEventsAfterSass),
@@ -939,6 +942,14 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
   tracing = false;
   await browser.close();
   browser = undefined;
+  const rawNativeEvents = (await fs.readFile(path.join(proof, "native-trace.jsonl"), "utf8"))
+    .trim()
+    .split("\n")
+    .filter(Boolean)
+    .map((line) => JSON.parse(line));
+  const nativeOperations = summarizeNativeEvents(rawNativeEvents);
+  assert.ok(nativeOperations.calls > 0);
+  await write("native-operations.json", nativeOperations);
   await write("receipt.json", {
     complete: true,
     schema: "vize.parcel.host.v2",
@@ -957,6 +968,7 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
     nativeBuildToken: loaded.getNativeBuildToken(),
     providerLock: lock,
     developmentHostOptions: {
+      shouldContentHash: false,
       browserCache: "Chromium default; cache disabling APIs are not used",
       recoveryFrontier,
       unqualifiedRecovery: "Default error recovery remains a failing frontier: #10736",
