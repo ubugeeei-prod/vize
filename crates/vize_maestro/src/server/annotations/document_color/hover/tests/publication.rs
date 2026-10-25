@@ -2,6 +2,14 @@
 //! an async provider yields, including equal-version close/reopen.
 
 use crate::server::{MaestroServer, project_contexts::DocumentServer};
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Mutation {
+    Unchanged,
+    Edit,
+    Close,
+    SameVersionReopen,
+}
 use futures::{FutureExt, channel::oneshot, executor::block_on};
 use tower_lsp::{
     LanguageServer, LspService,
@@ -14,7 +22,12 @@ use tower_lsp::{
 
 #[test]
 fn completed_whole_color_hover_is_refused_after_async_source_mutation() {
-    for mutation in ["unchanged", "edit", "close", "same-version-reopen"] {
+    for mutation in [
+        Mutation::Unchanged,
+        Mutation::Edit,
+        Mutation::Close,
+        Mutation::SameVersionReopen,
+    ] {
         block_on(async {
             let (service, _socket) = LspService::new(MaestroServer::new);
             let server = service.inner();
@@ -50,7 +63,7 @@ fn completed_whole_color_hover_is_refused_after_async_source_mutation() {
             futures::pin_mut!(pending);
             assert!(pending.as_mut().now_or_never().is_none());
             match mutation {
-                "edit" => {
+                Mutation::Edit => {
                     assert!(server.state.documents.apply_changes(
                         &uri,
                         vec![TextDocumentContentChangeEvent {
@@ -61,10 +74,10 @@ fn completed_whole_color_hover_is_refused_after_async_source_mutation() {
                         2
                     ));
                 }
-                "close" => {
+                Mutation::Close => {
                     server.state.documents.close(&uri);
                 }
-                "same-version-reopen" => {
+                Mutation::SameVersionReopen => {
                     server.state.documents.close(&uri);
                     server.state.documents.open(
                         uri.clone(),
@@ -74,15 +87,14 @@ fn completed_whole_color_hover_is_refused_after_async_source_mutation() {
                     );
                     assert_eq!(server.state.documents.version(&uri), Some(1));
                 }
-                "unchanged" => {}
-                _ => unreachable!(),
+                Mutation::Unchanged => {}
             }
             release.send(()).unwrap();
             let actual = pending.await;
-            if mutation == "unchanged" {
+            if mutation == Mutation::Unchanged {
                 assert_eq!(serde_json::to_value(actual.unwrap()).unwrap(), wanted);
             } else {
-                assert_eq!(actual, Err(Error::content_modified()), "{mutation}");
+                assert_eq!(actual, Err(Error::content_modified()), "{mutation:?}");
             }
             assert!(!server.state.has_corsa_bridge());
         });
