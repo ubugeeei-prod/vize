@@ -63,6 +63,11 @@ const registered: Record<string, { sources: SourcePair[]; tests: Selector[] }> =
         before: "138020f6b6f2aca5cabf28d457b1084b87cc3732b673538e57fcf45bbd7cc1d7",
         after: "65858c57902af1e833ba79e29ae46a17fad029c4a7d558936e74092c00bd2082",
       },
+      {
+        path: "crates/vize_canon/src/batch/executor/tests/incremental_fallback.rs",
+        before: "dc06840ea2fc02f3f25ffb9c9e8b8f17ab639a20b8616643579104df4d9d34a2",
+        after: "288475335b06e28f3127e83cdf1a8551ae648cd1ae4ca25ecf16d69e4825fc20",
+      },
     ],
     tests: [
       {
@@ -98,6 +103,12 @@ const registered: Record<string, { sources: SourcePair[]; tests: Selector[] }> =
       {
         selector: "batch::executor::tests::cli_global_diagnostics_do_not_trigger_session_fallback",
         source: "crates/vize_canon/src/batch/executor/tests.rs",
+        consumesFixture: false,
+      },
+      {
+        selector:
+          "batch::executor::tests::incremental_fallback::incremental_session_fallback_is_counted_per_check",
+        source: "crates/vize_canon/src/batch/executor/tests/incremental_fallback.rs",
         consumesFixture: false,
       },
     ],
@@ -264,6 +275,14 @@ export function unchangedGlobalDiagnosticMock(before: string, after: string): bo
   );
 }
 
+/** Preserve the complete incremental fallback/counter control around its selected mock. */
+export function unchangedIncrementalRuntimeMock(before: string, after: string): boolean {
+  const previous = "    let executor = CorsaExecutor::new(&case_dir).unwrap();";
+  const current =
+    "    let executor = CorsaExecutor::with_corsa_path(&case_dir, Some(&tsgo)).unwrap();";
+  return before.split(previous).length === 2 && before.replace(previous, current) === after;
+}
+
 export function newNativeRuntimeCases(
   product: string,
   previous: unknown,
@@ -354,6 +373,12 @@ export function newNativeRuntimeCases(
             before.toString("utf8"),
             after.toString("utf8"),
           ), "unrelated executor test or oracle edit");
+      if (expected.path === "crates/vize_canon/src/batch/executor/tests/incremental_fallback.rs")
+        require(before !== null &&
+          unchangedIncrementalRuntimeMock(
+            before.toString("utf8"),
+            after.toString("utf8"),
+          ), "unrelated incremental counter or fallback oracle edit");
       if (expected.path.startsWith("crates/vize_maestro/"))
         require(before !== null &&
           unchangedNativeRuntimeGuidance(
