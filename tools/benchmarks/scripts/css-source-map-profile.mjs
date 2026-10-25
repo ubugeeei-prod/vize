@@ -166,6 +166,9 @@ function run(base, head, destination) {
     fs.mkdirSync(target);
     assert.deepEqual(fs.readdirSync(target), []);
     const nativeDir = path.join(root, "npm/native");
+    const imageDir = path.join(destination, `${side}-image`);
+    assert.equal(fs.existsSync(imageDir), false);
+    fs.mkdirSync(imageDir);
     if (side === "base") {
       assert.equal(fs.existsSync(path.join(nativeDir, "node_modules")), false);
       fs.symlinkSync(
@@ -189,7 +192,7 @@ function run(base, head, destination) {
       "--features",
       "napi,legacy",
       "--output-dir",
-      ".",
+      imageDir,
       "--no-js",
       "--",
       "--locked",
@@ -224,11 +227,12 @@ function run(base, head, destination) {
       path.join(destination, `${side}-build.log`),
     );
     assert.equal(git(root, "diff", "--name-only", "HEAD"), "");
-    const binaries = fs.readdirSync(nativeDir).filter((name) => name.endsWith(".node"));
+    const binaries = fs.readdirSync(imageDir).filter((name) => name.endsWith(".node"));
     assert.equal(binaries.length, 1);
-    identity.binary = path.join(destination, `${side}.node`);
-    fs.copyFileSync(path.join(nativeDir, binaries[0]), identity.binary);
+    identity.binary = path.join(imageDir, binaries[0]);
     identity.binarySha256 = digest(identity.binary);
+    const declaration = path.join(imageDir, "index.d.ts");
+    identity.declaration = { file: declaration, sha256: digest(declaration) };
     write(path.join(destination, `${side}-identity.json`), identity);
     retain();
   }
