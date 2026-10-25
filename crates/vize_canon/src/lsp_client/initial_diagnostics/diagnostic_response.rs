@@ -52,6 +52,19 @@ pub(super) struct NativeDiagnostic {
 }
 
 impl NativeDiagnostic {
+    pub(super) fn matches_dialect(&self, derived_snapshots: bool) -> bool {
+        derived_snapshots
+            || (self.start_position.is_none()
+                && self.end_position.is_none()
+                && self.source_lines.is_none()
+                && self.source.is_none()
+                && self
+                    .message_chain
+                    .iter()
+                    .chain(&self.related_information)
+                    .all(|child| child.matches_dialect(false)))
+    }
+
     pub(super) fn belongs_to(&self, expected_file: &str) -> bool {
         self.file_name
             .as_deref()

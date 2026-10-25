@@ -113,3 +113,50 @@ fn chained_metadata_is_checked_on_its_own_source_and_cannot_hide_a_bad_location(
     row["messageChain"][0]["sourceLines"][0]["text"] = json!("wrong");
     assert!(convert(row).is_err());
 }
+
+#[test]
+fn actual_pinned_beta_dto_and_source_reproduce_the_complete_semantic_packet() {
+    let fixture: Value = serde_json::from_str(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/typechecker/snapshot-source-text/protocol9-beta.json"
+    )))
+    .unwrap();
+    let name = fixture["file"].as_str().unwrap();
+    let source = SnapshotText::new(fixture["text"].as_str().unwrap()).unwrap();
+    let row: NativeDiagnostic = serde_json::from_value(fixture["diagnostics"][0].clone()).unwrap();
+    let packet = row
+        .into_lsp(name, |file| {
+            assert_eq!(file, name);
+            Ok(&source)
+        })
+        .unwrap();
+    assert_eq!(
+        serde_json::to_value(packet).unwrap(),
+        json!({
+        "range":{"start":{"line":2,"character":13},"end":{"line":2,"character":19}},
+        "severity":1,"code":2322,"source":"ts","message":"Type 'string' is not assignable to type 'number'."})
+    );
+}
+
+#[test]
+fn session_snapshots_keeps_the_original_dto_field_contract_including_nested_rows() {
+    let beta: NativeDiagnostic = serde_json::from_value(wire()).unwrap();
+    assert!(!beta.matches_dialect(false));
+    assert!(beta.matches_dialect(true));
+    let mut legacy = wire();
+    for field in ["startPosition", "endPosition", "sourceLines"] {
+        legacy.as_object_mut().unwrap().remove(field);
+    }
+    let value: NativeDiagnostic = serde_json::from_value(legacy.clone()).unwrap();
+    assert!(value.matches_dialect(false));
+    for field in ["source", "messageChain", "relatedInformation"] {
+        let mut changed = legacy.clone();
+        changed[field] = if field == "source" {
+            json!("custom")
+        } else {
+            json!([wire()])
+        };
+        let row: NativeDiagnostic = serde_json::from_value(changed).unwrap();
+        assert!(!row.matches_dialect(false));
+    }
+}

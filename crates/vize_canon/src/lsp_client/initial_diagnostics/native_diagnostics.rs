@@ -43,6 +43,7 @@ pub(in crate::lsp_client) fn read(
             .ok_or(Failure::Unsupported)?;
         let file = path_to_typescript_name(&path);
         let params = json!({"snapshot":snapshot.handle,"project":project.id,"file":file});
+        let derived_snapshots = client.dialect() == Some(ApiDialect::DerivedSnapshots);
         // The already-owned handshake distinguishes native 7.0's single-file
         // DTO from 7.1's files array. Never request project-wide data then filter.
         let kind_params = match client.dialect() {
@@ -60,11 +61,19 @@ pub(in crate::lsp_client) fn read(
             // Native NewDiagnosticResponses(nil) serializes a successful null.
             // It is empty for THIS kind only; every remaining kind must succeed.
             if !response.is_null() {
-                rows.extend(
-                    serde_json::from_value::<Vec<NativeDiagnostic>>(response).map_err(|error| {
+                let diagnostics = serde_json::from_value::<Vec<NativeDiagnostic>>(response)
+                    .map_err(|error| {
                         Failure::Failed(cstr!("Malformed {method} response: {error}"))
-                    })?,
-                );
+                    })?;
+                if diagnostics
+                    .iter()
+                    .any(|row| !row.matches_dialect(derived_snapshots))
+                {
+                    return Err(Failure::Failed(cstr!(
+                        "Malformed {method} response: beta fields on the session-snapshots dialect"
+                    )));
+                }
+                rows.extend(diagnostics);
             }
         }
         if rows.iter().any(|row| !row.belongs_to(&file)) {

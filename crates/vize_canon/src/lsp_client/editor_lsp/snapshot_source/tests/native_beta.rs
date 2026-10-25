@@ -7,7 +7,7 @@ use crate::{
 };
 use corsa::runtime::block_on;
 use lsp_types::{DocumentDiagnosticReport, DocumentDiagnosticReportResult};
-use serde_json::{Value, json};
+use serde_json::json;
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -74,6 +74,7 @@ fn actual_sdk_semantic_error_repair_navigation_and_two_file_scope_are_complete()
     editor.mirror(&neighbor_uri, NEIGHBOR).unwrap();
     editor.ready_workspace_request().unwrap();
     let client = editor.configured_api.as_ref().unwrap().client.clone();
+    assert_eq!(VALID.lines().nth(2).unwrap().find("label"), Some(30));
     let invalid = VALID.replace("label.length", "label");
     let repaired = VALID.replace("\"ok\"", "\"repaired\"");
     let mut rows = Vec::new();
@@ -151,7 +152,7 @@ fn actual_sdk_semantic_error_repair_navigation_and_two_file_scope_are_complete()
             references,
             json!([
                 {"uri":source_uri,"range":{"start":{"line":1,"character":13},"end":{"line":1,"character":18}}},
-                {"uri":source_uri,"range":{"start":{"line":2,"character":29},"end":{"line":2,"character":34}}},
+                {"uri":source_uri,"range":{"start":{"line":2,"character":30},"end":{"line":2,"character":35}}},
                 {"uri":source_uri,"range":{"start":{"line":3,"character":20},"end":{"line":3,"character":25}}}
             ])
         );
