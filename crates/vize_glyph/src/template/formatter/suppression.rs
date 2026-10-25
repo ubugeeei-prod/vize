@@ -268,6 +268,7 @@ impl TextRun {
 
     /// Append `source[start..end]`, separating it from already buffered text
     /// with a single space (an interpolation or a stray `<` split the runs).
+    #[inline(always)]
     pub(super) fn push_source(&mut self, source: &[u8], start: usize, end: usize) {
         if self.bytes.is_empty() {
             self.start = start;

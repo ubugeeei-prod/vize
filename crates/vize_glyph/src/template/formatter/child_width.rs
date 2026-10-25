@@ -158,7 +158,7 @@ impl TemplateFormatter<'_> {
             > self.options.print_width as usize
     }
 
-    #[inline]
+    #[inline(always)]
     pub(super) fn write_wrapped_hugged_child(
         &self,
         output: &mut Vec<u8>,
@@ -219,7 +219,7 @@ impl TemplateFormatter<'_> {
         true
     }
 
-    #[inline]
+    #[inline(always)]
     pub(super) fn write_wrapped_text_interpolation(
         &self,
         output: &mut Vec<u8>,
