@@ -6,8 +6,15 @@ import { test } from "node:test";
 const root = fileURLToPath(new URL("../../", import.meta.url));
 
 test("capture never replaces the actual diagnostic assertion and the full tier stays unfiltered", () => {
-  const rust = fs.readFileSync(
+  const binary = fs.readFileSync(
     path.join(root, "crates/vize_canon/tests/fix_history_diagnostics.rs"),
+    "utf8",
+  );
+  assert(binary.includes("pub(crate) mod fix_history_runner;"));
+  assert(binary.includes("use support::fix_history_runner::check_pack;"));
+  assert(!binary.includes("fn check_pack("));
+  const rust = fs.readFileSync(
+    path.join(root, "crates/vize_canon/tests/support/fix_history_runner.rs"),
     "utf8",
   );
   const comparison = rust.indexOf("let (compared_actual, compared_expected) =");

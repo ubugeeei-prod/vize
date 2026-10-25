@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { performance } from "node:perf_hooks";
@@ -227,7 +228,57 @@ await test(
         }
       }
     } finally {
-      provider.cleanup();
+      try {
+        // Artifact services reject legal Unix filenames containing quotes or
+        // angle brackets. Preserve their original names and bytes inside tar.
+        const directories = variants
+          .map((variant) => variant.directory)
+          .filter((directory) => fs.existsSync(path.join(project, directory)));
+        if (directories.length > 0) {
+          const sha256 = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
+          const inputs = directories.flatMap((directory) =>
+            fs
+              .readdirSync(path.join(project, directory))
+              .sort()
+              .map((file) => {
+                const relative = path.join(directory, file);
+                const bytes = fs.readFileSync(path.join(project, relative));
+                return { path: relative, bytes: bytes.length, sha256: sha256(bytes) };
+              }),
+          );
+          const archive = path.join(output, "literal-fixtures.tar");
+          const args = ["-cf", archive, "-C", project, ...directories];
+          const start = performance.now();
+          const result = spawnSync("tar", args, { encoding: "utf8", timeout: 30_000 });
+          const packet = {
+            command: "tar",
+            args,
+            status: result.status,
+            signal: result.signal,
+            error: result.error?.message ?? null,
+            stdout: result.stdout,
+            stderr: result.stderr,
+            elapsedMs: performance.now() - start,
+            inputs,
+            archiveSha256: fs.existsSync(archive) ? sha256(fs.readFileSync(archive)) : null,
+          };
+          fs.writeFileSync(
+            path.join(output, "fixture-archive-packet.json"),
+            `${JSON.stringify(packet, null, 2)}\n`,
+          );
+          assert.equal(packet.error, null);
+          assert.equal(packet.signal, null);
+          assert.equal(packet.status, 0);
+          assert.equal(packet.stdout, "");
+          assert.equal(packet.stderr, "");
+          assert.notEqual(packet.archiveSha256, null);
+          for (const directory of directories) {
+            fs.rmSync(path.join(project, directory), { recursive: true });
+          }
+        }
+      } finally {
+        provider.cleanup();
+      }
     }
   },
 );
