@@ -100,6 +100,39 @@ function sourceIdentity() {
   };
 }
 
+function executionAuthority(source, consumer, environment) {
+  const loader = path.join(repoRoot, "crates/vize_carton/src/config/loader");
+  const rust = fs.readFileSync(path.join(loader, "js.rs"), "utf8");
+  const embedded =
+    /let script = \[\s*include_str!\("vite-runtime\.mjs"\),\s*include_str!\("module-runtime\.mjs"\),\s*r#"([\s\S]*?)"#,\s*\]\s*\.concat\(\);/u.exec(
+      rust,
+    );
+  assert.ok(embedded, "exact current source config script recipe");
+  assert.match(
+    fs.readFileSync(path.join(loader, "lsp_snapshot.rs"), "utf8"),
+    /builder\.prefix\("vize-config-compile-"\)/u,
+  );
+  const escape = (value) => value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+  return {
+    source: { path: source.executable, sha256: source.receipt.binarySha256 },
+    node: {
+      path: path.join(environment.PATH, "node"),
+      physicalPath: fs.realpathSync(process.execPath),
+      sha256: sha256(fs.readFileSync(process.execPath)),
+    },
+    configScript:
+      fs.readFileSync(path.join(loader, "vite-runtime.mjs"), "utf8") +
+      fs.readFileSync(path.join(loader, "module-runtime.mjs"), "utf8") +
+      embedded[1],
+    configFile: fs.realpathSync(consumer.configFile),
+    configCachePattern: new RegExp(
+      `^${escape(environment.TMPDIR ?? os.tmpdir())}/vize-config-compile-[A-Za-z0-9]+$`,
+      "u",
+    ),
+    sdk: consumer.expectedExecutable,
+  };
+}
+
 function exactHover(packet, source, token) {
   const offset =
     token === "value" ? source.indexOf("const value") + 6 : source.indexOf("{{ doubled }}") + 3;
@@ -428,7 +461,11 @@ export async function observeSourceLspSelection() {
         assert.equal(wire.pending.length, 0);
         assert.equal(wire.failure, null);
         assert.equal(wire.forcedTermination ?? false, false);
-        profile.nativeOwners = captureNativeOwners(wire.prefix, path.join(directory, "native"));
+        profile.nativeOwners = captureNativeOwners(
+          wire.prefix,
+          path.join(directory, "native"),
+          executionAuthority(source, consumer, environment),
+        );
         profile.qualification = validateNativeLifecycle(
           profile.nativeOwners,
           consumer,
