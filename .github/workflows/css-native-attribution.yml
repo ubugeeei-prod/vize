@@ -1,0 +1,43 @@
+name: Native CSS operation attribution
+on:
+  workflow_dispatch:
+  push:
+    branches: ["test/css-binding-phase-profile"]
+    paths:
+      - ".github/workflows/css-native-attribution.yml"
+      - "tools/benchmarks/scripts/css-native-attribution.mjs"
+      - "tools/benchmarks/scripts/css-source-map-profile.mjs"
+      - "tools/benchmarks/scripts/css-source-map-phases.mjs"
+      - "tests/tooling/css-native-attribution.test.mjs"
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: css-native-attribution-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  replay:
+    if: ${{ github.event_name == 'workflow_dispatch' || !github.event.deleted }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ github.sha }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24.14.0" }
+      - name: Verify closed original-image and operation plans
+        run: node --test tests/tooling/css-native-attribution.test.mjs
+      - name: Replay exact original images with complete derived-input controls
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node tools/benchmarks/scripts/css-native-attribution.mjs target/css-native-attribution
+      - name: Retain every original identity, complete query and timing sample
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: css-native-attribution-${{ github.sha }}-${{ github.run_id }}
+          path: target/css-native-attribution/
+          if-no-files-found: error
+          retention-days: 14
