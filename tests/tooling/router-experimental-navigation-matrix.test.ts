@@ -161,17 +161,24 @@ await test(
   async () => {
     assert.equal(process.env.VIZE_LSP_REQUIRE_SOURCE_BUILD, "1");
     assert.ok(process.env.VIZE_TEST_BIN, "exact source CLI required");
+    const output =
+      process.env.VIZE_TEST_ROUTER_MATRIX_OUTPUT ??
+      path.join(repoRoot, "target/differential/router-navigation");
+    fs.mkdirSync(output, { recursive: true });
     const [binary] = resolveVizeLaunchCommand(undefined, process.env.VIZE_TEST_BIN, {
       required: true,
       repoRoot,
+      onVerifiedLaunch(launch) {
+        fs.writeFileSync(
+          path.join(output, "source-launch.json"),
+          `${JSON.stringify(launch, null, 2)}\n`,
+        );
+      },
     });
     const checker = process.env.VIZE_TEST_ROUTER_MATRIX_CHECKER;
     const publicCli = process.env.VIZE_TEST_ROUTER_MATRIX_PUBLIC_CLI;
     assert.ok(checker && path.isAbsolute(checker), "independently locked TypeScript host required");
     assert.ok(publicCli && path.isAbsolute(publicCli), "immutable published Vize oracle required");
-    const output =
-      process.env.VIZE_TEST_ROUTER_MATRIX_OUTPUT ??
-      path.join(repoRoot, "target/differential/router-navigation");
     const { authority, files } = readNavigationFixture();
     const fixture = await prepareExperimentalRouterProject(output);
     const scannerCompiler = scannerTransportCompiler(path.join(fixture.root, "package.json"));
@@ -301,6 +308,11 @@ await test(
         scannerChecks.push(() => assert.equal(bytes, expected, `complete scanner output ${name}`));
         if (name !== "typed-router.d.ts") fs.rmSync(path.join(fixture.root, name));
       }
+      fs.writeFileSync(
+        path.join(output, "scanner-transport.json"),
+        `${JSON.stringify({ authority, admittedRoot: fs.realpathSync(fixture.root), packets: scannerPackets }, null, 2)}\n`,
+      );
+      for (const check of scannerChecks) check();
       for (const [variant, newline] of [
         ["lf", "\n"],
         ["crlf", "\r\n"],
@@ -421,7 +433,13 @@ await test(
           fs.writeFileSync(probePath, source);
           fs.writeFileSync(path.join(output, `${probe.id}-${stage}.source.txt`), source);
           const candidate = native(`format/${probe.id}/${stage}`);
-          published(`format/${probe.id}/${stage}`);
+          const released = published(`format/${probe.id}/${stage}`);
+          checks.push({
+            id: `format/${probe.id}/${stage}/native-preservation`,
+            check() {
+              equivalent(candidate, released);
+            },
+          });
           generated(`format/${probe.id}/${stage}`);
           const independent =
             probe.reference === "vue-tsc"
@@ -496,10 +514,5 @@ await test(
     } finally {
       fixture.cleanup();
     }
-    fs.writeFileSync(
-      path.join(output, "scanner-transport.json"),
-      `${JSON.stringify({ authority, admittedRoot: fs.realpathSync(fixture.root), packets: scannerPackets }, null, 2)}\n`,
-    );
-    for (const check of scannerChecks) check();
   },
 );
