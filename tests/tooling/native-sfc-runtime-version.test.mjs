@@ -63,16 +63,13 @@ const invalid = ["", "2.6", "2.6.14", "2.7.16", "3.5", "4", "0", "Vue2", "2.7-be
 const source =
   '<template><div id="雪">Hello {{ count }}</div></template><script>export default { data() { return { count: 1 } } }</script>';
 
-for (const [name, invoke] of [
-  ["single", (configuration) => native.compileSfc(source, configuration)],
-  [
-    "files",
-    (configuration) =>
-      native.compileSfcBatchWithResults([{ path: "雪.vue", source }], configuration),
-  ],
-  ["stats", (configuration) => native.compileSfcBatch(join(fixtures, "*.vue"), configuration)],
-]) {
-  test(`${name} rejects an explicit unavailable runtime across target modes`, options, () => {
+for (const [name, invoke] of Object.entries({
+  single: (configuration) => native.compileSfc(source, configuration),
+  files: (configuration) =>
+    native.compileSfcBatchWithResults([{ path: "雪.vue", source }], configuration),
+  stats: (configuration) => native.compileSfcBatch(join(fixtures, "*.vue"), configuration),
+})) {
+  await test(`${name} rejects an explicit unavailable runtime across target modes`, options, () => {
     for (const version of legacy) {
       for (const target of [{}, { ssr: true }, { vapor: true }]) {
         const configuration = { vueVersion: version, ...target };
@@ -88,7 +85,7 @@ for (const [name, invoke] of [
       }
     }
   });
-  test(`${name} rejects invalid or ambiguous selectors`, options, () => {
+  await test(`${name} rejects invalid or ambiguous selectors`, options, () => {
     for (const version of invalid) {
       const configuration = { vueVersion: version };
       assert.throws(
@@ -103,7 +100,7 @@ for (const [name, invoke] of [
   });
 }
 
-test("runtime validation precedes worker allocation and glob reads", options, () => {
+await test("runtime validation precedes worker allocation and glob reads", options, () => {
   for (const operation of [
     () => native.compileSfcBatch("[", { vueVersion: "2.7", threads: 0 }),
     () => native.compileSfcBatchWithResults([], { vueVersion: "2.7", threads: 0 }),
@@ -116,7 +113,7 @@ test("runtime validation precedes worker allocation and glob reads", options, ()
   assert.throws(() => native.compileSfcBatch("[", { vueVersion: "3", threads: 0 }), /thread/i);
 });
 
-test("default and explicit Vue3 preserve complete single and batch modules", options, () => {
+await test("default and explicit Vue3 preserve complete single and batch modules", options, () => {
   const sources = [
     source,
     '<template><p class="雪">😀 &amp; {{ 1 + 2 }}</p></template>',
@@ -176,7 +173,7 @@ test("default and explicit Vue3 preserve complete single and batch modules", opt
   }
 });
 
-test("explicit Vue3 emits its actual DOM and server runtime vocabulary", options, () => {
+await test("explicit Vue3 emits its actual DOM and server runtime vocabulary", options, () => {
   const dom = observe("dom-vocabulary", { vueVersion: "3" }, () =>
     native.compileSfc(source, { vueVersion: "3" }),
   );
