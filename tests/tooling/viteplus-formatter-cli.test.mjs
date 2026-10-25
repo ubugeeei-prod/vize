@@ -17,7 +17,7 @@ const files = {
   "日本語/🎨.ts": "const   color=3\n",
 };
 
-test("source CLI shares Vite+ formatter width and project-root exclusions across check and write", (t) => {
+void test("source CLI shares Vite+ formatter width and project-root exclusions across check and write", (t) => {
   const [binary] = resolveVizeLaunchCommand(undefined, path.join(root, "target/ci/vize"), {
     required: true,
     repoRoot: root,
