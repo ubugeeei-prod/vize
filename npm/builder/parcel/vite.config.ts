@@ -4,7 +4,7 @@ export default defineConfig({
   lint: { ignorePatterns: ["dist/**"], options: { typeAware: true } },
   fmt: { ignorePatterns: ["dist/**"] },
   pack: {
-    entry: ["src/index.ts", "src/style.ts", "src/hmr-runtime.ts"],
+    entry: ["src/index.ts", "src/style.ts"],
     format: "cjs",
     dts: true,
     deps: {

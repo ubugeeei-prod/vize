@@ -22,7 +22,7 @@ export function analyseProfile(profile) {
     const node = nodes.get(profile.samples[index]);
     assert.ok(node, "every sample must name an existing node");
     assert.equal(typeof node.callFrame.url, "string");
-    if (!/\/@vizejs\/parcel-(?:transformer|resolver)\//.test(node.callFrame.url)) continue;
+    if (!node.callFrame.url.includes("/@vizejs/parcel-transformer/")) continue;
     const row = rows.get(node.id) ?? {
       function: node.callFrame.functionName,
       file: node.callFrame.url,

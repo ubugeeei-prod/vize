@@ -33,10 +33,6 @@
     "./style": {
       "types": "./dist/style.d.cts",
       "default": "./dist/style.cjs"
-    },
-    "./dist/hmr-runtime.cjs": {
-      "types": "./dist/hmr-runtime.d.cts",
-      "default": "./dist/hmr-runtime.cjs"
     }
   },
   "publishConfig": {
@@ -47,7 +43,8 @@
     "check": "vp check src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts",
     "test": "pnpm build && node --test src/*.test.ts",
-    "test:host": "node ../../../tools/support/compat/parcel/run.mjs"
+    "test:host": "node ../../../tools/support/compat/parcel/run.mjs",
+    "test:host:recovery-frontier": "node ../../../tools/support/compat/parcel/run.mjs --recovery-frontier"
   },
   "dependencies": {
     "@parcel/diagnostic": "2.16.4",
@@ -55,8 +52,7 @@
     "@parcel/source-map": "2.1.1",
     "@vizejs/native": "workspace:*",
     "diff": "8.0.4",
-    "magic-string": "0.30.21",
-    "oxc-parser": "catalog:oxc"
+    "magic-string": "0.30.21"
   },
   "devDependencies": {
     "@parcel/config-default": "2.16.4",

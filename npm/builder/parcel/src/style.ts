@@ -1,10 +1,11 @@
 import { Transformer } from "@parcel/plugin";
 import { scopeViteCssForPipeline, transformViteCssVarsForPipeline } from "@vizejs/native";
 import { editMap } from "./maps.ts";
+import { nativeOperation } from "./trace.ts";
 
 /** Run before Parcel's CSS pipeline, after its Sass/Less/Stylus pipeline. */
 export default new Transformer({
-  async transform({ asset, options }) {
+  async transform({ asset, options, tracer }) {
     if (asset.meta.vizeStyleApplied) return [asset];
     const metadata = asset.meta.vizeStyle as
       | { scope?: string; variables?: string; productionFilename?: string }
@@ -21,9 +22,14 @@ export default new Transformer({
     const productionFilename =
       metadata?.productionFilename ?? asset.query.get("vize-owner") ?? undefined;
     let after = variables
-      ? transformViteCssVarsForPipeline(before, variables, productionFilename)
+      ? nativeOperation(tracer, "transformViteCssVarsForPipeline", asset.filePath, () =>
+          transformViteCssVarsForPipeline(before, variables, productionFilename),
+        )
       : before;
-    if (scope) after = scopeViteCssForPipeline(after, scope);
+    if (scope)
+      after = nativeOperation(tracer, "scopeViteCssForPipeline", asset.filePath, () =>
+        scopeViteCssForPipeline(after, scope),
+      );
     const map = editMap(
       before,
       after,
