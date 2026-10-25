@@ -302,6 +302,7 @@ try {
   );
   console.log("Candidate Nuxt 2 webpack build and SSR routes passed");
 } finally {
+  fs.writeFileSync(path.join(artifacts, "timings.json"), JSON.stringify(timings, null, 2) + "\n");
   await browser?.close();
   for (const server of servers) if (server.exitCode === null) server.kill("SIGTERM");
   for (const item of swapped) {

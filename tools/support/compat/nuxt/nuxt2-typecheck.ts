@@ -6,7 +6,7 @@ import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { asArray, asRecord, at, parseJson, readJson } from "../../json-value.ts";
+import { asRecord, parseJson, readJson } from "../../json-value.ts";
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 const hash = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
@@ -27,6 +27,13 @@ export function verifyNuxt2Typecheck(fixture: string, artifacts: string): void {
       process.platform === "win32" ? "tsc.exe" : "tsc",
     );
   assert.equal(fs.existsSync(corsa), true);
+  const providerVersion = spawnSync(corsa, ["--version"], { encoding: "utf8" });
+  assert.equal(providerVersion.status, 0);
+  const provider = {
+    path: corsa,
+    sha256: hash(fs.readFileSync(corsa)),
+    version: providerVersion.stdout.trim(),
+  };
   const native = path.join(root, "npm/native/index.js");
   const sourceHead = spawnSync("git", ["rev-parse", "HEAD"], {
     cwd: root,
@@ -107,6 +114,7 @@ export function verifyNuxt2Typecheck(fixture: string, artifacts: string): void {
         JSON.stringify(
           {
             sourceBinding: readJson(identity),
+            provider,
             vue: readJson(path.join(fixture, "node_modules/vue/package.json")),
             rows,
           },
@@ -118,19 +126,16 @@ export function verifyNuxt2Typecheck(fixture: string, artifacts: string): void {
       assert.equal(result.signal, null);
       assert.equal(result.status, errors === 0 ? 0 : 1, result.stderr + result.stdout);
       assert.equal(packet.errorCount, errors);
-      assert.equal(packet.fileCount, 1);
-      const files = asArray(packet.files, "typecheck files");
-      assert.equal(files.length, 1);
-      assert.equal(at(files, 0, "file"), "App.vue");
-      const diagnostics = asArray(at(files, 0, "diagnostics"), "typecheck diagnostics");
-      assert.equal(diagnostics.length, errors);
-      if (errors === 1) {
-        assert.equal(at(diagnostics, 0, "code"), 2339);
-        assert.equal(
-          at(diagnostics, 0, "message"),
-          "Property 'toFixed' does not exist on type 'string'.",
-        );
-      }
+      assert.deepEqual(
+        packet,
+        readJson(
+          path.join(
+            root,
+            "tools/support/compat/nuxt/fixtures/nuxt2-typecheck",
+            `${name}.expected.json`,
+          ),
+        ),
+      );
     }
   } finally {
     fs.rmSync(project, { recursive: true, force: true });
