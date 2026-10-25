@@ -1,21 +1,24 @@
 {
   "scope": "reversible integration qualification only; formal package/native PR heads and publication remain separate",
   "main": {
-    "sha": "13fa41356d075047a229f580014b637d3bbeb57f",
-    "tree": "3d7d7754b74e3294ba354498b08d5b533b84d7d8"
+    "sha": "ce95f3c38fd72ba471b94b5f6078c631035a3381",
+    "tree": "67d7728ea9e3d22314ffb321a2927fb521e62178",
+    "integrationMerge": "4cc7275b0cf2baa5c97cadd3114ecf7a1456f212"
   },
   "native": {
-    "pin": "b7bded1352dda0628ff1de0c94f7c6533a82db47",
-    "tree": "dafee01d7901f73ad2b7eec36bcb9eff63c46b99",
+    "pin": "87d497ce3087903ab28cb58306446f67e3f626d0",
+    "tree": "1cf987a329645f668f108a6ada0d677e41de4460",
     "base": "aeab2e4994e1ccd55a9ae22b15ab849d03f93cc5",
     "integrationMerge": "b33828862c6165532d06f1e1267565244aaf8901",
     "previousPins": [
       "931a99792e0042faf090e879dc8e39201a2c0d87",
-      "664c7dc3846c068a756b7562e11eab35a9497d9d"
+      "664c7dc3846c068a756b7562e11eab35a9497d9d",
+      "b7bded1352dda0628ff1de0c94f7c6533a82db47"
     ],
     "guardedIntegrationMerge": "0bb2db0ec51f425afb9eb39bfbb455ec85d130c2",
-    "producerTreeComparison": "allJSX/Vapor/SSRdirectories+NAPIjsx exactb7;actualrebasedmain/runtimeoptionchangespreserved;nofrontendrewrites",
-    "staticComponentIntegrationMerge": "cd0f21024b983736b08b93274fb19bdbe4954c99"
+    "producerTreeComparison": "qualified authored-module branch preserved with current-main additions and shared literal style hunks; Lowerer actual-symbol current_output_mode/stability and literal_style_target/active coexist; standalone default Vdom preserved",
+    "staticComponentIntegrationMerge": "cd0f21024b983736b08b93274fb19bdbe4954c99",
+    "adaptersIntegrationMerge": "d2ab3fb80da11e9a1432b584ed0d784ef6350b46"
   },
   "babelOrderedInputs": [
     {
@@ -81,11 +84,17 @@
     {
       "sha": "bd08ede7b296643f22d3bcd524cd6e0886437eb8",
       "tree": "47e51dfb9d01e671119021a51ad352e304885cfb"
+    },
+    {
+      "sha": "e316ebef0594c72bf99a815584ef7f17a216498d",
+      "tree": "7c87159554a66997bd59eaf52bbe865eb38b0b23",
+      "integrationCherryPick": "ec508c8cb89c8db2a0428cfe248e6df52b286bf4",
+      "scope": "README-only actual setup/native source boundaries"
     }
   ],
   "currentComposedBeforeLedger": {
-    "sha": "af56a3a7531e505f75308a7ec441405fe5330b33",
-    "tree": "a5ba74b28c4f78abb00dee8a34bdc132c021b942"
+    "sha": "ec508c8cb89c8db2a0428cfe248e6df52b286bf4",
+    "tree": "500d498a8438ee11aab4fcdaccb6c07436b1ac5d"
   },
   "priorCampaigns": [
     {
@@ -111,11 +120,81 @@
       "run": 40224271643,
       "artifact": 12610189827,
       "actual": "RED:stable4fullbrowser/SSR/hydrationpass;rc9fourmissingSetListenerABI;rc11fourextraDynamicComponentanchorvsindependentstaticreference;allrawunchanged"
+    },
+    {
+      "source": "90c355d5266f8b37e8808dfe351cd9cc6781c6a1",
+      "run": 40228552005,
+      "artifact": 12611897488,
+      "actual": "RED:96host/generator+60cold pass; stable4full pass; rc11four pass fullSSR/DOM/effects/hydration identities but fail rawCSRstyle attribute order; all original packets retained",
+      "frontier": {
+        "run": 40229122252,
+        "artifact": 12612293480,
+        "source": "90c355d5266f8b37e8808dfe351cd9cc6781c6a1",
+        "actual": "separate4strict rc9functional failures, actualmissingSetListenerABI, no expected-error PASS"
+      }
     }
   ],
   "runtimeQualification": {
     "supported": "8strictrows:stableVDOM3.5.44four+Vapor3.6rc11four;no skips;fullSSR/browser/nodes/effects",
     "frontier": "historicalrc9fourstrictfunctionalrowsretainedinseparatemanualexperimentrefwithactualfailedstatus;no expectederrorPASS;all12commandretained",
     "generator": "96actualhostcasesincludingrealoverrideorders/ASTclones/upstreammaps/collisions;60cold controls;singleNativeprepass"
+  },
+  "previousMain": {
+    "sha": "13fa41356d075047a229f580014b637d3bbeb57f",
+    "tree": "3d7d7754b74e3294ba354498b08d5b533b84d7d8"
+  },
+  "style": {
+    "pin": "fde7af3b6af20645951e60282419d78e5941b93c",
+    "tree": "6f1a2b76a94ef216b73a1c3bd1fc00beb893cf81",
+    "base": "78719553cf550bcffbf1d0fb891fda642f42de3a",
+    "orderedCommits": [
+      "7c0eadfd4c51bdbae2126c002e15921d9e05f2e8",
+      "88804aae895ff674975ad0dcf9593692f387528f",
+      "9cc90ec25d3eb9067d273b4d238cca2b0ec1ddaf",
+      "11f99d6b952c817736cd20097bda39495eccfd00",
+      "6f3c49018a967bf6644e9faf0eb36c9dc96106f5",
+      "fde7af3b6af20645951e60282419d78e5941b93c"
+    ],
+    "sourceRun": 40235658963,
+    "sourceConclusion": "success",
+    "integrationMerge": "ef95a6ae9832b45052338da3614e7b1be1f611c2",
+    "semantics": "bounded original-AST string evaluation; conservative CSSOM/lexical/ASCII-case merge refusals; shared Core+JSX+nativeL3 projection; no reference/HTML normalization"
+  },
+  "unchangedSupportedRuntimeWitness": [
+    {
+      "file": "npm/babel/test/runtime/fixtures.mjs",
+      "sha256": "322ba455e9a79980c552e77294f4e33fc63e675cca1aab1d544993c3ce9a99fe",
+      "byteIdenticalTo90c": true
+    },
+    {
+      "file": "npm/babel/test/runtime/reference.mjs",
+      "sha256": "b9a93be906c20644debe77bae36fae55837c61b50637b78f26892fa4f0d698e6",
+      "byteIdenticalTo90c": true
+    },
+    {
+      "file": "npm/babel/test/runtime/run.mjs",
+      "sha256": "2154d2d811a02362a59a1cdc657ee8abdac4b59696e212cd532c1cb11e4b2d72",
+      "byteIdenticalTo90c": true
+    },
+    {
+      "file": "npm/babel/test/runtime/browser.mjs",
+      "sha256": "c22a645ba5c5a250ae1a156ba7e344dc27bea21ffec0f2f804f5b910262a8339",
+      "byteIdenticalTo90c": true
+    },
+    {
+      "file": "npm/babel/test/runtime/browser-page.mjs",
+      "sha256": "3aa0830015314417d52e9c6cfeadf21a574bcb51a049bc6914a78a2436c53394",
+      "byteIdenticalTo90c": true
+    },
+    {
+      "file": "npm/babel/test/runtime-renderers.test.mjs",
+      "sha256": "0f21d281460fa13147749780dd76e2ed6ab11cd02be75a43678eb23462e2a687",
+      "byteIdenticalTo90c": true
+    }
+  ],
+  "compositionCustody": {
+    "mainLock": "style-union-composition/main-ce95/structural-preservation.json; both YAML documents parsed, all42current-main importer records/package/snapshot/catalog entries deep-equal; only own Babel importer added",
+    "sourceConflicts": "no production conflicts; ort combines three overlapping JSX compiler/lowerer/vapor files; bothmode states inspected",
+    "publicAcceptance": "none; candidate source qualification only"
   }
 }
