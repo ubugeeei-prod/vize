@@ -329,13 +329,10 @@ mod tests {
             serde_json::to_value(&second_still_invalid.diagnostics).unwrap(),
             serde_json::to_value(&second_invalid.diagnostics).unwrap()
         );
+        let disk = "<script setup lang=\"ts\">\nimport Widget from '@scope/shared'\nvoid Widget\n</script>\n";
         for (host, source) in [(&first_host, &first_source), (&second_host, &second_source)] {
-            assert!(
-                !std::fs::read_to_string(host)
-                    .unwrap()
-                    .contains("const props")
-            );
-            assert!(source.contains("const props"));
+            assert_eq!(std::fs::read_to_string(host).unwrap(), disk);
+            assert_ne!(source, disk);
         }
     }
 

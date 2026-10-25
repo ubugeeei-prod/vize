@@ -246,10 +246,11 @@ fn deleted_package_targets_leave_no_root_or_importer_shadow_companions() {
     std::fs::remove_file(&target).unwrap();
     let deleted =
         super::vue_document::build_vue_virtual_project(&host, source, Default::default()).unwrap();
+    let mut expected_deleted = Vec::new();
     for scope in &scopes {
         for companion in ["Widget.vue.ts", "Widget.d.vue.ts"] {
             let path = scope.join("node_modules/@scope/dynamic").join(companion);
-            assert!(deleted.materialized_changes.deleted.contains(&path));
+            expected_deleted.push(path.clone());
             assert!(
                 !path.exists(),
                 "retired generated companion remains resolvable: {}",
@@ -257,6 +258,10 @@ fn deleted_package_targets_leave_no_root_or_importer_shadow_companions() {
             );
         }
     }
+    expected_deleted.sort();
+    let mut actual_deleted = deleted.materialized_changes.deleted;
+    actual_deleted.sort();
+    assert_eq!(actual_deleted, expected_deleted);
 }
 
 fn write(path: &Path, content: &str) {
