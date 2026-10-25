@@ -27,7 +27,6 @@ import {
   relocate,
   sha256,
   type NativeAudit,
-  type Roots,
 } from "./support/project-uri-membership-10622.ts";
 import {
   requireTypecheckDependency,

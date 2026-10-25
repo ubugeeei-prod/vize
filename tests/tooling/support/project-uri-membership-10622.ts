@@ -5,6 +5,7 @@ import path from "node:path";
 import { createInterface } from "node:readline";
 import { pipeline } from "node:stream/promises";
 import { fileURLToPath } from "node:url";
+import { stripVTControlCharacters } from "node:util";
 import { createGunzip, createGzip, gunzipSync } from "node:zlib";
 import { decodeFrames } from "../../differential/lsp-wire.ts";
 import { root } from "./lsp/paths.ts";
@@ -232,7 +233,10 @@ export async function auditNative(
     return { stream, bytes: value.bytes, sha256: value.hash.digest("hex"), frames: value.reported };
   });
   assert.equal(seen.size, 534);
-  assert.deepEqual([...seen.keys()].sort(), [...expectedByPath.keys()].sort());
+  assert.deepEqual(
+    [...seen.keys()].sort((a, b) => a.localeCompare(b)),
+    [...expectedByPath.keys()].sort((a, b) => a.localeCompare(b)),
+  );
   assert.ok(nativeProject && main);
   assert.equal(completions.length, 2);
   if (live) {
@@ -260,8 +264,7 @@ export async function auditNative(
 }
 
 export function membershipCounters(stderr: string) {
-  const rows = stderr
-    .replaceAll(/\x1b\[[0-9;]*m/gu, "")
+  const rows = stripVTControlCharacters(stderr)
     .split("\n")
     .filter((line) => line.includes('phase="canonical_uri_membership"'))
     .map((line) => {
