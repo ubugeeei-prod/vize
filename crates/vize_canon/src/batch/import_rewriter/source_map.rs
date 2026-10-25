@@ -172,18 +172,24 @@ impl ImportSourceMap {
         if replacements.is_empty() {
             return self.clone();
         }
-        let mut adjustments = if self.adjustments.is_empty() {
-            self.replacement_ranges
-                .iter()
-                .map(|range| OffsetAdjustment {
-                    original_offset: range.original_end,
-                    adjustment: (range.virtual_end - range.virtual_start) as i32
-                        - (range.original_end - range.original_start) as i32,
-                })
-                .collect()
-        } else {
-            self.adjustments.clone()
-        };
+        if self.adjustments.is_empty() {
+            let mut map = Self::for_rewrites(self.replacement_ranges.len() + replacements.len());
+            for range in &self.replacement_ranges {
+                map.record_replacement(
+                    range.original_start,
+                    range.original_end,
+                    range.virtual_end - range.virtual_start,
+                );
+            }
+            for (start, length) in replacements {
+                map.record_replacement(*start, start + 1, *length);
+            }
+            map.replacement_ranges
+                .sort_by_key(|range| std::cmp::Reverse(range.original_start));
+            map.finish_descending_replacements();
+            return map;
+        }
+        let mut adjustments = self.adjustments.clone();
         adjustments.extend(replacements.iter().map(|(start, length)| OffsetAdjustment {
             original_offset: start + 1,
             adjustment: *length as i32 - 1,

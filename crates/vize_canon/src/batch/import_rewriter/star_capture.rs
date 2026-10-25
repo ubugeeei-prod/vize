@@ -110,7 +110,7 @@ impl super::ImportRewriter {
 #[cfg(test)]
 mod compatibility_tests {
     use super::{ImportRewriter, SourceType, VirtualProjectRewriteOptions};
-    use crate::batch::{ImportSourceMap, OffsetAdjustment};
+    use crate::batch::ImportSourceMap;
 
     #[test]
     fn retained_private_compatibility_routes_preserve_the_complete_star_and_map() {
@@ -155,11 +155,28 @@ mod compatibility_tests {
             assert_eq!(result.code.as_str(), "export * from './Panel.vue.ts';\n");
             assert_eq!(
                 result.source_map,
-                ImportSourceMap::new(vec![OffsetAdjustment {
-                    original_offset: 15,
-                    adjustment: 3,
-                }]),
+                ImportSourceMap::with_replacement_ranges(Vec::new(), vec![(15, 26, 14)]),
             );
+            for offset in 0..=source.len() as u32 {
+                let expected = if offset < 15 {
+                    offset
+                } else if offset < 26 {
+                    15
+                } else {
+                    offset + 3
+                };
+                assert_eq!(result.source_map.get_virtual_offset(offset), expected);
+            }
+            for offset in 0..=result.code.len() as u32 {
+                let expected = if offset < 15 {
+                    offset
+                } else if offset < 29 {
+                    15
+                } else {
+                    offset - 3
+                };
+                assert_eq!(result.source_map.get_original_offset(offset), expected);
+            }
         }
     }
 }
