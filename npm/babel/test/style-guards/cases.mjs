@@ -4,8 +4,11 @@ export const inputs = JSON.parse(
   fs.readFileSync(new URL("./fixtures/inputs.json", import.meta.url)),
 );
 assert.equal(inputs.length, 8);
+const priority = JSON.parse(fs.readFileSync(new URL("./fixtures/priority.json", import.meta.url)));
+assert.equal(priority.length, 8);
 export const cases = [
   ...inputs,
+  ...priority,
   ...["STYLE", "Style"].flatMap((spelling) =>
     ["before", "after"].map((order) => ({
       id: spelling.toLowerCase() + "-" + (spelling === "STYLE" ? "upper" : "mixed") + "-" + order,
@@ -16,7 +19,7 @@ export const cases = [
     })),
   ),
 ];
-assert.equal(cases.length, 12);
+assert.equal(cases.length, 20);
 export function attributes(row, template = false, staticStyle = false) {
   const style = staticStyle
     ? `style="${row.referenceCss}"`

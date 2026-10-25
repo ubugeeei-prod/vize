@@ -47,6 +47,8 @@ try {
           float: computed.float,
           colorPriority: button.style.getPropertyPriority("color"),
           weightPriority: button.style.getPropertyPriority("font-weight"),
+          customBrand: button.style.getPropertyValue("--Brand"),
+          customPriority: button.style.getPropertyPriority("--Brand"),
         },
       };
     },

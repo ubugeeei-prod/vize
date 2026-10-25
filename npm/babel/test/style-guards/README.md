@@ -8,6 +8,9 @@ native preparation and the real rc.11 browser runtime.
 The eight CSSOM vectors retain the exact source inputs from the shared style
 compiler fixture. Four additional `STYLE`/`Style` attribute-order cases preserve
 case-sensitive authored bytes and test case-insensitive HTML attribute behavior.
+A separate eight-case priority family covers token case, gaps, trailing spaces,
+and the different JavaScript/CSS whitespace sets, with an ASCII-space control.
+The original eight CSSOM and four attribute-order inputs remain unchanged.
 
 Refused inputs compare complete raw DOM, computed styles, priorities, setup,
 trusted events, updates, and disposal with a genuine dynamic-style template.

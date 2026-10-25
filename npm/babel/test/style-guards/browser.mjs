@@ -183,7 +183,7 @@ export async function browserCases(input, directory, cases) {
     requests,
   };
   json(path.join(directory, "browser.json"), result);
-  assert.equal(rows.length, 12);
+  assert.equal(rows.length, 20);
   assert(
     rows.every((row) => row.error === null),
     "complete guard rows must pass; inspect retained raw counterparts",
