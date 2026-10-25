@@ -7,6 +7,8 @@ on:
     paths:
       - .github/workflows/cross-file-finalization.yml
       - crates/vize_croquis_cf/src/analyzer/core/files.rs
+      - crates/vize_croquis_cf/src/analyzer/core/accessors.rs
+      - crates/vize_croquis_cf/src/analyzer/core/accessors/**
       - crates/vize_croquis_cf/src/analyzer/core/deps.rs
       - crates/vize/src/commands/lint/cross_file.rs
       - crates/vize_vitrine/src/wasm/cross_file.rs
@@ -48,6 +50,16 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Install frozen workspace tools
         run: vp install --frozen-lockfile --prefer-offline
+      - name: Verify complete analyzer reset and file ID reuse
+        run: |
+          mkdir -p target/vize-tests/cross-file-clear-template-facts
+          cargo test --locked --profile ci -p vize_croquis_cf --lib -- analyzer::core::accessors::clear_tests:: --nocapture > target/vize-tests/cross-file-clear-template-facts/rust.stdout 2> target/vize-tests/cross-file-clear-template-facts/rust.stderr
+          cat target/vize-tests/cross-file-clear-template-facts/rust.stdout
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          assert.match(fs.readFileSync('target/vize-tests/cross-file-clear-template-facts/rust.stdout', 'utf8'), /test result: ok\. 4 passed; 0 failed; 0 ignored;/u);
+          JS
       - name: Build and receipt the actual source CLI
         run: |
           cargo build --locked --profile ci -p vize
@@ -78,6 +90,7 @@ jobs:
             target/ci/vize.differential-build.json
             target/vize-tests/cross-file-sfc-effects
             target/vize-tests/cross-file-finalization
+            target/vize-tests/cross-file-clear-template-facts
           if-no-files-found: error
           retention-days: 14
   actual-source-wasm-packets:

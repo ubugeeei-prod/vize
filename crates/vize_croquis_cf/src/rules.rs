@@ -33,6 +33,7 @@ mod reactivity;
 mod setup_context;
 
 // Re-export rule result types
+pub(crate) use boundary::analyze_boundaries_in_ssr_mode;
 pub use boundary::{BoundaryInfo, BoundaryKind, analyze_boundaries};
 pub use complexity::{
     ComplexityBand, ComplexityContributor, ComplexityDimension, ComplexityDimensionBreakdown,

@@ -313,3 +313,30 @@ fn vue_version_3_keeps_legacy_lowering_disabled() {
         vize_l0::config::VueVersion::V3
     );
 }
+
+#[cfg(feature = "native")]
+#[test]
+fn diagnostic_progress_threshold_is_configurable_without_disabling_features() {
+    let state = ServerState::new();
+    state.apply_lsp_initialization_options(Some(
+        &serde_json::json!({"typecheckTimeoutMs":180_000,"typecheck":true}),
+    ));
+    assert_eq!(
+        state
+            .native_diagnostic_timeout_ms
+            .load(std::sync::atomic::Ordering::SeqCst),
+        180_000
+    );
+    assert!(state.is_lsp_typecheck_enabled());
+    for millis in [0, u64::MAX] {
+        state.apply_lsp_initialization_options(Some(
+            &serde_json::json!({"typecheckTimeoutMs":millis}),
+        ));
+        assert_eq!(
+            state
+                .native_diagnostic_timeout_ms
+                .load(std::sync::atomic::Ordering::SeqCst),
+            180_000
+        );
+    }
+}

@@ -1,0 +1,460 @@
+{
+  "schema": "vize.scoped-nesting.specificity",
+  "version": 1,
+  "reference": "@vue/compiler-sfc@3.5.35",
+  "before": "@vizejs/native@0.566.0",
+  "scopeId": "data-v-nesting",
+  "cases": [
+    {
+      "id": "reported-hover",
+      "source": "<template><div class=\"a\"/></template><style scoped>.x .y,.z{&:hover{background:rgb(0,0,255)}}</style>",
+      "css": ".x .y,.z{&:hover{background:rgb(0,0,255)}}",
+      "html": "<div class=\"z guard target\" data-v-nesting></div>",
+      "competitor": ".z.guard[data-v-nesting]:hover{background:rgb(255,0,0)}",
+      "hover": true,
+      "pseudo": null,
+      "expected": [
+        0,
+        0,
+        255,
+        255
+      ],
+      "beforeCss": ".x .y[data-v-nesting]:hover,.z[data-v-nesting]:hover{background:rgb(0,0,255)}",
+      "referenceCss": ".x .y,.z{&[data-v-nesting]:hover{background:rgb(0,0,255)}}"
+    },
+    {
+      "id": "implicit-descendant",
+      "source": "<template><div class=\"a\"/></template><style scoped>.a,#never{.child{background:rgb(0,0,255)}}</style>",
+      "css": ".a,#never{.child{background:rgb(0,0,255)}}",
+      "html": "<div class=\"a\" data-v-nesting><i class=\"child guard target\" data-v-nesting></i></div>",
+      "competitor": ".target.guard.guard.guard[data-v-nesting]{background:rgb(255,0,0)}",
+      "hover": false,
+      "pseudo": null,
+      "expected": [
+        0,
+        0,
+        255,
+        255
+      ],
+      "beforeCss": ".a .child[data-v-nesting],#never .child[data-v-nesting]{background:rgb(0,0,255)}",
+      "referenceCss": ".a,#never{.child[data-v-nesting]{background:rgb(0,0,255)}}"
+    },
+    {
+      "id": "nested-parent-list",
+      "source": "<template><div class=\"a\"/></template><style scoped>.outer{.a,#never{.child{background:rgb(0,0,255)}}}</style>",
+      "css": ".outer{.a,#never{.child{background:rgb(0,0,255)}}}",
+      "html": "<section class=\"outer\" data-v-nesting><div class=\"a\" data-v-nesting><i class=\"child guard target\" data-v-nesting></i></div></section>",
+      "competitor": ".target.guard.guard.guard[data-v-nesting]{background:rgb(255,0,0)}",
+      "hover": false,
+      "pseudo": null,
+      "expected": [
+        0,
+        0,
+        255,
+        255
+      ],
+      "beforeCss": ".outer .a .child[data-v-nesting],.outer #never .child[data-v-nesting]{background:rgb(0,0,255)}",
+      "referenceCss": ".outer{.a,#never{.child[data-v-nesting]{background:rgb(0,0,255)}}}"
+    },
+    {
+      "id": "three-list-levels",
+      "source": "<template><div class=\"a\"/></template><style scoped>.a,#never{.middle,.unused{.child,.unused{background:rgb(0,0,255)}}}</style>",
+      "css": ".a,#never{.middle,.unused{.child,.unused{background:rgb(0,0,255)}}}",
+      "html": "<div class=\"a\" data-v-nesting><div class=\"middle\" data-v-nesting><i class=\"child guard target\" data-v-nesting></i></div></div>",
+      "competitor": ".target.guard.guard.guard[data-v-nesting]{background:rgb(255,0,0)}",
+      "hover": false,
+      "pseudo": null,
+      "expected": [
+        0,
+        0,
+        255,
+        255
+      ],
+      "beforeCss": ".a .middle .child[data-v-nesting],.a .middle .unused[data-v-nesting],.a .unused .child[data-v-nesting],.a .unused .unused[data-v-nesting],#never .middle .child[data-v-nesting],#never .middle .unused[data-v-nesting],#never .unused .child[data-v-nesting],#never .unused .unused[data-v-nesting]{background:rgb(0,0,255)}",
+      "referenceCss": ".a,#never{.middle,.unused{.child[data-v-nesting],.unused[data-v-nesting]{background:rgb(0,0,255)}}}"
+    },
+    {
+      "id": "multiple-ampersands",
+      "source": "<template><div class=\"a\"/></template><style scoped>.a,#never{& &{background:rgb(0,0,255)}}</style>",
+      "css": ".a,#never{& &{background:rgb(0,0,255)}}",
+      "html": "<div class=\"a\" data-v-nesting><div class=\"a target guard\" data-v-nesting></div></div>",
+      "competitor": ".target.guard.guard.guard[data-v-nesting]{background:rgb(255,0,0)}",
+      "hover": false,
+      "pseudo": null,
+      "expected": [
+        0,
+        0,
+        255,
+        255
+      ],
+      "beforeCss": ".a .a[data-v-nesting],#never #never[data-v-nesting]{background:rgb(0,0,255)}",
+      "referenceCss": ".a,#never{& &[data-v-nesting]{background:rgb(0,0,255)}}"
+    },
+    {
+      "id": "functional-nesting",
+      "source": "<template><div class=\"a\"/></template><style scoped>.a,#never{:is(&,.other){background:rgb(0,0,255)}}</style>",
+      "css": ".a,#never{:is(&,.other){background:rgb(0,0,255)}}",
+      "html": "<div class=\"a target guard\" data-v-nesting></div>",
+      "competitor": ".target.guard.guard.guard[data-v-nesting]{background:rgb(255,0,0)}",
+      "hover": false,
+      "pseudo": null,
+      "expected": [
+        0,
+        0,
+        255,
+        255
+      ],
+      "beforeCss": ":is(.a[data-v-nesting],.other[data-v-nesting]),:is(#never[data-v-nesting],.other[data-v-nesting]){background:rgb(0,0,255)}",
+      "referenceCss": ".a,#never{:is(&[data-v-nesting],.other[data-v-nesting]){background:rgb(0,0,255)}}"
+    },
+    {
+      "id": "where-parent",
+      "source": "<template><div class=\"a\"/></template><style scoped>:where(.a,#ignored),#never{.child{background:rgb(0,0,255)}}</style>",
+      "css": ":where(.a,#ignored),#never{.child{background:rgb(0,0,255)}}",
+      "html": "<div class=\"a\" data-v-nesting><i class=\"child guard target\" data-v-nesting></i></div>",
+      "competitor": ".target.guard.guard.guard[data-v-nesting]{background:rgb(255,0,0)}",
+      "hover": false,
+      "pseudo": null,
+      "expected": [
+        0,
+        0,
+        255,
+        255
+      ],
+      "beforeCss": ":where(.a,#ignored),#never{.child[data-v-nesting]{background:rgb(0,0,255)}}",
+      "referenceCss": ":where(.a,#ignored),#never{.child[data-v-nesting]{background:rgb(0,0,255)}}"
+    },
+    {
+      "id": "where-child",
+      "source": "<template><div class=\"a\"/></template><style scoped>.a,#never{:where(&) .child{background:rgb(0,0,255)}}</style>",
+      "css": ".a,#never{:where(&) .child{background:rgb(0,0,255)}}",
+      "html": "<div class=\"a\" data-v-nesting><i class=\"child guard target\" data-v-nesting></i></div>",
+      "competitor": "",
+      "hover": false,
+      "pseudo": null,
+      "expected": [
+        0,
+        0,
+        255,
+        255
+      ],
+      "beforeCss": ":where(.a) .child[data-v-nesting],:where(#never) .child[data-v-nesting]{background:rgb(0,0,255)}",
+      "referenceCss": ".a,#never{:where(&) .child[data-v-nesting]{background:rgb(0,0,255)}}"
+    },
+    {
+      "id": "quoted-ampersand",
+      "source": "<template><div class=\"a\"/></template><style scoped>.a,#never{[data-symbol=\"&\"]{background:rgb(0,0,255)}}</style>",
+      "css": ".a,#never{[data-symbol=\"&\"]{background:rgb(0,0,255)}}",
+      "html": "<div class=\"a\" data-v-nesting><div class=\"target guard\" data-symbol=\"&\" data-v-nesting></div></div>",
+      "competitor": ".target.guard.guard.guard[data-v-nesting]{background:rgb(255,0,0)}",
+      "hover": false,
+      "pseudo": null,
+      "expected": [
+        0,
+        0,
+        255,
+        255
+      ],
+      "beforeCss": "[data-symbol=\".a\"][data-v-nesting],[data-symbol=\"#never\"][data-v-nesting]{background:rgb(0,0,255)}",
+      "referenceCss": ".a,#never{[data-symbol=\"&\"][data-v-nesting]{background:rgb(0,0,255)}}"
+    },
+    {
+      "id": "escaped-ampersand",
+      "source": "<template><div class=\"a\"/></template><style scoped>.a\\&,#never{.child{background:rgb(0,0,255)}}</style>",
+      "css": ".a\\&,#never{.child{background:rgb(0,0,255)}}",
+      "html": "<div class=\"a&\" data-v-nesting><i class=\"child guard target\" data-v-nesting></i></div>",
+      "competitor": ".target.guard.guard.guard[data-v-nesting]{background:rgb(255,0,0)}",
+      "hover": false,
+      "pseudo": null,
+      "expected": [
+        0,
+        0,
+        255,
+        255
+      ],
+      "beforeCss": ".a\\& .child[data-v-nesting],#never .child[data-v-nesting]{background:rgb(0,0,255)}",
+      "referenceCss": ".a\\&,#never{.child[data-v-nesting]{background:rgb(0,0,255)}}"
+    },
+    {
+      "id": "pseudo-element-parent",
+      "source": "<template><div class=\"a\"/></template><style scoped>.a,#never::before{& .child{background:rgb(0,0,255)}}</style>",
+      "css": ".a,#never::before{& .child{background:rgb(0,0,255)}}",
+      "html": "<div class=\"a\" data-v-nesting><i class=\"child guard target\" data-v-nesting></i></div>",
+      "competitor": ".target.guard.guard.guard[data-v-nesting]{background:rgb(255,0,0)}",
+      "hover": false,
+      "pseudo": null,
+      "expected": [
+        255,
+        0,
+        0,
+        255
+      ],
+      "beforeCss": ".a .child[data-v-nesting],#never::before .child[data-v-nesting]{background:rgb(0,0,255)}",
+      "referenceCss": ".a,#never::before{& .child[data-v-nesting]{background:rgb(0,0,255)}}",
+      "cascadeReason": "The pseudo-element parent branch cannot be represented by &: it does not raise the matching element branch above the explicit guarded rule."
+    },
+    {
+      "id": "pseudo-element-child",
+      "source": "<template><div class=\"a\"/></template><style scoped>.a,#never{&::before{content:\"\";position:absolute;inset:0;background:rgb(0,0,255)}}</style>",
+      "css": ".a,#never{&::before{content:\"\";position:absolute;inset:0;background:rgb(0,0,255)}}",
+      "html": "<div class=\"a target guard\" data-v-nesting></div>",
+      "competitor": "",
+      "hover": false,
+      "pseudo": "::before",
+      "expected": [
+        0,
+        0,
+        255,
+        255
+      ],
+      "beforeCss": ".a[data-v-nesting]::before,#never[data-v-nesting]::before{content:\"\";position:absolute;inset:0;background:rgb(0,0,255)}",
+      "referenceCss": ".a,#never{&[data-v-nesting]::before{content:\"\";position:absolute;inset:0;background:rgb(0,0,255)}}"
+    },
+    {
+      "id": "global-child",
+      "source": "<template><div class=\"a\"/></template><style scoped>.a,#never{:global(.target){background:rgb(0,0,255)}}</style>",
+      "css": ".a,#never{:global(.target){background:rgb(0,0,255)}}",
+      "html": "<div class=\"a\" data-v-nesting><div class=\"target guard\"></div></div>",
+      "competitor": "",
+      "hover": false,
+      "pseudo": null,
+      "expected": [
+        0,
+        0,
+        255,
+        255
+      ],
+      "beforeCss": ".target,.target{background:rgb(0,0,255)}",
+      "referenceCss": ".a,#never{.target{background:rgb(0,0,255)}}"
+    },
+    {
+      "id": "deep-child",
+      "source": "<template><div class=\"a\"/></template><style scoped>.a,#never{& :deep(.target){background:rgb(0,0,255)}}</style>",
+      "css": ".a,#never{& :deep(.target){background:rgb(0,0,255)}}",
+      "html": "<div class=\"a\" data-v-nesting><div class=\"target guard\"></div></div>",
+      "competitor": "",
+      "hover": false,
+      "pseudo": null,
+      "expected": [
+        0,
+        0,
+        255,
+        255
+      ],
+      "beforeCss": ".a[data-v-nesting] .target,#never[data-v-nesting] .target{background:rgb(0,0,255)}",
+      "referenceCss": ".a,#never{&[data-v-nesting] .target{background:rgb(0,0,255)}}"
+    },
+    {
+      "id": "slotted-child",
+      "source": "<template><div class=\"a\"/></template><style scoped>.a,#never{:slotted(.target){background:rgb(0,0,255)}}</style>",
+      "css": ".a,#never{:slotted(.target){background:rgb(0,0,255)}}",
+      "html": "<div class=\"a\" data-v-nesting><div class=\"target guard\" data-v-nesting-s></div></div>",
+      "competitor": "",
+      "hover": false,
+      "pseudo": null,
+      "expected": [
+        0,
+        0,
+        255,
+        255
+      ],
+      "beforeCss": ".a .target[data-v-nesting-s],#never .target[data-v-nesting-s]{background:rgb(0,0,255)}",
+      "referenceCss": ".a,#never{.target[data-v-nesting-s]{background:rgb(0,0,255)}}"
+    },
+    {
+      "id": "global-parent",
+      "source": "<template><div class=\"a\"/></template><style scoped>:global(.a),#never{.child{background:rgb(0,0,255)}}</style>",
+      "css": ":global(.a),#never{.child{background:rgb(0,0,255)}}",
+      "html": "<div class=\"a\" data-v-nesting><i class=\"child guard target\" data-v-nesting></i></div>",
+      "competitor": ".target.guard.guard.guard[data-v-nesting]{background:rgb(255,0,0)}",
+      "hover": false,
+      "pseudo": null,
+      "expected": [
+        0,
+        0,
+        255,
+        255
+      ],
+      "beforeCss": ".a,#never .child[data-v-nesting]{background:rgb(0,0,255)}",
+      "referenceCss": ".a,#never{.child[data-v-nesting]{background:rgb(0,0,255)}}"
+    },
+    {
+      "id": "deep-parent",
+      "source": "<template><div class=\"a\"/></template><style scoped>.a :deep(.b),#never{.child{background:rgb(0,0,255)}}</style>",
+      "css": ".a :deep(.b),#never{.child{background:rgb(0,0,255)}}",
+      "html": "<div class=\"a\" data-v-nesting><div class=\"b\"><i class=\"child guard target\"></i></div></div>",
+      "competitor": ".target.guard.guard.guard[data-v-nesting]{background:rgb(255,0,0)}",
+      "hover": false,
+      "pseudo": null,
+      "expected": [
+        0,
+        0,
+        255,
+        255
+      ],
+      "beforeCss": ".a[data-v-nesting] .b .child,#never .child[data-v-nesting]{background:rgb(0,0,255)}",
+      "referenceCss": ".a[data-v-nesting] .b,#never[data-v-nesting]{.child{background:rgb(0,0,255)}}"
+    },
+    {
+      "id": "slotted-parent",
+      "source": "<template><div class=\"a\"/></template><style scoped>:slotted(.a),#never{.child{background:rgb(0,0,255)}}</style>",
+      "css": ":slotted(.a),#never{.child{background:rgb(0,0,255)}}",
+      "html": "<div class=\"a\" data-v-nesting><i class=\"child guard target\" data-v-nesting></i></div>",
+      "competitor": ".target.guard.guard.guard[data-v-nesting]{background:rgb(255,0,0)}",
+      "hover": false,
+      "pseudo": null,
+      "expected": [
+        0,
+        0,
+        255,
+        255
+      ],
+      "beforeCss": ".a[data-v-nesting-s] .child,#never .child[data-v-nesting]{background:rgb(0,0,255)}",
+      "referenceCss": ".a,#never{.child[data-v-nesting]{background:rgb(0,0,255)}}"
+    },
+    {
+      "id": "group-media",
+      "source": "<template><div class=\"a\"/></template><style scoped>.a,#never{@media (min-width:1px){.child{background:rgb(0,0,255)}}}</style>",
+      "css": ".a,#never{@media (min-width:1px){.child{background:rgb(0,0,255)}}}",
+      "html": "<div class=\"a\" data-v-nesting><i class=\"child guard target\" data-v-nesting></i></div>",
+      "competitor": ".target.guard.guard.guard[data-v-nesting]{background:rgb(255,0,0)}",
+      "hover": false,
+      "pseudo": null,
+      "expected": [
+        0,
+        0,
+        255,
+        255
+      ],
+      "beforeCss": "@media (min-width:1px){.a .child[data-v-nesting],#never .child[data-v-nesting]{background:rgb(0,0,255)}}",
+      "referenceCss": ".a[data-v-nesting],#never[data-v-nesting]{@media (min-width:1px){.child[data-v-nesting]{background:rgb(0,0,255)}}}"
+    },
+    {
+      "id": "group-supports",
+      "source": "<template><div class=\"a\"/></template><style scoped>.a,#never{@supports (display:block){.child{background:rgb(0,0,255)}}}</style>",
+      "css": ".a,#never{@supports (display:block){.child{background:rgb(0,0,255)}}}",
+      "html": "<div class=\"a\" data-v-nesting><i class=\"child guard target\" data-v-nesting></i></div>",
+      "competitor": ".target.guard.guard.guard[data-v-nesting]{background:rgb(255,0,0)}",
+      "hover": false,
+      "pseudo": null,
+      "expected": [
+        0,
+        0,
+        255,
+        255
+      ],
+      "beforeCss": "@supports (display:block){.a .child[data-v-nesting],#never .child[data-v-nesting]{background:rgb(0,0,255)}}",
+      "referenceCss": ".a[data-v-nesting],#never[data-v-nesting]{@supports (display:block){.child[data-v-nesting]{background:rgb(0,0,255)}}}"
+    },
+    {
+      "id": "group-scope",
+      "source": "<template><div class=\"a\"/></template><style scoped>.a,#never{@scope (.start){.child{background:rgb(0,0,255)}}}</style>",
+      "css": ".a,#never{@scope (.start){.child{background:rgb(0,0,255)}}}",
+      "html": "<div class=\"a\" data-v-nesting><section class=\"start\" data-v-nesting><i class=\"child guard target\" data-v-nesting></i></section></div>",
+      "competitor": ".target.guard.guard.guard[data-v-nesting]{background:rgb(255,0,0)}",
+      "hover": false,
+      "pseudo": null,
+      "expected": [
+        255,
+        0,
+        0,
+        255
+      ],
+      "beforeCss": "@scope (.start){.a .child[data-v-nesting],#never .child[data-v-nesting]{background:rgb(0,0,255)}}",
+      "referenceCss": ".a[data-v-nesting],#never[data-v-nesting]{@scope (.start){.child[data-v-nesting]{background:rgb(0,0,255)}}}",
+      "cascadeReason": "The @scope body establishes its own nesting context; the explicit guarded rule wins without inheriting the outer ID specificity."
+    },
+    {
+      "id": "group-container",
+      "source": "<template><div class=\"a\"/></template><style scoped>.a,#never{@container test (min-width:1px){.child{background:rgb(0,0,255)}}}</style>",
+      "css": ".a,#never{@container test (min-width:1px){.child{background:rgb(0,0,255)}}}",
+      "html": "<div class=\"a\" data-v-nesting><section style=\"container-name:test;container-type:inline-size;width:100px\"><i class=\"child guard target\" data-v-nesting></i></section></div>",
+      "competitor": ".target.guard.guard.guard[data-v-nesting]{background:rgb(255,0,0)}",
+      "hover": false,
+      "pseudo": null,
+      "expected": [
+        0,
+        0,
+        255,
+        255
+      ],
+      "beforeCss": "@container test (min-width:1px){.a .child[data-v-nesting],#never .child[data-v-nesting]{background:rgb(0,0,255)}}",
+      "referenceCss": ".a[data-v-nesting],#never[data-v-nesting]{@container test (min-width:1px){.child[data-v-nesting]{background:rgb(0,0,255)}}}"
+    },
+    {
+      "id": "group-layer",
+      "source": "<template><div class=\"a\"/></template><style scoped>.a,#never{@layer nested{.child{background:rgb(0,0,255)}}}</style>",
+      "css": ".a,#never{@layer nested{.child{background:rgb(0,0,255)}}}",
+      "html": "<div class=\"a\" data-v-nesting><i class=\"child guard target\" data-v-nesting></i></div>",
+      "competitor": "",
+      "hover": false,
+      "pseudo": null,
+      "expected": [
+        0,
+        0,
+        255,
+        255
+      ],
+      "beforeCss": "@layer nested{.a .child[data-v-nesting],#never .child[data-v-nesting]{background:rgb(0,0,255)}}",
+      "referenceCss": ".a[data-v-nesting],#never[data-v-nesting]{@layer nested{.child[data-v-nesting]{background:rgb(0,0,255)}}}"
+    },
+    {
+      "id": "interleaved-declarations",
+      "source": "<template><div class=\"a\"/></template><style scoped>.a,#never{color:red;.child{background:rgb(0,0,255)}color:green;}</style>",
+      "css": ".a,#never{color:red;.child{background:rgb(0,0,255)}color:green;}",
+      "html": "<div class=\"a\" data-v-nesting><i class=\"child guard target\" data-v-nesting></i></div>",
+      "competitor": ".target.guard.guard.guard[data-v-nesting]{background:rgb(255,0,0)}",
+      "hover": false,
+      "pseudo": null,
+      "expected": [
+        0,
+        0,
+        255,
+        255
+      ],
+      "beforeCss": ".a[data-v-nesting],#never[data-v-nesting]{color:red;}.a .child[data-v-nesting],#never .child[data-v-nesting]{background:rgb(0,0,255)}.a[data-v-nesting],#never[data-v-nesting]{color:green;}",
+      "referenceCss": ".a,#never{&[data-v-nesting]{color:red;color:green}.child[data-v-nesting]{background:rgb(0,0,255)}}"
+    },
+    {
+      "id": "mixed-specificity-functional",
+      "source": "<template><div class=\"a\"/></template><style scoped>:is(.a,.unused),#never{.child:hover{background:rgb(0,0,255)}}</style>",
+      "css": ":is(.a,.unused),#never{.child:hover{background:rgb(0,0,255)}}",
+      "html": "<div class=\"a\" data-v-nesting><i class=\"child guard target\" data-v-nesting></i></div>",
+      "competitor": ".target.guard.guard.guard[data-v-nesting]{background:rgb(255,0,0)}",
+      "hover": true,
+      "pseudo": null,
+      "expected": [
+        0,
+        0,
+        255,
+        255
+      ],
+      "beforeCss": ":is(.a,.unused) .child[data-v-nesting]:hover,#never .child[data-v-nesting]:hover{background:rgb(0,0,255)}",
+      "referenceCss": ":is(.a,.unused),#never{.child[data-v-nesting]:hover{background:rgb(0,0,255)}}"
+    },
+    {
+      "id": "comma-in-attribute",
+      "source": "<template><div class=\"a\"/></template><style scoped>[data-list=\"a,b\"],#never{.child{background:rgb(0,0,255)}}</style>",
+      "css": "[data-list=\"a,b\"],#never{.child{background:rgb(0,0,255)}}",
+      "html": "<div data-list=\"a,b\" data-v-nesting><i class=\"child guard target\" data-v-nesting></i></div>",
+      "competitor": ".target.guard.guard.guard[data-v-nesting]{background:rgb(255,0,0)}",
+      "hover": false,
+      "pseudo": null,
+      "expected": [
+        0,
+        0,
+        255,
+        255
+      ],
+      "beforeCss": "[data-list=\"a,b\"] .child[data-v-nesting],#never .child[data-v-nesting]{background:rgb(0,0,255)}",
+      "referenceCss": "[data-list=\"a,b\"],#never{.child[data-v-nesting]{background:rgb(0,0,255)}}"
+    }
+  ],
+  "beforeProvider": {
+    "package": "@vizejs/native",
+    "version": "0.566.0",
+    "imageSha256": "a87bbfbbe9ff61b419144ef46851761b603e4dff52151372986d54227b138561",
+    "packageLockSha256": "1e9ccc6225b40d3c9e4131cddd8f14f12326b5ac630f970a8675da4428d41f9b",
+    "platform": "darwin-arm64"
+  }
+}

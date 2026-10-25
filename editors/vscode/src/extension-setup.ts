@@ -372,6 +372,9 @@ export function createExtensionSetup(
         `Server: ${state.selectedServerCandidate.source}${version}`,
         state.selectedServerCandidate.path,
       );
+      if (state.selectedServerCandidate.workspaceFallbackReason) {
+        lines.push(state.selectedServerCandidate.workspaceFallbackReason);
+      }
     }
 
     lines.push("Click to manage Vize.");
@@ -384,10 +387,11 @@ export function createExtensionSetup(
   ): string {
     const enabled = shouldStartFromConfiguration(config, workspaceLspConfig.hasConfig);
     const server = state.selectedServerCandidate
-      ? `${state.selectedServerCandidate.source} ${state.selectedServerCandidate.version ?? "unknown"}`
+      ? `${state.selectedServerCandidate.source} ${state.selectedServerCandidate.version ?? "unknown"} (${state.selectedServerCandidate.path})`
       : "server not resolved";
+    const fallback = state.selectedServerCandidate?.workspaceFallbackReason;
 
-    return `Vize is ${formatStatus(state.currentStatus)} (${enabled ? "enabled" : "disabled"}). Features: ${workspaceLspConfig.describeCapabilities(initializationOptions)}. Server: ${server}.`;
+    return `Vize is ${formatStatus(state.currentStatus)} (${enabled ? "enabled" : "disabled"}). Features: ${workspaceLspConfig.describeCapabilities(initializationOptions)}. Server: ${server}.${fallback ? ` ${fallback}` : ""}`;
   }
 
   function formatStatus(status: VizeStatus): string {

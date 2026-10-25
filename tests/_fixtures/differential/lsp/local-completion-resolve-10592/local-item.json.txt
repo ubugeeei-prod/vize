@@ -1,0 +1,6 @@
+{
+  "detail": "Vue Router file route param: string",
+  "kind": 10,
+  "label": "id",
+  "sortText": "0"
+}

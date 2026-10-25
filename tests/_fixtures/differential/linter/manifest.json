@@ -2221,6 +2221,131 @@
           }
         ]
       }
+    },
+    {
+      "id": "linter/repeated-macro-groups-10610",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "repeated-macro-groups-10610",
+        "files": [
+          {
+            "path": "TwoModels.lf.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "8e6562bda3affdb1d2f7333f1319c1cf9b430888a24d95a5f950ca79f199e222"
+          },
+          {
+            "path": "TwoModels.crlf.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "d26518381e8be8bb67f3f1eed9059d3b9c0e56d0ecfb8296dd9f3435bdceb4ab"
+          },
+          {
+            "path": "SplitGroup.vue.txt",
+            "role": "negative-control",
+            "sha256": "629deec3565de51676aa49d2aa40e4d32485454f5516120d29a6c69e3c85c7f9"
+          },
+          {
+            "path": "vite.config.mjs",
+            "role": "native-cli-config",
+            "sha256": "486630fa1aa8d4320f6765722933be31afdb2f579f939954567c9eb9fd3308cc"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/sibling-script-import-reads-10616",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "sibling-script-import-reads-10616",
+        "files": [
+          {
+            "path": "TwoBlocks.lf.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "8f3ca7135e471de11340082664e4b4f8f4b089a1a15fb2cf9d2eb525c0af751e"
+          },
+          {
+            "path": "TwoBlocks.crlf.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "a1f2f42194b3bdca9c023b8b6cd80ce7ee8d4a45c4f990fd0746237e09ad2579"
+          },
+          {
+            "path": "Shadowed.vue.txt",
+            "role": "negative-control",
+            "sha256": "bd85fa93cba6ea7b836c1090d33ede55722f76c4193e304c972d977ae06c3ac7"
+          },
+          {
+            "path": "vite.config.mjs",
+            "role": "native-cli-config",
+            "sha256": "db828803ca275e69d59875f8e8a6422a8eb35acf4cd56c3d77bc6a5b84e6434f"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/ambient-macro-declarations-10656",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "ambient-macro-declarations-10656",
+        "files": [
+          {
+            "path": "AmbientPrefix.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "dd87643b81b0b952db3723f789d3fe1b9827c166d225f4b207fc88449d8faec0"
+          },
+          {
+            "path": "AmbientBarrier.vue.txt",
+            "role": "negative-control",
+            "sha256": "4f9b1a7d8350cd311675587f9f02ae5844e94f115199427b0f8433891515bfd7"
+          },
+          {
+            "path": "vite.config.mjs",
+            "role": "native-cli-config",
+            "sha256": "486630fa1aa8d4320f6765722933be31afdb2f579f939954567c9eb9fd3308cc"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }

@@ -1,4 +1,4 @@
-export type LspInitializationOptions = Partial<Record<string, boolean>>;
+export type LspInitializationOptions = Partial<Record<string, boolean | number>>;
 
 export type ConfigurationInspection<T = unknown> = {
   globalValue?: T;
@@ -220,6 +220,16 @@ export function getInitializationOptions(
     options.typecheck = true;
     options.editor = true;
     options.ecosystem = true;
+  }
+
+  const timeoutMs = config.get<number>("typecheck.timeoutMs", 10_000);
+  if (
+    hasExplicitConfigurationValue(config, "typecheck.timeoutMs") &&
+    Number.isSafeInteger(timeoutMs) &&
+    timeoutMs > 0 &&
+    timeoutMs <= 4_294_967_295
+  ) {
+    options.typecheckTimeoutMs = timeoutMs;
   }
 
   return options;

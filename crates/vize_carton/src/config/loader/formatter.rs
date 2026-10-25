@@ -45,7 +45,19 @@ fn snapshot(loaded: LoadedRawConfig) -> LoadedFormatterSnapshot {
     let compiler_whitespace = loaded.config.compiler_whitespace();
     let sort_imports = loaded.config.formatter_sort_imports().cloned();
     let formatter_profile = loaded.config.formatter_profile().clone();
-    let ignores = loaded.config.entry_ignores();
+    let mut ignores = loaded.config.entry_ignores();
+    ignores.extend(
+        loaded
+            .config
+            .formatter_ignore_patterns()
+            .iter()
+            .map(|pattern| ConfigEntryIgnore {
+                base_path: project_root
+                    .as_deref()
+                    .map(|root| root.to_string_lossy().into()),
+                pattern: pattern.clone(),
+            }),
+    );
     let compiler_entries = loaded.config.compiler_entries();
     let entries = loaded.config.clone().into_entry_files();
     let (config, features) = loaded.config.into_config_and_features();

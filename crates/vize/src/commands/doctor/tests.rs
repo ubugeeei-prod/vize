@@ -201,6 +201,7 @@ import ChildCard from './Child.vue'
 <template><ChildCard extra="value" /></template>
 "#;
     let child = r#"<script setup lang="ts">
+defineOptions({ inheritAttrs: false })
 defineProps<{ id: number }>()
 </script>
 <template><span /></template>

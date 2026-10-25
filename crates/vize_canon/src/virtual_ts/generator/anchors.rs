@@ -132,6 +132,8 @@ fn emit_setup_binding_anchors(
         .unwrap_or_default();
     let mut first = true;
     for name in binding_names {
+        let value_import = value_import_names.contains(name.as_str());
+        let name = crate::virtual_ts::props::setup_anchor_identifier(summary, name);
         if is_reserved_anchor_name(&name) {
             continue;
         }
@@ -140,7 +142,7 @@ fn emit_setup_binding_anchors(
         } else {
             ts.push(' ');
         }
-        if value_import_names.contains(name.as_str()) {
+        if value_import {
             // A direct value read is illegal for imported `const enum`s (TS2475).
             // `keyof typeof` consumes the permitted type query without asserting
             // directly to the enum object type, which TypeScript also rejects.
@@ -202,6 +204,9 @@ fn is_reserved_anchor_name(name: &str) -> bool {
             | "public"
     )
 }
+
+#[cfg(test)]
+mod contextual_names;
 
 #[cfg(test)]
 mod tests {
@@ -268,7 +273,7 @@ mod tests {
         );
         assert_eq!(
             anchors.as_str(),
-            "\n  // Reference setup bindings (used in template/CSS v-bind)\n  void $setup; void $value; void _private; void café; void props; void résumé;\n"
+            "\n  // Reference setup bindings (used in template/CSS v-bind)\n  void $setup; void $value; void _private; void café; void _class; void _default; void props; void résumé;\n"
         );
         assert_eq!(
             summary

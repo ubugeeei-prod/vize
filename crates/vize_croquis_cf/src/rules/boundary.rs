@@ -45,6 +45,15 @@ pub fn analyze_boundaries(
     registry: &ModuleRegistry,
     graph: &DependencyGraph,
 ) -> (Vec<BoundaryInfo>, Vec<CrossFileDiagnostic>) {
+    analyze_boundaries_in_ssr_mode(registry, graph, true)
+}
+
+/// Retain error/Suspense analysis when a host proves the app client-only.
+pub(crate) fn analyze_boundaries_in_ssr_mode(
+    registry: &ModuleRegistry,
+    graph: &DependencyGraph,
+    ssr_enabled: bool,
+) -> (Vec<BoundaryInfo>, Vec<CrossFileDiagnostic>) {
     let mut boundaries = Vec::new();
     let mut diagnostics = Vec::new();
 
@@ -81,29 +90,31 @@ pub fn analyze_boundaries(
             async_components.insert(entry.id);
         }
 
-        // Resolve source-owned function reachability once per component.
-        let client_regions = analysis
-            .setup_context
-            .client_only_browser_ranges(&analysis.scopes, &analysis.template_expressions);
-        let browser_usages = find_browser_api_usage(analysis);
-        for (api, offset, context, source) in browser_usages {
-            if !client::is_client_usage(analysis, offset, source, &client_regions) {
-                client_only_apis.push((entry.id, api.clone(), offset));
+        if ssr_enabled {
+            // Resolve source-owned function reachability once per component.
+            let client_regions = analysis
+                .setup_context
+                .client_only_browser_ranges(&analysis.scopes, &analysis.template_expressions);
+            let browser_usages = find_browser_api_usage(analysis);
+            for (api, offset, context, source) in browser_usages {
+                if !client::is_client_usage(analysis, offset, source, &client_regions) {
+                    client_only_apis.push((entry.id, api.clone(), offset));
 
-                diagnostics.push(
-                    CrossFileDiagnostic::new(
-                        CrossFileDiagnosticKind::BrowserApiInSsr {
-                            api,
-                            context: CompactString::new(context),
-                        },
-                        DiagnosticSeverity::Warning,
-                        entry.id,
-                        offset,
-                        "Browser API used in potentially SSR context",
-                    )
-                    .with_primary_source(source)
-                    .with_suggestion("Wrap in onMounted() or guard with !import.meta.env.SSR, import.meta.client, or typeof window !== 'undefined'"),
-                );
+                    diagnostics.push(
+                        CrossFileDiagnostic::new(
+                            CrossFileDiagnosticKind::BrowserApiInSsr {
+                                api,
+                                context: CompactString::new(context),
+                            },
+                            DiagnosticSeverity::Warning,
+                            entry.id,
+                            offset,
+                            "Browser API used in potentially SSR context",
+                        )
+                        .with_primary_source(source)
+                        .with_suggestion("Wrap in onMounted() or guard with !import.meta.env.SSR, import.meta.client, or typeof window !== 'undefined'"),
+                    );
+                }
             }
         }
 

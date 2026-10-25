@@ -50,17 +50,60 @@ impl Selected {
         }
     }
 
-    pub(super) fn data(self) -> Value {
-        let (kind, name, property) = match self {
+    fn identity(self) -> (&'static str, &'static str, Option<&'static str>) {
+        match self {
             Self::Entry(kind, entry) => (kind, entry.name, None),
             Self::Value(property, value) => ("value", value.name, Some(property.name)),
             Self::Wide(property, value) => ("wide", value.name, Some(property.name)),
             Self::Color(property, value) => ("color", value.name, Some(property.name)),
             Self::Function(property, value) => ("function", value.name, Some(property.name)),
             Self::Vue(feature) => ("vue", feature.name, None),
-        };
+        }
+    }
+
+    pub(super) fn data(self) -> Value {
+        let (kind, name, property) = self.identity();
         json!({ KEY: { "kind": kind, "name": name, "property": property } })
     }
+}
+
+/// Only the exact immutable catalog identity can bypass a document owner.
+/// Unknown outer or payload fields may carry another owner's state, so keep
+/// them on the guarded path even when a valid CSS marker is also present.
+#[cfg(feature = "native")]
+pub(crate) fn resolve_catalog(item: &mut CompletionItem) -> bool {
+    let Some(data) = item.data.as_ref().and_then(Value::as_object) else {
+        return false;
+    };
+    if data.len() != 1 {
+        return false;
+    }
+    let Some(payload) = data.get(KEY) else {
+        return false;
+    };
+    let Some(selected) = decode(payload) else {
+        return false;
+    };
+    let Some(payload) = payload.as_object().filter(|payload| payload.len() == 3) else {
+        return false;
+    };
+    let (kind, name, property) = selected.identity();
+    let property_matches = match property {
+        Some(property) => payload.get("property").and_then(Value::as_str) == Some(property),
+        None => payload.get("property").is_some_and(Value::is_null),
+    };
+    if selected.label() != item.label
+        || Some(selected.kind()) != item.kind
+        || payload.get("kind").and_then(Value::as_str) != Some(kind)
+        || payload.get("name").and_then(Value::as_str) != Some(name)
+        || !property_matches
+    {
+        return false;
+    }
+    item.documentation = Some(super::super::markup::markdown_documentation(
+        documentation::markdown(selected),
+    ));
+    true
 }
 
 /// Return whether this is CSS data, including invalid data, so it never reaches Corsa.

@@ -39,7 +39,9 @@ test("receipt-less LSP launch failures retain source-only expected identity", as
   });
   assert.equal(report.buildReceipt, null);
   assert.equal(report.binary, null);
-  assert.equal(report.summary.legacyFailures, loaded.cases.length);
+  const unsupported = loaded.cases.filter((fixture) => fixture.data.sourceSession).length;
+  assert.equal(report.summary.legacyFailures, loaded.cases.length - unsupported);
+  assert.equal(report.summary.legacyUnsupported, unsupported);
   assert.equal(report.summary.legacyMatches, 0);
   validateLspReport(loaded, report, { sourceRevision: build.sourceRevision });
 });

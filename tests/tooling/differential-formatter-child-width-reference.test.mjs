@@ -133,6 +133,7 @@ void test("sole-child Vue references retain old whole bytes and reject altered i
     `${directory}/current-vue-references.json`,
     `${directory}/vue2_filters.original.rs.txt`,
     `${directory}/glyph-vue2-native.original.ts.txt`,
+    `${directory}/formatter-manifest.original.json.txt`,
   ];
   for (const row of authority.records.slice(0, 3)) {
     files.push(row.input.path, row.historical.path, row.config.path);
@@ -150,6 +151,32 @@ void test("sole-child Vue references retain old whole bytes and reject altered i
     fs.copyFileSync(path.join(root, relative), target);
   }
   const first = cli.cases.find((row) => row.id === "formatter/sfc/vue2-filter-chain-crlf");
+  const livePath = path.join(scratch, cliPath);
+  const liveBytes = fs.readFileSync(livePath);
+  const appended = JSON.parse(liveBytes);
+  appended.cases.push({ ...appended.cases[0], id: "formatter/sfc/new-issue-input" });
+  fs.writeFileSync(livePath, `${JSON.stringify(appended, null, 2)}\n`);
+  soleChildVueAuthority(scratch);
+  for (const mutate of [
+    (manifest) => {
+      manifest.cases[0].witnesses = [];
+    },
+    (manifest) => {
+      manifest.cases.shift();
+    },
+    (manifest) => {
+      manifest.baseRevision = "0".repeat(40);
+    },
+    (manifest) => {
+      manifest.cases.push(manifest.cases[0]);
+    },
+  ]) {
+    const changed = structuredClone(appended);
+    mutate(changed);
+    fs.writeFileSync(livePath, `${JSON.stringify(changed, null, 2)}\n`);
+    assert.throws(() => soleChildVueAuthority(scratch));
+  }
+  fs.writeFileSync(livePath, liveBytes);
   const artifact = { path: owner, sha256: originalHash };
   assert.deepEqual(
     resolveSoleChildVueSource(scratch, artifact),
@@ -176,6 +203,7 @@ void test("sole-child Vue references retain old whole bytes and reject altered i
     apiPath,
     `${directory}/current-vue-references.json`,
     `${directory}/glyph-vue2-native.original.ts.txt`,
+    `${directory}/formatter-manifest.original.json.txt`,
     authority.records[0].input.path,
     authority.records[0].historical.path,
     authority.records[0].config.path,

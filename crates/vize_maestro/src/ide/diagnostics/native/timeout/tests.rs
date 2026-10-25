@@ -3,8 +3,9 @@ use serde_json::{Value, json};
 use tower::Service;
 use tower_lsp::{LspService, jsonrpc::Request, lsp_types::Diagnostic};
 
-use super::with_native_diagnostic_timeout;
+use super::with_native_diagnostic_progress;
 use crate::{MaestroServer, ide::DiagnosticService};
+use std::time::Duration;
 
 const SOURCE: &str = include_str!(
     "../../../../../../../tests/_fixtures/differential/lsp-regressions/native-diagnostic-timeout-7698/App.vue.txt"
@@ -18,7 +19,7 @@ fn expected() -> Value {
 }
 
 #[test]
-fn outer_native_timeout_publishes_the_whole_incomplete_status_instead_of_clean_empty() {
+fn hard_native_timeout_publishes_the_whole_incomplete_status_instead_of_clean_empty() {
     let root = tempfile::tempdir().expect("public timeout fixture root");
     let path = root.path().join("App.vue");
     std::fs::write(&path, SOURCE).expect("whole authored SFC");
@@ -29,10 +30,7 @@ fn outer_native_timeout_publishes_the_whole_incomplete_status_instead_of_clean_e
     let mut diagnostics = DiagnosticService::collect(&state, &uri);
     assert_eq!(json!(diagnostics), expected()["completedClean"]);
 
-    let hints = crate::runtime::block_on(with_native_diagnostic_timeout(future::pending::<
-        Vec<Diagnostic>,
-    >()))
-    .expect_err("the unchanged ten-second production bound must expire");
+    let hints = vec![super::super::super::corsa::collect::typecheck_timed_out_hint()];
     diagnostics.extend(hints);
 
     let mut captured_client = None;
@@ -76,9 +74,11 @@ fn completed_clean_and_positive_native_vectors_are_unchanged() {
     for key in ["completedClean", "completedNative"] {
         let diagnostics: Vec<Diagnostic> =
             serde_json::from_value(expected[key].clone()).expect("whole authored native vector");
-        let result =
-            crate::runtime::block_on(with_native_diagnostic_timeout(future::ready(diagnostics)))
-                .expect("completed result must retain success");
+        let result = crate::runtime::block_on(with_native_diagnostic_progress(
+            Duration::ZERO,
+            future::ready(diagnostics),
+            || async { panic!("a completed result must not announce pending diagnostics") },
+        ));
         assert_eq!(json!(result), expected[key]);
     }
 }
@@ -89,13 +89,11 @@ fn an_answered_native_error_is_not_reclassified_as_an_outer_timeout() {
         code: -32602,
         message: "authored complete backend refusal".into(),
     };
-    let result = crate::runtime::block_on(with_native_diagnostic_timeout(future::ready(Err::<
-        Vec<Diagnostic>,
-        _,
-    >(
-        error
-    ))))
-    .expect("answered error must preserve the existing fallback classification");
+    let result = crate::runtime::block_on(with_native_diagnostic_progress(
+        Duration::ZERO,
+        future::ready(Err::<Vec<Diagnostic>, _>(error)),
+        || async { panic!("an answered error must not announce pending diagnostics") },
+    ));
     match result {
         Err(vize_canon::CorsaBridgeError::ResponseError { code, message }) => {
             assert_eq!(code, -32602);
@@ -103,4 +101,24 @@ fn an_answered_native_error_is_not_reclassified_as_an_outer_timeout() {
         }
         _ => panic!("the answered native error changed classification"),
     }
+}
+
+#[test]
+fn soft_threshold_retains_the_same_future_and_returns_its_whole_late_result() {
+    let (release, answer) = futures::channel::oneshot::channel();
+    let authored = expected()["completedNative"].clone();
+    let result = crate::runtime::block_on(with_native_diagnostic_progress(
+        Duration::ZERO,
+        async {
+            answer
+                .await
+                .expect("the original native waiter remains alive")
+        },
+        || async {
+            release
+                .send(authored.clone())
+                .expect("soft threshold must not drop its native waiter");
+        },
+    ));
+    assert_eq!(result, authored);
 }

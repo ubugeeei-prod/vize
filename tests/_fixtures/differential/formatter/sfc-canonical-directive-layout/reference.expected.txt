@@ -1,0 +1,11 @@
+<template>
+  <button
+    :aria-label="
+      unread > 0
+        ? `${unread} unread messages are waiting for you in the inbox right now, please read`
+        : 'no unread messages at all'
+    "
+  >
+    go
+  </button>
+</template>

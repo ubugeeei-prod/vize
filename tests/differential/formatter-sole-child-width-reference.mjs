@@ -8,7 +8,8 @@ const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const DIRECTORY = "tests/_fixtures/differential/formatter-regressions/sole-child-width-7876";
 const AUTHORITY = `${DIRECTORY}/current-vue-references.json`;
 const HASH = "bf8c553b9fd93908061acbeb8a239a0ee945c7f59209ce25d406d53ef28a3d36";
-const CLI_MANIFEST = "tests/_fixtures/differential/formatter/manifest.json";
+const CLI_MANIFEST = `${DIRECTORY}/formatter-manifest.original.json.txt`;
+const LIVE_CLI_MANIFEST = "tests/_fixtures/differential/formatter/manifest.json";
 const CLI_HASH = "1c4beb10ea5b444df0a902552f468d7d8f67e70c5d301d9815d930bce6298984";
 const API_MANIFEST = "tests/_fixtures/differential/formatter-history/vue-version-manifest.json";
 const API_HASH = "e18b9c2595b7a5dbbe655930d83692e2ecdb04e1a60e0e7a2ec490577e0c88fc";
@@ -23,6 +24,27 @@ function bytes(root, relative) {
   const contained = path.relative(fs.realpathSync(root), file);
   assert(contained && !contained.startsWith("..") && !path.isAbsolute(contained));
   return fs.readFileSync(file);
+}
+
+export function assertClosedFormatterManifest(root) {
+  assert.equal(hash(bytes(root, CLI_MANIFEST)), CLI_HASH, "whole formatter manifest changed");
+  const originalManifest = JSON.parse(bytes(root, CLI_MANIFEST));
+  const liveBytes = bytes(root, LIVE_CLI_MANIFEST);
+  const liveManifest = JSON.parse(liveBytes);
+  // Keep the closed whole manifest and every original live record immutable.
+  // New issue fixtures append to the active registry without rebasing history.
+  assert.deepEqual(liveBytes, Buffer.from(`${JSON.stringify(liveManifest, null, 2)}\n`));
+  assert.deepEqual(
+    liveManifest.cases.slice(0, originalManifest.cases.length),
+    originalManifest.cases,
+    "original formatter cases changed",
+  );
+  assert.deepEqual(
+    { ...liveManifest, cases: [] },
+    { ...originalManifest, cases: [] },
+    "original formatter metadata changed",
+  );
+  assert.equal(new Set(liveManifest.cases.map((row) => row.id)).size, liveManifest.cases.length);
 }
 
 export function soleChildVueAuthority(root) {
@@ -42,7 +64,7 @@ export function soleChildVueAuthority(root) {
       "native-hardcoded-3",
     ],
   );
-  assert.equal(hash(bytes(root, CLI_MANIFEST)), CLI_HASH, "whole formatter manifest changed");
+  assertClosedFormatterManifest(root);
   assert.equal(hash(bytes(root, API_MANIFEST)), API_HASH, "whole Vue14 manifest changed");
   assert.equal(result.nativeOwner.path, "tests/tooling/glyph-vue2-native.test.ts");
   assert.equal(hash(Buffer.from(result.nativeOwner.content)), result.nativeOwner.sha256);

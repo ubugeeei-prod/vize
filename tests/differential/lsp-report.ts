@@ -12,6 +12,7 @@ import {
 } from "./lsp-manifest.ts";
 import { decodeFrames } from "./lsp-wire.ts";
 import { validateLspWorkspace } from "./lsp-workspace.ts";
+import { sourceSessionUnsupportedLegacy } from "./lsp-source-sessions.ts";
 import {
   hasCapabilities,
   type JsonRpcMessage,
@@ -181,6 +182,7 @@ export function validateLspReport(
     plannedCases: loaded.cases.length,
     legacyMatches: 0,
     legacyFailures: 0,
+    legacyUnsupported: 0,
     baselineDrift: 0,
     nativeUnsupported: loaded.cases.length,
     pairedComparisons: 0,
@@ -192,6 +194,15 @@ export function validateLspReport(
     assert(row, "every planned row is required");
     assert.deepEqual(row.native, { state: "unsupported", reason: NATIVE_REASON });
     assert.deepEqual(row.comparison, { state: "not-compared", reason: NATIVE_REASON });
+    if (fixture.data.sourceSession) {
+      assert.deepEqual(
+        row.legacy,
+        sourceSessionUnsupportedLegacy(),
+        "an unsupported source session cannot claim wire or reference credit",
+      );
+      summary.legacyUnsupported += 1;
+      continue;
+    }
     assert.equal(row.legacy.comparator, "complete-jsonrpc-response");
     assert(["completed", "failed"].includes(row.legacy.state));
     validateLspWorkspace(fixture, row.legacy.workspace, row.legacy.state === "completed");

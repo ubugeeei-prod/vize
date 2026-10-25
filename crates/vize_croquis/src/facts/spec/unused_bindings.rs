@@ -15,6 +15,7 @@
 
 use std::collections::BTreeSet;
 
+mod normal_reads;
 mod refs;
 
 use oxc_allocator::Allocator;
@@ -38,17 +39,20 @@ pub fn evaluate(
     checked: &[CheckedExpression],
     croquis: &Croquis,
 ) -> Result<FactTable<UnusedBindings>, &'static str> {
-    if descriptor.script.is_some() {
-        return Err("plain-script");
-    }
     let Some(setup) = descriptor.script_setup.as_ref() else {
         return Ok(FactTable::default());
     };
-    if setup.src.is_some()
-        || setup
-            .lang
-            .as_deref()
-            .is_some_and(|lang| !matches!(lang, "js" | "ts" | "jsx" | "tsx"))
+    if descriptor
+        .script
+        .iter()
+        .chain(descriptor.script_setup.iter())
+        .any(|block| {
+            block.src.is_some()
+                || block
+                    .lang
+                    .as_deref()
+                    .is_some_and(|lang| !matches!(lang, "js" | "ts" | "jsx" | "tsx"))
+        })
         || descriptor.template.as_ref().is_some_and(|block| {
             block.src.is_some() || block.lang.as_deref().is_some_and(|lang| lang != "html")
         })
@@ -56,6 +60,9 @@ pub fn evaluate(
     {
         return Ok(FactTable::default());
     }
+    let Some(module_reads) = normal_reads::read(descriptor.script.as_ref()) else {
+        return Ok(FactTable::default());
+    };
     let jsx = matches!(setup.lang.as_deref(), Some("jsx" | "tsx"));
     let decls = bindings_extract::extract(&setup.content, jsx)?;
     // The naive evaluator resolves the complete authored script and type
@@ -121,6 +128,10 @@ pub fn evaluate(
         }
     }
     let mut result = Vec::new();
+    let setup_offset = descriptor
+        .script
+        .as_ref()
+        .map_or(0, |script| script.content.len() as u32 + 1);
     for decl in decls {
         let Some(symbol) = scoping.get_binding(scoping.root_scope_id(), decl.name.as_str().into())
         else {
@@ -132,6 +143,12 @@ pub fn evaluate(
             || !bindings.contains_binding(&decl.name)
         {
             continue;
+        }
+        let declaration_span = decl
+            .span
+            .map(|(start, end)| (start + setup_offset, end + setup_offset));
+        if descriptor.script.is_some() && bindings.span(&decl.name) != declaration_span {
+            return Err("split-script-frame");
         }
         let script_read = semantic.nodes().iter().any(|node| {
             let AstKind::IdentifierReference(id) = node.kind() else {
@@ -162,9 +179,10 @@ pub fn evaluate(
             .iter()
             .any(|directive| normalized(&cstr!("v-{directive}")) == normalized(&decl.name));
         if !script_read
+            && !(flags.contains(SymbolFlags::Import) && module_reads.contains(&decl.name))
             && !reads.contains(&decl.name)
             && !template_tag_read
-            && let Some(span) = decl.span
+            && let Some(span) = declaration_span
         {
             result.push((decl.name.as_str().into(), UnusedBindingFact { span }));
         }

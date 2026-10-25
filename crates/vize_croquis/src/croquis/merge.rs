@@ -1,6 +1,8 @@
 use super::Croquis;
 use crate::scope::{ScopeData, ScopeKind};
-use vize_carton::CompactString;
+use crate::script_parser::ModuleReadFacts;
+use vize_carton::{CompactString, FxHashSet};
+use vize_relief::BindingType;
 
 impl Croquis {
     /// Merge a regular `<script>` croquis into a `<script setup>` croquis.
@@ -8,7 +10,10 @@ impl Croquis {
     /// The receiver keeps precedence for setup-local data, while module-level
     /// facts from the regular script are retained for virtual TS, lint, and
     /// cross-file consumers.
-    pub fn merge_plain_script(&mut self, plain: Self) {
+    pub fn merge_plain_script(&mut self, mut plain: Self) {
+        if let Some(reads) = plain.setup_context.take_module_read_facts() {
+            self.apply_module_reads(reads);
+        }
         self.merge_plain_script_scopes(&plain);
 
         let plain_bindings = plain.bindings;
@@ -42,6 +47,31 @@ impl Croquis {
         for (name, span) in plain.binding_spans {
             self.binding_spans.entry(name).or_insert(span);
         }
+    }
+
+    fn apply_module_reads(&mut self, reads: ModuleReadFacts) {
+        let ModuleReadFacts::Known(reads) = reads else {
+            // Invalid syntax or eval cannot establish absence of a module read.
+            self.unused_bindings.clear();
+            return;
+        };
+        if reads.is_empty() || self.unused_bindings.is_empty() {
+            return;
+        }
+        // This runs before merging normal-script scopes. Only original setup
+        // imports are hoisted into the shared module; setup-local values remain
+        // private even if a normal-script identifier has the same spelling.
+        let imports: FxHashSet<&str> = self
+            .scopes
+            .iter()
+            .filter(|scope| scope.kind == ScopeKind::ExternalModule)
+            .flat_map(|scope| scope.bindings())
+            .filter_map(|(name, binding)| {
+                (binding.binding_type != BindingType::ExternalModule).then_some(name)
+            })
+            .collect();
+        self.unused_bindings
+            .retain(|name| !imports.contains(name.as_str()) || !reads.contains(name));
     }
 
     fn merge_plain_script_scopes(&mut self, plain: &Self) {
