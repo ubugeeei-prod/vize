@@ -44,7 +44,7 @@ fn project(source: &str, marker: &str, contents: LspHoverContents) -> Hover {
         }),
     };
     let original_contents = HoverService::convert_lsp_hover(native.clone()).contents;
-    let result = HoverService::project_native_attribute_hover(&ctx, source_span, native);
+    let result = HoverService::project_native_dom_hover(&ctx, source_span, native);
     assert_eq!(result.contents, original_contents);
     result
 }

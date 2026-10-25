@@ -121,14 +121,10 @@ impl HoverService {
         let (line, character) = crate::ide::offset_to_position(&doc.content, doc.hover_offset);
         let hover = bridge.hover(&request_uri, line, character).await.ok()??;
 
-        Some(Self::project_native_attribute_hover(
-            ctx,
-            source_span,
-            hover,
-        ))
+        Some(Self::project_native_dom_hover(ctx, source_span, hover))
     }
 
-    fn project_native_attribute_hover(
+    fn project_native_dom_hover(
         ctx: &IdeContext<'_>,
         source_span: Option<(usize, usize)>,
         hover: LspHover,
@@ -149,8 +145,11 @@ impl HoverService {
         ctx: &IdeContext<'_>,
         corsa_bridge: Option<&Arc<CorsaBridge>>,
     ) -> Option<Hover> {
-        let tag_name =
-            crate::ide::definition::helpers::get_tag_at_offset(&ctx.content, ctx.offset)?;
+        let (tag_name, source_span) =
+            crate::ide::definition::helpers::get_tag_with_source_span_at_offset(
+                &ctx.content,
+                ctx.offset,
+            )?;
         if crate::ide::is_component_tag(&tag_name) {
             return None;
         }
@@ -170,7 +169,7 @@ impl HoverService {
         let hover = bridge.hover(&request_uri, line, character).await.ok()??;
 
         Some(documentation::enrich_native_html(
-            Self::convert_lsp_hover(hover),
+            Self::project_native_dom_hover(ctx, Some(source_span), hover),
             &tag_name,
             doc.category,
         ))
@@ -206,3 +205,6 @@ mod attribute_range_tests;
 
 #[cfg(test)]
 mod documentation_tests;
+
+#[cfg(test)]
+mod tag_range_tests;

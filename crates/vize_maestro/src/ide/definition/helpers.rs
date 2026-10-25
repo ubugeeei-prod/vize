@@ -56,6 +56,15 @@ pub(crate) fn skip_virtual_header(content: &str) -> usize {
 
 /// Get the tag name at the given offset (if cursor is on a tag).
 pub(crate) fn get_tag_at_offset(content: &str, offset: usize) -> Option<String> {
+    get_tag_with_source_span_at_offset(content, offset).map(|(name, _)| name)
+}
+
+/// Return the authored tag-name span alongside the existing tag lookup.
+/// HTML and Pug/Jade use the same cursor boundaries as name-only callers.
+pub(crate) fn get_tag_with_source_span_at_offset(
+    content: &str,
+    offset: usize,
+) -> Option<(String, (usize, usize))> {
     let cursor = offset.min(content.len());
     let (_, _, name_start, name_end) = find_tag_name_span(content, cursor)
         .or_else(|| crate::ide::pug::tag_name_span_at_offset(content, cursor))?;
@@ -64,7 +73,9 @@ pub(crate) fn get_tag_at_offset(content: &str, offset: usize) -> Option<String> 
         return None;
     }
 
-    content.get(name_start..name_end).map(str::to_string)
+    content
+        .get(name_start..name_end)
+        .map(|name| (name.to_string(), (name_start, name_end)))
 }
 
 pub(crate) fn find_tag_name_span(
