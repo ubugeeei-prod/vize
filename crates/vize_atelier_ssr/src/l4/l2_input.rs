@@ -27,7 +27,29 @@ pub fn compile_l2_to_ssr<'a>(
     root: &Region<'a>,
     options: &SsrCompilerOptions,
 ) -> Option<SsrCodegenResult> {
-    let selection = select_l2_lane(allocator, source, root, options);
+    compile_l2_to_ssr_with_experimental_options(
+        allocator,
+        source,
+        root,
+        options,
+        &SsrCompilerExperimentalOptions::default(),
+    )
+}
+
+/// Emit a caller-built L2 root with the shared SSR emitter's genuine source
+/// origins. The options remain separate from the published exhaustive model.
+#[doc(hidden)]
+pub fn compile_l2_to_ssr_with_experimental_options<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    root: &Region<'a>,
+    options: &SsrCompilerOptions,
+    experimental: &SsrCompilerExperimentalOptions,
+) -> Option<SsrCodegenResult> {
+    let selection = vize_l0::profile!(
+        "atelier.ssr.caller_l2.select_and_emit",
+        select_l2_lane_with_experimental_options(allocator, source, root, options, experimental)
+    );
     record_selection(&selection);
     match selection {
         SsrL4Selection::Emitted(result) => Some(result),
@@ -35,11 +57,28 @@ pub fn compile_l2_to_ssr<'a>(
     }
 }
 
+#[cfg(test)]
 pub(super) fn select_l2_lane<'a>(
     allocator: &'a Allocator,
     source: &'a str,
     root: &Region<'a>,
     options: &SsrCompilerOptions,
+) -> SsrL4Selection {
+    select_l2_lane_with_experimental_options(
+        allocator,
+        source,
+        root,
+        options,
+        &SsrCompilerExperimentalOptions::default(),
+    )
+}
+
+fn select_l2_lane_with_experimental_options<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    root: &Region<'a>,
+    options: &SsrCompilerOptions,
+    experimental: &SsrCompilerExperimentalOptions,
 ) -> SsrL4Selection {
     let texts = SideTable::new();
     let for_wrappers = SideTable::new();
@@ -57,12 +96,11 @@ pub(super) fn select_l2_lane<'a>(
         },
         diagnostics: 0,
     };
-    let experimental = SsrCompilerExperimentalOptions::default();
     select_from_l2_plain(
         allocator,
         &artifact,
         options,
-        &experimental,
+        experimental,
         crate::SsrSfcContext::new(true),
         || {
             if options.croquis.is_some() || options.binding_metadata.is_some() || options.inline {

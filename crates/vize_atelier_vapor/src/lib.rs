@@ -92,7 +92,8 @@ pub use compile::{
 };
 pub use generate::{
     VaporGenerateExperimentalOptions, VaporGenerateOptions, VaporGenerateResult, generate_vapor,
-    generate_vapor_with_options, generate_vapor_with_options_and_experimentals,
+    generate_vapor_from_transformed_root, generate_vapor_with_options,
+    generate_vapor_with_options_and_experimentals,
 };
 pub use generators::{
     GenerateContext, build_text_expression, can_inline_text, can_optimize_for, can_use_ternary,
