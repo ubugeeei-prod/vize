@@ -80,6 +80,9 @@ impl ReferencesService {
         let art_locations =
             art::shared_script_references(ctx, include_declaration, corsa_bridge.as_deref()).await;
         if canonical_locations.is_some() {
+            if art_locations.is_none() {
+                return canonical_locations;
+            }
             return corsa_support::merge_canonical_locations(
                 canonical_locations,
                 art_locations,

@@ -8,6 +8,12 @@ use vize_l0::String;
 use crate::ide::{IdeContext, corsa_support, offset_to_position, position_to_offset};
 use crate::virtual_code::{ArtVariantInfo, BlockType};
 
+#[derive(Clone, Copy)]
+enum Template {
+    Art(usize),
+    Ordinary,
+}
+
 pub(super) async fn variant_references(
     ctx: &IdeContext<'_>,
     info: &ArtVariantInfo,
@@ -27,9 +33,9 @@ pub(super) async fn variant_references(
     // Refresh every variant before a query can return imported-symbol hits
     // from a previously opened projection at another buffer revision.
     let opened = synchronize(ctx, bridge).await?;
-    let (_, uri) = opened
-        .iter()
-        .find(|(index, _)| *index == info.variant_index)?;
+    let (_, uri) = opened.iter().find(
+        |(template, _)| matches!(template, Template::Art(index) if *index == info.variant_index),
+    )?;
     // Discovery retains the script declaration even when the client excludes
     // it from the final answer. Native identity, not spelling, chooses a join.
     let discovered = bridge.references(uri, line, character, true).await.ok()?;
@@ -87,7 +93,10 @@ pub(super) async fn shared_script_references(
     shared_at(ctx, anchor, include_declaration, bridge, None, &opened).await
 }
 
-async fn synchronize(ctx: &IdeContext<'_>, bridge: &CorsaBridge) -> Option<Vec<(usize, String)>> {
+async fn synchronize(
+    ctx: &IdeContext<'_>,
+    bridge: &CorsaBridge,
+) -> Option<Vec<(Template, String)>> {
     let documents = ctx.virtual_docs.as_ref()?;
     let mut opened = Vec::new();
     let mut contents = Vec::new();
@@ -96,7 +105,17 @@ async fn synchronize(ctx: &IdeContext<'_>, bridge: &CorsaBridge) -> Option<Vec<(
         let path = corsa_support::art_template_request_path(ctx.uri, index);
         let uri = corsa_support::request_file_uri(&path);
         contents.push((uri.clone(), template.content.as_str().into()));
-        opened.push((index, uri));
+        opened.push((Template::Art(index), uri));
+    }
+    // An inline art binding also drives the ordinary SFC template. In a
+    // standalone art file `documents.template` aliases its default variant.
+    if !ctx.uri.path().ends_with(".art.vue")
+        && let Some(template) = documents.template.as_ref()
+    {
+        let path = corsa_support::template_request_path(ctx.uri);
+        let uri = corsa_support::request_file_uri(&path);
+        contents.push((uri.clone(), template.content.as_str().into()));
+        opened.push((Template::Ordinary, uri));
     }
     if opened.is_empty() {
         return None;
@@ -136,15 +155,18 @@ async fn shared_at(
     include_declaration: bool,
     bridge: &CorsaBridge,
     selected_variant: Option<usize>,
-    opened: &[(usize, String)],
+    opened: &[(Template, String)],
 ) -> Option<Vec<Location>> {
     let documents = ctx.virtual_docs.as_ref()?;
     let mut positions = Vec::new();
-    for (index, uri) in opened {
-        if selected_variant == Some(*index) {
+    for (target, uri) in opened {
+        if matches!(target, Template::Art(index) if selected_variant == Some(*index)) {
             continue;
         }
-        let template = documents.art_template(*index)?;
+        let template = match target {
+            Template::Art(index) => documents.art_template(*index)?,
+            Template::Ordinary => documents.template.as_ref()?,
+        };
         let Some(offset) = template.source_map.to_generated(anchor) else {
             continue;
         };
