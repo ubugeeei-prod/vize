@@ -9,7 +9,11 @@ import {
   phaseDependencyPlan,
   phaseOutputAbsent,
 } from "../../tools/benchmarks/scripts/css-source-map-phases.mjs";
-import { profileVectors } from "../../tools/benchmarks/scripts/css-source-map-profile.mjs";
+import {
+  profileModes,
+  profileVectors,
+  validateNativeTimingPlan,
+} from "../../tools/benchmarks/scripts/css-source-map-profile.mjs";
 
 await test("isolated phase driver requires the sole actual rlibs and rejects missing or ambiguous producers", () => {
   const names = ["vize_atelier_sfc", "vize_croquis", "vize_carton", "serde_json"],
@@ -105,4 +109,55 @@ await test("driver dependency plan keeps actual target libraries and same-role h
       .searchDirectories,
     [host.directory],
   );
+});
+
+await test("isolated native processes can never schedule map-on calls or shrink interleaved coverage", () => {
+  for (let sample = 0; sample < 20; sample++) {
+    assert.deepEqual(profileModes("isolated-off", sample), [false]);
+    assert.deepEqual(
+      profileModes("interleaved", sample),
+      sample % 2 === 0 ? [false, true] : [true, false],
+    );
+  }
+  assert.throws(() => profileModes("foreign"));
+});
+
+await test("native timing admission retains every vector, mode and batch and refuses missing or invented samples", () => {
+  for (const mode of ["interleaved", "isolated-off"]) {
+    const packet = {
+      measurementMode: mode,
+      timings: profileVectors().map((row) => ({
+        ...row,
+        samples: Array.from({ length: 20 }, () =>
+          profileModes(mode).map((sourceMap) => ({
+            sourceMap,
+            calls: row.batch,
+            elapsedNs: 1,
+            bytes: 1,
+          })),
+        ).flat(),
+      })),
+    };
+    validateNativeTimingPlan(packet, mode);
+    for (const mutate of [
+      (value) => value.timings.pop(),
+      (value) => value.timings[0].samples.pop(),
+      (value) => {
+        value.timings[0].source = "foreign";
+      },
+      (value) => {
+        value.timings[0].samples[0].calls = 0;
+      },
+      (value) => {
+        value.timings[0].samples[0].elapsedNs = 0;
+      },
+      (value) => {
+        value.timings[0].samples[0].sourceMap = !value.timings[0].samples[0].sourceMap;
+      },
+    ]) {
+      const changed = structuredClone(packet);
+      mutate(changed);
+      assert.throws(() => validateNativeTimingPlan(changed, mode));
+    }
+  }
 });
