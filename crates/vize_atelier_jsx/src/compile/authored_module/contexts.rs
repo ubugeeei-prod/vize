@@ -21,10 +21,26 @@ pub(super) fn check(
         .filter_map(JsxComponent::component_setup)
         .map(|setup| Span::new(setup.declaration_start, setup.declaration_end))
         .collect();
-    check_spans(program, &spans)
+    check_receivers(
+        program,
+        &spans,
+        "Block-body JSX component setup cannot preserve lexical this, arguments or new.target; use a function declaration or expression-bodied component",
+    )
 }
 
 pub(super) fn check_spans(program: &Program<'_>, spans: &[Span]) -> Result<(), JsxDiagnostic> {
+    check_receivers(
+        program,
+        spans,
+        "Vapor/SSR component setup cannot preserve the authored lexical this, arguments or new.target in this context",
+    )
+}
+
+fn check_receivers(
+    program: &Program<'_>,
+    spans: &[Span],
+    message: &str,
+) -> Result<(), JsxDiagnostic> {
     let mut visitor = Contexts {
         spans,
         missing: None,
@@ -32,11 +48,7 @@ pub(super) fn check_spans(program: &Program<'_>, spans: &[Span]) -> Result<(), J
     };
     visitor.visit_program(program);
     if let Some((start, end)) = visitor.missing {
-        return Err(error(
-            start,
-            end,
-            "Block-body JSX component setup cannot preserve lexical this, arguments or new.target; use a function declaration or expression-bodied component",
-        ));
+        return Err(error(start, end, message));
     }
     Ok(())
 }
