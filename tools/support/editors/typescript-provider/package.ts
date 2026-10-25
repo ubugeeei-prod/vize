@@ -3,7 +3,7 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { digest, stageProvider, targets } from "./artifacts.ts";
+import { assertPackageOutput, digest, stageProvider, targets } from "./artifacts.ts";
 import { assertPlatformVsix } from "./assert.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
@@ -16,6 +16,7 @@ assert(Object.hasOwn(targets, target), `Unknown Rust target: ${target}`);
 const artifactDir = path.resolve(artifactInput),
   output = path.resolve(outputInput);
 const extension = path.join(root, "editors/vscode");
+assertPackageOutput(root, output);
 const staging = path.join(extension, "native/typescript-projection");
 assert(
   !fs.existsSync(staging),

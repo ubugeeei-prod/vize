@@ -6,6 +6,7 @@ import { createRequire } from "node:module";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import {
+  assertPackageOutput,
   checkBuildReceipt,
   digest,
   providerFiles,
@@ -34,6 +35,11 @@ function artifact(target: string) {
   };
   return { image, receipt };
 }
+void test("platform outputs survive the next prepublish and cannot enter another target archive", () => {
+  assertPackageOutput(root, path.join(root, ".artifacts/vscode/vize-linux-x64.vsix"));
+  for (const output of ["dist/vize-linux-x64.vsix", "vize-win32-x64.vsix", "native/prior.vsix"])
+    assert.throws(() => assertPackageOutput(root, path.join(root, "editors/vscode", output)));
+});
 void test("all eight controlled native artifacts retain one exact provider inventory", () => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize native 日本語 paths "));
   try {

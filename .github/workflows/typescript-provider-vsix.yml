@@ -138,21 +138,26 @@ jobs:
       - name: Verify eight controlled inventories and failure controls
         run: vp node --test tests/typescript-plugin/provider-packaging.test.ts tests/tooling/github-native-build-receipt.test.ts tests/tooling/vscode-vsix-policy.test.ts
       - name: Preserve and qualify the universal metadata-only artifact
-        run: vp run --workspace-root package:vscode-extension
-      - name: Package each corresponding same-source image
+        env:
+          VIZE_TYPESCRIPT_PROVIDER_OUTPUT: ${{ runner.temp }}/typescript-provider-vsix
         run: |
-          rust-script tools/commands/editors/vscode/package-typescript-provider.rs x86_64-unknown-linux-gnu .native-artifacts editors/vscode/dist/vize-linux-x64.vsix
-          rust-script tools/commands/editors/vscode/package-typescript-provider.rs x86_64-pc-windows-msvc .native-artifacts editors/vscode/dist/vize-win32-x64.vsix
+          vp run --workspace-root package:vscode-extension
+          mkdir -p "$VIZE_TYPESCRIPT_PROVIDER_OUTPUT"
+          cp editors/vscode/dist/vize.vsix "$VIZE_TYPESCRIPT_PROVIDER_OUTPUT/vize.vsix"
+      - name: Package each corresponding same-source image
+        env:
+          VIZE_TYPESCRIPT_PROVIDER_OUTPUT: ${{ runner.temp }}/typescript-provider-vsix
+        run: |
+          rust-script tools/commands/editors/vscode/package-typescript-provider.rs x86_64-unknown-linux-gnu .native-artifacts "$VIZE_TYPESCRIPT_PROVIDER_OUTPUT/vize-linux-x64.vsix"
+          rust-script tools/commands/editors/vscode/package-typescript-provider.rs x86_64-pc-windows-msvc .native-artifacts "$VIZE_TYPESCRIPT_PROVIDER_OUTPUT/vize-win32-x64.vsix"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: typescript-provider-vsix-${{ github.event.pull_request.head.sha || github.sha }}
-          path: |
-            editors/vscode/dist/vize*.vsix
-            editors/vscode/dist/vize*.vsix.receipt.json
+          path: ${{ runner.temp }}/typescript-provider-vsix
           if-no-files-found: error
           retention-days: 7
-  host:
+  installed-extension:
     name: Installed platform VSIX native service (${{ matrix.os }})
     needs: package
     strategy:

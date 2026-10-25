@@ -57,6 +57,13 @@ export interface ProviderReceipt {
 export const compareNames = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 export const digest = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 export const readJson = (file: string) => JSON.parse(fs.readFileSync(file, "utf8"));
+export function assertPackageOutput(root: string, output: string): void {
+  const relative = path.relative(path.join(root, "editors/vscode"), path.resolve(output));
+  assert(
+    relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative),
+    "Write platform VSIX outputs outside editors/vscode: VSCE prepublish rebuilds dist, and prior target archives must not enter the next package",
+  );
+}
 export function regularBytes(file: string, maximum = 100_000_000): Buffer {
   const stat = fs.lstatSync(file);
   assert(stat.isFile() && !stat.isSymbolicLink(), `Expected a physical regular file: ${file}`);
