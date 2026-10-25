@@ -55,6 +55,9 @@ export default defineConfig({
   test: { projects: [${JSON.stringify({ ...shape.host, test: { name: "unit", environment: "node", include: ["src/**/*.spec.ts"] } })}] },
 });\n`;
 const originalConfig = fs.readFileSync(path.join(fixture, "vite.config.ts"));
+const component = path.join(fixture, "src/Hello.vue");
+const componentBytes = fs.readFileSync(`${component}.txt`);
+assert.equal(fs.existsSync(component), false, "the tracked carrier owns the exact runtime input");
 
 function files(directory) {
   return fs
@@ -125,6 +128,8 @@ function run(stage, shape, expectedRed) {
 const candidate = {};
 const installedBefore = {};
 try {
+  fs.writeFileSync(component, componentBytes, { flag: "wx" });
+  assert.deepEqual(fs.readFileSync(component), componentBytes);
   for (const shape of shapes) run("published", shape, shape.red);
   for (const [name, source] of Object.entries({
     vize: "npm/cli/dist",
@@ -156,6 +161,12 @@ try {
   // admission in a fresh actual Vitest invocation after the first repair.
   for (const shape of shapes.filter((entry) => entry.red)) run("repaired-repeat", shape, false);
 } finally {
+  assert.deepEqual(
+    fs.readFileSync(component),
+    componentBytes,
+    "both adapters preserve the whole authored component",
+  );
+  fs.rmSync(component);
   fs.writeFileSync(path.join(fixture, "vite.config.ts"), originalConfig);
   fs.writeFileSync(
     path.join(evidence, "observations.json"),
@@ -172,6 +183,12 @@ try {
         }).stdout.trim(),
         lockSha256: hash(fs.readFileSync(path.join(fixture, "package-lock.json"))),
         nativeCompiler: "published 0.566.0; unchanged by candidate adapter installation",
+        component: {
+          carrier: "src/Hello.vue.txt",
+          runtimePath: "src/Hello.vue",
+          sha256: hash(componentBytes),
+          bytes: componentBytes.length,
+        },
         packages,
         candidate,
         installedBefore,
