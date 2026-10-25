@@ -79,7 +79,7 @@ pub fn generate_vapor_with_options_and_experimentals(
     options: VaporGenerateOptions,
     experimental_options: VaporGenerateExperimentalOptions<'_>,
 ) -> VaporGenerateResult {
-    generate_vapor_with_spans(ir, binding_metadata, options, experimental_options, None)
+    super::generate_vapor_with_spans(ir, binding_metadata, options, experimental_options, None)
 }
 
 /// Generate Vapor code, taking the authored anchors a map-requesting compile

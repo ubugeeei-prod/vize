@@ -385,7 +385,7 @@ await test("whole default code, maps and DTOs equal the before-source native", s
     );
   const withoutTiming = (row) => {
     if (!row) return row;
-    const { timeMs, ...rest } = row;
+    const { timeMs: _timeMs, ...rest } = row;
     return rest;
   };
   const comparable = (row) => ({

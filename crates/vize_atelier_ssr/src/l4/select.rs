@@ -25,6 +25,10 @@ pub(super) struct L2Artifact<'s, 'a> {
 /// Lower `artifact` to L3, verify it, build the string plan from the shared
 /// partition facts, and emit from it when `admit` hands back the expression
 /// rewriter (its `Err` names the legacy reason instead).
+#[expect(
+    clippy::too_many_arguments,
+    reason = "L2 analysis, independent SFC runtime metadata and capture"
+)]
 pub(super) fn select_from_l2<'a, 'e, C: CaptureSink>(
     allocator: &'a Allocator,
     artifact: &L2Artifact<'_, 'a>,
