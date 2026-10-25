@@ -91,6 +91,7 @@ fn tracked_vue_descendant_paths(state: &ServerState, root: &Path) -> Vec<PathBuf
 /// Corsa-free editor requests. In particular, the authored fixture asks
 /// `workspace/symbol` immediately after `workspace/didCreateFiles`; that
 /// request only needs the tracked file URI, not a TypeScript backend flush.
+#[track_caller]
 pub(super) fn invalidate_corsa_disk_state(state: &ServerState) {
     state.mark_corsa_disk_state_dirty();
 }

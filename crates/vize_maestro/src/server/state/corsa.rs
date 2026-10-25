@@ -167,11 +167,20 @@ impl ServerState {
     /// a backend timeout even though those requests do not need the
     /// invalidation to answer. The next Corsa-using request flushes this bit
     /// instead.
+    #[track_caller]
     pub(crate) fn mark_corsa_disk_state_dirty(&self) {
         self.invalidate_canonical_editor_paths();
         let _change = self.corsa_environment_change();
         let bridge = { self.corsa_bridge.read().clone() };
         if let Some(bridge) = bridge {
+            if std::env::var_os("VIZE_TRACE_EDITOR_PREPARATION").is_some() {
+                eprintln!(
+                    "[vize-disk-lifecycle] event=maestro_mark bridge={:p} caller={} stack={}",
+                    Arc::as_ptr(&bridge),
+                    std::panic::Location::caller(),
+                    std::backtrace::Backtrace::force_capture()
+                );
+            }
             bridge.mark_disk_project_state_dirty();
         }
     }

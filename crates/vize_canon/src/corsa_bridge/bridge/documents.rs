@@ -131,6 +131,12 @@ impl CorsaBridge {
     /// Record an external disk project-shape change without touching the
     /// backend on the foreground LSP notification path.
     pub fn mark_disk_project_state_dirty(&self) {
+        if std::env::var_os("VIZE_TRACE_EDITOR_PREPARATION").is_some() {
+            eprintln!(
+                "[vize-disk-lifecycle] event=bridge_mark bridge={self:p} previous_dirty={}",
+                self.disk_project_state_dirty.load(Ordering::SeqCst)
+            );
+        }
         self.editor_session.invalidate_disk_inputs();
         self.disk_project_state_dirty.store(true, Ordering::SeqCst);
     }
@@ -144,6 +150,9 @@ impl CorsaBridge {
             dirty: &self.disk_project_state_dirty,
             completed: false,
         };
+        if std::env::var_os("VIZE_TRACE_EDITOR_PREPARATION").is_some() {
+            eprintln!("[vize-disk-lifecycle] event=bridge_flush bridge={self:p}");
+        }
         self.invalidate_disk_project_state().await?;
         flush.completed = true;
         Ok(())

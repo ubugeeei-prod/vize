@@ -37,6 +37,18 @@ impl MaestroServer {
         // importer pass must not invalidate this same owner after an editor
         // request has already synchronized the stable opened source.
         #[cfg(feature = "native")]
+        if std::env::var_os("VIZE_TRACE_EDITOR_PREPARATION").is_some() {
+            let disk_matches = uri
+                .to_file_path()
+                .ok()
+                .and_then(|path| std::fs::read_to_string(path).ok())
+                .map(|disk| disk == content);
+            eprintln!(
+                "[vize-disk-lifecycle] event=did_open_invalidation uri={uri} version={version} bytes={} disk_matches={disk_matches:?}",
+                content.len()
+            );
+        }
+        #[cfg(feature = "native")]
         super::workspace_files::invalidate_changed_document_disk_project_state(self, &uri).await;
 
         // The bounded worker starts parser/lint feedback promptly, then runs
