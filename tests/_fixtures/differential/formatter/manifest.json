@@ -2841,7 +2841,13 @@
             "runtimeFileName": "App.vue"
           }
         ],
-        "config": []
+        "config": [
+          {
+            "path": "vize.config.json",
+            "sha256": "8426a8802f455610fb05dfb92795b1a287844efcb37165334f15f99a8970a120",
+            "role": "project-vue-version-and-formatter-preset"
+          }
+        ]
       },
       "provenance": {
         "issues": [
