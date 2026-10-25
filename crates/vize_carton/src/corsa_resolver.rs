@@ -30,9 +30,7 @@ use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
 mod packages;
-use packages::{
-    find_node_modules_native, find_node_modules_tsrs_native, find_node_modules_wrapper,
-};
+use packages::{find_node_modules_native, find_node_modules_wrapper, resolve_owned_launcher};
 
 #[cfg(test)]
 mod normalize_tests;
@@ -115,31 +113,21 @@ pub fn discover_corsa_in_ancestors(start: &Path) -> Option<PathBuf> {
     discover_in_walk(&[start.to_path_buf()], dev_paths_enabled())
 }
 
-/// Re-resolve a `node_modules/.bin` wrapper path to the native binary it
-/// shadows, when one can be discovered from the wrapper's project root.
-/// Non-wrapper paths are returned unchanged.
+/// Follow a selected `.bin` target and its own package's native dependency.
+/// Never replace an explicit launcher with a different project provider.
 pub fn normalize_corsa_path(path: &Path) -> PathBuf {
-    normalize_corsa_path_with_discovery(path, |project_root| {
-        if path.file_name().is_some_and(|name| name == "tsrs")
-            && let Some(native) = find_node_modules_tsrs_native(project_root)
-        {
-            return Some(native);
-        }
-        discover_in_walk(&[project_root.to_path_buf()], dev_paths_enabled())
-    })
+    normalize_corsa_path_with_discovery(path, resolve_owned_launcher)
 }
 
 fn normalize_corsa_path_with_discovery(
     path: &Path,
     discover: impl FnOnce(&Path) -> Option<PathBuf>,
 ) -> PathBuf {
-    let Some(project_root) = wrapper_project_root(path) else {
+    if wrapper_project_root(path).is_none() {
         return path.to_path_buf();
-    };
-    match discover(project_root) {
-        Some(resolved) if resolved != path => resolved,
-        _ => path.to_path_buf(),
     }
+    let target = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
+    discover(&target).unwrap_or(target)
 }
 
 /// The `@typescript/*-*` platform suffix for the current target.
@@ -258,11 +246,12 @@ fn discover_in_walk(walk_starts: &[PathBuf], dev_paths: bool) -> Option<PathBuf>
             }
             visited.push(dir);
             match probe_directory(dir, dev_paths) {
-                Some(Candidate::Native(path) | Candidate::Legacy(path)) => return Some(path),
-                Some(Candidate::Wrapper(path)) => {
+                Ok(Some(Candidate::Native(path) | Candidate::Legacy(path))) => return Some(path),
+                Ok(Some(Candidate::Wrapper(path))) => {
                     wrapper_fallback.get_or_insert(path);
                 }
-                None => {}
+                Ok(None) => {}
+                Err(_) => return None,
             }
         }
     }
@@ -270,23 +259,29 @@ fn discover_in_walk(walk_starts: &[PathBuf], dev_paths: bool) -> Option<PathBuf>
     wrapper_fallback
 }
 
-fn probe_directory(dir: &Path, dev_paths: bool) -> Option<Candidate> {
+fn probe_directory(
+    dir: &Path,
+    dev_paths: bool,
+) -> Result<Option<Candidate>, packages::InvalidNativePackage> {
     if let Some(path) = find_project_cache(dir, dev_paths) {
-        return Some(Candidate::Native(path));
+        return Ok(Some(Candidate::Native(path)));
     }
     if dev_paths
         && let Some(parent) = dir.parent()
         && let Some(path) = find_project_cache(&parent.join("corsa-bind"), dev_paths)
     {
-        return Some(Candidate::Native(path));
+        return Ok(Some(Candidate::Native(path)));
     }
-    if let Some(path) = find_node_modules_native(dir) {
-        return Some(path);
+    if let Some(path) = find_node_modules_native(dir)? {
+        return Ok(Some(path));
     }
-    find_node_modules_wrapper(dir).map(Candidate::Wrapper)
+    Ok(find_node_modules_wrapper(dir).map(Candidate::Wrapper))
 }
 
 fn find_project_cache(dir: &Path, dev_paths: bool) -> Option<PathBuf> {
+    if !dev_paths {
+        return None;
+    }
     let mut cache_dirs = vec![dir.join(".cache")];
     if dev_paths {
         let typescript_go = dir.join("ref").join("typescript-go");
