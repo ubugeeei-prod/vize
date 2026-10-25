@@ -104,6 +104,29 @@ const config = {
   include: ["src"],
 };
 fs.writeFileSync(path.join(consumer, "tsconfig.json"), JSON.stringify(config));
+const declarationsConfig = path.join(consumer, "declarations.json");
+fs.writeFileSync(
+  declarationsConfig,
+  JSON.stringify({
+    compilerOptions: {
+      strict: true,
+      target: "ES2022",
+      module: "Node16",
+      moduleResolution: "Node16",
+      noEmit: true,
+      types: [],
+    },
+    files: ["node_modules/@vizejs/typescript-vue-plugin/index.d.cts"],
+  }),
+);
+fs.writeFileSync(
+  path.join(output, "declarations.stdout"),
+  run(
+    process.execPath,
+    [path.join(consumer, "node_modules/typescript/bin/tsc"), "-p", declarationsConfig],
+    consumer,
+  ),
+);
 const src = path.join(consumer, "src");
 fs.mkdirSync(src);
 const main = path.join(src, "main.ts"),

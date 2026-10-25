@@ -92,9 +92,16 @@ function createMappedLanguageService(ts, service, support) {
       const results = positions(file, position, feature).map((offset) =>
         map(service[method](file, offset, ...args), file),
       );
-      return combine
-        ? unique(results.flatMap((result) => result || []))
-        : results.find((result) => result !== undefined);
+      if (combine) return unique(results.flatMap((result) => result || []));
+      return (
+        results.find((result) => result !== undefined) ??
+        (method === "getRenameInfo"
+          ? {
+              canRename: false,
+              localizedErrorMessage: "This source range has no safe rename projection",
+            }
+          : undefined)
+      );
     };
   }
   const locations =
@@ -279,6 +286,12 @@ function createMappedLanguageService(ts, service, support) {
     "prepareCallHierarchy",
     "provideInlayHints",
     "getEditsForRefactor",
+    "getJsxClosingTagAtPosition",
+    "getDocCommentTemplateAtPosition",
+    "getSpanOfEnclosingComment",
+    "getBreakpointStatementAtPosition",
+    "getNameOrDottedNameSpan",
+    "getLinkedEditingRangeAtPosition",
   ]) {
     if (typeof service[method] !== "function") continue;
     proxy[method] = (file, ...args) => {
@@ -289,6 +302,21 @@ function createMappedLanguageService(ts, service, support) {
       return edits ? { ...result, edits } : undefined;
     };
   }
+  if (service.organizeImports)
+    proxy.organizeImports = (scope, ...args) =>
+      isSfc(scope.fileName)
+        ? []
+        : changes(service.organizeImports(scope, ...args), Feature.codeActions) || [];
+  if (service.getCombinedCodeFix)
+    proxy.getCombinedCodeFix = (scope, ...args) => {
+      if (isSfc(scope.fileName)) return { changes: [] };
+      const result = service.getCombinedCodeFix(scope, ...args);
+      const mapped = changes(result.changes, Feature.codeActions);
+      return mapped ? { ...result, changes: mapped } : { changes: [] };
+    };
+  if (service.getEditsForFileRename)
+    proxy.getEditsForFileRename = (...args) =>
+      changes(service.getEditsForFileRename(...args), Feature.codeActions) || [];
   if (service.getNavigateToItems)
     proxy.getNavigateToItems = (...args) =>
       locations(shared.DocumentSymbols)(service.getNavigateToItems(...args));

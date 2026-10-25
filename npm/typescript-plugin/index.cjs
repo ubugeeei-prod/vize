@@ -123,7 +123,7 @@ function createLanguageServiceProxy(ts, languageService, support) {
       kind: ts.ScriptElementKind.alias,
       kindModifiers: "",
       textSpan: vueDefinition.textSpan,
-      ...(quickInfo || {}),
+      ...quickInfo,
       ...(displayParts ? { displayParts } : {}),
       documentation: [
         ...(quickInfo?.documentation || []),
