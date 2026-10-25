@@ -252,7 +252,9 @@ fn independent_authored_body_errors_survive_generic_repairs() {
                 "T extends string"
             };
             let value = if body_error { "'bad'" } else { "1" };
-            let body = cstr!("const independent: number = {value};\nvoid independent;\n");
+            let body = cstr!(
+                "const independent: number = {value};\nvoid independent;\nconst genericValue: T | undefined = undefined;\nvoid genericValue;\n"
+            );
             let authored = cstr!(
                 "{prefix}<script setup lang=\"ts\" generic=\"{generic}\">\n{body}</script>\n<template><div /></template>\n"
             );
