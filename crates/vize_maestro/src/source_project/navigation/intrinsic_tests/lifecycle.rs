@@ -9,7 +9,10 @@ use std::{
 };
 
 const SOURCE: &str = "export const view = <button/>;";
-const AT: Position = Position::new(0, 22);
+const AT: Position = Position {
+    line: 0,
+    character: 22,
+};
 
 #[test]
 fn changed_source_cancels_the_queued_intrinsic_query_before_old_reply_publication() {

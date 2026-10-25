@@ -1,7 +1,9 @@
 //! Existing snapshot worker admission and configuration cleanup.
+#[cfg(feature = "experimental-source-navigation")]
+use super::Url;
 use super::{
     Arc, CachedNavigation, Lang, NativeNavigationProject, NavigationRefusal, NavigationWorker,
-    Profile, ProgramOptions, QueryFamily, SnapshotRefusal, SourceSnapshot, Url,
+    Profile, ProgramOptions, QueryFamily, SnapshotRefusal, SourceSnapshot,
 };
 
 impl NativeNavigationProject<'_> {
