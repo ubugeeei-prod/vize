@@ -4,30 +4,42 @@ use std::cell::Ref;
 
 use super::reserved_props::rewrite_reserved_with_segments;
 use super::spread_reserved_props::{
-    BindingRewrite, SpreadRewriteSegment, rewrite_instance_references,
+    BindingRewrite, ParsedInstanceReferences, SpreadRewriteSegment,
+    materialize_instance_references, prepare_instance_references,
 };
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 
-pub(super) fn rewrite<'a>(
-    expression: &str,
-    bindings: &'a TemplateBindingAccess,
-) -> Option<Ref<'a, BindingRewrite>> {
-    if !bindings.has_instance_globals() || !expression.contains('$') {
-        return None;
+/// Receiver-independent parse result for one actual scope/text input.
+#[derive(Debug)]
+pub(crate) struct PreparedInstanceRewrite {
+    reserved: Option<BindingRewrite>,
+    instance: ParsedInstanceReferences,
+}
+
+impl PreparedInstanceRewrite {
+    pub(crate) fn normalized_names(&self) -> &vize_carton::FxHashSet<vize_carton::String> {
+        &self.instance.normalized_names
     }
-    bindings.cached_instance_rewrite(expression, || {
-        // Preserve the existing reserved-word grammar before asking OXC for
-        // actual value references. Its source segments compose with the AST
-        // rewrite; synthetic receivers never acquire authored identity.
-        let reserved = rewrite_reserved_with_segments(expression, bindings);
-        let intermediate = reserved
+
+    pub(crate) fn has_instance_references(&self) -> bool {
+        self.instance.has_instance_references()
+    }
+
+    pub(crate) fn receiver_is_shadowed(&self) -> bool {
+        self.instance.receiver_is_shadowed()
+    }
+
+    pub(crate) fn materialize(
+        self,
+        expression: &str,
+        bindings: &TemplateBindingAccess,
+    ) -> Option<BindingRewrite> {
+        let intermediate = self
+            .reserved
             .as_ref()
-            .map_or(expression, |rewrite| rewrite.code.as_str());
-        let instance = vize_carton::profile!(
-            "canon.instance_global_rewrite.parse",
-            rewrite_instance_references(intermediate, bindings)
-        );
-        match (reserved, instance) {
+            .map_or(expression, |row| row.code.as_str());
+        let instance = materialize_instance_references(intermediate, self.instance, bindings);
+        match (self.reserved, instance) {
             (None, None) => None,
             (Some(rewrite), None) | (None, Some(rewrite)) => Some(rewrite),
             (Some(reserved), Some(instance)) => Some(BindingRewrite {
@@ -37,8 +49,6 @@ pub(super) fn rewrite<'a>(
                     .diagnostic_prefixes
                     .into_iter()
                     .filter_map(|prefix| {
-                        // A dollar token cannot be a reserved-word replacement;
-                        // its complete source token lies in one unchanged segment.
                         let inner = reserved.segments.iter().find(|inner| {
                             inner.generated.start <= prefix.source.start
                                 && prefix.source.end <= inner.generated.end
@@ -52,6 +62,33 @@ pub(super) fn rewrite<'a>(
                     .collect(),
             }),
         }
+    }
+}
+
+pub(crate) fn prepare_instance_rewrite(
+    expression: &str,
+    bindings: &TemplateBindingAccess,
+) -> PreparedInstanceRewrite {
+    let reserved = rewrite_reserved_with_segments(expression, bindings);
+    let intermediate = reserved
+        .as_ref()
+        .map_or(expression, |row| row.code.as_str());
+    let instance = vize_carton::profile!(
+        "canon.instance_global_rewrite.parse",
+        prepare_instance_references(intermediate, bindings)
+    );
+    PreparedInstanceRewrite { reserved, instance }
+}
+
+pub(super) fn rewrite<'a>(
+    expression: &str,
+    bindings: &'a TemplateBindingAccess,
+) -> Option<Ref<'a, BindingRewrite>> {
+    if !bindings.has_instance_globals() || !expression.contains('$') {
+        return None;
+    }
+    bindings.cached_instance_rewrite(expression, || {
+        prepare_instance_rewrite(expression, bindings).materialize(expression, bindings)
     })
 }
 
@@ -96,6 +133,8 @@ mod tests {
     use crate::virtual_ts::types::VirtualTsOptions;
     use std::cell::Cell;
     use vize_croquis::{Analyzer, AnalyzerOptions, ScopeId};
+
+    mod receiver_plan;
 
     #[test]
     fn semantic_reads_preserve_keys_literals_types_and_function_bindings() {

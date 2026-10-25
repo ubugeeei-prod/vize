@@ -15,7 +15,7 @@ use oxc_ast_visit::{Visit, walk::walk_object_property};
 use oxc_parser::Parser;
 use oxc_semantic::{Scoping, SemanticBuilder};
 use oxc_span::SourceType;
-use vize_carton::{String, append};
+use vize_carton::{FxHashSet, String, append};
 use vize_croquis::{ScopeChain, ScopeId, ScopeKind};
 
 const PARSE_PREFIX: &str = "const __vize_spread = (";
@@ -40,7 +40,29 @@ pub(crate) struct SpreadRewriteSegment {
 #[derive(Clone, Debug, PartialEq, Eq)]
 struct Replacement {
     source: Range<usize>,
+    /// OXC's actual normalized identifier, separate from its authored spelling.
+    name: String,
+    /// A normalized value binding actually visible at this particular read.
+    receiver_shadowed: bool,
     shorthand: bool,
+}
+
+/// Parsed relative references and actual semantic names. No AST or allocator
+/// reference crosses this boundary; final receiver spelling is selected later.
+#[derive(Debug, Default)]
+pub(crate) struct ParsedInstanceReferences {
+    replacements: Vec<Replacement>,
+    pub(crate) normalized_names: FxHashSet<String>,
+}
+
+impl ParsedInstanceReferences {
+    pub(crate) fn has_instance_references(&self) -> bool {
+        !self.replacements.is_empty()
+    }
+
+    pub(crate) fn receiver_is_shadowed(&self) -> bool {
+        self.replacements.iter().any(|row| row.receiver_shadowed)
+    }
 }
 
 /// Returns `None` without constructing a parser or output buffer when the
@@ -55,13 +77,14 @@ pub(super) fn rewrite_reserved_spread_references(
         return None;
     }
 
-    let replacements = collect_replacements(
+    let parsed = collect_replacements(
         expression,
         template_binding_access,
         template_scopes,
         usage_scope_id,
         false,
     );
+    let replacements = parsed.replacements;
     if replacements.is_empty() {
         return None;
     }
@@ -72,19 +95,29 @@ pub(super) fn rewrite_reserved_spread_references(
     ))
 }
 
-pub(super) fn rewrite_instance_references(
+pub(crate) fn prepare_instance_references(
     expression: &str,
     bindings: &TemplateBindingAccess,
-) -> Option<BindingRewrite> {
-    let summary = bindings.instance_summary()?;
-    let replacements = collect_replacements(
+) -> ParsedInstanceReferences {
+    let Some(summary) = bindings.instance_summary() else {
+        return ParsedInstanceReferences::default();
+    };
+    collect_replacements(
         expression,
         bindings,
         &summary.scopes,
         bindings.scope_id(),
         true,
-    );
-    (!replacements.is_empty()).then(|| apply_replacements(expression, &replacements, bindings))
+    )
+}
+
+pub(crate) fn materialize_instance_references(
+    expression: &str,
+    parsed: ParsedInstanceReferences,
+    bindings: &TemplateBindingAccess,
+) -> Option<BindingRewrite> {
+    (!parsed.replacements.is_empty())
+        .then(|| apply_replacements(expression, &parsed.replacements, bindings))
 }
 
 fn has_reserved_name_candidate(
@@ -123,7 +156,7 @@ fn collect_replacements(
     template_scopes: &ScopeChain,
     usage_scope_id: ScopeId,
     only_instance: bool,
-) -> Vec<Replacement> {
+) -> ParsedInstanceReferences {
     let expression_result = collect_with_wrapper(
         expression,
         template_binding_access,
@@ -148,7 +181,7 @@ fn collect_replacements(
         )
         .unwrap_or_default();
     }
-    Vec::new()
+    ParsedInstanceReferences::default()
 }
 
 fn collect_with_wrapper(
@@ -158,7 +191,7 @@ fn collect_with_wrapper(
     usage_scope_id: ScopeId,
     only_instance: bool,
     wrapper: (&str, &str),
-) -> Option<Vec<Replacement>> {
+) -> Option<ParsedInstanceReferences> {
     let (prefix, suffix) = wrapper;
     if only_instance {
         vize_carton::profiler::global_profiler()
@@ -206,7 +239,27 @@ fn collect_with_wrapper(
     collector
         .replacements
         .dedup_by(|right, left| right.source == left.source);
-    Some(collector.replacements)
+    let scoping = semantic.semantic.scoping();
+    let mut normalized_names = FxHashSet::default();
+    if only_instance {
+        // Symbols include escaped binders; unresolved names include authored
+        // value/type-query reads that a new generated alias must never bind.
+        normalized_names.extend(
+            scoping
+                .symbol_ids()
+                .map(|id| String::from(scoping.symbol_name(id))),
+        );
+        normalized_names.extend(
+            scoping
+                .root_unresolved_references()
+                .keys()
+                .map(|name| String::from(name.as_str())),
+        );
+    }
+    Some(ParsedInstanceReferences {
+        replacements: collector.replacements,
+        normalized_names,
+    })
 }
 
 struct ReferenceCollector<'a> {
@@ -251,6 +304,17 @@ impl ReferenceCollector<'_> {
         let end = ident.span.end.checked_sub(self.offset)? as usize;
         (start < end && end <= self.expression_len).then_some(Replacement {
             source: start..end,
+            name: String::from(ident.name.as_str()),
+            receiver_shadowed: instance
+                && (self
+                    .scoping
+                    .find_binding(reference.scope_id(), "__ctx".into())
+                    .is_some_and(|symbol| self.scoping.symbol_flags(symbol).is_value())
+                    || is_visible_template_binding(
+                        self.template_scopes,
+                        self.usage_scope_id,
+                        "__ctx",
+                    )),
             shorthand,
         })
     }
@@ -313,14 +377,14 @@ fn apply_replacements(
         );
         let Some((name, receiver)) = expression
             .get(replacement.source.clone())
-            .and_then(|name| Some((name, bindings.receiver(name)?)))
+            .and_then(|name| Some((name, bindings.receiver(replacement.name.as_str())?)))
         else {
             // Keep the authored text: the next source segment copies it.
             source_cursor = replacement.source.start;
             continue;
         };
         let generated_start = code.len();
-        if bindings.is_instance_global(name) {
+        if bindings.is_instance_global(replacement.name.as_str()) {
             if replacement.shorthand {
                 code.push_str(name);
                 segments.push(SpreadRewriteSegment {

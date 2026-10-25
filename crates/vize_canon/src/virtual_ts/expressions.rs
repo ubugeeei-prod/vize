@@ -34,6 +34,7 @@ pub(crate) use props_literal::{
     append_spread_value, prop_entry_sub_spans,
 };
 mod instance_rewrite;
+pub(crate) use instance_rewrite::{PreparedInstanceRewrite, prepare_instance_rewrite};
 mod reserved_props;
 pub(crate) use spread_reserved_props::BindingRewrite;
 #[cfg(test)]

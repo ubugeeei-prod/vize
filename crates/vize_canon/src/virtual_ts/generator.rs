@@ -708,6 +708,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                         && template_ast.is_some_and(|root| root.source.contains('$')),
                 )
             );
+            template_binding_access.emit_instance_receiver_alias(&mut ts);
             if check_options.any_enabled() {
                 profile!(
                     "canon.virtual_ts.generate_scope_closures",
