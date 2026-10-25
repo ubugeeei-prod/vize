@@ -523,6 +523,7 @@ mod pool;
 mod reference_tests;
 mod references;
 mod registry;
+mod shutdown;
 #[cfg(test)]
 mod tests;
 mod watched;

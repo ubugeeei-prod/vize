@@ -155,14 +155,13 @@ impl CorsaBridge {
 
     /// Shutdown the bridge.
     pub async fn shutdown(&self) -> Result<(), CorsaBridgeError> {
-        if !self.initialized.load(Ordering::SeqCst) {
-            return Ok(());
-        }
-
         let initialized = Arc::clone(&self.initialized);
         let editor_session = Arc::clone(&self.editor_session);
         let result = self
-            .submit_async(move |slot| {
+            // Startup may already own the worker before `initialized` is
+            // published. Queue behind that accepted work under the same
+            // configured deadline; timeout never grants successful teardown.
+            .submit_ready_async(move |slot| {
                 let outcome = match slot.as_mut() {
                     Some(client) => client
                         .shutdown()
@@ -348,3 +347,6 @@ mod tests {
         assert_eq!(locations[0].range.end.character, 21);
     }
 }
+
+#[cfg(test)]
+mod shutdown_tests;

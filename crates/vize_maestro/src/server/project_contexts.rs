@@ -91,6 +91,7 @@ impl MaestroServer {
             initial_diagnostics: self.initial_diagnostics.clone(),
             configuration_watchers: self.configuration_watchers.clone(),
             configuration_admission: self.configuration_admission.clone(),
+            shutdown: self.shutdown.clone(),
             #[cfg(feature = "experimental-source-navigation")]
             module_link_termination: None,
         }
