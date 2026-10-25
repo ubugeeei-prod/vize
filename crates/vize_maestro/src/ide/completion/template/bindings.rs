@@ -37,7 +37,7 @@ pub(crate) fn analyzed_template_binding_completions(
 
     let ordinary;
     let (croquis, template_local) = if crate::ide::template_scope::pug::is_pug(ctx) {
-        let Some(analysis) = crate::ide::template_scope::pug::analyzed(ctx) else {
+        let Some(analysis) = crate::ide::template_scope::pug::analyzed_for_completion(ctx) else {
             return Vec::new();
         };
         analysis

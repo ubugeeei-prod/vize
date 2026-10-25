@@ -28,7 +28,7 @@ const rows = [1, 2]
 <template lang="${language}">
 section
   div(v-for=${quote}(item, outerIndex) in rows${quote})
-    p 🧭{{ item }}
+    p(:title=${quote}item${quote}) 🧭{{ item }}
     Child(v-slot=${quote}{ item, slotOnly }${quote})
       p {{ item }}
       em(v-for=${quote}(item, innerIndex) in rows${quote}) {{ item }}
@@ -131,6 +131,30 @@ section
               "complete named scope vector",
             );
           }
+          const boundary =
+            source.indexOf(`:title=${quote}item${quote}`) + `:title=${quote}item`.length;
+          const boundaryLabels = completionLabels(
+            await session.request("textDocument/completion", {
+              textDocument: { uri },
+              position: offsetToPosition(source, boundary),
+            }),
+          );
+          assert.deepEqual(
+            boundaryLabels
+              .filter((label) =>
+                [
+                  "item",
+                  "outerIndex",
+                  "innerIndex",
+                  "slotOnly",
+                  "siblingOnly",
+                  "multilineOnly",
+                ].includes(label),
+              )
+              .sort(),
+            ["item", "outerIndex"],
+            "closed directive value caret retains its entire local scope",
+          );
           const outerUse = source.lastIndexOf("{{ item }}") + 3;
           assert.deepEqual(
             await session.request("textDocument/definition", {

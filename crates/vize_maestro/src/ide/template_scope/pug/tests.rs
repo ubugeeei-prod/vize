@@ -6,6 +6,29 @@ use tower_lsp::lsp_types::{GotoDefinitionResponse, Url};
 const SOURCE: &str = "<script setup lang=\"ts\">\nconst item = 'outside'; const rows = [];\n</script>\n<template lang=\"pug\">\nsection\n  div(v-for=\"(item, outerIndex) in rows\")\n    p 🧭{{ item }}\n    Child(v-slot=\"{ item, slotOnly }\")\n      p {{ item }}\n      em(v-for=\"(item, innerIndex) in rows\") {{ item }}\n  div(v-for=\"(item, siblingOnly) in rows\") {{ item }}\n  p {{ item }}\n</template>\n";
 
 #[test]
+fn completion_at_a_quoted_value_end_keeps_the_enclosing_scope() {
+    for newline in ["\n", "\r\n"] {
+        let source = "<script setup>const item = 'outer'; const rows = [];</script><template lang=\"pug\">\ndiv(v-for=\"(item, outerIndex) in rows\")\n  p(:title=\"item\")\n</template>".replace('\n', newline);
+        let state = ServerState::new();
+        let uri = Url::parse("file:///tmp/Caret.vue").unwrap();
+        let offset = source.find(":title=\"item\"").unwrap() + ":title=\"item".len();
+        let ctx = IdeContext::testing_completion(&state, &uri, offset, source);
+        assert!(
+            analyzed(&ctx).is_none(),
+            "the quote is not an authored identifier byte"
+        );
+        let (croquis, cursor) = analyzed_for_completion(&ctx).unwrap();
+        let mut names: Vec<_> = template_scope::bindings_visible_at(croquis, cursor)
+            .into_iter()
+            .filter(|(_, _, kind)| *kind == ScopeKind::VFor)
+            .map(|(name, _, _)| name)
+            .collect();
+        names.sort_unstable();
+        assert_eq!(names, ["item", "outerIndex"]);
+    }
+}
+
+#[test]
 fn mapped_scopes_keep_nearest_declarations_and_complete_local_names() {
     for language in ["pug", "jade", "PUG", "JADE"] {
         for newline in ["\n", "\r\n"] {

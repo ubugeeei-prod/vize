@@ -60,6 +60,28 @@ mod tests {
                 .map(|at| map.offset_to_pug(map.verbatim_offset_to_html(at).unwrap())),
             [2, 3, 4, 9, 10, 11, 12],
         );
+        assert_eq!(
+            (0..15)
+                .map(|at| map.verbatim_cursor_to_html(at))
+                .collect::<StdVec<_>>(),
+            [
+                None,
+                None,
+                Some(1),
+                Some(2),
+                Some(3),
+                Some(4),
+                None,
+                None,
+                None,
+                Some(11),
+                Some(12),
+                Some(13),
+                Some(14),
+                Some(15),
+                None
+            ],
+        );
     }
 }
 
@@ -127,6 +149,18 @@ impl PugSourceMap {
             (segment.verbatim && segment.pug_start <= at && at < segment.pug_end)
                 .then(|| segment.html_start + at - segment.pug_start)
         })
+    }
+
+    /// A completion caret belongs to the verbatim token immediately to its left.
+    /// Only an exact copied endpoint is admitted; synthetic gaps still refuse.
+    pub fn verbatim_cursor_to_html(&self, at: u32) -> Option<u32> {
+        self.segments
+            .iter()
+            .find_map(|segment| {
+                (segment.verbatim && segment.pug_start < at && at <= segment.pug_end)
+                    .then(|| segment.html_start + at - segment.pug_start)
+            })
+            .or_else(|| self.verbatim_offset_to_html(at))
     }
 
     /// Map a derived-template span onto the authored pug: verbatim bytes

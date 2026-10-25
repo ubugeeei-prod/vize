@@ -80,9 +80,23 @@ fn scope<'a>(ctx: &'a IdeContext<'_>) -> Option<&'a PugScope> {
 }
 
 pub(in crate::ide) fn analyzed<'a>(ctx: &'a IdeContext<'_>) -> Option<(&'a Croquis, u32)> {
+    analyzed_at(ctx, false)
+}
+
+pub(in crate::ide) fn analyzed_for_completion<'a>(
+    ctx: &'a IdeContext<'_>,
+) -> Option<(&'a Croquis, u32)> {
+    analyzed_at(ctx, true)
+}
+
+fn analyzed_at<'a>(ctx: &'a IdeContext<'_>, completion: bool) -> Option<(&'a Croquis, u32)> {
     let scope = scope(ctx)?;
     let local = u32::try_from(ctx.offset.checked_sub(scope.start)?).ok()?;
-    let local = scope.template.map.verbatim_offset_to_html(local)?;
+    let local = if completion {
+        scope.template.map.verbatim_cursor_to_html(local)?
+    } else {
+        scope.template.map.verbatim_offset_to_html(local)?
+    };
     Some((&scope.croquis, local))
 }
 
