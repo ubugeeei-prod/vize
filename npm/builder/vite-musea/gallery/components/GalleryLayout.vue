@@ -448,6 +448,7 @@ function openSearchModal() {
 }
 
 .content {
+  container: musea-content / inline-size;
   background: var(--musea-bg-primary);
   overflow-y: auto;
   height: calc(100vh - var(--musea-header-height));

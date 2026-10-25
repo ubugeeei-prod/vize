@@ -167,6 +167,7 @@ jobs:
           vp exec tsx --test src/vrt/mask-capture.browser.test.ts
           vp exec tsx --test src/vrt/diff-style.browser.test.ts
           vp exec tsx --test src/vrt/before-capture.browser.test.ts
+          vp exec tsx --test gallery/components/content-layout.browser.test.ts
       - name: Retain gallery browser observations and screenshots
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -183,6 +184,8 @@ jobs:
             artifacts/musea-viewports/observations.json
             artifacts/musea-sidebar-rotation/*.png
             artifacts/musea-sidebar-rotation/observations.json
+            artifacts/musea-content-layout/*.png
+            artifacts/musea-content-layout/observations.json
             artifacts/musea-hosted/*.png
             artifacts/musea-hosted/observations.json
             artifacts/musea-snapshot-collisions/*.png
