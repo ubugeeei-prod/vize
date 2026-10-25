@@ -206,6 +206,15 @@ export async function compareImages(
   const width = baseline.width;
   const height = baseline.height;
   const totalPixels = width * height;
+
+  // Decode both inputs and compare dimensions before this shortcut: equal PNG
+  // payloads must still reject corrupt files, and equal RGBA bytes can describe
+  // different image shapes. Exact decoded equality is independent of tolerance,
+  // alpha compositing, and anti-aliasing settings and needs no diff allocation.
+  if (baseline.data.equals(current.data)) {
+    return { diffPixels: 0, totalPixels, diffPercentage: 0 };
+  }
+
   const diff = new PNG({ width, height });
 
   const useAntiAliasing = comparison.antiAliasing ?? true;
