@@ -191,6 +191,50 @@ mod tests {
     use std::fs;
 
     #[test]
+    fn runtime_selection_fixture_preserves_explicit_path_authority() {
+        let fixture: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../../tests/_fixtures/runtime/native-runtime-10694/selection.json"
+        ))
+        .unwrap();
+        assert_eq!(
+            fixture.get("schema").unwrap(),
+            "vize.native-runtime-selection"
+        );
+        assert_eq!(fixture.get("version").unwrap(), 1);
+        let mut ids = Vec::new();
+        for case in fixture.get("overrideCases").unwrap().as_array().unwrap() {
+            if case.get("source").unwrap() != "configuration" {
+                continue;
+            }
+            ids.push(case.get("id").unwrap().as_str().unwrap());
+            let root = tempfile::tempdir().unwrap();
+            let requested = case.get("requested").unwrap().as_str().unwrap();
+            let selected = root.path().join(requested);
+            if case.get("present").unwrap().as_bool().unwrap() {
+                fs::create_dir_all(selected.parent().unwrap()).unwrap();
+                fs::write(&selected, "selection marker; not an executable").unwrap();
+            }
+            let actual =
+                resolve_corsa_executable(Some(requested), Some(root.path().to_str().unwrap()));
+            if case.get("present").unwrap().as_bool().unwrap() {
+                assert_eq!(
+                    std::path::Path::new(actual.unwrap().as_str()),
+                    selected.canonicalize().unwrap()
+                );
+            } else {
+                assert_eq!(
+                    actual.unwrap_err(),
+                    vize_l0::cstr!(
+                        "Configured Corsa executable does not exist: {} (from configuration)",
+                        selected.display()
+                    )
+                );
+            }
+        }
+        assert_eq!(ids, ["explicit-valid", "explicit-missing"]);
+    }
+
+    #[test]
     fn missing_explicit_runtime_is_an_error_before_any_transport_starts() {
         let root = tempfile::tempdir().unwrap();
         let error = resolve_corsa_executable(

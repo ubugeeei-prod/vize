@@ -427,3 +427,5 @@ fn falls_back_to_node_modules_bin_wrapper_when_no_native_binary_exists() {
 
 mod package_runtime;
 mod project_packages;
+
+mod fixture_cases;
