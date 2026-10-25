@@ -214,9 +214,9 @@ fn default_discovery_never_uses_ambient_runtime_or_package_manager() {
         .unwrap();
     assert!(
         output.status.success(),
-        "isolated resolver child failed: stdout={} stderr={}",
-        std::string::String::from_utf8_lossy(&output.stdout),
-        std::string::String::from_utf8_lossy(&output.stderr)
+        "isolated resolver child failed: stdout={:?} stderr={:?}",
+        output.stdout,
+        output.stderr
     );
     assert_eq!(
         fs::read(root.join("child-completed")).unwrap(),
