@@ -25,7 +25,7 @@ export function cssCustodyRevisions(repository, selected) {
         return [authority.beforeRevision, authority.fixRevision];
       }),
     ),
-  ].sort();
+  ].sort((left, right) => (left < right ? -1 : left > right ? 1 : 0));
 }
 
 /** Restore immutable Git objects lost from ordinary main history by squash. */

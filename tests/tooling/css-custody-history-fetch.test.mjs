@@ -69,7 +69,7 @@ await test("selected CSS shards retain the exact authenticated producer revision
         return [authority.beforeRevision, authority.fixRevision];
       }),
     ),
-  ].sort();
+  ].sort((left, right) => (left < right ? -1 : left > right ? 1 : 0));
   assert.deepEqual(cssCustodyRevisions(root, selected), expected);
   assert.deepEqual(
     cssCustodyRevisions(root, ["tests/tooling/compiler-css-binding-custody.test.mjs"]),
