@@ -21,6 +21,31 @@ const { renderToString } = await import("vue/server-renderer");
 const runtime = require.resolve("vue/package.json");
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const packets = [];
+const report = {
+  epoch,
+  sourceSha: process.env.SOURCE_SHA,
+  node: process.version,
+  native: {
+    image: path.resolve(image),
+    sha256: hash(fs.readFileSync(image)),
+    buildToken: native.getNativeBuildToken(),
+  },
+  runtime: {
+    package: runtime,
+    sha256: hash(fs.readFileSync(runtime)),
+    version: require(runtime).version,
+  },
+  scope:
+    "real source native collector + existing rewriter; data URL asset modules; Node --check and actual Vue VNode/free-reference semantics; not a bundler speed claim",
+  packets,
+};
+// Preserve the current complete packet even when a real assertion fails.
+process.on("exit", () => {
+  fs.writeFileSync(
+    path.join(output, `${epoch}-native.json`),
+    JSON.stringify(report, null, 2) + "\n",
+  );
+});
 const asset = "<template><img src='./a.svg'></template>";
 const cases = [
   [
@@ -203,7 +228,8 @@ for (const [name, original, expected, semantic] of cases) {
     if (check.status === 0) {
       globalThis._imports_0 = "authored-global";
       try {
-        const component = (await import(pathToFileURL(file))).default;
+        const compiled = await import(pathToFileURL(file));
+        const component = compiled.default ?? { render: compiled.render };
         if (semantic === "value") assert.equal(component.value, "authored");
         if (semantic === "string") {
           assert.equal(component.value, "_imports_0");
@@ -251,24 +277,6 @@ for (const [name, original, expected, semantic] of cases) {
     }
   }
 }
-const report = {
-  epoch,
-  sourceSha: process.env.SOURCE_SHA,
-  node: process.version,
-  native: {
-    image: path.resolve(image),
-    sha256: hash(fs.readFileSync(image)),
-    buildToken: native.getNativeBuildToken(),
-  },
-  runtime: {
-    package: runtime,
-    sha256: hash(fs.readFileSync(runtime)),
-    version: require(runtime).version,
-  },
-  scope:
-    "real source native collector + existing rewriter; data URL asset modules; Node --check and actual Vue VNode/free-reference semantics; not a bundler speed claim",
-  packets,
-};
 fs.writeFileSync(path.join(output, `${epoch}-native.json`), JSON.stringify(report, null, 2) + "\n");
 console.log(
   JSON.stringify({

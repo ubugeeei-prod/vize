@@ -7,8 +7,10 @@ use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use oxc_syntax::symbol::SymbolFlags;
 use vize_armature::{ExpressionNode, PropNode, TemplateChildNode};
-use vize_l0::{Allocator, SmallVec, SourceRoot, String, profiler::global_profiler};
-use vize_l1::embed::{Lang, syntax::NativeForInput};
+use vize_l0::{
+    Allocator, SmallVec, String, expression_guard::expression_is_safe_to_parse,
+    profiler::global_profiler,
+};
 
 use super::{TemplateAssetUrl, push_usize};
 use crate::types::SfcDescriptor;
@@ -93,12 +95,7 @@ impl Names {
         }
     }
 
-    fn template<'a>(
-        &mut self,
-        allocator: &'a Allocator,
-        source: &'a str,
-        children: &[TemplateChildNode<'a>],
-    ) {
+    fn template<'a>(&mut self, allocator: &'a Allocator, children: &[TemplateChildNode<'a>]) {
         for child in children {
             match child {
                 TemplateChildNode::Element(element) => {
@@ -115,33 +112,19 @@ impl Names {
                         if directive.name == "for" {
                             // The original for-head owns aliases and iterable;
                             // `of`, destructuring, and holes are not JS Expr.
-                            let span = expression.loc().span;
-                            if let Some(input) = SourceRoot::new(source).ok().and_then(|root| {
-                                let raw = source.get(span.start as usize..span.end as usize)?;
-                                NativeForInput::attribute_in(
-                                    allocator,
-                                    root.whole_block(),
-                                    raw,
-                                    Lang::Ts,
-                                )
-                                .ok()
-                            }) {
+                            if let ExpressionNode::Simple(node) = expression
+                                && may_reference_import_name(node.content)
+                                && let Some((aliases, collection)) = vize_croquis::drawer::retain_v_for_binding_parameters_with_source(allocator, node.content)
+                            {
                                 global_profiler().record_counter("sfc.asset_names.for_head", 1);
-                                let owner = input.observe();
-                                if let Some(Ok(aliases)) = owner.aliases() {
-                                    if let Some(parameters) = aliases.parameters() {
-                                        for parameter in parameters {
-                                            self.visit_formal_parameter(parameter);
-                                        }
-                                    }
-                                    if let Some(rest) = aliases.rest() {
-                                        self.visit_formal_parameter_rest(rest);
-                                    }
-                                }
-                                if let Some(Ok(collection)) = owner.collection()
-                                    && let Some(expression) = collection.expression()
+                                self.visit_formal_parameters(&aliases.parameters);
+                                if may_reference_import_name(collection)
+                                    && expression_is_safe_to_parse(collection)
                                 {
-                                    self.visit_expression(expression);
+                                    global_profiler().record_counter("sfc.asset_names.for_collection_parse", 1);
+                                    if let Ok(expression) = Parser::new(allocator.as_oxc(), collection, SourceType::ts()).parse_expression() {
+                                        self.visit_expression(&expression);
+                                    }
                                 }
                             }
                         } else {
@@ -150,6 +133,7 @@ impl Names {
                                 && let ExpressionNode::Simple(node) = expression
                                 && node.js_ast.is_none()
                                 && may_reference_import_name(node.content)
+                                && expression_is_safe_to_parse(node.content)
                             {
                                 // A statement handler has no retained Expr.
                                 global_profiler()
@@ -165,7 +149,7 @@ impl Names {
                             }
                         }
                     }
-                    self.template(allocator, source, &element.children);
+                    self.template(allocator, &element.children);
                 }
                 TemplateChildNode::Interpolation(node) => self.expression(&node.content),
                 _ => {}
@@ -211,7 +195,7 @@ pub(super) fn avoid_authored_names(descriptor: &SfcDescriptor<'_>, urls: &mut [T
     {
         global_profiler().record_counter("sfc.asset_names.template_parse", 1);
         let (root, _) = vize_armature::Parser::new(&allocator, source).parse();
-        names.template(&allocator, source, &root.children);
+        names.template(&allocator, &root.children);
     }
     names.indices.sort_unstable();
     names.indices.dedup();

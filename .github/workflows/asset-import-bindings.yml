@@ -7,6 +7,7 @@ on:
       - "crates/vize_atelier_sfc/src/bundler/assets.rs"
       - "crates/vize_atelier_sfc/src/bundler/assets/**"
       - "crates/vize_atelier_sfc/src/bundler/tests/asset_names.rs"
+      - "crates/vize_croquis/src/drawer/helpers/v_for/**"
       - "crates/vize_atelier_sfc/examples/asset_import_names_profile.rs"
       - "tests/tooling/asset-import-binding-source.mjs"
       - ".github/workflows/asset-import-bindings.yml"
@@ -25,7 +26,7 @@ jobs:
       CARGO_INCREMENTAL: "0"
       RUSTC_WRAPPER: ""
       RUSTC_WORKSPACE_WRAPPER: ""
-      BASE_SHA: ${{ github.event.pull_request.base.sha || '3ec7c4b7d5d2402fc06856740597125dc44d10c7' }}
+      BASE_SHA: "3ec7c4b7d5d2402fc06856740597125dc44d10c7"
       HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
@@ -60,6 +61,7 @@ jobs:
           set -euo pipefail
           [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ && "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
           [[ "$(git rev-parse HEAD)" == "$HEAD_SHA" ]]
+          [[ "$(git merge-base "$BASE_SHA" "$HEAD_SHA")" == "$BASE_SHA" ]]
           capture="$RUNNER_TEMP/asset-import-bindings"
           baseline="$RUNNER_TEMP/asset-import-bindings-base"
           mkdir -p "$capture"
@@ -72,7 +74,7 @@ jobs:
           rustc -Vv > "$capture/rustc.txt"
           node --version > "$capture/node.txt"
           sha256sum Cargo.lock pnpm-lock.yaml "$observer" tests/tooling/asset-import-binding-source.mjs > "$capture/inputs.sha256"
-          for epoch in base head; do
+          for epoch in head base; do
             if [[ "$epoch" == base ]]; then source="$baseline"; sha="$BASE_SHA"; else source="$GITHUB_WORKSPACE"; sha="$HEAD_SHA"; fi
             target="$RUNNER_TEMP/asset-bindings-targets/$sha"
             token="$(node -e 'process.stdout.write(require("node:crypto").randomBytes(16).toString("hex"))')"
@@ -85,6 +87,7 @@ jobs:
             SOURCE_SHA="$sha" node tests/tooling/asset-import-binding-source.mjs "$epoch" "$capture/$epoch.node" "$capture" > "$capture/$epoch-native.stdout" 2> "$capture/$epoch-native.stderr"
           done
           CARGO_TARGET_DIR="$RUNNER_TEMP/asset-bindings-targets/$HEAD_SHA" cargo test --locked -p vize_atelier_sfc --lib bundler::tests --profile ci -- --nocapture > "$capture/unit.stdout" 2> "$capture/unit.stderr"
+          CARGO_TARGET_DIR="$RUNNER_TEMP/asset-bindings-targets/$HEAD_SHA" cargo test --locked -p vize_croquis --lib drawer::helpers::v_for --profile ci -- --nocapture > "$capture/for-helper-unit.stdout" 2> "$capture/for-helper-unit.stderr"
           sha256sum "$capture/"*.node "$capture/"*-observer > "$capture/executables.sha256"
       - name: Verify full unchanged packets, actual collision repair and source custody
         shell: bash

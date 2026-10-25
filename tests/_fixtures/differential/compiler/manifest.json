@@ -5,6 +5,59 @@
   "product": "compiler",
   "cases": [
     {
+      "id": "compiler/sfc/asset-import-binding-collision-10710",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "asset-import-binding-collision-10710",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "7998b880526f430c3bed37dde989637352aa169369c51354e8c5df4b1bbe69ba",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "asset-import-binding-collision-10710/module.expected.txt",
+        "sha256": "9bc21691bd1caa9d0a8612945e5b0c8d5361995c44da2022b9bb4c9d473124f2",
+        "source": "crates/vize_atelier_sfc/src/bundler/tests/asset_names.rs:reserves_module_bindings_in_each_real_script_grammar; SSR source coverage only, collector/assembly semantics separately in tests/tooling/asset-import-binding-source.mjs"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); Croquis descriptor and armature tokenizer remain legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/ssr-slot-scope",
       "state": "active",
       "targets": ["ssr"],

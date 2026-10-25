@@ -1,4 +1,5 @@
 use super::*;
+use vize_l0::String;
 
 fn names(source: &str) -> Vec<String> {
     collect_template_asset_urls(source, None, Some("App.vue"))
@@ -14,6 +15,9 @@ fn reserves_module_bindings_in_each_real_script_grammar() {
         r#"<script>if (true) { var _imports_0 = 'authored' } export default {}</script>"#,
         r#"<script setup>const _imports_0 = 'authored'</script>"#,
         r#"<script setup>import { ref as _imports_0 } from 'vue'</script>"#,
+        r#"<script>function _imports_0() {} export default {}</script>"#,
+        r#"<script>class _imports_0 {} export default {}</script>"#,
+        r#"<script>import * as _imports_0 from 'vue'; export default {}</script>"#,
         r#"<script setup>const \u005fimports_0 = 'authored'</script>"#,
         r#"<script setup lang="ts">const _imports_0: string = 'authored'</script>"#,
         r#"<script setup lang="tsx">const _imports_0 = <div /></script>"#,
@@ -69,6 +73,10 @@ fn reserves_decoded_template_aliases_callbacks_and_global_values() {
         "<img v-for='_imports_0 in items' src='./a.svg' :title='_imports_0'>",
         "<img v-for='_imports_0 of items' src='./a.svg' :title='_imports_0'>",
         "<img v-for='({ value: _imports_0 }, index) of items' src='./a.svg'>",
+        "<img v-for='({ a, b, c, d, e, f, g, h, i, j, k, value: _imports_0 }, index) of items' src='./a.svg'>",
+        "<img v-for='(, _imports_0, index) of items' src='./a.svg'>",
+        "<img v-for='&#95;imports_0 of items' src='./a.svg'>",
+        r#"<img v-for='\u005fimports_0 of items' src='./a.svg'>"#,
         "<Child v-slot='{ _imports_0 }'><img src='./a.svg' :title='_imports_0'></Child>",
         "<Child v-slot='{ value: &#95;imports_0 }'><img src='./a.svg'></Child>",
         "<Child :render='_imports_0 => h(\"img\", {src: \"./a.svg\"})'><img src='./a.svg'></Child>",
