@@ -134,7 +134,7 @@ fn null_ack_precedes_eof_foreign_exit_is_preserved_and_failed_ack_still_closes()
     use std::os::unix::fs::PermissionsExt;
 
     for (shutdown_to_eof, mode) in [
-        (true, "ok"),
+        (true, "complete"),
         (false, "ok"),
         (true, "error"),
         (true, "non-null"),
@@ -165,7 +165,7 @@ fn null_ack_precedes_eof_foreign_exit_is_preserved_and_failed_ack_still_closes()
                 assert_eq!(error.classify(), serde_json::error::Category::Data);
                 json!({"jsonrpc":"2.0","id":1,"result":{"not":"null"}})
             }
-            "ok" => {
+            "ok" | "complete" => {
                 result.unwrap();
                 json!({"jsonrpc":"2.0","id":1,"result":null})
             }
@@ -180,6 +180,9 @@ fn null_ack_precedes_eof_foreign_exit_is_preserved_and_failed_ack_still_closes()
             json!({"direction":"request","wholePacket":{"jsonrpc":"2.0","id":1,"method":"shutdown"}}),
             json!({"direction":"response","wholePacket":response}),
         ];
+        if mode == "complete" {
+            expected.push(json!({"direction":"notification","wholePacket":{"jsonrpc":"2.0","method":"window/logMessage","params":{"type":3,"message":"handled method 'shutdown' (1) in 6.071µs"}}}));
+        }
         if !shutdown_to_eof {
             expected.push(
                 json!({"direction":"request","wholePacket":{"jsonrpc":"2.0","method":"exit"}}),
@@ -192,3 +195,6 @@ fn null_ack_precedes_eof_foreign_exit_is_preserved_and_failed_ack_still_closes()
         );
     }
 }
+
+#[cfg(unix)]
+mod completion;

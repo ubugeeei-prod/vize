@@ -13,6 +13,8 @@ use std::{
     path::Path,
 };
 
+mod completion;
+
 const LINUX_X64: &str = "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4";
 const DARWIN_ARM64: &str = "a82f731365ad69d5c4c15f5e18fba4584bf3b7b839960172a76c3462b5114bf2";
 
@@ -47,12 +49,21 @@ pub(super) async fn close(client: &LspClient, shutdown_to_eof: bool) -> corsa_ls
     if !shutdown_to_eof {
         return client.graceful_close().await;
     }
-    // Unit result decoding requires the actual null Shutdown acknowledgement.
-    // Always close/reap even after a protocol error, retaining that first error.
-    // Sending Exit races native 7.0.2's Shutdown and can emit EOF/context canceled.
+    // EditorLspSession is a non-cloneable owner: shutdown, discard and Drop
+    // converge on its closed latch, and only shutdown sends this request. SDK
+    // clones are private responders/overlays and cannot initiate another one.
+    // A fresh subscription therefore has no earlier Shutdown to mistake for
+    // this one. The SDK does not expose numeric request IDs; this is temporal
+    // single-owner correlation, not an independent numeric-ID proof.
+    let events = client.subscribe();
+    // Native queues its null ACK before the dispatcher's final Info log. EOF
+    // immediately after ACK can cancel that log's queue write into stderr.
+    // Drain that producer completion before EOF, without filtering any stream.
     let acknowledged = client.request_without_params::<Shutdown>().await;
+    let completed = acknowledged.and_then(|()| completion::drain(&events));
+    // Always close/reap, preserving the first protocol/completion failure.
     let closed = client.close().await;
-    acknowledged.and(closed)
+    completed.and(closed)
 }
 
 fn known_initialize(initialized: &Value) -> bool {

@@ -1,0 +1,219 @@
+[
+  {
+    "expected": {
+      "kind": "complete"
+    },
+    "input": {
+      "message": "handled method 'shutdown' (1) in 0s",
+      "type": 3
+    }
+  },
+  {
+    "expected": {
+      "kind": "complete"
+    },
+    "input": {
+      "message": "handled method 'shutdown' (7) in 6.071µs",
+      "type": 3
+    }
+  },
+  {
+    "expected": {
+      "kind": "complete"
+    },
+    "input": {
+      "message": "handled method 'shutdown' (42) in 2ns",
+      "type": 3
+    }
+  },
+  {
+    "expected": {
+      "kind": "complete"
+    },
+    "input": {
+      "message": "handled method 'shutdown' (9223372036854775807) in 1m0.003s",
+      "type": 3
+    }
+  },
+  {
+    "expected": {
+      "kind": "unrelated"
+    },
+    "input": {
+      "message": "handled method 'initialize' (1) in 1ns",
+      "type": 3
+    }
+  },
+  {
+    "expected": {
+      "kind": "unrelated"
+    },
+    "input": {
+      "message": "handled method 'shutdown' (7) in 6.071µs",
+      "type": 2
+    }
+  },
+  {
+    "expected": {
+      "kind": "unrelated"
+    },
+    "input": {
+      "message": "handled method 'shutdown' (7) in 6.071µs",
+      "type": "3"
+    }
+  },
+  {
+    "expected": {
+      "kind": "unrelated"
+    },
+    "input": {
+      "message": null,
+      "type": 3
+    }
+  },
+  {
+    "expected": {
+      "kind": "unrelated"
+    },
+    "input": null
+  },
+  {
+    "expected": {
+      "kind": "unrelated"
+    },
+    "input": {
+      "type": 3
+    }
+  },
+  {
+    "expected": {
+      "error": "protocol error: Malformed authenticated native shutdown completion: {\"message\":\"handled method 'shutdown' () in 1ns\",\"type\":3}",
+      "kind": "malformed"
+    },
+    "input": {
+      "message": "handled method 'shutdown' () in 1ns",
+      "type": 3
+    }
+  },
+  {
+    "expected": {
+      "error": "protocol error: Malformed authenticated native shutdown completion: {\"message\":\"handled method 'shutdown' (0) in 1ns\",\"type\":3}",
+      "kind": "malformed"
+    },
+    "input": {
+      "message": "handled method 'shutdown' (0) in 1ns",
+      "type": 3
+    }
+  },
+  {
+    "expected": {
+      "error": "protocol error: Malformed authenticated native shutdown completion: {\"message\":\"handled method 'shutdown' (01) in 1ns\",\"type\":3}",
+      "kind": "malformed"
+    },
+    "input": {
+      "message": "handled method 'shutdown' (01) in 1ns",
+      "type": 3
+    }
+  },
+  {
+    "expected": {
+      "error": "protocol error: Malformed authenticated native shutdown completion: {\"message\":\"handled method 'shutdown' (+1) in 1ns\",\"type\":3}",
+      "kind": "malformed"
+    },
+    "input": {
+      "message": "handled method 'shutdown' (+1) in 1ns",
+      "type": 3
+    }
+  },
+  {
+    "expected": {
+      "error": "protocol error: Malformed authenticated native shutdown completion: {\"message\":\"handled method 'shutdown' (-1) in 1ns\",\"type\":3}",
+      "kind": "malformed"
+    },
+    "input": {
+      "message": "handled method 'shutdown' (-1) in 1ns",
+      "type": 3
+    }
+  },
+  {
+    "expected": {
+      "error": "protocol error: Malformed authenticated native shutdown completion: {\"message\":\"handled method 'shutdown' (9223372036854775808) in 1ns\",\"type\":3}",
+      "kind": "malformed"
+    },
+    "input": {
+      "message": "handled method 'shutdown' (9223372036854775808) in 1ns",
+      "type": 3
+    }
+  },
+  {
+    "expected": {
+      "error": "protocol error: Malformed authenticated native shutdown completion: {\"message\":\"handled method 'shutdown' (7) in \",\"type\":3}",
+      "kind": "malformed"
+    },
+    "input": {
+      "message": "handled method 'shutdown' (7) in ",
+      "type": 3
+    }
+  },
+  {
+    "expected": {
+      "error": "protocol error: Malformed authenticated native shutdown completion: {\"message\":\"handled method 'shutdown' (7) in invalid\",\"type\":3}",
+      "kind": "malformed"
+    },
+    "input": {
+      "message": "handled method 'shutdown' (7) in invalid",
+      "type": 3
+    }
+  },
+  {
+    "expected": {
+      "error": "protocol error: Malformed authenticated native shutdown completion: {\"message\":\"handled method 'shutdown' (7) in +1ns\",\"type\":3}",
+      "kind": "malformed"
+    },
+    "input": {
+      "message": "handled method 'shutdown' (7) in +1ns",
+      "type": 3
+    }
+  },
+  {
+    "expected": {
+      "error": "protocol error: Malformed authenticated native shutdown completion: {\"message\":\"handled method 'shutdown' (7) in 1.2.3ns\",\"type\":3}",
+      "kind": "malformed"
+    },
+    "input": {
+      "message": "handled method 'shutdown' (7) in 1.2.3ns",
+      "type": 3
+    }
+  },
+  {
+    "expected": {
+      "error": "protocol error: Malformed authenticated native shutdown completion: {\"message\":\"handled method 'shutdown' (7) in 1us\",\"type\":3}",
+      "kind": "malformed"
+    },
+    "input": {
+      "message": "handled method 'shutdown' (7) in 1us",
+      "type": 3
+    }
+  },
+  {
+    "expected": {
+      "error": "protocol error: Malformed authenticated native shutdown completion: {\"message\":\"handled method 'shutdown' (7) in 1s1h\",\"type\":3}",
+      "kind": "malformed"
+    },
+    "input": {
+      "message": "handled method 'shutdown' (7) in 1s1h",
+      "type": 3
+    }
+  },
+  {
+    "expected": {
+      "error": "protocol error: Malformed authenticated native shutdown completion: {\"extra\":\"retained\",\"message\":\"handled method 'shutdown' (7) in 6.071µs\",\"type\":3}",
+      "kind": "malformed"
+    },
+    "input": {
+      "extra": "retained",
+      "message": "handled method 'shutdown' (7) in 6.071µs",
+      "type": 3
+    }
+  }
+]
