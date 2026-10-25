@@ -6,7 +6,7 @@ const {
   mapLanguageDiagnosticRange,
 } = require("../language-projection.js");
 
-test("diagnostic punctuation gaps follow the native span law without enabling navigation", () => {
+void test("diagnostic punctuation gaps follow the native span law without enabling navigation", () => {
   // A generated handler diagnostic encloses synthetic parentheses around a
   // mapped expression, as the actual TS6 service reports.
   const projection = {
@@ -43,7 +43,7 @@ test("diagnostic punctuation gaps follow the native span law without enabling na
   assert.equal(projection.mappings[0][5], 0);
 });
 
-test("converts independent UTF-8 spaces, preserving CRLF and diagnostic-only metadata", () => {
+void test("converts independent UTF-8 spaces, preserving CRLF and diagnostic-only metadata", () => {
   const projection = toUtf16LanguageProjection(
     "😀\r\né",
     JSON.stringify({
@@ -83,7 +83,7 @@ test("converts independent UTF-8 spaces, preserving CRLF and diagnostic-only met
   );
 });
 
-test("aggregates EXPECT across the complete collection and preserves native owner-copy ignores", () => {
+void test("aggregates EXPECT across the complete collection and preserves native owner-copy ignores", () => {
   const projection = {
     diagnostics: [],
     diagnosticDirectives: {
