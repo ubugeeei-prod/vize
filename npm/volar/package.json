@@ -28,6 +28,10 @@
   "publishConfig": {
     "access": "public"
   },
+  "scripts": {
+    "check": "tsc --ignoreConfig --strict --noEmit --module NodeNext --moduleResolution NodeNext --target ESNext src/index.d.ts",
+    "test": "node --test test/service.test.js"
+  },
   "dependencies": {
     "@vizejs/native": "workspace:*",
     "@volar/language-core": "2.4.30",

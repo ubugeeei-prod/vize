@@ -130,7 +130,7 @@ function fixture(name, files, extraOptions = {}, languageOptions = {}) {
 
 const basic = `<script setup lang="ts">\nimport { suffix } from './lib';\nconst title: string = 'hi';\nconst count: number = 'bad';\nconst record = { alpha: 1, beta: 'two' };\nrecord.alpha;\nfunction label(value: string) { return value + suffix; }\n</script>\n<template><p>{{ title.toUpperCase() }} {{ label(title) }} {{ absent }}</p></template>\n`;
 
-test("actual native projection through Volar and TypeScript: complete packets and lifecycle", () => {
+void test("actual native projection through Volar and TypeScript: complete packets and lifecycle", () => {
   assert.equal(ts.version, "6.0.3");
   const f = fixture("basic", { "App.vue": basic, "lib.ts": "export const suffix = '!';\n" });
   const file = f.path("App.vue");
@@ -221,7 +221,7 @@ test("actual native projection through Volar and TypeScript: complete packets an
   }
 });
 
-test("Unicode, CRLF, directives, invalid syntax, generic slots and resolver options", () => {
+void test("Unicode, CRLF, directives, invalid syntax, generic slots and resolver options", () => {
   const unicode =
     '<script setup lang="ts">\r\nconst 日本 = "😀";\r\nconst 数: number = "bad";\r\n</script>\r\n<template>{{ 日本 }}</template>\r\n';
   const f = fixture("unicode", { "Unicode.vue": unicode });
@@ -296,9 +296,10 @@ test("Unicode, CRLF, directives, invalid syntax, generic slots and resolver opti
     );
     assert.equal(diagnostics.length, 0);
     const position = parent.indexOf("item.id", parent.indexOf("v-slot")) + "item.".length;
-    query("generic-slot-hover", { position }, () =>
+    const slotHover = query("generic-slot-hover", { position }, () =>
       g.languageService.getQuickInfoAtPosition(g.path("Parent.vue"), position),
     );
+    assert.equal(ts.displayPartsToString(slotHover.displayParts), "(property) id: number");
     g.capture("generic-slots");
   } finally {
     g.languageService.dispose();
@@ -362,7 +363,18 @@ test("Unicode, CRLF, directives, invalid syntax, generic slots and resolver opti
     const errors = query("feature-boundary-diagnostics", { file }, () =>
       e.languageService.getSemanticDiagnostics(file),
     );
-    assert(errors.some((diagnostic) => diagnostic.code === 2322));
+    assert.equal(
+      errors.filter((diagnostic) => diagnostic.code === 2322).length,
+      2,
+      "both the wrong prop and wrong event parameter survive; native prop echo stays suppressed",
+    );
+    assert(
+      errors.some((diagnostic) =>
+        ts
+          .flattenDiagnosticMessageText(diagnostic.messageText, "\n")
+          .includes("Types of parameters 'value'"),
+      ),
+    );
     const root = e.language.scripts.get(file).generated.root;
     const diagnosticOnly = root.projection.mappings
       .map((row, index) => ({ row, mapping: root.embeddedCodes[0].mappings[index] }))
@@ -384,7 +396,7 @@ test("Unicode, CRLF, directives, invalid syntax, generic slots and resolver opti
   }
 });
 
-test("all captured packets equal the reviewed complete source expectations", () => {
+void test("all captured packets equal the reviewed complete source expectations", () => {
   fs.mkdirSync(evidence, { recursive: true });
   fs.writeFileSync(path.join(evidence, "packets.json"), JSON.stringify(packets, null, 2) + "\n");
   fs.writeFileSync(

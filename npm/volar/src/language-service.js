@@ -1,6 +1,9 @@
 import { createLanguage } from "@volar/language-core";
 import { createProxyLanguageService, decorateLanguageServiceHost } from "@volar/typescript";
-import { applyDiagnosticDirectives } from "@vizejs/native/language-projection.js";
+import {
+  applyDiagnosticDirectives,
+  mapLanguageDiagnosticRange,
+} from "@vizejs/native/language-projection.js";
 import { createVizeLanguagePlugin, VizeVirtualCode } from "./language-plugin.js";
 
 /** Compose the actual Volar context and TypeScript service, including mapper diagnostics. */
@@ -97,19 +100,7 @@ export function createVizeLanguageService(ts, host, options = {}) {
     }
     return cached.get(fileName);
   }
-  const filteringService = new Proxy(rawService, {
-    get(target, key) {
-      if (key === "getSyntacticDiagnostics" || key === "getSemanticDiagnostics") {
-        return (fileName) =>
-          diagnosticsFor(fileName)?.[
-            key === "getSyntacticDiagnostics" ? "syntactic" : "semantic"
-          ] ?? target[key](fileName);
-      }
-      const value = target[key];
-      return typeof value === "function" ? value.bind(target) : value;
-    },
-  });
-  const { proxy, initialize } = createProxyLanguageService(filteringService);
+  const { proxy, initialize } = createProxyLanguageService(rawService);
   initialize(language);
 
   function sourceFileFor(fileName) {
@@ -124,8 +115,25 @@ export function createVizeLanguageService(ts, host, options = {}) {
     );
   }
   function authoredDiagnostic(diagnostic) {
+    const root = diagnostic.file && rootFor(diagnostic.file.fileName);
+    const mapped =
+      root && diagnostic.start !== undefined && diagnostic.length !== undefined
+        ? mapLanguageDiagnosticRange(root.projection, diagnostic.start, diagnostic.length)
+        : undefined;
+    const unmapped = mapped?.fidelity === "none";
+    const messageText = !unmapped
+      ? diagnostic.messageText
+      : typeof diagnostic.messageText === "string"
+        ? `Vize generated TypeScript: ${diagnostic.messageText}`
+        : {
+            ...diagnostic.messageText,
+            messageText: `Vize generated TypeScript: ${diagnostic.messageText.messageText}`,
+          };
     return {
       ...diagnostic,
+      ...(mapped && { start: mapped.start, length: mapped.length }),
+      messageText,
+      ...(unmapped && { source: "vize-generated" }),
       file: diagnostic.file
         ? (sourceFileFor(diagnostic.file.fileName) ?? diagnostic.file)
         : undefined,
@@ -136,7 +144,11 @@ export function createVizeLanguageService(ts, host, options = {}) {
     get(target, key) {
       if (key === "getSyntacticDiagnostics" || key === "getSemanticDiagnostics") {
         return (fileName) => {
-          const diagnostics = target[key](fileName).map(authoredDiagnostic);
+          const collection = diagnosticsFor(fileName);
+          const raw =
+            collection?.[key === "getSyntacticDiagnostics" ? "syntactic" : "semantic"] ??
+            rawService[key](fileName);
+          const diagnostics = raw.map(authoredDiagnostic);
           if (key === "getSemanticDiagnostics") {
             const file = sourceFileFor(fileName);
             if (file)
