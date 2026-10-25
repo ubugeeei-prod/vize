@@ -96,6 +96,19 @@ fn contextual_geometry_requires_its_primary_but_never_suppresses_diagnostics() {
 }
 
 #[test]
+fn contextual_refusals_survive_deferred_buffers_and_name_role_normalization() {
+    for role in [InputRole::Name, InputRole::Value] {
+        let mut main = DiagnosticOwnership::default();
+        main.block_contextual_owner(owner());
+        let mut buffer = DiagnosticOwnership::default();
+        buffer.record(owner().with_role(role), 2..7, 22..27, true);
+        buffer.record(owner().with_role(role), 12..17, 22..27, false);
+        main.append_rebased(buffer, 100);
+        assert!(main.into_echoes().is_empty());
+    }
+}
+
+#[test]
 fn a_deferred_root_buffer_rebases_echoes_and_primaries_with_its_text() {
     let mut whole = DiagnosticOwnership::default();
     whole.record(owner(), 10..15, 22..27, true);

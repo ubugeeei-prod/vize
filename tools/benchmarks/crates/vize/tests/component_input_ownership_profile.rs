@@ -96,7 +96,7 @@ fn actual_mapper_generation_reports_gated_parse_and_allocation_costs() {
             last, baseline,
             "profiling must retain the complete generated packet: {name}"
         );
-        let mut spans = profiler.span_snapshot().into_iter().filter(|(name, _, _)| name.starts_with("canon.virtual_ts.root_expect.") || *name == "qualification.component_input.generate").map(|(name, _, m)| json!({"name": name, "calls": m.count, "nanoseconds": m.total_duration.as_nanos(), "allocationCalls": m.alloc_calls, "requestedBytes": m.alloc_bytes, "selfAllocationCalls": m.self_alloc_calls, "selfRequestedBytes": m.self_alloc_bytes})).collect::<Vec<_>>();
+        let mut spans = profiler.span_snapshot().into_iter().filter(|(name, _, _)| (name.starts_with("canon.virtual_ts.root_expect.") || name.starts_with("canon.virtual_ts.input_ownership.")) || *name == "qualification.component_input.generate").map(|(name, _, m)| json!({"name": name, "calls": m.count, "nanoseconds": m.total_duration.as_nanos(), "allocationCalls": m.alloc_calls, "requestedBytes": m.alloc_bytes, "selfAllocationCalls": m.self_alloc_calls, "selfRequestedBytes": m.self_alloc_bytes})).collect::<Vec<_>>();
         spans.sort_by(|a, b| a["name"].as_str().cmp(&b["name"].as_str()));
         rows.push(json!({"case": name, "input": source, "iterations": ITERATIONS, "setupParsesPerGeneration": setup_parses, "candidateParsesPerGeneration": candidate_parses, "packet": last, "spans": spans}));
     }
@@ -105,6 +105,25 @@ fn actual_mapper_generation_reports_gated_parse_and_allocation_costs() {
     }
     // Retain every actual observation before checking the independent laws.
     for row in &rows {
+        let retained = row["spans"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|span| span["name"] == "canon.virtual_ts.input_ownership.retained_context");
+        if row["case"] == "checker-virtual-projection-disabled" {
+            assert!(
+                retained.is_none(),
+                "disabled projection does no ownership walk"
+            );
+        } else {
+            let retained = retained.expect("one retained-AST ownership walk per mapper generation");
+            assert_eq!(retained["calls"], ITERATIONS);
+            assert_eq!(
+                retained["allocationCalls"], 0,
+                "these ordinary/callback/EXPECT values require no new owned contextual records"
+            );
+            assert_eq!(retained["requestedBytes"], 0);
+        }
         for (key, expected) in [
             (
                 "canon.virtual_ts.root_expect.parse_setup",

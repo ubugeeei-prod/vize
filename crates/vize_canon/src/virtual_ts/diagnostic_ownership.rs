@@ -9,6 +9,9 @@ use std::{cell::RefCell, ops::Range};
 use vize_carton::FxHashSet;
 use vize_croquis::croquis::{ComponentUsage, PassedProp};
 
+mod contextual;
+pub(crate) use contextual::unproven_prop_ranges;
+
 pub(crate) type DiagnosticOwnershipCollector = RefCell<DiagnosticOwnership>;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -82,9 +85,13 @@ struct Projection {
 #[derive(Default, Debug)]
 pub(crate) struct DiagnosticOwnership {
     rows: Vec<Projection>,
+    unproven: FxHashSet<InputOwner>,
 }
 
 impl DiagnosticOwnership {
+    pub(crate) fn block_contextual_owner(&mut self, owner: InputOwner) {
+        self.unproven.insert(owner.with_role(InputRole::Value));
+    }
     pub(crate) fn record(
         &mut self,
         owner: InputOwner,
@@ -122,6 +129,9 @@ impl DiagnosticOwnership {
         inference: bool,
         suppress: bool,
     ) {
+        if suppress && self.unproven.contains(&owner.with_role(InputRole::Value)) {
+            return;
+        }
         if !generated.is_empty() && !authored.is_empty() {
             self.rows.push(Projection {
                 owner,
@@ -153,6 +163,7 @@ impl DiagnosticOwnership {
 
     /// Deferred root buffers are rebased with their text, before publication.
     pub(crate) fn append_rebased(&mut self, other: Self, offset: usize) {
+        self.unproven.extend(other.unproven);
         self.rows.extend(other.rows.into_iter().map(|mut row| {
             row.generated.start += offset;
             row.generated.end += offset;
@@ -161,14 +172,21 @@ impl DiagnosticOwnership {
     }
 
     pub(crate) fn into_echoes(self) -> Vec<DiagnosticEcho> {
+        let proven = |row: &Projection| {
+            row.valid
+                && (!row.suppress
+                    || !self
+                        .unproven
+                        .contains(&row.owner.with_role(InputRole::Value)))
+        };
         let owners: FxHashSet<_> = self
             .rows
             .iter()
-            .filter(|row| row.valid && !row.inference)
+            .filter(|row| proven(row) && !row.inference)
             .map(|row| row.owner)
             .collect();
         let mut primaries: Vec<Range<usize>> = Vec::new();
-        for row in self.rows.iter().filter(|row| row.valid && !row.inference) {
+        for row in self.rows.iter().filter(|row| proven(row) && !row.inference) {
             if let Some(last) = primaries.last_mut() {
                 if row.generated.start < last.start {
                     // Unproven ownership must remain diagnostically visible.
@@ -187,7 +205,7 @@ impl DiagnosticOwnership {
         for row in self
             .rows
             .into_iter()
-            .filter(|row| row.valid && row.inference)
+            .filter(|row| proven(row) && row.inference)
         {
             if row.generated.start < last_echo {
                 return Vec::new();

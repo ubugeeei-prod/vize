@@ -47,6 +47,14 @@ pub(super) fn collect_component_prop_expression_ranges(
         0,
         &summary.scopes,
     );
+    let unproven = if options.diagnostic_ownership.is_some() {
+        options
+            .template_ast
+            .map(crate::virtual_ts::diagnostic_ownership::unproven_prop_ranges)
+            .unwrap_or_default()
+    } else {
+        FxHashSet::default()
+    };
     let external_template_bindings: FxHashSet<&str> = options
         .virtual_ts_options
         .external_template_bindings
@@ -80,6 +88,12 @@ pub(super) fn collect_component_prop_expression_ranges(
             }
         }
         for prop in &usage.props {
+            if unproven.contains(&(prop.start, prop.end))
+                && let Some(collector) = options.diagnostic_ownership
+                && let Some(owner) = InputOwner::for_expected_projection(&usage, prop)
+            {
+                collector.borrow_mut().block_contextual_owner(owner);
+            }
             if options.diagnostic_ownership.is_some()
                 && let Some(owner) = InputOwner::for_prop(&usage, prop)
                 && let Some(value) = source.value_source_range(prop)
