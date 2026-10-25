@@ -81,32 +81,14 @@ export function render(_ctx) {
 
 #[test]
 fn a_spread_merges_checkbox_value_props() {
-    let source = r#"<input v-bind="o" true-value="y">"#;
-    assert_compiles(
-        source,
-        false,
+    assert_both_lanes(
+        r#"<input v-bind="o" true-value="y">"#,
         r#"import { setDynamicProps as _setDynamicProps, renderEffect as _renderEffect, template as _template } from 'vue';
 const t0 = _template("<input>", true)
 
 export function render(_ctx) {
   const n0 = t0()
   _renderEffect(() => _setDynamicProps(n0, [_ctx.o, { "true-value": "y" }]))
-  return n0
-}"#,
-    );
-    // The retained lane keeps a plain spread's static attributes apart.
-    assert_compiles(
-        source,
-        true,
-        r#"import { setAttr as _setAttr, setDynamicProps as _setDynamicProps, renderEffect as _renderEffect, template as _template } from 'vue';
-const t0 = _template("<input>", true)
-
-export function render(_ctx) {
-  const n0 = t0()
-  _renderEffect(() => {
-    _setDynamicProps(n0, [_ctx.o])
-    _setAttr(n0, "true-value", "y")
-  })
   return n0
 }"#,
     );

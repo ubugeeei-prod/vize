@@ -69,6 +69,30 @@
     "components/named-slot-updates": {
       "verdict": "equivalent",
       "basis": "resolved component props and named-slot closures update independently with identical mounted DOM, diagnostics, and identity"
+    },
+    "props/spread-before-static": {
+      "verdict": "equivalent",
+      "basis": "complete mounted DOM, authored prop precedence, source replacement/removal/restoration, diagnostics and element identity match the pinned reference"
+    },
+    "props/spread-after-static": {
+      "verdict": "equivalent",
+      "basis": "complete mounted DOM, authored prop precedence, source replacement/removal/restoration, diagnostics and element identity match the pinned reference"
+    },
+    "props/ordered-spread-chain": {
+      "verdict": "equivalent",
+      "basis": "complete mounted DOM, authored prop precedence, source replacement/removal/restoration, diagnostics and element identity match the pinned reference"
+    },
+    "props/spread-class-style": {
+      "verdict": "equivalent",
+      "basis": "complete mounted DOM, authored prop precedence, source replacement/removal/restoration, diagnostics and element identity match the pinned reference"
+    },
+    "events/spread-listener-order": {
+      "verdict": "equivalent",
+      "basis": "complete mounted DOM, authored prop precedence, source replacement/removal/restoration, diagnostics and element identity match the pinned reference"
+    },
+    "props/ordered-spread-reads": {
+      "verdict": "equivalent",
+      "basis": "each reactive publication evaluates the three sources exactly once in authored order, with complete DOM and identity pinned"
     }
   }
 }

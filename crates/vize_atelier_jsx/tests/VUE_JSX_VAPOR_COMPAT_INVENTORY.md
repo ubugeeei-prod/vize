@@ -6,7 +6,7 @@ under the same pinned Vue Vapor runtime. Each row mounts both components in
 Happy DOM, applies the corpus updates, and compares normalized rendered DOM,
 live form state, diagnostics, and element identity.
 
-The current bounded cohort covers seventeen behaviors. It is not a claim that the
+The current bounded cohort covers twenty-three behaviors. It is not a claim that the
 full `vue-jsx-vapor` surface is compatible; issue #6884 remains open until the
 corpus covers the complete dialect inventory.
 
@@ -27,6 +27,12 @@ a reviewed update to the executable verdict inventory.
 | `children/dynamic-text`             | equivalent | initial DOM and three text updates retain the authored element           |
 | `props/dynamic-attributes`          | equivalent | attributes and text update while the authored element remains live       |
 | `props/spread-updates`              | equivalent | spread attributes update repeatedly on the same live element             |
+| `props/spread-before-static` | equivalent | ordered source merges, replacements and restoration retain the authored element |
+| `props/spread-after-static` | equivalent | ordered source merges, replacements and restoration retain the authored element |
+| `props/ordered-spread-chain` | equivalent | ordered source merges, replacements and restoration retain the authored element |
+| `props/spread-class-style` | equivalent | ordered source merges, replacements and restoration retain the authored element |
+| `events/spread-listener-order` | equivalent | ordered source merges, replacements and restoration retain the authored element |
+| `props/ordered-spread-reads` | equivalent | every source evaluates once in authored order on each reactive publication |
 | `props/dynamic-value`               | equivalent | falsy, array and nested-VNode attribute values match both JSX references |
 | `props/dynamic-boolean-value`       | equivalent | value-sensitive boolean property updates match both real JSX references  |
 | `props/dynamic-aria-value`          | equivalent | value-sensitive ARIA attribute updates match both real JSX references    |
@@ -103,3 +109,12 @@ Run the focused oracle with:
 ```text
 cargo test -p vize_atelier_jsx --test vue_jsx_vapor_compat_oracle
 ```
+
+The ordered-source rows cover both static/object orders, two spread objects
+separated by a reactive named prop, key removal and restoration, class/style
+composition, and real listener side-effect order. Complete authored DOM traces
+are pinned independently of the reference comparison. The getter row also
+records each source read and the number of runtime prop publications: every
+reactive effect reads the three sources once in source order and publishes one
+combined prop state. The same shared lowering contract is checked through
+retained template, native template, and VDOM mounted witnesses (#10458).

@@ -18,7 +18,6 @@ pub(super) fn uses_computed_props(el: &ElementNode<'_>) -> bool {
     }
     let mut computed = false;
     let mut object = false;
-    let mut forced = false;
     for prop in &el.props {
         if let PropNode::Directive(dir) = prop
             && dir.name == "bind"
@@ -28,16 +27,14 @@ pub(super) fn uses_computed_props(el: &ElementNode<'_>) -> bool {
             }
             match &dir.arg {
                 Some(ExpressionNode::Simple(key)) => {
-                    if !dir.modifiers.is_empty() {
-                        if !key.is_static
+                    if !dir.modifiers.is_empty()
+                        && (!key.is_static
                             || dir
                                 .modifiers
                                 .iter()
-                                .any(|modifier| !matches!(modifier.content, "attr" | "prop"))
-                        {
-                            return false;
-                        }
-                        forced = true;
+                                .any(|modifier| !matches!(modifier.content, "attr" | "prop")))
+                    {
+                        return false;
                     }
                     computed |= !key.is_static;
                 }
@@ -47,19 +44,10 @@ pub(super) fn uses_computed_props(el: &ElementNode<'_>) -> bool {
             }
         }
     }
-    // Beside an object spread, a bound listener joins the spread's sources so
-    // the runtime's `mergeProps` chains it with the object's own handler.
-    computed || object && (forced || has_listener_bind(el))
-}
-
-/// A static `:onX` binding. Only an element with a spread pays for this
-/// second walk, so the common per-element check costs what it did.
-fn has_listener_bind(el: &ElementNode<'_>) -> bool {
-    el.props.iter().any(|prop| {
-        matches!(prop, PropNode::Directive(dir) if dir.name == "bind"
-            && matches!(&dir.arg, Some(ExpressionNode::Simple(key))
-                if key.is_static && crate::ir::is_on(key.content)))
-    })
+    // Object sources own the complete prop state, including every authored
+    // static/bound neighbour. One ordered operation lets removals restore an
+    // earlier source instead of an independent patch erasing another source.
+    computed || object
 }
 
 pub(super) fn transform<'a>(

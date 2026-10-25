@@ -1,0 +1,66 @@
+{
+  "package": "@vizejs/native",
+  "version": "0.560.0",
+  "cases": [
+    {
+      "id": "props/spread-before-static",
+      "source": "const App = () => <div {...state.attrs} id=\"fixed\"/>;",
+      "result": {
+        "code": "import { setDynamicProps as _setDynamicProps, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div id=\\\"fixed\\\"></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setDynamicProps(n0, [state.attrs]))\n  return n0\n}\n",
+        "errors": [],
+        "warnings": [],
+        "scopedStyles": []
+      }
+    },
+    {
+      "id": "props/spread-after-static",
+      "source": "const App = () => <div id=\"fixed\" {...state.attrs}/>;",
+      "result": {
+        "code": "import { setDynamicProps as _setDynamicProps, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div id=\\\"fixed\\\"></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setDynamicProps(n0, [state.attrs]))\n  return n0\n}\n",
+        "errors": [],
+        "warnings": [],
+        "scopedStyles": []
+      }
+    },
+    {
+      "id": "props/ordered-spread-chain",
+      "source": "const App = () => <div {...state.first} title={state.title} {...state.last}/>;",
+      "result": {
+        "code": "import { setProp as _setProp, setDynamicProps as _setDynamicProps, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => {\n    _setDynamicProps(n0, [state.first])\n    _setProp(n0, \"title\", state.title)\n    _setDynamicProps(n0, [state.last])\n  })\n  return n0\n}\n",
+        "errors": [],
+        "warnings": [],
+        "scopedStyles": []
+      }
+    },
+    {
+      "id": "props/spread-class-style",
+      "source": "const App = () => <div class=\"base\" style=\"color:red\" {...state.attrs} class={state.classes} style={state.styles}/>;",
+      "result": {
+        "code": "import { setClass as _setClass, setStyle as _setStyle, setDynamicProps as _setDynamicProps, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => {\n    _setDynamicProps(n0, [state.attrs])\n    _setClass(n0, [\"base\", state.classes])\n    _setStyle(n0, [\"color:red\", state.styles])\n  })\n  return n0\n}\n",
+        "errors": [],
+        "warnings": [],
+        "scopedStyles": []
+      }
+    },
+    {
+      "id": "events/spread-listener-order",
+      "source": "const App = () => <button {...{title: state.title, onClick: () => state.log += \"spread;\"}} onClick={() => state.log += \"own;\"}>{state.log}</button>;",
+      "result": {
+        "code": "import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setDynamicProps as _setDynamicProps, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button> </button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  const x0 = _txt(n0)\n  _renderEffect(() => {\n    _setDynamicProps(n0, [{title: state.title, onClick: () => state.log += \"spread;\"}, { onClick: () => state.log += \"own;\" }], [\"onClick\"])\n    _setText(x0, _toDisplayString(state.log))\n  })\n  return n0\n}\n",
+        "errors": [],
+        "warnings": [],
+        "scopedStyles": []
+      }
+    },
+    {
+      "id": "props/ordered-spread-reads",
+      "source": "const App = () => <div {...read(\"first\")} title={read(\"title\")} {...read(\"last\")}/>;",
+      "result": {
+        "code": "import { setProp as _setProp, setDynamicProps as _setDynamicProps, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => {\n    _setDynamicProps(n0, [read(\"first\")])\n    _setProp(n0, \"title\", read(\"title\"))\n    _setDynamicProps(n0, [read(\"last\")])\n  })\n  return n0\n}\n",
+        "errors": [],
+        "warnings": [],
+        "scopedStyles": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+import { ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+import { mergeProps as _mergeProps } from "vue"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: "base" }, _ctx.first, { title: _ctx.title }, _ctx.last, _attrs))}></div>`)
+}
+
+const _sfc_main = {}
+_sfc_main.ssrRender = ssrRender
+export default _sfc_main

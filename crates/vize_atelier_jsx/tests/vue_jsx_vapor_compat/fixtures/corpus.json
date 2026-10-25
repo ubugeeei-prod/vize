@@ -539,6 +539,754 @@
         [0, 1, 2, 3, 4],
         [0, 1, 2, 3, 4]
       ]
+    },
+    {
+      "id": "props/spread-before-static",
+      "babelCorpusId": "props/spread_then_static",
+      "source": "const App = () => <div {...state.attrs} id=\"fixed\"/>;",
+      "initial": {
+        "attrs": {
+          "id": "from-object",
+          "title": "A"
+        }
+      },
+      "steps": [
+        {
+          "patch": {
+            "attrs": {
+              "id": "next",
+              "title": "B"
+            }
+          }
+        },
+        {
+          "patch": {
+            "attrs": {}
+          }
+        },
+        {
+          "patch": {
+            "attrs": {
+              "id": "last"
+            }
+          }
+        }
+      ],
+      "expectedText": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "expectedElementIdentities": [
+        [
+          0
+        ],
+        [
+          0
+        ],
+        [
+          0
+        ],
+        [
+          0
+        ]
+      ],
+      "expectedDom": [
+        [
+          {
+            "tag": "div",
+            "attributes": {
+              "id": "fixed",
+              "title": "A"
+            },
+            "children": []
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {
+              "id": "fixed",
+              "title": "B"
+            },
+            "children": []
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {
+              "id": "fixed"
+            },
+            "children": []
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {
+              "id": "fixed"
+            },
+            "children": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "props/spread-after-static",
+      "source": "const App = () => <div id=\"fixed\" {...state.attrs}/>;",
+      "initial": {
+        "attrs": {
+          "id": "from-object",
+          "title": "A"
+        }
+      },
+      "steps": [
+        {
+          "patch": {
+            "attrs": {
+              "id": "next",
+              "title": "B"
+            }
+          }
+        },
+        {
+          "patch": {
+            "attrs": {}
+          }
+        },
+        {
+          "patch": {
+            "attrs": {
+              "id": "last"
+            }
+          }
+        },
+        {
+          "patch": {
+            "attrs": null
+          }
+        },
+        {
+          "patch": {
+            "attrs": {
+              "$jsxValue": "undefined"
+            }
+          }
+        },
+        {
+          "patch": {
+            "attrs": false
+          }
+        }
+      ],
+      "expectedText": [
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "expectedElementIdentities": [
+        [
+          0
+        ],
+        [
+          0
+        ],
+        [
+          0
+        ],
+        [
+          0
+        ],
+        [
+          0
+        ],
+        [
+          0
+        ],
+        [
+          0
+        ]
+      ],
+      "expectedDom": [
+        [
+          {
+            "tag": "div",
+            "attributes": {
+              "id": "from-object",
+              "title": "A"
+            },
+            "children": []
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {
+              "id": "next",
+              "title": "B"
+            },
+            "children": []
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {
+              "id": "fixed"
+            },
+            "children": []
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {
+              "id": "last"
+            },
+            "children": []
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {
+              "id": "fixed"
+            },
+            "children": []
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {
+              "id": "fixed"
+            },
+            "children": []
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {
+              "id": "fixed"
+            },
+            "children": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "props/ordered-spread-chain",
+      "source": "const App = () => <div {...state.first} title={state.title} {...state.last}/>;",
+      "initial": {
+        "first": {
+          "id": "first",
+          "title": "first",
+          "data-role": "kept"
+        },
+        "title": "middle",
+        "last": {
+          "title": "last",
+          "data-last": "A"
+        }
+      },
+      "steps": [
+        {
+          "patch": {
+            "last": {}
+          }
+        },
+        {
+          "patch": {
+            "title": "updated"
+          }
+        },
+        {
+          "patch": {
+            "first": {
+              "id": "next"
+            },
+            "last": {
+              "title": "override"
+            }
+          }
+        },
+        {
+          "patch": {
+            "last": {}
+          }
+        }
+      ],
+      "expectedText": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "expectedElementIdentities": [
+        [
+          0
+        ],
+        [
+          0
+        ],
+        [
+          0
+        ],
+        [
+          0
+        ],
+        [
+          0
+        ]
+      ],
+      "expectedDom": [
+        [
+          {
+            "tag": "div",
+            "attributes": {
+              "id": "first",
+              "title": "last",
+              "data-role": "kept",
+              "data-last": "A"
+            },
+            "children": []
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {
+              "id": "first",
+              "title": "middle",
+              "data-role": "kept"
+            },
+            "children": []
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {
+              "id": "first",
+              "title": "updated",
+              "data-role": "kept"
+            },
+            "children": []
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {
+              "id": "next",
+              "title": "override"
+            },
+            "children": []
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {
+              "id": "next",
+              "title": "updated"
+            },
+            "children": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "props/spread-class-style",
+      "babelCorpusId": "props/style_merge_with_spread",
+      "source": "const App = () => <div class=\"base\" style=\"color:red\" {...state.attrs} class={state.classes} style={state.styles}/>;",
+      "initial": {
+        "attrs": {
+          "class": "object",
+          "style": {
+            "backgroundColor": "yellow",
+            "color": "blue"
+          }
+        },
+        "classes": {
+          "active": true
+        },
+        "styles": {
+          "color": "green"
+        }
+      },
+      "steps": [
+        {
+          "patch": {
+            "attrs": {
+              "class": [
+                "next"
+              ],
+              "style": {
+                "backgroundColor": "orange"
+              }
+            },
+            "classes": [],
+            "styles": {}
+          }
+        },
+        {
+          "patch": {
+            "attrs": {},
+            "classes": {
+              "active": true
+            },
+            "styles": {
+              "fontWeight": "bold"
+            }
+          }
+        },
+        {
+          "patch": {
+            "attrs": {
+              "class": null,
+              "style": null
+            },
+            "classes": [],
+            "styles": {}
+          }
+        }
+      ],
+      "expectedText": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "expectedElementIdentities": [
+        [
+          0
+        ],
+        [
+          0
+        ],
+        [
+          0
+        ],
+        [
+          0
+        ]
+      ],
+      "expectedDom": [
+        [
+          {
+            "tag": "div",
+            "attributes": {
+              "class": "base object active",
+              "style": "color: green; background-color: yellow;"
+            },
+            "children": []
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {
+              "class": "base next",
+              "style": "color: red; background-color: orange;"
+            },
+            "children": []
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {
+              "class": "base active",
+              "style": "color: red; font-weight: bold;"
+            },
+            "children": []
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {
+              "class": "base",
+              "style": "color: red;"
+            },
+            "children": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "events/spread-listener-order",
+      "babelCorpusId": "props/on_merge_with_spread",
+      "source": "const App = () => <button {...{title: state.title, onClick: () => state.log += \"spread;\"}} onClick={() => state.log += \"own;\"}>{state.log}</button>;",
+      "initial": {
+        "title": "first",
+        "log": ""
+      },
+      "steps": [
+        {
+          "event": {
+            "selector": "button",
+            "type": "click"
+          }
+        },
+        {
+          "patch": {
+            "title": "second"
+          }
+        },
+        {
+          "event": {
+            "selector": "button",
+            "type": "click"
+          }
+        }
+      ],
+      "expectedText": [
+        "",
+        "spread;own;",
+        "spread;own;",
+        "spread;own;spread;own;"
+      ],
+      "expectedElementIdentities": [
+        [
+          0
+        ],
+        [
+          0
+        ],
+        [
+          0
+        ],
+        [
+          0
+        ]
+      ],
+      "expectedDom": [
+        [
+          {
+            "tag": "button",
+            "attributes": {
+              "title": "first"
+            },
+            "children": []
+          }
+        ],
+        [
+          {
+            "tag": "button",
+            "attributes": {
+              "title": "first"
+            },
+            "children": [
+              "spread;own;"
+            ]
+          }
+        ],
+        [
+          {
+            "tag": "button",
+            "attributes": {
+              "title": "second"
+            },
+            "children": [
+              "spread;own;"
+            ]
+          }
+        ],
+        [
+          {
+            "tag": "button",
+            "attributes": {
+              "title": "second"
+            },
+            "children": [
+              "spread;own;spread;own;"
+            ]
+          }
+        ]
+      ],
+      "expectedEvents": [
+        [],
+        [
+          {
+            "selector": "button",
+            "type": "click",
+            "defaultPrevented": false,
+            "dispatchResult": true
+          }
+        ],
+        [
+          {
+            "selector": "button",
+            "type": "click",
+            "defaultPrevented": false,
+            "dispatchResult": true
+          }
+        ],
+        [
+          {
+            "selector": "button",
+            "type": "click",
+            "defaultPrevented": false,
+            "dispatchResult": true
+          },
+          {
+            "selector": "button",
+            "type": "click",
+            "defaultPrevented": false,
+            "dispatchResult": true
+          }
+        ]
+      ]
+    },
+    {
+      "id": "props/ordered-spread-reads",
+      "expectedPropPublications": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "source": "const App = () => <div {...read(\"first\")} title={read(\"title\")} {...read(\"last\")}/>;",
+      "initial": {
+        "first": {
+          "id": "A"
+        },
+        "title": "middle",
+        "last": {
+          "title": "last"
+        }
+      },
+      "steps": [
+        {
+          "patch": {
+            "last": {}
+          }
+        },
+        {
+          "patch": {
+            "title": "next"
+          }
+        },
+        {
+          "patch": {
+            "first": {
+              "id": "B"
+            }
+          }
+        }
+      ],
+      "expectedText": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "expectedElementIdentities": [
+        [
+          0
+        ],
+        [
+          0
+        ],
+        [
+          0
+        ],
+        [
+          0
+        ]
+      ],
+      "expectedReads": [
+        [
+          "first",
+          "title",
+          "last"
+        ],
+        [
+          "first",
+          "title",
+          "last",
+          "first",
+          "title",
+          "last"
+        ],
+        [
+          "first",
+          "title",
+          "last",
+          "first",
+          "title",
+          "last",
+          "first",
+          "title",
+          "last"
+        ],
+        [
+          "first",
+          "title",
+          "last",
+          "first",
+          "title",
+          "last",
+          "first",
+          "title",
+          "last",
+          "first",
+          "title",
+          "last"
+        ]
+      ],
+      "expectedDom": [
+        [
+          {
+            "tag": "div",
+            "attributes": {
+              "id": "A",
+              "title": "last"
+            },
+            "children": []
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {
+              "id": "A",
+              "title": "middle"
+            },
+            "children": []
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {
+              "id": "A",
+              "title": "next"
+            },
+            "children": []
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {
+              "id": "B",
+              "title": "next"
+            },
+            "children": []
+          }
+        ]
+      ]
     }
   ]
 }

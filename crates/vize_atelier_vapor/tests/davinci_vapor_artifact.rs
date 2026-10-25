@@ -125,7 +125,7 @@ fn accepted_artifacts_bypass_legacy_walks_and_unsupported_inputs_keep_them() {
         }
     }
     // Element `v-bind` objects merge static attributes at runtime (upstream's
-    // shape), so the native template omits them; the retained one keeps them.
+    // shape), so both native and retained templates omit them.
     for (source, template) in [
         (
             r#"<main><div data-id="box" class="base" v-bind="attrs" title="fixed" :aria-label="label">{{ label }}</div></main>"#,

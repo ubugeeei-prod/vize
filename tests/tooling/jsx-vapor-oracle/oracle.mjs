@@ -154,7 +154,7 @@ const componentFixtures = {
   }),
 };
 
-function linkedFunction(code, functionName, state) {
+function linkedFunction(code, functionName, state, reads, observations) {
   const linked = transformSync(code, {
     configFile: false,
     babelrc: false,
@@ -190,9 +190,24 @@ function linkedFunction(code, functionName, state) {
   }).code;
   return compileFunction(
     `${linked}\nreturn ${functionName};`,
-    ["Vue", "JsxVapor", "state", "FixtureCard"],
+    ["Vue", "JsxVapor", "state", "FixtureCard", "read"],
     { filename: `${functionName}.generated.mjs` },
-  )(Vue, JsxVapor, state, componentFixtures.FixtureCard);
+  )(
+    {
+      ...Vue,
+      setDynamicProps(...args) {
+        observations.propPublications += 1;
+        return Vue.setDynamicProps(...args);
+      },
+    },
+    JsxVapor,
+    state,
+    componentFixtures.FixtureCard,
+    (name) => {
+      reads.push(name);
+      return state[name];
+    },
+  );
 }
 
 function observeChildren(parent) {
@@ -257,7 +272,9 @@ function materialize(value) {
 async function trace(code, functionName, spec, runtime = "vapor") {
   const initial = materialize(structuredClone(spec.initial));
   const state = spec.valueMatrix ? Vue.shallowReactive(initial) : Vue.reactive(initial);
-  const render = linkedFunction(code, functionName, state);
+  const reads = [];
+  const observations = { propPublications: 0 };
+  const render = linkedFunction(code, functionName, state, reads, observations);
   const component =
     runtime === "vapor"
       ? Vue.defineVaporComponent({ setup: () => render({}) })
@@ -289,6 +306,8 @@ async function trace(code, functionName, spec, runtime = "vapor") {
       elementIdentities: elements.map((element) => identities.get(element)),
       warnings: [...warnings],
       events: structuredClone(events),
+      ...(spec.expectedReads ? { reads: [...reads] } : {}),
+      ...(spec.expectedPropPublications ? { propPublications: observations.propPublications } : {}),
     };
   }
 
@@ -408,6 +427,27 @@ function assertBehavior(spec, phases, expectedElementIdentities = spec.expectedE
     expectedElementIdentities,
     `${spec.id}: element update identity trace`,
   );
+  if (spec.expectedDom) {
+    assert.deepEqual(
+      phases.map(({ dom }) => dom),
+      spec.expectedDom,
+      `${spec.id}: complete DOM trace`,
+    );
+  }
+  if (spec.expectedReads) {
+    assert.deepEqual(
+      phases.map(({ reads }) => reads),
+      spec.expectedReads,
+      `${spec.id}: source evaluation order and count`,
+    );
+  }
+  if (spec.expectedPropPublications) {
+    assert.deepEqual(
+      phases.map(({ propPublications }) => propPublications),
+      spec.expectedPropPublications,
+      `${spec.id}: one prop publication per effect`,
+    );
+  }
   if (spec.expectedEvents) {
     assert.deepEqual(
       phases.map(({ events }) => events),

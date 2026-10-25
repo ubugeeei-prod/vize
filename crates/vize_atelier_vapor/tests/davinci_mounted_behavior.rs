@@ -34,6 +34,7 @@ mod davinci_mounted_behavior {
     mod native_slots;
     mod native_spreads;
     mod native_templates;
+    mod retained_spreads;
     pub(crate) mod runtime;
     mod slots;
 }

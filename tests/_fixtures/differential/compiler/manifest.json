@@ -923,6 +923,59 @@
           }
         ]
       }
+    },
+    {
+      "id": "compiler/sfc/ordered-object-props-10458",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "ordered-object-props-10458",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "8b24e63febc776801e181b255f2a16514456ce6313174c960be9c960046362e0",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "ordered-object-props-10458/module.expected.txt",
+        "sha256": "eb26b19b116c00777b8743bc13fb4650a7d9cbc9277beaf560f2fd9a21c93e87",
+        "source": "crates/vize_atelier_jsx/tests/ordered_spread_props.rs:ordered_object_source_modules_and_templates_are_complete; mounted client oracles separately qualify retained and native ordered source behavior"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "The SSR product fixture retains legacy compilation; mounted JSX and template witnesses qualify client Vapor prop-source ordering without claiming a product route migration."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
     }
   ],
   "runtimePacks": [

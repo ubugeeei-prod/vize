@@ -128,40 +128,34 @@ fn html_anchor_bindings_keep_html_semantics_at_svg_integration_points() {
 
 #[test]
 fn spread_props_on_svg_elements_are_attributes() {
-    for (source, call) in [
-        (
-            r#"<svg><circle v-bind="attrs"/></svg>"#,
-            "_setDynamicProps(n0, [_ctx.attrs], null, true)",
-        ),
-        (
-            r#"<svg v-bind="attrs" :viewBox="box"><path/></svg>"#,
-            ", null, true)",
-        ),
-    ] {
-        let allocator = Allocator::new();
-        let code = compile_vapor(
-            &allocator,
-            source,
-            VaporCompilerOptions {
-                prefix_identifiers: true,
-                ..Default::default()
-            },
-        )
-        .code;
-        assert!(code.contains(call), "{source}\n{code}");
-    }
-    let allocator = Allocator::new();
-    let code = compile_vapor(
-        &allocator,
+    let mut packets = Vec::new();
+    for source in [
+        r#"<svg><circle v-bind="attrs"/></svg>"#,
+        r#"<svg v-bind="attrs" :viewBox="box"><path/></svg>"#,
         r#"<div><span v-bind="attrs"></span></div>"#,
-        VaporCompilerOptions {
-            prefix_identifiers: true,
-            ..Default::default()
-        },
-    )
-    .code;
-    assert!(
-        code.contains("_setDynamicProps(n1, [_ctx.attrs]))"),
-        "{code}"
+    ] {
+        for retained in [false, true] {
+            let allocator = Allocator::new();
+            let output = compile_vapor(
+                &allocator,
+                source,
+                VaporCompilerOptions {
+                    prefix_identifiers: true,
+                    davinci_retained_lane: retained,
+                    ..Default::default()
+                },
+            );
+            assert_eq!(output.error_messages.len(), 0, "{source}");
+            packets.push(serde_json::json!({
+                "source": source,
+                "retained": retained,
+                "code": output.code.as_str(),
+                "templates": output.templates.iter().map(|template| template.as_str()).collect::<Vec<_>>(),
+                "errors": [],
+            }));
+        }
+    }
+    insta::assert_snapshot!(
+        serde_json::to_string_pretty(&packets).expect("complete SVG prop packets")
     );
 }

@@ -8,6 +8,7 @@ use vize_carton::FxHashSet;
 pub(in crate::lower) struct RootAttributes<'a, 'b> {
     owner: &'b ElementNode<'a>,
     has_static_attr: bool,
+    has_object_binding: bool,
     dynamic_attrs: FxHashSet<&'a str>,
     non_reactive: bool,
 }
@@ -17,6 +18,7 @@ impl<'a, 'b> RootAttributes<'a, 'b> {
         Self {
             owner: el,
             has_static_attr: false,
+            has_object_binding: false,
             dynamic_attrs: FxHashSet::default(),
             non_reactive: inherited,
         }
@@ -30,6 +32,8 @@ impl<'a, 'b> RootAttributes<'a, 'b> {
     pub(in crate::lower) fn observe_binding(&mut self, dir: &DirectiveNode<'a>) {
         if let Some(ExpressionNode::Simple(key)) = dir.arg.as_ref() {
             self.dynamic_attrs.insert(key.content);
+        } else if dir.arg.is_none() {
+            self.has_object_binding = true;
         }
     }
 
@@ -49,6 +53,7 @@ impl<'a, 'b> RootAttributes<'a, 'b> {
 pub(super) fn collect_dynamic_attrs<'a>(
     el: &ElementNode<'a>,
     has_static_attr: &mut bool,
+    has_object_binding: &mut bool,
     non_reactive: &mut bool,
     derive_non_reactive: bool,
 ) -> FxHashSet<&'a str> {
@@ -73,6 +78,10 @@ pub(super) fn collect_dynamic_attrs<'a>(
                     if dir.name == "bind" {
                         match dir.arg.as_ref() {
                             Some(ExpressionNode::Simple(key)) => Some(key.content),
+                            None => {
+                                *has_object_binding = true;
+                                None
+                            }
                             _ => None,
                         }
                     } else {
@@ -94,11 +103,19 @@ pub(super) fn write_attributes(
     // Collect dynamic binding names to skip their static counterparts
     let derived;
     let mut has_static_attr = false;
+    let mut has_object_binding = false;
     let dynamic_attrs = if let Some(ref root) = root {
         has_static_attr = root.has_static_attr;
+        has_object_binding = root.has_object_binding;
         &root.dynamic_attrs
     } else {
-        derived = collect_dynamic_attrs(el, &mut has_static_attr, non_reactive, true);
+        derived = collect_dynamic_attrs(
+            el,
+            &mut has_static_attr,
+            &mut has_object_binding,
+            non_reactive,
+            true,
+        );
         &derived
     };
 
@@ -106,7 +123,7 @@ pub(super) fn write_attributes(
     // This result depends only on the unchanged props. The first pass above
     // avoids computing it for elements without static attributes.
     let uses_computed = has_static_attr
-        && !dynamic_attrs.is_empty()
+        && (has_object_binding || !dynamic_attrs.is_empty())
         && super::super::super::merged_props::uses_computed_props(el);
     for prop in el.props.iter() {
         if let PropNode::Attribute(attr) = prop {

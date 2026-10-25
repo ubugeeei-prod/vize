@@ -1,0 +1,72 @@
+---
+source: crates/vize_atelier_jsx/tests/ordered_spread_props.rs
+expression: "serde_json::to_string_pretty(&packets).expect(\"complete compiler packets\")"
+---
+[
+  {
+    "code": "import { setDynamicProps as _setDynamicProps, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setDynamicProps(n0, [state.attrs, { id: \"fixed\" }]))\n  return n0\n}\n",
+    "componentName": "App",
+    "diagnostics": [],
+    "id": "props/spread-before-static",
+    "scopedStyle": false,
+    "source": "const App = () => <div {...state.attrs} id=\"fixed\"/>;",
+    "templates": [
+      "<div></div>"
+    ]
+  },
+  {
+    "code": "import { setDynamicProps as _setDynamicProps, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setDynamicProps(n0, [{ id: \"fixed\" }, state.attrs]))\n  return n0\n}\n",
+    "componentName": "App",
+    "diagnostics": [],
+    "id": "props/spread-after-static",
+    "scopedStyle": false,
+    "source": "const App = () => <div id=\"fixed\" {...state.attrs}/>;",
+    "templates": [
+      "<div></div>"
+    ]
+  },
+  {
+    "code": "import { setDynamicProps as _setDynamicProps, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setDynamicProps(n0, [state.first, { title: state.title }, state.last], [\"title\"]))\n  return n0\n}\n",
+    "componentName": "App",
+    "diagnostics": [],
+    "id": "props/ordered-spread-chain",
+    "scopedStyle": false,
+    "source": "const App = () => <div {...state.first} title={state.title} {...state.last}/>;",
+    "templates": [
+      "<div></div>"
+    ]
+  },
+  {
+    "code": "import { setDynamicProps as _setDynamicProps, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setDynamicProps(n0, [{ class: \"base\", style: \"color:red\" }, state.attrs, { class: state.classes, style: state.styles }]))\n  return n0\n}\n",
+    "componentName": "App",
+    "diagnostics": [],
+    "id": "props/spread-class-style",
+    "scopedStyle": false,
+    "source": "const App = () => <div class=\"base\" style=\"color:red\" {...state.attrs} class={state.classes} style={state.styles}/>;",
+    "templates": [
+      "<div></div>"
+    ]
+  },
+  {
+    "code": "import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setDynamicProps as _setDynamicProps, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<button> </button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  const x0 = _txt(n0)\n  _renderEffect(() => {\n    _setDynamicProps(n0, [{title: state.title, onClick: () => state.log += \"spread;\"}, { onClick: () => state.log += \"own;\" }], [\"onClick\"])\n    _setText(x0, _toDisplayString(state.log))\n  })\n  return n0\n}\n",
+    "componentName": "App",
+    "diagnostics": [],
+    "id": "events/spread-listener-order",
+    "scopedStyle": false,
+    "source": "const App = () => <button {...{title: state.title, onClick: () => state.log += \"spread;\"}} onClick={() => state.log += \"own;\"}>{state.log}</button>;",
+    "templates": [
+      "<button> </button>"
+    ]
+  },
+  {
+    "code": "import { setDynamicProps as _setDynamicProps, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setDynamicProps(n0, [read(\"first\"), { title: read(\"title\") }, read(\"last\")], [\"title\"]))\n  return n0\n}\n",
+    "componentName": "App",
+    "diagnostics": [],
+    "id": "props/ordered-spread-reads",
+    "scopedStyle": false,
+    "source": "const App = () => <div {...read(\"first\")} title={read(\"title\")} {...read(\"last\")}/>;",
+    "templates": [
+      "<div></div>"
+    ]
+  }
+]

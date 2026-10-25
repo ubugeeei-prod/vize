@@ -52,26 +52,8 @@ fn native_element_objects_merge_props_in_authored_order() {
         );
         assert_eq!(actual, expected, "{backend}");
     }
-    // The retained lane keeps static attributes in the template and applies
-    // the object after them, so the object overrides the later static title
-    // and replaces the static class (a P3-6 finding; the native lane fixes it).
-    let legacy = json!([
-        view(
-            json!({"data-id": "box", "class": "x", "title": "from-attrs", "data-role": "a", "aria-label": "L"}),
-            "L"
-        ),
-        view(
-            json!({"data-id": "box", "class": "y", "data-role": "b", "aria-label": "M"}),
-            "M"
-        ),
-        view(
-            json!({"data-id": "box", "class": "", "title": "late", "aria-label": "M"}),
-            "M"
-        ),
-        unmounted
-    ]);
     let actual = mounted_trace_with_identity("vapor-legacy", source, context, steps, false, true);
-    assert_eq!(actual, legacy, "vapor-legacy");
+    assert_eq!(actual, expected, "vapor-legacy");
 }
 
 #[test]

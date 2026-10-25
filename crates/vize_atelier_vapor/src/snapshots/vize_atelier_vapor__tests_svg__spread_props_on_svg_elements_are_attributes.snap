@@ -1,0 +1,60 @@
+---
+source: crates/vize_atelier_vapor/src/tests_svg.rs
+expression: "serde_json::to_string_pretty(&packets).expect(\"complete SVG prop packets\")"
+---
+[
+  {
+    "code": "import { child as _child, setDynamicProps as _setDynamicProps, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<svg><circle></circle></svg>\", true, 1)\n\nexport function render(_ctx) {\n  const n1 = t0()\n  const n0 = _child(n1)\n  _renderEffect(() => _setDynamicProps(n0, [_ctx.attrs], null, true))\n  return n1\n}\n",
+    "errors": [],
+    "retained": false,
+    "source": "<svg><circle v-bind=\"attrs\"/></svg>",
+    "templates": [
+      "<svg><circle></circle></svg>"
+    ]
+  },
+  {
+    "code": "import { child as _child, setDynamicProps as _setDynamicProps, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<svg><circle></circle></svg>\", true, 1)\n\nexport function render(_ctx) {\n  const n1 = t0()\n  const n0 = _child(n1)\n  _renderEffect(() => _setDynamicProps(n0, [_ctx.attrs], null, true))\n  return n1\n}\n",
+    "errors": [],
+    "retained": true,
+    "source": "<svg><circle v-bind=\"attrs\"/></svg>",
+    "templates": [
+      "<svg><circle></circle></svg>"
+    ]
+  },
+  {
+    "code": "import { setDynamicProps as _setDynamicProps, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<svg><path></path></svg>\", true, 1)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setDynamicProps(n0, [_ctx.attrs, { viewBox: _ctx.box }], [\"viewBox\"], true))\n  return n0\n}\n",
+    "errors": [],
+    "retained": false,
+    "source": "<svg v-bind=\"attrs\" :viewBox=\"box\"><path/></svg>",
+    "templates": [
+      "<svg><path></path></svg>"
+    ]
+  },
+  {
+    "code": "import { setDynamicProps as _setDynamicProps, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<svg><path></path></svg>\", true, 1)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setDynamicProps(n0, [_ctx.attrs, { viewBox: _ctx.box }], [\"viewBox\"], true))\n  return n0\n}\n",
+    "errors": [],
+    "retained": true,
+    "source": "<svg v-bind=\"attrs\" :viewBox=\"box\"><path/></svg>",
+    "templates": [
+      "<svg><path></path></svg>"
+    ]
+  },
+  {
+    "code": "import { child as _child, setDynamicProps as _setDynamicProps, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div><span></span></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  const n1 = _child(n0)\n  _renderEffect(() => _setDynamicProps(n1, [_ctx.attrs]))\n  return n0\n}\n",
+    "errors": [],
+    "retained": false,
+    "source": "<div><span v-bind=\"attrs\"></span></div>",
+    "templates": [
+      "<div><span></span></div>"
+    ]
+  },
+  {
+    "code": "import { child as _child, setDynamicProps as _setDynamicProps, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div><span></span></div>\", true)\n\nexport function render(_ctx) {\n  const n1 = t0()\n  const n0 = _child(n1)\n  _renderEffect(() => _setDynamicProps(n0, [_ctx.attrs]))\n  return n1\n}\n",
+    "errors": [],
+    "retained": true,
+    "source": "<div><span v-bind=\"attrs\"></span></div>",
+    "templates": [
+      "<div><span></span></div>"
+    ]
+  }
+]
