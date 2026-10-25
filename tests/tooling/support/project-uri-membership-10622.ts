@@ -108,7 +108,12 @@ export async function auditNative(
   live?: NativeAudit,
 ): Promise<NativeAudit> {
   const expected = read("public-0.567.0.native-sources.json") as Array<Record<string, unknown>>;
-  const expectedByPath = new Map(expected.map((entry) => [entry.path, entry]));
+  const expectedByPath = new Map(
+    expected.map((entry) => {
+      assert.ok(typeof entry.path === "string", "the frozen source owner path is a string");
+      return [entry.path, entry] as const;
+    }),
+  );
   const seen = new Map<string, unknown>();
   const owners = new Map<
     number,
