@@ -38,6 +38,10 @@ fn nested_analysis_keeps_complete_normal_vdom_and_vapor_packets() {
         .nth(2)
         .unwrap()
         .join("tests/_fixtures/differential/typecheck/jsx-nested-native-expressions-8441");
+    let successors: Value = serde_json::from_slice(
+        &std::fs::read(fixture.join("authored-module-refusal-10701-successor.json")).unwrap(),
+    )
+    .unwrap();
     // Compile every case before assertions, so the first changed refusal does
     // not hide later producer, style or module packets from Actions review.
     let mut cases = Vec::new();
@@ -55,11 +59,30 @@ fn nested_analysis_keeps_complete_normal_vdom_and_vapor_packets() {
             } else {
                 format!("{name}.{label}.runtime.json.txt")
             };
-            let expected: Value =
+            let historical: Value =
                 serde_json::from_slice(&std::fs::read(fixture.join(&output)).unwrap()).unwrap();
+            // Refusal successors retain the original complete producer packet.
+            // VDOM continues to compare the original whole module unchanged.
+            let expected_packet = if label == "vapor" {
+                successors["cases"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .find(|case| case["name"] == name && case["mode"] == label)
+                    .unwrap()["successorPacket"]
+                    .as_str()
+                    .unwrap()
+                    .to_owned()
+            } else {
+                output.clone()
+            };
+            let expected: Value =
+                serde_json::from_slice(&std::fs::read(fixture.join(&expected_packet)).unwrap())
+                    .unwrap();
             cases.push(json!({
                 "name": name, "mode": label, "source": source,
-                "historicalPacket": output, "historical": expected,
+                "historicalPacket": output, "historical": historical,
+                "expectedPacket": expected_packet, "expected": expected,
                 "current": complete_runtime_packet(&source, mode),
             }));
         }
@@ -67,13 +90,13 @@ fn nested_analysis_keeps_complete_normal_vdom_and_vapor_packets() {
     if let Some(path) = std::env::var_os("VIZE_JSX_NESTED_RUNTIME_CAPTURE") {
         std::fs::write(
             path,
-            serde_json::to_vec(&json!({ "schemaVersion": 1, "cases": cases })).unwrap(),
+            serde_json::to_vec(&json!({ "schemaVersion": 2, "cases": cases })).unwrap(),
         )
         .unwrap();
     }
     for case in cases {
         assert_eq!(
-            case["current"], case["historical"],
+            case["current"], case["expected"],
             "{}/{}",
             case["name"], case["mode"]
         );
