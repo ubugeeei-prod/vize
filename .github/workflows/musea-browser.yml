@@ -82,6 +82,7 @@ jobs:
           vp exec tsx --test src/inline-art-static.browser.test.ts
           vp exec tsx --test src/variant-bindings-native.browser.test.ts src/variant-bindings-http.test.ts
           vp exec tsx --test src/variant-navigation-owner.test.ts src/variant-navigation-probe.browser.test.ts src/variant-navigation-owner.browser.test.ts
+          vp exec tsx --test src/vrt/before-capture.browser.test.ts
       - name: Verify hosted CLI capture and snapshot identities with the exact source packages
         working-directory: npm/builder/vite-musea
         env:
@@ -105,6 +106,7 @@ jobs:
             artifacts/musea-native-hosted-vrt-reconnect/**
             artifacts/musea-native-literal-variants/**
             artifacts/musea-native-packed-gallery-base/**
+            output/playwright/musea-interactions/**
             !artifacts/**/node_modules/**
           if-no-files-found: warn
           retention-days: 14
@@ -162,6 +164,9 @@ jobs:
           vp exec tsx --test gallery/components/viewport-presets.browser.test.ts
           vp exec tsx --test src/props-permalink.test.ts gallery/components/props-permalink.browser.test.ts
           vp exec tsx --test gallery/components/sidebar-rotation.browser.test.ts
+          vp exec tsx --test src/vrt/mask-capture.browser.test.ts
+          vp exec tsx --test src/vrt/diff-style.browser.test.ts
+          vp exec tsx --test src/vrt/before-capture.browser.test.ts
       - name: Retain gallery browser observations and screenshots
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -184,6 +189,9 @@ jobs:
             artifacts/musea-snapshot-collisions/*.json
             output/playwright/musea-props/*.png
             output/playwright/musea-props/observations.json
+            artifacts/musea-vrt-mask/**
+            artifacts/musea-vrt-styles/**
+            output/playwright/musea-interactions/**
           if-no-files-found: error
           retention-days: 7
           include-hidden-files: false

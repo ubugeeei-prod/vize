@@ -16,6 +16,8 @@ export {
 } from "./runner.js";
 
 export { generateVrtReport, generateVrtJsonReport } from "./report.js";
+export { UnsupportedDiffStyleError } from "./diff-style.js";
+export type { DiffStyle } from "../types/index.js";
 
 export {
   readPng,

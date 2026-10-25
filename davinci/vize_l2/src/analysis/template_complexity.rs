@@ -90,7 +90,8 @@ pub enum DecisionKind {
     /// One `?:`: one decision, a structure (+1 + nesting).
     Conditional,
     /// An evaluated expression position without a retained AST (opaque,
-    /// foreign, or a Vue 2 filter chain): adds nothing, counted.
+    /// foreign, or a Vue 2 filter chain), or without exact authored ranges
+    /// for its contributions: adds nothing, counted.
     Unknown,
 }
 
@@ -203,17 +204,6 @@ impl ComplexityFacts {
             self.unknown = self.unknown.saturating_add(1);
         }
         self.contributions.push(contribution);
-    }
-
-    /// Fill in a row pushed before its increments were known (an operator
-    /// tree is counted while its operands are being scored).
-    pub(super) fn settle(&mut self, index: usize, cyclomatic: u32, cognitive: u32) {
-        if let Some(row) = self.contributions.get_mut(index) {
-            row.cyclomatic = cyclomatic;
-            row.cognitive = cognitive;
-            self.cyclomatic = self.cyclomatic.saturating_add(cyclomatic);
-            self.cognitive = self.cognitive.saturating_add(cognitive);
-        }
     }
 }
 

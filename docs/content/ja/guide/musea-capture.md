@@ -31,6 +31,31 @@ musea({
 });
 ```
 
+操作後の画面を比較する場合は、`capture.beforeCapture` に非同期コールバックを指定します。
+分離された Playwright の `Page` と、読み取り専用の `{ artPath, variantName, viewport }` を受け取ります。
+CLI は Vite 設定からこの関数を読み込みます。`MuseaVrtRunner` にも同じ設定を渡せます。
+
+```ts
+musea({
+  vrt: {
+    capture: {
+      async beforeCapture(page, { variantName }) {
+        if (variantName !== "Submitted") return;
+        await page.getByRole("textbox", { name: "Message" }).fill("Hello");
+        await page.getByRole("button", { name: "Submit" }).click();
+        await page.getByText("Message received", { exact: true }).waitFor();
+      },
+    },
+  },
+});
+```
+
+プレビューの準備と `waitSelector` の完了後に関数を実行して待機し、その後で `settleTime`、
+要素の非表示、マスク、撮影設定を適用します。`workers` による並列実行や再試行でも、
+撮影ごとに新しいページを使います。関数が例外または拒否を返すと、`beforeCapture failed:` で始まる
+撮影エラーになり、ページとコンテキストを閉じます。失敗した撮影の今回の画像や基準画像は
+作成・更新しません。
+
 この例は、アニメーションの停止とキャレットの非表示を維持したまま、
 ページに動きを抑える設定を要求します。`reducedMotion` に `"reduce"` を指定すると、
 ブラウザーからページにこの設定を伝えます。実際の動きはページ側の対応によって変わります。

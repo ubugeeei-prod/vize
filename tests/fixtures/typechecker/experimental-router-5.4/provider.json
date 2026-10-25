@@ -11,9 +11,7 @@
   },
   "contract": {
     "optIn": "vueCompilerOptions.plugins: vue-router/volar/sfc-typed-router",
-    "unpublishedHelpersAbsent": [
-      "_RoutePropsForFilePath"
-    ],
+    "unpublishedHelpersAbsent": ["_RoutePropsForFilePath"],
     "experimentalExports": [
       "definePage",
       "defineParamParser",
@@ -21,10 +19,7 @@
       "defineHashParamParser",
       "experimental_createRouter"
     ],
-    "stableExports": [
-      "useRoute",
-      "useRouter"
-    ],
+    "stableExports": ["useRoute", "useRouter"],
     "primaryDocs": [
       "https://router.vuejs.org/experimental/router-resolver",
       "https://router.vuejs.org/experimental/param-parsers"

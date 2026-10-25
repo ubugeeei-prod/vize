@@ -91,6 +91,7 @@ export const TYPECHECKER_TESTS = {
   "long-prop-kebab-case-10423": "long_prop_keys_preserve_static_and_async_listener_diagnostics",
   "pug-refusal-10430": "pug_and_jade_preprocessing_errors_preserve_authored_diagnostics",
   "portable-pug-10434": "portable_pug_refusals_preserve_native_batch_diagnostics",
+  "jsx-prop-token-ranges-10494": "jsx_prop_tokens_preserve_complete_batch_diagnostics",
   "experimental-router-import-10520":
     "experimental_page_import_preserves_published_path_diagnostics",
 } as const;
@@ -160,6 +161,7 @@ const sourceRevisions = {
   "long-prop-kebab-case-10423": "d8849fab885cb40b9516889a464549fd29af3f92",
   "pug-refusal-10430": "cb141dfffe07cce5d49bf6221b5d6b7ad8f5cc8e",
   "portable-pug-10434": "c2132e45d47aad595aac7e07f5e71a78b8ffd1c8",
+  "jsx-prop-token-ranges-10494": "aaeeb1c1264a319737fa11e56971c9d73064d6a3",
   "experimental-router-import-10520": "a29d9c0b1961ada51037db402c3b74436a56d623",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 
@@ -191,7 +193,7 @@ export type TypecheckerCase = {
   test: string;
   regressionCommit: string;
   sourceRevision?: string;
-  checkerOptions?: { optionsApi: boolean };
+  checkerOptions?: { optionsApi?: boolean; jsxTypecheck?: boolean };
   projectOptions?: { vuePackage: "absent" };
   packReference: Artifact;
   inputs: Array<Artifact & { file: string }>;
@@ -204,7 +206,7 @@ type Pack = {
   sourceRevision: string;
   diagnosticContract: typeof contract;
   regressionCommit: string;
-  checkerOptions?: { optionsApi: boolean };
+  checkerOptions?: { optionsApi?: boolean; jsxTypecheck?: boolean };
   projectOptions?: { vuePackage: "absent" };
   cases: Array<{
     id: string;
@@ -381,7 +383,11 @@ export function loadTypecheckerManifest(manifestPath: string) {
     assert.deepEqual(pack.diagnosticContract, contract);
     assert.deepEqual(
       pack.checkerOptions,
-      fixture.pack === "options-api-any-instance" ? { optionsApi: true } : undefined,
+      fixture.pack === "options-api-any-instance"
+        ? { optionsApi: true }
+        : fixture.pack === "jsx-prop-token-ranges-10494"
+          ? { jsxTypecheck: true }
+          : undefined,
       "the original explicit checker options must be retained",
     );
     assert.deepEqual(fixture.checkerOptions, pack.checkerOptions);

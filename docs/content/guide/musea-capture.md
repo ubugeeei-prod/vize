@@ -23,6 +23,33 @@ musea({
 });
 ```
 
+To compare an interactive state, use `capture.beforeCapture`. The callback receives
+the isolated Playwright `Page` and a read-only `{ artPath, variantName, viewport }`
+context. The CLI reads the callback from your Vite configuration; the same option
+works with `MuseaVrtRunner`.
+
+```ts
+musea({
+  vrt: {
+    capture: {
+      async beforeCapture(page, { variantName }) {
+        if (variantName !== "Submitted") return;
+        await page.getByRole("textbox", { name: "Message" }).fill("Hello");
+        await page.getByRole("button", { name: "Submit" }).click();
+        await page.getByText("Message received", { exact: true }).waitFor();
+      },
+    },
+  },
+});
+```
+
+The runner awaits the callback after preview readiness and `waitSelector`, then
+applies `settleTime`, hidden elements, masks, and screenshot settings. Each capture
+and retry gets a fresh page, including when `workers` runs captures concurrently.
+A thrown or rejected assertion produces a capture error prefixed with
+`beforeCapture failed:`. It closes the page and context without writing a current
+image or creating or changing the baseline for that failed capture.
+
 Run `musea-vrt --a11y --json` to save accessibility reports. Each violation
 retains its `nodes` count and adds `targets` containing the selector arrays,
 HTML snippet, failure summary, and `any`/`all`/`none` checks. Check `data`

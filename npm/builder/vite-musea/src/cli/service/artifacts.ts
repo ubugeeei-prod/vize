@@ -48,6 +48,7 @@ export class SessionArtifacts {
           passed: result.passed,
           isNew: result.isNew,
           diffPercentage: result.diffPercentage,
+          ...(result.diffStyle ? { diffStyle: result.diffStyle } : {}),
           error: result.error,
           images: urls,
         };

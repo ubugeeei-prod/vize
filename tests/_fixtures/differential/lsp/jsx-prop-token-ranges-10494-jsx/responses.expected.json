@@ -1,0 +1,67 @@
+[
+  {
+    "params": {
+      "position": {
+        "line": 3,
+        "character": 47
+      },
+      "context": {
+        "includeDeclaration": true
+      }
+    },
+    "result": [
+      {
+        "uri": "${workspace}/Child.vue",
+        "range": {
+          "start": {
+            "line": 2,
+            "character": 14
+          },
+          "end": {
+            "line": 2,
+            "character": 19
+          }
+        }
+      },
+      {
+        "uri": "${workspace}/Consumer.jsx",
+        "range": {
+          "start": {
+            "line": 3,
+            "character": 47
+          },
+          "end": {
+            "line": 3,
+            "character": 52
+          }
+        }
+      }
+    ]
+  },
+  {
+    "params": {
+      "position": {
+        "line": 3,
+        "character": 47
+      },
+      "context": {
+        "includeDeclaration": false
+      }
+    },
+    "result": [
+      {
+        "uri": "${workspace}/Consumer.jsx",
+        "range": {
+          "start": {
+            "line": 3,
+            "character": 47
+          },
+          "end": {
+            "line": 3,
+            "character": 52
+          }
+        }
+      }
+    ]
+  }
+]

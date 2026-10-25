@@ -1,4 +1,4 @@
-import type { LaunchOptions } from "playwright";
+import type { LaunchOptions, Page } from "playwright";
 
 /**
  * Viewport configuration.
@@ -47,10 +47,21 @@ export interface VrtOptions {
   workers?: number;
 }
 
-/**
- * Screenshot capture configuration.
- */
+/** Identity of the isolated preview about to be captured. */
+export interface BeforeCaptureContext {
+  readonly artPath: string;
+  readonly variantName: string;
+  readonly viewport: Readonly<ViewportConfig>;
+}
+
+/** Screenshot capture configuration. */
 export interface CaptureConfig {
+  /**
+   * Run authored Playwright interactions/assertions after preview readiness and
+   * waitSelector, before settleTime, hiding, masking and the screenshot.
+   * Rejection fails this capture without writing or updating its baseline.
+   */
+  beforeCapture?: (page: Page, context: BeforeCaptureContext) => void | Promise<void>;
   /** Freeze finite/infinite animations during screenshots. @default "disabled" */
   animations?: "disabled" | "allow";
   /** Emulate prefers-reduced-motion. @default "no-preference" */
@@ -69,13 +80,17 @@ export interface CaptureConfig {
   waitSelector?: string;
   /** Elements to hide before capture (CSS selectors) */
   hideElements?: string[];
-  /** Elements to mask before capture (CSS selectors) */
+  /** Elements to cover during capture without changing their layout (CSS selectors). */
   maskElements?: string[];
+  /** CSS color used to cover masked elements. @default "#ff00ff" */
+  maskColor?: string;
 }
 
 /**
  * Image comparison configuration.
  */
+export type DiffStyle = "overlay" | "sideBySide" | "diffOnly";
+
 export interface ComparisonConfig {
   /**
    * Per-pixel YIQ color difference threshold from 0 (exact) to 1 (least sensitive).
@@ -88,8 +103,8 @@ export interface ComparisonConfig {
   antiAliasing?: boolean;
   /** Alpha channel comparison */
   alpha?: boolean;
-  /** Diff image output format */
-  diffStyle?: "overlay" | "sideBySide" | "diffOnly" | "animated";
+  /** PNG presentation: overlay (default), baseline/current pair, or transparent unchanged pixels. */
+  diffStyle?: DiffStyle;
   /** Diff highlight color */
   diffColor?: { r: number; g: number; b: number };
 }

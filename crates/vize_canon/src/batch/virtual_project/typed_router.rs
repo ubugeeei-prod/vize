@@ -99,6 +99,41 @@ pub(super) fn configured_root(
     options: Option<&Map<std::string::String, Value>>,
     tsconfig: Option<&Path>,
 ) -> Option<PathBuf> {
+    configured_root_with(&project.project_root, options, || {
+        let compiler = project.load_compiler_options(tsconfig).ok()?;
+        root_from_compiler_options(&project.project_root, &compiler)
+    })
+}
+
+/// Resolve the same opt-in from already admitted immutable compiler options.
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std strings")]
+pub(in crate::batch::virtual_project) fn configured_root_from_options(
+    project_root: &Path,
+    options: Option<&Map<std::string::String, Value>>,
+    compiler: &Map<std::string::String, Value>,
+) -> Option<PathBuf> {
+    configured_root_with(project_root, options, || {
+        root_from_compiler_options(project_root, compiler)
+    })
+}
+
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std strings")]
+fn root_from_compiler_options(
+    project_root: &Path,
+    compiler: &Map<std::string::String, Value>,
+) -> Option<PathBuf> {
+    compiler
+        .get("rootDir")
+        .map(|value| value.as_str().map(PathBuf::from))
+        .unwrap_or_else(|| Some(project_root.to_path_buf()))
+}
+
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std strings")]
+fn configured_root_with(
+    project_root: &Path,
+    options: Option<&Map<std::string::String, Value>>,
+    compiler_root: impl FnOnce() -> Option<PathBuf>,
+) -> Option<PathBuf> {
     let plugin = options?.get("plugins")?.as_array()?.iter().find(|entry| {
         entry.as_str() == Some(PLUGIN) || entry.get("name").and_then(Value::as_str) == Some(PLUGIN)
     })?;
@@ -107,16 +142,12 @@ pub(super) fn configured_root(
         // A malformed path is unsupported; it never enables a guessed transform.
         PathBuf::from(value.as_str()?)
     } else {
-        let compiler = project.load_compiler_options(tsconfig).ok()?;
-        compiler
-            .get("rootDir")
-            .map(|value| value.as_str().map(PathBuf::from))
-            .unwrap_or_else(|| Some(project.project_root.clone()))?
+        compiler_root()?
     };
     Some(normalize_path_lexically(&if root.is_absolute() {
         root
     } else {
-        project.project_root.join(root)
+        project_root.join(root)
     }))
 }
 

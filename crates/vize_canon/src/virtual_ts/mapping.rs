@@ -60,10 +60,32 @@ pub fn mapping_for_end_offset<'a>(
 /// An exact-expression sub-span wins over the enclosing mapping, and both
 /// paths clamp to the authored range so synthetic generated text (helper
 /// names, punctuation) can never push a diagnostic past the authored bytes.
+#[inline]
 pub fn map_generated_offset_to_source(mapping: &VizeMapping, generated_offset: usize) -> usize {
+    map_generated_position_to_source(mapping, generated_offset, false)
+}
+
+/// Map the closed end of a generated range to its authored endpoint.
+///
+/// A canonicalized property name can have a different byte length from its
+/// authored spelling. Its declared end still owns the complete authored token.
+#[inline]
+pub fn map_generated_end_offset_to_source(mapping: &VizeMapping, generated_offset: usize) -> usize {
+    map_generated_position_to_source(mapping, generated_offset, true)
+}
+
+#[inline]
+fn map_generated_position_to_source(
+    mapping: &VizeMapping,
+    generated_offset: usize,
+    prefer_end: bool,
+) -> usize {
     if let Some(span) = mapping.sub_spans.iter().find(|span| {
         generated_offset >= span.gen_range.start && generated_offset <= span.gen_range.end
     }) {
+        if prefer_end && generated_offset == span.gen_range.end {
+            return span.src_range.end;
+        }
         let generated_relative = generated_offset.saturating_sub(span.gen_range.start);
         let source_len = span.src_range.end.saturating_sub(span.src_range.start);
         return span
@@ -72,6 +94,9 @@ pub fn map_generated_offset_to_source(mapping: &VizeMapping, generated_offset: u
             .saturating_add(generated_relative.min(source_len));
     }
 
+    if prefer_end && generated_offset >= mapping.gen_range.end {
+        return mapping.src_range.end;
+    }
     let generated_relative = generated_offset.saturating_sub(mapping.gen_range.start);
     let source_len = mapping
         .src_range

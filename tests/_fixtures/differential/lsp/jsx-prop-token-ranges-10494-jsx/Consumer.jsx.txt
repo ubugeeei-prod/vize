@@ -1,0 +1,4 @@
+// 🧭 source position
+import Child from "./Child.vue";
+const count = 1; const label = "hello";
+export const view = <div data-note="🧭"><Child count={count} foo-bar={label} active 名称={label} /></div>;

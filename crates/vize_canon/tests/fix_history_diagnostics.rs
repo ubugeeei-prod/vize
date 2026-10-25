@@ -841,6 +841,7 @@ fn check_pack(
             | "long-prop-kebab-case-10423"
             | "pug-refusal-10430"
             | "portable-pug-10434"
+            | "jsx-prop-token-ranges-10494"
             | "experimental-router-import-10520" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
@@ -864,8 +865,23 @@ fn check_pack(
         pack.checker_options
             .as_ref()
             .map(|options| options.options_api),
-        (name == "options-api-any-instance").then_some(true),
+        matches!(
+            name,
+            "options-api-any-instance" | "jsx-prop-token-ranges-10494"
+        )
+        .then_some(name == "options-api-any-instance"),
         "the original explicit checker options must be retained"
+    );
+    assert_eq!(
+        pack.checker_options
+            .as_ref()
+            .map(|options| options.jsx_typecheck),
+        matches!(
+            name,
+            "options-api-any-instance" | "jsx-prop-token-ranges-10494"
+        )
+        .then_some(name == "jsx-prop-token-ranges-10494"),
+        "the authored JSX lowering option must be retained"
     );
     assert_eq!(
         pack.cases
@@ -1023,6 +1039,13 @@ fn check_pack(
         {
             checker.enable_options_api();
         }
+        if pack
+            .checker_options
+            .as_ref()
+            .is_some_and(|options| options.jsx_typecheck)
+        {
+            checker.enable_jsx_typecheck();
+        }
         checker.scan_project().expect("the project must scan");
         let result = checker
             .check_project()
@@ -1140,6 +1163,17 @@ fn portable_pug_refusals_preserve_native_batch_diagnostics() {
         "c2132e45d47aad595aac7e07f5e71a78b8ffd1c8",
         Some(10434),
         &["refused-jade-with-valid-pug-sibling"],
+    );
+}
+
+#[test]
+fn jsx_prop_tokens_preserve_complete_batch_diagnostics() {
+    check_pack(
+        "jsx-prop-token-ranges-10494",
+        "jsx_prop_tokens_preserve_complete_batch_diagnostics",
+        "aaeeb1c1264a319737fa11e56971c9d73064d6a3",
+        Some(10494),
+        &["tsx-invalid-and-valid-props", "jsx-invalid-and-valid-props"],
     );
 }
 
