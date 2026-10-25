@@ -29,7 +29,7 @@ function temporary(run) {
   }
 }
 
-test("three captured templates reproduce all121 source files and exact1210-file public output", () => {
+void test("three captured templates reproduce all121 source files and exact1210-file public output", () => {
   assert.equal(frozen.seed.size, 121);
   assert.equal(frozen.rows.length, 1210);
   assert.equal(
@@ -49,7 +49,7 @@ test("three captured templates reproduce all121 source files and exact1210-file 
 });
 
 for (const name of ["component.vue.txt", "module.ts.txt", "cohort.stdout", "package-lock.json"]) {
-  test(`changed frozen ${name} fails before source generation`, () =>
+  void test(`changed frozen ${name} fails before source generation`, () =>
     temporary((root) => {
       fs.cpSync(fixture, root, { recursive: true });
       fs.appendFileSync(path.join(root, name), " ");
@@ -64,7 +64,7 @@ for (const name of ["component.vue.txt", "module.ts.txt", "cohort.stdout", "pack
     }));
 }
 
-test("corpus generation has exact membership and survives unchanged inventory", () =>
+void test("corpus generation has exact membership and survives unchanged inventory", () =>
   temporary((root) => {
     makeCorpus(fixture, root);
     const before = inventory(root, ["src", "package.json", "package-lock.json", "tsconfig.json"]);
@@ -82,7 +82,7 @@ test("corpus generation has exact membership and survives unchanged inventory", 
     assert.equal(Object.keys(inventory(root, ["src"])).length, 1211);
   }));
 
-test("dependency inventory retains link identity and rejects external dependency links", () =>
+void test("dependency inventory retains link identity and rejects external dependency links", () =>
   temporary((root) => {
     fs.writeFileSync(path.join(root, "entry"), "inside");
     fs.symlinkSync("entry", path.join(root, "internal"));
@@ -91,7 +91,7 @@ test("dependency inventory retains link identity and rejects external dependency
     assert.throws(() => inventory(root, ["external"]), /dependency link escapes consumer/u);
   }));
 
-test("sample acceptance checks every raw byte, file order, diagnostic field and status", () => {
+void test("sample acceptance checks every raw byte, file order, diagnostic field and status", () => {
   const output = Buffer.from(
     '[{"file":"A","messages":[{"message":"x","severity":1}]},{"file":"B","messages":[]}]',
   );
@@ -121,7 +121,7 @@ function profile(side) {
   };
 }
 
-test("entire31-phase vectors pin all probes and the1211-to2 snapshot transition", () => {
+void test("entire31-phase vectors pin all probes and the1211-to2 snapshot transition", () => {
   for (const side of ["base", "head"]) {
     assertProfile(profile(side), frozen.authority.requestPhaseCounts[side]);
     assert.equal(profileCounts(profile(side)).length, 31);
@@ -158,7 +158,7 @@ test("entire31-phase vectors pin all probes and the1211-to2 snapshot transition"
   });
 });
 
-test("missing duplicate unknown or truncated checker telemetry cannot pass", () => {
+void test("missing duplicate unknown or truncated checker telemetry cannot pass", () => {
   const expected = frozen.authority.requestPhaseCounts.head;
   for (const mutate of [
     (data) => {
@@ -189,7 +189,7 @@ test("missing duplicate unknown or truncated checker telemetry cannot pass", () 
   }
 });
 
-test("measurement environment removes inherited instrumentation while keeping ordinary runtime variables", () => {
+void test("measurement environment removes inherited instrumentation while keeping ordinary runtime variables", () => {
   assert.deepEqual(
     cleanEnvironment(
       {
@@ -214,7 +214,7 @@ test("measurement environment removes inherited instrumentation while keeping or
   );
 });
 
-test("RSS evidence must be one positive GNU-time observation", () => {
+void test("RSS evidence must be one positive GNU-time observation", () => {
   assert.equal(parseRss("\tMaximum resident set size (kbytes): 1234\n"), 1234);
   for (const text of [
     "",
