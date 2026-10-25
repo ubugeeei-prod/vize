@@ -776,8 +776,6 @@ fn content_mapper_nested_vfor_reuses_branch_guards() {
     );
 }
 
-<<<<<<< HEAD
-=======
 #[test]
 fn slot_host_guards_preserve_authored_impossible_comparisons() {
     if native_fixture_runtime_disabled() {
@@ -1124,8 +1122,6 @@ fn check_pack(
         capture.finish(name, test, &fixture_pack);
     }
 }
-
->>>>>>> feat/router-experimental-types
 #[test]
 fn long_prop_keys_preserve_static_and_async_listener_diagnostics() {
     check_pack(
