@@ -22,6 +22,8 @@ jobs:
     env:
       CARGO_BUILD_JOBS: "24"
       CARGO_INCREMENTAL: "0"
+      RUSTC_WRAPPER: ""
+      RUSTC_WORKSPACE_WRAPPER: ""
       BASE_SHA: ${{ github.event.pull_request.base.sha }}
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
     steps:
@@ -38,8 +40,12 @@ jobs:
         with: { toolchain: "1.99.1" }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
         with: { wild-version: "0.9.0" }
-      - uses: ./.github/actions/setup-rust-sticky-cache
-        with: { key: test-scripts, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: native-image-alt-registry-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
       - name: Build immutable source observers before measuring
         shell: bash
         run: |
@@ -61,13 +67,18 @@ jobs:
           rustc -Vv > "$capture/rustc.txt"
           uname -a > "$capture/platform.txt"
           sha256sum "$observer" "$support" Cargo.lock > "$capture/observer-and-lock.sha256"
-          export CARGO_TARGET_DIR="$GITHUB_WORKSPACE/target"
+          base_target="$RUNNER_TEMP/native-image-alt-targets/$BASE_SHA"
+          head_target="$RUNNER_TEMP/native-image-alt-targets/$HEAD_SHA"
+          [[ "$base_target" != "$head_target" && ! -e "$base_target" && ! -e "$head_target" ]]
+          printf '%s\n' "$base_target" "$head_target" > "$capture/isolated-targets.txt"
+          (cd "$baseline" && git ls-files crates/vize_patina/src | sort | xargs sha256sum) > "$capture/base-production.sha256"
+          git ls-files crates/vize_patina/src | sort | xargs sha256sum > "$capture/head-production.sha256"
           flags=(--locked --profile ci-opt -p vize_patina --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16')
-          (cd "$baseline" && cargo build "${flags[@]}" --example native_image_alt_original) > "$capture/base-build.log" 2>&1
-          cp "$CARGO_TARGET_DIR/ci-opt/examples/native_image_alt_original" "$capture/base-observer"
-          cargo build "${flags[@]}" --example native_image_alt_original --example native_image_alt_canonical > "$capture/head-build.log" 2>&1
-          cp "$CARGO_TARGET_DIR/ci-opt/examples/native_image_alt_original" "$capture/head-observer"
-          cp "$CARGO_TARGET_DIR/ci-opt/examples/native_image_alt_canonical" "$capture/canonical-observer"
+          (cd "$baseline" && CARGO_TARGET_DIR="$base_target" cargo build "${flags[@]}" --verbose --message-format=json --example native_image_alt_original) > "$capture/base-build.jsonl" 2> "$capture/base-build.stderr"
+          cp "$base_target/ci-opt/examples/native_image_alt_original" "$capture/base-observer"
+          CARGO_TARGET_DIR="$head_target" cargo build "${flags[@]}" --verbose --message-format=json --example native_image_alt_original --example native_image_alt_canonical > "$capture/head-build.jsonl" 2> "$capture/head-build.stderr"
+          cp "$head_target/ci-opt/examples/native_image_alt_original" "$capture/head-observer"
+          cp "$head_target/ci-opt/examples/native_image_alt_canonical" "$capture/canonical-observer"
           sha256sum "$capture/"*-observer > "$capture/executables.sha256"
       - name: Observe original-owner before and after, then independent canonical phases
         shell: bash
@@ -109,10 +120,27 @@ jobs:
           }
           for (const row of canonical) assert.equal(row.phase, 'patina.native.canonical.img_alt');
           const hash = name => createHash('sha256').update(readFileSync(`${directory}/${name}`)).digest('hex');
+          const targets = readFileSync(`${directory}/isolated-targets.txt`, 'utf8').trim().split('\n');
+          assert.equal(targets.length, 2);
+          assert.notEqual(targets[0], targets[1]);
+          const compiled = ['base', 'head'].map((epoch, index) => {
+            const messages = readFileSync(`${directory}/${epoch}-build.jsonl`, 'utf8').trim().split('\n').map(line => JSON.parse(line));
+            const library = messages.filter(row => row.reason === 'compiler-artifact' && row.target.name === 'vize_patina' && row.target.kind.includes('lib'));
+            assert.equal(library.length, 1);
+            assert.equal(library[0].fresh, false, `${epoch} Patina must compile from its own source`);
+            assert.ok(library[0].filenames.every(file => file.startsWith(`${targets[index]}/`)));
+            const root = epoch === 'base' ? `${process.env.RUNNER_TEMP}/native-image-alt-base` : process.env.GITHUB_WORKSPACE;
+            assert.equal(library[0].target.src_path, `${root}/crates/vize_patina/src/lib.rs`);
+            assert.ok(library[0].package_id.startsWith(`path+file://${root}/crates/vize_patina#`));
+            return { epoch, packageId: library[0].package_id, source: library[0].target.src_path,
+              filenames: library[0].filenames, fresh: library[0].fresh };
+          });
           const receipt = { base: process.env.BASE_SHA, head: process.env.HEAD_SHA,
             originalPacketEquality: true, baseCaptureSha256: hash('base.json'),
             headCaptureSha256: hash('head.json'), canonicalCaptureSha256: hash('canonical.json'),
             originalOwner: head.representation, canonicalOwners: canonical.map(row => row.representation),
+            isolatedCompiledTargets: targets, compiledLibraries: compiled,
+            baseProductionSha256: hash('base-production.sha256'), headProductionSha256: hash('head-production.sha256'),
             profile: 'ci-opt: release, thin LTO, 16 codegen units',
             crossRepresentationRatioAsserted: false, defaultDriverMigrationAsserted: false,
             wholeProductPerformanceAsserted: false };

@@ -47,7 +47,10 @@ retain the actual failed producer or admitted File without fabricating nodes.
 
 The `native-image-alt-query.yml` source workflow builds the original-header
 observer byte-for-byte on the immutable base and head, then compares its entire
-diagnostic packets. Both runs use genuine L1 `NativeTemplateComponent` owners
+diagnostic packets. Compiled Cargo targets are fresh and isolated by each
+immutable source SHA, with actual compiler-artifact source paths, package IDs,
+freshness and production source hashes retained. Only registry/git sources may
+reuse a download cache. Both runs use genuine L1 `NativeTemplateComponent` owners
 and include the same original child iteration. The new canonical observer
 reports absolute query phases separately for actual Vue, JSX and TSX owners;
 there is no trusted conversion between these private owner families. Each
