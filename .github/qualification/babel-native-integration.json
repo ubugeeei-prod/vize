@@ -1,0 +1,43 @@
+{
+  "scope": "reversible integration qualification only; formal package/native PR heads and publication remain separate",
+  "main": {
+    "sha": "13fa41356d075047a229f580014b637d3bbeb57f",
+    "tree": "3d7d7754b74e3294ba354498b08d5b533b84d7d8"
+  },
+  "native": {
+    "pin": "931a99792e0042faf090e879dc8e39201a2c0d87",
+    "tree": "b868878622eebaeda815cceda1fc9dfada19f76d",
+    "base": "aeab2e4994e1ccd55a9ae22b15ab849d03f93cc5",
+    "integrationMerge": "b33828862c6165532d06f1e1267565244aaf8901"
+  },
+  "babelOrderedInputs": [
+    {
+      "sha": "fc4ba43de166299f96487ec45eff2cc9c292f6b9",
+      "tree": "3ba5986d4c24d27c7fd77328a8b9b5d6b1336bfa"
+    },
+    {
+      "sha": "35b28400700c7a754f953b3962c4c14c2e836312",
+      "tree": "fe2d10b3a2a7de90f06400a09e1a74c4be6a4c09"
+    },
+    {
+      "sha": "8b6283e02d4d1da1cfa75ef222c7d71bb94809b8",
+      "tree": "68b6ae6eac0559f2108de0ee9c5d80eb03c53212"
+    },
+    {
+      "sha": "e6da6e91da4cd1021a42f012d51b75f5754008d6",
+      "tree": "fec040155a9c6f47dfae788dd9b6d329144e0101"
+    },
+    {
+      "sha": "bf6f24f1f70a5c53ca80d85e9a60c13f98ef8fd9",
+      "tree": "4709c0cea0e986d8a37dcc456307c5a6d21a050a"
+    },
+    {
+      "sha": "4c5b070650e19098adb5f4a7806eb5c9132537e4",
+      "tree": "cb7555c5feb0ab855fcf40edcbedb584a1103fb0"
+    }
+  ],
+  "currentComposedBeforeLedger": {
+    "sha": "4c64b66172675fad3855234447734a1258b390ac",
+    "tree": "ba62a630a88420def3a85a166819547703b1f2a5"
+  }
+}
