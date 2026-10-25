@@ -21,7 +21,7 @@ const packet = () => ({
     falseProfileBytes: JSON.stringify(vector.expected),
   })),
 });
-test("whole false-profile metadata retains every field, literal name and refusal control", () => {
+void test("whole false-profile metadata retains every field, literal name and refusal control", () => {
   const base = packet(),
     head = structuredClone(base);
   comparePackets(base, head);
@@ -57,7 +57,7 @@ test("whole false-profile metadata retains every field, literal name and refusal
     assert.throws(() => comparePackets(base, altered));
   }
 });
-test("closed matrix covers every size/shape and invalid timing vectors fail closed", () => {
+void test("closed matrix covers every size/shape and invalid timing vectors fail closed", () => {
   assert.equal(memberCases().length, 18);
   assert.equal(new Set(memberCases().map((value) => value.id)).size, 18);
   for (const count of [32, 128, 512])

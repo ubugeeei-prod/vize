@@ -45,30 +45,37 @@ export function memberCases() {
 }
 export function controlCases() {
   return [
-    [
-      "keyword",
-      "readonly?: string; readonlyThing?: number; readonly readonlyName?: boolean",
-      [
+    {
+      id: "keyword",
+      members: "readonly?: string; readonlyThing?: number; readonly readonlyName?: boolean",
+      props: [
         { name: "readonly", type: "string", required: false },
         { name: "readonlyThing", type: "number", required: false },
         { name: "readonlyName", type: "boolean", required: false },
       ],
-    ],
-    [
-      "whitespace",
-      "readonly\tp0?: number; readonly/* boundary */p1?: number; readonly\u00a0p2?: number",
-      ["p0", "p1", "p2"].map((name) => ({ name, type: "number", required: false })),
-    ],
-    [
-      "cooked-refused",
-      String.raw`readonly "scope.name"?: string; readonly ["a:b"]?: number; "\u006cabel"?: string; [key]: string; [sideEffect()]: number`,
-      [
+    },
+    {
+      id: "whitespace",
+      members:
+        "readonly\tp0?: number; readonly/* boundary */p1?: number; readonly\u00a0p2?: number",
+      props: ["p0", "p1", "p2"].map((name) => ({ name, type: "number", required: false })),
+    },
+    {
+      id: "cooked-refused",
+      members: String.raw`readonly "scope.name"?: string; readonly ["a:b"]?: number; "\u006cabel"?: string; [key]: string; [sideEffect()]: number`,
+      props: [
         { name: "scope.name", type: "string", required: false },
         { name: "a:b", type: "number", required: false },
         { name: "label", type: "string", required: false },
       ],
-    ],
-  ].map(([id, members, props]) => ({
+    },
+    {
+      id: "readonly-optional-spacing",
+      members:
+        "readonly p0? : number; readonly p1?\t: number; readonly/* modifier */p2? /* optional */ : number",
+      props: ["p0", "p1", "p2"].map((name) => ({ name, type: "number", required: false })),
+    },
+  ].map(({ id, members, props }) => ({
     id,
     source: `<script setup lang="ts">defineProps<{ ${members} }>()</script>`,
     expected: { emits: [], props },
