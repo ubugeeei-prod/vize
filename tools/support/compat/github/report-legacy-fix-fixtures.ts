@@ -280,9 +280,12 @@ function checkProduct(
         ? newVaporStyleApiCases(before?.vaporStyleApiCases, manifest.vaporStyleApiCases, readFile)
         : { ids: [] as string[], sources: new Set<string>() };
     const compilerPaths = paths.filter((path) => legacyProducts([path]).includes("compiler"));
+    const vaporIds = compilerPaths.some((path) => vaporStyle.sources.has(path))
+      ? vaporStyle.ids
+      : [];
     const vaporOnly =
       product === "compiler" &&
-      vaporStyle.ids.length > 0 &&
+      vaporIds.length > 0 &&
       compilerPaths.length > 0 &&
       compilerPaths.every((path) => vaporStyle.sources.has(path));
     const registered =
@@ -291,7 +294,7 @@ function checkProduct(
     return {
       product,
       state: registered ? "new-inputs-registered" : "new-input-missing",
-      cases: [...cases, ...protocols, ...runtime.ids, ...cssApi, ...vaporStyle.ids],
+      cases: [...cases, ...protocols, ...runtime.ids, ...cssApi, ...vaporIds],
     };
   } catch (error) {
     return { product, state: "invalid-manifest-or-input", cases: [], reason: String(error) };
