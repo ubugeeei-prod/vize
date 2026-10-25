@@ -113,6 +113,16 @@ const registered: Record<string, { sources: SourcePair[]; tests: Selector[] }> =
         before: "bf2aff6b0ed2aa044a39c48cb3280903d76e173da2af931f9416a454edbaeb24",
         after: "5cf2c7cbbf2fc36109cb8f4e02e7e02db51902b00d32ce5b3ec04152dd872ee5",
       },
+      {
+        path: "crates/vize_patina/src/linter/native_type_aware.rs",
+        before: "f1b118304bdcc17341379bc685f0c9e805972e519524aead474fa6e7d28eb7a7",
+        after: "71cf576e7de8c3419f15af8ed6ed395fee6ddde77114f0e42068c5af130e64f5",
+      },
+      {
+        path: "crates/vize_patina/src/linter/native_type_aware/plain_module_tests/packets.rs",
+        before: "34e3d06a5cae777bc1315d5d4bbb94c8f44f1fc138ee3d7323a53762fcd5f5e7",
+        after: "c72d860c16caa1fae043ddde528155a32f3de1ced1de02ad5a32fcb4b72f8c3f",
+      },
     ],
     tests: [
       {
@@ -189,6 +199,15 @@ export function unchangedNonRuntimeErrors(before: string, after: string): boolea
   };
   const retained = strip(before);
   return retained !== null && retained === strip(after);
+}
+
+/** Only the approved runtime-help literal may change in these mixed modules. */
+export function unchangedNativeRuntimeHelp(before: string, after: string): boolean {
+  const oldText =
+    "Type-aware lint rules were skipped because the Corsa runtime could not be started. Configure `typeChecker.corsaPath` or install `typescript@^7`.";
+  const newText =
+    "Type-aware lint rules were skipped because the native compiler could not be started. Install a native TypeScript runtime in this project or configure `typeChecker.corsaPath`, `CORSA_PATH`, or `TSGO_PATH` to its executable.";
+  return before.split(oldText).length === 2 && before.replace(oldText, newText) === after;
 }
 
 export function newNativeRuntimeCases(
@@ -275,6 +294,16 @@ export function newNativeRuntimeCases(
             before.toString("utf8"),
             after.toString("utf8"),
           ), "unrelated mixed error module edit");
+      if (
+        expected.path === "crates/vize_patina/src/linter/native_type_aware.rs" ||
+        expected.path ===
+          "crates/vize_patina/src/linter/native_type_aware/plain_module_tests/packets.rs"
+      )
+        require(before !== null &&
+          unchangedNativeRuntimeHelp(
+            before.toString("utf8"),
+            after.toString("utf8"),
+          ), "unrelated mixed type-aware module edit");
       result.sources.add(expected.path);
     }
     require(Array.isArray(row.tests) &&

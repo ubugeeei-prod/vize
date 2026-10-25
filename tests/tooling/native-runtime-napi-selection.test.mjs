@@ -27,7 +27,7 @@ const floating =
   '<script setup lang="ts">\nasync function loadData(): Promise<number> {\n  return 1\n}\n\nloadData()\n</script>\n';
 const ignored = floating.replace("loadData()\n</script>", "void loadData()\n</script>");
 const runtimeHelp =
-  "Type-aware lint rules were skipped because the Corsa runtime could not be started. Configure `typeChecker.corsaPath` or install `typescript@^7`.";
+  "Type-aware lint rules were skipped because the native compiler could not be started. Install a native TypeScript runtime in this project or configure `typeChecker.corsaPath`, `CORSA_PATH`, or `TSGO_PATH` to its executable.";
 function empty(filename) {
   return { filename, errorCount: 0, warningCount: 0, diagnostics: [] };
 }
@@ -159,13 +159,14 @@ test("source type-aware NAPI follows real user compiler graphs and preserves who
     providers,
     consumerBase: base,
     scope:
-      "source NAPI compiler selection with qualified 7.0.2; no beta API or new schema/lifecycle compatibility claim",
+      "source NAPI selection with qualified 7.0.2 and an explicit beta API capability probe; no beta support claim before whole output success",
   });
   const worker = fileURLToPath(
     new URL("./support/native-runtime-selection/napi-worker.mjs", import.meta.url),
   );
   for (const kind of [
     "canonical-702",
+    "canonical-beta",
     "alias-702",
     "explicit-702",
     "absent",
@@ -222,16 +223,28 @@ test("source type-aware NAPI follows real user compiler graphs and preserves who
         kind === "explicit-missing"
           ? `Configured Corsa executable does not exist: ${options.corsaPath} (from configuration)`
           : "No native TypeScript/tsgo executable found. Install a native TypeScript runtime in the selected project, or set typeChecker.corsaPath, CORSA_PATH, or TSGO_PATH to its executable.";
-      assert.deepEqual(
-        observed.packet.results,
-        missing
-          ? [{ id: "missing", result: expectedMissing(consumer.entry, message) }]
-          : [
-              { id: "valid", result: empty(consumer.entry) },
-              { id: "error", result: expectedFloating(consumer.entry, errorSource) },
-              { id: "repair", result: empty(consumer.entry) },
-            ],
+      const expectedResults = missing
+        ? [{ id: "missing", result: expectedMissing(consumer.entry, message) }]
+        : [
+            { id: "valid", result: empty(consumer.entry) },
+            { id: "error", result: expectedFloating(consumer.entry, errorSource) },
+            { id: "repair", result: empty(consumer.entry) },
+          ];
+      fs.writeFileSync(
+        path.join(caseOutput, "whole-comparison.json"),
+        `${JSON.stringify(
+          {
+            source: build.source.head,
+            provider: consumer.expectedExecutable,
+            betaApiCapabilityProbe: kind === "canonical-beta",
+            expected: expectedResults,
+            actual: observed.packet.results,
+          },
+          null,
+          2,
+        )}\n`,
       );
+      assert.deepEqual(observed.packet.results, expectedResults);
       assertProviderFiles(providers);
       assert.equal(sha256(fs.readFileSync(addon.path)), addon.sha256);
     });

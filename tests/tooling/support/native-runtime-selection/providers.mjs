@@ -73,7 +73,8 @@ function nativeProvider(root, version, requireMeta = true) {
   assert.equal(probe.error, undefined);
   assert.equal(probe.status, 0);
   assert.equal(probe.signal, null);
-  assert.equal(probe.stdout.trim(), `Version ${version}`);
+  assert.equal(probe.stdout, `Version ${version}\n`);
+  assert.equal(probe.stderr, "");
   return {
     root: selected,
     meta,

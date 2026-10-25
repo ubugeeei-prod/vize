@@ -10,6 +10,7 @@ import {
 import {
   runtimeFixturePath,
   unchangedNonRuntimeErrors,
+  unchangedNativeRuntimeHelp,
 } from "../../tools/support/compat/github/native-runtime-fixtures.ts";
 import { planPrChecks } from "../../tools/support/compat/github/plan-pr-checks.ts";
 import { loadTypecheckerManifest } from "../differential/typechecker.ts";
@@ -286,4 +287,16 @@ void test("the Git reader distinguishes new-on-disk files from unreadable revisi
     () => gitFixtureFile("0".repeat(40), "Cargo.toml", fileURLToPath(root)),
     /git show failed/,
   );
+});
+
+void test("the type-aware help correction retains all unrelated source and packet bytes", () => {
+  for (const path of [
+    "crates/vize_patina/src/linter/native_type_aware.rs",
+    "crates/vize_patina/src/linter/native_type_aware/plain_module_tests/packets.rs",
+  ]) {
+    const before = sourceImage("base", path)!.toString("utf8");
+    const after = sourceImage("head", path)!.toString("utf8");
+    assert(unchangedNativeRuntimeHelp(before, after));
+    assert(!unchangedNativeRuntimeHelp(before, `${after}\n// unrelated source edit\n`));
+  }
 });

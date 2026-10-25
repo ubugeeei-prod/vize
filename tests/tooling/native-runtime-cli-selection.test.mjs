@@ -138,7 +138,8 @@ test("source CLI selects actual user-installed native packages and retains whole
   assert.equal(version.status, 0);
   assert.equal(version.signal, null);
   assert.equal(version.error, undefined);
-  assert.equal(version.stdout.trim(), expected.cliVersion);
+  assert.equal(version.stdout, `${expected.cliVersion}\n`);
+  assert.equal(version.stderr, "");
   assert.ok(
     process.env.VIZE_NATIVE_STRACE,
     "VIZE_NATIVE_STRACE is mandatory; no global tool fallback",
