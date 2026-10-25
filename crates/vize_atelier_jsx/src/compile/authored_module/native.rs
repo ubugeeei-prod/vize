@@ -29,6 +29,10 @@ impl Context<'_> {
         } else {
             "__vapor: true,\n"
         });
+        if matches!(component, JsxComponent::Ssr(component) if component.mode == crate::JsxOutputMode::Vapor)
+        {
+            writer.synthetic("__vapor: true,\n");
+        }
         if let Some(name) = component.component_name() {
             writer.synthetic("name: ");
             writer.synthetic(&js_string(name));
