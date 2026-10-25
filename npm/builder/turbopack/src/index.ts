@@ -54,7 +54,9 @@ export function vizeTurbopack(
             { query: ownedStyle },
             { query: new RegExp(`[?&]lang=${lang}(?:&|$)`) },
             module ? { query: moduleStyle } : { not: { query: moduleStyle } },
-            inline ? { query: inlineStyle } : { not: { query: inlineStyle } },
+            inline
+              ? { all: [{ query: inlineStyle }, { path: "*.vue" }] }
+              : { not: { query: inlineStyle } },
           ],
         },
         loaders: [
@@ -65,7 +67,8 @@ export function vizeTurbopack(
           ...(styleLoaders[lang] ?? []),
           ...(inline ? ["@vizejs/turbopack-plugin/style-loader"] : []),
         ],
-        as: module ? "*.module.css" : "*.css",
+        // A processed CSS asset must not re-enter its SFC/preprocessor loaders.
+        ...(inline ? { as: module ? "*.module.css" : "*.css" } : {}),
         type: module ? ("css-module" as const) : ("css" as const),
       })),
     ),

@@ -9,6 +9,9 @@ export default withVize(
   },
   {
     root: import.meta.dirname,
-    styleLoaders: { scss: [{ loader: "sass-loader", options: { sourceMap: true } }] },
+    styleLoaders: {
+      css: [{ loader: `${import.meta.dirname}/once-loader.cjs` }],
+      scss: [{ loader: "sass-loader", options: { sourceMap: true } }],
+    },
   },
 );
