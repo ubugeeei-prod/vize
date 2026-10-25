@@ -90,3 +90,43 @@ fn ready_intrinsic_data_cannot_escape_same_version_reopen_or_cancellation() {
         assert_eq!(ready.publish(|reply| reply), Err(expected));
     }
 }
+
+#[test]
+fn asynchronous_intrinsic_rendering_retains_final_edit_reopen_and_close_guards() {
+    for action in ["edit", "reopen", "close", "retire"] {
+        let documents = DocumentStore::new();
+        documents.open(uri(), SOURCE.into(), 1, "typescriptreact".into());
+        let project = NativeNavigationProject::new(SourceQueryProject::new(&documents));
+        let (entered, rendering) = futures::channel::oneshot::channel();
+        let (resume, resumed) = futures::channel::oneshot::channel();
+        let target_uri = uri();
+        let request = project.render_intrinsic_tag(&target_uri, AT, |target| async move {
+            assert_eq!(target.name.as_str(), "button");
+            entered.send(()).unwrap();
+            resumed.await.unwrap();
+            Some(target)
+        });
+        let mutate = async {
+            rendering.await.unwrap();
+            match action {
+                "edit" => documents.open(
+                    uri(),
+                    "export const view = <input/>;".into(),
+                    2,
+                    "typescriptreact".into(),
+                ),
+                "reopen" => documents.open(uri(), SOURCE.into(), 1, "typescriptreact".into()),
+                "close" => documents.close(&uri()),
+                _ => project.retire(),
+            };
+            resume.send(()).unwrap();
+        };
+        let (result, ()) = block_on(async { futures::join!(request, mutate) });
+        let expected = match action {
+            "close" => SnapshotRefusal::MissingDocument,
+            "retire" => SnapshotRefusal::Cancelled,
+            _ => SnapshotRefusal::Superseded,
+        };
+        assert_eq!(result, Err(NavigationRefusal::Host(expected)), "{action}");
+    }
+}

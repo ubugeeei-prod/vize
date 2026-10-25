@@ -22,18 +22,22 @@ impl MaestroServer {
         position: tower_lsp::lsp_types::Position,
     ) -> Option<tower_lsp::lsp_types::Hover> {
         let project = self.navigation.as_deref()?;
-        let target = project.intrinsic_tag(ctx.uri, position).await.ok()??;
-        let bridge = self.state.get_corsa_bridge().await;
-        if let Some(hover) = crate::ide::HoverService::hover_dom_tag_at_with_corsa(
-            ctx.uri,
-            &target.name,
-            target.range,
-            bridge.as_ref(),
-        )
-        .await
-        {
-            return Some(hover);
-        }
-        crate::ide::HoverService::hover_dom_tag_at(&target.name, target.range)
+        project
+            .render_intrinsic_tag(ctx.uri, position, |target| async move {
+                let bridge = self.state.get_corsa_bridge().await;
+                if let Some(hover) = crate::ide::HoverService::hover_dom_tag_at_with_corsa(
+                    ctx.uri,
+                    &target.name,
+                    target.range,
+                    bridge.as_ref(),
+                )
+                .await
+                {
+                    return Some(hover);
+                }
+                crate::ide::HoverService::hover_dom_tag_at(&target.name, target.range)
+            })
+            .await
+            .ok()?
     }
 }

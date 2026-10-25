@@ -12,6 +12,16 @@ import type { PublishedSessionBinding } from "./support/lsp/session-process.ts";
 test("authored LSP profiles preserve the historical default and reject unsupported values", () => {
   const loaded = loadLspManifest(path.join(root, "tests/_fixtures/differential/lsp/manifest.json"));
   assert.equal(fixtureLanguageId(loaded.cases[0].data), "vue");
+  assert.deepEqual(
+    loaded.cases
+      .filter((fixture) => fixture.data.languageId !== undefined)
+      .map((fixture) => [fixture.id, fixture.data.languageId]),
+    [
+      ["lsp/regression/jsx-intrinsic-hover-10521-jsx", "javascriptreact"],
+      ["lsp/regression/jsx-intrinsic-hover-10521-tsx", "typescriptreact"],
+    ],
+    "historical rows retain their original didOpen profiles",
+  );
   for (const languageId of ["vue", "javascriptreact", "typescriptreact"] as const) {
     const fixture = { ...loaded.cases[0], data: { ...loaded.cases[0].data, languageId } };
     assert.equal(fixtureLanguageId(fixture.data), languageId);

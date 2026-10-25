@@ -17,6 +17,22 @@ impl NativeNavigationProject<'_> {
         uri: &Url,
         position: Position,
     ) -> Result<Option<IntrinsicTagTarget>, NavigationRefusal> {
+        self.render_intrinsic_tag(uri, position, |target| async { Some(target) })
+            .await
+    }
+
+    /// Keep the original document lease through asynchronous documentation work.
+    /// An owned target alone cannot authorize publication after an edit or close.
+    pub(crate) async fn render_intrinsic_tag<T, F, Fut>(
+        &self,
+        uri: &Url,
+        position: Position,
+        render: F,
+    ) -> Result<Option<T>, NavigationRefusal>
+    where
+        F: FnOnce(IntrinsicTagTarget) -> Fut,
+        Fut: std::future::Future<Output = Option<T>>,
+    {
         let (query, _) = self
             .source
             .begin_query(uri)
@@ -27,7 +43,12 @@ impl NativeNavigationProject<'_> {
                     return Err(NavigationRefusal::Language);
                 }
                 let worker = self.worker(snapshot)?;
-                Ok((worker.profile(), worker.intrinsic_tag(position).await))
+                let target = worker.intrinsic_tag(position).await?;
+                let rendered = match target {
+                    Some(target) => render(target).await,
+                    None => None,
+                };
+                Ok((worker.profile(), Ok(rendered)))
             })
             .await
             .map_err(NavigationRefusal::Host)?;
