@@ -7,6 +7,7 @@ import { test } from "node:test";
 import { repoRoot } from "../_helpers/realworld-patch.ts";
 import { resolveVizeLaunchCommand } from "./support/lsp/launch.ts";
 import { runCopyAndCollisionControls } from "./support/content-mapper-instance-globals-copies-10617.ts";
+import { runReceiverPlanControls } from "./support/content-mapper-instance-globals-receiver-plan-10617.ts";
 import {
   assertDiagnosticPrefixGeometry,
   assertPrefixGeometryMutations,
@@ -426,6 +427,20 @@ await test(
       );
       checks.push(
         ...runCopyAndCollisionControls(
+          files,
+          source,
+          published,
+          output,
+          binary,
+          publicCli,
+          host,
+          ts5,
+          hostMatrix.hosts,
+          run,
+        ),
+      );
+      checks.push(
+        ...runReceiverPlanControls(
           files,
           source,
           published,
