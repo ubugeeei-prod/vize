@@ -5303,5 +5303,43 @@
         }
       ]
     }
+  ],
+  "protocolCases": [
+    {
+      "id": "typechecker/protocol/native-shutdown-completion-10524",
+      "state": "active",
+      "adapter": "native-shutdown-wire-v1",
+      "targets": [
+        "native-shutdown"
+      ],
+      "inputs": [
+        {
+          "path": "native-shutdown-completion-10524/completion-envelopes.json",
+          "sha256": "6d97b04d935c191d0960839fd9c7d0e9599b50c2f46c4dbccdf0fdf3a188be47"
+        }
+      ],
+      "tests": [
+        {
+          "selector": "lsp_client::editor_lsp::native_shutdown::completion::tests::complete_provider_envelopes_and_failures_match_pinned_packets",
+          "source": "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown/completion/tests.rs",
+          "sha256": "e196a9fde31f48a2c9df7de9e86ef627b1c58ffff1bdb1a2e151bbc7fe5a5b11"
+        },
+        {
+          "selector": "lsp_client::editor_lsp::native_shutdown::tests::completion::buffered_completion_and_unrelated_notifications_preserve_the_whole_transcript",
+          "source": "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown/tests/completion.rs",
+          "sha256": "c29ee8d8ff579c8493ab934b58c2400c9a25f8e68e48177d7dc095a513a2564c"
+        },
+        {
+          "selector": "lsp_client::editor_lsp::native_shutdown::tests::completion::malformed_missing_stale_and_eof_completion_still_close_the_owned_process",
+          "source": "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown/tests/completion.rs",
+          "sha256": "c29ee8d8ff579c8493ab934b58c2400c9a25f8e68e48177d7dc095a513a2564c"
+        },
+        {
+          "selector": "lsp_client::editor_lsp::native_shutdown::tests::null_ack_precedes_eof_foreign_exit_is_preserved_and_failed_ack_still_closes",
+          "source": "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown/tests.rs",
+          "sha256": "c598a4f9788ffc0b769fcb754e445f9d018ac6f513a4f6ffbfc3da3df81a4f15"
+        }
+      ]
+    }
   ]
 }

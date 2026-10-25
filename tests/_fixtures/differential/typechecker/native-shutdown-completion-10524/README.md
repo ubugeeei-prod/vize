@@ -6,6 +6,13 @@ acceptance claims. The Rust parser test compares every complete result and error
 the owned wire peer separately records full request, ACK, notification and EOF
 packets, including rejection and process-cleanup controls.
 
+The manifest registers this pack under the closed `protocolCases` collection,
+separate from `cases`. The gate authenticates the raw envelope hash, full wire
+selector/source hashes and ordinary Rust test-module registration. Only the owned
+native shutdown module tree and its exact wire-support fixture may use this
+registry; mixed changes still need new batch evidence for other Canon source.
+Neither the batch loader nor language/dialect denominators include this pack.
+
 The native Linux executable is SHA-256
 `4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4`.
 The npm 7.0.2 package records upstream revision

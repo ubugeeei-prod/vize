@@ -6,6 +6,10 @@ import { createHash } from "node:crypto";
 import { appendFileSync } from "node:fs";
 
 import { changedPaths } from "./plan-source-checks.ts";
+import {
+  nativeShutdownProtocolSource,
+  newNativeShutdownProtocolCases,
+} from "./native-shutdown-protocol-fixtures.ts";
 
 /** PRs opened before this (just after the gate merged) stay report-only. */
 export const GATE_SINCE = "2026-10-20T06:00:00Z";
@@ -53,6 +57,7 @@ interface Manifest {
   version?: unknown;
   product?: unknown;
   cases?: ManifestCase[];
+  protocolCases?: unknown;
 }
 
 const manifestPath = (product: Product) => `tests/_fixtures/differential/${product}/manifest.json`;
@@ -119,7 +124,11 @@ function checkCompilerCase(
   );
 }
 
-function checkProduct(product: Product, readFile: ReadFile): ProductReport {
+function checkProduct(
+  product: Product,
+  paths: readonly string[],
+  readFile: ReadFile,
+): ProductReport {
   const previous = readFile("base", manifestPath(product));
   const current = readFile("head", manifestPath(product));
   if (current === null) return { product, state: "adapter-or-manifest-missing", cases: [] };
@@ -186,7 +195,22 @@ function checkProduct(product: Product, readFile: ReadFile): ProductReport {
         }
         return id;
       });
-    return { product, state: cases.length ? "new-inputs-registered" : "new-input-missing", cases };
+    const canonPaths = paths.filter((path) => path.startsWith("crates/vize_canon/src/"));
+    const protocolRequired =
+      product === "typechecker" && canonPaths.some(nativeShutdownProtocolSource);
+    const batchRequired =
+      product !== "typechecker" || canonPaths.some((path) => !nativeShutdownProtocolSource(path));
+    const protocols =
+      product === "typechecker"
+        ? newNativeShutdownProtocolCases(before?.protocolCases, manifest.protocolCases, readFile)
+        : [];
+    const registered =
+      (!batchRequired || cases.length > 0) && (!protocolRequired || protocols.length > 0);
+    return {
+      product,
+      state: registered ? "new-inputs-registered" : "new-input-missing",
+      cases: [...cases, ...protocols],
+    };
   } catch (error) {
     return { product, state: "invalid-manifest-or-input", cases: [], reason: String(error) };
   }
@@ -206,7 +230,7 @@ export function analyzeLegacyFix({
   if (products.length === 0) return { state: "no-known-legacy-source", products: [] };
   return {
     state: "fixture-required",
-    products: products.map((product) => checkProduct(product, readFile)),
+    products: products.map((product) => checkProduct(product, paths, readFile)),
   };
 }
 
