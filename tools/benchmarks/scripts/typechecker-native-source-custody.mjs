@@ -45,6 +45,7 @@ export const INFRASTRUCTURE_PATHS = new Set([
     "typechecker-native-profile-replay",
     "typechecker-native-profile-corpus",
     "typechecker-native-source-custody",
+    "typechecker-native-build-info",
   ]
     .flatMap((file) => [file + ".mjs", file + ".test.mjs"])
     .map((file) => "tools/benchmarks/scripts/" + file),
