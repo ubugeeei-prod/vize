@@ -282,10 +282,14 @@ export async function prepareConsumer() {
       `${entry} exposes its public callable`,
     );
     const issuer = createRequire(resolved);
+    assert.equal(issuer("webpack-sources/package.json").version, "3.5.1");
     assert.equal(issuer.resolve("@vizejs/native"), strictNative);
     assert.equal(issuer("@vizejs/native").getNativeBuildToken(), sourceReceipt.identity.token);
     assert.throws(() => issuer.resolve("@vizejs/builder-shared"));
-    strictEntries[entry] = path.relative(strictConsumer, resolved);
+    strictEntries[entry] = {
+      file: path.relative(strictConsumer, resolved),
+      webpackSources: issuer("webpack-sources/package.json").version,
+    };
   }
   assert.equal(
     sha256(await fs.readFile(path.join(path.dirname(strictNative), sourceReceipt.binary.filename))),

@@ -7,6 +7,7 @@ import { createServer } from "node:net";
 import { chromium } from "playwright";
 import { prepareConsumer, consumer, output, run, sha256 } from "./prepare-consumer.mjs";
 import { checkRspackConsumer } from "./run-rspack.mjs";
+import { checkHostErrors } from "./run-errors.mjs";
 
 const receipt = await prepareConsumer();
 const require = createRequire(path.join(consumer, "package.json"));
@@ -252,9 +253,14 @@ async function exercise(mode, label = mode) {
 }
 
 try {
-  await checkRspackConsumer(browser, measurements);
   await exercise("dev");
   await fs.writeFile(sourcePath, original);
+  const errorServer = await launch("dev", "errors");
+  try {
+    await checkHostErrors(errorServer.url, sourcePath, original, measurements);
+  } finally {
+    await errorServer.stop();
+  }
   for (const name of ["cold", "warm"]) {
     const result = await run(`build-${name}`, process.execPath, [next, "build"], consumer, {
       NEXT_TELEMETRY_DISABLED: "1",
@@ -300,6 +306,7 @@ try {
   }
   await inspectMaps(path.join(consumer, ".next/static"));
   assert.ok(maps.length, "production maps retain authored SFC sources");
+  await checkRspackConsumer(browser, measurements);
   await fs.writeFile(
     path.join(output, "qualification.json"),
     JSON.stringify(

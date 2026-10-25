@@ -87,9 +87,9 @@ export async function checkRspackConsumer(browser, measurements) {
 
     const server = createServer(async (request, response) => {
       if (request.url === "/") {
-        response.setHeader("Content-Type", "text/html");
+        response.setHeader("Content-Type", "text/html; charset=utf-8");
         response.end(
-          '<link rel="icon" href="data:,"><link rel="stylesheet" href="/styles.css"><div id="app"></div><script src="/bundle.js"></script>',
+          '<!doctype html><html><head><meta charset="utf-8"><link rel="icon" href="data:,"><link rel="stylesheet" href="/styles.css"></head><body><div id="app"></div><script src="/bundle.js"></script></body></html>',
         );
         return;
       }
@@ -104,7 +104,7 @@ export async function checkRspackConsumer(browser, measurements) {
         return;
       }
       try {
-        response.setHeader("Content-Type", files[request.url]);
+        response.setHeader("Content-Type", `${files[request.url]}; charset=utf-8`);
         response.end(await fs.readFile(path.join(target, request.url.slice(1))));
       } catch (error) {
         response.writeHead(500).end(String(error));
