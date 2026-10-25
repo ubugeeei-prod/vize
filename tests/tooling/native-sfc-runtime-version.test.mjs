@@ -5,7 +5,7 @@ import { mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { after, test } from "node:test";
+import { test } from "node:test";
 
 const proof = process.env.VIZE_NATIVE_SFC_VERSION_PROOF;
 const required = process.env.VIZE_NATIVE_SFC_VERSION_REQUIRED === "1";
@@ -37,26 +37,33 @@ if (selected) {
   );
   writeFileSync(join(proof, "source.json"), JSON.stringify(receipt, null, 2) + "\n");
 }
+function persist() {
+  if (selected)
+    writeFileSync(join(proof, "whole-observations.json"), JSON.stringify(rows, null, 2) + "\n");
+}
+process.once("exit", persist);
 const observe = (name, options, operation) => {
   const started = performance.now();
+  let result;
   try {
-    const result = operation();
-    rows.push({ name, options, durationMs: performance.now() - started, result });
-    return result;
+    result = operation();
   } catch (error) {
     rows.push({
       name,
       options,
       durationMs: performance.now() - started,
-      error: { code: error.code, message: error.message },
+      error: {
+        name: error.name,
+        ...Object.fromEntries(Object.getOwnPropertyNames(error).map((key) => [key, error[key]])),
+      },
     });
+    persist();
     throw error;
   }
+  rows.push({ name, options, durationMs: performance.now() - started, result });
+  persist();
+  return result;
 };
-after(() => {
-  if (selected)
-    writeFileSync(join(proof, "whole-observations.json"), JSON.stringify(rows, null, 2) + "\n");
-});
 const options = { skip: !selected };
 const legacy = ["2", "2.7", "v2", " V2.7 ", "1", "0.11", "0.10"];
 const invalid = ["", "2.6", "2.6.14", "2.7.16", "3.5", "4", "0", "Vue2", "2.7-beta"];
@@ -110,7 +117,13 @@ await test("runtime validation precedes worker allocation and glob reads", optio
       /native SFC compiler currently targets the Vue 3 runtime/,
     );
   }
-  assert.throws(() => native.compileSfcBatch("[", { vueVersion: "3", threads: 0 }), /thread/i);
+  assert.throws(
+    () =>
+      observe("modern-worker-control", { vueVersion: "3", threads: 0 }, () =>
+        native.compileSfcBatch("[", { vueVersion: "3", threads: 0 }),
+      ),
+    /thread/i,
+  );
 });
 
 await test("default and explicit Vue3 preserve complete single and batch modules", options, () => {
@@ -188,3 +201,5 @@ await test("explicit Vue3 emits its actual DOM and server runtime vocabulary", o
   assert.match(ssr.code, /ssrRender|ssrInterpolate/);
   assert.equal(readdirSync(fixtures).filter((name) => name.endsWith(".vue")).length, 4);
 });
+
+persist();
