@@ -78,9 +78,29 @@ for (const [label, source] of refs) {
       fs.writeFileSync(path.join(capture, `${label}-${name}-test.rs`), original);
       let observed = original;
       if (name === "bridge") {
-        for (const variable of ["diagnostics", "created_diagnostics", "deleted_diagnostics"]) {
+        for (const variable of [
+          "diagnostics",
+          "created_diagnostics",
+          "deleted_diagnostics",
+          "repaired_diagnostics",
+          "edited_diagnostics",
+          "edited_deleted_diagnostics",
+          "edited_repaired_diagnostics",
+        ]) {
           const declaration = new RegExp(`(let ${variable} = [^;]+;)`);
-          assert(declaration.test(observed));
+          if (!declaration.test(observed)) {
+            assert(
+              ![
+                "diagnostics",
+                "created_diagnostics",
+                "deleted_diagnostics",
+                "missing",
+                "created",
+                "deleted",
+              ].includes(variable),
+            );
+            continue;
+          }
           observed = observed.replace(
             declaration,
             `$1\n        eprintln!("OBSERVED ${variable}: {${variable}:#?}");`,
@@ -91,14 +111,40 @@ for (const [label, source] of refs) {
           'eprintln!("OBSERVED_DISK source={} generated={}", missing.join("Missing.vue").is_file(), created_shadow.join("Missing.d.vue.ts").is_file());\n        let deleted_diagnostics =',
         );
       } else {
-        for (const variable of ["missing", "created", "deleted"]) {
+        for (const variable of [
+          "missing",
+          "created",
+          "deleted",
+          "repaired",
+          "edited",
+          "edited_deleted",
+          "edited_repaired",
+        ]) {
           const declaration = new RegExp(`(let ${variable} = server\\.check_vue_sfc[^;]+;)`);
-          assert(declaration.test(observed));
+          if (!declaration.test(observed)) {
+            assert(
+              ![
+                "diagnostics",
+                "created_diagnostics",
+                "deleted_diagnostics",
+                "missing",
+                "created",
+                "deleted",
+              ].includes(variable),
+            );
+            continue;
+          }
           observed = observed.replace(
             declaration,
             `$1\n        eprintln!("OBSERVED ${variable}: {}", serde_json::to_string(&${variable}).unwrap());`,
           );
         }
+      }
+      if (label === "fixed" && name === "server") {
+        observed = observed.replaceAll(
+          /(let (first_valid|second_invalid|first_deleted|second_unchanged|first_repaired|second_still_invalid) = [\s\S]+?\.unwrap\(\);)/g,
+          '$1\n eprintln!("OBSERVED $2: {}", serde_json::to_string(&$2).unwrap());',
+        );
       }
       fs.writeFileSync(file, observed);
     }
@@ -172,6 +218,11 @@ for (const [label, source] of refs) {
       label === "fixed"
         ? [
             ...cases,
+            [
+              "cross-root",
+              null,
+              "corsa_server::request::tests::deleting_one_package_root_preserves_other_root_types_and_unsaved_hosts",
+            ],
             [
               "physical-retirement",
               null,

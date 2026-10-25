@@ -851,6 +851,17 @@ fn empty_generic_markers_preserve_functional_public_contracts() {
     );
 }
 
+#[test]
+fn missing_exported_package_target_preserves_ts2307() {
+    check_pack(
+        "package-target-deletion-refresh",
+        "missing_exported_package_target_preserves_ts2307",
+        "9dfa45b2bcbbb5ca2ff3548ba16e607f0fc283f0",
+        None,
+        &["missing-target"],
+    );
+}
+
 fn check_pack(
     name: &str,
     test: &str,
@@ -878,6 +889,7 @@ fn check_pack(
     assert_eq!(
         pack.source_revision,
         match name {
+            "package-target-deletion-refresh" => "13fa41356d075047a229f580014b637d3bbeb57f",
             "template-context-undefined-10667"
             | "contextual-prop-anchors-10661"
             | "typed-import-meta"
