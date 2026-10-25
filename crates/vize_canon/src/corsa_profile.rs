@@ -88,6 +88,7 @@ fn method_label(method: &str) -> &'static str {
         "describeCapabilities",
         "parseConfigFile",
         "updateSnapshot",
+        "release",
         "releaseSnapshot",
         "getDefaultProjectForFile",
         "getSourceFile",

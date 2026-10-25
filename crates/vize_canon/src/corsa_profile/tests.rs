@@ -14,6 +14,11 @@ fn disabled_profiling_installs_no_hook_and_custom_hooks_are_preserved() {
 }
 
 #[test]
+fn background_snapshot_release_keeps_its_endpoint_identity() {
+    assert_eq!(method_label("release"), "release");
+}
+
+#[test]
 fn all_request_phases_origins_and_transports_preserve_exact_samples() {
     let profiler = Profiler::enabled();
     for (origin, stage) in [
