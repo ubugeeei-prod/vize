@@ -7602,7 +7602,7 @@
           },
           {
             "path": ".github/workflows/lsp-owned-outer-shutdown.yml",
-            "sha256": "1c4cea1334b8957bbe08a8bdeb8ee1c7a849cfe4979ab87b48c568b5b42f0aef"
+            "sha256": "3fa71947f9b6b366b64ea49a6c4d5b36d1af8f693a4fb165419827caa4579f0f"
           },
           {
             "path": "tests/tooling/owned-editor-shutdown-order.test.mjs",
