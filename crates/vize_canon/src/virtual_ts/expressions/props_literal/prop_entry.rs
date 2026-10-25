@@ -49,9 +49,7 @@ pub(super) fn append_prop_entry(
     } else {
         generated_prop_span(prop, template_binding_access)
     };
-    let Some(mut generated_value) = generated_value else {
-        return None;
-    };
+    let mut generated_value = generated_value?;
     let inline_callback = crate::virtual_ts::scope::is_inline_callback_prop(prop);
     if inline_callback {
         // The authored callback is checked against its resolved type separately.

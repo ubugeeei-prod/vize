@@ -16,13 +16,10 @@ fn binding() -> (InputOwner, Range<usize>) {
     let usage = usages.first().expect("real component usage");
     let prop = usage.props.first().expect("real passed prop");
     let owner = InputOwner::for_prop(usage, prop).expect("context-free component input");
-    let source = crate::virtual_ts::expressions::ComponentPropSource::new(
-        Some(template),
-        0,
-        &summary.scopes,
-    )
-    .value_source_range(prop)
-    .expect("authored value span");
+    let start = template
+        .find("items[0].length")
+        .expect("handwritten authored value");
+    let source = start..start + "items[0].length".len();
     (owner, source)
 }
 

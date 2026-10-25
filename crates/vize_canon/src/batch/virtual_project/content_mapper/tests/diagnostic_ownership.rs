@@ -120,15 +120,53 @@ fn form_events_and_callback_inference_keep_one_binding_ownership_role() {
             let after = packet("Form.art.vue", &source, true);
             let echoes = added_echoes(&before, &after);
             assert!(!echoes.is_empty());
-            for [_, _, original, length, _, _] in echoes {
-                let owner = source
-                    .get(original..original + length)
-                    .expect("authored binding");
-                assert!(
-                    !owner.contains("=>"),
-                    "a contextual callback must remain visible"
-                );
+            let fields = [
+                [
+                    "initial-state",
+                    "{ role: 'ok', tags: [] }",
+                    "schema",
+                    "schema",
+                ],
+                [
+                    "initial-state",
+                    "{ role: null, tags: [] }",
+                    "schema",
+                    "schema",
+                ],
+                [
+                    "initial-state",
+                    "{ role: 'ok', tags: [] }",
+                    "schema",
+                    "schema",
+                ],
+            ];
+            let mut expected = fields.iter().flatten().copied().collect::<Vec<_>>();
+            expected.extend([
+                "{ role: 'ok', tags: [] }",
+                "schema",
+                "{ role: null, tags: [] }",
+                "schema",
+                "{ role: 'ok', tags: [] }",
+                "schema",
+            ]);
+            if !callback.is_empty() {
+                for field in fields {
+                    expected.extend(field);
+                    expected.extend(field);
+                }
             }
+            let actual = echoes
+                .into_iter()
+                .map(|[original, length, _, _, _, _]| {
+                    source
+                        .get(original..original + length)
+                        .expect("exact authored binding")
+                })
+                .collect::<Vec<_>>();
+            assert_eq!(
+                actual, expected,
+                "the complete ownership vector must contain only the independently enumerated ordinary sibling bindings"
+            );
         }
     }
 }
@@ -154,9 +192,7 @@ fn deferred_expect_buffers_prepend_echo_policy_without_changing_authored_expecta
         assert_eq!(echoes.len(), 9);
         let text = after["text"].as_str().expect("virtual source");
         for [_, _, start, end, _, _] in echoes {
-            let generated = text
-                .get(start..start + length)
-                .expect("real rebased generated row");
+            let generated = text.get(start..end).expect("real rebased generated row");
             assert!(matches!(generated, "\"count\"" | "items[0].length"));
         }
     }
