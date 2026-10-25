@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { loadConfig, validateOptions } from "./config.ts";
 
-test("only documented compiler and host controls are admitted", () => {
+void test("only documented compiler and host controls are admitted", () => {
   const config = {
     compiler: {
       vapor: false,
@@ -32,7 +32,7 @@ test("only documented compiler and host controls are admitted", () => {
   }
 });
 
-test("configuration uses Parcel's tracked config loader and package key", async () => {
+void test("configuration uses Parcel's tracked config loader and package key", async () => {
   const calls: unknown[] = [];
   const config = {
     getConfig(...args: unknown[]) {

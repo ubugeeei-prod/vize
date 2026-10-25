@@ -42,7 +42,8 @@
     "build": "vp pack",
     "check": "vp check src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts",
-    "test": "pnpm build && node --test src/*.test.ts"
+    "test": "pnpm build && node --test src/*.test.ts",
+    "test:host": "node ../../../tools/support/compat/parcel/run.mjs"
   },
   "dependencies": {
     "@parcel/diagnostic": "2.16.4",

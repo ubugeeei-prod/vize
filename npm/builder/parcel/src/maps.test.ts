@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { blockMap, byteOffset, editMap } from "./maps.ts";
 
-test("native byte boundaries reject the inside of astral and non-ASCII characters", () => {
+void test("native byte boundaries reject the inside of astral and non-ASCII characters", () => {
   const source = "é😺\r\nx";
   for (const [bytes, utf16] of [
     [0, 0],
@@ -18,7 +18,7 @@ test("native byte boundaries reject the inside of astral and non-ASCII character
   }
 });
 
-test("style maps point into the full authored CRLF SFC after an astral prefix", () => {
+void test("style maps point into the full authored CRLF SFC after an astral prefix", () => {
   const source = "<!--😺-->\r\n<style scoped>é.foo { color: red }\r\n.bar{display:block}</style>";
   const start = source.indexOf("é.foo");
   const end = source.indexOf("</style>");
@@ -35,7 +35,7 @@ test("style maps point into the full authored CRLF SFC after an astral prefix", 
   assert.equal(map.getSourceContent("é.vue"), source);
 });
 
-test("inserted code is unmapped while unchanged UTF-16 columns keep their authored owner", () => {
+void test("inserted code is unmapped while unchanged UTF-16 columns keep their authored owner", () => {
   const source = ".😺foo { color: red }";
   const original = blockMap(
     source,
@@ -54,7 +54,7 @@ test("inserted code is unmapped while unchanged UTF-16 columns keep their author
   assert.equal(map.getSourceContent("Component.vue"), source);
 });
 
-test("multiple removals and insertions reconstruct exact code and keep independent spans", () => {
+void test("multiple removals and insertions reconstruct exact code and keep independent spans", () => {
   const source = "const a = './a.svg';\r\nconst b = './b.svg';\r\nconst keep = 17;";
   const after = "const a = a;\r\nconst b = b;\r\nconst keep = 17;";
   const original = blockMap(

@@ -67,7 +67,7 @@ jobs:
         run: |
           test ! -e "$RUNNER_TEMP/parcel-cpu"
           mkdir "$RUNNER_TEMP/parcel-cpu"
-          node --cpu-prof --cpu-prof-dir="$RUNNER_TEMP/parcel-cpu" tools/support/compat/parcel/host.mjs "$RUNNER_TEMP/parcel-proof"
+          VIZE_PARCEL_PROFILE_DIR="$RUNNER_TEMP/parcel-cpu" vp run --no-cache --filter './npm/builder/parcel' test:host -- "$RUNNER_TEMP/parcel-proof"
       - name: Preserve source samples and seal the complete evidence
         if: ${{ always() && !cancelled() }}
         run: |

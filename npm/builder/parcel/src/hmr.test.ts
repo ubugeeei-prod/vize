@@ -18,7 +18,7 @@ async function evaluate(code: string) {
   return import(`data:text/javascript,${encodeURIComponent(instrumented)}#${nonce++}`);
 }
 
-test("identical output and imported snapshots admit CSS-only virtual reevaluation", async () => {
+void test("identical output and imported snapshots admit CSS-only virtual reevaluation", async () => {
   const api = await import(runtime);
   const code = "export default { setup() { return { n: 1 } } };";
   const before = await evaluate(code);
@@ -27,7 +27,7 @@ test("identical output and imported snapshots admit CSS-only virtual reevaluatio
   assert.equal(api.same(api.read(before.default), api.read(after.default)), true);
 });
 
-test("unchanged SFC output cannot hide a changed live imported binding", async () => {
+void test("unchanged SFC output cannot hide a changed live imported binding", async () => {
   const provider = `data:text/javascript,${encodeURIComponent("export let value=1; export function update(next) { value=next; }")}`;
   const dependency = await import(provider);
   const api = await import(runtime);
@@ -40,7 +40,7 @@ test("unchanged SFC output cannot hide a changed live imported binding", async (
   assert.equal(api.same(api.read(before.default), api.read(after.default)), false);
 });
 
-test("namespace snapshots capture values rather than retain a live namespace", async () => {
+void test("namespace snapshots capture values rather than retain a live namespace", async () => {
   const provider = `data:text/javascript,${encodeURIComponent("export let value=3; export function update(next) { value=next; }")}`;
   const dependency = await import(provider);
   const api = await import(runtime);
@@ -51,7 +51,7 @@ test("namespace snapshots capture values rather than retain a live namespace", a
   assert.equal(api.same(api.read(before.default), api.read(after.default)), false);
 });
 
-test("named default functions and classes keep their authored local declaration", async () => {
+void test("named default functions and classes keep their authored local declaration", async () => {
   for (const code of [
     "export default function Example() {} export const original=Example;",
     "export default class Example {} export const original=Example;",
@@ -61,7 +61,7 @@ test("named default functions and classes keep their authored local declaration"
   }
 });
 
-test("Unicode and escaped private-name collisions do not change authored bindings", async () => {
+void test("Unicode and escaped private-name collisions do not change authored bindings", async () => {
   const result = await evaluate(
     "// 😺\r\nconst __vize_parcel_\\u0072emember=7; const __vize_parcel_component=8; export default { café: 9, original: __vize_parcel_remember + __vize_parcel_component }; export const later=10;",
   );
@@ -69,7 +69,7 @@ test("Unicode and escaped private-name collisions do not change authored binding
   assert.equal(result.later, 10);
 });
 
-test("side effects, dynamic imports and malformed output disable state preservation", async () => {
+void test("side effects, dynamic imports and malformed output disable state preservation", async () => {
   for (const code of [
     "import './side-effect.js'; export default {};",
     "export default { later: () => import('./dynamic.js') };",

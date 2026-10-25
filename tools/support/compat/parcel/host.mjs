@@ -48,7 +48,7 @@ async function files(directory) {
     if (entry.isDirectory()) result.push(...(await files(name)));
     else if (entry.isFile()) result.push(name);
   }
-  return result.sort();
+  return result.sort((left, right) => (left < right ? -1 : left > right ? 1 : 0));
 }
 
 async function stagePackage(directory, output, nativeVersion) {
@@ -680,6 +680,7 @@ void [transformer, styles, standard, vapor, badMap, badVapor];
     ],
   ];
   for (const [name, text, config] of expectedFailures) {
+    assert.equal(typeof name, "string");
     await fs.writeFile(path.join(consumer, "App.vue"), text);
     await fs.writeFile(path.join(consumer, ".vizerc.parcel.json"), JSON.stringify(config));
     let failure;

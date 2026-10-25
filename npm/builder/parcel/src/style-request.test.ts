@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { styleRequest } from "./style-request.ts";
 
-test("external style queries preserve question marks, Unicode, spaces, and fragments", () => {
+void test("external style queries preserve question marks, Unicode, spaces, and fragments", () => {
   const value = styleRequest(
     "./é style.css?theme=one?two&empty=#sheet",
     "data-v-123",
@@ -20,7 +20,7 @@ test("external style queries preserve question marks, Unicode, spaces, and fragm
   assert.equal(parsed.hash, "#sheet");
 });
 
-test("unscoped development imports only carry CSS-variable context", () => {
+void test("unscoped development imports only carry CSS-variable context", () => {
   const parsed = new URL(styleRequest("./style.css", "data-v-abc", false), "file:///project/");
   assert.deepEqual([...parsed.searchParams], [["vize-vars", "data-v-abc"]]);
 });
