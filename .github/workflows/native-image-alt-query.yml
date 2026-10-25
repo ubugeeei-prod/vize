@@ -64,6 +64,7 @@ jobs:
           cmp "$observer" "$baseline/$observer"
           cmp "$support" "$baseline/$support"
           git -C "$baseline" diff --exit-code -- crates/vize_patina/src Cargo.lock
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- Cargo.lock
           rustc -Vv > "$capture/rustc.txt"
           uname -a > "$capture/platform.txt"
           sha256sum "$observer" "$support" Cargo.lock > "$capture/observer-and-lock.sha256"

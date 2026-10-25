@@ -21,8 +21,10 @@ impl NativeCanonicalLint<'_, '_> {
     /// Check image-alt presence on genuine native Vue/JSX/TSX markup.
     ///
     /// Static and statically named bound attributes count, including empty alt
-    /// values. Indeterminate attribute names refuse the complete query. This
-    /// does not enable a configured product route or infer component rendering.
+    /// values. Markup comments, component operations, non-HTML image elements,
+    /// indeterminate attribute names and node-limit failures refuse the complete
+    /// query. This does not enable a configured product route or infer component
+    /// rendering. Native producer refusals remain separate from query admission.
     pub fn img_alt(
         &self,
         messages: &impl MessageLookup,
