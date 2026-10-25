@@ -79,7 +79,7 @@ export interface NativeBinding {
     controls: Array<{
       name: string;
       control: string;
-      default_value?: unknown;
+      defaultValue?: unknown;
       description?: string;
       required: boolean;
       options: Array<{ label: string; value: unknown }>;

@@ -180,9 +180,12 @@ void test(
         "Variant",
         "authored variant values take precedence",
       );
-      assert.equal(controls.get("count").default_value, 9);
+      assert.equal(controls.get("count").default_value, 0);
+      assert.equal(controls.get("enabled").default_value, false);
+      assert.deepEqual(controls.get("items").default_value, []);
+      assert.equal(controls.get("data").default_value, null);
       for (const [name, value] of Object.entries(expectedRuntimeDefaults)) {
-        if (name !== "label" && name !== "count")
+        if (!["label", "count", "enabled", "items", "data"].includes(name))
           assert.deepEqual(controls.get(name).default_value, value, name);
       }
       assert.deepEqual(JSON.parse(palette.json).controls, palette.controls);
@@ -203,6 +206,15 @@ void test(
         "007",
       );
       await page.getByRole("note").filter({ hasText: "Function props retain" }).waitFor();
+      const dataEditor = page
+        .getByRole("group", { name: "data", exact: true })
+        .locator(".view-lines");
+      await dataEditor.waitFor();
+      assert.equal(
+        (await dataEditor.innerText()).trim(),
+        "null",
+        "JSON controls retain explicit null instead of an empty object",
+      );
       const preview = page.frameLocator('iframe[title="Live component preview"]');
       await preview.locator("[data-runtime-probe]").waitFor();
       await page.waitForFunction(() => {
@@ -211,9 +223,22 @@ void test(
         );
         return frame?.contentDocument?.querySelector("[data-code]")?.textContent === "007";
       });
+      await page.waitForFunction(
+        () =>
+          document
+            .querySelector<HTMLIFrameElement>('iframe[title="Live component preview"]')
+            ?.contentDocument?.querySelector("[data-count]")?.textContent === "0",
+      );
+      assert.equal(await preview.locator("[data-enabled]").textContent(), "false");
+      assert.equal(await preview.locator("[data-items]").textContent(), "[]");
+      assert.equal(await preview.locator("[data-data]").textContent(), "null");
       assert.equal(await preview.locator("[data-callback]").textContent(), "function retained");
       assert.equal(await preview.locator("[data-opaque]").textContent(), "2");
       const currentValues = JSON.parse(await page.locator(".props-json-code code").innerText());
+      assert.equal(currentValues.count, 0);
+      assert.equal(currentValues.enabled, false);
+      assert.equal(currentValues.data, null);
+      assert.deepEqual(currentValues.items, []);
       assert.equal(Object.hasOwn(currentValues, "callback"), false);
       assert.equal(Object.hasOwn(currentValues, "opaque"), false);
       await page.getByRole("textbox", { name: "label", exact: true }).fill("Edited 🎨");

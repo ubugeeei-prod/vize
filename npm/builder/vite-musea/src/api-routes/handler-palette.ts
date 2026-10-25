@@ -61,9 +61,19 @@ export async function handleArtPalette(
     const binding = loadNative();
     let palette: PaletteResponse;
     if (binding.generateArtPalette) {
-      palette = binding.generateArtPalette(source, {
+      const generated = binding.generateArtPalette(source, {
         filename: readableArtPath,
       });
+      // N-API object fields are camelCase; the gallery/export contract uses
+      // default_value. Normalize actual native data before SFC defaults merge.
+      palette = {
+        ...generated,
+        controls: generated.controls.map(({ defaultValue, ...control }) => ({
+          ...control,
+          ...(defaultValue !== undefined ? { default_value: defaultValue } : {}),
+        })),
+      };
+      palette.json = JSON.stringify({ title: palette.title, controls: palette.controls }, null, 2);
     } else {
       palette = {
         title: art.metadata.title,
