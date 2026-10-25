@@ -38,7 +38,7 @@ const packageRoot = path.join(fixture, "node_modules/@vizejs/nuxt");
 const candidateDist = path.join(root, "npm/framework/nuxt/dist");
 const artifacts = path.resolve(process.argv[2] ?? path.join(os.tmpdir(), "vize-nuxt2-build"));
 fs.mkdirSync(artifacts, { recursive: true });
-const cleanupBridgeSource = bridge ? prepareNuxt2BridgeSource(root, fixture, artifacts) : undefined;
+let cleanupBridgeSource: (() => void) | undefined;
 const hash = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 const fixtureConfig = fs.readFileSync(path.join(fixture, "nuxt.config.js"));
 fs.writeFileSync(
@@ -185,16 +185,6 @@ async function verifyBrowser(port: number, mode: "production" | "development") {
   }
 }
 
-assert.equal(
-  at(readJson(path.join(packageRoot, "package.json")), "version"),
-  bridge ? at(readJson(path.join(root, "npm/framework/nuxt/package.json")), "version") : "0.429.1",
-);
-assert.equal(
-  at(readJson(path.join(fixture, "node_modules/nuxt/package.json")), "version"),
-  nuxtVersion,
-);
-assert.ok(fs.existsSync(path.join(candidateDist, "nuxt2-entry.cjs")));
-
 const swapped = (
   [
     ["nuxt", candidateDist],
@@ -205,16 +195,31 @@ const swapped = (
   installed: path.join(fixture, "node_modules/@vizejs", name, "dist"),
   backup: path.join(artifacts, `${bridge ? "initial-source" : "published"}-${name}-dist`),
 }));
-for (const item of swapped) {
-  assert.ok(fs.existsSync(item.candidate), "candidate package must be built");
-  fs.cpSync(item.installed, item.backup, { recursive: true });
-  fs.rmSync(item.installed, { recursive: true });
-  fs.cpSync(item.candidate, item.installed, { recursive: true });
-}
-
 // Children started here; the outer cleanup stops any that are still running.
 const servers: ChildProcess[] = [];
+const restored: typeof swapped = [];
 try {
+  cleanupBridgeSource = bridge ? prepareNuxt2BridgeSource(root, fixture, artifacts) : undefined;
+  assert.equal(
+    at(readJson(path.join(packageRoot, "package.json")), "version"),
+    bridge
+      ? at(readJson(path.join(root, "npm/framework/nuxt/package.json")), "version")
+      : "0.429.1",
+  );
+  assert.equal(
+    at(readJson(path.join(fixture, "node_modules/nuxt/package.json")), "version"),
+    nuxtVersion,
+  );
+  assert.ok(fs.existsSync(path.join(candidateDist, "nuxt2-entry.cjs")));
+
+  for (const item of swapped) {
+    assert.ok(fs.existsSync(item.candidate), "candidate package must be built");
+    fs.cpSync(item.installed, item.backup, { recursive: true });
+    restored.push(item);
+    fs.rmSync(item.installed, { recursive: true });
+    fs.cpSync(item.candidate, item.installed, { recursive: true });
+  }
+
   for (const name of [".nuxt", "dist", ".output"])
     fs.rmSync(path.join(fixture, name), { recursive: true, force: true });
   const buildLog = path.join(artifacts, "build.log");
@@ -384,7 +389,7 @@ try {
   }
   await browser?.close();
   for (const server of servers) if (server.exitCode === null) server.kill("SIGTERM");
-  for (const item of swapped) {
+  for (const item of restored) {
     fs.rmSync(item.installed, { recursive: true, force: true });
     fs.cpSync(item.backup, item.installed, { recursive: true });
   }
