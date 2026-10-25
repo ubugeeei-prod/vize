@@ -5,6 +5,42 @@ use crate::{ide::IdeContext, server::ServerState};
 use tower_lsp::lsp_types::{HoverContents, Url};
 
 #[test]
+fn complete_examples_follow_html_void_grammar_and_preserve_paired_elements() {
+    // The HTML syntax's independently enumerated void elements.
+    for tag in [
+        "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source",
+        "track", "wbr",
+    ] {
+        assert_eq!(
+            super::native_tag_example(tag),
+            format!("<template>\n  <{tag}>\n</template>")
+        );
+        assert_eq!(
+            super::native_attribute_example(tag, "id", false),
+            format!("<template>\n  <{tag} id=\"...\">\n</template>")
+        );
+    }
+    for tag in ["button", "div", "textarea", "svg", "math"] {
+        assert_eq!(
+            super::native_tag_example(tag),
+            format!("<template>\n  <{tag}>...</{tag}>\n</template>")
+        );
+        assert_eq!(
+            super::native_attribute_example(tag, "id", false),
+            format!("<template>\n  <{tag} id=\"...\">...</{tag}>\n</template>")
+        );
+    }
+    assert_eq!(
+        super::native_attribute_example("input", "disabled", true),
+        "<template>\n  <input disabled>\n</template>"
+    );
+    assert_eq!(
+        super::native_attribute_example("button", "disabled", true),
+        "<template>\n  <button disabled>...</button>\n</template>"
+    );
+}
+
+#[test]
 fn test_hover_template_describes_native_html_element() {
     let source = r#"<template>
   <button type="button">Save</button>

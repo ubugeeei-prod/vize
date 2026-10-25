@@ -16,11 +16,39 @@ const CRLF: &str = include_str!(
     "../../../../../../tests/_fixtures/differential/lsp/html-element-hover-documentation/App.crlf.vue.txt"
 );
 const EXPECTED: &str = include_str!(
-    "../../../../../../tests/_fixtures/differential/lsp/html-element-hover-documentation/controls.expected.json"
+    "../../../../../../tests/_fixtures/differential/lsp/html-element-hover-documentation/controls.current.expected.json"
 );
 const LINKS: &str = "\n\n**Docs**\n\n[MDN reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/button)\n\n[HTML Living Standard](https://html.spec.whatwg.org/multipage/form-elements.html#the-button-element)";
 const DESCRIPTION: &str =
     "\n\nProvides an interactive button that can trigger an action or submit a form.";
+
+#[test]
+fn native_void_documentation_keeps_the_complete_type_text_and_range() {
+    let original = Hover {
+        contents: HoverContents::Markup(MarkupContent {
+            kind: MarkupKind::Markdown,
+            value:
+                "```typescript\nconst element: HTMLInputElement\n```\n\nNative Ω🧭 documentation."
+                    .into(),
+        }),
+        range: Some(Range::new(Position::new(7, 11), Position::new(7, 21))),
+    };
+    let actual = documentation::enrich_native_html(original, "input", "HTML element");
+    let expected = Hover {
+        contents: HoverContents::Markup(MarkupContent {
+            kind: MarkupKind::Markdown,
+            value: concat!(
+                "```typescript\nconst element: HTMLInputElement\n```\n\nNative Ω🧭 documentation.",
+                "\n\nProvides a form control whose behavior depends on its type.",
+                "\n\n**HTML syntax**\n\nVoid elements do not have child content or an end tag.",
+                "\n\n**Docs**\n\n[MDN reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input)",
+                "\n\n[HTML Living Standard](https://html.spec.whatwg.org/multipage/input.html#the-input-element)"
+            ).into(),
+        }),
+        range: Some(Range::new(Position::new(7, 11), Position::new(7, 21))),
+    };
+    assert_eq!(actual, expected);
+}
 
 #[test]
 fn complete_fallback_hovers_preserve_authored_utf16_ranges_for_open_closing_and_multiline_tags() {

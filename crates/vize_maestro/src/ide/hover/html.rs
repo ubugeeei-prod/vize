@@ -178,15 +178,24 @@ impl HoverService {
 }
 
 fn native_attribute_example(tag_name: &str, attr_name: &str, is_boolean: bool) -> String {
-    if is_boolean {
-        format!("<template>\n  <{tag_name} {attr_name}>...</{tag_name}>\n</template>")
-    } else {
-        format!("<template>\n  <{tag_name} {attr_name}=\"...\">...</{tag_name}>\n</template>")
+    match (vize_l0::is_void_tag(tag_name), is_boolean) {
+        (true, true) => format!("<template>\n  <{tag_name} {attr_name}>\n</template>"),
+        (true, false) => format!("<template>\n  <{tag_name} {attr_name}=\"...\">\n</template>"),
+        (false, true) => {
+            format!("<template>\n  <{tag_name} {attr_name}>...</{tag_name}>\n</template>")
+        }
+        (false, false) => {
+            format!("<template>\n  <{tag_name} {attr_name}=\"...\">...</{tag_name}>\n</template>")
+        }
     }
 }
 
 fn native_tag_example(tag_name: &str) -> String {
-    format!("<template>\n  <{tag_name}>...</{tag_name}>\n</template>")
+    if vize_l0::is_void_tag(tag_name) {
+        format!("<template>\n  <{tag_name}>\n</template>")
+    } else {
+        format!("<template>\n  <{tag_name}>...</{tag_name}>\n</template>")
+    }
 }
 
 #[cfg(test)]

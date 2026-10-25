@@ -36,7 +36,14 @@ function reference(name: string): Buffer {
   assert.ok(row, `frozen reference ${name}`);
   return readPinnedArtifact(fixtureRoot, { path: row.source, sha256: row.sha256 });
 }
-const rows = JSON.parse(reference("controls.expected.json").toString("utf8")) as Row[];
+// Preserve the historical reference above; this successor changes only the
+// input example and its explicit HTML syntax note.
+const rows = JSON.parse(
+  readPinnedArtifact(fixtureRoot, {
+    path: "controls.current.expected.json",
+    sha256: "0beab4fa2ab93b77cfac113da964fbbf9b99e84f4e423324f03ddac5e23cd5af",
+  }).toString("utf8"),
+) as Row[];
 const source = fixture.files[0].bytes.toString("utf8");
 const binary = path.join(root, "target/ci", process.platform === "win32" ? "vize.exe" : "vize");
 function configure(workspace: string, typecheck: boolean, corsaPath?: string): void {
@@ -219,8 +226,12 @@ await test("successful native Corsa HTML hovers include the selected documentati
       const expected = row.result!.contents.value;
       const description = expected.split("\n\n")[3];
       const links = expected.slice(expected.indexOf("\n\n**Docs**"));
+      const syntax =
+        row.tag === "input"
+          ? "\n\n**HTML syntax**\n\nVoid elements do not have child content or an end tag."
+          : "";
       assert.ok(
-        text.endsWith(`\n\n${description}${links}`),
+        text.endsWith(`\n\n${description}${syntax}${links}`),
         `complete native documentation suffix: ${row.tag}`,
       );
     }

@@ -5,6 +5,8 @@ use tower_lsp::lsp_types::{Hover, HoverContents, MarkupKind};
 use super::elements::{self, ElementDocs};
 
 const DESCRIPTION: &str = "\n\n";
+const VOID_SYNTAX: &str =
+    "\n\n**HTML syntax**\n\nVoid elements do not have child content or an end tag.";
 const MDN: &str = "\n\n**Docs**\n\n[MDN reference](";
 const STANDARD: &str = ")\n\n[HTML Living Standard](";
 const END: &str = ")";
@@ -37,6 +39,11 @@ pub(super) fn append(hover: &mut Hover, docs: &ElementDocs, include_description:
         if include_description { DESCRIPTION } else { "" },
         if include_description {
             docs.description
+        } else {
+            ""
+        },
+        if vize_l0::is_void_tag(docs.tag) {
+            VOID_SYNTAX
         } else {
             ""
         },
