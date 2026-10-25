@@ -143,7 +143,7 @@ test(
             );
             const diagnostics =
               version === 2
-                ? expected.invalidDiagnostics.diagnostics.map((item) => ({
+                ? expected.invalidDiagnostics.diagnostics.map((item: Record<string, Json>) => ({
                     ...item,
                     range: range(text, text.indexOf("toUpperCase"), "toUpperCase".length),
                   }))
@@ -190,7 +190,7 @@ test(
               resolved,
               generated,
               independentPosition: null as number | null,
-              parsedReferences: [] as unknown[],
+              parsedReferences: [] as readonly unknown[],
             };
             receipt.stages.push(stage);
             const tree = ts.createSourceFile(
@@ -253,7 +253,7 @@ test(
               );
             authority[0].response.range = authored[0];
             const declaration = authority[3].response.find(
-              (location) => location.uri === "file://$PROJECT/typed-router.d.ts",
+              (location: { uri: string }) => location.uri === "file://$PROJECT/typed-router.d.ts",
             );
             assert.ok(declaration);
             const sourceReferences = authored.map((span) => ({
