@@ -11,9 +11,7 @@ on:
       - crates/vize/src/commands/content_mapper/**
       - tests/fixtures/typechecker/undeclared-instance-globals-10617/**
       - tests/tooling/content-mapper-instance-globals-10617.test.ts
-      - tests/tooling/support/content-mapper-instance-globals-10617.ts
-      - tests/tooling/support/content-mapper-instance-globals-hosts-10617.ts
-      - tests/tooling/support/content-mapper-instance-globals-profiles-10617.ts
+      - tests/tooling/support/content-mapper-instance-globals*.ts
       - npm/cli/content-mapper-helpers*
       - Cargo.lock
   workflow_dispatch:
