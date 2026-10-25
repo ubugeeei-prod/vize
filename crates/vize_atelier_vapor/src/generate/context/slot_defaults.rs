@@ -32,6 +32,30 @@ impl GenerateContext<'_> {
         });
     }
 
+    /// The ForNode owns this original parameter goal. No generated declaration
+    /// or second parse is needed to resolve its decoded local names and paths.
+    pub(in crate::generate) fn resolve_for_parameter_reads(
+        &mut self,
+        node: &vize_atelier_core::SimpleExpressionNode<'_>,
+        root: &str,
+    ) {
+        let Some(retained) = node.js_ast.filter(|retained| retained.raw == node.content) else {
+            return;
+        };
+        let Some(Ok(parameters)) = retained.as_slot_parameters() else {
+            return;
+        };
+        vize_carton::profiler::global_profiler()
+            .record_counter("vapor.for_binding.retained_reads", 1);
+        for parameter in &parameters.items {
+            self.resolve_binding_reads(&parameter.pattern, node.content, root, |ctx, binding| {
+                if let Some(scope) = ctx.for_scopes.last_mut() {
+                    scope.read_overrides.push(binding);
+                }
+            });
+        }
+    }
+
     /// `pattern` as a callback parameter: its computed keys and defaults read
     /// the enclosing scope, since the callback receives the raw value and the
     /// loop scope being closed does not exist inside it.
@@ -118,7 +142,7 @@ impl GenerateContext<'_> {
         &mut self,
         pattern: &str,
         root: &str,
-        mut bind: impl FnMut(&mut Self, DestructureBinding),
+        bind: impl FnMut(&mut Self, DestructureBinding),
     ) {
         if !expression_is_safe_to_parse(pattern) {
             return;
@@ -135,8 +159,18 @@ impl GenerateContext<'_> {
         let Some(declarator) = declaration.declarations.first() else {
             return;
         };
+        self.resolve_binding_reads(&declarator.id, &source, root, bind);
+    }
+
+    fn resolve_binding_reads(
+        &mut self,
+        pattern: &BindingPattern<'_>,
+        source: &str,
+        root: &str,
+        mut bind: impl FnMut(&mut Self, DestructureBinding),
+    ) {
         let mut pending = SmallVec::<[(&BindingPattern<'_>, String); 8]>::new();
-        pending.push((&declarator.id, String::from(root)));
+        pending.push((pattern, String::from(root)));
         while let Some((pattern, read)) = pending.pop() {
             match pattern {
                 BindingPattern::BindingIdentifier(identifier) => {
@@ -159,7 +193,7 @@ impl GenerateContext<'_> {
                     // Pushed first, so the rest element binds after the keys
                     // it excludes.
                     if let Some(rest) = &object.rest {
-                        let excluded = self.rest_excluded_keys(object, &source);
+                        let excluded = self.rest_excluded_keys(object, source);
                         self.use_helper("getRestElement");
                         pending.push((
                             &rest.argument,

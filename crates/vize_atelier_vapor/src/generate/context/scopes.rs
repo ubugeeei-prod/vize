@@ -49,17 +49,16 @@ impl GenerateContext<'_> {
             let Some(scope) = self.for_scopes.get(loops) else {
                 continue;
             };
+            if let Some(binding) = scope
+                .read_overrides
+                .iter()
+                .rev()
+                .find(|binding| name == binding.local.as_str())
+            {
+                return Some(binding.path.clone());
+            }
             if let Some(ref value_alias) = scope.value_alias {
                 let for_var = cstr!("_for_item{}", scope.depth);
-
-                if let Some(binding) = scope
-                    .read_overrides
-                    .iter()
-                    .rev()
-                    .find(|binding| name == binding.local.as_str())
-                {
-                    return Some(binding.path.clone());
-                }
                 if value_alias.starts_with(['{', '[', '(']) {
                     for binding in parse_destructure_bindings(value_alias.as_str()) {
                         if name == binding.local.as_str() {
@@ -171,6 +170,30 @@ impl GenerateContext<'_> {
         key_alias: Option<&str>,
         index_alias: Option<&str>,
     ) {
+        self.push_for_scope_inner(value_alias, key_alias, index_alias, [None; 3]);
+    }
+
+    pub(crate) fn push_for_scope_retained(
+        &mut self,
+        value: Option<&vize_atelier_core::SimpleExpressionNode<'_>>,
+        key: Option<&vize_atelier_core::SimpleExpressionNode<'_>>,
+        index: Option<&vize_atelier_core::SimpleExpressionNode<'_>>,
+    ) {
+        self.push_for_scope_inner(
+            value.map(|node| node.content),
+            key.map(|node| node.content),
+            index.map(|node| node.content),
+            [value, key, index],
+        );
+    }
+
+    fn push_for_scope_inner(
+        &mut self,
+        value_alias: Option<&str>,
+        key_alias: Option<&str>,
+        index_alias: Option<&str>,
+        retained: [Option<&vize_atelier_core::SimpleExpressionNode<'_>>; 3],
+    ) {
         let depth = self.for_scopes.len();
         self.for_scopes.push(ForScope {
             value_alias: value_alias.map(String::new),
@@ -179,7 +202,17 @@ impl GenerateContext<'_> {
             depth,
             read_overrides: std::vec::Vec::new(),
         });
-        if let Some(pattern) = value_alias
+        for (node, kind) in retained.into_iter().zip(["item", "key", "index"]) {
+            if let Some(node) = node.filter(|node| node.identifiers.is_some()) {
+                self.resolve_for_parameter_reads(node, &cstr!("_for_{kind}{depth}.value"));
+            }
+        }
+        if retained
+            .first()
+            .copied()
+            .flatten()
+            .is_none_or(|node| node.identifiers.is_none())
+            && let Some(pattern) = value_alias
             && pattern.trim_start().starts_with(['{', '['])
             && needs_parsed_reads(pattern)
         {

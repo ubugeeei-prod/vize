@@ -34,7 +34,6 @@ pub(super) fn generate_for(
     }
     source.push_str(")");
 
-    let value_alias = for_node.value.as_ref().map(|v| v.content);
     let key_alias = for_node.key.as_ref().map(|k| k.content);
     let index_alias = for_node.index.as_ref().map(|i| i.content);
 
@@ -54,7 +53,11 @@ pub(super) fn generate_for(
     }
 
     // Push for scope before generating body
-    ctx.push_for_scope(value_alias, key_alias, index_alias);
+    ctx.push_for_scope_retained(
+        for_node.value.as_deref(),
+        for_node.key.as_deref(),
+        for_node.index.as_deref(),
+    );
 
     let slot_root = ctx.transition_slot
         && for_node.parent.is_none()
@@ -215,21 +218,21 @@ fn resolve_key_expression(
         return resolved;
     };
 
-    if let Some(value) = for_node.value.as_ref() {
-        // The key callback destructures the raw item itself, so a parsed
-        // read goes back to the local it stands for, longest read first.
-        let mut reads = current_scope
-            .read_overrides
-            .iter()
-            .collect::<std::vec::Vec<_>>();
-        reads.sort_by_key(|binding| std::cmp::Reverse(binding.path.len()));
-        for binding in reads {
-            if resolved.contains(binding.path.as_str()) {
-                resolved = resolved
-                    .replace(binding.path.as_str(), binding.local.as_str())
-                    .into();
-            }
+    // The key callback destructures the raw item itself, so a parsed
+    // read goes back to the local it stands for, longest read first.
+    let mut reads = current_scope
+        .read_overrides
+        .iter()
+        .collect::<std::vec::Vec<_>>();
+    reads.sort_by_key(|binding| std::cmp::Reverse(binding.path.len()));
+    for binding in reads {
+        if resolved.contains(binding.path.as_str()) {
+            resolved = resolved
+                .replace(binding.path.as_str(), binding.local.as_str())
+                .into();
         }
+    }
+    if let Some(value) = for_node.value.as_ref() {
         restore_current_alias_reference(
             &mut resolved,
             &cstr!("_for_item{}.value", current_scope.depth),

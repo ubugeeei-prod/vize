@@ -12,7 +12,13 @@ use vize_l0::{SmallVec, String, ToCompactString};
 /// and array destructuring ("[first, second]").
 pub(crate) fn extract_for_params(expr: &ExpressionNode<'_>, params: &mut Vec<String>) {
     let content = match expr {
-        ExpressionNode::Simple(exp) => exp.content,
+        ExpressionNode::Simple(exp) => {
+            if let Some(names) = &exp.identifiers {
+                params.extend(names.iter().map(|name| String::from(*name)));
+                return;
+            }
+            exp.content
+        }
         _ => return,
     };
     extract_destructure_params(content.trim(), params);
