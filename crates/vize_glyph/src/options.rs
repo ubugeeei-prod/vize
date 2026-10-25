@@ -142,6 +142,12 @@ pub struct FormatOptions {
     /// runtime flag, never sourced from or written to user config.
     #[serde(skip)]
     pub skip_script_stabilization: bool,
+
+    /// Runtime layout policy selected by a named preset, independent of its
+    /// explicitly overridable options. Not part of the serialized option set.
+    #[doc(hidden)]
+    #[serde(skip)]
+    pub canonical_directive_layout: bool,
 }
 
 impl Default for FormatOptions {
@@ -174,6 +180,7 @@ impl Default for FormatOptions {
             self_close_void_elements: false,
             reindent_preprocessor_styles: false,
             skip_script_stabilization: false,
+            canonical_directive_layout: false,
         }
     }
 }
@@ -201,6 +208,7 @@ impl FormatOptions {
     ) -> Result<Self, serde_json::Error> {
         let mut options = Self::default();
         options.overlay(&profile.options)?;
+        options.canonical_directive_layout = profile.preset == Some(FormatPreset::Prettier);
         Ok(options)
     }
 
@@ -209,6 +217,7 @@ impl FormatOptions {
     pub fn apply_preset(&mut self, preset: FormatPreset) {
         // Preset options are typed literals, so the overlay cannot fail.
         let _ = self.overlay(&preset.options());
+        self.canonical_directive_layout = preset == FormatPreset::Prettier;
     }
 
     fn overlay(&mut self, overrides: &serde_json::Value) -> Result<(), serde_json::Error> {
@@ -220,8 +229,10 @@ impl FormatOptions {
             merged.extend(overrides.clone());
         }
         let skip_script_stabilization = self.skip_script_stabilization;
+        let canonical_directive_layout = self.canonical_directive_layout;
         *self = serde_json::from_value(merged)?;
         self.skip_script_stabilization = skip_script_stabilization;
+        self.canonical_directive_layout = canonical_directive_layout;
         Ok(())
     }
 }

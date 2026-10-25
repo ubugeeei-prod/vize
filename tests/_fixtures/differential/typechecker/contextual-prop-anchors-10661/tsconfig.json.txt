@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "preserve",
+    "strict": true
+  },
+  "include": [
+    "src"
+  ]
+}

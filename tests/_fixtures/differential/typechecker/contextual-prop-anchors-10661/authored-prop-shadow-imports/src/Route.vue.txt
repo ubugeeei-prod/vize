@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import { token as from } from "./dep";
+defineProps<{ from: number; of: number; as: number }>();
+const of = from;
+const as = of;
+</script>
+<template><p>{{ from.toUpperCase() }} {{ of.toUpperCase() }} {{ as.toUpperCase() }}</p></template>
