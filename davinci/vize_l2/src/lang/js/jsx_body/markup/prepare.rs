@@ -52,16 +52,12 @@ pub(super) fn roots(records: &[Record<'_>], source: &str) -> (Vec<usize>, Vec<Is
         let result = match root {
             Some((root, row))
                 if record.kind == Syntax::Expression
-                    && row.kind == Syntax::Element
+                    && matches!(row.kind, Syntax::Element | Syntax::Fragment)
                     && record.span == row.span
                     && body.next().is_none() =>
             {
-                element(records, root, source).map(|()| root)
+                node(records, root, source).map(|()| root)
             }
-            Some((_, row)) if row.kind == Syntax::Fragment => Err(Issue {
-                kind: Kind::Fragment,
-                span: row.span,
-            }),
             _ => Err(Issue {
                 kind: Kind::RootExpression,
                 span: record.span,
@@ -75,6 +71,45 @@ pub(super) fn roots(records: &[Record<'_>], source: &str) -> (Vec<usize>, Vec<Is
     (roots, issues)
 }
 
+fn node(records: &[Record<'_>], index: usize, source: &str) -> Result<(), Issue> {
+    if record(records, index)?.kind == Syntax::Fragment {
+        return fragment(records, index, source);
+    }
+    element(records, index, source)
+}
+
+fn fragment(records: &[Record<'_>], index: usize, source: &str) -> Result<(), Issue> {
+    let row = record(records, index)?;
+    let mut body = children(records, index);
+    let opening = body.next().and_then(|index| records.get(index));
+    if opening.is_none_or(|opening| {
+        opening.kind != Syntax::FragmentOpening || opening.span.start != row.span.start
+    }) {
+        return Err(Issue {
+            kind: Kind::InvalidRecord,
+            span: row.span,
+        });
+    }
+    while let Some(index) = body.next() {
+        let row_child = record(records, index)?;
+        if row_child.kind == Syntax::FragmentClosing {
+            return if row_child.span.end == row.span.end && body.next().is_none() {
+                Ok(())
+            } else {
+                Err(Issue {
+                    kind: Kind::InvalidRecord,
+                    span: row_child.span,
+                })
+            };
+        }
+        child(records, index, source)?;
+    }
+    Err(Issue {
+        kind: Kind::InvalidRecord,
+        span: row.span,
+    })
+}
+
 fn element(records: &[Record<'_>], index: usize, source: &str) -> Result<(), Issue> {
     let row = record(records, index)?;
     let mut body = children(records, index);
@@ -85,18 +120,7 @@ fn element(records: &[Record<'_>], index: usize, source: &str) -> Result<(), Iss
     let tag = header(records, opening, source)?;
     for child in body {
         let row = record(records, child)?;
-        let kind = match row.kind {
-            Syntax::Element => {
-                element(records, child, source)?;
-                continue;
-            }
-            Syntax::Text(value) => {
-                let original = source.get(row.span.start as usize..row.span.end as usize);
-                if !super::whitespace::ignored(value) || original != Some(value) {
-                    normalized(row, value, source)?;
-                }
-                continue;
-            }
+        match row.kind {
             Syntax::Closing => {
                 let mut names = children(records, child);
                 if names
@@ -107,20 +131,37 @@ fn element(records: &[Record<'_>], index: usize, source: &str) -> Result<(), Iss
                 {
                     continue;
                 }
-                Kind::InvalidRecord
+                return Err(Issue {
+                    kind: Kind::InvalidRecord,
+                    span: row.span,
+                });
             }
-            Syntax::Container if empty(records, child) => continue,
-            Syntax::Container => Kind::DynamicChild,
-            Syntax::Fragment => Kind::Fragment,
-            Syntax::SpreadChild => Kind::SpreadChild,
-            _ => Kind::InvalidRecord,
-        };
-        return Err(Issue {
-            kind,
-            span: row.span,
-        });
+            _ => self::child(records, child, source)?,
+        }
     }
     Ok(())
+}
+
+fn child(records: &[Record<'_>], index: usize, source: &str) -> Result<(), Issue> {
+    let row = record(records, index)?;
+    let kind = match row.kind {
+        Syntax::Element | Syntax::Fragment => return node(records, index, source),
+        Syntax::Text(value) => {
+            let original = source.get(row.span.start as usize..row.span.end as usize);
+            if super::whitespace::ignored(value) && original == Some(value) {
+                return Ok(());
+            }
+            return normalized(row, value, source);
+        }
+        Syntax::Container if empty(records, index) => return Ok(()),
+        Syntax::Container => Kind::DynamicChild,
+        Syntax::SpreadChild => Kind::SpreadChild,
+        _ => Kind::InvalidRecord,
+    };
+    Err(Issue {
+        kind,
+        span: row.span,
+    })
 }
 
 fn header<'a>(records: &[Record<'a>], index: usize, source: &str) -> Result<&'a str, Issue> {

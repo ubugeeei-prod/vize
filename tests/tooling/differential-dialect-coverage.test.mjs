@@ -153,34 +153,36 @@ void test("missing case coverage becomes explicit unknown without changing manif
 
 void test("linter and LSP coverage record every pinned authored source dialect", () => {
   assert.deepEqual(summarizeDialectCoverage(load("linter").cases), {
-    plannedCases: 91,
+    plannedCases: 94,
     verifiedCases: 0,
-    provisionalCases: 91,
-    unknownReadinessCases: 91,
+    provisionalCases: 94,
+    unknownReadinessCases: 94,
     verified: {},
     provisional: {
-      "html-template": 50,
+      "html-template": 52,
       js: 6,
+      jsx: 2,
       "pug-template": 4,
-      ts: 35,
+      ts: 36,
+      tsx: 2,
       "vue2-sfc": 2,
-      "vue3-sfc": 72,
+      "vue3-sfc": 74,
     },
   });
   assert.deepEqual(summarizeDialectCoverage(load("lsp").cases), {
-    plannedCases: 54,
+    plannedCases: 56,
     verifiedCases: 0,
-    provisionalCases: 54,
-    unknownReadinessCases: 54,
+    provisionalCases: 56,
+    unknownReadinessCases: 56,
     verified: {},
     provisional: {
       "html-template": 47,
-      js: 5,
-      jsx: 3,
+      js: 7,
+      jsx: 4,
       "pug-template": 4,
-      ts: 40,
-      tsx: 3,
-      "vue3-sfc": 53,
+      ts: 42,
+      tsx: 4,
+      "vue3-sfc": 55,
     },
   });
 });
@@ -201,19 +203,19 @@ void test("typechecker coverage records every pinned authored source dialect", (
   const source = load("typechecker");
   const summary = summarizeDialectCoverage(source.cases);
   assert.deepEqual(summary, {
-    plannedCases: 101,
+    plannedCases: 112,
     verifiedCases: 0,
-    provisionalCases: 100,
-    unknownReadinessCases: 101,
+    provisionalCases: 111,
+    unknownReadinessCases: 112,
     verified: {},
     provisional: {
-      "html-template": 95,
+      "html-template": 106,
       js: 1,
       jsx: 1,
       "pug-template": 2,
-      ts: 99,
+      ts: 110,
       tsx: 4,
-      "vue3-sfc": 98,
+      "vue3-sfc": 109,
     },
   });
   assert.deepEqual(

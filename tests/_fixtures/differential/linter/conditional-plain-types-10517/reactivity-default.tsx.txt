@@ -1,0 +1,8 @@
+import { reactive } from "vue";
+
+const state = reactive({ count: 0 });
+const count = state.count;
+
+export function useCount() {
+  return { count };
+}

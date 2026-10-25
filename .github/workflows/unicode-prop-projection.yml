@@ -1,0 +1,117 @@
+name: Unicode prop projection
+on:
+  pull_request:
+    paths:
+      - .github/workflows/unicode-prop-projection.yml
+      - tools/support/compat/github/unicode-prop-projection-custody.mjs
+      - crates/vize_canon/src/virtual_ts/props/mappings.rs
+      - crates/vize_canon/src/virtual_ts/props/mappings/**
+      - crates/vize_canon/src/virtual_ts/props/template_model.rs
+      - crates/vize/tests/content_mapper_tsgo_cli/unicode_prop_bindings.rs
+      - tests/_fixtures/differential/typechecker/unicode-prop-bindings-10573/**
+permissions: { contents: read }
+concurrency:
+  group: unicode-props-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  CARGO_TERM_COLOR: always
+  CONTENT_MAPPER_TYPESCRIPT_SHA: d6c4afddb2c55f4a9dea7b59293a99a8fdea1799
+  BASE_SHA: ${{ github.event.pull_request.base.sha }}
+  HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+jobs:
+  native-host:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.HEAD_SHA }}", persist-credentials: false }
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          repository: microsoft/TypeScript
+          ref: ${{ env.CONTENT_MAPPER_TYPESCRIPT_SHA }}
+          path: typescript-content-mapper
+          persist-credentials: false
+      - uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
+        with:
+          go-version-file: typescript-content-mapper/tsc/go.mod
+          cache-dependency-path: typescript-content-mapper/tsc/go.sum
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          {
+            key: content-mapper-conformance,
+            cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}",
+          }
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          version: latest
+          node-version-file: package.json
+          run-install: false
+          cache: true
+          cache-save: false
+      - name: Install pinned dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Build exact official mapper host
+        working-directory: typescript-content-mapper/tsc
+        run: |
+          test "$(git rev-parse HEAD)" = "$CONTENT_MAPPER_TYPESCRIPT_SHA"
+          go build -tags=noembed -trimpath -o "$RUNNER_TEMP/tsgo" ./cmd/tsc
+          cp internal/bundled/libs/*.d.ts "$RUNNER_TEMP/"
+      - name: Run all native and official-host valid invalid repair packets
+        env:
+          VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
+          VIZE_TEST_REQUIRE_TSGO: "1"
+          CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
+          VIZE_UNICODE_PROP_CAPTURE: ${{ github.workspace }}/target/unicode-prop-packets
+        run: |
+          cargo test --locked --profile ci -p vize_canon --lib virtual_ts::props::mappings::tests:: -- --nocapture
+          cargo test --locked --profile ci -p vize_canon --test fix_history_diagnostics unicode_prop_bindings_preserve_complete_authored_diagnostics -- --exact --nocapture
+          cargo test --locked --profile ci -p vize --test integration -- content_mapper_tsgo_cli::unicode_prop_bindings:: --nocapture --test-threads=1
+      - name: Retain complete provider identities
+        if: always()
+        run: |
+          node --input-type=module <<'JS'
+          import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+          import { createHash } from 'node:crypto';
+          import { spawnSync } from 'node:child_process';
+          const identify = path => {
+            const bytes = readFileSync(path), version = spawnSync(path, ['--version']);
+            return { path, sha256: createHash('sha256').update(bytes).digest('hex'), version: { status: version.status, stdout: version.stdout.toString('base64'), stderr: version.stderr.toString('base64') } };
+          };
+          mkdirSync('target/unicode-prop-packets', { recursive: true });
+          const fixture = readFileSync('tests/_fixtures/differential/typechecker/unicode-prop-bindings-10573/cases.json');
+          const receipt = { source: process.env.HEAD_SHA, mapperSource: process.env.CONTENT_MAPPER_TYPESCRIPT_SHA, mapper: identify(`${process.env.RUNNER_TEMP}/tsgo`), native: identify('node_modules/@typescript/typescript-linux-x64/lib/tsc'), cli: identify('target/ci/vize'), fixtureSha256: createHash('sha256').update(fixture).digest('hex') };
+          writeFileSync('target/unicode-prop-packets/providers.json', JSON.stringify(receipt, null, 2) + '\n');
+          JS
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: unicode-prop-packets-${{ env.HEAD_SHA }}-${{ github.run_id }}
+          path: target/unicode-prop-packets/
+          if-no-files-found: error
+          retention-days: 14
+  unaffected-projections:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.HEAD_SHA }}", fetch-depth: 0, persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - name: Compile and run both roles in initially absent isolated targets
+        run: node tools/support/compat/github/unicode-prop-projection-custody.mjs
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: unicode-prop-parity-${{ env.HEAD_SHA }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/unicode-prop-parity/
+          if-no-files-found: error
+          retention-days: 14

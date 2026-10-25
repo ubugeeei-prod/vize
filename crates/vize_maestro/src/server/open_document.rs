@@ -27,6 +27,11 @@ impl MaestroServer {
         };
         #[cfg(feature = "experimental-source-navigation")]
         self.notify_native_navigation(&uri);
+        #[cfg(all(
+            feature = "retained-program",
+            not(feature = "experimental-source-navigation")
+        ))]
+        self.notify_retained_navigation(&uri);
         self.state.update_virtual_docs(&uri, &content);
         // Prepare the owner's disk view at the open boundary. A delayed
         // importer pass must not invalidate this same owner after an editor
@@ -66,6 +71,11 @@ impl MaestroServer {
         self.state.forget_closed_document(&uri);
         #[cfg(feature = "experimental-source-navigation")]
         self.notify_native_navigation(&uri);
+        #[cfg(all(
+            feature = "retained-program",
+            not(feature = "experimental-source-navigation")
+        ))]
+        self.notify_retained_navigation(&uri);
 
         // Clean up virtual documents cache
         self.state.remove_virtual_docs(&uri);

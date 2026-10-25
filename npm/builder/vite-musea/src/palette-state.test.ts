@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  initialPaletteValues,
   clearSavedPaletteState,
   getPaletteStateStorageKey,
   normalizeSavedPaletteState,
@@ -124,3 +125,33 @@ class MemoryStorage implements Storage {
     this.items.set(key, value);
   }
 }
+
+void test("unsupported defaults and functions retain component values instead of invented JSON", () => {
+  const metadata = [
+    { name: "callback", control: "function", required: false, options: [] },
+    {
+      name: "opaque",
+      control: "object",
+      required: false,
+      options: [],
+      unsupported_default: true,
+      default_source: "() => readState()",
+    },
+    { name: "code", control: "text", required: false, options: [], default_value: "007" },
+    { name: "flag", control: "text", required: false, options: [], default_value: "true" },
+    { name: "items", control: "array", required: false, options: [], default_value: ["日本語"] },
+    {
+      name: "data",
+      control: "object",
+      required: false,
+      options: [],
+      default_value: { flag: false },
+    },
+  ];
+  assert.deepEqual(initialPaletteValues(metadata), {
+    code: "007",
+    flag: "true",
+    items: ["日本語"],
+    data: { flag: false },
+  });
+});

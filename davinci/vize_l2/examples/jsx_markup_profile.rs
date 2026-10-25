@@ -20,10 +20,11 @@ fn main() -> Result<(), &'static str> {
         .parse()
         .map_err(|_| "children")?;
     let rounds: usize = args.next().ok_or("rounds")?.parse().map_err(|_| "rounds")?;
-    let layout = match args.next().as_deref() {
-        None | Some("compact") => false,
-        Some("layout") => true,
-        _ => return Err("layout must be compact or layout"),
+    let (layout, fragments) = match args.next().as_deref() {
+        None | Some("compact") => (false, false),
+        Some("layout") => (true, false),
+        Some("fragments") => (false, true),
+        _ => return Err("mode must be compact, layout or fragments"),
     };
     if children > 256 || rounds == 0 {
         return Err("probe bounds: children <=256, rounds >0");
@@ -37,7 +38,13 @@ fn main() -> Result<(), &'static str> {
         if layout {
             source.push_str("\n  ");
         }
+        if fragments {
+            source.push_str("<>");
+        }
         append!(&mut source, "<i data-index=\"{index}\"/>");
+        if fragments {
+            source.push_str("</>");
+        }
     }
     if layout {
         source.push('\n');
@@ -46,7 +53,7 @@ fn main() -> Result<(), &'static str> {
     let block = SourceRoot::new(&source)
         .map_err(|_| "source")?
         .whole_block();
-    let mut phases = [0u128; 4];
+    let mut phases = [0u128; 5];
     for _ in 0..rounds {
         let arena = Allocator::default();
         let at = Instant::now();
@@ -70,13 +77,24 @@ fn main() -> Result<(), &'static str> {
         }
         black_box((&native, &facts));
         let analyzed = at.elapsed().as_nanos();
-        for (sum, next) in phases.iter_mut().zip([parsed, walked, finished, analyzed]) {
+        let at = Instant::now();
+        let boundaries = native.fragment_boundaries().count();
+        if boundaries != if fragments { children * 2 } else { 0 } {
+            return Err("full original fragment boundaries");
+        }
+        black_box(boundaries);
+        let queried = at.elapsed().as_nanos();
+        for (sum, next) in phases
+            .iter_mut()
+            .zip([parsed, walked, finished, analyzed, queried])
+        {
             *sum += next;
         }
     }
-    let [parsed, walked, finished, analyzed] = phases.map(|ns| parse_us(ns) / rounds as f64);
+    let [parsed, walked, finished, analyzed, queried] =
+        phases.map(|ns| parse_us(ns) / rounds as f64);
     println!(
-        "{{\"children\":{children},\"rounds\":{rounds},\"layout\":{layout},\"source_bytes\":{},\"nodes\":{},\"parse_us\":{parsed},\"walk_us\":{walked},\"canonical_us\":{finished},\"analysis_us\":{analyzed}}}",
+        "{{\"children\":{children},\"rounds\":{rounds},\"layout\":{layout},\"fragments\":{fragments},\"source_bytes\":{},\"nodes\":{},\"parse_us\":{parsed},\"walk_us\":{walked},\"canonical_us\":{finished},\"analysis_us\":{analyzed},\"boundary_query_us\":{queried}}}",
         source.len(),
         children + 1
     );

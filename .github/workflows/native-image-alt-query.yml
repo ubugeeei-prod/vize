@@ -1,0 +1,158 @@
+name: Native image-alt query source evidence
+
+on:
+  pull_request:
+    paths:
+      - "crates/vize_patina/src/attribute_policy/**"
+      - "crates/vize_patina/src/native/img_alt.rs"
+      - "crates/vize_patina/src/native/canonical/img_alt.rs"
+      - "crates/vize_patina/examples/native_image_alt_*.rs"
+      - "crates/vize_patina/examples/image_alt_measurement/**"
+      - ".github/workflows/native-image-alt-query.yml"
+
+permissions: { contents: read }
+concurrency:
+  group: native-image-alt-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  source-evidence:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    env:
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      RUSTC_WRAPPER: ""
+      RUSTC_WORKSPACE_WRAPPER: ""
+      BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          {
+            ref: "${{ github.event.pull_request.head.sha }}",
+            fetch-depth: 0,
+            persist-credentials: false,
+          }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version-file: "package.json", package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: native-image-alt-registry-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+      - name: Build immutable source observers before measuring
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ && "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$(git rev-parse HEAD)" == "$HEAD_SHA" ]]
+          capture="$RUNNER_TEMP/native-image-alt"
+          baseline="$RUNNER_TEMP/native-image-alt-base"
+          mkdir -p "$capture"
+          git worktree add --detach "$baseline" "$BASE_SHA"
+          observer=crates/vize_patina/examples/native_image_alt_original.rs
+          support=crates/vize_patina/examples/image_alt_measurement/mod.rs
+          mkdir -p "$baseline/$(dirname "$support")"
+          cp "$observer" "$baseline/$observer"
+          cp "$support" "$baseline/$support"
+          cmp "$observer" "$baseline/$observer"
+          cmp "$support" "$baseline/$support"
+          git -C "$baseline" diff --exit-code -- crates/vize_patina/src Cargo.lock
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- Cargo.lock
+          rustc -Vv > "$capture/rustc.txt"
+          uname -a > "$capture/platform.txt"
+          sha256sum "$observer" "$support" Cargo.lock > "$capture/observer-and-lock.sha256"
+          base_target="$RUNNER_TEMP/native-image-alt-targets/$BASE_SHA"
+          head_target="$RUNNER_TEMP/native-image-alt-targets/$HEAD_SHA"
+          [[ "$base_target" != "$head_target" && ! -e "$base_target" && ! -e "$head_target" ]]
+          printf '%s\n' "$base_target" "$head_target" > "$capture/isolated-targets.txt"
+          (cd "$baseline" && git ls-files crates/vize_patina/src | sort | xargs sha256sum) > "$capture/base-production.sha256"
+          git ls-files crates/vize_patina/src | sort | xargs sha256sum > "$capture/head-production.sha256"
+          flags=(--locked --profile ci-opt -p vize_patina --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16')
+          (cd "$baseline" && CARGO_TARGET_DIR="$base_target" cargo build "${flags[@]}" --verbose --message-format=json --example native_image_alt_original) > "$capture/base-build.jsonl" 2> "$capture/base-build.stderr"
+          cp "$base_target/ci-opt/examples/native_image_alt_original" "$capture/base-observer"
+          CARGO_TARGET_DIR="$head_target" cargo build "${flags[@]}" --verbose --message-format=json --example native_image_alt_original --example native_image_alt_canonical > "$capture/head-build.jsonl" 2> "$capture/head-build.stderr"
+          CARGO_TARGET_DIR="$head_target" cargo clippy "${flags[@]}" --lib --example native_image_alt_original --example native_image_alt_canonical -- -D warnings > "$capture/head-clippy.log" 2>&1
+          cp "$head_target/ci-opt/examples/native_image_alt_original" "$capture/head-observer"
+          cp "$head_target/ci-opt/examples/native_image_alt_canonical" "$capture/canonical-observer"
+          sha256sum "$capture/"*-observer > "$capture/executables.sha256"
+      - name: Observe original-owner before and after, then independent canonical phases
+        shell: bash
+        run: |
+          set -euo pipefail
+          capture="$RUNNER_TEMP/native-image-alt"
+          "$capture/base-observer" > "$capture/base.json" 2> "$capture/base.stderr"
+          "$capture/head-observer" > "$capture/head.json" 2> "$capture/head.stderr"
+          "$capture/canonical-observer" > "$capture/canonical.json" 2> "$capture/canonical.stderr"
+      - name: Require full original-owner packet equality and explicit phase custody
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { createHash } from 'node:crypto';
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const directory = `${process.env.RUNNER_TEMP}/native-image-alt`;
+          const read = name => JSON.parse(readFileSync(`${directory}/${name}.json`));
+          const base = read('base'), head = read('head'), canonical = read('canonical');
+          assert.equal(base.source, head.source);
+          assert.equal(base.representation, head.representation);
+          assert.equal(base.phase, 'patina.native.original.img_alt.observer');
+          assert.equal(head.phase, base.phase);
+          assert.deepEqual(head.packets, base.packets, 'complete original-header diagnostic packets');
+          assert.equal(head.packets.length, 16);
+          assert.equal(canonical.length, 3);
+          assert.deepEqual(canonical.map(row => row.representation), [
+            'Vue NativeSfc canonical File',
+            'JSX JsxMarkupFile same-Program canonical File',
+            'TSX JsxMarkupFile same-Program canonical File',
+          ]);
+          for (const row of [base, head, ...canonical]) {
+            assert.equal(row.packets.length, 16);
+            assert.equal(row.samples.length, 9);
+            for (const sample of row.samples) {
+              assert.equal(sample.calls, 500);
+              assert.ok(sample.average_ns > 0);
+            }
+          }
+          for (const row of canonical) assert.equal(row.phase, 'patina.native.canonical.img_alt');
+          const hash = name => createHash('sha256').update(readFileSync(`${directory}/${name}`)).digest('hex');
+          const targets = readFileSync(`${directory}/isolated-targets.txt`, 'utf8').trim().split('\n');
+          assert.equal(targets.length, 2);
+          assert.notEqual(targets[0], targets[1]);
+          const compiled = ['base', 'head'].map((epoch, index) => {
+            const messages = readFileSync(`${directory}/${epoch}-build.jsonl`, 'utf8').trim().split('\n').map(line => JSON.parse(line));
+            const library = messages.filter(row => row.reason === 'compiler-artifact' && row.target.name === 'vize_patina' && row.target.kind.includes('lib'));
+            assert.equal(library.length, 1);
+            assert.equal(library[0].fresh, false, `${epoch} Patina must compile from its own source`);
+            assert.ok(library[0].filenames.every(file => file.startsWith(`${targets[index]}/`)));
+            const root = epoch === 'base' ? `${process.env.RUNNER_TEMP}/native-image-alt-base` : process.env.GITHUB_WORKSPACE;
+            assert.equal(library[0].target.src_path, `${root}/crates/vize_patina/src/lib.rs`);
+            assert.ok(library[0].package_id.startsWith(`path+file://${root}/crates/vize_patina#`));
+            return { epoch, packageId: library[0].package_id, source: library[0].target.src_path,
+              filenames: library[0].filenames, fresh: library[0].fresh };
+          });
+          const receipt = { base: process.env.BASE_SHA, head: process.env.HEAD_SHA,
+            originalPacketEquality: true, baseCaptureSha256: hash('base.json'),
+            headCaptureSha256: hash('head.json'), canonicalCaptureSha256: hash('canonical.json'),
+            originalOwner: head.representation, canonicalOwners: canonical.map(row => row.representation),
+            isolatedCompiledTargets: targets, compiledLibraries: compiled,
+            baseProductionSha256: hash('base-production.sha256'), headProductionSha256: hash('head-production.sha256'),
+            profile: 'ci-opt: release, thin LTO, 16 codegen units',
+            crossRepresentationRatioAsserted: false, defaultDriverMigrationAsserted: false,
+            wholeProductPerformanceAsserted: false };
+          writeFileSync(`${directory}/receipt.json`, JSON.stringify(receipt, null, 2) + '\n');
+          console.log(JSON.stringify(receipt));
+          JS
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: native-image-alt-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/native-image-alt
+          if-no-files-found: error
+          retention-days: 7

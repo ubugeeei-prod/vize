@@ -1,0 +1,80 @@
+name: Cross-file SFC effect graphs
+run-name: Cross-file SFC effects @ ${{ github.event.pull_request.head.sha || github.sha }}
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - .github/workflows/cross-file-sfc-effects.yml
+      - crates/vize/src/commands/lint/cross_file.rs
+      - crates/vize/src/commands/lint/cross_file/**
+      - tests/tooling/support/cross-file-sfc-effects.ts
+      - tests/tooling/support/cross-file-sfc-effects/**
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cross-file-sfc-effects-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_INCREMENTAL: "0"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  EXPECTED_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  actual-cli-packets:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with:
+          toolchain: "1.99.1"
+          components: clippy
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: cross-file-sfc-effects
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Install frozen workspace tools
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Build and receipt the actual source CLI
+        run: |
+          cargo build --locked --profile ci -p vize
+          node tests/differential/build-receipt.ts
+      - name: Verify descriptor and complete report regressions
+        run: |
+          mkdir -p target/vize-tests/cross-file-sfc-effects
+          cargo test --locked --profile ci -p vize --lib -- commands::lint::cross_file::effect_summary_tests:: --nocapture > target/vize-tests/cross-file-sfc-effects/rust.stdout 2> target/vize-tests/cross-file-sfc-effects/rust.stderr
+          cat target/vize-tests/cross-file-sfc-effects/rust.stdout
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          const raw = fs.readFileSync('target/vize-tests/cross-file-sfc-effects/rust.stdout', 'utf8');
+          assert.match(raw, /test result: ok\. 5 passed; 0 failed; 0 ignored;/u);
+          JS
+      - name: Compare complete public and source CLI packets with the actual WASM reference
+        run: node tests/tooling/support/cross-file-sfc-effects.ts
+      - name: Preserve complete packets, provider identities and phase profiles
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cross-file-sfc-effects-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            target/ci/vize.differential-build.json
+            target/vize-tests/cross-file-sfc-effects
+          if-no-files-found: error
+          retention-days: 14

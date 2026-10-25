@@ -1,0 +1,7 @@
+<script setup lang="ts">
+type Fields = { café: string }
+defineProps<Pick<Fields, 'café'>>()
+</script>
+<template>
+  <div>{{ café }}</div>
+</template>

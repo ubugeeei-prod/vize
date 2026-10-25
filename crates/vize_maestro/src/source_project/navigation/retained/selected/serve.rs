@@ -14,6 +14,7 @@ pub(super) fn run(
             break;
         }
         match command {
+            Command::IntrinsicTag(request) => request.refuse(NavigationRefusal::Language),
             Command::ModuleLinks(request) => request.refuse(NavigationRefusal::Language),
             Command::LinkedEditing(request) => request.refuse(NavigationRefusal::Language),
             Command::Highlights(request) => {

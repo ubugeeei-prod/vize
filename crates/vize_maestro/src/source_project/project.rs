@@ -11,7 +11,7 @@ mod tests;
 mod tracked;
 
 use std::sync::Arc;
-#[cfg(feature = "experimental-source-navigation")]
+#[cfg(feature = "retained-program")]
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::{AtomicU64, Ordering};
 
@@ -37,7 +37,7 @@ struct ActiveQuery {
 #[derive(Default)]
 struct ActiveQueries(
     Mutex<Vec<ActiveQuery>>,
-    #[cfg(feature = "experimental-source-navigation")] AtomicBool,
+    #[cfg(feature = "retained-program")] AtomicBool,
 );
 
 impl ActiveQueries {
@@ -80,7 +80,7 @@ impl<'host> SourceQueryProject<'host> {
         uri: &Url,
     ) -> Result<(ProjectQuery<'host>, AbortHandle), SnapshotRefusal> {
         let _lifecycle = self.lifecycle.lock();
-        #[cfg(feature = "experimental-source-navigation")]
+        #[cfg(feature = "retained-program")]
         if self.active.1.load(Ordering::Acquire) || self.host.project_retired() {
             return Err(SnapshotRefusal::Superseded);
         }
@@ -173,12 +173,12 @@ impl<'host> SourceQueryProject<'host> {
         self.active.remove_for(uri)
     }
 
-    #[cfg(feature = "experimental-source-navigation")]
+    #[cfg(feature = "retained-program")]
     pub(crate) fn mark_retired(&self) {
         self.active.1.store(true, Ordering::Release);
     }
 
-    #[cfg(feature = "experimental-source-navigation")]
+    #[cfg(feature = "retained-program")]
     pub(crate) fn retire(&self) {
         self.mark_retired();
         let aborted = {

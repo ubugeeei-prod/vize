@@ -1,0 +1,46 @@
+[
+  {
+    "position": {
+      "line": 3,
+      "character": 42
+    },
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\nconst __vizeDomElement: HTMLButtonElement\n```\n\nProvides an interactive button that can trigger an action or submit a form.\n\n**Docs**\n\n[MDN reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/button)\n\n[HTML Living Standard](https://html.spec.whatwg.org/multipage/form-elements.html#the-button-element)"
+      },
+      "range": {
+        "start": {
+          "line": 3,
+          "character": 41
+        },
+        "end": {
+          "line": 3,
+          "character": 47
+        }
+      }
+    }
+  },
+  {
+    "position": {
+      "line": 3,
+      "character": 85
+    },
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\nconst __vizeDomElement: HTMLInputElement\n```\n\nProvides a form control whose behavior depends on its type.\n\n**HTML syntax**\n\nVoid elements do not have child content or an end tag.\n\n**Docs**\n\n[MDN reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input)\n\n[HTML Living Standard](https://html.spec.whatwg.org/multipage/input.html#the-input-element)"
+      },
+      "range": {
+        "start": {
+          "line": 3,
+          "character": 84
+        },
+        "end": {
+          "line": 3,
+          "character": 89
+        }
+      }
+    }
+  }
+]
