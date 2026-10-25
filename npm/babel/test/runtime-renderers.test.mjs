@@ -16,7 +16,16 @@ import {
 
 let configured;
 const compilers = new Map();
-for (const runtimeSpec of runtimeSpecs)
+const role = process.env.VIZE_BABEL_RUNTIME_ROLE ?? "supported";
+assert(
+  ["supported", "frontier", "all"].includes(role),
+  "explicit supported/frontier/all runtime role",
+);
+const selected = runtimeSpecs.filter(
+  (spec) => role === "all" || (role === "frontier" ? spec.id === "rc9" : spec.id !== "rc9"),
+);
+assert.equal(selected.length, role === "all" ? 3 : role === "frontier" ? 1 : 2);
+for (const runtimeSpec of selected)
   for (const hostSpec of hostSpecs)
     for (const format of ["esm", "cjs"]) {
       const id = runtimeSpec.id + "-babel" + hostSpec.major + "-" + format;
@@ -32,6 +41,7 @@ for (const runtimeSpec of runtimeSpecs)
           compiler,
           runtime,
           format,
+          qualificationRole: role,
           report: path.join(configured.output, id + ".json"),
         };
         const inputFile = path.join(configured.output, id + ".input.json");
