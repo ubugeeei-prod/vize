@@ -354,4 +354,6 @@ fn is_valid_identifier(s: &str) -> bool {
 #[cfg(test)]
 mod optional_spacing_tests;
 #[cfg(test)]
+mod readonly_primitive_tests;
+#[cfg(test)]
 mod tests;

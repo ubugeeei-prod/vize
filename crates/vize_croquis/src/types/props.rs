@@ -93,16 +93,21 @@ impl TypeResolver {
         }
 
         let colon_pos = trimmed.find(':')?;
-        let name_part = trimmed.get(..colon_pos).unwrap_or_default().trim_end();
+        let raw_name_part = trimmed.get(..colon_pos).unwrap_or_default();
+        let name_part = raw_name_part.trim_end();
         let type_part = trimmed.get(colon_pos + 1..).unwrap_or_default();
         let optional = name_part.ends_with('?');
         let name = name_part.trim().trim_end_matches('?').trim();
 
-        if !is_valid_identifier(name) {
+        let name = if is_valid_identifier(name) {
+            name
+        } else if let Some(name) = borrowed_readonly_primitive_name(raw_name_part, type_part) {
+            name
+        } else {
             self.literal_member_parse_calls
                 .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
             return literal::parse(trimmed);
-        }
+        };
 
         Some(TypeProperty {
             name: CompactString::new(name),
@@ -110,6 +115,38 @@ impl TypeResolver {
             optional,
         })
     }
+}
+
+/// Only a closed, proven member grammar can skip whole-member validation.
+/// Complex types and exotic keys retain the parser's cooked-name/refusal rules.
+fn borrowed_readonly_primitive_name<'a>(name_part: &'a str, type_part: &str) -> Option<&'a str> {
+    // Non-ASCII trivia stays with the parser: Rust and TypeScript whitespace differ.
+    let suffix = name_part.strip_prefix("readonly")?;
+    let member = suffix.trim_ascii_start();
+    if suffix.len() == member.len() {
+        return None;
+    }
+    if !matches!(
+        type_part.trim_ascii(),
+        "number"
+            | "string"
+            | "boolean"
+            | "bigint"
+            | "symbol"
+            | "object"
+            | "unknown"
+            | "never"
+            | "any"
+            | "undefined"
+            | "null"
+            | "void"
+    ) {
+        return None;
+    }
+    // Remove at most one token: malformed `foo??` must reach the parser.
+    let member = member.trim_ascii_end();
+    let name = member.strip_suffix('?').unwrap_or(member).trim_ascii_end();
+    is_valid_identifier(name).then_some(name)
 }
 
 fn push_unique_properties(

@@ -56,8 +56,8 @@ fn borrowed_ascii_members_match_the_actual_parser_with_lf_and_crlf() {
         );
         assert_eq!(
             resolver.literal_member_parse_calls(),
-            4,
-            "only readonly/quoted/Unicode members use the existing AST fallback"
+            3,
+            "only quoted/Unicode members use the existing AST fallback"
         );
     }
 }
