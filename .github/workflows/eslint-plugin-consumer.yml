@@ -112,12 +112,22 @@ jobs:
           const consumer = process.env.VIZE_ESLINT_PACKED_CONSUMER;
           writeFileSync(join(consumer, 'package.json'), JSON.stringify({ private: true, type: 'module' }));
           const packages = readdirSync(process.env.VIZE_ESLINT_EVIDENCE).filter(file => file.endsWith('.tgz')).map(file => resolve(process.env.VIZE_ESLINT_EVIDENCE, file));
-          execFileSync('vp', ['exec', 'pnpm', 'add', '--ignore-scripts', '--no-optional', '--lockfile=false', ...packages, 'eslint@10.13.0', 'typescript@6.0.3'], { cwd: consumer, stdio: 'inherit' });
+          execFileSync('vp', ['exec', 'pnpm', 'add', '--ignore-scripts', '--no-optional', '--save-exact', ...packages, 'eslint@10.13.0', 'typescript@6.0.3'], { cwd: consumer, stdio: 'inherit' });
           mkdirSync(join(consumer, 'node_modules/@vizejs'), { recursive: true });
           symlinkSync(join(root, 'npm/native'), join(consumer, 'node_modules/@vizejs/native'), 'dir');
           JS
           cp npm/eslint/test/packed-consumer.mjs "$VIZE_ESLINT_PACKED_CONSUMER/consumer.mjs"
           (cd "$VIZE_ESLINT_PACKED_CONSUMER" && node consumer.mjs) > "$VIZE_ESLINT_EVIDENCE/packed-consumer.json"
+          cp "$VIZE_ESLINT_PACKED_CONSUMER/package.json" "$VIZE_ESLINT_EVIDENCE/packed-package.json"
+          cp "$VIZE_ESLINT_PACKED_CONSUMER/pnpm-lock.yaml" "$VIZE_ESLINT_EVIDENCE/packed-pnpm-lock.yaml"
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { readFileSync } from 'node:fs';
+          const source = JSON.parse(readFileSync(`${process.env.VIZE_ESLINT_EVIDENCE}/consumer.json`));
+          const packed = JSON.parse(readFileSync(`${process.env.VIZE_ESLINT_EVIDENCE}/packed-consumer.json`));
+          assert.equal(packed.nativeBuildToken, source.nativeBuildToken);
+          assert.deepEqual(packed.nativeImages, source.nativeImages);
+          JS
       - name: Retain complete source-native packets, raw traces and timings
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
