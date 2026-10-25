@@ -10,7 +10,7 @@ The dedicated workflow builds the actual pinned baseline and literal PR head wit
 - 48 CSSOM review packets: six refused vectors preserve their old runtime operations; two ordinary/important controls prove static component output.
 - 48 attribute-case/order packets, all preserving their complete old outputs.
 - Four complete SFC DTOs: Vapor CSR uses the static template; the other target combinations remain unchanged.
-- Eight complete independent UTF-16 map arrays, including same-line astral characters and CRLF edits, with wrong aggregate origins, foreign source content and stale generated columns rejected.
+- Ten complete independent UTF-16 map arrays, preserving the original eight inputs and adding two HTML-entity/static-reference controls, including same-line astral characters and CRLF edits, with wrong aggregate origins, foreign source content and stale generated columns rejected.
 
 Generated CSS maps to its actual authored style name and whole expression span. A direct template RootNode owns the complete input beginning at zero; a JSX root retains its actual module offset. The template map witness does not qualify authored JSX module maps. That additional boundary belongs to the composed authored-module and actual Babel host campaigns.
 
