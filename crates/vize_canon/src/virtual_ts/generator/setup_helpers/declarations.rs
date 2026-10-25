@@ -37,6 +37,7 @@ impl SetupHelperPlan {
         &self,
         ts: &mut String,
         summary: &Croquis,
+        generic_parameters: Option<&crate::virtual_ts::generic_parameters::GenericParameters>,
     ) -> Option<String> {
         let emits = summary
             .macros
@@ -57,7 +58,7 @@ impl SetupHelperPlan {
             }
         });
         let models = (!self.shadowed.contains("defineModel"))
-            .then(|| super::super::emits::template_model_emit_type(summary))
+            .then(|| super::super::emits::template_model_emit_type(summary, generic_parameters))
             .flatten();
         let ty = match (base, models) {
             (Some(base), Some(models)) => vize_carton::cstr!("{base} & {models}"),

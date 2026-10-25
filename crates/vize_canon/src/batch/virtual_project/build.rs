@@ -169,6 +169,7 @@ pub(super) fn build_vue_registered_file(
         )
     )?;
     let GeneratedVueFile {
+        generic_copies: _,
         mut code,
         mut mappings,
         mapping_meta,

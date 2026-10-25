@@ -1,80 +1,140 @@
 //! Map `<script setup generic="...">` through its generated copies.
 //!
-//! The generator repeats the authored type-parameter list in every signature
-//! that must stay generic (setup, `Props`, the component contract), adding
-//! `= any` defaults or dropping `const` where a position requires it, and
-//! instantiates `Props` with the constraints as fallback arguments. None of
-//! those copies had a mapping, so one bad constraint surfaced as one unmapped
-//! diagnostic per copy (#9753). The setup signature copy now maps its
-//! parameters back to the attribute; the rest are echoes whose diagnostics
-//! that copy already reports, so the content mapper suppresses them.
+//! One parser-owned parameter plan supplies the exact rendered spellings and
+//! relative mapping rows. The setup signature owns authored diagnostics; the
+//! other generated copies are echoes of that same authored list.
 
 use std::ops::Range;
 
-use vize_atelier_sfc::SfcDescriptor;
-
+use crate::virtual_ts::generic_parameters::GenericParameters;
 use crate::virtual_ts::{ProjectionFeatures, ProjectionMeta, VizeMapping};
 
-/// One authored type parameter: `name extends constraint` and its default.
-struct Param<'a> {
-    core: (&'a str, Range<usize>),
-    constraint: Option<&'a str>,
-    default: Option<(&'a str, Range<usize>)>,
+/// Generated copies of one authored parameter list. Preparation happens before
+/// mapping the reporting copy, so both mapping and suppression share ownership.
+pub(in crate::batch::virtual_project) struct GenericCopies {
+    pub(in crate::batch::virtual_project) attribute: Range<usize>,
+    copies: Vec<GenericCopy>,
 }
 
-/// Unmapped generated copies of the authored parameter list.
-pub(in crate::batch::virtual_project) struct GenericCopies {
-    /// The authored attribute value.
-    pub(in crate::batch::virtual_project) attribute: Range<usize>,
-    /// Each copy's `[typeof ]Name<...>` and its parameter rows, if it declares them.
-    copies: Vec<(Range<usize>, Option<Vec<Row>>)>,
+struct GenericCopy {
+    range: Range<usize>,
+    rows: Option<Vec<Row>>,
+    reporting: bool,
 }
+
+type Row = (Range<usize>, Range<usize>);
 
 impl GenericCopies {
     pub(in crate::batch::virtual_project) fn find(
         code: &str,
         mappings: &[VizeMapping],
-        source: &str,
-        descriptor: &SfcDescriptor<'_>,
+        parameters: &GenericParameters,
+        attribute: Range<usize>,
     ) -> Option<Self> {
-        let block = descriptor.script_setup.as_ref()?;
-        let attribute = attribute_value(source, block.loc.tag_start..block.loc.start, "generic")?;
-        let params: Vec<_> = list_items(source, attribute.clone())
-            .into_iter()
-            .filter_map(|item| authored_param(source, item))
-            .collect();
-        if params.is_empty() {
-            return None;
-        }
         let mut covered: Vec<_> = mappings.iter().map(|row| row.gen_range.clone()).collect();
         covered.sort_by_key(|range| range.start);
         let mut copies = Vec::new();
-        for (open, _) in code.match_indices('<') {
-            let Some(list) = generated_list(code, open + 1) else {
-                continue;
-            };
-            let items = list_items(code, list.clone());
-            let after = covered.partition_point(|row| row.start <= list.end);
-            if items.len() != params.len()
-                || covered
-                    .get(..after)
-                    .is_some_and(|rows| rows.iter().any(|row| open < row.end))
+        // Match complete, already-rendered lists. Quoted commas, nested types,
+        // arrows and comments remain opaque here; OXC prepared their ranges.
+        for (rendered, rows) in parameters.declaration_variants() {
+            for list in exact_lists(code, rendered) {
+                if overlaps_mapped(&covered, list.clone()) {
+                    continue;
+                }
+                let start = list.start + 1;
+                copies.push(GenericCopy {
+                    range: instantiation(code, list.start)..list.end,
+                    rows: Some(
+                        rows.iter()
+                            .map(|(generated, authored)| {
+                                (
+                                    start + generated.start..start + generated.end,
+                                    attribute.start + authored.start
+                                        ..attribute.start + authored.end,
+                                )
+                            })
+                            .collect(),
+                    ),
+                    reporting: false,
+                });
+            }
+        }
+        // Only a repeated authored constraint can carry an echoed diagnostic.
+        // Bare names or unconstrained `unknown`/`any` arguments can occur in
+        // unrelated generated helpers and do not establish that ownership.
+        if parameters.has_repeated_fallback_constraint() {
+            for list in exact_lists(code, &parameters.fallback) {
+                if overlaps_mapped(&covered, list.clone()) {
+                    continue;
+                }
+                copies.push(GenericCopy {
+                    range: instantiation(code, list.start)..list.end,
+                    rows: None,
+                    reporting: false,
+                });
+            }
+        }
+        // Prefer declaration rows when spellings coincide. Outer lists own any
+        // matching list nested inside their constraints/defaults, preventing an
+        // inner `Foo<T>` from suppressing the reporting signature around it.
+        copies.sort_by(|left, right| {
+            left.range
+                .start
+                .cmp(&right.range.start)
+                .then_with(|| right.range.end.cmp(&left.range.end))
+                .then_with(|| right.rows.is_some().cmp(&left.rows.is_some()))
+        });
+        let mut retained: Vec<GenericCopy> = Vec::new();
+        for mut copy in copies {
+            if retained
+                .last()
+                .is_some_and(|last| copy.range.start < last.range.end)
             {
                 continue;
             }
-            if let Some(rows) = declaration_rows(code, &items, &params) {
-                copies.push((instantiation(code, open)..list.end + 1, Some(rows)));
-            } else if is_fallback_argument_list(code, &items, &params) {
-                copies.push((instantiation(code, open)..list.end + 1, None));
-            }
+            copy.reporting = copy.rows.is_some() && is_setup_copy(code, &copy.range);
+            retained.push(copy);
         }
-        (!copies.is_empty()).then_some(Self { attribute, copies })
+        (!retained.is_empty()).then_some(Self {
+            attribute,
+            copies: retained,
+        })
     }
 
-    /// Generated ranges whose diagnostics repeat another copy's.
+    /// Generated ranges whose diagnostics repeat the setup signature's.
     pub(in crate::batch::virtual_project) fn echoes(&self) -> impl Iterator<Item = &Range<usize>> {
-        self.copies.iter().map(|(list, _)| list)
+        self.copies
+            .iter()
+            .filter(|copy| !copy.reporting)
+            .map(|copy| &copy.range)
     }
+
+    pub(in crate::batch::virtual_project) fn shift_generated(&mut self, offset: usize) {
+        for copy in &mut self.copies {
+            copy.range.start += offset;
+            copy.range.end += offset;
+            for (generated, _) in copy.rows.iter_mut().flatten() {
+                generated.start += offset;
+                generated.end += offset;
+            }
+        }
+    }
+}
+
+fn exact_lists<'a>(code: &'a str, rendered: &'a str) -> impl Iterator<Item = Range<usize>> + 'a {
+    code.match_indices(rendered).filter_map(move |(start, _)| {
+        let open = start.checked_sub(1)?;
+        let end = start + rendered.len();
+        (code.as_bytes().get(open) == Some(&b'<') && code.as_bytes().get(end) == Some(&b'>'))
+            .then_some(open..end + 1)
+    })
+}
+
+fn overlaps_mapped(covered: &[Range<usize>], list: Range<usize>) -> bool {
+    let after = covered.partition_point(|row| row.start < list.end);
+    covered
+        .get(..after)
+        .is_some_and(|rows| rows.iter().any(|row| list.start < row.end))
 }
 
 /// Diagnostics on `Name<...>` (arity, `typeof` constraints) belong to the
@@ -86,21 +146,26 @@ fn instantiation(code: &str, open: usize) -> usize {
     name.strip_suffix("typeof ").unwrap_or(name).len()
 }
 
+fn is_setup_copy(code: &str, copy: &Range<usize>) -> bool {
+    code.get(..copy.start)
+        .is_some_and(|before| before.ends_with("function "))
+        && code
+            .get(copy.start..)
+            .is_some_and(|after| after.starts_with("__setup<"))
+}
+
 /// Map the setup signature copy back to the attribute, diagnostics only.
 pub(super) fn map_generic_attribute(
     code: &str,
     mappings: &mut Vec<VizeMapping>,
     meta: &mut Vec<ProjectionMeta>,
-    source: &str,
-    descriptor: &SfcDescriptor<'_>,
+    copies: Option<&GenericCopies>,
 ) {
-    let Some(rows) = GenericCopies::find(code, mappings, source, descriptor).and_then(|found| {
-        found.copies.into_iter().find_map(|(copy, rows)| {
-            // The setup function is the scope the authored parameters belong
-            // to; other copies can carry artifacts such as an unused `T`.
-            let setup = code.get(..copy.start)?.ends_with("function ")
-                && code.get(copy.start..)?.starts_with("__setup<");
-            setup.then_some(rows).flatten()
+    let Some(rows) = copies.and_then(|copies| {
+        copies.copies.iter().find_map(|copy| {
+            (copy.reporting && is_setup_copy(code, &copy.range))
+                .then_some(copy.rows.as_ref())
+                .flatten()
         })
     }) else {
         return;
@@ -108,8 +173,8 @@ pub(super) fn map_generic_attribute(
     meta.resize(mappings.len(), ProjectionMeta::default());
     for (gen_range, src_range) in rows {
         mappings.push(VizeMapping {
-            gen_range,
-            src_range,
+            gen_range: gen_range.clone(),
+            src_range: src_range.clone(),
             sub_spans: Vec::new(),
         });
         meta.push(ProjectionMeta {
@@ -119,186 +184,17 @@ pub(super) fn map_generic_attribute(
     }
 }
 
-type Row = (Range<usize>, Range<usize>);
-
-/// A generated type-parameter list equal to the authored one up to `const`
-/// modifiers and synthetic `= any` defaults.
-fn declaration_rows(code: &str, items: &[Range<usize>], params: &[Param<'_>]) -> Option<Vec<Row>> {
-    let mut rows = Vec::new();
-    for (item, param) in items.iter().zip(params) {
-        let (core, default) = split_default(code, without_const(code, item.clone()));
-        if code.get(core.clone())? != param.core.0 {
-            return None;
-        }
-        rows.push((core, param.core.1.clone()));
-        match (default, &param.default) {
-            (Some(generated), Some((text, authored))) if code.get(generated.clone())? == *text => {
-                rows.push((generated, authored.clone()));
-            }
-            (None, None) => {}
-            (Some(generated), None) if code.get(generated.clone())? == "any" => {}
-            _ => return None,
-        }
-    }
-    Some(rows)
-}
-
-/// `Props<C1, C2>`: each argument is its parameter's constraint, or the
-/// `any` / `unknown` the generator substitutes when there is none to repeat.
-fn is_fallback_argument_list(code: &str, items: &[Range<usize>], params: &[Param<'_>]) -> bool {
-    let mut repeats_constraint = false;
-    for (item, param) in items.iter().zip(params) {
-        let text = code.get(trimmed(code, item.clone())).unwrap_or_default();
-        if param
-            .constraint
-            .is_some_and(|constraint| text == constraint)
-        {
-            repeats_constraint = true;
-        } else if !matches!(text, "any" | "unknown") {
-            return false;
-        }
-    }
-    repeats_constraint
-}
-
-fn authored_param(source: &str, item: Range<usize>) -> Option<Param<'_>> {
-    let (core, default) = split_default(source, without_const(source, item));
-    let piece = |range: Range<usize>| Some((source.get(range.clone())?, range));
-    let text = source.get(core.clone())?;
-    let constraint = text
-        .match_indices("extends")
-        .find(|(at, _)| {
-            let spaced = |byte: Option<&u8>| byte.is_some_and(u8::is_ascii_whitespace);
-            spaced(text.as_bytes().get(at.wrapping_sub(1)))
-                && spaced(text.as_bytes().get(at + "extends".len()))
-        })
-        .and_then(|(at, _)| {
-            source.get(trimmed(source, core.start + at + "extends".len()..core.end))
-        });
-    Some(Param {
-        core: piece(core)?,
-        constraint,
-        default: default.and_then(piece),
-    })
-}
-
-/// A parameter without its leading `const` modifier.
-fn without_const(text: &str, item: Range<usize>) -> Range<usize> {
-    let item = trimmed(text, item);
-    text.get(item.clone())
-        .and_then(|param| param.strip_prefix("const"))
-        .filter(|rest| rest.starts_with(|ch: char| ch.is_ascii_whitespace()))
-        .map_or(item.clone(), |rest| {
-            item.end - rest.trim_start().len()..item.end
-        })
-}
-
-/// Split `core = default` at its depth-0 `=` (never an `=>` arrow).
-fn split_default(text: &str, item: Range<usize>) -> (Range<usize>, Option<Range<usize>>) {
-    let bytes = text.as_bytes();
-    let mut depth = 0i32;
-    let mut index = item.start;
-    while index < item.end {
-        match bytes.get(index) {
-            Some(b'<' | b'(' | b'[' | b'{') => depth += 1,
-            Some(b'>' | b')' | b']' | b'}') => depth -= 1,
-            Some(b'=') if bytes.get(index + 1) == Some(&b'>') => index += 1,
-            Some(b'=') if depth == 0 => {
-                return (
-                    trimmed(text, item.start..index),
-                    Some(trimmed(text, index + 1..item.end)),
-                );
-            }
-            _ => {}
-        }
-        index += 1;
-    }
-    (trimmed(text, item), None)
-}
-
-/// The body of the `<...>` list opened just before `start`.
-fn generated_list(code: &str, start: usize) -> Option<Range<usize>> {
-    let bytes = code.as_bytes();
-    let mut depth = 0i32;
-    let mut index = start;
-    while let Some(&byte) = bytes.get(index) {
-        match byte {
-            b'=' if bytes.get(index + 1) == Some(&b'>') => index += 1,
-            b'<' | b'(' | b'[' | b'{' => depth += 1,
-            b'>' if depth == 0 => return Some(start..index),
-            b'>' | b')' | b']' | b'}' => depth -= 1,
-            b';' if depth == 0 => return None,
-            _ => {}
-        }
-        index += 1;
-    }
-    None
-}
-
-fn list_items(text: &str, list: Range<usize>) -> Vec<Range<usize>> {
-    let bytes = text.as_bytes();
-    let mut items = Vec::new();
-    let mut depth = 0i32;
-    let mut start = list.start;
-    let mut index = list.start;
-    while index < list.end {
-        match bytes.get(index) {
-            Some(b'=') if bytes.get(index + 1) == Some(&b'>') => index += 1,
-            Some(b'<' | b'(' | b'[' | b'{') => depth += 1,
-            Some(b'>' | b')' | b']' | b'}') => depth -= 1,
-            Some(b',') if depth == 0 => {
-                items.push(start..index);
-                start = index + 1;
-            }
-            _ => {}
-        }
-        index += 1;
-    }
-    items.push(start..list.end);
-    items
-}
-
-fn trimmed(text: &str, range: Range<usize>) -> Range<usize> {
-    let Some(slice) = text.get(range.clone()) else {
-        return range;
-    };
-    let start = range.start + slice.len() - slice.trim_start().len();
-    let end = range.end - (slice.len() - slice.trim_end().len());
-    start..end.max(start)
-}
-
-/// The quoted value of `name="..."` inside an opening tag.
-fn attribute_value(source: &str, tag: Range<usize>, name: &str) -> Option<Range<usize>> {
-    let text = source.get(tag.clone())?;
-    let bytes = text.as_bytes();
-    let mut from = 0;
-    while let Some(found) = text.get(from..)?.find(name) {
-        let start = from + found;
-        let end = start + name.len();
-        from = end;
-        if !crate::text_scan::byte_before(bytes, start).is_some_and(|b| b.is_ascii_whitespace()) {
-            continue;
-        }
-        let rest = text.get(end..)?.trim_start();
-        let Some(value) = rest.strip_prefix('=').map(str::trim_start) else {
-            continue;
-        };
-        let quote = *value.as_bytes().first()?;
-        if !matches!(quote, b'"' | b'\'') {
-            return None;
-        }
-        let value_start = tag.start + text.len() - value.len() + 1;
-        let length = value.get(1..)?.find(quote as char)?;
-        return Some(value_start..value_start + length);
-    }
-    None
-}
+#[cfg(test)]
+pub(crate) use crate::virtual_ts::generic_parameters::attribute_value;
 
 #[cfg(test)]
 mod tests {
     use std::path::Path;
 
     use crate::batch::generate_vue_content_mapper_transform;
+    use crate::virtual_ts::generic_parameters::GenericParameters;
+
+    use super::{GenericCopies, map_generic_attribute};
 
     /// One generated copy of `authored` maps onto the attribute and every other
     /// copy is an ignored echo, so each authored error reports once (#9753).
@@ -324,6 +220,11 @@ mod tests {
                 .find(|span| span[0] <= copy && copy + authored.len() <= span[0] + span[1]);
             if let Some([start, _, original_start, _, kind, _]) = span {
                 assert_eq!((kind, original_start + copy - start), (0, original));
+                assert!(
+                    echoes
+                        .iter()
+                        .all(|echo| { copy + authored.len() <= echo.start || echo.end <= copy })
+                );
                 reporting += 1;
             } else {
                 assert!(
@@ -345,5 +246,124 @@ mod tests {
         assert_one_reporting_copy("T extends string = MissingDefault", "MissingDefault");
         assert_one_reporting_copy("const T extends MissingConst", "MissingConst");
         assert_one_reporting_copy("T extends\n  MissingMulti,\n  U", "MissingMulti");
+    }
+
+    #[test]
+    fn quoted_and_template_commas_keep_one_reporting_copy() {
+        assert_one_reporting_copy(
+            "T extends 'a,b' = MissingQuotedDefault, U",
+            "MissingQuotedDefault",
+        );
+        assert_one_reporting_copy(
+            "T extends `a,${MissingTemplate}`, U = 'c,d'",
+            "MissingTemplate",
+        );
+    }
+
+    #[test]
+    fn nested_functions_and_comments_keep_one_reporting_copy() {
+        assert_one_reporting_copy(
+            "T extends ((value: 'a,b', fn: <U>(value: U) => U) => MissingNested), U",
+            "MissingNested",
+        );
+        assert_one_reporting_copy(
+            "T /* name, <=> */ extends /* constraint, */ MissingComment, /* separator, */ U = 'a,b'",
+            "MissingComment",
+        );
+        assert_one_reporting_copy("T extends MissingLine // comma, <=>", "MissingLine");
+    }
+
+    #[test]
+    fn unicode_and_lf_crlf_keep_exact_authored_offsets() {
+        for newline in ["\n", "\r\n"] {
+            let generic = vize_l0::cstr!(
+                "名前 extends 'a,b',{newline}  const T extends{newline}  MissingUnicode"
+            );
+            assert_one_reporting_copy(&generic, "MissingUnicode");
+        }
+    }
+
+    #[test]
+    fn prepared_copies_keep_nested_names_inside_their_outer_owner() {
+        let parameters = GenericParameters::parse("T extends Box<T>, U extends External = 'a,b'");
+        assert!(parameters.diagnostics.is_empty());
+        let code = vize_l0::cstr!(
+            "function __setup<{}>() {{}}\ntype Props<{}> = {{}};\ntype Named = Props<{}>;\ntype Fallback = Props<{}>;\n",
+            parameters.raw(),
+            parameters.alias_declaration,
+            parameters.names,
+            parameters.fallback,
+        );
+        let attribute = 100..100 + parameters.raw().len();
+        let copies = GenericCopies::find(&code, &[], &parameters, attribute.clone())
+            .expect("prepared copies");
+        let echoes: Vec<_> = copies.echoes().cloned().collect();
+        assert_eq!(echoes.len(), 2, "{code}");
+        let named = code.find("type Named = ").expect("named argument control");
+        let fallback = code.find("type Fallback = ").expect("fallback copy");
+        assert!(
+            echoes
+                .iter()
+                .all(|echo| echo.end <= named || fallback <= echo.start)
+        );
+        let mut mappings = Vec::new();
+        let mut meta = Vec::new();
+        map_generic_attribute(&code, &mut mappings, &mut meta, Some(&copies));
+        assert_eq!(mappings.len(), 3);
+        assert_eq!(meta.len(), mappings.len());
+        for mapping in &mappings {
+            let authored =
+                mapping.src_range.start - attribute.start..mapping.src_range.end - attribute.start;
+            assert_eq!(
+                code.get(mapping.gen_range.clone()),
+                parameters.raw().get(authored),
+            );
+            assert!(echoes.iter().all(|echo| {
+                mapping.gen_range.end <= echo.start || echo.end <= mapping.gen_range.start
+            }));
+        }
+        let mut shifted = copies;
+        shifted.shift_generated(17);
+        assert_eq!(
+            shifted.echoes().cloned().collect::<Vec<_>>(),
+            echoes
+                .iter()
+                .map(|range| range.start + 17..range.end + 17)
+                .collect::<Vec<_>>(),
+        );
+    }
+
+    #[test]
+    fn invalid_parameters_retain_the_authored_reporting_range() {
+        let parameters = GenericParameters::parse("T extends");
+        assert!(!parameters.diagnostics.is_empty());
+        let code = vize_l0::cstr!("function __setup<{}>() {{}}", parameters.raw());
+        let attribute = 40..40 + parameters.raw().len();
+        let copies = GenericCopies::find(&code, &[], &parameters, attribute.clone())
+            .expect("invalid authored signature");
+        let mut mappings = Vec::new();
+        let mut meta = Vec::new();
+        map_generic_attribute(&code, &mut mappings, &mut meta, Some(&copies));
+        assert_eq!(mappings.len(), 1);
+        assert_eq!(
+            mappings.first().map(|mapping| &mapping.src_range),
+            Some(&attribute)
+        );
+        assert!(copies.echoes().next().is_none());
+    }
+
+    #[test]
+    fn unrelated_bare_names_and_unconstrained_fallbacks_are_not_echoes() {
+        for generic in ["T extends 'a,b'", "T = 'a,b'"] {
+            let parameters = GenericParameters::parse(generic);
+            assert!(parameters.diagnostics.is_empty());
+            let code = vize_l0::cstr!(
+                "function __setup<{}>() {{}}\ntype UnrelatedName = Other<T>;\ntype UnrelatedFallback = Other<unknown>;\n",
+                parameters.raw(),
+            );
+            let copies = GenericCopies::find(&code, &[], &parameters, 0..generic.len())
+                .expect("reporting signature");
+            assert!(copies.echoes().next().is_none(), "{code}");
+        }
     }
 }

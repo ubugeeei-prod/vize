@@ -11,6 +11,10 @@ pub(in crate::batch::virtual_project) struct GeneratedVueFile {
     /// Row-aligned producer feature ownership. Style diagnostics may append
     /// ordinary rows after this prefix; JSX shifts coordinates without reordering.
     pub(in crate::batch::virtual_project) mapping_meta: Vec<crate::virtual_ts::ProjectionMeta>,
+    /// Prepared before mapping the reporting signature; reused by the mapper
+    /// so generated diagnostic ownership never needs a second parse or scan.
+    pub(in crate::batch::virtual_project) generic_copies:
+        Option<super::generic_attribute::GenericCopies>,
     pub(in crate::batch::virtual_project) semantic_links: Vec<crate::virtual_ts::VizeSemanticLink>,
     pub(in crate::batch::virtual_project) prop_default_key_links:
         Vec<crate::virtual_ts::VizeSemanticLink>,

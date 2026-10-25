@@ -13,7 +13,7 @@ use vize_carton::{CompactString, FxHashSet, String, append};
 use vize_croquis::Croquis;
 
 use super::declarations::SetupHelperPlan;
-use crate::virtual_ts::{VizeMapping, props::extract_generic_names};
+use crate::virtual_ts::{VizeMapping, generic_parameters::GenericParameters};
 
 pub(super) struct OwnedEmitCall {
     literal: CompactString,
@@ -156,7 +156,7 @@ impl SetupHelperPlan {
         ts: &mut String,
         mappings: &mut Vec<VizeMapping>,
         summary: &Croquis,
-        generic_param: Option<&str>,
+        generic_param: Option<&GenericParameters>,
         source_offset: &dyn Fn(usize) -> usize,
     ) {
         if self.emit_calls.is_empty() {
@@ -170,7 +170,7 @@ impl SetupHelperPlan {
                     .iter()
                     .any(|export| export.name == "Emits")
             })
-            .map(extract_generic_names)
+            .map(|generic| generic.names.clone())
             .unwrap_or_default();
         let generic_suffix = if generic_names.is_empty() {
             String::default()

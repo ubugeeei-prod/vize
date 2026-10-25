@@ -66,6 +66,13 @@ pub(super) fn generate_vue_virtual_ts(
     let options = &descriptor_options;
     let allocator = Allocator::new();
     let mut diagnostics = Vec::new();
+    let generic_parameters = descriptor
+        .script_setup
+        .as_ref()
+        .and_then(|block| block.attrs.get("generic"))
+        .map(|value| value.as_ref())
+        .filter(|value: &&str| !value.trim().is_empty())
+        .map(crate::virtual_ts::generic_parameters::GenericParameters::parse);
 
     let view = match vize_atelier_sfc::prepare_root_patterned_template(
         descriptor,
@@ -76,6 +83,7 @@ pub(super) fn generate_vue_virtual_ts(
         Ok(view) => view,
         Err(error) => {
             return Ok(GeneratedVueFile {
+                generic_copies: None,
                 typed_router_import: false,
                 empty_module_exports: false,
                 module_exports: None,
@@ -157,6 +165,7 @@ pub(super) fn generate_vue_virtual_ts(
     // AST remains absent; native TypeScript owns syntax diagnostics for that script.
     if !has_script_projection {
         return Ok(GeneratedVueFile {
+            generic_copies: None,
             typed_router_import: false,
             empty_module_exports: false,
             module_exports: None,
@@ -262,6 +271,7 @@ pub(super) fn generate_vue_virtual_ts(
             template_offset,
             options,
             VirtualTsGenerationOptions {
+                generic_parameters: generic_parameters.as_ref(),
                 authored_scripts: Some(AuthoredScriptMetadata::from_descriptor(descriptor)),
                 check_options: codegen_options.check_options,
                 dialect: codegen_options.dialect,
@@ -310,12 +320,16 @@ pub(super) fn generate_vue_virtual_ts(
     let mut code = output.code;
     let (mut mappings, mut mapping_meta, semantic_links, prop_default_key_links) =
         output.mapping.into_binding_parts_with_metadata();
+    let generic_copies = generic_parameters.as_ref().and_then(|plan| {
+        let attribute =
+            crate::virtual_ts::generic_parameters::authored_generic_range(source, descriptor)?;
+        generic_attribute::GenericCopies::find(&code, &mappings, plan, attribute)
+    });
     generic_attribute::map_generic_attribute(
         &code,
         &mut mappings,
         &mut mapping_meta,
-        source,
-        descriptor,
+        generic_copies.as_ref(),
     );
     style_modules::append_style_scoped_classes(
         &mut code,
@@ -332,6 +346,7 @@ pub(super) fn generate_vue_virtual_ts(
     );
 
     Ok(GeneratedVueFile {
+        generic_copies,
         code,
         mappings,
         mapping_meta,

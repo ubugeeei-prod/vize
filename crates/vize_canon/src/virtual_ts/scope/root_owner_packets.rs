@@ -198,6 +198,7 @@ mod tests {
             0,
             (
                 ScopeGenerationOptions {
+                    generic_parameters: None,
                     check_options: VirtualTsCheckOptions {
                         check_unknown_events: true,
                         ..Default::default()
