@@ -7591,5 +7591,58 @@
         }
       ]
     }
+  ],
+  "rawEditorCases": [
+    {
+      "id": "typechecker/raw-editor/outside-import-contract-10695",
+      "state": "active",
+      "adapter": "native-editor-raw-contract-v1",
+      "targets": [
+        "raw-editor"
+      ],
+      "input": {
+        "path": "tests/fixtures/typechecker/outside-import-editor-raw-10695/authority.json",
+        "sha256": "96120b4fcedcf646511da2a43041b4d25c175b320f833fad4e932227ace8d2f4"
+      },
+      "sources": [
+        {
+          "path": "crates/vize_canon/src/corsa_bridge/outside_import_editor_tests.rs",
+          "before": "70c65e63a14ad41e9d82153bb792d3292839c4dfe83535f39f7d89bb1e2b4807",
+          "after": "c0c67c1f428939ad6398ef024582b0177d4eaaa0a4447ccc81f28b58f951da6a"
+        },
+        {
+          "path": "crates/vize_canon/src/corsa_bridge/outside_import_editor_tests/alias_packet.rs",
+          "before": null,
+          "after": "80c301b11f69b9b624dfa5caf1367635c60cc037efb7a77950083df36b69ff23"
+        }
+      ],
+      "tests": [
+        {
+          "selector": "corsa_bridge::outside_import_editor_tests::alias_packet::unchanged_pre_policy_packet_matches_its_independent_generated_ast",
+          "source": "crates/vize_canon/src/corsa_bridge/outside_import_editor_tests/alias_packet.rs",
+          "sha256": "80c301b11f69b9b624dfa5caf1367635c60cc037efb7a77950083df36b69ff23"
+        },
+        {
+          "selector": "corsa_bridge::outside_import_editor_tests::alias_packet::literal_geometry_tracks_utf16_escaped_quotes_crlf_and_different_root_lengths",
+          "source": "crates/vize_canon/src/corsa_bridge/outside_import_editor_tests/alias_packet.rs",
+          "sha256": "80c301b11f69b9b624dfa5caf1367635c60cc037efb7a77950083df36b69ff23"
+        },
+        {
+          "selector": "corsa_bridge::outside_import_editor_tests::alias_packet::an_unrelated_string_is_not_import_geometry_authority",
+          "source": "crates/vize_canon/src/corsa_bridge/outside_import_editor_tests/alias_packet.rs",
+          "sha256": "80c301b11f69b9b624dfa5caf1367635c60cc037efb7a77950083df36b69ff23"
+        },
+        {
+          "selector": "corsa_bridge::outside_import_editor_tests::alias_packet::duplicate_helper_declarations_are_not_position_authority",
+          "source": "crates/vize_canon/src/corsa_bridge/outside_import_editor_tests/alias_packet.rs",
+          "sha256": "80c301b11f69b9b624dfa5caf1367635c60cc037efb7a77950083df36b69ff23"
+        },
+        {
+          "selector": "corsa_bridge::vue_document_package_config_tests::native_editor_resolves_package_alias_from_monorepo_root",
+          "source": "crates/vize_canon/src/corsa_bridge/vue_document_package_config_tests.rs",
+          "sha256": "6215f9674046f9e57963c4a6043ee58e3bbf712e49566beee4f3f7a99f8d8b93"
+        }
+      ]
+    }
   ]
 }
