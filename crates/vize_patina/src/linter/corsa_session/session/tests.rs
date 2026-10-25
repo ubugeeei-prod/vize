@@ -310,6 +310,7 @@ fn revisiting_rewritten_source_restores_its_probe_coordinates() {
     std::fs::remove_dir_all(root).unwrap();
 }
 
+mod component_isolation;
 mod retained_documents;
 
 fn retained_document_corsa_path() -> Option<PathBuf> {

@@ -1970,6 +1970,64 @@
           }
         ]
       }
+    },
+    {
+      "id": "linter/component-document-isolation-10444",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "component-document-isolation-10444",
+        "files": [
+          {
+            "path": "Child.jade.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "183391c7540b411f4f0bff82de75fb56a71515b235d785ecd9c47e1da4482a15"
+          },
+          {
+            "path": "Child.pug.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "0612f28e3e04b486f7052040d8ce2efeaa5bbbabab67db9ad370ab4ddd7fa070"
+          },
+          {
+            "path": "Child.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "44cd9fcc7c723e0b2ac0e90b7c478ab8c8066371c73bf598572c7589aa3d4b3e"
+          },
+          {
+            "path": "Parent.jade.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "cb86a1544b55850ec2c58bd707c757332f9a55cc972ec52890ab48406ec29051"
+          },
+          {
+            "path": "Parent.pug.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "f74850d8291888f12d312be74a0a94122cbee1517bc50c01ba15e28f09ebade3"
+          },
+          {
+            "path": "Parent.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "771a9d40813fb5fee120e72a89191e0915c8f5295525080306ed313bd6f4fdde"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "pug-template",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }

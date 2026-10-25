@@ -1,0 +1,10 @@
+<script setup lang="ts">
+// 日本語 😀
+async function save(): Promise<void> {}
+save();
+const flag: object = {};
+if (flag) {}
+</script>
+<template>
+<div />
+</template>

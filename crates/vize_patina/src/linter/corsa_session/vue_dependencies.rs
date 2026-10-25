@@ -50,11 +50,7 @@ pub(super) fn prepare(
         return prepared;
     }
     let authored = absolute_path(Path::new(filename));
-    let mut visited = FxHashMap::default();
-    visited.insert(
-        authored.clone(),
-        virtual_file_path(session_root, project_root, filename),
-    );
+    let mut visited = FxHashMap::<PathBuf, PathBuf>::default();
     let mut queue = vec![(authored, String::from(source), None, SourceType::tsx())];
     while let Some((path, text, target, source_type)) = queue.pop() {
         let allocator = Allocator::default();
@@ -214,19 +210,24 @@ fn absolute_path(path: &Path) -> PathBuf {
 }
 
 fn dependency_target(session_root: &Path, project_root: &Path, source: &Path) -> PathBuf {
-    if source.strip_prefix(project_root).is_ok() {
-        return virtual_file_path(session_root, project_root, &source.to_string_lossy());
-    }
-    let mut hash = std::collections::hash_map::DefaultHasher::new();
-    source.hash(&mut hash);
-    let parent = session_root
-        .join("external-components")
-        .join(&*vize_l0::cstr!("{}", hash.finish()));
-    virtual_file_path(
-        &parent,
-        source.parent().unwrap_or(source),
-        &source.to_string_lossy(),
-    )
+    let mut target = if source.strip_prefix(project_root).is_ok() {
+        virtual_file_path(session_root, project_root, &source.to_string_lossy())
+    } else {
+        let mut hash = std::collections::hash_map::DefaultHasher::new();
+        source.hash(&mut hash);
+        let parent = session_root
+            .join("external-components")
+            .join(&*vize_l0::cstr!("{}", hash.finish()));
+        virtual_file_path(
+            &parent,
+            source.parent().unwrap_or(source),
+            &source.to_string_lossy(),
+        )
+    };
+    // Component exports and lint probes are different projections. Neither
+    // import order nor a self/cyclic import may alias a retained lint document.
+    target.set_extension("component.ts");
+    target
 }
 
 fn generate(path: &Path, source: &str) -> Option<CachedDocument> {

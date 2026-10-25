@@ -1,7 +1,7 @@
 use super::{case_dir, retained_document_corsa_path};
 use crate::{LintPreset, LintResult, Linter};
 
-fn complete(result: &LintResult) -> serde_json::Value {
+pub(super) fn complete(result: &LintResult) -> serde_json::Value {
     let diagnostics: Vec<_> = result
         .diagnostics
         .iter()
@@ -155,6 +155,49 @@ fn failed_refresh_does_not_cache_a_new_projection() {
     std::fs::remove_dir_all(root).unwrap();
 }
 
+#[test]
+fn imported_components_cannot_replace_retained_lint_documents() {
+    let Some(corsa_path) = retained_document_corsa_path() else {
+        return;
+    };
+    let root = case_dir("component-document-isolation-😀");
+    std::fs::create_dir_all(&root).unwrap();
+    std::fs::write(root.join("package.json"), "{}").unwrap();
+    let child = root.join("Child.vue");
+    let parent = root.join("Parent.vue");
+    let child_source = PARENT.replace("import Child from './Child.vue';\n", "");
+    std::fs::write(&child, &child_source).unwrap();
+    let linter = Linter::with_preset(LintPreset::Opinionated)
+        .with_corsa_path(Some(corsa_path))
+        .with_enabled_rules(Some(vec![
+            "type/no-floating-promises".into(),
+            "type/strict-boolean-expressions".into(),
+        ]));
+    let child_filename = child.to_str().unwrap();
+    let expected_child = expected(
+        child_filename,
+        vec![floating(&child_source), boolean(&child_source)],
+    );
+    assert_eq!(
+        complete(&linter.lint_sfc(&child_source, child_filename)),
+        expected_child
+    );
+    assert_eq!(
+        complete(&linter.lint_sfc(PARENT, parent.to_str().unwrap())),
+        expected(
+            parent.to_str().unwrap(),
+            vec![floating(PARENT), boolean(PARENT)]
+        )
+    );
+    assert_eq!(
+        complete(&linter.lint_sfc(&child_source, child_filename)),
+        expected_child,
+        "importing Child must preserve its complete retained lint diagnostics"
+    );
+    Linter::finish_type_aware_lint(std::slice::from_ref(&linter), &[]);
+    std::fs::remove_dir_all(root).unwrap();
+}
+
 const PARENT: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../tests/_fixtures/differential/linter/retained-projection-10440/Parent.vue.txt"
@@ -176,11 +219,11 @@ const CHILD: &str = include_str!(concat!(
     "/../../tests/_fixtures/differential/linter/retained-projection-10440/Child.vue.txt"
 ));
 
-fn expected(filename: &str, diagnostics: Vec<serde_json::Value>) -> serde_json::Value {
+pub(super) fn expected(filename: &str, diagnostics: Vec<serde_json::Value>) -> serde_json::Value {
     serde_json::json!({"filename": filename, "error_count": 0, "warning_count": diagnostics.len(), "diagnostics": diagnostics})
 }
 
-fn floating(source: &str) -> serde_json::Value {
+pub(super) fn floating(source: &str) -> serde_json::Value {
     let start = source.rfind("save();").expect("authored floating call");
     serde_json::json!({
         "rule_name": "type/no-floating-promises", "severity": "warning",
@@ -191,7 +234,7 @@ fn floating(source: &str) -> serde_json::Value {
     })
 }
 
-fn boolean(source: &str) -> serde_json::Value {
+pub(super) fn boolean(source: &str) -> serde_json::Value {
     let start = source.find("if (flag)").expect("authored object condition") + "if (".len();
     serde_json::json!({
         "rule_name": "type/strict-boolean-expressions", "severity": "warning",
