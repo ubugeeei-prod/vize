@@ -9,6 +9,7 @@ import {
   restorePaletteState,
   writeSavedPaletteState,
   type CustomProp,
+  type SavedPaletteState,
 } from "./paletteState";
 
 export function usePalette() {
@@ -48,7 +49,7 @@ export function usePalette() {
     () => new Set(customProps.value.map((cp) => cp.name)),
   );
 
-  async function load(artPath: string) {
+  async function load(artPath: string, sharedState?: SavedPaletteState) {
     const version = ++loadVersion;
     loading.value = true;
     error.value = null;
@@ -56,7 +57,7 @@ export function usePalette() {
       const loadedPalette = await fetchPalette(artPath);
       if (version !== loadVersion) return;
       palette.value = loadedPalette;
-      const saved = readSavedPaletteState(artPath);
+      const saved = sharedState ?? readSavedPaletteState(artPath);
       if (saved) {
         const restored = restorePaletteState(palette.value.controls, saved);
         values.value = restored.values;

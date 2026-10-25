@@ -20,6 +20,7 @@ import FullscreenPreview from "../components/FullscreenPreview.vue";
 import { getVariantSectionId } from "../utils/variantSections";
 import { useResizable } from "../composables/useResizable";
 import { createVariantNavigation } from "../utils/variantNavigation";
+import { MUSEA_PROPS_QUERY } from "../utils/propsPermalink";
 
 const route = useRoute();
 const { getArt, load } = useArts();
@@ -31,7 +32,9 @@ const {
 } = useActions();
 const { setCurrentVariant } = useEventCapture();
 
-const activeTab = ref<"variants" | "props" | "docs" | "a11y" | "vrt">("variants");
+const activeTab = ref<"variants" | "props" | "docs" | "a11y" | "vrt">(
+  route.query[MUSEA_PROPS_QUERY] === undefined ? "variants" : "props",
+);
 const actionCount = computed(() => events.value.length);
 const actionsExpanded = ref(false);
 const actionsContentRef = useTemplateRef<HTMLElement>("actionsContentRef");
@@ -158,11 +161,18 @@ onMounted(() => {
 });
 
 watch(artPath, () => {
-  activeTab.value = "variants";
+  activeTab.value = route.query[MUSEA_PROPS_QUERY] === undefined ? "variants" : "props";
   clearActions();
   disconnectVariantObserver();
   variantSectionElements.clear();
 });
+
+watch(
+  () => route.query[MUSEA_PROPS_QUERY],
+  (shared) => {
+    if (shared !== undefined) activeTab.value = "props";
+  },
+);
 
 function selectTab(tab: typeof activeTab.value) {
   activeTab.value = tab;

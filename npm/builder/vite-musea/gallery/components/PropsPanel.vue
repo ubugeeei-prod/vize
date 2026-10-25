@@ -9,6 +9,7 @@ import {
   useTemplateRef,
 } from "vue";
 import { shallowRef } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { usePalette } from "../composables/usePalette";
 import { useArts } from "../composables/useArts";
 import { getPreviewUrl, vMuseaGlobals } from "../api";
@@ -17,6 +18,11 @@ import { indentUsage, usagePropsAttributes, usageScript } from "../utils/usageCo
 import { safeUrl } from "../utils/safeUrl";
 import { getControlComponent } from "./controlComponent";
 import { supportedProps, unsupportedPropEdit } from "../utils/supportedProps";
+import {
+  MUSEA_PROPS_QUERY,
+  createPropsPermalink,
+  readPropsPermalink,
+} from "../utils/propsPermalink";
 import SlotEditor from "./SlotEditor.vue";
 import HighlightedCode from "./HighlightedCode.vue";
 
@@ -26,6 +32,10 @@ const props = defineProps<{
 }>();
 
 const MonacoEditor = defineAsyncComponent(() => import("./MonacoEditor.vue"));
+const route = useRoute();
+const router = useRouter();
+const shareStatus = ref("");
+const shareError = ref<string | null>(null);
 
 const {
   palette,
@@ -78,11 +88,14 @@ const previewUrl = computed(() => {
 });
 
 watch(
-  () => props.artPath,
-  (path) => {
-    if (path) load(path);
+  () => [props.artPath, route.query[MUSEA_PROPS_QUERY]] as const,
+  ([path, shared]) => {
+    const parsed = shared === undefined ? null : readPropsPermalink(shared, path);
+    shareError.value = parsed?.error ?? null;
+    shareStatus.value = "";
+    if (path) void load(path, parsed?.state?.palette);
     iframeReady.value = false;
-    slotContent.value = {};
+    slotContent.value = parsed?.state?.slots ?? {};
     controlsMode.value = "controls";
   },
   { immediate: true },
@@ -181,11 +194,18 @@ onUnmounted(() => {
 });
 
 function onResetValues() {
+  // Reset must also remove the permalink, otherwise reload would reapply it.
+  if (route.query[MUSEA_PROPS_QUERY] !== undefined) {
+    const { [MUSEA_PROPS_QUERY]: _shared, ...query } = route.query;
+    void router.replace({ query, hash: route.hash });
+  }
   resetValues();
   clearSavedValues(props.artPath);
   slotContent.value = {};
   controlsMode.value = "controls";
   saveStatus.value = "idle";
+  shareError.value = null;
+  shareStatus.value = "";
   const iframe = iframeRef.value;
   if (!iframe || !iframeReady.value) return;
   sendMessage(iframe, "musea:set-props", { props: appliedValues.value });
@@ -195,6 +215,26 @@ function onResetValues() {
 function onSaveValues() {
   saveValues(props.artPath);
   saveStatus.value = "saved";
+}
+
+async function copyPermalink() {
+  shareError.value = null;
+  shareStatus.value = "";
+  try {
+    const url = createPropsPermalink(window.location.href, props.artPath, {
+      palette: {
+        version: 1,
+        values: values.value,
+        customProps: customProps.value,
+        deletedPaletteProps: [...deletedPaletteProps.value],
+      },
+      slots: slotContent.value,
+    });
+    await navigator.clipboard.writeText(url);
+    shareStatus.value = "Link copied";
+  } catch (error) {
+    shareError.value = error instanceof Error ? error.message : "Unable to copy the props link.";
+  }
 }
 
 function setControlsMode(mode: "controls" | "code") {
@@ -405,6 +445,7 @@ const controlKindOptions = [
                 </button>
               </div>
               <button type="button" class="props-reset" @click="onResetValues">Reset</button>
+              <button type="button" class="props-share" @click="copyPermalink">Copy link</button>
               <button
                 type="button"
                 class="props-save"
@@ -415,6 +456,9 @@ const controlKindOptions = [
               </button>
             </div>
           </div>
+
+          <p v-if="shareError" class="props-code-error" role="alert">{{ shareError }}</p>
+          <p v-else-if="shareStatus" class="props-share-status" role="status">{{ shareStatus }}</p>
 
           <p v-if="retainedUnsupported.length" class="props-code-error" role="note">
             {{ retainedUnsupported.join(", ") }} is retained only. Preview and copied usage contain
@@ -725,6 +769,7 @@ const controlKindOptions = [
 }
 
 .props-reset,
+.props-share,
 .props-save {
   background: var(--musea-bg-tertiary);
   border: 1px solid var(--musea-border);
@@ -737,9 +782,16 @@ const controlKindOptions = [
 }
 
 .props-reset:hover,
+.props-share:hover,
 .props-save:hover {
   border-color: var(--musea-text-muted);
   color: var(--musea-text);
+}
+
+.props-share-status {
+  color: var(--musea-accent);
+  font-size: 0.75rem;
+  margin-bottom: 0.75rem;
 }
 
 .props-save.saved {

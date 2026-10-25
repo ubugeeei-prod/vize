@@ -11,11 +11,11 @@ Musea is a component gallery for listing your components and comparing their sta
 [ready-made UI examples](./ui/index.md), then write variants of your own components in `*.art.vue`
 files using plain Vue syntax.
 
-| Goal                                                   | Feature                                  |
-| ------------------------------------------------------ | ---------------------------------------- |
-| Compare default, loading, disabled, and error states  | Art files with named variants            |
-| Check props and design tokens                          | The gallery's props palette and token view |
-| Catch visual changes and accessibility problems        | `musea-vrt` in CI                        |
+| Goal                                                 | Feature                                    |
+| ---------------------------------------------------- | ------------------------------------------ |
+| Compare default, loading, disabled, and error states | Art files with named variants              |
+| Check props and design tokens                        | The gallery's props palette and token view |
+| Catch visual changes and accessibility problems      | `musea-vrt` in CI                          |
 
 - `vize_musea` is the Rust core: it parses `*.art.vue`, generates docs and prop palettes, autogenerates variants, and prepares VRT data.
 - `@vizejs/vite-plugin-musea` is the recommended gallery and dev-server workflow today.
@@ -238,6 +238,17 @@ Musea can surface:
 ![Musea Props Panel](/musea-props.png)
 
 The palette pipeline can infer interactive controls from component metadata and art definitions.
+
+Use **Copy link** in Props Controls to share the current values, custom controls, removed props,
+and slot content. Opening the link selects the Props tab and restores that snapshot in the
+preview, including in a fresh browser. Explicit URL state takes precedence over
+saved local values. **Reset** restores the current component defaults and removes the shared
+state from the URL while preserving other query parameters and the variant fragment.
+
+Links contain a versioned JSON snapshot for the selected Art file. Slot content is rendered as
+literal text. DOM HTML and event handler props, non-JSON values, and states larger than 24,000
+encoded characters cannot be shared. Invalid links show an error and retain the normal local
+or default state; no snapshot is partially applied. Share only values suitable for a public URL.
 
 Vue 3.5.41 does not apply a component prop literally named `__proto__`. Preserving that raw key in
 editor data does not prove that a preview applies it. Avoid this prop name;
