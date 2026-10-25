@@ -1,0 +1,59 @@
+{
+  "schema": "vize.vue2RenameContextCustody",
+  "version": 1,
+  "sourceRevision": "284c7c4f6a7a1a50d9acec8d877c47aae21cfe42",
+  "producer": {
+    "workflowRun": 40171762851,
+    "job": 121103891221,
+    "artifact": 12591225041,
+    "evidenceRevision": "57fd9f641093992e6f5b79c496c96b8e4618cee0"
+  },
+  "sourceBuild": {
+    "schema": "vize.differential.build",
+    "version": 1,
+    "recipe": "cargo build --profile ci -p vize --features legacy",
+    "sourceRevision": "284c7c4f6a7a1a50d9acec8d877c47aae21cfe42",
+    "binaryPath": "target/ci/vize",
+    "binarySha256": "7098faa8f7dbc7b8b0e2cfb1773633009c1aa7d1d18bed556eb784f9e763ae28",
+    "cliVersion": "vize 0.474.0-dev"
+  },
+  "nativeTypeScript": {
+    "binary": "/home/runner/_work/vize/vize/node_modules/@typescript/typescript-linux-x64/lib/tsc",
+    "realpath": "/home/runner/_work/vize/vize/node_modules/.pnpm/@typescript+typescript-linux-x64@7.0.2/node_modules/@typescript/typescript-linux-x64/lib/tsc",
+    "sha256": "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4",
+    "version": "Version 7.0.2"
+  },
+  "upstream": {
+    "repository": "https://github.com/PanJiaChen/vue-element-admin",
+    "revision": "6858a9ad67483025f6a9432a926beb9327037be3",
+    "file": "src/views/dashboard/admin/components/TransactionTable.vue",
+    "blob": "d07b0edf6b07d2648b05ae1d1c23cfb52fbc831e",
+    "sha256": "4f32ac35959e8e062b4bfe535523bb5c003ebb9ff783a10eae5f22db869572f3",
+    "license": "MIT",
+    "licenseBlob": "61515750df8d215937d8a5c58202d649dcdff957",
+    "licenseSha256": "707265af5bde955e699607946fec8c26382a803dcb4d59b0a2993c0979382eb8"
+  },
+  "historical": {
+    "path": "historical.json",
+    "sha256": "68129b8221ac20f9f9c57169d5e89dbf9f14da7b62e28adcbcbb247347e2f422",
+    "sources": [
+      {
+        "path": "tests/snapshots/check/vue-element-admin-legacy-lsp-oracle.ts",
+        "archived": "vue-element-admin-legacy-lsp-oracle.ts.historical.txt",
+        "sha256": "b49d0d15d21ce331a6244d8d4cac268fef4aa50684a059405ea69f9c430dfefe"
+      },
+      {
+        "path": "tests/snapshots/check/vue-element-admin-unmapped-diagnostic-oracle.ts",
+        "archived": "vue-element-admin-unmapped-diagnostic-oracle.ts.historical.txt",
+        "sha256": "7690159f894d0a7404197f629e09890adeacbc2313e2f2dc9d95ec9d47385cc6"
+      }
+    ]
+  },
+  "successor": {
+    "path": "successor.json",
+    "sha256": "83f580c929b91a3ded1ff3c61cc53b39e61b030c14f46518c82c7dffdbfbb7dd"
+  },
+  "variants": 4,
+  "phases": 3,
+  "sourceContextAdditionsPerBrokenPacket": 1
+}
