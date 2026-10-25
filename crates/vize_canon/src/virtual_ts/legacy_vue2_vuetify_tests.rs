@@ -264,7 +264,7 @@ fn vue2_instance_members_are_declared_once() {
 
     let standard = standard_virtual_ts(script, template, &VirtualTsOptions::default());
     assert!(
-        standard.contains("const $listeners: __VizeInstanceGlobal<'$listeners'>"),
+        standard.contains("const $listeners = __ctx.$listeners;"),
         "Vue 3 should still resolve $listeners through the instance-global form:\n{standard}"
     );
 }

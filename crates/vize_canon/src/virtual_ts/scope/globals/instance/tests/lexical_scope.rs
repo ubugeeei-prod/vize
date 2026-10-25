@@ -43,7 +43,12 @@ fn output(strict: bool) -> VirtualTsOutput {
 
 #[test]
 fn lexical_dollar_scopes_keep_only_real_instance_reads_and_exact_authored_ranges() {
-    let output = output(true);
+    assert_instance_reads(true, "__vize_strict_template_context.");
+    assert_instance_reads(false, "__ctx.");
+}
+
+fn assert_instance_reads(strict: bool, receiver: &str) {
+    let output = output(strict);
     let mut reads: Vec<_> = output
         .mapping
         .spans()
@@ -52,7 +57,7 @@ fn lexical_dollar_scopes_keep_only_real_instance_reads_and_exact_authored_ranges
             output
                 .code
                 .get(..mapping.gen_range.start)
-                .filter(|head| head.ends_with("__vize_strict_template_context."))?;
+                .filter(|head| head.ends_with(receiver))?;
             Some((
                 output.code.get(mapping.gen_range.clone()).unwrap(),
                 mapping.src_range.clone(),
@@ -76,24 +81,22 @@ fn lexical_dollar_scopes_keep_only_real_instance_reads_and_exact_authored_ranges
 }
 
 #[test]
-fn permissive_dollar_scopes_do_not_hoist_lexical_slot_loop_or_handler_names() {
+fn default_dollar_scopes_do_not_hoist_lexical_slot_loop_or_handler_names() {
     let output = output(false);
     let declarations: Vec<_> = output
         .code
         .lines()
-        .filter(|line| {
-            line.trim_start().starts_with("const $") && line.ends_with("= undefined as any;")
-        })
+        .filter(|line| line.trim_start().starts_with("const $") && line.contains(" = __ctx.$"))
         .collect();
     assert_eq!(
         declarations,
         vec![
-            "  const $before: __VizeInstanceGlobal<'$before'> = undefined as any;",
-            "  const $after: __VizeInstanceGlobal<'$after'> = undefined as any;",
-            "  const $form: __VizeInstanceGlobal<'$form'> = undefined as any;",
-            "  const $field: __VizeInstanceGlobal<'$field'> = undefined as any;",
-            "  const $unknown: __VizeInstanceGlobal<'$unknown'> = undefined as any;",
-            "  const $self: __VizeInstanceGlobal<'$self'> = undefined as any;",
+            "  const $before = __ctx.$before;",
+            "  const $after = __ctx.$after;",
+            "  const $form = __ctx.$form;",
+            "  const $field = __ctx.$field;",
+            "  const $unknown = __ctx.$unknown;",
+            "  const $self = __ctx.$self;",
         ]
     );
 }

@@ -709,9 +709,7 @@ fn test_template_instance_globals_delegate_to_component_public_instance() {
     );
 
     assert!(
-        output
-            .code
-            .contains("const $t: __VizeInstanceGlobal<'$t'> = undefined as any;"),
+        output.code.contains("const $t = __ctx.$t;"),
         "{}",
         output.code
     );
@@ -735,11 +733,7 @@ fn test_template_instance_globals_delegate_to_component_public_instance() {
         },
     );
 
-    assert!(
-        !configured_output
-            .code
-            .contains("__VizeInstanceGlobal<'$t'>")
-    );
+    assert!(!configured_output.code.contains("__ctx.$t"));
     assert!(
         configured_output
             .code
@@ -767,9 +761,7 @@ const $q = functionCall()
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
     assert!(
-        !output
-            .code
-            .contains("const $q: __VizeInstanceGlobal<'$q'> = undefined as any;"),
+        !output.code.contains("__ctx.$q"),
         "setup binding named like an instance global must not be redeclared:\n{}",
         output.code
     );

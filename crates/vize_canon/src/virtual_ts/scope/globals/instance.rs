@@ -1,12 +1,12 @@
 //! Template references to `$`-prefixed component instance globals.
 //!
-//! Two forms are emitted. The permissive one declares each name once with a
-//! conditional type that widens to `any` when the instance type does not carry
-//! it, which keeps a project with no authoritative ambient declaration surface
-//! free of invented diagnostics. The strict one, enabled when the project does
-//! publish such a surface (currently Nuxt's generated `.nuxt` types), reads the
-//! name off the template context instead, so a global nothing declares reports
-//! the `TS2339` the Vue toolchain reports, once per authored occurrence.
+//! Vue 3 reads each authored occurrence off its typed public instance. Missing
+//! members therefore report TypeScript property errors instead of acquiring an
+//! `any` fallback.
+//! Explicit strict mode uses its narrower template context, while Vue 2 retains
+//! the structural compatibility fallback because its context is not a complete
+//! public instance. An unavailable Vue instance type still degrades to `any` at
+//! the import boundary, rather than inventing declarations for plugin names.
 //!
 //! Names the caller already declared, including the ones mined out of a
 //! generated `ComponentCustomProperties`, never reach either form: they are
@@ -187,7 +187,7 @@ struct InstanceGlobalRefsEmitter<'a> {
     synthetic_setup_bindings: FxHashSet<&'a str>,
     type_export_names: FxHashSet<&'a str>,
     seen_names: FxHashSet<String>,
-    /// Authored `(name, source offset)` pairs already emitted. Strict resolution
+    /// Authored `(name, source offset)` pairs already emitted. Checked resolution
     /// reports one diagnostic per authored occurrence the way `vue-tsc` does, so
     /// it deduplicates by position; the two collection passes above can reach the
     /// same occurrence twice.
@@ -263,11 +263,18 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
             None
         };
 
-        let strict = self.options.strict_instance_globals && declared_type.is_none();
-        // Strict resolution keeps every authored occurrence so an undeclared
-        // name reports once per use, the way `vue-tsc` does. The permissive form
-        // declares the name once and every later use resolves to that binding.
-        let already_declared = if strict {
+        let receiver = if self.options.strict_instance_globals {
+            Some("__vize_strict_template_context")
+        } else if !self.scope_options.legacy_vue2 {
+            Some("__ctx")
+        } else {
+            None
+        };
+        let checked = receiver.is_some() && declared_type.is_none();
+        // A checked access preserves every authored occurrence, including loop
+        // sources, so a missing member reports at each use. The legacy fallback
+        // declares a name once and later uses resolve to that binding.
+        let already_declared = if checked {
             if !self.seen_occurrences.insert((name.into(), src_start)) {
                 return;
             }
@@ -287,7 +294,7 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
         // The `__VizeInstanceGlobal` alias is only emitted for names that
         // actually read the public instance: an alias declared and never used
         // is a `TS6196` under `noUnusedLocals`.
-        if !strict && declared_type.is_none() && !self.emitted_instance_global_alias {
+        if !checked && declared_type.is_none() && !self.emitted_instance_global_alias {
             self.ts.push_str(
                 "  type __VizeInstanceGlobal<K extends string> = K extends keyof __Ctx ? __Ctx[K] : any;\n",
             );
@@ -295,23 +302,23 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
         }
 
         let gen_start = self.ts.len();
-        let stmt = match (declared_type.as_deref(), strict, already_declared) {
+        let stmt = match (declared_type.as_deref(), receiver, already_declared) {
             (Some(props_type), _, _) => {
                 cstr!("  const {name}: {props_type} = undefined as any;\n")
             }
-            (None, false, _) => {
+            (None, None, _) => {
                 cstr!("  const {name}: __VizeInstanceGlobal<'{name}'> = undefined as any;\n")
             }
-            (None, true, false) => {
-                cstr!("  const {name} = __vize_strict_template_context.{name};\n")
+            (None, Some(receiver), false) => {
+                cstr!("  const {name} = {receiver}.{name};\n")
             }
-            (None, true, true) => cstr!("  void (__vize_strict_template_context.{name});\n"),
+            (None, Some(receiver), true) => cstr!("  void ({receiver}.{name});\n"),
         };
-        // The strict forms read the name off `__vize_strict_template_context`,
-        // and that access is where TypeScript reports an undeclared global, so
+        // Checked forms read the name off the instance/template context,
+        // where TypeScript reports an undeclared global, so
         // the mapping anchors to the trailing occurrence rather than the leading
         // binding name.
-        let name_offset = if strict {
+        let name_offset = if checked {
             stmt.rfind(name)
         } else {
             stmt.find(name)

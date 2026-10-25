@@ -1,7 +1,10 @@
 //! Emission of `$`-prefixed template instance globals in both forms.
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
 
-use crate::virtual_ts::{VirtualTsOptions, VirtualTsOutput, generate_virtual_ts_with_offsets};
+use crate::virtual_ts::{
+    VirtualTsOptions, VirtualTsOutput, generate_virtual_ts_with_offsets,
+    generate_virtual_ts_with_offsets_legacy_vue2,
+};
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
 const SCRIPT: &str = "const label = 'x'\n";
@@ -9,6 +12,10 @@ const TEMPLATE: &str =
     r#"<p :title="$missing('c')">{{ $missing('a') }}{{ $missing('b') }}{{ label }}</p>"#;
 
 fn generate(strict: bool) -> VirtualTsOutput {
+    generate_with_dialect(strict, false)
+}
+
+fn generate_with_dialect(strict: bool, legacy_vue2: bool) -> VirtualTsOutput {
     let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, TEMPLATE);
 
@@ -21,7 +28,18 @@ fn generate(strict: bool) -> VirtualTsOutput {
         strict_instance_globals: strict,
         ..Default::default()
     };
-    generate_virtual_ts_with_offsets(&summary, Some(SCRIPT), Some(&root), 0, 0, &options)
+    if legacy_vue2 {
+        generate_virtual_ts_with_offsets_legacy_vue2(
+            &summary,
+            Some(SCRIPT),
+            Some(&root),
+            0,
+            0,
+            &options,
+        )
+    } else {
+        generate_virtual_ts_with_offsets(&summary, Some(SCRIPT), Some(&root), 0, 0, &options)
+    }
 }
 
 /// Authored offsets of the three `$missing` occurrences in `TEMPLATE`.
@@ -36,8 +54,8 @@ fn authored_offsets() -> Vec<usize> {
 }
 
 #[test]
-fn the_permissive_form_declares_the_name_once_with_an_any_fallback() {
-    let output = generate(false);
+fn the_legacy_vue2_form_declares_the_name_once_with_an_any_fallback() {
+    let output = generate_with_dialect(false, true);
 
     assert!(
         output.code.contains(
@@ -56,6 +74,28 @@ fn the_permissive_form_declares_the_name_once_with_an_any_fallback() {
         output.code
     );
     assert!(!output.code.contains("__ctx.$missing"), "{}", output.code);
+}
+
+#[test]
+fn the_default_vue3_form_checks_every_occurrence_on_the_public_instance() {
+    let output = generate(false);
+    let statements = output
+        .code
+        .lines()
+        .filter(|line| line.contains("__ctx.$missing"))
+        .collect::<Vec<_>>();
+
+    assert_eq!(
+        statements,
+        vec![
+            "  const $missing = __ctx.$missing;",
+            "  void (__ctx.$missing);",
+            "  void (__ctx.$missing);",
+        ]
+    );
+    assert!(!output.code.contains("__VizeInstanceGlobal"));
+    assert!(!output.code.contains("__vize_strict_template_context"));
+    assert_mapped_occurrences(&output, "__ctx.");
 }
 
 #[test]
@@ -90,15 +130,17 @@ fn the_strict_form_reads_every_occurrence_off_the_template_context() {
 #[test]
 fn the_strict_form_maps_each_access_back_to_its_authored_occurrence() {
     let output = generate(true);
+    assert_mapped_occurrences(&output, "__vize_strict_template_context.");
+}
 
+fn assert_mapped_occurrences(output: &VirtualTsOutput, receiver: &str) {
     let mut mapped = output
         .mapping
         .spans()
         .iter()
         .filter(|mapping| {
             output.code.get(mapping.gen_range.clone()) == Some("$missing")
-                && output.code[..mapping.gen_range.start]
-                    .ends_with("__vize_strict_template_context.")
+                && output.code[..mapping.gen_range.start].ends_with(receiver)
         })
         .map(|mapping| mapping.src_range.clone())
         .collect::<Vec<_>>();
@@ -114,8 +156,8 @@ fn the_strict_form_maps_each_access_back_to_its_authored_occurrence() {
 }
 
 #[test]
-fn the_permissive_form_maps_the_single_declaration_to_the_first_occurrence() {
-    let output = generate(false);
+fn the_legacy_vue2_form_maps_the_single_declaration_to_the_first_occurrence() {
+    let output = generate_with_dialect(false, true);
 
     let mapped = output
         .mapping
