@@ -242,3 +242,41 @@ void test("kernel-restarted native reads remain explicit and never manufacture i
     /explicit return count/u,
   );
 });
+
+void test("only proved same-group terminal interruption can retain an unknown syscall without coverage credit", () => {
+  const traces = (
+    unknownAt = "2.200000",
+    workerTerminal = 0,
+    extra = "",
+    exitGroup = "2.100000 exit_group(0) = ?\n",
+  ) => [
+    {
+      tid: 100,
+      text: `${exec}\n1.100000 clone(child_stack=NULL, flags=CLONE_VM|CLONE_THREAD) = 101 <0.000001>\n${unknownAt} ???( <unfinished ...>\n${extra}2.300000 +++ exited with 0 +++\n`,
+    },
+    { tid: 101, text: `${exitGroup}2.210000 +++ exited with ${workerTerminal} +++\n` },
+  ];
+  const capture = parseStraceCapture(traces());
+  assert.equal(capture.syscallsComplete, false);
+  assert.equal(capture.terminalUnknownSyscalls.length, 1);
+  assert.equal(
+    capture.terminalUnknownSyscalls[0].classification,
+    "UNKNOWN_UNCAPTURED_TERMINAL_SYSCALL",
+  );
+  assert.equal(capture.terminalUnknownSyscalls[0].syscallBytesCaptured, false);
+  assert.match(capture.terminalUnknownSyscalls[0].raw, /\?\?\?\( <unfinished/u);
+  for (const malformed of [
+    traces("2.000000"),
+    traces("2.200000", 1),
+    traces("2.200000", 0, "", ""),
+    traces("2.200000", 0, `2.250000 write(1, ${hex("a")}, 1) = 1 <0.000001>\n`),
+    traces().map((trace) => (trace.tid === 101 ? { ...trace, tid: 102 } : trace)),
+    [
+      {
+        tid: 100,
+        text: `${exec}\n2.200000 execve( <unfinished ...>\n2.300000 +++ exited with 0 +++\n`,
+      },
+    ],
+  ])
+    assert.throws(() => parseStraceCapture(malformed));
+});

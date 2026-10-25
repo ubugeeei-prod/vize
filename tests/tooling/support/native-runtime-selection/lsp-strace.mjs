@@ -82,6 +82,7 @@ export function parseStraceCapture(traces) {
   const parents = new Map();
   const executables = new Map();
   const attempts = [];
+  const unfinished = [];
   for (const { tid, text } of traces) {
     let pending;
     for (const line of text.split("\n").filter(Boolean)) {
@@ -91,7 +92,7 @@ export function parseStraceCapture(traces) {
       let call = match[2];
       if (call.endsWith("<unfinished ...>")) {
         assert.equal(pending, undefined, "one unfinished syscall per thread");
-        pending = { at, call: call.slice(0, -"<unfinished ...>".length) };
+        pending = { tid, at, call: call.slice(0, -"<unfinished ...>".length), raw: line };
         continue;
       }
       const resumed = /^<\.\.\. (\w+) resumed>(.*)$/u.exec(call);
@@ -105,7 +106,14 @@ export function parseStraceCapture(traces) {
         pending = undefined;
       } else rows.push(syscallRow(tid, at, at, call));
     }
-    assert.equal(pending, undefined, "all traced syscalls completed");
+    if (pending) {
+      assert.equal(
+        pending.call.trim(),
+        "???(",
+        "nonterminal unfinished syscalls remain unqualified",
+      );
+      unfinished.push(pending);
+    }
   }
   rows.sort(compareRows);
   for (const row of rows) {
@@ -171,7 +179,58 @@ export function parseStraceCapture(traces) {
     if ((exited || killed) && row.tid === owner.process)
       owner.exit = { code: exited ? Number(exited[1]) : null, signal: killed?.[1] ?? null };
   }
-  return { owners, attempts };
+  for (const unknown of unfinished) {
+    const process = leader(unknown.tid),
+      owner = byPid.get(process);
+    assert.ok(owner, "terminal unknown syscall belongs to an actual executed image group");
+    const exits = owner.rows.filter((row) => /^exit_group\(\d+\)\s+=\s+\?(?:\s|$)/u.test(row.call));
+    assert.equal(exits.length, 1, "one explicit exit_group owns terminal interruption");
+    const exit = exits[0],
+      code = Number(/^exit_group\((\d+)\)/u.exec(exit.call)[1]);
+    assert.ok(
+      BigInt(exit.interval.endNanoseconds) < clock(unknown.at).nanoseconds,
+      "unknown interval must be strictly after the same-group explicit exit_group",
+    );
+    const members = new Set([
+      process,
+      ...[...parents.keys()].filter((tid) => leader(tid) === process),
+    ]);
+    for (const tid of members) {
+      const terminals = owner.rows.filter(
+        (row) => row.tid === tid && /^\+\+\+ (?:exited|killed)/u.test(row.call),
+      );
+      assert.equal(
+        terminals.length,
+        1,
+        "every observed same-group thread has its own terminal proof",
+      );
+      assert.equal(
+        terminals[0].call,
+        `+++ exited with ${code} +++`,
+        "same-code group terminal proof",
+      );
+    }
+    const later = owner.rows.filter(
+      (row) =>
+        row.tid === unknown.tid && clock(row.at).nanoseconds >= clock(unknown.at).nanoseconds,
+    );
+    assert.equal(later.length, 1, "no hidden resumed/other syscall after terminal unknown");
+    assert.equal(later[0].call, `+++ exited with ${code} +++`);
+    (owner.terminalUnknownSyscalls ??= []).push({
+      ...unknown,
+      process,
+      classification: "UNKNOWN_UNCAPTURED_TERMINAL_SYSCALL",
+      exitGroup: exit,
+      sameCodeThreadTerminals: [...members],
+      syscallBytesCaptured: false,
+    });
+  }
+  return {
+    owners,
+    attempts,
+    syscallsComplete: unfinished.length === 0,
+    terminalUnknownSyscalls: owners.flatMap((owner) => owner.terminalUnknownSyscalls ?? []),
+  };
 }
 
 export function decodeNativeIo(owner) {
@@ -330,6 +389,8 @@ export function captureNativeOwners(tracePrefix, directory, authority) {
   const inventory = {
     attempts: capture.attempts,
     executions: capture.owners.map(({ rows: _rows, ...owner }) => owner),
+    syscallsComplete: capture.syscallsComplete,
+    terminalUnknownSyscalls: capture.terminalUnknownSyscalls,
   };
   fs.writeFileSync(
     path.join(directory, "exec-inventory.json"),
@@ -347,7 +408,7 @@ export function captureNativeOwners(tracePrefix, directory, authority) {
   const owners = allOwners
     .filter((owner) => owner.role === "selected-native-lsp")
     .map(decodeNativeIo);
-  return owners.map((owner) => {
+  const nativeOwners = owners.map((owner) => {
     assert.ok(owner.exit, "each native process has its own actual terminal status");
     const physicalPath = fs.realpathSync(owner.path);
     const streams = {};
@@ -374,6 +435,8 @@ export function captureNativeOwners(tracePrefix, directory, authority) {
       streams,
       ioFailures: owner.events.filter((event) => event.count < 0),
       ioRestarts: owner.events.filter((event) => event.returnKind === "kernel-restart"),
+      syscallsComplete: !owner.terminalUnknownSyscalls?.length,
+      terminalUnknownSyscalls: owner.terminalUnknownSyscalls ?? [],
     };
     fs.writeFileSync(
       path.join(directory, `${owner.process}.json`),
@@ -381,4 +444,11 @@ export function captureNativeOwners(tracePrefix, directory, authority) {
     );
     return observation;
   });
+  return {
+    nativeOwners,
+    syscallsComplete: capture.syscallsComplete,
+    terminalUnknownSyscalls: capture.terminalUnknownSyscalls,
+    execInventory: path.join(directory, "exec-inventory.json"),
+    qualifiedExecInventory: path.join(directory, "qualified-exec-inventory.json"),
+  };
 }

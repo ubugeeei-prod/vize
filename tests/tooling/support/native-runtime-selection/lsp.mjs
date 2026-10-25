@@ -461,11 +461,18 @@ export async function observeSourceLspSelection() {
         assert.equal(wire.pending.length, 0);
         assert.equal(wire.failure, null);
         assert.equal(wire.forcedTermination ?? false, false);
-        profile.nativeOwners = captureNativeOwners(
+        const nativeCapture = captureNativeOwners(
           wire.prefix,
           path.join(directory, "native"),
           executionAuthority(source, consumer, environment),
         );
+        profile.nativeOwners = nativeCapture.nativeOwners;
+        profile.syscallObservation = {
+          syscallsComplete: nativeCapture.syscallsComplete,
+          terminalUnknownSyscalls: nativeCapture.terminalUnknownSyscalls,
+          execInventory: nativeCapture.execInventory,
+          qualifiedExecInventory: nativeCapture.qualifiedExecInventory,
+        };
         profile.qualification = validateNativeLifecycle(
           profile.nativeOwners,
           consumer,
