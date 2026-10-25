@@ -21,7 +21,11 @@ function installVueVirtualModules(ts, info) {
   const snapshots = new Map();
   const get = (fileName) => {
     if (!isSfc(fileName)) return undefined;
-    const raw = getSnapshot(fileName);
+    const scriptInfo = info.project?.projectService?.getScriptInfo?.(fileName);
+    // tsserver deliberately exposes an empty snapshot for closed mixed files.
+    // An open, unsaved empty file is authoritative and must remain empty.
+    const closedMixed = scriptInfo?.hasMixedContent && scriptInfo.isScriptOpen?.() === false;
+    const raw = closedMixed ? undefined : getSnapshot(fileName);
     const source = raw?.getText(0, raw.getLength()) ?? readFile(fileName);
     if (typeof source !== "string") return undefined;
     const settings = host.getCompilationSettings?.() || {};

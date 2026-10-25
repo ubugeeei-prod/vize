@@ -2,6 +2,10 @@
   "name": "@vizejs/typescript-vue-plugin",
   "version": "0.474.0",
   "description": "Vize language service plugin for the JavaScript TypeScript server",
+  "homepage": "https://github.com/ubugeeei-prod/vize",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",

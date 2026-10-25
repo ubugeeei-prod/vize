@@ -304,6 +304,21 @@ try {
     7,
   ]);
   assert.match(afterEdit.body.displayString, /string/);
+  await client.send("change", {
+    file: vue,
+    line: 1,
+    offset: 1,
+    endLine: edited.split("\n").length,
+    endOffset: 1,
+    insertString: "",
+  });
+  const cleared = await request(
+    "diagnostics-after-unsaved-clear",
+    "semanticDiagnosticsSync",
+    main,
+    mainText,
+  );
+  assert(!cleared.body.some((entry) => [2322, 2741].includes(entry.code)), JSON.stringify(cleared));
   const tsc = path.join(consumer, "node_modules/typescript/bin/tsc");
   try {
     run(process.execPath, [tsc, "-p", consumer, "--pretty", "false"], consumer);

@@ -19,7 +19,14 @@ const initVuePlugin = require(path.join(root, "npm/typescript-plugin/index.cjs")
   create(info: {
     languageService: import("typescript").LanguageService;
     languageServiceHost: import("typescript").LanguageServiceHost;
-    project: { getCurrentDirectory(): string };
+    project: {
+      getCurrentDirectory(): string;
+      projectService?: {
+        getScriptInfo(
+          fileName: string,
+        ): { hasMixedContent: boolean; isScriptOpen(): boolean } | undefined;
+      };
+    };
     serverHost: typeof ts.sys;
     config?: { nativePath: string };
   }): import("typescript").LanguageService;
@@ -35,7 +42,15 @@ test("TypeScript Vue plugin exposes generated SFC component types", () => {
     const service = initVuePlugin({ typescript: ts }).create({
       languageService: ts.createLanguageService(host),
       languageServiceHost: host,
-      project: { getCurrentDirectory: () => project.root },
+      project: {
+        getCurrentDirectory: () => project.root,
+        projectService: {
+          getScriptInfo: (file) =>
+            file.endsWith(".vue")
+              ? { hasMixedContent: true, isScriptOpen: () => false }
+              : undefined,
+        },
+      },
       serverHost: ts.sys,
       config: { nativePath: project.nativeDir },
     });
@@ -275,6 +290,7 @@ function createHost(rootDir: string, rootFiles: string[]) {
     getProjectVersion: () => String(projectVersion),
     getScriptFileNames: () => rootFiles,
     getScriptSnapshot(fileName) {
+      if (fileName.endsWith(".vue")) return ts.ScriptSnapshot.fromString("");
       const source = ts.sys.readFile(fileName);
       return source === undefined ? undefined : ts.ScriptSnapshot.fromString(source);
     },
