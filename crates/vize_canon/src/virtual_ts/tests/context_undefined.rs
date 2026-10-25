@@ -68,8 +68,22 @@ fn contexts() -> Vec<(String, String)> {
                     ),
                 );
                 if rich {
-                    assert!(text.contains("string | undefined"));
-                    assert!(text.contains("Element | undefined"));
+                    let attrs: Vec<_> = text
+                        .lines()
+                        .filter_map(|line| line.strip_prefix("    const $attrs = "))
+                        .collect();
+                    let refs: Vec<_> = text
+                        .lines()
+                        .filter_map(|line| line.strip_prefix("    const $refs = "))
+                        .collect();
+                    assert_eq!(
+                        attrs,
+                        ["(void 0) as unknown as { value: string | undefined };"]
+                    );
+                    assert_eq!(
+                        refs,
+                        ["(void 0) as unknown as { node: Element | undefined };"]
+                    );
                 }
                 contexts.push((
                     format!("{dialect:?}-strict{strict}-rich{rich}"),
@@ -123,10 +137,9 @@ fn embedded_model_placeholder_keeps_its_type_assertion_without_a_value_lookup() 
         (ast.operator_placeholders, ast.undefined_references),
         (1, 0)
     );
-    assert!(
-        source.contains(
-            "typeof import('vue') extends { defineModel: infer __Macro } ? __Macro : never"
-        )
+    assert_eq!(
+        helper.embedded,
+        "  const defineModel = (void 0) as unknown as typeof import('vue') extends { defineModel: infer __Macro } ? __Macro : never;\n"
     );
 }
 

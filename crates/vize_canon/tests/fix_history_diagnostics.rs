@@ -821,7 +821,8 @@ fn check_pack(
     assert_eq!(
         pack.source_revision,
         match name {
-            "contextual-prop-anchors-10661"
+            "template-context-undefined-10667"
+            | "contextual-prop-anchors-10661"
             | "typed-import-meta"
             | "slot-outlet-key"
             | "options-api-any-instance"

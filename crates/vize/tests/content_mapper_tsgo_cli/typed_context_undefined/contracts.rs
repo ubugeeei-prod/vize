@@ -111,11 +111,15 @@ pub(super) fn assert_mapper_geometry(
         );
     }
     if case.id == "prop-used" {
-        assert!(
-            transform
-                .text
-                .contains("const undefined = props[\"undefined\"];"),
-            "do not suppress the valid prop binding"
+        let bindings: Vec<_> = transform
+            .text
+            .lines()
+            .filter_map(|line| line.trim_start().strip_prefix("const undefined = "))
+            .collect();
+        assert_eq!(
+            bindings,
+            ["props[\"undefined\"];"],
+            "the complete original prop binding is retained exactly once"
         );
     }
 }

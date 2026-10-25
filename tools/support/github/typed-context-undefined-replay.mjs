@@ -88,6 +88,7 @@ if (mode === "prepare") {
       manifestSha256: hash(readFileSync("public/node_modules/vize/package.json")),
       version: pkg.version,
       lockSha256: hash(readFileSync("public/pnpm-lock.yaml")),
+      projectPolicySha256: hash(readFileSync("public/pnpm-workspace.yaml")),
     },
   });
   appendFileSync(
