@@ -15,6 +15,7 @@ export function readPropsPermalink(input: unknown, artPath: string): PermalinkRe
   try {
     if (
       typeof input !== "string" ||
+      input.length > MAX_PROPS_PERMALINK_LENGTH ||
       encodeURIComponent(input).length > MAX_PROPS_PERMALINK_LENGTH
     ) {
       throw new Error("The shared props state is missing or too large.");
@@ -118,16 +119,28 @@ function compare(a: string, b: string): number {
 
 function canonicalJson(input: unknown): string {
   let remaining = 4_096;
+  let characters = MAX_PROPS_PERMALINK_LENGTH;
+  function count(value: string) {
+    characters -= value.length;
+    if (characters < 0) throw new Error("The shared props state is too large.");
+  }
   function visit(value: unknown, depth: number): unknown {
     if (--remaining < 0 || depth > 12) throw new Error("The shared props state is too complex.");
-    if (value === null || typeof value === "string" || typeof value === "boolean") return value;
+    if (typeof value === "string") {
+      count(value);
+      return value;
+    }
+    if (value === null || typeof value === "boolean") return value;
     if (typeof value === "number" && Number.isFinite(value)) return value;
     if (Array.isArray(value)) return value.map((item) => visit(item, depth + 1));
     if (isRecord(value) && [Object.prototype, null].includes(Object.getPrototypeOf(value))) {
       return Object.fromEntries(
         Object.keys(value)
           .toSorted(compare)
-          .map((key) => [key, visit(value[key], depth + 1)]),
+          .map((key) => {
+            count(key);
+            return [key, visit(value[key], depth + 1)];
+          }),
       );
     }
     throw new Error("Only JSON values can be shared in a props URL.");
