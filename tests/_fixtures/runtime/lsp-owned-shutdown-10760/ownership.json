@@ -1,0 +1,14 @@
+{
+  "schema": "vize.owned-compiler-shutdown",
+  "version": 1,
+  "bridgeCases": [
+    { "id": "absent-client", "admission": "none", "release": "none", "expected": "ok" },
+    { "id": "pending-startup-release", "admission": "pending", "release": "before-timeout", "expected": "ok" },
+    { "id": "pending-startup-timeout", "admission": "pending", "release": "after-timeout", "expected": "timeout" },
+    { "id": "stopped-worker", "admission": "stopped", "release": "none", "expected": "process-terminated" }
+  ],
+  "ownerCases": [
+    { "id": "root-only", "cachedProjects": [], "expectedOwners": 1 },
+    { "id": "root-and-two-cached", "cachedProjects": ["a", "b"], "expectedOwners": 3 }
+  ]
+}

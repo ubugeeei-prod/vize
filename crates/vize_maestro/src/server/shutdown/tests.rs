@@ -52,7 +52,7 @@ fn cancellation_before_bridge_enqueue_does_not_stop_the_independent_driver() {
     let driver_admission = admission.clone();
     let (entered, observed) = std::sync::mpsc::channel();
     let (finished, completed) = std::sync::mpsc::channel();
-    let owner = Arc::new(());
+    let owner = Arc::new(crate::server::ServerState::new());
     let weak = Arc::downgrade(&owner);
     let mut first = Box::pin(shutdown.run(async move {
         entered.send(()).unwrap();

@@ -55,3 +55,12 @@ jobs:
           NODE
       - name: Exercise outer shutdown ownership and cancellation
         run: cargo test --locked --profile ci -p vize_maestro --lib shutdown -- --nocapture
+      - name: Retain explicit compiler selection receipt
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: lsp-owned-shutdown-provider-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/lsp-owned-shutdown-sdk-receipt.json
+            ${{ runner.temp }}/lsp-owned-shutdown-sdk/package-lock.json
+          if-no-files-found: error
