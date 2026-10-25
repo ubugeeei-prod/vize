@@ -254,6 +254,20 @@ export default { data() { return { n: 1 } } }</script><template><button @click="
         undefined,
         "vue",
       ],
+      [
+        "decoded-source-near-miss",
+        String.raw`<script>import { ref as authoredRef } from 'pkg\n';
+export default { data() { return { n: 1 } } }</script><template><button @click="n++">{{ n }}</button></template>`,
+        String.raw`pkg\n`,
+        "pkg\n",
+      ],
+      [
+        "decoded-source-literal-backslash",
+        String.raw`<script>import { ref as authoredRef } from 'pkg\\n';
+export default { data() { return { n: 1 } } }</script><template><button @click="n++">{{ n }}</button></template>`,
+        String.raw`pkg\n`,
+        String.raw`pkg\n`,
+      ],
     ]) {
       const file = { path: `./${control}.vue`, source, scopeId: "runtime-options" };
       writeFileSync(file.path, source);
@@ -281,7 +295,7 @@ export default { data() { return { n: 1 } } }</script><template><button @click="
       authoredStandalone.push({
         target: "dom",
         control,
-        external: true,
+        external: control !== "decoded-source-literal-backslash",
         authoredModule,
         options,
         source,
@@ -333,7 +347,7 @@ export default { data() { return { n: 1 } } }</script><template><button @click="
 
 function completeCases() {
   assert.equal(cases.length, 144, "all 72 module and 72 standalone configurations were captured");
-  assert.equal(observations.length, 928, "every native API return was retained");
+  assert.equal(observations.length, 934, "every native API return was retained");
   return cases;
 }
 
@@ -599,7 +613,7 @@ await test(
   skip,
   () => {
     completeCases();
-    assert.equal(authoredStandalone.length, 8);
+    assert.equal(authoredStandalone.length, 10);
     const Vue = require(join(process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_VUE, "node_modules/vue"));
     for (const row of authoredStandalone) {
       const { path, scopeId, ...file } = row.batch.results[0];
@@ -621,7 +635,7 @@ await test(
           parsed.program.body
             .filter((node) => node.type === "ImportDeclaration")
             .map((node) => node.source.value),
-          [row.authoredModule],
+          external ? [row.authoredModule] : [],
         );
         assert.equal(
           parsed.program.body.some(
@@ -646,7 +660,7 @@ await test(
       if (!external) new vm.Script(`(function(){${file.code}\n})`);
       if (!external && row.target === "dom") {
         const component = vm.runInNewContext(`(function(){${file.code}\n})()`, {
-          SelectedVue: Vue,
+          [row.options.runtimeGlobalName ?? "Vue"]: Vue,
         });
         const state = component.data();
         const first = component.render(state, [], {}, {}, state, component);

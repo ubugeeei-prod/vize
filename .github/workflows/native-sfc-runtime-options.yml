@@ -13,6 +13,10 @@ on:
       - davinci/vize_l0/src/js_string.rs
       - davinci/vize_l1_to_l2/src/emit/**
       - tests/tooling/native-sfc-runtime-options.test.mjs
+      - tests/_fixtures/differential/compiler/sfc-runtime-options-native/**
+      - npm/native/**
+      - crates/vize_vitrine/src/napi/**
+      - Cargo.lock
   workflow_dispatch:
 
 permissions: { contents: read }
