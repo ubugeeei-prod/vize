@@ -440,6 +440,10 @@ export interface TypeCheckerConfig {
  */
 export interface FormatterConfig {
   /**
+   * Formatter-only exclusions, relative to the project root; ordered negations are supported
+   */
+  ignorePatterns?: string[];
+  /**
    * Named set of formatter defaults; options set alongside it win
    */
   preset?: "vize" | "prettier" | "compact" | "documentation";

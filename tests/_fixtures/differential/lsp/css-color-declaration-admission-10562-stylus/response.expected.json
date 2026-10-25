@@ -1,0 +1,56 @@
+[
+  {
+    "range": {
+      "start": {
+        "line": 4,
+        "character": 8
+      },
+      "end": {
+        "line": 4,
+        "character": 15
+      }
+    },
+    "color": {
+      "red": 1.0,
+      "green": 0.0,
+      "blue": 0.0,
+      "alpha": 1.0
+    }
+  },
+  {
+    "range": {
+      "start": {
+        "line": 5,
+        "character": 19
+      },
+      "end": {
+        "line": 5,
+        "character": 31
+      }
+    },
+    "color": {
+      "red": 0.0,
+      "green": 0.0,
+      "blue": 1.0,
+      "alpha": 1.0
+    }
+  },
+  {
+    "range": {
+      "start": {
+        "line": 6,
+        "character": 16
+      },
+      "end": {
+        "line": 6,
+        "character": 19
+      }
+    },
+    "color": {
+      "red": 1.0,
+      "green": 0.0,
+      "blue": 0.0,
+      "alpha": 1.0
+    }
+  }
+]

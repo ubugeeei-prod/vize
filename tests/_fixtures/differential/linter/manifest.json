@@ -2221,6 +2221,47 @@
           }
         ]
       }
+    },
+    {
+      "id": "linter/repeated-macro-groups-10610",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "repeated-macro-groups-10610",
+        "files": [
+          {
+            "path": "TwoModels.lf.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "8e6562bda3affdb1d2f7333f1319c1cf9b430888a24d95a5f950ca79f199e222"
+          },
+          {
+            "path": "TwoModels.crlf.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "d26518381e8be8bb67f3f1eed9059d3b9c0e56d0ecfb8296dd9f3435bdceb4ab"
+          },
+          {
+            "path": "SplitGroup.vue.txt",
+            "role": "negative-control",
+            "sha256": "629deec3565de51676aa49d2aa40e4d32485454f5516120d29a6c69e3c85c7f9"
+          },
+          {
+            "path": "vite.config.mjs",
+            "role": "native-cli-config",
+            "sha256": "486630fa1aa8d4320f6765722933be31afdb2f579f939954567c9eb9fd3308cc"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }

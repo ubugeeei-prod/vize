@@ -1,0 +1,12 @@
+{
+  "name": "vize-vitest-project-extends-reproduction",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@vizejs/vite-plugin": "0.566.0",
+    "vite": "8.0.16",
+    "vitest": "5.0.1",
+    "vize": "0.566.0",
+    "vue": "3.5.43"
+  }
+}

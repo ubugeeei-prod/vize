@@ -1,0 +1,73 @@
+name: CSS color declaration admission
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/css-color-declaration-admission.yml"
+      - "crates/vize_maestro/src/server/annotations/document_color.rs"
+      - "crates/vize_maestro/src/server/annotations/document_color/**"
+      - "crates/vize_maestro/src/ide/style.rs"
+      - "tests/tooling/lsp-css-color-declaration-admission.test.ts"
+      - "tests/_fixtures/differential/lsp/css-color-declaration-admission-10562*/**"
+
+permissions: { contents: read }
+
+concurrency:
+  group: css-color-declaration-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  source-packets:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    env:
+      CARGO_BUILD_JOBS: "12"
+      CARGO_TERM_COLOR: always
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha }}
+      VIZE_LSP_BIN: target/ci/vize
+      VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, cache: true, run-install: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: test-scripts, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - run: vp install --frozen-lockfile --prefer-offline
+      - name: Build and receipt the exact source CLI
+        run: |
+          cargo build --profile ci -p vize
+          node tests/differential/build-receipt.ts
+          node --input-type=module -e "import assert from 'node:assert/strict';import fs from 'node:fs';assert.equal(JSON.parse(fs.readFileSync('target/ci/vize.differential-build.json')).sourceRevision,process.env.SOURCE_SHA)"
+      - name: Preserve complete public controls and corrected source packets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p target/vize-tests/css-color-declaration-admission
+          node --test tests/tooling/lsp-css-color-declaration-admission.test.ts 2>&1 | tee target/vize-tests/css-color-declaration-admission/protocol.log
+      - name: Verify shared parser edges and source work accounting
+        shell: bash
+        env:
+          VIZE_CSS_COLOR_WORK_CAPTURE: ${{ github.workspace }}/target/vize-tests/css-color-declaration-admission/scanner-work.json
+        run: |
+          set -euo pipefail
+          cargo test --locked --profile ci -p vize_maestro --lib server::annotations::document_color:: -- --nocapture 2>&1 | tee target/vize-tests/css-color-declaration-admission/native.log
+      - name: Retain owned whole packets and actual source identity
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: css-color-declarations-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.event.pull_request.head.sha }}
+          path: |
+            target/vize-tests/css-color-declaration-admission/
+            target/differential/lsp-sessions/
+            target/ci/vize.differential-build.json
+          if-no-files-found: error
+          retention-days: 7
