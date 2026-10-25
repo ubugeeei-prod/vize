@@ -16,7 +16,7 @@ export function prepareSharedApiCampaign(repoRoot, consumer) {
 /** Reuse authored packets only; beta provider/view qualification is independent. */
 export function prepareNativeBetaDtoCampaign(repoRoot, consumer) {
   assert.equal(consumer.kind, "selected-config");
-  return prepareCampaignInputs(repoRoot, consumer);
+  return { ...prepareCampaignInputs(repoRoot, consumer), packetWorkspace: consumer.configRoot };
 }
 
 function prepareCampaignInputs(repoRoot, consumer) {
@@ -257,7 +257,7 @@ export function assertSharedApiWirePackets(consumer, campaign, profile) {
     Object.keys(campaign.wireContract.transitions),
     "every dependency and repeated-initial transition is required",
   );
-  const workspace = pathToFileURL(consumer.workspace).href;
+  const workspace = pathToFileURL(campaign.packetWorkspace ?? consumer.workspace).href;
   const materialize = (value) => {
     if (typeof value === "string") return value.replaceAll("${workspace}", workspace);
     if (Array.isArray(value)) return value.map(materialize);
