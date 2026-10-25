@@ -7644,5 +7644,59 @@
         }
       ]
     }
+  ],
+  "preparationCases": [
+    {
+      "id": "typechecker/preparation/parse-before-runtime-10732",
+      "state": "active",
+      "adapter": "real-check-preparation-cli-v1",
+      "targets": [
+        "cli-preparation"
+      ],
+      "input": {
+        "path": "tests/_fixtures/differential/typechecker/check-parse-before-runtime-10732/cases.json",
+        "sha256": "c24a743240082791caed1803ec2aa9153accba6330690723ef8d9dd2ed6fb4ae"
+      },
+      "sources": [
+        {
+          "path": "crates/vize/src/commands/check/runner/execution.rs",
+          "before": "efeddbdcf3ef827687aad6bf3ce23dd3d591ca6f7083517d6fe04b8b2c86d65d",
+          "after": "7b8a9d169cadbce57143ee1b4debc7c96938548f9dfe74f6163dc357fc768a01"
+        },
+        {
+          "path": "crates/vize_canon/src/batch.rs",
+          "before": "046a27c2f9870d3e7c8e0be955f2daad298fbf9d0c043441aaa52f8c2c379681",
+          "after": "8c4b1940aeba743b43e2bb835509d8cc210839d1547c82e722c34d522b8ad5d8"
+        },
+        {
+          "path": "crates/vize_canon/src/batch/type_checker.rs",
+          "before": "e8ddc0437605f21402f26835451c69855fed051c34b5d8eb9cfbf5dae94b1d8b",
+          "after": "79997491da904dcd9dd6fda06d23d22e6905139b540e337cd3681d0c1ef681c0"
+        },
+        {
+          "path": "crates/vize_canon/src/batch/type_checker/installed_sources.rs",
+          "before": "1c5c069a944112a794468b0897ccb0b787469d6ed8c50e151771cc500c3dab50",
+          "after": "9df773a5f70b2caceeb1e66a4c36a9d002f0a65cb106202198d403b2337d1f7d"
+        },
+        {
+          "path": "crates/vize_canon/src/batch/type_checker/preparation.rs",
+          "before": null,
+          "after": "f497a2de865cfef1da271c52517bc95bc9215bb560bc9d39d223b58ce880817d"
+        }
+      ],
+      "test": {
+        "path": "tests/tooling/cli-check-contract.test.ts",
+        "sha256": "c16f0a791dd8633322944551d03ee5e7a3c39bcc99588afaf8ec58c863b94a4f"
+      },
+      "producer": {
+        "path": "tools/support/compat/github/source-cli-identity.ts",
+        "sha256": "c8d80351cbb43746950df7570816ce993e62c22653cb0eb8b5c72d722231db9e",
+        "binary": "target/ci/vize",
+        "receipt": "target/ci/vize.source-build.json",
+        "consumerReceipt": "target/ci/vize.source-use.json",
+        "witnessSchema": "vize.check-preparation.packets",
+        "packets": 9
+      }
+    }
   ]
 }

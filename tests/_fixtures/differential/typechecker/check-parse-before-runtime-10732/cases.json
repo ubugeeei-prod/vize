@@ -1,0 +1,49 @@
+{
+  "schema": "vize.check-preparation-cli",
+  "version": 1,
+  "parseCases": [
+    {
+      "id": "missing-template-close",
+      "source": "<template><div></div>",
+      "expected": {
+        "status": 1,
+        "stdout": "",
+        "stderr": "Error: SFC parse error: Malformed <template> block: the closing tag is missing.\n"
+      }
+    },
+    {
+      "id": "nested-open-template",
+      "source": "<template><div>",
+      "expected": {
+        "status": 1,
+        "stdout": "",
+        "stderr": "Error: SFC parse error: Malformed <template> block: the closing tag is missing.\n"
+      }
+    },
+    {
+      "id": "bom-crlf-unicode",
+      "source": "﻿<template>\r\n<div>日本語😀\r\n",
+      "expected": {
+        "status": 1,
+        "stdout": "",
+        "stderr": "Error: SFC parse error: Malformed <template> block: the closing tag is missing.\n"
+      }
+    }
+  ],
+  "validCase": {
+    "source": "<template><p /></template>\n",
+    "expected": {
+      "status": 1,
+      "stdout": "",
+      "stderr": "Error: error: native TypeScript runtime not found\n\nvize check requires a user-installed native TypeScript/tsgo executable.\nKeep your existing 'typescript' package. Install a native compiler under a separate alias, or configure typeChecker.corsaPath, CORSA_PATH, or TSGO_PATH.\n\nThe example below selects native TypeScript 7.1.0-beta; choose the native version you want to run.\n\nExample install commands (choose your package manager):\n\n  npm install -D typescript-native@npm:typescript@7.1.0-beta  # npm\n  pnpm add -D typescript-native@npm:typescript@7.1.0-beta  # pnpm\n  yarn add -D typescript-native@npm:typescript@7.1.0-beta  # yarn\n  bun add -D typescript-native@npm:typescript@7.1.0-beta  # bun\n\n"
+    }
+  },
+  "configErrorCase": {
+    "argument": "./missing.json",
+    "expected": {
+      "status": 2,
+      "stdout": "",
+      "stderr": "\u001b[31mError:\u001b[0m config file not found: ./missing.json\n"
+    }
+  }
+}

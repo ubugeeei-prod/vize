@@ -15,11 +15,13 @@ mod incremental;
 mod installed_sources;
 mod metrics;
 mod paths;
+mod preparation;
 mod registered;
 mod result;
 pub use declarations::{DeclarationEmitOptions, DeclarationEmitResult, DeclarationOutput};
 pub use metrics::IncrementalCheckMetrics;
 use paths::{IncrementalPaths, collect_project_paths};
+pub use preparation::BatchTypeCheckerPreparation;
 
 /// Result of type checking.
 #[derive(Debug, Default)]
@@ -198,21 +200,13 @@ impl BatchTypeChecker {
     /// and virtual-TS generation CPU-bound instead of serializing every file on
     /// the batch checker.
     pub fn scan_paths(&mut self, paths: &[PathBuf]) -> CorsaResult<()> {
-        self.scope_initial_installed_sources(paths)?;
-        let previous_sources = self.project.registered_original_paths_sorted();
-        self.project.set_declaration_roots(paths);
-        self.project.register_paths(paths)?;
-        self.project.register_package_route_targets()?;
-        // Out-of-root workspace files reachable through imports register too,
-        // so their consumers keep real types instead of the ambient stub
-        // (#3887).
-        self.project.register_reachable_dependencies()?;
-        self.project.prune_unowned_sources(previous_sources);
-        self.project.finalize_package_routes()?;
-        self.scanned = true;
-        self.incremental_paths
-            .after_explicit_scan(&self.project, paths);
-        Ok(())
+        scan_prepared_paths(
+            &mut self.project,
+            &mut self.scanned,
+            &mut self.incremental_paths,
+            &mut self.owned_storage,
+            paths,
+        )
     }
 
     /// Scan the project for source files.
@@ -276,6 +270,29 @@ impl BatchTypeChecker {
 
         self.executor.emit_declarations(&self.project, options)
     }
+}
+
+fn scan_prepared_paths(
+    project: &mut VirtualProject,
+    scanned: &mut bool,
+    incremental_paths: &mut IncrementalPaths,
+    owned_storage: &mut Option<tempfile::TempDir>,
+    paths: &[PathBuf],
+) -> CorsaResult<()> {
+    installed_sources::scope_initial_installed_sources(project, *scanned, owned_storage, paths)?;
+    let previous_sources = project.registered_original_paths_sorted();
+    project.set_declaration_roots(paths);
+    project.register_paths(paths)?;
+    project.register_package_route_targets()?;
+    // Out-of-root workspace files reachable through imports register too,
+    // so their consumers keep real types instead of the ambient stub
+    // (#3887).
+    project.register_reachable_dependencies()?;
+    project.prune_unowned_sources(previous_sources);
+    project.finalize_package_routes()?;
+    *scanned = true;
+    incremental_paths.after_explicit_scan(project, paths);
+    Ok(())
 }
 
 impl TypeChecker for BatchTypeChecker {

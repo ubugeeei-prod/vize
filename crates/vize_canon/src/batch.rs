@@ -39,8 +39,9 @@ pub use executor::CorsaExecutor;
 pub use import_rewriter::{ImportRewriter, ImportSourceMap, OffsetAdjustment, RewriteResult};
 pub use source_map::{CompositeSourceMap, SfcBlockRange, SfcSourceMap};
 pub use type_checker::{
-    BatchTypeChecker, BatchTypeCheckerOptions, DeclarationEmitOptions, DeclarationEmitResult,
-    DeclarationOutput, IncrementalCheckMetrics, TypeCheckResult, TypeChecker,
+    BatchTypeChecker, BatchTypeCheckerOptions, BatchTypeCheckerPreparation, DeclarationEmitOptions,
+    DeclarationEmitResult, DeclarationOutput, IncrementalCheckMetrics, TypeCheckResult,
+    TypeChecker,
 };
 pub use virtual_project::{
     BatchTopologyMetrics, CONTENT_MAPPER_GENERATED_DIAGNOSTIC_CODE,
