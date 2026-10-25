@@ -3,6 +3,8 @@ use crate::support::vite_config;
 use serde_json::{Value, json};
 use std::{fs, process::Command};
 
+mod pinned;
+
 const RULE: &str = "script/define-macros-order";
 const ABOVE: &str = "`defineModel` should be above `defineProps`.";
 const MODEL_TOP: &str = "`defineModel` should be placed at the top of `<script setup>` (after any potential import statements or type definitions).";
