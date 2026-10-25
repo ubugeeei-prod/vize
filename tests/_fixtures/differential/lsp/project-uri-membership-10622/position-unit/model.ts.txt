@@ -1,0 +1,2 @@
+import { ref, type Ref } from "vue";
+export function useThing(marker: string): { count: Ref<number>; title: string } { return { count: ref(0), title: marker }; }

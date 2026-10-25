@@ -4,6 +4,10 @@ on:
   pull_request:
     paths:
       - ".github/workflows/lsp-project-uri-membership.yml"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "Cargo.lock"
+      - "crates/vize_maestro/src/ide/corsa_support/canonical.rs"
       - "crates/vize_maestro/src/ide/corsa_support/canonical/project.rs"
       - "crates/vize_maestro/src/ide/corsa_support/canonical/project/identities/**"
       - "crates/vize_maestro/src/ide/corsa_support/canonical/project/identities.rs"
@@ -11,7 +15,13 @@ on:
       - "crates/vize_maestro/src/server/state/default.rs"
       - "crates/vize_maestro/src/server/state/canonical_paths.rs"
       - "tests/tooling/lsp-project-uri-membership.test.ts"
+      - "tests/tooling/lsp-project-uri-membership-position.test.ts"
       - "tests/tooling/support/project-uri-membership-10622.ts"
+      - "tests/tooling/support/project-uri-membership-position-10622.ts"
+      - "tests/tooling/support/project-uri-membership-provider-10622.ts"
+      - "tests/tooling/support/typecheck-dependency.ts"
+      - "editors/vscode/test/fixtures/passive-vize-server.cjs"
+      - "tests/_fixtures/differential/lsp/warm-type-backed-requests/**"
       - "tests/_fixtures/differential/lsp/project-uri-membership-10622/**"
 
 permissions: { contents: read }
@@ -48,6 +58,16 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with: { key: test-scripts, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
       - run: vp install --frozen-lockfile --prefer-offline
+      - name: Install the immutable original corpus Vue provider
+        shell: bash
+        run: |
+          set -euo pipefail
+          provider="$RUNNER_TEMP/project-uri-vue-10622"
+          mkdir -p "$provider"
+          cp tests/_fixtures/differential/lsp/project-uri-membership-10622/vue-3.5.41/package.json "$provider/package.json"
+          cp tests/_fixtures/differential/lsp/project-uri-membership-10622/vue-3.5.41/package-lock.json "$provider/package-lock.json"
+          npm ci --prefix "$provider" --ignore-scripts --no-audit --no-fund
+          printf 'VIZE_PROJECT_URI_VUE_PACKAGE=%s/node_modules/vue\n' "$provider" >> "$GITHUB_ENV"
       - name: Check every referenced tooling TypeScript project
         shell: bash
         run: |
@@ -90,6 +110,11 @@ jobs:
         run: |
           set -euo pipefail
           cargo test --locked --profile ci -p vize_maestro --lib server::state::canonical_paths::tests:: -- --nocapture 2>&1 | tee target/vize-tests/project-uri-membership-10622/path-leases.log
+      - name: Verify original400 complete packets, native ownership and byte positions
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test --test-concurrency=1 tests/tooling/lsp-project-uri-membership.test.ts tests/tooling/lsp-project-uri-membership-position.test.ts 2>&1 | tee target/vize-tests/project-uri-membership-10622/protocol.log
       - name: Retain owned complete source observations
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

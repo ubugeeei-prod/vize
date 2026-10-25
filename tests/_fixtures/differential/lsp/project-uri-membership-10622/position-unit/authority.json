@@ -1,0 +1,27 @@
+{
+  "schema": "vize.lsp.native-completion-position-unit",
+  "version": 1,
+  "authority": "Actual published0.567.0 LF/CRLF astral-before-cursor native completion frames plus primary SDK7.0.2 source; not source-built current qualification",
+  "existingOriginal400AuthoritySha256": "d9659038353d4eb8181baa0677ae296ad6ced6d8687d25873df60434eb660395",
+  "scope": "data.vizeCompletion.item.data.position is a native UTF8 byte offset; LSP query line/character uses negotiated utf-16. Only proven AST import-root spans and named transportURI fields relocate. All original packets, values, IDs and native sources remain retained.",
+  "files": {
+    "AstralCRLF.vue.txt": "e566d465d1b0e47d022781d0f02aace866f038eae90ca66ed8f3303e698893e7",
+    "AstralLF.vue.txt": "ff5cb57854484612b00a32fb89ff7fef3830bb14e7b2b3739460cc7e3b697a1d",
+    "Child.vue.txt": "96d23f63a86bfb9e3ac85c70e82af5a388b48ffdc608c1eec5e751ba9b16c8c5",
+    "SDK-LICENSE.txt": "a7d00bfd54525bc694b6e32f64c7ebcf5e6b7ae3657be5cc12767bce74654a47",
+    "model.ts.txt": "09a541dc0b3ebbd92434b99f3bb793debeb1bbae955d2d88d6722aaba80ea98c",
+    "profiles.json": "987dcd9ded587c0a408f6f7c537344641b5ea39489e0c68b7c552e8226c6af92",
+    "public-CRLF.native.ts.gz": "67578d4fb7c3980d51aea2073962978061eeb788b0884ee74f3bfb428fdb4390",
+    "public-LF.native.ts.gz": "93e4e8d01c2a74d4e4275fe5af957e06a5e9fbe91c23bc6d15f3d38808abf055",
+    "public-client.bin.gz": "1c966576cc46fd4c03a393cfe33d8c0ed3865cca339bcbf62335cc03fa57575f",
+    "public-native-protocol.jsonl.gz": "4474bec0db82aba519a948de3f938e79bceb94e688c5f23b3125118e4edb32bf",
+    "public-observation.json.gz": "10d21401eb6dbf8a2c579d02174479d12df3a119d526d91aa71a27c877d11838",
+    "public-provider.json": "98dcb63a20979f466ade4775cd31adaa170f12a5072381814e1b0e1ccc2c9052",
+    "public-sdk-package.json": "e88558e22e3db6c4da920e15a60eb2bbea801732b94aedb67e972be2a7f485b8",
+    "public-server.bin.gz": "0d052f234556d2afb555386bce4727bfdb5520d961fcef5e7839713400f7fe52",
+    "public-stderr.bin.gz": "31c6c96d132d888ab0bb7b08de00d946dd9710fd490fc9be8776da20ad57f03b",
+    "sdk-completions.go.gz": "d1ef6aa0f31571b94a5911db785487bbec8abdddd8de1043ec637a7ec626bbe0",
+    "sdk-converters.go.gz": "7202b12d9c67046e4b324fbe450b5a2a8cc7eb6a425517804914733145908112",
+    "sdk-source.json": "49d7f8bdff0243eb108a9f4dd3d5ef532d4afcdaddc0357ef40441137dc35bdb"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "schema": "vize.lsp.project-uri-membership-before",
+  "version": 1,
+  "issue": 10622,
+  "authority": "Published0.567.0 original400 scoped observation; no Nuxt latency reproduction or universal performance claim",
+  "sourceRevision": "2934b35b18393c188b3da5f8e50595299589fb8c",
+  "roots": {
+    "workspace": "/private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace",
+    "nativeProject": "/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-t5ZrE5/projects/2380d56c6aaa7e53533638f3b22b5749884eb74b555e1e0c18463f239ec21fac"
+  },
+  "originalSourceFiles": 534,
+  "rows": 15,
+  "nativeMethodCounts": {
+    "initialize": 1,
+    "initialized": 1,
+    "textDocument/didOpen": 534,
+    "textDocument/documentSymbol": 538,
+    "textDocument/diagnostic": 4,
+    "textDocument/hover": 4,
+    "custom/initializeAPISession": 1,
+    "textDocument/completion": 2,
+    "textDocument/references": 4,
+    "textDocument/definition": 4
+  },
+  "nativeArchive": {
+    "path": ".git/wt/preserved-evidence/20261025/lsp-type-query-warm-state-10622/public567-original400-scoped-profile.tar.gz",
+    "bytes": 111313391,
+    "sha256": "0a4c80c774f2bf95f6a74276b14784f95928c248ced761c32d3fcda728073753"
+  },
+  "relocation": "Bijection for exact authored workspace and owned native project root strings only. Any generated UTF16 position relocation requires the unchanged normalized native source and exact observed native query position. Other numbers, revisions, fields and ordered items remain complete.",
+  "files": {
+    "original400.inputs.json": "4a7a04cd282ff6449d7f25558e776d0986639e8e69c6fce40b5e909c08a90779",
+    "public-0.567.0-client.bin.gz": "bfbc091051301650fff362df41b3b39dc4a2dc9aa00c7b66fe4e9a36cdcfe262",
+    "public-0.567.0-observation.json.gz": "564825a20b56e3e0123b5181efb76b3165fdb470dc4bc8fbfa8359220b636f2c",
+    "public-0.567.0-server.bin.gz": "6ce451bc65dd7316fa09c197ff4701a52ebbcde09ec60fcd1bf3fab2658ebca5",
+    "public-0.567.0-stderr.bin.gz": "080deacc6b1ad5e0e5c988478539c7597c27f04ffdbfac1c3efe8c32c229031d",
+    "public-0.567.0.native-completion-queries.json": "7ffbdac9bb601ec59216cdb3ade34b2182edb41d4461c00b8ab4066e38750f7a",
+    "public-0.567.0.native-main.ts.gz": "1a12f09fdb67c337fdf4e2596cba167e03d78a6c249ee8e5c83dad90e62739a6",
+    "public-0.567.0.native-sources.json": "f92a5fa654aab9b097e7ea032dd858c6e417c228c466d0175bafdab956fdf894",
+    "public-0.567.0.packets.json": "41f4cb773fe8719a394e24d899b19214c6a2d5ae660d82a96bc7caf8a4e6eccd",
+    "public-0.567.0.provider.json": "98dcb63a20979f466ade4775cd31adaa170f12a5072381814e1b0e1ccc2c9052",
+    "vue-3.5.41/package-lock.json": "74d907d8fcce6f8a1c803cee0609859a305a693954068a86df1a888d4ff4da2e",
+    "vue-3.5.41/package.json": "4a2c593a78dd898566bf14bc68914ae452738d0ef2de4a64fd8c2be8f097f942"
+  },
+  "vuePackageJsonSha256": "f4b4f0bcc14f8d48db601ba33f408211438d86e914c08f7169836ad618ae1893"
+}

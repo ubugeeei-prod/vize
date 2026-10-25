@@ -1,0 +1,37 @@
+{
+  "schema": "vize.published.npm.jsx-hover-acceptance",
+  "version": 1,
+  "authority": "published-npm-consumer",
+  "releaseVersion": "0.567.0",
+  "platform": "darwin",
+  "arch": "arm64",
+  "provider": {
+    "wrapper": {
+      "path": "/private/tmp/vize-10622-scoped-profile.cPAkOQ/node_modules/vize/bin/vize",
+      "sha256": "c468a9fe05d3f46520392ed4bdbccf1ff9b323308f9aa23cca0b507b829a6f54"
+    },
+    "nativeAddon": {
+      "path": "/private/tmp/vize-10622-scoped-profile.cPAkOQ/node_modules/@vizejs/native-darwin-arm64/vize-vitrine.darwin-arm64.node",
+      "sha256": "98938bf0b7b6bfa603e6e624e6e299b7a3c4837782ae734419b087824f0ce9e3"
+    },
+    "cliVersion": "vize 0.567.0"
+  },
+  "dependencies": {
+    "runtime": {
+      "path": "/private/tmp/vize-10622-scoped-profile.cPAkOQ/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+      "sha256": "a82f731365ad69d5c4c15f5e18fba4584bf3b7b839960172a76c3462b5114bf2",
+      "version": "Version 7.0.2"
+    },
+    "vue": {
+      "path": "/private/tmp/vize-10622-scoped-profile.cPAkOQ/node_modules/vue",
+      "version": "3.5.41"
+    }
+  },
+  "driver": {
+    "sourceRoot": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-lsp-type-query-warm-state-10622",
+    "sourceHead": "bd905e766c37ad5bacabaacbec02c90def36726e",
+    "sessionSourceSha256": "19dcdc0a40c70f34945563d8518fb43855eb36aeff45bb1b67e2f6ccbbec56e7",
+    "sessionAdaptedSha256": "fbeb3c81b9aaa560b2217fb90ae035a8afa8bf6647ca1b2b592ccf4c12bc1c41"
+  },
+  "scope": "Untimed scoped published400-fixture observation with passive compiler byte tracing and numeric preparation tracing. No performance admission or universal claim."
+}

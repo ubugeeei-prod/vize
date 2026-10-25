@@ -1,0 +1,264 @@
+[
+  {
+    "name": "LF",
+    "source": "AstralLF.vue.txt",
+    "sourceSha256": "ff5cb57854484612b00a32fb89ff7fef3830bb14e7b2b3739460cc7e3b697a1d",
+    "native": "public-LF.native.ts.gz",
+    "nativeSourceSha256": "5af744bcc87adbad166a8e61945041b7e04a27c864cc6ea13b0b6547bc1c7f16",
+    "document": {
+      "languageId": "typescript",
+      "uri": "file:///private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-AblEtc/projects/47058f2cd2bceabbcfde39afeabf70f91aed59a9716bd281e964d150b3ec19c1/src/AstralLF.vue.ts",
+      "version": 1
+    },
+    "roots": {
+      "workspace": "/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-10622-position-unit.8p9idwrr/workspace",
+      "nativeProject": "/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-AblEtc/projects/47058f2cd2bceabbcfde39afeabf70f91aed59a9716bd281e964d150b3ec19c1"
+    },
+    "nativeExchange": {
+      "pid": 27916,
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 5,
+        "method": "textDocument/completion",
+        "params": {
+          "context": {
+            "triggerKind": 1
+          },
+          "position": {
+            "character": 25,
+            "line": 127
+          },
+          "textDocument": {
+            "uri": "file:///private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-AblEtc/projects/47058f2cd2bceabbcfde39afeabf70f91aed59a9716bd281e964d150b3ec19c1/src/AstralLF.vue.ts"
+          }
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 5,
+        "result": {
+          "isIncomplete": false,
+          "items": [
+            {
+              "label": "count",
+              "kind": 5,
+              "sortText": "11",
+              "data": {
+                "fileName": "/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-AblEtc/projects/47058f2cd2bceabbcfde39afeabf70f91aed59a9716bd281e964d150b3ec19c1/src/AstralLF.vue.ts",
+                "position": 15994,
+                "name": "count"
+              }
+            },
+            {
+              "label": "title",
+              "kind": 5,
+              "sortText": "11",
+              "data": {
+                "fileName": "/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-AblEtc/projects/47058f2cd2bceabbcfde39afeabf70f91aed59a9716bd281e964d150b3ec19c1/src/AstralLF.vue.ts",
+                "position": 15994,
+                "name": "title"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "nativePositionEncoding": "utf-16",
+    "nativeUtf8Offset": 15994,
+    "nativeUtf16Offset": 15985,
+    "packet": {
+      "label": "LF",
+      "method": "textDocument/completion",
+      "params": {
+        "textDocument": {
+          "uri": "file:///private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-10622-position-unit.8p9idwrr/workspace/src/AstralLF.vue"
+        },
+        "position": {
+          "line": 5,
+          "character": 23
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "result": [
+          {
+            "data": {
+              "vizeCompletion": {
+                "item": {
+                  "data": {
+                    "fileName": "/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-AblEtc/projects/47058f2cd2bceabbcfde39afeabf70f91aed59a9716bd281e964d150b3ec19c1/src/AstralLF.vue.ts",
+                    "name": "count",
+                    "position": 15994
+                  },
+                  "kind": 5,
+                  "label": "count",
+                  "sortText": "11"
+                },
+                "requestUri": "file:///private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-AblEtc/projects/47058f2cd2bceabbcfde39afeabf70f91aed59a9716bd281e964d150b3ec19c1/src/AstralLF.vue.ts",
+                "revision": 1,
+                "uri": "file:///private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-10622-position-unit.8p9idwrr/workspace/src/AstralLF.vue"
+              }
+            },
+            "kind": 5,
+            "label": "count",
+            "sortText": "11"
+          },
+          {
+            "data": {
+              "vizeCompletion": {
+                "item": {
+                  "data": {
+                    "fileName": "/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-AblEtc/projects/47058f2cd2bceabbcfde39afeabf70f91aed59a9716bd281e964d150b3ec19c1/src/AstralLF.vue.ts",
+                    "name": "title",
+                    "position": 15994
+                  },
+                  "kind": 5,
+                  "label": "title",
+                  "sortText": "11"
+                },
+                "requestUri": "file:///private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-AblEtc/projects/47058f2cd2bceabbcfde39afeabf70f91aed59a9716bd281e964d150b3ec19c1/src/AstralLF.vue.ts",
+                "revision": 1,
+                "uri": "file:///private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-10622-position-unit.8p9idwrr/workspace/src/AstralLF.vue"
+              }
+            },
+            "kind": 5,
+            "label": "title",
+            "sortText": "11"
+          }
+        ],
+        "id": 2
+      }
+    }
+  },
+  {
+    "name": "CRLF",
+    "source": "AstralCRLF.vue.txt",
+    "sourceSha256": "e566d465d1b0e47d022781d0f02aace866f038eae90ca66ed8f3303e698893e7",
+    "native": "public-CRLF.native.ts.gz",
+    "nativeSourceSha256": "621ba24d65ca8a29e3e163a15de01a292b48e397d35afcaf022dbd4fc41c1a02",
+    "document": {
+      "languageId": "typescript",
+      "uri": "file:///private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-AblEtc/projects/47058f2cd2bceabbcfde39afeabf70f91aed59a9716bd281e964d150b3ec19c1/src/AstralCRLF.vue.ts",
+      "version": 1
+    },
+    "roots": {
+      "workspace": "/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-10622-position-unit.8p9idwrr/workspace",
+      "nativeProject": "/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-AblEtc/projects/47058f2cd2bceabbcfde39afeabf70f91aed59a9716bd281e964d150b3ec19c1"
+    },
+    "nativeExchange": {
+      "pid": 27947,
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 6,
+        "method": "textDocument/completion",
+        "params": {
+          "context": {
+            "triggerKind": 1
+          },
+          "position": {
+            "character": 25,
+            "line": 127
+          },
+          "textDocument": {
+            "uri": "file:///private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-AblEtc/projects/47058f2cd2bceabbcfde39afeabf70f91aed59a9716bd281e964d150b3ec19c1/src/AstralCRLF.vue.ts"
+          }
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 6,
+        "result": {
+          "isIncomplete": false,
+          "items": [
+            {
+              "label": "count",
+              "kind": 5,
+              "sortText": "11",
+              "data": {
+                "fileName": "/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-AblEtc/projects/47058f2cd2bceabbcfde39afeabf70f91aed59a9716bd281e964d150b3ec19c1/src/AstralCRLF.vue.ts",
+                "position": 15994,
+                "name": "count"
+              }
+            },
+            {
+              "label": "title",
+              "kind": 5,
+              "sortText": "11",
+              "data": {
+                "fileName": "/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-AblEtc/projects/47058f2cd2bceabbcfde39afeabf70f91aed59a9716bd281e964d150b3ec19c1/src/AstralCRLF.vue.ts",
+                "position": 15994,
+                "name": "title"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "nativePositionEncoding": "utf-16",
+    "nativeUtf8Offset": 15994,
+    "nativeUtf16Offset": 15985,
+    "packet": {
+      "label": "CRLF",
+      "method": "textDocument/completion",
+      "params": {
+        "textDocument": {
+          "uri": "file:///private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-10622-position-unit.8p9idwrr/workspace/src/AstralCRLF.vue"
+        },
+        "position": {
+          "line": 5,
+          "character": 23
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "result": [
+          {
+            "data": {
+              "vizeCompletion": {
+                "item": {
+                  "data": {
+                    "fileName": "/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-AblEtc/projects/47058f2cd2bceabbcfde39afeabf70f91aed59a9716bd281e964d150b3ec19c1/src/AstralCRLF.vue.ts",
+                    "name": "count",
+                    "position": 15994
+                  },
+                  "kind": 5,
+                  "label": "count",
+                  "sortText": "11"
+                },
+                "requestUri": "file:///private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-AblEtc/projects/47058f2cd2bceabbcfde39afeabf70f91aed59a9716bd281e964d150b3ec19c1/src/AstralCRLF.vue.ts",
+                "revision": 2,
+                "uri": "file:///private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-10622-position-unit.8p9idwrr/workspace/src/AstralCRLF.vue"
+              }
+            },
+            "kind": 5,
+            "label": "count",
+            "sortText": "11"
+          },
+          {
+            "data": {
+              "vizeCompletion": {
+                "item": {
+                  "data": {
+                    "fileName": "/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-AblEtc/projects/47058f2cd2bceabbcfde39afeabf70f91aed59a9716bd281e964d150b3ec19c1/src/AstralCRLF.vue.ts",
+                    "name": "title",
+                    "position": 15994
+                  },
+                  "kind": 5,
+                  "label": "title",
+                  "sortText": "11"
+                },
+                "requestUri": "file:///private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-AblEtc/projects/47058f2cd2bceabbcfde39afeabf70f91aed59a9716bd281e964d150b3ec19c1/src/AstralCRLF.vue.ts",
+                "revision": 2,
+                "uri": "file:///private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-10622-position-unit.8p9idwrr/workspace/src/AstralCRLF.vue"
+              }
+            },
+            "kind": 5,
+            "label": "title",
+            "sortText": "11"
+          }
+        ],
+        "id": 3
+      }
+    }
+  }
+]

@@ -1,0 +1,23 @@
+{
+  "package": "@typescript/typescript-darwin-arm64",
+  "version": "7.0.2",
+  "gitHead": "2bd066d87f5bafd315be9f40889d0a60b9e58e0b",
+  "completionDataPositionUnit": "UTF8 bytes",
+  "negotiatedLspPositionEncoding": "utf-16",
+  "source": [
+    {
+      "path": "internal/ls/completions.go",
+      "blob": "5e62661fce9fa3799e6136f362bfb705700227a9",
+      "sha256": "b43c0a79d8ce56e286e26e805d0f4d24c8a0334d2be774062f7219e33b776fd6",
+      "url": "https://github.com/microsoft/typescript-go/blob/2bd066d87f5bafd315be9f40889d0a60b9e58e0b/internal/ls/completions.go#L36-L87",
+      "proof": "ProvideCompletion converts LSP line/character to internal position; ensureItemData assigns int32(pos)."
+    },
+    {
+      "path": "internal/ls/lsconv/converters.go",
+      "blob": "0ff39bea16a5042ece28cf4b85cecafcb96308da",
+      "sha256": "54d5881b5596cf99074e168ed54aacbb582c62e3cc4294c5f1a3ed1d989fd3ac",
+      "url": "https://github.com/microsoft/typescript-go/blob/2bd066d87f5bafd315be9f40889d0a60b9e58e0b/internal/ls/lsconv/converters.go#L144-L190",
+      "proof": "LineAndCharacterToPosition returns UTF8 offset; DecodeRuneInString supplies byte size while UTF16 counts the negotiated character."
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import { useThing } from "./model";
+import Child from "./Child.vue";
+const marker = "🧭é日本語";
+const thing = useThing(marker);
+const selected = thing.count.value;
+</script>
+<template><Child :title="thing.title" />{{ selected }}</template>

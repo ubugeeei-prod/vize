@@ -1,0 +1,36 @@
+[
+  {
+    "jsonrpc": "2.0",
+    "id": 547,
+    "method": "textDocument/completion",
+    "params": {
+      "context": {
+        "triggerKind": 1
+      },
+      "position": {
+        "character": 50,
+        "line": 133
+      },
+      "textDocument": {
+        "uri": "file:///private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-t5ZrE5/projects/2380d56c6aaa7e53533638f3b22b5749884eb74b555e1e0c18463f239ec21fac/src/c/Comp0.vue.ts"
+      }
+    }
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 554,
+    "method": "textDocument/completion",
+    "params": {
+      "context": {
+        "triggerKind": 1
+      },
+      "position": {
+        "character": 50,
+        "line": 133
+      },
+      "textDocument": {
+        "uri": "file:///private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-t5ZrE5/projects/2380d56c6aaa7e53533638f3b22b5749884eb74b555e1e0c18463f239ec21fac/src/c/Comp0.vue.ts"
+      }
+    }
+  }
+]

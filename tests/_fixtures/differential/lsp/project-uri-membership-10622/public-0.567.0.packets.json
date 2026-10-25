@@ -1,0 +1,2371 @@
+{
+  "initialization": {
+    "capabilities": {
+      "callHierarchyProvider": true,
+      "codeActionProvider": {
+        "codeActionKinds": [
+          "quickfix",
+          "source.organizeImports",
+          "source.sortImports",
+          "source.removeUnusedImports",
+          "source.fixAll"
+        ],
+        "resolveProvider": false
+      },
+      "codeLensProvider": {
+        "resolveProvider": false
+      },
+      "colorProvider": true,
+      "completionProvider": {
+        "resolveProvider": true,
+        "triggerCharacters": [
+          "\"",
+          "'",
+          ":",
+          "@",
+          ".",
+          "<",
+          "=",
+          "/",
+          ">",
+          "+",
+          "^",
+          "*",
+          "(",
+          ")",
+          "#",
+          "[",
+          "]",
+          "$",
+          "-",
+          "{",
+          "}"
+        ]
+      },
+      "declarationProvider": true,
+      "definitionProvider": true,
+      "documentFormattingProvider": true,
+      "documentHighlightProvider": true,
+      "documentLinkProvider": {
+        "resolveProvider": false
+      },
+      "documentOnTypeFormattingProvider": {
+        "firstTriggerCharacter": ";",
+        "moreTriggerCharacter": [
+          "}",
+          "\n"
+        ]
+      },
+      "documentRangeFormattingProvider": true,
+      "documentSymbolProvider": true,
+      "experimental": {
+        "vize": {
+          "jsxTypecheck": true
+        }
+      },
+      "foldingRangeProvider": true,
+      "hoverProvider": true,
+      "implementationProvider": true,
+      "inlayHintProvider": true,
+      "linkedEditingRangeProvider": true,
+      "monikerProvider": true,
+      "referencesProvider": true,
+      "renameProvider": {
+        "prepareProvider": true
+      },
+      "selectionRangeProvider": true,
+      "semanticTokensProvider": {
+        "full": true,
+        "legend": {
+          "tokenModifiers": [
+            "declaration",
+            "definition",
+            "readonly",
+            "static",
+            "deprecated",
+            "abstract",
+            "async",
+            "modification",
+            "documentation",
+            "defaultLibrary"
+          ],
+          "tokenTypes": [
+            "namespace",
+            "type",
+            "class",
+            "enum",
+            "interface",
+            "struct",
+            "typeParameter",
+            "parameter",
+            "variable",
+            "property",
+            "enumMember",
+            "event",
+            "function",
+            "method",
+            "macro",
+            "keyword",
+            "modifier",
+            "comment",
+            "string",
+            "number",
+            "regexp",
+            "operator",
+            "decorator"
+          ]
+        },
+        "range": true
+      },
+      "signatureHelpProvider": {
+        "retriggerCharacters": [
+          ")"
+        ],
+        "triggerCharacters": [
+          "(",
+          ",",
+          "<"
+        ]
+      },
+      "textDocumentSync": {
+        "change": 2,
+        "openClose": true,
+        "save": {
+          "includeText": false
+        },
+        "willSave": false,
+        "willSaveWaitUntil": false
+      },
+      "typeDefinitionProvider": true,
+      "workspace": {
+        "fileOperations": {
+          "didCreate": {
+            "filters": [
+              {
+                "pattern": {
+                  "glob": "**/*.d.{ts,mts,cts}",
+                  "matches": "file"
+                },
+                "scheme": "file"
+              },
+              {
+                "pattern": {
+                  "glob": "**/*.vue",
+                  "matches": "file"
+                },
+                "scheme": "file"
+              },
+              {
+                "pattern": {
+                  "glob": "**/*",
+                  "matches": "folder"
+                },
+                "scheme": "file"
+              }
+            ]
+          },
+          "didDelete": {
+            "filters": [
+              {
+                "pattern": {
+                  "glob": "**/*.d.{ts,mts,cts}",
+                  "matches": "file"
+                },
+                "scheme": "file"
+              },
+              {
+                "pattern": {
+                  "glob": "**/*.vue",
+                  "matches": "file"
+                },
+                "scheme": "file"
+              },
+              {
+                "pattern": {
+                  "glob": "**/*",
+                  "matches": "folder"
+                },
+                "scheme": "file"
+              }
+            ]
+          },
+          "didRename": {
+            "filters": [
+              {
+                "pattern": {
+                  "glob": "**/*.{vue,ts,tsx,d.ts,d.mts,d.cts,js,jsx,mts,cts,mjs,cjs}",
+                  "matches": "file"
+                },
+                "scheme": "file"
+              },
+              {
+                "pattern": {
+                  "glob": "**/*",
+                  "matches": "folder"
+                },
+                "scheme": "file"
+              }
+            ]
+          },
+          "willRename": {
+            "filters": [
+              {
+                "pattern": {
+                  "glob": "**/*.{vue,ts,tsx,d.ts,d.mts,d.cts,js,jsx,mts,cts,mjs,cjs}",
+                  "matches": "file"
+                },
+                "scheme": "file"
+              },
+              {
+                "pattern": {
+                  "glob": "**/*",
+                  "matches": "folder"
+                },
+                "scheme": "file"
+              }
+            ]
+          }
+        },
+        "workspaceFolders": {
+          "changeNotifications": true,
+          "supported": true
+        }
+      },
+      "workspaceSymbolProvider": true
+    },
+    "serverInfo": {
+      "name": "vize-maestro",
+      "version": "0.567.0"
+    }
+  },
+  "rows": [
+    {
+      "label": "round0-structural",
+      "method": "textDocument/documentSymbol",
+      "params": {
+        "textDocument": {
+          "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "result": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": 19,
+                    "name": "h2",
+                    "range": {
+                      "end": {
+                        "character": 47,
+                        "line": 20
+                      },
+                      "start": {
+                        "character": 4,
+                        "line": 20
+                      }
+                    },
+                    "selectionRange": {
+                      "end": {
+                        "character": 7,
+                        "line": 20
+                      },
+                      "start": {
+                        "character": 5,
+                        "line": 20
+                      }
+                    }
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": 19,
+                        "name": "li",
+                        "range": {
+                          "end": {
+                            "character": 80,
+                            "line": 22
+                          },
+                          "start": {
+                            "character": 6,
+                            "line": 22
+                          }
+                        },
+                        "selectionRange": {
+                          "end": {
+                            "character": 9,
+                            "line": 22
+                          },
+                          "start": {
+                            "character": 7,
+                            "line": 22
+                          }
+                        }
+                      }
+                    ],
+                    "kind": 19,
+                    "name": "ul",
+                    "range": {
+                      "end": {
+                        "character": 9,
+                        "line": 23
+                      },
+                      "start": {
+                        "character": 4,
+                        "line": 21
+                      }
+                    },
+                    "selectionRange": {
+                      "end": {
+                        "character": 7,
+                        "line": 21
+                      },
+                      "start": {
+                        "character": 5,
+                        "line": 21
+                      }
+                    }
+                  },
+                  {
+                    "kind": 5,
+                    "name": "Comp7",
+                    "range": {
+                      "end": {
+                        "character": 68,
+                        "line": 24
+                      },
+                      "start": {
+                        "character": 4,
+                        "line": 24
+                      }
+                    },
+                    "selectionRange": {
+                      "end": {
+                        "character": 10,
+                        "line": 24
+                      },
+                      "start": {
+                        "character": 5,
+                        "line": 24
+                      }
+                    }
+                  },
+                  {
+                    "kind": 5,
+                    "name": "Comp14",
+                    "range": {
+                      "end": {
+                        "character": 69,
+                        "line": 25
+                      },
+                      "start": {
+                        "character": 4,
+                        "line": 25
+                      }
+                    },
+                    "selectionRange": {
+                      "end": {
+                        "character": 11,
+                        "line": 25
+                      },
+                      "start": {
+                        "character": 5,
+                        "line": 25
+                      }
+                    }
+                  },
+                  {
+                    "kind": 5,
+                    "name": "Comp21",
+                    "range": {
+                      "end": {
+                        "character": 69,
+                        "line": 26
+                      },
+                      "start": {
+                        "character": 4,
+                        "line": 26
+                      }
+                    },
+                    "selectionRange": {
+                      "end": {
+                        "character": 11,
+                        "line": 26
+                      },
+                      "start": {
+                        "character": 5,
+                        "line": 26
+                      }
+                    }
+                  }
+                ],
+                "kind": 19,
+                "name": "section",
+                "range": {
+                  "end": {
+                    "character": 12,
+                    "line": 27
+                  },
+                  "start": {
+                    "character": 2,
+                    "line": 19
+                  }
+                },
+                "selectionRange": {
+                  "end": {
+                    "character": 10,
+                    "line": 19
+                  },
+                  "start": {
+                    "character": 3,
+                    "line": 19
+                  }
+                }
+              }
+            ],
+            "kind": 2,
+            "name": "template",
+            "range": {
+              "end": {
+                "character": 11,
+                "line": 28
+              },
+              "start": {
+                "character": 0,
+                "line": 18
+              }
+            },
+            "selectionRange": {
+              "end": {
+                "character": 9,
+                "line": 18
+              },
+              "start": {
+                "character": 1,
+                "line": 18
+              }
+            }
+          },
+          {
+            "children": [
+              {
+                "kind": 14,
+                "name": "title",
+                "range": {
+                  "end": {
+                    "character": 76,
+                    "line": 7
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 7
+                  }
+                },
+                "selectionRange": {
+                  "end": {
+                    "character": 13,
+                    "line": 7
+                  },
+                  "start": {
+                    "character": 8,
+                    "line": 7
+                  }
+                }
+              },
+              {
+                "kind": 14,
+                "name": "size",
+                "range": {
+                  "end": {
+                    "character": 76,
+                    "line": 7
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 7
+                  }
+                },
+                "selectionRange": {
+                  "end": {
+                    "character": 19,
+                    "line": 7
+                  },
+                  "start": {
+                    "character": 15,
+                    "line": 7
+                  }
+                }
+              },
+              {
+                "kind": 14,
+                "name": "emit",
+                "range": {
+                  "end": {
+                    "character": 53,
+                    "line": 8
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 8
+                  }
+                },
+                "selectionRange": {
+                  "end": {
+                    "character": 10,
+                    "line": 8
+                  },
+                  "start": {
+                    "character": 6,
+                    "line": 8
+                  }
+                }
+              },
+              {
+                "kind": 14,
+                "name": "open",
+                "range": {
+                  "end": {
+                    "character": 24,
+                    "line": 9
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 9
+                  }
+                },
+                "selectionRange": {
+                  "end": {
+                    "character": 10,
+                    "line": 9
+                  },
+                  "start": {
+                    "character": 6,
+                    "line": 9
+                  }
+                }
+              },
+              {
+                "kind": 14,
+                "name": "thing",
+                "range": {
+                  "end": {
+                    "character": 30,
+                    "line": 10
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 10
+                  }
+                },
+                "selectionRange": {
+                  "end": {
+                    "character": 11,
+                    "line": 10
+                  },
+                  "start": {
+                    "character": 6,
+                    "line": 10
+                  }
+                }
+              },
+              {
+                "kind": 14,
+                "name": "label",
+                "range": {
+                  "end": {
+                    "character": 64,
+                    "line": 11
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 11
+                  }
+                },
+                "selectionRange": {
+                  "end": {
+                    "character": 11,
+                    "line": 11
+                  },
+                  "start": {
+                    "character": 6,
+                    "line": 11
+                  }
+                }
+              },
+              {
+                "kind": 12,
+                "name": "toggle",
+                "range": {
+                  "end": {
+                    "character": 1,
+                    "line": 15
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 12
+                  }
+                },
+                "selectionRange": {
+                  "end": {
+                    "character": 15,
+                    "line": 12
+                  },
+                  "start": {
+                    "character": 9,
+                    "line": 12
+                  }
+                }
+              }
+            ],
+            "detail": "ts",
+            "kind": 2,
+            "name": "script setup",
+            "range": {
+              "end": {
+                "character": 9,
+                "line": 16
+              },
+              "start": {
+                "character": 0,
+                "line": 0
+              }
+            },
+            "selectionRange": {
+              "end": {
+                "character": 7,
+                "line": 0
+              },
+              "start": {
+                "character": 1,
+                "line": 0
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "label": "round0-template-hover",
+      "method": "textDocument/hover",
+      "params": {
+        "textDocument": {
+          "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+        },
+        "position": {
+          "line": 20,
+          "character": 36
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 3,
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\nconst label: string\n```"
+          },
+          "range": {
+            "end": {
+              "character": 39,
+              "line": 20
+            },
+            "start": {
+              "character": 34,
+              "line": 20
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "round0-bound-value-hover",
+      "method": "textDocument/hover",
+      "params": {
+        "textDocument": {
+          "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+        },
+        "position": {
+          "line": 24,
+          "character": 37
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 4,
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\nconst title: string\n```"
+          },
+          "range": {
+            "end": {
+              "character": 40,
+              "line": 24
+            },
+            "start": {
+              "character": 35,
+              "line": 24
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "round0-tag-completion",
+      "method": "textDocument/completion",
+      "params": {
+        "textDocument": {
+          "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+        },
+        "position": {
+          "line": 24,
+          "character": 8
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 5,
+        "result": [
+          {
+            "detail": "Component in script setup",
+            "insertTextFormat": 1,
+            "kind": 7,
+            "label": "Comp14",
+            "sortText": "Comp14",
+            "textEdit": {
+              "newText": "Comp14",
+              "range": {
+                "end": {
+                  "character": 10,
+                  "line": 24
+                },
+                "start": {
+                  "character": 5,
+                  "line": 24
+                }
+              }
+            }
+          },
+          {
+            "detail": "Component in script setup",
+            "insertTextFormat": 1,
+            "kind": 7,
+            "label": "Comp21",
+            "sortText": "Comp21",
+            "textEdit": {
+              "newText": "Comp21",
+              "range": {
+                "end": {
+                  "character": 10,
+                  "line": 24
+                },
+                "start": {
+                  "character": 5,
+                  "line": 24
+                }
+              }
+            }
+          },
+          {
+            "detail": "Component in script setup",
+            "insertTextFormat": 1,
+            "kind": 7,
+            "label": "Comp7",
+            "sortText": "Comp7",
+            "textEdit": {
+              "newText": "Comp7",
+              "range": {
+                "end": {
+                  "character": 10,
+                  "line": 24
+                },
+                "start": {
+                  "character": 5,
+                  "line": 24
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "label": "round0-member-completion",
+      "method": "textDocument/completion",
+      "params": {
+        "textDocument": {
+          "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+        },
+        "position": {
+          "line": 11,
+          "character": 48
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 6,
+        "result": [
+          {
+            "data": {
+              "vizeCompletion": {
+                "item": {
+                  "data": {
+                    "fileName": "/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-t5ZrE5/projects/2380d56c6aaa7e53533638f3b22b5749884eb74b555e1e0c18463f239ec21fac/src/c/Comp0.vue.ts",
+                    "name": "count",
+                    "position": 16650
+                  },
+                  "kind": 5,
+                  "label": "count",
+                  "sortText": "11"
+                },
+                "requestUri": "file:///private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-t5ZrE5/projects/2380d56c6aaa7e53533638f3b22b5749884eb74b555e1e0c18463f239ec21fac/src/c/Comp0.vue.ts",
+                "revision": 1,
+                "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+              }
+            },
+            "kind": 5,
+            "label": "count",
+            "sortText": "11"
+          },
+          {
+            "data": {
+              "vizeCompletion": {
+                "item": {
+                  "data": {
+                    "fileName": "/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-t5ZrE5/projects/2380d56c6aaa7e53533638f3b22b5749884eb74b555e1e0c18463f239ec21fac/src/c/Comp0.vue.ts",
+                    "name": "double",
+                    "position": 16650
+                  },
+                  "kind": 5,
+                  "label": "double",
+                  "sortText": "11"
+                },
+                "requestUri": "file:///private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-t5ZrE5/projects/2380d56c6aaa7e53533638f3b22b5749884eb74b555e1e0c18463f239ec21fac/src/c/Comp0.vue.ts",
+                "revision": 1,
+                "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+              }
+            },
+            "kind": 5,
+            "label": "double",
+            "sortText": "11"
+          },
+          {
+            "data": {
+              "vizeCompletion": {
+                "item": {
+                  "data": {
+                    "fileName": "/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-t5ZrE5/projects/2380d56c6aaa7e53533638f3b22b5749884eb74b555e1e0c18463f239ec21fac/src/c/Comp0.vue.ts",
+                    "name": "items",
+                    "position": 16650
+                  },
+                  "kind": 5,
+                  "label": "items",
+                  "sortText": "11"
+                },
+                "requestUri": "file:///private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-t5ZrE5/projects/2380d56c6aaa7e53533638f3b22b5749884eb74b555e1e0c18463f239ec21fac/src/c/Comp0.vue.ts",
+                "revision": 1,
+                "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+              }
+            },
+            "kind": 5,
+            "label": "items",
+            "sortText": "11"
+          },
+          {
+            "data": {
+              "vizeCompletion": {
+                "item": {
+                  "data": {
+                    "fileName": "/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-t5ZrE5/projects/2380d56c6aaa7e53533638f3b22b5749884eb74b555e1e0c18463f239ec21fac/src/c/Comp0.vue.ts",
+                    "name": "add",
+                    "position": 16650
+                  },
+                  "kind": 2,
+                  "label": "add",
+                  "sortText": "11"
+                },
+                "requestUri": "file:///private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-t5ZrE5/projects/2380d56c6aaa7e53533638f3b22b5749884eb74b555e1e0c18463f239ec21fac/src/c/Comp0.vue.ts",
+                "revision": 1,
+                "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+              }
+            },
+            "kind": 2,
+            "label": "add",
+            "sortText": "11"
+          }
+        ]
+      }
+    },
+    {
+      "label": "round0-local-references",
+      "method": "textDocument/references",
+      "params": {
+        "textDocument": {
+          "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+        },
+        "position": {
+          "line": 20,
+          "character": 18
+        },
+        "context": {
+          "includeDeclaration": true
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 7,
+        "result": [
+          {
+            "range": {
+              "end": {
+                "character": 15,
+                "line": 12
+              },
+              "start": {
+                "character": 9,
+                "line": 12
+              }
+            },
+            "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 22,
+                "line": 20
+              },
+              "start": {
+                "character": 16,
+                "line": 20
+              }
+            },
+            "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 57,
+                "line": 24
+              },
+              "start": {
+                "character": 51,
+                "line": 24
+              }
+            },
+            "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 58,
+                "line": 25
+              },
+              "start": {
+                "character": 52,
+                "line": 25
+              }
+            },
+            "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 58,
+                "line": 26
+              },
+              "start": {
+                "character": 52,
+                "line": 26
+              }
+            },
+            "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+          }
+        ]
+      }
+    },
+    {
+      "label": "round0-import-references",
+      "method": "textDocument/references",
+      "params": {
+        "textDocument": {
+          "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+        },
+        "position": {
+          "line": 10,
+          "character": 18
+        },
+        "context": {
+          "includeDeclaration": true
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 8,
+        "result": [
+          {
+            "range": {
+              "end": {
+                "character": 18,
+                "line": 2
+              },
+              "start": {
+                "character": 9,
+                "line": 2
+              }
+            },
+            "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 23,
+                "line": 10
+              },
+              "start": {
+                "character": 14,
+                "line": 10
+              }
+            },
+            "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 18,
+                "line": 2
+              },
+              "start": {
+                "character": 9,
+                "line": 2
+              }
+            },
+            "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp134.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 23,
+                "line": 10
+              },
+              "start": {
+                "character": 14,
+                "line": 10
+              }
+            },
+            "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp134.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 18,
+                "line": 2
+              },
+              "start": {
+                "character": 9,
+                "line": 2
+              }
+            },
+            "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp268.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 23,
+                "line": 10
+              },
+              "start": {
+                "character": 14,
+                "line": 10
+              }
+            },
+            "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp268.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 25,
+                "line": 3
+              },
+              "start": {
+                "character": 16,
+                "line": 3
+              }
+            },
+            "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/lib/mod0.ts"
+          }
+        ]
+      }
+    },
+    {
+      "label": "round1-structural",
+      "method": "textDocument/documentSymbol",
+      "params": {
+        "textDocument": {
+          "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 9,
+        "result": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": 19,
+                    "name": "h2",
+                    "range": {
+                      "end": {
+                        "character": 47,
+                        "line": 20
+                      },
+                      "start": {
+                        "character": 4,
+                        "line": 20
+                      }
+                    },
+                    "selectionRange": {
+                      "end": {
+                        "character": 7,
+                        "line": 20
+                      },
+                      "start": {
+                        "character": 5,
+                        "line": 20
+                      }
+                    }
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": 19,
+                        "name": "li",
+                        "range": {
+                          "end": {
+                            "character": 80,
+                            "line": 22
+                          },
+                          "start": {
+                            "character": 6,
+                            "line": 22
+                          }
+                        },
+                        "selectionRange": {
+                          "end": {
+                            "character": 9,
+                            "line": 22
+                          },
+                          "start": {
+                            "character": 7,
+                            "line": 22
+                          }
+                        }
+                      }
+                    ],
+                    "kind": 19,
+                    "name": "ul",
+                    "range": {
+                      "end": {
+                        "character": 9,
+                        "line": 23
+                      },
+                      "start": {
+                        "character": 4,
+                        "line": 21
+                      }
+                    },
+                    "selectionRange": {
+                      "end": {
+                        "character": 7,
+                        "line": 21
+                      },
+                      "start": {
+                        "character": 5,
+                        "line": 21
+                      }
+                    }
+                  },
+                  {
+                    "kind": 5,
+                    "name": "Comp7",
+                    "range": {
+                      "end": {
+                        "character": 68,
+                        "line": 24
+                      },
+                      "start": {
+                        "character": 4,
+                        "line": 24
+                      }
+                    },
+                    "selectionRange": {
+                      "end": {
+                        "character": 10,
+                        "line": 24
+                      },
+                      "start": {
+                        "character": 5,
+                        "line": 24
+                      }
+                    }
+                  },
+                  {
+                    "kind": 5,
+                    "name": "Comp14",
+                    "range": {
+                      "end": {
+                        "character": 69,
+                        "line": 25
+                      },
+                      "start": {
+                        "character": 4,
+                        "line": 25
+                      }
+                    },
+                    "selectionRange": {
+                      "end": {
+                        "character": 11,
+                        "line": 25
+                      },
+                      "start": {
+                        "character": 5,
+                        "line": 25
+                      }
+                    }
+                  },
+                  {
+                    "kind": 5,
+                    "name": "Comp21",
+                    "range": {
+                      "end": {
+                        "character": 69,
+                        "line": 26
+                      },
+                      "start": {
+                        "character": 4,
+                        "line": 26
+                      }
+                    },
+                    "selectionRange": {
+                      "end": {
+                        "character": 11,
+                        "line": 26
+                      },
+                      "start": {
+                        "character": 5,
+                        "line": 26
+                      }
+                    }
+                  }
+                ],
+                "kind": 19,
+                "name": "section",
+                "range": {
+                  "end": {
+                    "character": 12,
+                    "line": 27
+                  },
+                  "start": {
+                    "character": 2,
+                    "line": 19
+                  }
+                },
+                "selectionRange": {
+                  "end": {
+                    "character": 10,
+                    "line": 19
+                  },
+                  "start": {
+                    "character": 3,
+                    "line": 19
+                  }
+                }
+              }
+            ],
+            "kind": 2,
+            "name": "template",
+            "range": {
+              "end": {
+                "character": 11,
+                "line": 28
+              },
+              "start": {
+                "character": 0,
+                "line": 18
+              }
+            },
+            "selectionRange": {
+              "end": {
+                "character": 9,
+                "line": 18
+              },
+              "start": {
+                "character": 1,
+                "line": 18
+              }
+            }
+          },
+          {
+            "children": [
+              {
+                "kind": 14,
+                "name": "title",
+                "range": {
+                  "end": {
+                    "character": 76,
+                    "line": 7
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 7
+                  }
+                },
+                "selectionRange": {
+                  "end": {
+                    "character": 13,
+                    "line": 7
+                  },
+                  "start": {
+                    "character": 8,
+                    "line": 7
+                  }
+                }
+              },
+              {
+                "kind": 14,
+                "name": "size",
+                "range": {
+                  "end": {
+                    "character": 76,
+                    "line": 7
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 7
+                  }
+                },
+                "selectionRange": {
+                  "end": {
+                    "character": 19,
+                    "line": 7
+                  },
+                  "start": {
+                    "character": 15,
+                    "line": 7
+                  }
+                }
+              },
+              {
+                "kind": 14,
+                "name": "emit",
+                "range": {
+                  "end": {
+                    "character": 53,
+                    "line": 8
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 8
+                  }
+                },
+                "selectionRange": {
+                  "end": {
+                    "character": 10,
+                    "line": 8
+                  },
+                  "start": {
+                    "character": 6,
+                    "line": 8
+                  }
+                }
+              },
+              {
+                "kind": 14,
+                "name": "open",
+                "range": {
+                  "end": {
+                    "character": 24,
+                    "line": 9
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 9
+                  }
+                },
+                "selectionRange": {
+                  "end": {
+                    "character": 10,
+                    "line": 9
+                  },
+                  "start": {
+                    "character": 6,
+                    "line": 9
+                  }
+                }
+              },
+              {
+                "kind": 14,
+                "name": "thing",
+                "range": {
+                  "end": {
+                    "character": 30,
+                    "line": 10
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 10
+                  }
+                },
+                "selectionRange": {
+                  "end": {
+                    "character": 11,
+                    "line": 10
+                  },
+                  "start": {
+                    "character": 6,
+                    "line": 10
+                  }
+                }
+              },
+              {
+                "kind": 14,
+                "name": "label",
+                "range": {
+                  "end": {
+                    "character": 64,
+                    "line": 11
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 11
+                  }
+                },
+                "selectionRange": {
+                  "end": {
+                    "character": 11,
+                    "line": 11
+                  },
+                  "start": {
+                    "character": 6,
+                    "line": 11
+                  }
+                }
+              },
+              {
+                "kind": 12,
+                "name": "toggle",
+                "range": {
+                  "end": {
+                    "character": 1,
+                    "line": 15
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 12
+                  }
+                },
+                "selectionRange": {
+                  "end": {
+                    "character": 15,
+                    "line": 12
+                  },
+                  "start": {
+                    "character": 9,
+                    "line": 12
+                  }
+                }
+              }
+            ],
+            "detail": "ts",
+            "kind": 2,
+            "name": "script setup",
+            "range": {
+              "end": {
+                "character": 9,
+                "line": 16
+              },
+              "start": {
+                "character": 0,
+                "line": 0
+              }
+            },
+            "selectionRange": {
+              "end": {
+                "character": 7,
+                "line": 0
+              },
+              "start": {
+                "character": 1,
+                "line": 0
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "label": "round1-template-hover",
+      "method": "textDocument/hover",
+      "params": {
+        "textDocument": {
+          "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+        },
+        "position": {
+          "line": 20,
+          "character": 36
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 10,
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\nconst label: string\n```"
+          },
+          "range": {
+            "end": {
+              "character": 39,
+              "line": 20
+            },
+            "start": {
+              "character": 34,
+              "line": 20
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "round1-bound-value-hover",
+      "method": "textDocument/hover",
+      "params": {
+        "textDocument": {
+          "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+        },
+        "position": {
+          "line": 24,
+          "character": 37
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 11,
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\nconst title: string\n```"
+          },
+          "range": {
+            "end": {
+              "character": 40,
+              "line": 24
+            },
+            "start": {
+              "character": 35,
+              "line": 24
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "round1-tag-completion",
+      "method": "textDocument/completion",
+      "params": {
+        "textDocument": {
+          "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+        },
+        "position": {
+          "line": 24,
+          "character": 8
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 12,
+        "result": [
+          {
+            "detail": "Component in script setup",
+            "insertTextFormat": 1,
+            "kind": 7,
+            "label": "Comp14",
+            "sortText": "Comp14",
+            "textEdit": {
+              "newText": "Comp14",
+              "range": {
+                "end": {
+                  "character": 10,
+                  "line": 24
+                },
+                "start": {
+                  "character": 5,
+                  "line": 24
+                }
+              }
+            }
+          },
+          {
+            "detail": "Component in script setup",
+            "insertTextFormat": 1,
+            "kind": 7,
+            "label": "Comp21",
+            "sortText": "Comp21",
+            "textEdit": {
+              "newText": "Comp21",
+              "range": {
+                "end": {
+                  "character": 10,
+                  "line": 24
+                },
+                "start": {
+                  "character": 5,
+                  "line": 24
+                }
+              }
+            }
+          },
+          {
+            "detail": "Component in script setup",
+            "insertTextFormat": 1,
+            "kind": 7,
+            "label": "Comp7",
+            "sortText": "Comp7",
+            "textEdit": {
+              "newText": "Comp7",
+              "range": {
+                "end": {
+                  "character": 10,
+                  "line": 24
+                },
+                "start": {
+                  "character": 5,
+                  "line": 24
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "label": "round1-member-completion",
+      "method": "textDocument/completion",
+      "params": {
+        "textDocument": {
+          "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+        },
+        "position": {
+          "line": 11,
+          "character": 48
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 13,
+        "result": [
+          {
+            "data": {
+              "vizeCompletion": {
+                "item": {
+                  "data": {
+                    "fileName": "/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-t5ZrE5/projects/2380d56c6aaa7e53533638f3b22b5749884eb74b555e1e0c18463f239ec21fac/src/c/Comp0.vue.ts",
+                    "name": "count",
+                    "position": 16650
+                  },
+                  "kind": 5,
+                  "label": "count",
+                  "sortText": "11"
+                },
+                "requestUri": "file:///private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-t5ZrE5/projects/2380d56c6aaa7e53533638f3b22b5749884eb74b555e1e0c18463f239ec21fac/src/c/Comp0.vue.ts",
+                "revision": 1,
+                "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+              }
+            },
+            "kind": 5,
+            "label": "count",
+            "sortText": "11"
+          },
+          {
+            "data": {
+              "vizeCompletion": {
+                "item": {
+                  "data": {
+                    "fileName": "/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-t5ZrE5/projects/2380d56c6aaa7e53533638f3b22b5749884eb74b555e1e0c18463f239ec21fac/src/c/Comp0.vue.ts",
+                    "name": "double",
+                    "position": 16650
+                  },
+                  "kind": 5,
+                  "label": "double",
+                  "sortText": "11"
+                },
+                "requestUri": "file:///private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-t5ZrE5/projects/2380d56c6aaa7e53533638f3b22b5749884eb74b555e1e0c18463f239ec21fac/src/c/Comp0.vue.ts",
+                "revision": 1,
+                "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+              }
+            },
+            "kind": 5,
+            "label": "double",
+            "sortText": "11"
+          },
+          {
+            "data": {
+              "vizeCompletion": {
+                "item": {
+                  "data": {
+                    "fileName": "/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-t5ZrE5/projects/2380d56c6aaa7e53533638f3b22b5749884eb74b555e1e0c18463f239ec21fac/src/c/Comp0.vue.ts",
+                    "name": "items",
+                    "position": 16650
+                  },
+                  "kind": 5,
+                  "label": "items",
+                  "sortText": "11"
+                },
+                "requestUri": "file:///private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-t5ZrE5/projects/2380d56c6aaa7e53533638f3b22b5749884eb74b555e1e0c18463f239ec21fac/src/c/Comp0.vue.ts",
+                "revision": 1,
+                "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+              }
+            },
+            "kind": 5,
+            "label": "items",
+            "sortText": "11"
+          },
+          {
+            "data": {
+              "vizeCompletion": {
+                "item": {
+                  "data": {
+                    "fileName": "/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-t5ZrE5/projects/2380d56c6aaa7e53533638f3b22b5749884eb74b555e1e0c18463f239ec21fac/src/c/Comp0.vue.ts",
+                    "name": "add",
+                    "position": 16650
+                  },
+                  "kind": 2,
+                  "label": "add",
+                  "sortText": "11"
+                },
+                "requestUri": "file:///private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-canon/editor/sessions/session-t5ZrE5/projects/2380d56c6aaa7e53533638f3b22b5749884eb74b555e1e0c18463f239ec21fac/src/c/Comp0.vue.ts",
+                "revision": 1,
+                "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+              }
+            },
+            "kind": 2,
+            "label": "add",
+            "sortText": "11"
+          }
+        ]
+      }
+    },
+    {
+      "label": "round1-local-references",
+      "method": "textDocument/references",
+      "params": {
+        "textDocument": {
+          "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+        },
+        "position": {
+          "line": 20,
+          "character": 18
+        },
+        "context": {
+          "includeDeclaration": true
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 14,
+        "result": [
+          {
+            "range": {
+              "end": {
+                "character": 15,
+                "line": 12
+              },
+              "start": {
+                "character": 9,
+                "line": 12
+              }
+            },
+            "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 22,
+                "line": 20
+              },
+              "start": {
+                "character": 16,
+                "line": 20
+              }
+            },
+            "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 57,
+                "line": 24
+              },
+              "start": {
+                "character": 51,
+                "line": 24
+              }
+            },
+            "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 58,
+                "line": 25
+              },
+              "start": {
+                "character": 52,
+                "line": 25
+              }
+            },
+            "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 58,
+                "line": 26
+              },
+              "start": {
+                "character": 52,
+                "line": 26
+              }
+            },
+            "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+          }
+        ]
+      }
+    },
+    {
+      "label": "round1-import-references",
+      "method": "textDocument/references",
+      "params": {
+        "textDocument": {
+          "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+        },
+        "position": {
+          "line": 10,
+          "character": 18
+        },
+        "context": {
+          "includeDeclaration": true
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 15,
+        "result": [
+          {
+            "range": {
+              "end": {
+                "character": 18,
+                "line": 2
+              },
+              "start": {
+                "character": 9,
+                "line": 2
+              }
+            },
+            "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 23,
+                "line": 10
+              },
+              "start": {
+                "character": 14,
+                "line": 10
+              }
+            },
+            "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 18,
+                "line": 2
+              },
+              "start": {
+                "character": 9,
+                "line": 2
+              }
+            },
+            "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp134.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 23,
+                "line": 10
+              },
+              "start": {
+                "character": 14,
+                "line": 10
+              }
+            },
+            "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp134.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 18,
+                "line": 2
+              },
+              "start": {
+                "character": 9,
+                "line": 2
+              }
+            },
+            "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp268.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 23,
+                "line": 10
+              },
+              "start": {
+                "character": 14,
+                "line": 10
+              }
+            },
+            "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp268.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 25,
+                "line": 3
+              },
+              "start": {
+                "character": 16,
+                "line": 3
+              }
+            },
+            "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/lib/mod0.ts"
+          }
+        ]
+      }
+    },
+    {
+      "label": "final-structural",
+      "method": "textDocument/documentSymbol",
+      "params": {
+        "textDocument": {
+          "uri": "file:///private/tmp/vize-10622-scoped-profile.cPAkOQ/workspace/src/c/Comp0.vue"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 16,
+        "result": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": 19,
+                    "name": "h2",
+                    "range": {
+                      "end": {
+                        "character": 47,
+                        "line": 20
+                      },
+                      "start": {
+                        "character": 4,
+                        "line": 20
+                      }
+                    },
+                    "selectionRange": {
+                      "end": {
+                        "character": 7,
+                        "line": 20
+                      },
+                      "start": {
+                        "character": 5,
+                        "line": 20
+                      }
+                    }
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": 19,
+                        "name": "li",
+                        "range": {
+                          "end": {
+                            "character": 80,
+                            "line": 22
+                          },
+                          "start": {
+                            "character": 6,
+                            "line": 22
+                          }
+                        },
+                        "selectionRange": {
+                          "end": {
+                            "character": 9,
+                            "line": 22
+                          },
+                          "start": {
+                            "character": 7,
+                            "line": 22
+                          }
+                        }
+                      }
+                    ],
+                    "kind": 19,
+                    "name": "ul",
+                    "range": {
+                      "end": {
+                        "character": 9,
+                        "line": 23
+                      },
+                      "start": {
+                        "character": 4,
+                        "line": 21
+                      }
+                    },
+                    "selectionRange": {
+                      "end": {
+                        "character": 7,
+                        "line": 21
+                      },
+                      "start": {
+                        "character": 5,
+                        "line": 21
+                      }
+                    }
+                  },
+                  {
+                    "kind": 5,
+                    "name": "Comp7",
+                    "range": {
+                      "end": {
+                        "character": 68,
+                        "line": 24
+                      },
+                      "start": {
+                        "character": 4,
+                        "line": 24
+                      }
+                    },
+                    "selectionRange": {
+                      "end": {
+                        "character": 10,
+                        "line": 24
+                      },
+                      "start": {
+                        "character": 5,
+                        "line": 24
+                      }
+                    }
+                  },
+                  {
+                    "kind": 5,
+                    "name": "Comp14",
+                    "range": {
+                      "end": {
+                        "character": 69,
+                        "line": 25
+                      },
+                      "start": {
+                        "character": 4,
+                        "line": 25
+                      }
+                    },
+                    "selectionRange": {
+                      "end": {
+                        "character": 11,
+                        "line": 25
+                      },
+                      "start": {
+                        "character": 5,
+                        "line": 25
+                      }
+                    }
+                  },
+                  {
+                    "kind": 5,
+                    "name": "Comp21",
+                    "range": {
+                      "end": {
+                        "character": 69,
+                        "line": 26
+                      },
+                      "start": {
+                        "character": 4,
+                        "line": 26
+                      }
+                    },
+                    "selectionRange": {
+                      "end": {
+                        "character": 11,
+                        "line": 26
+                      },
+                      "start": {
+                        "character": 5,
+                        "line": 26
+                      }
+                    }
+                  }
+                ],
+                "kind": 19,
+                "name": "section",
+                "range": {
+                  "end": {
+                    "character": 12,
+                    "line": 27
+                  },
+                  "start": {
+                    "character": 2,
+                    "line": 19
+                  }
+                },
+                "selectionRange": {
+                  "end": {
+                    "character": 10,
+                    "line": 19
+                  },
+                  "start": {
+                    "character": 3,
+                    "line": 19
+                  }
+                }
+              }
+            ],
+            "kind": 2,
+            "name": "template",
+            "range": {
+              "end": {
+                "character": 11,
+                "line": 28
+              },
+              "start": {
+                "character": 0,
+                "line": 18
+              }
+            },
+            "selectionRange": {
+              "end": {
+                "character": 9,
+                "line": 18
+              },
+              "start": {
+                "character": 1,
+                "line": 18
+              }
+            }
+          },
+          {
+            "children": [
+              {
+                "kind": 14,
+                "name": "title",
+                "range": {
+                  "end": {
+                    "character": 76,
+                    "line": 7
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 7
+                  }
+                },
+                "selectionRange": {
+                  "end": {
+                    "character": 13,
+                    "line": 7
+                  },
+                  "start": {
+                    "character": 8,
+                    "line": 7
+                  }
+                }
+              },
+              {
+                "kind": 14,
+                "name": "size",
+                "range": {
+                  "end": {
+                    "character": 76,
+                    "line": 7
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 7
+                  }
+                },
+                "selectionRange": {
+                  "end": {
+                    "character": 19,
+                    "line": 7
+                  },
+                  "start": {
+                    "character": 15,
+                    "line": 7
+                  }
+                }
+              },
+              {
+                "kind": 14,
+                "name": "emit",
+                "range": {
+                  "end": {
+                    "character": 53,
+                    "line": 8
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 8
+                  }
+                },
+                "selectionRange": {
+                  "end": {
+                    "character": 10,
+                    "line": 8
+                  },
+                  "start": {
+                    "character": 6,
+                    "line": 8
+                  }
+                }
+              },
+              {
+                "kind": 14,
+                "name": "open",
+                "range": {
+                  "end": {
+                    "character": 24,
+                    "line": 9
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 9
+                  }
+                },
+                "selectionRange": {
+                  "end": {
+                    "character": 10,
+                    "line": 9
+                  },
+                  "start": {
+                    "character": 6,
+                    "line": 9
+                  }
+                }
+              },
+              {
+                "kind": 14,
+                "name": "thing",
+                "range": {
+                  "end": {
+                    "character": 30,
+                    "line": 10
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 10
+                  }
+                },
+                "selectionRange": {
+                  "end": {
+                    "character": 11,
+                    "line": 10
+                  },
+                  "start": {
+                    "character": 6,
+                    "line": 10
+                  }
+                }
+              },
+              {
+                "kind": 14,
+                "name": "label",
+                "range": {
+                  "end": {
+                    "character": 64,
+                    "line": 11
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 11
+                  }
+                },
+                "selectionRange": {
+                  "end": {
+                    "character": 11,
+                    "line": 11
+                  },
+                  "start": {
+                    "character": 6,
+                    "line": 11
+                  }
+                }
+              },
+              {
+                "kind": 12,
+                "name": "toggle",
+                "range": {
+                  "end": {
+                    "character": 1,
+                    "line": 15
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 12
+                  }
+                },
+                "selectionRange": {
+                  "end": {
+                    "character": 15,
+                    "line": 12
+                  },
+                  "start": {
+                    "character": 9,
+                    "line": 12
+                  }
+                }
+              }
+            ],
+            "detail": "ts",
+            "kind": 2,
+            "name": "script setup",
+            "range": {
+              "end": {
+                "character": 9,
+                "line": 16
+              },
+              "start": {
+                "character": 0,
+                "line": 0
+              }
+            },
+            "selectionRange": {
+              "end": {
+                "character": 7,
+                "line": 0
+              },
+              "start": {
+                "character": 1,
+                "line": 0
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
