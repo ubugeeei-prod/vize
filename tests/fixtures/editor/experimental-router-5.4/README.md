@@ -6,8 +6,7 @@ fixture), and a proper `<art><variant>` document. The complete declaration was
 produced by the real scanner; whole-project reference checking passes. The
 runtime helper regenerates and compares every declaration byte before hosting.
 
-The original installed-host capture is retained by Actions 40178143159, artifact
-12592699376. It demonstrates that the ordinary-template Art shape has no native
+The original installed-host capture is retained by Actions 40178143159, artifact 12592699376. It demonstrates that the ordinary-template Art shape has no native
 type diagnostics or typed query results. A separate public 0.562.0 proper-variant
 probe produces typed completions and template diagnostics, but script property
 hover is null, definition selects the local variable, and references omit authored
