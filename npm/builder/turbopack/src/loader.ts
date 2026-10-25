@@ -133,7 +133,7 @@ export function compileTurbopackSfc(filename: string, source: string, options: S
     if (!style.src) params.set("inline", "");
     if (!options.isProduction) params.set("dev", "");
     const stylePath = style.src ?? `./${path.basename(filename)}`;
-    const requestFor = () => `${stylePath}${stylePath.includes("?") ? "&" : "?"}vue&${params}`;
+    const requestFor = () => `${stylePath}${stylePath.includes("?") ? "&" : "?"}vue&${params.toString()}`;
     const request = requestFor();
     if (style.module) {
       const name = style.moduleName ?? "$style";
