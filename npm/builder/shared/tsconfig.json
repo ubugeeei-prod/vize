@@ -9,7 +9,7 @@
     "emitDeclarationOnly": true,
     "rootDir": "."
   },
-  "include": ["mapped-module.ts", "module-output.ts", "hot-reload.ts"],
+  "include": ["*.ts"],
   "exclude": ["node_modules", "dist"],
   "references": []
 }

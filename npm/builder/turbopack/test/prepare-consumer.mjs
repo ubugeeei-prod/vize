@@ -174,10 +174,27 @@ export async function prepareConsumer() {
   const loadedNative = installed("@vizejs/native");
   assert.equal(loadedNative.getNativeBuildToken(), sourceReceipt.identity.token);
   assert.ok(installed.resolve("@vizejs/native").startsWith(consumer + path.sep));
+  assert.equal(
+    sha256(
+      await fs.readFile(
+        path.join(path.dirname(installed.resolve("@vizejs/native")), sourceReceipt.binary.filename),
+      ),
+    ),
+    sourceReceipt.binary.sha256,
+  );
   assert.throws(() => installed.resolve("@vizejs/builder-shared"));
   assert.equal(typeof installed("@vizejs/turbopack-plugin").withVize, "function");
   assert.equal(typeof installed("@vizejs/turbopack-plugin/loader").default, "function");
   assert.equal(typeof installed("@vizejs/rspack-plugin").VizePlugin, "function");
+  for (const entry of [
+    "@vizejs/turbopack-plugin/loader",
+    "@vizejs/turbopack-plugin/scope-loader",
+    "@vizejs/rspack-plugin",
+  ]) {
+    const issuer = createRequire(installed.resolve(entry));
+    assert.equal(issuer.resolve("@vizejs/native"), installed.resolve("@vizejs/native"));
+    assert.equal(issuer("@vizejs/native").getNativeBuildToken(), sourceReceipt.identity.token);
+  }
   for (const name of ["turbopack", "rspack"]) {
     const directory = path.join(consumer, `node_modules/@vizejs/${name}-plugin/dist`);
     await assertBundledHelpers(directory);
