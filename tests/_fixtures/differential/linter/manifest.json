@@ -2257,8 +2257,8 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
-            "selector": "actual native CLI configured macro-group regression and complete diagnostics"
+            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "selector": "linter manifest pinned authored sources"
           }
         ]
       }
