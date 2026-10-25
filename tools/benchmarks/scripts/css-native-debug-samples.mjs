@@ -15,7 +15,7 @@ import { streamedDigest as digest, validateDebugIdentity } from "./css-native-de
 const script = fileURLToPath(import.meta.url);
 const write = (file, value) => fs.writeFileSync(file, JSON.stringify(value, null, 2) + "\n");
 const read = (file) => JSON.parse(fs.readFileSync(file, "utf8"));
-async function run(configFile, destination) {
+async function run(configFile, destination, savedRoot) {
   assert.equal(process.env.GITHUB_ACTIONS, "true");
   assert.equal(process.platform, "linux");
   assert.equal(process.version, "v24.14.0");
@@ -96,6 +96,15 @@ async function run(configFile, destination) {
     receipt.perfEventParanoid = fs
       .readFileSync("/proc/sys/kernel/perf_event_paranoid", "utf8")
       .trim();
+    const decoder = process.env.VIZE_CSS_ADDR2LINE;
+    if (decoder) {
+      assert.ok(path.isAbsolute(decoder));
+      receipt.decoder = {
+        file: decoder,
+        sha256: digest(decoder),
+        version: await command([decoder, "--version"], "decoder-version"),
+      };
+    }
     for (const [side, image] of Object.entries(config.images)) {
       const native = createRequire(import.meta.url)(image.transportBinary);
       validateDebugIdentity(
@@ -111,6 +120,11 @@ async function run(configFile, destination) {
       assert.match(sections, /\.debug_info\s/u);
       assert.match(sections, /\.debug_line\s/u);
       await command(["readelf", "--notes", image.transportBinary], `${side}-elf-notes`);
+      if (savedRoot)
+        await command(
+          [perf, "buildid-cache", "--add", image.transportBinary],
+          `${side}-buildid-cache`,
+        );
       for (const row of config.rows)
         for (const operation of ["authored", "processed"]) {
           const source = operation === "authored" ? row.source : row.processed;
@@ -129,57 +143,88 @@ async function run(configFile, destination) {
     }
     const worker = path.join(path.dirname(script), "css-native-cpu-profile.mjs");
     const fifoRoot = fs.mkdtempSync(path.join(process.env.RUNNER_TEMP, "css-perf-control-"));
-    for (const [ordinal, item] of samplingPlan().entries()) {
-      assert.equal(digest(configFile), receipt.configSha256);
-      const name = `${ordinal}-${item.side}-${item.operation}-${item.id}`,
-        data = path.join(destination, `${name}.perf.data`),
-        packetFile = path.join(destination, `${name}.json`);
-      const control = path.join(fifoRoot, `${ordinal}-control`),
-        ack = path.join(fifoRoot, `${ordinal}-ack`);
-      execFileSync("mkfifo", [control, ack]);
-      assert.equal(fs.existsSync(data), false);
-      await command(
-        [
-          perf,
-          "record",
-          "--event",
-          "cpu-clock:u",
-          "--freq",
-          "99",
-          "--call-graph",
-          "dwarf,8192",
-          "--delay=-1",
-          `--control=fifo:${control},${ack}`,
-          "--output",
-          data,
-          "--",
-          process.execPath,
-          worker,
-          "--worker",
-          configFile,
-          String(ordinal),
-          packetFile,
-          control,
-          ack,
-        ],
-        `${name}-record`,
-        60,
-      );
-      validateSamplePacket(read(packetFile), config, item);
-      const events = await command(
-        [perf, "script", "--hide-call-graph", "--fields", "time", "--input", data],
-        `${name}-events`,
-      );
-      receipt.samples.push({
-        ...item,
-        sampleCount: sampledEventCount(events),
-        dataSha256: digest(data),
-        packetSha256: digest(packetFile),
-      });
+    if (savedRoot) {
+      const saved = read(path.join(savedRoot, "receipt.json"));
+      assert.equal(saved.captureComplete, true);
+      assert.deepEqual(saved.plan, samplingPlan());
+      for (const side of ["base", "head"])
+        assert.deepEqual(saved.images[side].producer, config.images[side].producer);
+      receipt.captureReplay = {
+        originalHarnessSource: saved.harnessSource,
+        noNewCpuCapture: true,
+        receiptSha256: digest(path.join(savedRoot, "receipt.json")),
+      };
+      for (const [ordinal, item] of samplingPlan().entries()) {
+        const name = `${ordinal}-${item.side}-${item.operation}-${item.id}`;
+        const packetFile = path.join(savedRoot, `${name}.json`),
+          data = path.join(savedRoot, `${name}.perf.data`);
+        assert.equal(digest(packetFile), saved.samples[ordinal].packetSha256);
+        assert.equal(digest(data), saved.samples[ordinal].dataSha256);
+        validateSamplePacket(read(packetFile), config, item);
+        for (const suffix of [".json", ".perf.data", "-events.stdout"])
+          fs.copyFileSync(
+            path.join(savedRoot, name + suffix),
+            path.join(destination, name + suffix),
+          );
+        assert.equal(
+          sampledEventCount(fs.readFileSync(path.join(savedRoot, `${name}-events.stdout`), "utf8")),
+          saved.samples[ordinal].sampleCount,
+        );
+        receipt.samples.push(saved.samples[ordinal]);
+      }
       retain();
-      fs.unlinkSync(control);
-      fs.unlinkSync(ack);
-    }
+    } else
+      for (const [ordinal, item] of samplingPlan().entries()) {
+        assert.equal(digest(configFile), receipt.configSha256);
+        const name = `${ordinal}-${item.side}-${item.operation}-${item.id}`,
+          data = path.join(destination, `${name}.perf.data`),
+          packetFile = path.join(destination, `${name}.json`);
+        const control = path.join(fifoRoot, `${ordinal}-control`),
+          ack = path.join(fifoRoot, `${ordinal}-ack`);
+        execFileSync("mkfifo", [control, ack]);
+        assert.equal(fs.existsSync(data), false);
+        await command(
+          [
+            perf,
+            "record",
+            "--event",
+            "cpu-clock:u",
+            "--freq",
+            "99",
+            "--call-graph",
+            "dwarf,8192",
+            "--delay=-1",
+            `--control=fifo:${control},${ack}`,
+            "--output",
+            data,
+            "--",
+            process.execPath,
+            worker,
+            "--worker",
+            configFile,
+            String(ordinal),
+            packetFile,
+            control,
+            ack,
+          ],
+          `${name}-record`,
+          60,
+        );
+        validateSamplePacket(read(packetFile), config, item);
+        const events = await command(
+          [perf, "script", "--hide-call-graph", "--fields", "time", "--input", data],
+          `${name}-events`,
+        );
+        receipt.samples.push({
+          ...item,
+          sampleCount: sampledEventCount(events),
+          dataSha256: digest(data),
+          packetSha256: digest(packetFile),
+        });
+        retain();
+        fs.unlinkSync(control);
+        fs.unlinkSync(ack);
+      }
     assert.equal(receipt.samples.length, 24);
     receipt.captureComplete = true;
     retain();
@@ -193,10 +238,12 @@ async function run(configFile, destination) {
         const item = receipt.plan[ordinal],
           name = `${ordinal}-${item.side}-${item.operation}-${item.id}`,
           data = path.join(destination, `${name}.perf.data`);
+        const decoderArgs = decoder ? ["--addr2line", decoder] : [];
         const flat = await command(
           [
             perf,
             "report",
+            ...decoderArgs,
             "--stdio",
             "--no-children",
             "--no-inline",
@@ -222,6 +269,7 @@ async function run(configFile, destination) {
           [
             perf,
             "report",
+            ...decoderArgs,
             "--stdio",
             "--children",
             "--inline",
@@ -239,7 +287,7 @@ async function run(configFile, destination) {
           `${name}-source-inline-callers`,
         );
         await command(
-          [perf, "script", "--fields", "+srcline", "--input", data],
+          [perf, "script", ...decoderArgs, "--fields", "+srcline", "--input", data],
           `${name}-source-stacks`,
         );
         await command([perf, "buildid-list", "--input", data], `${name}-buildids`);

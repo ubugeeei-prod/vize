@@ -2,7 +2,7 @@ name: Native CSS qualified debug replay
 on:
   workflow_dispatch:
   push:
-    branches: ["test/css-native-debug-profile"]
+    branches: ["test/css-native-debug-capture"]
     paths:
       - ".github/workflows/css-native-debug-replay.yml"
       - "tools/benchmarks/scripts/css-native-debug-replay.mjs"
