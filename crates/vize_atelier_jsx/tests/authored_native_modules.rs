@@ -127,6 +127,7 @@ fn owned_native_arrows_keep_whole_modules_and_exact_composed_origins() {
 fn native_module_admission_is_owned_by_ast_not_enclosing_name_spelling() {
     let cases = [
         "export default () => <strong>Hello</strong>;",
+        "export const App = () => <div>{flag ? <i>yes</i> : null}</div>;",
         "import Child from './Child.js'; export const App = () => <Child/>; export default App;",
         "import * as UI from './Child.js'; export const App = () => <UI.Child/>;",
         "import {ref} from 'vue'; export const Counter = (props: {label:string}) => { const clicks=ref(0); const inc=()=>clicks.value++; return <button onClick={inc}>{props.label}:{clicks.value}</button>; }; export default Counter;",
