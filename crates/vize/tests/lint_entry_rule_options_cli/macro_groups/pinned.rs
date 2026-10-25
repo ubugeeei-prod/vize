@@ -35,7 +35,7 @@ fn registered_authored_inputs_keep_macro_group_and_ambient_barrier_diagnostics()
             "ambient-macro-declarations-10656",
             "AmbientBarrier.vue",
             "AmbientBarrier.vue.txt",
-            Some((29, super::MODEL_TOP)),
+            Some((30, super::MODEL_TOP)),
         ),
     ] {
         let inputs = inputs.join(family);
