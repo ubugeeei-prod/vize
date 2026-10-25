@@ -1,13 +1,12 @@
 //! Retain complete packets even when an exact native observation fails.
 
+use crate::support::indexed_access::hash;
 use serde_json::json;
-use sha2::{Digest, Sha256};
 use std::{
     fs,
     path::Path,
     process::{Command, Output},
 };
-use vize_l0::cstr;
 
 pub(super) fn retain(project: &Path, runtime: &str, label: &str, output: &Output, profiled: bool) {
     let Some(root) = std::env::var_os("VIZE_MESSAGE_PROFILE_CAPTURE_DIR") else {
@@ -30,9 +29,7 @@ pub(super) fn retain(project: &Path, runtime: &str, label: &str, output: &Output
     let mut entries = Vec::new();
     for (name, bytes) in payloads {
         fs::write(directory.join(name), &bytes).unwrap();
-        entries.push(
-            json!({"path":name,"bytes":bytes.len(),"sha256":cstr!("{:x}",Sha256::digest(&bytes))}),
-        );
+        entries.push(json!({"path":name,"bytes":bytes.len(),"sha256":hash(&bytes)}));
     }
     let provider = fs::canonicalize(runtime).unwrap();
     let provider_bytes = fs::read(&provider).unwrap();
@@ -40,7 +37,7 @@ pub(super) fn retain(project: &Path, runtime: &str, label: &str, output: &Output
     let receipt = json!({
         "status":output.status.code(), "files":entries,
         "provider":{
-            "path":provider,"bytes":provider_bytes.len(),"sha256":cstr!("{:x}",Sha256::digest(&provider_bytes)),
+            "path":provider,"bytes":provider_bytes.len(),"sha256":hash(&provider_bytes),
             "version_status":version.status.code(),"version_stdout":std::str::from_utf8(&version.stdout).unwrap(),
             "version_stderr":std::str::from_utf8(&version.stderr).unwrap()
         },
