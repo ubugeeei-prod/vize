@@ -17,3 +17,9 @@ The independent compiler oracle in
 original entity-encoding mutation. Quote and angle directory names are tested on
 hosts where those names are legal. Source-built CLI and LSP qualifications remain
 separate from this compiler grammar oracle.
+
+The oracle retains special-name fixture directories in `literal-fixtures.tar`,
+with their original filenames and a byte/hash manifest in
+`fixture-archive-packet.json`, because the artifact service rejects those legal
+Unix filenames. Compiler process packets and each phase's complete source remain
+separate files in the same artifact.
