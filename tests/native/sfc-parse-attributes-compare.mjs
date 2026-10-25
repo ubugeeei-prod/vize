@@ -5,7 +5,7 @@ import path from "node:path";
 const directory = path.resolve(process.argv[2]);
 const base = JSON.parse(await fs.readFile(path.join(directory, "base/packets.json"), "utf8"));
 const head = JSON.parse(await fs.readFile(path.join(directory, "head/packets.json"), "utf8"));
-assert.equal(base.source, "666daf9ca30597d6ead1ba68c174d2a139ee1291");
+assert.equal(base.source, "49a98d1e72707083354b8ff11e1cec800ded28b3");
 assert.equal(head.source, process.env.VIZE_SFC_ATTRS_HEAD_SHA);
 const fixtures = JSON.parse(
   await fs.readFile(

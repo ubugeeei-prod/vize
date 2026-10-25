@@ -25,14 +25,14 @@ jobs:
       fail-fast: false
       matrix: { role: [base, head] }
     env:
-      VIZE_SFC_ATTRS_SOURCE_SHA: ${{ matrix.role == 'base' && '666daf9ca30597d6ead1ba68c174d2a139ee1291' || github.event.pull_request.head.sha || github.sha }}
+      VIZE_SFC_ATTRS_SOURCE_SHA: ${{ matrix.role == 'base' && '49a98d1e72707083354b8ff11e1cec800ded28b3' || github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ env.VIZE_SFC_ATTRS_HEAD_SHA }}", persist-credentials: false }
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         if: matrix.role == 'base'
         with:
-          ref: 666daf9ca30597d6ead1ba68c174d2a139ee1291
+          ref: 49a98d1e72707083354b8ff11e1cec800ded28b3
           path: .attrs-base
           persist-credentials: false
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
