@@ -76,7 +76,7 @@ jobs:
           retention-days: 7
 
   manual-helper-probe:
-    name: Compare manually explicit real helpers
+    name: Qualify manually explicit real helpers
     needs: [source-cli, provider]
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
@@ -94,6 +94,8 @@ jobs:
         with: { node-version-file: package.json, cache: true, run-install: false }
       - name: Install frozen Vize tooling dependencies
         run: vp install --frozen-lockfile --prefer-offline
+      - name: Test frozen provider and whole packet guards
+        run: vp node --test tests/tooling/router-preview-provider.test.ts
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0

@@ -2,7 +2,14 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { hash, readAuthority, relativeMember, type FileIdentity } from "./authority.ts";
+import {
+  fileIdentity,
+  hash,
+  readAuthority,
+  relativeMember,
+  type FileIdentity,
+} from "./authority.ts";
+import { readOracles } from "./oracles.ts";
 
 export type BuiltProvider = {
   schema: string;
@@ -12,6 +19,10 @@ export type BuiltProvider = {
   actor: { sourceRevision: string; runId: string; runAttempt: string };
   authoritySha256: string;
   upstream: ReturnType<typeof readAuthority>["authority"]["provider"];
+  sourceInputs: ReturnType<typeof readAuthority>["authority"]["sourceInputs"];
+  sourceArchive: FileIdentity;
+  builder: Record<string, unknown>;
+  processes: FileIdentity;
   package: {
     name: string;
     version: string;
@@ -35,6 +46,7 @@ export function verifyBuiltProvider(directory: string, expectedReceiptSha256: st
   assert.equal(receipt.qualificationCredit, false);
   assert.equal(receipt.authoritySha256, source.sha256);
   assert.deepEqual(receipt.upstream, source.authority.provider);
+  assert.deepEqual(receipt.sourceInputs, source.authority.sourceInputs);
   assert.deepEqual(receipt.actor, {
     sourceRevision: process.env.GITHUB_SHA,
     runId: process.env.GITHUB_RUN_ID,
@@ -43,6 +55,27 @@ export function verifyBuiltProvider(directory: string, expectedReceiptSha256: st
   assert.equal(receipt.package.name, "vue-router");
   assert.equal(receipt.package.version, "5.4.0");
   assert.equal(receipt.package.filename, "vue-router-5.4.0.tgz");
+  const frozen =
+    readOracles().json<Pick<BuiltProvider, "upstream" | "sourceArchive" | "builder" | "package">>(
+      "provider-package.json",
+    );
+  assert.deepEqual(
+    {
+      upstream: receipt.upstream,
+      sourceArchive: receipt.sourceArchive,
+      builder: receipt.builder,
+      package: receipt.package,
+    },
+    frozen,
+    "exact real preview build identity; version 5.4.0 alone is insufficient",
+  );
+  for (const expected of [receipt.sourceArchive, receipt.processes]) {
+    assert.deepEqual(
+      fileIdentity(directory, expected.path),
+      expected,
+      "complete build artifact custody",
+    );
+  }
   const archive = path.join(directory, relativeMember(receipt.package.filename));
   const archiveBytes = fs.readFileSync(archive);
   assert.equal(archiveBytes.length, receipt.package.bytes);

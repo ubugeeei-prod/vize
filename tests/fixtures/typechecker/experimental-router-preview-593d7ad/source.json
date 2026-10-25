@@ -77,7 +77,7 @@
     }
   ],
   "qualification": {
-    "state": "discovery",
+    "state": "frozen",
     "sourceBuiltPackageIsNotPublishedNpmArchive": true,
     "automaticProjection": "not-qualified"
   },

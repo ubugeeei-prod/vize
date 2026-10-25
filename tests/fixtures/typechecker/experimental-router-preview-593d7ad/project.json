@@ -8,6 +8,11 @@
       "sha256": "49687bd525be764e8059008fb94c27ef59f1d9da23792d97e452f2a18fa5df74"
     },
     {
+      "path": "package-lock.json",
+      "bytes": 55813,
+      "sha256": "5e08bb084d956d04d2936ecbdf98a6252b35df17ead59928e599bd9889122896"
+    },
+    {
       "path": "package.json",
       "bytes": 287,
       "sha256": "66b26f547482fe15cf766eff9444c36d3e934071c30683c2b5dbb233f6f1f0b0"
@@ -38,5 +43,5 @@
       "sha256": "88fd4f1d6d986627d8f757cb5f7f191467d42d082c01e5425ba9fbf7a3298dbd"
     }
   ],
-  "strictOracles": "not-frozen"
+  "strictOracles": "frozen-independent-controls"
 }

@@ -6,6 +6,7 @@ import { fixtureDirectory, hash, relativeMember, type FileIdentity } from "./aut
 import { inspectExperimentalExports } from "./semantic-exports.ts";
 import { verifyInstalledProvider, type verifyBuiltProvider } from "./provider.ts";
 import { processRecorder } from "./processes.ts";
+import { readOracles } from "./oracles.ts";
 
 type ProjectAuthority = {
   schema: string;
@@ -34,6 +35,8 @@ export function readProjectFixture(directory = fixtureDirectory) {
 export function prepareProject(output: string, provider: ReturnType<typeof verifyBuiltProvider>) {
   assert.equal(process.env.GITHUB_ACTIONS, "true", "real preview installs run in Actions");
   const pinned = readProjectFixture();
+  const oracles = readOracles();
+  assert.equal(pinned.authority.strictOracles, "frozen-independent-controls");
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-router-preview-593d7ad-"));
   for (const [relative, bytes] of pinned.files) {
     const destination = path.join(root, relative);
@@ -46,13 +49,7 @@ export function prepareProject(output: string, provider: ReturnType<typeof verif
   const install = processes.run(
     "install-real-built-provider",
     process.platform === "win32" ? "npm.cmd" : "npm",
-    [
-      "install",
-      "--ignore-scripts",
-      "--no-audit",
-      "--no-fund",
-      "--registry=https://registry.npmjs.org",
-    ],
+    ["ci", "--ignore-scripts", "--no-audit", "--no-fund", "--registry=https://registry.npmjs.org"],
     root,
     180_000,
   );
@@ -81,6 +78,7 @@ export function prepareProject(output: string, provider: ReturnType<typeof verif
     false,
     "no invented experimental useRoute",
   );
+  assert.deepEqual(exports, oracles.json("installed-exports.json"), "all real semantic exports");
   const generation = processes.run(
     "real-preview-route-scanner",
     process.execPath,
@@ -92,6 +90,11 @@ export function prepareProject(output: string, provider: ReturnType<typeof verif
   assert.equal(generation.status, 0, generation.stderr);
   const generated = fs.readFileSync(path.join(root, "typed-router.d.ts"));
   fs.writeFileSync(path.join(output, "typed-router.d.ts.txt"), generated);
+  assert.deepEqual(
+    generated,
+    oracles.files.get("frozen/typed-router.d.ts.txt"),
+    "complete declaration from the actual pinned route scanner",
+  );
   for (const name of ["routes.generated.ts", "resolver.generated.ts"]) {
     fs.copyFileSync(path.join(root, name), path.join(output, `${name}.txt`));
     fs.rmSync(path.join(root, name));
@@ -99,6 +102,11 @@ export function prepareProject(output: string, provider: ReturnType<typeof verif
   fs.copyFileSync(
     path.join(root, "package-lock.json"),
     path.join(output, "consumer-package-lock.json"),
+  );
+  assert.deepEqual(
+    fs.readFileSync(path.join(root, "package-lock.json")),
+    pinned.files.get("package-lock.json"),
+    "npm ci cannot rewrite the frozen real-provider consumer lock",
   );
   const dependencies = ["vue", "vue-router", "typescript", "vue-tsc", "vize"].map((name) => {
     const bytes = fs.readFileSync(path.join(root, "node_modules", name, "package.json"));
@@ -109,6 +117,7 @@ export function prepareProject(output: string, provider: ReturnType<typeof verif
     path.join(output, "project-identity.json"),
     `${JSON.stringify({ root, sourceInputs: pinned.authority.files, dependencies, generatedDeclarationSha256: hash(generated) }, null, 2)}\n`,
   );
+  assert.deepEqual(dependencies, oracles.json("dependencies.json"), "independent host identities");
   return {
     root,
     pinned,

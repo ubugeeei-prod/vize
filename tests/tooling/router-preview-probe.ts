@@ -4,13 +4,11 @@ import path from "node:path";
 import { repoRoot } from "../_helpers/realworld-patch.ts";
 import { resolveTsgoBinary } from "../_helpers/realworld-typecheck.ts";
 import { resolveVizeLaunchCommand } from "./support/lsp/launch.ts";
-import {
-  fixtureDirectory,
-  previewPage,
-  readAuthority,
-} from "./support/router-preview/authority.ts";
+import { previewPage, readAuthority } from "./support/router-preview/authority.ts";
 import { prepareProject } from "./support/router-preview/project.ts";
 import { verifyBuiltProvider } from "./support/router-preview/provider.ts";
+import { readOracles, verifyControl } from "./support/router-preview/oracles.ts";
+import type { Observation } from "./support/router-preview/processes.ts";
 
 assert.equal(process.env.GITHUB_ACTIONS, "true", "the real preview provider runs in Actions");
 const receiptSha = process.env.VIZE_ROUTER_PREVIEW_RECEIPT_SHA256;
@@ -19,6 +17,7 @@ const providerDirectory = process.env.VIZE_ROUTER_PREVIEW_PROVIDER;
 assert.ok(providerDirectory, "actual source-built provider artifact is required");
 const output = path.join(repoRoot, "target/differential/router-preview-593d7ad");
 fs.mkdirSync(output, { recursive: true });
+const oracles = readOracles();
 const provider = verifyBuiltProvider(providerDirectory, receiptSha);
 const sourceBinary = process.env.VIZE_TEST_BIN ?? process.env.VIZE_LSP_BIN;
 assert.ok(sourceBinary, "receipted source CLI required");
@@ -38,6 +37,13 @@ const basePage = fixture.pinned.files.get(previewPage)!.toString("utf8");
 const baseConfig = JSON.parse(fixture.pinned.files.get("tsconfig.json")!.toString("utf8"));
 const controls: Array<{ id: string; source: string; invalid: boolean }> = [];
 const summaries: unknown[] = [];
+const captures: Array<{
+  id: string;
+  source: string;
+  reference: Observation;
+  publicControl: Observation;
+  native: Observation;
+}> = [];
 try {
   for (const [newlineId, newline] of [
     ["lf", "\n"],
@@ -127,6 +133,7 @@ try {
           ],
           fixture.root,
         );
+        captures.push({ id, source: phase.source, reference, publicControl, native });
         assert.deepEqual(
           fs.readFileSync(path.join(fixture.root, "typed-router.d.ts")),
           fixture.generated,
@@ -156,18 +163,20 @@ try {
     qualificationCredit: false,
     automaticProjection: "not-qualified",
     provider: authority.authority.provider,
+    oracleAuthoritySha256: oracles.sha256,
+    qualifiedHosts: [] as string[],
     summaries,
   };
   fs.writeFileSync(path.join(output, "result.json"), `${JSON.stringify(result, null, 2)}\n`);
-  const strict = path.join(fixtureDirectory, "oracles.json");
-  assert.equal(
-    fs.existsSync(strict),
-    true,
-    "discovery is not qualification: freeze complete independent oracles before strict acceptance",
-  );
-  throw new Error(
-    "Strict oracle consumer must be admitted before qualification; complete discovery packets were retained",
-  );
+  assert.deepEqual(controls, oracles.controls, "entire control denominator and authored bytes");
+  assert.equal(captures.length * 3, oracles.authority.scope.processes);
+  for (const capture of captures) {
+    verifyControl(oracles, capture.id, capture.source, capture, fixture.root);
+  }
+  result.state = "qualified-manually-explicit-helpers";
+  result.qualificationCredit = true;
+  result.qualifiedHosts = ["check"];
+  fs.writeFileSync(path.join(output, "result.json"), `${JSON.stringify(result, null, 2)}\n`);
 } finally {
   fixture.cleanup();
 }

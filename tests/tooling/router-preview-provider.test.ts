@@ -8,6 +8,7 @@ import { test } from "node:test";
 import { buildProvider } from "./support/router-preview/build-provider.ts";
 import { fixtureDirectory, readAuthority } from "./support/router-preview/authority.ts";
 import { readProjectFixture } from "./support/router-preview/project.ts";
+import { nativeOracle, readOracles, verifyControl } from "./support/router-preview/oracles.ts";
 
 const digest = (value: string) => createHash("sha256").update(value).digest("hex");
 
@@ -15,7 +16,7 @@ test("preview identity pins real source rather than reusing the published versio
   const { authority } = readAuthority();
   assert.equal(authority.sourceInputs.length, 9);
   assert.deepEqual(authority.qualification, {
-    state: "discovery",
+    state: "frozen",
     sourceBuiltPackageIsNotPublishedNpmArchive: true,
     automaticProjection: "not-qualified",
   });
@@ -24,6 +25,7 @@ test("preview identity pins real source rather than reusing the published versio
     [...project.files.keys()],
     [
       "generate.mjs",
+      "package-lock.json",
       "package.json",
       "src/pages/index.vue",
       "src/pages/products/[id=int].vue",
@@ -32,7 +34,85 @@ test("preview identity pins real source rather than reusing the published versio
       "tsconfig.json",
     ],
   );
-  assert.equal(project.authority.strictOracles, "not-frozen");
+  assert.equal(project.authority.strictOracles, "frozen-independent-controls");
+  const oracles = readOracles();
+  assert.equal(oracles.controls.length, 20);
+  assert.equal(oracles.independent.size, 40);
+});
+
+test("frozen independent output drift is refused before any provider installation", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-preview-oracle-control-"));
+  try {
+    fs.cpSync(fixtureDirectory, root, { recursive: true });
+    fs.appendFileSync(path.join(root, "frozen/independent-processes.json"), "\n");
+    assert.throws(() => readOracles(root), /frozen\/independent-processes\.json/u);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("whole packet qualification changes only the proven rootDir protocol field", () => {
+  const oracles = readOracles();
+  const id = "lf/enabled/wrong-id";
+  const control = oracles.controls.find((entry) => entry.id === id)!;
+  const frozen = oracles.independent.get(`${id}/public-control`)!;
+  const root = `/tmp/longer-日本語-🍣-'quoted'-preview-root`;
+  const native = { ...frozen, ...nativeOracle(frozen, root), cwd: root };
+  const actual = {
+    reference: structuredClone(oracles.independent.get(`${id}/reference`)!),
+    publicControl: structuredClone(native),
+    native: { ...structuredClone(native), label: `${id}/source` },
+  };
+  verifyControl(oracles, id, control.source, actual, root);
+  for (const kind of [
+    "position-before",
+    "position-after",
+    "membership",
+    "foreign-root",
+    "code",
+    "stderr",
+    "status",
+    "bytes-only",
+  ]) {
+    const mutated = structuredClone(actual);
+    if (kind === "status") mutated.native.status = 0;
+    else if (kind === "stderr") {
+      mutated.native.stderr = "unexpected warning\n";
+      mutated.native.stderrBase64 = Buffer.from(mutated.native.stderr).toString("base64");
+    } else if (kind === "bytes-only") mutated.native.stdoutBase64 += "eA==";
+    else {
+      const report = JSON.parse(mutated.native.stdout);
+      if (kind === "position-before" || kind === "position-after") {
+        report.files[1].diagnostics[0] = report.files[1].diagnostics[0].replace(
+          "error:14:7",
+          kind === "position-before" ? "error:14:6" : "error:14:8",
+        );
+      } else if (kind === "membership") report.programs[0].files.pop();
+      else if (kind === "foreign-root") report.programs[0].compilerOptions.rootDir = "/foreign";
+      else if (kind === "code")
+        report.files[1].diagnostics[0] = report.files[1].diagnostics[0].replace("TS2322", "TS9999");
+      mutated.native.stdout = `${JSON.stringify(report, null, 2)}\n`;
+      mutated.native.stdoutBase64 = Buffer.from(mutated.native.stdout).toString("base64");
+    }
+    assert.throws(
+      () => verifyControl(oracles, id, control.source, mutated, root),
+      { code: "ERR_ASSERTION" },
+      kind,
+    );
+  }
+  assert.throws(
+    () => verifyControl(oracles, id, `${control.source}\n`, actual, root),
+    /authored input/u,
+  );
+  const withAuthoredRoot = structuredClone(frozen);
+  const report = JSON.parse(withAuthoredRoot.stdout);
+  const authored = `authored literal '${frozen.cwd}' must remain exact`;
+  report.files[1].diagnostics.push(authored);
+  withAuthoredRoot.stdout = `${JSON.stringify(report, null, 2)}\n`;
+  withAuthoredRoot.stdoutBase64 = Buffer.from(withAuthoredRoot.stdout).toString("base64");
+  const transported = JSON.parse(nativeOracle(withAuthoredRoot, root).stdout);
+  assert.equal(transported.programs[0].compilerOptions.rootDir, root);
+  assert.equal(transported.files[1].diagnostics.at(-1), authored);
 });
 
 test("preview project input drift is refused before installation", () => {
