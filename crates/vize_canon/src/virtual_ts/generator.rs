@@ -839,7 +839,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let event_inference =
         super::scope::emit_event_inference_helpers(&mut ts, summary, forwards, legacy_vue2);
     emit_emit_props_helper(&mut ts, &emits_info, hoist_shared_preamble, event_inference);
-    let generic_component_params = setup_props_plan.generic_component_params(generic_parameters);
+    let generic_component_params =
+        setup_props_plan.generic_component_params(generic_parameters, authored_generic);
     let public_component_type = emit_component_constructors(
         &mut ts,
         &setup_props_plan,
@@ -858,7 +859,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         },
         generic_parameters
             .map(|plan| plan.authored())
-            .or(authored_generic),
+            .or(authored_generic)
+            .map(|raw| if raw.trim().is_empty() { "" } else { raw }),
         legacy_vue2,
         dialect,
     );

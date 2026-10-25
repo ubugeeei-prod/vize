@@ -6228,6 +6228,74 @@
           "message": "This comparison appears to be unintentional because the types '\"error\" | \"success\"' and '\"pending\"' have no overlap."
         }
       ]
+    },
+    {
+      "id": "typechecker/empty-generic-public-contract-10540/frozen-root-element-contract",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "empty-generic-public-contract-10540",
+      "case": "frozen-root-element-contract",
+      "test": "empty_generic_markers_preserve_functional_public_contracts",
+      "regressionCommit": "4fdc457df6498c4636efb35dd76af61394ad7006",
+      "sourceRevision": "4fdc457df6498c4636efb35dd76af61394ad7006",
+      "packReference": {
+        "path": "empty-generic-public-contract-10540/cases.json",
+        "sha256": "af65a7f853cdf2f38449f7306141d5335b8c2d4e6a5dd7a6d94c8e5a275b41d4"
+      },
+      "inputs": [
+        {
+          "file": "Base.vue",
+          "path": "empty-generic-public-contract-10540/Base.vue.txt",
+          "sha256": "2ef309d65624e9b3ea4dc6e7b4c9bd6edf7be6b2bd6a86343527d2ab5d26d10a"
+        },
+        {
+          "file": "Child.vue",
+          "path": "empty-generic-public-contract-10540/Child.vue.txt",
+          "sha256": "693b60ff8f9570799da2ad768f772abf71c6d9c521c389fe815eb3b184760e44"
+        },
+        {
+          "file": "Generic.vue",
+          "path": "empty-generic-public-contract-10540/Generic.vue.txt",
+          "sha256": "7ce37ad9ffabeccbebe15e580c01e3692eff4bcc83597eb12d96e6c9a0156f29"
+        },
+        {
+          "file": "Fragment.vue",
+          "path": "empty-generic-public-contract-10540/Fragment.vue.txt",
+          "sha256": "d4f15fd5c4af7073049924aef8ee5ca82ac9c7b618ddb9f85bd26bb508c5f7e5"
+        },
+        {
+          "file": "App.vue",
+          "path": "empty-generic-public-contract-10540/App.vue.txt",
+          "sha256": "52b2916cec46d8480e0bff56decdc0ffb584ceba131bf47b4672d2548d107be5"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "empty-generic-public-contract-10540/tsconfig.json.txt",
+          "sha256": "78e238c2f71305efbfdb899c94899d7310cb4acba06919a70fbb60be3415ca43"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
     }
   ],
   "protocolCases": [

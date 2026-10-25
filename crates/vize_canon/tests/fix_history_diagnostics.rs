@@ -787,6 +787,20 @@ fn slot_host_guards_preserve_authored_impossible_comparisons() {
     );
 }
 
+#[test]
+fn empty_generic_markers_preserve_functional_public_contracts() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "empty-generic-public-contract-10540",
+        "empty_generic_markers_preserve_functional_public_contracts",
+        "4fdc457df6498c4636efb35dd76af61394ad7006",
+        Some(10540),
+        &["frozen-root-element-contract"],
+    );
+}
+
 fn check_pack(
     name: &str,
     test: &str,
@@ -872,7 +886,8 @@ fn check_pack(
             | "jsx-prop-token-ranges-10494"
             | "quoted-generic-parameters-10540"
             | "unicode-prop-bindings-10573"
-            | "narrowed-slot-host-guard-10660" => regression,
+            | "narrowed-slot-host-guard-10660"
+            | "empty-generic-public-contract-10540" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
             }
@@ -936,6 +951,16 @@ fn check_pack(
             std::fs::create_dir(project_root.join("node_modules"))
                 .expect("node_modules must be created");
             link_vue(&vue, &project_root.join("node_modules/vue"));
+            if name == "empty-generic-public-contract-10540" {
+                let helpers = std::fs::canonicalize(
+                    root.join("tests/node_modules/vue-component-type-helpers"),
+                )
+                .expect("the pinned real public component type helpers must be installed");
+                link_vue(
+                    &helpers,
+                    &project_root.join("node_modules/vue-component-type-helpers"),
+                );
+            }
         }
         for input in &case.inputs {
             let file = safe_relative(&input.file);

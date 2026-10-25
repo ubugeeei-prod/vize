@@ -360,7 +360,16 @@ impl SetupPropsPlan {
     pub(super) fn generic_component_params(
         &self,
         generic_param: Option<&GenericParameters>,
+        authored_generic: Option<&str>,
     ) -> Option<(String, String)> {
-        generic_param.map(|generic| (generic.declaration.clone(), generic.names.clone()))
+        generic_param
+            .map(|generic| (generic.declaration.clone(), generic.names.clone()))
+            .or_else(|| {
+                // A bare or empty attribute still selects Vue's functional
+                // component contract. It declares no parameters to parse.
+                authored_generic
+                    .filter(|raw| raw.trim().is_empty())
+                    .map(|_| (String::default(), String::default()))
+            })
     }
 }
