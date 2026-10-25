@@ -16,6 +16,11 @@ import {
   nativeShutdownProtocolSource,
   newNativeShutdownProtocolCases,
 } from "./native-shutdown-protocol-fixtures.ts";
+import {
+  NATIVE_BETA_DTO_PROTOCOL_ID,
+  nativeBetaDtoProtocolSource,
+  newNativeBetaDtoProtocolCases,
+} from "./native-beta-dto-fixtures.ts";
 
 import { knownCompilerCssSource } from "../../../../tests/differential/compiler-css-api-registry.ts";
 import { newNativeRuntimeCases } from "./native-runtime-fixtures.ts";
@@ -116,6 +121,21 @@ function coverageLost(before?: DialectCoverage, after?: DialectCoverage): boolea
   if (rank(before) !== rank(after)) return rank(after) < rank(before);
   const kept = dialects(after);
   return [...dialects(before)].some((dialect) => !kept.has(dialect));
+}
+
+// Route only one explicitly registered protocol ID; malformed/unknown rows
+// remain with the original closed validator and cannot disappear in filtering.
+function protocolPartition(value: unknown, id: string, include: boolean): unknown {
+  if (!Array.isArray(value)) return value;
+  return value.filter((row: unknown) => {
+    const matches =
+      row !== null &&
+      typeof row === "object" &&
+      !Array.isArray(row) &&
+      "id" in row &&
+      row.id === id;
+    return matches === include;
+  });
 }
 
 function sha256(bytes: Buffer): string {
@@ -256,6 +276,15 @@ function checkProduct(
             readFile,
           )
         : { ids: [] as string[], sources: new Set<string>() };
+    const dtoProtocols =
+      product === "typechecker"
+        ? newNativeBetaDtoProtocolCases(
+            protocolPartition(before?.protocolCases, NATIVE_BETA_DTO_PROTOCOL_ID, true),
+            protocolPartition(manifest.protocolCases, NATIVE_BETA_DTO_PROTOCOL_ID, true),
+            readFile,
+          )
+        : [];
+    const dtoRegistered = dtoProtocols.includes(NATIVE_BETA_DTO_PROTOCOL_ID);
     const runtime = newNativeRuntimeCases(
       product,
       before?.runtimeCases,
@@ -271,12 +300,17 @@ function checkProduct(
             (path) =>
               !runtime.sources.has(path) &&
               !languageProject.sources.has(path) &&
+              !(dtoRegistered && nativeBetaDtoProtocolSource(path)) &&
               !(product === "typechecker" && nativeShutdownProtocolSource(path)),
           )
         : true;
     const protocols =
       product === "typechecker"
-        ? newNativeShutdownProtocolCases(before?.protocolCases, manifest.protocolCases, readFile)
+        ? newNativeShutdownProtocolCases(
+            protocolPartition(before?.protocolCases, NATIVE_BETA_DTO_PROTOCOL_ID, false),
+            protocolPartition(manifest.protocolCases, NATIVE_BETA_DTO_PROTOCOL_ID, false),
+            readFile,
+          )
         : [];
     const cssApi =
       product === "compiler"
@@ -312,6 +346,7 @@ function checkProduct(
         ...cssApi,
         ...vaporIds,
         ...languageProject.ids,
+        ...dtoProtocols,
       ],
     };
   } catch (error) {
