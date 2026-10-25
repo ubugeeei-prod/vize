@@ -20,10 +20,14 @@ jobs:
     env:
       CARGO_BUILD_JOBS: "24"
       CARGO_INCREMENTAL: "0"
+      QUALIFICATION_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
       BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { fetch-depth: 0, persist-credentials: false }
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
       - uses: ./.github/actions/cache-vp-bootstrap
       - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         with:
@@ -48,6 +52,7 @@ jobs:
           INSTA_UPDATE: new
         run: |
           mkdir -p "$RUNNER_TEMP/jsx-authored-native"
+          test "$(git rev-parse HEAD)" = "$QUALIFICATION_HEAD_SHA"
           git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/jsx-authored-native/source.txt"
           git diff --exit-code
           status=0
