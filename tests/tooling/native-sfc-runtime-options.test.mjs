@@ -10,11 +10,13 @@ import {
 } from "node:fs";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { test } from "node:test";
 import vm from "node:vm";
 
-const proof = process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_PROOF;
+const proof = process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_PROOF
+  ? resolve(process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_PROOF)
+  : undefined;
 if (process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_REQUIRED === "1") assert.ok(proof);
 const selected = Boolean(proof);
 const require = createRequire(import.meta.url);
@@ -87,6 +89,7 @@ if (selected) {
   assert.equal(typeof vm.SourceTextModule, "function", "use the real V8 module parser");
 }
 const cases = [];
+let pinnedModule;
 await test("capture all native runtime configurations before semantic assertions", skip, () => {
   const fixtures = mkdtempSync(join(tmpdir(), "vize-runtime-options-"));
   const previous = process.cwd();
@@ -97,6 +100,17 @@ await test("capture all native runtime configurations before semantic assertions
       writeFileSync(path, source);
       return { path, source, scopeId: "runtime-options" };
     });
+    pinnedModule = observe(
+      "pinned-ssr",
+      { filename: "Layout.vue", ssr: true, sourceMap: false, scopeId: "runtime-options" },
+      () =>
+        native.compileSfc(sourceFiles[4], {
+          filename: "Layout.vue",
+          ssr: true,
+          sourceMap: false,
+          scopeId: "runtime-options",
+        }),
+    );
     for (const [target, targetOptions] of Object.entries(targets)) {
       for (const sourceMap of [false, true]) {
         for (const runtimeModuleName of runtimeModules) {
@@ -185,20 +199,26 @@ await test("capture all native runtime configurations before semantic assertions
   writeFileSync(join(proof, "matrix.json"), JSON.stringify(cases, null, 2) + "\n");
 });
 
+function completeCases() {
+  assert.equal(cases.length, 108, "all 36 module and 72 standalone configurations were captured");
+  assert.equal(observations.length, 559, "every native API return was retained");
+  return cases;
+}
+
 await test(
   "default and explicit default runtime names preserve entire native returns",
   skip,
   () => {
     for (const target of Object.keys(targets)) {
       for (const sourceMap of [false, true]) {
-        const baseline = cases.find(
+        const baseline = completeCases().find(
           (row) =>
             row.target === target &&
             row.options.sourceMap === sourceMap &&
             row.batch &&
             row.options.runtimeModuleName === undefined,
         );
-        const explicit = cases.find(
+        const explicit = completeCases().find(
           (row) =>
             row.target === target &&
             row.options.sourceMap === sourceMap &&
@@ -232,7 +252,7 @@ await test("single and batch code, maps and all shared metadata remain equal", s
     "moduleShape",
     "hasScoped",
   ];
-  for (const row of cases.filter((row) => row.batch)) {
+  for (const row of completeCases().filter((row) => row.batch)) {
     assert.equal(row.batch.failedCount, 0);
     assert.equal(row.batch.successCount, sourceFiles.length);
     for (const [index, result] of row.single.entries()) {
@@ -246,7 +266,7 @@ await test("single and batch code, maps and all shared metadata remain equal", s
     if (row.stats) {
       assert.equal(row.stats.failed, 0);
       assert.equal(row.stats.success, sourceFiles.length);
-      const baseline = cases.find(
+      const baseline = completeCases().find(
         (entry) =>
           entry.batch &&
           entry.target === row.target &&
@@ -269,7 +289,7 @@ await test(
   "custom runtime names produce valid whole modules and only selected generated imports",
   skip,
   () => {
-    for (const row of cases.filter((row) => row.batch)) {
+    for (const row of completeCases().filter((row) => row.batch)) {
       const selectedModule = row.options.runtimeModuleName ?? "vue";
       for (const [index, syntax] of row.syntax.entries()) {
         assert.equal(
@@ -297,7 +317,7 @@ await test(
 await test("standalone DOM output reads the selected real runtime global", skip, () => {
   const Vue = require(join(process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_VUE, "node_modules/vue"));
   assert.equal(Vue.version, "3.5.44");
-  for (const row of cases.filter((row) => row.function && row.target === "dom")) {
+  for (const row of completeCases().filter((row) => row.function && row.target === "dom")) {
     const reads = [];
     const context = {};
     const chosen = row.options.runtimeGlobalName ?? "Vue";
@@ -334,7 +354,7 @@ await test("standalone DOM output reads the selected real runtime global", skip,
 });
 
 await test("standalone single, files and statistics preserve code and maps", skip, () => {
-  for (const row of cases.filter((entry) => entry.function)) {
+  for (const row of completeCases().filter((entry) => entry.function)) {
     const { path, scopeId, ...file } = row.functionBatch.results[0];
     assert.equal(path, row.options.filename);
     assert.equal(scopeId, row.options.scopeId);
@@ -352,4 +372,44 @@ await test("standalone single, files and statistics preserve code and maps", ski
       ]);
     }
   }
+});
+
+await test("whole default code, maps and DTOs equal the before-source native", skip, () => {
+  assert.ok(process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_BASELINE);
+  const before = JSON.parse(readFileSync(process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_BASELINE));
+  assert.equal(before.length, 108);
+  const defaults = (rows) =>
+    rows.filter(
+      (row) =>
+        row.options.runtimeModuleName === undefined && row.options.runtimeGlobalName === undefined,
+    );
+  const withoutTiming = (row) => {
+    if (!row) return row;
+    const { timeMs, ...rest } = row;
+    return rest;
+  };
+  const comparable = (row) => ({
+    target: row.target,
+    options: row.options,
+    single: row.single,
+    batch: withoutTiming(row.batch),
+    stats: withoutTiming(row.stats),
+    function: row.function,
+    functionBatch: withoutTiming(row.functionBatch),
+    functionStats: withoutTiming(row.functionStats),
+    syntax: row.syntax,
+  });
+  assert.deepEqual(defaults(completeCases()).map(comparable), defaults(before).map(comparable));
+});
+
+await test("pinned default SSR module remains byte-identical", skip, () => {
+  completeCases();
+  const fixture = new URL(
+    "../_fixtures/differential/compiler/sfc-runtime-options-native/",
+    import.meta.url,
+  );
+  assert.equal(readFileSync(new URL("Layout.vue.txt", fixture), "utf8"), sourceFiles[4]);
+  assert.equal(pinnedModule.code, readFileSync(new URL("module.expected.txt", fixture), "utf8"));
+  assert.deepEqual(pinnedModule.errors, []);
+  assert.deepEqual(pinnedModule.warnings, []);
 });
