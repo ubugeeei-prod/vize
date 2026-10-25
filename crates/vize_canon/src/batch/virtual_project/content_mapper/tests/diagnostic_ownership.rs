@@ -184,6 +184,64 @@ fn contextual_callback_errors_do_not_acquire_synthetic_ignore_rows() {
 }
 
 #[test]
+fn proved_expected_callback_geometry_never_hides_its_contextual_body() {
+    let source = "<script setup lang=\"ts\">import Comp from './Comp.vue'; const noop = () => {};</script><template><!-- @vue-expect-error --><Comp :id=\"{ a: 1 }\" :pick=\"(field) => !!field\" @save=\"noop\" /></template>";
+    let mut before = packet("Callback.vue", source, false);
+    let mut after = packet("Callback.vue", source, true);
+    let table = after
+        .as_object_mut()
+        .unwrap()
+        .remove("diagnosticDirectives")
+        .unwrap();
+    before
+        .as_object_mut()
+        .unwrap()
+        .remove("diagnosticDirectives");
+    assert_eq!(
+        after, before,
+        "all text, mappings, editor features, links and authored diagnostics remain exact"
+    );
+    let callback = source.find("(field) => !!field").unwrap();
+    let rows = table["directives"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|row| serde_json::from_value::<[usize; 6]>(row.clone()).unwrap())
+        .collect::<Vec<_>>();
+    let expects = rows.iter().filter(|row| row[4] == 1).collect::<Vec<_>>();
+    assert_eq!(expects.len(), 1, "unused EXPECT remains one aggregate");
+    assert!(
+        rows.iter()
+            .filter(|row| row[4] == 0)
+            .all(|row| row[0] + row[1] <= callback
+                || callback + "(field) => !!field".len() <= row[0]),
+        "no contextual callback IGNORE is emitted"
+    );
+    let [_, _, start, end, _, _] = *expects[0];
+    let body_rows = after["mappings"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|row| row[2] == callback && row[3] == "(field) => !!field".len())
+        .collect::<Vec<_>>();
+    assert_eq!(
+        body_rows.len(),
+        2,
+        "one inference copy and one authored contextual check"
+    );
+    for row in body_rows {
+        let generated = row[0].as_u64().unwrap() as usize;
+        let length = row[1].as_u64().unwrap() as usize;
+        let editor_features = row[5].as_u64().unwrap();
+        assert_eq!(
+            start <= generated && generated + length <= end,
+            editor_features != 0,
+            "only the actual authored body belongs to EXPECT"
+        );
+    }
+}
+
+#[test]
 fn expect_owns_one_late_packet_and_navigation_echoes_do_not_widen_it() {
     for newline in ["\n", "\r\n"] {
         let source = MIN

@@ -228,7 +228,10 @@ pub(super) fn with_owned_input_echoes(
         }
     }
     let mut owned = Vec::new();
-    for echo in echoes.iter().filter(|echo| !echo.authored.is_empty()) {
+    for echo in echoes
+        .iter()
+        .filter(|echo| echo.suppress && !echo.authored.is_empty())
+    {
         let mut start = echo.generated.start;
         let first = union.partition_point(|range| range.end <= start);
         for covered in union.iter().skip(first) {

@@ -236,6 +236,7 @@ impl<'a> ComponentPropsContext<'a, '_> {
         )
         .with_model_modifiers(self.model_modifiers)
         .with_diagnostic_ownership(self.diagnostic_ownership)
+        .with_expected_packet(self.inference_prelude.is_some())
     }
 }
 

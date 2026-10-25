@@ -68,7 +68,8 @@ pub(super) fn generate_component_handler_scope(
         ctx.template_source,
         ctx.template_offset,
         &ctx.summary.scopes,
-    );
+    )
+    .with_expected_packet(ctx.inference_prelude.is_some());
     let event_types = if let Some(prelude) = ctx.inference_prelude {
         let mut prelude = prelude.borrow_mut();
         let super::super::root_owner_packets::RootOwnerBuffer {

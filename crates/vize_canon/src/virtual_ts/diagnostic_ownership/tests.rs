@@ -81,6 +81,21 @@ fn both_proven_navigation_and_inference_copies_keep_exact_owner_ranges() {
 }
 
 #[test]
+fn contextual_geometry_requires_its_primary_but_never_suppresses_diagnostics() {
+    let mut absent = DiagnosticOwnership::default();
+    absent.record_expect_geometry(owner(), 10..15, 22..27, true);
+    assert!(absent.into_echoes().is_empty());
+    let mut ledger = DiagnosticOwnership::default();
+    ledger.record_expect_geometry(owner(), 10..15, 22..27, true);
+    ledger.record_expect_geometry(owner(), 30..35, 22..27, false);
+    let echoes = ledger.into_echoes();
+    assert_eq!(echoes.len(), 1);
+    assert_eq!(echoes[0].generated, 10..15);
+    assert_eq!(echoes[0].authored, 22..27);
+    assert!(!echoes[0].suppress);
+}
+
+#[test]
 fn a_deferred_root_buffer_rebases_echoes_and_primaries_with_its_text() {
     let mut whole = DiagnosticOwnership::default();
     whole.record(owner(), 10..15, 22..27, true);

@@ -178,7 +178,9 @@ pub(super) fn append_prop_entry(
     }
     Some(PropDiagnosticRows {
         name: entry_gen_start..key_gen_end,
-        value: value_span,
+        // A callback literal carries a synthetic `never`, not the authored
+        // body. Only the separately checked callback can own its value range.
+        value: if inline_callback { 0..0 } else { value_span },
         ignored_primary: before_following_spread && !repeated_named_key,
         merged: merge_named_bindings,
     })

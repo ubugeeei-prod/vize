@@ -38,6 +38,7 @@ pub(crate) struct ComponentPropSource<'a> {
     pub(crate) diagnostic_ownership:
         Option<&'a crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector>,
     inference_only: bool,
+    expected_packet: bool,
 }
 
 impl<'a> ComponentPropSource<'a> {
@@ -53,6 +54,7 @@ impl<'a> ComponentPropSource<'a> {
             model_modifiers: None,
             diagnostic_ownership: None,
             inference_only: false,
+            expected_packet: false,
         }
     }
 
@@ -80,7 +82,13 @@ impl<'a> ComponentPropSource<'a> {
             model_modifiers: self.model_modifiers,
             diagnostic_ownership: ownership,
             inference_only: self.inference_only,
+            expected_packet: self.expected_packet,
         }
+    }
+
+    pub(crate) const fn with_expected_packet(mut self, expected: bool) -> Self {
+        self.expected_packet = expected;
+        self
     }
 
     pub(crate) fn value_source_range(self, prop: &PassedProp) -> Option<std::ops::Range<usize>> {
@@ -107,23 +115,33 @@ impl<'a> ComponentPropSource<'a> {
         let Some(collector) = self.diagnostic_ownership else {
             return;
         };
-        let Some(owner) = InputOwner::for_prop(usage, prop) else {
+        let ordinary_owner = InputOwner::for_prop(usage, prop);
+        let Some(owner) = ordinary_owner.or_else(|| {
+            self.expected_packet
+                .then(|| InputOwner::for_expected_projection(usage, prop))
+                .flatten()
+        }) else {
             return;
         };
         let name_source = prop_name_source_range(self, prop);
         let value_source = prop_value_source_range(self, prop).or_else(|| name_source.clone());
         // Do not retain a RefCell borrow while another emitter runs.
         let mut ledger = collector.borrow_mut();
+        let mut record = |owner, generated, source| {
+            if ordinary_owner.is_some() {
+                ledger.record(owner, generated, source, self.inference_only);
+            } else {
+                // The root relocation proof classifies the callback's creation.
+                // Its contextual body still owns diagnostics; this record only
+                // prevents an inference mapping from widening authored EXPECT.
+                ledger.record_expect_geometry(owner, generated, source, self.inference_only);
+            }
+        };
         if let Some(source) = name_source {
-            ledger.record(
-                owner.with_role(InputRole::Name),
-                name,
-                source,
-                self.inference_only,
-            );
+            record(owner.with_role(InputRole::Name), name, source);
         }
         if let Some(source) = value_source {
-            ledger.record(owner, value, source, self.inference_only);
+            record(owner, value, source);
         }
     }
 }

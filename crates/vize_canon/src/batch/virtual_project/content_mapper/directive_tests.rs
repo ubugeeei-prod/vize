@@ -255,6 +255,7 @@ fn input_echo_policy_subtracts_only_existing_ignore_intervals() {
         let echoes = [crate::virtual_ts::diagnostic_ownership::DiagnosticEcho {
             generated: 10..30,
             authored: 100..110,
+            suppress: true,
         }];
         let result = super::directives::with_owned_input_echoes(Some(table), &echoes).unwrap();
         let mut expected = expected

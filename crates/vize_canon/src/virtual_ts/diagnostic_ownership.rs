@@ -28,14 +28,23 @@ pub(crate) struct InputOwner {
 
 impl InputOwner {
     pub(crate) fn for_prop(usage: &ComponentUsage, prop: &PassedProp) -> Option<Self> {
-        if prop.name_is_dynamic
-            || matches!(prop.name.as_str(), "key" | "ref")
-            || prop.value.as_ref().is_some_and(|value| {
-                crate::virtual_ts::scope::contains_inline_function_prop_value(value.as_str())
-            })
-        {
+        if prop.value.as_ref().is_some_and(|value| {
+            crate::virtual_ts::scope::contains_inline_function_prop_value(value.as_str())
+        }) {
             // A contextual callback can have a different contract in another
             // invocation. Its body is never classified as a diagnostic echo.
+            return None;
+        }
+        Self::for_expected_projection(usage, prop)
+    }
+
+    /// Geometry can distinguish a proved same-root inference copy without
+    /// claiming its contextual diagnostics are interchangeable with a primary.
+    pub(crate) fn for_expected_projection(
+        usage: &ComponentUsage,
+        prop: &PassedProp,
+    ) -> Option<Self> {
+        if prop.name_is_dynamic || matches!(prop.name.as_str(), "key" | "ref") {
             return None;
         }
         Some(Self {
@@ -57,6 +66,7 @@ impl InputOwner {
 pub(crate) struct DiagnosticEcho {
     pub(crate) generated: Range<usize>,
     pub(crate) authored: Range<usize>,
+    pub(crate) suppress: bool,
 }
 
 #[derive(Debug)]
@@ -65,6 +75,7 @@ struct Projection {
     generated: Range<usize>,
     authored: Range<usize>,
     inference: bool,
+    suppress: bool,
     valid: bool,
 }
 
@@ -81,7 +92,7 @@ impl DiagnosticOwnership {
         authored: Range<usize>,
         inference: bool,
     ) {
-        self.record_projection(owner, generated, authored, inference);
+        self.record_projection(owner, generated, authored, inference, true);
     }
 
     pub(crate) fn record_bare_navigation(
@@ -90,7 +101,17 @@ impl DiagnosticOwnership {
         generated: Range<usize>,
         authored: Range<usize>,
     ) {
-        self.record_projection(owner, generated, authored, true);
+        self.record_projection(owner, generated, authored, true, true);
+    }
+
+    pub(crate) fn record_expect_geometry(
+        &mut self,
+        owner: InputOwner,
+        generated: Range<usize>,
+        authored: Range<usize>,
+        inference: bool,
+    ) {
+        self.record_projection(owner, generated, authored, inference, false);
     }
 
     fn record_projection(
@@ -99,6 +120,7 @@ impl DiagnosticOwnership {
         generated: Range<usize>,
         authored: Range<usize>,
         inference: bool,
+        suppress: bool,
     ) {
         if !generated.is_empty() && !authored.is_empty() {
             self.rows.push(Projection {
@@ -106,6 +128,7 @@ impl DiagnosticOwnership {
                 generated,
                 authored,
                 inference,
+                suppress,
                 valid: true,
             });
         }
@@ -183,6 +206,7 @@ impl DiagnosticOwnership {
                 echoes.push(DiagnosticEcho {
                     generated: row.generated,
                     authored: row.authored,
+                    suppress: row.suppress,
                 });
             }
         }

@@ -360,6 +360,7 @@ fn emit_resolved_events(
             ctx.scopes,
         )
         .with_diagnostic_ownership(ctx.diagnostic_ownership)
+        .with_expected_packet(ctx.inference_prelude.is_some())
         .inference_only()
         .record_prop_projection(usage, prop, key_start..key_end, value_start..value_end);
         ts.push_str(",\n");
