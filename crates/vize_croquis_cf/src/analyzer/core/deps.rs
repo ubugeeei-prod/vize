@@ -207,10 +207,6 @@ mod tests {
     use super::is_relative_specifier;
     use crate::{CrossFileAnalyzer, CrossFileOptions, DependencyEdge, FileId};
     use std::path::Path;
-    use vize_carton::FxHashSet;
-
-    #[cfg(test)]
-    mod source_update_tests;
     use vize_croquis::Croquis;
 
     fn analyzer_with(files: &[(&str, &str)]) -> CrossFileAnalyzer {
