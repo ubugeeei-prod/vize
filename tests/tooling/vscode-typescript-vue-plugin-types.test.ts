@@ -39,6 +39,9 @@ test("TypeScript Vue plugin exposes generated SFC component types", () => {
       project.mainTs,
       project.ambientDts,
     ]);
+    const originalOptions = host.getCompilationSettings();
+    const configFile = ts.parseJsonText("tsconfig.json", "{}");
+    Object.defineProperty(originalOptions, "configFile", { value: configFile });
     const service = initVuePlugin({ typescript: ts }).create({
       languageService: ts.createLanguageService(host),
       languageServiceHost: host,
@@ -46,6 +49,12 @@ test("TypeScript Vue plugin exposes generated SFC component types", () => {
       serverHost: ts.sys,
       config: { nativePath: project.nativeDir },
     });
+    assert.equal(host.getCompilationSettings().configFile, configFile);
+    assert.equal(
+      Object.getOwnPropertyDescriptor(host.getCompilationSettings(), "configFile")?.enumerable,
+      false,
+    );
+    assert.equal(originalOptions.allowNonTsExtensions, undefined);
     const source = fs.readFileSync(project.mainTs, "utf8");
     const quickInfo = service.getQuickInfoAtPosition(
       project.mainTs,

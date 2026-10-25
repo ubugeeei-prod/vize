@@ -69,7 +69,15 @@ function installVueVirtualModules(ts, info) {
     return value;
   };
   const originalOptions = bind("getCompilationSettings");
-  const options = () => ({ ...originalOptions?.(), allowNonTsExtensions: true });
+  const options = () => {
+    const original = originalOptions?.() || {};
+    // TypeScript stores the parsed configFile as a non-enumerable option.
+    // Losing it crashes configured-project reload when another SFC opens.
+    return Object.create(Object.getPrototypeOf(original), {
+      ...Object.getOwnPropertyDescriptors(original),
+      allowNonTsExtensions: { value: true, enumerable: true, configurable: true, writable: true },
+    });
+  };
   const resolverHost = {
     ...serverHost,
     ...host,

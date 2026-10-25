@@ -188,6 +188,7 @@ async function request(name, command, file, text, marker, extra = {}) {
     ...extra,
   });
   results[name] = response;
+  assert.equal(response.success, true, JSON.stringify(response));
   return response;
 }
 try {
