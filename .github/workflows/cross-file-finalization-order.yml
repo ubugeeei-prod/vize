@@ -2,6 +2,11 @@ name: Cross-file finalization order
 run-name: Cross-file exact incoming vectors @ ${{ github.event.pull_request.head.sha || github.sha }}
 on:
   workflow_dispatch:
+    inputs:
+      base_sha:
+        description: Exact combined integration base SHA with reset and stale-import fixes
+        type: string
+        required: true
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
@@ -21,7 +26,7 @@ env:
   CARGO_INCREMENTAL: "0"
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   EXPECTED_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-  BASE_SOURCE_SHA: 0d237da915b8f1d7b0777bee8f0a0aeea20e3067
+  BASE_SOURCE_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.base_sha || github.event.pull_request.base.sha }}
 jobs:
   actual-ordered-source-states:
     runs-on: blacksmith-32vcpu-ubuntu-2404
