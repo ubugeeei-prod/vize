@@ -6,7 +6,8 @@ use crate::options::FormatOptions;
 use crate::template::literal_lines::Representation;
 use crate::template::literal_spans::ValueLines;
 use oxc_allocator::Allocator as OxcAllocator;
-use oxc_ast::ast::{Expression, Statement};
+use oxc_ast::ast::{Expression, Program, Statement, TemplateElement};
+use oxc_ast_visit::Visit;
 use oxc_formatter::{QuoteStyle, format_program, parse_for_format};
 use oxc_formatter_core::LineWidth;
 use oxc_span::SourceType;
@@ -56,6 +57,72 @@ fn strip_generated_group_indent(expression: &str, options: &FormatOptions) -> St
         literal.advance_line(line);
     }
     unindented
+}
+
+#[derive(Default)]
+struct TemplateRanges {
+    spans: Vec<oxc_span::Span>,
+}
+
+impl<'a> Visit<'a> for TemplateRanges {
+    fn visit_template_element(&mut self, element: &TemplateElement<'a>) {
+        self.spans.push(element.span);
+    }
+}
+
+/// The embedded printer uses its configured separator even within template
+/// text. Restore only parser-owned quasi ranges, retaining formatted `${…}`.
+#[cold]
+#[inline(never)]
+fn preserve_cr_template_text(
+    allocator: &OxcAllocator,
+    original: &Program<'_>,
+    code: String,
+) -> Option<String> {
+    if memchr::memchr(b'`', original.source_text.as_bytes()).is_none() {
+        return Some(code);
+    }
+    let mut before = TemplateRanges::default();
+    before.visit_program(original);
+    if !before.spans.iter().any(|span| {
+        original
+            .source_text
+            .get(span.start as usize..span.end as usize)
+            .is_some_and(|text| text.contains(['\r', '\n']))
+    }) {
+        return Some(code);
+    }
+    let mut wrapper = String::with_capacity(code.len() + 7);
+    wrapper.push_str("void (");
+    wrapper.push_str(&code);
+    wrapper.push(')');
+    let source = allocator.alloc_str(&wrapper);
+    let parsed = parse_for_format(allocator, source, SourceType::ts().with_module(true));
+    if !parsed.diagnostics.is_empty() {
+        return None;
+    }
+    let mut after = TemplateRanges::default();
+    after.visit_program(&parsed.program);
+    if before.spans.len() != after.spans.len() {
+        return None;
+    }
+    before.spans.sort_unstable_by_key(|span| span.start);
+    after.spans.sort_unstable_by_key(|span| span.start);
+    let mut restored = String::with_capacity(code.len());
+    let mut previous = 0;
+    for (authored, printed) in before.spans.iter().zip(after.spans) {
+        let start = printed.start.checked_sub(6)? as usize;
+        let end = printed.end.checked_sub(6)? as usize;
+        restored.push_str(code.get(previous..start)?);
+        restored.push_str(
+            original
+                .source_text
+                .get(authored.start as usize..authored.end as usize)?,
+        );
+        previous = end;
+    }
+    restored.push_str(code.get(previous..)?);
+    Some(restored)
 }
 
 #[inline]
@@ -250,6 +317,11 @@ fn format_expression_with_layout(
             } else {
                 trim_expression(inner.text).to_compact_string()
             };
+            let code = if options.end_of_line == crate::EndOfLine::Cr {
+                preserve_cr_template_text(oxc_allocator, &parsed.program, code)?
+            } else {
+                code
+            };
             let owns_attribute_lines = !matches!(&unary.argument, Expression::ObjectExpression(_))
                 && (code.contains('\n')
                     || (options.end_of_line == crate::EndOfLine::Cr && code.contains('\r')));
@@ -275,8 +347,14 @@ fn format_expression_with_layout(
         // parentheses and sequences whose grouping Vue consumers require.
         let inner = expression_wrapper::unwrap_argument(inner, &parsed.program, trimmed)?;
 
+        let code = trim_expression(inner.text).to_compact_string();
+        let code = if options.end_of_line == crate::EndOfLine::Cr {
+            preserve_cr_template_text(oxc_allocator, &parsed.program, code)?
+        } else {
+            code
+        };
         Some(FormattedExpression {
-            code: trim_expression(inner.text).to_compact_string(),
+            code,
             retained_bare_sequence: inner.retained_bare_sequence,
             owns_attribute_lines: false,
         })

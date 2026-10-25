@@ -77,6 +77,7 @@ fn span_text(source: &str, span: vize_l0::Span) -> Option<&str> {
 }
 
 /// Format a directive value expression.
+#[inline]
 pub(super) fn format_directive_value(
     name: &str,
     value: &str,
@@ -84,6 +85,9 @@ pub(super) fn format_directive_value(
     vue_version: crate::VueVersion,
     attribute_depth: usize,
 ) -> (String, bool, bool) {
+    if options.end_of_line != crate::EndOfLine::Cr {
+        return format_directive_value_inner(name, value, options, vue_version, attribute_depth);
+    }
     let (mut value, indent, owns_lines) =
         format_directive_value_inner(name, value, options, vue_version, attribute_depth);
     if options.end_of_line == crate::EndOfLine::Cr && value.contains('\n') {
@@ -212,7 +216,7 @@ pub(super) fn reanchor_continuation_lines(
     // A lone CR ends a line like LF; the lines are rebuilt with LF below.
     let normalized;
     let value = if options.end_of_line == crate::EndOfLine::Cr && value.contains('\r') {
-        normalized = value.replace('\r', "\n");
+        normalized = super::literal_spans::normalize_layout_cr(value, representation);
         normalized.as_str()
     } else {
         value

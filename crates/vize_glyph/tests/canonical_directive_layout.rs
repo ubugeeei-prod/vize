@@ -58,18 +58,17 @@ fn cr_object_layout_preserves_mixed_literal_separators() -> Result<(), Box<dyn s
         let source = format!(
             "<template>\r  <div :class=\"{{ [{literal}]: visible, active: visible }}\" />\r</template>\r"
         );
-        let first = format_sfc(&source, &options)?;
-        assert!(
-            first.code.contains(literal.as_str()),
-            "raw {raw:?}: {}",
-            first.code
+        let expected = format!(
+            "<template>\r  <div\r    :class=\"{{\r      [{literal}]: visible,\r      active: visible\r    }}\"\r  />\r</template>\r"
         );
+        let first = format_sfc(&source, &options)?;
+        assert_eq!(first.code.as_str(), expected, "raw {raw:?}");
         let mut previous = first.code;
         for _ in 0..2 {
             let next = format_sfc(&previous, &options)?;
             assert!(!next.changed, "raw {raw:?}: {}", next.code);
             assert_eq!(next.code, previous, "raw {raw:?}");
-            assert!(next.code.contains(literal.as_str()));
+            assert_eq!(next.code.as_str(), expected, "raw {raw:?}");
             previous = next.code;
         }
     }
