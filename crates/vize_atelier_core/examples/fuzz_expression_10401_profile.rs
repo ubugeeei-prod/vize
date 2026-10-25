@@ -15,7 +15,15 @@ use vize_atelier_core::steps::expression::{
 
 fn main() {
     let mut args = env::args().skip(1);
-    let phase = args.next().expect("phase: guard, guarded, or raw");
+    let phase = args
+        .next()
+        .expect("phase: controls, inspect, guard, guarded, or raw");
+    if phase == "controls" {
+        let path = args.next().expect("exact input path");
+        assert!(args.next().is_none());
+        control_packets(&fs::read_to_string(path).expect("UTF-8 reproducer"));
+        return;
+    }
     let path = args.next().expect("input path");
     let iterations: usize = args
         .next()
@@ -23,18 +31,18 @@ fn main() {
     assert!((1..=100_000).contains(&iterations));
     assert!(args.next().is_none());
     let source = fs::read_to_string(path).expect("UTF-8 reproducer");
-    let safe = expression_is_safe_to_parse(&source);
-    eprintln!(
-        "{}",
-        serde_json::json!({
-            "phase": phase,
-            "bytes": source.len(),
-            "iterations": iterations,
-            "safe": safe,
-            "depth": expression_nesting_depth(&source),
-            "balanced": expression_has_balanced_delimiters(&source),
-        })
-    );
+    if phase == "inspect" {
+        println!(
+            "{}",
+            serde_json::json!({
+                "bytes": source.len(),
+                "safe": expression_is_safe_to_parse(&source),
+                "depth": expression_nesting_depth(&source),
+                "balanced": expression_has_balanced_delimiters(&source),
+            })
+        );
+        return;
+    }
     let start = Instant::now();
     let mut accepted = 0;
     let mut rejected = 0;
@@ -77,4 +85,65 @@ fn main() {
             "skipped": skipped,
         })
     );
+}
+
+fn control_packets(reproducer: &str) {
+    let controls = [
+        "f<T>(arg)",
+        "f<Map<string, Array<number>>>(value)",
+        "f<A<B<C>>>(value)",
+        "a > b ? f<T>(x) : g<U>(y)",
+        "f<T /* > */>(value)",
+        "f<\"greater >\">(value)",
+        "f<`greater >`>(value)",
+        "f<`head ${T} >`>(value)",
+        "f<T>(\">\")",
+        "f<T>`greater >`",
+        "a < b",
+        "a < b && c < d",
+        "a < b > c",
+        "<T",
+        "<T>value",
+        "f<T",
+        "f<[[A, B]",
+        "f<T,>() < U",
+        "f</* > */ T",
+        "f<'>',>() < U",
+        "f<'\\u003e'>(x)",
+        "f<\\u0054>(x)",
+        "f\\u003cT",
+        "<Widget value={left > right} />",
+        "<Widget<T> value={x} />",
+        "<T,>(arg: T) => arg",
+        "cond ? <Widget /> : <Other />",
+        "<Box title=\"a > b\" />",
+        "f<T>(x) > g<U>(y)",
+        "f<T>() < U",
+    ];
+    let mut packets = Vec::new();
+    for (profile, source_type) in [
+        ("ts", SourceType::ts()),
+        ("tsx", SourceType::tsx()),
+        ("jsx", SourceType::jsx()),
+    ] {
+        for source in controls {
+            let allocator = Allocator::default();
+            let result = Parser::new(&allocator, source, source_type).parse_expression();
+            // Debug includes the complete AST with spans or diagnostic packets
+            // with labels. Compare exact packets across the two source builds.
+            packets.push(serde_json::json!({
+                "profile": profile,
+                "source": source,
+                "packet": format!("{result:?}"),
+            }));
+        }
+    }
+    let allocator = Allocator::default();
+    let result = Parser::new(&allocator, reproducer, SourceType::ts()).parse_expression();
+    packets.push(serde_json::json!({
+        "profile": "ts",
+        "source": "exact issue-10401 artifact",
+        "packet": format!("{result:?}"),
+    }));
+    println!("{}", serde_json::to_string(&packets).unwrap());
 }
