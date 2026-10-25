@@ -12,6 +12,12 @@ const fixture = fileURLToPath(
   new URL("../fixtures/css/compile-source-maps/public-0.571.0.json", import.meta.url),
 );
 const frozen = JSON.parse(fs.readFileSync(fixture, "utf8"));
+const errors = JSON.parse(
+  fs.readFileSync(
+    new URL("../fixtures/css/compile-source-maps/public-error-neighbor.json", import.meta.url),
+    "utf8",
+  ),
+);
 const require = createRequire(import.meta.url);
 const native = require("../../npm/native/index.js");
 const output = path.join(root, "target/css-compile-source-maps");
@@ -59,18 +65,18 @@ const unqualified = new Set([
   "v-bind",
   "empty",
   "comment",
-  "invalid",
+  "parse-error",
   "guarded",
   "embedded-map",
 ]);
 
-test("real source native CSS preserves every frozen public field and emits only admitted whole maps", () => {
+await test("real source native CSS preserves every frozen public field and emits only admitted whole maps", () => {
   packet.source = readSource();
   retain();
   assert.equal(frozen.schema, "vize.css.compile-source-map.public-before");
   assert.equal(frozen.captures.length, 40);
   const failures = [];
-  for (const entry of frozen.captures) {
+  for (const entry of [...frozen.captures, ...errors.captures]) {
     for (const sourceMap of [false, true]) {
       const options = { ...entry.options, sourceMap };
       const result = native.compileCss(entry.source, options);
@@ -123,5 +129,5 @@ test("real source native CSS preserves every frozen public field and emits only 
   packet.failures = failures;
   retain();
   assert.deepEqual(failures, []);
-  assert.equal(packet.calls.length, 80);
+  assert.equal(packet.calls.length, 84);
 });

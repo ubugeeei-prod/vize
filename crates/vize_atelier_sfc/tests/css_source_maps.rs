@@ -142,7 +142,7 @@ fn empty_error_and_embedded_map_boundaries_do_not_fabricate_origins() {
     for source in [
         "",
         "/* comment */",
-        ".a{color:",
+        "}",
         "a{opacity:sign(-50%)}",
         ".a{color:red}/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm90aGVyLnNjc3MiXSwic291cmNlc0NvbnRlbnQiOlsiLnNvdXJjZXtjb2xvcjpyZWR9Il0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBIn0= */",
     ] {
@@ -159,4 +159,27 @@ fn empty_error_and_embedded_map_boundaries_do_not_fabricate_origins() {
             serde_json::to_value(plain).unwrap()
         );
     }
+}
+
+#[test]
+fn parser_recovery_keeps_its_existing_result_and_real_rule_origin() {
+    let source = ".a{color:";
+    let plain = compile_css(source, &CssCompileOptions::default());
+    let mapped = compile_css(
+        source,
+        &CssCompileOptions {
+            source_map: true,
+            ..Default::default()
+        },
+    );
+    assert_eq!(mapped.code, ".a {\n  color: ;\n}\n");
+    assert_eq!(
+        serde_json::from_str::<serde_json::Value>(mapped.map.as_deref().unwrap()).unwrap(),
+        serde_json::json!({
+            "version": 3, "file": "style.css", "sources": ["style.css"], "sourcesContent": [source], "names": [], "mappings": "AAAA"
+        })
+    );
+    let mut preserved = serde_json::to_value(mapped).unwrap();
+    preserved.as_object_mut().unwrap().remove("map");
+    assert_eq!(preserved, serde_json::to_value(plain).unwrap());
 }
