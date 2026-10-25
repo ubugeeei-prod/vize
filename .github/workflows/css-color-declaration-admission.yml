@@ -56,7 +56,7 @@ jobs:
       - name: Verify shared parser edges and source work accounting
         shell: bash
         env:
-          VIZE_CSS_COLOR_WORK_CAPTURE: target/vize-tests/css-color-declaration-admission/scanner-work.json
+          VIZE_CSS_COLOR_WORK_CAPTURE: ${{ github.workspace }}/target/vize-tests/css-color-declaration-admission/scanner-work.json
         run: |
           set -euo pipefail
           cargo test --locked --profile ci -p vize_maestro --lib server::annotations::document_color:: -- --nocapture 2>&1 | tee target/vize-tests/css-color-declaration-admission/native.log
