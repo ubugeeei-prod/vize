@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { classifyTerminalSyscalls } from "./lsp-strace-terminal.mjs";
+import { readStraceLines } from "./lsp-strace-lines.mjs";
 import fs from "node:fs";
 import path from "node:path";
 import { createHash } from "node:crypto";
@@ -86,9 +87,10 @@ export function parseStraceCapture(traces) {
   const unfinished = [];
   const exitEntries = [];
   const readEntries = [];
-  for (const { tid, text } of traces) {
+  for (const { tid, text, lines } of traces) {
     let pending;
-    for (const line of text.split("\n").filter(Boolean)) {
+    for (const line of lines ?? text.split("\n")) {
+      if (line === "") continue;
       const match = /^(\d+\.\d+)\s+(.*)$/u.exec(line);
       assert.ok(match, `timestamped complete strace line for ${tid}: ${line}`);
       const at = match[1];
@@ -350,7 +352,7 @@ export function captureNativeOwners(tracePrefix, directory, authority) {
     .map((file) => {
       const suffix = file.slice(prefix.length);
       assert.match(suffix, /^\d+$/u);
-      return { tid: Number(suffix), text: fs.readFileSync(path.join(parent, file), "utf8") };
+      return { tid: Number(suffix), lines: readStraceLines(path.join(parent, file)) };
     });
   assert.ok(traces.length > 0, "actual strace files are mandatory");
   fs.mkdirSync(directory, { recursive: true });

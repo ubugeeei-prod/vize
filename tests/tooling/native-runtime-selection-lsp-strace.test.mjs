@@ -11,6 +11,7 @@ import {
   parseStraceCapture,
   validateExecInventory,
 } from "./support/native-runtime-selection/lsp-strace.mjs";
+import { readStraceLines } from "./support/native-runtime-selection/lsp-strace-lines.mjs";
 
 const hex = (bytes) =>
   `"${[...Buffer.from(bytes)].map((byte) => `\\x${byte.toString(16).padStart(2, "0")}`).join("")}"`;
@@ -19,6 +20,37 @@ const frame = (packet) => {
   return Buffer.concat([Buffer.from(`Content-Length: ${bytes.length}\r\n\r\n`), bytes]);
 };
 const exec = `1.000000 execve(${hex("/actual/compiler")}, [${hex("/actual/compiler")}, ${hex("--lsp")}, ${hex("--stdio")}], 0x1 /* 3 vars */) = 0 <0.000001>`;
+
+void test("raw trace streaming preserves every chunk boundary, complete line and final unterminated record", () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-strace-lines-"));
+  try {
+    const file = path.join(directory, "raw");
+    const source = `${"a".repeat(65535)}🧭é\r\n\nlast🧭`;
+    fs.writeFileSync(file, source);
+    assert.deepEqual([...readStraceLines(file)], source.split("\n"));
+    fs.writeFileSync(file, "\n");
+    assert.deepEqual([...readStraceLines(file)], [""]);
+    fs.writeFileSync(file, "");
+    assert.deepEqual([...readStraceLines(file)], []);
+    fs.writeFileSync(file, Buffer.from([0x61, 0xc3, 0x28, 0x0a]));
+    assert.throws(() => [...readStraceLines(file)], /lossless UTF8/u);
+    const packet = {
+      jsonrpc: "2.0",
+      id: 1,
+      result: { literal: "a".repeat(30000), unicode: "🧭é" },
+    };
+    const bytes = frame(packet);
+    const raw = `${exec}\n1.200000 write(1, ${hex(bytes)}, ${bytes.length}) = ${bytes.length} <0.000001>\n2.000000 +++ exited with 0 +++`;
+    fs.writeFileSync(file, raw);
+    const streamed = parseStraceTexts([{ tid: 100, lines: readStraceLines(file) }]);
+    assert.deepEqual(streamed, parseStraceTexts([{ tid: 100, text: raw }]));
+    assert.deepEqual(decodeNativeFrames(streamed[0].events[0].bytes)[0].packet, packet);
+    fs.writeFileSync(file, raw.replace("write(1,", "writev(1,"));
+    assert.throws(() => parseStraceTexts([{ tid: 100, lines: readStraceLines(file) }]));
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
 
 void test("native syscall custody preserves complete framed bytes and original Go thread ownership", () => {
   const packet = {
