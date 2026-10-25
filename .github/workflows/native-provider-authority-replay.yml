@@ -1,0 +1,65 @@
+name: Frozen native provider authority replay
+on:
+  push:
+    branches: [test/native-runtime-provider-authority]
+  workflow_dispatch:
+permissions: { contents: read, actions: read }
+jobs:
+  before:
+    runs-on: blacksmith-16vcpu-ubuntu-2404
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { path: observer, fetch-depth: 0, persist-credentials: false }
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          path: producer
+          ref: cbda7c7e410151d440871ecb97f2ad3fda0f8419
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "26.12.1", package-manager-cache: false }
+      - name: Fetch exact original source artifact without rebuilding
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/provider-authority"
+          gh api repos/ubugeeei-prod/vize/actions/artifacts/12609932912 > "$RUNNER_TEMP/provider-authority/artifact-metadata.json"
+          gh api --allow-escape-sequences repos/ubugeeei-prod/vize/actions/artifacts/12609932912/zip > "$RUNNER_TEMP/provider-cli.zip"
+          node observer/tests/tooling/support/native-runtime-selection/restore-frozen-cli.mjs "$GITHUB_WORKSPACE/producer" "$RUNNER_TEMP/provider-cli.zip" "$RUNNER_TEMP/provider-authority"
+      - name: Install actual official providers and passive exec observer
+        run: |
+          set -euo pipefail
+          if ! command -v strace >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install --yes --no-install-recommends strace
+          fi
+          strace --version > "$RUNNER_TEMP/provider-authority/strace-version.txt"
+          npm install --prefix "$RUNNER_TEMP/provider-authority-beta" --ignore-scripts --no-audit --no-fund --save-exact --registry=https://registry.npmjs.org typescript@7.1.0-beta vue@3.5.44
+          npm install --prefix "$RUNNER_TEMP/provider-authority-six" --ignore-scripts --no-audit --no-fund --save-exact --registry=https://registry.npmjs.org typescript@6.0.3
+          npm install --prefix "$RUNNER_TEMP/provider-authority-702" --ignore-scripts --no-audit --no-fund --save-exact --registry=https://registry.npmjs.org typescript@7.0.2 vue@3.5.44
+      - name: Observe all exact before-image misselections and whole diagnostic vectors
+        env:
+          VIZE_REQUIRE_NATIVE_RUNTIME_SELECTION: "1"
+          VIZE_RUNTIME_AUTHORITY_EXPECTATION: before
+          VIZE_RUNTIME_AUTHORITY_SOURCE_ROOT: ${{ github.workspace }}/producer
+          VIZE_SOURCE_CLI: ${{ github.workspace }}/producer/target/ci/vize
+          VIZE_RUNTIME_AUTHORITY_OUTPUT: ${{ runner.temp }}/provider-authority
+          VIZE_NATIVE_BETA_ROOT: ${{ runner.temp }}/provider-authority-beta
+          VIZE_TYPESCRIPT_SIX_ROOT: ${{ runner.temp }}/provider-authority-six
+          VIZE_NATIVE_702_ROOT: ${{ runner.temp }}/provider-authority-702
+        run: |
+          export VIZE_NATIVE_STRACE="$(command -v strace)"
+          node observer/tests/tooling/support/native-runtime-selection/authority.mjs
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: frozen-provider-authority-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/provider-authority/**
+            ${{ runner.temp }}/provider-authority-*/package.json
+            ${{ runner.temp }}/provider-authority-*/package-lock.json
+            !${{ runner.temp }}/provider-authority/**/environment/tool-path/node
+            !${{ runner.temp }}/provider-authority/**/environment/tool-path/node.exe
+          if-no-files-found: error
+          retention-days: 7
