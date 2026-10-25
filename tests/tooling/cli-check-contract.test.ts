@@ -1,9 +1,15 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { test } from "node:test";
+import { after, test } from "node:test";
+import {
+  regularMember,
+  sourceCliCheckout,
+  verifySourceCliConsumerUse,
+} from "../../tools/support/compat/github/source-cli-identity.ts";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -122,10 +128,95 @@ test("vize check exits 0 in an empty project with no inputs", () => {
   });
 });
 
+const preparationInput = fs.readFileSync(
+  new URL(
+    "../_fixtures/differential/typechecker/check-parse-before-runtime-10732/cases.json",
+    import.meta.url,
+  ),
+);
+assert.equal(
+  createHash("sha256").update(preparationInput).digest("hex"),
+  "c24a743240082791caed1803ec2aa9153accba6330690723ef8d9dd2ed6fb4ae",
+);
+const preparationCases = JSON.parse(preparationInput.toString("utf8")) as {
+  parseCases: Array<{ id: string; source: string; expected: CheckResult }>;
+  validCase: { source: string; expected: CheckResult };
+  configErrorCase: { argument: string; expected: CheckResult };
+};
+
+const preparationPackets: Array<{ argv: string[]; inputSha256: string; result: CheckResult }> = [];
+let preparationProducer:
+  | {
+      sourceRevision: string;
+      producerReceiptSha256: string;
+      useReceiptSha256: string;
+      binary: ReturnType<typeof regularMember>;
+    }
+  | undefined;
+
+function requirePreparationProducer() {
+  if (preparationProducer) return preparationProducer;
+  const producerReceiptSha256 = process.env.VIZE_SOURCE_CLI_RECEIPT_SHA256;
+  const useReceiptSha256 = process.env.VIZE_SOURCE_CLI_USE_RECEIPT_SHA256;
+  assert.ok(producerReceiptSha256, "the original source CLI producer receipt is required");
+  assert.ok(useReceiptSha256, "the verified source CLI consumer receipt is required");
+  const checkout = sourceCliCheckout(root);
+  const producer = JSON.parse(
+    fs.readFileSync(path.join(root, "target/ci/vize.source-build.json"), "utf8"),
+  ) as Parameters<typeof verifySourceCliConsumerUse>[1];
+  assert.ok(process.env.GITHUB_RUN_ID);
+  assert.ok(process.env.GITHUB_RUN_ATTEMPT);
+  verifySourceCliConsumerUse(
+    root,
+    producer,
+    { ...checkout, runId: process.env.GITHUB_RUN_ID, runAttempt: process.env.GITHUB_RUN_ATTEMPT },
+    producerReceiptSha256,
+    useReceiptSha256,
+  );
+  assert.equal(VIZE.command, path.join(root, "target/ci/vize"));
+  const binary = regularMember(root, "target/ci/vize");
+  assert.deepEqual(
+    binary,
+    producer.members[0],
+    "the actual source CLI image must match its producer",
+  );
+  preparationProducer = {
+    sourceRevision: checkout.sourceRevision,
+    producerReceiptSha256,
+    useReceiptSha256,
+    binary,
+  };
+  return preparationProducer;
+}
+
+after(() => {
+  assert.equal(preparationPackets.length, 9, "all actual no-SDK packet witnesses are required");
+  const producer = requirePreparationProducer();
+  assert.deepEqual(
+    regularMember(root, "target/ci/vize"),
+    producer.binary,
+    "the source CLI image changed during packet observations",
+  );
+  assert.equal(sourceCliCheckout(root).sourceRevision, producer.sourceRevision);
+  console.log(
+    JSON.stringify({
+      schema: "vize.check-preparation.packets",
+      version: 1,
+      fixtureSha256: createHash("sha256").update(preparationInput).digest("hex"),
+      producer,
+      packets: preparationPackets,
+    }),
+  );
+});
+
 /** Run the real built CLI with no inherited SDK paths, package manager or home. */
 function runCheckWithoutRuntime(args: string[], cwd: string): CheckResult {
   assert.equal(VIZE.prefix.length, 0, "isolated runtime contracts require the built source CLI");
   assert(path.isAbsolute(VIZE.command), "isolated runtime contracts require an absolute CLI path");
+  requirePreparationProducer();
+  const inputSha256 = createHash("sha256")
+    .update(fs.readFileSync(path.join(cwd, args[0])))
+    .digest("hex");
   const home = path.join(cwd, "isolated-home");
   const bin = path.join(home, "bin");
   fs.mkdirSync(bin, { recursive: true });
@@ -145,24 +236,21 @@ function runCheckWithoutRuntime(args: string[], cwd: string): CheckResult {
     },
   });
   if (result.error) throw result.error;
-  return { status: result.status, stdout: result.stdout, stderr: result.stderr };
+  const packet = { status: result.status, stdout: result.stdout, stderr: result.stderr };
+  preparationPackets.push({ argv: ["check", "--quiet", ...args], inputSha256, result: packet });
+  return packet;
 }
 
 for (const extra of [[], ["--no-config"]]) {
   void test(`vize check preserves complete SFC parse failures without an SDK (${extra.length ? "no-config" : "config discovery"})`, () => {
     withWorkspace((dir) => {
-      for (const source of [
-        "<template><div></div>",
-        "<template><div>",
-        "\uFEFF<template>\r\n<div>日本語😀\r\n",
-      ]) {
-        fs.writeFileSync(path.join(dir, "Broken.vue"), source);
-        assert.deepEqual(runCheckWithoutRuntime(["Broken.vue", ...extra], dir), {
-          status: 1,
-          stdout: "",
-          stderr:
-            "Error: SFC parse error: Malformed <template> block: the closing tag is missing.\n",
-        });
+      for (const entry of preparationCases.parseCases) {
+        fs.writeFileSync(path.join(dir, "Broken.vue"), entry.source);
+        assert.deepEqual(
+          runCheckWithoutRuntime(["Broken.vue", ...extra], dir),
+          entry.expected,
+          entry.id,
+        );
       }
     });
   });
@@ -171,35 +259,19 @@ for (const extra of [[], ["--no-config"]]) {
 void test("vize check keeps configuration precedence and complete valid-project missing-runtime help", () => {
   withWorkspace((dir) => {
     fs.writeFileSync(path.join(dir, "Broken.vue"), "<template><div>");
-    assert.deepEqual(runCheckWithoutRuntime(["Broken.vue", "--config", "./missing.json"], dir), {
-      status: 2,
-      stdout: "",
-      stderr: "\u001b[31mError:\u001b[0m config file not found: ./missing.json\n",
-    });
-    fs.writeFileSync(path.join(dir, "Valid.vue"), "<template><p /></template>\n");
-    const stderr = [
-      "Error: error: native TypeScript runtime not found",
-      "",
-      "vize check requires a user-installed native TypeScript/tsgo executable.",
-      "Keep your existing 'typescript' package. Install a native compiler under a separate alias, or configure typeChecker.corsaPath, CORSA_PATH, or TSGO_PATH.",
-      "",
-      "The example below selects native TypeScript 7.1.0-beta; choose the native version you want to run.",
-      "",
-      "Example install commands (choose your package manager):",
-      "",
-      "  npm install -D typescript-native@npm:typescript@7.1.0-beta  # npm",
-      "  pnpm add -D typescript-native@npm:typescript@7.1.0-beta  # pnpm",
-      "  yarn add -D typescript-native@npm:typescript@7.1.0-beta  # yarn",
-      "  bun add -D typescript-native@npm:typescript@7.1.0-beta  # bun",
-      "",
-      "",
-    ].join("\n");
+    assert.deepEqual(
+      runCheckWithoutRuntime(
+        ["Broken.vue", "--config", preparationCases.configErrorCase.argument],
+        dir,
+      ),
+      preparationCases.configErrorCase.expected,
+    );
+    fs.writeFileSync(path.join(dir, "Valid.vue"), preparationCases.validCase.source);
     for (const extra of [[], ["--no-config"]]) {
-      assert.deepEqual(runCheckWithoutRuntime(["Valid.vue", ...extra], dir), {
-        status: 1,
-        stdout: "",
-        stderr,
-      });
+      assert.deepEqual(
+        runCheckWithoutRuntime(["Valid.vue", ...extra], dir),
+        preparationCases.validCase.expected,
+      );
     }
   });
 });
