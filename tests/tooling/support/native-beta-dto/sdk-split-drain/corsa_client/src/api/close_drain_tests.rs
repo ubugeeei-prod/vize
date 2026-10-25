@@ -52,7 +52,7 @@ impl Peer {
                     "initialize" => json!({"caseSensitivity": 1, "currentDirectory": "/owned"}),
                     "createSnapshot" | "updateSnapshot" => {
                         head += 1;
-                        json!({"snapshot": head.to_string(), "projects": [{
+                        json!({"snapshot": head, "projects": [{
                             "id": "project", "configFileName": "/owned/tsconfig.json",
                             "compilerOptions": {}, "rootFiles": ["/owned/main.ts"]
                         }]})
@@ -177,8 +177,8 @@ fn terminal_drain_releases_cached_head_before_peer_close_and_all_clones_refuse_n
     assert_eq!(
         releases,
         [
-            json!({"handle":"1", "snapshot":"1"}),
-            json!({"handle":"2", "snapshot":"2"})
+            json!({"handle":"1", "snapshot":1}),
+            json!({"handle":"2", "snapshot":2})
         ]
     );
     assert!(matches!(
@@ -193,6 +193,20 @@ fn terminal_drain_releases_cached_head_before_peer_close_and_all_clones_refuse_n
         block_on(client.raw_json_request("getSemanticDiagnostics", json!({}))),
         Err(CorsaError::Closed(_))
     ));
+    let late_users = (0..4)
+        .map(|_| {
+            let client = client.clone();
+            thread::spawn(move || {
+                assert!(matches!(
+                    block_on(client.initialize()),
+                    Err(CorsaError::Closed(_))
+                ))
+            })
+        })
+        .collect::<Vec<_>>();
+    for user in late_users {
+        user.join().unwrap();
+    }
     assert_eq!(
         peer.snapshot_requests(),
         before,
@@ -223,7 +237,7 @@ fn outstanding_nonhead_lease_is_not_falsely_released_after_terminal_drain() {
         .filter(|(method, _)| method == "release")
         .map(|(_, params)| params.clone())
         .collect::<Vec<_>>();
-    assert_eq!(releases, [json!({"handle":"2", "snapshot":"2"})]);
+    assert_eq!(releases, [json!({"handle":"2", "snapshot":2})]);
     // Dropping this invalid late lease deliberately retains the stock queue-closed warning.
     drop(old);
     peer.owner_close();
