@@ -26,10 +26,11 @@ const searchModalOpen = ref(false);
 const sidebarCollapsed = ref(false);
 const isCompact = ref(false);
 let compactMedia: MediaQueryList | null = null;
+const sidebarMaxSize = () => Math.max(240, window.innerWidth - 320);
 const sidebarWidth = useResizable({
   direction: "horizontal",
   minSize: 200,
-  maxSize: () => Math.max(240, window.innerWidth - 320),
+  maxSize: sidebarMaxSize,
   storageKey: "musea-sidebar-width",
   defaultSize: 240,
   documentClass: "musea-sidebar-resizing",
@@ -85,15 +86,18 @@ function syncCompactLayout(event: MediaQueryListEvent | MediaQueryList) {
   isCompact.value = event.matches;
 }
 
+function startSidebarResize(event: PointerEvent) {
+  sidebarWidth.size.value = Math.min(sidebarMaxSize(), sidebarWidth.size.value);
+  sidebarWidth.onPointerDown(event);
+}
+
 function resizeSidebarWithKeyboard(event: KeyboardEvent) {
   const step = event.shiftKey ? 40 : 10;
+  const current = Math.min(sidebarMaxSize(), sidebarWidth.size.value);
   if (event.key === "ArrowLeft") {
-    sidebarWidth.size.value = Math.max(200, sidebarWidth.size.value - step);
+    sidebarWidth.size.value = Math.max(200, current - step);
   } else if (event.key === "ArrowRight") {
-    sidebarWidth.size.value = Math.min(
-      Math.max(240, window.innerWidth - 320),
-      sidebarWidth.size.value + step,
-    );
+    sidebarWidth.size.value = Math.min(sidebarMaxSize(), current + step);
   } else {
     return;
   }
@@ -194,7 +198,7 @@ function openSearchModal() {
           type="button"
           class="sidebar-resize-handle"
           aria-label="Resize sidebar with left and right arrow keys"
-          @pointerdown.stop.prevent="sidebarWidth.onPointerDown"
+          @pointerdown.stop.prevent="startSidebarResize"
           @keydown="resizeSidebarWithKeyboard"
         ></button>
         <button
@@ -357,6 +361,8 @@ function openSearchModal() {
 
 .sidebar-wrapper {
   flex: 0 0 auto;
+  /* Clamp the displayed width while retaining the preferred width for a wider viewport. */
+  max-width: max(240px, calc(100vw - 320px));
   height: 100%;
   max-height: 100%;
   overflow-y: auto;
