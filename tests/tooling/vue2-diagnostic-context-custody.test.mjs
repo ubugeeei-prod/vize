@@ -69,7 +69,7 @@ function assertSuccessor(previous, current) {
   assert.deepEqual(current, expected, "every historical facet plus the complete reviewed context");
 }
 
-test("Vue2 packet custody preserves all historical bytes and the complete source-built successor", () => {
+void test("Vue2 packet custody preserves all historical bytes and the complete source-built successor", () => {
   assert.equal(custody.schema, "vize.vue2DiagnosticContextCustody");
   assert.equal(custody.version, 1);
   assert.equal(
@@ -113,7 +113,7 @@ test("Vue2 packet custody preserves all historical bytes and the complete source
   assertSuccessor(historical, successor);
 });
 
-test("Vue2 successor custody rejects canonical, coordinate, context and inventory changes", () => {
+void test("Vue2 successor custody rejects canonical, coordinate, context and inventory changes", () => {
   for (const mutate of [
     (packet) => {
       packet.files[0].file += ".unexpected";
