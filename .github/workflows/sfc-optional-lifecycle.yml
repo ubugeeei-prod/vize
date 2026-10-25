@@ -35,6 +35,7 @@ jobs:
         with: { node-version-file: source/package.json, cache: true, run-install: false }
       - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # master
         with: { toolchain: "1.99.1" }
+      - uses: ./source/.github/actions/setup-rust-script
       - name: Install exact source lifecycle dependencies
         working-directory: source
         run: vp install --filter './npm/native...' --filter './npm/cli...' --filter './npm/builder/vite...' --filter './npm/builder/vite-musea...' --frozen-lockfile --prefer-offline
