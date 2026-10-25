@@ -7,7 +7,6 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import {
   compilerCssApiReport,
-  compilerCssApiSources,
   cssMapProducerPaths,
   loadCompilerCssApiCases,
   newCompilerCssApiCases,
