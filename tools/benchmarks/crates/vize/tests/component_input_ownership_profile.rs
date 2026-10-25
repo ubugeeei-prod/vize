@@ -22,7 +22,7 @@ static ALLOCATOR: ProfilingAllocator<System> = ProfilingAllocator::from_allocato
 
 const FORM: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
-    "/../../tests/_fixtures/content-mapper/diagnostic-ownership-10607-10618/Form.art.vue.txt"
+    "/../../../../tests/_fixtures/content-mapper/diagnostic-ownership-10607-10618/Form.art.vue.txt"
 ));
 const ITERATIONS: u64 = 32;
 
