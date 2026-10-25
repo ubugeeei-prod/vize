@@ -55,6 +55,7 @@ jobs:
             source_root="$RUNNER_TEMP/doctor-baseline-source"
             git worktree add --detach "$source_root" "$source_sha"
             cp crates/vize/tests/doctor_prop_accuracy_cli.rs "$source_root/crates/vize/tests/"
+            echo 'mod doctor_prop_accuracy_cli;' >> "$source_root/crates/vize/tests/main.rs"
           fi
           target_root="$RUNNER_TEMP/doctor-props-$source_sha-$ROLE-target"
           test ! -e "$target_root"
@@ -71,7 +72,7 @@ jobs:
         run: |
           cd "$SOURCE_ROOT"
           status=0
-          /usr/bin/time -v cargo test --locked --profile ci -p vize --test doctor_prop_accuracy_cli model_alias_and_native_fallthrough_props_preserve_the_complete_healthy_packet -- --nocapture > "$VIZE_PROP_ACCURACY_ARTIFACTS/test.stdout" 2> "$VIZE_PROP_ACCURACY_ARTIFACTS/test.stderr" || status=$?
+          /usr/bin/time -v cargo test --locked --profile ci -p vize --test integration doctor_prop_accuracy_cli::model_alias_and_native_fallthrough_props_preserve_the_complete_healthy_packet -- --nocapture > "$VIZE_PROP_ACCURACY_ARTIFACTS/test.stdout" 2> "$VIZE_PROP_ACCURACY_ARTIFACTS/test.stderr" || status=$?
           cat "$VIZE_PROP_ACCURACY_ARTIFACTS/test.stdout"
           test "$status" -ne 0
           python3 - <<'PY'
@@ -89,7 +90,7 @@ jobs:
           cd "$SOURCE_ROOT"
           cargo test --locked --profile ci -p vize_croquis_cf --lib
           cargo test --locked --profile ci -p vize --lib commands::doctor::tests::
-          /usr/bin/time -v cargo test --locked --profile ci -p vize --test doctor_prop_accuracy_cli --test doctor_cli -- --nocapture > "$VIZE_PROP_ACCURACY_ARTIFACTS/test.stdout" 2> "$VIZE_PROP_ACCURACY_ARTIFACTS/test.stderr"
+          /usr/bin/time -v cargo test --locked --profile ci -p vize --test integration doctor_ -- --nocapture > "$VIZE_PROP_ACCURACY_ARTIFACTS/test.stdout" 2> "$VIZE_PROP_ACCURACY_ARTIFACTS/test.stderr"
           cat "$VIZE_PROP_ACCURACY_ARTIFACTS/test.stdout"
           cargo clippy --locked --profile ci -p vize_croquis_cf --lib -- -D warnings
       - name: Preserve binary identity
