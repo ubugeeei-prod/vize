@@ -5,6 +5,7 @@ on:
     paths:
       - "crates/vize_canon/src/virtual_ts/generator/component_constructors.rs"
       - "crates/vize_canon/src/virtual_ts/generator/component_constructors/**"
+      - "crates/vize_canon/src/virtual_ts/props.rs"
       - "crates/vize_canon/tests/constructor_emission_projection.rs"
       - ".github/workflows/checker-constructor-emitter.yml"
 
@@ -16,7 +17,7 @@ concurrency:
 
 jobs:
   parity:
-    if: startsWith(github.event.pull_request.title, 'refactor(canon)')
+    if: startsWith(github.event.pull_request.title, 'refactor(canon)') || startsWith(github.event.pull_request.title, 'perf(canon)')
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     env:

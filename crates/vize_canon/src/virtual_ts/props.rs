@@ -242,7 +242,7 @@ pub(crate) fn strip_const_modifiers(generic_param: &str) -> String {
             ',' if depth == 0 => {
                 append_param_without_const(&mut result, current_param.trim());
                 result.push_str(", ");
-                current_param = String::default();
+                current_param.clear();
                 continue;
             }
             _ => {}
@@ -371,6 +371,52 @@ mod tests {
             strip_const_modifiers(add_generic_defaults("const T extends Tab").as_str()).as_str(),
             "T extends Tab = any"
         );
+    }
+
+    #[test]
+    fn reused_generic_parameter_storage_preserves_complete_output() {
+        for (input, expected) in [
+            ("", ""),
+            (" \t\r\n ", ""),
+            ("const T, const U", "T, U"),
+            ("constant, constructor", "constant, constructor"),
+            (
+                "const LongAuthoredGenericParameter extends Record<string, readonly [number, string]>, const T, const 日本 = 'quoted'",
+                "LongAuthoredGenericParameter extends Record<string, readonly [number, string]>, T, 日本 = 'quoted'",
+            ),
+            (
+                "const\r\nLongAuthoredGenericParameter extends Map<string, Set<number>>,\r\nconst T = \"quoted\"",
+                "LongAuthoredGenericParameter extends Map<string, Set<number>>, T = \"quoted\"",
+            ),
+            (
+                "const 日本 extends Record<string, '🧭'>, const T, const LongAuthoredGenericParameter = 日本",
+                "日本 extends Record<string, '🧭'>, T, LongAuthoredGenericParameter = 日本",
+            ),
+        ] {
+            let actual = strip_const_modifiers(input);
+            assert_eq!(actual, expected);
+            assert_eq!(strip_const_modifiers(&actual), expected);
+        }
+        for count in [1, 2, 17, 257] {
+            let parameters: Vec<_> = (0..count)
+                .map(|index| {
+                    vize_carton::cstr!(
+                        "const LongAuthoredGenericParameter{index} extends Record<string, number>"
+                    )
+                })
+                .collect();
+            let expected: Vec<_> = (0..count)
+                .map(|index| {
+                    vize_carton::cstr!(
+                        "LongAuthoredGenericParameter{index} extends Record<string, number>"
+                    )
+                })
+                .collect();
+            assert_eq!(
+                strip_const_modifiers(&parameters.join(", ")),
+                expected.join(", ")
+            );
+        }
     }
 
     #[test]
