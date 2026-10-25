@@ -56,7 +56,8 @@ jobs:
           vp run --workspace-root build:vite-plugin
           node npm/builder/vite/scripts/run-tests.mjs --require-prepared
       - name: Retain all locked adapter tests and cross-root build contracts
-        run: node npm/native/scripts/test-preparation.mjs vp run --dir npm/builder/vite test:prepared
+        working-directory: npm/builder/vite
+        run: node ../../native/scripts/test-preparation.mjs vp run test:prepared
       - name: Verify real CSS imports assets checkouts dev and SSR with the source addon
         env:
           VIZE_STYLE_RELATIVE_MATRIX: "1"
