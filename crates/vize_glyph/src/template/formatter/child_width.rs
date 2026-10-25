@@ -57,22 +57,22 @@ impl TemplateFormatter<'_> {
         let source = input.as_bytes();
         let close = start + memchr::memchr(b'<', source.get(start..)?)?;
         let child = input.get(start..close)?;
-        let child_bytes = child.as_bytes();
         if child.is_empty() {
             return None;
         }
         if source.get(close + 1) != Some(&b'/') {
             return None;
         }
-        // An authored multiline leading interpolation owns its established
-        // layout. Later multiline interpolations in a mixed text run may be
-        // normalized to one line, so they still contribute their formatted
-        // width to the opening-tag decision.
-        if child_bytes.iter().any(|byte| matches!(byte, b'\r' | b'\n'))
-            && authored_multiline_child_owns_layout(child_bytes)
-        {
-            return None;
-        }
+        // Rejoin formatter-owned text wraps before probing the compact width.
+        // Newlines inside an interpolation remain with the JS/literal owner.
+        let compact;
+        let child = if child.contains(['\r', '\n']) {
+            compact = super::text_wrap::compact_text_child(child)?;
+            compact.as_str()
+        } else {
+            child
+        };
+        let child_bytes = child.as_bytes();
         let (closing_name, _) = parse_closing_tag(input, close)?;
         if closing_name != tag_name {
             return None;
@@ -287,17 +287,4 @@ impl TemplateFormatter<'_> {
         output.extend_from_slice(self.newline);
         true
     }
-}
-
-#[cold]
-#[inline(never)]
-fn authored_multiline_child_owns_layout(bytes: &[u8]) -> bool {
-    if !bytes.windows(2).any(|window| window == b"{{") {
-        return true;
-    }
-    parse_interpolation_range(bytes, 0).is_some_and(|(expression_start, expression_end, _)| {
-        bytes
-            .get(expression_start..expression_end)
-            .is_some_and(|expression| expression.iter().any(|byte| matches!(byte, b'\r' | b'\n')))
-    })
 }

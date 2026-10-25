@@ -161,3 +161,26 @@ fn text_words(text: &str) -> Vec<(usize, usize)> {
     }
     words
 }
+
+pub(super) fn compact_text_child(text: &str) -> Option<vize_l0::String> {
+    let mut cursor = 0;
+    while let Some(offset) = memchr::memmem::find(text.as_bytes().get(cursor..)?, b"{{") {
+        let (start, end, close) = parse_interpolation_range(text.as_bytes(), cursor + offset)?;
+        if text.get(start..end)?.contains(['\r', '\n']) {
+            return None;
+        }
+        cursor = close;
+    }
+    let mut compact = vize_l0::String::with_capacity(text.len());
+    for line in text.split(['\r', '\n']) {
+        let line = line.trim_matches([' ', '\t']);
+        if line.is_empty() {
+            continue;
+        }
+        if !compact.is_empty() {
+            compact.push(' ');
+        }
+        compact.push_str(line);
+    }
+    Some(compact)
+}
