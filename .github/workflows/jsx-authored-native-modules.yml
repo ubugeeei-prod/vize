@@ -45,11 +45,16 @@ jobs:
           git worktree add --detach "$baseline" "$BASE_SHA"
           cp "$observer" "$baseline/$observer"
           cmp "$observer" "$baseline/$observer"
+          role_observer=crates/vize_atelier_jsx/tests/ssr_functional_role_packet.rs
+          cp "$role_observer" "$baseline/$role_observer"
+          cmp "$role_observer" "$baseline/$role_observer"
           git -C "$baseline" diff --exit-code -- crates/*/src
           (cd "$baseline" && CARGO_TARGET_DIR="$RUNNER_TEMP/jsx-authored-base-target" VIZE_JSX_AUTHORED_PROFILE_CAPTURE="$RUNNER_TEMP/jsx-authored-native/base-profile.json" cargo test --locked --profile ci -p vize_atelier_jsx --test authored_module_profile -- --nocapture)
           VIZE_JSX_AUTHORED_PROFILE_CAPTURE="$RUNNER_TEMP/jsx-authored-native/head-profile.json" cargo test --locked --profile ci -p vize_atelier_jsx --test authored_module_profile -- --nocapture
+          (cd "$baseline" && CARGO_TARGET_DIR="$RUNNER_TEMP/jsx-authored-base-target" VIZE_JSX_FUNCTIONAL_ROLE_CAPTURE="$RUNNER_TEMP/jsx-authored-native/base-functional-role.json" cargo test --locked --profile ci -p vize_atelier_jsx --test ssr_functional_role_packet -- --nocapture)
+          VIZE_JSX_FUNCTIONAL_ROLE_CAPTURE="$RUNNER_TEMP/jsx-authored-native/head-functional-role.json" cargo test --locked --profile ci -p vize_atelier_jsx --test ssr_functional_role_packet -- --nocapture
           git -C "$baseline" rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/jsx-authored-native/base-source.txt"
-          sha256sum "$observer" "$baseline/$observer" > "$RUNNER_TEMP/jsx-authored-native/observer.sha256"
+          sha256sum "$observer" "$baseline/$observer" "$role_observer" "$baseline/$role_observer" > "$RUNNER_TEMP/jsx-authored-native/observer.sha256"
       - name: Verify measured contracts and source counters
         run: |
           python3 - <<'PYCODE'
@@ -59,6 +64,22 @@ jobs:
           base=json.loads((directory/'base-profile.json').read_text())
           head=json.loads((directory/'head-profile.json').read_text())
           assert len(base)==len(head)==12
+          before_roles=json.loads((directory/'base-functional-role.json').read_text())
+          after_roles=json.loads((directory/'head-functional-role.json').read_text())
+          assert len(before_roles)==len(after_roles)==6
+          for index,(before,after) in enumerate(zip(before_roles,after_roles)):
+            assert before['source']==after['source']
+            assert before['components']==after['components'], 'module admission must retain the whole original producer packet'
+            if index==0:
+              assert after['module']=='' and len(after['diagnostics'])==1
+              if not before['diagnostics']:
+                assert 'function ssrRender' in before['module'] and 'const A =' not in before['module']
+            if index==3:
+              assert not after['diagnostics'] and '__ssrInlineRender: true' in after['module']
+            if index in [1,2,4,5]:
+              assert len(after['diagnostics'])==1 and after['module']==''
+              diagnostic=after['diagnostics'][0]
+              assert after['source'][diagnostic['start']:diagnostic['end']] in ['1','`text`']
           rows=[]
           for previous,current in zip(base,head):
             for field in ['source','ssr','map','iterationsPerSample']: assert previous[field]==current[field]
