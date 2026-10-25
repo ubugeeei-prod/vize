@@ -223,6 +223,8 @@ watch(measureEnabled, (enabled) => {
   min-height: 260px;
   max-height: min(70vh, 720px);
   overflow: auto;
+  align-items: flex-start;
+  justify-content: flex-start;
 }
 
 .variant-preview {
@@ -240,6 +242,11 @@ watch(measureEnabled, (enabled) => {
 
 .variant-preview.viewport-mode {
   iframe {
+    /* Preserve the selected device's responsive viewport. Auto margins center
+       a fitting frame but become zero on overflow, keeping every edge reachable. */
+    max-width: none;
+    max-height: none;
+    margin-inline: auto;
     flex-shrink: 0;
   }
 }
