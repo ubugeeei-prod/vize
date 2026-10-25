@@ -161,7 +161,7 @@ void test(
       );
       assert.deepEqual(
         [...controls.keys()],
-        ["count", "label", "code", "enabled", "items", "data", "callback", "opaque"],
+        ["count", "data", "enabled", "items", "label", "code", "callback", "opaque"],
       );
       const expectedControls = {
         label: "text",
@@ -209,7 +209,7 @@ void test(
       const dataEditor = page
         .getByRole("group", { name: "data", exact: true })
         .locator(".view-lines");
-      await dataEditor.waitFor();
+      await dataEditor.getByText("null", { exact: true }).waitFor();
       assert.equal(
         (await dataEditor.innerText()).trim(),
         "null",
