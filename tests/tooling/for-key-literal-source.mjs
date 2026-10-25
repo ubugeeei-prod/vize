@@ -5,6 +5,7 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { createRequire, registerHooks } from "node:module";
 import { pathToFileURL } from "node:url";
+import { inspect } from "node:util";
 import { vueVaporBrowserRuntime, vueVaporVersion } from "./support/vue-vapor-release.mjs";
 const require = createRequire(import.meta.url);
 const ui = createRequire(new URL("../../npm/ui/package.json", import.meta.url));
@@ -114,6 +115,7 @@ for (const epoch of ["base", "head"]) {
         app.unmount();
         host.remove();
       }
+      row.callsText = inspect(row.calls, { depth: null, colors: false });
       row.matches =
         !row.runtimeError &&
         row.calls.length > 0 &&
