@@ -8,10 +8,7 @@ use super::{
     },
 };
 use corsa::{
-    api::{
-        ApiMode, ApiSpawnConfig, FileChangeSummary, FileChanges, OverlayChanges, OverlayUpdate,
-        ProjectSession,
-    },
+    api::{ApiMode, ApiSpawnConfig, FileChangeSummary, ProjectSession},
     runtime::block_on,
 };
 use std::hash::{Hash, Hasher};
@@ -24,6 +21,15 @@ impl CorsaTypeAwareSession {
         filename: &str,
         corsa_path: Option<&std::path::Path>,
         tsconfig_path: Option<std::path::PathBuf>,
+    ) -> Result<Self, String> {
+        Self::new_with_configure(filename, corsa_path, tsconfig_path, std::convert::identity)
+    }
+
+    fn new_with_configure(
+        filename: &str,
+        corsa_path: Option<&std::path::Path>,
+        tsconfig_path: Option<std::path::PathBuf>,
+        configure: impl FnOnce(ApiSpawnConfig) -> ApiSpawnConfig,
     ) -> Result<Self, String> {
         let project_root = resolve_project_root(filename);
         let executable = resolve_corsa_executable(&project_root, corsa_path)?;
@@ -82,9 +88,11 @@ impl CorsaTypeAwareSession {
             "patina.corsa_session.spawn",
             block_on(ProjectSession::spawn(
                 vize_canon::corsa_profile::with_request_profiling(
-                    ApiSpawnConfig::new(executable)
-                        .with_mode(api_mode)
-                        .with_cwd(&session_root),
+                    configure(
+                        ApiSpawnConfig::new(executable)
+                            .with_mode(api_mode)
+                            .with_cwd(&session_root)
+                    ),
                     vize_canon::corsa_profile::RequestOrigin::Patina
                 ),
                 config_path_wire.as_str(),
@@ -154,112 +162,16 @@ impl CorsaTypeAwareSession {
             return Ok(());
         }
 
-        let next_path = virtual_file_path(&self.session_root, &self.project_root, filename);
-        let prepared = super::vue_dependencies::prepare(
-            generated_source,
-            filename,
-            &self.session_root,
-            &self.project_root,
-            &self.vue_path_aliases,
-            &mut self.dependency_cache,
-            &self.dependency_paths,
-        );
-        let mut dependency_changes = super::vue_dependencies::materialize(&prepared.files, &[])?;
-        self.dependency_paths
-            .extend(prepared.files.iter().map(|(path, _)| path.clone()));
-        let document = super::virtual_documents::OpenedDocument {
-            input_hash,
-            rewritten_source: prepared.code,
-            import_source_map: prepared.source_map,
-        };
-        let generated_source = document
-            .rewritten_source
-            .as_deref()
-            .unwrap_or(generated_source);
-        let mut virtual_changes = profile!(
-            "patina.corsa_session.write_virtual_file",
-            super::virtual_documents::sync_stable_virtual_file(
-                &mut self.published,
-                &next_path,
-                generated_source,
-                self.supports_overlay_updates,
-                &[],
-            )
-        )?;
-        self.virtual_file_path = next_path;
-        self.virtual_file_wire = path_to_wire(&self.virtual_file_path);
-        dependency_changes
-            .created
-            .append(&mut virtual_changes.created);
-        dependency_changes
-            .changed
-            .append(&mut virtual_changes.changed);
-        dependency_changes
-            .deleted
-            .append(&mut virtual_changes.deleted);
-        if dependency_changes.changed.is_empty()
-            && dependency_changes.created.is_empty()
-            && dependency_changes.deleted.is_empty()
-            && !self.supports_overlay_updates
-        {
-            dependency_changes
-                .changed
-                .push(self.virtual_file_wire.as_str().into());
-        }
-        self.note_refresh(&dependency_changes);
-        let file_changes = (!dependency_changes.changed.is_empty()
-            || !dependency_changes.created.is_empty()
-            || !dependency_changes.deleted.is_empty())
-        .then_some(FileChanges::Summary(dependency_changes));
-
-        if self.supports_overlay_updates {
-            self.overlay_version = self.overlay_version.saturating_add(1);
-            profile!(
-                "patina.corsa_session.refresh_overlay",
-                block_on(self.session.refresh_with_overlay_changes(
-                    file_changes,
-                    Some(OverlayChanges {
-                        upsert: vec![OverlayUpdate {
-                            document: self.virtual_file_wire.as_str().into(),
-                            text: generated_source.into(),
-                            version: Some(self.overlay_version),
-                            language_id: Some("typescript".into()),
-                        }],
-                        delete: Vec::new(),
-                    }),
-                ))
-            )
-            .map_err(|error| {
-                compact_error(
-                    "Failed to update patina type snapshot",
-                    error.to_compact_string().as_str(),
-                )
-            })?;
-            self.remember_virtual_input(filename, document);
-            return Ok(());
-        }
-
-        profile!(
-            "patina.corsa_session.refresh_file",
-            block_on(self.session.refresh(file_changes))
-        )
-        .map_err(|error| {
-            compact_error(
-                "Failed to update patina type snapshot",
-                error.to_compact_string().as_str(),
-            )
-        })?;
-        self.remember_virtual_input(filename, document);
-        Ok(())
+        self.open_virtual_projects(&[(generated_source, filename)])
     }
 
-    fn retarget_virtual_file(&mut self, filename: &str) {
+    pub(super) fn retarget_virtual_file(&mut self, filename: &str) {
         self.virtual_file_path =
             virtual_file_path(&self.session_root, &self.project_root, filename);
         self.virtual_file_wire = path_to_wire(&self.virtual_file_path);
     }
 
-    fn note_refresh(&mut self, summary: &FileChangeSummary) {
+    pub(super) fn note_refresh(&mut self, summary: &FileChangeSummary) {
         let counts = super::virtual_documents::RefreshCounts::from_summary(summary);
         #[cfg(test)]
         {
@@ -285,7 +197,7 @@ impl CorsaTypeAwareSession {
         self.last_refresh
     }
 
-    fn remember_virtual_input(
+    pub(super) fn remember_virtual_input(
         &mut self,
         filename: &str,
         document: super::virtual_documents::OpenedDocument,
@@ -337,7 +249,7 @@ impl Drop for SessionRootCleanup {
     }
 }
 
-fn virtual_source_hash(source: &str) -> u64 {
+pub(super) fn virtual_source_hash(source: &str) -> u64 {
     let mut hasher = std::collections::hash_map::DefaultHasher::new();
     source.hash(&mut hasher);
     hasher.finish()
