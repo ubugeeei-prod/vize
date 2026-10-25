@@ -6,12 +6,15 @@ on:
     types: [opened, synchronize, reopened]
     paths:
       - .github/workflows/doctor-lint-ssr-context.yml
+      - crates/vize/src/commands.rs
       - crates/vize/src/commands/project_ssr.rs
       - crates/vize/src/commands/doctor/analysis.rs
       - crates/vize/src/commands/lint.rs
       - crates/vize/src/commands/lint/entry_rules.rs
       - crates/vize/src/commands/lint/cross_file.rs
+      - crates/vize/tests/main.rs
       - crates/vize/tests/doctor_lint_ssr_context_cli.rs
+      - crates/vize_croquis_cf/src/rules.rs
       - crates/vize_croquis_cf/src/rules/boundary.rs
       - crates/vize_croquis_cf/src/analyzer/core/run.rs
       - crates/vize_croquis_cf/src/analyzer/core.rs
@@ -65,10 +68,12 @@ jobs:
           fi
           target_root="$RUNNER_TEMP/doctor-ssr-$source_sha-$ROLE-target"
           test ! -e "$target_root"
-          echo "SOURCE_SHA=$source_sha" >> "$GITHUB_ENV"
-          echo "SOURCE_ROOT=$source_root" >> "$GITHUB_ENV"
-          echo "CARGO_TARGET_DIR=$target_root" >> "$GITHUB_ENV"
-          echo "VIZE_SSR_CONTEXT_ARTIFACTS=$RUNNER_TEMP/doctor-ssr-packets" >> "$GITHUB_ENV"
+          {
+            echo "SOURCE_SHA=$source_sha"
+            echo "SOURCE_ROOT=$source_root"
+            echo "CARGO_TARGET_DIR=$target_root"
+            echo "VIZE_SSR_CONTEXT_ARTIFACTS=$RUNNER_TEMP/doctor-ssr-packets"
+          } >> "$GITHUB_ENV"
           mkdir -p "$RUNNER_TEMP/doctor-ssr-packets"
           printf '%s\n' "$source_sha" > "$RUNNER_TEMP/doctor-ssr-packets/source-sha.txt"
           git -C "$source_root" status --porcelain > "$RUNNER_TEMP/doctor-ssr-packets/source-status.txt"
