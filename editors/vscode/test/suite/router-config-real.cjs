@@ -47,6 +47,15 @@ exports.run = async function run() {
   const documents = new Map();
   const baseline = new Map();
   const authored = new Map();
+  const immutable = new Map(
+    manifest.projects
+      .flatMap((project) => [
+        path.join(project.root, "typed-router.d.ts"),
+        path.join(project.root, "vite.config.mjs"),
+        ...(project.enabled ? [] : [project.config]),
+      ])
+      .map((file) => [file, fs.readFileSync(file)]),
+  );
   const test = async (label, operation) => {
     try {
       await operation();
@@ -93,7 +102,10 @@ exports.run = async function run() {
     initial.packet.params.capabilities.workspace.didChangeWatchedFiles.relativePatternSupport,
     true,
   );
-  retain("selected-server", await vscode.commands.executeCommand("vize.test.getServerInfo"));
+  const selected = await vscode.commands.executeCommand("vize.test.getServerInfo");
+  retain("selected-server", selected);
+  assert.equal(selected.path, manifest.launcher);
+  assert.equal(selected.extensionVersion, extension.packageJSON.version);
   const [enabled, disabled] = manifest.projects;
 
   for (const file of enabled.pages) {
@@ -216,9 +228,12 @@ exports.run = async function run() {
         );
       }
     });
-  const spawns = records().filter(({ kind }) => kind === "spawn");
-  retain("process-isolation", { spawns, failures });
+  const allSpawns = records().filter(({ kind }) => kind === "spawn");
+  const spawns = allSpawns.filter(({ argv }) => argv[0] === "lsp");
+  retain("process-isolation", { spawns, allSpawns, failures });
   assert.equal(spawns.length, 1, "config edits retain the same outer native server process");
+  assert.ok(frames().every(({ pid }) => pid === spawns[0].pid));
+  for (const [file, bytes] of immutable) assert.deepEqual(fs.readFileSync(file), bytes);
   for (const [file, source] of authored) {
     assert.equal(
       fs.readFileSync(file, "utf8"),
