@@ -1,0 +1,1046 @@
+{
+  "schema": "vize.vue2DiagnosticContextCustody",
+  "version": 1,
+  "sourceRevision": "c8c4e052e6002c05ae3a4ef645458b25033da1eb",
+  "producer": {
+    "workflowRun": 40166711835,
+    "job": 121089153833,
+    "artifact": "vue-parity-snapshot-differences"
+  },
+  "historical": {
+    "path": "tests/snapshots/check/__snapshots__/vue2-elm-check.snap",
+    "sha256": "8f06c4ce93b5dba1558c541cc7dd7b11dafdfc665e4dcbf6babf115e257c6c6f"
+  },
+  "successor": {
+    "path": "tests/snapshots/check/__snapshots__/vue2-elm-context-check.snap",
+    "sha256": "478e366358a67bffca96b2329c07ec74750b202819d1449e3831c32db7fbe3dd"
+  },
+  "upstream": {
+    "repository": "https://github.com/bailicangdu/vue2-elm",
+    "revision": "b85ff0220366be863868269177a4abf74c7a85ca",
+    "license": "GPL-2.0-only",
+    "files": [
+      {
+        "file": "src/components/common/shoplist.vue",
+        "sha256": "d9fd3879d521051210f1df3519d084a0d644e8e892f6df79b97b6d91fbd53480",
+        "gitBlob": "6e16d49b1198630cafe5b65b3bd7402dccd896d5"
+      },
+      {
+        "file": "src/components/footer/footGuide.vue",
+        "sha256": "91948ed6c257e5b653c61fb4bcfc7b92e679c6594e3e2cc9555aac95f0fa3d2d",
+        "gitBlob": "15b911ca75eb0acbb0e7aea4856042c21bdccb96"
+      },
+      {
+        "file": "src/components/header/head.vue",
+        "sha256": "7dcf5fbe095e6ce6c25fe50b9d6f2491ea29f61fa91c0dd47262d724c798677d",
+        "gitBlob": "1ca519a24272e39bcbbd3ffd20505e98ee6dbb14"
+      },
+      {
+        "file": "src/page/confirmOrder/children/children/addAddress.vue",
+        "sha256": "763456f4a6afa383afc37ab021bda1cbb6cd814cb0f7944a45e1880d27638a8a",
+        "gitBlob": "be2a8c03a34cebf8ca3a0e282d93963495c30cc3"
+      },
+      {
+        "file": "src/page/confirmOrder/children/payment.vue",
+        "sha256": "3f146f2d410a6962bb5da9dd96450331fb6f208d592defbff513e1ab43c92df9",
+        "gitBlob": "ffdab344c4015c39702e4ccbb37013c924a7f95e"
+      },
+      {
+        "file": "src/page/confirmOrder/confirmOrder.vue",
+        "sha256": "661d6cba948730438be8f7dc5271159df059b0bc0602f72f00c616de3f3e1ef2",
+        "gitBlob": "9f62baaf4860242eaba0e181a8b4294bd881f700"
+      },
+      {
+        "file": "src/page/food/food.vue",
+        "sha256": "418ff60204f18d6fc80ae25dd484af6f86d5d4535c711bbe9d03e4b109742cbc",
+        "gitBlob": "015efd651bad188c7f4250e375bef8305e230afe"
+      },
+      {
+        "file": "src/page/order/children/orderDetail.vue",
+        "sha256": "e0df0b86b3f7b5c842b9b7aa933601bea91f922248cbeeb5b828c54a2486cb65",
+        "gitBlob": "9e4cc9ad1bd7d987313f7169b426b84bac7054b9"
+      },
+      {
+        "file": "src/page/order/order.vue",
+        "sha256": "76de437b98250d56805993aba16377152399b6c2bf5911a1aef7a08cccdbfce6",
+        "gitBlob": "b5b46fb7937e7245221d006af07b3ee485495789"
+      },
+      {
+        "file": "src/page/profile/children/children/address.vue",
+        "sha256": "7ef94895e669a0f445c27f623a4158d4c65af5b5e0914c2fce8cfdf405b44b1a",
+        "gitBlob": "320bf75613a6500dc6a35fb81f52b2c1dbd193ee"
+      },
+      {
+        "file": "src/page/profile/children/children/children/add.vue",
+        "sha256": "0d7d3928332ecb91ca13b10d029c13f2a8e0bd4ab178ed21176582c895a5916d",
+        "gitBlob": "b09800b8f6e44ab8d7febee2e6ccdcca51b62771"
+      },
+      {
+        "file": "src/page/profile/children/info.vue",
+        "sha256": "df7c052b793901687757a4576219b135210b997b49bbeea9b86bde1924051ff4",
+        "gitBlob": "88ba67333d45c7b9bd43912ac375f3673f9ff0fa"
+      },
+      {
+        "file": "src/page/profile/profile.vue",
+        "sha256": "9e87186246d41f6a61a237252616ee2bf63468b4124ffc6425c3d6ed521c781b",
+        "gitBlob": "9aa9d42a6134c17c487739539bd639d64b02bf96"
+      },
+      {
+        "file": "src/page/service/children/questionDetail.vue",
+        "sha256": "cebd24218f6cb77ce6266d176d2323d442e241c817185114f5687b38b441cdf2",
+        "gitBlob": "2509e37690ab997c09e03faada4b68dafd240d30"
+      },
+      {
+        "file": "src/page/shop/children/children/shopSafe.vue",
+        "sha256": "79e394a85616100741d63813fbaf830e3f5c8f0b08ebe4d4b5ddf9662c84e6b5",
+        "gitBlob": "9bcf16512e25fd97eae65cddd63782bbc550da18"
+      },
+      {
+        "file": "src/page/shop/children/shopDetail.vue",
+        "sha256": "d2314d28fb9eee2a1589fbf8b935049a07c3ddfe4a6c10e22ae9a9b8454f4542",
+        "gitBlob": "3ce6cc0a7cc3799151f39379b7ca29d5edf4b54e"
+      },
+      {
+        "file": "src/page/shop/shop.vue",
+        "sha256": "5965637d7f4290aeaea07ac7bd8c10c34d35e52fc6635532c1b80cd45dec945f",
+        "gitBlob": "c6177659d63382f6b0409d771a3abd7b013e6807"
+      },
+      {
+        "file": "src/page/vipcard/children/useCart.vue",
+        "sha256": "fc7573311ca4b25ed18172b9771f8f7b8a0c5922f4d45cbf6c7cf92619c088dc",
+        "gitBlob": "d0ae6f83713fae1a3e0006321004d9b083d26830"
+      },
+      {
+        "file": "src/page/vipcard/vipcard.vue",
+        "sha256": "94f7e0df309e76408e1bae1976f45c9a419a0c53e8b6ec3511bddab55217e56e",
+        "gitBlob": "82c279793367cdd9484afd355e5907fb073b65cb"
+      }
+    ]
+  },
+  "fileCount": 61,
+  "diagnosticCount": 408,
+  "contextAdditions": 92,
+  "contextSourceCharacters": 160,
+  "witnesses": [
+    {
+      "file": "src/components/common/shoplist.vue",
+      "diagnosticIndex": 0,
+      "line": 10,
+      "column": 60,
+      "code": null,
+      "canonicalMessage": "Template parse error: Duplicate attribute `class`. Keeping the repeated attribute so parsing can continue.",
+      "sourceLine": "\t\t\t\t\t\t<h4 :class=\"item.is_premium? 'premium': ''\" class=\"\" class=\"shop_title ellipsis\">{{item.name}}</h4>",
+      "binding": "class"
+    },
+    {
+      "file": "src/components/footer/footGuide.vue",
+      "diagnosticIndex": 0,
+      "line": 23,
+      "column": 65,
+      "code": 18004,
+      "canonicalMessage": "No value exists in scope for the shorthand property 'geohash'. Either declare one or provide an initializer.",
+      "sourceLine": "        <section @click = \"gotoAddress({path: '/msite', query: {geohash}})\" class=\"guide_item\">",
+      "binding": "@click"
+    },
+    {
+      "file": "src/components/footer/footGuide.vue",
+      "diagnosticIndex": 1,
+      "line": 23,
+      "column": 65,
+      "code": 2339,
+      "canonicalMessage": "Property 'geohash' does not exist on the component instance.",
+      "sourceLine": "        <section @click = \"gotoAddress({path: '/msite', query: {geohash}})\" class=\"guide_item\">",
+      "binding": "@click"
+    },
+    {
+      "file": "src/components/footer/footGuide.vue",
+      "diagnosticIndex": 2,
+      "line": 29,
+      "column": 58,
+      "code": 2339,
+      "canonicalMessage": "Property 'geohash' does not exist on the component instance.",
+      "sourceLine": "        <section @click = \"gotoAddress({path: `/search/${geohash}`})\" class=\"guide_item\">",
+      "binding": "@click"
+    },
+    {
+      "file": "src/components/header/head.vue",
+      "diagnosticIndex": 0,
+      "line": 10,
+      "column": 27,
+      "code": 2339,
+      "canonicalMessage": "Property 'userInfo' does not exist on the component instance.",
+      "sourceLine": "        <router-link :to=\"userInfo? '/profile':'/login'\" v-if='signinUp' class=\"head_login\">",
+      "binding": "'to'"
+    },
+    {
+      "file": "src/components/header/head.vue",
+      "diagnosticIndex": 1,
+      "line": 11,
+      "column": 44,
+      "code": 2339,
+      "canonicalMessage": "Property 'userInfo' does not exist on the component instance.",
+      "sourceLine": "            <svg class=\"user_avatar\" v-if=\"userInfo\">",
+      "binding": "v-if"
+    },
+    {
+      "file": "src/page/confirmOrder/children/children/addAddress.vue",
+      "diagnosticIndex": 0,
+      "line": 38,
+      "column": 127,
+      "code": 2339,
+      "canonicalMessage": "Property 'searchAddress' does not exist on the component instance.",
+      "sourceLine": "                    <router-link to=\"/confirmOrder/chooseAddress/addAddress/searchAddress\" tag=\"div\" class=\"choose_address\">{{searchAddress? searchAddress.name : '小区/写字楼/学校等'}}</router-link>",
+      "binding": null
+    },
+    {
+      "file": "src/page/confirmOrder/children/children/addAddress.vue",
+      "diagnosticIndex": 1,
+      "line": 38,
+      "column": 142,
+      "code": 2339,
+      "canonicalMessage": "Property 'searchAddress' does not exist on the component instance.",
+      "sourceLine": "                    <router-link to=\"/confirmOrder/chooseAddress/addAddress/searchAddress\" tag=\"div\" class=\"choose_address\">{{searchAddress? searchAddress.name : '小区/写字楼/学校等'}}</router-link>",
+      "binding": null
+    },
+    {
+      "file": "src/page/confirmOrder/children/payment.vue",
+      "diagnosticIndex": 0,
+      "line": 10,
+      "column": 31,
+      "code": 2339,
+      "canonicalMessage": "Property 'cartPrice' does not exist on the component instance.",
+      "sourceLine": "                    <span>¥ {{cartPrice&&cartPrice.toFixed(2) || payDetail.resultData.orderInfo.orderAmount&&(payDetail.resultData.orderInfo.orderAmount/100).toFixed(2)}}</span>",
+      "binding": null
+    },
+    {
+      "file": "src/page/confirmOrder/children/payment.vue",
+      "diagnosticIndex": 1,
+      "line": 10,
+      "column": 42,
+      "code": 2339,
+      "canonicalMessage": "Property 'cartPrice' does not exist on the component instance.",
+      "sourceLine": "                    <span>¥ {{cartPrice&&cartPrice.toFixed(2) || payDetail.resultData.orderInfo.orderAmount&&(payDetail.resultData.orderInfo.orderAmount/100).toFixed(2)}}</span>",
+      "binding": null
+    },
+    {
+      "file": "src/page/confirmOrder/confirmOrder.vue",
+      "diagnosticIndex": 0,
+      "line": 10,
+      "column": 53,
+      "code": 2339,
+      "canonicalMessage": "Property 'choosedAddress' does not exist on the component instance.",
+      "sourceLine": "                    <div class=\"add_address\" v-if=\"!choosedAddress\">请添加一个收货地址</div>",
+      "binding": "v-if"
+    },
+    {
+      "file": "src/page/confirmOrder/confirmOrder.vue",
+      "diagnosticIndex": 1,
+      "line": 13,
+      "column": 37,
+      "code": 2339,
+      "canonicalMessage": "Property 'choosedAddress' does not exist on the component instance.",
+      "sourceLine": "                            <span>{{choosedAddress.name}}</span>",
+      "binding": null
+    },
+    {
+      "file": "src/page/confirmOrder/confirmOrder.vue",
+      "diagnosticIndex": 2,
+      "line": 14,
+      "column": 37,
+      "code": 2339,
+      "canonicalMessage": "Property 'choosedAddress' does not exist on the component instance.",
+      "sourceLine": "                            <span>{{choosedAddress.sex == 1? '先生':'女士'}}</span>",
+      "binding": null
+    },
+    {
+      "file": "src/page/confirmOrder/confirmOrder.vue",
+      "diagnosticIndex": 3,
+      "line": 15,
+      "column": 37,
+      "code": 2339,
+      "canonicalMessage": "Property 'choosedAddress' does not exist on the component instance.",
+      "sourceLine": "                            <span>{{choosedAddress.phone}}</span>",
+      "binding": null
+    },
+    {
+      "file": "src/page/confirmOrder/confirmOrder.vue",
+      "diagnosticIndex": 4,
+      "line": 18,
+      "column": 41,
+      "code": 2339,
+      "canonicalMessage": "Property 'choosedAddress' does not exist on the component instance.",
+      "sourceLine": "                            <span v-if=\"choosedAddress.tag\" :style=\"{backgroundColor: iconColor(choosedAddress.tag)}\">{{choosedAddress.tag}}</span>",
+      "binding": "v-if"
+    },
+    {
+      "file": "src/page/confirmOrder/confirmOrder.vue",
+      "diagnosticIndex": 5,
+      "line": 18,
+      "column": 97,
+      "code": 2339,
+      "canonicalMessage": "Property 'choosedAddress' does not exist on the component instance.",
+      "sourceLine": "                            <span v-if=\"choosedAddress.tag\" :style=\"{backgroundColor: iconColor(choosedAddress.tag)}\">{{choosedAddress.tag}}</span>",
+      "binding": "'style'"
+    },
+    {
+      "file": "src/page/confirmOrder/confirmOrder.vue",
+      "diagnosticIndex": 6,
+      "line": 18,
+      "column": 121,
+      "code": 2339,
+      "canonicalMessage": "Property 'choosedAddress' does not exist on the component instance.",
+      "sourceLine": "                            <span v-if=\"choosedAddress.tag\" :style=\"{backgroundColor: iconColor(choosedAddress.tag)}\">{{choosedAddress.tag}}</span>",
+      "binding": null
+    },
+    {
+      "file": "src/page/confirmOrder/confirmOrder.vue",
+      "diagnosticIndex": 7,
+      "line": 19,
+      "column": 34,
+      "code": 2339,
+      "canonicalMessage": "Property 'choosedAddress' does not exist on the component instance.",
+      "sourceLine": "                            <p>{{choosedAddress.address_detail}}</p>",
+      "binding": null
+    },
+    {
+      "file": "src/page/confirmOrder/confirmOrder.vue",
+      "diagnosticIndex": 8,
+      "line": 88,
+      "column": 50,
+      "code": 2339,
+      "canonicalMessage": "Property 'remarkText' does not exist on the component instance.",
+      "sourceLine": "                        <span class=\"ellipsis\">{{remarkText||inputText? remarklist: '口味、偏好等'}}</span>",
+      "binding": null
+    },
+    {
+      "file": "src/page/confirmOrder/confirmOrder.vue",
+      "diagnosticIndex": 9,
+      "line": 88,
+      "column": 62,
+      "code": 2339,
+      "canonicalMessage": "Property 'inputText' does not exist on the component instance.",
+      "sourceLine": "                        <span class=\"ellipsis\">{{remarkText||inputText? remarklist: '口味、偏好等'}}</span>",
+      "binding": null
+    },
+    {
+      "file": "src/page/food/food.vue",
+      "diagnosticIndex": 0,
+      "line": 21,
+      "column": 22,
+      "code": 2349,
+      "canonicalMessage": "This expression is not callable.\nType '{ methods: { getImgPath(path: any): string; }; }' has no call signatures.",
+      "sourceLine": "\t\t\t\t\t\t\t\t\t\t<img :src=\"getImgPath(item.image_url)\" v-if=\"index\" class=\"category_icon\">",
+      "binding": "'src'"
+    },
+    {
+      "file": "src/page/food/food.vue",
+      "diagnosticIndex": 1,
+      "line": 35,
+      "column": 62,
+      "code": 2339,
+      "canonicalMessage": "Property 'index' does not exist on the component instance.",
+      "sourceLine": "\t    \t\t\t\t\t\t<li v-for=\"(item, index) in categoryDetail\" v-if=\"index\" :key=\"index\" class=\"category_right_li\" @click=\"getCategoryIds(item.id, item.name)\" :class=\"{category_right_choosed: restaurant_category_ids == item.id || (!restaurant_category_ids)&&index == 0}\">",
+      "binding": "v-if"
+    },
+    {
+      "file": "src/page/food/food.vue",
+      "diagnosticIndex": 2,
+      "line": 172,
+      "column": 251,
+      "code": 2339,
+      "canonicalMessage": "Property 'latitude' does not exist on the component instance.",
+      "sourceLine": "\t    \t<shop-list :geohash=\"geohash\" :restaurantCategoryId=\"restaurant_category_id\" :restaurantCategoryIds=\"restaurant_category_ids\" :sortByType='sortByType' :deliveryMode=\"delivery_mode\" :confirmSelect=\"confirmStatus\" :supportIds=\"support_ids\" v-if=\"latitude\"></shop-list>",
+      "binding": "v-if"
+    },
+    {
+      "file": "src/page/order/children/orderDetail.vue",
+      "diagnosticIndex": 0,
+      "line": 7,
+      "column": 45,
+      "code": 2551,
+      "canonicalMessage": "Property 'orderDetail' does not exist on the component instance. Did you mean 'orderData'?",
+      "sourceLine": "                    <img :src=\"imgBaseUrl + orderDetail.restaurant_image_url\">",
+      "binding": "'src'"
+    },
+    {
+      "file": "src/page/order/children/orderDetail.vue",
+      "diagnosticIndex": 1,
+      "line": 8,
+      "column": 26,
+      "code": 2551,
+      "canonicalMessage": "Property 'orderDetail' does not exist on the component instance. Did you mean 'orderData'?",
+      "sourceLine": "                    <p>{{orderDetail.status_bar.title}}</p>",
+      "binding": null
+    },
+    {
+      "file": "src/page/order/children/orderDetail.vue",
+      "diagnosticIndex": 2,
+      "line": 9,
+      "column": 26,
+      "code": 2551,
+      "canonicalMessage": "Property 'orderDetail' does not exist on the component instance. Did you mean 'orderData'?",
+      "sourceLine": "                    <p>{{orderDetail.timeline_node.description}}</p>",
+      "binding": null
+    },
+    {
+      "file": "src/page/order/children/orderDetail.vue",
+      "diagnosticIndex": 3,
+      "line": 10,
+      "column": 83,
+      "code": 18004,
+      "canonicalMessage": "No value exists in scope for the shorthand property 'geohash'. Either declare one or provide an initializer.",
+      "sourceLine": "                    <router-link class=\"order_again\" :to=\"{path: '/shop', query: {geohash, id: orderDetail.restaurant_id}}\">再来一单</router-link>",
+      "binding": "'to'"
+    },
+    {
+      "file": "src/page/order/children/orderDetail.vue",
+      "diagnosticIndex": 4,
+      "line": 10,
+      "column": 83,
+      "code": 2339,
+      "canonicalMessage": "Property 'geohash' does not exist on the component instance.",
+      "sourceLine": "                    <router-link class=\"order_again\" :to=\"{path: '/shop', query: {geohash, id: orderDetail.restaurant_id}}\">再来一单</router-link>",
+      "binding": "'to'"
+    },
+    {
+      "file": "src/page/order/children/orderDetail.vue",
+      "diagnosticIndex": 5,
+      "line": 10,
+      "column": 96,
+      "code": 2551,
+      "canonicalMessage": "Property 'orderDetail' does not exist on the component instance. Did you mean 'orderData'?",
+      "sourceLine": "                    <router-link class=\"order_again\" :to=\"{path: '/shop', query: {geohash, id: orderDetail.restaurant_id}}\">再来一单</router-link>",
+      "binding": "'to'"
+    },
+    {
+      "file": "src/page/order/children/orderDetail.vue",
+      "diagnosticIndex": 6,
+      "line": 13,
+      "column": 88,
+      "code": 18004,
+      "canonicalMessage": "No value exists in scope for the shorthand property 'geohash'. Either declare one or provide an initializer.",
+      "sourceLine": "                    <router-link class=\"food_list_header\" :to=\"{path: '/shop', query: {geohash, id: orderDetail.restaurant_id}}\">",
+      "binding": "'to'"
+    },
+    {
+      "file": "src/page/order/children/orderDetail.vue",
+      "diagnosticIndex": 7,
+      "line": 13,
+      "column": 101,
+      "code": 2551,
+      "canonicalMessage": "Property 'orderDetail' does not exist on the component instance. Did you mean 'orderData'?",
+      "sourceLine": "                    <router-link class=\"food_list_header\" :to=\"{path: '/shop', query: {geohash, id: orderDetail.restaurant_id}}\">",
+      "binding": "'to'"
+    },
+    {
+      "file": "src/page/order/children/orderDetail.vue",
+      "diagnosticIndex": 8,
+      "line": 15,
+      "column": 53,
+      "code": 2551,
+      "canonicalMessage": "Property 'orderDetail' does not exist on the component instance. Did you mean 'orderData'?",
+      "sourceLine": "                            <img :src=\"imgBaseUrl + orderDetail.restaurant_image_url\">",
+      "binding": "'src'"
+    },
+    {
+      "file": "src/page/order/children/orderDetail.vue",
+      "diagnosticIndex": 9,
+      "line": 16,
+      "column": 37,
+      "code": 2551,
+      "canonicalMessage": "Property 'orderDetail' does not exist on the component instance. Did you mean 'orderData'?",
+      "sourceLine": "                            <span>{{orderDetail.restaurant_name}}</span>",
+      "binding": null
+    },
+    {
+      "file": "src/page/order/children/orderDetail.vue",
+      "diagnosticIndex": 10,
+      "line": 23,
+      "column": 44,
+      "code": 2551,
+      "canonicalMessage": "Property 'orderDetail' does not exist on the component instance. Did you mean 'orderData'?",
+      "sourceLine": "                        <li v-for=\"item in orderDetail.basket.group[0]\">",
+      "binding": "v-for"
+    },
+    {
+      "file": "src/page/order/children/orderDetail.vue",
+      "diagnosticIndex": 11,
+      "line": 33,
+      "column": 33,
+      "code": 2551,
+      "canonicalMessage": "Property 'orderDetail' does not exist on the component instance. Did you mean 'orderData'?",
+      "sourceLine": "                        <span>{{orderDetail.basket.deliver_fee&&orderDetail.basket.deliver_fee.price || 0}}</span>   ",
+      "binding": null
+    },
+    {
+      "file": "src/page/order/children/orderDetail.vue",
+      "diagnosticIndex": 12,
+      "line": 33,
+      "column": 65,
+      "code": 2551,
+      "canonicalMessage": "Property 'orderDetail' does not exist on the component instance. Did you mean 'orderData'?",
+      "sourceLine": "                        <span>{{orderDetail.basket.deliver_fee&&orderDetail.basket.deliver_fee.price || 0}}</span>   ",
+      "binding": null
+    },
+    {
+      "file": "src/page/order/children/orderDetail.vue",
+      "diagnosticIndex": 13,
+      "line": 35,
+      "column": 47,
+      "code": 2551,
+      "canonicalMessage": "Property 'orderDetail' does not exist on the component instance. Did you mean 'orderData'?",
+      "sourceLine": "                    <div class=\"pay_ment\">实付{{orderDetail.total_amount.toFixed(2)}}</div>",
+      "binding": null
+    },
+    {
+      "file": "src/page/order/children/orderDetail.vue",
+      "diagnosticIndex": 14,
+      "line": 65,
+      "column": 34,
+      "code": 2551,
+      "canonicalMessage": "Property 'orderDetail' does not exist on the component instance. Did you mean 'orderData'?",
+      "sourceLine": "                            <p>{{orderDetail.id}}</p>",
+      "binding": null
+    },
+    {
+      "file": "src/page/order/children/orderDetail.vue",
+      "diagnosticIndex": 15,
+      "line": 77,
+      "column": 34,
+      "code": 2551,
+      "canonicalMessage": "Property 'orderDetail' does not exist on the component instance. Did you mean 'orderData'?",
+      "sourceLine": "                            <p>{{orderDetail.formatted_created_at}}</p>",
+      "binding": null
+    },
+    {
+      "file": "src/page/order/order.vue",
+      "diagnosticIndex": 0,
+      "line": 30,
+      "column": 67,
+      "code": 18004,
+      "canonicalMessage": "No value exists in scope for the shorthand property 'geohash'. Either declare one or provide an initializer.",
+      "sourceLine": "                        <router-link :to=\"{path: '/shop', query: {geohash, id: item.restaurant_id}}\" tag=\"span\" class=\"buy_again\" v-else>再来一单</router-link>",
+      "binding": "'to'"
+    },
+    {
+      "file": "src/page/order/order.vue",
+      "diagnosticIndex": 1,
+      "line": 30,
+      "column": 67,
+      "code": 2339,
+      "canonicalMessage": "Property 'geohash' does not exist on the component instance.",
+      "sourceLine": "                        <router-link :to=\"{path: '/shop', query: {geohash, id: item.restaurant_id}}\" tag=\"span\" class=\"buy_again\" v-else>再来一单</router-link>",
+      "binding": "'to'"
+    },
+    {
+      "file": "src/page/profile/children/children/address.vue",
+      "diagnosticIndex": 0,
+      "line": 8,
+      "column": 38,
+      "code": 2339,
+      "canonicalMessage": "Property 'removeAddress' does not exist on the component instance.",
+      "sourceLine": "        \t\t<li v-for=\"(item,index) in removeAddress\">",
+      "binding": "v-for"
+    },
+    {
+      "file": "src/page/profile/children/children/children/add.vue",
+      "diagnosticIndex": 0,
+      "line": 13,
+      "column": 87,
+      "code": 2339,
+      "canonicalMessage": "Property 'addAddress' does not exist on the component instance.",
+      "sourceLine": "\t        \t\t\t\t<input type=\"text\" placeholder=\"小区/写字楼/学校等\" readonly=\"readonly\" v-model=\"addAddress\" />",
+      "binding": "modelValue"
+    },
+    {
+      "file": "src/page/profile/children/info.vue",
+      "diagnosticIndex": 0,
+      "line": 9,
+      "column": 33,
+      "code": 2339,
+      "canonicalMessage": "Property 'userInfo' does not exist on the component instance.",
+      "sourceLine": "                    <img  v-if=\"userInfo\" :src=\"imgBaseUrl + userInfo.avatar\" class=\"headportrait-div-top\">",
+      "binding": "v-if"
+    },
+    {
+      "file": "src/page/profile/children/info.vue",
+      "diagnosticIndex": 1,
+      "line": 9,
+      "column": 62,
+      "code": 2339,
+      "canonicalMessage": "Property 'userInfo' does not exist on the component instance.",
+      "sourceLine": "                    <img  v-if=\"userInfo\" :src=\"imgBaseUrl + userInfo.avatar\" class=\"headportrait-div-top\">",
+      "binding": "'src'"
+    },
+    {
+      "file": "src/page/profile/profile.vue",
+      "diagnosticIndex": 0,
+      "line": 6,
+      "column": 35,
+      "code": 2339,
+      "canonicalMessage": "Property 'userInfo' does not exist on the component instance.",
+      "sourceLine": "                <router-link :to=\"userInfo&&userInfo.user_id? '/profile/info' : '/login'\" class=\"profile-link\">",
+      "binding": "'to'"
+    },
+    {
+      "file": "src/page/profile/profile.vue",
+      "diagnosticIndex": 1,
+      "line": 6,
+      "column": 45,
+      "code": 2339,
+      "canonicalMessage": "Property 'userInfo' does not exist on the component instance.",
+      "sourceLine": "                <router-link :to=\"userInfo&&userInfo.user_id? '/profile/info' : '/login'\" class=\"profile-link\">",
+      "binding": "'to'"
+    },
+    {
+      "file": "src/page/profile/profile.vue",
+      "diagnosticIndex": 2,
+      "line": 7,
+      "column": 45,
+      "code": 2339,
+      "canonicalMessage": "Property 'userInfo' does not exist on the component instance.",
+      "sourceLine": "                    <img :src=\"imgBaseUrl + userInfo.avatar\" class=\"privateImage\" v-if=\"userInfo&&userInfo.user_id\">",
+      "binding": "'src'"
+    },
+    {
+      "file": "src/page/profile/profile.vue",
+      "diagnosticIndex": 3,
+      "line": 7,
+      "column": 89,
+      "code": 2339,
+      "canonicalMessage": "Property 'userInfo' does not exist on the component instance.",
+      "sourceLine": "                    <img :src=\"imgBaseUrl + userInfo.avatar\" class=\"privateImage\" v-if=\"userInfo&&userInfo.user_id\">",
+      "binding": "v-if"
+    },
+    {
+      "file": "src/page/profile/profile.vue",
+      "diagnosticIndex": 4,
+      "line": 7,
+      "column": 99,
+      "code": 2339,
+      "canonicalMessage": "Property 'userInfo' does not exist on the component instance.",
+      "sourceLine": "                    <img :src=\"imgBaseUrl + userInfo.avatar\" class=\"privateImage\" v-if=\"userInfo&&userInfo.user_id\">",
+      "binding": "v-if"
+    },
+    {
+      "file": "src/page/service/children/questionDetail.vue",
+      "diagnosticIndex": 0,
+      "line": 3,
+      "column": 32,
+      "code": 2339,
+      "canonicalMessage": "Property 'question' does not exist on the component instance.",
+      "sourceLine": "        <head-top :head-title=\"question.title\" go-back='true'></head-top>",
+      "binding": "'head-title'"
+    },
+    {
+      "file": "src/page/shop/children/children/shopSafe.vue",
+      "diagnosticIndex": 0,
+      "line": 11,
+      "column": 60,
+      "code": 2339,
+      "canonicalMessage": "Property 'shopDetail' does not exist on the component instance.",
+      "sourceLine": "                            <svg class=\"shop_status\" v-if=\"shopDetail.status == 1\">",
+      "binding": "v-if"
+    },
+    {
+      "file": "src/page/shop/children/children/shopSafe.vue",
+      "diagnosticIndex": 1,
+      "line": 21,
+      "column": 70,
+      "code": 2339,
+      "canonicalMessage": "Property 'shopDetail' does not exist on the component instance.",
+      "sourceLine": "                                <span class=\"shop_status_well\" v-if=\"shopDetail.status == 1\">良好</span>",
+      "binding": "v-if"
+    },
+    {
+      "file": "src/page/shop/children/children/shopSafe.vue",
+      "diagnosticIndex": 2,
+      "line": 26,
+      "column": 41,
+      "code": 2339,
+      "canonicalMessage": "Property 'shopDetail' does not exist on the component instance.",
+      "sourceLine": "                                <span>{{shopDetail.identification.identificate_date && shopDetail.identification.identificate_date.split('T')[0]}}</span>",
+      "binding": null
+    },
+    {
+      "file": "src/page/shop/children/children/shopSafe.vue",
+      "diagnosticIndex": 3,
+      "line": 26,
+      "column": 88,
+      "code": 2339,
+      "canonicalMessage": "Property 'shopDetail' does not exist on the component instance.",
+      "sourceLine": "                                <span>{{shopDetail.identification.identificate_date && shopDetail.identification.identificate_date.split('T')[0]}}</span>",
+      "binding": null
+    },
+    {
+      "file": "src/page/shop/children/children/shopSafe.vue",
+      "diagnosticIndex": 4,
+      "line": 38,
+      "column": 34,
+      "code": 2339,
+      "canonicalMessage": "Property 'shopDetail' does not exist on the component instance.",
+      "sourceLine": "                            <p>{{shopDetail.identification.company_name}}</p>",
+      "binding": null
+    },
+    {
+      "file": "src/page/shop/children/children/shopSafe.vue",
+      "diagnosticIndex": 5,
+      "line": 42,
+      "column": 34,
+      "code": 2339,
+      "canonicalMessage": "Property 'shopDetail' does not exist on the component instance.",
+      "sourceLine": "                            <p>{{shopDetail.identification.identificate_agency}}</p>",
+      "binding": null
+    },
+    {
+      "file": "src/page/shop/children/children/shopSafe.vue",
+      "diagnosticIndex": 6,
+      "line": 46,
+      "column": 34,
+      "code": 2339,
+      "canonicalMessage": "Property 'shopDetail' does not exist on the component instance.",
+      "sourceLine": "                            <p>{{shopDetail.identification.registered_number}}</p>",
+      "binding": null
+    },
+    {
+      "file": "src/page/shop/children/children/shopSafe.vue",
+      "diagnosticIndex": 7,
+      "line": 50,
+      "column": 34,
+      "code": 2339,
+      "canonicalMessage": "Property 'shopDetail' does not exist on the component instance.",
+      "sourceLine": "                            <p>{{shopDetail.identification.registered_address}}</p>",
+      "binding": null
+    },
+    {
+      "file": "src/page/shop/children/children/shopSafe.vue",
+      "diagnosticIndex": 8,
+      "line": 54,
+      "column": 34,
+      "code": 2339,
+      "canonicalMessage": "Property 'shopDetail' does not exist on the component instance.",
+      "sourceLine": "                            <p>{{shopDetail.identification.registered_principal}}</p>",
+      "binding": null
+    },
+    {
+      "file": "src/page/shop/children/children/shopSafe.vue",
+      "diagnosticIndex": 9,
+      "line": 58,
+      "column": 34,
+      "code": 2339,
+      "canonicalMessage": "Property 'shopDetail' does not exist on the component instance.",
+      "sourceLine": "                            <p>{{shopDetail.identification.legal_person}}</p>",
+      "binding": null
+    },
+    {
+      "file": "src/page/shop/children/children/shopSafe.vue",
+      "diagnosticIndex": 10,
+      "line": 62,
+      "column": 34,
+      "code": 2339,
+      "canonicalMessage": "Property 'shopDetail' does not exist on the component instance.",
+      "sourceLine": "                            <p>{{shopDetail.identification.operation_period}}</p>",
+      "binding": null
+    },
+    {
+      "file": "src/page/shop/children/children/shopSafe.vue",
+      "diagnosticIndex": 11,
+      "line": 71,
+      "column": 34,
+      "code": 2339,
+      "canonicalMessage": "Property 'shopDetail' does not exist on the component instance.",
+      "sourceLine": "                            <p>{{shopDetail.identification.operation_period}}</p>",
+      "binding": null
+    },
+    {
+      "file": "src/page/shop/children/children/shopSafe.vue",
+      "diagnosticIndex": 12,
+      "line": 75,
+      "column": 34,
+      "code": 2339,
+      "canonicalMessage": "Property 'shopDetail' does not exist on the component instance.",
+      "sourceLine": "                            <p>{{shopDetail.identification.licenses_date}}</p>",
+      "binding": null
+    },
+    {
+      "file": "src/page/shop/children/children/shopSafe.vue",
+      "diagnosticIndex": 13,
+      "line": 79,
+      "column": 34,
+      "code": 2339,
+      "canonicalMessage": "Property 'shopDetail' does not exist on the component instance.",
+      "sourceLine": "                            <p>{{shopDetail.identification.licenses_number}}</p>",
+      "binding": null
+    },
+    {
+      "file": "src/page/shop/children/children/shopSafe.vue",
+      "diagnosticIndex": 14,
+      "line": 83,
+      "column": 34,
+      "code": 2339,
+      "canonicalMessage": "Property 'shopDetail' does not exist on the component instance.",
+      "sourceLine": "                            <p>{{shopDetail.identification.licenses_scope}}</p>",
+      "binding": null
+    },
+    {
+      "file": "src/page/shop/children/children/shopSafe.vue",
+      "diagnosticIndex": 15,
+      "line": 87,
+      "column": 34,
+      "code": 2339,
+      "canonicalMessage": "Property 'shopDetail' does not exist on the component instance.",
+      "sourceLine": "                            <p>{{shopDetail.identification.registered_principal}}</p>",
+      "binding": null
+    },
+    {
+      "file": "src/page/shop/children/children/shopSafe.vue",
+      "diagnosticIndex": 16,
+      "line": 94,
+      "column": 70,
+      "code": 2339,
+      "canonicalMessage": "Property 'shopDetail' does not exist on the component instance.",
+      "sourceLine": "                        <img :src=\"localapi || proapi ? imgBaseUrl + shopDetail.license.business_license_image : getImgPath(shopDetail.license.business_license_image)\">",
+      "binding": "'src'"
+    },
+    {
+      "file": "src/page/shop/children/children/shopSafe.vue",
+      "diagnosticIndex": 17,
+      "line": 94,
+      "column": 114,
+      "code": 2349,
+      "canonicalMessage": "This expression is not callable.\nType '{ methods: { getImgPath(path: any): string; }; }' has no call signatures.",
+      "sourceLine": "                        <img :src=\"localapi || proapi ? imgBaseUrl + shopDetail.license.business_license_image : getImgPath(shopDetail.license.business_license_image)\">",
+      "binding": "'src'"
+    },
+    {
+      "file": "src/page/shop/children/children/shopSafe.vue",
+      "diagnosticIndex": 18,
+      "line": 94,
+      "column": 125,
+      "code": 2339,
+      "canonicalMessage": "Property 'shopDetail' does not exist on the component instance.",
+      "sourceLine": "                        <img :src=\"localapi || proapi ? imgBaseUrl + shopDetail.license.business_license_image : getImgPath(shopDetail.license.business_license_image)\">",
+      "binding": "'src'"
+    },
+    {
+      "file": "src/page/shop/children/children/shopSafe.vue",
+      "diagnosticIndex": 19,
+      "line": 95,
+      "column": 70,
+      "code": 2339,
+      "canonicalMessage": "Property 'shopDetail' does not exist on the component instance.",
+      "sourceLine": "                        <img :src=\"localapi || proapi ? imgBaseUrl + shopDetail.license.catering_service_license_image : getImgPath(shopDetail.license.catering_service_license_image)\">",
+      "binding": "'src'"
+    },
+    {
+      "file": "src/page/shop/children/children/shopSafe.vue",
+      "diagnosticIndex": 20,
+      "line": 95,
+      "column": 122,
+      "code": 2349,
+      "canonicalMessage": "This expression is not callable.\nType '{ methods: { getImgPath(path: any): string; }; }' has no call signatures.",
+      "sourceLine": "                        <img :src=\"localapi || proapi ? imgBaseUrl + shopDetail.license.catering_service_license_image : getImgPath(shopDetail.license.catering_service_license_image)\">",
+      "binding": "'src'"
+    },
+    {
+      "file": "src/page/shop/children/children/shopSafe.vue",
+      "diagnosticIndex": 21,
+      "line": 95,
+      "column": 133,
+      "code": 2339,
+      "canonicalMessage": "Property 'shopDetail' does not exist on the component instance.",
+      "sourceLine": "                        <img :src=\"localapi || proapi ? imgBaseUrl + shopDetail.license.catering_service_license_image : getImgPath(shopDetail.license.catering_service_license_image)\">",
+      "binding": "'src'"
+    },
+    {
+      "file": "src/page/shop/children/shopDetail.vue",
+      "diagnosticIndex": 0,
+      "line": 7,
+      "column": 36,
+      "code": 2339,
+      "canonicalMessage": "Property 'shopDetail' does not exist on the component instance.",
+      "sourceLine": "                <li v-for=\"item in shopDetail.activities\" :key=\"item.id\">",
+      "binding": "v-for"
+    },
+    {
+      "file": "src/page/shop/children/shopDetail.vue",
+      "diagnosticIndex": 1,
+      "line": 13,
+      "column": 36,
+      "code": 2339,
+      "canonicalMessage": "Property 'shopDetail' does not exist on the component instance.",
+      "sourceLine": "                <li v-for=\"item in shopDetail.supports\" :key=\"item.id\">",
+      "binding": "v-for"
+    },
+    {
+      "file": "src/page/shop/children/shopDetail.vue",
+      "diagnosticIndex": 2,
+      "line": 31,
+      "column": 52,
+      "code": 2339,
+      "canonicalMessage": "Property 'shopDetail' does not exist on the component instance.",
+      "sourceLine": "                    <svg class=\"shop_status\" v-if=\"shopDetail.status == 1\">",
+      "binding": "v-if"
+    },
+    {
+      "file": "src/page/shop/children/shopDetail.vue",
+      "diagnosticIndex": 3,
+      "line": 41,
+      "column": 62,
+      "code": 2339,
+      "canonicalMessage": "Property 'shopDetail' does not exist on the component instance.",
+      "sourceLine": "                        <span class=\"shop_status_well\" v-if=\"shopDetail.status == 1\">良好</span>",
+      "binding": "v-if"
+    },
+    {
+      "file": "src/page/shop/children/shopDetail.vue",
+      "diagnosticIndex": 4,
+      "line": 46,
+      "column": 33,
+      "code": 2339,
+      "canonicalMessage": "Property 'shopDetail' does not exist on the component instance.",
+      "sourceLine": "                        <span>{{shopDetail.identification.identificate_date && shopDetail.identification.identificate_date.split('T')[0]}}</span>",
+      "binding": null
+    },
+    {
+      "file": "src/page/shop/children/shopDetail.vue",
+      "diagnosticIndex": 5,
+      "line": 46,
+      "column": 80,
+      "code": 2339,
+      "canonicalMessage": "Property 'shopDetail' does not exist on the component instance.",
+      "sourceLine": "                        <span>{{shopDetail.identification.identificate_date && shopDetail.identification.identificate_date.split('T')[0]}}</span>",
+      "binding": null
+    },
+    {
+      "file": "src/page/shop/children/shopDetail.vue",
+      "diagnosticIndex": 6,
+      "line": 53,
+      "column": 18,
+      "code": 2339,
+      "canonicalMessage": "Property 'shopDetail' does not exist on the component instance.",
+      "sourceLine": "            <p>{{shopDetail.name}}</p>",
+      "binding": null
+    },
+    {
+      "file": "src/page/shop/children/shopDetail.vue",
+      "diagnosticIndex": 7,
+      "line": 54,
+      "column": 21,
+      "code": 2339,
+      "canonicalMessage": "Property 'shopDetail' does not exist on the component instance.",
+      "sourceLine": "            <p>地址：{{shopDetail.address}}</p>",
+      "binding": null
+    },
+    {
+      "file": "src/page/shop/children/shopDetail.vue",
+      "diagnosticIndex": 8,
+      "line": 55,
+      "column": 24,
+      "code": 2339,
+      "canonicalMessage": "Property 'shopDetail' does not exist on the component instance.",
+      "sourceLine": "            <p>营业时间：[{{shopDetail.opening_hours[0]}}]</p>",
+      "binding": null
+    },
+    {
+      "file": "src/page/shop/children/shopDetail.vue",
+      "diagnosticIndex": 9,
+      "line": 56,
+      "column": 39,
+      "code": 2339,
+      "canonicalMessage": "Property 'shopDetail' does not exist on the component instance.",
+      "sourceLine": "            <p @click=\"showLicenseImg(shopDetail.license.business_license_image)\">",
+      "binding": "@click"
+    },
+    {
+      "file": "src/page/shop/children/shopDetail.vue",
+      "diagnosticIndex": 10,
+      "line": 61,
+      "column": 39,
+      "code": 2339,
+      "canonicalMessage": "Property 'shopDetail' does not exist on the component instance.",
+      "sourceLine": "            <p @click=\"showLicenseImg(shopDetail.license.catering_service_license_image)\">",
+      "binding": "@click"
+    },
+    {
+      "file": "src/page/shop/shop.vue",
+      "diagnosticIndex": 0,
+      "line": 80,
+      "column": 48,
+      "code": 2349,
+      "canonicalMessage": "This expression is not callable.\nType '{ methods: { getImgPath(path: any): string; }; }' has no call signatures.",
+      "sourceLine": "                                    <img :src=\"getImgPath(item.icon_url)\" v-if=\"item.icon_url\">",
+      "binding": "'src'"
+    },
+    {
+      "file": "src/page/shop/shop.vue",
+      "diagnosticIndex": 1,
+      "line": 109,
+      "column": 67,
+      "code": 2339,
+      "canonicalMessage": "Property 'attribute' does not exist on the component instance.",
+      "sourceLine": "                                                        <li v-if=\"attribute\" v-for=\"(attribute, foodindex) in foods.attributes\" :key=\"foodindex\" :style=\"{color: '#' + attribute.icon_color,borderColor:'#' + attribute.icon_color}\" :class=\"{attribute_new: attribute.icon_name == '新'}\">",
+      "binding": "v-if"
+    },
+    {
+      "file": "src/page/shop/shop.vue",
+      "diagnosticIndex": 2,
+      "line": 234,
+      "column": 48,
+      "code": 2349,
+      "canonicalMessage": "This expression is not callable.\nType '{ methods: { getImgPath(path: any): string; }; }' has no call signatures.",
+      "sourceLine": "                                    <img :src=\"getImgPath(item.avatar)\" class=\"user_avatar\">",
+      "binding": "'src'"
+    },
+    {
+      "file": "src/page/shop/shop.vue",
+      "diagnosticIndex": 3,
+      "line": 248,
+      "column": 60,
+      "code": 2349,
+      "canonicalMessage": "This expression is not callable.\nType '{ methods: { getImgPath(path: any): string; }; }' has no call signatures.",
+      "sourceLine": "                                                <img :src=\"getImgPath(item.image_hash)\" v-if=\"item.image_hash\">",
+      "binding": "'src'"
+    },
+    {
+      "file": "src/page/shop/shop.vue",
+      "diagnosticIndex": 4,
+      "line": 272,
+      "column": 101,
+      "code": null,
+      "canonicalMessage": "Template parse error: Missing whitespace between attributes; inferred a new attribute boundary.",
+      "sourceLine": "                        <svg width=\"16\" height=\"16\" xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\"class=\"specs_cancel\" @click=\"showChooseList\">",
+      "binding": "@click"
+    },
+    {
+      "file": "src/page/vipcard/children/useCart.vue",
+      "diagnosticIndex": 0,
+      "line": 4,
+      "column": 51,
+      "code": 2339,
+      "canonicalMessage": "Property 'userInfo' does not exist on the component instance.",
+      "sourceLine": "        <p class=\"buy_for\">成功兑换后将关联到当前帐号： <span>{{userInfo.username}}</span></p>",
+      "binding": null
+    },
+    {
+      "file": "src/page/vipcard/vipcard.vue",
+      "diagnosticIndex": 0,
+      "line": 4,
+      "column": 24,
+      "code": 2339,
+      "canonicalMessage": "Property 'userInfo' does not exist on the component instance.",
+      "sourceLine": "        <section v-if=\"userInfo\">",
+      "binding": "v-if"
+    },
+    {
+      "file": "src/page/vipcard/vipcard.vue",
+      "diagnosticIndex": 1,
+      "line": 5,
+      "column": 44,
+      "code": 2339,
+      "canonicalMessage": "Property 'userInfo' does not exist on the component instance.",
+      "sourceLine": "            <p class=\"buy_for\">为账户 <span>{{userInfo.username}}</span> 购买会员</p>",
+      "binding": null
+    }
+  ]
+}
