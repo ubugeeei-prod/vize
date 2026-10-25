@@ -17,8 +17,9 @@
 //!    native TypeScript packages, declared aliases and linked platform packages.
 //!    The nearest native package wins; local launchers remain a final fallback.
 //!    Unlinked package-store entries and Vize's old bundled runtime are ignored.
-//! 4. Common global install locations under `$HOME` plus `npm root -g`.
-//! 5. A `PATH` lookup for `corsa` then `tsgo`.
+//!
+//! Discovery ends at those project roots. Global executables require an
+//! explicit configuration or environment path; discovery does not run npm.
 //!
 //! Developer-checkout paths (`ref/typescript-go/...` and `../corsa-bind`) are
 //! probed only in debug builds or when
@@ -218,16 +219,7 @@ fn discover_runtime(project_root: Option<&Path>) -> Option<PathBuf> {
     let cwd = std::env::current_dir().ok();
     let walk_starts = discovery_starts(project_root, cwd.as_deref());
 
-    if let Some(found) = discover_in_walk(&walk_starts, dev_paths) {
-        return Some(found);
-    }
-    if let Some(found) = find_in_home_locations() {
-        return Some(found);
-    }
-    if let Some(found) = find_in_npm_global_root() {
-        return Some(found);
-    }
-    find_in_path_lookup().map(|path| normalize_corsa_path(&path))
+    discover_in_walk(&walk_starts, dev_paths)
 }
 
 /// Whether developer-checkout paths may be probed.
@@ -324,68 +316,6 @@ fn existing_executable(dir: &Path, executable: &str) -> Option<PathBuf> {
     if windows.is_file() {
         return Some(windows);
     }
-    None
-}
-
-fn find_in_home_locations() -> Option<PathBuf> {
-    const HOME_RELATIVE: [&str; 7] = [
-        ".npm-global/bin",
-        ".npm/bin",
-        ".local/share/pnpm",
-        ".volta/bin",
-        ".asdf/shims",
-        ".local/share/fnm/node-versions/current/bin",
-        ".nvm/versions/node/current/bin",
-    ];
-    const SYSTEM_BIN_DIRS: [&str; 2] = ["/opt/homebrew/bin", "/usr/local/bin"];
-
-    let home = std::env::var_os("HOME").map(PathBuf::from)?;
-    for executable in CORSA_EXECUTABLE_NAMES {
-        for prefix in HOME_RELATIVE {
-            let candidate = home.join(prefix).join(executable);
-            if candidate.is_file() {
-                return Some(candidate);
-            }
-        }
-        for system_dir in SYSTEM_BIN_DIRS {
-            let candidate = Path::new(system_dir).join(executable);
-            if candidate.is_file() {
-                return Some(candidate);
-            }
-        }
-    }
-
-    None
-}
-
-fn find_in_npm_global_root() -> Option<PathBuf> {
-    let output = std::process::Command::new("npm")
-        .args(["root", "-g"])
-        .output()
-        .ok()?;
-    if !output.status.success() {
-        return None;
-    }
-
-    let npm_root = String::from_utf8_lossy(&output.stdout);
-    let bin_dir = Path::new(npm_root.trim()).parent()?.join("bin");
-    for executable in CORSA_EXECUTABLE_NAMES {
-        let candidate = bin_dir.join(executable);
-        if candidate.is_file() {
-            return Some(candidate);
-        }
-    }
-
-    None
-}
-
-fn find_in_path_lookup() -> Option<PathBuf> {
-    for executable in CORSA_EXECUTABLE_NAMES {
-        if let Ok(path) = which::which(executable) {
-            return Some(path);
-        }
-    }
-
     None
 }
 

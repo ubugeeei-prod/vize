@@ -144,3 +144,83 @@ fn missing_runtime_message_is_actionable_without_a_bare_executable_fallback() {
         "No native TypeScript/tsgo executable found. Install a native TypeScript runtime in the selected project, or set typeChecker.corsaPath, CORSA_PATH, or TSGO_PATH to its executable."
     );
 }
+
+#[cfg(unix)]
+#[test]
+fn default_discovery_never_uses_ambient_runtime_or_package_manager() {
+    const CHILD: &str = "VIZE_TEST_AMBIENT_DISCOVERY_CHILD";
+    const ROOT: &str = "VIZE_TEST_AMBIENT_DISCOVERY_ROOT";
+    if std::env::var_os(CHILD).is_some() {
+        let root = PathBuf::from(std::env::var_os(ROOT).unwrap());
+        let project = root.join("project");
+        let home_runtime = root.join("home/.npm-global/bin/corsa");
+        let global_runtime = root.join("bin/tsgo");
+        for selected in [Some(project.as_path()), None] {
+            assert_eq!(
+                resolve(None, selected, &[]),
+                Err(CorsaResolveError::NotFound)
+            );
+            assert_eq!(
+                resolve(Some(&global_runtime), selected, &[]).unwrap(),
+                global_runtime.canonicalize().unwrap()
+            );
+            assert_eq!(
+                resolve(None, selected, &[("CORSA_PATH", &global_runtime)]).unwrap(),
+                global_runtime.canonicalize().unwrap()
+            );
+        }
+        // Exercise PATH/npm refusal even after the earlier HOME decoy is gone.
+        fs::remove_file(home_runtime).unwrap();
+        for selected in [Some(project.as_path()), None] {
+            assert_eq!(
+                resolve(None, selected, &[]),
+                Err(CorsaResolveError::NotFound)
+            );
+        }
+        assert!(!root.join("npm-called").exists());
+        fs::write(root.join("child-completed"), "ambient-discovery-checked").unwrap();
+        return;
+    }
+
+    use std::os::unix::fs::PermissionsExt;
+    let temp = TempDir::new().unwrap();
+    let root = temp.path();
+    let project = root.join("project");
+    fs::create_dir_all(&project).unwrap();
+    write_file(&root.join("home/.npm-global/bin/corsa"));
+    write_file(&root.join("bin/tsgo"));
+    let npm = root.join("bin/npm");
+    fs::write(
+        &npm,
+        "#!/bin/sh\n: > \"$VIZE_TEST_AMBIENT_PM_MARKER\"\nprintf '%s\\n' \"$VIZE_TEST_AMBIENT_GLOBAL_ROOT\"\n",
+    )
+    .unwrap();
+    fs::set_permissions(&npm, fs::Permissions::from_mode(0o755)).unwrap();
+    let output = std::process::Command::new(std::env::current_exe().unwrap())
+        .args([
+            "--exact",
+            "corsa_resolver::tests::project_packages::default_discovery_never_uses_ambient_runtime_or_package_manager",
+            "--nocapture",
+        ])
+        .current_dir(&project)
+        .env(CHILD, "1")
+        .env(ROOT, root)
+        .env("HOME", root.join("home"))
+        .env("PATH", root.join("bin"))
+        .env("VIZE_CORSA_DEV_PATHS", "0")
+        .env("VIZE_TEST_AMBIENT_PM_MARKER", root.join("npm-called"))
+        .env("VIZE_TEST_AMBIENT_GLOBAL_ROOT", root.join("global/node_modules"))
+        .output()
+        .unwrap();
+    assert!(
+        output.status.success(),
+        "isolated resolver child failed: stdout={} stderr={}",
+        std::string::String::from_utf8_lossy(&output.stdout),
+        std::string::String::from_utf8_lossy(&output.stderr)
+    );
+    assert_eq!(
+        fs::read(root.join("child-completed")).unwrap(),
+        b"ambient-discovery-checked"
+    );
+    assert!(!root.join("npm-called").exists());
+}
