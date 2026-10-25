@@ -240,7 +240,7 @@ mod tests {
                 let Some(oxc_ast::ast::Argument::ArrowFunctionExpression(key)) =
                     call.arguments.get(2)
                 else {
-                    panic!("keyed fixture must emit a key callback");
+                    panic!("keyed fixture must emit a key callback: {}", self.code);
                 };
                 self.functions.push(
                     self.code
@@ -307,8 +307,11 @@ mod tests {
                 ],
             ),
             (
-                r#"<div v-for="\u005fouter of items"><Child><template #default="{ row: _row }"><p v-for="\u005finner of children" :key="_row + _inner">ok</p></template></Child></div>"#,
-                &[r#"(\u005finner) => (_slotProps0.row + _inner)"#],
+                r#"<div v-for="\u005fouter of items" :key="_outer.id"><Child><template #default="{ row: _row }"><p v-for="\u005finner of children" :key="_row + _inner">ok</p></template></Child></div>"#,
+                &[
+                    r#"(\u005fouter) => (_outer.id)"#,
+                    r#"(\u005finner) => (_slotProps0.row + _inner)"#,
+                ],
             ),
         ];
         for (source, expected) in cases {

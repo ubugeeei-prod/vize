@@ -88,9 +88,26 @@ assert.ok(
 );
 const beforeProfile = read("base-profile"),
   afterProfile = read("head-profile");
-assert.equal(beforeProfile.rows.length, 18);
-assert.equal(afterProfile.rows.length, 18);
+assert.equal(beforeProfile.rows.length, 27);
+assert.equal(afterProfile.rows.length, 27);
 for (const row of afterProfile.rows) {
+  const before = beforeProfile.rows.find(
+    (candidate) => candidate.case === row.case && candidate.backend === row.backend,
+  );
+  assert.equal(row.source, before.source);
+  if (row.case === "ordinary-key-literal") {
+    const parserCounters = (record) =>
+      new Map(
+        record.counters
+          .filter((counter) => counter.name.endsWith(".parses"))
+          .map((counter) => [counter.name, [counter.samples, counter.total]]),
+      );
+    assert.deepEqual(
+      parserCounters(row),
+      parserCounters(before),
+      "the actual ordinary callback path must add no parser calls",
+    );
+  }
   assert.equal(row.calls, 1);
   assert.equal(row.success, true);
   if (row.case.startsWith("ordinary"))

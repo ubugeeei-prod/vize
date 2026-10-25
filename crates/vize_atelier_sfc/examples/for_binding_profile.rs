@@ -25,6 +25,18 @@ fn main() {
             "escaped-key-index",
             r"<p v-for='(row, \u005fkey, \u005findex) in items'>{{ _key }}{{ _index }}</p>",
         ),
+        (
+            "ordinary-key-literal",
+            r#"<p v-for="row of items" :key="capture('_for_item0.value')">ok</p>"#,
+        ),
+        (
+            "escaped-key-literal",
+            r#"<p v-for="\u005frow of items" :key="capture('_for_item0.value')">ok</p>"#,
+        ),
+        (
+            "escaped-key-callback-shadow",
+            r#"<p v-for="\u005frow of items" :key="(_for_item0 => capture(_for_item0.value))({value: 'shadow'})">ok</p>"#,
+        ),
     ] {
         let source = [
             "<script>export default {}</script><template>",
