@@ -12,6 +12,7 @@ import {
   validateBuildReceipt,
 } from "../../../tests/differential/build-receipt.ts";
 import { captureCssHover } from "./css-hover-visual-capture.mjs";
+import { verifyCssHoverSourceCustody } from "./css-hover-source-custody.mjs";
 import {
   baselineRevision,
   fixtureSource,
@@ -49,17 +50,15 @@ const identity = expectedBuildIdentity(root);
 const receiptPath = path.join(root, `${identity.binaryPath}.differential-build.json`);
 const receipt = JSON.parse(fs.readFileSync(receiptPath, "utf8"));
 validateBuildReceipt(receipt, identity);
-const ownedRendererChanges = new Set([
-  "crates/vize_maestro/src/ide/style/documentation.rs",
-  "crates/vize_maestro/src/ide/style/tests/hover.rs",
-]);
-const productionChanges = git("diff", "--name-only", baselineRevision, "HEAD", "--", "crates")
-  .split("\n")
-  .filter(Boolean);
-assert.ok(
-  productionChanges.every((file) => ownedRendererChanges.has(file)),
-  "capture source must contain only the approved CSS example renderer delta",
-);
+let sourceCustody;
+try {
+  sourceCustody = verifyCssHoverSourceCustody(root, identity.sourceRevision);
+  assert.equal(sourceCustody.historicalBaselineRevision, baselineRevision);
+  write("source-custody.json", sourceCustody);
+} catch (error) {
+  write("source-custody-error.json", { message: error.message, stack: error.stack });
+  throw error;
+}
 const serverPath = fs.realpathSync(path.join(root, identity.binaryPath));
 const actualVersion = execFileSync(serverPath, ["--version"], { encoding: "utf8" }).trim();
 assert.equal(actualVersion, identity.cliVersion);
@@ -162,7 +161,8 @@ try {
     actualCliVersion: actualVersion,
     sourceTree: git("rev-parse", "HEAD^{tree}"),
     baselineRevision,
-    productionChanges,
+    productionChanges: sourceCustody.productionChanges,
+    sourceCustody,
     vscodeVersion,
     vscodeExecutable: { path: vscodeExecutable, sha256: hash(fs.readFileSync(vscodeExecutable)) },
     vsix: { sha256: hash(fs.readFileSync(vsixPath)), bytes: fs.statSync(vsixPath).size },

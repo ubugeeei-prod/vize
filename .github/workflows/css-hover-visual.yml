@@ -5,11 +5,19 @@ on:
     paths:
       - ".github/workflows/css-hover-visual.yml"
       - "editors/vscode/test/css-hover-*.mjs"
+      - "editors/vscode/test/css-hover-source-custody.json"
+      - "tests/_fixtures/differential/lsp/css-hover-stylesheet-examples-10572/**"
+      - "crates/vize_maestro/src/ide/style.rs"
+      - "crates/vize_maestro/src/server/annotations/document_color.rs"
+      - "crates/vize_maestro/src/server/annotations/document_color/**"
       - "crates/vize_maestro/src/ide/style/documentation.rs"
       - "crates/vize_maestro/src/ide/style/tests/hover.rs"
       - "editors/vscode/test/run-css-hover-visual.mjs"
       - "editors/vscode/test/suite/css-hover-visual.cjs"
       - "tests/tooling/vscode-css-hover-visual.test.mjs"
+      - "tests/tooling/vscode-css-hover-source-custody.test.mjs"
+      - "tests/tooling/lsp-css-color-declaration-admission.test.ts"
+      - "tests/_fixtures/differential/lsp/css-color-declaration-admission-10562/**"
 
 permissions: { contents: read }
 
@@ -41,6 +49,8 @@ jobs:
         with: { node-version-file: package.json, cache: true, run-install: false }
       - name: Install locked JavaScript dependencies
         run: vp install --frozen-lockfile --prefer-offline
+      - name: Verify the reviewed source composition and immutable baseline before building
+        run: node editors/vscode/test/css-hover-source-custody.mjs
       - name: Install repository Rust toolchain
         run: |
           rustup toolchain install || rustup show active-toolchain
@@ -55,9 +65,14 @@ jobs:
           cargo build --profile ci -p vize
           node tests/differential/build-receipt.ts
       - name: Check capture refusal boundaries
-        run: node --test tests/tooling/vscode-css-hover-visual.test.mjs
+        run: node --test tests/tooling/vscode-css-hover-visual.test.mjs tests/tooling/vscode-css-hover-source-custody.test.mjs
       - name: Check real SFC CSS example packets and completion parity
         run: cargo test --profile ci -p vize_maestro ide::style::tests -- --test-threads=4
+      - name: Verify all eighteen current hovers and frozen color and presentation vectors
+        env:
+          VIZE_LSP_BIN: target/ci/vize
+          VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
+        run: node --test tests/tooling/lsp-css-color-declaration-admission.test.ts
       - name: Build and package the actual extension
         run: |
           vp run --workspace-root build:vscode-extension
@@ -76,7 +91,10 @@ jobs:
         if: always()
         with:
           name: css-hover-visual-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.event.pull_request.head.sha }}
-          path: output/playwright/css-hover/
+          path: |
+            output/playwright/css-hover/
+            target/vize-tests/css-color-declaration-admission/
+            target/differential/lsp-sessions/
           include-hidden-files: true
           if-no-files-found: warn
           retention-days: 7

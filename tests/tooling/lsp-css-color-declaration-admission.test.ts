@@ -13,6 +13,7 @@ type Positive = {
   language: string;
   newline: string;
   source: string;
+  sourceSha256: string;
   diagnostics: Record<string, unknown>;
   documentColors: Array<{ color: unknown; range: unknown }>;
   presentations: unknown;
@@ -28,6 +29,23 @@ const baseline = JSON.parse(
     sha256: "abe5753a99c3356c9625ec466a4a71ef438d72b23328e10f7707535a5892b25a",
   }).toString("utf8"),
 ) as { rows: Positive[] };
+const currentHovers = JSON.parse(
+  readPinnedArtifact(frozenRoot, {
+    path: "hover.expected-stylesheet-examples-10572.json",
+    sha256: "f6d95ee0c3fce94d54b6790d7ce6a942f35e496f6ff4796abcdd4c121cadeb11",
+  }).toString("utf8"),
+) as {
+  rows: Array<{ language: string; newline: string; sourceSha256: string; results: unknown[] }>;
+};
+assert.deepEqual(
+  currentHovers.rows.map(({ language, newline, sourceSha256 }) => ({
+    language,
+    newline,
+    sourceSha256,
+  })),
+  baseline.rows.map(({ language, newline, sourceSha256 }) => ({ language, newline, sourceSha256 })),
+  "current hover expectations must cover every frozen source row in order",
+);
 const negative = readPinnedArtifact(frozenRoot, {
   path: "negative.public-0.565.0.json",
   sha256: "2d7b4e8643d18e8719dc0f2c5fa8a0a7074945780fbe0228f81f8c4d36e24194",
@@ -86,7 +104,7 @@ async function open(session: LspSession, uri: string, source: string, version = 
 await test("CSS declaration admission preserves all eighteen complete public color and hover controls", async () => {
   assert.equal(baseline.rows.length, 18);
   await withSession("positive", async (session, workspace, observations) => {
-    for (const row of baseline.rows) {
+    for (const [rowIndex, row] of baseline.rows.entries()) {
       const uri = pathToFileURL(
         path.join(workspace, `日本語-${row.language}-${row.newline}.vue`),
       ).href;
@@ -94,13 +112,15 @@ await test("CSS declaration admission preserves all eighteen complete public col
       const colors = await session.request("textDocument/documentColor", { textDocument: { uri } });
       observations.push({ source: row.source, colors });
       assert.deepEqual(colors, row.documentColors, `${row.language}/${row.newline} whole colors`);
-      for (const request of row.hover) {
+      const expectedHovers = currentHovers.rows[rowIndex]!.results;
+      assert.equal(expectedHovers.length, row.hover.length);
+      for (const [requestIndex, request] of row.hover.entries()) {
         const params = { textDocument: { uri }, position: request.params.position };
         const result = await session.request("textDocument/hover", params);
         observations.push({ params, result });
         assert.deepEqual(
           result,
-          request.result,
+          expectedHovers[requestIndex],
           `${row.language}/${row.newline} ${request.kind} whole hover`,
         );
       }
