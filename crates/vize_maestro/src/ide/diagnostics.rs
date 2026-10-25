@@ -92,12 +92,14 @@ pub(in crate::ide) use service::VirtualTsResult;
 
 #[cfg(feature = "native")]
 pub(crate) const TYPECHECK_UNAVAILABLE_HINT_MESSAGE: &str = "Type checking is unavailable in this workspace. Make sure `tsconfig.json` exists. \
-     Install `typescript@^7` or configure `typeChecker.corsaPath`; \
+     Provide a native TypeScript compiler, for example `typescript-native@npm:typescript@7.1.0-beta`, \
+     or configure `typeChecker.corsaPath`, `CORSA_PATH`, or `TSGO_PATH`; \
      see https://vizejs.dev/guide/static-analysis.";
 
 #[cfg(feature = "native")]
 pub(crate) const TYPECHECK_UNAVAILABLE_NOTICE_MESSAGE: &str = "Vize: type checking is unavailable in this workspace. Make sure tsconfig.json exists. \
-     Install `typescript@^7` or configure `typeChecker.corsaPath`.";
+     Provide a native TypeScript compiler, for example `typescript-native@npm:typescript@7.1.0-beta`, \
+     or configure `typeChecker.corsaPath`, `CORSA_PATH`, or `TSGO_PATH`.";
 
 /// Diagnostic source identifiers.
 pub mod sources {

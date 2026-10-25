@@ -416,11 +416,48 @@ export async function observeSourceLspSelection() {
             "actual missing-provider notice",
             from,
           );
-          assert.match(phase.unavailable.params.message, /typescript|type.?check|Corsa/iu);
-          assert.match(
-            phase.unavailable.params.message,
-            /(?:install|add)[\s\S]*typescript@/iu,
-            "missing provider has its actual actionable install guidance",
+          assert.deepEqual(
+            phase.unavailable,
+            {
+              jsonrpc: "2.0",
+              method: "window/showMessage",
+              params: {
+                message:
+                  "Vize: type checking is unavailable in this workspace. Make sure tsconfig.json exists. Provide a native TypeScript compiler, for example `typescript-native@npm:typescript@7.1.0-beta`, or configure `typeChecker.corsaPath`, `CORSA_PATH`, or `TSGO_PATH`.",
+                type: 2,
+              },
+            },
+            "complete actionable user-provided compiler notice",
+          );
+          phase.unavailableDiagnostics = await wire.wait(
+            (packet) =>
+              packet.method === "textDocument/publishDiagnostics" &&
+              packet.params?.uri === uri &&
+              packet.params?.version === version,
+            "complete unavailable-provider diagnostic",
+            from,
+          );
+          assert.deepEqual(
+            phase.unavailableDiagnostics,
+            {
+              jsonrpc: "2.0",
+              method: "textDocument/publishDiagnostics",
+              params: {
+                uri,
+                version,
+                diagnostics: [
+                  {
+                    code: "typecheck-unavailable",
+                    message:
+                      "Type checking is unavailable in this workspace. Make sure `tsconfig.json` exists. Provide a native TypeScript compiler, for example `typescript-native@npm:typescript@7.1.0-beta`, or configure `typeChecker.corsaPath`, `CORSA_PATH`, or `TSGO_PATH`; see https://vizejs.dev/guide/static-analysis.",
+                    range: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } },
+                    severity: 4,
+                    source: "vize/types",
+                  },
+                ],
+              },
+            },
+            "complete unavailable-provider diagnostic remains visible",
           );
         }
         assert.deepEqual(
