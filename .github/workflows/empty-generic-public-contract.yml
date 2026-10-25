@@ -1,0 +1,77 @@
+name: Empty generic public contract
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "crates/vize_canon/src/virtual_ts/generator.rs"
+      - "crates/vize_canon/src/virtual_ts/generator/setup_props.rs"
+      - "crates/vize_canon/src/batch/virtual_project/vue_codegen.rs"
+      - "crates/vize_canon/src/batch/virtual_project/vue_codegen/generic_syntax.rs"
+      - "crates/vize_canon/tests/empty_generic_public_contract.rs"
+      - "tests/_fixtures/differential/typechecker/empty-generic-public-contract-10540/**"
+      - "tools/support/compat/content-mapper/empty-generic-contract.ts"
+      - ".github/workflows/empty-generic-public-contract.yml"
+permissions: { contents: read }
+concurrency:
+  group: empty-generic-contract-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  actual-contract:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    env:
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      BASE_SHA: "4fdc457df6498c4636efb35dd76af61394ad7006"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          {
+            ref: "${{ github.event.pull_request.head.sha || github.sha }}",
+            fetch-depth: 0,
+            persist-credentials: false,
+          }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "26.12.1", package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          { key: empty-generic-contract, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - name: Compile separate exact source images and focused producer controls
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          git worktree add --detach "$RUNNER_TEMP/empty-generic-base" "$BASE_SHA"
+          (cd "$RUNNER_TEMP/empty-generic-base" && CARGO_TARGET_DIR="$RUNNER_TEMP/empty-generic-target-base" cargo build --locked --profile ci -p vize --bin vize)
+          CARGO_TARGET_DIR="$RUNNER_TEMP/empty-generic-target-head" cargo build --locked --profile ci -p vize --bin vize
+          CARGO_TARGET_DIR="$RUNNER_TEMP/empty-generic-target-head" cargo test --locked --profile ci -p vize_canon --test empty_generic_public_contract -- --nocapture
+      - name: Install pinned actual native, mapper and reference providers
+        run: |
+          mkdir -p "$RUNNER_TEMP/empty-generic-consumer"
+          cd "$RUNNER_TEMP/empty-generic-consumer"
+          npm init -y
+          npm install --prefer-online --ignore-scripts --no-audit --no-fund --save-exact vize@0.569.0 typescript@6.0.3 typescript-native@npm:typescript@7.1.0-beta vue@3.6.0-beta.10 vue-component-type-helpers@3.3.11 vue-tsc@3.3.11
+          npm view typescript@7.1.0-beta gitHead dist.integrity --json > beta-metadata.json
+      - name: Capture both images and all actual provider vectors before assertions
+        run: |
+          node tools/support/compat/content-mapper/empty-generic-contract.ts \
+            --consumer "$RUNNER_TEMP/empty-generic-consumer" \
+            --baseline "$RUNNER_TEMP/empty-generic-target-base/ci/vize" \
+            --candidate "$RUNNER_TEMP/empty-generic-target-head/ci/vize" \
+            --baseline-source "$BASE_SHA" --source "$SOURCE_SHA" \
+            --output "$RUNNER_TEMP/empty-generic-evidence"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: empty-generic-contract-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/empty-generic-evidence
+            ${{ runner.temp }}/empty-generic-consumer/package.json
+            ${{ runner.temp }}/empty-generic-consumer/package-lock.json
+            ${{ runner.temp }}/empty-generic-consumer/beta-metadata.json
+          if-no-files-found: error
+          retention-days: 7

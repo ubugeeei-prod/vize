@@ -20,6 +20,7 @@ mod long_prop_kebab_case;
 mod optional_prop_spacing;
 mod props_binding;
 mod pug_refusal;
+mod quoted_generic_parameters;
 mod template_expression_syntax;
 mod type_only_import_use;
 mod unicode_prop_bindings;

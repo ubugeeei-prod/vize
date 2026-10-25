@@ -84,8 +84,14 @@ export const TYPECHECKER_TESTS = {
   "portable-pug-10434": "portable_pug_refusals_preserve_native_batch_diagnostics",
   "jsx-prop-token-ranges-10494": "jsx_prop_tokens_preserve_complete_batch_diagnostics",
   "unicode-prop-bindings-10573": "unicode_prop_bindings_preserve_complete_authored_diagnostics",
+  "quoted-generic-parameters-10540":
+    "quoted_generic_parameters_preserve_complete_batch_diagnostics",
   "narrowed-slot-host-guard-10660": "slot_host_guards_preserve_authored_impossible_comparisons",
+  "empty-generic-public-contract-10540":
+    "empty_generic_markers_preserve_functional_public_contracts",
   "contextual-prop-anchors-10661": "contextual_prop_anchors_preserve_authored_diagnostics",
+  "planned-generic-syntax-route-10598":
+    "planned_generic_syntax_keeps_independent_body_errors_through_repairs",
   "experimental-router-import-10520":
     "experimental_page_import_preserves_published_path_diagnostics",
   "literal-reference-paths-10551": "literal_reference_paths_preserve_complete_authored_diagnostics",
@@ -160,8 +166,11 @@ export const sourceRevisions = {
   "portable-pug-10434": "c2132e45d47aad595aac7e07f5e71a78b8ffd1c8",
   "jsx-prop-token-ranges-10494": "aaeeb1c1264a319737fa11e56971c9d73064d6a3",
   "unicode-prop-bindings-10573": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
+  "quoted-generic-parameters-10540": "711b56b2499b9136d8965a59c65713a2b78540f4",
   "narrowed-slot-host-guard-10660": "da6d833de40c8a084022d0229beaeec25a92eb41",
+  "empty-generic-public-contract-10540": "4fdc457df6498c4636efb35dd76af61394ad7006",
   "contextual-prop-anchors-10661": "da6d833de40c8a084022d0229beaeec25a92eb41",
+  "planned-generic-syntax-route-10598": "957827706dd439d9810a24f65b4a16c45f266b5e",
   "experimental-router-import-10520": "a29d9c0b1961ada51037db402c3b74436a56d623",
   "literal-reference-paths-10551": "0a7f029e3be412a89232bd82127d3ac9bb058514",
   "content-mapper-experimental-router-10526": "190c82fb9c8bbdc2c519b335b1661563270f4d2c",

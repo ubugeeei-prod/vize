@@ -23,6 +23,8 @@ use super::setup_props::SetupPropsPlan;
 /// shaping the emitted instance type.
 pub(super) struct ComponentInstanceAliases<'a> {
     pub(super) generic_params: Option<&'a (String, String)>,
+    pub(super) generic_parameters:
+        Option<&'a crate::virtual_ts::generic_parameters::GenericParameters>,
     pub(super) slots_is_generic: bool,
     pub(super) emits_is_generic: bool,
     pub(super) exposed_is_generic: bool,
@@ -140,9 +142,7 @@ pub(super) fn emit_component_constructors<'a>(
     } else {
         let mut props_ref = aliases
             .generic_params
-            .map(|(decl, _)| {
-                setup_props_plan.generic_fallback_component_props_type_ref(decl.as_str())
-            })
+            .map(|_| setup_props_plan.generic_fallback_component_props_type_ref())
             .unwrap_or_else(|| setup_props_plan.component_props_type_ref().into());
         if aliases.jsx_slots {
             props_ref = cstr!("{props_ref} & __VizeJsxSlotProps<__VizeSlots>");

@@ -15,6 +15,8 @@ mod declaration_emit;
 #[cfg(unix)]
 mod incremental_fallback;
 mod nested_generated_config;
+#[cfg(unix)]
+mod planned_syntax_route;
 
 fn unique_case_dir(name: &str) -> PathBuf {
     static NEXT_CASE_ID: AtomicUsize = AtomicUsize::new(0);

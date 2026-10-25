@@ -98,6 +98,8 @@ pub(crate) struct ScopeGenContext<'a, 'template> {
 }
 
 pub(crate) struct ScopeGenerationOptions<'a, 'template> {
+    pub(crate) generic_parameters:
+        Option<&'a crate::virtual_ts::generic_parameters::GenericParameters>,
     pub(crate) check_options: VirtualTsCheckOptions,
     pub(crate) virtual_ts_options: &'a VirtualTsOptions,
     /// Names already declared by the conservative Options API setup-spread fallback.

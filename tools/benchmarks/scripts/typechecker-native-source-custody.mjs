@@ -40,11 +40,13 @@ export const INFRASTRUCTURE_PATHS = new Set([
   "docs/davinci/decisions/2026-10-04-shared-leaf-native-trivia.md",
   "tools/benchmarks/scripts/typechecker-native-profile-corpus-fixture.mjs",
   "tools/benchmarks/scripts/typechecker-native-dependency-link.test.mjs",
+  "tests/tooling/native-buildinfo-ownership.test.mjs",
   ...[
     "typechecker-native-graph-archive",
     "typechecker-native-profile-replay",
     "typechecker-native-profile-corpus",
     "typechecker-native-source-custody",
+    "typechecker-native-build-info",
   ]
     .flatMap((file) => [file + ".mjs", file + ".test.mjs"])
     .map((file) => "tools/benchmarks/scripts/" + file),

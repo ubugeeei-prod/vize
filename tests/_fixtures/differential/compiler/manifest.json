@@ -1078,6 +1078,65 @@
           }
         ]
       }
+    },
+    {
+      "id": "compiler/sfc/compact-scoped-at-rules-10639",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "compact-scoped-at-rules-10639",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "33af10204821e5c540fb3df9ae7a28a675a5fad2682ca41fd132cc001d457499",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "compact-scoped-at-rules-10639/module.expected.txt",
+        "sha256": "cf9bc6ab717d5159535acc00900736ca743114f4e8ad8af2a552fb7e38726469",
+        "cssPath": "compact-scoped-at-rules-10639/style.expected.css",
+        "cssSha256": "980f8bfb8d4cd21738a69584d2b8f4f2ddb9a79ebbe040a8bdbde3d864b54f26",
+        "source": "crates/vize_atelier_sfc/src/vite_plugin/css_scope/at_rules.rs:compact_grouping_rules_keep_the_complete_parent_and_scoped_selector"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); scoped style compilation remains legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/10639",
+        "reporter": "ubugeeei"
+      }
     }
   ],
   "runtimePacks": [

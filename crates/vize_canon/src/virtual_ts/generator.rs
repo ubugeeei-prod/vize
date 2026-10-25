@@ -8,6 +8,8 @@ mod emits;
 pub(super) mod entry;
 mod fallthrough;
 mod file_directives;
+#[cfg(feature = "native")]
+pub(crate) mod generic_recovery;
 pub(super) mod generics;
 mod global_components;
 mod glued_import;
@@ -141,6 +143,15 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         options_script_source,
     } = script_metadata::ScriptMetadata::new(summary, script_content, generation_options);
 
+    let local_generic_parameters = generation_options
+        .generic_parameters
+        .is_none()
+        .then(|| generic_param.map(crate::virtual_ts::generic_parameters::GenericParameters::parse))
+        .flatten();
+    let generic_parameters = generation_options
+        .generic_parameters
+        .or(local_generic_parameters.as_ref());
+
     preamble::emit_module_preamble(&mut ts, summary, generation_options, legacy_vue2);
 
     let mut named_value_exports = self::script_module::collect_normal_script_named_value_exports(
@@ -207,7 +218,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         script_blocks::AmbientProjection::plan(summary, script_content, &mut module_spans);
 
     // Re-declare SFC generics on hoisted declarations with safe defaults.
-    let generic_injection = generics::generic_injection(generic_param);
+    let generic_injection = generics::generic_injection(generic_parameters);
     let hoisted_type_spans: FxHashMap<(u32, u32), &str> = if generic_injection.is_some() {
         script_blocks.hoisted_type_spans(summary, script_content)
     } else {
@@ -314,7 +325,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         });
     }
     let hoisted_generic_aliases =
-        HoistedGenericAliases::collect(summary, script_content, generic_param);
+        HoistedGenericAliases::collect(summary, script_content, generic_parameters);
     if let Some(aliases) = &hoisted_generic_aliases {
         aliases.emit_module_aliases(&mut ts);
     }
@@ -368,7 +379,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let setup_props_plan = generate_setup_props(
         &mut ts,
         prop_source(&mut mappings, summary, script_content, source_offset),
-        generic_param,
+        generic_parameters,
         options_api_props.as_ref(),
         &syntactic_type_only_imported_names,
         setup_type_exports.exports_public_type("Props"),
@@ -388,7 +399,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     setup_imports.read_template_slots_from(template_record.slots_value().as_str());
     ts.push_str("// ========== Setup Scope ==========\n");
     let async_prefix = if is_async { "async " } else { "" };
-    let generic_params = generic_param.map(|g| cstr!("<{g}>")).unwrap_or_default();
+    let generic_params = generic_parameters
+        .map(|g| cstr!("<{}>", g.authored()))
+        .unwrap_or_default();
     append!(ts, "{async_prefix}function __setup{generic_params}() {{\n",);
     if let Some(aliases) = &hoisted_generic_aliases {
         aliases.emit_setup_aliases(&mut ts);
@@ -409,7 +422,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             template_record: &template_record,
         },
         script_content,
-        generic_param,
+        generic_parameters,
         hoist_shared_preamble,
         template_ast,
     );
@@ -627,6 +640,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     setup_props_plan.emit_artifact(
         &mut ts,
         prop_source(&mut mappings, summary, script_content, source_offset),
+        generic_parameters,
     );
     let has_root_el = root_element::emit_setup_type(
         &mut ts,
@@ -656,7 +670,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             );
             // Vue template context (available in template expressions)
             setup_imports.emit_template_slots(&mut ts, &mut mappings, source_offset);
-            let template_emit = setup_helpers.template_emit_initializer(&mut ts, summary);
+            let template_emit =
+                setup_helpers.template_emit_initializer(&mut ts, summary, generic_parameters);
             emit_template_context(
                 &mut ts,
                 options,
@@ -678,6 +693,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     crate::virtual_ts::props::TemplatePropsScope::new(
                         template_ref_unwraps.props_shadow_anchor(),
                         template_ref_unwraps.props_object_binding(),
+                        generic_parameters,
                     ),
                 )
             });
@@ -710,6 +726,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                         &template_binding_access,
                         template_offset,
                         ScopeGenerationOptions {
+                            generic_parameters,
                             check_options,
                             virtual_ts_options: options,
                             setup_spread_bindings: template_ref_unwraps.setup_spread_bindings(),
@@ -756,7 +773,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             &mut ts,
             &mut mappings,
             summary,
-            generic_param,
+            generic_parameters,
             &script_source_offset,
         );
     }
@@ -795,7 +812,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     setup_props_plan.emit_module_export(
         &mut ts,
         options_api_props.as_ref(),
-        generic_param,
+        generic_parameters,
         &template_record.forwarded,
     );
     emit_authored_component_aliases(&mut ts, authored_default);
@@ -804,7 +821,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         summary,
         MacroTypeMappings::new(&mut mappings, script_content, &script_source_offset),
         generation_options.preserve_event_navigation,
-        generic_param,
+        generic_parameters,
         define_emits_runtime_args.is_some(),
     );
     let slots_is_generic = emit_slots_type(
@@ -822,12 +839,14 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let event_inference =
         super::scope::emit_event_inference_helpers(&mut ts, summary, forwards, legacy_vue2);
     emit_emit_props_helper(&mut ts, &emits_info, hoist_shared_preamble, event_inference);
-    let generic_component_params = setup_props_plan.generic_component_params(authored_generic);
+    let generic_component_params =
+        setup_props_plan.generic_component_params(generic_parameters, authored_generic);
     let public_component_type = emit_component_constructors(
         &mut ts,
         &setup_props_plan,
         &ComponentInstanceAliases {
             generic_params: generic_component_params.as_ref(),
+            generic_parameters,
             slots_is_generic,
             emits_is_generic: emits_info.has_generic_emits(),
             exposed_is_generic,
@@ -838,7 +857,10 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             jsx_slots: check_options.jsx_slots,
             has_authored_default: authored_default == super::types::AuthoredDefaultKind::Component,
         },
-        authored_generic,
+        generic_parameters
+            .map(|plan| plan.authored())
+            .or(authored_generic)
+            .map(|raw| if raw.trim().is_empty() { "" } else { raw }),
         legacy_vue2,
         dialect,
     );

@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10540,
+  "regressionCommit": "4fdc457df6498c4636efb35dd76af61394ad7006",
+  "sourceRevision": "4fdc457df6498c4636efb35dd76af61394ad7006",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "frozen-root-element-contract",
+      "inputs": [
+        {
+          "file": "Base.vue",
+          "source": "Base.vue.txt"
+        },
+        {
+          "file": "Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "Generic.vue",
+          "source": "Generic.vue.txt"
+        },
+        {
+          "file": "Fragment.vue",
+          "source": "Fragment.vue.txt"
+        },
+        {
+          "file": "App.vue",
+          "source": "App.vue.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

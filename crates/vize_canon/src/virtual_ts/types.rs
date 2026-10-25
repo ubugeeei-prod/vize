@@ -203,6 +203,8 @@ impl<'a> AuthoredScriptMetadata<'a> {
 
 #[derive(Debug, Clone, Copy, Default)]
 pub(crate) struct VirtualTsGenerationOptions<'a> {
+    /// Shared parser-owned generic metadata, prepared once by a high-level caller.
+    pub(crate) generic_parameters: Option<&'a super::generic_parameters::GenericParameters>,
     /// Descriptor-owned block roles and attributes survive script parse failure.
     pub(crate) authored_scripts: Option<AuthoredScriptMetadata<'a>>,
     pub(crate) check_options: VirtualTsCheckOptions,

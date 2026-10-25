@@ -79,18 +79,18 @@ void test("every product manifest contributes to the case-level dialect denomina
 
 void test("compiler promotes rare inventory rows through actual adapter coordinates", () => {
   assert.deepEqual(summarizeDialectCoverage(load("compiler").cases), {
-    plannedCases: 25,
+    plannedCases: 26,
     verifiedCases: 4,
-    provisionalCases: 19,
-    unknownReadinessCases: 21,
+    provisionalCases: 20,
+    unknownReadinessCases: 22,
     verified: {
       "vue0-template": 2,
       "vue-quirks": 2,
     },
     provisional: {
-      "html-template": 19,
+      "html-template": 20,
       ts: 5,
-      "vue3-sfc": 19,
+      "vue3-sfc": 20,
     },
   });
 });
@@ -203,19 +203,19 @@ void test("typechecker coverage records every pinned authored source dialect", (
   const source = load("typechecker");
   const summary = summarizeDialectCoverage(source.cases);
   assert.deepEqual(summary, {
-    plannedCases: 126,
+    plannedCases: 146,
     verifiedCases: 0,
-    provisionalCases: 125,
-    unknownReadinessCases: 126,
+    provisionalCases: 145,
+    unknownReadinessCases: 146,
     verified: {},
     provisional: {
-      "html-template": 120,
+      "html-template": 140,
       js: 1,
       jsx: 1,
       "pug-template": 2,
-      ts: 124,
+      ts: 144,
       tsx: 4,
-      "vue3-sfc": 123,
+      "vue3-sfc": 143,
     },
   });
   assert.deepEqual(

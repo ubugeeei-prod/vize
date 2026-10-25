@@ -163,7 +163,9 @@ fn instance_props_type(
     summary: &Croquis,
     scope_options: &ScopeGenerationOptions<'_, '_>,
 ) -> Option<String> {
-    if let Some(props_type) = TemplatePropsModel::new(summary).instance_props_type() {
+    if let Some(props_type) =
+        TemplatePropsModel::new(summary, scope_options.generic_parameters).instance_props_type()
+    {
         return Some(props_type);
     }
     let resolve_on_instance = scope_options.options_api

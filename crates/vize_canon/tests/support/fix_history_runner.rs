@@ -96,11 +96,14 @@ pub(crate) fn check_pack(
             | "pug-refusal-10430"
             | "portable-pug-10434"
             | "jsx-prop-token-ranges-10494"
+            | "quoted-generic-parameters-10540"
+            | "planned-generic-syntax-route-10598"
             | "unicode-prop-bindings-10573"
             | "experimental-router-import-10520"
             | "literal-reference-paths-10551"
             | "content-mapper-experimental-router-10526"
-            | "narrowed-slot-host-guard-10660" => regression,
+            | "narrowed-slot-host-guard-10660"
+            | "empty-generic-public-contract-10540" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
             }
@@ -173,6 +176,16 @@ pub(crate) fn check_pack(
             std::fs::create_dir(project_root.join("node_modules"))
                 .expect("node_modules must be created");
             link_vue(&vue, &project_root.join("node_modules/vue"));
+            if name == "empty-generic-public-contract-10540" {
+                let helpers = std::fs::canonicalize(
+                    root.join("tests/node_modules/vue-component-type-helpers"),
+                )
+                .expect("the pinned real public component type helpers must be installed");
+                link_vue(
+                    &helpers,
+                    &project_root.join("node_modules/vue-component-type-helpers"),
+                );
+            }
         }
         for input in &case.inputs {
             let file = safe_relative(&input.file);
