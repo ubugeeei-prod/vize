@@ -5,6 +5,7 @@ import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import { test, after } from "node:test";
+import { fileURLToPath } from "node:url";
 import { ESLint, Linter, SourceCode } from "eslint";
 
 const require = createRequire(import.meta.url);
@@ -192,19 +193,43 @@ test("explicit type-aware selection uses the actual runtime and exposes missing 
     process.platform === "win32" ? "tsc.exe" : "tsc",
   );
   selected[0].settings.vize.corsaPath = runtime;
-  const count = calls.length;
-  const result = linter.verify(value, selected, { filename: "Typed.vue" });
-  packets.push({ source: value, runtime, runtimeSha256: hash(fs.readFileSync(runtime)), result });
-  assert.equal(calls.length - count, 1);
-  assert.equal(calls.at(-1).typeAware, true);
-  assert.ok(result.some((message) => message.ruleId === "vize/type/no-floating-promises"));
-  assert.ok(!result.some((message) => /runtime|executable|failed/i.test(message.message)));
-  selected[0].settings.vize.corsaPath = path.join(os.tmpdir(), "vize-missing-typescript-runtime");
-  const missing = linter.verify(value, selected, { filename: "Typed.vue" });
-  packets.push({ source: value, missingRuntime: missing });
-  assert.ok(
-    missing.some((message) => /Configured Corsa executable does not exist/.test(message.message)),
-  );
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-eslint-types-"));
+  const filename = path.join(directory, "Typed.vue");
+  const diskSource = value.replace("\nload();", "\nawait load();");
+  const tsconfig = { compilerOptions: { strict: true, target: "ESNext", skipLibCheck: true } };
+  try {
+    fs.writeFileSync(filename, diskSource);
+    fs.writeFileSync(path.join(directory, "tsconfig.json"), JSON.stringify(tsconfig));
+    fs.symlinkSync(
+      fileURLToPath(new URL("../../../node_modules/", import.meta.url)),
+      path.join(directory, "node_modules"),
+      "dir",
+    );
+    const count = calls.length;
+    const result = linter.verify(value, selected, { filename });
+    packets.push({
+      source: value,
+      diskSource,
+      tsconfig,
+      runtime,
+      runtimeSha256: hash(fs.readFileSync(runtime)),
+      result,
+    });
+    assert.equal(calls.length - count, 1);
+    assert.equal(calls.at(-1).typeAware, true);
+    assert.ok(result.some((message) => message.ruleId === "vize/type/no-floating-promises"));
+    assert.ok(!result.some((message) => /runtime|executable|failed/i.test(message.message)));
+    assert.deepEqual(linter.verify(diskSource, selected, { filename }), []);
+    selected[0].settings.vize.corsaPath = path.join(directory, "missing-typescript-runtime");
+    const missing = linter.verify(value, selected, { filename });
+    packets.push({ source: value, missingRuntime: missing });
+    assert.ok(
+      missing.some((message) => /Configured Corsa executable does not exist/.test(message.message)),
+    );
+    assert.equal(fs.readFileSync(filename, "utf8"), diskSource);
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
 });
 
 test("real native call counts stay one per pass as enabled rules grow", () => {
