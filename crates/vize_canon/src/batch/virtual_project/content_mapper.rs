@@ -278,7 +278,7 @@ fn transform_with_diagnostic_ownership(
                 .then(|| {
                     let echoes = GenericCopies::find(&code, &mappings, content, &descriptor);
                     let directives = with_generic_echoes(
-                        sfc_diagnostic_directives(content, &descriptor, &spans),
+                        sfc_diagnostic_directives(content, &descriptor, &spans, &diagnostic_echoes),
                         echoes.as_ref(),
                     );
                     with_component_prop_echoes(directives, &code, &mappings)

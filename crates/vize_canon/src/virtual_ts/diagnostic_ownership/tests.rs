@@ -62,6 +62,25 @@ fn separate_generations_cannot_share_an_owner_at_colliding_offsets() {
 }
 
 #[test]
+fn only_proven_bare_navigation_can_be_excluded_from_expect_ownership() {
+    let mut ledger = DiagnosticOwnership::default();
+    ledger.record_bare_navigation(owner(), 10..15, 22..27);
+    ledger.record(owner(), 20..25, 22..27, true);
+    ledger.record(owner(), 30..35, 22..27, false);
+    let echoes = ledger.into_echoes();
+    assert_eq!(
+        echoes
+            .iter()
+            .map(|echo| echo.bare_navigation)
+            .collect::<Vec<_>>(),
+        [true, false]
+    );
+    let mut missing = DiagnosticOwnership::default();
+    missing.record_bare_navigation(owner(), 10..15, 22..27);
+    assert!(missing.into_echoes().is_empty());
+}
+
+#[test]
 fn a_deferred_root_buffer_rebases_echoes_and_primaries_with_its_text() {
     let mut whole = DiagnosticOwnership::default();
     whole.record(owner(), 10..15, 22..27, true);

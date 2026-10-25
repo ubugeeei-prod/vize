@@ -219,11 +219,10 @@ pub(super) fn generate_expression_statement(
             })
         })
     {
-        collector.borrow_mut().record(
+        collector.borrow_mut().record_bare_navigation(
             *owner,
             mapping.gen_range.clone(),
             mapping.src_range.clone(),
-            true,
         );
     }
     if !template_binding_access.is_empty() {

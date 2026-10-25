@@ -181,19 +181,43 @@ fn contextual_callback_errors_do_not_acquire_synthetic_ignore_rows() {
 }
 
 #[test]
-fn deferred_expect_buffers_prepend_echo_policy_without_changing_authored_expectations() {
+fn expect_owns_one_late_packet_and_navigation_echoes_do_not_widen_it() {
     for newline in ["\n", "\r\n"] {
         let source = MIN
             .replace("  <Child3", "  <!-- @vue-expect-error -->\n  <Child3")
             .replace('\n', newline);
-        let before = packet("src/Min.vue", &source, false);
+        let mut before = packet("src/Min.vue", &source, false);
         let after = packet("src/Min.vue", &source, true);
+        let text = after["text"].as_str().expect("virtual source");
+        let start = text.find("void Child3;").expect("mapped component tag") + "void ".len();
+        let check = text
+            .find("const __vize_prop_check_0_count")
+            .expect("primary check");
+        let entry = "\"count\": items[0].length";
+        let end = check
+            + text
+                .get(check..)
+                .expect("check suffix")
+                .find(entry)
+                .expect("canonical props entry")
+            + entry.len();
+        let authored = before["diagnosticDirectives"]["directives"][0]
+            .as_array_mut()
+            .expect("one authored expectation");
+        assert_eq!(authored[4], 1);
+        authored[2] = start.into();
+        authored[3] = end.into();
         let echoes = added_echoes(&before, &after);
         assert_eq!(echoes.len(), 9);
-        let text = after["text"].as_str().expect("virtual source");
-        for [_, _, start, end, _, _] in echoes {
-            let generated = text.get(start..end).expect("real rebased generated row");
+        for [_, _, echo_start, echo_end, _, _] in echoes {
+            let generated = text
+                .get(echo_start..echo_end)
+                .expect("real rebased generated row");
             assert!(matches!(generated, "\"count\"" | "items[0].length"));
+            assert!(
+                echo_end <= start || end <= echo_start,
+                "protocol intervals must be disjoint"
+            );
         }
     }
 }

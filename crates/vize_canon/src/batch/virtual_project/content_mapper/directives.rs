@@ -28,13 +28,27 @@ pub(super) fn sfc_diagnostic_directives(
     source: &str,
     descriptor: &SfcDescriptor<'_>,
     spans: &[ContentMapperSpan],
+    echoes: &[crate::virtual_ts::diagnostic_ownership::DiagnosticEcho],
 ) -> Option<ContentMapperDiagnosticDirectives> {
     let authored = TemplateDiagnosticDirectives::for_descriptor(source, descriptor);
     let mut directives = Vec::new();
     let mut expects_unused_table = false;
+    let navigation_echoes = echoes
+        .iter()
+        .filter(|echo| echo.bare_navigation)
+        .map(|echo| &echo.generated)
+        .collect::<Vec<_>>();
 
     for directive in authored.directives() {
-        let ranges = mapped_virtual_ranges(spans, &directive.targets);
+        // Exported navigation mappings stay untouched. Only a proven bare
+        // copy is excluded from EXPECT ownership; otherwise its early read
+        // stretches one expectation across unrelated slot and sibling code.
+        let excluded = if directive.policy == DirectivePolicy::Expect {
+            navigation_echoes.as_slice()
+        } else {
+            &[]
+        };
+        let ranges = mapped_virtual_ranges(spans, &directive.targets, excluded);
         let policy = match directive.policy {
             DirectivePolicy::Expect => {
                 expects_unused_table = true;
@@ -195,20 +209,57 @@ pub(super) fn with_owned_input_echoes(
     directives: Option<ContentMapperDiagnosticDirectives>,
     echoes: &[crate::virtual_ts::diagnostic_ownership::DiagnosticEcho],
 ) -> Option<ContentMapperDiagnosticDirectives> {
-    let mut owned = echoes
-        .iter()
-        .filter(|echo| !echo.authored.is_empty())
-        .map(|echo| {
-            ContentMapperDiagnosticDirective([
+    let mut covered_ignores = directives
+        .as_ref()
+        .into_iter()
+        .flat_map(|table| &table.directives)
+        .filter_map(|directive| {
+            let [_, _, start, end, policy, _] = directive.0;
+            (policy == DIRECTIVE_POLICY_IGNORE && start < end).then_some(start..end)
+        })
+        .collect::<Vec<_>>();
+    covered_ignores.sort_unstable_by_key(|range| range.start);
+    let mut union: Vec<Range<usize>> = Vec::with_capacity(covered_ignores.len());
+    for range in covered_ignores {
+        if let Some(last) = union.last_mut()
+            && range.start <= last.end
+        {
+            last.end = last.end.max(range.end);
+        } else {
+            union.push(range);
+        }
+    }
+    let mut owned = Vec::new();
+    for echo in echoes.iter().filter(|echo| !echo.authored.is_empty()) {
+        let mut start = echo.generated.start;
+        let first = union.partition_point(|range| range.end <= start);
+        for covered in union.iter().skip(first) {
+            if covered.start >= echo.generated.end {
+                break;
+            }
+            if start < covered.start {
+                owned.push(ContentMapperDiagnosticDirective([
+                    echo.authored.start,
+                    echo.authored.len(),
+                    start,
+                    covered.start,
+                    DIRECTIVE_POLICY_IGNORE,
+                    0,
+                ]));
+            }
+            start = start.max(covered.end);
+        }
+        if start < echo.generated.end {
+            owned.push(ContentMapperDiagnosticDirective([
                 echo.authored.start,
                 echo.authored.len(),
-                echo.generated.start,
+                start,
                 echo.generated.end,
                 DIRECTIVE_POLICY_IGNORE,
                 0,
-            ])
-        })
-        .collect::<Vec<_>>();
+            ]));
+        }
+    }
     if owned.is_empty() {
         return directives;
     }
@@ -234,12 +285,18 @@ fn preceded_by_named_prop_ignore(generated: &str, start: usize) -> bool {
 fn mapped_virtual_ranges(
     spans: &[ContentMapperSpan],
     targets: &[Range<usize>],
+    excluded: &[&Range<usize>],
 ) -> Vec<Range<usize>> {
     let mut ranges = spans
         .iter()
         .filter_map(
             |ContentMapperSpan([generated, length, original, original_length, _, _])| {
+                let echo = excluded.partition_point(|echo| echo.end <= *generated);
+                let is_navigation_echo = excluded
+                    .get(echo)
+                    .is_some_and(|echo| echo.start <= *generated && generated + length <= echo.end);
                 (*length > 0
+                    && !is_navigation_echo
                     && targets.iter().any(|target| {
                         *original < target.end && original + original_length > target.start
                     }))

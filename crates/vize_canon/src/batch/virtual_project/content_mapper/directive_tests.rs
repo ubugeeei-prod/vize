@@ -216,6 +216,51 @@ fn component_prop_assignments_are_ignored_only_when_the_literal_owns_them() {
 }
 
 #[test]
+fn input_echo_policy_subtracts_only_existing_ignore_intervals() {
+    use super::protocol::{
+        ContentMapperDiagnosticDirective as Row, ContentMapperDiagnosticDirectives as Table,
+        ContentMapperUnusedExpectDiagnostic,
+    };
+    for (covered, expected) in [
+        (0..10, vec![10..30]),
+        (30..40, vec![10..30]),
+        (10..30, vec![]),
+        (15..20, vec![10..15, 20..30]),
+        (0..20, vec![20..30]),
+        (20..40, vec![10..20]),
+    ] {
+        let authored = Row([1, 2, covered.start, covered.end, DIRECTIVE_POLICY_IGNORE, 0]);
+        let expectation = Row([3, 4, 40, 50, DIRECTIVE_POLICY_EXPECT, 0]);
+        let table = Table {
+            directives: vec![authored, expectation],
+            unused_expect_directive_diagnostics: vec![ContentMapperUnusedExpectDiagnostic {
+                code: 4,
+                message_text: "Unused '@vue-expect-error' directive".into(),
+            }],
+        };
+        let echoes = [crate::virtual_ts::diagnostic_ownership::DiagnosticEcho {
+            generated: 10..30,
+            authored: 100..110,
+            bare_navigation: true,
+        }];
+        let result = super::directives::with_owned_input_echoes(Some(table), &echoes).unwrap();
+        let mut expected = expected
+            .into_iter()
+            .map(|range| Row([100, 10, range.start, range.end, DIRECTIVE_POLICY_IGNORE, 0]))
+            .collect::<Vec<_>>();
+        expected.extend([authored, expectation]);
+        assert_eq!(result.directives, expected);
+        assert_eq!(
+            result.unused_expect_directive_diagnostics,
+            [ContentMapperUnusedExpectDiagnostic {
+                code: 4,
+                message_text: "Unused '@vue-expect-error' directive".into()
+            }]
+        );
+    }
+}
+
+#[test]
 fn longer_words_do_not_match_directive_tokens() {
     let source = "<template>\n  <!-- @vue-ignores nothing here -->\n  <div />\n</template>\n";
     assert!(transform(source).diagnostic_directives.is_none());

@@ -7,20 +7,12 @@ import { createHash } from "node:crypto";
 import { createRequire } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { resolveOfficialNativeImage } from "./official-fixtures.ts";
-
-type Diagnostic = {
-  file: string;
-  line: number;
-  column: number;
-  severity: number;
-  code: number;
-  message: string;
-};
-type Project = {
-  id: string;
-  inputs: { file: string; source: string }[];
-  diagnostics: Diagnostic[];
-};
+import {
+  directiveControls,
+  formDirectiveControls,
+  type Diagnostic,
+  type Project,
+} from "./diagnostic-ownership-projects.ts";
 type Observation = {
   argv: string[];
   cwd: string;
@@ -37,6 +29,15 @@ const packRoot = path.join(
 );
 const packBytes = fs.readFileSync(path.join(packRoot, "cases.json"));
 const pack = JSON.parse(packBytes.toString()) as { cases: Project[] };
+const slotBase = pack.cases.find((project) => project.id === "slot-prop-named-child-invalid");
+assert.ok(slotBase);
+const formBase = pack.cases.find((project) => project.id === "art-generic-form-invalid");
+assert.ok(formBase);
+const projects = [
+  ...pack.cases,
+  ...directiveControls(slotBase),
+  ...formDirectiveControls(formBase),
+];
 const digest = (bytes: string | Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 const args = process.argv.slice(2),
   options = new Map<string, string>();
@@ -190,15 +191,21 @@ const rows: {
   id: string;
   files: Record<string, string>;
   diagnostics: Diagnostic[];
+  mapperStdout?: string;
   observations: Record<string, Observation>;
 }[] = [];
-for (const project of pack.cases)
+for (const project of projects)
   for (const newline of ["\n", "\r\n"])
     for (const prefix of ["", header]) {
       const id = `${project.id}-${newline === "\n" ? "lf" : "crlf"}-${prefix ? "unicode" : "plain"}`;
       const files: Record<string, string> = {};
       for (const entry of project.inputs) {
         let text = fs.readFileSync(path.join(packRoot, entry.source), "utf8");
+        if (
+          (entry.file === "src/Min.vue" || entry.file === "src/Form.art.vue") &&
+          project.replaceParent
+        )
+          text = project.replaceParent(text);
         if (
           entry.file.endsWith(".vue") &&
           !entry.file.endsWith("GenericForm.vue") &&
@@ -212,10 +219,11 @@ for (const project of pack.cases)
       const config = JSON.parse(files["tsconfig.json"]);
       config.contentMappers = [{ package: "vize", extensions: [".vue"] }];
       files["tsconfig.json"] = JSON.stringify(config, null, 2) + "\n";
-      const diagnostics = project.diagnostics.map((row) => ({
-        ...row,
-        column: row.column + prefix.length,
-      }));
+      const diagnostics = project.diagnostics.map((row) => {
+        const line = files[row.file].split(/\r?\n/u).at(row.line - 1);
+        assert.ok(line);
+        return { ...row, column: row.column + (line.includes(header) ? prefix.length : 0) };
+      });
       const observations: Record<string, Observation> = {};
       for (const side of candidate ? ["baseline", "candidate"] : ["baseline"]) {
         const directory = path.join(output, "projects", id, side);
@@ -326,7 +334,7 @@ for (const project of pack.cases)
           path.join(directory, "check"),
         );
       }
-      rows.push({ id, files, diagnostics, observations });
+      rows.push({ id, files, diagnostics, observations, mapperStdout: project.mapperStdout });
     }
 write(path.join(output, "inventory.json"), {
   cases: rows.length,
@@ -334,10 +342,10 @@ write(path.join(output, "inventory.json"), {
   ids: rows.map((row) => row.id),
   mode: baselineOnly ? "baseline-only" : "candidate-and-baseline",
 });
-assert.equal(rows.length, 28);
+assert.equal(rows.length, 60);
 assert.equal(
   rows.reduce((total, row) => total + Object.keys(row.observations).length, 0),
-  baselineOnly ? 84 : 168,
+  baselineOnly ? 180 : 360,
 );
 // Every full protocol/check/official-host observation is durable before comparisons.
 for (const row of rows) {
@@ -356,7 +364,13 @@ for (const row of rows) {
           const line = row.files[file].split(/\r?\n/u).at(d.line - 1);
           assert.ok(line);
           const prefix = line.includes(header);
-          return `${base} (source: ${line.trim()}${prefix ? "" : "; binding: 'count'"})`;
+          const binding =
+            d.code === 2578
+              ? "; binding: @vue-expect-error"
+              : d.code === 2532 && !prefix
+                ? "; binding: 'count'"
+                : "";
+          return `${base} (source: ${line.trim()}${binding})`;
         }),
     })),
     programs: [
@@ -371,9 +385,11 @@ for (const row of rows) {
     warningCount: 0,
     fileCount: projectFiles.length,
   };
-  const expectedMapper = row.diagnostics
-    .map((d) => `${d.file}(${d.line},${d.column}): error TS${d.code}: ${d.message}\n`)
-    .join("");
+  const expectedMapper =
+    row.mapperStdout ??
+    row.diagnostics
+      .map((d) => `${d.file}(${d.line},${d.column}): error TS${d.code}: ${d.message}\n`)
+      .join("");
   for (const side of candidate ? ["baseline", "candidate"] : ["baseline"]) {
     successful(row.observations[`${side}-protocol`]);
     const check = row.observations[`${side}-check`];
@@ -390,8 +406,10 @@ for (const row of rows) {
     assert.equal(mapper.error, null, row.id);
     assert.equal(mapper.signal, null, row.id);
     assert.equal(mapper.stderr, "", row.id);
-    assert.equal(mapper.status, row.diagnostics.length ? 2 : 0, row.id);
-    if (side === "candidate" || row.diagnostics.length === 0)
+    const baselineHasEchoes =
+      side === "baseline" && /^(?:form-(?:callback-)?)?expect-used-/u.test(row.id);
+    assert.equal(mapper.status, row.diagnostics.length || baselineHasEchoes ? 2 : 0, row.id);
+    if (side === "candidate" || (row.diagnostics.length === 0 && !baselineHasEchoes))
       assert.equal(
         mapper.stdout,
         expectedMapper,
