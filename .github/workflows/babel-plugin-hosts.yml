@@ -44,6 +44,10 @@ jobs:
           vp install --frozen-lockfile --prefer-offline --filter './npm/babel...' --filter './npm/native...'
           npm ci --prefix npm/babel/test/hosts/babel7 --ignore-scripts --no-audit --no-fund
           npm ci --prefix npm/babel/test/hosts/babel8 --ignore-scripts --no-audit --no-fund
+          for runtime in stable rc9 rc11; do
+            npm ci --prefix "npm/babel/test/runtime/$runtime" --ignore-scripts --no-audit --no-fund
+          done
+          node npm/babel/test/runtime/stable/node_modules/playwright/cli.js install --with-deps chromium
       - name: Build the actual source compiler and both public package entrypoints
         run: |
           set -euo pipefail
@@ -75,6 +79,15 @@ jobs:
           set -euo pipefail
           export VIZE_BABEL_PACKED_PLUGIN=$(find "$RUNNER_TEMP/babel-plugin/packed" -maxdepth 1 -name '*.tgz' -print -quit)
           node npm/native/scripts/test-preparation.mjs node npm/babel/test/profile-host.mjs
+      - name: Qualify real client SSR and hydration with matching Vue runtimes
+        if: always()
+        env:
+          VIZE_BABEL_NATIVE_ROOT: ${{ github.workspace }}/npm/native
+          VIZE_BABEL_RUNTIME_OUTPUT: ${{ runner.temp }}/babel-plugin/runtime
+        run: |
+          set -euo pipefail
+          export VIZE_BABEL_PACKED_PLUGIN=$(find "$RUNNER_TEMP/babel-plugin/packed" -maxdepth 1 -name '*.tgz' -print -quit)
+          node npm/native/scripts/test-preparation.mjs node --test npm/babel/test/runtime-renderers.test.mjs
       - name: Check package source and declarations
         if: always()
         run: vp run --filter './npm/babel' check
