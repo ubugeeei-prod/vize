@@ -155,7 +155,7 @@ impl MaestroServer {
             }
             Ok(None) => {
                 // Unsupported/parser/art/script paths keep their existing
-                // collector and scope, inside this SAME original outer deadline.
+                // collector and scope within the same retained diagnostic future.
                 if !world.is_current(&self.state) {
                     return None;
                 }
@@ -176,8 +176,9 @@ impl MaestroServer {
         };
         // Reuse ORIGINAL full record/source-role/provider/owner validation:
         // TWO additional fresh physical guard passes on the existing config
-        // worker, without Vite evaluation or retargeting. Their cost stays in
-        // the original outer deadline; no count/performance equivalence claimed.
+        // worker, without Vite evaluation or retargeting. Their cost remains
+        // inside the same retained collection; the progress threshold never
+        // discards their result. No count/performance equivalence is claimed.
         let current = self
             .state
             .continue_initial_configuration(
