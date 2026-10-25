@@ -1,0 +1,70 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "initialize",
+  "params": {
+    "capabilities": {
+      "textDocument": {
+        "completion": {
+          "completionItem": {
+            "documentationFormat": [
+              "markdown",
+              "plaintext"
+            ]
+          }
+        },
+        "diagnostic": {
+          "dynamicRegistration": false,
+          "relatedDocumentSupport": true,
+          "relatedInformation": true
+        },
+        "hover": {
+          "contentFormat": [
+            "markdown",
+            "plaintext"
+          ]
+        },
+        "signatureHelp": {
+          "signatureInformation": {
+            "documentationFormat": [
+              "markdown",
+              "plaintext"
+            ]
+          }
+        }
+      },
+      "workspace": {
+        "diagnostic": {
+          "refreshSupport": true
+        },
+        "didChangeWatchedFiles": {
+          "dynamicRegistration": true,
+          "relativePatternSupport": true
+        }
+      }
+    },
+    "initializationOptions": {
+      "userPreferences": {
+        "inlayHints": {
+          "variableTypes": {
+            "enabled": true
+          }
+        },
+        "tsserver": {
+          "automaticTypeAcquisition": {
+            "enabled": false
+          }
+        }
+      }
+    },
+    "processId": "${sourcePid}",
+    "rootPath": "${nativeRoot}",
+    "rootUri": "${nativeRootUri}",
+    "workspaceFolders": [
+      {
+        "name": "${nativeWorkspaceName}",
+        "uri": "${nativeRootUri}"
+      }
+    ]
+  }
+}
