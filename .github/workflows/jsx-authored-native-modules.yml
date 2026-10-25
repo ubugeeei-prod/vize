@@ -136,10 +136,12 @@ jobs:
         run: cargo test --locked --profile ci -p vize_atelier_jsx --lib
       - name: Existing mode and Babel option producer contracts
         if: always()
-        env: { INSTA_UPDATE: new }
+        env:
+          INSTA_UPDATE: new
+          VIZE_JSX_ADVERSARIAL_CAPTURE: ${{ runner.temp }}/jsx-authored-native/adversarial
         run: |
           status=0
-          for target in compile ssr vapor_ssr babel_is_custom_element babel_merge_props babel_v_slots pragma v_model_argument v_slots_forwarding; do
+          for target in compile ssr vapor_ssr babel_is_custom_element babel_merge_props babel_v_slots pragma v_model_argument v_slots_forwarding adversarial_snapshots; do
             cargo test --locked --profile ci -p vize_atelier_jsx --test "$target" || status=1
           done
           exit "$status"
