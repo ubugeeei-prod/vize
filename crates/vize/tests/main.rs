@@ -61,6 +61,7 @@ mod check_legacy_vue2_no_unused_cli;
 mod check_legacy_vue2_ref_unwrap_cli;
 mod check_legacy_vue2_template_scope_cli;
 mod check_legacy_vue2_vfor_cli;
+mod check_message_profile_cli;
 mod check_monorepo_tsconfig_cli;
 mod check_multistatement_v_on_cli;
 mod check_nuxt2_classic_plugin_bindings_cli;
