@@ -296,6 +296,7 @@ export function runCopyAndCollisionControls(
           : undefined;
         mappedReads.push({
           label: stage.label,
+          binderProof,
           reads: instanceReceiverReads(
             response.result!,
             path.join(output, "reference/package.json"),
@@ -306,6 +307,7 @@ export function runCopyAndCollisionControls(
           path.join(root, "mapped-reads.json"),
           `${JSON.stringify(mappedReads, null, 2)}\n`,
         );
+        assertErrorMappings(stage.program.source, stage.program, response.result!);
       },
     });
   }
