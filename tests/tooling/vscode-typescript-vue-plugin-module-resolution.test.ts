@@ -13,9 +13,9 @@ const ts = require(
     paths: [path.join(root, "editors/vscode"), path.join(root, "tests")],
   }),
 ) as typeof import("typescript");
-const initVuePlugin = require(
-  path.join(root, "editors/vscode/typescript-vue-plugin/index.cjs"),
-) as (modules: { typescript: typeof ts }) => {
+const initVuePlugin = require(path.join(root, "npm/typescript-plugin/index.cjs")) as (modules: {
+  typescript: typeof ts;
+}) => {
   create(info: {
     languageService: import("typescript").LanguageService;
     languageServiceHost: import("typescript").LanguageServiceHost;

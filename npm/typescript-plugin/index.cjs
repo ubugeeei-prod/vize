@@ -2,22 +2,48 @@
 
 const path = require("node:path");
 const { vueComponentDisplayParts } = require("./component-contracts.cjs");
-const {
-  resolveExistingVueSpecifier,
-  resolveVueImportDefinition,
-} = require("./import-resolution.cjs");
+const { resolveVueImportDefinition } = require("./import-resolution.cjs");
+const { createMappedLanguageService } = require("./language-service.cjs");
 const { installVueVirtualModules } = require("./virtual-modules.cjs");
 
 function init({ typescript: ts }) {
   return {
+    getExternalFiles(project) {
+      const configFile = project.getCompilerOptions?.().configFilePath;
+      if (typeof configFile !== "string") return [];
+      const config = ts.readConfigFile(configFile, ts.sys.readFile);
+      if (config.error) return [];
+      const enabled = config.config.compilerOptions?.plugins?.find(
+        (plugin) => plugin.name === "@vizejs/typescript-vue-plugin",
+      );
+      if (enabled?.enabled === false) return [];
+      const parsed = ts.parseJsonConfigFileContent(
+        config.config,
+        ts.sys,
+        path.dirname(configFile),
+        undefined,
+        configFile,
+        undefined,
+        [".vue", ".art"].map((extension) => ({
+          extension,
+          isMixedContent: true,
+          scriptKind: ts.ScriptKind.Deferred,
+        })),
+      );
+      return parsed.fileNames.filter((file) => /\.(?:vue|art)$/i.test(file));
+    },
     create(info) {
-      if (!info?.languageService) {
+      if (info?.config?.enabled === false || !info?.languageService) {
         return info?.languageService;
       }
       try {
         const support = createVueImportSupport(ts, info);
         return support
-          ? createLanguageServiceProxy(ts, info.languageService, support)
+          ? createLanguageServiceProxy(
+              ts,
+              createMappedLanguageService(ts, info.languageService, support.virtual),
+              support,
+            )
           : info.languageService;
       } catch (error) {
         logPluginError(info, "create", error);
@@ -41,9 +67,10 @@ function createVueImportSupport(ts, info) {
     return undefined;
   }
 
-  installVueVirtualModules(ts, info);
+  const virtual = installVueVirtualModules(ts, info);
 
   return {
+    virtual,
     fileExists: originalFileExists,
     readFile: originalReadFile,
   };
@@ -55,12 +82,6 @@ function createLanguageServiceProxy(ts, languageService, support) {
     const value = languageService[key];
     proxy[key] = typeof value === "function" ? value.bind(languageService) : value;
   }
-
-  proxy.getSemanticDiagnostics = (fileName) =>
-    filterVueImportDiagnostics(ts, languageService.getSemanticDiagnostics(fileName), {
-      fileExists: support.fileExists,
-      fileName,
-    });
 
   proxy.getDefinitionAtPosition = (fileName, position) => {
     const vueDefinition = resolveVueImportDefinition(ts, support, fileName, position);
@@ -126,23 +147,6 @@ function logPluginError(info, phase, error) {
   } catch {
     // Logging must never be the reason the TypeScript server exits.
   }
-}
-
-function filterVueImportDiagnostics(ts, diagnostics, { fileExists, fileName }) {
-  return diagnostics.filter((diagnostic) => {
-    if (diagnostic.code !== 2307) {
-      return true;
-    }
-
-    const specifier = diagnosticVueSpecifier(ts, diagnostic);
-    const containingFile = diagnostic.file?.fileName || fileName;
-    return !resolveExistingVueSpecifier(containingFile, specifier, fileExists);
-  });
-}
-
-function diagnosticVueSpecifier(ts, diagnostic) {
-  const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
-  return message.match(/Cannot find module ['"]([^'"]+\.vue)['"]/)?.[1];
 }
 
 function bind(fn, thisArg) {

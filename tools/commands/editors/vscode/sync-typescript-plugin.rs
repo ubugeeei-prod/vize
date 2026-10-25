@@ -19,10 +19,13 @@ use vize_tool_support::common;
 
 const USAGE: &str = "Usage: rust-script tools/commands/editors/vscode/sync-typescript-plugin.rs <stage|inject> [vsix]";
 const PACKAGE_PATH: &str = "node_modules/@vizejs/typescript-vue-plugin";
-const PLUGIN_FILES: [&str; 6] = [
+const PLUGIN_FILES: [&str; 9] = [
+    "README.md",
     "component-contracts.cjs",
     "import-resolution.cjs",
     "index.cjs",
+    "index.d.cts",
+    "language-service.cjs",
     "module-resolution.cjs",
     "package.json",
     "virtual-modules.cjs",
@@ -38,7 +41,7 @@ fn run() -> Result<(), String> {
     let args = env::args().skip(1).collect::<Vec<_>>();
     match args.first().map(String::as_str) {
         Some("stage") => stage_plugin(
-            &extension_dir.join("typescript-vue-plugin"),
+            &root.join("npm/typescript-plugin"),
             &extension_dir.join(PACKAGE_PATH),
         ),
         Some("inject") => {
@@ -47,7 +50,7 @@ fn run() -> Result<(), String> {
                     .unwrap_or_else(|_| root.clone())
                     .join("dist/vize.vsix")
             });
-            inject_plugin(&extension_dir.join("typescript-vue-plugin"), &vsix)
+            inject_plugin(&root.join("npm/typescript-plugin"), &vsix)
         }
         Some("--help" | "-h") => {
             println!("{USAGE}");

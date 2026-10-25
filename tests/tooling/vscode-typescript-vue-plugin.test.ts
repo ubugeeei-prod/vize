@@ -16,9 +16,9 @@ const ts = require(
     paths: [path.join(root, "editors/vscode"), path.join(root, "tests")],
   }),
 ) as typeof import("typescript");
-const initVuePlugin = require(
-  path.join(root, "editors/vscode/typescript-vue-plugin/index.cjs"),
-) as (modules: { typescript: typeof ts }) => {
+const initVuePlugin = require(path.join(root, "npm/typescript-plugin/index.cjs")) as (modules: {
+  typescript: typeof ts;
+}) => {
   create(info: {
     languageService: import("typescript").LanguageService;
     languageServiceHost: import("typescript").LanguageServiceHost;
@@ -74,7 +74,7 @@ test("VS Code extension installs the guarded TypeScript Vue plugin", () => {
 
   assert.match(readFile("editors/vscode/.vscodeignore"), /^typescript-vue-plugin\/$/m);
   assert.ok(
-    fs.existsSync(path.join(root, "editors/vscode/typescript-vue-plugin/index.cjs")),
+    fs.existsSync(path.join(root, "npm/typescript-plugin/index.cjs")),
     "plugin source is synchronized into node_modules/@vizejs/typescript-vue-plugin for VS Code",
   );
 });
@@ -134,7 +134,7 @@ test("TypeScript Vue plugin maps .ts definition results back to real .vue files"
   }
 });
 
-test("TypeScript Vue plugin filters existing .vue import diagnostics without patching host resolution", () => {
+test("TypeScript Vue plugin keeps unresolved .vue diagnostics when the host cannot be patched", () => {
   const project = createVueProject('import App from "./app.vue";\nApp;\n', {
     "app.vue": "<template />\n",
   });
@@ -155,7 +155,7 @@ test("TypeScript Vue plugin filters existing .vue import diagnostics without pat
     const diagnostics = wrapped.getSemanticDiagnostics(project.mainTs);
     assert.equal(
       hasCannotFindVueModule(diagnostics, "./app.vue"),
-      false,
+      true,
       formatDiagnostics(diagnostics),
     );
   } finally {

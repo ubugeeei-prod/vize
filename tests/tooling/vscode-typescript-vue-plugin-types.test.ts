@@ -13,9 +13,9 @@ const ts = require(
     paths: [path.join(root, "editors/vscode"), path.join(root, "tests")],
   }),
 ) as typeof import("typescript");
-const initVuePlugin = require(
-  path.join(root, "editors/vscode/typescript-vue-plugin/index.cjs"),
-) as (modules: { typescript: typeof ts }) => {
+const initVuePlugin = require(path.join(root, "npm/typescript-plugin/index.cjs")) as (modules: {
+  typescript: typeof ts;
+}) => {
   create(info: {
     languageService: import("typescript").LanguageService;
     languageServiceHost: import("typescript").LanguageServiceHost;
@@ -115,8 +115,8 @@ test("TypeScript Vue plugin exposes generated SFC component types", () => {
     );
     assert.equal(
       nativeGenerationCount(project.nativeCalls),
-      2,
-      "expected native generation for the imported component and side-effect specifier",
+      3,
+      "expected native generation for the imported component, package component and side-effect specifier",
     );
 
     fs.writeFileSync(
@@ -138,7 +138,7 @@ test("TypeScript Vue plugin exposes generated SFC component types", () => {
     );
     assert.equal(
       nativeGenerationCount(project.nativeCalls),
-      3,
+      4,
       "expected one additional native generation after the SFC edit",
     );
   } finally {
@@ -226,6 +226,10 @@ function createProject() {
     path.join(nativeDir, "package.json"),
     JSON.stringify({ main: "index.cjs", name: "@vizejs/native", version: "0.0.0" }),
   );
+  fs.copyFileSync(
+    path.join(root, "npm/native/language-projection.js"),
+    path.join(nativeDir, "language-projection.js"),
+  );
   const nativeCalls = path.join(nativeDir, "calls.txt");
   fs.writeFileSync(nativeCalls, "0");
   fs.writeFileSync(
@@ -234,12 +238,12 @@ function createProject() {
       '"use strict";',
       'const fs = require("node:fs");',
       'const path = require("node:path");',
-      "exports.typeCheck = (source) => {",
+      "exports.generateVueLanguageCode = (source) => {",
       '  const callsFile = path.join(__dirname, "calls.txt");',
       '  const calls = Number(fs.readFileSync(callsFile, "utf8")) + 1;',
       "  fs.writeFileSync(callsFile, String(calls));",
       "  const props = source.match(/^\\s*defineProps<([\\s\\S]*?)>\\s*\\(\\s*\\)/m)?.[1] || '{}';",
-      "  return { virtualTs: `declare const component: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: ${props} } & (new () => { $props: ${props} });\\nexport default component;\\n` };",
+      "  return JSON.stringify({ extension: '.tsx', mappings: [], diagnostics: [], text: `declare const component: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: ${props} } & (new () => { $props: ${props} });\\nexport default component;\\n` });",
       "};",
       "",
     ].join("\n"),
