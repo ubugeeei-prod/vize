@@ -1,0 +1,11 @@
+{
+  "name": "vize-babel-runtime-rc9",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@vue/server-renderer": "3.6.0-rc.9",
+    "playwright": "1.62.1",
+    "vue": "3.6.0-rc.9"
+  }
+}
