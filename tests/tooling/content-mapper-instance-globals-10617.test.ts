@@ -31,7 +31,7 @@ test("10617 retains the original reported files, exact beta host and closed fram
     cases.find(({ id }) => id === "original")!.globals,
     files.get("project/src/globals.d.ts.txt"),
   );
-  assert.equal(cases.length, 20);
+  assert.equal(cases.length, 26);
   const packet = { jsonrpc: "2.0", id: 1, result: { text: "日本語🍣\r\n", mappings: [] } };
   assert.deepEqual(decodeFrames(frame(packet).toString()), [packet]);
   assert.throws(() => decodeFrames(frame(packet).subarray(0, -1).toString()));
@@ -177,7 +177,7 @@ await test(
         for (const entry of cases) {
           const label = `${variant}/${entry.id}`;
           const content = (
-            unicode ? entry.source.replace("{{ ", '{{ "日本語🍣" }} {{ ') : entry.source
+            unicode ? entry.source.replace("{{ ", '{{ "日本語🍣" + ') : entry.source
           ).replaceAll("\n", newline);
           for (const root of [published, source]) {
             fs.writeFileSync(path.join(root, "src/Globals.vue"), content);
@@ -320,10 +320,25 @@ await test(
               const activeErrors = entry.errors
                 .map((error, index) => ({ error, row: rows[index] }))
                 .filter(({ error }) => !error.suppressed);
-              const diagnostics = activeErrors.map(({ error, row }) => {
-                const at = location(content, error.anchor, error.token);
+              const nativeErrors = activeErrors.map(({ error, row }) => ({
+                at: location(content, error.anchor, error.token),
+                code: row.code,
+                message: row.message,
+                binding: entry.binding,
+              }));
+              if (entry.unusedDirective)
+                nativeErrors.push({
+                  at: location(content, "<!-- @vue-expect-error -->", "<!--"),
+                  code: 2578,
+                  message: "Unused '@vue-expect-error' directive.",
+                  binding: "@vue-expect-error",
+                });
+              // The CLI's authored-location presentation order differs from the
+              // compiler/mapper's prelude order; neither actual output is changed.
+              nativeErrors.sort((a, b) => a.at.line - b.at.line || a.at.column - b.at.column);
+              const diagnostics = nativeErrors.map(({ at, code, message, binding }) => {
                 const line = content.split(/\r?\n/u)[at.line - 1].trim();
-                return `error:${at.line}:${at.column} [TS${row.code}] ${row.message} (source: ${line.length > 160 ? `${line.slice(0, 157)}...` : line})`;
+                return `error:${at.line}:${at.column} [TS${code}] ${message} (source: ${line.length > 160 ? `${line.slice(0, 157)}...` : line}${binding ? `; binding: ${binding}` : ""})`;
               });
               const report = {
                 files: [

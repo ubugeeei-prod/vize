@@ -19,10 +19,13 @@ actual diagnostic type display. Raw SFC-reference output is retained separately:
 its virtual SFC graph falsely loses `$declared` in this installed graph and is
 not used as an acceptance oracle.
 
-The twenty authored cases cover original/isolated/valid/repaired programs,
+The twenty-six authored cases cover original/isolated/valid/repaired programs,
 repeated, optional, call and loop-source accesses, intentional any, declared
 unknown, typed plugin values, setup/loop/slot shadows, CSS modules, own props,
-Options API discovery, and authored suppression comments. LF plus CRLF with
+Options API discovery, and authored suppression comments. Opening-node comments
+retain their existing child-negative/unused-expect behavior; separate owned
+interpolation and attribute cases include an unrelated invalid sibling. Unicode
+is added inside the existing interpolation so directive ownership is preserved. LF plus CRLF with
 Unicode/emoji exercise diagnostic and UTF8 protocol coordinates. Options API
 results are explicitly discovery-only; a clean-before/error-after result is
 recorded as a regression rather than receiving acceptance credit.

@@ -102,7 +102,8 @@
           "token": "$ghost",
           "kind": "undeclared"
         }
-      ]
+      ],
+      "binding": "v-for"
     },
     {
       "id": "intentional-any",
@@ -169,14 +170,14 @@
       "id": "css-module",
       "source": "<script setup lang=\"ts\">\nconst n = 1;\n</script>\n\n<template>\n  <div>{{ $style.known.toUpperCase() }}</div>\n</template>\n<style module>\n.known { color: red; }\n</style>\n",
       "globals": "export {};\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $declared: { known: number };\n  }\n}\n",
-      "oracle": "export {};\nfunction independentVueContext() {\ntype __Ctx = import('vue').ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\ndeclare const $style: Record<string, string>;\n$style.known.toUpperCase();\n}\n",
+      "oracle": "export {};\nfunction independentVueContext() {\ntype __Ctx = import('vue').ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\nconst $style = undefined as unknown as Record<string, string>;\n$style.known.toUpperCase();\n}\n",
       "errors": []
     },
     {
       "id": "own-props",
       "source": "<script setup lang=\"ts\">\ndefineProps<{ known: number }>();\n</script>\n\n<template>\n  <div>{{ $props.known.toFixed() }}</div>\n</template>\n",
       "globals": "export {};\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $declared: { known: number };\n  }\n}\n",
-      "oracle": "export {};\nfunction independentVueContext() {\ntype __Ctx = import('vue').ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\ndeclare const $props: { known: number };\n$props.known.toFixed();\n}\n",
+      "oracle": "export {};\nfunction independentVueContext() {\ntype __Ctx = import('vue').ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\nconst $props = undefined as unknown as { known: number };\n$props.known.toFixed();\n}\n",
       "errors": []
     },
     {
@@ -188,8 +189,37 @@
       "discovery": true
     },
     {
-      "id": "expect-error",
+      "id": "expect-error-opening-child",
       "source": "<script setup lang=\"ts\">\nconst n = 1;\n</script>\n<template>\n  <!-- @vue-expect-error -->\n  <div>{{ $ghost.anything }}</div>\n</template>\n",
+      "globals": "export {};\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $declared: { known: number };\n  }\n}\n",
+      "oracle": "export {};\nfunction independentVueContext() {\ntype __Ctx = import('vue').ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\n__ctx.$ghost;\n}\n",
+      "errors": [
+        {
+          "anchor": "$ghost.anything",
+          "token": "$ghost",
+          "kind": "undeclared",
+          "suppressed": false
+        }
+      ],
+      "unusedDirective": true
+    },
+    {
+      "id": "ignore-opening-child",
+      "source": "<script setup lang=\"ts\">\nconst n = 1;\n</script>\n<template>\n  <!-- @vue-ignore -->\n  <div>{{ $ghost.anything }}</div>\n</template>\n",
+      "globals": "export {};\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $declared: { known: number };\n  }\n}\n",
+      "oracle": "export {};\nfunction independentVueContext() {\ntype __Ctx = import('vue').ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\n__ctx.$ghost;\n}\n",
+      "errors": [
+        {
+          "anchor": "$ghost.anything",
+          "token": "$ghost",
+          "kind": "undeclared",
+          "suppressed": false
+        }
+      ]
+    },
+    {
+      "id": "expect-owned-interpolation",
+      "source": "<script setup lang=\"ts\">\nconst n = 1;\n</script>\n<template>\n  <!-- @vue-expect-error -->\n  {{ $ghost.anything }}\n</template>\n",
       "globals": "export {};\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $declared: { known: number };\n  }\n}\n",
       "oracle": "export {};\nfunction independentVueContext() {\ntype __Ctx = import('vue').ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\n__ctx.$ghost;\n}\n",
       "errors": [
@@ -202,8 +232,8 @@
       ]
     },
     {
-      "id": "ignore",
-      "source": "<script setup lang=\"ts\">\nconst n = 1;\n</script>\n<template>\n  <!-- @vue-ignore -->\n  <div>{{ $ghost.anything }}</div>\n</template>\n",
+      "id": "ignore-owned-interpolation",
+      "source": "<script setup lang=\"ts\">\nconst n = 1;\n</script>\n<template>\n  <!-- @vue-ignore -->\n  {{ $ghost.anything }}\n</template>\n",
       "globals": "export {};\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $declared: { known: number };\n  }\n}\n",
       "oracle": "export {};\nfunction independentVueContext() {\ntype __Ctx = import('vue').ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\n__ctx.$ghost;\n}\n",
       "errors": [
@@ -212,6 +242,72 @@
           "token": "$ghost",
           "kind": "undeclared",
           "suppressed": true
+        }
+      ]
+    },
+    {
+      "id": "expect-owned-attribute",
+      "source": "<script setup lang=\"ts\">\nconst n = 1;\n</script>\n<template>\n  <!-- @vue-expect-error -->\n  <div :title=\"$ghost.anything\"></div>\n</template>\n",
+      "globals": "export {};\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $declared: { known: number };\n  }\n}\n",
+      "oracle": "export {};\nfunction independentVueContext() {\ntype __Ctx = import('vue').ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\n__ctx.$ghost;\n}\n",
+      "errors": [
+        {
+          "anchor": "$ghost.anything",
+          "token": "$ghost",
+          "kind": "undeclared",
+          "suppressed": true
+        }
+      ]
+    },
+    {
+      "id": "ignore-owned-attribute",
+      "source": "<script setup lang=\"ts\">\nconst n = 1;\n</script>\n<template>\n  <!-- @vue-ignore -->\n  <div :title=\"$ghost.anything\"></div>\n</template>\n",
+      "globals": "export {};\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $declared: { known: number };\n  }\n}\n",
+      "oracle": "export {};\nfunction independentVueContext() {\ntype __Ctx = import('vue').ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\n__ctx.$ghost;\n}\n",
+      "errors": [
+        {
+          "anchor": "$ghost.anything",
+          "token": "$ghost",
+          "kind": "undeclared",
+          "suppressed": true
+        }
+      ]
+    },
+    {
+      "id": "expect-owned-foreign-sibling",
+      "source": "<script setup lang=\"ts\">\nconst n = 1;\n</script>\n<template>\n  <!-- @vue-expect-error -->\n  <div :title=\"$ghost.anything\"></div>\n  <div>{{ $other.value }}</div>\n</template>\n",
+      "globals": "export {};\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $declared: { known: number };\n  }\n}\n",
+      "oracle": "export {};\nfunction independentVueContext() {\ntype __Ctx = import('vue').ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\n__ctx.$ghost;\n__ctx.$other;\n}\n",
+      "errors": [
+        {
+          "anchor": "$ghost.anything",
+          "token": "$ghost",
+          "kind": "undeclared",
+          "suppressed": true
+        },
+        {
+          "anchor": "$other.value",
+          "token": "$other",
+          "kind": "undeclared"
+        }
+      ]
+    },
+    {
+      "id": "ignore-owned-foreign-sibling",
+      "source": "<script setup lang=\"ts\">\nconst n = 1;\n</script>\n<template>\n  <!-- @vue-ignore -->\n  <div :title=\"$ghost.anything\"></div>\n  <div>{{ $other.value }}</div>\n</template>\n",
+      "globals": "export {};\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $declared: { known: number };\n  }\n}\n",
+      "oracle": "export {};\nfunction independentVueContext() {\ntype __Ctx = import('vue').ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\n__ctx.$ghost;\n__ctx.$other;\n}\n",
+      "errors": [
+        {
+          "anchor": "$ghost.anything",
+          "token": "$ghost",
+          "kind": "undeclared",
+          "suppressed": true
+        },
+        {
+          "anchor": "$other.value",
+          "token": "$other",
+          "kind": "undeclared"
         }
       ]
     }

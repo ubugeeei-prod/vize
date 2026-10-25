@@ -10,6 +10,8 @@ export type GlobalCase = {
   globals: string;
   oracle: string;
   discovery?: boolean;
+  binding?: string;
+  unusedDirective?: boolean;
   errors: Array<{ anchor: string; token: string; kind: string; suppressed?: boolean }>;
 };
 export type Packet = {
@@ -134,15 +136,24 @@ export function expectedHost(
   rows: ReturnType<typeof compilerRows>,
 ) {
   assert.equal(rows.length, entry.errors.length, entry.id);
-  return rows
-    .flatMap((row, index) => {
-      const error = entry.errors[index];
-      const at = location(source, error.anchor, error.token);
-      return error.suppressed
-        ? []
-        : [`src/Globals.vue(${at.line},${at.column}): error TS${row.code}: ${row.message}\n`];
-    })
-    .join("");
+  const unused = entry.unusedDirective
+    ? (() => {
+        const at = location(source, "<!-- @vue-expect-error -->", "@vue-expect-error");
+        return `src/Globals.vue(${at.line},${at.column}): error vize4: Unused '@vue-expect-error' directive\n`;
+      })()
+    : "";
+  return (
+    unused +
+    rows
+      .flatMap((row, index) => {
+        const error = entry.errors[index];
+        const at = location(source, error.anchor, error.token);
+        return error.suppressed
+          ? []
+          : [`src/Globals.vue(${at.line},${at.column}): error TS${row.code}: ${row.message}\n`];
+      })
+      .join("")
+  );
 }
 export function assertErrorMappings(source: string, entry: GlobalCase, result: Transform) {
   assert.equal(result.extension, ".tsx");
