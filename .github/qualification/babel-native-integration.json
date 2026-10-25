@@ -94,11 +94,15 @@
     {
       "sha": "9f742169dfe8fe7527a18e81871b932be5cdbbdf",
       "scope": "additive CSRonly actualNative CSSOM8+HTMLcase4 guards, genuine static/dynamic reference roles; original supported8 unchanged"
+    },
+    {
+      "sha": "88d458fed2894ca54784ffeafdffbc72b3c88fd4",
+      "scope": "separate8priority inputs; original8CSSOM+4HTML inputs and originalsupported8 unchanged; custom priority observation added"
     }
   ],
   "currentComposedBeforeLedger": {
-    "sha": "adc7a9151d5c7d5b6225e9896ddacc5fef539e50",
-    "tree": "065c68f6a3ec70a1111c934c6ccc5a09d7c65d42"
+    "sha": "d91f7e3892428b1f352a55a745578f96fb7bafca",
+    "tree": "b7a3d8ddcce56fb8344b387d823b60dc70b4c9ee"
   },
   "priorCampaigns": [
     {
@@ -142,6 +146,12 @@
       "run": 40236239858,
       "artifact": 12615181400,
       "actual": "SUCCESS:all8supported original wholeSSR/browser/hydration/rawHTML/node identity/effect rows0fail0skip;96host/generator+60cold controls andrealcall profile/source declarations passed; no publiccredit"
+    },
+    {
+      "source": "166443c87c8523b6c7f9eafaa0c1a5a1f2ae3f58",
+      "run": 40237622748,
+      "artifact": 12615418797,
+      "actual": "SUCCESS:original8supported +48CSR CSSOM/HTMLcase guardfiles,16decodedNativeJSXanchors; fixed declared input scope retained; later priority family independently exposed further boundary"
     }
   ],
   "runtimeQualification": {
@@ -154,8 +164,8 @@
     "tree": "3d7d7754b74e3294ba354498b08d5b533b84d7d8"
   },
   "style": {
-    "pin": "fde7af3b6af20645951e60282419d78e5941b93c",
-    "tree": "6f1a2b76a94ef216b73a1c3bd1fc00beb893cf81",
+    "pin": "71ced1ae14e3b41490efb4832f5bbec67e72980c",
+    "tree": "c059cdf90e805396cca2b70197bcfdc2129f24c0",
     "base": "78719553cf550bcffbf1d0fb891fda642f42de3a",
     "orderedCommits": [
       "7c0eadfd4c51bdbae2126c002e15921d9e05f2e8",
@@ -163,12 +173,19 @@
       "9cc90ec25d3eb9067d273b4d238cca2b0ec1ddaf",
       "11f99d6b952c817736cd20097bda39495eccfd00",
       "6f3c49018a967bf6644e9faf0eb36c9dc96106f5",
-      "fde7af3b6af20645951e60282419d78e5941b93c"
+      "fde7af3b6af20645951e60282419d78e5941b93c",
+      "67142099f673f238ce561f3993976bf6667d9705",
+      "c5fa95a4ca3403301c90cafbbac4f325c72f41a9",
+      "6a97af142ed32ffed091563a36c3525952b430a0",
+      "db522e4e40a0ba42bb26d79cb6243e509f22a634",
+      "71ced1ae14e3b41490efb4832f5bbec67e72980c"
     ],
-    "sourceRun": 40235658963,
+    "sourceRun": 40240366399,
     "sourceConclusion": "success",
     "integrationMerge": "ef95a6ae9832b45052338da3614e7b1be1f611c2",
-    "semantics": "bounded original-AST string evaluation; conservative CSSOM/lexical/ASCII-case merge refusals; shared Core+JSX+nativeL3 projection; no reference/HTML normalization"
+    "semantics": "bounded original-AST string evaluation; conservative CSSOM/lexical/ASCII-case merge refusals; shared Core+JSX+nativeL3 projection; no reference/HTML normalization",
+    "priorPin": "fde7af3b6af20645951e60282419d78e5941b93c",
+    "priorityGuard": "noncustom ASCII values with one exact terminal lowercase token and nonempty stem; all other bangs preserve runtime; no value normalization"
   },
   "unchangedSupportedRuntimeWitness": [
     {
@@ -210,11 +227,13 @@
   "additiveStyleWitness": {
     "caseFamilies": {
       "frozenCssom": 8,
-      "asciiCaseStyleSources": 4
+      "asciiCaseStyleSources": 4,
+      "priorityTokens": 8
     },
     "hostPairs": 4,
     "supportedRuntimeWitnessFiles": "byte-identical f665 and90c; no SSR/hydration coverage claim for this additional CSR guard",
     "maps": "single delegated Native pass; wholeDTO +true original-printed-AST map anchors for admitted JSX literals; finalBabel sourcecontent retained",
-    "rawContract": "refused cases compare full dynamic-reference raw packets; admitted cases compare actual static-template raw packets and independently CSSOM computed priorities, retaining all raw counterparts"
+    "rawContract": "refused cases compare full dynamic-reference raw packets; admitted cases compare actual static-template raw packets and independently CSSOM computed priorities, retaining all raw counterparts",
+    "filesPerHostPair": 20
   }
 }
