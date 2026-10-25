@@ -7,7 +7,11 @@ on:
       - "crates/vize_atelier_vapor/src/**"
       - "crates/vize_atelier_ssr/src/**"
       - "crates/vize_vitrine/src/napi/jsx.rs"
-      - "tests/_fixtures/differential/jsx/authored-native-modules-10700/**"
+      - "tests/_fixtures/differential/jsx/**"
+      - "tests/_fixtures/differential/typecheck/jsx-nested-native-expressions-8441/**"
+      - "tests/tooling/jsx-authored-module-fixture-custody.test.mjs"
+      - "tests/tooling/jsx-vapor-oracle/**"
+      - "tests/tooling/support/jsx-falsy-and-runtime.mjs"
       - ".github/workflows/jsx-authored-native-modules.yml"
 permissions: { contents: read }
 concurrency:
@@ -139,6 +143,9 @@ jobs:
             cargo test --locked --profile ci -p vize_atelier_jsx --test "$target" || status=1
           done
           exit "$status"
+      - name: Verify complete native fixture and historical custody
+        if: always()
+        run: node --test tests/tooling/jsx-authored-module-fixture-custody.test.mjs tests/tooling/vapor-third-party-reports.test.mjs
       - name: Capture whole native fixture packets and genuine runtime traces
         if: always()
         env:
