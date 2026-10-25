@@ -73,6 +73,7 @@ pub mod key;
 pub mod lower;
 pub mod native;
 pub mod native_file;
+pub mod native_vue2;
 pub mod partial;
 pub mod pass;
 pub mod vue_file;

@@ -23,6 +23,8 @@ pub(super) fn emit_event_references(
     checkable_usages: &[(usize, &ComponentUsage)],
 ) {
     let navigation_ctx = EventNavigationContext {
+        inference_prelude: ctx.inference_prelude,
+        diagnostic_ownership: ctx.diagnostic_ownership,
         scopes: &ctx.summary.scopes,
         template_source: ctx.template_source,
         template_offset: ctx.template_offset,
@@ -60,6 +62,8 @@ pub(super) fn emit_scoped_event_references(
     indent: &str,
 ) {
     let navigation_ctx = EventNavigationContext {
+        inference_prelude: None,
+        diagnostic_ownership: ctx.source_context.diagnostic_ownership,
         scopes: ctx.source_context.scopes,
         template_source: ctx.source_context.template,
         template_offset: ctx.source_context.offset,
@@ -87,6 +91,9 @@ pub(super) fn emit_scoped_event_references(
 }
 
 struct EventNavigationContext<'a> {
+    inference_prelude: Option<&'a std::cell::RefCell<super::root_owner_packets::RootOwnerBuffer>>,
+    diagnostic_ownership:
+        Option<&'a crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector>,
     scopes: &'a vize_croquis::ScopeChain,
     template_source: Option<&'a str>,
     template_offset: u32,
@@ -145,15 +152,37 @@ fn emit_usage_event_references(
         }
         let is_model_event = ctx.preserve_event_navigation && event.name.starts_with("update:");
         if !emitted_resolved_events && ctx.preserve_event_navigation {
-            emit_resolved_events(
-                ts,
-                ctx,
-                usage,
-                component_ref,
-                idx,
-                resolved_events.as_str(),
-                event_indent,
-            );
+            if let Some(prelude) = ctx.inference_prelude {
+                let mut prelude = prelude.borrow_mut();
+                let super::root_owner_packets::RootOwnerBuffer {
+                    text,
+                    diagnostic_ownership,
+                    ..
+                } = &mut *prelude;
+                let inference_ctx = EventNavigationContext {
+                    diagnostic_ownership: ctx.diagnostic_ownership.map(|_| &*diagnostic_ownership),
+                    ..*ctx
+                };
+                emit_resolved_events(
+                    text,
+                    &inference_ctx,
+                    usage,
+                    component_ref,
+                    idx,
+                    resolved_events.as_str(),
+                    event_indent,
+                );
+            } else {
+                emit_resolved_events(
+                    ts,
+                    ctx,
+                    usage,
+                    component_ref,
+                    idx,
+                    resolved_events.as_str(),
+                    event_indent,
+                );
+            }
             emitted_resolved_events = true;
         }
         if is_model_event {
@@ -297,7 +326,8 @@ fn emit_resolved_events(
                 ctx.template_source,
                 ctx.template_offset,
                 ctx.scopes,
-            ),
+            )
+            .with_diagnostic_ownership(ctx.diagnostic_ownership),
             indent,
         );
         ts.push_str(");\n");
@@ -316,7 +346,24 @@ fn emit_resolved_events(
         if !emitted.insert(name.clone()) {
             continue;
         }
-        append!(*ts, "{indent}  \"{name}\": {value},\n");
+        append!(*ts, "{indent}  ");
+        let key_start = ts.len();
+        append!(*ts, "\"{name}\"");
+        let key_end = ts.len();
+        ts.push_str(": ");
+        let value_start = ts.len();
+        ts.push_str(value.as_str());
+        let value_end = ts.len();
+        crate::virtual_ts::expressions::ComponentPropSource::new(
+            ctx.template_source,
+            ctx.template_offset,
+            ctx.scopes,
+        )
+        .with_diagnostic_ownership(ctx.diagnostic_ownership)
+        .with_expected_packet(ctx.inference_prelude.is_some())
+        .inference_only()
+        .record_prop_projection(usage, prop, key_start..key_end, value_start..value_end);
+        ts.push_str(",\n");
     }
     append!(*ts, "{indent}}});\n");
 }

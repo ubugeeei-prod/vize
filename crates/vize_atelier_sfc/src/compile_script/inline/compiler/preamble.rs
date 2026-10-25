@@ -1,5 +1,6 @@
 use vize_carton::{String, profile};
 
+use crate::compile_script::runtime_imports::RuntimeModule;
 use crate::module_map::Runs;
 
 use super::super::super::TemplateParts;
@@ -34,27 +35,26 @@ pub(super) fn emit_preamble(
     is_vapor: bool,
     is_ts: bool,
     is_async: bool,
+    runtime: &RuntimeModule<'_>,
     tracer: &mut Tracer<'_>,
 ) -> PreambleState {
     // mergeDefaults import comes first if needed
     if needs_merge_defaults {
-        output.extend_from_slice(b"import { mergeDefaults as _mergeDefaults } from 'vue'\n");
+        runtime.push_import(output, "mergeDefaults as _mergeDefaults");
     }
 
     // useSlots import if defineSlots was used
     if has_define_slots {
-        output.extend_from_slice(b"import { useSlots as _useSlots } from 'vue'\n");
+        runtime.push_import(output, "useSlots as _useSlots");
     }
 
     // useModel import if defineModel was used; mergeModels is added on the same
     // import line when defineModel coexists with defineProps/defineEmits.
     if has_define_model {
         if needs_merge_models {
-            output.extend_from_slice(
-                b"import { useModel as _useModel, mergeModels as _mergeModels } from 'vue'\n",
-            );
+            runtime.push_import(output, "useModel as _useModel, mergeModels as _mergeModels");
         } else {
-            output.extend_from_slice(b"import { useModel as _useModel } from 'vue'\n");
+            runtime.push_import(output, "useModel as _useModel");
         }
     }
 
@@ -62,51 +62,46 @@ pub(super) fn emit_preamble(
     if has_css_vars {
         let include_define_component = is_ts && !is_async && !is_vapor;
         if is_vapor {
-            if import_block_has_local_from(template.imports, "vue", "_unref") {
-                output.extend_from_slice(
-                    b"import { useVaporCssVars as _useVaporCssVars } from 'vue'\n",
-                );
+            if import_block_has_local_from(template.imports, runtime.name, "_unref") {
+                runtime.push_import(output, "useVaporCssVars as _useVaporCssVars");
             } else {
-                output.extend_from_slice(
-                    b"import { useVaporCssVars as _useVaporCssVars, unref as _unref } from 'vue'\n",
+                runtime.push_import(
+                    output,
+                    "useVaporCssVars as _useVaporCssVars, unref as _unref",
                 );
             }
-        } else if import_block_has_local_from(template.imports, "vue", "_unref") {
+        } else if import_block_has_local_from(template.imports, runtime.name, "_unref") {
             if include_define_component {
-                output.extend_from_slice(
-                    b"import { useCssVars as _useCssVars, defineComponent as _defineComponent } from 'vue'\n",
+                runtime.push_import(
+                    output,
+                    "useCssVars as _useCssVars, defineComponent as _defineComponent",
                 );
             } else {
-                output.extend_from_slice(b"import { useCssVars as _useCssVars } from 'vue'\n");
+                runtime.push_import(output, "useCssVars as _useCssVars");
             }
         } else if include_define_component {
-            output.extend_from_slice(
-                b"import { useCssVars as _useCssVars, unref as _unref, defineComponent as _defineComponent } from 'vue'\n",
+            runtime.push_import(
+                output,
+                "useCssVars as _useCssVars, unref as _unref, defineComponent as _defineComponent",
             );
         } else {
-            output.extend_from_slice(
-                b"import { useCssVars as _useCssVars, unref as _unref } from 'vue'\n",
-            );
+            runtime.push_import(output, "useCssVars as _useCssVars, unref as _unref");
         }
     }
 
     if has_css_modules {
-        output.extend_from_slice(b"import { useCssModule as _useCssModule } from 'vue'\n");
+        runtime.push_import(output, "useCssModule as _useCssModule");
     }
 
     // Component helper import (skip if already emitted with withAsyncContext)
     if is_vapor && !is_async {
         if needs_vapor_setup_context {
-            output.extend_from_slice(
-                b"import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'\n",
-            );
+            runtime.push_import(output, "defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs");
         } else {
-            output.extend_from_slice(
-                b"import { defineVaporComponent as _defineVaporComponent } from 'vue'\n",
-            );
+            runtime.push_import(output, "defineVaporComponent as _defineVaporComponent");
         }
     } else if is_ts && !is_async && (!has_css_vars || is_vapor) {
-        output.extend_from_slice(b"import { defineComponent as _defineComponent } from 'vue'\n");
+        runtime.push_import(output, "defineComponent as _defineComponent");
     }
 
     // Template imports (Vue helpers)

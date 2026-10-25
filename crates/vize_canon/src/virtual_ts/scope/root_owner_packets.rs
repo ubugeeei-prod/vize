@@ -12,23 +12,35 @@ use super::{component_prop_navigation, context::ComponentPropsContext};
 use crate::template_diagnostic_directives::{DirectivePolicy, TemplateDiagnosticDirectives};
 use crate::virtual_ts::{VizeSemanticLink, types::VizeMapping};
 
+mod safety;
+
 #[derive(Default)]
-pub(super) struct RootOwnerPacket {
-    pub(super) text: String,
-    pub(super) mappings: Vec<VizeMapping>,
-    pub(super) diagnostic_mappings: Vec<VizeMapping>,
-    pub(super) semantic_links: Vec<VizeSemanticLink>,
+pub(crate) struct RootOwnerBuffer {
+    pub(crate) diagnostic_ownership:
+        crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector,
+    pub(crate) text: String,
+    pub(crate) mappings: Vec<VizeMapping>,
+    pub(crate) diagnostic_mappings: Vec<VizeMapping>,
+    pub(crate) semantic_links: Vec<VizeSemanticLink>,
 }
 
-impl RootOwnerPacket {
+impl RootOwnerBuffer {
     pub(super) fn append_to(
         self,
         text: &mut String,
         mappings: &mut Vec<VizeMapping>,
         diagnostic_mappings: &mut Vec<VizeMapping>,
         links: &mut Vec<VizeSemanticLink>,
+        diagnostic_ownership: Option<
+            &crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector,
+        >,
     ) {
         let offset = text.len();
+        if let Some(collector) = diagnostic_ownership {
+            collector
+                .borrow_mut()
+                .append_rebased(self.diagnostic_ownership.into_inner(), offset);
+        }
         text.push_str(self.text.as_str());
         for (target, rows) in [
             (mappings, self.mappings),
@@ -54,6 +66,42 @@ impl RootOwnerPacket {
     }
 }
 
+/// Inference declarations precede the diagnostic packet, in the same lexical
+/// scope. No ignore interval then has to overlap the packet's single EXPECT.
+#[derive(Default)]
+pub(super) struct RootOwnerPacket {
+    pub(super) inference: std::cell::RefCell<RootOwnerBuffer>,
+    pub(super) diagnostic: RootOwnerBuffer,
+}
+
+impl RootOwnerPacket {
+    pub(super) fn append_to(
+        self,
+        text: &mut String,
+        mappings: &mut Vec<VizeMapping>,
+        diagnostic_mappings: &mut Vec<VizeMapping>,
+        links: &mut Vec<VizeSemanticLink>,
+        diagnostic_ownership: Option<
+            &crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector,
+        >,
+    ) {
+        self.inference.into_inner().append_to(
+            text,
+            mappings,
+            diagnostic_mappings,
+            links,
+            diagnostic_ownership,
+        );
+        self.diagnostic.append_to(
+            text,
+            mappings,
+            diagnostic_mappings,
+            links,
+            diagnostic_ownership,
+        );
+    }
+}
+
 #[derive(Default)]
 pub(super) struct RootOwnerPackets {
     packets: FxHashMap<usize, RootOwnerPacket>,
@@ -65,6 +113,7 @@ impl RootOwnerPackets {
     pub(super) fn collect(
         ctx: &ComponentPropsContext<'_, '_>,
         usages: &[(usize, &ComponentUsage)],
+        script: Option<&str>,
     ) -> Self {
         let mut result = Self::default();
         let Some(root) = ctx.template_ast else {
@@ -92,7 +141,7 @@ impl RootOwnerPackets {
                     .map(|range| (range.start, range.end))
             })
             .collect();
-        if expected_owners.is_empty() {
+        if expected_owners.is_empty() || !safety::stable_render_flow(root) {
             return result;
         }
         let by_start: FxHashMap<_, _> = usages
@@ -100,6 +149,7 @@ impl RootOwnerPackets {
             .map(|&(idx, usage)| (usage.start, (idx, usage)))
             .collect();
         crate::virtual_ts::script_facts::with_bindings(ctx.summary, |bindings| {
+            let mut safety = safety::RelocationSafety::new(script, bindings);
             for child in &root.children {
                 let TemplateChildNode::Element(element) = child else {
                     continue;
@@ -113,7 +163,7 @@ impl RootOwnerPackets {
                     || bindings.binding_type(usage.name.as_str()) != Some(BindingType::SetupConst)
                     || usage.props.is_empty()
                     || usage.props.iter().all(|prop| matches!(prop.name.as_str(), "key" | "ref"))
-                    || usage.props.iter().any(|prop| prop.is_dynamic || prop.name_is_dynamic)
+                    || usage.props.iter().any(|prop| prop.name_is_dynamic)
                     || !usage.spread_props.is_empty()
                     || usage.events.is_empty()
                     || usage.events.iter().any(|event| event.name_is_dynamic
@@ -121,12 +171,24 @@ impl RootOwnerPackets {
                             bindings.binding_type(handler.as_str().trim()) != Some(BindingType::SetupConst)))
                     || element.props.iter().any(|prop| match prop {
                         PropNode::Attribute(_) => false,
-                        PropNode::Directive(directive) => directive.name != "on"
+                        PropNode::Directive(directive) => !matches!(directive.name, "on" | "bind")
                             || !matches!(directive.arg.as_ref(), Some(ExpressionNode::Simple(arg)) if arg.is_static),
                     })
                     || usage.slots.iter().any(|slot|
                         component_prop_navigation::slot_navigation_source_range(ctx.template_source, slot)
                             .is_some_and(|range| range.start < usage.start as usize || range.end > usage.end as usize))
+                {
+                    continue;
+                }
+                if usage
+                    .props
+                    .iter()
+                    .any(|prop| prop.is_dynamic && !safety.allows(usage.scope_id.as_u32(), prop))
+                    || usage.events.iter().any(|event| {
+                        event.handler.as_ref().is_none_or(|handler| {
+                            !safety.initialized_const(handler.as_str().trim())
+                        })
+                    })
                 {
                     continue;
                 }
@@ -198,6 +260,7 @@ mod tests {
             0,
             (
                 ScopeGenerationOptions {
+                    diagnostic_ownership: None,
                     generic_parameters: None,
                     check_options: VirtualTsCheckOptions {
                         check_unknown_events: true,
@@ -374,7 +437,7 @@ mod tests {
             ),
             (
                 SCRIPT,
-                "<!-- @vue-expect-error --><Comp :id=\"value\" @missing=\"noop\">{{ value.bad }}</Comp>",
+                "<!-- @vue-expect-error --><Comp :id=\"value.bad\" @missing=\"noop\">{{ value.bad }}</Comp>",
             ),
             (
                 "import Comp from './Comp.vue'; let value: string | number = '';",
@@ -420,6 +483,71 @@ mod tests {
                     render(script, template, true, navigation),
                     "{template}"
                 );
+            }
+        }
+    }
+
+    #[test]
+    fn render_cfa_frontiers_keep_complete_original_order_but_handlers_stay_isolated() {
+        let script = "import Comp from './Comp.vue'; const state = { kind: 'a' as 'a' | 'b' }; const value = 1; const noop = () => {}; declare function assertState(value: unknown): asserts value is { kind: 'a' };";
+        for newline in ["\n", "\r\n"] {
+            for effect in [
+                "state.kind = 'b'",
+                "value++",
+                "assertState(state)",
+                "({ ...state, kind: (state.kind = 'b') })",
+                "delete state.kind",
+                "({ nested: [delete state.kind] })",
+            ] {
+                let template = cstr!(
+                    "<!-- 日本 🧭 --><!-- @vue-expect-error -->{newline}<Comp :id=\"value\" @save=\"noop\" /><div>{{{{ {effect} }}}}</div>"
+                );
+                assert_eq!(
+                    render(script, &template, false, true),
+                    render(script, &template, true, true),
+                    "render effect {effect} cannot be moved across"
+                );
+            }
+            let template = cstr!(
+                "<!-- 日本 🧭 --><!-- @vue-expect-error -->{newline}<Comp :id=\"value\" @save=\"noop\" /><button @click=\"state.kind = 'b'\"></button>"
+            );
+            let before = render(script, &template, false, true);
+            let after = render(script, &template, true, true);
+            assert_ne!(
+                before.0, after.0,
+                "a non-invoked handler body cannot bar unrelated pure root ownership"
+            );
+            assert_eq!(mapping_payloads(&before), mapping_payloads(&after));
+            assert_eq!(link_payloads(&before), link_payloads(&after));
+        }
+    }
+
+    #[test]
+    fn flow_sensitive_type_captures_keep_all_original_bytes_and_geometry() {
+        let script = "import Comp from './Comp.vue'; const state: { value?: number } = {}; state.value = 1; const noop = () => {};";
+        for newline in ["\n", "\r\n"] {
+            for callback in [
+                "(field: typeof state.value) => !!field",
+                "(field: typeof state['value']) => !!field",
+                "(field: (typeof state)['value']) => !!field",
+                "(field): typeof state.value => field",
+                "(field) => field as typeof state.value",
+                "(field) => field satisfies typeof state.value",
+            ] {
+                for directive in ["", "<!-- @vue-expect-error -->"] {
+                    for effect in ["", "<div>{{ delete state.value }}</div>"] {
+                        let template = cstr!(
+                            "<!-- 日本 🧭 -->{directive}{newline}<Comp :pick=\"{callback}\" @save=\"noop\" />{effect}"
+                        );
+                        for navigation in [false, true] {
+                            assert_eq!(
+                                render(script, &template, false, navigation),
+                                render(script, &template, true, navigation),
+                                "unproved type capture {callback} must retain the whole original packet"
+                            );
+                        }
+                    }
+                }
             }
         }
     }

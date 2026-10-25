@@ -10,7 +10,7 @@ metadata.vize.stability = "alpha-supported"
 
 [features]
 default = ["native"]
-native = ["dep:lightningcss", "lightningcss/serde", "dep:parcel_selectors"]
+native = ["dep:lightningcss", "lightningcss/serde", "dep:parcel_selectors", "dep:parcel_sourcemap"]
 legacy = ["vize_atelier_core/legacy", "vize_atelier_ssr/legacy"]
 # Arms the Davinci P1-7 differential lane across the atelier crates: every
 # retained-AST consumption dual-runs the legacy re-parse and panics on
@@ -78,6 +78,7 @@ serde_json = { workspace = true }
 thiserror = { workspace = true }
 lightningcss = { workspace = true, optional = true }
 parcel_selectors = { workspace = true, optional = true }
+parcel_sourcemap = { workspace = true, optional = true }
 regex = { workspace = true }
 sha2 = { workspace = true }
 

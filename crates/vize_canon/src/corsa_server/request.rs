@@ -188,17 +188,19 @@ mod tests {
         let package = app.join("node_modules/@scope/dynamic");
         write(
             &app.join("tsconfig.json"),
-            r#"{"compilerOptions":{"strict":true,"module":"ESNext","moduleResolution":"Bundler","allowArbitraryExtensions":true}}"#,
+            include_str!(
+                "../../../../tests/_fixtures/differential/typechecker/package-target-deletion-refresh/tsconfig.json.txt"
+            ),
         );
         write(
             &package.join("package.json"),
-            r#"{"name":"@scope/dynamic","exports":"./Widget.vue"}"#,
+            include_str!(
+                "../../../../tests/_fixtures/differential/typechecker/package-target-deletion-refresh/package.json.txt"
+            ),
         );
-        let source = r#"<script setup lang="ts">
-import Widget from '@scope/dynamic'
-void Widget
-</script>
-"#;
+        let source = include_str!(
+            "../../../../tests/_fixtures/differential/typechecker/package-target-deletion-refresh/Host.vue.txt"
+        );
         write(&host, source);
         install_runtime_stubs(&app);
         let mut server = CorsaServer::with_config(ServerConfig {
@@ -221,6 +223,117 @@ void Widget
         std::fs::remove_file(package.join("Widget.vue")).unwrap();
         let deleted = server.check_vue_sfc(&uri, source, "").unwrap();
         assert!(has_code(&deleted, "TS2307"));
+
+        write(
+            &package.join("Widget.vue"),
+            "<script setup lang=\"ts\">defineProps<{ repaired: true }>()</script>\n",
+        );
+        let repaired = server.check_vue_sfc(&uri, source, "").unwrap();
+        assert!(!has_code(&repaired, "TS2307"), "{repaired:#?}");
+        let unsaved = source.replace(
+            "void Widget",
+            "const authored: string = 42\nvoid Widget\nvoid authored",
+        );
+        let edited = server.check_vue_sfc(&uri, &unsaved, "").unwrap();
+        assert!(has_code(&edited, "TS2322"), "{edited:#?}");
+        assert!(!has_code(&edited, "TS2307"), "{edited:#?}");
+        std::fs::remove_file(package.join("Widget.vue")).unwrap();
+        let edited_deleted = server.check_vue_sfc(&uri, &unsaved, "").unwrap();
+        assert!(has_code(&edited_deleted, "TS2307"), "{edited_deleted:#?}");
+        assert!(has_code(&edited_deleted, "TS2322"), "{edited_deleted:#?}");
+        write(
+            &package.join("Widget.vue"),
+            "<script setup lang=\"ts\">defineProps<{ repaired: true }>()</script>\n",
+        );
+        let edited_repaired = server.check_vue_sfc(&uri, &unsaved, "").unwrap();
+        assert!(
+            !has_code(&edited_repaired, "TS2307"),
+            "{edited_repaired:#?}"
+        );
+        assert!(has_code(&edited_repaired, "TS2322"), "{edited_repaired:#?}");
+        assert_eq!(std::fs::read_to_string(&host).unwrap(), source);
+    }
+
+    #[test]
+    fn deleting_one_package_root_preserves_other_root_types_and_unsaved_hosts() {
+        let Some(corsa_path) = std::env::var_os("CORSA_PATH").map(PathBuf::from) else {
+            return;
+        };
+        if !corsa_path.is_file() {
+            return;
+        }
+        let root = tempfile::tempdir().unwrap();
+        let mut projects = Vec::new();
+        for (name, prop, value) in [
+            ("first", "alpha: string", "{ alpha: 'ok' }"),
+            ("second", "beta: number", "{ beta: 'wrong' }"),
+        ] {
+            let app = root.path().join(name);
+            let host = app.join("src/Host.vue");
+            let target = app.join("node_modules/@scope/shared/Widget.vue");
+            write(
+                &app.join("tsconfig.json"),
+                r#"{"compilerOptions":{"strict":true,"module":"ESNext","moduleResolution":"Bundler","allowArbitraryExtensions":true}}"#,
+            );
+            write(
+                &target.parent().unwrap().join("package.json"),
+                r#"{"name":"@scope/shared","version":"1.0.0","exports":"./Widget.vue"}"#,
+            );
+            let component =
+                format!("<script setup lang=\"ts\">defineProps<{{ {prop} }}>()</script>\n");
+            write(&target, &component);
+            let disk = "<script setup lang=\"ts\">\nimport Widget from '@scope/shared'\nvoid Widget\n</script>\n";
+            write(&host, disk);
+            let source = disk.replace(
+                "void Widget",
+                &format!(
+                    "const props: InstanceType<typeof Widget>['$props'] = {value}\nvoid props"
+                ),
+            );
+            install_runtime_stubs(&app);
+            let server = CorsaServer::with_config(ServerConfig {
+                corsa_path: Some(corsa_path.to_string_lossy().into_owned().into()),
+                working_dir: Some(app.to_string_lossy().into_owned().into()),
+                ..ServerConfig::default()
+            });
+            projects.push((server, host, target, component, source));
+        }
+        let (mut first, first_host, first_target, component, first_source) = projects.remove(0);
+        let (mut second, second_host, _, _, second_source) = projects.remove(0);
+        let first_uri = crate::file_uri::path_to_file_uri(&first_host);
+        let second_uri = crate::file_uri::path_to_file_uri(&second_host);
+        let first_valid = first.check_vue_sfc(&first_uri, &first_source, "").unwrap();
+        assert!(first_valid.diagnostics.is_empty(), "{first_valid:#?}");
+        let second_invalid = second
+            .check_vue_sfc(&second_uri, &second_source, "")
+            .unwrap();
+        assert!(has_code(&second_invalid, "TS2322"), "{second_invalid:#?}");
+        assert!(!has_code(&second_invalid, "TS2307"), "{second_invalid:#?}");
+        std::fs::remove_file(&first_target).unwrap();
+        let first_deleted = first.check_vue_sfc(&first_uri, &first_source, "").unwrap();
+        assert!(has_code(&first_deleted, "TS2307"), "{first_deleted:#?}");
+        let second_unchanged = second
+            .check_vue_sfc(&second_uri, &second_source, "")
+            .unwrap();
+        assert_eq!(
+            serde_json::to_value(&second_unchanged.diagnostics).unwrap(),
+            serde_json::to_value(&second_invalid.diagnostics).unwrap()
+        );
+        write(&first_target, &component);
+        let first_repaired = first.check_vue_sfc(&first_uri, &first_source, "").unwrap();
+        assert!(first_repaired.diagnostics.is_empty(), "{first_repaired:#?}");
+        let second_still_invalid = second
+            .check_vue_sfc(&second_uri, &second_source, "")
+            .unwrap();
+        assert_eq!(
+            serde_json::to_value(&second_still_invalid.diagnostics).unwrap(),
+            serde_json::to_value(&second_invalid.diagnostics).unwrap()
+        );
+        let disk = "<script setup lang=\"ts\">\nimport Widget from '@scope/shared'\nvoid Widget\n</script>\n";
+        for (host, source) in [(&first_host, &first_source), (&second_host, &second_source)] {
+            assert_eq!(std::fs::read_to_string(host).unwrap(), disk);
+            assert_ne!(source, disk);
+        }
     }
 
     fn has_code(result: &crate::corsa_server::CheckResult, code: &str) -> bool {

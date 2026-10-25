@@ -37,6 +37,17 @@ impl<'r, 'a> ResolvedExpressions<'r, 'a> {
         expression: &JsExpr<'_>,
         access: &impl AccessProvider,
     ) -> Result<(), EmitError> {
+        let table = self.table_for_retained(expression)?;
+        write_expression(writer, authored_file, table, access)
+    }
+
+    /// Borrow only the completed table for this exact original retained owner.
+    /// Target name planning shares the writer's authority checks and never
+    /// resolves, parses, or substitutes an expression's printed text.
+    pub(crate) fn table_for_retained(
+        self,
+        expression: &JsExpr<'_>,
+    ) -> Result<&'r ResolutionTable<'a>, EmitError> {
         let index = self
             .tables
             .binary_search_by_key(&key(expression.span), |table| key(table.expression().span))
@@ -63,7 +74,7 @@ impl<'r, 'a> ResolvedExpressions<'r, 'a> {
                 kind: EmitErrorKind::SourceMismatch,
             });
         }
-        write_expression(writer, authored_file, table, access)
+        Ok(table)
     }
 }
 
