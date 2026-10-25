@@ -86,6 +86,7 @@ test("Node engine floors retain precise compatible minimum versions", () => {
   for (const engine of [
     "^22 || >=24",
     "^22.13.0 || >=24",
+    "^22.18.0 || >=24.11.0",
     ">=22.13.0 || ^24.0.0",
     "^22.13 || >=24.0",
     ">= 22.13.0",
