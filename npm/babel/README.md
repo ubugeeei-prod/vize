@@ -44,6 +44,9 @@ and module transformations keep their place in that pipeline.
 Files without JSX return before loading the native addon. JSX-producing visitor
 transforms belong in an earlier Babel pass; introducing new JSX after native
 compilation produces an explicit error.
+The final generation boundary also checks for JSX introduced by later `post`
+hooks. That guard returns control to Babel without claiming code generation;
+other generator overrides keep Babel's normal collision rules.
 
 Use Babel `overrides`, `only`, and `ignore` to select Vue files in mixed projects.
 An explicit foreign JSX runtime or factory is a configuration error.

@@ -3,7 +3,7 @@ import { getCompiler } from "./native.ts";
 import { normalizeOptions } from "./options.ts";
 import { captureReservations, restoreReservations } from "./scopes.ts";
 import { composeInputMap } from "./source-map.ts";
-import type { BabelApi, BabelFile, VizeBabelMetadata, VizeBabelOptions } from "./types.ts";
+import type { BabelApi, BabelFile, FileAst, VizeBabelMetadata, VizeBabelOptions } from "./types.ts";
 
 export type { VizeBabelMetadata, VizeBabelOptions } from "./types.ts";
 
@@ -17,6 +17,13 @@ export default function vizeBabelPlugin(
   const api = apiValue as BabelApi;
   api.assertVersion("^7.29.7 || ^8.0.9");
   const options = normalizeOptions(rawOptions);
+  const assertComplete = (ast: FileAst) => {
+    if (hasJsx(ast, api.types.VISITOR_KEYS)) {
+      throw new Error(
+        "JSX was introduced after the native phase; run JSX-producing transforms in an earlier Babel pass",
+      );
+    }
+  };
   const plugin = {
     name: "vize-vue-jsx",
     manipulateOptions(host: { filename?: string }, parser: Parameters<typeof enableSyntax>[1]) {
@@ -107,11 +114,13 @@ export default function vizeBabelPlugin(
         process.emitWarning(`[vize] ${warning}`, { type: "VizeJsxWarning" });
     },
     post(file: BabelFile) {
-      if (hasJsx(file.ast, api.types.VISITOR_KEYS)) {
-        throw new Error(
-          "JSX was introduced after the native phase; run JSX-producing transforms in an earlier Babel pass",
-        );
-      }
+      assertComplete(file.ast);
+    },
+    generatorOverride(ast: FileAst) {
+      // Later post hooks run after our post. Inspect their final AST, then
+      // return undefined so Babel or another real override owns generation.
+      assertComplete(ast);
+      return undefined;
     },
   };
   return plugin;

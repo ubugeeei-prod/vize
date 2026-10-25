@@ -146,6 +146,54 @@ coldFixtures.push(
     filenameSuffix: ".react.jsx",
   },
 );
+for (const order of ["first", "last"])
+  coldFixtures.push({
+    id: "late-post-introduces-jsx-" + order,
+    source: "export const existing = 1;\n",
+    order,
+    latePost: true,
+    error:
+      "JSX was introduced after the native phase; run JSX-producing transforms in an earlier Babel pass",
+  });
+positiveFixtures.push(
+  {
+    id: "later-post-jsx-refuses-after-real-native",
+    source: basic,
+    latePost: true,
+    order: "first",
+    error:
+      "JSX was introduced after the native phase; run JSX-producing transforms in an earlier Babel pass",
+  },
+  {
+    id: "multiple-real-host-generators-refuse",
+    source: basic,
+    generatorOverrides: 2,
+    error: "More than one plugin attempted to override codegen.",
+  },
+);
+for (const order of ["first", "last"])
+  for (const cloneInputAst of [false, true]) {
+    coldFixtures.push({
+      id: `real-host-generator-plain-${order}-clone-${cloneInputAst}`,
+      source: 'const compass = "🧭"; export const authoredToken = "雪";\r\n',
+      fromAst: "unchanged",
+      order,
+      cloneInputAst,
+      generatorOverrides: 1,
+      upstream: true,
+    });
+    positiveFixtures.push({
+      id: `real-host-generator-jsx-${order}-clone-${cloneInputAst}`,
+      source:
+        'const compass = "🧭"; const authoredToken = "café";\r\nexport const render = () => <div data-probe="original">{authoredToken}</div>;\r\n',
+      fromAst: "edit",
+      order,
+      cloneInputAst,
+      upstream: true,
+      generatorOverrides: 1,
+      html: '<div data-probe="ast-edited">café</div>',
+    });
+  }
 const reserved =
   'const compass = "🧭"; export const authoredToken = "雪";\r\nexport const render = () => <div title={authoredToken}>{authoredToken}</div>;\r\n';
 positiveFixtures.push(
