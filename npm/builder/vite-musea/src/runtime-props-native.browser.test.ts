@@ -48,6 +48,28 @@ void test(
         cache: false,
       });
       observations.cold = cold;
+      assert.equal(
+        cold.profile.literalMemberParseCalls,
+        0,
+        "ASCII/runtime metadata never reparses type members",
+      );
+      const literalSource = `<script setup lang="ts">defineProps<{ "scope.name"?: string; café?: number; ['a:b']?: boolean; [key]: string }>()</script>`;
+      const literalCold = binding.analyzeSfc(literalSource, {
+        filename: "Literal.vue",
+        profile: true,
+      });
+      const literalWarm = binding.analyzeSfc(literalSource, {
+        filename: "Literal.vue",
+        profile: true,
+      });
+      assert.deepEqual(
+        literalCold.props.map((prop: any) => prop.name),
+        ["scope.name", "café", "a:b"],
+      );
+      assert.equal(literalCold.profile.literalMemberParseCalls, 4);
+      assert.equal(literalWarm.profile.literalMemberParseCalls, 0);
+      assert.equal(literalWarm.profile.cacheHit, true);
+      observations.literalProfile = { cold: literalCold, warm: literalWarm };
       const props = new Map<string, any>(cold.props.map((prop: any) => [prop.name, prop]));
       assert.deepEqual(
         [...props.keys()],

@@ -24,7 +24,7 @@ defineEmits(["change", "update:modelValue"]);
 export const runtimeArt = `<script setup lang="ts">
 defineArt("./RuntimeProbe.vue", { title: "Runtime Controls" });
 </script>
-<art><variant name="Default" default><RuntimeProbe label="Variant" :count="9" /></variant></art>`;
+<art><variant name="Default" default args='{"label":"Variant","count":9}'><RuntimeProbe label="Variant" :count="9" /></variant></art>`;
 
 export const expectedRuntimeDefaults = {
   label: "true",

@@ -247,7 +247,8 @@ not invent a replacement value or execute the expression. Function props are rea
 
 The public `analyzeSfc(source, { filename, profile: true })` native API reports props, emits, and
 optional phase timings (`descriptorParseNs`, `analyzeNs`, `defaultProjectionNs`, `serializeNs`)
-with actual call counts. `serializeNs` covers construction of the Rust JSON result, excluding the
+with actual call counts, including `literalMemberParseCalls` for exotic typed member syntax (zero
+for ASCII members and cache hits). `serializeNs` covers construction of the Rust JSON result, excluding the
 N-API conversion and optional profile envelope. A bounded cache reuses metadata only for the exact
 filename and source; edits invalidate the entry. Use `{ cache: false, profile: true }` for cold
 measurements. Unsupported defaults have `unsupported_default: true` and their authored
