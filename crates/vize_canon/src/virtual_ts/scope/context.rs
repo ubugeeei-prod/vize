@@ -98,6 +98,8 @@ pub(crate) struct ScopeGenContext<'a, 'template> {
 }
 
 pub(crate) struct ScopeGenerationOptions<'a, 'template> {
+    pub(crate) diagnostic_ownership:
+        Option<&'a crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector>,
     pub(crate) check_options: VirtualTsCheckOptions,
     pub(crate) virtual_ts_options: &'a VirtualTsOptions,
     /// Names already declared by the conservative Options API setup-spread fallback.
@@ -186,7 +188,10 @@ pub(super) struct EventHandlerExprContext<'a> {
     pub(super) indent: &'a str,
 }
 
+#[derive(Clone, Copy)]
 pub(super) struct ComponentPropsContext<'a, 'template> {
+    pub(crate) diagnostic_ownership:
+        Option<&'a crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector>,
     pub(super) summary: &'a Croquis,
     pub(super) template_ast: Option<&'a vize_relief::RootNode<'template>>,
     pub(super) template_source: Option<&'a str>,
@@ -226,6 +231,7 @@ impl<'a> ComponentPropsContext<'a, '_> {
             &self.summary.scopes,
         )
         .with_model_modifiers(self.model_modifiers)
+        .with_diagnostic_ownership(self.diagnostic_ownership)
     }
 }
 

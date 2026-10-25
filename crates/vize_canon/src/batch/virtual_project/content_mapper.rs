@@ -24,7 +24,10 @@ pub use protocol::{
 };
 
 mod directives;
-use directives::{sfc_diagnostic_directives, with_component_prop_echoes, with_generic_echoes};
+use directives::{
+    sfc_diagnostic_directives, with_component_prop_echoes, with_generic_echoes,
+    with_owned_input_echoes,
+};
 
 mod component_name;
 use component_name::content_mapper_component_name;
@@ -143,6 +146,17 @@ pub fn generate_vue_content_mapper_transform_with_options(
     content: &str,
     transform_options: ContentMapperTransformOptions,
 ) -> CorsaResult<ContentMapperTransform> {
+    transform_with_diagnostic_ownership(path, content, transform_options, Some(Default::default()))
+}
+
+fn transform_with_diagnostic_ownership(
+    path: &Path,
+    content: &str,
+    transform_options: ContentMapperTransformOptions,
+    diagnostic_ownership: Option<
+        crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector,
+    >,
+) -> CorsaResult<ContentMapperTransform> {
     let authored_content = content;
     let authored = crate::authored_sfc::AuthoredSfc::new(content);
     let content = authored.analyzed();
@@ -187,6 +201,7 @@ pub fn generate_vue_content_mapper_transform_with_options(
         &descriptor,
         &virtual_ts_options,
         VueCodegenOptions {
+            diagnostic_ownership: diagnostic_ownership.as_ref(),
             check_options: transform_options.virtual_ts_check_options(),
             typed_router_root: None,
             preserve_unused_diagnostics: transform_options.preserve_unused_diagnostics,
@@ -214,20 +229,32 @@ pub fn generate_vue_content_mapper_transform_with_options(
     publicize_generated_diagnostic_helpers(&mut code, &mappings);
 
     if use_tsx {
+        let previous_length = code.len();
         prepend_vue_jsx_reference(
             &mut code,
             &mut mappings,
             &mut semantic_links,
             &mut prop_default_key_links,
         );
+        if let Some(collector) = &diagnostic_ownership {
+            collector
+                .borrow_mut()
+                .note_generated_insertion(0, code.len() - previous_length);
+        }
     }
     if suppress_typescript_diagnostics {
+        let previous_length = code.len();
         prepend_typescript_nocheck(
             &mut code,
             &mut mappings,
             &mut semantic_links,
             &mut prop_default_key_links,
         );
+        if let Some(collector) = &diagnostic_ownership {
+            collector
+                .borrow_mut()
+                .note_generated_insertion(0, code.len() - previous_length);
+        }
     }
 
     authored.remap_mappings(&mut mappings);
@@ -237,19 +264,28 @@ pub fn generate_vue_content_mapper_transform_with_options(
     }
     let content = authored_content;
     let spans = protocol_spans(content, &code, &mappings, &mapping_meta);
+    let mut diagnostic_echoes = diagnostic_ownership
+        .map(|collector| collector.into_inner().into_echoes())
+        .unwrap_or_default();
+    for echo in &mut diagnostic_echoes {
+        echo.authored = authored.to_authored(echo.authored.clone());
+    }
     Ok(ContentMapperTransform {
         extension: CONTENT_MAPPER_VIRTUAL_EXTENSION,
         // Directive comments are read from HTML templates and SFC blocks only.
-        diagnostic_directives: (!authored.is_derived())
-            .then(|| {
-                let echoes = GenericCopies::find(&code, &mappings, content, &descriptor);
-                let directives = with_generic_echoes(
-                    sfc_diagnostic_directives(content, &descriptor, &spans),
-                    echoes.as_ref(),
-                );
-                with_component_prop_echoes(directives, &code, &mappings)
-            })
-            .flatten(),
+        diagnostic_directives: with_owned_input_echoes(
+            (!authored.is_derived())
+                .then(|| {
+                    let echoes = GenericCopies::find(&code, &mappings, content, &descriptor);
+                    let directives = with_generic_echoes(
+                        sfc_diagnostic_directives(content, &descriptor, &spans),
+                        echoes.as_ref(),
+                    );
+                    with_component_prop_echoes(directives, &code, &mappings)
+                })
+                .flatten(),
+            &diagnostic_echoes,
+        ),
         mappings: spans,
         semantic_links: protocol_semantic_links(&semantic_links),
         diagnostics: diagnostics

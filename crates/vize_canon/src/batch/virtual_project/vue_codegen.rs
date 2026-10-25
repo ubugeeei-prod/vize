@@ -262,6 +262,7 @@ pub(super) fn generate_vue_virtual_ts(
             template_offset,
             options,
             VirtualTsGenerationOptions {
+                diagnostic_ownership: codegen_options.diagnostic_ownership,
                 authored_scripts: Some(AuthoredScriptMetadata::from_descriptor(descriptor)),
                 check_options: codegen_options.check_options,
                 dialect: codegen_options.dialect,
@@ -295,6 +296,7 @@ pub(super) fn generate_vue_virtual_ts(
         script_content.as_deref(),
         script_offset,
         split_script_setup_offsets,
+        codegen_options.diagnostic_ownership,
     );
 
     // Surface Vue-specific semantic errors (e.g. DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE)

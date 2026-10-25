@@ -23,6 +23,7 @@ pub(super) fn emit_event_references(
     checkable_usages: &[(usize, &ComponentUsage)],
 ) {
     let navigation_ctx = EventNavigationContext {
+        diagnostic_ownership: ctx.diagnostic_ownership,
         scopes: &ctx.summary.scopes,
         template_source: ctx.template_source,
         template_offset: ctx.template_offset,
@@ -60,6 +61,7 @@ pub(super) fn emit_scoped_event_references(
     indent: &str,
 ) {
     let navigation_ctx = EventNavigationContext {
+        diagnostic_ownership: ctx.source_context.diagnostic_ownership,
         scopes: ctx.source_context.scopes,
         template_source: ctx.source_context.template,
         template_offset: ctx.source_context.offset,
@@ -87,6 +89,8 @@ pub(super) fn emit_scoped_event_references(
 }
 
 struct EventNavigationContext<'a> {
+    diagnostic_ownership:
+        Option<&'a crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector>,
     scopes: &'a vize_croquis::ScopeChain,
     template_source: Option<&'a str>,
     template_offset: u32,
@@ -297,7 +301,8 @@ fn emit_resolved_events(
                 ctx.template_source,
                 ctx.template_offset,
                 ctx.scopes,
-            ),
+            )
+            .with_diagnostic_ownership(ctx.diagnostic_ownership),
             indent,
         );
         ts.push_str(");\n");
@@ -316,7 +321,23 @@ fn emit_resolved_events(
         if !emitted.insert(name.clone()) {
             continue;
         }
-        append!(*ts, "{indent}  \"{name}\": {value},\n");
+        append!(*ts, "{indent}  ");
+        let key_start = ts.len();
+        append!(*ts, "\"{name}\"");
+        let key_end = ts.len();
+        ts.push_str(": ");
+        let value_start = ts.len();
+        ts.push_str(value.as_str());
+        let value_end = ts.len();
+        crate::virtual_ts::expressions::ComponentPropSource::new(
+            ctx.template_source,
+            ctx.template_offset,
+            ctx.scopes,
+        )
+        .with_diagnostic_ownership(ctx.diagnostic_ownership)
+        .inference_only()
+        .record_prop_projection(usage, prop, key_start..key_end, value_start..value_end);
+        ts.push_str(",\n");
     }
     append!(*ts, "{indent}}});\n");
 }

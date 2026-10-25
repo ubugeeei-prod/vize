@@ -14,6 +14,8 @@ use crate::virtual_ts::{VizeSemanticLink, types::VizeMapping};
 
 #[derive(Default)]
 pub(super) struct RootOwnerPacket {
+    pub(super) diagnostic_ownership:
+        crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector,
     pub(super) text: String,
     pub(super) mappings: Vec<VizeMapping>,
     pub(super) diagnostic_mappings: Vec<VizeMapping>,
@@ -27,8 +29,16 @@ impl RootOwnerPacket {
         mappings: &mut Vec<VizeMapping>,
         diagnostic_mappings: &mut Vec<VizeMapping>,
         links: &mut Vec<VizeSemanticLink>,
+        diagnostic_ownership: Option<
+            &crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector,
+        >,
     ) {
         let offset = text.len();
+        if let Some(collector) = diagnostic_ownership {
+            collector
+                .borrow_mut()
+                .append_rebased(self.diagnostic_ownership.into_inner(), offset);
+        }
         text.push_str(self.text.as_str());
         for (target, rows) in [
             (mappings, self.mappings),
@@ -198,6 +208,7 @@ mod tests {
             0,
             (
                 ScopeGenerationOptions {
+                    diagnostic_ownership: None,
                     check_options: VirtualTsCheckOptions {
                         check_unknown_events: true,
                         ..Default::default()

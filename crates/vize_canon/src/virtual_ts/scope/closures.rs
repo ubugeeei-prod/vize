@@ -113,10 +113,12 @@ pub(super) fn emit_scope_closures(
         SlotOutletChecks::default()
     };
     slot_outlets.emit_helpers(ts);
-    let skipped_expression_ranges =
-        profile!("canon.virtual_ts.component_prop_expression_ranges", {
-            collect_component_prop_expression_ranges(summary, &options, &slot_outlets)
-        });
+    let expression_plan = profile!("canon.virtual_ts.component_prop_expression_ranges", {
+        collect_component_prop_expression_ranges(summary, &options, &slot_outlets)
+    });
+    let skipped_expression_ranges = expression_plan.skipped;
+    let checks =
+        checks.with_diagnostic_ownership(options.diagnostic_ownership, &expression_plan.owners);
 
     let children_map: FxHashMap<u32, Vec<ScopeId>> =
         profile!("canon.virtual_ts.build_scope_tree", {
@@ -199,6 +201,7 @@ pub(super) fn emit_scope_closures(
         FxHashSet::default()
     };
     let props_ctx = ComponentPropsContext {
+        diagnostic_ownership: options.diagnostic_ownership,
         summary,
         model_modifiers: checks.model_modifiers,
         template_ast: options.template_ast,
@@ -246,10 +249,16 @@ pub(super) fn emit_scope_closures(
         } else {
             for &usage in usages {
                 if let Some(packet) = root_packets.get_mut(usage.0) {
+                    let packet_ctx = ComponentPropsContext {
+                        diagnostic_ownership: options
+                            .diagnostic_ownership
+                            .map(|_| &packet.diagnostic_ownership),
+                        ..props_ctx
+                    };
                     emit_event_references(
                         &mut packet.text,
                         &mut packet.mappings,
-                        &props_ctx,
+                        &packet_ctx,
                         &[usage],
                     );
                 } else {

@@ -841,7 +841,8 @@ fn check_pack(
             | "pug-refusal-10430"
             | "portable-pug-10434"
             | "jsx-prop-token-ranges-10494"
-            | "unicode-prop-bindings-10573" => regression,
+            | "unicode-prop-bindings-10573"
+            | "component-input-diagnostic-owners-10607" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
             }
@@ -1192,6 +1193,25 @@ fn unicode_prop_bindings_preserve_complete_authored_diagnostics() {
             "keyed-unicode",
             "reserved-hyphen-ascii",
             "unicode-continue",
+        ],
+    );
+}
+
+#[test]
+fn component_input_copies_preserve_complete_authored_diagnostics() {
+    check_pack(
+        "component-input-diagnostic-owners-10607",
+        "component_input_copies_preserve_complete_authored_diagnostics",
+        "bd905e766c37ad5bacabaacbec02c90def36726e",
+        Some(10607),
+        &[
+            "art-generic-form-invalid",
+            "art-generic-form-repaired",
+            "slot-prop-without-children-invalid",
+            "slot-prop-named-child-invalid",
+            "slot-prop-two-named-children-invalid",
+            "slot-prop-named-child-repaired",
+            "two-files-same-offset-invalid",
         ],
     );
 }

@@ -203,6 +203,8 @@ impl<'a> AuthoredScriptMetadata<'a> {
 
 #[derive(Debug, Clone, Copy, Default)]
 pub(crate) struct VirtualTsGenerationOptions<'a> {
+    pub(crate) diagnostic_ownership:
+        Option<&'a super::diagnostic_ownership::DiagnosticOwnershipCollector>,
     /// Descriptor-owned block roles and attributes survive script parse failure.
     pub(crate) authored_scripts: Option<AuthoredScriptMetadata<'a>>,
     pub(crate) check_options: VirtualTsCheckOptions,

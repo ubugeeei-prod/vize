@@ -1,4 +1,6 @@
-use vize_carton::FxHashSet;
+use crate::virtual_ts::diagnostic_ownership::InputOwner;
+use crate::virtual_ts::expressions::ComponentPropSource;
+use vize_carton::{FxHashMap, FxHashSet};
 use vize_croquis::{Croquis, TemplateExpressionKind};
 
 use super::component_prop_checker::contains_inline_function_prop_value;
@@ -6,16 +8,45 @@ use super::component_props::component_usage_has_checkable_binding;
 use super::context::ScopeGenerationOptions;
 use super::slot_outlet_props::SlotOutletChecks;
 
+#[derive(Default)]
+pub(super) struct ComponentPropExpressionPlan {
+    pub(super) skipped: FxHashSet<(u32, u32)>,
+    pub(super) owners: FxHashMap<(u32, u32, u32), InputOwner>,
+}
+
 pub(super) fn collect_component_prop_expression_ranges(
     summary: &Croquis,
     options: &ScopeGenerationOptions<'_, '_>,
     slot_outlets: &SlotOutletChecks,
-) -> FxHashSet<(u32, u32)> {
+) -> ComponentPropExpressionPlan {
     if !options.check_options.check_props {
-        return FxHashSet::default();
+        return ComponentPropExpressionPlan::default();
     }
 
-    let mut ranges = slot_outlets.expression_ranges(summary);
+    let mut plan = ComponentPropExpressionPlan {
+        skipped: slot_outlets.expression_ranges(summary),
+        owners: FxHashMap::default(),
+    };
+    let positions: FxHashSet<_> = if options.diagnostic_ownership.is_some() {
+        summary
+            .template_expressions
+            .iter()
+            .map(|expr| {
+                (
+                    expr.scope_id.as_u32(),
+                    expr.start as usize,
+                    expr.end as usize,
+                )
+            })
+            .collect()
+    } else {
+        FxHashSet::default()
+    };
+    let source = ComponentPropSource::new(
+        options.template_ast.map(|root| root.source),
+        0,
+        &summary.scopes,
+    );
     let external_template_bindings: FxHashSet<&str> = options
         .virtual_ts_options
         .external_template_bindings
@@ -44,11 +75,25 @@ pub(super) fn collect_component_prop_expression_ranges(
                     && expr.end <= spread.end
                     && expr.content.as_str().trim() == spread.expression.as_str().trim()
                 {
-                    ranges.insert((expr.start, expr.end));
+                    plan.skipped.insert((expr.start, expr.end));
                 }
             }
         }
         for prop in &usage.props {
+            if options.diagnostic_ownership.is_some()
+                && let Some(owner) = InputOwner::for_prop(&usage, prop)
+                && let Some(value) = source.value_source_range(prop)
+                && positions.contains(&(usage.scope_id.as_u32(), value.start, value.end))
+            {
+                plan.owners.insert(
+                    (
+                        usage.scope_id.as_u32(),
+                        value.start as u32,
+                        value.end as u32,
+                    ),
+                    owner,
+                );
+            }
             if prop.name_is_dynamic {
                 continue;
             }
@@ -73,10 +118,10 @@ pub(super) fn collect_component_prop_expression_ranges(
                     && expr.end <= prop.end
                     && expr.content.as_str().trim() == value
                 {
-                    ranges.insert((expr.start, expr.end));
+                    plan.skipped.insert((expr.start, expr.end));
                 }
             }
         }
     }
-    ranges
+    plan
 }

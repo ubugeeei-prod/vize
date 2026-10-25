@@ -200,10 +200,16 @@ pub(super) fn generate_component_props(
     }
     for &(idx, usage) in checkable_usages {
         if let Some(mut packet) = root_packets.remove(idx) {
+            let packet_ctx = ComponentPropsContext {
+                diagnostic_ownership: ctx
+                    .diagnostic_ownership
+                    .map(|_| &packet.diagnostic_ownership),
+                ..*ctx
+            };
             generate_usage_declarations(
                 &mut packet.text,
                 &mut packet.mappings,
-                ctx,
+                &packet_ctx,
                 &shared_contracts,
                 idx,
                 usage,
@@ -212,12 +218,24 @@ pub(super) fn generate_component_props(
                 &mut packet.text,
                 &mut packet.mappings,
                 &mut packet.semantic_links,
-                ctx,
+                &packet_ctx,
                 idx,
                 usage,
             );
-            generate_root_usage_checks(&mut packet.text, &mut packet.mappings, ctx, idx, usage);
-            packet.append_to(ts, mappings, diagnostic_mappings, semantic_links);
+            generate_root_usage_checks(
+                &mut packet.text,
+                &mut packet.mappings,
+                &packet_ctx,
+                idx,
+                usage,
+            );
+            packet.append_to(
+                ts,
+                mappings,
+                diagnostic_mappings,
+                semantic_links,
+                ctx.diagnostic_ownership,
+            );
         }
     }
 }

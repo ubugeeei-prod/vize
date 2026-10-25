@@ -124,7 +124,11 @@ fn append_props_object(
             );
         }
         let name = super::super::helpers::to_camel_case(prop.name.as_str());
-        append!(*ts, "{expr_indent}  \"{name}\": ");
+        append!(*ts, "{expr_indent}  ");
+        let key_start = ts.len();
+        append!(*ts, "\"{name}\"");
+        let key_end = ts.len();
+        ts.push_str(": ");
         // This copy is intentionally unmapped. `@ts-ignore` covers only the
         // next line, so the parameter tokens have to sit on the property line
         // even when the author broke them inside the opening parenthesis.
@@ -135,7 +139,13 @@ fn append_props_object(
         } else {
             value.as_str()
         };
-        append_prop_value(ts, value);
+        let value_range = append_prop_value(ts, value);
+        source_context.inference_only().record_prop_projection(
+            usage,
+            prop,
+            key_start..key_end,
+            value_range,
+        );
         ts.push_str(",\n");
     }
     for spread in spreads {

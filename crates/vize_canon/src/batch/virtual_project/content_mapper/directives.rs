@@ -188,6 +188,39 @@ pub(super) fn with_component_prop_echoes(
     Some(directives)
 }
 
+/// Only an emitter-proven repeated expression is excluded. Put synthetic
+/// ignores first: upstream marks the first matching tuple used, so an echo
+/// must never satisfy an authored expect directive on a different check.
+pub(super) fn with_owned_input_echoes(
+    directives: Option<ContentMapperDiagnosticDirectives>,
+    echoes: &[crate::virtual_ts::diagnostic_ownership::DiagnosticEcho],
+) -> Option<ContentMapperDiagnosticDirectives> {
+    let mut owned = echoes
+        .iter()
+        .filter(|echo| !echo.authored.is_empty())
+        .map(|echo| {
+            ContentMapperDiagnosticDirective([
+                echo.authored.start,
+                echo.authored.len(),
+                echo.generated.start,
+                echo.generated.end,
+                DIRECTIVE_POLICY_IGNORE,
+                0,
+            ])
+        })
+        .collect::<Vec<_>>();
+    if owned.is_empty() {
+        return directives;
+    }
+    let mut directives = directives.unwrap_or(ContentMapperDiagnosticDirectives {
+        unused_expect_directive_diagnostics: Vec::new(),
+        directives: Vec::new(),
+    });
+    owned.append(&mut directives.directives);
+    directives.directives = owned;
+    Some(directives)
+}
+
 fn preceded_by_named_prop_ignore(generated: &str, start: usize) -> bool {
     let Some(line_start) = generated.get(..start).and_then(|prefix| prefix.rfind('\n')) else {
         return false;

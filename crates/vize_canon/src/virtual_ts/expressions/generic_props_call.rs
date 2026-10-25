@@ -190,7 +190,7 @@ pub(crate) fn generate_slot_host_binding(
         &mut discarded,
         usage,
         template_binding_access,
-        source_context,
+        source_context.inference_only(),
         indent,
     );
     if usage.vif_guard.is_some() {
@@ -209,7 +209,7 @@ pub(crate) fn generate_slot_host_binding(
         &mut discarded,
         usage,
         template_binding_access,
-        source_context,
+        source_context.inference_only(),
         indent,
     );
     if usage.vif_guard.is_some() {

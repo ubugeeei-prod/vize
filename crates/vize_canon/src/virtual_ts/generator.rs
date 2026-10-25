@@ -710,6 +710,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                         &template_binding_access,
                         template_offset,
                         ScopeGenerationOptions {
+                            diagnostic_ownership: generation_options.diagnostic_ownership,
                             check_options,
                             virtual_ts_options: options,
                             setup_spread_bindings: template_ref_unwraps.setup_spread_bindings(),
