@@ -283,6 +283,7 @@ export function classifyFormatProbe(file: string, stages: FormatStage[]) {
   const expected = `error:${reference[0].line}:${reference[0].column} [TS${reference[0].code}] ${reference[0].message}`;
   const pass =
     invalid.nativeStatus === 1 &&
+    !invalid.nativeReport!.files!.some((row) => row.file !== file && row.diagnostics.length) &&
     nativeInvalid.diagnostics.includes(expected) &&
     repaired.nativeStatus === 0 &&
     nativeRepaired.diagnostics.length === 0 &&

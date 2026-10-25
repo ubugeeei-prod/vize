@@ -100,7 +100,7 @@ function mutationControls(packet: Packet) {
     );
     assert.throws(() => equivalent({ ...packet, ...change }, packet));
   }
-  const report = JSON.parse(packet.stdout);
+  let report = JSON.parse(packet.stdout);
   for (const mutate of [
     () => {
       report.programs[0].unexpected = true;
@@ -110,6 +110,7 @@ function mutationControls(packet: Packet) {
         [];
     },
   ]) {
+    report = JSON.parse(packet.stdout);
     mutate();
     assert.throws(() =>
       equivalent({ ...packet, stdout: `${JSON.stringify(report, null, 2)}\n` }, packet),

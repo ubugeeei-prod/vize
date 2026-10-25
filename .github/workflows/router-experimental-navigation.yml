@@ -73,7 +73,9 @@ jobs:
           sha256sum "$RUNNER_TEMP/router-navigation-public/package-lock.json" "$RUNNER_TEMP/router-navigation-public/node_modules/vize/package.json" > "$RUNNER_TEMP/router-navigation/public-oracle-identity.sha256"
       - name: Build exact source CLI
         run: |
-          cargo build --locked --profile ci -p vize --bin vize
+          cargo build --profile ci -p vize
+          vp node tests/differential/build-receipt.ts
+          cp target/ci/vize.differential-build.json "$RUNNER_TEMP/router-navigation/source-build.json"
           sha256sum target/ci/vize > "$RUNNER_TEMP/router-navigation/source-cli.sha256"
       - name: Capture complete source and independent reference matrix
         env:
