@@ -2,7 +2,7 @@
   "schema": "vize.css-hover.source-custody",
   "version": 1,
   "historicalBaselineRevision": "2934b35b18393c188b3da5f8e50595299589fb8c",
-  "productTreeRevision": "186b062ced4aa52694e92f3def1dc2d6ea676ab2",
+  "productTreeRevision": "00a82e5c92e38cb16d673c682db06a692f372cba",
   "baselineCratesTreeOid": "3963f87b333566d98319039ce43fcd3714dd02fa",
   "baselineCratesSha256": "981087aca813963e627a19d46a458c3dd151cb0a11bb395b4c50e46d410475b4",
   "historicalCapture": {
@@ -33,19 +33,26 @@
       }
     ]
   },
-  "buildPaths": ["Cargo.toml", "Cargo.lock", "rust-toolchain.toml", ".cargo"],
+  "buildPaths": [
+    "Cargo.toml",
+    "Cargo.lock",
+    "rust-toolchain.toml",
+    ".cargo",
+    "davinci",
+    "vendor",
+    "assets",
+    "tools/benchmarks/crates",
+    "tests/davinci_test_support",
+    "tests/vize_test_runner",
+    "npm/cli/schemas/vize.config.schema.json",
+    "docs/davinci/plan/budgets.toml"
+  ],
   "buildInputs": [
     {
-      "path": ".cargo/audit.toml",
-      "mode": "100644",
-      "type": "blob",
-      "oid": "f7cef9068cfbb306ceb2153248e6ec2457394c7e"
-    },
-    {
-      "path": ".cargo/config.toml",
-      "mode": "100644",
-      "type": "blob",
-      "oid": "c09dd990ba2d541df0fe40aa6f96118218e1f9a7"
+      "path": ".cargo",
+      "mode": "040000",
+      "type": "tree",
+      "oid": "94a0f928a397c194b87f2f75e4a6bb2e1371dfe3"
     },
     {
       "path": "Cargo.lock",
@@ -60,10 +67,58 @@
       "oid": "2b84b653d98a146473e529100d32e85e820820ff"
     },
     {
+      "path": "assets",
+      "mode": "040000",
+      "type": "tree",
+      "oid": "14160bf03309280d6bfc8e0cd64529f2f08d682f"
+    },
+    {
+      "path": "davinci",
+      "mode": "040000",
+      "type": "tree",
+      "oid": "a6921c2e8a073ffcd866c59415896d1863dd2401"
+    },
+    {
+      "path": "docs/davinci/plan/budgets.toml",
+      "mode": "100644",
+      "type": "blob",
+      "oid": "0baced1e6f79c079df1342f1665f8d9a61f56aa0"
+    },
+    {
+      "path": "npm/cli/schemas/vize.config.schema.json",
+      "mode": "100644",
+      "type": "blob",
+      "oid": "c3b597246f2dc66651818cd20f4118e34283ee1e"
+    },
+    {
       "path": "rust-toolchain.toml",
       "mode": "100644",
       "type": "blob",
       "oid": "93a1d79896529a7e9fba1a42459ef1682979971f"
+    },
+    {
+      "path": "tests/davinci_test_support",
+      "mode": "040000",
+      "type": "tree",
+      "oid": "07e3d846afcecd2681af276e4d9ae5f20a6cd845"
+    },
+    {
+      "path": "tests/vize_test_runner",
+      "mode": "040000",
+      "type": "tree",
+      "oid": "817d8add3eeb04b9b324824458b7a209f480ebab"
+    },
+    {
+      "path": "tools/benchmarks/crates",
+      "mode": "040000",
+      "type": "tree",
+      "oid": "49d2214b899027a94bc39c3f777f076938b15b7e"
+    },
+    {
+      "path": "vendor",
+      "mode": "040000",
+      "type": "tree",
+      "oid": "3c31aca31d8bd24440911b86a3066b9dd856b475"
     }
   ],
   "layers": [
@@ -206,5 +261,479 @@
         }
       ]
     }
-  ]
+  ],
+  "historicalBuildInputs": [
+    {
+      "path": ".cargo/audit.toml",
+      "mode": "100644",
+      "type": "blob",
+      "oid": "f7cef9068cfbb306ceb2153248e6ec2457394c7e"
+    },
+    {
+      "path": ".cargo/config.toml",
+      "mode": "100644",
+      "type": "blob",
+      "oid": "c09dd990ba2d541df0fe40aa6f96118218e1f9a7"
+    },
+    {
+      "path": "Cargo.lock",
+      "mode": "100644",
+      "type": "blob",
+      "oid": "748a9c1cb2b9f1a8164a7ad3ab540676cf40a286"
+    },
+    {
+      "path": "Cargo.toml",
+      "mode": "100644",
+      "type": "blob",
+      "oid": "2b84b653d98a146473e529100d32e85e820820ff"
+    },
+    {
+      "path": "rust-toolchain.toml",
+      "mode": "100644",
+      "type": "blob",
+      "oid": "93a1d79896529a7e9fba1a42459ef1682979971f"
+    }
+  ],
+  "historicalP1": {
+    "sourceRevision": "76fbd6e7f405b4cdc10193be356f1609cbf3c5f4",
+    "cratesTreeOid": "f0d56f15965553f1bf8904454814fc9cd835d641",
+    "cratesSha256": "82c787eb33af93e0b58684c6db1223ff503de7c7120eba6a91b8120211cd1a57"
+  },
+  "mergedMain": {
+    "sourceRevision": "116a05062ad5ce4b9fa56bba0c801835498418fa",
+    "cratesTreeOid": "e05e03b7862b01074a90637d6d5a7ddf21e37969",
+    "cratesSha256": "b6d6e157dfdfd459ad261a061599787b14f25bea684d980903b75ff61d01b98d",
+    "integrationLayer": {
+      "name": "merged-main-integration-116a",
+      "baseRevision": "76fbd6e7f405b4cdc10193be356f1609cbf3c5f4",
+      "reviewedRevision": "116a05062ad5ce4b9fa56bba0c801835498418fa",
+      "changes": [
+        {
+          "path": "crates/vize/src/commands/lint/cross_file.rs",
+          "before": {
+            "path": "crates/vize/src/commands/lint/cross_file.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "4cd44f1db10d24df3e7a63d2d34d353a066911f4"
+          },
+          "after": {
+            "path": "crates/vize/src/commands/lint/cross_file.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "400d83c017f69d5d0dc08517aef555a5720c1527"
+          }
+        },
+        {
+          "path": "crates/vize/src/commands/lint/cross_file/effect_summary_tests.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize/src/commands/lint/cross_file/effect_summary_tests.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "05542719d2c8654246a2cfdfe7b49535f8cc3fe4"
+          }
+        },
+        {
+          "path": "crates/vize/src/commands/lint/cross_file/sfc.rs",
+          "before": {
+            "path": "crates/vize/src/commands/lint/cross_file/sfc.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "5d4c1b029c63e8b40592826eeaf1d7d4b55a05ce"
+          },
+          "after": {
+            "path": "crates/vize/src/commands/lint/cross_file/sfc.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "489135d1adbe12ba3a711e6bc79d3e9d69bb3cc2"
+          }
+        },
+        {
+          "path": "crates/vize/tests/content_mapper_tsgo_cli.rs",
+          "before": {
+            "path": "crates/vize/tests/content_mapper_tsgo_cli.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "863d8650b377bd03a3168590470da69781cefdf8"
+          },
+          "after": {
+            "path": "crates/vize/tests/content_mapper_tsgo_cli.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "03fbdbac8fc973b577a048e4ffcde0df61c4c798"
+          }
+        },
+        {
+          "path": "crates/vize/tests/content_mapper_tsgo_cli/optional_prop_spacing.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize/tests/content_mapper_tsgo_cli/optional_prop_spacing.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "5dd28ba685e2e64517d4bc60bbb0ce8ee8d55789"
+          }
+        },
+        {
+          "path": "crates/vize/tests/content_mapper_tsgo_cli/unicode_prop_bindings.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize/tests/content_mapper_tsgo_cli/unicode_prop_bindings.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "870d2939229074e46838ef62c0762ba19d2a489d"
+          }
+        },
+        {
+          "path": "crates/vize_canon/src/virtual_ts/props/mappings.rs",
+          "before": {
+            "path": "crates/vize_canon/src/virtual_ts/props/mappings.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "b826377e906bd2d8ce879997d111547bfcda8bc8"
+          },
+          "after": {
+            "path": "crates/vize_canon/src/virtual_ts/props/mappings.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "83fa1116f587352d8d695f5d4874500cc81a47ee"
+          }
+        },
+        {
+          "path": "crates/vize_canon/src/virtual_ts/props/mappings/tests.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize_canon/src/virtual_ts/props/mappings/tests.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "ad503407428803f30c55583c043a8d7722874a8f"
+          }
+        },
+        {
+          "path": "crates/vize_canon/src/virtual_ts/props/template_model.rs",
+          "before": {
+            "path": "crates/vize_canon/src/virtual_ts/props/template_model.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "8478ba2a61341fb1abf3dc728e76b717d3959f8b"
+          },
+          "after": {
+            "path": "crates/vize_canon/src/virtual_ts/props/template_model.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "2eedbbefb5ac7b57db732736fd92fafec6dd61ec"
+          }
+        },
+        {
+          "path": "crates/vize_canon/tests/fix_history_diagnostics.rs",
+          "before": {
+            "path": "crates/vize_canon/tests/fix_history_diagnostics.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "b339335feb60a088ffcdc25526493c8b402ae35b"
+          },
+          "after": {
+            "path": "crates/vize_canon/tests/fix_history_diagnostics.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "ee13835f06993aef6b14d41dfe271cca499eb549"
+          }
+        },
+        {
+          "path": "crates/vize_croquis/src/types.rs",
+          "before": {
+            "path": "crates/vize_croquis/src/types.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "a4da82c6131900a7b876d2be65c689abb0b204cb"
+          },
+          "after": {
+            "path": "crates/vize_croquis/src/types.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "153b801f5c751b8acee64e1c5ce2457e94860989"
+          }
+        },
+        {
+          "path": "crates/vize_croquis/src/types/optional_spacing_tests.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize_croquis/src/types/optional_spacing_tests.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "5c2ec4eeccf8670692dda9e1426bc3555ac85fdd"
+          }
+        },
+        {
+          "path": "crates/vize_croquis/src/types/props.rs",
+          "before": {
+            "path": "crates/vize_croquis/src/types/props.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "9137ea7a73b6a9dee0093b8c4d9285ec25746fa6"
+          },
+          "after": {
+            "path": "crates/vize_croquis/src/types/props.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "2fd486ff1384c6c678cafaba0b7e53d86b5d3420"
+          }
+        },
+        {
+          "path": "crates/vize_croquis/src/types/readonly_primitive_tests.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize_croquis/src/types/readonly_primitive_tests.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "e06157931bc85a157290b6b0a6a7175bfbdc351d"
+          }
+        },
+        {
+          "path": "crates/vize_croquis_cf/src/analyzer/core/deps.rs",
+          "before": {
+            "path": "crates/vize_croquis_cf/src/analyzer/core/deps.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "7915e55a59ec06768ec248242c331db02f964390"
+          },
+          "after": {
+            "path": "crates/vize_croquis_cf/src/analyzer/core/deps.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "31da7de620f45d29afc0b946ba15267897bab857"
+          }
+        },
+        {
+          "path": "crates/vize_croquis_cf/src/analyzer/core/files.rs",
+          "before": {
+            "path": "crates/vize_croquis_cf/src/analyzer/core/files.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "fd72fff595d8cd9ab8754bad9566500115f120b2"
+          },
+          "after": {
+            "path": "crates/vize_croquis_cf/src/analyzer/core/files.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "f36d5d3d2e5b111c741688ad63112f0f9be9480c"
+          }
+        },
+        {
+          "path": "crates/vize_patina/examples/image_alt_measurement/mod.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize_patina/examples/image_alt_measurement/mod.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "e29ce6eaa65d1ee87e0095770684b4b03b81d61d"
+          }
+        },
+        {
+          "path": "crates/vize_patina/examples/native_image_alt_canonical.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize_patina/examples/native_image_alt_canonical.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "6ddbe0fdeee2e4940aa5225948438dc7ebfeebbb"
+          }
+        },
+        {
+          "path": "crates/vize_patina/examples/native_image_alt_original.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize_patina/examples/native_image_alt_original.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "1c04b9a5966b6f4655426af63cfc78109b242b17"
+          }
+        },
+        {
+          "path": "crates/vize_patina/src/attribute_policy.rs",
+          "before": {
+            "path": "crates/vize_patina/src/attribute_policy.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "31e69ba183a3708369fd99282cb11f1a49bbc948"
+          },
+          "after": {
+            "path": "crates/vize_patina/src/attribute_policy.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "a1ec386b37b7e7e20a518d4c764249e3bd2643ac"
+          }
+        },
+        {
+          "path": "crates/vize_patina/src/attribute_policy/img_alt.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize_patina/src/attribute_policy/img_alt.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "55c0f416d2c077dfa2fa41f9d419b75373b55250"
+          }
+        },
+        {
+          "path": "crates/vize_patina/src/native/canonical.rs",
+          "before": {
+            "path": "crates/vize_patina/src/native/canonical.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "927597b65c3bbee5ce8f82c3f58a1a0b26b72f1d"
+          },
+          "after": {
+            "path": "crates/vize_patina/src/native/canonical.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "7508e7d279566b486d543f7ac4ab08ef017a5c04"
+          }
+        },
+        {
+          "path": "crates/vize_patina/src/native/canonical/img_alt.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize_patina/src/native/canonical/img_alt.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "31411e5b772260f4303003cee94ef140cda7796e"
+          }
+        },
+        {
+          "path": "crates/vize_patina/src/native/img_alt.rs",
+          "before": {
+            "path": "crates/vize_patina/src/native/img_alt.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "dbfa24cbc5a9ca7a58a308105e28242e02311422"
+          },
+          "after": {
+            "path": "crates/vize_patina/src/native/img_alt.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "9282e16d288bf9bb6353c7e10cf21be872c97af8"
+          }
+        },
+        {
+          "path": "crates/vize_patina/src/rules/a11y/img_alt.rs",
+          "before": {
+            "path": "crates/vize_patina/src/rules/a11y/img_alt.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "dbc84f2407fca46f33800d44b330de48aec44784"
+          },
+          "after": {
+            "path": "crates/vize_patina/src/rules/a11y/img_alt.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "39fdc66f98a7856bfcfbae9781992e12fe061d13"
+          }
+        },
+        {
+          "path": "crates/vize_patina/src/rules/facts/max_template_complexity/tests.rs",
+          "before": {
+            "path": "crates/vize_patina/src/rules/facts/max_template_complexity/tests.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "93168210bbb81e40a5a52349a1f02903e9a6b155"
+          },
+          "after": {
+            "path": "crates/vize_patina/src/rules/facts/max_template_complexity/tests.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "b60ec4b70ffe721517e0acb99fde25d3e38b27eb"
+          }
+        },
+        {
+          "path": "crates/vize_patina/src/rules/facts/max_template_complexity/tests/decoded_coordinates.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize_patina/src/rules/facts/max_template_complexity/tests/decoded_coordinates.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "e6af4480787cfde13cd9caeb765b118f62921e8a"
+          }
+        },
+        {
+          "path": "crates/vize_patina/tests/main.rs",
+          "before": {
+            "path": "crates/vize_patina/tests/main.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "af3cefcbfa13838160c9af6476b76b2ac6b1a585"
+          },
+          "after": {
+            "path": "crates/vize_patina/tests/main.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "e9ccaee198106d5ec496f42c1c738e2eacaf1f39"
+          }
+        },
+        {
+          "path": "crates/vize_patina/tests/native_canonical_img_alt.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize_patina/tests/native_canonical_img_alt.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "a4cbd53c2105da4b5e6ba5d34fdaa27bb7ae8933"
+          }
+        },
+        {
+          "path": "crates/vize_patina/tests/native_canonical_img_alt/refusals.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize_patina/tests/native_canonical_img_alt/refusals.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "7c57ac4821befc7b14486e7146966e905bfedd17"
+          }
+        },
+        {
+          "path": "crates/vize_patina/tests/native_canonical_img_alt/support.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize_patina/tests/native_canonical_img_alt/support.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "77c6b695c204eca928fb2f368e0b8b396db737d3"
+          }
+        },
+        {
+          "path": "crates/vize_vitrine/src/wasm/cross_file.rs",
+          "before": {
+            "path": "crates/vize_vitrine/src/wasm/cross_file.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "ca8822f39040d6d2e91460a9ba1a2339f05472c5"
+          },
+          "after": {
+            "path": "crates/vize_vitrine/src/wasm/cross_file.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "1e1808097d72f9d6440b912c768b6ece019fc272"
+          }
+        },
+        {
+          "path": "crates/vize_vitrine/src/wasm/cross_file/effect_summary.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize_vitrine/src/wasm/cross_file/effect_summary.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "46e741eb1ee0687966826432d656e0bbdf85e4ca"
+          }
+        },
+        {
+          "path": "crates/vize_vitrine/src/wasm/cross_file/effect_summary/tests.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize_vitrine/src/wasm/cross_file/effect_summary/tests.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "6bb750362789a6d95f7988ec4b4cbd6065fee006"
+          }
+        }
+      ]
+    }
+  }
 }
