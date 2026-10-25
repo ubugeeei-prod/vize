@@ -2,7 +2,7 @@
 mod for_bindings;
 use vize_croquis::reactivity::ReactiveKind;
 use vize_croquis::{BindingType, Croquis, ScopeBinding, ScopeKind, VForScopeData, VSlotScopeData};
-use vize_l0::{Allocator, Box, CompactString, String, interner::Interner};
+use vize_l0::{Allocator, Box, CompactString, String, Vec, interner::Interner};
 
 use crate::errors::{CompilerError, ErrorCode};
 use crate::options::TransformOptions;
@@ -548,7 +548,7 @@ pub(super) fn clone_expression<'a>(
                 js_ast: s.js_ast,
                 hoisted: None,
                 identifiers: s.identifiers.as_ref().map(|names| {
-                    let mut retained = vize_l0::Vec::new_in(&allocator);
+                    let mut retained = Vec::new_in(&allocator);
                     for name in names {
                         retained.push(*name);
                     }

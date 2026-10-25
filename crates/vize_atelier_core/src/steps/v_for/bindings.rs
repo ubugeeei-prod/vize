@@ -98,7 +98,7 @@ mod tests {
             assert_eq!(node.content, alias);
             assert!(node.identifiers.is_none());
             assert!(node.js_ast.is_none());
-            assert_eq!(node.loc.span, vize_l0::Span::default());
+            assert_eq!(node.loc.span, vize_l0::Span::new(0, 0));
         }
     }
 

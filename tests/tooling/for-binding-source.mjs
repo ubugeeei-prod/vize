@@ -269,7 +269,7 @@ async function observe(packet, run) {
       stackFile: file,
       sha256: hash(trace),
     };
-    if (epoch === "head") throw error;
+    if (epoch === "head") process.exitCode = 1;
   }
 }
 
@@ -320,7 +320,21 @@ for (const packet of records.filter((row) => row.backend !== "ssr")) {
     assert.equal(typeof render, "function");
     const componentOptions = { render, props: ["items", "fallback"], inheritAttrs: false };
     const component =
-      packet.backend === "vapor" ? client.defineVaporComponent(componentOptions) : componentOptions;
+      packet.backend === "vapor"
+        ? client.defineVaporComponent({
+            ...componentOptions,
+            // The real Vapor callback receives setup state as its first argument.
+            // This host exposes the same authored inputs used by DOM and SSR.
+            setup: (props) => ({
+              get items() {
+                return props.items;
+              },
+              get fallback() {
+                return props.fallback;
+              },
+            }),
+          })
+        : componentOptions;
     const state = client.reactive({ items: structuredClone(fixture.items), fallback: "A" });
     const app =
       packet.backend === "vapor"
@@ -360,6 +374,7 @@ for (const packet of records.filter((row) => row.backend !== "ssr")) {
         );
       packet.warnings = warnings;
     } finally {
+      packet.warnings = warnings;
       app.unmount();
       host.remove();
     }
