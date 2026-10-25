@@ -128,7 +128,10 @@ export function newNativeShutdownProtocolCases(
       const source = readFile("head", `${root}/tests.rs`)?.toString("utf8");
       require(source !== undefined &&
         /\bmod provider_pairs;/.test(source), "missing ordinary pair test module");
-      require(source !== undefined && /#\[cfg\(unix\)\]\s+mod native_provider;/.test(source), "missing ordinary native provider test module");
+      require(source !== undefined &&
+        /#\[cfg\(unix\)\]\s+mod native_provider;/.test(
+          source,
+        ), "missing ordinary native provider test module");
     }
     require(Array.isArray(row.tests) &&
       row.tests.length === registeredSelectors.length, "all registered selectors required");
