@@ -6,6 +6,8 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  readdirSync,
+  readlinkSync,
   writeFileSync,
 } from "node:fs";
 import { createRequire } from "node:module";
@@ -171,16 +173,16 @@ await test("capture all native runtime configurations before semantic assertions
             ...targetOptions,
             mode: "function",
             sourceMap: true,
-            filename: files[0].path,
-            scopeId: files[0].scopeId,
+            filename: files[1].path,
+            scopeId: files[1].scopeId,
             ...(runtimeModuleName === undefined ? {} : { runtimeModuleName }),
             ...(runtimeGlobalName === undefined ? {} : { runtimeGlobalName }),
           };
           const result = observe("function", { target, ...options }, () =>
-            native.compileSfc(sourceFiles[0], options),
+            native.compileSfc(sourceFiles[1], options),
           );
           const functionBatch = observe("function-files", { target, ...options }, () =>
-            native.compileSfcBatchWithResults([files[0]], {
+            native.compileSfcBatchWithResults([files[1]], {
               ...options,
               includeSourceMap: true,
               includeHashes: true,
@@ -190,7 +192,7 @@ await test("capture all native runtime configurations before semantic assertions
             }),
           );
           const functionStats = observe("function-stats", { target, ...options }, () =>
-            native.compileSfcBatch("./Case-0.vue", options),
+            native.compileSfcBatch("./Case-1.vue", options),
           );
           cases.push({ target, options, function: result, functionBatch, functionStats });
         }
@@ -267,8 +269,13 @@ await test("single and batch code, maps and all shared metadata remain equal", s
         Object.fromEntries(keys.map((key) => [key, result[key]])),
         Object.fromEntries(keys.map((key) => [key, row.batch.results[index][key]])),
       );
-      if (row.options.sourceMap)
-        assert.deepEqual(JSON.parse(result.map).sourcesContent, [sourceFiles[index]]);
+      if (row.options.sourceMap) {
+        if (index === 0) {
+          // Existing template-only static output has no authored map link. The
+          // before-source comparison independently pins this absent-map DTO.
+          assert.equal(result.map, undefined);
+        } else assert.deepEqual(JSON.parse(result.map).sourcesContent, [sourceFiles[index]]);
+      }
     }
     if (row.stats) {
       assert.equal(row.stats.failed, 0);
@@ -329,8 +336,35 @@ await test(
 );
 
 await test("standalone DOM output reads the selected real runtime global", skip, () => {
-  const Vue = require(join(process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_VUE, "node_modules/vue"));
+  const runtimeRoot = process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_VUE;
+  const Vue = require(join(runtimeRoot, "node_modules/vue"));
   assert.equal(Vue.version, "3.5.44");
+  const inventory = (directory, relative = "") =>
+    readdirSync(directory, { withFileTypes: true })
+      .sort((left, right) => left.name.localeCompare(right.name))
+      .flatMap((entry) => {
+        const absolute = join(directory, entry.name);
+        const path = join(relative, entry.name);
+        if (entry.isDirectory()) return inventory(absolute, path);
+        if (entry.isSymbolicLink()) return [{ path, target: readlinkSync(absolute) }];
+        assert.equal(entry.isFile(), true);
+        const bytes = readFileSync(absolute);
+        return [{ path, bytes: bytes.length, sha256: hash(bytes) }];
+      });
+  writeFileSync(
+    join(proof, "actual-runtime-provider.json"),
+    JSON.stringify(
+      {
+        root: runtimeRoot,
+        version: Vue.version,
+        node: process.version,
+        lock: JSON.parse(readFileSync(join(runtimeRoot, "package-lock.json"))),
+        files: inventory(join(runtimeRoot, "node_modules")),
+      },
+      null,
+      2,
+    ) + "\n",
+  );
   for (const row of completeCases().filter((row) => row.function && row.target === "dom")) {
     const reads = [];
     const context = {};
@@ -351,9 +385,13 @@ await test("standalone DOM output reads the selected real runtime global", skip,
       });
     const component = vm.runInNewContext(`(function(){${row.function.code}\n})()`, context);
     assert.equal(typeof component.render, "function");
-    const rendered = component.render({}, []);
-    assert.equal(rendered.type, "div");
-    assert.equal(rendered.children, "Hello 😀");
+    const state = component.data();
+    const rendered = component.render(state, []);
+    assert.equal(rendered.type, "button");
+    assert.equal(rendered.children, "1");
+    rendered.props.onClick({});
+    const updated = component.render(state, []);
+    assert.equal(updated.children, "2");
     assert.deepEqual(reads, [chosen]);
     appendFileSync(
       join(proof, "runtime-globals.jsonl"),
@@ -362,6 +400,7 @@ await test("standalone DOM output reads the selected real runtime global", skip,
         reads,
         type: rendered.type,
         children: rendered.children,
+        updatedChildren: updated.children,
       }) + "\n",
     );
   }
@@ -373,7 +412,7 @@ await test("standalone single, files and statistics preserve code and maps", ski
     assert.equal(path, row.options.filename);
     assert.equal(scopeId, row.options.scopeId);
     assert.deepEqual(file, row.function);
-    assert.deepEqual(JSON.parse(file.map).sourcesContent, [sourceFiles[0]]);
+    assert.deepEqual(JSON.parse(file.map).sourcesContent, [sourceFiles[1]]);
     assert.equal(row.functionStats.failed, 0);
     assert.equal(row.functionStats.success, 1);
     assert.equal(row.functionStats.outputBytes, Buffer.byteLength(file.code));
