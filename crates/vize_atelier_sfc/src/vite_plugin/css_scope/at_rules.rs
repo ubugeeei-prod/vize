@@ -62,8 +62,11 @@ mod tests {
             "@supports(display:grid)",
             "@container(width>1px)",
         ] {
-            let source = vize_carton::format!(".a{{{condition}{{&:hover{{color:blue}}}}}}");
-            let expected = vize_carton::format!("{condition}{{.a[data-v-x]:hover{{color:blue}}}}");
+            let mut source = vize_carton::String::from(".a{");
+            source.push_str(condition);
+            source.push_str("{&:hover{color:blue}}}");
+            let mut expected = vize_carton::String::from(condition);
+            expected.push_str("{.a[data-v-x]:hover{color:blue}}");
             assert_eq!(scope_css_for_pipeline(&source, "data-v-x"), expected);
         }
         assert_eq!(
