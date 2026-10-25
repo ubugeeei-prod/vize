@@ -265,7 +265,7 @@ function captureRetainedApi(owners) {
 }
 
 /** Unsaved dependency reference offsets change; exact authored geometry matters. */
-export async function observeBetaNavigation(wire, consumer, campaign, source) {
+export async function observeBetaNavigation(wire, consumer, _campaign, source) {
   const uri = pathToFileURL(path.join(consumer.configRoot, "src/support.ts")).href;
   const declaration = source.indexOf("value: number"),
     use = source.lastIndexOf("value");
@@ -290,9 +290,4 @@ export async function observeBetaNavigation(wire, consumer, campaign, source) {
     result: [location(declaration), location(use)],
   });
   return { dependencyText: source, definition, references };
-}
-
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const { observeSourceLspSelection } = await import("./lsp.mjs");
-  await observeSourceLspSelection({ campaign: "native-beta-dto-workspace-10731" });
 }

@@ -46,7 +46,7 @@
   "producerFiles": [
     {
       "path": ".github/workflows/native-beta-diagnostic-dto.yml",
-      "sha256": "4d0cf97c4cd9a83a974ec763d92ce51c20f6c00af4d183dfa7d7fc658bd32d5b"
+      "sha256": "b0632222900b29538a9937558bbee233d633e2b4db8df1a5c3bc9aeb2b79b33e"
     },
     {
       "path": "tests/tooling/support/native-beta-dto/prepare-role.mjs",

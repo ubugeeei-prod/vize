@@ -157,7 +157,7 @@ export async function observeSharedApiTransitions({
       campaign.custody.inputFiles,
       "unsaved dependency controls preserve every authored disk byte",
     );
-    if (navigation)
+    if (navigation && dependencyVersion)
       phase.navigation = await navigation(
         wire,
         consumer,
@@ -239,13 +239,6 @@ export async function observeSharedApiTransitions({
       exactHover(phase[token], campaign.sources.valid, token);
     }
     assert.deepEqual(captureConsumerInputs(consumer), campaign.custody.inputFiles);
-    if (navigation)
-      phase.navigation = await navigation(
-        wire,
-        consumer,
-        campaign,
-        campaign.transitions.dependencyValid,
-      );
     profile.snapshotTransitions.push(phase);
   }
   assertSharedApiWirePackets(consumer, campaign, profile);

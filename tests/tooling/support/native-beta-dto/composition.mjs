@@ -22,6 +22,7 @@ const paths = [
     ...names,
     prefix + "lsp-strace-lines.mjs",
     prefix + "lsp-native-beta-dto.mjs",
+    prefix + "lsp-native-beta-workspace.mjs",
     ".github/workflows/native-beta-diagnostic-dto.yml",
     ...borrowed.shutdownSourceFiles.map((row) => row.path),
   ]),

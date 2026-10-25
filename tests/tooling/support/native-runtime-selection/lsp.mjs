@@ -246,13 +246,6 @@ export async function observeSourceLspSelection({ campaign = "runtime-selection"
             });
             exactHover(phase[token], text, token);
           }
-          if (betaCampaign)
-            phase.navigation = await observeBetaNavigation(
-              wire,
-              consumer,
-              sharedCampaign,
-              sharedCampaign.transitions.dependencyValid,
-            );
         } else if (name === "valid") {
           phase.unavailable = await wire.wait(
             (packet) =>

@@ -209,9 +209,12 @@ fn actual_sdk_semantic_error_repair_navigation_and_two_file_scope_are_complete()
     if expect_refusal {
         assert!(retained.is_err());
     } else {
+        let Some(error_phase) = rows.get(1) else {
+            panic!("whole error phase must remain recorded")
+        };
         assert_eq!(
             serde_json::to_value(retained.unwrap().unwrap()).unwrap(),
-            rows.get(1).unwrap()["lower"]["complete"]
+            error_phase["lower"]["complete"]
         );
     }
     // The neighboring error is still real, but can only appear in its own read.

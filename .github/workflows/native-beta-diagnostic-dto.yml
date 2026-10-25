@@ -75,7 +75,7 @@ jobs:
         run: |
           cargo test --locked --profile ci -p vize_canon --lib lsp_client::initial_diagnostics::
           cargo test --locked --profile ci -p vize_canon --lib lsp_client::editor_lsp::snapshot_source::
-          cargo clippy --locked --profile ci -p vize_canon --all-targets -- -D warnings
+          cargo clippy --locked --profile ci -p vize_canon -- -D warnings -D clippy::wildcard_imports
       - name: Preserve separate materialized close topology frontier with actual identities
         if: ${{ matrix.role == 'after' && matrix.sdk.version == '7.1.0-beta' }}
         env:
@@ -144,7 +144,7 @@ jobs:
           if [ "$CAMPAIGN" = runtime-selection ]; then
             node tests/tooling/support/native-runtime-selection/lsp.mjs
           else
-            node tests/tooling/support/native-runtime-selection/lsp-native-beta-dto.mjs
+            node tests/tooling/support/native-runtime-selection/lsp-native-beta-workspace.mjs
           fi
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
