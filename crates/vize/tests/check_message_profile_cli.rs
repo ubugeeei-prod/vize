@@ -4,6 +4,8 @@ use crate::support::{corsa_path, corsa_requirement};
 use serde_json::{Value, json};
 use std::{fs, path::Path, process::Command};
 
+mod capture;
+
 const SOURCE: &str = r#"type Required = { readonly kind: "expected"; readonly nested: { readonly label: "🙂"; readonly enabled: true } };
 const value: Required = { kind: "actual", nested: { label: "違う", enabled: false } };
 import Missing from "./Missing.vue";
@@ -109,8 +111,10 @@ fn real_check_message_profile_preserves_complete_native_packets_and_repair() {
         command.output().unwrap()
     };
     let plain = run(false);
+    capture::retain(project.path(), &runtime, "plain", &plain, false);
     assert_eq!(plain.status.code(), Some(1));
     let profiled = run(true);
+    capture::retain(project.path(), &runtime, "profiled", &profiled, true);
     assert_eq!(profiled.status.code(), plain.status.code());
     assert_eq!(
         profiled.stdout, plain.stdout,
@@ -133,23 +137,25 @@ fn real_check_message_profile_preserves_complete_native_packets_and_repair() {
         .map(|message| message.len() as u64)
         .sum::<u64>();
     assert_parse_profile(&profile, 4, message_bytes);
+    // Projection assembly and final authored-message restoration each inspect
+    // all four messages; only the first missing-import pass rewrites a mirror.
     assert_eq!(
-        counter(&profile, "canon.diagnostics.restore_specifiers.calls", 4),
-        4
+        counter(&profile, "canon.diagnostics.restore_specifiers.calls", 8),
+        8
     );
     assert_eq!(
         counter(
             &profile,
             "canon.diagnostics.restore_specifiers.quoted_candidates",
-            4
+            8
         ),
-        7
+        14
     );
     assert_eq!(
         counter(
             &profile,
             "canon.diagnostics.restore_specifiers.eligible_candidates",
-            4
+            8
         ),
         1
     );
@@ -157,20 +163,20 @@ fn real_check_message_profile_preserves_complete_native_packets_and_repair() {
         counter(
             &profile,
             "canon.diagnostics.restore_specifiers.source_searches",
-            4
+            8
         ),
-        7
+        14
     );
     assert_eq!(
         counter(
             &profile,
             "canon.diagnostics.restore_specifiers.source_search_input_bytes",
-            4
+            8
         ),
-        7 * SOURCE.len() as u64
+        14 * SOURCE.len() as u64
     );
     assert_eq!(
-        counter(&profile, "canon.diagnostics.restore_specifiers.rewrites", 4),
+        counter(&profile, "canon.diagnostics.restore_specifiers.rewrites", 8),
         1
     );
     // Complete raw 7.0.2 output has four lines (400 UTF-8 bytes), including
@@ -184,9 +190,9 @@ fn real_check_message_profile_preserves_complete_native_packets_and_repair() {
         counter(
             &profile,
             "canon.diagnostics.restore_specifiers.message_input_bytes",
-            4
+            8
         ),
-        260
+        260 + message_bytes
     );
     fs::write(
         project.path().join("src/entry.ts"),
@@ -194,6 +200,7 @@ fn real_check_message_profile_preserves_complete_native_packets_and_repair() {
     )
     .unwrap();
     let repaired = run(true);
+    capture::retain(project.path(), &runtime, "repaired", &repaired, true);
     assert_eq!(repaired.status.code(), Some(0));
     assert_eq!(
         serde_json::from_slice::<Value>(&repaired.stdout).unwrap(),
