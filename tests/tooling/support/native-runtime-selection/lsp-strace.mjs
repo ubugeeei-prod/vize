@@ -115,6 +115,24 @@ export function parseStraceTexts(traces) {
     if (!owner) continue;
     const io = /^(read|write|readv|writev)\((\d+),/u.exec(row.call);
     if (io && [0, 1, 2].includes(Number(io[2]))) {
+      // Upstream strace documents ERESTARTSYS as a terminated kernel call
+      // followed by re-execution, not a successful read of unavailable bytes.
+      // https://github.com/strace/strace/blob/master/doc/strace.1.in
+      const restart =
+        /\)\s+=\s+\? (ERESTARTSYS|ERESTARTNOINTR|ERESTARTNOHAND|ERESTART_RESTARTBLOCK)(?:\s|$)/u.exec(
+          row.call,
+        );
+      if (restart) {
+        owner.events.push({
+          ...row,
+          operation: io[1],
+          fd: Number(io[2]),
+          count: null,
+          returnKind: "kernel-restart",
+          restart: restart[1],
+        });
+        continue;
+      }
       const returned = /\)\s+=\s+(-?\d+)(?:\s|$)/u.exec(row.call);
       assert.ok(returned, "native IO has an explicit return count");
       const count = Number(returned[1]);
@@ -190,6 +208,7 @@ export function captureNativeOwners(tracePrefix, directory) {
       exit: owner.exit,
       streams,
       ioFailures: owner.events.filter((event) => event.count < 0),
+      ioRestarts: owner.events.filter((event) => event.returnKind === "kernel-restart"),
     };
     fs.writeFileSync(
       path.join(directory, `${owner.process}.json`),

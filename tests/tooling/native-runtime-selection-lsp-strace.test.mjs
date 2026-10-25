@@ -77,3 +77,26 @@ test("native syscall custody refuses truncated buffers, unsupported successful I
   ])
     assert.throws(() => decodeNativeFrames(bytes));
 });
+
+test("kernel-restarted native reads remain explicit and never manufacture input bytes", () => {
+  const owners = parseStraceTexts([
+    {
+      tid: 100,
+      text: `${exec}\n1.100000 read(0, 0x7ffff72cf5cf, 1) = ? ERESTARTSYS (To be restarted)\n1.200000 --- SIGALRM {si_signo=SIGALRM, si_code=SI_KERNEL} ---\n1.300000 read(0, ${hex("a")}, 1) = 1 <0.000001>\n2.000000 +++ exited with 0 +++\n`,
+    },
+  ]);
+  assert.equal(owners[0].events[0].returnKind, "kernel-restart");
+  assert.equal(owners[0].events[0].count, null);
+  assert.equal(owners[0].events[0].bytes, undefined);
+  assert.equal(owners[0].events[1].bytes.toString(), "a");
+  assert.throws(
+    () =>
+      parseStraceTexts([
+        {
+          tid: 100,
+          text: `${exec}\n1.100000 read(0, 0x1, 1) = ? UNKNOWN\n2.000000 +++ exited with 0 +++\n`,
+        },
+      ]),
+    /explicit return count/u,
+  );
+});
