@@ -38,9 +38,10 @@ pub(super) struct ResolvedLinterRuleGroups {
     nuxt_available: Vec<bool>,
 }
 
-pub(super) struct TypeAwareProjectPaths {
+pub(super) struct LintProjectContext {
     pub(super) corsa: Option<PathBuf>,
     pub(super) tsconfig: Option<PathBuf>,
+    pub(super) ssr_enabled: bool,
 }
 
 impl ResolvedLinterRuleGroups {
@@ -50,7 +51,7 @@ impl ResolvedLinterRuleGroups {
         help_level: HelpLevel,
         args: &LintArgs,
         features: LinterFeatureFlags,
-        type_aware_project: TypeAwareProjectPaths,
+        project: LintProjectContext,
         custom_elements: &vize_relief::options::CustomElementMatcher,
     ) -> Vec<Linter> {
         let availability = self
@@ -67,7 +68,13 @@ impl ResolvedLinterRuleGroups {
                 let type_aware =
                     args.type_aware || args.strict_reactivity || config.type_aware_lint_enabled();
                 let mut additional_rules = config.enabled_rules();
-                let disabled_rules = resolved_disabled_rules(config, *pinia_available);
+                let mut disabled_rules = resolved_disabled_rules(config, *pinia_available);
+                if !project.ssr_enabled {
+                    disabled_rules.extend([
+                        "ssr/no-browser-globals-in-ssr".into(),
+                        "ssr/no-hydration-mismatch".into(),
+                    ]);
+                }
                 let restricted_globals = rule_options.restricted_globals();
                 let restricted_members = rule_options.restricted_members();
                 let musea_design_tokens = rule_options.musea_design_tokens();
@@ -188,8 +195,8 @@ impl ResolvedLinterRuleGroups {
                 #[cfg(not(target_arch = "wasm32"))]
                 {
                     linter = linter
-                        .with_corsa_path(type_aware_project.corsa.clone())
-                        .with_type_aware_tsconfig(type_aware_project.tsconfig.clone());
+                        .with_corsa_path(project.corsa.clone())
+                        .with_type_aware_tsconfig(project.tsconfig.clone());
                 }
                 #[cfg(not(target_arch = "wasm32"))]
                 if args.strict_reactivity {

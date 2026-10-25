@@ -1993,9 +1993,7 @@
     {
       "id": "lsp/regression/pug-authored-scopes-10481",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "pug-authored-scopes-10481",
         "files": [
@@ -2025,11 +2023,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "pug-template",
-              "ts"
-            ],
+            "dialects": ["vue3-sfc", "pug-template", "ts"],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -2038,9 +2032,7 @@
     {
       "id": "lsp/regression/jsx-prop-token-ranges-10494-tsx",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "jsx-prop-token-ranges-10494-tsx",
         "files": [
@@ -2078,13 +2070,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "js",
-              "ts",
-              "tsx"
-            ],
+            "dialects": ["vue3-sfc", "html-template", "js", "ts", "tsx"],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -2093,9 +2079,7 @@
     {
       "id": "lsp/regression/jsx-prop-token-ranges-10494-jsx",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "jsx-prop-token-ranges-10494-jsx",
         "files": [
@@ -2133,13 +2117,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "js",
-              "ts",
-              "jsx"
-            ],
+            "dialects": ["vue3-sfc", "html-template", "js", "ts", "jsx"],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -2244,9 +2222,7 @@
     {
       "id": "lsp/regression/css-color-declaration-admission-10562-css",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "css-color-declaration-admission-10562-css",
         "files": [
@@ -2273,10 +2249,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template"
-            ],
+            "dialects": ["vue3-sfc", "html-template"],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -2285,9 +2258,7 @@
     {
       "id": "lsp/regression/css-color-declaration-admission-10562-stylus",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "css-color-declaration-admission-10562-stylus",
         "files": [
@@ -2314,10 +2285,97 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template"
-            ],
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/source-session/local-completion-resolve-10592",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "local-completion-resolve-10592",
+        "files": [
+          {
+            "path": "a-package.json.txt",
+            "sha256": "a90fc33418afa2b9cbf4768524b021135b965ecdf993457505bfae3ac44a8428"
+          },
+          {
+            "path": "a-vite.config.mjs.txt",
+            "sha256": "9289d892df5b850f34c47486c209286cb9bdd7e9b6863a54d41a37993ae82300"
+          },
+          {
+            "path": "a-tsconfig.json.txt",
+            "sha256": "07aa477a9b674188c231b9c47c3fae1a95d93bf2f87e0a02909b143951bf6eba"
+          },
+          {
+            "path": "a-page.vue.txt",
+            "sha256": "33141e0600a018d25840f8cd5167fcf878a8cd3028b96950c6e293fa40b5c7d4"
+          },
+          {
+            "path": "b-package.json.txt",
+            "sha256": "a90fc33418afa2b9cbf4768524b021135b965ecdf993457505bfae3ac44a8428"
+          },
+          {
+            "path": "b-vite.config.mjs.txt",
+            "sha256": "9289d892df5b850f34c47486c209286cb9bdd7e9b6863a54d41a37993ae82300"
+          },
+          {
+            "path": "b-tsconfig.json.txt",
+            "sha256": "07aa477a9b674188c231b9c47c3fae1a95d93bf2f87e0a02909b143951bf6eba"
+          },
+          {
+            "path": "b-page.vue.txt",
+            "sha256": "33141e0600a018d25840f8cd5167fcf878a8cd3028b96950c6e293fa40b5c7d4"
+          },
+          {
+            "path": "changed-a-vite.config.mjs.txt",
+            "sha256": "8c62022a0b0daa930e5f8d8fd80f76686867acd0381cd558253b44b7b475aff7"
+          },
+          {
+            "path": "local-item.json.txt",
+            "sha256": "972a42a8a179cad881cfeb02682150847b0c09ad83fd9f3b4feb1f728a0968d0"
+          },
+          {
+            "path": "initialize-capabilities.json.txt",
+            "sha256": "37888467406cb1d4d709bd4cdd652986c4afd9f50e1db1b9ae3163d79a88bfd5"
+          },
+          {
+            "path": "public-before-observation.json.gz",
+            "sha256": "3384b7bc8169299a303a6a3ff7f70bf7ef20ee0611c16d4f6fdaee6b1e93c8a8"
+          },
+          {
+            "path": "public-before-wire.jsonl.gz",
+            "sha256": "de71bc152f86edb10b520aaa1f72de1d04dfaf3c9cdefcb6da221b8ad3af4faf"
+          },
+          {
+            "path": "public-before-identity.json",
+            "sha256": "6b94794836a05e2ce65072dbc5c2da76422ab614dc0f1f62a2e50f30616804e3"
+          },
+          {
+            "path": "source-law.rs.txt",
+            "sha256": "932357f1d13cd1645a9864c8dc2115d8acc4929ee120f7c9a986f2de3b236c18"
+          }
+        ]
+      },
+      "case": {
+        "path": "local-completion-resolve-10592/case.json",
+        "sha256": "34380478bc14c6511d9b831031ed16243a694e454bd9ec0a055bcc48ec8f3114"
+      },
+      "requestCount": 0,
+      "initializationOptions": {
+        "typecheck": false,
+        "lint": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
             "selector": "LSP manifest pinned authored sources"
           }
         ]

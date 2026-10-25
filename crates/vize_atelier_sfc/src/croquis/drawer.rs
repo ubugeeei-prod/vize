@@ -62,6 +62,7 @@ fn analyze_scripts_impl<D: ScriptDemand>(
     match (descriptor.script.as_ref(), descriptor.script_setup.as_ref()) {
         (Some(script), Some(script_setup)) if options.merge_scripts => {
             let plain_drawer = D::prepare(Drawer::with_options(drawer_options));
+            let plain_drawer = demand_unused(plain_drawer, options);
             let mut plain_drawer = apply_options_api_mode(plain_drawer, options_api, legacy_vue2);
             profile!(
                 "atelier.sfc.croquis.script_plain",

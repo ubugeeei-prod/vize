@@ -5,6 +5,8 @@ use tower_lsp::{
 };
 
 #[cfg(feature = "native")]
+mod completion_resolve;
+#[cfg(feature = "native")]
 mod css;
 mod formatting;
 #[cfg(feature = "native")]

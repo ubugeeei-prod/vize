@@ -86,7 +86,8 @@ pub(super) fn build_cross_file_lint_output_with_report<S: AsRef<str>>(
     settings: Option<&CrossFileRuleSettings<'_>>,
 ) -> CrossFileLintOutput {
     let root = std::env::current_dir().unwrap_or_default();
-    let mut analyzer = CrossFileAnalyzer::with_project_root(patina_cross_file_options(), root);
+    let mut analyzer = CrossFileAnalyzer::with_project_root(patina_cross_file_options(), &root);
+    analyzer.set_ssr_enabled(super::super::project_ssr::ssr_enabled(&root));
     let mut file_indexes: FxHashMap<FileId, usize> = FxHashMap::default();
     let mut source_offsets: FxHashMap<FileId, CrossFileSourceOffsets> = FxHashMap::default();
     let mut results: Vec<_> = files

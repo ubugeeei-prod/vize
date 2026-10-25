@@ -162,6 +162,23 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn completion_resolve(&self, item: CompletionItem) -> Result<CompletionItem> {
+        #[cfg(feature = "native")]
+        let item = {
+            let mut item = item;
+            let native_owned = item
+                .data
+                .as_ref()
+                .is_some_and(|data| data.get("vizeCompletion").is_some());
+            // Static items and immutable CSS catalog identities have no source
+            // owner. A retired primary cannot make their local answer stale.
+            // Native marker presence wins, including malformed/mixed payloads.
+            if !native_owned
+                && (item.data.is_none() || crate::ide::style::resolve_catalog(&mut item))
+            {
+                return Ok(item);
+            }
+            item
+        };
         let uri = item
             .data
             .as_ref()
