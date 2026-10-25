@@ -307,6 +307,12 @@ fn mode_aware_multi_component_snapshot() {
         },
     );
 
+    capture_snapshot(
+        "mode_aware_multi_component",
+        MIXED_MODES,
+        &compile_output_summary(MIXED_MODES, &output),
+        Some(output.module_code().as_str()),
+    );
     insta::assert_debug_snapshot!(
         "mode_aware_multi_component_summary",
         compile_output_summary(MIXED_MODES, &output),
@@ -375,10 +381,36 @@ fn assert_vdom_snapshot(name: &str, source: &str, lang: JsxLang) {
 fn assert_vapor_snapshot(name: &str, source: &str, lang: JsxLang, options: VaporCompileOptions) {
     let bump = Allocator::new();
     let output = compile_to_vapor(&bump, source, lang, options);
+    capture_snapshot(name, source, &vapor_output_summary(source, &output), None);
     insta::assert_debug_snapshot!(
         format!("{name}_vapor"),
         vapor_output_summary(source, &output)
     );
+}
+
+/// Retain the complete observation before a snapshot failure can stop the test.
+/// Capture never changes the expected snapshots or grants qualification credit.
+fn capture_snapshot(
+    name: &str,
+    source: &str,
+    summary: &impl std::fmt::Debug,
+    module: Option<&str>,
+) {
+    let Ok(directory) = std::env::var("VIZE_JSX_ADVERSARIAL_CAPTURE") else {
+        return;
+    };
+    let path = std::path::Path::new(&directory).join(format!("{name}.json"));
+    std::fs::create_dir_all(&directory).unwrap();
+    std::fs::write(
+        path,
+        serde_json::to_vec_pretty(&serde_json::json!({
+            "source": source,
+            "summary": format!("{summary:#?}"),
+            "module": module,
+        }))
+        .unwrap(),
+    )
+    .unwrap();
 }
 
 fn lower_summary<'a>(source: &'a str, output: &'a LowerOutput<'a>) -> LowerSummary<'a> {

@@ -212,7 +212,18 @@ fn babel_ssr_stateful_slot_producer_keeps_primary_value_diagnostics() {
     let source = "const A = () => { return <B/>; };";
     let bare = compile_jsx(&allocator, source, JsxLang::Jsx, &config);
     assert!(bare.diagnostics.is_empty(), "{:?}", bare.diagnostics);
-    assert!(bare.module_code().contains("__ssrInlineRender: true"));
+    assert_eq!(
+        bare.module_code(),
+        concat!(
+            "import { ssrRenderComponent as _ssrRenderComponent } from \"@vue/server-renderer\"\n",
+            "import { resolveComponent as _resolveComponent } from \"vue\"\n\n",
+            "const A = ({\n__ssrInlineRender: true,\nname: \"A\",\nsetup() {\n",
+            " return (() => {\n\n\n\n",
+            "return ((_ctx, _push, _parent, _attrs) => {\n",
+            "  _push(_ssrRenderComponent(_resolveComponent(\"B\"), _attrs, null, _parent))\n",
+            "})\n})()\n}\n});",
+        )
+    );
     for value in ["1", "`text`"] {
         let input = format!("const A = () => {{ return <B v-slots={{{value}}}/>; }};");
         let output = compile_jsx(&allocator, &input, JsxLang::Jsx, &config);
