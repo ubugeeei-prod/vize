@@ -1,0 +1,91 @@
+name: Vue diagnostic context evidence
+
+on:
+  push:
+    branches: [ci/vue2-pinia-context-evidence]
+    paths:
+      - .github/workflows/vue2-pinia-context-evidence.yml
+      - tools/support/compat/fixtures/context-packet-evidence.mjs
+
+permissions: { contents: read }
+concurrency:
+  group: vue-context-evidence-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SOURCE_REVISION: 284c7c4f6a7a1a50d9acec8d877c47aae21cfe42
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  CARGO_TERM_COLOR: always
+
+jobs:
+  packets:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ env.SOURCE_REVISION }}
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.sha }}
+          path: .context-evidence-runner
+          sparse-checkout: tools/support/compat/fixtures/context-packet-evidence.mjs
+          sparse-checkout-cone-mode: false
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          version: latest
+          node-version-file: package.json
+          run-install: false
+          cache: true
+          cache-save: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: vue-parity
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Install pinned providers and upstream fixtures
+        run: |
+          test "$(git rev-parse HEAD)" = "$SOURCE_REVISION"
+          git submodule update --init --depth 1 -- tests/_fixtures/_git/pinia tests/_fixtures/_git/vue-element-admin
+          vp install --frozen-lockfile --prefer-offline
+      - name: Build the exact main source
+        run: |
+          cargo build --locked --profile ci -p vize --features legacy
+          node tests/differential/build-receipt.ts --legacy
+      - name: Capture unchanged historical gate results
+        env:
+          VIZE_TEST_BIN: ${{ github.workspace }}/target/ci/vize
+          VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize
+          VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
+          VIZE_LSP_BUILD_RECIPE: cargo build --profile ci -p vize --features legacy
+        run: |
+          mkdir -p target/context-packet-evidence
+          set +e
+          node --test --test-concurrency=1 --test-name-pattern='pinia' tests/tooling/compat-ratchet.test.ts > target/context-packet-evidence/pinia-historical-gate.log 2>&1
+          pinia_exit=$?
+          node --test --test-concurrency=1 tests/snapshots/check/vue-element-admin-legacy-lsp-oracle.ts tests/snapshots/check/vue-element-admin-unmapped-diagnostic-oracle.ts > target/context-packet-evidence/vue2-historical-gates.log 2>&1
+          vue2_exit=$?
+          set -e
+          printf '{"pinia":%s,"vue2":%s}\n' "$pinia_exit" "$vue2_exit" > target/context-packet-evidence/historical-status.json
+      - name: Capture complete CLI and edit-cycle packets
+        env:
+          VIZE_TEST_BIN: ${{ github.workspace }}/target/ci/vize
+          VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize
+          VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
+          VIZE_LSP_BUILD_RECIPE: cargo build --profile ci -p vize --features legacy
+          RAYON_NUM_THREADS: "4"
+        run: node .context-evidence-runner/tools/support/compat/fixtures/context-packet-evidence.mjs
+      - name: Retain all complete packets and provider identities
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: vue-context-packets-${{ env.SOURCE_REVISION }}-${{ github.run_id }}
+          path: |
+            target/context-packet-evidence/
+            target/differential/lsp-sessions/
+            target/ci/vize.differential-build.json
+          if-no-files-found: error
+          retention-days: 14
