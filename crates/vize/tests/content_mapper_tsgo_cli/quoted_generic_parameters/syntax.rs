@@ -78,11 +78,12 @@ fn reference_error(output: &Output, column: usize) -> (u32, &str) {
     let (code, message) = diagnostic.split_once(": ").unwrap();
     assert!(code.bytes().all(|byte| byte.is_ascii_digit()));
     let code = code.parse::<u32>().unwrap();
-    assert!(
-        (1000..2000).contains(&code),
-        "a provider syntax code is required"
+    assert_eq!(code / 1000, 1, "a provider syntax code is required");
+    assert_ne!(message, "");
+    assert_eq!(
+        message.split(['\r', '\n']).collect::<Vec<_>>(),
+        vec![message]
     );
-    assert!(!message.is_empty() && !message.contains(['\r', '\n']));
     assert_eq!(stdout, cstr!("{prefix}{code}: {message}\n"));
     (code, message)
 }
