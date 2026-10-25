@@ -69,7 +69,9 @@ impl TemplateFormatter<'_> {
         }
         let join = joiner.open(start);
         self.open_chunk(output, depth, join);
-        if self.write_wrapped_text_run(output, &formatted, (start, end), depth, joiner) {
+        if self.options.canonical_directive_layout
+            && self.write_wrapped_text_run(output, &formatted, (start, end), depth, joiner)
+        {
             joiner.finish(end);
             return;
         }

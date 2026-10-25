@@ -45,6 +45,7 @@ void test("source CLI text layouts preserve parsed markup and rendered whitespac
     });
     assert.deepEqual(diagnostics, []);
     const render = compileFunction(compiled.code, ["Vue"])(Vue);
+    render._rc = true;
     const app = Vue.createSSRApp({
       data: () => state,
       render,

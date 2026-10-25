@@ -67,8 +67,25 @@ impl TemplateFormatter<'_> {
         // Newlines inside an interpolation remain with the JS/literal owner.
         let compact;
         let child = if child.contains(['\r', '\n']) {
-            compact = super::text_wrap::compact_text_child(child)?;
-            compact.as_str()
+            if self.options.canonical_directive_layout {
+                if child
+                    .as_bytes()
+                    .first()
+                    .is_some_and(|byte| byte.is_ascii_whitespace())
+                    || authored_multiline_child_owns_layout(child.as_bytes())
+                {
+                    return None;
+                }
+                let formatted =
+                    format_interpolations_with_vue_version(child, self.options, self.vue_version);
+                compact = super::text_wrap::compact_text_child(&formatted)?;
+                compact.as_str()
+            } else {
+                if authored_multiline_child_owns_layout(child.as_bytes()) {
+                    return None;
+                }
+                child
+            }
         } else {
             child
         };
@@ -287,4 +304,17 @@ impl TemplateFormatter<'_> {
         output.extend_from_slice(self.newline);
         true
     }
+}
+
+#[cold]
+#[inline(never)]
+fn authored_multiline_child_owns_layout(bytes: &[u8]) -> bool {
+    if !bytes.windows(2).any(|window| window == b"{{") {
+        return true;
+    }
+    parse_interpolation_range(bytes, 0).is_some_and(|(expression_start, expression_end, _)| {
+        bytes
+            .get(expression_start..expression_end)
+            .is_some_and(|expression| expression.iter().any(|byte| matches!(byte, b'\r' | b'\n')))
+    })
 }

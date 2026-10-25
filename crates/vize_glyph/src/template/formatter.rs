@@ -315,7 +315,7 @@ impl<'a> TemplateFormatter<'a> {
             {
                 // Suppression pragmas own physical lines; ordinary condensed
                 // text instead forms one canonical run across authored wraps.
-                if joiner.has_locked_lines() {
+                if !self.options.canonical_directive_layout || joiner.has_locked_lines() {
                     self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
                 }
                 pos += 1;
