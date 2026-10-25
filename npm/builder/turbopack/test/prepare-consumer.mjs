@@ -265,17 +265,22 @@ export async function prepareConsumer() {
   const strictRequire = createRequire(path.join(strictConsumer, "package.json"));
   const strictNative = strictRequire.resolve("@vizejs/native");
   const strictEntries = {};
-  for (const entry of [
-    "@vizejs/turbopack-plugin",
-    "@vizejs/turbopack-plugin/loader",
-    "@vizejs/turbopack-plugin/style-loader",
-    "@vizejs/turbopack-plugin/scope-loader",
-    "@vizejs/rspack-plugin",
-    "@vizejs/rspack-plugin/loader",
+  for (const [entry, exported] of [
+    ["@vizejs/turbopack-plugin", "withVize"],
+    ["@vizejs/turbopack-plugin/loader", "default"],
+    ["@vizejs/turbopack-plugin/style-loader", "default"],
+    ["@vizejs/turbopack-plugin/scope-loader", "default"],
+    ["@vizejs/rspack-plugin", "VizePlugin"],
+    ["@vizejs/rspack-plugin/loader", "default"],
   ]) {
     const resolved = strictRequire.resolve(entry);
     assert.ok(resolved.startsWith(strictConsumer + path.sep));
-    assert.ok(Object.keys(strictRequire(entry)).length);
+    const loaded = strictRequire(entry);
+    assert.equal(
+      typeof (typeof loaded === "function" ? loaded : loaded[exported]),
+      "function",
+      `${entry} exposes its public callable`,
+    );
     const issuer = createRequire(resolved);
     assert.equal(issuer.resolve("@vizejs/native"), strictNative);
     assert.equal(issuer("@vizejs/native").getNativeBuildToken(), sourceReceipt.identity.token);
