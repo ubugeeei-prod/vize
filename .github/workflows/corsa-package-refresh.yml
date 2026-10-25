@@ -8,6 +8,11 @@ on:
       - crates/vize_canon/src/lsp_client/**
       - crates/vize_canon/src/corsa_server/**
   workflow_dispatch:
+    inputs:
+      historical:
+        description: Repeat the immutable before/after runtime-policy attribution
+        type: boolean
+        default: false
 permissions: { contents: read }
 concurrency:
   group: corsa-package-refresh-${{ github.event.pull_request.number || github.ref }}
@@ -39,6 +44,7 @@ jobs:
       - name: Compare unchanged tests with one physical historical SDK
         env:
           VIZE_PACKAGE_REFRESH_CAPTURE: ${{ runner.temp }}/corsa-package-refresh
+          VIZE_COMPARE_HISTORICAL: ${{ inputs.historical }}
         run: |
           cp -R tools/support/compat/github/corsa-package-refresh "$RUNNER_TEMP/corsa-package-refresh-harness"
           vp node "$RUNNER_TEMP/corsa-package-refresh-harness/compare.mjs"

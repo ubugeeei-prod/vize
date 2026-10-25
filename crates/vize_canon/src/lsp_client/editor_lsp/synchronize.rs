@@ -63,7 +63,7 @@ impl EditorLspSession {
         Ok(())
     }
 
-    pub(super) fn close_mirrored_document(&mut self, document_uri: &str) -> Result<(), String> {
+    fn close_mirrored_document(&mut self, document_uri: &str) -> Result<(), String> {
         let uri = parse_document_uri(document_uri)?;
         self.overlay.close(&uri).map_err(|error| {
             cstr!("Failed to close editor LSP overlay for {document_uri}: {error}")

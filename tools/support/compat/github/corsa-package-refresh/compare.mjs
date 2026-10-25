@@ -58,11 +58,14 @@ const cases = [
     "corsa_server::request::tests::persistent_check_server_refreshes_package_target_create_and_delete",
   ],
 ];
-const refs = [
-  ["before-policy", "13fa41356d075047a229f580014b637d3bbeb57f"],
-  ["runtime-policy", "9469f272b189d0220a9838539f2c878fc5d70edd"],
-  ["fixed", observer],
-];
+const refs =
+  process.env.VIZE_COMPARE_HISTORICAL === "true"
+    ? [
+        ["before-policy", "13fa41356d075047a229f580014b637d3bbeb57f"],
+        ["runtime-policy", "9469f272b189d0220a9838539f2c878fc5d70edd"],
+        ["fixed", observer],
+      ]
+    : [["fixed", observer]];
 for (const [label, source] of refs) {
   git("checkout", "--detach", source);
   assert.equal(git("rev-parse", "HEAD"), source);
@@ -82,6 +85,10 @@ for (const [label, source] of refs) {
             `$1\n        eprintln!("OBSERVED ${variable}: {${variable}:#?}");`,
           );
         }
+        observed = observed.replace(
+          "let deleted_diagnostics =",
+          'eprintln!("OBSERVED_DISK source={} generated={}", missing.join("Missing.vue").is_file(), created_shadow.join("Missing.d.vue.ts").is_file());\n        let deleted_diagnostics =',
+        );
       } else {
         for (const variable of ["missing", "created", "deleted"]) {
           const declaration = new RegExp(`(let ${variable} = server\\.check_vue_sfc[^;]+;)`);
@@ -93,6 +100,23 @@ for (const [label, source] of refs) {
         }
       }
       fs.writeFileSync(file, observed);
+    }
+    for (const [file, needle, trace] of [
+      [
+        "crates/vize_canon/src/lsp_client/workspace_project.rs",
+        "        match self.activate_workspace_project_with_reload(",
+        '        eprintln!("OBSERVED_DELTA {changes:#?}");\n',
+      ],
+      [
+        "crates/vize_canon/src/lsp_client/initial_diagnostics.rs",
+        "        let document_uri = self.session_document_uri(uri);",
+        '        eprintln!("OBSERVED_OWNER attached={} materialized={} uri={uri} documents={:?}", self.project_session_attached_to_editor, self.materialized_project_session, self.document_texts.keys());\n',
+      ],
+    ]) {
+      const original = fs.readFileSync(file, "utf8");
+      assert(original.includes(needle));
+      originals.set(file, original);
+      fs.writeFileSync(file, original.replace(needle, trace + needle));
     }
     for (const [name, , test] of cases) {
       assert.equal(
