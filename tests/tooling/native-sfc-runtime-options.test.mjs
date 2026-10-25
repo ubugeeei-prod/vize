@@ -91,6 +91,7 @@ if (selected) {
   assert.equal(typeof vm.SourceTextModule, "function", "use the real V8 module parser");
 }
 const cases = [];
+const authoredStandalone = [];
 let pinnedModule;
 await test("capture all native runtime configurations before semantic assertions", skip, () => {
   const fixtures = mkdtempSync(join(tmpdir(), "vize-runtime-options-"));
@@ -198,15 +199,56 @@ await test("capture all native runtime configurations before semantic assertions
         }
       }
     }
+    const authoredSource = String.raw`<script>import { ref as authoredRef } from '@runtime/quote\'雪'; export default { data() { return { n: 1 } } }</script><template><button @click="n++">{{ n }}</button></template>`;
+    const authoredFile = {
+      path: "./Authored.vue",
+      source: authoredSource,
+      scopeId: "runtime-options",
+    };
+    writeFileSync(authoredFile.path, authoredSource);
+    for (const [target, targetOptions] of Object.entries(targets)) {
+      for (const runtimeModuleName of [undefined, "@runtime/quote'雪"]) {
+        const options = {
+          ...targetOptions,
+          filename: authoredFile.path,
+          scopeId: authoredFile.scopeId,
+          mode: "function",
+          sourceMap: true,
+          runtimeGlobalName: "SelectedVue",
+          ...(runtimeModuleName === undefined ? {} : { runtimeModuleName }),
+        };
+        const single = observe("authored-standalone-single", { target, ...options }, () =>
+          native.compileSfc(authoredSource, options),
+        );
+        const batch = observe("authored-standalone-files", { target, ...options }, () =>
+          native.compileSfcBatchWithResults([authoredFile], {
+            ...options,
+            includeSourceMap: true,
+            includeHashes: true,
+            includeStyles: true,
+            includeCustomBlocks: true,
+            includeMacroArtifacts: true,
+          }),
+        );
+        const stats = observe("authored-standalone-stats", { target, ...options }, () =>
+          native.compileSfcBatch(authoredFile.path, options),
+        );
+        authoredStandalone.push({ target, options, source: authoredSource, single, batch, stats });
+      }
+    }
   } finally {
     process.chdir(previous);
   }
   writeFileSync(join(proof, "matrix.json"), JSON.stringify(cases, null, 2) + "\n");
+  writeFileSync(
+    join(proof, "authored-standalone.json"),
+    JSON.stringify(authoredStandalone, null, 2) + "\n",
+  );
 });
 
 function completeCases() {
   assert.equal(cases.length, 144, "all 72 module and 72 standalone configurations were captured");
-  assert.equal(observations.length, 901, "every native API return was retained");
+  assert.equal(observations.length, 919, "every native API return was retained");
   return cases;
 }
 
@@ -466,3 +508,43 @@ await test("pinned default SSR module remains byte-identical", skip, () => {
   assert.deepEqual(pinnedModule.errors, []);
   assert.deepEqual(pinnedModule.warnings, []);
 });
+
+await test(
+  "standalone recognizes escaped authored runtime sources and warns for external imports",
+  skip,
+  () => {
+    completeCases();
+    assert.equal(authoredStandalone.length, 6);
+    const Vue = require(join(process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_VUE, "node_modules/vue"));
+    for (const row of authoredStandalone) {
+      const { path, scopeId, ...file } = row.batch.results[0];
+      assert.equal(path, row.options.filename);
+      assert.equal(scopeId, row.options.scopeId);
+      assert.deepEqual(file, row.single);
+      assert.deepEqual(JSON.parse(file.map).sourcesContent, [row.source]);
+      assert.equal(row.stats.failed, 0);
+      assert.equal(row.stats.success, 1);
+      assert.equal(row.stats.outputBytes, Buffer.byteLength(file.code));
+      const external = row.target === "ssr" || row.options.runtimeModuleName === undefined;
+      assert.deepEqual(
+        file.warnings,
+        external
+          ? [
+              "Standalone SFC output still contains non-Vue ES module imports; CDN evaluation requires those dependencies to be provided separately.",
+            ]
+          : [],
+      );
+      if (!external) new vm.Script(`(function(){${file.code}\n})`);
+      if (!external && row.target === "dom") {
+        const component = vm.runInNewContext(`(function(){${file.code}\n})()`, {
+          SelectedVue: Vue,
+        });
+        const state = component.data();
+        const first = component.render(state, []);
+        assert.equal(first.children, "1");
+        first.props.onClick({});
+        assert.equal(component.render(state, []).children, "2");
+      }
+    }
+  },
+);

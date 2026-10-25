@@ -27,7 +27,17 @@ fn rewrite_runtime_import_line(
     vize_l0::js_string::push_js_string_literal(&mut expected_double, runtime_module_name);
     let expected_single = cstr!("'{runtime_module_name}'");
     if source != expected_double && source != expected_single {
-        return None;
+        // The generated canonical spellings above need no parser
+        // after their literal comparison. An authored equivalent may instead
+        // use single-quote or Unicode escapes; compare its decoded module value.
+        if !source.contains('\\')
+            || !crate::compile_script::import_utils::import_block_has_source(
+                trimmed,
+                runtime_module_name,
+            )
+        {
+            return None;
+        }
     }
 
     let bindings: Vec<_> = specifiers
