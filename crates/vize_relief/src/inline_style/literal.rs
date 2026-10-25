@@ -67,9 +67,13 @@ fn evaluate(object: &ObjectExpression<'_>) -> Option<String> {
         }
         let value = value.value.as_str();
         if value.is_empty()
-            || value
-                .chars()
-                .any(|c| c.is_control() || matches!(c, ';' | '{' | '}'))
+            || value.chars().any(|c| {
+                c.is_control()
+                    || matches!(
+                        c,
+                        ';' | '{' | '}' | '(' | ')' | '[' | ']' | '\'' | '"' | '\\'
+                    )
+            })
             || value.contains("/*")
             || value.contains("*/")
         {
@@ -107,10 +111,51 @@ fn evaluate(object: &ObjectExpression<'_>) -> Option<String> {
 }
 
 fn style_key(key: &str) -> bool {
-    if matches!(key, "__proto__" | "prototype" | "constructor") {
+    // These are CSSOM/Object interface members, not ordinary CSS properties.
+    // In particular cssText replaces declarations and cssFloat is an alias
+    // whose CSS spelling is not the result of hyphenating the JS key.
+    if matches!(
+        key,
+        "__proto__"
+            | "prototype"
+            | "constructor"
+            | "cssText"
+            | "cssFloat"
+            | "length"
+            | "parentRule"
+            | "item"
+            | "getPropertyValue"
+            | "getPropertyPriority"
+            | "setProperty"
+            | "removeProperty"
+            | "getPropertyCSSValue"
+            | "getPropertyShorthand"
+            | "isPropertyImplicit"
+            | "toString"
+            | "toLocaleString"
+            | "valueOf"
+            | "hasOwnProperty"
+            | "isPrototypeOf"
+            | "propertyIsEnumerable"
+            | "__defineGetter__"
+            | "__defineSetter__"
+            | "__lookupGetter__"
+            | "__lookupSetter__"
+    ) {
         return false;
     }
+    let custom = key.starts_with("--");
     let name = key.strip_prefix("--").unwrap_or(key);
+    if !custom
+        && (!name.as_bytes().first().is_some_and(u8::is_ascii_lowercase)
+            || ["webkit", "moz", "ms", "o"].iter().any(|prefix| {
+                name.strip_prefix(prefix)
+                    .and_then(|suffix| suffix.as_bytes().first())
+                    .is_some_and(u8::is_ascii_uppercase)
+            }))
+    {
+        return false;
+    }
     !name.is_empty()
         && name.as_bytes().first().is_some_and(u8::is_ascii_alphabetic)
         && name
