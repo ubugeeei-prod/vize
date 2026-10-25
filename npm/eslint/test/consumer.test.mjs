@@ -48,7 +48,7 @@ function verify(source, rules, filename = "Unsaved.vue") {
 const alt = { "vize/a11y/alt-text": "error" };
 const source = '<template>😀<img src="x"></template>\r\n';
 
-test("the standalone public plugin shares rules and complete flat presets", () => {
+void test("the standalone public plugin shares rules and complete flat presets", () => {
   assert.equal(plugin.meta.name, "eslint-plugin-vize");
   assert.equal(plugin.meta.version, packageJson.version);
   assert.equal(plugin.rules, bridge.rules);
@@ -65,7 +65,7 @@ test("the standalone public plugin shares rules and complete flat presets", () =
   }
 });
 
-test("actual ESLint reports unsaved Unicode/CRLF source and native UTF-16 fixes", () => {
+void test("actual ESLint reports unsaved Unicode/CRLF source and native UTF-16 fixes", () => {
   const count = calls.length;
   const messages = verify(source, alt);
   assert.equal(calls.length - count, 1);
@@ -85,7 +85,7 @@ test("actual ESLint reports unsaved Unicode/CRLF source and native UTF-16 fixes"
   assert.deepEqual(fixed.messages, []);
 });
 
-test("scriptless, JS, TS, TSX and mixed script blocks retain the complete source", () => {
+void test("scriptless, JS, TS, TSX and mixed script blocks retain the complete source", () => {
   for (const script of [
     "",
     '<script>export default { name: "Example" };</script>',
@@ -103,7 +103,7 @@ test("scriptless, JS, TS, TSX and mixed script blocks retain the complete source
   }
 });
 
-test("selected rule options, severity, off, parse errors and reused ASTs are authoritative", () => {
+void test("selected rule options, severity, off, parse errors and reused ASTs are authoritative", () => {
   const value =
     '<template><my-component /></template><script setup>import MyComponent from "./MyComponent.vue";</script>';
   const casing = (option) => ({ "vize/vue/component-name-in-template-casing": ["warn", option] });
@@ -136,7 +136,7 @@ test("selected rule options, severity, off, parse errors and reused ASTs are aut
   assert.equal(calls.length, count);
 });
 
-test("real multi-file ESLint runs keep file-local participation and edits separate", async () => {
+void test("real multi-file ESLint runs keep file-local participation and edits separate", async () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-eslint-files-"));
   try {
     fs.writeFileSync(path.join(directory, "One.vue"), source);
@@ -180,7 +180,7 @@ test("real multi-file ESLint runs keep file-local participation and edits separa
   }
 });
 
-test("explicit type-aware selection uses the actual runtime and exposes missing providers", () => {
+void test("explicit type-aware selection uses the actual runtime and exposes missing providers", () => {
   const value =
     '<script setup lang="ts">async function load(): Promise<number> { return 1; }\nload();</script>\n';
   const rules = { "vize/type/no-floating-promises": "error" };
@@ -233,9 +233,9 @@ test("explicit type-aware selection uses the actual runtime and exposes missing 
   }
 });
 
-test("real native call counts stay one per pass as enabled rules grow", () => {
+void test("real native call counts stay one per pass as enabled rules grow", () => {
   const available = Object.keys(ruleConfigs.all);
-  for (const size of [...new Set([1, 8, 64, available.length])]) {
+  for (const size of new Set([1, 8, 64, available.length])) {
     const rules = Object.fromEntries(available.slice(0, size).map((name) => [name, "error"]));
     const start = calls.length;
     const rounds = 12;
