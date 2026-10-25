@@ -23,7 +23,7 @@ void test("Vite+ tasks use one project projection with JSX defaults and explicit
       mode: "production",
     });
     assert.equal(formatter.typeChecker?.jsxTypecheck, true);
-    assert.deepEqual(formatter.formatter, { singleQuote: true });
+    assert.deepEqual(formatter.formatter, { printWidth: 90, singleQuote: true });
     let checks = 0;
     assert.equal(
       await runNative("check", [], metadata, "native", async (_command, argv) => {

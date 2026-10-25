@@ -389,4 +389,5 @@ fn script_and_template_text_are_never_scanned_for_colours() {
     assert_eq!(colors(source), Vec::new());
 }
 
+mod declaration_admission;
 mod indented;

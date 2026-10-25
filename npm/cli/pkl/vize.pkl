@@ -247,6 +247,9 @@ class TypeCheckerConfig {
 }
 
 class FormatterConfig {
+  /// Formatter-only exclusions, relative to the project root; ordered negations are supported.
+  ignorePatterns: Listing<String>? = null
+
   /// Oxfmt-compatible import sorting; false disables it.
   sortImports: Boolean(this == false) | SortImportsConfig.SortImportsConfig? = null
 

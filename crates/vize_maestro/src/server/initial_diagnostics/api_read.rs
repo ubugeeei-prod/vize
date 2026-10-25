@@ -14,7 +14,7 @@ use super::{MaestroServer, RetainedDiagnostics};
 use crate::{
     ide::{
         DiagnosticService,
-        diagnostics::{PreparedInitialApiDiagnostics, with_native_diagnostic_timeout},
+        diagnostics::{PreparedInitialApiDiagnostics, with_native_diagnostic_progress},
     },
     server::{
         diagnostic_publishing::CollectedDiagnostics,
@@ -105,24 +105,14 @@ impl MaestroServer {
             return;
         }
         let sync = DiagnosticService::collect(&self.state, uri);
-        // Preserve the original outer deadline over ALL native collection:
-        // preparation, open, read, physical guards, finish, recovery and mapping.
-        // Detached work does not restart a timeout or move the measured bound.
-        let diagnostics = match with_native_diagnostic_timeout(
+        let diagnostics = with_native_diagnostic_progress(
+            self.state.native_diagnostic_timeout(),
             self.collect_initial_api_with_scope(&world, scope, &sync),
+            || self.publish_pending_native_diagnostics(uri, expected, world.stamp, &sync),
         )
-        .await
-        {
-            Ok(Some(diagnostics)) => diagnostics,
-            Ok(None) => return,
-            Err(hints) => {
-                // The original timeout packet discloses missing type results.
-                // Cancellation retires only the waiter; entered IPC still owns
-                // its real snapshot on the bounded read lane until it drains.
-                let mut diagnostics = sync;
-                diagnostics.extend(hints);
-                diagnostics
-            }
+        .await;
+        let Some(diagnostics) = diagnostics else {
+            return;
         };
         if !world.is_current(&self.state) {
             return;
@@ -165,7 +155,7 @@ impl MaestroServer {
             }
             Ok(None) => {
                 // Unsupported/parser/art/script paths keep their existing
-                // collector and scope, inside this SAME original outer deadline.
+                // collector and scope within the same retained diagnostic future.
                 if !world.is_current(&self.state) {
                     return None;
                 }
@@ -186,8 +176,9 @@ impl MaestroServer {
         };
         // Reuse ORIGINAL full record/source-role/provider/owner validation:
         // TWO additional fresh physical guard passes on the existing config
-        // worker, without Vite evaluation or retargeting. Their cost stays in
-        // the original outer deadline; no count/performance equivalence claimed.
+        // worker, without Vite evaluation or retargeting. Their cost remains
+        // inside the same retained collection; the progress threshold never
+        // discards their result. No count/performance equivalence is claimed.
         let current = self
             .state
             .continue_initial_configuration(

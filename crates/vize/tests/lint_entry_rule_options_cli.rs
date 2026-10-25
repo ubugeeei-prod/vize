@@ -5,6 +5,8 @@
 use crate::support::vite_config;
 use std::{fs, path::Path, process::Command};
 
+mod macro_groups;
+
 fn write_file(root: &Path, path: &str, content: &str) {
     let file_path = root.join(path);
     if let Some(parent) = file_path.parent() {

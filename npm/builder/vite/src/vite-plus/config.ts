@@ -82,11 +82,13 @@ export function normalizeConfig(source: VueConfigObject, integration: VizePlusOp
             ? integration.lint
             : lintConfig !== false,
     fmt:
-      (vue?.fmt ?? vue?.formatter) !== undefined
-        ? true
-        : nativeFmt === undefined
-          ? integration.fmt
-          : nativeFmt !== false,
+      nativeFmt === false
+        ? false
+        : (vue?.fmt ?? vue?.formatter) !== undefined
+          ? true
+          : nativeFmt === undefined
+            ? integration.fmt
+            : true,
   };
   const config: UserConfigExport = async (env) =>
     (await projectViteConfigSource(source, env, configDirectory)) as UserConfigInput;

@@ -1,0 +1,44 @@
+name: Vitest project configuration consumers
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "crates/vize_carton/src/config/loader/vite-runtime.*"
+      - "npm/cli/src/config*"
+      - "npm/cli/src/config/**"
+      - "npm/builder/vite/src/config.ts"
+      - "npm/builder/vite/src/plugin/shared-config.ts"
+      - "npm/builder/vite/src/plugin/host-config-source.ts"
+      - "tests/consumers/vitest-project-extends.mjs"
+      - "tests/tooling/vitest-project-extends.test.ts"
+      - "tests/_fixtures/_projects/vitest-project-extends/**"
+      - ".github/workflows/vitest-project-extends.yml"
+permissions: { contents: read }
+concurrency:
+  group: vitest-project-extends-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  consumers:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, cache: true, run-install: false }
+      - run: vp install --filter './npm/builder/vite...' --filter './npm/cli...' --frozen-lockfile --prefer-offline
+      - name: Build both source configuration adapters
+        run: |
+          (cd npm/cli && vp pack)
+          (cd npm/builder/vite && vp pack)
+      - name: Install the exact released reproduction
+        working-directory: tests/_fixtures/_projects/vitest-project-extends
+        run: npm ci --prefer-offline --no-audit --no-fund
+      - name: Compare published failure and source adapter behavior in real Vitest projects
+        run: node tests/consumers/vitest-project-extends.mjs "$RUNNER_TEMP/vitest-project-extends"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: vitest-project-extends-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/vitest-project-extends
+          if-no-files-found: error
+          retention-days: 14
