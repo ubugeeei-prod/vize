@@ -72,6 +72,9 @@ for (const spec of runtimeSpecs) {
     fs.mkdirSync(directory, { recursive: true });
     row.reference = prepareReference(row.identity, directory);
     const requireRuntime = createRequire(path.join(row.identity.root, "package.json"));
+    const playwright = requireRuntime("playwright");
+    row.playwright = { chromiumLaunch: typeof playwright.chromium?.launch };
+    assert.equal(row.playwright.chromiumLaunch, "function", "public CommonJS Playwright host API");
     const Vue = await import(pathToFileURL(requireRuntime.resolve("vue")).href);
     const renderer = await import(
       pathToFileURL(requireRuntime.resolve("@vue/server-renderer")).href

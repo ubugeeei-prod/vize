@@ -3,13 +3,13 @@ import fs from "node:fs";
 import http from "node:http";
 import { createRequire } from "node:module";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
 import { here, json } from "./environment.mjs";
 import { wholeError } from "../hosts/contracts.mjs";
 
 export async function observeBrowser(input, directory, serverReport) {
   const requireRuntime = createRequire(path.join(input.runtime.root, "package.json"));
-  const { chromium } = await import(pathToFileURL(requireRuntime.resolve("playwright")).href);
+  const { chromium } = requireRuntime("playwright");
+  assert.equal(typeof chromium?.launch, "function", "the actual Playwright host exposes Chromium");
   const routes = new Map([
     ["/runtime.js", input.runtime.browserEntry],
     ["/browser-page.mjs", path.join(here, "browser-page.mjs")],

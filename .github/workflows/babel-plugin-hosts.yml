@@ -97,7 +97,9 @@ jobs:
           name: babel-plugin-hosts-${{ github.run_id }}-${{ github.run_attempt }}-${{ env.SOURCE_SHA }}
           path: |
             ${{ runner.temp }}/babel-plugin
+            !${{ runner.temp }}/babel-plugin/**/node_modules/**
             npm/native/.artifacts/native/build-token-receipt.json
+            npm/native/*.node
             npm/babel/test/hosts/fixtures/babel7/package-lock.json
             npm/babel/test/hosts/fixtures/babel8/package-lock.json
           if-no-files-found: error
