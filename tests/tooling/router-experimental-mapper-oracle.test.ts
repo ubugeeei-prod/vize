@@ -402,7 +402,7 @@ test(
           validPacket,
         );
         // This independently admitted config uses the published string plugin
-        // and the host's logical absolute root, rather than the Vize-specific
+        // and the host's logical absolute root, independently of the relative
         // object-option precedence control above.
         fs.writeFileSync(
           path.join(project.root, "tsconfig.logical.json"),
