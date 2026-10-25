@@ -38,6 +38,7 @@ jobs:
       - name: Observe exact source evaluator and complete compiler packets
         env:
           VIZE_LITERAL_STYLE_CAPTURE: ${{ runner.temp }}/vapor-literal-styles/head.json
+          VIZE_LITERAL_STYLE_PROFILE_CAPTURE: ${{ runner.temp }}/vapor-literal-styles/head-profile.json
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/vapor-literal-styles"
@@ -54,7 +55,7 @@ jobs:
           cp "$observer" "$baseline/$observer"
           cmp "$observer" "$baseline/$observer"
           git -C "$baseline" diff --exit-code -- crates/*/src
-          (cd "$baseline" && CARGO_TARGET_DIR="$RUNNER_TEMP/vapor-literal-style-base-target" VIZE_LITERAL_STYLE_EXPECT_OLD=1 VIZE_LITERAL_STYLE_CAPTURE="$RUNNER_TEMP/vapor-literal-styles/base.json" cargo test --locked --profile ci -p vize_atelier_jsx --test literal_style_source -- --nocapture --test-threads=1)
+          (cd "$baseline" && CARGO_TARGET_DIR="$RUNNER_TEMP/vapor-literal-style-base-target" VIZE_LITERAL_STYLE_EXPECT_OLD=1 VIZE_LITERAL_STYLE_PROFILE_CAPTURE="$RUNNER_TEMP/vapor-literal-styles/base-profile.json" VIZE_LITERAL_STYLE_CAPTURE="$RUNNER_TEMP/vapor-literal-styles/base.json" cargo test --locked --profile ci -p vize_atelier_jsx --test literal_style_source -- --nocapture --test-threads=1)
           git -C "$baseline" rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/vapor-literal-styles/base-source.txt"
           sha256sum "$observer" "$baseline/$observer" > "$RUNNER_TEMP/vapor-literal-styles/observer.sha256"
       - name: Compare every preserved runtime path without output normalization
@@ -65,11 +66,12 @@ jobs:
           const directory = `${process.env.RUNNER_TEMP}/vapor-literal-styles`;
           const base = JSON.parse(fs.readFileSync(`${directory}/base.json`));
           const head = JSON.parse(fs.readFileSync(`${directory}/head.json`));
-          assert.equal(head.length, 144); assert.equal(base.length, head.length);
+          assert.equal(head.length, 180); assert.equal(base.length, head.length);
           let changed = 0;
           for (let index=0; index<head.length; index++) {
             const current=head[index], previous=base[index];
             for (const key of ['id','family','source','retained','mapped','mode','ssr','standalone','fold']) assert.deepEqual(current[key], previous[key]);
+            assert.ok(current.expressionReparses <= previous.expressionReparses, `no new expression parsing ${index}`);
             if (!current.fold) assert.deepEqual(current.output, previous.output, `preserved whole packet ${index}`);
             else {
               assert.notDeepEqual(current.output, previous.output, `real fold must alter the full packet ${index}`);
@@ -79,6 +81,17 @@ jobs:
               assert.equal(current.counters.find(row=>row.name==='relief.inline_style.literal_object_candidates')?.total ?? 0,0);
             }
           }
+          const beforeProfile=JSON.parse(fs.readFileSync(`${directory}/base-profile.json`));
+          const afterProfile=JSON.parse(fs.readFileSync(`${directory}/head-profile.json`));
+          assert.equal(beforeProfile.length,12); assert.equal(afterProfile.length,12);
+          const median=xs=>xs.toSorted((a,b)=>a-b)[Math.floor(xs.length/2)];
+          const measurements=afterProfile.map((row,index)=>{
+            const previous=beforeProfile[index];
+            for(const key of ['id','family','source','mode','ssr','standalone','retained','iterationsPerSample']) assert.deepEqual(row[key],previous[key]);
+            assert.equal(row.samplesNs.length,9); assert.equal(previous.samplesNs.length,9);
+            return {id:row.id,family:row.family,mode:row.mode,ssr:row.ssr,standalone:row.standalone,retained:row.retained,baseMedianNs:median(previous.samplesNs),headMedianNs:median(row.samplesNs),ratio:median(row.samplesNs)/median(previous.samplesNs),baseArenaBytes:previous.arenaBytes,headArenaBytes:row.arenaBytes,baseExpressionReparses:previous.expressionReparses,headExpressionReparses:row.expressionReparses};
+          });
+          fs.writeFileSync(`${directory}/measurement.json`,JSON.stringify({scope:'CI source full-compile observer including parsing/lowering/codegen/JSON; arena used bytes excludes owned heap; report only',measurements},null,2)+'\n');
           fs.writeFileSync(`${directory}/comparison.json`,JSON.stringify({scope:'source-only; complete raw outputs; no browser or published artifact credit',rows:head.length,changed,preserved:head.length-changed},null,2)+'\n');
           JS
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

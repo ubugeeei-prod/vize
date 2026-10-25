@@ -58,7 +58,7 @@ fn template(source: &str, retained: bool, mapped: bool) -> (Value, usize, u64) {
         },
         VaporCompilerExperimentalOptions {
             source_map: mapped,
-            source_map_filename: Some("Original 日😀.vue"),
+            source_map_filename: Some("Original 日😀.vue".into()),
             ..Default::default()
         },
     );
@@ -173,7 +173,122 @@ fn complete_literal_style_source_observations() {
             rows.push(json!({"id":id,"family":"jsx","source":source,"mode":format!("{mode:?}"),"ssr":ssr,"standalone":standalone,"fold":expected.is_some() && !ssr && mode == JsxOutputMode::Vapor,"output":output,"arenaBytes":arena,"expressionReparses":reparses,"counters":counters}));
         }
     }
+    // A pure value alone does not prove how authored style sources merge.
+    // These complete packets must remain byte-identical to the old runtime
+    // path, including authored order, effects, diagnostics and every map.
+    for (id, attributes) in [
+        (
+            "static-before",
+            "style=\"color:red\" :style=\"{fontWeight:'700'}\"",
+        ),
+        (
+            "static-after",
+            ":style=\"{fontWeight:'700'}\" style=\"color:red\"",
+        ),
+        (
+            "spread-before",
+            "v-bind=\"attrs\" :style=\"{fontWeight:'700'}\"",
+        ),
+        (
+            "spread-after",
+            ":style=\"{fontWeight:'700'}\" v-bind=\"attrs\"",
+        ),
+        (
+            "computed-name",
+            ":[key]=\"value\" :style=\"{fontWeight:'700'}\"",
+        ),
+        ("prop-modifier", ":style.prop=\"{fontWeight:'700'}\""),
+        ("attr-modifier", ":style.attr=\"{fontWeight:'700'}\""),
+    ] {
+        let source = format!("<button {attributes}>{{{{label}}}}</button>");
+        for retained in [false, true] {
+            for mapped in [false, true] {
+                let (output, arena, reparses) = template(&source, retained, mapped);
+                rows.push(json!({"id":id,"family":"template-merge","source":source,"retained":retained,"mapped":mapped,"fold":false,"output":output,"arenaBytes":arena,"expressionReparses":reparses}));
+            }
+        }
+    }
+    for (id, opening) in [
+        (
+            "spread-before",
+            "button {...attrs} style={{fontWeight:'700'}}",
+        ),
+        (
+            "spread-after",
+            "button style={{fontWeight:'700'}} {...attrs}",
+        ),
+        (
+            "duplicate-style",
+            "button style=\"color:red\" style={{fontWeight:'700'}}",
+        ),
+        ("component-prop", "Child style={{fontWeight:'700'}}"),
+    ] {
+        let closing = if id == "component-prop" {
+            "Child"
+        } else {
+            "button"
+        };
+        let source = format!("const App = () => <{opening}>{{label}}</{closing}>;");
+        for standalone in [false, true] {
+            let (output, arena, reparses) = jsx(&source, JsxOutputMode::Vapor, false, standalone);
+            rows.push(json!({"id":id,"family":"jsx-merge","source":source,"standalone":standalone,"fold":false,"output":output,"arenaBytes":arena,"expressionReparses":reparses}));
+        }
+    }
     if let Some(path) = std::env::var_os("VIZE_LITERAL_STYLE_CAPTURE") {
         std::fs::write(path, serde_json::to_vec_pretty(&rows).unwrap()).unwrap();
     }
+}
+
+#[test]
+fn measured_whole_compile_source_work() {
+    let Some(path) = std::env::var_os("VIZE_LITERAL_STYLE_PROFILE_CAPTURE") else {
+        return;
+    };
+    let profiler = global_profiler();
+    profiler.disable();
+    let mut rows = Vec::new();
+    for (id, expression) in [
+        ("literal", "{fontWeight:'700'}"),
+        ("call", "{color:read()}"),
+    ] {
+        let source =
+            format!("const App = () => <button style={{{expression}}}>{{label}}</button>;");
+        for (mode, ssr, standalone) in [
+            (JsxOutputMode::Vapor, false, false),
+            (JsxOutputMode::Vdom, false, false),
+            (JsxOutputMode::Vapor, true, false),
+            (JsxOutputMode::Vapor, false, true),
+        ] {
+            let mut samples = Vec::new();
+            for _ in 0..10 {
+                std::hint::black_box(jsx(&source, mode, ssr, standalone));
+            }
+            for _ in 0..9 {
+                let started = std::time::Instant::now();
+                for _ in 0..100 {
+                    std::hint::black_box(jsx(std::hint::black_box(&source), mode, ssr, standalone));
+                }
+                samples.push(started.elapsed().as_nanos() as u64);
+            }
+            let (output, arena, reparses) = jsx(&source, mode, ssr, standalone);
+            rows.push(json!({"id":id,"family":"jsx","source":source,"mode":format!("{mode:?}"),"ssr":ssr,"standalone":standalone,"output":output,"samplesNs":samples,"iterationsPerSample":100,"arenaBytes":arena,"expressionReparses":reparses}));
+        }
+        let source = format!("<button :style=\"{expression}\">{{{{label}}}}</button>");
+        for retained in [false, true] {
+            let mut samples = Vec::new();
+            for _ in 0..10 {
+                std::hint::black_box(template(&source, retained, false));
+            }
+            for _ in 0..9 {
+                let started = std::time::Instant::now();
+                for _ in 0..100 {
+                    std::hint::black_box(template(std::hint::black_box(&source), retained, false));
+                }
+                samples.push(started.elapsed().as_nanos() as u64);
+            }
+            let (output, arena, reparses) = template(&source, retained, false);
+            rows.push(json!({"id":id,"family":"template","source":source,"retained":retained,"output":output,"samplesNs":samples,"iterationsPerSample":100,"arenaBytes":arena,"expressionReparses":reparses}));
+        }
+    }
+    std::fs::write(path, serde_json::to_vec_pretty(&rows).unwrap()).unwrap();
 }
