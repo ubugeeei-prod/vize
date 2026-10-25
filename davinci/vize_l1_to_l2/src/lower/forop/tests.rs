@@ -20,7 +20,7 @@ fn with_for(source: &str, check: impl FnOnce(&Lowered<'_>, &ForOp<'_>, &ScopeFac
     check(&lowered, for_op, scope, parts);
 }
 
-fn declarations<'a>(source: &'a str, scope: &'a ScopeFacts) -> std::vec::Vec<(&'a str, &'a str)> {
+fn declarations<'a>(source: &'a str, scope: &'a ScopeFacts) -> alloc::vec::Vec<(&'a str, &'a str)> {
     scope
         .bindings
         .iter()
