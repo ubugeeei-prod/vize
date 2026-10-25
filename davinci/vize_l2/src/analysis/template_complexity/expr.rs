@@ -161,22 +161,24 @@ impl<'a> Visit<'a> for Scorer<'_, 'a> {
         let Some(span) = self.file_span(it.span) else {
             return;
         };
-        let index = self.facts.contributions.len();
-        self.facts.push(Contribution {
-            span,
-            kind: DecisionKind::Logical,
-            op: self.op,
-            nesting: self.nesting(),
-            cyclomatic: 0,
-            cognitive: 0,
-        });
+        let nesting = self.nesting();
         let mut run = Run {
             operators: 0,
             runs: 0,
             last: None,
         };
         self.flatten(it, &mut run);
-        self.facts.settle(index, run.operators, run.runs);
+        // `run` orders all rows by authored position before publishing. Emit
+        // this complete row once instead of inserting zeros and revisiting it
+        // after nested decisions may have reallocated the contribution buffer.
+        self.facts.push(Contribution {
+            span,
+            kind: DecisionKind::Logical,
+            op: self.op,
+            nesting,
+            cyclomatic: run.operators,
+            cognitive: run.runs,
+        });
     }
 
     fn visit_conditional_expression(&mut self, it: &ConditionalExpression<'a>) {

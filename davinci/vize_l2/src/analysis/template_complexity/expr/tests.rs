@@ -60,6 +60,9 @@ fn checked_wrapper_coordinates_preserve_whole_logical_and_nested_conditional_ran
                 .unwrap();
         let mut facts = ComplexityFacts::empty();
         score(ExprRef::Js(js), NodeId::from_index(3), 0, &mut facts);
+        facts
+            .contributions
+            .sort_unstable_by_key(Contribution::sort_key);
         assert_eq!(facts, expected(&file, expression, "yes ? '😀' : 'no'"));
         assert!(core::ptr::eq(js.ast, &wrapper.expression));
     }
@@ -73,6 +76,9 @@ fn load_path_identity_coordinates_retain_the_complete_existing_fact_shape() {
     let js = JsExpr::parse_in(&a, expression, span(&file, expression)).unwrap();
     let mut facts = ComplexityFacts::empty();
     score(ExprRef::Js(js), NodeId::from_index(3), 0, &mut facts);
+    facts
+        .contributions
+        .sort_unstable_by_key(Contribution::sort_key);
     assert_eq!(facts, expected(&file, expression, "yes ? '😀' : 'no'"));
 }
 
@@ -153,6 +159,9 @@ fn terminal_leaves_preserve_facts_and_compounds_still_visit_nested_decisions() {
         let js = JsExpr::parse_in(&a, expression, Span::new(0, expression.len() as u32)).unwrap();
         let mut facts = ComplexityFacts::empty();
         score(ExprRef::Js(js), NodeId::from_index(3), 0, &mut facts);
+        facts
+            .contributions
+            .sort_unstable_by_key(Contribution::sort_key);
         assert_eq!(
             facts,
             expected(expression, "a && (b ? c : d)", "b ? c : d"),
