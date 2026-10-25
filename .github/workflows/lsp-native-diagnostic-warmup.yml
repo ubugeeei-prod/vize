@@ -50,6 +50,7 @@ jobs:
           wild-version: "0.9.0"
       - run: vp install --frozen-lockfile --prefer-offline
       - name: Build each exact source in its own initially absent role and SHA target
+        id: producer
         env:
           ROLE: ${{ matrix.role }}
           # Immutable pre-fix source: future rebases must still reproduce the original drop.
@@ -82,7 +83,7 @@ jobs:
           CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
         run: node --test --test-concurrency=1 tests/tooling/lsp-native-diagnostic-warmup.test.ts
       - name: Preserve source freshness, assembly oracles, recovery and editor controls
-        if: ${{ matrix.role == 'candidate' }}
+        if: ${{ !cancelled() && matrix.role == 'candidate' && steps.producer.outcome == 'success' }}
         env:
           CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
           VIZE_LSP_NATIVE_DIAGNOSTIC_TIMEOUT_MS: "120000"

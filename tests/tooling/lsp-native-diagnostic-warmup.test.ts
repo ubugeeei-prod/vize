@@ -224,11 +224,6 @@ await test(
       );
       assert.equal(nativeErrors(await wait(second, (packet) => packet.version === 1)).length, 8);
       const afterWarm = new NativeDiagnosticsGate(session.processId, fs.realpathSync(runtime));
-      assert.deepEqual(
-        afterWarm.lives.map(({ pid, birthTicks, executable }) => ({ pid, birthTicks, executable })),
-        gate.lives.map(({ pid, birthTicks, executable }) => ({ pid, birthTicks, executable })),
-        "both documents reuse the same actual native process lifetimes",
-      );
 
       const staleGate = await stop();
       const stalePass = notifications.length;
@@ -310,6 +305,11 @@ await test(
           params.diagnostics.every((diagnostic) => diagnostic.code !== "typecheck-timed-out"),
         ),
         "a soft threshold must never turn a real native result into a timeout",
+      );
+      assert.deepEqual(
+        afterWarm.lives.map(({ pid, birthTicks, executable }) => ({ pid, birthTicks, executable })),
+        gate.lives.map(({ pid, birthTicks, executable }) => ({ pid, birthTicks, executable })),
+        "both documents reuse the same actual native process lifetimes",
       );
     } catch (error) {
       failure = error instanceof Error ? error.stack : String(error);
