@@ -1,0 +1,171 @@
+[
+  {
+    "id": "empty",
+    "source": "",
+    "attrs": {}
+  },
+  {
+    "id": "template",
+    "source": "<template lang=\"html\"><p>🐱</p></template>",
+    "attrs": {
+      "template": [["lang", "html"]]
+    }
+  },
+  {
+    "id": "upper-template-language",
+    "source": "<template LANG=\"html\"><div/></template>",
+    "attrs": {
+      "template": [["LANG", "html"]]
+    }
+  },
+  {
+    "id": "script",
+    "source": "<script vapor>export default {}</script><template><div/></template>",
+    "attrs": {
+      "script": [["vapor", ""]],
+      "template": []
+    },
+    "vapor": true
+  },
+  {
+    "id": "setup",
+    "source": "<script setup vapor lang=\"ts\">const n: number = 1;</script><template>{{n}}</template>",
+    "attrs": {
+      "scriptSetup": [
+        ["setup", ""],
+        ["vapor", ""],
+        ["lang", "ts"]
+      ],
+      "template": []
+    },
+    "vapor": true
+  },
+  {
+    "id": "false-value",
+    "source": "<script setup=\"false\" vapor=\"false\">const n = 1;</script><template>{{n}}</template>",
+    "attrs": {
+      "scriptSetup": [
+        ["setup", "false"],
+        ["vapor", "false"]
+      ],
+      "template": []
+    },
+    "vapor": true
+  },
+  {
+    "id": "empty-value",
+    "source": "<script setup vapor=\"\">const n = 1;</script><template>{{n}}</template>",
+    "attrs": {
+      "scriptSetup": [
+        ["setup", ""],
+        ["vapor", ""]
+      ],
+      "template": []
+    },
+    "vapor": true
+  },
+  {
+    "id": "upper-name",
+    "source": "<SCRIPT VAPOR>export default {}</SCRIPT><template/>",
+    "attrs": {
+      "script": [["VAPOR", ""]],
+      "template": []
+    }
+  },
+  {
+    "id": "upper-tag",
+    "source": "<SCRIPT vapor>export default {}</SCRIPT><template/>",
+    "attrs": {
+      "script": [["vapor", ""]],
+      "template": []
+    },
+    "vapor": true
+  },
+  {
+    "id": "mixed-name",
+    "source": "<script setup VaPoR>const n = 1;</script><template>{{n}}</template>",
+    "attrs": {
+      "scriptSetup": [
+        ["setup", ""],
+        ["VaPoR", ""]
+      ],
+      "template": []
+    }
+  },
+  {
+    "id": "neighbors",
+    "source": "<script setup data-vapor=\"vapor\" nonvapor title=\"vapor\">const text = \"<script vapor>\";</script><template>{{text}}</template>",
+    "attrs": {
+      "scriptSetup": [
+        ["setup", ""],
+        ["data-vapor", "vapor"],
+        ["nonvapor", ""],
+        ["title", "vapor"]
+      ],
+      "template": []
+    }
+  },
+  {
+    "id": "comment",
+    "source": "<!-- <script vapor>ignored</script> --><script setup>const text = \"vapor\";</script><template>{{text}}</template>",
+    "attrs": {
+      "scriptSetup": [["setup", ""]],
+      "template": []
+    }
+  },
+  {
+    "id": "duplicates",
+    "source": "<script setup vapor=\"first\" lang=\"ts\" vapor=\"last\">const n: number = 1;</script><template>{{n}}</template>",
+    "attrs": {
+      "scriptSetup": [
+        ["setup", ""],
+        ["vapor", "last"],
+        ["lang", "ts"]
+      ],
+      "template": []
+    },
+    "vapor": true
+  },
+  {
+    "id": "all-blocks",
+    "source": "<template data-z=\"🐱\" lang=\"html\"><div/></template>\r\n<script setup data-z=\"a>b\" data-味=\"值\" __proto__=\"safe\">const n = 1;</script>\r\n<style scoped module=\"theme\" lang=\"css\">.a { color: red }</style><docs z=\"&amp;\" a></docs>",
+    "attrs": {
+      "template": [
+        ["data-z", "🐱"],
+        ["lang", "html"]
+      ],
+      "scriptSetup": [
+        ["setup", ""],
+        ["data-z", "a>b"],
+        ["data-味", "值"],
+        ["__proto__", "safe"]
+      ],
+      "styles": [
+        [
+          ["scoped", ""],
+          ["module", "theme"],
+          ["lang", "css"]
+        ]
+      ],
+      "customBlocks": [
+        [
+          ["z", "&amp;"],
+          ["a", ""]
+        ]
+      ]
+    }
+  },
+  {
+    "id": "external-empty",
+    "source": "<script src=\"\"></script><template/>",
+    "attrs": {
+      "script": [["src", ""]],
+      "template": []
+    }
+  },
+  {
+    "id": "malformed",
+    "source": "<template><p>unterminated",
+    "error": true
+  }
+]

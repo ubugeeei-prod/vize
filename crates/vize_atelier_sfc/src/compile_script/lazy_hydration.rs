@@ -71,6 +71,13 @@ impl LazyHydrationStrategy {
 
 /// Expand Nuxt `defineLazyHydrationComponent(strategy, loader)` calls.
 pub(crate) fn transform_lazy_hydration_macros(content: &str) -> Option<LazyHydrationTransform> {
+    transform_lazy_hydration_macros_with_runtime(content, "vue")
+}
+
+pub(crate) fn transform_lazy_hydration_macros_with_runtime(
+    content: &str,
+    runtime_module_name: &str,
+) -> Option<LazyHydrationTransform> {
     if !content.contains("defineLazyHydrationComponent") {
         return None;
     }
@@ -113,7 +120,7 @@ pub(crate) fn transform_lazy_hydration_macros(content: &str) -> Option<LazyHydra
 
     Some(LazyHydrationTransform {
         code,
-        preamble: build_lazy_hydration_preamble(&strategies),
+        preamble: build_lazy_hydration_preamble(&strategies, runtime_module_name),
         runs,
     })
 }
@@ -256,10 +263,12 @@ fn argument_source(arg: &Argument<'_>, source: &str) -> Option<String> {
         .map(ToCompactString::to_compact_string)
 }
 
-fn build_lazy_hydration_preamble(strategies: &[LazyHydrationStrategy]) -> String {
-    let mut preamble = String::from(
-        "import { defineAsyncComponent as __vizeDefineAsyncComponent, defineComponent as __vizeDefineComponent, h as __vizeH, hydrateOnIdle as __vizeHydrateOnIdle, hydrateOnInteraction as __vizeHydrateOnInteraction, hydrateOnMediaQuery as __vizeHydrateOnMediaQuery, hydrateOnVisible as __vizeHydrateOnVisible, mergeProps as __vizeMergeProps } from 'vue'\n",
-    );
+fn build_lazy_hydration_preamble(
+    strategies: &[LazyHydrationStrategy],
+    runtime_module_name: &str,
+) -> String {
+    let mut preamble = String::default();
+    super::runtime_imports::RuntimeModule::new(runtime_module_name).append_import(&mut preamble, "defineAsyncComponent as __vizeDefineAsyncComponent, defineComponent as __vizeDefineComponent, h as __vizeH, hydrateOnIdle as __vizeHydrateOnIdle, hydrateOnInteraction as __vizeHydrateOnInteraction, hydrateOnMediaQuery as __vizeHydrateOnMediaQuery, hydrateOnVisible as __vizeHydrateOnVisible, mergeProps as __vizeMergeProps");
     preamble.push_str("import { useNuxtApp as __vizeUseNuxtApp } from '#app/nuxt'\n");
     preamble.push_str("const __vizeDefineLazyHydrationComponent = (props, defineStrategy) => (id, loader) => __vizeDefineComponent({\n");
     preamble.push_str("  inheritAttrs: false,\n");

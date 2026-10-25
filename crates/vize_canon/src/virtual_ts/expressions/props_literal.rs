@@ -41,7 +41,7 @@ pub(crate) fn append_inference_props_literal(
         &mut Vec::new(),
         usage,
         template_binding_access,
-        source_context,
+        source_context.inference_only(),
         expr_indent,
     );
 }
@@ -113,7 +113,7 @@ pub(crate) fn append_props_literal(
                 &mut emitted_merged_class,
             )
         };
-        append_prop_entry(
+        let rows = append_prop_entry(
             ts,
             mappings,
             prop,
@@ -126,6 +126,12 @@ pub(crate) fn append_props_literal(
             spreads.peek().is_some(),
             &mut authored_named_keys,
         );
+        if let Some(rows) = rows
+            && !rows.merged
+            && (!rows.ignored_primary || source_context.is_inference_only())
+        {
+            source_context.record_prop_projection(usage, prop, rows.name, rows.value);
+        }
     }
     for spread in spreads {
         append_spread_entry(
