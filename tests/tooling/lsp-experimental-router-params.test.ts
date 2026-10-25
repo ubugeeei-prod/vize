@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { createHash } from "node:crypto";
 import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
@@ -106,6 +107,7 @@ async function diagnostics(session: LspSession, uri: string, version: number): P
 async function queries(session: LspSession, uri: string, source: string) {
   const requests = [];
   const resolved = [];
+  let generated: { file: string; sha256: string; source: string } | null = null;
   for (const method of methods) {
     const offset =
       source.indexOf("route.params.page") + (method === "textDocument/completion" ? 13 : 14);
@@ -119,11 +121,23 @@ async function queries(session: LspSession, uri: string, source: string) {
     requests.push({ method, params, response, elapsedMs: performance.now() - started });
     if (method === "textDocument/completion") {
       assert.ok(Array.isArray(response));
+      const candidate = response[0] as
+        | { data?: { vizeCompletion?: { item?: { data?: { fileName?: unknown } } } } }
+        | undefined;
+      const file = candidate?.data?.vizeCompletion?.item?.data?.fileName;
+      if (typeof file === "string" && fs.existsSync(file)) {
+        const bytes = fs.readFileSync(file);
+        generated = {
+          file,
+          sha256: createHash("sha256").update(bytes).digest("hex"),
+          source: bytes.toString("utf8"),
+        };
+      }
       for (const item of response)
         resolved.push(await session.request("completionItem/resolve", item));
     }
   }
-  return { requests, resolved };
+  return { requests, resolved, generated };
 }
 
 function assertQueries(
@@ -131,13 +145,14 @@ function assertQueries(
   expected: Golden,
   directory: string,
   revision: number,
+  compare: (actual: unknown, expected: unknown, message?: string) => void,
 ) {
   const packets = actual.requests.map(({ elapsedMs: _, ...packet }) => packet);
-  assert.deepEqual(
+  compare(
     normalize(packets, directory),
     replaceExpected(expected.requests as unknown as Json, "revision", revision),
   );
-  assert.deepEqual(
+  compare(
     normalize(actual.resolved, directory),
     replaceExpected(expected.resolved, "revision", revision),
   );
@@ -208,6 +223,15 @@ test(
     fs.mkdirSync(output, { recursive: true });
     const provider = await prepareExperimentalRouterProject(path.join(output, "provider"));
     const receipts: unknown[] = [];
+    const failures: string[] = [];
+    const compare = (actual: unknown, expected: unknown, message?: string) => {
+      try {
+        assert.deepEqual(actual, expected, message);
+      } catch (error) {
+        if (!(error instanceof assert.AssertionError)) throw error;
+        failures.push(error.message);
+      }
+    };
     try {
       for (const variant of ["lf", "crlf"]) {
         const expected = golden(variant);
@@ -250,12 +274,12 @@ test(
               version === 2
                 ? expected.invalidDiagnostics
                 : replaceExpected(expected.diagnostics, "version", version);
-            assert.deepEqual(normalize(published, directory), expectedDiagnostics);
+            compare(normalize(published, directory), expectedDiagnostics);
             const actual = await queries(session, uri, source);
             receipt.stages.push({ version, published, ...actual });
-            assertQueries(actual, expected, directory, version);
+            assertQueries(actual, expected, directory, version, compare);
           }
-          assert.deepEqual(
+          compare(
             fs.readFileSync(path.join(directory, "typed-router.d.ts")),
             declaration,
             "editor requests never regenerate provider declarations",
@@ -265,7 +289,7 @@ test(
           receipt.stderr = session.stderrText;
           fs.writeFileSync(
             path.join(output, "observation.json"),
-            `${JSON.stringify({ dependencies: provider.dependencies, receipts }, null, 2)}\n`,
+            `${JSON.stringify({ dependencies: provider.dependencies, failures, receipts }, null, 2)}\n`,
           );
           fs.rmSync(directory, { recursive: true, force: true });
         }
@@ -285,24 +309,33 @@ test(
       try {
         await session.initialize([enabled, disabled], options);
         const enabledUri = open(session, enabled, expected.source);
-        assert.deepEqual(
+        compare(
           normalize(await diagnostics(session, enabledUri, 1), enabled),
           expected.diagnostics,
         );
-        assertQueries(await queries(session, enabledUri, expected.source), expected, enabled, 1);
-        const disabledUri = open(session, disabled, expected.source);
-        assert.deepEqual(
-          await diagnostics(session, disabledUri, 1),
-          structuralDiagnostics(disabledUri, 1),
+        assertQueries(
+          await queries(session, enabledUri, expected.source),
+          expected,
+          enabled,
+          1,
+          compare,
         );
+        const disabledUri = open(session, disabled, expected.source);
+        compare(await diagnostics(session, disabledUri, 1), structuralDiagnostics(disabledUri, 1));
         const completion = (uri: string) =>
           session.request("textDocument/completion", {
             textDocument: { uri },
             position: position(expected.source, expected.source.indexOf("route.params.page") + 13),
           });
-        assert.deepEqual(await completion(disabledUri), structuralCompletion);
+        compare(await completion(disabledUri), structuralCompletion);
         // The same spelled page/route in another project must not borrow authority.
-        assertQueries(await queries(session, enabledUri, expected.source), expected, enabled, 1);
+        assertQueries(
+          await queries(session, enabledUri, expected.source),
+          expected,
+          enabled,
+          1,
+          compare,
+        );
         for (const [version, admitted] of [
           [2, false],
           [3, true],
@@ -317,7 +350,7 @@ test(
           });
           const published = await diagnostics(session, enabledUri, version);
           if (admitted) {
-            assert.deepEqual(
+            compare(
               normalize(published, enabled),
               replaceExpected(expected.diagnostics, "version", version),
             );
@@ -326,19 +359,20 @@ test(
               expected,
               enabled,
               4,
+              compare,
             );
           } else {
-            assert.deepEqual(published, structuralDiagnostics(enabledUri, version));
-            assert.deepEqual(await completion(enabledUri), structuralCompletion);
+            compare(published, structuralDiagnostics(enabledUri, version));
+            compare(await completion(enabledUri), structuralCompletion);
           }
-          assert.deepEqual(await completion(disabledUri), structuralCompletion);
+          compare(await completion(disabledUri), structuralCompletion);
         }
       } finally {
         await session.shutdown();
         receipt.stderr = session.stderrText;
         fs.writeFileSync(
           path.join(output, "observation.json"),
-          `${JSON.stringify({ dependencies: provider.dependencies, receipts }, null, 2)}\n`,
+          `${JSON.stringify({ dependencies: provider.dependencies, failures, receipts }, null, 2)}\n`,
         );
         fs.rmSync(enabled, { recursive: true, force: true });
         fs.rmSync(disabled, { recursive: true, force: true });
@@ -346,5 +380,6 @@ test(
     } finally {
       provider.cleanup();
     }
+    assert.deepEqual(failures, [], "every independent whole protocol comparison must pass");
   },
 );
