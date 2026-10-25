@@ -147,9 +147,13 @@ const attrs = { 'data-spread': 'value' }
             .collect();
         assert_eq!(!undeclared.is_empty(), expected_warning, "{name}");
         for finding in undeclared {
-            let serialized = serde_json::to_string(finding).unwrap();
-            assert!(!serialized.contains("data-location: unknown"));
-            assert!(serialized.contains("inheritAttrs"));
+            assert_eq!(
+                serde_json::to_value(&finding.fix).unwrap(),
+                serde_json::json!({
+                    "safety": "review-required",
+                    "title": "Forward attributes to the intended element with `v-bind=\"$attrs\"`, or review the component's `inheritAttrs` setting and root elements."
+                })
+            );
         }
         assert!(!report.summary().has_blocking_errors, "{name}");
         if !expected_warning {
