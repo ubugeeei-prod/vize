@@ -87,6 +87,23 @@ pub(super) fn emit(
                 "Vapor/SSR authored modules require a directly returned JSX root in an owned component arrow; function declarations, callbacks and other expression contexts are not represented yet",
             ));
         }
+        if let Some((index, _)) = spans
+            .iter()
+            .enumerate()
+            .find(|(_, span)| **span == (start, end))
+            && matches!(components.get(index), Some(JsxComponent::Ssr(component)) if component.mode == crate::JsxOutputMode::Vdom)
+            && native_plans.iter().any(|plan| {
+                plan.setup.render_start == start
+                    && plan.setup.render_end == end
+                    && plan.setup.setup_start == 0
+            })
+        {
+            return Err(error(
+                start,
+                end,
+                "SSR expression-bodied VDOM components require an explicit functional props and attribute fallthrough projection; use a stateful block-body component or the Vapor component role",
+            ));
+        }
         if native_plans.iter().any(|plan| {
             plan.span.start <= start
                 && end <= plan.span.end

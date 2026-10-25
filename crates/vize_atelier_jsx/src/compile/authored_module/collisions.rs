@@ -30,7 +30,19 @@ pub(super) fn check(
         .iter()
         .map(|component| crate::parse_module(&allocator, component.code(), lang))
         .collect();
-    for parsed in &parsed_components {
+    for ((component, parsed), &(start, end)) in components.iter().zip(&parsed_components).zip(spans)
+    {
+        if !matches!(component, JsxComponent::Vdom(_)) {
+            let mut residual = ResidualJsx(false);
+            residual.visit_program(&parsed.program);
+            if residual.0 {
+                return Err(error(
+                    start,
+                    end,
+                    "Vapor/SSR backend retained JSX inside an attribute expression; this context requires shared IR lowering before module emission",
+                ));
+            }
+        }
         for statement in &parsed.program.body {
             if let Statement::ImportDeclaration(import) = statement {
                 helpers.visit_import_declaration(import);
@@ -220,5 +232,17 @@ impl<'a> Visit<'a> for References<'a, '_> {
                 identifier.span.end,
             ));
         }
+    }
+}
+
+/// A TSX parser can accept residual JSX that no emitted runtime can execute.
+/// Inspect syntax nodes, never source spelling, before admitting native output.
+struct ResidualJsx(bool);
+impl<'a> Visit<'a> for ResidualJsx {
+    fn visit_jsx_element(&mut self, _: &oxc_ast::ast::JSXElement<'a>) {
+        self.0 = true;
+    }
+    fn visit_jsx_fragment(&mut self, _: &oxc_ast::ast::JSXFragment<'a>) {
+        self.0 = true;
     }
 }
