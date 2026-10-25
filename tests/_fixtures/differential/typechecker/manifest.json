@@ -5316,14 +5316,14 @@
       "pack": "jsx-prop-token-ranges-10494",
       "case": "tsx-invalid-and-valid-props",
       "test": "jsx_prop_tokens_preserve_complete_batch_diagnostics",
-      "regressionCommit": "72caad322770d89177ae8e659e418d9d7d3a85eb",
-      "sourceRevision": "72caad322770d89177ae8e659e418d9d7d3a85eb",
+      "regressionCommit": "ec31d1907818f7dc8b157ceb844f6d28292a247d",
+      "sourceRevision": "ec31d1907818f7dc8b157ceb844f6d28292a247d",
       "checkerOptions": {
         "jsxTypecheck": true
       },
       "packReference": {
         "path": "jsx-prop-token-ranges-10494/cases.json",
-        "sha256": "5fe96eaf8181ed9b1f9d06e112f35fa16791a5727fec3503b5b9130dfa2a4268"
+        "sha256": "131d15dacc1c5755233c8ecf4f88de473c4a838b6034b443f2331431d0a28a5f"
       },
       "inputs": [
         {
@@ -5372,14 +5372,14 @@
       "pack": "jsx-prop-token-ranges-10494",
       "case": "jsx-invalid-and-valid-props",
       "test": "jsx_prop_tokens_preserve_complete_batch_diagnostics",
-      "regressionCommit": "72caad322770d89177ae8e659e418d9d7d3a85eb",
-      "sourceRevision": "72caad322770d89177ae8e659e418d9d7d3a85eb",
+      "regressionCommit": "ec31d1907818f7dc8b157ceb844f6d28292a247d",
+      "sourceRevision": "ec31d1907818f7dc8b157ceb844f6d28292a247d",
       "checkerOptions": {
         "jsxTypecheck": true
       },
       "packReference": {
         "path": "jsx-prop-token-ranges-10494/cases.json",
-        "sha256": "5fe96eaf8181ed9b1f9d06e112f35fa16791a5727fec3503b5b9130dfa2a4268"
+        "sha256": "131d15dacc1c5755233c8ecf4f88de473c4a838b6034b443f2331431d0a28a5f"
       },
       "inputs": [
         {

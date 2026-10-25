@@ -2064,7 +2064,7 @@
       },
       "case": {
         "path": "jsx-prop-token-ranges-10494-tsx/case.json",
-        "sha256": "5337faacd725e16eb4efc2f6b1061f6c0d4850df2a5bfc8b5bc633fdc8d5e8e2"
+        "sha256": "8263b70419efe31fba105e3a39ed950122b4c2cf6a0ebe1a5d76f6c75ffa43fb"
       },
       "requestCount": 2,
       "initializationOptions": {
@@ -2119,7 +2119,7 @@
       },
       "case": {
         "path": "jsx-prop-token-ranges-10494-jsx/case.json",
-        "sha256": "33252099f07400dd2c3b0ef97d3466e92cbfd1ea19f15ca2bbcbb4ed944aadcd"
+        "sha256": "89c05bd7ee56ad072693ee370015ed91ec471bfdfadc4c53c7a9b7dd01df2f55"
       },
       "requestCount": 2,
       "initializationOptions": {

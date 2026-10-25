@@ -2,7 +2,7 @@
   "version": 1,
   "id": "lsp/regression/jsx-prop-token-ranges-10494-tsx",
   "provenance": {
-    "fixCommit": "72caad322770d89177ae8e659e418d9d7d3a85eb",
+    "fixCommit": "ec31d1907818f7dc8b157ceb844f6d28292a247d",
     "witnessPath": "tests/tooling/lsp-jsx-prop-token-ranges.test.ts",
     "witnessTest": "JSX and TSX prop hover, references and rename preserve complete authored tokens",
     "inputOrigin": "Minimized published v0.560.0 quoted JSX prop range failure and unsafe rename in #10494",
