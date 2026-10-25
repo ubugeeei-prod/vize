@@ -149,6 +149,8 @@ pub struct ServerState {
     lsp_features: RwLock<LspFeatureConfig>,
     /// Fast path for checking whether type-aware features are enabled.
     lsp_typecheck_enabled: AtomicBool,
+    /// Soft diagnostic progress threshold; native work continues after it.
+    native_diagnostic_timeout_ms: std::sync::atomic::AtomicU64,
     /// Client can request documentation through the native completion resolver.
     completion_documentation_resolve: AtomicBool,
     /// Type checker options and project identity shared by LSP diagnostics.

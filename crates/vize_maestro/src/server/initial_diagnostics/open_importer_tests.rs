@@ -52,6 +52,7 @@ export default () => {
         let mut server = MaestroServer::new(client);
         server.initial_diagnostics = Some(super::InitialDiagnosticsScheduler {
             sender: Some(sender),
+            sync_sender: None,
             worker_owned: false,
             pending: queue,
         });
@@ -132,6 +133,7 @@ fn one_queued_open_reuses_its_owner_but_the_next_public_operation_confirms_unkno
     ));
     assert!(sync_owner.state.lsp_features().hover);
     assert_eq!(factory_count(&fixture), "once\n");
+    fixture.pending.lock().complete_sync(&uri, sync.sequence);
     let (_, typed) = fixture
         .pending
         .lock()
@@ -232,6 +234,7 @@ fn queued_open_receipt_refuses_changed_source_version_reopen_config_and_failed_r
                     .open(target.clone(), "<template />".into(), 1, "vue".into());
             }
         }
+        fixture.pending.lock().complete_sync(&uri, sync.sequence);
         let (_, typed) = fixture
             .pending
             .lock()

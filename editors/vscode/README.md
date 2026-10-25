@@ -121,6 +121,13 @@ semantic tokens, links, folding ranges, inlay hints, and file rename handling. I
 individual switches, make sure to include `vize.completion.enable`, `vize.hover.enable`, and
 `vize.definition.enable` together when testing the core editor flow.
 
+Large projects may take longer to warm their shared native type-checking session. Lint feedback
+appears first; the native result follows when ready. `vize.typecheck.timeoutMs` controls when the
+Problems panel shows the informational `typecheck-pending` message, without discarding the native
+result. Other LSP clients can send `initializationOptions.typecheckTimeoutMs`; the environment
+variable `VIZE_LSP_NATIVE_DIAGNOSTIC_TIMEOUT_MS` overrides that threshold. Native IPC still has its
+separate hard request bound, configured by `typeChecker.lspRequestTimeoutMs` in the project config.
+
 Use individual switches when you want to compare one Vize surface against an existing Vue editor
 setup without changing the whole profile:
 
@@ -129,6 +136,7 @@ setup without changing the whole profile:
 | `vize.lint.enable`             | `true`  | Vue-aware diagnostics.                                                      |
 | `vize.diagnostics.enable`      | `false` | Deprecated alias for `vize.lint.enable`.                                    |
 | `vize.typecheck.enable`        | `true`  | Type checking diagnostics and type-aware backend features.                  |
+| `vize.typecheck.timeoutMs`     | `10000` | Time before showing that native diagnostics are still running.              |
 | `vize.editor.enable`           | `true`  | Main editor assistance bundle.                                              |
 | `vize.ecosystem.enable`        | `true`  | Router, I18n, Nuxt, and Void Vue helpers.                                   |
 | `vize.optionsApi.enable`       | `false` | Vue 3 Options API template bindings.                                        |

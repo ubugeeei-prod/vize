@@ -135,13 +135,20 @@ impl MaestroServer {
 
         // Use async version when native feature is enabled (includes Corsa diagnostics)
         #[cfg(feature = "native")]
-        let diagnostics = match prepared
-            .filter(|sync| sync.version == version && sync.stamp.is_current(&self.state))
-        {
-            Some(sync) => {
-                DiagnosticService::collect_async_from_sync(&self.state, uri, sync.diagnostics).await
-            }
-            None => DiagnosticService::collect_async(&self.state, uri).await,
+        let diagnostics = {
+            let sync = prepared
+                .filter(|sync| sync.version == version && sync.stamp.is_current(&self.state))
+                .map_or_else(
+                    || DiagnosticService::collect(&self.state, uri),
+                    |sync| sync.diagnostics,
+                );
+            let stamp = self.state.corsa_request_stamp();
+            crate::ide::diagnostics::with_native_diagnostic_progress(
+                self.state.native_diagnostic_timeout(),
+                DiagnosticService::collect_async_from_sync(&self.state, uri, sync.clone()),
+                || self.publish_pending_native_diagnostics(uri, version, stamp, &sync),
+            )
+            .await
         };
 
         #[cfg(not(feature = "native"))]
@@ -176,6 +183,30 @@ impl MaestroServer {
             #[cfg(feature = "native")]
             stamp: scope.as_ref().map(|scope| scope.stamp()),
         })
+    }
+
+    /// Pending feedback is partial and must not claim a terminal publication or
+    /// complete the scheduled job. Reuse the captured source/config stamp.
+    #[cfg(feature = "native")]
+    pub(in crate::server) async fn publish_pending_native_diagnostics(
+        &self,
+        uri: &Url,
+        version: i32,
+        stamp: super::state::CorsaRequestStamp,
+        sync: &[Diagnostic],
+    ) {
+        if self.state.project_context_retired()
+            || !self.state.is_lsp_typecheck_enabled()
+            || !stamp.is_current(&self.state)
+            || self.state.documents.version(uri) != Some(version)
+        {
+            return;
+        }
+        let mut diagnostics = sync.to_vec();
+        diagnostics.push(crate::ide::diagnostics::typecheck_pending_hint());
+        self.client
+            .publish_diagnostics(uri.clone(), diagnostics, None)
+            .await;
     }
 
     pub(super) async fn publish_collected_diagnostics(
