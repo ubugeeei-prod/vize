@@ -7,6 +7,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { startTsserver, position } from "./tsserver-client.mjs";
+import { createInheritedConfig, checkInheritedConfig } from "./inherited-config.mjs";
 
 const typescriptVersion = process.env.VIZE_TYPESCRIPT_PLUGIN_TYPESCRIPT || "6.0.3";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -178,6 +179,7 @@ for (const [file, source] of [
     JSON.stringify({ source, raw: JSON.parse(raw), normalized }, null, 2),
   );
 }
+const inherited = createInheritedConfig(consumer, src, output, config);
 const tsserver = path.join(consumer, "node_modules/typescript/lib/tsserver.js");
 const client = startTsserver(tsserver, consumer, output);
 const results = {};
@@ -280,6 +282,7 @@ try {
     tsDiagnostics.body.some((entry) => [2322, 2741].includes(entry.code)),
     JSON.stringify(tsDiagnostics),
   );
+  await checkInheritedConfig(client, inherited, nativeApi, tsserver, consumer, output, results);
   let renamed = vueText;
   const lineOffsets = [0];
   for (let index = 0; index < vueText.length; index++)
