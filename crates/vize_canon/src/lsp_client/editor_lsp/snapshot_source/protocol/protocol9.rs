@@ -70,7 +70,7 @@ pub(super) fn source_text<'a>(
         }
     }
     let string_bytes = |pair: usize| {
-        if pair % 2 != 0 {
+        if !pair.is_multiple_of(2) {
             return Err(Refuse::Strings);
         }
         let offset = pair
