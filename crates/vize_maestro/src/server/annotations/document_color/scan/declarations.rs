@@ -48,7 +48,7 @@ enum Parenthesis {
 
 #[derive(Default)]
 pub(super) struct Conditions {
-    header: Option<(usize, Header)>,
+    header: Option<(usize, Header, usize)>,
     start: Option<(usize, usize, Parenthesis)>,
     value_depth: Option<usize>,
     rejected: bool,
@@ -75,11 +75,11 @@ impl Conditions {
         if in_value || self.in_value() {
             return;
         }
-        let header = match self.header {
-            Some((start, header)) if start == statement => header,
+        let (header, keyword_end) = match self.header {
+            Some((start, header, end)) if start == statement => (header, end),
             _ => {
                 let header = header(content.as_bytes(), statement, at, mode);
-                self.header = Some((statement, header));
+                self.header = Some((statement, header.0, header.1));
                 header
             }
         };
@@ -95,7 +95,7 @@ impl Conditions {
         let function = bytes.get(name..at).unwrap_or_default();
         #[cfg(test)]
         super::record_declaration_name_work(at - name);
-        let keyword = name > statement && bytes.get(name - 1) == Some(&b'@');
+        let keyword = at == keyword_end;
         let kind = match header {
             Header::Supports if function.is_empty() || keyword => Parenthesis::Declaration,
             Header::Container if function.eq_ignore_ascii_case(b"style") => {
@@ -149,7 +149,7 @@ impl Conditions {
     }
 }
 
-fn header(bytes: &[u8], start: usize, end: usize, mode: CssMode) -> Header {
+fn header(bytes: &[u8], start: usize, end: usize, mode: CssMode) -> (Header, usize) {
     #[cfg(test)]
     super::record_declaration_name_work(end.saturating_sub(start));
     let at = skip_trivia(bytes, start, end);
@@ -157,22 +157,22 @@ fn header(bytes: &[u8], start: usize, end: usize, mode: CssMode) -> Header {
         let name = at + 1;
         let stop = identifier_end(bytes, name, end);
         if identifier_eq(bytes, name, stop, b"supports") {
-            return Header::Supports;
+            return (Header::Supports, stop);
         }
         if identifier_eq(bytes, name, stop, b"container") {
-            return Header::Container;
+            return (Header::Container, stop);
         }
         if mode.accepts_variable_names()
             && [b"mixin".as_slice(), b"function", b"include"]
                 .iter()
                 .any(|expected| identifier_eq(bytes, name, stop, expected))
         {
-            return Header::Parameters;
+            return (Header::Parameters, stop);
         }
     } else if mode.accepts_variable_names() && bytes.get(at) == Some(&b'.') {
-        return Header::Parameters;
+        return (Header::Parameters, at);
     }
-    Header::Other
+    (Header::Other, at)
 }
 
 /// Stylus permits `color red`; selectors and unindented names do not grant it.
