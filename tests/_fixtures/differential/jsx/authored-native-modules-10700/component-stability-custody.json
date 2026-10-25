@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "sourceHead": "b7bded1352dda0628ff1de0c94f7c6533a82db47",
+  "sourceTree": "dafee01d7901f73ad2b7eec36bcb9eff63c46b99",
+  "runId": 40227011294,
+  "packet": "component-stability.json",
+  "observations": 28,
+  "qualification": "whole source packets; actual symbol/count/call AST and lexical UTF16 map assertions passed before initially empty golden failed closed; no browser/runtime credit",
+  "independentMapSources": [
+    "const",
+    "repeated",
+    "escaped",
+    "unicode-crlf",
+    "destructured"
+  ],
+  "runtime": false,
+  "artifactId": 12610814614,
+  "rawCaptureSha256": "bf8705e52287eeb7a1d6c64908a12f60de997b5825bdbfb30e97cfa6d59dc3ed",
+  "goldenSha256": "7d06e85e66a5ae5b039c01f0c97c1b3280f08b0714863826b32330325647e7ed",
+  "goldenProjection": {
+    "excludedFields": [
+      "tokens"
+    ],
+    "reason": "decoded token arrays duplicate the complete encoded map; raw arrays retained in Actions and independently checked for static values and exact before/head conservative equality"
+  }
+}

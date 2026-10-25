@@ -1,1 +1,804 @@
-[]
+[
+  {
+    "code": "import { createComponentWithFallback as _createComponentWithFallback, setInsertionState as _setInsertionState, template as _template } from \"vue\"\n\nconst Child={}; export const App=({\n__vapor: true,\nname: \"App\",\nsetup() {\nreturn (() => {\n\nconst t0 = _template(\"<section></section>\", true)\n\nreturn ((_ctx) => {\n  const n1 = t0()\n  _setInsertionState(n1)\n  const n0 = _createComponentWithFallback(Child, null, null, false)\n  return n1\n})(undefined, [])\n})()\n}\n});",
+    "counters": {
+      "atelier.jsx.lower.component_stability_builds": 1,
+      "atelier.jsx.lower.component_stability_queries": 1,
+      "atelier.jsx.lower.component_stability_references": 1,
+      "atelier.jsx.lower.component_stability_symbols": 2,
+      "atelier.jsx.lower.stable_component_values": 1,
+      "atelier.jsx.module.component_use_candidates": 0,
+      "atelier.jsx.module.component_use_refusals": 0,
+      "atelier.jsx.module.component_use_semantic_builds": 0,
+      "atelier.jsx.module.native_generated_maps": 1,
+      "atelier.jsx.module.native_plans": 1,
+      "atelier.jsx.module.native_roots": 1,
+      "atelier.vapor.transformed_root.origin_collections": 1,
+      "atelier.vapor.transformed_root.roots": 1
+    },
+    "map": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;uBAAO;;;;;0CAAS;;;;;EAAiB",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "const Child={}; export const App=()=> <section><Child/></section>;"
+      ],
+      "version": 3
+    },
+    "mode": "Vapor",
+    "name": "const",
+    "source": "const Child={}; export const App=()=> <section><Child/></section>;",
+    "stable": true
+  },
+  {
+    "code": "import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createElementBlock as _createElementBlock, createBlock as _createBlock } from \"vue\"\n\nconst Child={}; export const App=()=> (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"section\", null, [\n    (_openBlock(), _createBlock(_resolveDynamicComponent(Child)))\n  ]))\n})(undefined, [])\n})();",
+    "counters": {
+      "atelier.jsx.module.native_generated_maps": 0,
+      "atelier.jsx.module.native_plans": 0,
+      "atelier.jsx.module.native_roots": 0
+    },
+    "map": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;SAAC,oCAAC;IAAQ,qDAAC;;;IAAiB",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "const Child={}; export const App=()=> <section><Child/></section>;"
+      ],
+      "version": 3
+    },
+    "mode": "Vdom",
+    "name": "const",
+    "source": "const Child={}; export const App=()=> <section><Child/></section>;",
+    "stable": true
+  },
+  {
+    "code": "import { createComponentWithFallback as _createComponentWithFallback, setInsertionState as _setInsertionState, template as _template } from \"vue\"\n\nconst Child={}; export const App=({\n__vapor: true,\nname: \"App\",\nsetup() {\nreturn (() => {\n\nconst t0 = _template(\"<section></section>\", true)\n\nreturn ((_ctx) => {\n  const n2 = t0()\n  _setInsertionState(n2)\n  const n0 = _createComponentWithFallback(Child, null, null, false)\n  _setInsertionState(n2, 1)\n  const n1 = _createComponentWithFallback(Child, null, null, false)\n  return n2\n})(undefined, [])\n})()\n}\n});",
+    "counters": {
+      "atelier.jsx.lower.component_stability_builds": 1,
+      "atelier.jsx.lower.component_stability_queries": 2,
+      "atelier.jsx.lower.component_stability_references": 2,
+      "atelier.jsx.lower.component_stability_symbols": 2,
+      "atelier.jsx.lower.stable_component_values": 2,
+      "atelier.jsx.module.component_use_candidates": 0,
+      "atelier.jsx.module.component_use_refusals": 0,
+      "atelier.jsx.module.component_use_semantic_builds": 0,
+      "atelier.jsx.module.native_generated_maps": 1,
+      "atelier.jsx.module.native_plans": 1,
+      "atelier.jsx.module.native_roots": 1,
+      "atelier.vapor.transformed_root.origin_collections": 1,
+      "atelier.vapor.transformed_root.roots": 1
+    },
+    "map": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;uBAAO;;;;;0CAAS;;0CAAQ;;;;;EAAiB",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "const Child={}; export const App=()=> <section><Child/><Child/></section>;"
+      ],
+      "version": 3
+    },
+    "mode": "Vapor",
+    "name": "repeated",
+    "source": "const Child={}; export const App=()=> <section><Child/><Child/></section>;",
+    "stable": true
+  },
+  {
+    "code": "import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createElementBlock as _createElementBlock, createBlock as _createBlock } from \"vue\"\n\nconst Child={}; export const App=()=> (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"section\", null, [\n    (_openBlock(), _createBlock(_resolveDynamicComponent(Child))),\n    (_openBlock(), _createBlock(_resolveDynamicComponent(Child)))\n  ]))\n})(undefined, [])\n})();",
+    "counters": {
+      "atelier.jsx.module.native_generated_maps": 0,
+      "atelier.jsx.module.native_plans": 0,
+      "atelier.jsx.module.native_roots": 0
+    },
+    "map": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;SAAC,oCAAC;IAAQ,qDAAC;IAAO,qDAAC;;;IAAiB",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "const Child={}; export const App=()=> <section><Child/><Child/></section>;"
+      ],
+      "version": 3
+    },
+    "mode": "Vdom",
+    "name": "repeated",
+    "source": "const Child={}; export const App=()=> <section><Child/><Child/></section>;",
+    "stable": true
+  },
+  {
+    "code": "import { createDynamicComponent as _createDynamicComponent, setInsertionState as _setInsertionState, template as _template } from \"vue\"\n\nlet Child={}; Child=other; export const App=({\n__vapor: true,\nname: \"App\",\nsetup() {\nreturn (() => {\n\nconst t0 = _template(\"<section></section>\", true)\n\nreturn ((_ctx) => {\n  const n1 = t0()\n  _setInsertionState(n1)\n  const n0 = _createDynamicComponent(() => (Child), null, null, false)\n  return n1\n})(undefined, [])\n})()\n}\n});",
+    "counters": {
+      "atelier.jsx.lower.component_stability_builds": 1,
+      "atelier.jsx.lower.component_stability_queries": 1,
+      "atelier.jsx.lower.component_stability_references": 0,
+      "atelier.jsx.lower.component_stability_symbols": 2,
+      "atelier.jsx.lower.stable_component_values": 0,
+      "atelier.jsx.module.component_use_candidates": 0,
+      "atelier.jsx.module.component_use_refusals": 0,
+      "atelier.jsx.module.component_use_semantic_builds": 0,
+      "atelier.jsx.module.native_generated_maps": 1,
+      "atelier.jsx.module.native_plans": 1,
+      "atelier.jsx.module.native_roots": 1,
+      "atelier.vapor.transformed_root.origin_collections": 1,
+      "atelier.vapor.transformed_root.roots": 1
+    },
+    "map": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;uBAAO;;;;;;;;;;EAA0B",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "let Child={}; Child=other; export const App=()=> <section><Child/></section>;"
+      ],
+      "version": 3
+    },
+    "mode": "Vapor",
+    "name": "mutable",
+    "source": "let Child={}; Child=other; export const App=()=> <section><Child/></section>;",
+    "stable": false
+  },
+  {
+    "code": "import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createElementBlock as _createElementBlock, createBlock as _createBlock } from \"vue\"\n\nlet Child={}; Child=other; export const App=()=> (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"section\", null, [\n    (_openBlock(), _createBlock(_resolveDynamicComponent(Child)))\n  ]))\n})(undefined, [])\n})();",
+    "counters": {
+      "atelier.jsx.module.native_generated_maps": 0,
+      "atelier.jsx.module.native_plans": 0,
+      "atelier.jsx.module.native_roots": 0
+    },
+    "map": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;SAAC,oCAAC;IAAQ,qDAAC;;;IAAiB",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "let Child={}; Child=other; export const App=()=> <section><Child/></section>;"
+      ],
+      "version": 3
+    },
+    "mode": "Vdom",
+    "name": "mutable",
+    "source": "let Child={}; Child=other; export const App=()=> <section><Child/></section>;",
+    "stable": false
+  },
+  {
+    "code": "import { createDynamicComponent as _createDynamicComponent, setInsertionState as _setInsertionState, template as _template } from \"vue\"\n\nimport Child from './Child.js'; export const App=({\n__vapor: true,\nname: \"App\",\nsetup() {\nreturn (() => {\n\nconst t0 = _template(\"<section></section>\", true)\n\nreturn ((_ctx) => {\n  const n1 = t0()\n  _setInsertionState(n1)\n  const n0 = _createDynamicComponent(() => (Child), null, null, false)\n  return n1\n})(undefined, [])\n})()\n}\n});",
+    "counters": {
+      "atelier.jsx.lower.component_stability_builds": 1,
+      "atelier.jsx.lower.component_stability_queries": 1,
+      "atelier.jsx.lower.component_stability_references": 0,
+      "atelier.jsx.lower.component_stability_symbols": 2,
+      "atelier.jsx.lower.stable_component_values": 0,
+      "atelier.jsx.module.component_use_candidates": 0,
+      "atelier.jsx.module.component_use_refusals": 0,
+      "atelier.jsx.module.component_use_semantic_builds": 0,
+      "atelier.jsx.module.native_generated_maps": 1,
+      "atelier.jsx.module.native_plans": 1,
+      "atelier.jsx.module.native_roots": 1,
+      "atelier.vapor.transformed_root.origin_collections": 1,
+      "atelier.vapor.transformed_root.roots": 1
+    },
+    "map": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;uBAAO;;;;;;;;;;EAA0B",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "import Child from './Child.js'; export const App=()=> <section><Child/></section>;"
+      ],
+      "version": 3
+    },
+    "mode": "Vapor",
+    "name": "import",
+    "source": "import Child from './Child.js'; export const App=()=> <section><Child/></section>;",
+    "stable": false
+  },
+  {
+    "code": "import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createElementBlock as _createElementBlock, createBlock as _createBlock } from \"vue\"\n\nimport Child from './Child.js'; export const App=()=> (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"section\", null, [\n    (_openBlock(), _createBlock(_resolveDynamicComponent(Child)))\n  ]))\n})(undefined, [])\n})();",
+    "counters": {
+      "atelier.jsx.module.native_generated_maps": 0,
+      "atelier.jsx.module.native_plans": 0,
+      "atelier.jsx.module.native_roots": 0
+    },
+    "map": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;SAAC,oCAAC;IAAQ,qDAAC;;;IAAiB",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "import Child from './Child.js'; export const App=()=> <section><Child/></section>;"
+      ],
+      "version": 3
+    },
+    "mode": "Vdom",
+    "name": "import",
+    "source": "import Child from './Child.js'; export const App=()=> <section><Child/></section>;",
+    "stable": false
+  },
+  {
+    "code": "import { createDynamicComponent as _createDynamicComponent, setInsertionState as _setInsertionState, template as _template } from \"vue\"\n\nimport * as UI from './Child.js'; export const App=({\n__vapor: true,\nname: \"App\",\nsetup() {\nreturn (() => {\n\nconst t0 = _template(\"<section></section>\", true)\n\nreturn ((_ctx) => {\n  const n1 = t0()\n  _setInsertionState(n1)\n  const n0 = _createDynamicComponent(() => (UI.Child), null, null, false)\n  return n1\n})(undefined, [])\n})()\n}\n});",
+    "counters": {
+      "atelier.jsx.module.component_use_candidates": 0,
+      "atelier.jsx.module.component_use_refusals": 0,
+      "atelier.jsx.module.component_use_semantic_builds": 0,
+      "atelier.jsx.module.native_generated_maps": 1,
+      "atelier.jsx.module.native_plans": 1,
+      "atelier.jsx.module.native_roots": 1,
+      "atelier.vapor.transformed_root.origin_collections": 1,
+      "atelier.vapor.transformed_root.roots": 1
+    },
+    "map": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;uBAAO;;;;;;;;;;EAA6B",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "import * as UI from './Child.js'; export const App=()=> <section><UI.Child/></section>;"
+      ],
+      "version": 3
+    },
+    "mode": "Vapor",
+    "name": "namespace",
+    "source": "import * as UI from './Child.js'; export const App=()=> <section><UI.Child/></section>;",
+    "stable": false
+  },
+  {
+    "code": "import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createElementBlock as _createElementBlock, createBlock as _createBlock } from \"vue\"\n\nimport * as UI from './Child.js'; export const App=()=> (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"section\", null, [\n    (_openBlock(), _createBlock(_resolveDynamicComponent(UI.Child)))\n  ]))\n})(undefined, [])\n})();",
+    "counters": {
+      "atelier.jsx.module.native_generated_maps": 0,
+      "atelier.jsx.module.native_plans": 0,
+      "atelier.jsx.module.native_roots": 0
+    },
+    "map": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;SAAC,oCAAC;IAAQ,qDAAC;;;IAAoB",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "import * as UI from './Child.js'; export const App=()=> <section><UI.Child/></section>;"
+      ],
+      "version": 3
+    },
+    "mode": "Vdom",
+    "name": "namespace",
+    "source": "import * as UI from './Child.js'; export const App=()=> <section><UI.Child/></section>;",
+    "stable": false
+  },
+  {
+    "code": "import { createDynamicComponent as _createDynamicComponent, setInsertionState as _setInsertionState, template as _template } from \"vue\"\n\nconst UI={Child:{}}; export const App=({\n__vapor: true,\nname: \"App\",\nsetup() {\nreturn (() => {\n\nconst t0 = _template(\"<section></section>\", true)\n\nreturn ((_ctx) => {\n  const n1 = t0()\n  _setInsertionState(n1)\n  const n0 = _createDynamicComponent(() => (UI.Child), null, null, false)\n  return n1\n})(undefined, [])\n})()\n}\n});",
+    "counters": {
+      "atelier.jsx.module.component_use_candidates": 0,
+      "atelier.jsx.module.component_use_refusals": 0,
+      "atelier.jsx.module.component_use_semantic_builds": 0,
+      "atelier.jsx.module.native_generated_maps": 1,
+      "atelier.jsx.module.native_plans": 1,
+      "atelier.jsx.module.native_roots": 1,
+      "atelier.vapor.transformed_root.origin_collections": 1,
+      "atelier.vapor.transformed_root.roots": 1
+    },
+    "map": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;uBAAO;;;;;;;;;;EAA6B",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "const UI={Child:{}}; export const App=()=> <section><UI.Child/></section>;"
+      ],
+      "version": 3
+    },
+    "mode": "Vapor",
+    "name": "member",
+    "source": "const UI={Child:{}}; export const App=()=> <section><UI.Child/></section>;",
+    "stable": false
+  },
+  {
+    "code": "import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createElementBlock as _createElementBlock, createBlock as _createBlock } from \"vue\"\n\nconst UI={Child:{}}; export const App=()=> (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"section\", null, [\n    (_openBlock(), _createBlock(_resolveDynamicComponent(UI.Child)))\n  ]))\n})(undefined, [])\n})();",
+    "counters": {
+      "atelier.jsx.module.native_generated_maps": 0,
+      "atelier.jsx.module.native_plans": 0,
+      "atelier.jsx.module.native_roots": 0
+    },
+    "map": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;SAAC,oCAAC;IAAQ,qDAAC;;;IAAoB",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "const UI={Child:{}}; export const App=()=> <section><UI.Child/></section>;"
+      ],
+      "version": 3
+    },
+    "mode": "Vdom",
+    "name": "member",
+    "source": "const UI={Child:{}}; export const App=()=> <section><UI.Child/></section>;",
+    "stable": false
+  },
+  {
+    "code": "import { createDynamicComponent as _createDynamicComponent, setInsertionState as _setInsertionState, template as _template } from \"vue\"\n\nconst Child={}; export const App=({\n__vapor: true,\nname: \"App\",\nsetup() {\nlet Child={}; return (() => {\n\nconst t0 = _template(\"<section></section>\", true)\n\nreturn ((_ctx) => {\n  const n1 = t0()\n  _setInsertionState(n1)\n  const n0 = _createDynamicComponent(() => (Child), null, null, false)\n  return n1\n})(undefined, [])\n})()\n}\n});",
+    "counters": {
+      "atelier.jsx.lower.component_stability_builds": 1,
+      "atelier.jsx.lower.component_stability_queries": 1,
+      "atelier.jsx.lower.component_stability_references": 0,
+      "atelier.jsx.lower.component_stability_symbols": 3,
+      "atelier.jsx.lower.stable_component_values": 0,
+      "atelier.jsx.module.component_use_candidates": 0,
+      "atelier.jsx.module.component_use_refusals": 0,
+      "atelier.jsx.module.component_use_semantic_builds": 0,
+      "atelier.jsx.module.native_generated_maps": 1,
+      "atelier.jsx.module.native_plans": 1,
+      "atelier.jsx.module.native_roots": 1,
+      "atelier.vapor.transformed_root.origin_collections": 1,
+      "atelier.vapor.transformed_root.roots": 1
+    },
+    "map": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;AAAO,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;uBAAS;;;;;;;;;;EAA4B",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "const Child={}; export const App=()=> {let Child={}; return <section><Child/></section>;};"
+      ],
+      "version": 3
+    },
+    "mode": "Vapor",
+    "name": "mutable-shadow",
+    "source": "const Child={}; export const App=()=> {let Child={}; return <section><Child/></section>;};",
+    "stable": false
+  },
+  {
+    "code": "import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createElementBlock as _createElementBlock, createBlock as _createBlock } from \"vue\"\n\nimport { defineComponent as _defineComponent } from \"vue\"\nconst Child={}; export const App = _defineComponent({\nname: \"App\",\nsetup() {\nlet Child={}; return (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"section\", null, [\n    (_openBlock(), _createBlock(_resolveDynamicComponent(Child)))\n  ]))\n})\n})()\n}\n});",
+    "counters": {
+      "atelier.jsx.module.native_generated_maps": 0,
+      "atelier.jsx.module.native_plans": 0,
+      "atelier.jsx.module.native_roots": 0
+    },
+    "map": {
+      "file": "module.tsx",
+      "mappings": ";;;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;AAAiB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;SAAQ,oCAAC;IAAQ,qDAAC",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "const Child={}; export const App=()=> {let Child={}; return <section><Child/></section>;};"
+      ],
+      "version": 3
+    },
+    "mode": "Vdom",
+    "name": "mutable-shadow",
+    "source": "const Child={}; export const App=()=> {let Child={}; return <section><Child/></section>;};",
+    "stable": false
+  },
+  {
+    "code": "import { createComponentWithFallback as _createComponentWithFallback, setInsertionState as _setInsertionState, template as _template } from \"vue\"\n\nlet Child={}; export const App=({\n__vapor: true,\nname: \"App\",\nsetup() {\nconst Child={}; return (() => {\n\nconst t0 = _template(\"<section></section>\", true)\n\nreturn ((_ctx) => {\n  const n1 = t0()\n  _setInsertionState(n1)\n  const n0 = _createComponentWithFallback(Child, null, null, false)\n  return n1\n})(undefined, [])\n})()\n}\n});",
+    "counters": {
+      "atelier.jsx.lower.component_stability_builds": 1,
+      "atelier.jsx.lower.component_stability_queries": 1,
+      "atelier.jsx.lower.component_stability_references": 1,
+      "atelier.jsx.lower.component_stability_symbols": 3,
+      "atelier.jsx.lower.stable_component_values": 1,
+      "atelier.jsx.module.component_use_candidates": 0,
+      "atelier.jsx.module.component_use_refusals": 0,
+      "atelier.jsx.module.component_use_semantic_builds": 0,
+      "atelier.jsx.module.native_generated_maps": 1,
+      "atelier.jsx.module.native_plans": 1,
+      "atelier.jsx.module.native_roots": 1,
+      "atelier.vapor.transformed_root.origin_collections": 1,
+      "atelier.vapor.transformed_root.roots": 1
+    },
+    "map": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;AAAO,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;uBAAS;;;;;0CAAS;;;;;EAAmB",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "let Child={}; export const App=()=> {const Child={}; return <section><Child/></section>;};"
+      ],
+      "version": 3
+    },
+    "mode": "Vapor",
+    "name": "const-shadow",
+    "source": "let Child={}; export const App=()=> {const Child={}; return <section><Child/></section>;};",
+    "stable": true
+  },
+  {
+    "code": "import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createElementBlock as _createElementBlock, createBlock as _createBlock } from \"vue\"\n\nimport { defineComponent as _defineComponent } from \"vue\"\nlet Child={}; export const App = _defineComponent({\nname: \"App\",\nsetup() {\nconst Child={}; return (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"section\", null, [\n    (_openBlock(), _createBlock(_resolveDynamicComponent(Child)))\n  ]))\n})\n})()\n}\n});",
+    "counters": {
+      "atelier.jsx.module.native_generated_maps": 0,
+      "atelier.jsx.module.native_plans": 0,
+      "atelier.jsx.module.native_roots": 0
+    },
+    "map": {
+      "file": "module.tsx",
+      "mappings": ";;;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;AAAiB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;SAAQ,oCAAC;IAAQ,qDAAC",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "let Child={}; export const App=()=> {const Child={}; return <section><Child/></section>;};"
+      ],
+      "version": 3
+    },
+    "mode": "Vdom",
+    "name": "const-shadow",
+    "source": "let Child={}; export const App=()=> {const Child={}; return <section><Child/></section>;};",
+    "stable": true
+  },
+  {
+    "code": "import { createDynamicComponent as _createDynamicComponent, setInsertionState as _setInsertionState, template as _template } from \"vue\"\n\nconst Child={}; Child=other; export const App=({\n__vapor: true,\nname: \"App\",\nsetup() {\nreturn (() => {\n\nconst t0 = _template(\"<section></section>\", true)\n\nreturn ((_ctx) => {\n  const n1 = t0()\n  _setInsertionState(n1)\n  const n0 = _createDynamicComponent(() => (Child), null, null, false)\n  return n1\n})(undefined, [])\n})()\n}\n});",
+    "counters": {
+      "atelier.jsx.lower.component_stability_builds": 1,
+      "atelier.jsx.lower.component_stability_queries": 1,
+      "atelier.jsx.lower.component_stability_references": 2,
+      "atelier.jsx.lower.component_stability_symbols": 2,
+      "atelier.jsx.lower.stable_component_values": 0,
+      "atelier.jsx.module.component_use_candidates": 0,
+      "atelier.jsx.module.component_use_refusals": 0,
+      "atelier.jsx.module.component_use_semantic_builds": 0,
+      "atelier.jsx.module.native_generated_maps": 1,
+      "atelier.jsx.module.native_plans": 1,
+      "atelier.jsx.module.native_roots": 1,
+      "atelier.vapor.transformed_root.origin_collections": 1,
+      "atelier.vapor.transformed_root.roots": 1
+    },
+    "map": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;uBAAO;;;;;;;;;;EAA0B",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "const Child={}; Child=other; export const App=()=> <section><Child/></section>;"
+      ],
+      "version": 3
+    },
+    "mode": "Vapor",
+    "name": "write",
+    "source": "const Child={}; Child=other; export const App=()=> <section><Child/></section>;",
+    "stable": false
+  },
+  {
+    "code": "import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createElementBlock as _createElementBlock, createBlock as _createBlock } from \"vue\"\n\nconst Child={}; Child=other; export const App=()=> (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"section\", null, [\n    (_openBlock(), _createBlock(_resolveDynamicComponent(Child)))\n  ]))\n})(undefined, [])\n})();",
+    "counters": {
+      "atelier.jsx.module.native_generated_maps": 0,
+      "atelier.jsx.module.native_plans": 0,
+      "atelier.jsx.module.native_roots": 0
+    },
+    "map": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;SAAC,oCAAC;IAAQ,qDAAC;;;IAAiB",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "const Child={}; Child=other; export const App=()=> <section><Child/></section>;"
+      ],
+      "version": 3
+    },
+    "mode": "Vdom",
+    "name": "write",
+    "source": "const Child={}; Child=other; export const App=()=> <section><Child/></section>;",
+    "stable": false
+  },
+  {
+    "code": "import { createDynamicComponent as _createDynamicComponent, setInsertionState as _setInsertionState, template as _template } from \"vue\"\n\ndeclare const Child: unknown; export const App=({\n__vapor: true,\nname: \"App\",\nsetup() {\nreturn (() => {\n\nconst t0 = _template(\"<section></section>\", true)\n\nreturn ((_ctx) => {\n  const n1 = t0()\n  _setInsertionState(n1)\n  const n0 = _createDynamicComponent(() => (Child), null, null, false)\n  return n1\n})(undefined, [])\n})()\n}\n});",
+    "counters": {
+      "atelier.jsx.lower.component_stability_builds": 1,
+      "atelier.jsx.lower.component_stability_queries": 1,
+      "atelier.jsx.lower.component_stability_references": 0,
+      "atelier.jsx.lower.component_stability_symbols": 2,
+      "atelier.jsx.lower.stable_component_values": 0,
+      "atelier.jsx.module.component_use_candidates": 0,
+      "atelier.jsx.module.component_use_refusals": 0,
+      "atelier.jsx.module.component_use_semantic_builds": 0,
+      "atelier.jsx.module.native_generated_maps": 1,
+      "atelier.jsx.module.native_plans": 1,
+      "atelier.jsx.module.native_roots": 1,
+      "atelier.vapor.transformed_root.origin_collections": 1,
+      "atelier.vapor.transformed_root.roots": 1
+    },
+    "map": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;uBAAO;;;;;;;;;;EAA0B",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "declare const Child: unknown; export const App=()=> <section><Child/></section>;"
+      ],
+      "version": 3
+    },
+    "mode": "Vapor",
+    "name": "ambient",
+    "source": "declare const Child: unknown; export const App=()=> <section><Child/></section>;",
+    "stable": false
+  },
+  {
+    "code": "import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createElementBlock as _createElementBlock, createBlock as _createBlock } from \"vue\"\n\ndeclare const Child: unknown; export const App=()=> (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"section\", null, [\n    (_openBlock(), _createBlock(_resolveDynamicComponent(Child)))\n  ]))\n})(undefined, [])\n})();",
+    "counters": {
+      "atelier.jsx.module.native_generated_maps": 0,
+      "atelier.jsx.module.native_plans": 0,
+      "atelier.jsx.module.native_roots": 0
+    },
+    "map": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;SAAC,oCAAC;IAAQ,qDAAC;;;IAAiB",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "declare const Child: unknown; export const App=()=> <section><Child/></section>;"
+      ],
+      "version": 3
+    },
+    "mode": "Vdom",
+    "name": "ambient",
+    "source": "declare const Child: unknown; export const App=()=> <section><Child/></section>;",
+    "stable": false
+  },
+  {
+    "code": "import { createComponentWithFallback as _createComponentWithFallback, setInsertionState as _setInsertionState, template as _template } from \"vue\"\n\nconst \\u0043hild={}; export const App=({\n__vapor: true,\nname: \"App\",\nsetup() {\nreturn (() => {\n\nconst t0 = _template(\"<section></section>\", true)\n\nreturn ((_ctx) => {\n  const n1 = t0()\n  _setInsertionState(n1)\n  const n0 = _createComponentWithFallback(Child, null, null, false)\n  return n1\n})(undefined, [])\n})()\n}\n});",
+    "counters": {
+      "atelier.jsx.lower.component_stability_builds": 1,
+      "atelier.jsx.lower.component_stability_queries": 1,
+      "atelier.jsx.lower.component_stability_references": 1,
+      "atelier.jsx.lower.component_stability_symbols": 2,
+      "atelier.jsx.lower.stable_component_values": 1,
+      "atelier.jsx.module.component_use_candidates": 0,
+      "atelier.jsx.module.component_use_refusals": 0,
+      "atelier.jsx.module.component_use_semantic_builds": 0,
+      "atelier.jsx.module.native_generated_maps": 1,
+      "atelier.jsx.module.native_plans": 1,
+      "atelier.jsx.module.native_roots": 1,
+      "atelier.vapor.transformed_root.origin_collections": 1,
+      "atelier.vapor.transformed_root.roots": 1
+    },
+    "map": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;uBAAO;;;;;0CAAS;;;;;EAAiB",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "const \\u0043hild={}; export const App=()=> <section><Child/></section>;"
+      ],
+      "version": 3
+    },
+    "mode": "Vapor",
+    "name": "escaped",
+    "source": "const \\u0043hild={}; export const App=()=> <section><Child/></section>;",
+    "stable": true
+  },
+  {
+    "code": "import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createElementBlock as _createElementBlock, createBlock as _createBlock } from \"vue\"\n\nconst \\u0043hild={}; export const App=()=> (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"section\", null, [\n    (_openBlock(), _createBlock(_resolveDynamicComponent(Child)))\n  ]))\n})(undefined, [])\n})();",
+    "counters": {
+      "atelier.jsx.module.native_generated_maps": 0,
+      "atelier.jsx.module.native_plans": 0,
+      "atelier.jsx.module.native_roots": 0
+    },
+    "map": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;SAAC,oCAAC;IAAQ,qDAAC;;;IAAiB",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "const \\u0043hild={}; export const App=()=> <section><Child/></section>;"
+      ],
+      "version": 3
+    },
+    "mode": "Vdom",
+    "name": "escaped",
+    "source": "const \\u0043hild={}; export const App=()=> <section><Child/></section>;",
+    "stable": true
+  },
+  {
+    "code": "import { createComponentWithFallback as _createComponentWithFallback, setInsertionState as _setInsertionState, template as _template } from \"vue\"\n\n// 雪 🧭 'quote'\r\nconst 子={};\r\nexport const App=({\n__vapor: true,\nname: \"App\",\nsetup() {\nreturn (() => {\n\nconst t0 = _template(\"<section></section>\", true)\n\nreturn ((_ctx) => {\n  const n1 = t0()\n  _setInsertionState(n1)\n  const n0 = _createComponentWithFallback(子, null, null, false)\n  return n1\n})(undefined, [])\n})()\n}\n});",
+    "counters": {
+      "atelier.jsx.lower.component_stability_builds": 1,
+      "atelier.jsx.lower.component_stability_queries": 1,
+      "atelier.jsx.lower.component_stability_references": 1,
+      "atelier.jsx.lower.component_stability_symbols": 2,
+      "atelier.jsx.lower.stable_component_values": 1,
+      "atelier.jsx.module.component_use_candidates": 0,
+      "atelier.jsx.module.component_use_refusals": 0,
+      "atelier.jsx.module.component_use_semantic_builds": 0,
+      "atelier.jsx.module.native_generated_maps": 1,
+      "atelier.jsx.module.native_plans": 1,
+      "atelier.jsx.module.native_roots": 1,
+      "atelier.vapor.transformed_root.origin_collections": 1,
+      "atelier.vapor.transformed_root.roots": 1
+    },
+    "map": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,EAAE,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AAChB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AACZ,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;uBAAO;;;;;0CAAS;;;;;EAAa",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "// 雪 🧭 'quote'\r\nconst 子={};\r\nexport const App=()=> <section><子/></section>;"
+      ],
+      "version": 3
+    },
+    "mode": "Vapor",
+    "name": "unicode-crlf",
+    "source": "// 雪 🧭 'quote'\r\nconst 子={};\r\nexport const App=()=> <section><子/></section>;",
+    "stable": true
+  },
+  {
+    "code": "import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createElementBlock as _createElementBlock, createBlock as _createBlock } from \"vue\"\n\n// 雪 🧭 'quote'\r\nconst 子={};\r\nexport const App=()=> (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"section\", null, [\n    (_openBlock(), _createBlock(_resolveDynamicComponent(子)))\n  ]))\n})(undefined, [])\n})();",
+    "counters": {
+      "atelier.jsx.module.native_generated_maps": 0,
+      "atelier.jsx.module.native_plans": 0,
+      "atelier.jsx.module.native_roots": 0
+    },
+    "map": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,EAAE,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AAChB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AACZ,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;SAAC,oCAAC;IAAQ,qDAAC;;;IAAa",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "// 雪 🧭 'quote'\r\nconst 子={};\r\nexport const App=()=> <section><子/></section>;"
+      ],
+      "version": 3
+    },
+    "mode": "Vdom",
+    "name": "unicode-crlf",
+    "source": "// 雪 🧭 'quote'\r\nconst 子={};\r\nexport const App=()=> <section><子/></section>;",
+    "stable": true
+  },
+  {
+    "code": "import { createComponentWithFallback as _createComponentWithFallback, setInsertionState as _setInsertionState, template as _template } from \"vue\"\n\nconst {Child}=registry; export const App=({\n__vapor: true,\nname: \"App\",\nsetup() {\nreturn (() => {\n\nconst t0 = _template(\"<section></section>\", true)\n\nreturn ((_ctx) => {\n  const n1 = t0()\n  _setInsertionState(n1)\n  const n0 = _createComponentWithFallback(Child, null, null, false)\n  return n1\n})(undefined, [])\n})()\n}\n});",
+    "counters": {
+      "atelier.jsx.lower.component_stability_builds": 1,
+      "atelier.jsx.lower.component_stability_queries": 1,
+      "atelier.jsx.lower.component_stability_references": 1,
+      "atelier.jsx.lower.component_stability_symbols": 2,
+      "atelier.jsx.lower.stable_component_values": 1,
+      "atelier.jsx.module.component_use_candidates": 0,
+      "atelier.jsx.module.component_use_refusals": 0,
+      "atelier.jsx.module.component_use_semantic_builds": 0,
+      "atelier.jsx.module.native_generated_maps": 1,
+      "atelier.jsx.module.native_plans": 1,
+      "atelier.jsx.module.native_roots": 1,
+      "atelier.vapor.transformed_root.origin_collections": 1,
+      "atelier.vapor.transformed_root.roots": 1
+    },
+    "map": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;uBAAO;;;;;0CAAS;;;;;EAAiB",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "const {Child}=registry; export const App=()=> <section><Child/></section>;"
+      ],
+      "version": 3
+    },
+    "mode": "Vapor",
+    "name": "destructured",
+    "source": "const {Child}=registry; export const App=()=> <section><Child/></section>;",
+    "stable": true
+  },
+  {
+    "code": "import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createElementBlock as _createElementBlock, createBlock as _createBlock } from \"vue\"\n\nconst {Child}=registry; export const App=()=> (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"section\", null, [\n    (_openBlock(), _createBlock(_resolveDynamicComponent(Child)))\n  ]))\n})(undefined, [])\n})();",
+    "counters": {
+      "atelier.jsx.module.native_generated_maps": 0,
+      "atelier.jsx.module.native_plans": 0,
+      "atelier.jsx.module.native_roots": 0
+    },
+    "map": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;SAAC,oCAAC;IAAQ,qDAAC;;;IAAiB",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "const {Child}=registry; export const App=()=> <section><Child/></section>;"
+      ],
+      "version": 3
+    },
+    "mode": "Vdom",
+    "name": "destructured",
+    "source": "const {Child}=registry; export const App=()=> <section><Child/></section>;",
+    "stable": true
+  },
+  {
+    "code": "import { createComponentWithFallback as _createComponentWithFallback, setInsertionState as _setInsertionState, template as _template } from \"vue\"\n\nimport Child from './Child.js'; export const App=({\n__vapor: true,\nname: \"App\",\nsetup() {\nconst Child={}; return (() => {\n\nconst t0 = _template(\"<section></section>\", true)\n\nreturn ((_ctx) => {\n  const n1 = t0()\n  _setInsertionState(n1)\n  const n0 = _createComponentWithFallback(Child, null, null, false)\n  return n1\n})(undefined, [])\n})()\n}\n});",
+    "counters": {
+      "atelier.jsx.lower.component_stability_builds": 1,
+      "atelier.jsx.lower.component_stability_queries": 1,
+      "atelier.jsx.lower.component_stability_references": 1,
+      "atelier.jsx.lower.component_stability_symbols": 3,
+      "atelier.jsx.lower.stable_component_values": 1,
+      "atelier.jsx.module.component_use_candidates": 0,
+      "atelier.jsx.module.component_use_refusals": 0,
+      "atelier.jsx.module.component_use_semantic_builds": 0,
+      "atelier.jsx.module.native_generated_maps": 1,
+      "atelier.jsx.module.native_plans": 1,
+      "atelier.jsx.module.native_roots": 1,
+      "atelier.vapor.transformed_root.origin_collections": 1,
+      "atelier.vapor.transformed_root.roots": 1
+    },
+    "map": {
+      "file": "module.tsx",
+      "mappings": ";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;AAAO,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;uBAAS;;;;;0CAAS;;;;;EAAmB",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "import Child from './Child.js'; export const App=()=> {const Child={}; return <section><Child/></section>;};"
+      ],
+      "version": 3
+    },
+    "mode": "Vapor",
+    "name": "import-shadow",
+    "source": "import Child from './Child.js'; export const App=()=> {const Child={}; return <section><Child/></section>;};",
+    "stable": true
+  },
+  {
+    "code": "import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createElementBlock as _createElementBlock, createBlock as _createBlock } from \"vue\"\n\nimport { defineComponent as _defineComponent } from \"vue\"\nimport Child from './Child.js'; export const App = _defineComponent({\nname: \"App\",\nsetup() {\nconst Child={}; return (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"section\", null, [\n    (_openBlock(), _createBlock(_resolveDynamicComponent(Child)))\n  ]))\n})\n})()\n}\n});",
+    "counters": {
+      "atelier.jsx.module.native_generated_maps": 0,
+      "atelier.jsx.module.native_plans": 0,
+      "atelier.jsx.module.native_roots": 0
+    },
+    "map": {
+      "file": "module.tsx",
+      "mappings": ";;;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;AAAiB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;SAAQ,oCAAC;IAAQ,qDAAC",
+      "names": [],
+      "sources": [
+        "module.tsx"
+      ],
+      "sourcesContent": [
+        "import Child from './Child.js'; export const App=()=> {const Child={}; return <section><Child/></section>;};"
+      ],
+      "version": 3
+    },
+    "mode": "Vdom",
+    "name": "import-shadow",
+    "source": "import Child from './Child.js'; export const App=()=> {const Child={}; return <section><Child/></section>;};",
+    "stable": true
+  }
+]

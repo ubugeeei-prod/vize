@@ -197,6 +197,14 @@ function verifyAdversarial(row, historical, successor, packet) {
 }
 
 void test("adversarial successors retain whole structural observations and frozen originals", () => {
+  const stability = new URL("authored-native-modules-10700/", falsy);
+  const stabilityAuthority = parse(stability, "component-stability-custody.json");
+  assert.equal(stabilityAuthority.runtime, false);
+  assert.equal(
+    stabilityAuthority.rawCaptureSha256,
+    "bf8705e52287eeb7a1d6c64908a12f60de997b5825bdbfb30e97cfa6d59dc3ed",
+  );
+  assert.equal(hash(read(stability, "component-stability.json")), stabilityAuthority.goldenSha256);
   assert.equal(
     hash(read(adversarial, "custody.json")),
     "e5f10f8def638e6b95557ec4dbf55c423e7db8eb0b68e9f697c43ffc78a699e0",
@@ -268,6 +276,87 @@ void test("adversarial custody rejects unrelated code, scope, source and runtime
     negatives += 2;
   }
   assert.equal(negatives, 12);
+});
+
+function verifyStaticSuccessor(authority, previous, current) {
+  assert.deepEqual(authority.allowedChangedPointers, ["/components/3/code", "/components/4/code"]);
+  assert.deepEqual(authority.qualification, {
+    module: "refused",
+    components: "inspectable-producer-only",
+    nativeHandled: 0,
+    runtime: false,
+  });
+  fields(previous, packetFields);
+  fields(current, packetFields);
+  assert.equal(current.module, "");
+  assert.equal(current.moduleMap, null);
+  assert.equal(current.components.length, 5);
+  const restored = structuredClone(current);
+  for (const index of [3, 4]) {
+    assert.notEqual(current.components[index].code, previous.components[index].code);
+    restored.components[index].code = previous.components[index].code;
+  }
+  assert.deepEqual(restored, previous, "only two exact component code pointers may change");
+}
+
+void test("static-value successor retains every other refusal packet facet and rejects mutations", () => {
+  assert.equal(
+    hash(read(nested, "static-values-10701-successor.json")),
+    "49042832cef1a015e79b76bc1106dbc6f7833924bcaba8e712df08b8f1f5ab5d",
+  );
+  const authority = parse(nested, "static-values-10701-successor.json");
+  assert.equal(authority.source, "AfsStepperDialog.stories.tsx.txt");
+  assert.equal(hash(read(nested, authority.source)), authority.sourceSha256);
+  assert.equal(hash(read(nested, authority.historical)), authority.historicalSha256);
+  assert.equal(hash(read(nested, authority.successor)), authority.successorSha256);
+  const previous = parse(nested, authority.historical);
+  const current = parse(nested, authority.successor);
+  verifyStaticSuccessor(authority, previous, current);
+  let mutations = 0;
+  for (const mutate of [
+    (packet) => {
+      packet.components[0].code += "foreign";
+    },
+    (packet) => {
+      packet.components[3].map = "foreign";
+    },
+    (packet) => {
+      packet.components[4].setup = "foreign";
+    },
+    (packet) => {
+      packet.module = "executable";
+    },
+    (packet) => {
+      packet.moduleMap = "foreign";
+    },
+    (packet) => {
+      packet.diagnostics = "[]";
+    },
+  ]) {
+    const changed = structuredClone(current);
+    mutate(changed);
+    assert.throws(() => verifyStaticSuccessor(authority, previous, changed), assert.AssertionError);
+    mutations++;
+  }
+  assert.throws(
+    () =>
+      verifyStaticSuccessor(
+        { ...authority, allowedChangedPointers: ["/components"] },
+        previous,
+        current,
+      ),
+    assert.AssertionError,
+  );
+  assert.throws(
+    () =>
+      verifyStaticSuccessor(
+        { ...authority, qualification: { ...authority.qualification, runtime: true } },
+        previous,
+        current,
+      ),
+    assert.AssertionError,
+  );
+  assert.equal(mutations, 6);
 });
 
 void test("the same whole-packet custody rejects unreviewed mutations independently of hashes", () => {

@@ -63,7 +63,7 @@ fn nested_analysis_keeps_complete_normal_vdom_and_vapor_packets() {
                 serde_json::from_slice(&std::fs::read(fixture.join(&output)).unwrap()).unwrap();
             // Refusal successors retain the original complete producer packet.
             // VDOM continues to compare the original whole module unchanged.
-            let expected_packet = if label == "vapor" {
+            let refusal_packet = if label == "vapor" {
                 successors["cases"]
                     .as_array()
                     .unwrap()
@@ -76,12 +76,21 @@ fn nested_analysis_keeps_complete_normal_vdom_and_vapor_packets() {
             } else {
                 output.clone()
             };
+            let refusal: Value =
+                serde_json::from_slice(&std::fs::read(fixture.join(&refusal_packet)).unwrap())
+                    .unwrap();
+            let expected_packet = if name == "AfsStepperDialog.stories" && label == "vapor" {
+                "AfsStepperDialog.stories.vapor.static-values-10701.runtime.json.txt".to_owned()
+            } else {
+                refusal_packet.clone()
+            };
             let expected: Value =
                 serde_json::from_slice(&std::fs::read(fixture.join(&expected_packet)).unwrap())
                     .unwrap();
             cases.push(json!({
                 "name": name, "mode": label, "source": source,
                 "historicalPacket": output, "historical": historical,
+                "refusalPacket": refusal_packet, "refusal": refusal,
                 "expectedPacket": expected_packet, "expected": expected,
                 "current": complete_runtime_packet(&source, mode),
             }));
@@ -90,7 +99,7 @@ fn nested_analysis_keeps_complete_normal_vdom_and_vapor_packets() {
     if let Some(path) = std::env::var_os("VIZE_JSX_NESTED_RUNTIME_CAPTURE") {
         std::fs::write(
             path,
-            serde_json::to_vec(&json!({ "schemaVersion": 2, "cases": cases })).unwrap(),
+            serde_json::to_vec(&json!({ "schemaVersion": 3, "cases": cases })).unwrap(),
         )
         .unwrap();
     }
