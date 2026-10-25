@@ -102,6 +102,11 @@ for (const epoch of ["base", "head"]) {
         newline === "LF" ? "\n" : "\r\n",
       );
       const options = { filename: `${id}.vue`, vapor: true, sourceMap: true };
+      const runtimeInputs = {
+        items: ["A"],
+        groups: [{ id: "outer", items: ["A"] }],
+        holder: { _for_item0: { value: "authored-property" } },
+      };
       const result = native.compileSfc(source, options);
       const row = {
         epoch,
@@ -112,6 +117,9 @@ for (const epoch of ["base", "head"]) {
         source,
         sourceSha256: hash(source),
         options,
+        runtimeInputs,
+        runtimeInputsSha256: hash(JSON.stringify(runtimeInputs)),
+        callbackContract: "Record each argument and return that same value",
         result,
         calls: [],
         warnings: [],
@@ -143,9 +151,7 @@ for (const epoch of ["base", "head"]) {
         }),
       });
       const app = vue.createVaporApp(component, {
-        items: ["A"],
-        groups: [{ id: "outer", items: ["A"] }],
-        holder: { _for_item0: { value: "authored-property" } },
+        ...runtimeInputs,
         capture: () => (value) => {
           row.calls.push(value);
           return value;
@@ -173,6 +179,15 @@ for (const epoch of ["base", "head"]) {
     }
 }
 fs.writeFileSync(path.join(output, "for-key-literal.json"), JSON.stringify(report, null, 2) + "\n");
+for (const after of report.rows.filter((row) => row.epoch === "head")) {
+  const before = report.rows.find(
+    (row) => row.epoch === "base" && row.id === after.id && row.newline === after.newline,
+  );
+  assert.equal(after.source, before.source);
+  assert.deepEqual(after.options, before.options);
+  assert.deepEqual(after.runtimeInputs, before.runtimeInputs);
+  assert.equal(after.runtimeInputsSha256, before.runtimeInputsSha256);
+}
 console.log(
   JSON.stringify(
     report.rows.map(({ epoch, id, newline, calls, matches }) => ({

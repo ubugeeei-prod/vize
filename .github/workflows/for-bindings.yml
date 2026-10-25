@@ -85,7 +85,7 @@ jobs:
           git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- Cargo.lock pnpm-lock.yaml
           rustc -Vv > "$capture/rustc.txt"
           node --version > "$capture/node.txt"
-          sha256sum Cargo.lock pnpm-lock.yaml "$observer" tests/tooling/for-binding-source.mjs > "$capture/inputs.sha256"
+          sha256sum Cargo.lock pnpm-lock.yaml "$observer" tests/tooling/for-binding-source.mjs tests/tooling/for-key-literal-source.mjs tests/tooling/for-binding-verify.mjs > "$capture/inputs.sha256"
           for epoch in head base; do
             if [[ "$epoch" == base ]]; then source="$baseline"; sha="$BASE_SHA"; else source="$GITHUB_WORKSPACE"; sha="$HEAD_SHA"; fi
             target="$RUNNER_TEMP/for-bindings-targets/$sha"
