@@ -5,7 +5,7 @@ use std::borrow::Cow;
 use napi::bindgen_prelude::{Error, Result};
 use serde_json::{Value, json};
 use vize_atelier_sfc::SfcDescriptor;
-use vize_carton::FxHashMap;
+use vize_l0::FxHashMap;
 
 use super::SfcParsedAttributeNapi;
 
