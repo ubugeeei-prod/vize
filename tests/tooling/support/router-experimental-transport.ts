@@ -22,6 +22,11 @@ export function createExperimentalRouterWorkspace(parent: string, label: string)
   const directory = fs.mkdtempSync(path.join(owner, prefix + "x".repeat(padding)));
   assert.equal(path.dirname(directory), owner);
   assert.equal(directory.length, experimentalRouterWorkspaceUnits);
+  assert.equal(
+    Buffer.byteLength(directory),
+    experimentalRouterWorkspaceUnits + 4,
+    "the fixed oracle requires exactly its one known Unicode root fragment",
+  );
   assert.equal(fs.realpathSync(directory), directory);
   return directory;
 }
@@ -41,9 +46,9 @@ export function experimentalRouterDocumentTransport(
     const newline = source.indexOf("\n", cursor);
     const end = newline === -1 ? source.length : newline + 1;
     const line = source.slice(cursor, end).replace(/\r?\n$/u, "");
-    const reference = /^\/\/\/ <reference path="([^"]+)" \/>$/u.exec(line);
+    const reference = /^\/\/\/ <reference path=(?:"([^"]+)"|'([^']+)') \/>$/u.exec(line);
     if (reference) {
-      paths.push(reference[1]);
+      paths.push(reference[1] ?? reference[2]);
       const start = cursor + '/// <reference path="'.length;
       spans.push({ start, end: start + projectRoot.length });
     } else if (!/^\/\/\/ <reference lib="[^"]+" \/>$/u.test(line)) {

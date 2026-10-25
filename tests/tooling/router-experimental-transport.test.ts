@@ -202,3 +202,24 @@ test("a proven apostrophe URI root accepts the native percent form without chang
     extra: packet.extra,
   });
 });
+
+test("single-delimited compiler references preserve a literal double quote root", () => {
+  const quoted = `${project}"`;
+  const code = `/// <reference path='${quoted}/typed-router.d.ts' />\n${body}`;
+  const expected = `/// <reference path='$PROJECT/typed-router.d.ts' />\n${body}`;
+  const transport = experimentalRouterDocumentTransport(code, quoted);
+  assert.equal(transport.normalizedSource, expected);
+  const point = Buffer.byteLength(code.slice(0, code.lastIndexOf("page")));
+  assert.equal(
+    transport.relocate(point),
+    Buffer.byteLength(expected.slice(0, expected.lastIndexOf("page"))),
+  );
+});
+
+test("a delimiter embedded in a compiler reference value is rejected", () => {
+  const both = `${project}'"`;
+  for (const quote of ["'", '"']) {
+    const broken = `/// <reference path=${quote}${both}/typed-router.d.ts${quote} />\n${body}`;
+    assert.throws(() => experimentalRouterDocumentTransport(broken, both), assert.AssertionError);
+  }
+});
