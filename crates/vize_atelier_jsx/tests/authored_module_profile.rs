@@ -56,9 +56,10 @@ fn capture_authored_module_source_profile() {
                     observed, output,
                     "source profiling cannot change complete outputs"
                 );
+                let counters = profiler.counter_summary().entries.into_iter().map(|entry| json!({"name":entry.name,"samples":entry.samples,"total":entry.total})).collect::<Vec<_>>();
                 let summary = profiler.summary();
                 let phases=summary.entries.into_iter().map(|entry|json!({"name":entry.name,"count":entry.count,"totalNs":entry.total.as_nanos() as u64,"selfNs":entry.self_total.as_nanos() as u64})).collect::<Vec<_>>();
-                rows.push(json!({"source":source,"ssr":ssr,"map":map,"output":output,"iterationsPerSample":100,"samplesNs":samples,"phases":phases}));
+                rows.push(json!({"source":source,"ssr":ssr,"map":map,"output":output,"iterationsPerSample":100,"samplesNs":samples,"phases":phases,"counters":counters}));
             }
         }
     }

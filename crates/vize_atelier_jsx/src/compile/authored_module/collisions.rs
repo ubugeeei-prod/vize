@@ -15,20 +15,22 @@ pub(super) fn check(
     components: &[JsxComponent],
     spans: &[(u32, u32)],
     preamble: &str,
-    source: &str,
+    authored: &Program<'_>,
     lang: JsxLang,
 ) -> Result<Vec<Renderer>, JsxDiagnostic> {
     let allocator = oxc_allocator::Allocator::default();
     let generated = crate::parse_module(&allocator, preamble, JsxLang::Jsx);
-    let authored = crate::parse_module(&allocator, source, lang);
-    super::contexts::check(&authored.program, components)?;
+    super::contexts::check(authored, components)?;
     let mut helpers = Bindings {
         top_level_only: true,
         ..Default::default()
     };
     helpers.visit_program(&generated.program);
-    for component in components {
-        let parsed = crate::parse_module(&allocator, component.code(), lang);
+    let parsed_components: Vec<_> = components
+        .iter()
+        .map(|component| crate::parse_module(&allocator, component.code(), lang))
+        .collect();
+    for parsed in &parsed_components {
         for statement in &parsed.program.body {
             if let Statement::ImportDeclaration(import) = statement {
                 helpers.visit_import_declaration(import);
@@ -36,7 +38,7 @@ pub(super) fn check(
         }
     }
     let mut bindings = Bindings::default();
-    bindings.visit_program(&authored.program);
+    bindings.visit_program(authored);
     for (name, &(start, end)) in &bindings.names {
         if helpers.names.contains_key(name) {
             return Err(JsxDiagnostic::error(
@@ -49,28 +51,26 @@ pub(super) fn check(
         }
     }
     let mut scoping = None;
-    components.iter().zip(spans).map(|(component, &(start, end))| {
-        let allocator = oxc_allocator::Allocator::default();
-        let parsed = crate::parse_module(&allocator, component.code(), lang);
+    parsed_components.iter().zip(spans).map(|(parsed, &(start, end))| {
         let mut generated = Bindings { renderer_only: true, ..Default::default() };
         generated.visit_program(&parsed.program);
         // The emitted renderer is anonymous, so this declaration cannot capture
         // an authored `render` binding. Its parameters and body locals can.
         generated.names.remove("render");
         generated.names.remove("ssrRender");
-        let mut missing = find_capture(&authored.program, start, end, &generated.names, scoping.as_ref());
+        let mut missing = find_capture(authored, start, end, &generated.names, scoping.as_ref());
         if missing.is_some() && scoping.is_none() {
             // Most roots cannot collide. Resolve only candidate references, once
             // per authored module, preserving slot/local bindings inside JSX.
-            scoping = Some(SemanticBuilder::new().build(&authored.program).semantic.into_scoping());
-            missing = find_capture(&authored.program, start, end, &generated.names, scoping.as_ref());
+            scoping = Some(SemanticBuilder::new().build(authored).semantic.into_scoping());
+            missing = find_capture(authored, start, end, &generated.names, scoping.as_ref());
         }
         if let Some((name, start, end)) = missing {
             return Err(JsxDiagnostic::error(
                 vize_l0::cstr!("JSX authored reference `{name}` is shadowed by a generated renderer binding; rename the reference"), start, end,
             ));
         }
-        renderer(&parsed)
+        renderer(parsed)
     }).collect()
 }
 

@@ -46,8 +46,7 @@ jobs:
           cp "$observer" "$baseline/$observer"
           cmp "$observer" "$baseline/$observer"
           git -C "$baseline" diff --exit-code -- crates/*/src
-          export CARGO_TARGET_DIR="$GITHUB_WORKSPACE/target"
-          (cd "$baseline" && VIZE_JSX_AUTHORED_PROFILE_CAPTURE="$RUNNER_TEMP/jsx-authored-native/base-profile.json" cargo test --locked --profile ci -p vize_atelier_jsx --test authored_module_profile -- --nocapture)
+          (cd "$baseline" && CARGO_TARGET_DIR="$RUNNER_TEMP/jsx-authored-base-target" VIZE_JSX_AUTHORED_PROFILE_CAPTURE="$RUNNER_TEMP/jsx-authored-native/base-profile.json" cargo test --locked --profile ci -p vize_atelier_jsx --test authored_module_profile -- --nocapture)
           VIZE_JSX_AUTHORED_PROFILE_CAPTURE="$RUNNER_TEMP/jsx-authored-native/head-profile.json" cargo test --locked --profile ci -p vize_atelier_jsx --test authored_module_profile -- --nocapture
           git -C "$baseline" rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/jsx-authored-native/base-source.txt"
           sha256sum "$observer" "$baseline/$observer" > "$RUNNER_TEMP/jsx-authored-native/observer.sha256"
