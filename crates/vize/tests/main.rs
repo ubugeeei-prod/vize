@@ -193,6 +193,7 @@ mod lint_css_value_tokens_cli;
 mod lint_empty_patterns_cli;
 mod lint_entry_css_scope_cli;
 mod lint_entry_rule_options_cli;
+mod lint_sibling_script_imports_cli;
 mod lint_execution_config_cli;
 mod lint_fix_cli;
 mod lint_generic_type_reads_cli;

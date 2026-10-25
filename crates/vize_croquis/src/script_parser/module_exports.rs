@@ -202,7 +202,15 @@ pub(crate) fn parse_script_plain(
     skip_diagnostics: bool,
     occurrences: bool,
 ) -> ScriptParseResult {
-    parse_script_plain_with_exports(source, options, jsx, skip_diagnostics, occurrences, None)
+    parse_script_plain_with_exports(
+        source,
+        options,
+        jsx,
+        skip_diagnostics,
+        occurrences,
+        false,
+        None,
+    )
 }
 
 /// Whether a top-level binding means a type, a value, or cannot be decided

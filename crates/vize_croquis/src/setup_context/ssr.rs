@@ -18,6 +18,7 @@ pub(super) struct SsrFacts {
     occurrences: Option<BindingOccurrences>,
     runtime_template_reads: Option<BindingOccurrences>,
     component_reads_qualified: bool,
+    module_read_facts: Option<Box<crate::script_parser::ModuleReadFacts>>,
 }
 
 impl std::fmt::Debug for SetupContextTracker {
@@ -33,6 +34,20 @@ impl std::fmt::Debug for SetupContextTracker {
 }
 
 impl SetupContextTracker {
+    pub(crate) fn set_module_read_facts(&mut self, facts: crate::script_parser::ModuleReadFacts) {
+        self.ssr_mut().module_read_facts = Some(Box::new(facts));
+    }
+
+    pub(crate) fn take_module_read_facts(
+        &mut self,
+    ) -> Option<crate::script_parser::ModuleReadFacts> {
+        self.ssr
+            .as_mut()?
+            .module_read_facts
+            .take()
+            .map(|facts| *facts)
+    }
+
     fn ssr_mut(&mut self) -> &mut SsrFacts {
         self.ssr.get_or_insert_with(Default::default)
     }

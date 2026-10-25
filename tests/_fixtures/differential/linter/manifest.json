@@ -2262,6 +2262,47 @@
           }
         ]
       }
+    },
+    {
+      "id": "linter/sibling-script-import-reads-10616",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "sibling-script-import-reads-10616",
+        "files": [
+          {
+            "path": "TwoBlocks.lf.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "8f3ca7135e471de11340082664e4b4f8f4b089a1a15fb2cf9d2eb525c0af751e"
+          },
+          {
+            "path": "TwoBlocks.crlf.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "a1f2f42194b3bdca9c023b8b6cd80ce7ee8d4a45c4f990fd0746237e09ad2579"
+          },
+          {
+            "path": "Shadowed.vue.txt",
+            "role": "negative-control",
+            "sha256": "bd85fa93cba6ea7b836c1090d33ede55722f76c4193e304c972d977ae06c3ac7"
+          },
+          {
+            "path": "vite.config.mjs",
+            "role": "native-cli-config",
+            "sha256": "db828803ca275e69d59875f8e8a6422a8eb35acf4cd56c3d77bc6a5b84e6434f"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }
