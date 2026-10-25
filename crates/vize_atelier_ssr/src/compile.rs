@@ -16,7 +16,7 @@ use vize_l0::{
     profile,
 };
 
-pub use crate::l4::compile_l2_to_ssr;
+pub use crate::l4::{compile_l2_to_ssr, compile_l2_to_ssr_with_experimental_options};
 
 /// Compile a Vue template for SSR with default options
 pub fn compile_ssr<'a>(

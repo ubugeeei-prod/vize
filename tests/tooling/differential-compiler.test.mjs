@@ -15,6 +15,7 @@ import {
   validateCompilerReport,
 } from "../differential/compiler.mjs";
 import { sha256 } from "../differential/harness.mjs";
+import { compilerCssApiReport } from "../differential/compiler-css-api.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const pack = path.join(root, "tests/_fixtures/differential/compiler");
@@ -109,6 +110,7 @@ function syntheticReport(code = fixture.expected) {
     buildReceipt: { schema: "vize.differential.build", version: 1, recipe: BUILD_RECIPE, ...build },
     binary: { path: build.binaryPath, sha256: build.binarySha256, version: build.cliVersion },
     rows,
+    cssApi: compilerCssApiReport(loaded.cssApiCases),
     summary: {
       plannedCases: rows.length,
       legacyMatches: rows.length - baselineDrift,

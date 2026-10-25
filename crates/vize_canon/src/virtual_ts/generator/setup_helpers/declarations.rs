@@ -74,7 +74,7 @@ impl SetupHelperPlan {
             (Some(ty), None) | (None, Some(ty)) => ty,
             (None, None) => return None,
         };
-        Some(vize_carton::cstr!("undefined as unknown as {ty}"))
+        Some(vize_carton::cstr!("(void 0) as unknown as {ty}"))
     }
 }
 

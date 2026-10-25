@@ -33,6 +33,7 @@ mod page_meta_tests;
 mod parse;
 mod thread_pool;
 mod types;
+mod vue_version;
 
 pub use analysis::*;
 pub use batch::*;

@@ -85,6 +85,8 @@ pub struct SfcCompileOptionsNapi {
     pub runtime_module_name: Option<String>,
     /// Runtime global expression for standalone (`mode: "function"`) output.
     pub runtime_global_name: Option<String>,
+    /// Runtime dialect selector; omitted or "3" uses Vue 3.
+    /// Legacy selectors are rejected until their native runtime backend is available.
     pub vue_version: Option<String>,
     pub style_trim: Option<bool>,
     pub template_cache_handlers: Option<bool>,
@@ -179,6 +181,8 @@ pub struct BatchCompileOptionsNapi {
     pub runtime_module_name: Option<String>,
     /// Runtime global expression for standalone (`mode: "function"`) output.
     pub runtime_global_name: Option<String>,
+    /// Runtime dialect selector; omitted or "3" uses Vue 3.
+    /// Legacy selectors are rejected until their native runtime backend is available.
     pub vue_version: Option<String>,
     pub style_trim: Option<bool>,
     pub template_cache_handlers: Option<bool>,

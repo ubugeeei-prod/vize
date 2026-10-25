@@ -102,6 +102,7 @@ export interface BatchCompileOptionsNapi {
   runtimeModuleName?: string;
   /** Runtime global expression for standalone (`mode: "function"`) output. */
   runtimeGlobalName?: string;
+  /** Runtime dialect selector; omitted or "3" uses Vue 3. Legacy code generation is unavailable. */
   vueVersion?: string;
   styleTrim?: boolean;
   templateCacheHandlers?: boolean;
@@ -1340,6 +1341,7 @@ export interface SfcCompileOptionsNapi {
   runtimeModuleName?: string;
   /** Runtime global expression for standalone (`mode: "function"`) output. */
   runtimeGlobalName?: string;
+  /** Runtime dialect selector; omitted or "3" uses Vue 3. Legacy code generation is unavailable. */
   vueVersion?: string;
   styleTrim?: boolean;
   templateCacheHandlers?: boolean;

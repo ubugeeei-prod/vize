@@ -28,7 +28,7 @@ pub(crate) fn is_inline_callback_prop(prop: &PassedProp) -> bool {
 /// Whether the value contains an inline callback whose standalone generation
 /// would lose contextual typing. Legacy Vue 2 globals use this broader shape
 /// to avoid reporting `TS7006` for values such as `[(value) => !!value]`.
-pub(super) fn contains_inline_function_prop_value(value: &str) -> bool {
+pub(crate) fn contains_inline_function_prop_value(value: &str) -> bool {
     let value = value.trim();
     value.contains("=>") || value.starts_with("function") || value.starts_with("async function")
 }

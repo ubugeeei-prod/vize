@@ -18,6 +18,9 @@ use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
 pub(super) struct L2Artifact<'s, 'a> {
     pub(super) source: &'a str,
     pub(super) root: &'s Region<'a>,
+    /// A caller-built root's actual producer location inside the complete
+    /// source. Template parser callers keep their established section origin.
+    pub(super) root_origin: Option<vize_l0::Span>,
     pub(super) facts: PlanFacts<'s, 'a>,
     pub(super) diagnostics: u64,
 }
@@ -102,8 +105,7 @@ pub(super) fn select_from_l2<'a, 'e, C: CaptureSink>(
     );
     ctx.apply_sfc_context(context);
     ctx.set_runtime_module_name(runtime_module_name);
-    // The L2 program covers the whole template source, which starts at 0.
-    ctx.begin_render(0);
+    ctx.begin_render(artifact.root_origin.map_or(0, |span| span.start));
     match emit::emit_plan(&mut ctx, &lowered.plan, &artifact.facts, &mut exprs) {
         Ok(()) => SsrL4Selection::Emitted(ctx.finish_render()),
         Err(AdmissionFailure::Unsupported(reason)) => SsrL4Selection::Legacy(reason),
@@ -177,8 +179,7 @@ pub(super) fn select_from_l2_plain<'a, 'e>(
     );
     ctx.apply_sfc_context(context);
     ctx.set_runtime_module_name(runtime_module_name);
-    // The L2 program covers the whole template source, which starts at 0.
-    ctx.begin_render(0);
+    ctx.begin_render(artifact.root_origin.map_or(0, |span| span.start));
     match emit::emit_plan(&mut ctx, &lowered.plan, &artifact.facts, &mut exprs) {
         Ok(()) => SsrL4Selection::Emitted(ctx.finish_render()),
         Err(AdmissionFailure::Unsupported(reason)) => SsrL4Selection::Legacy(reason),
