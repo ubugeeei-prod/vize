@@ -120,6 +120,20 @@ fn legacy_adjustment_constructor_keeps_its_existing_contract() {
 }
 
 #[test]
+fn overflowing_queries_cannot_wrap_onto_an_unrelated_document_byte() {
+    let mut growing = ImportSourceMap::for_rewrites(1);
+    growing.record_replacement(10, 12, 20);
+    growing.finish_descending_replacements();
+    assert_eq!(growing.get_virtual_offset(u32::MAX), u32::MAX);
+    assert_eq!(growing.get_original_offset(u32::MAX), u32::MAX - 18);
+    let mut shrinking = ImportSourceMap::for_rewrites(1);
+    shrinking.record_replacement(10, 30, 2);
+    shrinking.finish_descending_replacements();
+    assert_eq!(shrinking.get_original_offset(u32::MAX), u32::MAX);
+    assert_eq!(shrinking.get_virtual_offset(u32::MAX), u32::MAX - 18);
+}
+
+#[test]
 fn zero_length_and_multiple_replacement_records_keep_exclusive_end_shifts() {
     let mut map = ImportSourceMap::for_rewrites(2);
     map.record_replacement(20, 22, 4);
