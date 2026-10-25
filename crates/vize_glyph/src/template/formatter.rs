@@ -23,6 +23,7 @@ mod preserved_text;
 mod suppression;
 mod tags;
 mod text;
+mod text_wrap;
 mod whitespace_significant;
 
 #[cfg(test)]
@@ -150,9 +151,11 @@ impl<'a> TemplateFormatter<'a> {
                     self.open_chunk(&mut output, depth, join);
                     output.extend_from_slice(b"</");
                     output.extend_from_slice(tag_name.as_bytes());
-                    if join.is_continuation()
-                        && !joiner.locks_current_line()
-                        && self.closing_bracket_overflows(&output)
+                    if joiner.take_wrapped_text_close(pos)
+                        || (join.is_continuation()
+                            && !joiner.locks_current_line()
+                            && (self.closing_bracket_overflows(&output)
+                                || self.following_text_overflows(&output, input, end_pos)))
                     {
                         output.extend_from_slice(self.newline);
                         self.write_indent(&mut output, depth);
@@ -310,7 +313,11 @@ impl<'a> TemplateFormatter<'a> {
             if pos < len
                 && (byte_at(source, pos) == b'\n' || (HAS_CR && byte_at(source, pos) == b'\r'))
             {
-                self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
+                // Suppression pragmas own physical lines; ordinary condensed
+                // text instead forms one canonical run across authored wraps.
+                if joiner.has_locked_lines() {
+                    self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
+                }
                 pos += 1;
             }
         }

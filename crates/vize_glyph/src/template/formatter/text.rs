@@ -69,6 +69,10 @@ impl TemplateFormatter<'_> {
         }
         let join = joiner.open(start);
         self.open_chunk(output, depth, join);
+        if self.write_wrapped_text_run(output, &formatted, (start, end), depth, joiner) {
+            joiner.finish(end);
+            return;
+        }
         let wrapped = if formatted.starts_with("{{ ") {
             self.write_wrapped_hugged_child(output, &formatted, start, end, depth, joiner)
         } else {

@@ -2956,6 +2956,139 @@
           "operations": []
         }
       ]
+    },
+    {
+      "id": "formatter/sfc/safe-mixed-text-wrap",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-safe-mixed-text-wrap",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "14bd9ac18a80b61ac09bcae808f785850b0c439b98b89450ecd0169609344b9d",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": [
+          {
+            "path": "vize.config.json",
+            "sha256": "8426a8802f455610fb05dfb92795b1a287844efcb37165334f15f99a8970a120",
+            "role": "project-vue-version-and-formatter-preset"
+          }
+        ]
+      },
+      "provenance": {
+        "issues": [
+          10609,
+          10615
+        ],
+        "commits": [
+          {
+            "sha": "bd905e766c37ad5bacabaacbec02c90def36726e",
+            "role": "pre-fix-base",
+            "paths": [
+              "crates/vize_glyph/src/template/formatter.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "issue-authored-regression",
+            "issue": 10609,
+            "path": "crates/vize_glyph/tests/template_text_canonical_layout.rs",
+            "symbol": "text_wraps_only_at_existing_whitespace_and_reaches_one_fixed_point"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/template_text_canonical_layout.rs",
+          "symbol": "text_wraps_only_at_existing_whitespace_and_reaches_one_fixed_point",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes",
+            "idempotence",
+            "input-layout-canonicality",
+            "LF-CRLF"
+          ],
+          "limitations": [
+            "Exact-head source execution is required in Actions."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "directive-expression-layout"
+            ],
+            "selector": "default Vue version with --no-config"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built CLI with the default width and the issue-authored conditional expression.",
+          "native": "No verified native formatter adapter at this base; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "pending",
+          "artifacts": [
+            {
+              "path": "sfc-safe-mixed-text-wrap/reference.expected.txt",
+              "sha256": "dfcbbce2d74e8b2329ce5e453c4469b6606f2938601a3da6df06da5eef5deb72",
+              "role": "issue-authored-regression-reference",
+              "provenance": {
+                "issue": 10609,
+                "path": "crates/vize_glyph/tests/template_text_canonical_layout.rs",
+                "symbol": "text_wraps_only_at_existing_whitespace_and_reaches_one_fixed_point",
+                "assertion": "The complete mixed-text consumer packet wraps at existing whitespace without adding rendered whitespace."
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured-FormatResult.changed; public Rust witness covers this field"
+          ],
+          "referenceState": "issue-10609-full-consumer-reference; exact-source Actions required"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
     }
   ],
   "adapterOptions": {
