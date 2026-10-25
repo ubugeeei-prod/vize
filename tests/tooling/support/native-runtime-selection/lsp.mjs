@@ -331,6 +331,10 @@ export async function observeSourceLspSelection({ campaign = "runtime-selection"
             .toString("utf8")
             .split("\n")
             .filter((line) => line.includes("initial_api_snapshot_refresh")),
+          queuedRetirementPhaseLines: Buffer.concat(wire.errors)
+            .toString("utf8")
+            .split("\n")
+            .filter((line) => line.includes("queued_editor_retirement")),
           outerRequests: wire.events
             .filter((event) => event.direction === "client" && event.packet.id !== undefined)
             .map((event) => ({ id: event.packet.id, method: event.packet.method })),

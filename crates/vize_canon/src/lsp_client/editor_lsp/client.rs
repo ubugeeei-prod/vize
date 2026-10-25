@@ -324,6 +324,16 @@ impl CorsaProjectClient {
         result
     }
 
+    /// Queued bridge work retires its initialized owner through normal shutdown.
+    pub(crate) fn retire_queued_disk_project_state(&mut self) -> Result<(), String> {
+        let phase =
+            crate::corsa_bridge::preparation_trace::Phase::start("queued_editor_retirement", 1);
+        self.clear_diagnostics_cache();
+        let result = self.retire_editor_lsp();
+        phase.finish();
+        result
+    }
+
     /// Record the exact discard caller only under the existing opt-in gate.
     pub(super) fn trace_editor_discard(&self, caller: impl FnOnce() -> String) {
         super::inlay_hint::trace_native_inlay("editorDiscard", || {
@@ -412,6 +422,70 @@ mod initial_snapshot_tests {
         assert!(
             !marker.exists(),
             "inconsistent attachment must not execute any provider"
+        );
+    }
+
+    #[test]
+    fn queued_retirement_keeps_empty_and_inconsistent_owners_dormant() {
+        for attached in [false, true] {
+            let (_root, mut client, marker) = guarded_client();
+            client.project_session_attached_to_editor = attached;
+            client
+                .diagnostics
+                .insert("file:///cached.ts".into(), Vec::new());
+            client.retire_queued_disk_project_state().unwrap();
+            assert_eq!(client.diagnostics_cache_len(), 0);
+            assert!(client.editor_lsp.is_none() && client.session.is_none());
+            assert!(!client.project_session_attached_to_editor);
+            assert!(!marker.exists(), "retirement must not execute a provider");
+        }
+    }
+
+    #[test]
+    fn queued_retirement_preserves_shutdown_failure_and_clears_stale_cache() {
+        let (root, mut client, _marker) = guarded_client();
+        let peer = root.path().join("controlled-peer.ts");
+        let log = root.path().join("whole-packets.jsonl");
+        let source = include_str!("native_shutdown/peer.ts.txt")
+            .replace("LOG_PATH", &serde_json::to_string(&log).unwrap())
+            .replace("REPLY_MODE", "\"error\"");
+        std::fs::write(&peer, source).unwrap();
+        std::fs::set_permissions(&peer, std::fs::Permissions::from_mode(0o700)).unwrap();
+        client.editor_lsp = Some(
+            super::EditorLspSession::spawn(peer.to_str().unwrap(), root.path(), root.path())
+                .unwrap(),
+        );
+        client
+            .diagnostics
+            .insert("file:///cached.ts".into(), Vec::new());
+        let actual = client.retire_queued_disk_project_state().unwrap_err();
+        let data = serde_json::json!({"code":-32603,"message":"controlled shutdown refusal","data":{"phase":"shutdown"}});
+        let error = corsa_lsp::CorsaError::Rpc(serde_json::from_value(data.clone()).unwrap());
+        assert_eq!(
+            actual,
+            vize_l0::cstr!("Failed to gracefully close editor LSP process: {error}")
+        );
+        assert_eq!(client.diagnostics_cache_len(), 0);
+        assert!(client.editor_lsp.is_none() && client.session.is_none());
+        client.retire_queued_disk_project_state().unwrap();
+        let packets: Vec<serde_json::Value> = std::fs::read_to_string(log)
+            .unwrap()
+            .lines()
+            .map(|line| serde_json::from_str(line).unwrap())
+            .collect();
+        let begin = packets
+            .iter()
+            .position(|row| {
+                row["direction"] == "request" && row["wholePacket"]["method"] == "shutdown"
+            })
+            .unwrap();
+        assert_eq!(
+            &packets[begin..],
+            &[
+                serde_json::json!({"direction":"request","wholePacket":{"jsonrpc":"2.0","id":2,"method":"shutdown"}}),
+                serde_json::json!({"direction":"response","wholePacket":{"jsonrpc":"2.0","id":2,"error":data}}),
+                serde_json::json!({"event":"stdin-eof"})
+            ]
         );
     }
 }

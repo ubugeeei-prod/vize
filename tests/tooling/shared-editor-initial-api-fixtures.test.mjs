@@ -25,6 +25,7 @@ function reader(overrides = new Map()) {
   const initialPath = "crates/vize_canon/src/lsp_client/initial_diagnostics.rs";
   const clientPath = "crates/vize_canon/src/lsp_client/editor_lsp/client.rs";
   const tracePath = "crates/vize_canon/src/lsp_client/editor_lsp/inlay_hint.rs";
+  const bridgePath = "crates/vize_canon/src/corsa_bridge/bridge/documents.rs";
   const initial = fs
     .readFileSync(path.join(root, initialPath), "utf8")
     .replace(
@@ -43,6 +44,15 @@ function reader(overrides = new Map()) {
   const tests = client.indexOf("\n#[cfg(all(test, unix))]\nmod initial_snapshot_tests {");
   assert.ok(tests > 0);
   client = client.slice(0, tests);
+  const queuedBegin = client.indexOf(
+    "    /// Queued bridge work retires its initialized owner through normal shutdown.\n",
+  );
+  const queuedEnd = client.indexOf(
+    "    /// Record the exact discard caller only under the existing opt-in gate.\n",
+    queuedBegin,
+  );
+  assert.ok(queuedBegin >= 0 && queuedEnd > queuedBegin);
+  client = client.slice(0, queuedBegin) + client.slice(queuedEnd);
   const discardBegin = client.indexOf(
     "    /// Record the exact discard caller only under the existing opt-in gate.\n",
   );
@@ -63,6 +73,18 @@ function reader(overrides = new Map()) {
     [initialPath, Buffer.from(initial)],
     [clientPath, Buffer.from(client)],
     [tracePath, Buffer.from(trace)],
+    [
+      bridgePath,
+      Buffer.from(
+        fs
+          .readFileSync(path.join(root, bridgePath), "utf8")
+          .replace(
+            "            // The owning worker completes normal retirement before replacement.\n",
+            "",
+          )
+          .replace(".retire_queued_disk_project_state()", ".invalidate_disk_project_state()"),
+      ),
+    ],
     [row.lspCase.path, null],
   ]);
   const beforeTypechecker = structuredClone(manifest);
@@ -131,6 +153,7 @@ void test("ordinary inputs cannot replace the pinned wire, image authority or co
     ...row.sources.map((source) => source.path),
     row.lspCase.path,
     row.wireContract.path,
+    row.callerWitness.path,
     ...Object.values(row.producer)
       .filter((ref) => ref.path)
       .map((ref) => ref.path),

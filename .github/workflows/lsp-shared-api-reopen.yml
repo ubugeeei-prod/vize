@@ -7,6 +7,7 @@ on:
       - crates/vize_canon/src/lsp_client/initial_diagnostics.rs
       - crates/vize_canon/src/lsp_client/editor_lsp/client.rs
       - crates/vize_canon/src/lsp_client/editor_lsp/inlay_hint.rs
+      - crates/vize_canon/src/corsa_bridge/bridge/documents.rs
       - tests/tooling/support/native-runtime-selection/lsp*.mjs
       - tests/tooling/lsp-shared-api-campaign.test.mjs
       - tests/_fixtures/differential/lsp/shared-api-snapshot-reopen-10730/**
@@ -53,7 +54,7 @@ jobs:
           cat target/vize-tests/shared-api-reopen-702/transport-controls.stdout
           cat target/vize-tests/shared-api-reopen-702/transport-controls.stderr >&2
           test "$status" -eq 0
-          node -e 'const fs=require("node:fs");const assert=require("node:assert/strict");assert.match(fs.readFileSync("target/vize-tests/shared-api-reopen-702/transport-controls.stdout","utf8"),/test result: ok\. 2 passed; 0 failed;/u)'
+          node -e 'const fs=require("node:fs");const assert=require("node:assert/strict");assert.match(fs.readFileSync("target/vize-tests/shared-api-reopen-702/transport-controls.stdout","utf8"),/test result: ok\. 4 passed; 0 failed;/u)'
           set +e
           cargo test --locked --profile ci -p vize_canon --lib lsp_client::editor_lsp::inlay_hint::trace_tests:: -- --nocapture > target/vize-tests/shared-api-reopen-702/trace-controls.stdout 2> target/vize-tests/shared-api-reopen-702/trace-controls.stderr
           status=$?

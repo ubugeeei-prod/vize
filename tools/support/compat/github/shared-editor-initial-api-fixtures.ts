@@ -20,12 +20,17 @@ const registration = {
     {
       path: "crates/vize_canon/src/lsp_client/editor_lsp/client.rs",
       before: "02601e1d2bb3eee642b663fd3336156f32791a35cf5999e689c69956626357fb",
-      after: "7d67741d6da1d3f0e4ef1083f617b409d2f40bd8ae83e9e77ac9e7a0f1f4c781",
+      after: "47f5e5f0c560723aa2b226a3ac3cb191d3465336ba8ad93bf287ba0b80e51ee5",
     },
     {
       path: "crates/vize_canon/src/lsp_client/editor_lsp/inlay_hint.rs",
       before: "0c477b1f2dbab225f4d63935c687f4eb5ae88017966c857692c739dc463448bd",
       after: "8d79f8a1dc8240ae72d99a3ef9f1543122d44a93c9ea8e5e417e89c05956631e",
+    },
+    {
+      path: "crates/vize_canon/src/corsa_bridge/bridge/documents.rs",
+      before: "d34e785609a2f24591fb0a459fcdac7ed1baff8ab2301c9e118f2e216052a110",
+      after: "d7f067540c08fc358fb56026b584a1919ae025f703ea3177e146984ca8e19541",
     },
   ],
   lspCase: {
@@ -39,7 +44,7 @@ const registration = {
   producer: {
     workflow: {
       path: ".github/workflows/lsp-shared-api-reopen.yml",
-      sha256: "9979883bed8e9ad01f62e625a31e5a2e7ee9e20c8f64f27ec0ff436ff77c9ca7",
+      sha256: "9fd8d1f48d97429a15482f0949128f82bd5acc9c7d3258d154b2cd8f267ab9e7",
     },
     entry: {
       path: "tests/tooling/support/native-runtime-selection/lsp-shared-api-reopen.mjs",
@@ -47,7 +52,7 @@ const registration = {
     },
     driver: {
       path: "tests/tooling/support/native-runtime-selection/lsp.mjs",
-      sha256: "4aabacbc18a702aaeb212a2ee276b07a8605554b4a4b021d2f70c4c73e8a334b",
+      sha256: "59c0b15e2d82da0f0b4772265593eb910fc0add52498cf063f88f3af27e621d3",
     },
     custody: {
       path: "tests/tooling/support/native-runtime-selection/lsp-source-custody.mjs",
@@ -85,7 +90,7 @@ const registration = {
     },
     registryTest: {
       path: "tests/tooling/shared-editor-initial-api-fixtures.test.mjs",
-      sha256: "4b8677802acd7fa52d9520a365119d19a717fa91239e081c238bbb78cacce7dc",
+      sha256: "d31e5eca3faa15069e7d6d83687764ad93c5efef1ea23b162f243c8c005ef945",
     },
     straceLines: {
       path: "tests/tooling/support/native-runtime-selection/lsp-strace-lines.mjs",
@@ -95,6 +100,14 @@ const registration = {
       path: "tests/tooling/native-runtime-selection-lsp-strace.test.mjs",
       sha256: "952310756b287146a0c6a8c9c07be52a54142008041ef8e3d90ff1391ff49716",
     },
+    failurePeer: {
+      path: "crates/vize_canon/src/lsp_client/editor_lsp/native_shutdown/peer.ts.txt",
+      sha256: "0f5eb91d7122ef7a653069efd3137a380b795132170826d3e4c49831872021c1",
+    },
+  },
+  callerWitness: {
+    path: "tests/_fixtures/differential/lsp/shared-api-snapshot-reopen-10730/queued-retirement.before.json",
+    sha256: "bab360748c49c0fbc75a128cecf8281fef81b536b8bc598b51a5fc5fe8b49747",
   },
 } as const;
 
@@ -199,6 +212,18 @@ export function newSharedEditorInitialApiCases(
     transitions?: unknown;
   };
   assert.equal(wire.id, SHARED_EDITOR_INITIAL_API_PROTOCOL_ID);
+  const caller = JSON.parse(
+    pinned(readFile, "head", registration.callerWitness).toString("utf8"),
+  ) as {
+    schema?: unknown;
+    queuedBridgeSourceSha256?: unknown;
+  };
+  assert.equal(caller.schema, "vize.lsp.queued-retirement.before");
+  const queuedBridge = registration.sources.find(
+    (source) => source.path === "crates/vize_canon/src/corsa_bridge/bridge/documents.rs",
+  );
+  assert(queuedBridge !== undefined);
+  assert.equal(caller.queuedBridgeSourceSha256, queuedBridge.before);
   const { sdk: _sdk, ...producer } = registration.producer;
   for (const ref of Object.values(producer)) pinned(readFile, "head", ref);
   return {
