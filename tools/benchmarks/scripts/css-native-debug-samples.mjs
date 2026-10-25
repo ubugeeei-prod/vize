@@ -87,6 +87,12 @@ async function run(configFile, destination) {
       sha256: digest(perf),
       version: await command([perf, "version", "--build-options"], "perf-version"),
     };
+    assert.equal(
+      receipt.perf.sha256,
+      "2927eb0973fd937bdd417622531c95f1e6e19307a29c3e05a2c6198e12af6e56",
+      "the five-byte ACK contract belongs to this actual perf binary",
+    );
+    assert.match(receipt.perf.version, /^perf version 6\.8\.12\n/u);
     receipt.perfEventParanoid = fs
       .readFileSync("/proc/sys/kernel/perf_event_paranoid", "utf8")
       .trim();

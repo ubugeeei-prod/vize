@@ -15,11 +15,25 @@ await test("real perf ACK frames permit partial FIFO reads and reject malformed 
       chunk.copy(buffer);
       return chunk.length;
     });
-  for (const chunks of [["ack\n"], ["a", "ck\n"], ["a", "c", "k", "\n"], ["ac", "k\n"]]) {
+  for (const chunks of [
+    ["ack\n\0"],
+    ["a", "ck\n\0"],
+    ["a", "c", "k", "\n", "\0"],
+    ["ac", "k\n\0"],
+  ]) {
     const expected = [...chunks].map((value) => Buffer.from(value).toString("hex"));
-    assert.deepEqual(consume([...chunks]), { ack: "ack\n", chunks: expected });
+    assert.deepEqual(consume([...chunks]), { ack: "ack\n\0", chunks: expected });
   }
-  for (const chunks of [[], ["a"], ["a\n"], ["ack!"], ["bad\n"], ["ack\nextra"]])
+  for (const chunks of [
+    [],
+    ["a"],
+    ["a\n"],
+    ["ack\n"],
+    ["ack!\0"],
+    ["bad\n\0"],
+    ["\0ack\n"],
+    ["ack\n\0extra"],
+  ])
     assert.throws(() => consume([...chunks]));
 });
 
@@ -115,8 +129,8 @@ await test("sample workload custody compares complete published output and exact
   const controlled = {
     ...packet,
     samplingControl: [
-      { command: "enable", ack: "ack\n" },
-      { command: "disable", ack: "ack\n" },
+      { command: "enable", ack: "ack\n\0" },
+      { command: "disable", ack: "ack\n\0" },
     ],
   };
   validateSamplePacket(controlled, debugConfig, item);

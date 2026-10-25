@@ -41,8 +41,8 @@ export function validateSamplePacket(packet, config, item) {
   assert.equal(packet.codeUnits, item.calls * packet.before.code.length);
   if (config.kind === "debug-source")
     assert.deepEqual(packet.samplingControl, [
-      { command: "enable", ack: "ack\n" },
-      { command: "disable", ack: "ack\n" },
+      { command: "enable", ack: "ack\n\0" },
+      { command: "disable", ack: "ack\n\0" },
     ]);
 }
 export function sampledEventCount(text) {
@@ -52,19 +52,20 @@ export function sampledEventCount(text) {
   return rows.length;
 }
 export function readPerfAck(readChunk) {
+  // perf6.8's evlist__ctlfd_ack writes sizeof("ack\n"), including NUL.
+  // Consume that exact pinned-tool frame so the next ACK has no stale prefix.
   const chunks = [];
   let length = 0;
-  while (length < 4) {
-    const buffer = Buffer.alloc(4 - length);
+  while (length < 5) {
+    const buffer = Buffer.alloc(5 - length);
     const count = readChunk(buffer);
     assert.ok(Number.isInteger(count) && count > 0 && count <= buffer.length);
     const chunk = buffer.subarray(0, count);
     chunks.push(chunk);
     length += count;
-    if (chunk.includes(10)) break;
   }
   const ack = Buffer.concat(chunks).toString();
-  assert.equal(ack, "ack\n");
+  assert.equal(ack, "ack\n\0");
   return { ack, chunks: chunks.map((chunk) => chunk.toString("hex")) };
 }
 function worker(configFile, ordinal, destination, controlPath, ackPath) {
@@ -115,7 +116,7 @@ function worker(configFile, ordinal, destination, controlPath, ackPath) {
     packet.ackReads.push({ command: name, chunks });
     controls.push({ command: name, ack });
     packet.samplingControl = controls;
-    assert.equal(ack, "ack\n");
+    assert.equal(ack, "ack\n\0");
   };
   if (config.kind === "debug-source") {
     assert.ok(controlPath && ackPath);
