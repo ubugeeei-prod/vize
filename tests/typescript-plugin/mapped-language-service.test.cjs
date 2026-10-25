@@ -24,6 +24,12 @@ test("feature dispatch maps Unicode authored spans and keeps edits within exact 
   const document = { source, projection };
   const queried = [];
   const raw = {
+    toLineColumnOffset(name, offset) {
+      return ts.getLineAndCharacterOfPosition(
+        ts.createSourceFile(name, generated, ts.ScriptTarget.Latest),
+        offset,
+      );
+    },
     getQuickInfoAtPosition(name, offset) {
       queried.push([name, offset]);
       return { textSpan: { start: offset, length: 5 }, displayParts: [{ text: "count: number" }] };
@@ -65,6 +71,10 @@ test("feature dispatch maps Unicode authored spans and keeps edits within exact 
   const info = service.getQuickInfoAtPosition(file, authoredStart + 6);
   assert.deepEqual(info.textSpan, { start: authoredStart + 6, length: 5 });
   assert.deepEqual(queried[0], [file, prefix.length + 6]);
+  assert.deepEqual(service.toLineColumnOffset(file, info.textSpan.start), {
+    line: 0,
+    character: authoredStart + 6,
+  });
   const edits = service.findRenameLocations(file, authoredStart + 6);
   assert.deepEqual(
     edits.map((value) => [value.fileName, value.textSpan]),
