@@ -10,9 +10,12 @@ autobenches = false
 
 [dev-dependencies]
 criterion.workspace = true
+serde_json.workspace = true
 vize = { path = "../../../../crates/vize", features = ["profiling"] }
+vize_canon = { workspace = true, features = ["native"] }
 vize_doctor.workspace = true
 vize_fresco.workspace = true
+vize_l0.workspace = true
 
 [[bench]]
 name = "doctor_tui"

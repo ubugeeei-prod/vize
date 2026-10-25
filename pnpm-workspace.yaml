@@ -264,8 +264,13 @@ peerDependencyRules:
 
 allowBuilds:
   "@parcel/watcher": false
+  # Parcel's pinned native providers ship platform optional packages. Keep
+  # installation from compiling addons or fetching SWC's unpinned WASM fallback.
+  "@swc/core@1.16.20": false
   core-js: false
   esbuild: true
+  "lmdb@2.8.5": false
+  "msgpackr-extract@3.0.4": false
   puppeteer: false
   unrs-resolver: false
   vue-demi: false
