@@ -150,6 +150,7 @@ jobs:
           VIZE_JSX_VAPOR_COMPAT_CAPTURE: ${{ runner.temp }}/jsx-authored-native/compat-modules.json
           VIZE_JSX_VAPOR_COMPAT_TRACE_CAPTURE: ${{ runner.temp }}/jsx-authored-native/compat-runtime.json
           VIZE_L4_SSR_REQUIRE_NATIVE: "1"
+          VIZE_MOUNTED_RUNTIME_PRODUCER_EVIDENCE: ${{ runner.temp }}/jsx-authored-native/runtime-producer
         run: |
           status=0
           mkdir -p "$RUNNER_TEMP/jsx-authored-native"

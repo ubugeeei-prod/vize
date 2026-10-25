@@ -1,1 +1,18 @@
-{"captureRequired":true}
+{
+  "components": [
+    {
+      "code": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<p${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(props.label)}</p>`)\n}\n",
+      "map": null,
+      "mode": "vdom",
+      "name": "App",
+      "preamble": "",
+      "setup": "Some(ComponentSetupSpan { declaration_start: 7, declaration_end: 73, params_start: 18, params_end: 38, type_params_start: 0, type_params_end: 0, is_async: false, destructured_props: [\"label\"], setup_start: 43, setup_end: 43, render_start: 50, render_end: 70 })",
+      "style": "None"
+    }
+  ],
+  "diagnostics": [],
+  "module": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nexport const App=({\n__ssrInlineRender: true,\nname: \"App\",\nprops: [\"label\"],\nsetup(props:{label:string}) {\nreturn (() => {\n\n\nreturn ((_ctx, _push, _parent, _attrs) => {\n  _push(`<p${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(props.label)}</p>`)\n})\n})()\n}\n});",
+  "moduleMap": null,
+  "source": "export const App=(props:{label:string})=> {return <p>{props.label}</p>;};",
+  "ssr": true
+}

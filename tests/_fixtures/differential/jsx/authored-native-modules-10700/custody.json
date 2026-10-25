@@ -10,6 +10,26 @@
     "fixtureSha256": "2bbfc6262f68ff176ce5a0a55eee3087bc9430a8814879e092332e221c9795d7",
     "derivedTokens": "Only the duplicate decoded tokens array is omitted from this golden; raw arrays remain in the artifact and every decoded segment is independently checked by the test. Whole source/code/map fields are retained."
   },
-  "admission": "capture required; no qualification claim until actual source packet review",
-  "statefulVdomSsr": "capture required; no qualification claim until actual source packet review"
+  "admission": {
+    "contract": "complete source packet; runtime coverage is separately attributed, no universal support claim",
+    "run": 40221673116,
+    "artifact": 12609354973,
+    "sourceHead": "664c7dc3846c068a756b7562e11eab35a9497d9d",
+    "checkoutHead": "664c7dc3846c068a756b7562e11eab35a9497d9d",
+    "checkoutTree": "3e1d3d673c142beb6653ad8ef47109f81850e99d",
+    "rawCapture": "admission.json",
+    "sha256": "80f7b6564d34b2971df3ba08872e63201e82a000e6991118f054b16080f60195",
+    "review": "Entire original input, module/code/maps, component metadata and exact diagnostics; admitted roles and explicit refusals are retained without normalization."
+  },
+  "statefulVdomSsr": {
+    "contract": "complete source packet; runtime coverage is separately attributed, no universal support claim",
+    "run": 40221673116,
+    "artifact": 12609354973,
+    "sourceHead": "664c7dc3846c068a756b7562e11eab35a9497d9d",
+    "checkoutHead": "664c7dc3846c068a756b7562e11eab35a9497d9d",
+    "checkoutTree": "3e1d3d673c142beb6653ad8ef47109f81850e99d",
+    "rawCapture": "stateful-vdom-ssr.json",
+    "sha256": "8cfe34a37c845e8d7c99d13ce1341ad409ac9e0c30c26adbfc0850b24ec96acf",
+    "review": "Entire original input, module/code/maps, component metadata and exact diagnostics; admitted roles and explicit refusals are retained without normalization."
+  }
 }
