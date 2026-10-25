@@ -71,6 +71,8 @@ jobs:
       - name: Run both complete test files without updating snapshots
         env: { VIZE_RSPACK_JSX_CAPTURE: "${{ runner.temp }}/rspack-authored" }
         run: node npm/native/scripts/test-preparation.mjs node --test npm/builder/rspack/src/jsx.test.ts npm/builder/rspack/src/shared/jsx-compile.test.ts
+      - name: Require the committed reviewed snapshot to remain byte-identical
+        run: git diff --exit-code -- npm/builder/rspack/src/__snapshots__/jsx.test.ts.snap
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
