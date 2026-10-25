@@ -62,7 +62,6 @@ jobs:
           rows=[]
           for previous,current in zip(base,head):
             for field in ['source','ssr','map','iterationsPerSample']: assert previous[field]==current[field]
-            assert previous['output']['diagnostics'], 'old provider must retain the actual refusal'
             assert not current['output']['diagnostics'], current['output']
             counters={entry['name']:entry['total'] for entry in current['counters']}
             roots=counters['atelier.jsx.module.native_roots']
@@ -77,8 +76,8 @@ jobs:
             assert len(previous['samplesNs'])==len(current['samplesNs'])==9
             before=statistics.median(previous['samplesNs'])
             after=statistics.median(current['samplesNs'])
-            rows.append({'source':current['source'],'ssr':current['ssr'],'map':current['map'],'baseRefusalMedianNs':before,'headCompleteModuleMedianNs':after,'ratioDifferentContracts':after/before,'counters':current['counters']})
-          (directory/'comparison.json').write_text(json.dumps({'scope':'same sources; old explicit refusal versus new complete module; ratios do not claim equivalent work or a speedup','rows':rows},indent=2)+'\n')
+            rows.append({'source':current['source'],'ssr':current['ssr'],'map':current['map'],'baseContract':'explicit-refusal' if previous['output']['diagnostics'] else 'complete-module','headContract':'complete-module','baseMedianNs':before,'headMedianNs':after,'ratio':after/before,'counters':current['counters']})
+          (directory/'comparison.json').write_text(json.dumps({'scope':'same sources with raw before/head outcomes retained; ratios describe the observed contracts and do not claim equivalent work or a speedup','rows':rows},indent=2)+'\n')
           PYCODE
       - name: Existing JSX library contracts
         if: always()
