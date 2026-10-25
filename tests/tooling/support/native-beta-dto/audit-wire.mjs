@@ -23,6 +23,7 @@ const threads = new Map();
 const leaders = [];
 const exits = new Map();
 const records = [];
+const eofReads = [];
 const unhex = (value) => Buffer.from(value.replaceAll("\\x", ""), "hex");
 for (const file of files) {
   const tid = Number(file.split(".").at(-1));
@@ -66,6 +67,7 @@ for (const file of files) {
           ),
         );
     assert(data.length >= Number(count), `${file}:${index + 1}: truncated successful syscall`);
+    if (Number(count) === 0 && operation === "read") eofReads.push({ tid, fd: Number(fd), at });
     if (Number(count))
       records.push({
         at,
@@ -246,10 +248,20 @@ for (const [index, process] of native.entries()) {
       "Attached DerivedSnapshots must not use semantic API queries",
     );
   }
+  const lspClient = byFd.get(0).client.packets;
+  const lspServer = byFd.get(1).server.packets;
+  const shutdown = lspClient.filter((row) => row.method === "shutdown");
+  assert.equal(shutdown.length, 1, "Exactly one native shutdown request required");
+  assert(
+    lspServer.some((row) => row.id === shutdown[0].id && row.result === null),
+    "Whole shutdown ACK required",
+  );
   receipts.push({
     scope,
     nativeOwner: leader,
     nativeExit: exits.get(leader),
+    nativeStdinEof: eofReads.some((row) => owner(row.tid) === leader && row.fd === 0),
+    exitNotifications: lspClient.filter((row) => row.method === "exit").length,
     stderr: { file: stderrFile, bytes: stderr.length, sha256: hash(stderr) },
     streams: observations,
     compilerKindPackets: kindRows,
@@ -266,18 +278,59 @@ save("closed-full-wire.json", {
   leaders,
   owners: receipts,
 });
-// Keep terminal-state qualification separate from complete packet capture. A
-// standard-exit stderr remains a failed lifecycle even if the process exits 0.
-for (const receipt of receipts) {
-  assert.equal(receipt.nativeExit, 0, "Actual native owner must exit cleanly");
-  assert.equal(receipt.stderr.bytes, 0, "Nonempty native stderr refuses lifecycle qualification");
+// The immutable beta baseline is an expected-refusal observation. This never
+// grants functional or lifecycle PASS to its DTO refusal or standard-exit error.
+const baseline = source.role === "before" && provider.version === "7.1.0-beta";
+if (baseline) {
+  assert(
+    source.rows.every(
+      (row) =>
+        row.lower.refused ===
+        "Malformed getSemanticDiagnostics response: unknown field `endPosition`, expected one of `fileName`, `pos`, `end`, `code`, `category`, `text`, `messageChain`, `relatedInformation`, `reportsUnnecessary`, `reportsDeprecated`",
+    ),
+    "Expected actual old-source DTO refusal required",
+  );
+  let refused = 0;
+  for (const receipt of receipts) {
+    assert.equal(
+      receipt.exitNotifications,
+      1,
+      "Old source standard-exit boundary must remain observed",
+    );
+    const bytes = fs.readFileSync(path.join(root, receipt.stderr.file));
+    const clean = receipt.nativeExit === 0 && bytes.length === 0;
+    const known =
+      (receipt.nativeExit === 0 &&
+        bytes.equals(Buffer.from("error handling method 'exit': EOF\n"))) ||
+      (receipt.nativeExit === 1 && bytes.equals(Buffer.from("context canceled\n")));
+    assert(clean || known, "Unexpected baseline terminal state must fail observation");
+    if (known) refused++;
+  }
+  assert(refused > 0, "Expected baseline lifecycle refusal must be observed");
+} else {
+  for (const receipt of receipts) {
+    if (provider.version === "7.1.0-beta") {
+      assert.equal(
+        receipt.exitNotifications,
+        0,
+        "Candidate beta requires authenticated EOF-only shutdown",
+      );
+      assert.equal(receipt.nativeStdinEof, true, "Actual native beta stdin EOF must be observed");
+    }
+    assert.equal(receipt.nativeExit, 0, "Actual candidate/control native owner must exit cleanly");
+    assert.equal(receipt.stderr.bytes, 0, "Nonempty native stderr refuses lifecycle qualification");
+  }
 }
-console.log(
-  JSON.stringify({
-    source: source.source,
-    role: source.role,
-    sdk: provider.version,
-    nativeOwners: receipts.length,
-    allFramesClosed: true,
-  }),
-);
+const disposition = {
+  source: source.source,
+  role: source.role,
+  sdk: provider.version,
+  roleKind: baseline ? "baseline-observation-known-refusal" : "functional-source-control",
+  observerCompleted: true,
+  dtoFunctionalPass: !baseline,
+  lifecyclePass: !baseline,
+  nativeOwners: receipts.length,
+  allFramesClosed: true,
+};
+save("role-disposition.json", disposition);
+console.log(JSON.stringify(disposition));

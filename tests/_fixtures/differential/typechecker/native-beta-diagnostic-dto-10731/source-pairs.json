@@ -1,6 +1,6 @@
 {
   "beforeRevision": "13fa41356d075047a229f580014b637d3bbeb57f",
-  "candidateProductionRevision": "a0e92ca5488fd4f04dabd282f1e437a98a3061c5",
+  "candidateProductionRevision": "ec579d989b1f876c182732c739eaaca03013ac75",
   "production": [
     {
       "path": "crates/vize_canon/src/lsp_client/initial_diagnostics/diagnostic_response.rs",
@@ -30,22 +30,27 @@
     {
       "path": "crates/vize_canon/src/lsp_client/session/capabilities.rs",
       "beforeSha256": "62069a68aa113b6916743ac088019857a8240dd7c8dc4ec58bbb7f7f9927e61d",
-      "afterSha256": "25d31a29813a9ba77b16f3892ac854123509c170e1e1fdeac066360d4a90eed5"
+      "afterSha256": "bb3c3b9c16fb8d5f704346d70ac774af9fd50cf588cc2cb11d9fb3fc68cf2225"
     },
     {
       "path": "crates/vize_canon/src/lsp_client/editor_lsp/component_types.rs",
       "beforeSha256": "c1c86934e04476bfb2464934e906498b4ff95f03b68a08527a24a0cbc7c39c13",
       "afterSha256": "6f06efdc6cd759b462afdd05135abd1938e897097d9aa05377e39b1443660590"
+    },
+    {
+      "path": "crates/vize_canon/src/lsp_client/diagnostics/batch.rs",
+      "beforeSha256": "a811d38e73b75f1c75510bc27df1abe36fc2684efbffb8b3e46375ef798176f4",
+      "afterSha256": "9a9d768b9d8a622b90a831bcba3c3949c480ab450c81c097dc839da4d692fd98"
     }
   ],
   "producerFiles": [
     {
       "path": ".github/workflows/native-beta-diagnostic-dto.yml",
-      "sha256": "5c03be469bae24df9f11eb70e1ef5f0d3f78901d952f405467f88529bb21c8c5"
+      "sha256": "019557e2777688daa66971e45d43a2b4f3c5d34c9f0fe8e51cff5feb62a93ac7"
     },
     {
       "path": "tests/tooling/support/native-beta-dto/prepare-role.mjs",
-      "sha256": "c25cf37d6300decd1bb798b81cca5e74435c0a51b59375101076223af1650d3f"
+      "sha256": "e168dec0d8f5b7bbf83d5bc2938224473e5909e8513b05627ffbb4f5f6c38e14"
     },
     {
       "path": "tests/tooling/support/native-beta-dto/provider.mjs",
@@ -53,11 +58,11 @@
     },
     {
       "path": "tests/tooling/support/native-beta-dto/audit-wire.mjs",
-      "sha256": "9eb4bceb8ec4ad1ecc418073570b68b479efb219a08fa1b1053f5b936a503f51"
+      "sha256": "a678db7bbbf62959e3ab744ad459bc62c6eee61c24014296cae1a5b24631d56c"
     },
     {
       "path": "tests/tooling/support/native-beta-dto/run-source.mjs",
-      "sha256": "ba8db40816b172b5bc6ce0b4bc2bf2623e64a37562d0a733c0876f60a4f679e7"
+      "sha256": "c3fba7858f0f0bf0737111b8b339e0b8da1e675e0b069bd9f48cd11f5cf7355e"
     }
   ]
 }

@@ -21,6 +21,7 @@ use std::{
 
 const VALID: &str = "/*🧭é日本語\u{2028}\u{2029}*/\r\nexport const label: string = \"ok\";\r\nexport const length: number = label.length;\r\nexport const echo = label;\r\n";
 const NEIGHBOR: &str = "export const outside: string = 42;\r\n";
+const BEFORE_BETA_REFUSAL: &str = "Malformed getSemanticDiagnostics response: unknown field `endPosition`, expected one of `fileName`, `pos`, `end`, `code`, `category`, `text`, `messageChain`, `relatedInformation`, `reportsUnnecessary`, `reportsDeprecated`";
 
 #[test]
 #[ignore = "actual pinned 7.0.2/beta native source before/after Actions only"]
@@ -146,10 +147,7 @@ fn actual_sdk_semantic_error_repair_navigation_and_two_file_scope_are_complete()
                 let Err(message) = other else {
                     panic!("before beta must fail strict decoding, not claim unsupported")
                 };
-                assert!(
-                    message.contains("Malformed") && message.contains("unknown field"),
-                    "{message}"
-                );
+                assert_eq!(message.as_str(), BEFORE_BETA_REFUSAL);
                 json!({"refused":message})
             }
         };
@@ -233,12 +231,17 @@ fn actual_sdk_semantic_error_repair_navigation_and_two_file_scope_are_complete()
     std::fs::write(&source, VALID).unwrap();
     drop(client);
     drop(editor);
-    let attached = attached_overlay_packets(&runtime, &capture, expect_refusal);
-    let record = json!({"source":expected_source,"role":std::env::var("VIZE_NATIVE_DTO_ROLE").unwrap(),
+    let mut record = json!({"source":expected_source,"role":std::env::var("VIZE_NATIVE_DTO_ROLE").unwrap(),
         "observerSha256":hash(include_bytes!("native_beta.rs")),"testExecutable":test_exe,"testExecutableSha256":hash(&std::fs::read(&test_exe).unwrap()),
         "sdkVersion":expected_version,"sdkExecutable":executable,"sdkSha256":expected_hash,"dialect":dialect,
         "scope":"API-owned explicit disk/FileChanges snapshots; attached overlay view is independently tested below",
-        "root":root,"config":std::str::from_utf8(config_text).unwrap(),"neighbor":NEIGHBOR,"rows":rows,"attached":attached});
+        "root":root,"config":std::str::from_utf8(config_text).unwrap(),"neighbor":NEIGHBOR,"rows":rows});
+    std::fs::write(
+        capture.join("owned-api-packets.json"),
+        serde_json::to_vec_pretty(&record).unwrap(),
+    )
+    .unwrap();
+    record["attached"] = attached_overlay_packets(&runtime, &capture, expect_refusal);
     std::fs::write(
         capture.join("complete-source-packets.json"),
         serde_json::to_vec_pretty(&record).unwrap(),
@@ -253,8 +256,7 @@ fn actual_sdk_semantic_error_repair_navigation_and_two_file_scope_are_complete()
     );
 }
 
-// An unchanged requested file is insufficient evidence of an editor overlay
-// graph: its dependency can change while its own complete text stays equal.
+// An unchanged main file can import an unsaved dependency.
 fn attached_overlay_packets(
     runtime: &Path,
     capture: &Path,
@@ -388,7 +390,11 @@ fn attached_overlay_packets(
             .rename_via_editor_lsp(&main_uri, 2, 31, "renamedValue")
             .unwrap();
         assert_eq!(hover, direct_hover);
-        assert_eq!(completion, direct_completion);
+        // Go map order varies; retain both packets and compare whole multisets.
+        assert_eq!(
+            completion_multiset(&completion),
+            completion_multiset(&direct_completion)
+        );
         if !before_beta {
             assert_eq!(
                 references.as_ref().unwrap().as_ref().unwrap(),
@@ -404,19 +410,77 @@ fn attached_overlay_packets(
         rows.push(json!({"phase":phase,"mainText":MAIN,"supportOverlay":support,"apiEligible":api_eligible,
             "nativePull":direct,"selected":selected_packet,"hover":hover,"references":references.ok(),
             "directReferences":direct_references,"definition":definition.ok(),"directDefinition":direct_definition,
-            "completion":completion,"rename":rename,"directRename":direct_rename,"batch":batch}));
+            "completion":completion,"directCompletion":direct_completion,"rename":rename,"directRename":direct_rename,"batch":batch}));
+        std::fs::write(
+            capture.join("attached-overlay-progress.json"),
+            serde_json::to_vec_pretty(&rows).unwrap(),
+        )
+        .unwrap();
         assert_eq!(std::fs::read(&main_path).unwrap(), MAIN.as_bytes());
         assert_eq!(std::fs::read(&support_path).unwrap(), SUPPORT.as_bytes());
     }
+    // No original disk file: the batch must exercise a mapped identity.
+    let virtual_path = root.join("Virtual.vue.ts");
+    let virtual_uri = path_to_file_uri(&virtual_path);
+    const VIRTUAL: &str = "export const bad: number = \"x\";\r\n";
+    client.did_open(&virtual_uri, VIRTUAL).unwrap();
+    let mapped_virtual = client.session_document_uri(&virtual_uri);
+    assert_ne!(mapped_virtual, virtual_uri);
+    let documents = FxHashMap::from_iter([
+        (main_uri.clone(), MAIN.into()),
+        (virtual_uri.clone(), VIRTUAL.into()),
+    ]);
+    let virtual_pull = client
+        .diagnostics_via_editor_lsp(&virtual_uri, &documents)
+        .unwrap();
+    let DocumentDiagnosticReportResult::Report(DocumentDiagnosticReport::Full(ref pull)) =
+        virtual_pull
+    else {
+        panic!("whole virtual native pull required")
+    };
+    let virtual_expected = json!([{
+        "range":{"start":{"line":0,"character":13},"end":{"line":0,"character":16}},
+        "severity":1,"code":2322,"source":"ts","message":"Type 'string' is not assignable to type 'number'."
+    }]);
+    assert_eq!(
+        serde_json::to_value(&pull.full_document_diagnostic_report.items).unwrap(),
+        virtual_expected
+    );
+    let whole_batch = client.request_diagnostics_batch(&[main_uri.clone(), virtual_uri.clone()]);
+    if !before_beta {
+        let rows = whole_batch.as_ref().unwrap();
+        assert_eq!(rows.len(), 2);
+        assert_eq!(rows.first().unwrap().0, main_uri);
+        assert!(rows.first().unwrap().1.is_empty());
+        assert_eq!(rows.last().unwrap().0, virtual_uri);
+        assert_eq!(
+            serde_json::to_value(&rows.last().unwrap().1).unwrap(),
+            virtual_expected
+        );
+    }
+    assert!(!virtual_path.exists());
+    client.did_close(&virtual_uri).unwrap();
     client.did_close(&main_uri).unwrap();
     assert!(client.hover_raw(&main_uri, 2, 31).unwrap().is_none());
     client.shutdown().unwrap();
     let result = json!({"scope":"attached editor; main unchanged, dependency unsaved, original disk retained",
-        "root":root,"mainUri":main_uri,"supportUri":support_uri,"config":std::str::from_utf8(config).unwrap(),"rows":rows});
+        "root":root,"mainUri":main_uri,"supportUri":support_uri,"config":std::str::from_utf8(config).unwrap(),"rows":rows,
+        "materializedBatch":{"virtualUri":virtual_uri,"mappedUri":mapped_virtual,"source":VIRTUAL,"nativePull":virtual_pull,"selected":whole_batch}});
     std::fs::write(
         capture.join("attached-overlay-packets.json"),
         serde_json::to_vec_pretty(&result).unwrap(),
     )
     .unwrap();
+    result
+}
+
+pub(super) fn completion_multiset(packet: &serde_json::Value) -> serde_json::Value {
+    let mut result = packet.clone();
+    result
+        .get_mut("items")
+        .unwrap()
+        .as_array_mut()
+        .unwrap()
+        .sort_by_cached_key(|item| serde_json::to_vec(item).unwrap());
     result
 }
