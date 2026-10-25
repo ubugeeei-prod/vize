@@ -23,6 +23,12 @@ import {
   observeSharedApiTransitions,
 } from "./lsp-shared-api-campaign.mjs";
 
+import {
+  prepareOwnedShutdownCampaign,
+  assertOwnedShutdownPackets,
+} from "./lsp-owned-outer-shutdown-campaign.mjs";
+import { captureOwnedShutdownOrder } from "./lsp-owned-outer-shutdown-order.mjs";
+
 const write = (file, value) => fs.writeFileSync(file, JSON.stringify(value, null, 2) + "\n");
 const repoRoot = fs.realpathSync(
   path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../.."),
@@ -52,12 +58,16 @@ function exactHover(packet, source, token) {
 
 export async function observeSourceLspSelection({ campaign = "runtime-selection" } = {}) {
   assert.ok(
-    ["runtime-selection", "shared-api-reopen-702", "shared-api-reopen-original-702"].includes(
-      campaign,
-    ),
+    [
+      "runtime-selection",
+      "shared-api-reopen-702",
+      "shared-api-reopen-original-702",
+      "owned-outer-shutdown-10760",
+    ].includes(campaign),
   );
   const snapshotCampaign = campaign !== "runtime-selection";
   const extendedCampaign = campaign === "shared-api-reopen-702";
+  const ownedShutdownCampaign = campaign === "owned-outer-shutdown-10760";
   const source = sourceIdentity(repoRoot, import.meta.filename),
     providers = loadNativeProviders();
   assert.ok(providers.frozen702, "the separately installed qualified 7.0.2 provider is mandatory");
@@ -102,9 +112,11 @@ export async function observeSourceLspSelection({ campaign = "runtime-selection"
     providers,
     shutdownSourceSha256: sha256(Buffer.from(nativeSource)),
     profiles: [],
-    scope: snapshotCampaign
-      ? "Bounded canonical/alias TypeScript7.0.2 shared snapshot campaign. Default eight-profile runtime selection is separate; no generic source-session, socket or full-syscall coverage credit."
-      : "Real source CLI/LSP selection and complete authored packets. No published/editor/cache dispatch, generic source-session, blanket API or beta clean-exit credit.",
+    scope: ownedShutdownCampaign
+      ? "Closed source-owned shutdown campaign: original basic4-phase packets and every actual qualified702 SDK closure before outer ACK; no performance/native-rate/default8 credit."
+      : snapshotCampaign
+        ? "Bounded canonical/alias TypeScript7.0.2 shared snapshot campaign. Default eight-profile runtime selection is separate; no generic source-session, socket or full-syscall coverage credit."
+        : "Real source CLI/LSP selection and complete authored packets. No published/editor/cache dispatch, generic source-session, blanket API or beta clean-exit credit.",
   };
   const kinds = snapshotCampaign
     ? ["canonical-702", "alias-702"]
@@ -126,7 +138,10 @@ export async function observeSourceLspSelection({ campaign = "runtime-selection"
         providers,
       });
     const sharedCampaign = extendedCampaign ? prepareSharedApiCampaign(repoRoot, consumer) : null;
-    const sources = sharedCampaign?.sources ?? SOURCES;
+    const ownedCampaign = ownedShutdownCampaign
+      ? prepareOwnedShutdownCampaign(repoRoot, consumer)
+      : null;
+    const sources = ownedCampaign?.sources ?? sharedCampaign?.sources ?? SOURCES;
     const inputs = captureConsumerInputs(consumer),
       environment = runtimeChildEnvironment(
         process.env,
@@ -149,6 +164,7 @@ export async function observeSourceLspSelection({ campaign = "runtime-selection"
       ),
       phases: [],
       ...(sharedCampaign ? { snapshotCampaign: sharedCampaign.custody } : {}),
+      ...(ownedCampaign ? { ownedShutdownCampaign: ownedCampaign.custody } : {}),
     };
     const wire = new SourceLspWire({
       executable: source.executable,
@@ -290,6 +306,7 @@ export async function observeSourceLspSelection({ campaign = "runtime-selection"
         );
         profile.phases.push(phase);
       }
+      if (ownedCampaign) assertOwnedShutdownPackets(consumer, ownedCampaign, profile);
       if (sharedCampaign)
         await observeSharedApiTransitions({
           wire,
@@ -364,6 +381,18 @@ export async function observeSourceLspSelection({ campaign = "runtime-selection"
           consumer,
           knownContract,
         );
+        if (ownedCampaign)
+          profile.ownedShutdownOrder = captureOwnedShutdownOrder({
+            prefix: wire.prefix,
+            directory,
+            authority: executionAuthority(repoRoot, source, consumer, environment),
+            outer: profile.outer,
+            outerShutdown: profile.shutdown,
+            knownContract,
+            initializeRequest: ownedCampaign.initializeRequest,
+            workspace: consumer.workspace,
+            temporaryRoot: environment.TMPDIR ?? os.tmpdir(),
+          });
         profile.userWarnings = wire.events.filter(
           (event) =>
             event.direction === "server" &&

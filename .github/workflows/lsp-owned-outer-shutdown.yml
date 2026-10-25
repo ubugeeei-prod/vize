@@ -1,0 +1,79 @@
+name: Owned outer compiler shutdown
+on:
+  push:
+    branches: [verify/lsp-owned-shutdown-10760]
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - .github/workflows/lsp-owned-outer-shutdown.yml
+      - crates/vize_canon/src/corsa_bridge/bridge.rs
+      - crates/vize_maestro/src/server.rs
+      - crates/vize_maestro/src/server/handlers.rs
+      - crates/vize_maestro/src/server/shutdown/**
+      - crates/vize_maestro/src/server/shutdown.rs
+      - crates/vize_maestro/src/server/state/corsa.rs
+      - crates/vize_maestro/src/server/state/project_contexts/**
+      - tests/tooling/support/native-runtime-selection/lsp*.mjs
+      - tests/tooling/support/native-runtime-selection/providers.mjs
+      - tests/tooling/owned-editor-shutdown-*.test.mjs
+      - tests/tooling/native-runtime-selection-lsp-strace.test.mjs
+      - tests/_fixtures/differential/lsp/owned-outer-shutdown-10760/**
+  workflow_dispatch:
+permissions: { contents: read }
+concurrency:
+  group: owned-outer-shutdown-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  CARGO_TERM_COLOR: always
+  NODE_OPTIONS: --disable-warning=DEP0040 --disable-warning=DEP0169
+jobs:
+  source:
+    uses: ./.github/workflows/full-source-cli.yml
+  observe:
+    needs: source
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, cache: true, run-install: false }
+      - run: vp install --frozen-lockfile --prefer-offline
+      - uses: ./.github/actions/restore-source-cli
+        with: { producer: "${{ toJSON(needs.source.outputs) }}" }
+      - name: Preserve every strict TypeScript project and closed protocol controls
+        run: |
+          node --test tests/tooling/typescript-tooling-project.test.ts
+          node --test tests/tooling/owned-editor-shutdown-order.test.mjs tests/tooling/owned-editor-shutdown-fixtures.test.mjs tests/tooling/native-runtime-selection-lsp-strace.test.mjs
+      - name: Install official providers into fresh isolated roots
+        run: |
+          if ! command -v strace >/dev/null; then sudo apt-get update && sudo apt-get install --yes --no-install-recommends strace; fi
+          provider_root="$RUNNER_TEMP/owned-outer-shutdown-providers"
+          test ! -e "$provider_root"
+          mkdir -p "$provider_root"
+          npm install --prefix "$provider_root/beta" --ignore-scripts --no-audit --no-fund --save-exact --registry=https://registry.npmjs.org typescript@7.1.0-beta vue@3.5.44
+          npm install --prefix "$provider_root/six" --ignore-scripts --no-audit --no-fund --save-exact --registry=https://registry.npmjs.org typescript@6.0.3
+          npm install --prefix "$provider_root/frozen702" --ignore-scripts --no-audit --no-fund --save-exact --registry=https://registry.npmjs.org typescript@7.0.2 vue@3.5.44
+      - name: Require every initialized native owner to close before outer Shutdown ACK
+        env:
+          VIZE_REQUIRE_NATIVE_RUNTIME_SELECTION: "1"
+          VIZE_SOURCE_CLI: ${{ github.workspace }}/target/ci/vize
+          VIZE_NATIVE_BETA_ROOT: ${{ runner.temp }}/owned-outer-shutdown-providers/beta
+          VIZE_TYPESCRIPT_SIX_ROOT: ${{ runner.temp }}/owned-outer-shutdown-providers/six
+          VIZE_NATIVE_702_ROOT: ${{ runner.temp }}/owned-outer-shutdown-providers/frozen702
+          VIZE_TRACE_EDITOR_PREPARATION: "1"
+        run: |
+          export VIZE_NATIVE_STRACE="$(command -v strace)"
+          node tests/tooling/support/native-runtime-selection/lsp-owned-outer-shutdown.mjs
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: owned-outer-shutdown-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
+          path: |
+            target/vize-tests/owned-outer-shutdown-10760/**
+            target/ci/vize.differential-build.json
+            ${{ runner.temp }}/owned-outer-shutdown-providers/**/package.json
+            ${{ runner.temp }}/owned-outer-shutdown-providers/**/package-lock.json
+          if-no-files-found: error
+          retention-days: 7

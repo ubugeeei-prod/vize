@@ -1,0 +1,46 @@
+[
+  {
+    "position": {
+      "line": 2,
+      "character": 7
+    },
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\nconst value: number\n```"
+      },
+      "range": {
+        "start": {
+          "line": 2,
+          "character": 6
+        },
+        "end": {
+          "line": 2,
+          "character": 11
+        }
+      }
+    }
+  },
+  {
+    "position": {
+      "line": 5,
+      "character": 29
+    },
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\nconst doubled: number\n```"
+      },
+      "range": {
+        "start": {
+          "line": 5,
+          "character": 28
+        },
+        "end": {
+          "line": 5,
+          "character": 35
+        }
+      }
+    }
+  }
+]

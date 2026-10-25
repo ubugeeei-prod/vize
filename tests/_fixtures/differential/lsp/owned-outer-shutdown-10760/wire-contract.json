@@ -1,0 +1,245 @@
+{
+  "version": 1,
+  "id": "lsp/owned-outer-shutdown-10760",
+  "scope": "Whole source-inspected basic4-phase packet oracles for canonical/alias qualified702; every initialized SDK including metadata owner must complete actual Shutdown/ACK/currentInfo/stdinEOF/exit0 before outer Shutdown ACK. This fixture alone grants no source execution, performance, generic SDK, or native whole-product credit.",
+  "beforeWitness": {
+    "issue": 10760,
+    "sourceHead": "cf4da0816167cf55621ba9acd6bb096a072afd3c",
+    "sourceActor": "4e3dadf26448cf29d8fd65f83366b9b59d6b35b7",
+    "archiveSha256": "daf1a13dd582414a63ed551615deeb0044fd55d782b093e9172ee6b03a7b4582",
+    "aliasFinalSdk": 15690,
+    "shutdownRequests": 0,
+    "outerShutdownAckId": 10
+  },
+  "initializeRequest": {
+    "path": "initialize-request.json",
+    "sha256": "c0d486283ee731107235783f0d60816aab7aade6e6ad8f4ff9a882659ab5283a"
+  },
+  "initializerSource": {
+    "path": "crates/vize_canon/src/lsp_client/diagnostics_lsp.rs",
+    "sha256": "e6bcf16051e2cbcd3c65227f9d6c8d40bf457166c4469c8a95227b7687cb2a35"
+  },
+  "basic": {
+    "valid": {
+      "diagnostics": {
+        "jsonrpc": "2.0",
+        "method": "textDocument/publishDiagnostics",
+        "params": {
+          "uri": "${workspace}/src/App.vue",
+          "version": 1,
+          "diagnostics": []
+        }
+      },
+      "value": {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\nconst value: number\n```"
+          },
+          "range": {
+            "start": {
+              "line": 2,
+              "character": 6
+            },
+            "end": {
+              "line": 2,
+              "character": 11
+            }
+          }
+        }
+      },
+      "doubled": {
+        "jsonrpc": "2.0",
+        "id": 3,
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\nconst doubled: number\n```"
+          },
+          "range": {
+            "start": {
+              "line": 5,
+              "character": 28
+            },
+            "end": {
+              "line": 5,
+              "character": 35
+            }
+          }
+        }
+      }
+    },
+    "error": {
+      "diagnostics": {
+        "jsonrpc": "2.0",
+        "method": "textDocument/publishDiagnostics",
+        "params": {
+          "uri": "${workspace}/src/App.vue",
+          "version": 2,
+          "diagnostics": [
+            {
+              "code": 2322,
+              "message": "Type 'string' is not assignable to type 'number'.",
+              "range": {
+                "start": {
+                  "line": 2,
+                  "character": 6
+                },
+                "end": {
+                  "line": 2,
+                  "character": 11
+                }
+              },
+              "severity": 1,
+              "source": "vize/types"
+            }
+          ]
+        }
+      },
+      "value": {
+        "jsonrpc": "2.0",
+        "id": 4,
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\nconst value: number\n```"
+          },
+          "range": {
+            "start": {
+              "line": 2,
+              "character": 6
+            },
+            "end": {
+              "line": 2,
+              "character": 11
+            }
+          }
+        }
+      },
+      "doubled": {
+        "jsonrpc": "2.0",
+        "id": 5,
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\nconst doubled: number\n```"
+          },
+          "range": {
+            "start": {
+              "line": 5,
+              "character": 28
+            },
+            "end": {
+              "line": 5,
+              "character": 35
+            }
+          }
+        }
+      }
+    },
+    "repair": {
+      "diagnostics": {
+        "jsonrpc": "2.0",
+        "method": "textDocument/publishDiagnostics",
+        "params": {
+          "uri": "${workspace}/src/App.vue",
+          "version": 3,
+          "diagnostics": []
+        }
+      },
+      "value": {
+        "jsonrpc": "2.0",
+        "id": 6,
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\nconst value: number\n```"
+          },
+          "range": {
+            "start": {
+              "line": 2,
+              "character": 6
+            },
+            "end": {
+              "line": 2,
+              "character": 11
+            }
+          }
+        }
+      },
+      "doubled": {
+        "jsonrpc": "2.0",
+        "id": 7,
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\nconst doubled: number\n```"
+          },
+          "range": {
+            "start": {
+              "line": 5,
+              "character": 28
+            },
+            "end": {
+              "line": 5,
+              "character": 35
+            }
+          }
+        }
+      }
+    },
+    "reopen": {
+      "diagnostics": {
+        "jsonrpc": "2.0",
+        "method": "textDocument/publishDiagnostics",
+        "params": {
+          "uri": "${workspace}/src/App.vue",
+          "version": 4,
+          "diagnostics": []
+        }
+      },
+      "value": {
+        "jsonrpc": "2.0",
+        "id": 8,
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\nconst value: number\n```"
+          },
+          "range": {
+            "start": {
+              "line": 2,
+              "character": 6
+            },
+            "end": {
+              "line": 2,
+              "character": 11
+            }
+          }
+        }
+      },
+      "doubled": {
+        "jsonrpc": "2.0",
+        "id": 9,
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\nconst doubled: number\n```"
+          },
+          "range": {
+            "start": {
+              "line": 5,
+              "character": 28
+            },
+            "end": {
+              "line": 5,
+              "character": 35
+            }
+          }
+        }
+      }
+    }
+  }
+}
