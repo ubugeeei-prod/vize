@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -31,6 +32,20 @@ export type Transform = {
   extension: string;
   mappings: number[][];
   diagnostics: unknown[];
+  [key: string]: unknown;
+};
+export type GoldenPacket = {
+  label: string;
+  sourceSha256: string;
+  globalsSha256: string;
+  result: Transform;
+};
+export type PacketGoldens = {
+  schema: string;
+  version: number;
+  issue: number;
+  complete: boolean;
+  packets: GoldenPacket[];
   [key: string]: unknown;
 };
 export type Response = { jsonrpc: string; id: number; result?: Transform; error?: unknown };
@@ -172,6 +187,190 @@ export function assertErrorMappings(source: string, entry: GlobalCase, result: T
       entry.id,
     );
   }
+}
+
+export function assertWholeTransform(actual: Transform, expected: Transform) {
+  assert.equal(
+    JSON.stringify(actual),
+    JSON.stringify(expected),
+    "complete generated text, mapping order, directives and all opaque fields",
+  );
+}
+export function fullPacketMutations(golden: Transform, foreign: Transform) {
+  const changes: Array<(copy: Transform) => void> = [
+    (copy) => {
+      copy.text += "\n// unexpected code";
+    },
+    (copy) => {
+      copy.text = copy.text.replace("__ctx", "__bad");
+    },
+    (copy) => {
+      copy.mappings.pop();
+    },
+    (copy) => {
+      copy.mappings.push([...copy.mappings[0]]);
+    },
+    (copy) => {
+      copy.extension = ".foreign";
+    },
+    (copy) => {
+      copy.foreignField = true;
+    },
+    (copy) => {
+      copy.diagnostics = [{ code: 9999, message: "foreign" }];
+    },
+    (copy) => {
+      copy.diagnosticDirectives = { foreign: true };
+    },
+  ];
+  for (const index of [0, 1, 2, 3, 5])
+    for (const delta of [-1, 1])
+      changes.push((copy) => {
+        copy.mappings[0][index] += delta;
+      });
+  if ("diagnosticDirectives" in golden) {
+    changes.push((copy) => {
+      delete copy.diagnosticDirectives;
+    });
+    changes.push((copy) => {
+      const payload = copy.diagnosticDirectives as {
+        unusedExpectDirectiveDiagnostics: Array<{ code: number }>;
+      };
+      payload.unusedExpectDirectiveDiagnostics[0].code = 9999;
+    });
+    for (const index of [0, 1, 2, 3, 4, 5])
+      for (const delta of [-1, 1])
+        changes.push((copy) => {
+          const payload = copy.diagnosticDirectives as { directives: number[][] };
+          payload.directives[0][index] += delta;
+        });
+  }
+  for (const change of changes) {
+    const copy = structuredClone(golden);
+    change(copy);
+    assert.notEqual(
+      JSON.stringify(copy),
+      JSON.stringify(golden),
+      "negative control must actually change the packet",
+    );
+    assert.throws(() => assertWholeTransform(copy, golden));
+  }
+  assert.notEqual(JSON.stringify(foreign), JSON.stringify(golden));
+  assert.throws(
+    () => assertWholeTransform(foreign, golden),
+    "a different authored case cannot acquire this input's packet",
+  );
+}
+
+type AstNode = {
+  end: number;
+  text?: string;
+  expression?: AstNode;
+  name?: AstNode;
+  getStart(source: AstNode): number;
+};
+type AstCompiler = {
+  version: string;
+  ScriptTarget: { Latest: number };
+  ScriptKind: { TSX: number };
+  createSourceFile(
+    name: string,
+    text: string,
+    target: number,
+    parents: boolean,
+    kind: number,
+  ): AstNode;
+  isPropertyAccessExpression(node: AstNode): boolean;
+  isIdentifier(node: AstNode): boolean;
+  forEachChild(node: AstNode, visitor: (node: AstNode) => void): void;
+};
+export function assertCheckedReadOwnership(
+  source: string,
+  entry: GlobalCase,
+  result: Transform,
+  referencePackage: string,
+) {
+  const ts = createRequire(referencePackage)("typescript") as AstCompiler;
+  assert.equal(ts.version, "5.9.3");
+  const parsed = ts.createSourceFile(
+    "Globals.vue.tsx",
+    result.text,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX,
+  );
+  const reads: Array<{ name: string; start: number; length: number }> = [];
+  const visit = (node: AstNode) => {
+    if (
+      ts.isPropertyAccessExpression(node) &&
+      node.expression &&
+      ts.isIdentifier(node.expression) &&
+      ["__ctx", "__vize_strict_template_context"].includes(node.expression.text ?? "")
+    ) {
+      const name = node.name!;
+      const start = Buffer.byteLength(result.text.slice(0, name.getStart(parsed)));
+      reads.push({
+        name: name.text!,
+        start,
+        length: Buffer.byteLength(result.text.slice(name.getStart(parsed), name.end)),
+      });
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(parsed);
+  for (const error of entry.errors.filter((item) => item.kind === "undeclared")) {
+    const at = location(source, error.anchor, error.token);
+    const named = reads.filter((read) => read.name === error.token);
+    assert.equal(
+      named.length,
+      entry.errors.filter((item) => item.kind === "undeclared" && item.token === error.token)
+        .length,
+      entry.id,
+    );
+    assert.ok(
+      named.some((read) =>
+        result.mappings.some(
+          (span) =>
+            span[0] === read.start &&
+            span[1] === read.length &&
+            span[2] === at.byteStart &&
+            span[3] === at.byteLength,
+        ),
+      ),
+      `${entry.id}: the checked receiver property, not the alias declaration, owns this authored name`,
+    );
+  }
+  const lexical =
+    entry.id === "setup-shadow"
+      ? "$undeclared"
+      : ["loop-shadow", "slot-shadow"].includes(entry.id)
+        ? "$ghost"
+        : entry.id === "options-own-method"
+          ? "$local"
+          : undefined;
+  if (lexical)
+    assert.equal(
+      reads.filter((read) => read.name === lexical).length,
+      0,
+      `${entry.id}: lexical owner must not be rebound to the Vue instance`,
+    );
+}
+
+export function assertProtocolAdmission(responses: Response[], configFile: string) {
+  assert.deepEqual(responses[0], {
+    id: 1,
+    jsonrpc: "2.0",
+    result: { diagnosticSource: "vize", positionEncoding: "utf-8" },
+  });
+  const watchedFiles = [fs.realpathSync(configFile)];
+  assert.deepEqual(responses[1], {
+    id: 2,
+    jsonrpc: "2.0",
+    result: {
+      configIdentity: `vize-content-mapper-v1:${sha(JSON.stringify([{}, watchedFiles]))}`,
+      watchedFiles,
+    },
+  });
 }
 
 export function writeInputs(root: string, files: Map<string, string>) {

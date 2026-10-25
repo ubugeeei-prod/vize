@@ -37,3 +37,9 @@ packets, profiles and size observations before assertions. The first campaign is
 explicit discovery with no full-packet qualification credit: reviewed complete
 transform goldens and mutation controls must be added after the actual capture.
 No performance claim follows from the individual timings.
+
+The provisional `source-packets.json` records only 20 unchanged LF transforms from
+the first source capture. Its `complete: false` flag prevents final qualification.
+These objects are byte-exact evidence of the earlier producer, including the
+complete directive payload; all final inputs must be recaptured after the inline
+instance-read fix. No workspace-root or generated-code normalization is used.

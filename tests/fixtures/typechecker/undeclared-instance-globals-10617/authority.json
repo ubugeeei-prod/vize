@@ -48,6 +48,16 @@
       "path": "reference/package.json.txt",
       "bytes": 200,
       "sha256": "c6dc02275332ea46b7748ebc83757f069a1bee6d93383dea31f86c64ae3c6906"
+    },
+    {
+      "path": "source-packets.json",
+      "bytes": 386286,
+      "sha256": "bb2434fbf6d0f73165b5da6fc5674495c64727a4a0c19dcf09c01635d94d2cb9"
+    },
+    {
+      "path": "README.md",
+      "bytes": 2980,
+      "sha256": "6d1890bb1a2185cfcd00cc68c77da47f9564f7df0cddcd574c97145208a2a3ac"
     }
   ]
 }

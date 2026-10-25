@@ -8,6 +8,11 @@ import { repoRoot } from "../_helpers/realworld-patch.ts";
 import { resolveVizeLaunchCommand } from "./support/lsp/launch.ts";
 import {
   assertErrorMappings,
+  assertCheckedReadOwnership,
+  assertProtocolAdmission,
+  assertWholeTransform,
+  fullPacketMutations,
+  type PacketGoldens,
   compilerRows,
   decodeFrames,
   expectedHost,
@@ -35,13 +40,26 @@ test("10617 retains the original reported files, exact beta host and closed fram
   const packet = { jsonrpc: "2.0", id: 1, result: { text: "日本語🍣\r\n", mappings: [] } };
   assert.deepEqual(decodeFrames(frame(packet).toString()), [packet]);
   assert.throws(() => decodeFrames(frame(packet).subarray(0, -1).toString()));
+  if (files.has("source-packets.json")) {
+    const golden = JSON.parse(files.get("source-packets.json")!) as PacketGoldens;
+    assert.equal(golden.schema, "vize.instance-global-complete-transforms");
+    fullPacketMutations(
+      golden.packets[0].result,
+      golden.packets.find((row) => row.label === "lf/loop-shadow")!.result,
+    );
+    const directivePacket = golden.packets.find((row) => "diagnosticDirectives" in row.result)!;
+    fullPacketMutations(directivePacket.result, golden.packets[0].result);
+  }
 });
 
 await test(
   "real beta mapper rejects undeclared instance globals without widening declared or lexical owners",
   {
     skip:
-      !process.env.VIZE_TEST_BIN && process.env.VIZE_TEST_GLOBALS_REQUIRED !== "1"
+      !process.env.VIZE_TEST_BIN &&
+      !process.env.VIZE_LSP_BIN &&
+      process.env.VIZE_TEST_GLOBALS_REQUIRED !== "1" &&
+      process.env.VIZE_LSP_REQUIRE_SOURCE_BUILD !== "1"
         ? "requires the exact-source consumer campaign"
         : false,
     timeout: 600_000,
@@ -51,8 +69,9 @@ await test(
       process.env.VIZE_TEST_GLOBALS_OUTPUT ??
       path.join(repoRoot, "target/differential/instance-globals-10617");
     fs.mkdirSync(output, { recursive: true });
-    assert.ok(process.env.VIZE_TEST_BIN);
-    const [binary] = resolveVizeLaunchCommand(undefined, process.env.VIZE_TEST_BIN, {
+    const requestedBinary = process.env.VIZE_TEST_BIN ?? process.env.VIZE_LSP_BIN;
+    assert.ok(requestedBinary, "source CLI required; no fallback or silent acceptance");
+    const [binary] = resolveVizeLaunchCommand(undefined, requestedBinary, {
       required: true,
       repoRoot,
       onVerifiedLaunch(launch) {
@@ -63,6 +82,9 @@ await test(
       },
     });
     const { authority, files, cases } = readGlobalsFixture();
+    const golden = files.has("source-packets.json")
+      ? (JSON.parse(files.get("source-packets.json")!) as PacketGoldens)
+      : undefined;
     const published = path.join(output, "published"),
       reference = path.join(output, "reference"),
       source = path.join(output, "source");
@@ -168,7 +190,12 @@ await test(
           }),
         ),
       ];
-      const sourceCases: Array<{ id: number; source: string; entry: (typeof cases)[number] }> = [];
+      const sourceCases: Array<{
+        id: number;
+        label: string;
+        source: string;
+        entry: (typeof cases)[number];
+      }> = [];
       let id = 3;
       for (const [variant, newline, unicode] of [
         ["lf", "\n", false],
@@ -255,7 +282,7 @@ await test(
               }),
             ),
           );
-          sourceCases.push({ id: id++, source: content, entry });
+          sourceCases.push({ id: id++, source: content, entry, label });
           if (["original", "valid", "undeclared-only", "repaired"].includes(entry.id))
             faithful.push(() => {
               const rows = compilerRows(beta.stdout);
@@ -398,12 +425,33 @@ await test(
         responses.map(({ jsonrpc, id: responseId, error }) => [jsonrpc, responseId, error ?? null]),
         Array.from({ length: id - 1 }, (_, index) => ["2.0", index + 1, null]),
       );
+      assertProtocolAdmission(responses, path.join(source, "tsconfig.json"));
+      assertProtocolAdmission(
+        decodeFrames(publicWire.stdout),
+        path.join(published, "tsconfig.json"),
+      );
       for (const row of sourceCases) {
         const result = responses.find((packet) => packet.id === row.id)!.result!;
         checks.push({
           id: `protocol/${row.id}/${row.entry.id}`,
           run() {
             assertErrorMappings(row.source, row.entry, result);
+            assertCheckedReadOwnership(
+              row.source,
+              row.entry,
+              result,
+              path.join(reference, "package.json"),
+            );
+          },
+        });
+        checks.push({
+          id: `whole-packet/${row.label}`,
+          run() {
+            const expected = golden?.packets.find((item) => item.label === row.label);
+            assert.ok(expected, `complete transform golden required for ${row.label}`);
+            assert.equal(expected.sourceSha256, sha(row.source));
+            assert.equal(expected.globalsSha256, sha(row.entry.globals));
+            assertWholeTransform(result, expected.result);
           },
         });
         sizes.push({
@@ -445,16 +493,24 @@ await test(
       );
       for (const check of faithful) check();
       const discoveryOnly = process.env.VIZE_TEST_GLOBALS_DISCOVERY === "1";
+      const failures = outcomes.filter(({ outcome }) => outcome === "gap");
+      const wholePacketQualification =
+        !discoveryOnly &&
+        golden?.complete === true &&
+        golden.packets.length === sourceCases.length &&
+        failures.length === 0;
       fs.writeFileSync(
         path.join(output, "qualification.json"),
-        `${JSON.stringify({ status: discoveryOnly ? "discovery-only; no acceptance credit" : "semantic-and-selected-mapping-only; complete-golden-pending", fullPacketQualification: false, outcomes }, null, 2)}\n`,
+        `${JSON.stringify({ status: discoveryOnly ? "discovery-only; no acceptance credit" : wholePacketQualification ? "qualified" : "unqualified", fullPacketQualification: wholePacketQualification, outcomes }, null, 2)}\n`,
       );
-      if (!discoveryOnly)
-        assert.deepEqual(
-          outcomes.filter(({ outcome }) => outcome === "gap"),
-          [],
-          "whole beta/native/protocol gaps; raw packets retained",
+      if (!discoveryOnly) {
+        assert.equal(
+          wholePacketQualification,
+          true,
+          "all complete transform goldens, semantic and mapping proofs are required",
         );
+        assert.deepEqual(failures, [], "whole beta/native/protocol gaps; raw packets retained");
+      }
     } finally {
       for (const root of [published, reference, source])
         fs.rmSync(path.join(root, "node_modules"), { recursive: true, force: true });
