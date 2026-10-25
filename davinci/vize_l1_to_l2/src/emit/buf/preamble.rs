@@ -50,9 +50,12 @@ impl Buf {
                     preamble.push_str(" as ");
                     preamble.push_str(helper.alias());
                 }
-                preamble.push_str(" } from \"");
-                preamble.push_str(options.runtime_module_name);
-                preamble.push_str("\"\n");
+                preamble.push_str(" } from ");
+                vize_l0::js_string::push_js_string_literal(
+                    &mut preamble,
+                    options.runtime_module_name,
+                );
+                preamble.push('\n');
             }
         }
         let imports_len = preamble.len();

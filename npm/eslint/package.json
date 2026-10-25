@@ -1,0 +1,69 @@
+{
+  "name": "eslint-plugin-vize",
+  "version": "0.474.0",
+  "description": "Native Vue lint rules for ESLint",
+  "keywords": [
+    "eslint",
+    "eslintplugin",
+    "lint",
+    "vize",
+    "vue"
+  ],
+  "homepage": "https://github.com/ubugeeei-prod/vize",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei-prod/vize",
+    "directory": "npm/eslint"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "test": "vp pack && node --test test/consumer.test.mjs",
+    "check": "vp check src vite.config.ts",
+    "check:fix": "vp check --fix src vite.config.ts"
+  },
+  "dependencies": {
+    "@typescript-eslint/parser": "8.72.0",
+    "oxlint-plugin-vize": "workspace:*",
+    "vue-eslint-parser": "10.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:typescript",
+    "@vizejs/native": "workspace:*",
+    "eslint": "10.13.0",
+    "typescript": "catalog:typescript",
+    "vite-plus": "catalog:vite-stack"
+  },
+  "peerDependencies": {
+    "eslint": "^10.0.0",
+    "typescript": ">=4.8.4 <6.1.0"
+  },
+  "engines": {
+    "node": "^22.13.0 || >=24"
+  },
+  "metadata": {
+    "vize": {
+      "stability": "experimental",
+      "stabilityDocs": "https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#package-support-tiers"
+    }
+  }
+}

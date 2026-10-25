@@ -1,0 +1,598 @@
+{
+  "schema": "vize.css.compile-source-map.public-before",
+  "version": 1,
+  "scope": "Published 0.571.0 missing-map reproduction and immutable complete non-map output oracle; no source-head qualification.",
+  "packages": [
+    {
+      "name": "@vizejs/native",
+      "version": "0.571.0",
+      "tarball": "https://registry.npmjs.org/@vizejs/native/-/native-0.571.0.tgz",
+      "integrity": "sha512-XFdgq0UOPozFdIwxXl4SmzJ/xW56Owo2hbp2kgMXg9XnnPyl0sZkynsO8jaOmAY8JZClQp69H9+3n4+pCvIaRQ==",
+      "archiveSha256": "9c28110bb6c60580dc0be2d8ec74520bf29419e11038133af595391cf0185917",
+      "retainedFile": "package/index.js",
+      "fileSha256": "39efc6c3a18d4ef39232d0fcc713c11114a29bef8c8942cdb8492ae9d939ebec"
+    },
+    {
+      "name": "@vizejs/native-darwin-arm64",
+      "version": "0.571.0",
+      "tarball": "https://registry.npmjs.org/@vizejs/native-darwin-arm64/-/native-darwin-arm64-0.571.0.tgz",
+      "integrity": "sha512-o6n7fLmFqt3d1/RE2zCuvfZBqflMecV5Q0JA4cMQRii9Ysdfazr9UqBU/d++Bp4mFsD8hsHy/RcnWEAayMgEqQ==",
+      "archiveSha256": "3ea9ab11d4bdf850f80507ebd14b987d470197a8d739e4e26b4d2d7ffc1386ee",
+      "retainedFile": "package/vize-vitrine.darwin-arm64.node",
+      "fileSha256": "7817eb27dfa1708a59e19eebf8052eb42dc840313289d4719572ab032d1cd24d"
+    }
+  ],
+  "buildToken": "4a833c6793600c1f36aada2e025c9e84",
+  "captures": [
+    {
+      "id": "plain-lf",
+      "source": ".a { color: red }\n.b { opacity: .5 }",
+      "options": {
+        "minify": false
+      },
+      "output": {
+        "code": ".a {\n  color: red;\n}\n\n.b {\n  opacity: .5;\n}\n",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "plain-lf",
+      "source": ".a { color: red }\n.b { opacity: .5 }",
+      "options": {
+        "minify": true
+      },
+      "output": {
+        "code": ".a{color:red}.b{opacity:.5}",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "unicode-crlf",
+      "source": "\r\n.雪😀 { color: red }\r\n.b{opacity:0.5}",
+      "options": {
+        "filename": "/fixture/组件 space'\"&😀.css",
+        "minify": false
+      },
+      "output": {
+        "code": ".雪😀 {\n  color: red;\n}\n\n.b {\n  opacity: .5;\n}\n",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "unicode-crlf",
+      "source": "\r\n.雪😀 { color: red }\r\n.b{opacity:0.5}",
+      "options": {
+        "filename": "/fixture/组件 space'\"&😀.css",
+        "minify": true
+      },
+      "output": {
+        "code": ".雪😀{color:red}.b{opacity:.5}",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "same-line-astral",
+      "source": ".雪😀{content:'雪😀'}.b{opacity:.5}",
+      "options": {
+        "filename": "../雪😀/input.css",
+        "minify": false
+      },
+      "output": {
+        "code": ".雪😀 {\n  content: \"雪😀\";\n}\n\n.b {\n  opacity: .5;\n}\n",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "same-line-astral",
+      "source": ".雪😀{content:'雪😀'}.b{opacity:.5}",
+      "options": {
+        "filename": "../雪😀/input.css",
+        "minify": true
+      },
+      "output": {
+        "code": ".雪😀{content:\"雪😀\"}.b{opacity:.5}",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "escaped-comments",
+      "source": "/*!雪😀\r\n*/.\\31 a{content:'雪😀'}.终{opacity:.5}",
+      "options": {
+        "filename": "file:///fixture/雪😀.css",
+        "minify": false
+      },
+      "output": {
+        "code": "/*!雪😀\r\n*/\n.\\31 a {\n  content: \"雪😀\";\n}\n\n.终 {\n  opacity: .5;\n}\n",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "escaped-comments",
+      "source": "/*!雪😀\r\n*/.\\31 a{content:'雪😀'}.终{opacity:.5}",
+      "options": {
+        "filename": "file:///fixture/雪😀.css",
+        "minify": true
+      },
+      "output": {
+        "code": "/*!雪😀\r\n*/\n.\\31 a{content:\"雪😀\"}.终{opacity:.5}",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "modules-unicode",
+      "source": ".雪😀{color:red}.b{opacity:.5}",
+      "options": {
+        "filename": "/src/组件.css",
+        "cssModules": true,
+        "minify": false
+      },
+      "output": {
+        "code": "._5Z-TYW_雪😀 {\n  color: red;\n}\n\n._5Z-TYW_b {\n  opacity: .5;\n}\n",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "modules-unicode",
+      "source": ".雪😀{color:red}.b{opacity:.5}",
+      "options": {
+        "filename": "/src/组件.css",
+        "cssModules": true,
+        "minify": true
+      },
+      "output": {
+        "code": "._5Z-TYW_雪😀{color:red}._5Z-TYW_b{opacity:.5}",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "keyframes",
+      "source": "@keyframes spin{from{opacity:0}to{opacity:1}}.box{animation:spin 1s}",
+      "options": {
+        "filename": "keyframes.css",
+        "minify": false
+      },
+      "output": {
+        "code": "@keyframes spin {\n  from {\n    opacity: 0;\n  }\n\n  to {\n    opacity: 1;\n  }\n}\n\n.box {\n  animation: 1s spin;\n}\n",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "keyframes",
+      "source": "@keyframes spin{from{opacity:0}to{opacity:1}}.box{animation:spin 1s}",
+      "options": {
+        "filename": "keyframes.css",
+        "minify": true
+      },
+      "output": {
+        "code": "@keyframes spin{0%{opacity:0}to{opacity:1}}.box{animation:1s spin}",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "assets-properties",
+      "source": ".a{--theme:blue;color:var(--theme);background:url('../雪😀 space.png')}.b{opacity:1}",
+      "options": {
+        "filename": "asset input.css",
+        "minify": false
+      },
+      "output": {
+        "code": ".a {\n  --theme: blue;\n  color: var(--theme);\n  background: url(\"../雪😀 space.png\");\n}\n\n.b {\n  opacity: 1;\n}\n",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "assets-properties",
+      "source": ".a{--theme:blue;color:var(--theme);background:url('../雪😀 space.png')}.b{opacity:1}",
+      "options": {
+        "filename": "asset input.css",
+        "minify": true
+      },
+      "output": {
+        "code": ".a{--theme:blue;color:var(--theme);background:url(\"../雪😀 space.png\")}.b{opacity:1}",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "targets",
+      "source": ".a{user-select:none;display:flex}.b{appearance:none}",
+      "options": {
+        "filename": "/src/targets.css",
+        "targets": {
+          "safari": 12
+        },
+        "minify": false
+      },
+      "output": {
+        "code": ".a {\n  user-select: none;\n  display: flex;\n}\n\n.b {\n  appearance: none;\n}\n",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "targets",
+      "source": ".a{user-select:none;display:flex}.b{appearance:none}",
+      "options": {
+        "filename": "/src/targets.css",
+        "targets": {
+          "safari": 12
+        },
+        "minify": true
+      },
+      "output": {
+        "code": ".a{-webkit-user-select:none;user-select:none;display:flex}.b{-webkit-appearance:none;appearance:none}",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "custom-media",
+      "source": "@custom-media --narrow (width < 30em);@media (--narrow){.a{color:red}}",
+      "options": {
+        "filename": "custom.css",
+        "customMedia": true,
+        "minify": false
+      },
+      "output": {
+        "code": "@custom-media --narrow (width < 30em);\n\n@media (--narrow) {\n  .a {\n    color: red;\n  }\n}\n",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "custom-media",
+      "source": "@custom-media --narrow (width < 30em);@media (--narrow){.a{color:red}}",
+      "options": {
+        "filename": "custom.css",
+        "customMedia": true,
+        "minify": true
+      },
+      "output": {
+        "code": "@custom-media --narrow (width<30em);@media (--narrow){.a{color:red}}",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "import",
+      "source": "@import \"./雪😀.css\";.a{color:red}",
+      "options": {
+        "filename": "/fixture/import.css",
+        "minify": false
+      },
+      "output": {
+        "code": "@import \"./雪😀.css\";\n\n.a {\n  color: red;\n}\n",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "import",
+      "source": "@import \"./雪😀.css\";.a{color:red}",
+      "options": {
+        "filename": "/fixture/import.css",
+        "minify": true
+      },
+      "output": {
+        "code": "@import \"./雪😀.css\";.a{color:red}",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "scope-inactive",
+      "source": ".a{color:red}",
+      "options": {
+        "scoped": true,
+        "minify": false
+      },
+      "output": {
+        "code": ".a {\n  color: red;\n}\n",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "scope-inactive",
+      "source": ".a{color:red}",
+      "options": {
+        "scoped": true,
+        "minify": true
+      },
+      "output": {
+        "code": ".a{color:red}",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "scoped-flat",
+      "source": "\r\n.box { color: red }\r\n",
+      "options": {
+        "filename": "/fixture/组件 space.vue",
+        "scoped": true,
+        "scopeId": "data-v-123abc",
+        "minify": false
+      },
+      "output": {
+        "code": ".box[data-v-123abc] {\n  color: red;\n}\n",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "scoped-flat",
+      "source": "\r\n.box { color: red }\r\n",
+      "options": {
+        "filename": "/fixture/组件 space.vue",
+        "scoped": true,
+        "scopeId": "data-v-123abc",
+        "minify": true
+      },
+      "output": {
+        "code": ".box[data-v-123abc]{color:red}",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "scoped-nested",
+      "source": ".host{& .child{color:red}}",
+      "options": {
+        "scoped": true,
+        "scopeId": "data-v-123abc",
+        "minify": false
+      },
+      "output": {
+        "code": ".host .child[data-v-123abc] {\n  color: red;\n}\n",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "scoped-nested",
+      "source": ".host{& .child{color:red}}",
+      "options": {
+        "scoped": true,
+        "scopeId": "data-v-123abc",
+        "minify": true
+      },
+      "output": {
+        "code": ".host .child[data-v-123abc]{color:red}",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "scoped-slotted",
+      "source": ":slotted(.a){color:red}",
+      "options": {
+        "scoped": true,
+        "scopeId": "data-v-123abc",
+        "minify": false
+      },
+      "output": {
+        "code": ".a[data-v-123abc-s] {\n  color: red;\n}\n",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "scoped-slotted",
+      "source": ":slotted(.a){color:red}",
+      "options": {
+        "scoped": true,
+        "scopeId": "data-v-123abc",
+        "minify": true
+      },
+      "output": {
+        "code": ".a[data-v-123abc-s]{color:red}",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "v-bind",
+      "source": ".a{color:v-bind(theme)}.b{color:blue}",
+      "options": {
+        "scopeId": "data-v-123abc",
+        "minify": false
+      },
+      "output": {
+        "code": ".a {\n  color: var(--123abc-theme);\n}\n\n.b {\n  color: #00f;\n}\n",
+        "cssVars": ["theme"],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "v-bind",
+      "source": ".a{color:v-bind(theme)}.b{color:blue}",
+      "options": {
+        "scopeId": "data-v-123abc",
+        "minify": true
+      },
+      "output": {
+        "code": ".a{color:var(--123abc-theme)}.b{color:#00f}",
+        "cssVars": ["theme"],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "empty",
+      "source": "",
+      "options": {
+        "minify": false
+      },
+      "output": {
+        "code": "\n",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "empty",
+      "source": "",
+      "options": {
+        "minify": true
+      },
+      "output": {
+        "code": "",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "comment",
+      "source": "/*comment*/",
+      "options": {
+        "minify": false
+      },
+      "output": {
+        "code": "\n",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "comment",
+      "source": "/*comment*/",
+      "options": {
+        "minify": true
+      },
+      "output": {
+        "code": "",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "invalid",
+      "source": ".a{color:",
+      "options": {
+        "minify": false
+      },
+      "output": {
+        "code": ".a {\n  color: ;\n}\n",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "invalid",
+      "source": ".a{color:",
+      "options": {
+        "minify": true
+      },
+      "output": {
+        "code": ".a{color:}",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "guarded",
+      "source": "a{opacity:sign(-50%)}",
+      "options": {
+        "minify": false
+      },
+      "output": {
+        "code": "a{opacity:sign(-50%)}",
+        "cssVars": [],
+        "errors": [
+          "CSS parse error: unsupported math function in a percentage context (upstream lightningcss defect; see vize issue #3295)"
+        ],
+        "warnings": []
+      }
+    },
+    {
+      "id": "guarded",
+      "source": "a{opacity:sign(-50%)}",
+      "options": {
+        "minify": true
+      },
+      "output": {
+        "code": "a{opacity:sign(-50%)}",
+        "cssVars": [],
+        "errors": [
+          "CSS parse error: unsupported math function in a percentage context (upstream lightningcss defect; see vize issue #3295)"
+        ],
+        "warnings": []
+      }
+    },
+    {
+      "id": "embedded-map",
+      "source": ".a{color:red}/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm90aGVyLnNjc3MiXSwic291cmNlc0NvbnRlbnQiOlsiLnNvdXJjZXtjb2xvcjpyZWR9Il0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBIn0= */",
+      "options": {
+        "minify": false
+      },
+      "output": {
+        "code": ".a {\n  color: red;\n}\n",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "embedded-map",
+      "source": ".a{color:red}/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm90aGVyLnNjc3MiXSwic291cmNlc0NvbnRlbnQiOlsiLnNvdXJjZXtjb2xvcjpyZWR9Il0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBIn0= */",
+      "options": {
+        "minify": true
+      },
+      "output": {
+        "code": ".a{color:red}",
+        "cssVars": [],
+        "errors": [],
+        "warnings": []
+      }
+    }
+  ]
+}

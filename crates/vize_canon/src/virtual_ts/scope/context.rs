@@ -73,6 +73,7 @@ impl ComponentBindingCheck<'_> {
 
 /// Context for recursive scope generation, bundling shared parameters.
 pub(crate) struct ScopeGenContext<'a, 'template> {
+    pub(super) inference_prelude: Option<&'a RefCell<super::root_owner_packets::RootOwnerBuffer>>,
     pub(crate) summary: &'a Croquis,
     pub(crate) virtual_ts_options: &'a VirtualTsOptions,
     pub(crate) expressions_by_scope: &'a FxHashMap<u32, Vec<&'a vize_croquis::TemplateExpression>>,
@@ -98,6 +99,8 @@ pub(crate) struct ScopeGenContext<'a, 'template> {
 }
 
 pub(crate) struct ScopeGenerationOptions<'a, 'template> {
+    pub(crate) diagnostic_ownership:
+        Option<&'a crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector>,
     pub(crate) generic_parameters:
         Option<&'a crate::virtual_ts::generic_parameters::GenericParameters>,
     pub(crate) check_options: VirtualTsCheckOptions,
@@ -188,7 +191,11 @@ pub(super) struct EventHandlerExprContext<'a> {
     pub(super) indent: &'a str,
 }
 
+#[derive(Clone, Copy)]
 pub(super) struct ComponentPropsContext<'a, 'template> {
+    pub(super) inference_prelude: Option<&'a RefCell<super::root_owner_packets::RootOwnerBuffer>>,
+    pub(crate) diagnostic_ownership:
+        Option<&'a crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector>,
     pub(super) summary: &'a Croquis,
     pub(super) template_ast: Option<&'a vize_relief::RootNode<'template>>,
     pub(super) template_source: Option<&'a str>,
@@ -228,6 +235,8 @@ impl<'a> ComponentPropsContext<'a, '_> {
             &self.summary.scopes,
         )
         .with_model_modifiers(self.model_modifiers)
+        .with_diagnostic_ownership(self.diagnostic_ownership)
+        .with_expected_packet(self.inference_prelude.is_some())
     }
 }
 

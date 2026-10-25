@@ -1,0 +1,4 @@
+<script setup lang="ts">
+import Widget from '@scope/dynamic'
+void Widget
+</script>
