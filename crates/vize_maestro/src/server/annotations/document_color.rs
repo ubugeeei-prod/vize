@@ -19,6 +19,7 @@
     reason = "lsp_types fields store std String"
 )]
 
+pub(super) mod hover;
 mod named;
 mod scan;
 

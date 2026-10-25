@@ -22,6 +22,9 @@ pub(super) fn apply(
     setup_range: Range<usize>,
     source_type: SourceType,
     file_literal: &str,
+    diagnostic_ownership: Option<
+        &crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector,
+    >,
 ) -> bool {
     if serde_json::from_str::<String>(file_literal).is_err() {
         return false;
@@ -136,6 +139,11 @@ pub(super) fn apply(
     edits.dedup();
     let introduced_import = edits.iter().any(|(_, _, route)| *route);
     for (at, text, _) in edits {
+        if let Some(collector) = diagnostic_ownership {
+            collector
+                .borrow_mut()
+                .note_generated_insertion(at, text.len());
+        }
         output.mapping.note_generated_replacement(at, 0, text.len());
         output.code.insert_str(at, &text);
     }

@@ -8,9 +8,15 @@ import { appendFileSync } from "node:fs";
 import { changedPaths } from "./plan-source-checks.ts";
 import { newLanguageProjectCases } from "./language-project-fixtures.ts";
 import {
+  newCompilerCssApiCases,
+  onlyCompilerCssChanges,
+} from "../../../../tests/differential/compiler-css-api.ts";
+import {
   nativeShutdownProtocolSource,
   newNativeShutdownProtocolCases,
 } from "./native-shutdown-protocol-fixtures.ts";
+
+import { newNativeRuntimeCases } from "./native-runtime-fixtures.ts";
 
 /** PRs opened before this (just after the gate merged) stay report-only. */
 export const GATE_SINCE = "2026-10-20T06:00:00Z";
@@ -60,6 +66,8 @@ interface Manifest {
   cases?: ManifestCase[];
   protocolCases?: unknown;
   languageProjectCases?: unknown;
+  runtimeCases?: unknown;
+  cssApiCases?: unknown;
 }
 
 const manifestPath = (product: Product) => `tests/_fixtures/differential/${product}/manifest.json`;
@@ -208,21 +216,40 @@ function checkProduct(
             readFile,
           )
         : { ids: [] as string[], sources: new Set<string>() };
+    const runtime = newNativeRuntimeCases(
+      product,
+      before?.runtimeCases,
+      manifest.runtimeCases,
+      readFile,
+    );
+    const productPaths = paths.filter((path) =>
+      path.startsWith(product === "linter" ? "crates/vize_patina/src/" : "crates/vize_canon/src/"),
+    );
     const batchRequired =
-      product !== "typechecker" ||
-      canonPaths.some(
-        (path) => !languageProject.sources.has(path) && !nativeShutdownProtocolSource(path),
-      );
+      product === "linter" || product === "typechecker"
+        ? productPaths.some(
+            (path) =>
+              !runtime.sources.has(path) &&
+              !languageProject.sources.has(path) &&
+              !(product === "typechecker" && nativeShutdownProtocolSource(path)),
+          )
+        : true;
     const protocols =
       product === "typechecker"
         ? newNativeShutdownProtocolCases(before?.protocolCases, manifest.protocolCases, readFile)
         : [];
+    const cssApi =
+      product === "compiler"
+        ? newCompilerCssApiCases(before?.cssApiCases, manifest.cssApiCases, readFile)
+        : [];
+    const cssOnly = product === "compiler" && cssApi.length > 0 && onlyCompilerCssChanges(paths);
     const registered =
-      (!batchRequired || cases.length > 0) && (!protocolRequired || protocols.length > 0);
+      (cssOnly || !batchRequired || cases.length > 0) &&
+      (!protocolRequired || protocols.length > 0);
     return {
       product,
       state: registered ? "new-inputs-registered" : "new-input-missing",
-      cases: [...cases, ...protocols, ...languageProject.ids],
+      cases: [...cases, ...protocols, ...runtime.ids, ...cssApi, ...languageProject.ids],
     };
   } catch (error) {
     return { product, state: "invalid-manifest-or-input", cases: [], reason: String(error) };
@@ -286,10 +313,17 @@ export function formatSummary(report: LegacyFixReport, enforce: boolean): string
   return `${lines.join("\n")}\n`;
 }
 
-function gitFile(revision: string, path: string): Buffer | null {
-  const result = spawnSync("git", ["show", `${revision}:${path}`], { encoding: "buffer" });
+export function gitFixtureFile(revision: string, path: string, cwd = process.cwd()): Buffer | null {
+  const result = spawnSync("git", ["show", `${revision}:${path}`], { cwd, encoding: "buffer" });
   if (result.status === 0) return result.stdout;
-  if (result.stderr.toString().includes("does not exist")) return null;
+  // New files can exist in the checkout while being absent from the baseline.
+  // Inspect the actual tree, rather than matching localized Git stderr. An
+  // unreadable revision/tree/blob remains an error instead of becoming absence.
+  const tree = spawnSync("git", ["ls-tree", "-z", revision, "--", path], {
+    cwd,
+    encoding: "buffer",
+  });
+  if (tree.status === 0 && tree.stdout.length === 0) return null;
   throw new Error(`git show failed for ${revision}:${path}: ${result.stderr.toString()}`);
 }
 
@@ -304,7 +338,7 @@ if (process.argv[1]?.endsWith("/report-legacy-fix-fixtures.ts")) {
   const report = analyzeLegacyFix({
     title: process.env.PR_TITLE ?? "",
     paths: changedPaths(base, head),
-    readFile: (side, path) => gitFile(side === "base" ? base : head, path),
+    readFile: (side, path) => gitFixtureFile(side === "base" ? base : head, path),
   });
   const enforce = enforced(process.env.PR_CREATED_AT);
   const summary = formatSummary(report, enforce);

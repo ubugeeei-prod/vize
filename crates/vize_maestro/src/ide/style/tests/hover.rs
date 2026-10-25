@@ -1,6 +1,30 @@
 use super::{Document, documentation, hover_documentation, item};
 
 #[test]
+fn named_color_hover_keeps_the_whole_packet_with_a_stylesheet_example() {
+    let document = Document::css(".demo { color: re|d; }", false);
+    let hover = super::super::hover(&document.context(), 0).unwrap();
+    let expected = serde_json::json!({
+        "contents": {
+            "kind": "markdown",
+            "value": concat!(
+                "**red**\n\n_CSS value for color_\n\n#ff0000\n\n**Example**\n\n",
+                "```css\n.example {\n  color: red;\n}\n```\n\n",
+                "**Property syntax**\n\n```css\n<color>\n```\n\n**Docs**\n\n",
+                "[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)",
+                "\n\n**Docs**\n\n",
+                "[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+            )
+        },
+        "range": {
+            "start": { "line": 2, "character": 15 },
+            "end": { "line": 2, "character": 18 }
+        }
+    });
+    assert_eq!(serde_json::to_value(hover).unwrap(), expected);
+}
+
+#[test]
 fn real_sfc_property_value_pseudo_and_at_rule_hovers_match_selected_completion_docs() {
     for (needle, offset, label, source) in [
         ("display: flex", 3, "display", "Properties/display"),

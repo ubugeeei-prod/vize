@@ -1,0 +1,776 @@
+{
+  "schema": "vize.css-color-hover.expected-current",
+  "version": 1,
+  "historicalInputSha256": "abe5753a99c3356c9625ec466a4a71ef438d72b23328e10f7707535a5892b25a",
+  "contractOrigin": "Explicit complete current hover packets for #10572; only sixteen existing named-color Example fences gain stylesheet rule context; historical input/colors/presentations stay frozen",
+  "rows": [
+    {
+      "language": "default",
+      "newline": "LF",
+      "sourceSha256": "0a5d9c9f5e8bb3b60fe24654d1525a349bcb1da27ac7656b75d861deae2b5f67",
+      "results": [
+        {
+          "contents": {
+            "kind": "markdown",
+            "value": "**color**\n\n_CSS property_\n\nSets the color of an element's text\n\n**Syntax**\n\n```css\n<color>\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+          },
+          "range": {
+            "end": {
+              "character": 7,
+              "line": 4
+            },
+            "start": {
+              "character": 2,
+              "line": 4
+            }
+          }
+        },
+        null,
+        null,
+        null,
+        null,
+        {
+          "contents": {
+            "kind": "markdown",
+            "value": "**red**\n\n_CSS value for outline-color_\n\n#ff0000\n\n**Example**\n\n```css\n.example {\n  outline-color: red;\n}\n```\n\n**Property syntax**\n\n```css\nauto | <color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color)"
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "language": "default",
+      "newline": "CRLF",
+      "sourceSha256": "8b5da7dff7eeb6241f156b9a3544200be61fcb039800054304f0c437a9a239a0",
+      "results": [
+        {
+          "contents": {
+            "kind": "markdown",
+            "value": "**color**\n\n_CSS property_\n\nSets the color of an element's text\n\n**Syntax**\n\n```css\n<color>\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+          },
+          "range": {
+            "end": {
+              "character": 7,
+              "line": 4
+            },
+            "start": {
+              "character": 2,
+              "line": 4
+            }
+          }
+        },
+        null,
+        null,
+        null,
+        null,
+        {
+          "contents": {
+            "kind": "markdown",
+            "value": "**red**\n\n_CSS value for outline-color_\n\n#ff0000\n\n**Example**\n\n```css\n.example {\n  outline-color: red;\n}\n```\n\n**Property syntax**\n\n```css\nauto | <color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color)"
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "language": "css",
+      "newline": "LF",
+      "sourceSha256": "f6b3d25acd31fad802a48c1f8a476a88d1d5e977ed28831b46bd475487073e1d",
+      "results": [
+        {
+          "contents": {
+            "kind": "markdown",
+            "value": "**color**\n\n_CSS property_\n\nSets the color of an element's text\n\n**Syntax**\n\n```css\n<color>\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+          },
+          "range": {
+            "end": {
+              "character": 7,
+              "line": 4
+            },
+            "start": {
+              "character": 2,
+              "line": 4
+            }
+          }
+        },
+        null,
+        null,
+        null,
+        null,
+        {
+          "contents": {
+            "kind": "markdown",
+            "value": "**red**\n\n_CSS value for outline-color_\n\n#ff0000\n\n**Example**\n\n```css\n.example {\n  outline-color: red;\n}\n```\n\n**Property syntax**\n\n```css\nauto | <color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color)"
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "language": "css",
+      "newline": "CRLF",
+      "sourceSha256": "8414b7a6a0dadcede8f83094e83ceb27f6d2728e7963999eb58c851d89d7a4d2",
+      "results": [
+        {
+          "contents": {
+            "kind": "markdown",
+            "value": "**color**\n\n_CSS property_\n\nSets the color of an element's text\n\n**Syntax**\n\n```css\n<color>\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+          },
+          "range": {
+            "end": {
+              "character": 7,
+              "line": 4
+            },
+            "start": {
+              "character": 2,
+              "line": 4
+            }
+          }
+        },
+        null,
+        null,
+        null,
+        null,
+        {
+          "contents": {
+            "kind": "markdown",
+            "value": "**red**\n\n_CSS value for outline-color_\n\n#ff0000\n\n**Example**\n\n```css\n.example {\n  outline-color: red;\n}\n```\n\n**Property syntax**\n\n```css\nauto | <color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color)"
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "language": "scss",
+      "newline": "LF",
+      "sourceSha256": "513c4e9f81f6011546cf66bcb2992a29b66adfa6ea42c907c5e54f32d12c25cc",
+      "results": [
+        {
+          "contents": {
+            "kind": "markdown",
+            "value": "**color**\n\n_CSS property_\n\nSets the color of an element's text\n\n**Syntax**\n\n```css\n<color>\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+          },
+          "range": {
+            "end": {
+              "character": 7,
+              "line": 4
+            },
+            "start": {
+              "character": 2,
+              "line": 4
+            }
+          }
+        },
+        null,
+        null,
+        null,
+        null,
+        {
+          "contents": {
+            "kind": "markdown",
+            "value": "**red**\n\n_CSS value for outline-color_\n\n#ff0000\n\n**Example**\n\n```css\n.example {\n  outline-color: red;\n}\n```\n\n**Property syntax**\n\n```css\nauto | <color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color)"
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "language": "scss",
+      "newline": "CRLF",
+      "sourceSha256": "4be26bfbefa52dc1173b906bcc82bdd29e7a39a4147db28ab232d4669b2c856a",
+      "results": [
+        {
+          "contents": {
+            "kind": "markdown",
+            "value": "**color**\n\n_CSS property_\n\nSets the color of an element's text\n\n**Syntax**\n\n```css\n<color>\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+          },
+          "range": {
+            "end": {
+              "character": 7,
+              "line": 4
+            },
+            "start": {
+              "character": 2,
+              "line": 4
+            }
+          }
+        },
+        null,
+        null,
+        null,
+        null,
+        {
+          "contents": {
+            "kind": "markdown",
+            "value": "**red**\n\n_CSS value for outline-color_\n\n#ff0000\n\n**Example**\n\n```css\n.example {\n  outline-color: red;\n}\n```\n\n**Property syntax**\n\n```css\nauto | <color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color)"
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "language": "less",
+      "newline": "LF",
+      "sourceSha256": "48f5eed333662cb8215083896ebd257a2c9a8deee5c945543e8a02725d22f42d",
+      "results": [
+        {
+          "contents": {
+            "kind": "markdown",
+            "value": "**color**\n\n_CSS property_\n\nSets the color of an element's text\n\n**Syntax**\n\n```css\n<color>\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+          },
+          "range": {
+            "end": {
+              "character": 7,
+              "line": 4
+            },
+            "start": {
+              "character": 2,
+              "line": 4
+            }
+          }
+        },
+        null,
+        null,
+        null,
+        null,
+        {
+          "contents": {
+            "kind": "markdown",
+            "value": "**red**\n\n_CSS value for outline-color_\n\n#ff0000\n\n**Example**\n\n```css\n.example {\n  outline-color: red;\n}\n```\n\n**Property syntax**\n\n```css\nauto | <color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color)"
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "language": "less",
+      "newline": "CRLF",
+      "sourceSha256": "4b08ad4685dfc954e09d9781f89fceef50513bf1f2f2d15ea6f18064fc43e341",
+      "results": [
+        {
+          "contents": {
+            "kind": "markdown",
+            "value": "**color**\n\n_CSS property_\n\nSets the color of an element's text\n\n**Syntax**\n\n```css\n<color>\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+          },
+          "range": {
+            "end": {
+              "character": 7,
+              "line": 4
+            },
+            "start": {
+              "character": 2,
+              "line": 4
+            }
+          }
+        },
+        null,
+        null,
+        null,
+        null,
+        {
+          "contents": {
+            "kind": "markdown",
+            "value": "**red**\n\n_CSS value for outline-color_\n\n#ff0000\n\n**Example**\n\n```css\n.example {\n  outline-color: red;\n}\n```\n\n**Property syntax**\n\n```css\nauto | <color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color)"
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "language": "postcss",
+      "newline": "LF",
+      "sourceSha256": "d438b3ae6064de6068e49d3f13d3f29cbac9d26fe4a328b0ef3268dd52645633",
+      "results": [
+        {
+          "contents": {
+            "kind": "markdown",
+            "value": "**color**\n\n_CSS property_\n\nSets the color of an element's text\n\n**Syntax**\n\n```css\n<color>\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+          },
+          "range": {
+            "end": {
+              "character": 7,
+              "line": 4
+            },
+            "start": {
+              "character": 2,
+              "line": 4
+            }
+          }
+        },
+        null,
+        null,
+        null,
+        null,
+        {
+          "contents": {
+            "kind": "markdown",
+            "value": "**red**\n\n_CSS value for outline-color_\n\n#ff0000\n\n**Example**\n\n```css\n.example {\n  outline-color: red;\n}\n```\n\n**Property syntax**\n\n```css\nauto | <color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color)"
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "language": "postcss",
+      "newline": "CRLF",
+      "sourceSha256": "8239f4c5bb4c724c5d648191031d093a128ddc42d134e9c30d7abc0f3a8ccf44",
+      "results": [
+        {
+          "contents": {
+            "kind": "markdown",
+            "value": "**color**\n\n_CSS property_\n\nSets the color of an element's text\n\n**Syntax**\n\n```css\n<color>\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+          },
+          "range": {
+            "end": {
+              "character": 7,
+              "line": 4
+            },
+            "start": {
+              "character": 2,
+              "line": 4
+            }
+          }
+        },
+        null,
+        null,
+        null,
+        null,
+        {
+          "contents": {
+            "kind": "markdown",
+            "value": "**red**\n\n_CSS value for outline-color_\n\n#ff0000\n\n**Example**\n\n```css\n.example {\n  outline-color: red;\n}\n```\n\n**Property syntax**\n\n```css\nauto | <color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color)"
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "language": "sass",
+      "newline": "LF",
+      "sourceSha256": "0c474e1a909ac0d7370e0c7be7b953964a00535b89efbd86526227ef9f3247e4",
+      "results": [
+        {
+          "contents": {
+            "kind": "markdown",
+            "value": "**color**\n\n_CSS property_\n\nSets the color of an element's text\n\n**Syntax**\n\n```css\n<color>\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+          },
+          "range": {
+            "end": {
+              "character": 7,
+              "line": 4
+            },
+            "start": {
+              "character": 2,
+              "line": 4
+            }
+          }
+        },
+        null,
+        null,
+        null,
+        null,
+        {
+          "contents": {
+            "kind": "markdown",
+            "value": "**red**\n\n_CSS value for outline-color_\n\n#ff0000\n\n**Example**\n\n```css\n.example {\n  outline-color: red;\n}\n```\n\n**Property syntax**\n\n```css\nauto | <color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color)"
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "language": "sass",
+      "newline": "CRLF",
+      "sourceSha256": "82973d3fdfe87b351665c114ac3c3c83640a694024d23ad1062add31fb847ef2",
+      "results": [
+        {
+          "contents": {
+            "kind": "markdown",
+            "value": "**color**\n\n_CSS property_\n\nSets the color of an element's text\n\n**Syntax**\n\n```css\n<color>\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+          },
+          "range": {
+            "end": {
+              "character": 7,
+              "line": 4
+            },
+            "start": {
+              "character": 2,
+              "line": 4
+            }
+          }
+        },
+        null,
+        null,
+        null,
+        null,
+        {
+          "contents": {
+            "kind": "markdown",
+            "value": "**red**\n\n_CSS value for outline-color_\n\n#ff0000\n\n**Example**\n\n```css\n.example {\n  outline-color: red;\n}\n```\n\n**Property syntax**\n\n```css\nauto | <color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color)"
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "language": "stylus",
+      "newline": "LF",
+      "sourceSha256": "e8ec85c399c022fd2c25498bb59dfa9e60367632ec2401f5deb94edd0bff0f5e",
+      "results": [
+        {
+          "contents": {
+            "kind": "markdown",
+            "value": "**color**\n\n_CSS property_\n\nSets the color of an element's text\n\n**Syntax**\n\n```css\n<color>\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+          },
+          "range": {
+            "end": {
+              "character": 7,
+              "line": 4
+            },
+            "start": {
+              "character": 2,
+              "line": 4
+            }
+          }
+        },
+        null,
+        null,
+        null,
+        null,
+        {
+          "contents": {
+            "kind": "markdown",
+            "value": "**red**\n\n_CSS value for outline-color_\n\n#ff0000\n\n**Example**\n\n```css\n.example {\n  outline-color: red;\n}\n```\n\n**Property syntax**\n\n```css\nauto | <color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color)"
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "language": "stylus",
+      "newline": "CRLF",
+      "sourceSha256": "2e97a1082ee0e1c69b68335c1df9579ddd27f140b1ec849771a1052dba47a75e",
+      "results": [
+        {
+          "contents": {
+            "kind": "markdown",
+            "value": "**color**\n\n_CSS property_\n\nSets the color of an element's text\n\n**Syntax**\n\n```css\n<color>\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+          },
+          "range": {
+            "end": {
+              "character": 7,
+              "line": 4
+            },
+            "start": {
+              "character": 2,
+              "line": 4
+            }
+          }
+        },
+        null,
+        null,
+        null,
+        null,
+        {
+          "contents": {
+            "kind": "markdown",
+            "value": "**red**\n\n_CSS value for outline-color_\n\n#ff0000\n\n**Example**\n\n```css\n.example {\n  outline-color: red;\n}\n```\n\n**Property syntax**\n\n```css\nauto | <color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color)"
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "language": "styl",
+      "newline": "LF",
+      "sourceSha256": "7afce4c6ffd385bb33205b9f46958462862657eb974d834100c974533b17d013",
+      "results": [
+        {
+          "contents": {
+            "kind": "markdown",
+            "value": "**color**\n\n_CSS property_\n\nSets the color of an element's text\n\n**Syntax**\n\n```css\n<color>\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+          },
+          "range": {
+            "end": {
+              "character": 7,
+              "line": 4
+            },
+            "start": {
+              "character": 2,
+              "line": 4
+            }
+          }
+        },
+        null,
+        null,
+        null,
+        null,
+        {
+          "contents": {
+            "kind": "markdown",
+            "value": "**red**\n\n_CSS value for outline-color_\n\n#ff0000\n\n**Example**\n\n```css\n.example {\n  outline-color: red;\n}\n```\n\n**Property syntax**\n\n```css\nauto | <color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color)"
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "language": "styl",
+      "newline": "CRLF",
+      "sourceSha256": "b773bc858fd1db0ae7ffe751ea5fc27a79b31e07e64cb25ff9392e228a48ec2c",
+      "results": [
+        {
+          "contents": {
+            "kind": "markdown",
+            "value": "**color**\n\n_CSS property_\n\nSets the color of an element's text\n\n**Syntax**\n\n```css\n<color>\n```\n\n**Baseline (catalog snapshot)**\n\nWidely available; interoperable since 2015-07-29; widely available since 2018-01-29\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color)"
+          },
+          "range": {
+            "end": {
+              "character": 7,
+              "line": 4
+            },
+            "start": {
+              "character": 2,
+              "line": 4
+            }
+          }
+        },
+        null,
+        null,
+        null,
+        null,
+        {
+          "contents": {
+            "kind": "markdown",
+            "value": "**red**\n\n_CSS value for outline-color_\n\n#ff0000\n\n**Example**\n\n```css\n.example {\n  outline-color: red;\n}\n```\n\n**Property syntax**\n\n```css\nauto | <color>\n```\n\n**Docs**\n\n[MDN CSS named colors](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color)\n\n**Docs**\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/outline-color)"
+          },
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 7
+            },
+            "start": {
+              "character": 17,
+              "line": 7
+            }
+          }
+        },
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "language": "unknown",
+      "newline": "LF",
+      "sourceSha256": "22bd8bb68fd78da93b72913786b8fc54b1019f7bd2bcdc26c02e52671abedbbd",
+      "results": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "language": "unknown",
+      "newline": "CRLF",
+      "sourceSha256": "e1371d0ced80e3ff5ecd56b95f410204ef543404d332bbba3cce2cfaf15fda0e",
+      "results": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    }
+  ]
+}

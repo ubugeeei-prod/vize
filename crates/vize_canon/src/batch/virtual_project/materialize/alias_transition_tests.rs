@@ -91,7 +91,13 @@ fn editor_union_replaces_external_link_with_owned_workspace_alias() {
     let preserved = FxHashMap::from_iter([(alias.virtual_dir.clone(), external)]);
 
     let snapshot = project
-        .materialize_editor_union(&FxHashSet::default(), &preserved, &[], false)
+        .materialize_editor_union(
+            &Default::default(),
+            &FxHashSet::default(),
+            &preserved,
+            &[],
+            false,
+        )
         .unwrap();
     assert_eq!(
         snapshot.package_links().get(&alias.virtual_dir),
@@ -123,7 +129,13 @@ fn editor_union_still_rejects_distinct_owned_alias_targets() {
     );
     let preserved = FxHashMap::from_iter([(alias.virtual_dir.clone(), other_target)]);
     let error = project
-        .materialize_editor_union(&FxHashSet::default(), &preserved, &[], false)
+        .materialize_editor_union(
+            &Default::default(),
+            &FxHashSet::default(),
+            &preserved,
+            &[],
+            false,
+        )
         .unwrap_err();
     assert!(
         error

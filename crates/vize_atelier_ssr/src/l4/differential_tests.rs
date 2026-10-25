@@ -154,6 +154,7 @@ fn selection_in_context(
         &SsrL4Request {
             options,
             experimental,
+            runtime_module_name: "vue",
             template_syntax: TemplateSyntaxMode::Standard,
             has_custom_elements: false,
             context,

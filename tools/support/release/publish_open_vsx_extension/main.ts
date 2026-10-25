@@ -9,6 +9,8 @@ import {
   envIntAtLeast,
   jsonHasExtensionVersion,
   readExtensionInfo,
+  readExtensionTarget,
+  extensionTargetMatches,
   type ExtensionInfo,
 } from "../editor_extension_info.ts";
 import { parseJson, stringMember } from "../ordered_json.ts";
@@ -17,10 +19,12 @@ async function extensionVersionIsVisible(
   publisher: string,
   name: string,
   version: string,
+  target: string,
 ): Promise<boolean> {
   // The exact-version API returns the version directly. `ovsx get --metadata`
   // now returns `allVersions`, which is not the `versions` array checked below.
-  const url = `https://open-vsx.org/api/${publisher}/${name}/${version}`;
+  const targetPath = target === "universal" ? "" : `${target}/`;
+  const url = `https://open-vsx.org/api/${publisher}/${name}/${targetPath}${version}`;
   const { status, stdout } = await collectOutput("curl", [
     "--fail",
     "--silent",
@@ -32,17 +36,19 @@ async function extensionVersionIsVisible(
   if (body === "") return false;
   const parsed = parseJson(body);
   if (parsed === undefined) return false;
-  if (stringMember(parsed, "version") === version) return true;
-  return jsonHasExtensionVersion(parsed, version);
+  if (stringMember(parsed, "version") === version && extensionTargetMatches(parsed, target))
+    return true;
+  return jsonHasExtensionVersion(parsed, version, target);
 }
 
 async function waitForExtensionVisibility(
   info: ExtensionInfo,
   maxAttempts: number,
   delaySeconds: number,
+  target: string,
 ): Promise<boolean> {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    if (await extensionVersionIsVisible(info.publisher, info.name, info.version)) {
+    if (await extensionVersionIsVisible(info.publisher, info.name, info.version, target)) {
       println(`${info.extensionId} ${info.version} is visible in Open VSX.`);
       return true;
     }
@@ -85,6 +91,8 @@ export async function publishOpenVsxExtension(args: readonly string[]): Promise<
   const packageJsonPath = resolvePath(args.length === 2 ? args[1] : "editors/vscode/package.json");
   const extensionInfo = readExtensionInfo(packageJsonPath);
   if (extensionInfo === null) return 1;
+  const target = readExtensionTarget();
+  if (target === null) return 1;
   const vpBin = nonEmptyEnv("VP_BIN") ?? "vp";
   const resolutionAttempts = envIntAtLeast("PUBLISH_RESOLUTION_RETRY_LIMIT", 1, 24);
   const resolutionDelaySeconds = envIntAtLeast("PUBLISH_RESOLUTION_RETRY_DELAY", 0, 10);
@@ -93,6 +101,7 @@ export async function publishOpenVsxExtension(args: readonly string[]): Promise<
       extensionInfo.publisher,
       extensionInfo.name,
       extensionInfo.version,
+      target,
     )
   ) {
     println(
@@ -112,7 +121,14 @@ export async function publishOpenVsxExtension(args: readonly string[]): Promise<
     "publish",
     resolvePath(args[0]),
   ]);
-  if (await waitForExtensionVisibility(extensionInfo, resolutionAttempts, resolutionDelaySeconds)) {
+  if (
+    await waitForExtensionVisibility(
+      extensionInfo,
+      resolutionAttempts,
+      resolutionDelaySeconds,
+      target,
+    )
+  ) {
     if (exitCode !== 0) {
       println(
         `${extensionInfo.extensionId} ${extensionInfo.version} was published despite a non-zero ovsx publish exit.`,
