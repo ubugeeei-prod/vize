@@ -105,6 +105,7 @@ jobs:
           cargo test --locked --profile ci -p vize --test integration --no-run --message-format=json > "$directory/after-build.jsonl" 2> "$directory/after-build.stderr"
           cargo test --locked --profile ci -p vize_canon --lib --no-run --message-format=json >> "$directory/after-build.jsonl" 2>> "$directory/after-build.stderr"
       - name: Preserve the head executable images
+        id: sealed_head
         run: node tools/support/github/typed-context-undefined-replay.mjs seal "$RUNNER_TEMP/typed-context-undefined" after
       - name: Require full raw native mapper CLI and option outcomes
         working-directory: source
@@ -128,6 +129,8 @@ jobs:
       - name: Verify whole packets and exact generated-prefix mapping deltas
         run: node tools/support/github/typed-context-undefined-replay.mjs verify "$RUNNER_TEMP/typed-context-undefined"
       - name: Require the complete legacy editor projection matrix
+        # Capture this independent oracle even when another observed contract fails.
+        if: ${{ always() && steps.sealed_head.outcome == 'success' }}
         working-directory: source
         env:
           VIZE_TEMPLATE_EMIT_TS40_CAPTURE: ${{ runner.temp }}/typed-context-undefined/legacy-ts40
