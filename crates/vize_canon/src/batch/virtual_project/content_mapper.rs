@@ -143,6 +143,22 @@ pub fn generate_vue_content_mapper_transform_with_options(
     content: &str,
     transform_options: ContentMapperTransformOptions,
 ) -> CorsaResult<ContentMapperTransform> {
+    generate_vue_content_mapper_transform_with_project_options(
+        path,
+        content,
+        transform_options,
+        None,
+    )
+}
+
+/// Generate a transform using configuration admitted when the host opened the project.
+/// The borrowed router root performs no configuration reads during transformation.
+pub fn generate_vue_content_mapper_transform_with_project_options(
+    path: &Path,
+    content: &str,
+    transform_options: ContentMapperTransformOptions,
+    typed_router_root: Option<&Path>,
+) -> CorsaResult<ContentMapperTransform> {
     let authored_content = content;
     let authored = crate::authored_sfc::AuthoredSfc::new(content);
     let content = authored.analyzed();
@@ -188,7 +204,7 @@ pub fn generate_vue_content_mapper_transform_with_options(
         &virtual_ts_options,
         VueCodegenOptions {
             check_options: transform_options.virtual_ts_check_options(),
-            typed_router_root: None,
+            typed_router_root,
             preserve_unused_diagnostics: transform_options.preserve_unused_diagnostics,
             options_api: transform_options.options_api(),
             preserve_authored_component: true,

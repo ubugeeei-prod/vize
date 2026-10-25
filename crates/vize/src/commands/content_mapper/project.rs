@@ -8,7 +8,7 @@
 //! `optionDiagnostics` addressed into the entry's options object instead of
 //! failing the request, so TypeScript can surface them in the tsconfig.
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
@@ -23,9 +23,10 @@ const OPTION_CODE_UNKNOWN_OPTION: i32 = 2;
 const OPTION_CODE_INVALID_TYPE: i32 = 3;
 
 /// Mapper settings resolved when TypeScript opens a project.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 pub(super) struct ProjectSettings {
     pub transform_options: ContentMapperTransformOptions,
+    pub typed_router_root: Option<PathBuf>,
 }
 
 /// Open mapper projects, keyed by the host-assigned opaque handle.
@@ -43,8 +44,8 @@ impl ProjectRegistry {
         self.projects.remove(handle);
     }
 
-    pub fn settings(&self, handle: &str) -> Option<ProjectSettings> {
-        self.projects.get(handle).copied()
+    pub fn settings(&self, handle: &str) -> Option<&ProjectSettings> {
+        self.projects.get(handle)
     }
 }
 
@@ -98,8 +99,14 @@ pub(super) struct OpenProjectResult {
 pub(super) fn resolve_open_project(
     params: &OpenProjectParams,
 ) -> Result<(ProjectSettings, OpenProjectResult), CorsaError> {
-    let configuration =
-        ContentMapperProjectConfiguration::load(Path::new(params.config_file_name.as_str()))?;
+    let empty_compiler_options = serde_json::Map::new();
+    let configuration = ContentMapperProjectConfiguration::load_with_compiler_options(
+        Path::new(params.config_file_name.as_str()),
+        params
+            .compiler_options
+            .as_object()
+            .unwrap_or(&empty_compiler_options),
+    )?;
     let mut options_api = true;
     let mut no_unused_locals = false;
     let mut check_javascript = false;
@@ -137,6 +144,7 @@ pub(super) fn resolve_open_project(
     }
     Ok((
         ProjectSettings {
+            typed_router_root: configuration.typed_router_root().map(Path::to_path_buf),
             transform_options: configuration
                 .transform_options
                 .with_options_api(options_api)

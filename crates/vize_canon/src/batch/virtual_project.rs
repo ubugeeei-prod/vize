@@ -36,6 +36,7 @@ pub use content_mapper::{
     ContentMapperDiagnosticDirectives, ContentMapperSemanticLink, ContentMapperSpan,
     ContentMapperTransform, ContentMapperTransformOptions, ContentMapperUnusedExpectDiagnostic,
     generate_vue_content_mapper_transform, generate_vue_content_mapper_transform_with_options,
+    generate_vue_content_mapper_transform_with_project_options,
 };
 pub use content_mapper_config::ContentMapperProjectConfiguration;
 mod cache_gc;

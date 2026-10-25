@@ -9,6 +9,10 @@ on:
         description: "Qualify both Vize-owned event rename targets with exact upstream tsgo"
         type: boolean
         default: false
+      router-experimental-only:
+        description: "Qualify explicit experimental Router project context with the pinned published mapper host"
+        type: boolean
+        default: false
       official-css-options-only:
         description: "Qualify Escaton's CSS, component and flow cases with the official published TypeScript 7.1 host"
         type: boolean
@@ -28,7 +32,7 @@ on:
       release_run: { description: "Successful official Release R", type: string, required: false }
 
 concurrency:
-  group: content-mapper-${{ inputs.published-defaults-only && github.run_id || github.event.pull_request.number || github.ref }}${{ inputs.published-defaults-only && '-published-defaults' || inputs.official-css-options-only && '-official-css-options' || inputs.event-rename-only && '-event-rename' || '' }}
+  group: content-mapper-${{ inputs.published-defaults-only && github.run_id || github.event.pull_request.number || github.ref }}${{ inputs.published-defaults-only && '-published-defaults' || inputs.router-experimental-only && '-router-experimental' || inputs.official-css-options-only && '-official-css-options' || inputs.event-rename-only && '-event-rename' || '' }}
   cancel-in-progress: ${{ !inputs.published-defaults-only }}
 
 permissions:
@@ -41,7 +45,7 @@ env:
 
 jobs:
   exact-tsgo-project:
-    if: ${{ !inputs.event-rename-only && !inputs.official-css-options-only && !inputs.published-defaults-only }}
+    if: ${{ !inputs.router-experimental-only && !inputs.event-rename-only && !inputs.official-css-options-only && !inputs.published-defaults-only }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     steps:
@@ -222,7 +226,7 @@ jobs:
           retention-days: 7
 
   event-rename:
-    if: github.event_name == 'workflow_dispatch' && inputs.event-rename-only && !inputs.official-css-options-only && !inputs.published-defaults-only
+    if: github.event_name == 'workflow_dispatch' && !inputs.router-experimental-only && inputs.event-rename-only && !inputs.official-css-options-only && !inputs.published-defaults-only
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     steps:
@@ -320,7 +324,7 @@ jobs:
         run: test "$TRANSACTIONS_OUTCOME" = success
 
   official-css-options:
-    if: github.event_name == 'workflow_dispatch' && (inputs.official-css-options-only || inputs.published-defaults-only)
+    if: github.event_name == 'workflow_dispatch' && !inputs.router-experimental-only && (inputs.official-css-options-only || inputs.published-defaults-only)
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 15
     env:
@@ -467,3 +471,68 @@ jobs:
             ${{ runner.temp }}/official-css-options/
             !${{ runner.temp }}/official-css-options/**/node_modules
             !${{ runner.temp }}/official-css-options/**/node_modules/**
+
+  router-experimental:
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.router-experimental-only)
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    steps:
+      - name: Checkout reviewed source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - name: Require the exact requested source
+        env:
+          EXPECTED_SOURCE_SHA: ${{ inputs.expected-source-sha }}
+        run: |
+          if [ -n "$EXPECTED_SOURCE_SHA" ]; then
+            test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
+          fi
+          mkdir -p "$RUNNER_TEMP/router-experimental"
+          git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/router-experimental/source-identity.txt"
+          git diff --exit-code HEAD
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: router-experimental
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Setup Vite Plus
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: false
+      - name: Install frozen dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Install the pinned published mapper host
+        run: |
+          mkdir -p "$RUNNER_TEMP/router-mapper-host"
+          cp tests/fixtures/typechecker/experimental-router-mapper-host/package.json.txt "$RUNNER_TEMP/router-mapper-host/package.json"
+          cp tests/fixtures/typechecker/experimental-router-mapper-host/package-lock.json.txt "$RUNNER_TEMP/router-mapper-host/package-lock.json"
+          npm ci --prefix "$RUNNER_TEMP/router-mapper-host" --ignore-scripts --no-audit --no-fund --prefer-offline --registry=https://registry.npmjs.org
+          sha256sum "$RUNNER_TEMP/router-mapper-host/package-lock.json" "$RUNNER_TEMP/router-mapper-host/node_modules/typescript/package.json" "$RUNNER_TEMP/router-mapper-host/node_modules/@typescript/typescript-linux-x64/lib/tsc" > "$RUNNER_TEMP/router-experimental/host-identity.sha256"
+      - name: Build source CLI and test immutable project context
+        run: |
+          cargo build --locked --profile ci -p vize --bin vize
+          cargo test --locked --profile ci -p vize_canon content_mapper_config::typed_router_tests:: -- --nocapture
+          cargo test --locked --profile ci -p vize --bin vize commands::content_mapper::typed_router_tests:: -- --nocapture
+          sha256sum target/ci/vize > "$RUNNER_TEMP/router-experimental/source-cli.sha256"
+      - name: Require complete published-provider mapper and reference packets
+        env:
+          VIZE_TEST_BIN: ${{ github.workspace }}/target/ci/vize
+          VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/router-mapper-host/node_modules/typescript/bin/tsc
+          VIZE_TEST_ROUTER_EXPERIMENTAL_REQUIRED: "1"
+          VIZE_TEST_ROUTER_OUTPUT: ${{ runner.temp }}/router-experimental/mapper
+        run: vp node --test --test-concurrency=1 tests/tooling/router-experimental-mapper-oracle.test.ts
+      - name: Upload complete mapper packets and process measurements
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: router-experimental-mapper-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/router-experimental/
+          if-no-files-found: error
