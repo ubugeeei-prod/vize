@@ -5,7 +5,15 @@
     "fixCommit": "416564d1746fee250ba4fd7e57965aac1d25d9de",
     "witnessPath": "tests/tooling/lsp-native-diagnostic-warmup.test.ts",
     "inputOrigin": "Authored public Ref unwrapping reproduction of issue #10604; eight template TS2739 errors plus an independent script TS2322 settlement control.",
-    "contractOrigin": "CSS literal red is independently authored; the dedicated genuine native stdio test asserts delayed type diagnostics and lifetime/freshness controls."
+    "contractOrigin": "CSS literal red is independently authored; the dedicated genuine native stdio test asserts delayed type diagnostics and lifetime/freshness controls.",
+    "originalIssue": {
+      "path": "original-issue.json",
+      "sha256": "b3461d602f569a40c2595e482e64893222e068fc46d59ab04b6dcb3e204a0fcf"
+    },
+    "warmupWitness": {
+      "path": "tests/tooling/lsp-native-diagnostic-warmup.test.ts",
+      "sha256": "ba8d53759b8f5fdf771dc8ee0169477ef5bdfe8357c8fa7c5501346eef62031e"
+    }
   },
   "files": [
     {
@@ -37,5 +45,20 @@
     "lint": true,
     "typecheck": true
   },
-  "scope": "The pinned local color response remains available during native warm-up; full diagnostic lifecycle is exercised by the separately bounded real stdio witness, without claiming whole-product native parity."
+  "scope": "The manifest documentColor request is a STRUCTURAL CONTROL ONLY and does not represent the native diagnostic fix. The separately pinned full genuine stdio/native transition witness owns the late pending-to-complete result, exact eight TS2739 errors, 1901-file corpus, current-phase gates, two pre-admitted roots, stale version, actual closed read, configuration revocation and hard-error controls. Root-expansion process replacement remains explicitly UNRESOLVED #10622; no native whole-product parity credit is claimed.",
+  "nativeWarmupContract": {
+    "vueSourceFiles": 487,
+    "tsSourceFiles": 1414,
+    "templateErrorCode": 2739,
+    "templateErrorCount": 8,
+    "softThresholdMs": 1,
+    "baselineConfiguration": "environment override",
+    "candidateConfiguration": "initializationOptions.typecheckTimeoutMs; environment override absent",
+    "changedRoots": {
+      "state": "UNRESOLVED",
+      "issue": 10622,
+      "strictFailureRun": "https://github.com/ubugeeei-prod/vize/actions/runs/40183984382"
+    },
+    "sameProcessReuse": "strictly qualified only across two pre-admitted roots with unchanged generated tsconfig roots"
+  }
 }

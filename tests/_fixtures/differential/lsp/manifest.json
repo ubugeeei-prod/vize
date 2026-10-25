@@ -2348,7 +2348,7 @@
       },
       "case": {
         "path": "native-diagnostic-warmup-10604/case.json",
-        "sha256": "0eebdc643dee4a50e2b56bab9ece15120e0374065d716e1a5c1e6180049b629e"
+        "sha256": "534270e64a5c08151bc46d056c0d165678f88934dbf029984bb1587119fa0c20"
       },
       "requestCount": 1,
       "initializationOptions": {

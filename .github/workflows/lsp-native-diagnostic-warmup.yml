@@ -81,7 +81,13 @@ jobs:
       - name: Reproduce the old drop or retain the complete real native answer
         env:
           CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
-        run: node --test --test-concurrency=1 tests/tooling/lsp-native-diagnostic-warmup.test.ts
+        run: |
+          if [ "$VIZE_WARMUP_ROLE" = baseline ]; then
+            node --test --test-concurrency=1 tests/tooling/lsp-native-diagnostic-warmup.test.ts
+          else
+            # Exercise the editor initialization setting itself, without an env override.
+            env -u VIZE_LSP_NATIVE_DIAGNOSTIC_TIMEOUT_MS node --test --test-concurrency=1 tests/tooling/lsp-native-diagnostic-warmup.test.ts
+          fi
       - name: Preserve source freshness, assembly oracles, recovery and editor controls
         if: ${{ !cancelled() && matrix.role == 'candidate' && steps.producer.outcome == 'success' }}
         env:
